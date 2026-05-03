@@ -1,0 +1,28 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+
+  server:
+    build: ./apps/server
+    expose: ["3000"]
+
+  web-landing:
+    build: ./apps/web/landing
+    expose: ["3001"]
+
+  web-companies:
+    build: ./apps/web/companies
+    expose: ["3002"]
+
+  web-management:
+    build: ./apps/web/management
+    expose: ["3003"]
+
+  web-superadmin:
+    build: ./apps/web/superadmin
+    expose: ["3004"]
