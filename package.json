@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"@expo-google-fonts/cairo": "^0.4.2",
+		"@expo/metro-runtime": "^55.0.10",
+		"axios": "^1.16.0",
+		"zod": "^4.4.2"
+	}
+}
