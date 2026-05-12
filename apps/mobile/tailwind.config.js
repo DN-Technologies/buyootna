@@ -6,11 +6,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        sans: ["Cairo_400Regular"],
         cairo: ["Cairo_400Regular"],
-        "cairo-bold": ["Cairo_700Bold"],
-        "cairo-extrabold": ["Cairo_800ExtraBold"],
-        "cairo-black": ["Cairo_900Black"],
         "cairo-medium": ["Cairo_500Medium"],
+        "cairo-semibold": ["Cairo_600SemiBold"],
+        "cairo-bold": ["Cairo_700Bold"],
         "readex-pro": ["ReadexPro_400Regular"],
         "readex-pro-bold": ["ReadexPro_700Bold"],
         "readex-pro-medium": ["ReadexPro_500Medium"],
