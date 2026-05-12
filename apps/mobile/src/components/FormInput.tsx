@@ -16,6 +16,7 @@ interface FormInputProps<T extends FieldValues> extends TextInputProps {
   label: string;
   isPassword?: boolean;
   isRequired?: boolean;
+  leftIcon?: React.ReactNode;
 }
 
 export default function FormInput<T extends FieldValues>({
@@ -24,6 +25,7 @@ export default function FormInput<T extends FieldValues>({
   label,
   isPassword = false,
   isRequired = true,
+  leftIcon,
   ...textInputProps
 }: FormInputProps<T>) {
   const [isFocused, setIsFocused] = useState(false);
@@ -58,13 +60,14 @@ export default function FormInput<T extends FieldValues>({
           <View className="mb-5 w-full">
             {/* Label */}
             <View className="flex-row-reverse justify-start mb-2">
-              <Text className="text-sm font-bold text-slate-800">{label}</Text>
+              <Text className="text-sm font-bold text-[#111111]">{label}</Text>
               {isRequired && <Text className="text-red-500 ml-1">*</Text>}
             </View>
 
             {/* Input Container */}
             <View
-              className={`flex-row items-center border-[1.5px] rounded-xl px-4 h-14 bg-white ${borderColorClass}`}
+              className={`flex-row items-center border-[1.5px] rounded-xl px-4 bg-white ${borderColorClass} ${textInputProps.multiline ? "items-start pt-2" : "h-14"}`}
+              style={textInputProps.multiline ? { minHeight: 120 } : {}}
             >
               {/* Password Eye Toggle Icon */}
               {isPassword && (
@@ -87,9 +90,18 @@ export default function FormInput<T extends FieldValues>({
                 </View>
               )}
 
+              {leftIcon && <View className="mr-3">{leftIcon}</View>}
+
               {/* Text Input */}
               <TextInput
-                className="flex-1 text-right text-base text-slate-900 h-full"
+                {...textInputProps}
+                className={`flex-1 text-right text-base text-[#111111] ${textInputProps.multiline ? "min-h-[100px]" : "h-full"}`}
+                textAlign="right"
+                style={[
+                  { writingDirection: "rtl", textAlign: "right" },
+                  textInputProps.multiline ? { textAlignVertical: "top" } : {},
+                  textInputProps.style,
+                ]}
                 onBlur={() => {
                   setIsFocused(false);
                   onBlur();
@@ -99,8 +111,7 @@ export default function FormInput<T extends FieldValues>({
                 value={value}
                 secureTextEntry={isSecureText}
                 placeholderTextColor="#9CA3AF"
-                textAlign={I18nManager.isRTL ? "right" : "left"}
-                {...textInputProps}
+                multiline={textInputProps.multiline}
               />
             </View>
 

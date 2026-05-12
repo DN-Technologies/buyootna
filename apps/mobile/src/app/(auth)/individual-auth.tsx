@@ -61,7 +61,7 @@ export default function IndividualAuthScreen() {
   // Handle switching account type from the bottom sheet
   const handleAccountTypeChange = (type: AccountType) => {
     if (type === "company") {
-      router.replace("/(auth)/company-register");
+      router.replace("/(auth)/company-auth");
     }
   };
 
