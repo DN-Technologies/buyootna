@@ -1,5 +1,6 @@
 import { SplashScreen, Stack } from "expo-router";
 import "react-native-reanimated";
+import "./globals.css";
 
 import { useEffect } from "react";
 import { I18nManager } from "react-native";
