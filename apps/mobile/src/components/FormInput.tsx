@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
-  type TextInputProps,
+  TextInputProps,
   TouchableOpacity,
   I18nManager,
 } from "react-native";
@@ -37,64 +37,41 @@ export default function FormInput<T extends FieldValues>({
         field: { onChange, onBlur, value },
         fieldState: { error, isTouched },
       }) => {
-        // Determine the current state
         const hasError = !!error;
-        // Success state: user interacted with it, it has a value, and no validation errors
         const isSuccess =
           isTouched && !hasError && value !== undefined && value !== "";
 
-        // Dynamic styling based on state
         let borderColorClass = "border-gray-300";
-        let iconColor = "#9CA3AF"; // Default Gray
+        let iconColor = "#9CA3AF";
 
         if (hasError) {
           borderColorClass = "border-red-500";
-          iconColor = "#EF4444"; // Red
+          iconColor = "#EF4444";
         } else if (isSuccess) {
           borderColorClass = "border-green-500";
-          iconColor = "#22C55E"; // Green
+          iconColor = "#22C55E";
         } else if (isFocused) {
-          borderColorClass = "border-[#0B2239]"; // Active Dark Blue
-          iconColor = "#9CA3AF"; // Keep icon gray when focused
+          borderColorClass = "border-[#0B2239]";
         }
 
         return (
           <View className="mb-5 w-full">
             {/* Label */}
-            <View className="flex-row mb-2">
-              <Text className="text-sm font-bold text-slate-800 text-right">
-                {label}
-              </Text>
+            <View className="flex-row-reverse justify-start mb-2">
+              <Text className="text-sm font-bold text-slate-800">{label}</Text>
               {isRequired && <Text className="text-red-500 ml-1">*</Text>}
             </View>
 
             {/* Input Container */}
             <View
-              className={`flow-row items-center border-[1.5px] rounded-xl px-4 py-3 bg-white ${borderColorClass}`}
+              className={`flex-row items-center border-[1.5px] rounded-xl px-4 h-14 bg-white ${borderColorClass}`}
             >
-              {/* Text Input */}
-              <TextInput
-                className="flex-1 text-right text-base text-slate-900 font-medium"
-                onBlur={() => {
-                  setIsFocused(false);
-                  onBlur();
-                }}
-                onFocus={() => setIsFocused(true)}
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry={isSecureText}
-                placeholderTextColor="#9CA3AF"
-                // Native layout fix for Arabic typing
-                textAlign={I18nManager.isRTL ? "right" : "left"}
-                {...textInputProps}
-              />
-
               {/* Password Eye Toggle Icon */}
               {isPassword && (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setIsSecureText(!isSecureText)}
-                  className="ml-3" // Adds spacing between icon and text
+                  className="mr-3 p-1"
                 >
                   <Feather
                     name={isSecureText ? "eye-off" : "eye"}
@@ -104,21 +81,37 @@ export default function FormInput<T extends FieldValues>({
                 </TouchableOpacity>
               )}
 
-              {/* Optional: Show checkmark if not a password field but successful */}
               {!isPassword && isSuccess && (
-                <Feather
-                  name="check"
-                  size={20}
-                  color={iconColor}
-                  className="ml-3"
-                />
+                <View className="mr-3 p-1">
+                  <Feather name="check" size={20} color={iconColor} />
+                </View>
               )}
+
+              {/* Text Input */}
+              <TextInput
+                className="flex-1 text-right text-base text-slate-900 h-full"
+                onBlur={() => {
+                  setIsFocused(false);
+                  onBlur();
+                }}
+                onFocus={() => setIsFocused(true)}
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry={isSecureText}
+                placeholderTextColor="#9CA3AF"
+                textAlign={I18nManager.isRTL ? "right" : "left"}
+                {...textInputProps}
+              />
             </View>
 
             {/* Error Message */}
             {hasError && (
-              <Text className="text-red-500 text-xs mt-1.5 text-right font-medium">
-                {error.message}
+              <Text
+                className="text-red-500 text-xs mt-1.5 font-medium"
+                // Forcing native RTL alignment for Arabic punctuation
+                style={{ textAlign: "right", writingDirection: "rtl" }}
+              >
+                {error?.message as string}
               </Text>
             )}
           </View>

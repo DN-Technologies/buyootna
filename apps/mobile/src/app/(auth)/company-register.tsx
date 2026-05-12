@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 import { View, Button } from "react-native";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { AccountType } from "@/types";
-import AccountTypeBottomSheet from "@/components/AccountTypeBottomSheet";
+import { AccountType } from "@/core/types";
+import AccountTypeBottomSheet from "@/core/components/AccountTypeBottomSheet";
 
 export default function CompanyRegister() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function CompanyRegister() {
   // 2. Define what happens when they pick an option
   const handleAccountTypeSelected = (type: AccountType) => {
     if (type === "individual") {
-      router.push("/(auth)/individual-register");
+      router.push("/(auth)/individual-auth");
     } else if (type === "company") {
       router.push("/(auth)/company-register");
     }

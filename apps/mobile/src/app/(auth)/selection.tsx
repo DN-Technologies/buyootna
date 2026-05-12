@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import SelectionCard from "@/components/SelectionCard";
 import AppLogo from "@/core/components/AppLogo";
-import { AccountType } from "@/types";
+import { AccountType } from "@/core/types";
 
 export default function AccountTypeSelectionScreen() {
   const router = useRouter();
@@ -12,7 +12,7 @@ export default function AccountTypeSelectionScreen() {
 
   const handleStartRegistration = () => {
     if (selectedType === "individual") {
-      router.push("/(auth)/individual-register");
+      router.push("/(auth)/individual-auth");
     } else if (selectedType === "company") {
       router.push("/(auth)/company-register");
     }

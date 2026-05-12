@@ -5,22 +5,22 @@ import {
   BottomSheetView,
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
-import SelectionCard from "./SelectionCard";
-import { AccountType } from "@/types";
-import AppLogo from "@/core/components/AppLogo";
+import { AccountType } from "@/core/types";
 import { Feather } from "@expo/vector-icons";
+import SelectionCard from "@/components/SelectionCard";
 
 interface AccountTypeBottomSheetProps {
   onContinue: (type: AccountType) => void;
+  initialType?: AccountType;
 }
 
 const AccountTypeBottomSheet = forwardRef<
   BottomSheetModal,
   AccountTypeBottomSheetProps
->(({ onContinue }, ref) => {
+>(({ onContinue, initialType = null }, ref) => {
   // Defines how high the sheet snaps up. Adjust percentage as needed.
   const snapPoints = useMemo(() => ["65%"], []);
-  const [selectedType, setSelectedType] = useState<AccountType>(null);
+  const [selectedType, setSelectedType] = useState<AccountType>(initialType);
 
   // Creates the dark overlay behind the bottom sheet
   const renderBackdrop = useCallback(
@@ -54,24 +54,18 @@ const AccountTypeBottomSheet = forwardRef<
       <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
         {/* Header Section */}
         <View className="flex-row justify-between items-start mb-6">
-          <View className="flex-1">
-            <Text className="text-2xl font-cairo-bold text-[#111] mb-2 mt-3 text-center">
-              اختر نوع حسابك للبدء
-            </Text>
-            <Text className="text-base text-[#6B6A6A] font-cairo-medium text-center leading-2">
-              حدد الطريقة التي تناسبك لاستخدام التطبيق، سواء كنت فرد تبحث أو
-              تنشر إعلان، شركة تعرض مشاريعها وخدماتها، أو مالك عقار.
-            </Text>
-          </View>
-
           {/* Close Button (X) */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleClose}
-            className="ml-4 p-1 bg-gray-100 rounded-full"
+            className="mr-4 p-1 bg-gray-100 rounded-full"
           >
             <Feather name="x" size={20} color="#64748B" />
           </TouchableOpacity>
+
+          <Text className="text-xl font-cairo-semibold text-[#111] mb-2 mt-3">
+            اختر نوع حسابك للبدء
+          </Text>
         </View>
 
         {/* Selection Cards */}
@@ -81,7 +75,11 @@ const AccountTypeBottomSheet = forwardRef<
             description="للأشخاص الراغبين في إضافة إعلان بيع أو إيجار أو بدل لعقاراتهم الخاص."
             type="individual"
             isSelected={selectedType === "individual"}
-            onPress={() => setSelectedType("individual")}
+            onPress={() => {
+              setSelectedType("individual");
+              onContinue("individual");
+              handleClose();
+            }}
           />
 
           <SelectionCard
@@ -89,31 +87,13 @@ const AccountTypeBottomSheet = forwardRef<
             description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
             type="company"
             isSelected={selectedType === "company"}
-            onPress={() => setSelectedType("company")}
+            onPress={() => {
+              setSelectedType("company");
+              onContinue("company");
+              handleClose();
+            }}
           />
         </View>
-        {/* Action Button */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          disabled={!selectedType}
-          onPress={() => {
-            if (selectedType) {
-              onContinue(selectedType);
-              handleClose();
-            }
-          }}
-          className={`w-full py-4 rounded-xl items-center justify-center mt-auto ${
-            selectedType ? "bg-[#0B2239]" : "bg-gray-300"
-          }`}
-        >
-          <Text
-            className={`text-lg font-bold ${
-              selectedType ? "text-white" : "text-gray-500"
-            }`}
-          >
-            بدء التسجيل
-          </Text>
-        </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>
   );
