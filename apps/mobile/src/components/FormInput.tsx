@@ -59,9 +59,11 @@ export default function FormInput<T extends FieldValues>({
         return (
           <View className="mb-5 w-full">
             {/* Label */}
-            <View className="flex-row-reverse justify-start mb-2">
-              <Text className="text-sm font-bold text-[#111111]">{label}</Text>
-              {isRequired && <Text className="text-red-500 ml-1">*</Text>}
+            <View className="flex-row-reverse justify-start mb-1">
+              <Text className="text-sm font-cairo-semibold leading-normal tracking-tight text-[#111111]">
+                {label}
+              </Text>
+              {isRequired && <Text className="text-red-500 mr-px">*</Text>}
             </View>
 
             {/* Input Container */}
@@ -95,7 +97,7 @@ export default function FormInput<T extends FieldValues>({
               {/* Text Input */}
               <TextInput
                 {...textInputProps}
-                className={`flex-1 text-right text-base text-[#111111] ${textInputProps.multiline ? "min-h-[100px]" : "h-full"}`}
+                className={`flex-1 text-right font-cairo-medium leading-normal tracking-normal text-base text-[#111111] ${textInputProps.multiline ? "min-h-[100px]" : "h-full"}`}
                 textAlign="right"
                 style={[
                   { writingDirection: "rtl", textAlign: "right" },

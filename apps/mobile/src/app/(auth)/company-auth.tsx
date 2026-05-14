@@ -87,8 +87,10 @@ export default function CompanyAuthScreen() {
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
-    if (selectedDate) {
+    // Close the picker on both platform after selection
+    setShowDatePicker(false);
+
+    if (selectedDate && event.type !== "dismissed") {
       const formattedDate = selectedDate.toLocaleDateString("ar-EG", {
         day: "numeric",
         month: "long",
@@ -237,7 +239,10 @@ export default function CompanyAuthScreen() {
                     تذكري
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity activeOpacity={0.7}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/(auth)/forgot-password")}
+                >
                   <Text className="text-[#0B2239] font-medium text-sm">
                     هل نسيت كلمة المرور؟
                   </Text>
@@ -365,7 +370,11 @@ export default function CompanyAuthScreen() {
                       editable={false}
                       pointerEvents="none"
                       leftIcon={
-                        <Feather name="chevron-down" size={20} color="#6B6A6A" />
+                        <Feather
+                          name="chevron-down"
+                          size={20}
+                          color="#6B6A6A"
+                        />
                       }
                     />
                   </TouchableOpacity>

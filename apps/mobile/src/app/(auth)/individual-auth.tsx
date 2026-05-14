@@ -80,18 +80,18 @@ export default function IndividualAuthScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* 1. Clickable to open Bottom Sheet */}
-          <View className="items-center mb-8 mt-2">
-            <View className="w-16 h-16 items-center justify-center mb-3">
+          <View className="items-center mb-1 mt-2">
+            <View className="w-16 h-16 items-center justify-center mb-1">
               <AppLogo width={64} height={64} fill="#0B2239" />
             </View>
 
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => bottomSheetRef.current?.present()}
-              className="flex-row items-center  px-4 py-2 rounded-full"
+              className="flex-row items-center px-4 py-2 rounded-full"
             >
               <Feather name="chevron-up" size={20} color="#6B6A6A" />
-              <Text className="text-lg font-semibold text-[#111111] mx-2">
+              <Text className="text-lg font-cario-semibold text-[#111111] mx-2">
                 فرد
               </Text>
               <Image
@@ -162,8 +162,11 @@ export default function IndividualAuthScreen() {
               {/* 3. Remember Me & Forgot Password */}
               <View className="flex-row justify-between items-center w-full mb-8">
                 {/* Forgot Password */}
-                <TouchableOpacity activeOpacity={0.7}>
-                  <Text className="text-[#0B2239] font-medium text-sm">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/(auth)/forgot-password")}
+                >
+                  <Text className="text-[#0B2239] font-cario-medium text-sm">
                     هل نسيت كلمة المرور؟
                   </Text>
                 </TouchableOpacity>
@@ -174,7 +177,7 @@ export default function IndividualAuthScreen() {
                   className="flex-row items-center"
                   onPress={() => setRememberMe(!rememberMe)}
                 >
-                  <Text className="text-slate-700 font-medium text-sm">
+                  <Text className="text-slate-700 font-cario-medium text-sm">
                     تذكري
                   </Text>
                   <View
@@ -196,7 +199,7 @@ export default function IndividualAuthScreen() {
                 onPress={handleLoginSubmit(onLogin)}
                 className="w-full py-4 rounded-3xl items-center justify-center bg-[#15304D] mt-auto mb-4"
               >
-                <Text className="text-lg font-bold text-white">
+                <Text className="text-lg font-cairo-bold text-white">
                   تسجيل الدخول
                 </Text>
               </TouchableOpacity>
