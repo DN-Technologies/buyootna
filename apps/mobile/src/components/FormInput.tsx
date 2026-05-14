@@ -5,7 +5,7 @@ import {
   TextInput,
   TextInputProps,
   TouchableOpacity,
-  I18nManager,
+  Platform,
 } from "react-native";
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 import { Feather } from "@expo/vector-icons";
@@ -53,17 +53,17 @@ export default function FormInput<T extends FieldValues>({
           borderColorClass = "border-green-500";
           iconColor = "#22C55E";
         } else if (isFocused) {
-          borderColorClass = "border-[#0B2239]";
+          borderColorClass = "border-primary";
         }
 
         return (
-          <View className="mb-5 w-full">
+          <View className="mb-4 w-full">
             {/* Label */}
-            <View className="flex-row-reverse justify-start mb-1">
-              <Text className="text-sm font-cairo-semibold leading-normal tracking-tight text-[#111111]">
+            <View className="flex-row-reverse justify-start mb-1 items-center">
+              <Text className="text-sm font-cairo-semibold tracking-tight text-charcoal">
                 {label}
               </Text>
-              {isRequired && <Text className="text-red-500 mr-px">*</Text>}
+              {isRequired && <Text className="text-red-500 mr-1 font-bold">*</Text>}
             </View>
 
             {/* Input Container */}
@@ -97,11 +97,18 @@ export default function FormInput<T extends FieldValues>({
               {/* Text Input */}
               <TextInput
                 {...textInputProps}
-                className={`flex-1 text-right font-cairo-medium leading-normal tracking-normal text-base text-[#111111] ${textInputProps.multiline ? "min-h-[100px]" : "h-full"}`}
+                className={`flex-1 text-right font-cairo-medium tracking-normal text-base text-charcoal ${
+                  textInputProps.multiline ? "min-h-[100px] pt-2" : "h-full"
+                }`}
                 textAlign="right"
+                textAlignVertical={textInputProps.multiline ? "top" : "center"}
                 style={[
-                  { writingDirection: "rtl", textAlign: "right" },
-                  textInputProps.multiline ? { textAlignVertical: "top" } : {},
+                  {
+                    writingDirection: "rtl",
+                    textAlign: "right",
+                    // Fix for Cairo font vertical offset on iOS
+                    paddingTop: Platform.OS === "ios" ? 4 : 0,
+                  },
                   textInputProps.style,
                 ]}
                 onBlur={() => {
@@ -120,7 +127,7 @@ export default function FormInput<T extends FieldValues>({
             {/* Error Message */}
             {hasError && (
               <Text
-                className="text-red-500 text-xs mt-1.5 font-medium"
+                className="text-red-500 text-xs mt-1.5 font-cairo-medium"
                 // Forcing native RTL alignment for Arabic punctuation
                 style={{ textAlign: "right", writingDirection: "rtl" }}
               >

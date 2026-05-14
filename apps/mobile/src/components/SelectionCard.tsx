@@ -17,9 +17,9 @@ export default function SelectionCard({
   onPress,
 }: SelectionCardProps) {
   // Dynamic styling based on selection state
-  const containerBg = isSelected ? "bg-[#15304D]" : "bg-white";
-  const borderColor = isSelected ? "border-[#15304D]" : "border-gray-200";
-  const descColor = isSelected ? "text-gray-300" : "text-[#6B6A6A]";
+  const containerBg = isSelected ? "bg-secondary" : "bg-white";
+  const borderColor = isSelected ? "border-secondary" : "border-gray-200";
+  const descColor = isSelected ? "text-gray-300" : "text-gray-medium";
 
   return (
     <TouchableOpacity
@@ -33,12 +33,14 @@ export default function SelectionCard({
       {/* Text Content */}
       <View className="flex-1 items-start">
         <Text
-          className={`text-lg font-cairo-semibold  font-bold mb-1 text-right w-full ${descColor}`}
+          className={`text-lg font-cairo-semibold mb-1 text-right w-full ${
+            isSelected ? "text-white" : "text-charcoal"
+          }`}
         >
           {title}
         </Text>
         <Text
-          className={`text-sm text-right font-cairo-medium  w-full leading-5 ${descColor}`}
+          className={`text-sm text-right font-cairo-medium w-full leading-5 ${descColor}`}
         >
           {description}
         </Text>

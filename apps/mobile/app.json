@@ -4,13 +4,13 @@
     "slug": "buyootna-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./src//assets//system/icon.jpeg",
+    "icon": "./src/assets/images/icon.png",
     "scheme": "buyootnamobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.youssefdevusf.buyootnamobile",
+      "bundleIdentifier": "com.youssefdevusf.buyootna",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

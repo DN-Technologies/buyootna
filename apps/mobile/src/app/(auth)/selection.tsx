@@ -14,7 +14,7 @@ export default function AccountTypeSelectionScreen() {
     if (selectedType === "individual") {
       router.push("/(auth)/individual-auth");
     } else if (selectedType === "company") {
-      router.push("/(auth)/company-register");
+      router.push("/(auth)/company-auth");
     }
   };
 

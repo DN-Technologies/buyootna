@@ -18,6 +18,13 @@ module.exports = {
         "readex-pro-extralight": ["ReadexPro_200ExtraLight"],
         "readex-pro-light": ["ReadexPro_300Light"],
       },
+      colors: {
+        primary: "#0B2239",
+        secondary: "#15304D",
+        accent: "#F1F5F9",
+        charcoal: "#111111",
+        "gray-medium": "#6B6A6A",
+      },
     },
   },
   plugins: [],

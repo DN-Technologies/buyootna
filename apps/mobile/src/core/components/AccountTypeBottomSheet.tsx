@@ -63,7 +63,7 @@ const AccountTypeBottomSheet = forwardRef<
             <Feather name="x" size={20} color="#64748B" />
           </TouchableOpacity>
 
-          <Text className="text-xl font-cairo-semibold text-[#111] mb-2 mt-3">
+          <Text className="text-xl font-cairo-semibold text-charcoal mb-2 mt-3">
             اختر نوع حسابك للبدء
           </Text>
         </View>
