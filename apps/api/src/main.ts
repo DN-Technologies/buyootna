@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -16,7 +17,10 @@ async function bootstrap() {
 
   // Enable CORS so React Native frontend can talk to it!
   app.enableCors();
-  await app.listen(process.env.PORT ?? 8000);
+
+  await app.listen(process.env.PORT ?? 8000, () => {
+    console.log('App running on port:', process.env.PORT ?? 8000);
+  });
 }
 bootstrap().catch((err) => {
   console.error('Failed to start NestJS application:', err);
