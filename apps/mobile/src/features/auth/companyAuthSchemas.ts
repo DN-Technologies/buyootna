@@ -46,12 +46,8 @@ export const companySignupSchema = z
     logo: z.any().optional(),
 
     // Step 3: Licensing
-    licenseActivity: z
-      .string({ message: "النشاط مطلوب" })
-      .min(1, "النشاط مطلوب"),
-    licenseExpiry: z
-      .string({ message: "تاريخ الانتهاء مطلوب" })
-      .min(1, "تاريخ الانتهاء مطلوب"),
+    licenseActivity: z.string().optional(),
+    licenseExpiry: z.string().optional(),
     // File upload is often handled separately or as a string URI in forms
     licenseFile: z.any().optional(),
   })

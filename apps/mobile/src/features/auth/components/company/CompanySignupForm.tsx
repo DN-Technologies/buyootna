@@ -24,6 +24,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const activitySheetRef = useRef<BottomSheetModal>(null);
+  const serviceAreasSheetRef = useRef<BottomSheetModal>(null);
 
   const {
     control,
@@ -37,6 +38,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   });
 
   const selectedActivity = watch("licenseActivity");
+  const selectedServiceAreas = watch("serviceAreas");
 
   const handleNextStep = async () => {
     let isStepValid = false;
@@ -70,7 +72,12 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   return (
     <View className="flex-1">
       {step === 1 && <SignupStep1 control={control} />}
-      {step === 2 && <SignupStep2 control={control} />}
+      {step === 2 && (
+        <SignupStep2
+          control={control}
+          onOpenServiceAreasSheet={() => serviceAreasSheetRef.current?.present()}
+        />
+      )}
       {step === 3 && (
         <SignupStep3
           control={control}
@@ -117,6 +124,24 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         selectedValue={selectedActivity}
         onSelect={(val) =>
           setValue("licenseActivity", val, { shouldValidate: true })
+        }
+      />
+
+      <SelectionBottomSheet
+        ref={serviceAreasSheetRef}
+        title="اختر نطاقات الخدمة"
+        options={[
+          "كل المناطق",
+          "العاصمة",
+          "حولي",
+          "الفروانية",
+          "الأحمدي",
+          "الجهراء",
+          "مبارك الكبير",
+        ]}
+        selectedValue={selectedServiceAreas}
+        onSelect={(val) =>
+          setValue("serviceAreas", val, { shouldValidate: true })
         }
       />
     </View>

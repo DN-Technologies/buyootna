@@ -49,6 +49,9 @@ const SelectionBottomSheet = forwardRef<
     >
       <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
         <View className="flex-row justify-between items-center mb-6">
+          <Text className="text-xl font-cairo-semibold text-[#111111]">
+            {title}
+          </Text>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
@@ -60,9 +63,6 @@ const SelectionBottomSheet = forwardRef<
           >
             <Feather name="x" size={20} color="#64748B" />
           </TouchableOpacity>
-          <Text className="text-xl font-cairo-semibold text-[#111111]">
-            {title}
-          </Text>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -75,16 +75,16 @@ const SelectionBottomSheet = forwardRef<
                 onPress={() => handleSelect(option)}
                 className={`flex-row justify-between items-center py-4 border-b border-gray-100 ${isSelected ? "bg-blue-50 px-3 rounded-xl border-transparent" : ""}`}
               >
-                {isSelected ? (
-                  <Feather name="check-circle" size={20} color="#15304D" />
-                ) : (
-                  <View className="w-5" />
-                )}
                 <Text
                   className={`text-base font-cairo-medium text-right ${isSelected ? "text-[#15304D] font-cairo-bold" : "text-[#111111]"}`}
                 >
                   {option}
                 </Text>
+                {isSelected ? (
+                  <Feather name="check-circle" size={20} color="#15304D" />
+                ) : (
+                  <View className="w-5" />
+                )}
               </TouchableOpacity>
             );
           })}

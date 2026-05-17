@@ -17,6 +17,7 @@ interface FormInputProps<T extends FieldValues> extends TextInputProps {
   isPassword?: boolean;
   isRequired?: boolean;
   leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
 export default function FormInput<T extends FieldValues>({
@@ -26,6 +27,7 @@ export default function FormInput<T extends FieldValues>({
   isPassword = false,
   isRequired = true,
   leftIcon,
+  rightIcon,
   ...textInputProps
 }: FormInputProps<T>) {
   const [isFocused, setIsFocused] = useState(false);
@@ -59,11 +61,13 @@ export default function FormInput<T extends FieldValues>({
         return (
           <View className="mb-4 w-full">
             {/* Label */}
-            <View className="flex-row-reverse justify-start mb-1 items-center">
+            <View className="flex-row justify-start mb-1 items-center">
               <Text className="text-sm font-cairo-semibold tracking-tight text-charcoal">
                 {label}
               </Text>
-              {isRequired && <Text className="text-red-500 mr-1 font-bold">*</Text>}
+              {isRequired && (
+                <Text className="text-red-500 ml-[2px] font-bold">*</Text>
+              )}
             </View>
 
             {/* Input Container */}
@@ -71,28 +75,8 @@ export default function FormInput<T extends FieldValues>({
               className={`flex-row items-center border-[1.5px] rounded-xl px-4 bg-white ${borderColorClass} ${textInputProps.multiline ? "items-start pt-2" : "h-14"}`}
               style={textInputProps.multiline ? { minHeight: 120 } : {}}
             >
-              {/* Password Eye Toggle Icon */}
-              {isPassword && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => setIsSecureText(!isSecureText)}
-                  className="mr-3 p-1"
-                >
-                  <Feather
-                    name={isSecureText ? "eye-off" : "eye"}
-                    size={20}
-                    color={iconColor}
-                  />
-                </TouchableOpacity>
-              )}
-
-              {!isPassword && isSuccess && (
-                <View className="mr-3 p-1">
-                  <Feather name="check" size={20} color={iconColor} />
-                </View>
-              )}
-
-              {leftIcon && <View className="mr-3">{leftIcon}</View>}
+              {/* Left Icon (Leading) */}
+              {leftIcon && <View style={{ marginEnd: 12 }}>{leftIcon}</View>}
 
               {/* Text Input */}
               <TextInput
@@ -122,17 +106,49 @@ export default function FormInput<T extends FieldValues>({
                 placeholderTextColor="#9CA3AF"
                 multiline={textInputProps.multiline}
               />
+
+              {/* Password Eye Toggle Icon (Trailing) */}
+              {isPassword && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setIsSecureText(!isSecureText)}
+                  className="p-1"
+                  style={{ marginStart: 12 }}
+                >
+                  <Feather
+                    name={isSecureText ? "eye-off" : "eye"}
+                    size={20}
+                    color={iconColor}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {/* Validation Success Icon (Trailing) */}
+              {!isPassword && isSuccess && (
+                <View className="p-1" style={{ marginStart: 12 }}>
+                  <Feather name="check" size={20} color={iconColor} />
+                </View>
+              )}
+
+              {/* Right Icon (Trailing) */}
+              {rightIcon && (
+                <View style={{ marginStart: 12 }}>
+                  {rightIcon}
+                </View>
+              )}
             </View>
 
             {/* Error Message */}
             {hasError && (
-              <Text
-                className="text-red-500 text-xs mt-1.5 font-cairo-medium"
-                // Forcing native RTL alignment for Arabic punctuation
-                style={{ textAlign: "right", writingDirection: "rtl" }}
-              >
-                {error?.message as string}
-              </Text>
+              <View className="flex-row justify-start w-full mt-1.5">
+                <Text
+                  className="text-red-500 text-xs font-cairo-medium"
+                  // Forcing native RTL alignment for Arabic punctuation
+                  style={{ textAlign: "right", writingDirection: "rtl" }}
+                >
+                  {error?.message as string}
+                </Text>
+              </View>
             )}
           </View>
         );

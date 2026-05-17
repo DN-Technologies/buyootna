@@ -50,9 +50,14 @@ export const SignupStep1: React.FC<StepProps> = ({ control }) => (
   </View>
 );
 
-interface Step2Props extends StepProps {}
+interface Step2Props extends StepProps {
+  onOpenServiceAreasSheet: () => void;
+}
 
-export const SignupStep2: React.FC<Step2Props> = ({ control }) => (
+export const SignupStep2: React.FC<Step2Props> = ({
+  control,
+  onOpenServiceAreasSheet,
+}) => (
   <View className="flex-1">
     <FormInput
       control={control}
@@ -65,13 +70,19 @@ export const SignupStep2: React.FC<Step2Props> = ({ control }) => (
       name="hqLocation"
       label="المقر الرئيسي"
       placeholder="أين يقع مقر الشركة ؟"
+      rightIcon={<Feather name="map-pin" size={20} color="#6B6A6A" />}
     />
-    <FormInput
-      control={control}
-      name="serviceAreas"
-      label="مناطق تقديم الخدمة"
-      placeholder="اختر نطاقات الخدمة"
-    />
+    <TouchableOpacity activeOpacity={1} onPress={onOpenServiceAreasSheet}>
+      <FormInput
+        control={control}
+        name="serviceAreas"
+        label="مناطق تقديم الخدمة"
+        placeholder="اختر نطاقات الخدمة"
+        editable={false}
+        pointerEvents="none"
+        rightIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
+      />
+    </TouchableOpacity>
     <FormInput
       control={control}
       name="about"
@@ -83,7 +94,7 @@ export const SignupStep2: React.FC<Step2Props> = ({ control }) => (
     />
 
     <View className="mb-4 w-full">
-      <View className="flex-row justify-end mb-1">
+      <View className="flex-row justify-start mb-1">
         <Text className="text-sm font-cairo-bold text-charcoal">لوجو الشركة</Text>
       </View>
       <TouchableOpacity
@@ -123,7 +134,8 @@ export const SignupStep3: React.FC<Step3Props> = ({
         placeholder="تشطيبات، بناء، ديكور، كهرباء"
         editable={false}
         pointerEvents="none"
-        leftIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
+        isRequired={false}
+        rightIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
       />
     </TouchableOpacity>
 
@@ -135,7 +147,8 @@ export const SignupStep3: React.FC<Step3Props> = ({
         placeholder="15 ابريل 2027"
         editable={false}
         pointerEvents="none"
-        leftIcon={<Feather name="calendar" size={20} color="#6B6A6A" />}
+        isRequired={false}
+        rightIcon={<Feather name="calendar" size={20} color="#6B6A6A" />}
       />
     </TouchableOpacity>
 
@@ -150,9 +163,8 @@ export const SignupStep3: React.FC<Step3Props> = ({
     )}
 
     <View className="mb-4 w-full">
-      <View className="flex-row justify-end mb-1">
+      <View className="flex-row justify-start mb-1">
         <Text className="text-sm font-cairo-bold text-slate-800">صورة الرخصة</Text>
-        <Text className="text-red-500 ml-1">*</Text>
       </View>
       <TouchableOpacity
         activeOpacity={0.7}
