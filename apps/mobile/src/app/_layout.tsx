@@ -15,11 +15,14 @@ import {
   Cairo_600SemiBold,
   Cairo_700Bold,
 } from "@expo-google-fonts/cairo";
+import { useAuthStore } from "@/store/useAuthStore";
 
 // Prevent auto-hide, we will hide it manually once our custom animated splash mounts
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const loadPersistedAuth = useAuthStore((state) => state.loadPersistedAuth);
+
   const [loaded, error] = useFonts({
     Cairo_400Regular,
     Cairo_500Medium,
@@ -45,6 +48,11 @@ export default function RootLayout() {
   if (!loaded && !error) {
     return null;
   }
+
+  useEffect(() => {
+    // Safely hydrate our authentication tokens from hardware storage
+    loadPersistedAuth();
+  }, [])
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
