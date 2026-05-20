@@ -1,9 +1,19 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterIndividualDto {
+  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
+  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
+  email: string;
+
   @IsString()
-  @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
-  identifier: string; // Can be email OR phone
+  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
+  phone: string;
 
   @IsString()
   @MinLength(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' })
@@ -15,9 +25,13 @@ export class RegisterCompanyDto {
   @IsNotEmpty()
   name: string;
 
+  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
+  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
+  email: string;
+
   @IsString()
-  @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
-  identifier: string; // Can be email OR phone
+  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
+  phone: string;
 
   @IsString()
   @MinLength(8)
@@ -40,10 +54,10 @@ export class RegisterCompanyDto {
   about: string;
 
   @IsString()
-  @IsNotEmpty()
-  licenseActivity: string;
+  @IsOptional()
+  licenseActivity?: string;
 
   @IsString()
-  @IsNotEmpty()
-  licenseExpiry: string;
+  @IsOptional()
+  licenseExpiry?: string;
 }

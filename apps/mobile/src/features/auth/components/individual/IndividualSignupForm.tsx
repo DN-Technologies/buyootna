@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -8,10 +8,12 @@ import { SignupFormValues, signupSchema } from "@/features/auth/authSchemas";
 
 interface IndividualSignupFormProps {
   onSubmit: (data: SignupFormValues) => void;
+  isLoading?: boolean;
 }
 
 export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
   onSubmit,
+  isLoading = false,
 }) => {
   const { control, handleSubmit } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -56,9 +58,14 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit(onSubmit)}
-        className="w-full py-4 rounded-3xl items-center justify-center bg-primary mt-6 mb-4"
+        disabled={isLoading}
+        className={`w-full py-4 rounded-3xl items-center justify-center mt-6 mb-4 ${isLoading ? "bg-primary/70" : "bg-primary"}`}
       >
-        <Text className="text-lg font-cairo-bold text-white">إنشاء حساب</Text>
+        {isLoading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <Text className="text-lg font-cairo-bold text-white">إنشاء حساب</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

@@ -36,7 +36,7 @@ model CompanyProfile {
   hqLocation      String
   serviceAreas    String
   about           String  @db.Text
-  licenseActivity String
+  licenseActivity String?
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

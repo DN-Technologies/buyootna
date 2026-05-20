@@ -51,6 +51,7 @@ type AuthMode = "login" | "signup";
 
 export default function IndividualAuthScreen() {
   const [mode, setMode] = useState<AuthMode>("login");
+  const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
   const router = useRouter();
 
@@ -59,6 +60,7 @@ export default function IndividualAuthScreen() {
   const profileSheetRef = useRef<BottomSheetModal>(null);
 
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
+    setIsLoading(true);
     try {
       const response = await apiClient.post("/auth/login", {
         identifier: data.identifier,
@@ -66,7 +68,7 @@ export default function IndividualAuthScreen() {
       });
 
       // Save token to Secure Store and update global state
-      await setAuth(response.data.user, response.data.tokens.access);
+      await setAuth(response.data.user, response.data.access_token);
 
       // The router guard in _layout.tsx will automatically push them to /(main)
       router.push("/(main)/home");
@@ -74,13 +76,17 @@ export default function IndividualAuthScreen() {
       const backendMessage =
         error.response?.data?.message || "حدث خطأ في الاتصال";
       Alert.alert("فشل تسجيل الدخول", backendMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const onSignup = async (data: SignupFormValues) => {
+    setIsLoading(true);
     try {
       await apiClient.post("/users/register/individual", {
-        identifier: data.email || data.phone,
+        email: data.email,
+        phone: data.phone,
         password: data.password,
       });
 
@@ -90,6 +96,8 @@ export default function IndividualAuthScreen() {
       const backendMessage =
         error.response?.data?.message || "حدث خطأ أثناء إنشاء الحساب";
       Alert.alert("فشل التسجيل", backendMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,9 +138,10 @@ export default function IndividualAuthScreen() {
             <IndividualLoginForm
               onSubmit={onLogin}
               onOpenProfiles={() => profileSheetRef.current?.present()}
+              isLoading={isLoading}
             />
           ) : (
-            <IndividualSignupForm onSubmit={onSignup} />
+            <IndividualSignupForm onSubmit={onSignup} isLoading={isLoading} />
           )}
         </ScrollView>
       </KeyboardAvoidingView>

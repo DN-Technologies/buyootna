@@ -1,13 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { RegisterCompanyDto, RegisterIndividualDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
-import { checkUserExists, isEmail, isPhone } from '../../core/utils/user.utils';
+import { checkUserExists } from '../../core/utils/user.utils';
 import { StorageService } from 'src/core/storage/storage.service';
 
 @Injectable()
@@ -19,17 +15,7 @@ export class UsersService {
 
   // --- Register Individual ---
   async registerIndividual(dto: RegisterIndividualDto) {
-    const validEmail = isEmail(dto.identifier);
-    const validPhone = isPhone(dto.identifier);
-
-    if (!validEmail && !validPhone) {
-      throw new BadRequestException('يجب إدخال بريد إلكتروني أو رقم هاتف صالح');
-    }
-
-    const email = validEmail ? dto.identifier : undefined;
-    const phone = validPhone ? dto.identifier : undefined;
-
-    await checkUserExists(this.prisma, email, phone);
+    await checkUserExists(this.prisma, dto.email, dto.phone);
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -38,8 +24,8 @@ export class UsersService {
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
-            email: email || null,
-            phone: phone || null,
+            email: dto.email,
+            phone: dto.phone,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
           },
@@ -69,17 +55,7 @@ export class UsersService {
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    const validEmail = isEmail(dto.identifier);
-    const validPhone = isPhone(dto.identifier);
-
-    if (!validEmail && !validPhone) {
-      throw new BadRequestException('يجب إدخال بريد إلكتروني أو رقم هاتف صالح');
-    }
-
-    const email = validEmail ? dto.identifier : undefined;
-    const phone = validPhone ? dto.identifier : undefined;
-
-    await checkUserExists(this.prisma, email, phone);
+    await checkUserExists(this.prisma, dto.email, dto.phone);
 
     // 1. Upload files to S3 if they exist
     let logoUrl: string | null = null;
@@ -102,8 +78,8 @@ export class UsersService {
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
-            email: email || null,
-            phone: phone || null,
+            email: dto.email,
+            phone: dto.phone,
             password: hashedPassword,
             role: Role.COMPANY,
           },

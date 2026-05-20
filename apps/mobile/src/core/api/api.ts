@@ -1,9 +1,14 @@
 import { useAuthStore } from "@/store/useAuthStore";
 import axios from "axios";
+import { Platform } from "react-native";
 
-// Use Expo's public environment configuration or fallback safely
-// const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://10.0.2.2:3000";
+// Android emulator uses 10.0.2.2 to reach host machine, iOS simulator uses localhost
+const DEV_API_URL =
+  Platform.OS === "android"
+    ? "http://10.0.2.2:8000"
+    : "http://localhost:8000";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
 
 const apiClient = axios.create({
   baseURL: API_URL,

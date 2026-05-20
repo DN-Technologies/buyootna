@@ -60,6 +60,7 @@ type AuthMode = "login" | "signup";
 
 export default function CompanyAuthScreen() {
   const [mode, setMode] = useState<AuthMode>("login");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
 
@@ -96,6 +97,7 @@ export default function CompanyAuthScreen() {
   const onLogin = async (
     data: CompanyLoginFormValues & { rememberMe: boolean },
   ) => {
+    setIsLoading(true);
     try {
       const response = await apiClient.post("/auth/login", {
         identifier: data.identifier,
@@ -109,6 +111,8 @@ export default function CompanyAuthScreen() {
         "فشل تسجيل الدخول",
         error.response?.data?.message || "حدث خطأ في الاتصال",
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -123,13 +127,15 @@ export default function CompanyAuthScreen() {
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
+    setIsLoading(true);
     try {
       // 1. Create a new FormData object
       const formData = new FormData();
 
       // 2. Append all text fields from React Hook Form
       formData.append("name", data.name);
-      formData.append("identifier", data.email || data.phone);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
       formData.append("password", data.password);
       formData.append("services", data.services);
       formData.append("hqLocation", data.hqLocation);
@@ -173,6 +179,8 @@ export default function CompanyAuthScreen() {
         "فشل التسجيل",
         error.response?.data?.message || "حدث خطأ أثناء إنشاء الحساب",
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -203,6 +211,7 @@ export default function CompanyAuthScreen() {
             <CompanyLoginForm
               onSubmit={onLogin}
               onOpenProfiles={() => profileSheetRef.current?.present()}
+              isLoading={isLoading}
             />
           ) : (
             <CompanySignupForm
@@ -211,6 +220,7 @@ export default function CompanyAuthScreen() {
               pickLogo={pickLogo}
               licenseFile={licenseFile}
               pickLicense={pickLicense}
+              isLoading={isLoading}
             />
           )}
         </ScrollView>

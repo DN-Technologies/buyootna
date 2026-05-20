@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -21,6 +21,7 @@ interface CompanySignupFormProps {
   pickLogo: () => void;
   licenseFile: DocumentPicker.DocumentPickerAsset | null;
   pickLicense: () => void;
+  isLoading?: boolean;
 }
 
 export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
@@ -29,6 +30,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   pickLogo,
   licenseFile,
   pickLicense,
+  isLoading = false,
 }) => {
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -109,11 +111,16 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={step < 3 ? handleNextStep : handleSubmit(onSubmit)}
-            className="flex-1 py-4 rounded-3xl items-center justify-center bg-primary"
+            disabled={step === 3 && isLoading}
+            className={`flex-1 py-4 rounded-3xl items-center justify-center ${step === 3 && isLoading ? "bg-primary/70" : "bg-primary"}`}
           >
-            <Text className="text-lg font-cairo-bold text-white">
-              {step < 3 ? "التالي" : "إنشاء حساب"}
-            </Text>
+            {step === 3 && isLoading ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text className="text-lg font-cairo-bold text-white">
+                {step < 3 ? "التالي" : "إنشاء حساب"}
+              </Text>
+            )}
           </TouchableOpacity>
 
           {step > 1 && (

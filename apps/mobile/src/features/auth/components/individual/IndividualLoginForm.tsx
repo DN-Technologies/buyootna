@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Feather } from "@expo/vector-icons";
@@ -11,11 +11,13 @@ import { LoginFormValues, loginSchema } from "@/features/auth/authSchemas";
 interface IndividualLoginFormProps {
   onSubmit: (data: LoginFormValues & { rememberMe: boolean }) => void;
   onOpenProfiles: () => void;
+  isLoading?: boolean;
 }
 
 export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
   onSubmit,
   onOpenProfiles,
+  isLoading = false,
 }) => {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
@@ -76,9 +78,14 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit(handleLogin)}
-        className="w-full py-4 rounded-3xl items-center justify-center bg-primary mb-4"
+        disabled={isLoading}
+        className={`w-full py-4 rounded-3xl items-center justify-center mb-4 ${isLoading ? "bg-primary/70" : "bg-primary"}`}
       >
-        <Text className="text-lg font-cairo-bold text-white">تسجيل الدخول</Text>
+        {isLoading ? (
+          <ActivityIndicator color="white" size="small" />
+        ) : (
+          <Text className="text-lg font-cairo-bold text-white">تسجيل الدخول</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
