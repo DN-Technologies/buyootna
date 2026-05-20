@@ -3,6 +3,8 @@ import { ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { Alert } from "react-native";
+import apiClient from "@/core/api/api";
 
 import SuccessBottomSheet from "@/core/components/SuccessBottomSheet";
 import {
@@ -18,24 +20,58 @@ import { ForgotPasswordStep2 } from "@/features/auth/components/recovery/ForgotP
 import { ForgotPasswordStep3 } from "@/features/auth/components/recovery/ForgotPasswordStep3";
 
 export default function ForgotPasswordScreen() {
-  const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [identifier, setIdentifier] = useState("");
+  const [timer, setTimer] = useState(0);
+  const [resetToken, setResetToken] = useState("");
   const successSheetRef = useRef<BottomSheetModal>(null);
+  const router = useRouter();
 
-  const onStep1Submit = (data: RequestOtpValues) => {
-    setIdentifier(data.identifier);
-    setStep(2);
+  const onStep1Submit = async (data: RequestOtpValues) => {
+    try {
+      await apiClient.post("/auth/recovery/request-otp", {
+        identifier: data.identifier,
+      });
+
+      setIdentifier(data.identifier);
+      setStep(2);
+      setTimer(45);
+    } catch (error) {}
   };
 
-  const onStep2Submit = (data: VerifyOtpValues) => {
-    console.log("OTP Verified: ", data.otp);
-    setStep(3);
+  const onStep2Submit = async (data: VerifyOtpValues) => {
+    try {
+      const response = await apiClient.post("/auth/recovery/verify-otp", {
+        identifier: identifier, // Use the idenfiter saved from Step 1
+        otp: data.otp,
+      });
+
+      // Save the temporary token for Step 3
+      setResetToken(response.data.resetToken);
+      setStep(3);
+    } catch (error: any) {
+      Alert.alert(
+        "خطأ",
+        error.response?.data?.message || "رمز التحقق غير صحيح",
+      );
+    }
   };
 
-  const onStep3Submit = (data: ResetPasswordValues) => {
-    console.log("Password Reset: ", data);
-    successSheetRef.current?.present();
+  const onStep3Submit = async (data: ResetPasswordValues) => {
+    try {
+      await apiClient.post("/auth/recovery/reset-password", {
+        resetToken: resetToken,
+        newPassword: data.password,
+      });
+
+      // Trigger the Success Bottom Sheet!
+      successSheetRef.current?.present();
+    } catch (error: any) {
+      Alert.alert(
+        "خطأ",
+        error.response?.data?.message || "تعذر تحديث كلمة المرور",
+      );
+    }
   };
 
   const handleSuccessClose = () => {
