@@ -45,14 +45,14 @@ export default function RootLayout() {
     }
   }, []);
 
-  if (!loaded && !error) {
-    return null;
-  }
-
   useEffect(() => {
     // Safely hydrate our authentication tokens from hardware storage
     loadPersistedAuth();
-  }, [])
+  }, []);
+
+  if (!loaded && !error) {
+    return null;
+  }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
