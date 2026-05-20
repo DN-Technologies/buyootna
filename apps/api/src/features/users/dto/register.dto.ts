@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class RegisterIndividualDto {
   @IsString()
@@ -15,11 +15,9 @@ export class RegisterCompanyDto {
   @IsNotEmpty()
   name: string;
 
-  @IsEmail()
-  email: string;
-
   @IsString()
-  phone: string;
+  @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
+  identifier: string; // Can be email OR phone
 
   @IsString()
   @MinLength(8)

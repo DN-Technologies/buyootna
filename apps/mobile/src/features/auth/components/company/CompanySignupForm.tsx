@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import * as DocumentPicker from "expo-document-picker";
 
 import {
   CompanySignupFormValues,
@@ -16,10 +17,18 @@ import SelectionBottomSheet from "@/core/components/SelectionBottomSheet";
 
 interface CompanySignupFormProps {
   onSubmit: (data: CompanySignupFormValues) => void;
+  logoFile: DocumentPicker.DocumentPickerAsset | null;
+  pickLogo: () => void;
+  licenseFile: DocumentPicker.DocumentPickerAsset | null;
+  pickLicense: () => void;
 }
 
 export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   onSubmit,
+  logoFile,
+  pickLogo,
+  licenseFile,
+  pickLicense,
 }) => {
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -76,6 +85,8 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         <SignupStep2
           control={control}
           onOpenServiceAreasSheet={() => serviceAreasSheetRef.current?.present()}
+          logoFile={logoFile}
+          pickLogo={pickLogo}
         />
       )}
       {step === 3 && (
@@ -85,6 +96,8 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           onOpenDatePicker={() => setShowDatePicker(true)}
           showDatePicker={showDatePicker}
           onDateChange={handleDateChange}
+          licenseFile={licenseFile}
+          pickLicense={pickLicense}
         />
       )}
 

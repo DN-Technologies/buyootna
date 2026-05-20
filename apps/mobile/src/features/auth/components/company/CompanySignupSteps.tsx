@@ -5,6 +5,7 @@ import { Feather } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import FormInput from "@/components/FormInput";
 import { CompanySignupFormValues } from "@/features/auth/companyAuthSchemas";
+import * as DocumentPicker from "expo-document-picker";
 
 interface StepProps {
   control: Control<CompanySignupFormValues>;
@@ -52,11 +53,15 @@ export const SignupStep1: React.FC<StepProps> = ({ control }) => (
 
 interface Step2Props extends StepProps {
   onOpenServiceAreasSheet: () => void;
+  logoFile: DocumentPicker.DocumentPickerAsset | null;
+  pickLogo: () => void;
 }
 
 export const SignupStep2: React.FC<Step2Props> = ({
   control,
   onOpenServiceAreasSheet,
+  logoFile,
+  pickLogo,
 }) => (
   <View className="flex-1">
     <FormInput
@@ -95,17 +100,24 @@ export const SignupStep2: React.FC<Step2Props> = ({
 
     <View className="mb-4 w-full">
       <View className="flex-row justify-start mb-1">
-        <Text className="text-sm font-cairo-bold text-charcoal">لوجو الشركة</Text>
+        <Text className="text-sm font-cairo-bold text-charcoal">
+          لوجو الشركة
+        </Text>
       </View>
       <TouchableOpacity
         activeOpacity={0.7}
-        className="w-full h-32 border-2 border-dashed border-gray-300 rounded-3xl items-center justify-center bg-gray-50"
+        onPress={pickLogo}
+        className={`w-full h-32 border-2 border-dashed rounded-3xl items-center justify-center ${logoFile ? "border-[#22C55E] bg-green-50" : "border-gray-300 bg-gray-50"}`}
       >
-        <Feather name="image" size={28} color="#94A3B8" className="mb-2" />
-        <Text className="text-charcoal font-cairo-bold mb-1">
-          اضغط هنا لرفع اللوجو
+        <Feather
+          name={logoFile ? "check-circle" : "image"}
+          size={28}
+          color={logoFile ? "#22C55E" : "#94A3B8"}
+          className="mb-2"
+        />
+        <Text className="text-[#111111] font-bold mb-1">
+          {logoFile ? logoFile.name : "اضغط هنا لرفع اللوجو"}
         </Text>
-        <Text className="text-xs text-slate-400 font-cairo-medium">الصيغ المدعومة: SVG, JPG, PNG</Text>
       </TouchableOpacity>
     </View>
   </View>
@@ -116,6 +128,8 @@ interface Step3Props extends StepProps {
   onOpenDatePicker: () => void;
   showDatePicker: boolean;
   onDateChange: (event: any, date?: Date) => void;
+  licenseFile: DocumentPicker.DocumentPickerAsset | null;
+  pickLicense: () => void;
 }
 
 export const SignupStep3: React.FC<Step3Props> = ({
@@ -124,6 +138,8 @@ export const SignupStep3: React.FC<Step3Props> = ({
   onOpenDatePicker,
   showDatePicker,
   onDateChange,
+  licenseFile,
+  pickLicense,
 }) => (
   <View className="flex-1">
     <TouchableOpacity activeOpacity={1} onPress={onOpenActivitySheet}>
@@ -164,17 +180,29 @@ export const SignupStep3: React.FC<Step3Props> = ({
 
     <View className="mb-4 w-full">
       <View className="flex-row justify-start mb-1">
-        <Text className="text-sm font-cairo-bold text-slate-800">صورة الرخصة</Text>
+        <Text className="text-sm font-cairo-bold text-slate-800">
+          صورة الرخصة
+        </Text>
       </View>
       <TouchableOpacity
         activeOpacity={0.7}
-        className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl items-center justify-center bg-gray-50"
+        onPress={pickLicense}
+        className={`w-full h-32 border-2 border-dashed rounded-3xl items-center justify-center ${licenseFile ? "border-[#22C55E] bg-green-50" : "border-gray-300 bg-gray-50"}`}
       >
-        <Feather name="file-text" size={28} color="#94A3B8" className="mb-2" />
-        <Text className="text-slate-800 font-cairo-bold mb-1">اضغط هنا لرفع ملف</Text>
-        <Text className="text-xs text-slate-400 font-cairo-medium">
-          الصيغ المدعومة: SVG, JPG, PNG (بحد أقصى 10 ميجا لكل ملف)
+        <Feather
+          name={licenseFile ? "check-circle" : "file-text"}
+          size={28}
+          color={licenseFile ? "#22C55E" : "#94A3B8"}
+          className="mb-2"
+        />
+        <Text className="text-[#111111] font-bold mb-1">
+          {licenseFile ? licenseFile.name : "اضغط هنا لرفع ملف"}
         </Text>
+        {!licenseFile && (
+          <Text className="text-xs text-slate-400 font-cairo-medium">
+            الصيغ المدعومة: SVG, JPG, PNG (بحد أقصى 10 ميجا لكل ملف)
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   </View>

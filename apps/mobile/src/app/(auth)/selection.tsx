@@ -69,6 +69,16 @@ export default function AccountTypeSelectionScreen() {
           >
             بدء التسجيل
           </Text>
+          
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.replace('/(main)/home')} // Sends them straight to the app!
+          className="w-full py-4 mt-2 items-center justify-center"
+        >
+          <Text className="text-base font-cairo-bold text-[#6B6A6A] underline">
+            تخطي والمتابعة كزائر
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

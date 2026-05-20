@@ -5,11 +5,17 @@ import { PrismaModule } from './core/prisma/prisma.module';
 import { UsersModule } from './features/users/users.module';
 import { AuthModule } from './features/auth/auth.module';
 import { RecoveryModule } from './features/recovery/recovery.module';
-import { StorageService } from './core/storage/storage.service';
+import { StorageModule } from './core/storage/storage.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, AuthModule, RecoveryModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    RecoveryModule,
+    StorageModule,
+  ],
   controllers: [AppController],
-  providers: [AppService, StorageService],
+  providers: [AppService],
 })
 export class AppModule {}

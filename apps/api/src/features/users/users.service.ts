@@ -69,7 +69,17 @@ export class UsersService {
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    await checkUserExists(this.prisma, dto.email, dto.phone);
+    const validEmail = isEmail(dto.identifier);
+    const validPhone = isPhone(dto.identifier);
+
+    if (!validEmail && !validPhone) {
+      throw new BadRequestException('يجب إدخال بريد إلكتروني أو رقم هاتف صالح');
+    }
+
+    const email = validEmail ? dto.identifier : undefined;
+    const phone = validPhone ? dto.identifier : undefined;
+
+    await checkUserExists(this.prisma, email, phone);
 
     // 1. Upload files to S3 if they exist
     let logoUrl: string | null = null;
@@ -92,8 +102,8 @@ export class UsersService {
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
-            email: dto.email,
-            phone: dto.phone,
+            email: email || null,
+            phone: phone || null,
             password: hashedPassword,
             role: Role.COMPANY,
           },
