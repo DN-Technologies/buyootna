@@ -8,10 +8,14 @@ import { PrismaService } from '../../core/prisma/prisma.service';
 import { RegisterCompanyDto, RegisterIndividualDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { checkUserExists, isEmail, isPhone } from '../../core/utils/user.utils';
+import { StorageService } from 'src/core/storage/storage.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   // --- Register Individual ---
   async registerIndividual(dto: RegisterIndividualDto) {
@@ -60,9 +64,28 @@ export class UsersService {
   }
 
   // --- Register Company ---
-  async registerCompany(dto: RegisterCompanyDto) {
+  async registerCompany(
+    dto: RegisterCompanyDto,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
+  ) {
     await checkUserExists(this.prisma, dto.email, dto.phone);
 
+    // 1. Upload files to S3 if they exist
+    let logoUrl: string | null = null;
+    let licenseFileUrl: string | null = null;
+
+    if (logoFile) {
+      logoUrl = await this.storageService.uploadFile(logoFile, 'company-logos');
+    }
+    if (licenseFile) {
+      licenseFileUrl = await this.storageService.uploadFile(
+        licenseFile,
+        'company-licenses',
+      );
+    }
+
+    // 2. Hash password and save to DB
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     try {
@@ -86,7 +109,8 @@ export class UsersService {
             about: dto.about,
             licenseActivity: dto.licenseActivity,
             licenseExpiry: dto.licenseExpiry,
-            // logoUrl and licenseFileUrl will be handled in Epic 5 (File Uploads)
+            logoUrl: logoUrl,
+            licenseFileUrl: licenseFileUrl,
           },
         });
 
