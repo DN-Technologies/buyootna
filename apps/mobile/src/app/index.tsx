@@ -36,7 +36,7 @@ export default function InitialSplashSequence() {
       withTiming(1, { duration: 600 }, (finished) => {
         if (finished) {
           // trigger Expo Router navigation on JS thread
-          runOnJS(router.replace)("(auth)/individual-auth" as any);
+          runOnJS(router.replace)("(main)/home" as any);
         }
       }),
     );
