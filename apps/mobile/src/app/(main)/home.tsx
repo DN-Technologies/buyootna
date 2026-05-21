@@ -18,6 +18,7 @@ import {
   UserIcon,
 } from '@/assets/icons/home/header/index';
 import { useAuthStore } from '@/store/useAuthStore';
+import PropertyCard from '@/core/components/PropertyCard';
 
 // Types for our primary tabs
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -136,14 +137,48 @@ export default function HomeScreen() {
         }} // paddingBottom ensures content isn't hidden by custom tab bar
         showsVerticalScrollIndicator={false}
       >
-        {/* Placeholder for dynamic content based on activeTab */}
-        <View className="items-center justify-center py-20">
-          <Text className="font-cairo-semibold text-gray-400">
-            {activeTab === 'all' && 'سيتم عرض العقارات والشركات هنا'}
-            {activeTab === 'properties' && 'سيتم عرض العقارات هنا'}
-            {activeTab === 'companies' && 'سيتم عرض الشركات هنا'}
-          </Text>
-        </View>
+        {activeTab === 'all' || activeTab === 'properties' ? (
+          <>
+            <PropertyCard
+              id="1"
+              images={[
+                'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1600607687931-ce8309e0fb73?auto=format&fit=crop&w=800&q=80',
+              ]}
+              price={150000}
+              companyName="شركة يعقوب عبد العقارية"
+              isFeatured={true}
+              type="سكني"
+              area={200}
+              beds={3}
+              baths={2}
+              location="السالمية، شارع 2، بناية 10، شقة 4"
+            />
+
+            <PropertyCard
+              id="2"
+              images={[
+                'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+              ]}
+              price={85000}
+              companyName="السعر غير معلن"
+              isFeatured={false}
+              type="استثماري"
+              area={150}
+              beds={2}
+              baths={2}
+              location="حولي، شارع تونس، برج المها"
+            />
+          </>
+        ) : null}
+
+        {activeTab === 'companies' && (
+          <View className="items-center justify-center py-20">
+            <Text className="font-cairo-semibold text-gray-400">
+              سيتم عرض بطاقات الشركات هنا
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
