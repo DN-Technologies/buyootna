@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Image, DimensionValue } from 'react-native';
 import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 
 export interface CompanyCardProps {
@@ -11,6 +11,7 @@ export interface CompanyCardProps {
   logoUrl: string;
   isVerified?: boolean;
   isFavorite?: boolean;
+  cardWidth?: DimensionValue;
   onPress?: () => void;
   onFavorite?: () => void;
   onQuoteRequest?: () => void;
@@ -25,6 +26,7 @@ export default function CompanyCard({
   logoUrl,
   isVerified = false,
   isFavorite = false,
+  cardWidth = '100%',
   onPress,
   onFavorite,
   onQuoteRequest,
@@ -35,6 +37,7 @@ export default function CompanyCard({
       onPress={onPress}
       className="mb-4 w-full rounded-[24px] border border-gray-100 bg-white p-4"
       style={{
+        width: cardWidth,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },

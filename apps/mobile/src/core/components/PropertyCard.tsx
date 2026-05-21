@@ -8,6 +8,7 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Dimensions,
+  DimensionValue,
 } from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
@@ -27,6 +28,7 @@ export interface PropertyCardProps {
   beds: number;
   baths: number;
   location: string;
+  cardWidth?: DimensionValue; // Allow custom width for horizontal scrolling
   onPress?: () => void;
   onFavorite?: () => void;
   onShare?: () => void;
@@ -42,6 +44,7 @@ export default function PropertyCard({
   beds,
   baths,
   location,
+  cardWidth = '100%',
   onPress,
   onFavorite,
   onShare,
@@ -61,6 +64,7 @@ export default function PropertyCard({
       onPress={onPress}
       className="mb-5 w-full overflow-hidden rounded-[24px] border border-gray-200 bg-white"
       style={{
+        width: cardWidth, // Applies the 85% width when inside a horizontal list
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -76,20 +80,23 @@ export default function PropertyCard({
           showsHorizontalScrollIndicator={false}
           onScroll={handleScroll}
           scrollEventThrottle={16}
-          className="h-full w-full"
+          //   className="h-full w-full"
         >
           {images.map((img, index) => (
             <Image
               key={index}
               source={{ uri: img }}
-              style={{ width: CARD_WIDTH, height: '100%' }}
+              style={{
+                width: typeof cardWidth === 'number' ? cardWidth : 350,
+                height: '100%',
+              }}
               resizeMode="cover"
             />
           ))}
         </ScrollView>
 
         {/* Absolute Top Right: Badges */}
-        <View className="absolute right-3 top-3 flex-row space-x-2 space-x-reverse">
+        <View className="absolute right-3 top-3 flex-row gap-2">
           {isFeatured && (
             <View className="rounded-full bg-[#F59E0B] px-3 py-1">
               <Text className="font-cairo-bold text-[10px] text-white">
@@ -130,7 +137,7 @@ export default function PropertyCard({
       <View className="p-4">
         {/* Price & Company Row */}
         <View className="mb-3 flex-row items-start justify-between">
-          <View className="flex-1 items-end">
+          <View className="flex-1">
             <Text className="font-cairo-bold text-xl text-[#111111]">
               {price.toLocaleString()}{' '}
               <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
@@ -145,8 +152,8 @@ export default function PropertyCard({
         </View>
 
         {/* Specs Row (Area, Beds, Baths) */}
-        <View className="mb-3 flex-row items-center justify-end space-x-4 space-x-reverse">
-          <View className="flex-row items-center space-x-1 space-x-reverse">
+        <View className="mb-3 flex-row items-center gap-4">
+          <View className="flex-row items-center gap-1">
             <FontAwesome5 name="ruler-combined" size={12} color="#94A3B8" />
             <Text className="font-cairo-semibold text-xs text-[#111111]">
               {area} م²
@@ -155,7 +162,7 @@ export default function PropertyCard({
 
           <View className="h-3 w-[1px] bg-gray-300" />
 
-          <View className="flex-row items-center space-x-1 space-x-reverse">
+          <View className="flex-row items-center gap-1">
             <FontAwesome5 name="bed" size={12} color="#94A3B8" />
             <Text className="font-cairo-semibold text-xs text-[#111111]">
               {beds}
@@ -173,7 +180,7 @@ export default function PropertyCard({
         </View>
 
         {/* Location Row */}
-        <View className="mb-4 flex-row items-center justify-end space-x-1.5 space-x-reverse">
+        <View className="mb-4 flex-row items-center gap-1.5">
           <Feather name="map-pin" size={12} color="#94A3B8" />
           <Text
             className="font-cairo-semibold text-xs text-[#6B6A6A]"
@@ -184,7 +191,7 @@ export default function PropertyCard({
         </View>
 
         {/* --- 3. Action Buttons Footer --- */}
-        <View className="flex-row items-center justify-between space-x-2 space-x-reverse pt-2">
+        <View className="flex-row items-center justify-between gap-2 pt-2">
           {/* WhatsApp Button (Green Outline) */}
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-center rounded-xl border border-green-500 bg-green-50/30 py-2.5"
