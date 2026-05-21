@@ -19,6 +19,7 @@ import {
 } from '@/assets/icons/home/header/index';
 import { useAuthStore } from '@/store/useAuthStore';
 import PropertyCard from '@/core/components/PropertyCard';
+import CompanyCard from '@/core/components/CompanyCard';
 
 // Types for our primary tabs
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -172,13 +173,34 @@ export default function HomeScreen() {
           </>
         ) : null}
 
-        {activeTab === 'companies' && (
-          <View className="items-center justify-center py-20">
-            <Text className="font-cairo-semibold text-gray-400">
-              سيتم عرض بطاقات الشركات هنا
-            </Text>
-          </View>
-        )}
+        {activeTab === 'all' || activeTab === 'companies' ? (
+          <>
+            <CompanyCard
+              id="1"
+              name="شركة البناء المتقن"
+              category="تشطيب • تصميم داخلي • تنفيذ"
+              rating={3.5}
+              projectsCount="+65"
+              serviceArea="يخدم جميع المناطق"
+              logoUrl="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80"
+              isVerified={true}
+              isFavorite={false}
+              onQuoteRequest={() => console.log('Quote Requested')}
+            />
+
+            <CompanyCard
+              id="2"
+              name="مؤسسة المعمار الحديث"
+              category="مقاولات عامة • بناء هيكل"
+              rating={4.8}
+              projectsCount="+120"
+              serviceArea="محافظة العاصمة وحولي"
+              logoUrl="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80"
+              isVerified={true}
+              isFavorite={true}
+            />
+          </>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
