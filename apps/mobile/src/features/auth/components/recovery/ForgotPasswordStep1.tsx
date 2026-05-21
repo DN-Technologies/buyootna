@@ -1,13 +1,13 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { Text, TouchableOpacity,View } from 'react-native';
 
-import FormInput from "@/components/FormInput";
+import FormInput from '@/components/FormInput';
 import {
   requestOtpSchema,
   RequestOtpValues,
-} from "@/features/auth/recoverySchemas";
+} from '@/features/auth/recoverySchemas';
 
 interface ForgotPasswordStep1Props {
   onSubmit: (data: RequestOtpValues) => void;
@@ -16,25 +16,21 @@ interface ForgotPasswordStep1Props {
 export const ForgotPasswordStep1: React.FC<ForgotPasswordStep1Props> = ({
   onSubmit,
 }) => {
-  const {
-    control,
-    handleSubmit,
-    watch,
-  } = useForm<RequestOtpValues>({
+  const { control, handleSubmit, watch } = useForm<RequestOtpValues>({
     resolver: zodResolver(requestOtpSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
 
-  const identifierValue = watch("identifier");
-  const isStep1Disabled = !identifierValue || identifierValue.trim() === "";
+  const identifierValue = watch('identifier');
+  const isStep1Disabled = !identifierValue || identifierValue.trim() === '';
 
   return (
     <View className="flex-1">
-      <View className="items-center mb-10 mt-1">
-        <Text className="text-2xl font-cairo-semibold leading-tight tracking-normal text-charcoal">
+      <View className="mb-10 mt-1 items-center">
+        <Text className="font-cairo-semibold text-2xl leading-tight tracking-normal text-charcoal">
           نسيت كلمة المرور؟
         </Text>
-        <Text className="text-sm font-cairo-medium text-gray-medium leading-normal tracking-normal text-center px-4">
+        <Text className="px-4 text-center font-cairo-medium text-sm leading-normal tracking-normal text-gray-medium">
           أدخل رقم الهاتف أو البريد الالكتروني المرتبط بحسابك
         </Text>
       </View>
@@ -50,11 +46,11 @@ export const ForgotPasswordStep1: React.FC<ForgotPasswordStep1Props> = ({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit(onSubmit)}
-        className={`w-full py-4 rounded-3xl items-center justify-center mt-auto ${
-          isStep1Disabled ? "bg-[#A6A6A6]" : "bg-secondary"
+        className={`mt-auto w-full items-center justify-center rounded-3xl py-4 ${
+          isStep1Disabled ? 'bg-[#A6A6A6]' : 'bg-secondary'
         }`}
       >
-        <Text className="text-lg font-cairo-bold text-white">
+        <Text className="font-cairo-bold text-lg text-white">
           إرسال رمز التحقق
         </Text>
       </TouchableOpacity>

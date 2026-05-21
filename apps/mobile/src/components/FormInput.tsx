@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import { Feather } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import {
-  View,
+  Platform,
   Text,
   TextInput,
   TextInputProps,
   TouchableOpacity,
-  Platform,
-} from "react-native";
-import { Control, Controller, FieldValues, Path } from "react-hook-form";
-import { Feather } from "@expo/vector-icons";
+  View,
+} from 'react-native';
 
 interface FormInputProps<T extends FieldValues> extends TextInputProps {
   control: Control<T>;
@@ -43,36 +43,36 @@ export default function FormInput<T extends FieldValues>({
       }) => {
         const hasError = !!error;
         const isSuccess =
-          isTouched && !hasError && value !== undefined && value !== "";
+          isTouched && !hasError && value !== undefined && value !== '';
 
-        let borderColorClass = "border-gray-300";
-        let iconColor = "#9CA3AF";
+        let borderColorClass = 'border-gray-300';
+        let iconColor = '#9CA3AF';
 
         if (hasError) {
-          borderColorClass = "border-red-500";
-          iconColor = "#EF4444";
+          borderColorClass = 'border-red-500';
+          iconColor = '#EF4444';
         } else if (isSuccess) {
-          borderColorClass = "border-green-500";
-          iconColor = "#22C55E";
+          borderColorClass = 'border-green-500';
+          iconColor = '#22C55E';
         } else if (isFocused) {
-          borderColorClass = "border-primary";
+          borderColorClass = 'border-primary';
         }
 
         return (
           <View className="mb-4 w-full">
             {/* Label */}
-            <View className="flex-row justify-start mb-1 items-center">
-              <Text className="text-sm font-cairo-semibold tracking-tight text-charcoal">
+            <View className="mb-1 flex-row items-center justify-start">
+              <Text className="font-cairo-semibold text-sm tracking-tight text-charcoal">
                 {label}
               </Text>
               {isRequired && (
-                <Text className="text-red-500 ml-[2px] font-bold">*</Text>
+                <Text className="ml-[2px] font-bold text-red-500">*</Text>
               )}
             </View>
 
             {/* Input Container */}
             <View
-              className={`flex-row items-center border-[1.5px] rounded-xl px-4 bg-white ${borderColorClass} ${textInputProps.multiline ? "items-start pt-2" : "h-14"}`}
+              className={`flex-row items-center rounded-xl border-[1.5px] bg-white px-4 ${borderColorClass} ${textInputProps.multiline ? 'items-start pt-2' : 'h-14'}`}
               style={textInputProps.multiline ? { minHeight: 120 } : {}}
             >
               {/* Left Icon (Leading) */}
@@ -81,17 +81,17 @@ export default function FormInput<T extends FieldValues>({
               {/* Text Input */}
               <TextInput
                 {...textInputProps}
-                className={`flex-1 text-right font-cairo-medium tracking-normal text-base text-charcoal ${
-                  textInputProps.multiline ? "min-h-[100px] pt-2" : "h-full"
+                className={`flex-1 text-right font-cairo-medium text-base tracking-normal text-charcoal ${
+                  textInputProps.multiline ? 'min-h-[100px] pt-2' : 'h-full'
                 }`}
                 textAlign="right"
-                textAlignVertical={textInputProps.multiline ? "top" : "center"}
+                textAlignVertical={textInputProps.multiline ? 'top' : 'center'}
                 style={[
                   {
-                    writingDirection: "rtl",
-                    textAlign: "right",
+                    writingDirection: 'rtl',
+                    textAlign: 'right',
                     // Fix for Cairo font vertical offset on iOS
-                    paddingTop: Platform.OS === "ios" ? 4 : 0,
+                    paddingTop: Platform.OS === 'ios' ? 4 : 0,
                   },
                   textInputProps.style,
                 ]}
@@ -116,7 +116,7 @@ export default function FormInput<T extends FieldValues>({
                   style={{ marginStart: 12 }}
                 >
                   <Feather
-                    name={isSecureText ? "eye-off" : "eye"}
+                    name={isSecureText ? 'eye-off' : 'eye'}
                     size={20}
                     color={iconColor}
                   />
@@ -132,19 +132,17 @@ export default function FormInput<T extends FieldValues>({
 
               {/* Right Icon (Trailing) */}
               {rightIcon && (
-                <View style={{ marginStart: 12 }}>
-                  {rightIcon}
-                </View>
+                <View style={{ marginStart: 12 }}>{rightIcon}</View>
               )}
             </View>
 
             {/* Error Message */}
             {hasError && (
-              <View className="flex-row justify-start w-full mt-1.5">
+              <View className="mt-1.5 w-full flex-row justify-start">
                 <Text
-                  className="text-red-500 text-xs font-cairo-medium"
+                  className="font-cairo-medium text-xs text-red-500"
                   // Forcing native RTL alignment for Arabic punctuation
-                  style={{ textAlign: "right", writingDirection: "rtl" }}
+                  style={{ textAlign: 'right', writingDirection: 'rtl' }}
                 >
                   {error?.message as string}
                 </Text>

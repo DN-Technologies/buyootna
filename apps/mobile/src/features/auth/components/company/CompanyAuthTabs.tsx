@@ -1,9 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Platform } from "react-native";
+import React from 'react';
+import { Platform,Text, TouchableOpacity, View } from 'react-native';
 
 interface CompanyAuthTabsProps {
-  mode: "login" | "signup";
-  onModeChange: (mode: "login" | "signup") => void;
+  mode: 'login' | 'signup';
+  onModeChange: (mode: 'login' | 'signup') => void;
 }
 
 export const CompanyAuthTabs: React.FC<CompanyAuthTabsProps> = ({
@@ -11,19 +11,19 @@ export const CompanyAuthTabs: React.FC<CompanyAuthTabsProps> = ({
   onModeChange,
 }) => {
   return (
-    <View className="flex-row bg-accent rounded-3xl p-1 mb-10 self-center w-[75%]">
+    <View className="mb-10 w-[75%] flex-row self-center rounded-3xl bg-accent p-1">
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => onModeChange("signup")}
-        className={`flex-1 py-2 rounded-3xl items-center ${
-          mode === "signup" ? "bg-primary" : "bg-transparent"
+        onPress={() => onModeChange('signup')}
+        className={`flex-1 items-center rounded-3xl py-2 ${
+          mode === 'signup' ? 'bg-primary' : 'bg-transparent'
         }`}
       >
         <Text
-          className={`text-sm font-cairo-bold ${
-            mode === "signup" ? "text-white" : "text-slate-500"
+          className={`font-cairo-bold text-sm ${
+            mode === 'signup' ? 'text-white' : 'text-slate-500'
           }`}
-          style={{ paddingTop: Platform.OS === "ios" ? 4 : 0 }}
+          style={{ paddingTop: Platform.OS === 'ios' ? 4 : 0 }}
         >
           تسجيل جديد
         </Text>
@@ -31,16 +31,16 @@ export const CompanyAuthTabs: React.FC<CompanyAuthTabsProps> = ({
 
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => onModeChange("login")}
-        className={`flex-1 py-2 rounded-3xl items-center ${
-          mode === "login" ? "bg-primary" : "bg-transparent"
+        onPress={() => onModeChange('login')}
+        className={`flex-1 items-center rounded-3xl py-2 ${
+          mode === 'login' ? 'bg-primary' : 'bg-transparent'
         }`}
       >
         <Text
-          className={`text-sm font-cairo-bold ${
-            mode === "login" ? "text-white" : "text-slate-500"
+          className={`font-cairo-bold text-sm ${
+            mode === 'login' ? 'text-white' : 'text-slate-500'
           }`}
-          style={{ paddingTop: Platform.OS === "ios" ? 4 : 0 }}
+          style={{ paddingTop: Platform.OS === 'ios' ? 4 : 0 }}
         >
           تسجيل دخول
         </Text>

@@ -1,19 +1,20 @@
-import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import * as DocumentPicker from "expo-document-picker";
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as DocumentPicker from 'expo-document-picker';
+import React, { useRef,useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { ActivityIndicator,Text, TouchableOpacity, View } from 'react-native';
 
+import SelectionBottomSheet from '@/core/components/SelectionBottomSheet';
 import {
   CompanySignupFormValues,
   companySignupSchema,
   STEP_1_FIELDS,
   STEP_2_FIELDS,
-} from "@/features/auth/companyAuthSchemas";
-import { CompanySignupProgress } from "./CompanySignupProgress";
-import { SignupStep1, SignupStep2, SignupStep3 } from "./CompanySignupSteps";
-import SelectionBottomSheet from "@/core/components/SelectionBottomSheet";
+} from '@/features/auth/companyAuthSchemas';
+
+import { CompanySignupProgress } from './CompanySignupProgress';
+import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
 
 interface CompanySignupFormProps {
   onSubmit: (data: CompanySignupFormValues) => void;
@@ -37,19 +38,14 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const activitySheetRef = useRef<BottomSheetModal>(null);
   const serviceAreasSheetRef = useRef<BottomSheetModal>(null);
 
-  const {
-    control,
-    handleSubmit,
-    trigger,
-    setValue,
-    watch,
-  } = useForm<CompanySignupFormValues>({
-    resolver: zodResolver(companySignupSchema),
-    mode: "onTouched",
-  });
+  const { control, handleSubmit, trigger, setValue, watch } =
+    useForm<CompanySignupFormValues>({
+      resolver: zodResolver(companySignupSchema),
+      mode: 'onTouched',
+    });
 
-  const selectedActivity = watch("licenseActivity");
-  const selectedServiceAreas = watch("serviceAreas");
+  const selectedActivity = watch('licenseActivity');
+  const selectedServiceAreas = watch('serviceAreas');
 
   const handleNextStep = async () => {
     let isStepValid = false;
@@ -70,13 +66,13 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
-    if (selectedDate && event.type !== "dismissed") {
-      const formattedDate = selectedDate.toLocaleDateString("ar-EG", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
+    if (selectedDate && event.type !== 'dismissed') {
+      const formattedDate = selectedDate.toLocaleDateString('ar-EG', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
       });
-      setValue("licenseExpiry", formattedDate, { shouldValidate: true });
+      setValue('licenseExpiry', formattedDate, { shouldValidate: true });
     }
   };
 
@@ -86,7 +82,9 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
       {step === 2 && (
         <SignupStep2
           control={control}
-          onOpenServiceAreasSheet={() => serviceAreasSheetRef.current?.present()}
+          onOpenServiceAreasSheet={() =>
+            serviceAreasSheetRef.current?.present()
+          }
           logoFile={logoFile}
           pickLogo={pickLogo}
         />
@@ -107,18 +105,18 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
       <View className="mt-auto pt-6">
         <CompanySignupProgress step={step} totalSteps={3} />
 
-        <View className="flex-row justify-between items-center w-full">
+        <View className="w-full flex-row items-center justify-between">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={step < 3 ? handleNextStep : handleSubmit(onSubmit)}
             disabled={step === 3 && isLoading}
-            className={`flex-1 py-4 rounded-3xl items-center justify-center ${step === 3 && isLoading ? "bg-primary/70" : "bg-primary"}`}
+            className={`flex-1 items-center justify-center rounded-3xl py-4 ${step === 3 && isLoading ? 'bg-primary/70' : 'bg-primary'}`}
           >
             {step === 3 && isLoading ? (
               <ActivityIndicator color="white" size="small" />
             ) : (
-              <Text className="text-lg font-cairo-bold text-white">
-                {step < 3 ? "التالي" : "إنشاء حساب"}
+              <Text className="font-cairo-bold text-lg text-white">
+                {step < 3 ? 'التالي' : 'إنشاء حساب'}
               </Text>
             )}
           </TouchableOpacity>
@@ -127,9 +125,9 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handlePrevStep}
-              className="py-4 px-6 items-center justify-center"
+              className="items-center justify-center px-6 py-4"
             >
-              <Text className="text-lg font-cairo-semibold text-charcoal">
+              <Text className="font-cairo-semibold text-lg text-charcoal">
                 السابق
               </Text>
             </TouchableOpacity>
@@ -140,10 +138,10 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
       <SelectionBottomSheet
         ref={activitySheetRef}
         title="اختر النشاط"
-        options={["تشطيبات", "بناء", "ديكور", "كهرباء", "سباكة", "تكييف"]}
+        options={['تشطيبات', 'بناء', 'ديكور', 'كهرباء', 'سباكة', 'تكييف']}
         selectedValue={selectedActivity}
         onSelect={(val) =>
-          setValue("licenseActivity", val, { shouldValidate: true })
+          setValue('licenseActivity', val, { shouldValidate: true })
         }
       />
 
@@ -151,17 +149,17 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         ref={serviceAreasSheetRef}
         title="اختر نطاقات الخدمة"
         options={[
-          "كل المناطق",
-          "العاصمة",
-          "حولي",
-          "الفروانية",
-          "الأحمدي",
-          "الجهراء",
-          "مبارك الكبير",
+          'كل المناطق',
+          'العاصمة',
+          'حولي',
+          'الفروانية',
+          'الأحمدي',
+          'الجهراء',
+          'مبارك الكبير',
         ]}
         selectedValue={selectedServiceAreas}
         onSelect={(val) =>
-          setValue("serviceAreas", val, { shouldValidate: true })
+          setValue('serviceAreas', val, { shouldValidate: true })
         }
       />
     </View>

@@ -1,21 +1,22 @@
-import "react-native-gesture-handler";
-import { SplashScreen, Stack } from "expo-router";
-import "react-native-reanimated";
-import "./globals.css";
+import 'react-native-gesture-handler';
+import 'react-native-reanimated';
+import './globals.css';
 
-import { useEffect } from "react";
-import { I18nManager } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
-  useFonts,
   Cairo_400Regular,
   Cairo_500Medium,
   Cairo_600SemiBold,
   Cairo_700Bold,
-} from "@expo-google-fonts/cairo";
-import { useAuthStore } from "@/store/useAuthStore";
+  useFonts,
+} from '@expo-google-fonts/cairo';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { SplashScreen, Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { I18nManager } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { useAuthStore } from '@/store/useAuthStore';
 
 // Prevent auto-hide, we will hide it manually once our custom animated splash mounts
 SplashScreen.preventAutoHideAsync();
@@ -61,6 +62,7 @@ export default function RootLayout() {
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(main)" />
           </Stack>
         </SafeAreaProvider>
       </BottomSheetModalProvider>

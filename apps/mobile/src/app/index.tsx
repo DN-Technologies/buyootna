@@ -1,26 +1,29 @@
-import { useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
   runOnJS,
-} from "react-native-reanimated";
-import * as SplashScreen from "expo-splash-screen";
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 
-import AppLogo from "@/core/components/AppLogo";
-import { StyleSheet } from "react-native";
+import { verifyInstallation } from 'nativewind';
+
+import AppLogo from '@/core/components/AppLogo';
 
 export default function InitialSplashSequence() {
   const router = useRouter();
 
   // Animation Values
   const dotOpacity = useSharedValue(1);
-  const bgColor = useSharedValue("#FFFFFF"); // White
+  const bgColor = useSharedValue('#FFFFFF'); // White
   const logoOpacity = useSharedValue(0);
 
   useEffect(() => {
+    verifyInstallation();
     // Hide native splash once this component mounts
     SplashScreen.hideAsync();
 
@@ -28,7 +31,7 @@ export default function InitialSplashSequence() {
     dotOpacity.value = withDelay(500, withTiming(0, { duration: 300 }));
 
     // 2. Change background to dark blue (matching the design)
-    bgColor.value = withDelay(800, withTiming("#0B2239", { duration: 500 }));
+    bgColor.value = withDelay(800, withTiming('#0B2239', { duration: 500 }));
 
     // 3. Fade in logo, then route away
     logoOpacity.value = withDelay(
@@ -36,7 +39,7 @@ export default function InitialSplashSequence() {
       withTiming(1, { duration: 600 }, (finished) => {
         if (finished) {
           // trigger Expo Router navigation on JS thread
-          runOnJS(router.replace)("(main)/home" as any);
+          runOnJS(router.replace)('(main)/home' as any);
         }
       }),
     );
@@ -58,13 +61,13 @@ export default function InitialSplashSequence() {
     <Animated.View
       style={[
         StyleSheet.absoluteFill,
-        { alignItems: "center", justifyContent: "center" },
+        { alignItems: 'center', justifyContent: 'center' },
         animatedBackground,
       ]}
     >
       {/* Initial Dot */}
       <Animated.View
-        className="absolute w-3 h-3 rounded-full bg-slate-800"
+        className="absolute h-3 w-3 rounded-full bg-slate-800"
         style={[animatedDot]}
       />
 

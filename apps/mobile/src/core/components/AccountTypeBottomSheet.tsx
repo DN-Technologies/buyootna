@@ -1,13 +1,14 @@
-import { forwardRef, useCallback, useMemo, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { Feather } from '@expo/vector-icons';
 import {
+  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
-import { AccountType } from "@/core/types";
-import { Feather } from "@expo/vector-icons";
-import SelectionCard from "@/components/SelectionCard";
+} from '@gorhom/bottom-sheet';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { Text, TouchableOpacity,View } from 'react-native';
+
+import SelectionCard from '@/components/SelectionCard';
+import { AccountType } from '@/core/types';
 
 interface AccountTypeBottomSheetProps {
   onContinue: (type: AccountType) => void;
@@ -19,7 +20,7 @@ const AccountTypeBottomSheet = forwardRef<
   AccountTypeBottomSheetProps
 >(({ onContinue, initialType = null }, ref) => {
   // Defines how high the sheet snaps up. Adjust percentage as needed.
-  const snapPoints = useMemo(() => ["65%"], []);
+  const snapPoints = useMemo(() => ['65%'], []);
   const [selectedType, setSelectedType] = useState<AccountType>(initialType);
 
   // Creates the dark overlay behind the bottom sheet
@@ -37,7 +38,7 @@ const AccountTypeBottomSheet = forwardRef<
 
   // Dismiss helper
   const handleClose = () => {
-    if (ref && "current" in ref && ref.current) {
+    if (ref && 'current' in ref && ref.current) {
       ref.current.dismiss();
     }
   };
@@ -48,22 +49,22 @@ const AccountTypeBottomSheet = forwardRef<
       index={0}
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
-      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
-      backgroundStyle={{ backgroundColor: "#FFFFFF", borderRadius: 24 }}
+      handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
+      backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
       <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
         {/* Header Section */}
-        <View className="flex-row justify-between items-start mb-6">
+        <View className="mb-6 flex-row items-start justify-between">
           {/* Close Button (X) */}
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleClose}
-            className="mr-4 p-1 bg-gray-100 rounded-full"
+            className="mr-4 rounded-full bg-gray-100 p-1"
           >
             <Feather name="x" size={20} color="#64748B" />
           </TouchableOpacity>
 
-          <Text className="text-xl font-cairo-semibold text-charcoal mb-2 mt-3">
+          <Text className="mb-2 mt-3 font-cairo-semibold text-xl text-charcoal">
             اختر نوع حسابك للبدء
           </Text>
         </View>
@@ -74,10 +75,10 @@ const AccountTypeBottomSheet = forwardRef<
             title="فرد"
             description="للأشخاص الراغبين في إضافة إعلان بيع أو إيجار أو بدل لعقاراتهم الخاص."
             type="individual"
-            isSelected={selectedType === "individual"}
+            isSelected={selectedType === 'individual'}
             onPress={() => {
-              setSelectedType("individual");
-              onContinue("individual");
+              setSelectedType('individual');
+              onContinue('individual');
               handleClose();
             }}
           />
@@ -86,10 +87,10 @@ const AccountTypeBottomSheet = forwardRef<
             title="شركة"
             description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
             type="company"
-            isSelected={selectedType === "company"}
+            isSelected={selectedType === 'company'}
             onPress={() => {
-              setSelectedType("company");
-              onContinue("company");
+              setSelectedType('company');
+              onContinue('company');
               handleClose();
             }}
           />
@@ -98,5 +99,7 @@ const AccountTypeBottomSheet = forwardRef<
     </BottomSheetModal>
   );
 });
+
+AccountTypeBottomSheet.displayName = 'AccountTypeBottomSheet';
 
 export default AccountTypeBottomSheet;

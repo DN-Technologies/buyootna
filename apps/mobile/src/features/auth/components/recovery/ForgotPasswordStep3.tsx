@@ -1,13 +1,13 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { Text, TouchableOpacity,View } from 'react-native';
 
-import FormInput from "@/components/FormInput";
+import FormInput from '@/components/FormInput';
 import {
   resetPasswordSchema,
   ResetPasswordValues,
-} from "@/features/auth/recoverySchemas";
+} from '@/features/auth/recoverySchemas';
 
 interface ForgotPasswordStep3Props {
   onSubmit: (data: ResetPasswordValues) => void;
@@ -16,22 +16,18 @@ interface ForgotPasswordStep3Props {
 export const ForgotPasswordStep3: React.FC<ForgotPasswordStep3Props> = ({
   onSubmit,
 }) => {
-  const {
-    control,
-    handleSubmit,
-    watch,
-  } = useForm<ResetPasswordValues>({
+  const { control, handleSubmit, watch } = useForm<ResetPasswordValues>({
     resolver: zodResolver(resetPasswordSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
 
-  const passwordValue = watch("password");
-  const isStep3Disabled = !passwordValue || passwordValue.trim() === "";
+  const passwordValue = watch('password');
+  const isStep3Disabled = !passwordValue || passwordValue.trim() === '';
 
   return (
     <View className="flex-1">
-      <View className="items-center mb-10 mt-6">
-        <Text className="text-2xl font-cairo-bold text-charcoal mb-2">
+      <View className="mb-10 mt-6 items-center">
+        <Text className="mb-2 font-cairo-bold text-2xl text-charcoal">
           إنشاء كلمة مرور جديدة
         </Text>
       </View>
@@ -54,11 +50,11 @@ export const ForgotPasswordStep3: React.FC<ForgotPasswordStep3Props> = ({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit(onSubmit)}
-        className={`w-full py-4 rounded-3xl items-center justify-center mt-auto ${
-          isStep3Disabled ? "bg-[#9CA3AF]" : "bg-secondary"
+        className={`mt-auto w-full items-center justify-center rounded-3xl py-4 ${
+          isStep3Disabled ? 'bg-[#9CA3AF]' : 'bg-secondary'
         }`}
       >
-        <Text className="text-lg font-cairo-bold text-white">
+        <Text className="font-cairo-bold text-lg text-white">
           تحديث كلمة المرور
         </Text>
       </TouchableOpacity>

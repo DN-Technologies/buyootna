@@ -1,12 +1,11 @@
-import { useAuthStore } from "@/store/useAuthStore";
-import axios from "axios";
-import { Platform } from "react-native";
+import axios from 'axios';
+import { Platform } from 'react-native';
+
+import { useAuthStore } from '@/store/useAuthStore';
 
 // Android emulator uses 10.0.2.2 to reach host machine, iOS simulator uses localhost
 const DEV_API_URL =
-  Platform.OS === "android"
-    ? "http://10.0.2.2:8000"
-    : "http://localhost:8000";
+  Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
 
@@ -14,7 +13,7 @@ const apiClient = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 

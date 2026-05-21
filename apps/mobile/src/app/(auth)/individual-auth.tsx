@@ -1,56 +1,55 @@
-import { useState, useRef } from "react";
-import { ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import { Alert } from "react-native";
-import apiClient from "@/core/api/api";
-import { useAuthStore } from "@/store/useAuthStore";
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import { useRef,useState } from 'react';
+import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
+import { Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { LoginFormValues, SignupFormValues } from "@/features/auth/authSchemas";
-import { AccountType } from "@/core/types";
-import AccountTypeBottomSheet from "@/core/components/AccountTypeBottomSheet";
-
+import apiClient from '@/core/api/api';
+import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
+import { AccountType } from '@/core/types';
+import { LoginFormValues, SignupFormValues } from '@/features/auth/authSchemas';
 // Modular Components
-import { IndividualAuthHeader } from "@/features/auth/components/individual/IndividualAuthHeader";
-import { IndividualAuthTabs } from "@/features/auth/components/individual/IndividualAuthTabs";
-import { IndividualLoginForm } from "@/features/auth/components/individual/IndividualLoginForm";
-import { IndividualSignupForm } from "@/features/auth/components/individual/IndividualSignupForm";
+import { IndividualAuthHeader } from '@/features/auth/components/individual/IndividualAuthHeader';
+import { IndividualAuthTabs } from '@/features/auth/components/individual/IndividualAuthTabs';
+import { IndividualLoginForm } from '@/features/auth/components/individual/IndividualLoginForm';
+import { IndividualSignupForm } from '@/features/auth/components/individual/IndividualSignupForm';
 import ProfileBottomSheet, {
   Profile,
-} from "@/features/auth/components/ProfileBottomSheet";
+} from '@/features/auth/components/ProfileBottomSheet';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const MOCK_PROFILES: Profile[] = [
   {
-    id: "1",
-    name: "Salim Elshekh",
-    email: "salinelshekh@gmail.com",
-    type: "individual",
-    typeName: "فرد",
-    icon: require("@/assets/icons/individual-icon.svg"),
+    id: '1',
+    name: 'Salim Elshekh',
+    email: 'salinelshekh@gmail.com',
+    type: 'individual',
+    typeName: 'فرد',
+    icon: require('@/assets/icons/individual-icon.svg'),
   },
   {
-    id: "2",
-    name: "Kayan Company",
-    email: "kayan@gmail.com",
-    type: "company",
-    typeName: "شركة",
-    icon: require("@/assets/icons/company-icon.svg"),
+    id: '2',
+    name: 'Kayan Company',
+    email: 'kayan@gmail.com',
+    type: 'company',
+    typeName: 'شركة',
+    icon: require('@/assets/icons/company-icon.svg'),
   },
   {
-    id: "3",
-    name: "Salim Elshekh",
-    email: "salinelshekh@gmail.com",
-    type: "owner",
-    typeName: "مالك عقار",
-    icon: require("@/assets/icons/owner-icon.svg"),
+    id: '3',
+    name: 'Salim Elshekh',
+    email: 'salinelshekh@gmail.com',
+    type: 'owner',
+    typeName: 'مالك عقار',
+    icon: require('@/assets/icons/owner-icon.svg'),
   },
 ];
 
-type AuthMode = "login" | "signup";
+type AuthMode = 'login' | 'signup';
 
 export default function IndividualAuthScreen() {
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
   const router = useRouter();
@@ -62,7 +61,7 @@ export default function IndividualAuthScreen() {
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post("/auth/login", {
+      const response = await apiClient.post('/auth/login', {
         identifier: data.identifier,
         password: data.password,
       });
@@ -71,11 +70,11 @@ export default function IndividualAuthScreen() {
       await setAuth(response.data.user, response.data.access_token);
 
       // The router guard in _layout.tsx will automatically push them to /(main)
-      router.push("/(main)/home");
+      router.push('/(main)/home');
     } catch (error: any) {
       const backendMessage =
-        error.response?.data?.message || "حدث خطأ في الاتصال";
-      Alert.alert("فشل تسجيل الدخول", backendMessage);
+        error.response?.data?.message || 'حدث خطأ في الاتصال';
+      Alert.alert('فشل تسجيل الدخول', backendMessage);
     } finally {
       setIsLoading(false);
     }
@@ -84,37 +83,37 @@ export default function IndividualAuthScreen() {
   const onSignup = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      await apiClient.post("/users/register/individual", {
+      await apiClient.post('/users/register/individual', {
         email: data.email,
         phone: data.phone,
         password: data.password,
       });
 
-      Alert.alert("تم بنجاح", "تم إنشاء الحساب بنجاح، يرجى تسجيل الدخول");
-      setMode("login"); // Automatically switch them to the login tab
+      Alert.alert('تم بنجاح', 'تم إنشاء الحساب بنجاح، يرجى تسجيل الدخول');
+      setMode('login'); // Automatically switch them to the login tab
     } catch (error: any) {
       const backendMessage =
-        error.response?.data?.message || "حدث خطأ أثناء إنشاء الحساب";
-      Alert.alert("فشل التسجيل", backendMessage);
+        error.response?.data?.message || 'حدث خطأ أثناء إنشاء الحساب';
+      Alert.alert('فشل التسجيل', backendMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleAccountTypeChange = (type: AccountType) => {
-    if (type === "company") {
-      router.replace("/(auth)/company-auth");
+    if (type === 'company') {
+      router.replace('/(auth)/company-auth');
     }
   };
 
   const handleProfileSelect = (profile: Profile) => {
-    console.log("Selected Profile:", profile);
+    console.log('Selected Profile:', profile);
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView
@@ -134,7 +133,7 @@ export default function IndividualAuthScreen() {
           <IndividualAuthTabs mode={mode} onModeChange={setMode} />
 
           {/* Render Active Form */}
-          {mode === "login" ? (
+          {mode === 'login' ? (
             <IndividualLoginForm
               onSubmit={onLogin}
               onOpenProfiles={() => profileSheetRef.current?.present()}
@@ -157,7 +156,7 @@ export default function IndividualAuthScreen() {
         profiles={MOCK_PROFILES}
         selectedId="2" // Kayan Company selected as per Figma
         onSelect={handleProfileSelect}
-        onAddAccount={() => setMode("signup")}
+        onAddAccount={() => setMode('signup')}
       />
     </SafeAreaView>
   );

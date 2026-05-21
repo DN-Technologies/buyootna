@@ -1,35 +1,34 @@
-import { useState, useRef } from "react";
-import { ScrollView, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Alert } from "react-native";
-import apiClient from "@/core/api/api";
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import { useRef,useState } from 'react';
+import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
+import { Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SuccessBottomSheet from "@/core/components/SuccessBottomSheet";
+import apiClient from '@/core/api/api';
+import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
+// Modular Components
+import { ForgotPasswordHeader } from '@/features/auth/components/recovery/ForgotPasswordHeader';
+import { ForgotPasswordStep1 } from '@/features/auth/components/recovery/ForgotPasswordStep1';
+import { ForgotPasswordStep2 } from '@/features/auth/components/recovery/ForgotPasswordStep2';
+import { ForgotPasswordStep3 } from '@/features/auth/components/recovery/ForgotPasswordStep3';
 import {
   RequestOtpValues,
-  VerifyOtpValues,
   ResetPasswordValues,
-} from "@/features/auth/recoverySchemas";
-
-// Modular Components
-import { ForgotPasswordHeader } from "@/features/auth/components/recovery/ForgotPasswordHeader";
-import { ForgotPasswordStep1 } from "@/features/auth/components/recovery/ForgotPasswordStep1";
-import { ForgotPasswordStep2 } from "@/features/auth/components/recovery/ForgotPasswordStep2";
-import { ForgotPasswordStep3 } from "@/features/auth/components/recovery/ForgotPasswordStep3";
+  VerifyOtpValues,
+} from '@/features/auth/recoverySchemas';
 
 export default function ForgotPasswordScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [identifier, setIdentifier] = useState("");
+  const [identifier, setIdentifier] = useState('');
   const [timer, setTimer] = useState(0);
-  const [resetToken, setResetToken] = useState("");
+  const [resetToken, setResetToken] = useState('');
   const successSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
 
   const onStep1Submit = async (data: RequestOtpValues) => {
     try {
-      await apiClient.post("/auth/recovery/request-otp", {
+      await apiClient.post('/auth/recovery/request-otp', {
         identifier: data.identifier,
       });
 
@@ -41,7 +40,7 @@ export default function ForgotPasswordScreen() {
 
   const onStep2Submit = async (data: VerifyOtpValues) => {
     try {
-      const response = await apiClient.post("/auth/recovery/verify-otp", {
+      const response = await apiClient.post('/auth/recovery/verify-otp', {
         identifier: identifier, // Use the idenfiter saved from Step 1
         otp: data.otp,
       });
@@ -51,15 +50,15 @@ export default function ForgotPasswordScreen() {
       setStep(3);
     } catch (error: any) {
       Alert.alert(
-        "خطأ",
-        error.response?.data?.message || "رمز التحقق غير صحيح",
+        'خطأ',
+        error.response?.data?.message || 'رمز التحقق غير صحيح',
       );
     }
   };
 
   const onStep3Submit = async (data: ResetPasswordValues) => {
     try {
-      await apiClient.post("/auth/recovery/reset-password", {
+      await apiClient.post('/auth/recovery/reset-password', {
         resetToken: resetToken,
         newPassword: data.password,
       });
@@ -68,15 +67,15 @@ export default function ForgotPasswordScreen() {
       successSheetRef.current?.present();
     } catch (error: any) {
       Alert.alert(
-        "خطأ",
-        error.response?.data?.message || "تعذر تحديث كلمة المرور",
+        'خطأ',
+        error.response?.data?.message || 'تعذر تحديث كلمة المرور',
       );
     }
   };
 
   const handleSuccessClose = () => {
     successSheetRef.current?.dismiss();
-    router.replace("/(auth)/individual-auth");
+    router.replace('/(auth)/individual-auth');
   };
 
   const handleBack = () => {
@@ -92,7 +91,7 @@ export default function ForgotPasswordScreen() {
       <ForgotPasswordHeader onBack={handleBack} />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView

@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+import { Image } from 'expo-image';
 
 export default function AppLogo({
   width = 100,
@@ -15,8 +15,8 @@ export default function AppLogo({
     <Image
       source={
         dark
-          ? require("@/assets/icons/buyootna-logo-dark.svg")
-          : require("@/assets/icons/buyootna-logo.svg")
+          ? require('@/assets/icons/buyootna-logo-dark.svg')
+          : require('@/assets/icons/buyootna-logo.svg')
       }
       style={{ width, height, tintColor: fill }}
       contentFit="contain"

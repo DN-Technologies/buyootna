@@ -1,10 +1,10 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { ActivityIndicator,Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from "@/components/FormInput";
-import { SignupFormValues, signupSchema } from "@/features/auth/authSchemas";
+import FormInput from '@/components/FormInput';
+import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 
 interface IndividualSignupFormProps {
   onSubmit: (data: SignupFormValues) => void;
@@ -17,7 +17,7 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
 }) => {
   const { control, handleSubmit } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-    mode: "onTouched",
+    mode: 'onTouched',
   });
 
   return (
@@ -59,12 +59,12 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         activeOpacity={0.8}
         onPress={handleSubmit(onSubmit)}
         disabled={isLoading}
-        className={`w-full py-4 rounded-3xl items-center justify-center mt-6 mb-4 ${isLoading ? "bg-primary/70" : "bg-primary"}`}
+        className={`mb-4 mt-6 w-full items-center justify-center rounded-3xl py-4 ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
       >
         {isLoading ? (
           <ActivityIndicator color="white" size="small" />
         ) : (
-          <Text className="text-lg font-cairo-bold text-white">إنشاء حساب</Text>
+          <Text className="font-cairo-bold text-lg text-white">إنشاء حساب</Text>
         )}
       </TouchableOpacity>
     </View>

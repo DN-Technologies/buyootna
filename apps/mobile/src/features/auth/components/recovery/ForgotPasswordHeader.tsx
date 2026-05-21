@@ -1,7 +1,8 @@
-import React from "react";
-import { View, TouchableOpacity } from "react-native";
-import { Image } from "expo-image";
-import AppLogo from "@/core/components/AppLogo";
+import { Image } from 'expo-image';
+import React from 'react';
+import { TouchableOpacity,View } from 'react-native';
+
+import AppLogo from '@/core/components/AppLogo';
 
 interface ForgotPasswordHeaderProps {
   onBack: () => void;
@@ -13,20 +14,20 @@ export const ForgotPasswordHeader: React.FC<ForgotPasswordHeaderProps> = ({
   return (
     <View>
       {/* Header Back Button */}
-      <View className="w-min ml-auto">
+      <View className="ml-auto w-min">
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onBack}
           className="px-6 py-4"
         >
           <Image
-            source={require("@/assets/icons/arrow-back.svg")}
+            source={require('@/assets/icons/arrow-back.svg')}
             style={{ width: 12, height: 16 }}
           />
         </TouchableOpacity>
       </View>
 
-      <View className="w-16 h-16 mx-auto items-center justify-center ">
+      <View className="mx-auto h-16 w-16 items-center justify-center">
         <AppLogo width={64} height={64} fill="#0B2239" />
       </View>
     </View>

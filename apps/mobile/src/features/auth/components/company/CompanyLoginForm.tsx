@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Feather } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { ActivityIndicator,Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from "@/components/FormInput";
+import FormInput from '@/components/FormInput';
 import {
   CompanyLoginFormValues,
   companyLoginSchema,
-} from "@/features/auth/companyAuthSchemas";
+} from '@/features/auth/companyAuthSchemas';
 
 interface CompanyLoginFormProps {
   onSubmit: (data: CompanyLoginFormValues & { rememberMe: boolean }) => void;
@@ -27,7 +27,7 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
 
   const { control, handleSubmit } = useForm<CompanyLoginFormValues>({
     resolver: zodResolver(companyLoginSchema),
-    mode: "onTouched",
+    mode: 'onTouched',
   });
 
   const handleLogin = (data: CompanyLoginFormValues) => {
@@ -51,26 +51,28 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
         isPassword={true}
       />
 
-      <View className="flex-row justify-between items-center w-full mb-8">
+      <View className="mb-8 w-full flex-row items-center justify-between">
         <TouchableOpacity
           activeOpacity={0.7}
           className="flex-row items-center"
           onPress={() => setRememberMe(!rememberMe)}
         >
           <View
-            className={`w-5 h-5 border-[1.5px] rounded mr-2 items-center justify-center ${
-              rememberMe ? "bg-primary border-primary" : "border-gray-400"
+            className={`mr-2 h-5 w-5 items-center justify-center rounded border-[1.5px] ${
+              rememberMe ? 'border-primary bg-primary' : 'border-gray-400'
             }`}
           >
             {rememberMe && <Feather name="check" size={14} color="white" />}
           </View>
-          <Text className="text-slate-700 font-cairo-medium text-sm">تذكري</Text>
+          <Text className="font-cairo-medium text-sm text-slate-700">
+            تذكري
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push("/(auth)/forgot-password")}
+          onPress={() => router.push('/(auth)/forgot-password')}
         >
-          <Text className="text-primary font-cairo-medium text-sm">
+          <Text className="font-cairo-medium text-sm text-primary">
             هل نسيت كلمة المرور؟
           </Text>
         </TouchableOpacity>
@@ -81,12 +83,14 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
           activeOpacity={0.8}
           onPress={handleSubmit(handleLogin)}
           disabled={isLoading}
-          className={`w-full py-4 rounded-3xl items-center justify-center mb-4 ${isLoading ? "bg-primary/70" : "bg-primary"}`}
+          className={`mb-4 w-full items-center justify-center rounded-3xl py-4 ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
         >
           {isLoading ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text className="text-lg font-cairo-bold text-white">تسجيل الدخول</Text>
+            <Text className="font-cairo-bold text-lg text-white">
+              تسجيل الدخول
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -95,7 +99,7 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
           onPress={onOpenProfiles}
           className="items-center"
         >
-          <Text className="text-charcoal font-cairo-semibold text-base">
+          <Text className="font-cairo-semibold text-base text-charcoal">
             المتابعة بحساب محفوظ
           </Text>
         </TouchableOpacity>

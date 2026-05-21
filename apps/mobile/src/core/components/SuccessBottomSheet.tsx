@@ -1,12 +1,12 @@
-import { forwardRef, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { Feather } from '@expo/vector-icons';
 import {
+  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
-import { Feather } from "@expo/vector-icons";
-import { Image } from "expo-image";
+} from '@gorhom/bottom-sheet';
+import { Image } from 'expo-image';
+import { forwardRef, useCallback, useMemo } from 'react';
+import { Text, TouchableOpacity,View } from 'react-native';
 
 interface SuccessBottomSheetProps {
   title: string;
@@ -20,8 +20,8 @@ interface SuccessBottomSheetProps {
 const SuccessBottomSheet = forwardRef<
   BottomSheetModal,
   SuccessBottomSheetProps
->(({ title, description, buttonText, onPress, iconName = "check" }, ref) => {
-  const snapPoints = useMemo(() => ["40%"], []);
+>(({ title, description, buttonText, onPress, iconName = 'check' }, ref) => {
+  const snapPoints = useMemo(() => ['40%'], []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -41,24 +41,24 @@ const SuccessBottomSheet = forwardRef<
       index={0}
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
-      handleIndicatorStyle={{ backgroundColor: "#CBD5E1", width: 40 }}
-      backgroundStyle={{ backgroundColor: "#FFFFFF", borderRadius: 24 }}
+      handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
+      backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView className="flex-1 px-6 pb-8 pt-4 items-center justify-center mb-6">
-        <View className="items-center mt-4">
+      <BottomSheetView className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4">
+        <View className="mt-4 items-center">
           {/* Success Icon Circle */}
-          <View className="w-20 h-20 bg-green-100 rounded-full items-center justify-center mb-6">
+          <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-green-100">
             <Image
-              source={require("@/assets/icons/success-icon.svg")}
+              source={require('@/assets/icons/success-icon.svg')}
               style={{ width: 74, height: 74 }}
             />
           </View>
 
           {/* Text Content */}
-          <Text className="text-xl font-cairo-bold text-[#111111] text-center">
+          <Text className="text-center font-cairo-bold text-xl text-[#111111]">
             {title}
           </Text>
-          <Text className="text-sm text-[#6B6A6A] font-cairo-semibold mb-3 text-center leading-6 px-4">
+          <Text className="mb-3 px-4 text-center font-cairo-semibold text-sm leading-6 text-[#6B6A6A]">
             {description}
           </Text>
         </View>
@@ -67,9 +67,9 @@ const SuccessBottomSheet = forwardRef<
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onPress}
-          className="w-full py-4 rounded-3xl items-center justify-center bg-[#15304D] mb-2"
+          className="mb-2 w-full items-center justify-center rounded-3xl bg-[#15304D] py-4"
         >
-          <Text className="text-lg font-cairo-bold text-white">
+          <Text className="font-cairo-bold text-lg text-white">
             {buttonText}
           </Text>
         </TouchableOpacity>
@@ -77,5 +77,7 @@ const SuccessBottomSheet = forwardRef<
     </BottomSheetModal>
   );
 });
+
+SuccessBottomSheet.displayName = 'SuccessBottomSheet';
 
 export default SuccessBottomSheet;

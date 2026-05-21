@@ -1,65 +1,64 @@
-import { useState, useRef } from "react";
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import * as DocumentPicker from 'expo-document-picker';
+import { useRouter } from 'expo-router';
+import { useRef,useState } from 'react';
 import {
-  View,
-  ScrollView,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import * as DocumentPicker from "expo-document-picker";
+  ScrollView,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import apiClient from '@/core/api/api';
+import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
+import { AccountType } from '@/core/types';
 import {
   CompanyLoginFormValues,
   CompanySignupFormValues,
-} from "@/features/auth/companyAuthSchemas";
-import { AccountType } from "@/core/types";
-import AccountTypeBottomSheet from "@/core/components/AccountTypeBottomSheet";
-
+} from '@/features/auth/companyAuthSchemas';
 // Modular Components
-import { CompanyAuthHeader } from "@/features/auth/components/company/CompanyAuthHeader";
-import { CompanyAuthTabs } from "@/features/auth/components/company/CompanyAuthTabs";
-import { CompanyLoginForm } from "@/features/auth/components/company/CompanyLoginForm";
-import { CompanySignupForm } from "@/features/auth/components/company/CompanySignupForm";
+import { CompanyAuthHeader } from '@/features/auth/components/company/CompanyAuthHeader';
+import { CompanyAuthTabs } from '@/features/auth/components/company/CompanyAuthTabs';
+import { CompanyLoginForm } from '@/features/auth/components/company/CompanyLoginForm';
+import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import ProfileBottomSheet, {
   Profile,
-} from "@/features/auth/components/ProfileBottomSheet";
-import apiClient from "@/core/api/api";
-import { useAuthStore } from "@/store/useAuthStore";
+} from '@/features/auth/components/ProfileBottomSheet';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const MOCK_PROFILES: Profile[] = [
   {
-    id: "1",
-    name: "Salim Elshekh",
-    email: "salinelshekh@gmail.com",
-    type: "individual",
-    typeName: "فرد",
-    icon: require("@/assets/icons/individual-icon.svg"),
+    id: '1',
+    name: 'Salim Elshekh',
+    email: 'salinelshekh@gmail.com',
+    type: 'individual',
+    typeName: 'فرد',
+    icon: require('@/assets/icons/individual-icon.svg'),
   },
   {
-    id: "2",
-    name: "Kayan Company",
-    email: "kayan@gmail.com",
-    type: "company",
-    typeName: "شركة",
-    icon: require("@/assets/icons/company-icon.svg"),
+    id: '2',
+    name: 'Kayan Company',
+    email: 'kayan@gmail.com',
+    type: 'company',
+    typeName: 'شركة',
+    icon: require('@/assets/icons/company-icon.svg'),
   },
   {
-    id: "3",
-    name: "Salim Elshekh",
-    email: "salinelshekh@gmail.com",
-    type: "owner",
-    typeName: "مالك عقار",
-    icon: require("@/assets/icons/owner-icon.svg"),
+    id: '3',
+    name: 'Salim Elshekh',
+    email: 'salinelshekh@gmail.com',
+    type: 'owner',
+    typeName: 'مالك عقار',
+    icon: require('@/assets/icons/owner-icon.svg'),
   },
 ];
 
-type AuthMode = "login" | "signup";
+type AuthMode = 'login' | 'signup';
 
 export default function CompanyAuthScreen() {
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -75,7 +74,7 @@ export default function CompanyAuthScreen() {
 
   const pickLogo = async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/jpeg", "image/png", "image/svg+xml"],
+      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
       copyToCacheDirectory: true,
     });
     if (!result.canceled && result.assets.length > 0) {
@@ -86,7 +85,7 @@ export default function CompanyAuthScreen() {
   // File Picker Handlers
   const pickLicense = async () => {
     const result = await DocumentPicker.getDocumentAsync({
-      type: ["image/jpeg", "image/png", "application/pdf"],
+      type: ['image/jpeg', 'image/png', 'application/pdf'],
       copyToCacheDirectory: true,
     });
     if (!result.canceled && result.assets.length > 0) {
@@ -99,17 +98,17 @@ export default function CompanyAuthScreen() {
   ) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post("/auth/login", {
+      const response = await apiClient.post('/auth/login', {
         identifier: data.identifier,
         password: data.password,
       });
 
       await setAuth(response.data.user, response.data.access_token);
-      router.replace("/(main)/home");
+      router.replace('/(main)/home');
     } catch (error: any) {
       Alert.alert(
-        "فشل تسجيل الدخول",
-        error.response?.data?.message || "حدث خطأ في الاتصال",
+        'فشل تسجيل الدخول',
+        error.response?.data?.message || 'حدث خطأ في الاتصال',
       );
     } finally {
       setIsLoading(false);
@@ -117,13 +116,13 @@ export default function CompanyAuthScreen() {
   };
 
   const handleAccountTypeChange = (type: AccountType) => {
-    if (type === "individual") {
-      router.replace("/(auth)/individual-auth");
+    if (type === 'individual') {
+      router.replace('/(auth)/individual-auth');
     }
   };
 
   const handleProfileSelect = (profile: Profile) => {
-    console.log("Selected Profile:", profile);
+    console.log('Selected Profile:', profile);
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
@@ -133,51 +132,51 @@ export default function CompanyAuthScreen() {
       const formData = new FormData();
 
       // 2. Append all text fields from React Hook Form
-      formData.append("name", data.name);
-      formData.append("email", data.email);
-      formData.append("phone", data.phone);
-      formData.append("password", data.password);
-      formData.append("services", data.services);
-      formData.append("hqLocation", data.hqLocation);
-      formData.append("serviceAreas", data.serviceAreas);
-      formData.append("about", data.about);
-      formData.append("licenseActivity", data.licenseActivity || "");
-      formData.append("licenseExpiry", data.licenseExpiry || "");
+      formData.append('name', data.name);
+      formData.append('email', data.email);
+      formData.append('phone', data.phone);
+      formData.append('password', data.password);
+      formData.append('services', data.services);
+      formData.append('hqLocation', data.hqLocation);
+      formData.append('serviceAreas', data.serviceAreas);
+      formData.append('about', data.about);
+      formData.append('licenseActivity', data.licenseActivity || '');
+      formData.append('licenseExpiry', data.licenseExpiry || '');
 
       // 3. Append files (React Native requires this specific object structure)
       if (logoFile) {
-        formData.append("logo", {
+        formData.append('logo', {
           uri: logoFile.uri,
-          name: logoFile.name || "logo.jpg",
-          type: logoFile.mimeType || "image/jpeg",
+          name: logoFile.name || 'logo.jpg',
+          type: logoFile.mimeType || 'image/jpeg',
         } as any);
       }
 
       if (licenseFile) {
-        formData.append("license", {
+        formData.append('license', {
           uri: licenseFile.uri,
-          name: licenseFile.name || "license.jpg",
-          type: licenseFile.mimeType || "image/jpeg",
+          name: licenseFile.name || 'license.jpg',
+          type: licenseFile.mimeType || 'image/jpeg',
         } as any);
       }
 
       // 4. Send request (Axios will automatically set the correct Boundary headers)
       const response = await apiClient.post(
-        "/users/register/company",
+        '/users/register/company',
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
         },
       );
 
-      Alert.alert("تم بنجاح", "تم إنشاء حساب الشركة بنجاح، يرجى تسجيل الدخول");
-      setMode("login");
+      Alert.alert('تم بنجاح', 'تم إنشاء حساب الشركة بنجاح، يرجى تسجيل الدخول');
+      setMode('login');
     } catch (error: any) {
       Alert.alert(
-        "فشل التسجيل",
-        error.response?.data?.message || "حدث خطأ أثناء إنشاء الحساب",
+        'فشل التسجيل',
+        error.response?.data?.message || 'حدث خطأ أثناء إنشاء الحساب',
       );
     } finally {
       setIsLoading(false);
@@ -187,7 +186,7 @@ export default function CompanyAuthScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ScrollView
@@ -207,7 +206,7 @@ export default function CompanyAuthScreen() {
           <CompanyAuthTabs mode={mode} onModeChange={setMode} />
 
           {/* Render Active Form */}
-          {mode === "login" ? (
+          {mode === 'login' ? (
             <CompanyLoginForm
               onSubmit={onLogin}
               onOpenProfiles={() => profileSheetRef.current?.present()}
@@ -237,7 +236,7 @@ export default function CompanyAuthScreen() {
         profiles={MOCK_PROFILES}
         selectedId="2"
         onSelect={handleProfileSelect}
-        onAddAccount={() => setMode("signup")}
+        onAddAccount={() => setMode('signup')}
       />
     </SafeAreaView>
   );

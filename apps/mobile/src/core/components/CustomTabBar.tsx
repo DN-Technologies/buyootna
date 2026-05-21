@@ -1,23 +1,23 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Platform,
   Dimensions,
-} from "react-native";
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+} from 'react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import {
   HomeIcon,
   SearchIcon,
   ActivityIcon,
   MenuIcon,
   AddIcon,
-} from "../../assets/icons/tab";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Path } from "react-native-svg";
+} from '@/assets/icons/tab/index';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Path } from 'react-native-svg';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
 export default function CustomTabBar({
   state,
@@ -27,7 +27,7 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
 
   // Base height + safe area for iPhone
-  const BAR_HEIGHT = 75 + (Platform.OS === "ios" ? insets.bottom : 16);
+  const BAR_HEIGHT = 75 + (Platform.OS === 'ios' ? insets.bottom : 16);
 
   // SVG Math
   const center = width / 2;
@@ -46,12 +46,12 @@ export default function CustomTabBar({
   `;
 
   // Find the 'add' route to render it separately
-  const addRouteIndex = state.routes.findIndex((r) => r.name === "add");
+  const addRouteIndex = state.routes.findIndex((r: any) => r.name === 'add');
   const addRoute = state.routes[addRouteIndex];
 
   const onAddPress = () => {
     const event = navigation.emit({
-      type: "tabPress",
+      type: 'tabPress',
       target: addRoute.key,
       canPreventDefault: true,
     });
@@ -66,7 +66,7 @@ export default function CustomTabBar({
       style={{
         height: BAR_HEIGHT,
         elevation: 10,
-        shadowColor: "#000",
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: -4 },
         shadowOpacity: 0.1,
         shadowRadius: 10,
@@ -79,14 +79,14 @@ export default function CustomTabBar({
 
       {/* 2. Standard Tab Icons (Overlapping the SVG) */}
       <View
-        className="absolute w-full h-full flex-row items-center justify-between px-2"
+        className="absolute h-full w-full flex-row items-center justify-between px-2"
         style={{
           paddingTop: 10,
-          paddingBottom: Platform.OS === "ios" ? insets.bottom : 16,
+          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 16,
         }}
       >
-        {state.routes.map((route, index) => {
-          if (route.name === "add") {
+        {state.routes.map((route: any, index: number) => {
+          if (route.name === 'add') {
             // Leave a blank space exactly where the floating button will go
             return <View key={route.key} style={{ width: 70 }} />;
           }
@@ -94,7 +94,7 @@ export default function CustomTabBar({
           const isFocused = state.index === index;
           const onPress = () => {
             const event = navigation.emit({
-              type: "tabPress",
+              type: 'tabPress',
               target: route.key,
               canPreventDefault: true,
             });
@@ -104,28 +104,28 @@ export default function CustomTabBar({
           };
 
           let IconComponent = HomeIcon;
-          let label = "";
+          let label = '';
 
           switch (route.name) {
-            case "home":
+            case 'home':
               IconComponent = HomeIcon;
-              label = "الرئيسية";
+              label = 'الرئيسية';
               break;
-            case "explore":
+            case 'explore':
               IconComponent = SearchIcon;
-              label = "استكشف";
+              label = 'استكشف';
               break;
-            case "chats":
+            case 'chats':
               IconComponent = ActivityIcon;
-              label = "نشاطي";
+              label = 'نشاطي';
               break;
-            case "profile":
+            case 'profile':
               IconComponent = MenuIcon;
-              label = "المزيد";
+              label = 'المزيد';
               break;
           }
 
-          const iconColor = isFocused ? "#FFD084" : "#FFFFFF";
+          const iconColor = isFocused ? '#FFD084' : '#FFFFFF';
 
           return (
             <TouchableOpacity
@@ -136,7 +136,7 @@ export default function CustomTabBar({
             >
               <IconComponent size={24} color={iconColor} />
               <Text
-                className={`text-[11px] font-cairo-bold ${isFocused ? "text-[#FFD084]" : "text-white"}`}
+                className={`font-cairo-bold text-[11px] ${isFocused ? 'text-[#FFD084]' : 'text-white'}`}
               >
                 {label}
               </Text>
@@ -150,14 +150,14 @@ export default function CustomTabBar({
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onAddPress}
-          className="absolute items-center justify-center bg-[#15304D] rounded-full"
+          className="absolute items-center justify-center rounded-full bg-[#15304D]"
           style={{
             width: 64,
             height: 64,
             left: width / 2 - 32,
             top: -25,
             elevation: 8,
-            shadowColor: "#000",
+            shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 5,
@@ -165,7 +165,7 @@ export default function CustomTabBar({
         >
           <AddIcon
             size={38}
-            color={state.index === addRouteIndex ? "#FFD084" : "#FFFFFF"}
+            color={state.index === addRouteIndex ? '#FFD084' : '#FFFFFF'}
           />
         </TouchableOpacity>
       )}

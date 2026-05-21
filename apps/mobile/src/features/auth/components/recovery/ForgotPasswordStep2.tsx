@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect,useRef, useState } from 'react';
+import { Controller,useForm } from 'react-hook-form';
+import { Text, TextInput,TouchableOpacity, View } from 'react-native';
 
 import {
   verifyOtpSchema,
   VerifyOtpValues,
-} from "@/features/auth/recoverySchemas";
+} from '@/features/auth/recoverySchemas';
 
 interface ForgotPasswordStep2Props {
   identifier: string;
@@ -20,17 +20,13 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
   const [timer, setTimer] = useState(45);
   const otpInputRef = useRef<TextInput>(null);
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-  } = useForm<VerifyOtpValues>({
+  const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
     resolver: zodResolver(verifyOtpSchema),
-    mode: "onChange",
+    mode: 'onChange',
   });
 
-  const otpValue = watch("otp");
-  const isStep2Disabled = !otpValue || otpValue.trim() === "";
+  const otpValue = watch('otp');
+  const isStep2Disabled = !otpValue || otpValue.trim() === '';
 
   // Timer Logic
   useEffect(() => {
@@ -43,11 +39,11 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
 
   return (
     <View className="flex-1">
-      <View className="items-center mb-10 mt-6">
-        <Text className="text-2xl font-cairo-bold text-charcoal mb-2">
+      <View className="mb-10 mt-6 items-center">
+        <Text className="mb-2 font-cairo-bold text-2xl text-charcoal">
           تحقق من الرمز
         </Text>
-        <Text className="text-sm font-cairo-semibold text-gray-medium text-center px-4">
+        <Text className="px-4 text-center font-cairo-semibold text-sm text-gray-medium">
           أرسلنا رمز التحقق المكون من 6 أرقام إلى {identifier}
         </Text>
       </View>
@@ -56,26 +52,29 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
       <Controller
         control={control}
         name="otp"
-        render={({ field: { onChange, value = "" }, fieldState: { error } }) => (
+        render={({
+          field: { onChange, value = '' },
+          fieldState: { error },
+        }) => (
           <View className="mb-6 items-center">
             {/* The 6 visible boxes */}
             <View
-              className="flex-row justify-between w-full"
-              style={{ direction: "ltr" }}
+              className="w-full flex-row justify-between"
+              style={{ direction: 'ltr' }}
             >
               {[0, 1, 2, 3, 4, 5].map((index) => (
                 <View
                   key={index}
-                  className={`w-12 h-14 border-[1.5px] rounded-xl items-center justify-center bg-white ${
+                  className={`h-14 w-12 items-center justify-center rounded-xl border-[1.5px] bg-white ${
                     value.length === index
-                      ? "border-secondary"
+                      ? 'border-secondary'
                       : error
-                      ? "border-red-500"
-                      : "border-gray-300"
+                        ? 'border-red-500'
+                        : 'border-gray-300'
                   }`}
                 >
-                  <Text className="text-xl font-cairo-bold text-charcoal">
-                    {value[index] || ""}
+                  <Text className="font-cairo-bold text-xl text-charcoal">
+                    {value[index] || ''}
                   </Text>
                 </View>
               ))}
@@ -86,17 +85,17 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
               ref={otpInputRef}
               value={value}
               onChangeText={(text) => {
-                const clean = text.replace(/[^0-9]/g, "");
+                const clean = text.replace(/[^0-9]/g, '');
                 if (clean.length <= 6) onChange(clean);
               }}
               keyboardType="number-pad"
               maxLength={6}
-              className="absolute w-full h-full opacity-0"
+              className="absolute h-full w-full opacity-0"
               autoFocus
             />
 
             {error && (
-              <Text className="text-red-500 text-xs mt-2 font-cairo-semibold">
+              <Text className="mt-2 font-cairo-semibold text-xs text-red-500">
                 {error.message}
               </Text>
             )}
@@ -105,14 +104,14 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
       />
 
       {/* Resend Timer */}
-      <View className="items-center mb-8">
+      <View className="mb-8 items-center">
         {timer > 0 ? (
-          <Text className="text-gray-medium font-cairo-semibold text-sm">
-            إعادة إرسال الرمز خلال 00:{timer.toString().padStart(2, "0")}
+          <Text className="font-cairo-semibold text-sm text-gray-medium">
+            إعادة إرسال الرمز خلال 00:{timer.toString().padStart(2, '0')}
           </Text>
         ) : (
           <TouchableOpacity activeOpacity={0.7} onPress={() => setTimer(45)}>
-            <Text className="text-secondary font-cairo-bold text-sm underline">
+            <Text className="font-cairo-bold text-sm text-secondary underline">
               إعادة إرسال الرمز
             </Text>
           </TouchableOpacity>
@@ -122,11 +121,13 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handleSubmit(onSubmit)}
-        className={`w-full py-4 rounded-3xl items-center justify-center mt-auto ${
-          isStep2Disabled ? "bg-[#9CA3AF]" : "bg-secondary"
+        className={`mt-auto w-full items-center justify-center rounded-3xl py-4 ${
+          isStep2Disabled ? 'bg-[#9CA3AF]' : 'bg-secondary'
         }`}
       >
-        <Text className="text-lg font-cairo-bold text-white">التحقق من الرمز</Text>
+        <Text className="font-cairo-bold text-lg text-white">
+          التحقق من الرمز
+        </Text>
       </TouchableOpacity>
     </View>
   );
