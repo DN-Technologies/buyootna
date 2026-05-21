@@ -7,7 +7,13 @@ import {
   Dimensions,
 } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { Feather } from "@expo/vector-icons";
+import {
+  HomeIcon,
+  SearchIcon,
+  ActivityIcon,
+  MenuIcon,
+  AddIcon,
+} from "../../assets/icons/tab";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
@@ -97,27 +103,29 @@ export default function CustomTabBar({
             }
           };
 
-          let iconName: keyof typeof Feather.glyphMap = "help-circle";
+          let IconComponent = HomeIcon;
           let label = "";
 
           switch (route.name) {
             case "home":
-              iconName = "home";
+              IconComponent = HomeIcon;
               label = "الرئيسية";
               break;
             case "explore":
-              iconName = "search";
+              IconComponent = SearchIcon;
               label = "استكشف";
               break;
             case "chats":
-              iconName = "file-text";
+              IconComponent = ActivityIcon;
               label = "نشاطي";
               break;
             case "profile":
-              iconName = "menu";
+              IconComponent = MenuIcon;
               label = "المزيد";
               break;
           }
+
+          const iconColor = isFocused ? "#FFD084" : "#FFFFFF";
 
           return (
             <TouchableOpacity
@@ -126,13 +134,9 @@ export default function CustomTabBar({
               onPress={onPress}
               className="flex-1 items-center justify-center space-y-1"
             >
-              <Feather
-                name={iconName}
-                size={24}
-                color={isFocused ? "#EAB308" : "#FFFFFF"}
-              />
+              <IconComponent size={24} color={iconColor} />
               <Text
-                className={`text-[11px] font-cairo-bold ${isFocused ? "text-[#EAB308]" : "text-white"}`}
+                className={`text-[11px] font-cairo-bold ${isFocused ? "text-[#FFD084]" : "text-white"}`}
               >
                 {label}
               </Text>
@@ -159,7 +163,10 @@ export default function CustomTabBar({
             shadowRadius: 5,
           }}
         >
-          <Feather name="plus" size={32} color="white" />
+          <AddIcon
+            size={38}
+            color={state.index === addRouteIndex ? "#FFD084" : "#FFFFFF"}
+          />
         </TouchableOpacity>
       )}
     </View>
