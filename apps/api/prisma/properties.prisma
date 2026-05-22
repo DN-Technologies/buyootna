@@ -1,0 +1,27 @@
+model Property {
+    id String @id @default(uuid())
+
+    // Classification
+    type       ListingType
+    category   PropertyCategory
+    isFeatured Boolean          @default(false)
+
+    // Core Details
+    price       Float
+    area        Float
+    beds        Int
+    baths       Int
+    location    String
+    description String @db.Text
+
+    // Media (Array of S3 URLs)
+    images String[]
+
+    // Relations
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

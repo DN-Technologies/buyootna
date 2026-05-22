@@ -2,3 +2,15 @@ enum Role {
   INDIVIDUAL
   COMPANY
 }
+
+enum ListingType {
+  SALE // بيع
+  RENT // إيجار
+  EXCHANGE // بدل
+}
+
+enum PropertyCategory {
+  RESIDENTIAL // سكني
+  COMMERCIAL // تجاري
+  INVESTMENT // استثماري
+}

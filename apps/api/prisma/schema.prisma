@@ -13,12 +13,14 @@ model User {
   password String
   role     Role
 
+  // Relation
   individualProfile IndividualProfile?
   companyProfile    CompanyProfile?
+  otpCode           OtpCode?
+  properties        Property[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  otpCode   OtpCode?
 }
 
 model IndividualProfile {
