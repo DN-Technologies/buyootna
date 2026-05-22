@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { verifyInstallation } from 'nativewind';
 import { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
@@ -9,8 +10,6 @@ import Animated, {
   withDelay,
   withTiming,
 } from 'react-native-reanimated';
-
-import { verifyInstallation } from 'nativewind';
 
 import AppLogo from '@/core/components/AppLogo';
 

@@ -1,5 +1,13 @@
-import { View, Text, TouchableOpacity, Image, DimensionValue } from 'react-native';
-import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import {
+  DimensionValue,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { HeartIcon } from '@/assets/icons/home/cards';
 
 export interface CompanyCardProps {
   id: string;
@@ -8,7 +16,7 @@ export interface CompanyCardProps {
   rating: number;
   projectsCount: string; // e.g., '+65'
   serviceArea: string; // e.g., 'يخدم جميع المناطق'
-  logoUrl: string;
+  logoUrl: any;
   isVerified?: boolean;
   isFavorite?: boolean;
   cardWidth?: DimensionValue;
@@ -35,7 +43,7 @@ export default function CompanyCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      className="mb-4 w-full rounded-[24px] border border-gray-100 bg-white p-4"
+      className="mb-4 w-full rounded-sm border border-gray-100 bg-white p-4"
       style={{
         width: cardWidth,
         elevation: 2,
@@ -47,90 +55,92 @@ export default function CompanyCard({
     >
       {/* --- 1. Top Section: Header --- */}
       <View className="mb-4 flex-row items-start justify-between">
-        {/* Top Left: Rating */}
-        <View className="mt-1 flex-row items-center gap-1">
-          <FontAwesome5 name="star" size={12} color="#F59E0B" solid />
-          <Text className="font-cairo-bold text-sm text-[#111111]">
-            {rating}
-          </Text>
-        </View>
-
         {/* Top Right: Logo & Info */}
-        <View className="flex-1 flex-row items-center justify-end pl-4">
-          <View className="mr-3 items-end">
-            <View className="mb-1 flex-row items-center gap-1">
+        <View className="flex-row">
+          {/* Logo Box */}
+          <View className="h-16 w-16 overflow-hidden rounded-sm">
+            <Image
+              source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          </View>
+          <View className="ml-3 mr-1 items-start">
+            <View className="flex-row items-center gap-1">
+              <Text className="font-cairo-semibold text-base leading-[28px] text-[#111111]">
+                {name}
+              </Text>
               {isVerified && (
                 <MaterialIcons name="verified" size={16} color="#22C55E" />
               )}
-              <Text className="font-cairo-bold text-base text-[#111111]">
-                {name}
-              </Text>
             </View>
-            <Text className="text-right font-cairo-semibold text-xs text-[#6B6A6A]">
+            <Text className="text-right font-cairo-semibold text-[11px] text-[#6B6A6A]">
               {category}
             </Text>
           </View>
+        </View>
 
-          {/* Logo Box */}
-          <View className="h-12 w-12 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-            <Image
-              source={{ uri: logoUrl }}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="contain"
-            />
-          </View>
+        {/* Top Left: Rating */}
+        <View className="mt-1 flex-row items-center gap-1">
+          <FontAwesome5 name="star" size={12} color="#F59E0B" solid />
+          <Text className="text-sm font-normal text-[#111111]">{rating}</Text>
         </View>
       </View>
 
       {/* --- 2. Middle Section: Stats & Heart --- */}
       <View className="mb-4 flex-row items-center justify-between px-1">
-        {/* Left: Heart Icon */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={onFavorite}
-          className="p-1"
-        >
-          <FontAwesome5
-            name="heart"
-            size={20}
-            color={isFavorite ? '#EF4444' : '#94A3B8'}
-            solid={isFavorite}
-          />
-        </TouchableOpacity>
-
-        {/* Right: Stats Row */}
-        <View className="flex-1 flex-row items-center justify-end gap-4 pr-2">
-          <View className="items-center">
-            <Text className="mb-0.5 font-cairo-bold text-xs text-[#111111]">
-              {projectsCount}
+        <View className="w-full flex-row gap-4 pr-2">
+          <View className="items-start">
+            <Text className="font-cairo-bold text-xs text-[#111111]">
+              {serviceArea}
             </Text>
-            <Text className="font-cairo-semibold text-[10px] text-[#94A3B8]">
-              مشاريع مكتملة
+            <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
+              النطاق
             </Text>
           </View>
 
           {/* Vertical Divider */}
-          <View className="mx-2 h-8 w-[1px] bg-gray-200" />
+          <View className="flex-1 items-center justify-center">
+            <View className="mx-2 h-8 w-[1px] max-w-[1px] bg-[#6B6A6A]" />
+          </View>
 
-          <View className="items-center">
-            <Text className="mb-0.5 font-cairo-bold text-xs text-[#111111]">
-              {serviceArea}
-            </Text>
-            <Text className="font-cairo-semibold text-[10px] text-[#94A3B8]">
-              النطاق
-            </Text>
+          <View className="items-end">
+            <View className="items-start">
+              <Text className="font-cairo-bold text-xs text-[#111111]">
+                {projectsCount}
+              </Text>
+              <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
+                مشاريع مكتملة
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
       {/* --- 3. Bottom Section: Action Button --- */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onQuoteRequest}
-        className="w-full flex-row items-center justify-center space-x-2 space-x-reverse rounded-xl bg-[#15304D] py-3.5"
-      >
-        <Text className="font-cairo-bold text-sm text-white">طلب عرض سعر</Text>
-      </TouchableOpacity>
+      <View className="flex-row items-center gap-3">
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onQuoteRequest}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-3.5"
+        >
+          <Text className="font-cairo-bold text-sm leading-[22px] text-white">
+            طلب عرض سعر
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onFavorite}
+          className="h-10 w-10 items-center justify-center p-1"
+        >
+          <HeartIcon
+            size={22}
+            color={isFavorite ? '#BA0003' : '#94A3B8'}
+            filled={isFavorite}
+          />
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 }

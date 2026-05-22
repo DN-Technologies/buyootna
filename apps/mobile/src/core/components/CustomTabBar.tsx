@@ -1,21 +1,22 @@
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import {
-  View,
+  Dimensions,
+  Platform,
   Text,
   TouchableOpacity,
-  Platform,
-  Dimensions,
+  View,
 } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import {
-  HomeIcon,
-  SearchIcon,
-  ActivityIcon,
-  MenuIcon,
-  AddIcon,
-} from '@/assets/icons/tab/index';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+
+import {
+  ActivityIcon,
+  AddIcon,
+  HomeIcon,
+  MenuIcon,
+  SearchIcon,
+} from '@/assets/icons/tab/index';
 
 const { width } = Dimensions.get('window');
 

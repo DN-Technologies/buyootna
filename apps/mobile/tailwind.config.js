@@ -24,6 +24,7 @@ module.exports = {
         "readex-pro-semibold": ["ReadexPro_600SemiBold"],
         "readex-pro-extralight": ["ReadexPro_200ExtraLight"],
         "readex-pro-light": ["ReadexPro_300Light"],
+        almarai: ["Almarai_400Regular"],
       },
       colors: {
         primary: "#0B2239",

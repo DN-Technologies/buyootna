@@ -1,26 +1,30 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-  View,
+  DimensionValue,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
   Text,
   TouchableOpacity,
-  Image,
-  ScrollView,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  Dimensions,
-  DimensionValue,
+  useWindowDimensions,
+  View,
 } from 'react-native';
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-// Card width is screen width minus padding (approx 40px for left/right margins)
-const CARD_WIDTH = SCREEN_WIDTH - 40;
-
-// Make it highly reusable with strict TypeScript props
+import {
+  BathIcon,
+  BedIcon,
+  CallIcon,
+  ChatIcon,
+  HeartIcon,
+  LocationIcon,
+  WhatsappIcon,
+} from '@/assets/icons/home/cards';
 export interface PropertyCardProps {
   id: string;
-  images: string[];
-  price: number;
+  images: (string | number)[];
+  price: number | string;
   companyName: string;
   isFeatured?: boolean;
   type?: string; // e.g., 'سكني'
@@ -28,6 +32,7 @@ export interface PropertyCardProps {
   beds: number;
   baths: number;
   location: string;
+  timeAgo?: string;
   cardWidth?: DimensionValue; // Allow custom width for horizontal scrolling
   onPress?: () => void;
   onFavorite?: () => void;
@@ -44,12 +49,18 @@ export default function PropertyCard({
   beds,
   baths,
   location,
+  timeAgo = 'منذ ساعتين',
   cardWidth = '100%',
   onPress,
   onFavorite,
   onShare,
 }: PropertyCardProps) {
+  const { width: windowWidth } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+
+  const fallbackWidth = windowWidth - 40;
+  const imageWidth = typeof cardWidth === 'number' ? cardWidth : (measuredWidth || fallbackWidth);
 
   // Update pagination dots when scrolling images
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -62,9 +73,15 @@ export default function PropertyCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={onPress}
-      className="mb-5 w-full overflow-hidden rounded-[24px] border border-gray-200 bg-white"
+      className="mb-5 w-full overflow-hidden rounded-md border border-gray-200 bg-white"
+      onLayout={(e) => {
+        const { width } = e.nativeEvent.layout;
+        if (width > 0 && width !== measuredWidth) {
+          setMeasuredWidth(width);
+        }
+      }}
       style={{
-        width: cardWidth, // Applies the 85% width when inside a horizontal list
+        width: cardWidth, // Applies the 75% width when inside a horizontal list
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -80,14 +97,13 @@ export default function PropertyCard({
           showsHorizontalScrollIndicator={false}
           onScroll={handleScroll}
           scrollEventThrottle={16}
-          //   className="h-full w-full"
         >
           {images.map((img, index) => (
             <Image
               key={index}
-              source={{ uri: img }}
+              source={typeof img === 'string' ? { uri: img } : img}
               style={{
-                width: typeof cardWidth === 'number' ? cardWidth : 350,
+                width: imageWidth,
                 height: '100%',
               }}
               resizeMode="cover"
@@ -97,28 +113,62 @@ export default function PropertyCard({
 
         {/* Absolute Top Right: Badges */}
         <View className="absolute right-3 top-3 flex-row gap-2">
-          {isFeatured && (
-            <View className="rounded-full bg-[#F59E0B] px-3 py-1">
-              <Text className="font-cairo-bold text-[10px] text-white">
-                مميز
-              </Text>
-            </View>
-          )}
-          <View className="rounded-full bg-white/90 px-3 py-1">
-            <Text className="font-cairo-bold text-[10px] text-[#111111]">
+          <View
+            style={{
+              height: 25,
+              minWidth: 55,
+              paddingHorizontal: 10,
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              borderTopLeftRadius: 10,
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 0,
+              borderBottomLeftRadius: 10,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Text className="font-almarai text-[12px] leading-[14.4px] text-[#111111]">
               {type}
             </Text>
           </View>
+          {isFeatured && (
+            <LinearGradient
+              colors={['#FF8D28', '#FACC15']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{
+                width: 55,
+                height: 25,
+                borderTopLeftRadius: 8,
+                borderTopRightRadius: 10,
+                borderBottomRightRadius: 10,
+                borderBottomLeftRadius: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text className="font-almarai text-[12px] leading-[14.4px] text-[#111111]">
+                مميز
+              </Text>
+            </LinearGradient>
+          )}
         </View>
 
         {/* Absolute Top Left: Actions (Heart & Share) */}
-        <View className="absolute left-3 top-3 flex-row space-x-2 space-x-reverse">
+        <View className="absolute left-3 top-3 flex-row gap-2">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={onFavorite}
-            className="h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm"
+            style={{
+              height: 25,
+              minWidth: 25,
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 8,
+            }}
           >
-            <Feather name="heart" size={16} color="#111111" />
+            <HeartIcon color="#111111" size={16} />
           </TouchableOpacity>
         </View>
 
@@ -131,59 +181,66 @@ export default function PropertyCard({
             />
           ))}
         </View>
+        <View className="absolute bottom-0 left-0 right-0 h-2 w-full rounded-t-[40px] bg-white" />
       </View>
 
       {/* --- 2. Content Info Section --- */}
-      <View className="p-4">
+      <View className="px-4 py-2">
         {/* Price & Company Row */}
-        <View className="mb-3 flex-row items-start justify-between">
-          <View className="flex-1">
+        <View className="mb-3 flex-row justify-between">
+          <View className="items-start">
             <Text className="font-cairo-bold text-xl text-[#111111]">
-              {price.toLocaleString()}{' '}
-              <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
-                د.ك
-              </Text>
+              {typeof price === 'number' ? (
+                <>
+                  {price.toLocaleString()}{' '}
+                  <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
+                    د.ك
+                  </Text>
+                </>
+              ) : (
+                price
+              )}
             </Text>
             <Text className="mt-1 font-cairo-semibold text-xs text-[#6B6A6A]">
               {companyName}
             </Text>
           </View>
-          {/* Note: Left side is empty in design, but you could put a "Time ago" text here */}
+          <Text className="mt-1.5 font-cairo-semibold text-xs text-[#6B6A6A]">
+            {timeAgo}
+          </Text>
         </View>
 
         {/* Specs Row (Area, Beds, Baths) */}
-        <View className="mb-3 flex-row items-center gap-4">
+        <View className="mb-2 flex-row items-center gap-3">
           <View className="flex-row items-center gap-1">
-            <FontAwesome5 name="ruler-combined" size={12} color="#94A3B8" />
-            <Text className="font-cairo-semibold text-xs text-[#111111]">
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
+              شقة •
+            </Text>
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
               {area} م²
             </Text>
           </View>
 
-          <View className="h-3 w-[1px] bg-gray-300" />
+          <View className="h-3 w-[1px] bg-[#111111]" />
 
-          <View className="flex-row items-center gap-1">
-            <FontAwesome5 name="bed" size={12} color="#94A3B8" />
-            <Text className="font-cairo-semibold text-xs text-[#111111]">
-              {beds}
-            </Text>
+          <View className="flex-row items-center gap-1.5">
+            <BedIcon color="#111111" size={16} />
+            <Text className="text-sm font-normal text-[#111111]">{beds}</Text>
           </View>
 
-          <View className="h-3 w-[1px] bg-gray-300" />
+          <View className="h-3 w-[1px] bg-[#111111]" />
 
-          <View className="flex-row items-center space-x-1 space-x-reverse">
-            <FontAwesome5 name="bath" size={12} color="#94A3B8" />
-            <Text className="font-cairo-semibold text-xs text-[#111111]">
-              {baths}
-            </Text>
+          <View className="flex-row items-center gap-1.5">
+            <BathIcon color="#111111" size={16} />
+            <Text className="text-sm font-normal text-[#111111]">{baths}</Text>
           </View>
         </View>
 
         {/* Location Row */}
-        <View className="mb-4 flex-row items-center gap-1.5">
-          <Feather name="map-pin" size={12} color="#94A3B8" />
+        <View className="mb-1 flex-row items-center gap-1.5">
+          <LocationIcon color="#6B6A6A" size={16} />
           <Text
-            className="font-cairo-semibold text-xs text-[#6B6A6A]"
+            className="font-cairo-medium text-sm leading-[23px] text-[#6B6A6A]"
             numberOfLines={1}
           >
             {location}
@@ -194,26 +251,26 @@ export default function PropertyCard({
         <View className="flex-row items-center justify-between gap-2 pt-2">
           {/* WhatsApp Button (Green Outline) */}
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center rounded-xl border border-green-500 bg-green-50/30 py-2.5"
+            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
             activeOpacity={0.7}
           >
-            <FontAwesome5 name="whatsapp" size={16} color="#22C55E" />
+            <WhatsappIcon size={20} />
           </TouchableOpacity>
 
           {/* Phone Button (Gray Outline) */}
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center rounded-xl border border-gray-300 py-2.5"
+            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
             activeOpacity={0.7}
           >
-            <Feather name="phone" size={16} color="#64748B" />
+            <CallIcon color="#15304D" size={16} />
           </TouchableOpacity>
 
           {/* Message/Chat Button (Gold Outline) */}
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-center rounded-xl border border-[#EAB308] py-2.5"
+            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#B28648]"
             activeOpacity={0.7}
           >
-            <Feather name="message-square" size={16} color="#EAB308" />
+            <ChatIcon color="#B28648" size={18} />
           </TouchableOpacity>
         </View>
       </View>
