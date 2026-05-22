@@ -19,7 +19,6 @@ import type { User } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Controller('properties')
-@UseGuards(AuthGuard('jwt')) // Locks down all endpoints in this controller
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 

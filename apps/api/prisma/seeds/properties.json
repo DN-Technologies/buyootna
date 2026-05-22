@@ -1,0 +1,847 @@
+[
+  {
+    "id": "1",
+    "images": [
+      17,
+      15,
+      14
+    ],
+    "price": 300,
+    "companyName": "الدار العقارية",
+    "isFeatured": true,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 440,
+    "beds": 0,
+    "baths": 4,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "2",
+    "images": [
+      38,
+      1,
+      35
+    ],
+    "price": 240000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 240,
+    "beds": 3,
+    "baths": 3,
+    "location": "المهبولة، قطعة 1، شارع الساحل",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "3",
+    "images": [
+      27,
+      21,
+      17
+    ],
+    "price": 500,
+    "companyName": "الدار العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 310,
+    "beds": 0,
+    "baths": 1,
+    "location": "الفروانية، قطعة 4، مقابل الجمعية",
+    "timeAgo": "منذ ساعة"
+  },
+  {
+    "id": "4",
+    "images": [
+      16,
+      2,
+      46
+    ],
+    "price": 320000,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": true,
+    "type": "بيع",
+    "category": "sale",
+    "area": 340,
+    "beds": 0,
+    "baths": 3,
+    "location": "الفنطاس، قطعة 4، بناية 12",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "5",
+    "images": [
+      42
+    ],
+    "price": 140000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 150,
+    "beds": 1,
+    "baths": 1,
+    "location": "الفروانية، قطعة 4، مقابل الجمعية",
+    "timeAgo": "منذ يومين"
+  },
+  {
+    "id": "6",
+    "images": [
+      23
+    ],
+    "price": 330000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 270,
+    "beds": 5,
+    "baths": 1,
+    "location": "الشعب البحري، شارع الخليج العربي",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "7",
+    "images": [
+      29
+    ],
+    "price": 250000,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 500,
+    "beds": 5,
+    "baths": 2,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "8",
+    "images": [
+      14
+    ],
+    "price": 1500,
+    "companyName": "شركة يعقوب عبد العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 350,
+    "beds": 2,
+    "baths": 1,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "9",
+    "images": [
+      41,
+      29
+    ],
+    "price": 410000,
+    "companyName": "الدار العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 180,
+    "beds": 1,
+    "baths": 3,
+    "location": "بيان، قطعة 2، شارع 10",
+    "timeAgo": "منذ 30 دقيقة"
+  },
+  {
+    "id": "10",
+    "images": [
+      14,
+      8
+    ],
+    "price": 900,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": true,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 130,
+    "beds": 0,
+    "baths": 2,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "11",
+    "images": [
+      4,
+      24,
+      24
+    ],
+    "price": 900,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 450,
+    "beds": 0,
+    "baths": 1,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "12",
+    "images": [
+      21,
+      7,
+      18
+    ],
+    "price": 1500,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 390,
+    "beds": 0,
+    "baths": 3,
+    "location": "الروضة، قطعة 3، شارع دمشق",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "13",
+    "images": [
+      19,
+      40,
+      32
+    ],
+    "price": 160000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 330,
+    "beds": 1,
+    "baths": 1,
+    "location": "الشعب البحري، شارع الخليج العربي",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "14",
+    "images": [
+      19,
+      15
+    ],
+    "price": 170000,
+    "companyName": "شركة يعقوب عبد العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 460,
+    "beds": 0,
+    "baths": 1,
+    "location": "بيان، قطعة 2، شارع 10",
+    "timeAgo": "منذ 5 ساعات"
+  },
+  {
+    "id": "15",
+    "images": [
+      49,
+      8,
+      8
+    ],
+    "price": 1500,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 260,
+    "beds": 4,
+    "baths": 4,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "16",
+    "images": [
+      45
+    ],
+    "price": 1400,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 330,
+    "beds": 3,
+    "baths": 4,
+    "location": "حولي، شارع تونس، مقابل المجمع",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "17",
+    "images": [
+      37
+    ],
+    "price": 310000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 100,
+    "beds": 0,
+    "baths": 1,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ ساعة"
+  },
+  {
+    "id": "18",
+    "images": [
+      15,
+      17,
+      42
+    ],
+    "price": 120000,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": false,
+    "type": "بدل",
+    "category": "exchange",
+    "area": 440,
+    "beds": 1,
+    "baths": 4,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ 5 ساعات"
+  },
+  {
+    "id": "19",
+    "images": [
+      6
+    ],
+    "price": 600,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 370,
+    "beds": 3,
+    "baths": 4,
+    "location": "الفنطاس، قطعة 4، بناية 12",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "20",
+    "images": [
+      3
+    ],
+    "price": 1300,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 160,
+    "beds": 1,
+    "baths": 2,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "21",
+    "images": [
+      17
+    ],
+    "price": 370000,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 140,
+    "beds": 3,
+    "baths": 1,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "22",
+    "images": [
+      10
+    ],
+    "price": 400,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 400,
+    "beds": 1,
+    "baths": 4,
+    "location": "العديلية، قطعة 3، شارع 12",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "23",
+    "images": [
+      16,
+      29
+    ],
+    "price": 100000,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 450,
+    "beds": 5,
+    "baths": 4,
+    "location": "الجابرية، قطعة 4، شارع 105",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "24",
+    "images": [
+      47,
+      34,
+      3
+    ],
+    "price": 130000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": true,
+    "type": "بيع",
+    "category": "sale",
+    "area": 130,
+    "beds": 4,
+    "baths": 4,
+    "location": "الروضة، قطعة 3، شارع دمشق",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "25",
+    "images": [
+      11
+    ],
+    "price": 420000,
+    "companyName": "شركة الاحمدي العقارية",
+    "isFeatured": true,
+    "type": "بيع",
+    "category": "sale",
+    "area": 250,
+    "beds": 3,
+    "baths": 1,
+    "location": "العديلية، قطعة 3، شارع 12",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "26",
+    "images": [
+      5,
+      26,
+      42
+    ],
+    "price": 120000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 230,
+    "beds": 5,
+    "baths": 3,
+    "location": "شرق، شارع احمد الجابر",
+    "timeAgo": "منذ يومين"
+  },
+  {
+    "id": "27",
+    "images": [
+      20,
+      48
+    ],
+    "price": 290000,
+    "companyName": "شركة الاحمدي العقارية",
+    "isFeatured": true,
+    "type": "بيع",
+    "category": "sale",
+    "area": 390,
+    "beds": 4,
+    "baths": 1,
+    "location": "حولي، شارع تونس، مقابل المجمع",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "28",
+    "images": [
+      22
+    ],
+    "price": 260000,
+    "companyName": "شركة الاحمدي العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 330,
+    "beds": 2,
+    "baths": 2,
+    "location": "المنقف، قطعة 1، قسيمة 23",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "29",
+    "images": [
+      33,
+      0,
+      42
+    ],
+    "price": 1200,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": true,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 180,
+    "beds": 2,
+    "baths": 1,
+    "location": "العديلية، قطعة 3، شارع 12",
+    "timeAgo": "منذ ساعة"
+  },
+  {
+    "id": "30",
+    "images": [
+      18,
+      38
+    ],
+    "price": 500,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 230,
+    "beds": 5,
+    "baths": 3,
+    "location": "الروضة، قطعة 3، شارع دمشق",
+    "timeAgo": "منذ 5 ساعات"
+  },
+  {
+    "id": "31",
+    "images": [
+      40
+    ],
+    "price": 130000,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 120,
+    "beds": 0,
+    "baths": 3,
+    "location": "المهبولة، قطعة 1، شارع الساحل",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "32",
+    "images": [
+      47
+    ],
+    "price": 700,
+    "companyName": "شركة ريماس العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 450,
+    "beds": 0,
+    "baths": 1,
+    "location": "حولي، شارع تونس، مقابل المجمع",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "33",
+    "images": [
+      35,
+      9,
+      27
+    ],
+    "price": 330000,
+    "companyName": "الدار العقارية",
+    "isFeatured": true,
+    "type": "بيع",
+    "category": "sale",
+    "area": 290,
+    "beds": 2,
+    "baths": 1,
+    "location": "العديلية، قطعة 3، شارع 12",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "34",
+    "images": [
+      6,
+      22,
+      49
+    ],
+    "price": 250000,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 250,
+    "beds": 1,
+    "baths": 2,
+    "location": "العديلية، قطعة 3، شارع 12",
+    "timeAgo": "منذ 30 دقيقة"
+  },
+  {
+    "id": "35",
+    "images": [
+      42,
+      47
+    ],
+    "price": 310000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 200,
+    "beds": 5,
+    "baths": 1,
+    "location": "الفروانية، قطعة 4، مقابل الجمعية",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "36",
+    "images": [
+      29
+    ],
+    "price": 600,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 240,
+    "beds": 1,
+    "baths": 1,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "37",
+    "images": [
+      49
+    ],
+    "price": 270000,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 420,
+    "beds": 3,
+    "baths": 3,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ ساعة"
+  },
+  {
+    "id": "38",
+    "images": [
+      37
+    ],
+    "price": 700,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": true,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 160,
+    "beds": 4,
+    "baths": 4,
+    "location": "الرميثية، قطعة 7، شارع المدارس",
+    "timeAgo": "منذ 10 دقائق"
+  },
+  {
+    "id": "39",
+    "images": [
+      24
+    ],
+    "price": 420000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 120,
+    "beds": 5,
+    "baths": 4,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "40",
+    "images": [
+      27,
+      4
+    ],
+    "price": 160000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "بدل",
+    "category": "exchange",
+    "area": 170,
+    "beds": 5,
+    "baths": 3,
+    "location": "الروضة، قطعة 3، شارع دمشق",
+    "timeAgo": "منذ يومين"
+  },
+  {
+    "id": "41",
+    "images": [
+      44,
+      18
+    ],
+    "price": 800,
+    "companyName": "الدار العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 360,
+    "beds": 5,
+    "baths": 4,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ 3 ساعات"
+  },
+  {
+    "id": "42",
+    "images": [
+      35,
+      0
+    ],
+    "price": 700,
+    "companyName": "الشركة الكويتية للعقارات",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 230,
+    "beds": 3,
+    "baths": 3,
+    "location": "المنقف، قطعة 1، قسيمة 23",
+    "timeAgo": "منذ 5 ساعات"
+  },
+  {
+    "id": "43",
+    "images": [
+      30,
+      47,
+      10
+    ],
+    "price": 230000,
+    "companyName": "شركة الاحمدي العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 420,
+    "beds": 5,
+    "baths": 3,
+    "location": "حولي، شارع تونس، مقابل المجمع",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "44",
+    "images": [
+      9
+    ],
+    "price": 600,
+    "companyName": "شركة يعقوب عبد العقارية",
+    "isFeatured": true,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 250,
+    "beds": 3,
+    "baths": 1,
+    "location": "المنقف، قطعة 1، قسيمة 23",
+    "timeAgo": "منذ 30 دقيقة"
+  },
+  {
+    "id": "45",
+    "images": [
+      45
+    ],
+    "price": 1200,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 350,
+    "beds": 1,
+    "baths": 2,
+    "location": "مشرف، قطعة 5، شارع 20",
+    "timeAgo": "منذ ساعتين"
+  },
+  {
+    "id": "46",
+    "images": [
+      49
+    ],
+    "price": 1500,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "إيجار",
+    "category": "rent",
+    "area": 210,
+    "beds": 5,
+    "baths": 4,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "47",
+    "images": [
+      8,
+      29
+    ],
+    "price": 170000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 490,
+    "beds": 5,
+    "baths": 4,
+    "location": "الفنطاس، قطعة 4، بناية 12",
+    "timeAgo": "منذ 12 ساعة"
+  },
+  {
+    "id": "48",
+    "images": [
+      30,
+      28,
+      16
+    ],
+    "price": 200000,
+    "companyName": "شركة بابل العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 430,
+    "beds": 3,
+    "baths": 2,
+    "location": "صباح السالم، قطعة 2، قسيمة 15",
+    "timeAgo": "منذ 5 ساعات"
+  },
+  {
+    "id": "49",
+    "images": [
+      17
+    ],
+    "price": 280000,
+    "companyName": "أوتاد العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 440,
+    "beds": 0,
+    "baths": 2,
+    "location": "الجابرية، قطعة 4، شارع 105",
+    "timeAgo": "منذ يوم"
+  },
+  {
+    "id": "50",
+    "images": [
+      13,
+      4,
+      26
+    ],
+    "price": 190000,
+    "companyName": "مجموعة الأوراق العقارية",
+    "isFeatured": false,
+    "type": "بيع",
+    "category": "sale",
+    "area": 440,
+    "beds": 3,
+    "baths": 4,
+    "location": "السالمية، شارع 2، بناية 10، شقة 4",
+    "timeAgo": "منذ يوم"
+  }
+]

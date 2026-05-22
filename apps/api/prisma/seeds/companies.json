@@ -1,0 +1,719 @@
+[
+  {
+    "id": "1",
+    "name": "شركة المقاولات الكويتية",
+    "category": "بناء هيكل أسود • مقاولات عامة • خرسانات",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 5,
+    "projectsCount": "60+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 0,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "2",
+    "name": "مؤسسة البناء الحديث",
+    "category": "مقاولات عامة • بناء عمارات وقسائم",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 4.2,
+    "projectsCount": "85+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 1,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "3",
+    "name": "الرواد للهياكل والترميم",
+    "category": "بناء هيكل أسود • توسعة وترميم • مقاولات",
+    "filterTags": [
+      "building",
+      "finishing"
+    ],
+    "rating": 4.8,
+    "projectsCount": "60+",
+    "serviceArea": "الجهراء والفروانية",
+    "logoUrl": 2,
+    "isVerified": true,
+    "isFavorite": true
+  },
+  {
+    "id": "4",
+    "name": "شركة الأساسات الراسخة",
+    "category": "حفر وردم • تدعيم أساسات • خرسانات",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 3.8,
+    "projectsCount": "110+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 3,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "5",
+    "name": "المقاولون المتحدون",
+    "category": "مقاولات حكومية • بناء فلل وقسائم",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 4.8,
+    "projectsCount": "110+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 4,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "6",
+    "name": "شركة العمران والتشييد",
+    "category": "هيكل أسود مع المواد • تسليم مفتاح",
+    "filterTags": [
+      "building",
+      "finishing"
+    ],
+    "rating": 4.6,
+    "projectsCount": "110+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 5,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "7",
+    "name": "شركة القمة للمقاولات",
+    "category": "بناء وتوسعة أدوار • ترميمات عامة",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 3.5,
+    "projectsCount": "85+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 6,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "8",
+    "name": "مؤسسة صروح الشرق",
+    "category": "مقاولات بناء • خرسانة مسلحة • حفر",
+    "filterTags": [
+      "building"
+    ],
+    "rating": 4,
+    "projectsCount": "110+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 7,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "9",
+    "name": "بيت الإعمار الكويتي",
+    "category": "تصاميم هندسية • بناء قسائم • إشراف",
+    "filterTags": [
+      "building",
+      "interior_design"
+    ],
+    "rating": 3.8,
+    "projectsCount": "200+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 8,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "10",
+    "name": "شركة الإتقان للتشطيبات",
+    "category": "تشطيبات سوبر ديلوكس • صبغ وسيجما",
+    "filterTags": [
+      "finishing"
+    ],
+    "rating": 4.9,
+    "projectsCount": "120+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 9,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "11",
+    "name": "مؤسسة اللمسة الفنية",
+    "category": "أعمال مساح • سيجما خارجية • ديكورات",
+    "filterTags": [
+      "finishing",
+      "decorations"
+    ],
+    "rating": 4.8,
+    "projectsCount": "60+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 10,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "12",
+    "name": "شركة الضياء لأعمال المساح",
+    "category": "مساح داخلي وخارجي • تركيب سيراميك",
+    "filterTags": [
+      "finishing"
+    ],
+    "rating": 4.8,
+    "projectsCount": "120+",
+    "serviceArea": "الجهراء وضواحيها",
+    "logoUrl": 11,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "13",
+    "name": "الأوائل للسيجما والصبغ",
+    "category": "أصباغ إيطالية • سيجما تكس • ديكورات",
+    "filterTags": [
+      "finishing",
+      "decorations"
+    ],
+    "rating": 4.5,
+    "projectsCount": "110+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 12,
+    "isVerified": true,
+    "isFavorite": true
+  },
+  {
+    "id": "14",
+    "name": "شركة روعة التشطيب",
+    "category": "سيراميك وبورسلان • رخام • أرضيات",
+    "filterTags": [
+      "finishing"
+    ],
+    "rating": 4.2,
+    "projectsCount": "120+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 13,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "15",
+    "name": "المبتكرون للتشطيبات",
+    "category": "تسليم مفتاح • تشطيبات داخلية وخارجية",
+    "filterTags": [
+      "finishing",
+      "building"
+    ],
+    "rating": 3.8,
+    "projectsCount": "200+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 14,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "16",
+    "name": "شركة الدقة العالية",
+    "category": "عوازل مياه ورطوبة • تشطيب حمامات",
+    "filterTags": [
+      "finishing"
+    ],
+    "rating": 4.5,
+    "projectsCount": "85+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 15,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "17",
+    "name": "مؤسسة النخبة للمقاولات",
+    "category": "تركيب جبس بورد • صبغ • تشطيب كامل",
+    "filterTags": [
+      "finishing",
+      "decorations"
+    ],
+    "rating": 4.3,
+    "projectsCount": "60+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 16,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "18",
+    "name": "أركان للتصميم الداخلي",
+    "category": "تصميم داخلي • مخططات ثلاثية الأبعاد • إشراف",
+    "filterTags": [
+      "interior_design"
+    ],
+    "rating": 4.2,
+    "projectsCount": "85+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 17,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "19",
+    "name": "استوديو الإبداع الهندسي",
+    "category": "تصميم معماري • توزيع مساحات • تصميم داخلي",
+    "filterTags": [
+      "interior_design",
+      "building"
+    ],
+    "rating": 5,
+    "projectsCount": "300+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 18,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "20",
+    "name": "شركة الفراغات الذكية",
+    "category": "تصميم مودرن وكلاسيك • استغلال مساحات",
+    "filterTags": [
+      "interior_design"
+    ],
+    "rating": 3.5,
+    "projectsCount": "110+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 19,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "21",
+    "name": "مؤسسة خطوط وألوان",
+    "category": "استشارات ألوان • تصميم أثاث • ديكورات",
+    "filterTags": [
+      "interior_design",
+      "decorations"
+    ],
+    "rating": 4.6,
+    "projectsCount": "120+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 20,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "22",
+    "name": "فكرة للتصميم والاستشارات",
+    "category": "تصميم وتنفيذ صالونات وفلل • استشارات هندسية",
+    "filterTags": [
+      "interior_design"
+    ],
+    "rating": 4.9,
+    "projectsCount": "150+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 21,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "23",
+    "name": "المصممون المحترفون",
+    "category": "تصميم شقق وفلل • تنسيق حدائق • تنفيذ ديكور",
+    "filterTags": [
+      "interior_design",
+      "decorations"
+    ],
+    "rating": 5,
+    "projectsCount": "250+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 22,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "24",
+    "name": "شركة زوايا للتصميم",
+    "category": "تصميم ثلاثي الأبعاد • مخططات إضاءة • إشراف",
+    "filterTags": [
+      "interior_design"
+    ],
+    "rating": 4.8,
+    "projectsCount": "300+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 23,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "25",
+    "name": "استوديو الهام للتصميم",
+    "category": "تصميم داخلي راقي • أثاث تفصيل • تنسيق",
+    "filterTags": [
+      "interior_design"
+    ],
+    "rating": 4.9,
+    "projectsCount": "200+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 24,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "26",
+    "name": "شركة لمسات الديكور",
+    "category": "ديكورات جبسية • أسقف معلقة • إضاءة مخفية",
+    "filterTags": [
+      "decorations"
+    ],
+    "rating": 4,
+    "projectsCount": "300+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 25,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "27",
+    "name": "مؤسسة النقش اليدوي",
+    "category": "أصباغ وديكورات خشبية • بديل الخشب ورخام",
+    "filterTags": [
+      "decorations",
+      "finishing"
+    ],
+    "rating": 3.8,
+    "projectsCount": "85+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 26,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "28",
+    "name": "المهارة لأعمال الجبس",
+    "category": "قواطع جبس بورد • أسقف فرنسية • كورنيش",
+    "filterTags": [
+      "decorations"
+    ],
+    "rating": 4.6,
+    "projectsCount": "60+",
+    "serviceArea": "الجهراء وضواحيها",
+    "logoUrl": 27,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "29",
+    "name": "شركة الكريستال للديكور",
+    "category": "ورق جدران • أرضيات باركيه • ديكورات حوائط",
+    "filterTags": [
+      "decorations"
+    ],
+    "rating": 4.7,
+    "projectsCount": "300+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 28,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "30",
+    "name": "رويال للديكور والجبس",
+    "category": "تصميم وتنفيذ ديكورات كلاسيكية • جبس مغربي",
+    "filterTags": [
+      "decorations",
+      "interior_design"
+    ],
+    "rating": 3.5,
+    "projectsCount": "60+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 29,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "31",
+    "name": "ورق الحائط والموزاييك",
+    "category": "تركيب ورق جدران ثلاثي الأبعاد • موزاييك",
+    "filterTags": [
+      "decorations"
+    ],
+    "rating": 4.3,
+    "projectsCount": "150+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 30,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "32",
+    "name": "عالم الديكورات الراقية",
+    "category": "ديكورات فلل • بديل الرخام • حوائط خشبية",
+    "filterTags": [
+      "decorations"
+    ],
+    "rating": 4.7,
+    "projectsCount": "45+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 31,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "33",
+    "name": "شركة الأناقة المعمارية",
+    "category": "ديكورات خارجية • جي آر سي • حجر طبيعي",
+    "filterTags": [
+      "decorations",
+      "building"
+    ],
+    "rating": 4.3,
+    "projectsCount": "300+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 32,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "34",
+    "name": "السريع لنقل العفش",
+    "category": "نقل أثاث • فك وتركيب • تغليف كرتون",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 3.8,
+    "projectsCount": "120+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 33,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "35",
+    "name": "شركة الأمان للنقل والتغليف",
+    "category": "نقل أثاث منزلي ومكتبي • سيارات مغلقة",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 4.2,
+    "projectsCount": "85+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 34,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "36",
+    "name": "نقليات الخليج",
+    "category": "شحن ونقل • هاف لوري • نقل مواد بناء",
+    "filterTags": [
+      "transport",
+      "building"
+    ],
+    "rating": 4.8,
+    "projectsCount": "45+",
+    "serviceArea": "الجهراء وضواحيها",
+    "logoUrl": 35,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "37",
+    "name": "مؤسسة الثقة لنقل الأثاث",
+    "category": "نقل عفش دقة وأمان • نجارين متخصصين",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 3.8,
+    "projectsCount": "150+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 36,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "38",
+    "name": "الناقل السريع",
+    "category": "نقل بضائع وأثاث • خدمة 24 ساعة • هاف لوري",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 4.3,
+    "projectsCount": "110+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 37,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "39",
+    "name": "شركة الفهد للخدمات اللوجستية",
+    "category": "توزيع ونقل بضائع • سيارات مبردة وعادية",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 3.8,
+    "projectsCount": "60+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 38,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "40",
+    "name": "نقليات الكويت الكبرى",
+    "category": "نقل بري • شاحنات ثقيلة • نقل مواد إنشائية",
+    "filterTags": [
+      "transport",
+      "building"
+    ],
+    "rating": 4.8,
+    "projectsCount": "85+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 39,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "41",
+    "name": "شركة المدار لنقل البضائع",
+    "category": "نقل بضائع خفيفة وثقيلة • كرين ورافعات",
+    "filterTags": [
+      "transport"
+    ],
+    "rating": 4.8,
+    "projectsCount": "85+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 40,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "42",
+    "name": "شركة الحلول البيئية",
+    "category": "مكافحة حشرات والقوارض • تعقيم وتطهير",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.6,
+    "projectsCount": "110+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 41,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "43",
+    "name": "الصيانة السريعة للسباكة",
+    "category": "أعمال صحي وسباكة • تسليك مجاري • تركيب مضخات",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.2,
+    "projectsCount": "120+",
+    "serviceArea": "محافظة العاصمة وحولي",
+    "logoUrl": 42,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "44",
+    "name": "شركة التكييف المركزي الحديث",
+    "category": "تركيب وصيانة تكييف • دكتات تكييف • غسيل فلاتر",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.5,
+    "projectsCount": "250+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 43,
+    "isVerified": false,
+    "isFavorite": false
+  },
+  {
+    "id": "45",
+    "name": "مؤسسة التيار الكهربائي",
+    "category": "تمديدات كهربائية • صيانة أعطال • تركيب إضاءة",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.2,
+    "projectsCount": "110+",
+    "serviceArea": "الجهراء وضواحيها",
+    "logoUrl": 44,
+    "isVerified": true,
+    "isFavorite": true
+  },
+  {
+    "id": "46",
+    "name": "شركة النظافة الشاملة",
+    "category": "تنظيف قسائم وعمارات • غسيل سجاد وكنب",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.8,
+    "projectsCount": "110+",
+    "serviceArea": "محافظة الأحمدي ومبارك الكبير",
+    "logoUrl": 45,
+    "isVerified": true,
+    "isFavorite": true
+  },
+  {
+    "id": "47",
+    "name": "الفنيون المتخصصون للمصاعد",
+    "category": "تركيب وصيانة مصاعد • قطع غيار مكفولة",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 5,
+    "projectsCount": "45+",
+    "serviceArea": "المنطقة العاشرة وضواحيها",
+    "logoUrl": 46,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "48",
+    "name": "شركة عزل الأسطح والمباني",
+    "category": "عزل مائي وحراري • عازل طربال • حماية المباني",
+    "filterTags": [
+      "other",
+      "building"
+    ],
+    "rating": 4.5,
+    "projectsCount": "60+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 47,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "49",
+    "name": "شركة الأنظمة الأمنية الذكية",
+    "category": "تركيب كاميرات مراقبة • إنتركم • أجهزة إنذار",
+    "filterTags": [
+      "other"
+    ],
+    "rating": 4.7,
+    "projectsCount": "110+",
+    "serviceArea": "الفروانية وضواحيها",
+    "logoUrl": 48,
+    "isVerified": true,
+    "isFavorite": false
+  },
+  {
+    "id": "50",
+    "name": "مجموعة الغانم للتجارة والصيانة",
+    "category": "مقاولات وصيانة عامة • تكييف وصحي • أصباغ",
+    "filterTags": [
+      "other",
+      "finishing"
+    ],
+    "rating": 4.9,
+    "projectsCount": "250+",
+    "serviceArea": "يخدم جميع المناطق",
+    "logoUrl": 49,
+    "isVerified": true,
+    "isFavorite": false
+  }
+]
