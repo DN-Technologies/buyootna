@@ -51,4 +51,30 @@ export class StorageService {
       throw new InternalServerErrorException('فشل في رفع الملف');
     }
   }
+  // Multiple File Uploads
+  async uploadMultipleFiles(
+    files: Express.Multer.File[],
+    folder: string,
+  ): Promise<string[]> {
+    if (!files || files.length === 0) {
+      return [];
+    }
+
+    try {
+      // Map over the array of files and call the single upload logic for each one.
+      // We use Promise.all to execute all S3 uploads in parallel for maximum speed.
+      const uploadPromises = files.map((file) => this.uploadFile(file, folder));
+
+      // Wait for all uploads to finish, then return the array of resulting S3 URLs
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('S3 Multiple Upload Error:', error);
+      // If even one fails, we throw an error to prevent partial listing creation
+      throw new InternalServerErrorException(
+        'فشل في رفع بعض الصور، يرجى المحاولة مرة أخرى',
+      );
+    }
+  }
 }
