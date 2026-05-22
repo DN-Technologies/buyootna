@@ -15,6 +15,73 @@ export class PropertiesService {
     private readonly storageService: StorageService,
   ) {}
 
+  // --- PUBLIC FEED ---
+  async getHomeFeed() {
+    // Run all 4 queries concurrently for maximum speed
+    const [saleProperties, rentProperties, exchangeProperties, topCompanies] =
+      await Promise.all([
+        // 1. Latest 5 properties for SALE
+        this.prisma.property.findMany({
+          where: { type: 'SALE' },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          include: {
+            user: {
+              select: {
+                companyProfile: { select: { name: true } },
+              },
+            },
+          },
+        }),
+
+        // 2. Latest 5 properties for RENT
+        this.prisma.property.findMany({
+          where: { type: 'RENT' },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          include: {
+            user: {
+              select: {
+                companyProfile: { select: { name: true } },
+              },
+            },
+          },
+        }),
+
+        // 3. Latest 5 properties for EXCHANGE
+        this.prisma.property.findMany({
+          where: { type: 'EXCHANGE' },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          include: {
+            user: {
+              select: {
+                companyProfile: { select: { name: true } },
+              },
+            },
+          },
+        }),
+
+        // 4. Top 5 Companies (Users with Role = Company who have a profile)
+        this.prisma.user.findMany({
+          where: { role: 'COMPANY', companyProfile: { isNot: null } },
+          orderBy: { createdAt: 'desc' },
+          take: 5,
+          include: {
+            companyProfile: true,
+          },
+        }),
+      ]);
+
+    // Format the response to perfetly match what the React Native app expects
+    return {
+      sale: this.formatProperties(saleProperties),
+      rent: this.formatProperties(rentProperties),
+      exchange: this.formatProperties(exchangeProperties),
+      companies: this.formatCompanies(topCompanies),
+    };
+  }
+
   // --- CREATE ---
   async create(
     userId: string,
@@ -79,4 +146,70 @@ export class PropertiesService {
 
     return property;
   }
+
+  // --- Helpers to clean the data before sending it to the mobile app ---
+  private formatProperties(properties: PropertyWithCompanyUser[]) {
+    return properties.map((p) => ({
+      id: p.id,
+      images: p.images,
+      price: p.price,
+      // If it's a company, show their name. Otherwise, show "مستخدم" (User)
+      companyName: p.user.companyProfile
+        ? p.user.companyProfile.name
+        : 'مستخدم',
+      isFeatured: p.isFeatured,
+      type:
+        p.category === 'RESIDENTIAL'
+          ? 'سكني'
+          : p.category === 'COMMERCIAL'
+            ? 'تجاري'
+            : 'استثماري',
+      area: p.area,
+      beds: p.beds,
+      baths: p.baths,
+      location: p.location,
+    }));
+  }
+
+  private formatCompanies(companies: CompanyUserProfile[]) {
+    return companies
+      .filter((c) => c.companyProfile !== null)
+      .map((c) => ({
+        id: c.companyProfile!.id,
+        name: c.companyProfile!.name,
+        category: c.companyProfile!.services,
+        rating: 4.5, // TODO: Implement real ratings later
+        projectsCount: '+50', // TODO: Make dynamic later
+        serviceArea: c.companyProfile!.serviceAreas,
+        logoUrl: c.companyProfile!.logoUrl,
+        isVerified: true,
+      }));
+  }
+}
+
+interface PropertyWithCompanyUser {
+  id: string;
+  images: string[];
+  price: number;
+  isFeatured: boolean;
+  category: string;
+  area: number;
+  beds: number;
+  baths: number;
+  location: string;
+  user: {
+    companyProfile: {
+      name: string;
+    } | null;
+  };
+}
+
+interface CompanyUserProfile {
+  companyProfile: {
+    id: string;
+    name: string;
+    services: string;
+    serviceAreas: string;
+    logoUrl: string | null;
+  } | null;
 }
