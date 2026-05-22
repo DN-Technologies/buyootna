@@ -6,6 +6,7 @@ import { UsersModule } from './features/users/users.module';
 import { AuthModule } from './features/auth/auth.module';
 import { RecoveryModule } from './features/recovery/recovery.module';
 import { StorageModule } from './core/storage/storage.module';
+import { PropertiesModule } from './features/properties/properties.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { StorageModule } from './core/storage/storage.module';
     AuthModule,
     RecoveryModule,
     StorageModule,
+    PropertiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
