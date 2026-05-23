@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Query,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -13,6 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { User } from '@prisma/client';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
 
 @Controller('users')
 export class UsersController {
@@ -43,6 +45,11 @@ export class UsersController {
     const licenseFile = files.license ? files.license[0] : undefined;
 
     return this.usersService.registerCompany(dto, logoFile, licenseFile);
+  }
+
+  @Get('companies')
+  async findAllCompanies(@Query() filters: GetCompaniesFilterDto) {
+    return this.usersService.findCompanies(filters);
   }
 
   @UseGuards(AuthGuard('jwt')) // This forces the request to have a valid Bearer Token

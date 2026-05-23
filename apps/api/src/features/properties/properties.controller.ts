@@ -9,6 +9,7 @@ import {
   UploadedFiles,
   Patch,
   Get,
+  Query,
 } from '@nestjs/common';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
@@ -17,6 +18,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { User } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 
 @Controller('properties')
 export class PropertiesController {
@@ -26,6 +28,12 @@ export class PropertiesController {
   @Get('feed/home')
   async getHomeFeed() {
     return this.propertiesService.getHomeFeed();
+  }
+
+  // Public Paginated Endpoint
+  @Get()
+  async findAll(@Query() filters: GetPropertiesFilterDto) {
+    return this.propertiesService.findAll(filters);
   }
 
   @UseGuards(AuthGuard('jwt'))

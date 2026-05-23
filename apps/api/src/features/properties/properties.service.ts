@@ -3,10 +3,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
+import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 
 @Injectable()
 export class PropertiesService {
@@ -79,6 +81,54 @@ export class PropertiesService {
       rent: this.formatProperties(rentProperties),
       exchange: this.formatProperties(exchangeProperties),
       companies: this.formatCompanies(topCompanies),
+    };
+  }
+
+  // --- PAGINATED FEED (For Infinite Scroll) ---
+  async findAll(filters: GetPropertiesFilterDto) {
+    const { type, page = 1, limit = 10 } = filters;
+
+    // Calculate how many records to skip based on the curretn page
+    const skip = (page - 1) * limit;
+
+    // Build the dynamic 'where' clause
+    const whereClause: Prisma.PropertyWhereInput = {};
+    if (type) {
+      whereClause.type = type;
+    }
+
+    // Run both queries concurrently: get the data AND the total count
+    const [properties, totalCount] = await Promise.all([
+      this.prisma.property.findMany({
+        where: whereClause,
+        skip: skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              companyProfile: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      this.prisma.property.count({ where: whereClause }),
+    ]);
+
+    // Return the formatted data along with pagination metadata
+    return {
+      data: this.formatProperties(properties), // Re-using our helper from HomeFeed!
+      meta: {
+        total: totalCount,
+        current: page,
+        limit: limit,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page < Math.ceil(totalCount / limit),
+      },
     };
   }
 
