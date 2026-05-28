@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-import { feedService } from '@/core/api/feed.service';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
 import { HomeFeedResponse } from '@/types/feed';
 
@@ -11,54 +10,35 @@ import RentProperties from './sliders/RentProperties';
 import SaleProperties from './sliders/SaleProperties';
 import ServiceCompanies from './sliders/ServiceCompanies';
 
-export default function HomeAll() {
-  const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+interface HomeAllProps {
+  feedData: HomeFeedResponse | null;
+  isLoading: boolean;
+}
 
-  // --- Fetch Function ---
-  const loadFeed = async () => {
-    try {
-      const data = await feedService.getHomeFeed();
-      setFeedData(data);
-    } catch (error) {
-      console.error('Failed to fetch home feed:', error);
-      // In a production app, you might set an error state here to show a retry button
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // --- Initial Load ---
-  useEffect(() => {
-    loadFeed();
-  }, []);
-
-  // --- Pull to Refresh Handle ---
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadFeed();
-    setRefreshing(false);
-  };
+export default function HomeAll({ feedData, isLoading }: HomeAllProps) {
 
   // --- Loading Screen ---
   if (isLoading) {
     return (
       <View className="flex-1 bg-white">
-        <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
-          {/* Title Placeholder */}
-          <View className="h-6 w-28 rounded-md bg-slate-200" />
-          {/* Show More Placeholder */}
-          <View className="h-4 w-16 rounded-md bg-slate-100" />
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
-        >
-          <PropertySkeleton />
-          <PropertySkeleton />
-        </ScrollView>
+        {[1, 2, 3, 4].map((key) => (
+          <View key={key} className="mb-6">
+            <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
+              {/* Title Placeholder */}
+              <View className="h-6 w-28 rounded-md bg-slate-200" />
+              {/* Show More Placeholder */}
+              <View className="h-4 w-16 rounded-md bg-slate-100" />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+            >
+              <PropertySkeleton />
+              <PropertySkeleton />
+            </ScrollView>
+          </View>
+        ))}
       </View>
     );
   }

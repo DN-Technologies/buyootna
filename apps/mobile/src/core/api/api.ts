@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { create } from 'axios';
 import { Platform } from 'react-native';
 
 import { useAuthStore } from '@/store/useAuthStore';
@@ -9,7 +9,7 @@ const DEV_API_URL =
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
 
-const apiClient = axios.create({
+const apiClient = create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {

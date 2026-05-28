@@ -30,7 +30,9 @@ interface ExchangePropertiesProps {
   initialData: PropertyDto[];
 }
 
-export default function ExchangeProperties({ initialData }: ExchangePropertiesProps) {
+export default function ExchangeProperties({
+  initialData,
+}: ExchangePropertiesProps) {
   const [data, setData] = useState<PropertyDto[]>(initialData);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -45,7 +47,11 @@ export default function ExchangeProperties({ initialData }: ExchangePropertiesPr
 
     try {
       const nextPage = page + 1;
-      const response = await feedService.getProperties('EXCHANGE', nextPage, 10);
+      const response = await feedService.getProperties(
+        'EXCHANGE',
+        nextPage,
+        10,
+      );
 
       setData((prev) => [...prev, ...response.data]); // Append new items
       setPage(response.meta.current);
@@ -74,6 +80,7 @@ export default function ExchangeProperties({ initialData }: ExchangePropertiesPr
         // Infinite Scroll Triggers:
         onEndReached={fetchMoreData}
         onEndReachedThreshold={0.5} // Trigger fetch when halfway through the last card
+        ListFooterComponentClassName="items-center justify-center"
         ListFooterComponent={
           isLoadingMore ? (
             <ActivityIndicator size="small" color="#15304D" className="ml-4" />

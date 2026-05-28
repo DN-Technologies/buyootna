@@ -24,13 +24,16 @@ export const feedService = {
    * This endpoint is public and does not require a JWT token.
    */
   getProperties: async (
-    type: 'SALE' | 'RENT' | 'EXCHANGE',
+    type?: 'SALE' | 'RENT' | 'EXCHANGE',
     page: number = 1,
     limit: number = 10,
   ): Promise<PropertiesResponse> => {
-    const response = await apiClient.get<PropertiesResponse>(
-      `/properties?type=${type}&page=${page}&limit=${limit}`,
-    );
+    let url = `/properties?page=${page}&limit=${limit}`;
+    if (type) {
+      url = `/properties?type=${type}&page=${page}&limit=${limit}`;
+    }
+    console.log('URL', url);
+    const response = await apiClient.get<PropertiesResponse>(url);
     return response.data;
   },
 
@@ -43,9 +46,11 @@ export const feedService = {
     page: number = 1,
     limit: number = 10,
   ): Promise<CompaniesResponse> => {
-    const response = await apiClient.get<CompaniesResponse>(
-      `/users/companies?category=${category}&page=${page}&limit=${limit}`,
-    );
+    let url = `/users/companies?page=${page}&limit=${limit}`;
+    if (category && category !== 'all') {
+      url = `/users/companies?category=${category}&page=${page}&limit=${limit}`;
+    }
+    const response = await apiClient.get<CompaniesResponse>(url);
     return response.data;
   },
 };

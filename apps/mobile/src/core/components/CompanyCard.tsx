@@ -56,7 +56,7 @@ export default function CompanyCard({
       {/* --- 1. Top Section: Header --- */}
       <View className="mb-4 flex-row items-start justify-between">
         {/* Top Right: Logo & Info */}
-        <View className="flex-row">
+        <View className="mr-3 flex-1 flex-row">
           {/* Logo Box */}
           <View className="h-16 w-16 overflow-hidden rounded-sm">
             <Image
@@ -65,16 +65,22 @@ export default function CompanyCard({
               resizeMode="cover"
             />
           </View>
-          <View className="ml-3 mr-1 items-start">
-            <View className="flex-row items-center gap-1">
-              <Text className="font-cairo-semibold text-base leading-[28px] text-[#111111]">
-                {name}
-              </Text>
+          <View className="ml-3 mr-1 flex-1">
+            <Text
+              className="flex-1 font-cairo-semibold text-base leading-[28px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              {name}{' '}
               {isVerified && (
                 <MaterialIcons name="verified" size={16} color="#22C55E" />
               )}
-            </View>
-            <Text className="text-right font-cairo-semibold text-[11px] text-[#6B6A6A]">
+            </Text>
+            <Text
+              className="w-full font-cairo-semibold text-[11px] text-[#6B6A6A]"
+              style={{
+                writingDirection: 'rtl',
+              }}
+            >
               {category}
             </Text>
           </View>
@@ -122,7 +128,7 @@ export default function CompanyCard({
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onQuoteRequest}
-          className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-3.5"
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-2.5"
         >
           <Text className="font-cairo-bold text-sm leading-[22px] text-white">
             طلب عرض سعر

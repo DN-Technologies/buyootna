@@ -74,7 +74,11 @@ export default function ServiceCompanies({
         const fetchFiltered = async () => {
           setIsLoadingMore(true);
           try {
-            const response = await feedService.getCompanies(activeFilter, 1, 10);
+            const response = await feedService.getCompanies(
+              activeFilter,
+              1,
+              10,
+            );
             setData(response.data);
             setPage(response.meta.current);
             setHasNextPage(response.meta.hasNextPage);
@@ -170,6 +174,7 @@ export default function ServiceCompanies({
           // Infinite Scroll Triggers:
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
+          ListFooterComponentClassName="items-center justify-center"
           ListFooterComponent={
             isLoadingMore ? (
               <ActivityIndicator

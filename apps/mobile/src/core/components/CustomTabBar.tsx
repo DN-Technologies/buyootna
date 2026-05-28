@@ -28,7 +28,7 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
 
   // Base height + safe area for iPhone
-  const BAR_HEIGHT = 75 + (Platform.OS === 'ios' ? insets.bottom : 16);
+  const BAR_HEIGHT = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
 
   // SVG Math
   const center = width / 2;

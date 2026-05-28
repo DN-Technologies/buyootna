@@ -171,7 +171,7 @@ export class UsersService {
       data: formattedCompanies,
       meta: {
         total: totalCount,
-        currentPage: page,
+        current: page,
         limit,
         totalPages: Math.ceil(totalCount / limit),
         hasNextPage: page < Math.ceil(totalCount / limit),

@@ -9,6 +9,10 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
+import {
+  CompanyUserProfile,
+  PropertyWithCompanyUser,
+} from './types/properties.interface';
 
 @Injectable()
 export class PropertiesService {
@@ -235,31 +239,4 @@ export class PropertiesService {
         isVerified: true,
       }));
   }
-}
-
-interface PropertyWithCompanyUser {
-  id: string;
-  images: string[];
-  price: number;
-  isFeatured: boolean;
-  category: string;
-  area: number;
-  beds: number;
-  baths: number;
-  location: string;
-  user: {
-    companyProfile: {
-      name: string;
-    } | null;
-  };
-}
-
-interface CompanyUserProfile {
-  companyProfile: {
-    id: string;
-    name: string;
-    services: string;
-    serviceAreas: string;
-    logoUrl: string | null;
-  } | null;
 }

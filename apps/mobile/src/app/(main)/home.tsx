@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import HomeFilterPills from '@/components/home/HomeFilterPills';
@@ -9,6 +9,8 @@ import HomeSearchBar from '@/components/home/HomeSearchBar';
 import HomeAll from '@/components/home/sections/HomeAll';
 import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
+import { feedService } from '@/core/api/feed.service';
+import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'companies';
 type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
@@ -28,6 +30,34 @@ export default function HomeScreen() {
     useState<PropertyFilter>('all');
   const [activeCompFilter, setActiveCompFilter] =
     useState<CompanyFilter>('all');
+
+  const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // --- Fetch Function ---
+  const loadFeed = async () => {
+    try {
+      const data = await feedService.getHomeFeed();
+      setFeedData(data);
+    } catch (error) {
+      console.error('Failed to fetch home feed:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // --- Initial Load ---
+  useEffect(() => {
+    loadFeed();
+  }, []);
+
+  // --- Pull to Refresh Handle ---
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadFeed();
+    setRefreshing(false);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
@@ -52,21 +82,37 @@ export default function HomeScreen() {
       </View>
 
       {/* 5. Scrolling Content Area (The Feed) */}
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{
-          paddingBottom: 130,
-        }} // Extra padding for the custom bottom bar
-        showsVerticalScrollIndicator={false}
-      >
-        {activeTab === 'all' && <HomeAll />}
-        {activeTab === 'properties' && (
-          <HomeProperties activeFilter={activePropFilter} />
-        )}
-        {activeTab === 'companies' && (
-          <HomeCompanies activeFilter={activeCompFilter} />
-        )}
-      </ScrollView>
+      {activeTab === 'properties' ? (
+        <HomeProperties
+          activeFilter={activePropFilter}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      ) : activeTab === 'companies' ? (
+        <HomeCompanies
+          activeFilter={activeCompFilter}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{
+            paddingBottom: 130,
+          }} // Extra padding for the custom bottom bar
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#15304D']}
+              tintColor="#15304D"
+            />
+          }
+        >
+          <HomeAll feedData={feedData} isLoading={isLoading} />
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

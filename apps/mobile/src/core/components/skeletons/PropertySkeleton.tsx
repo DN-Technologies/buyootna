@@ -1,14 +1,18 @@
-import { Dimensions, View } from 'react-native';
+import { Dimensions, DimensionValue, View } from 'react-native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HORIZONTAL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
 
-export default function PropertySkeleton() {
+interface PropertySkeletonProps {
+  cardWidth?: DimensionValue;
+}
+
+export default function PropertySkeleton({ cardWidth }: PropertySkeletonProps) {
   return (
     <View
-      className="mb-5 mr-4 overflow-hidden rounded-md border border-gray-200 bg-white"
+      className={`mb-5 overflow-hidden rounded-md border border-gray-200 bg-white ${cardWidth ? '' : 'mr-4'}`}
       style={{
-        width: HORIZONTAL_CARD_WIDTH,
+        width: cardWidth || HORIZONTAL_CARD_WIDTH,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
