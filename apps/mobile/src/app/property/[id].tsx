@@ -6,7 +6,6 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -18,6 +17,7 @@ import {
   HeartIcon,
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import ListerProfileSnippet from '@/core/components/ListerProfileSnippet';
 import MapPreview from '@/core/components/MapPreview';
 import PropertyDetailsBody from '@/core/components/PropertyDetailsBody';
 import PropertyOverview from '@/core/components/PropertyOverview';
@@ -205,11 +205,16 @@ export default function PropertyDetailsScreen() {
           />
         </View>
 
-        {/* Placeholder for Card 6 (Host) */}
-        <View className="px-5 py-6">
-          <Text className="text-center font-cairo-semibold text-gray-400">
-            (بطاقة المضيف ستظهر هنا...)
-          </Text>
+        {/* --- Card 6: Lister/Host Profile Snippet --- */}
+        <View className="mt-4 px-5">
+          <ListerProfileSnippet
+            name="نواف الجارحي"
+            joinedDate="06/2026"
+            rating={3.5}
+            avatarUrl="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80"
+            isVerified={true}
+            onPress={() => console.log('Navigate to Host Profile')}
+          />
         </View>
       </ScrollView>
 
