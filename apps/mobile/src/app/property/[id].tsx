@@ -20,6 +20,7 @@ import {
   HeartIcon,
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import PropertyOverview from '@/core/components/PropertyOverview';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HEADER_HEIGHT = 350;
@@ -165,12 +166,22 @@ export default function PropertyDetailsScreen() {
           </View>
         )}
 
-        {/* --- Card 3 Placeholder: Property Specs --- */}
-        <View className="px-5 py-6">
-          <Text className="mt-10 text-center font-cairo-semibold text-gray-400">
-            (مساحة تفاصيل العقار - السعر، المساحة، الخ)
-          </Text>
-        </View>
+        {/* --- Card 3: Property Specs --- */}
+        <PropertyOverview
+          type="SALE" // Change this to "EXCHANGE" to test the dynamic switch!
+          title="شقة للبيع"
+          price={150000}
+          isFeatured={true}
+          timeAgo="منذ ساعتين"
+          views={50}
+          area={200}
+          location="السالمية، شارع 2، بناية 10، شقة 4"
+          floor={4}
+          beds={3}
+          baths={2}
+          requestYear="2021"
+          requiredYear="2025"
+        />
       </ScrollView>
 
       {/* --- 3. Fixed Bottom Action Bar --- */}
