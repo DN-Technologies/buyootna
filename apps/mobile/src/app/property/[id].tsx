@@ -1,5 +1,6 @@
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -13,7 +14,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CallIcon, ChatIcon, WhatsappIcon } from '@/assets/icons/home/cards';
+import {
+  CallIcon,
+  ChatIcon,
+  HeartIcon,
+  WhatsappIcon,
+} from '@/assets/icons/home/cards';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HEADER_HEIGHT = 350;
@@ -56,31 +62,50 @@ export default function PropertyDetailsScreen() {
           paddingTop: Math.max(insets.top, 20) + 10,
         }}
       >
+        {/* Right Action: Back */}
+        <TouchableOpacity activeOpacity={0.8} onPress={() => router.back()}>
+          <View
+            style={{
+              height: 32,
+              minWidth: 32,
+              paddingHorizontal: 10,
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+              borderBottomLeftRadius: 8,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Image
+              source={require('@/assets/icons/arrow-back.svg')}
+              style={{ width: 10, height: 14 }}
+            />
+          </View>
+        </TouchableOpacity>
         {/* Left Actions: Share & Heart */}
-        <View className="flex-row space-x-3 space-x-reverse">
+        <View className="flex-row gap-3">
           <TouchableOpacity
             activeOpacity={0.8}
             className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
           >
-            <Feather name="share-2" size={20} color="#111111" />
+            <HeartIcon
+              size={18}
+              color={true ? '#BA0003' : '#94A3B8'}
+              filled={true}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.8}
             className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
           >
-            <Feather name="heart" size={20} color="#EF4444" />{' '}
-            {/* Or #111111 for unliked */}
+            <Image
+              source={require('@/assets/icons/home/property/share-icon.svg')}
+              style={{ width: 17, height: 14 }}
+            />
           </TouchableOpacity>
         </View>
-
-        {/* Right Action: Back */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
-        >
-          <Feather name="chevron-right" size={24} color="#111111" />
-        </TouchableOpacity>
       </View>
       {/* --- 2. Main Scrollable Content --- */}
       <ScrollView
@@ -110,7 +135,7 @@ export default function PropertyDetailsScreen() {
             </ScrollView>
 
             {/* Pagination Dots */}
-            <View className="absolute bottom-6 w-full flex-row items-center justify-center space-x-1.5 space-x-reverse">
+            <View className="absolute bottom-6 w-full flex-row items-center justify-center gap-1.5">
               {mockProperty.images.map((_, index) => (
                 <View
                   key={index}
@@ -131,15 +156,11 @@ export default function PropertyDetailsScreen() {
           >
             {/* Simulating the BUYOOTN Logo block from Figma */}
             <View className="items-center">
-              <FontAwesome5
-                name="home"
-                size={60}
-                color="white"
-                className="mb-2"
+              <Image
+                source={require('@/assets/icons/fallback-logo.svg')}
+                style={{ width: 155, height: 165 }}
+                resizeMode="contain"
               />
-              <Text className="mt-2 font-cairo-bold text-3xl tracking-widest text-white">
-                BUYOOTN
-              </Text>
             </View>
           </View>
         )}
