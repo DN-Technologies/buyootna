@@ -1,4 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   DimensionValue,
@@ -40,6 +41,7 @@ export interface PropertyCardProps {
 }
 
 export default function PropertyCard({
+  id,
   images,
   price,
   companyName,
@@ -60,7 +62,8 @@ export default function PropertyCard({
   const [measuredWidth, setMeasuredWidth] = useState(0);
 
   const fallbackWidth = windowWidth - 40;
-  const imageWidth = typeof cardWidth === 'number' ? cardWidth : (measuredWidth || fallbackWidth);
+  const imageWidth =
+    typeof cardWidth === 'number' ? cardWidth : measuredWidth || fallbackWidth;
 
   // Update pagination dots when scrolling images
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -69,10 +72,20 @@ export default function PropertyCard({
     setActiveIndex(Math.round(index));
   };
 
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else {
+      router.push(`/property/${id}`);
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={onPress}
+      onPress={handlePress}
       className="mb-5 w-full overflow-hidden rounded-md border border-gray-200 bg-white"
       onLayout={(e) => {
         const { width } = e.nativeEvent.layout;

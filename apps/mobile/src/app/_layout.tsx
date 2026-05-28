@@ -51,7 +51,7 @@ export default function RootLayout() {
   useEffect(() => {
     // Safely hydrate our authentication tokens from hardware storage
     loadPersistedAuth();
-  }, []);
+  }, [loadPersistedAuth]);
 
   if (!loaded && !error) {
     return null;
@@ -65,6 +65,7 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(main)" />
+            <Stack.Screen name="property/[id]" />
           </Stack>
         </SafeAreaProvider>
       </BottomSheetModalProvider>
