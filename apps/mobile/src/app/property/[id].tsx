@@ -1,6 +1,4 @@
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -21,6 +19,7 @@ import {
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
 import MapPreview from '@/core/components/MapPreview';
+import PropertyDetailsBody from '@/core/components/PropertyDetailsBody';
 import PropertyOverview from '@/core/components/PropertyOverview';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -190,6 +189,27 @@ export default function PropertyDetailsScreen() {
             location="السالمية، شارع 2، بناية 10، شقة 4"
             onPress={() => console.log('Open Full Map Modal')}
           />
+        </View>
+
+        {/* --- Card 5: Dynamic Details Sections --- */}
+        <View className="mt-2">
+          <PropertyDetailsBody
+            type="SALE" // Change to RENT or EXCHANGE to test!
+            description="شقة فاخرة للبيع في قلب السالمية. تتميز بتصميم معماري حديث وتشطيبات سوبر ديلوكس. الشقة تقع في الدور الـ 4 مما يوفر إطلالة بانورامية. موقع البرج حيوي جداً وقريب من المجمعات التجارية والخدمات الرئيسية."
+            features={['شارع واحد', 'مصعد', 'جراج']}
+            // Try changing type to 'EXCHANGE' to see this:
+            exchangeRequirement="أرغب بالبدل في منطقة جابر الأحمد أو المنطقة العاشرة. يفضل زاوية أو شارع واحد. مستعد للتفاوض مع المواقع المميزة."
+            // Try changing type to 'RENT' to see these:
+            additionalCosts={`الكهرباء والماء: على المستأجر (غير مشمولة في الإيجار).\nالإنترنت: متوفر اشتراك فايبر (يتحمله المستأجر).`}
+            rentTerms={`الفئة المستهدفة: عائلات فقط.\nمدة العقد: سنة واحدة (تجدد تلقائياً).\nالتأمين: مطلوب تأمين نصف شهر (مسترد عند الإخلاء).`}
+          />
+        </View>
+
+        {/* Placeholder for Card 6 (Host) */}
+        <View className="px-5 py-6">
+          <Text className="text-center font-cairo-semibold text-gray-400">
+            (بطاقة المضيف ستظهر هنا...)
+          </Text>
         </View>
       </ScrollView>
 
