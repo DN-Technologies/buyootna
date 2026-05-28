@@ -20,6 +20,7 @@ import {
   HeartIcon,
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import MapPreview from '@/core/components/MapPreview';
 import PropertyOverview from '@/core/components/PropertyOverview';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -182,6 +183,14 @@ export default function PropertyDetailsScreen() {
           requestYear="2021"
           requiredYear="2025"
         />
+
+        {/* --- Card 4: Map Preview --- */}
+        <View className="mt-4">
+          <MapPreview
+            location="السالمية، شارع 2، بناية 10، شقة 4"
+            onPress={() => console.log('Open Full Map Modal')}
+          />
+        </View>
       </ScrollView>
 
       {/* --- 3. Fixed Bottom Action Bar --- */}

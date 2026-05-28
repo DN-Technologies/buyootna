@@ -44,7 +44,7 @@ export default function PropertyOverview({
   requiredYear,
 }: PropertyOverviewProps) {
   return (
-    <View className="border-b border-gray-100 bg-white px-5 pb-6 pt-5">
+    <View className="bg-white px-5 pt-5">
       {/* -- Badges & Meta (Time/Views) --- */}
       <View className="flex-row items-center justify-between">
         {/* -- Price & Title --- */}
