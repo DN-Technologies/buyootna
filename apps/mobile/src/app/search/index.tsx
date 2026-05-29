@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestions';
 import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
@@ -35,7 +35,11 @@ export default function SearchScreen() {
 
   const handleSelectSearch = (term: string) => {
     setSearchText(term);
-    // In Card 3, this will trigger the API search and hide the overlay!
+    // Redirect cleanly to the results screen layout passing parameters
+    router.push({
+      pathname: '/search/results',
+      params: { query: term },
+    });
   };
 
   const handleSelectResult = (id: string) => {

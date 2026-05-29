@@ -52,14 +52,14 @@ export default function SearchHeader({
       <TouchableOpacity activeOpacity={0.7} onPress={onBack} className="p-1">
         <Image
           source={require('@/assets/icons/arrow-back.svg')}
-          style={{ width: 12, height: 18 }}
+          style={{ width: 12, height: 16 }}
           contentFit="contain"
         />
       </TouchableOpacity>
 
       {/* Middle: Search Input Container */}
       <View
-        className="ml-5 mr-2 h-[48px] flex-1 flex-row items-center rounded-full border bg-white px-4"
+        className="ml-3 mr-2 h-[42px] flex-1 flex-row items-center rounded-full border bg-white px-4"
         style={{ borderColor: isFocused ? '#B28648' : '#D1D5DB' }}
       >
         {/* Search Icon  */}
@@ -91,7 +91,7 @@ export default function SearchHeader({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={onFilterPress}
-        className="h-[48px] w-[48px] items-center justify-center rounded-full bg-[#F9FAFE]"
+        className="h-[42px] w-[42px] items-center justify-center rounded-full bg-[#F9FAFE]"
       >
         <Image
           source={require('@/assets/icons/home/header/filter-horizontal-icon.svg')}
