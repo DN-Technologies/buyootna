@@ -36,6 +36,18 @@ export class PropertiesController {
     return this.propertiesService.findAll(filters);
   }
 
+  // Public Single Property Endpoint
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.propertiesService.findOne(id);
+  }
+
+  // Public View Tracking Endpoint
+  @Patch(':id/view')
+  async incrementViews(@Param('id') id: string) {
+    return this.propertiesService.incrementViews(id);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Post()
   @UseInterceptors(FilesInterceptor('images', 10)) // Accept up to 10 files in 'images field

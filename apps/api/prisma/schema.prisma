@@ -43,6 +43,8 @@ model CompanyProfile {
   logoUrl         String?
   licenseFileUrl  String?
 
+  isVerified Boolean @default(false)
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 

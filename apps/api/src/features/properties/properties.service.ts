@@ -183,6 +183,69 @@ export class PropertiesService {
 
     return { message: 'تم حذف الإعلان بنجاح' };
   }
+  // --- GET SINGLE PROPERTY BY ID ---
+  async findOne(id: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { id },
+      include: {
+        // Fetch the user how posted it, but ONLY specific fields
+        user: {
+          select: {
+            id: true,
+            createdAt: true, // We need this for the "Joined in..." date
+            companyProfile: {
+              select: {
+                name: true,
+                logoUrl: true,
+                isVerified: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!property) {
+      throw new NotFoundException('عذراً، هذا العقار غير موجود أو تم حذفه');
+    }
+
+    // Format the response to perfectly match UI expects
+    return {
+      ...property,
+      // Create a clean 'host' object for the frontend
+      host: {
+        id: property.user.id,
+        name: property.user.companyProfile
+          ? property.user.companyProfile.name
+          : 'مستخدم',
+        avatarUrl:
+          property.user.companyProfile?.logoUrl ||
+          'https://via.placeholder.com/150',
+        joinedDate: this.formatDateToMonthYear(property.user.createdAt),
+        isVerified: property.user.companyProfile?.isVerified ?? false,
+        rating: 4.5, // TODO: Make dynamic when ratings system is built
+      },
+    };
+  }
+
+  // --- INCREMENT VIEW COUNT ---
+  async incrementViews(id: string) {
+    try {
+      await this.prisma.property.update({
+        where: { id },
+        data: {
+          views: {
+            increment: 1, // Atomic operation at the database level
+          },
+        },
+      });
+      return { success: true };
+    } catch {
+      // If the property doesn't exist, we just fail silently.
+      // It's just a view counter, no need to alert the user.
+      return { success: false };
+    }
+  }
 
   // --- HELPER: Verify Ownership ---
   private async verifyOwnership(userId: string, propertyId: string) {
@@ -236,7 +299,14 @@ export class PropertiesService {
         projectsCount: '+50', // TODO: Make dynamic later
         serviceArea: c.companyProfile!.serviceAreas,
         logoUrl: c.companyProfile!.logoUrl,
-        isVerified: true,
+        isVerified: c.companyProfile!.isVerified,
       }));
+  }
+
+  // Helper method to format dates like "06/2026" for the UI
+  private formatDateToMonthYear(date: Date): string {
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${year}`;
   }
 }
