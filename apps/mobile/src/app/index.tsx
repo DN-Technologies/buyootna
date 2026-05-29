@@ -42,7 +42,7 @@ export default function InitialSplashSequence() {
         }
       }),
     );
-  }, []);
+  }, [bgColor, dotOpacity, logoOpacity, router]);
 
   const animatedBackground = useAnimatedStyle(() => ({
     backgroundColor: bgColor.value,
