@@ -1,8 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import CompanyCard from '@/core/components/CompanyCard';
+import AlertSuccessToast from '@/core/components/search/AlertSuccessToast';
+import EmptySearchResult from '@/core/components/search/EmptySearchResult';
 import SearchHeader from '@/core/components/search/SearchHeader';
 
 // Type Definitions for strict tab safety
@@ -13,31 +16,43 @@ export default function SearchResultsScreen() {
   const searchString =
     typeof query === 'string' ? query : Array.isArray(query) ? query[0] : '';
 
-  // --- 1. Tab & Filter States ---
+  // --- Toast State ---
+  const [showToast, setShowToast] = useState(false);
 
   // --- 2. Mock Data for Companies (Matching Figma results) ---
-  const mockCompanies = [
-    {
-      id: '1',
-      name: 'شركة البناء المتقن',
-      category: 'تشطيب • تصميم داخلي • تنفيذ',
-      serviceArea: 'يخدم جميع المناطق',
-      projectsCount: '+85',
-      logoUrl:
-        'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
-      isFavorite: false,
-    },
-    {
-      id: '2',
-      name: 'شركة البناء المتقن',
-      category: 'تشطيب • تصميم داخلي • تنفيذ',
-      serviceArea: 'يخدم جميع المناطق',
-      projectsCount: '+85',
-      logoUrl:
-        'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
-      isFavorite: true,
-    },
+  const mockCompanies: any[] = [
+    // {
+    //   id: '1',
+    //   name: 'شركة البناء المتقن',
+    //   category: 'تشطيب • تصميم داخلي • تنفيذ',
+    //   serviceArea: 'يخدم جميع المناطق',
+    //   projectsCount: '+85',
+    //   logoUrl:
+    //     'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
+    //   isFavorite: false,
+    // },
+    // {
+    //   id: '2',
+    //   name: 'شركة البناء المتقن',
+    //   category: 'تشطيب • تصميم داخلي • تنفيذ',
+    //   serviceArea: 'يخدم جميع المناطق',
+    //   projectsCount: '+85',
+    //   logoUrl:
+    //     'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
+    //   isFavorite: true,
+    // },
   ];
+
+  const handleActivateAlert = () => {
+    // Here we would normally make an API call to save the user's alert preference
+    console.log(`Alert activated for query: ${query}`);
+    setShowToast(true); // Trigger the toast animation
+  };
+
+  const handleExploreNow = () => {
+    // Reset filters or go back to home
+    router.push('/home');
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -50,80 +65,6 @@ export default function SearchResultsScreen() {
         onBack={() => router.back()}
         onFilterPress={() => {}}
       />
-
-      {/* --- LEVEL 1: MAIN CATEGORY TABS ---
-      <View className="flex-row justify-between border-b border-gray-100 px-5 pt-2">
-        {(
-          [
-            { id: 'properties', label: 'عقارات' },
-            { id: 'companies', label: 'شركات' },
-            { id: 'auctions', label: 'مزادات' },
-            { id: 'deals', label: 'صفقات' },
-          ] as const
-        ).map((tab) => {
-          const isActive = activeMainTab === tab.id;
-          return (
-            <TouchableOpacity
-              key={tab.id}
-              activeOpacity={0.7}
-              onPress={() => setActiveMainTab(tab.id)}
-              className="flex-1 items-center pb-3"
-            >
-              <Text
-                className={`font-cairo-bold text-[15px] ${isActive ? 'text-[#15304D]' : 'text-[#94A3B8]'}`}
-              >
-                {tab.label}
-              </Text>
-              {isActive && (
-                <View className="absolute bottom-0 h-[2.5px] w-full rounded-t-full bg-[#15304D]" />
-              )}
-            </TouchableOpacity>
-          );
-        })}
-      </View> */}
-
-      {/* --- LEVEL 2: CONTEXTUAL SUB-CATEGORY PILLS ---
-      {activeMainTab === 'companies' && (
-        <View className="py-4">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 20,
-              flexDirection: 'row-reverse',
-            }} // Custom RTL handling for standard ScrollView
-          >
-            {(
-              [
-                { id: 'all', label: 'الكل' },
-                { id: 'decorations', label: 'ديكورات' },
-                { id: 'interior_design', label: 'تصميم داخلي' },
-                { id: 'finishing', label: 'تشطيب' },
-              ] as const
-            ).map((subTab) => {
-              const isActive = activeSubTab === subTab.id;
-              return (
-                <TouchableOpacity
-                  key={subTab.id}
-                  activeOpacity={0.7}
-                  onPress={() => setActiveSubTab(subTab.id)}
-                  className={`ml-2 rounded-full border px-5 py-2 ${
-                    isActive
-                      ? 'border-[#15304D] bg-[#15304D]'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  <Text
-                    className={`font-cairo-semibold text-xs ${isActive ? 'text-white' : 'text-[#111111]'}`}
-                  >
-                    {subTab.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-      )} */}
 
       {/* --- RESULTS META OVERVIEW LAYER --- */}
       <View className="flex-row items-center justify-between px-5 py-5">
@@ -167,12 +108,19 @@ export default function SearchResultsScreen() {
           />
         )}
         ListEmptyComponent={
-          <View className="items-center justify-center pt-20">
-            <Text className="font-cairo-medium text-[#94A3B8]">
-              لا توجد نتائج لعرضها في هذا القسم
-            </Text>
-          </View>
+          <EmptySearchResult
+            onActivateAlert={handleActivateAlert}
+            onExploreNow={handleExploreNow}
+          />
         }
+      />
+
+      {/* --- Floating Success Toast --- */}
+      <AlertSuccessToast
+        visible={showToast}
+        message={`تم تفعيل تنبيهات لـ ${query || 'هذا البحث'}`}
+        onHide={() => setShowToast(false)}
+        onUndo={() => console.log('Alert cancelled by user')}
       />
     </View>
   );
