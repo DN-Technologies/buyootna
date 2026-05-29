@@ -20,9 +20,8 @@ RUN pnpm run build
 # --- STAGE 4: Production Dependencies ---
 FROM base AS production-dependencies
 COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma
 RUN pnpm install --prod --frozen-lockfile
-RUN pnpm prisma:generate
+COPY --from=dependencies /app/node_modules/.prisma ./node_modules/.prisma
 
 # --- STAGE 5: Production Runner ---
 FROM node:20-alpine AS runner
