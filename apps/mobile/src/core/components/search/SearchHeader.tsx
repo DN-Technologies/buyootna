@@ -45,7 +45,7 @@ export default function SearchHeader({
 
   return (
     <View
-      className="flex-row items-center border-b border-gray-100 bg-white px-5 pb-3 pt-3"
+      className="flex-row items-center bg-[#FEFEFE] px-5 pt-3"
       style={{ paddingTop: Math.max(insets.top, 20) }}
     >
       {/* Right: Back Button */}

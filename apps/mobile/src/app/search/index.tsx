@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
 
+import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestions';
 import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
 import SearchHeader from '@/core/components/search/SearchHeader';
 
@@ -37,8 +38,17 @@ export default function SearchScreen() {
     // In Card 3, this will trigger the API search and hide the overlay!
   };
 
+  const handleSelectResult = (id: string) => {
+    // For now, let's just log it.
+    // In Card 3, this will route to the results page: router.push(`/explore/search-results?query=${searchText}`)
+    console.log('Selected Company ID:', id);
+  };
+
   return (
-    <View className="flex-1 bg-white">
+    <KeyboardAvoidingView
+      className="flex-1 bg-[#FEFEFE]"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {/* 1. Header */}
       <SearchHeader
         searchText={searchText}
@@ -49,16 +59,22 @@ export default function SearchScreen() {
         onFilterPress={() => console.log('Open Filter Modal')}
       />
 
-      {/* 2. Active Overlay (Shows when input is empty or focused) */}
-      {/* Once the user starts typing, we will swap this out for live suggestions in Card 2 */}
-      {searchText.length === 0 && (
+      {/* 2. Conditional Rendering Magic */}
+      {searchText.trim().length === 0 ? (
+        // Show History if input is empty
         <SearchActiveOverlay
           recentSearches={recentSearches}
           popularSearches={popularSearches}
           onSelectSearch={handleSelectSearch}
           onRemoveRecent={handleRemoveRecent}
         />
+      ) : (
+        // Show Live Suggestions if user is typing
+        <LiveSearchSuggestions
+          searchText={searchText}
+          onSelect={handleSelectResult}
+        />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
