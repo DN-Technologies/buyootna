@@ -113,8 +113,9 @@ export default function PropertyMediaHeader({
               <Image
                 key={index}
                 source={{ uri: img }}
-                style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT }}
+                style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT, backgroundColor: '#E2E8F0' }}
                 resizeMode="cover"
+                transition={300}
               />
             ))}
           </ScrollView>
