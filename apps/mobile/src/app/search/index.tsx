@@ -2,15 +2,22 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 
+import { SearchResultItem, searchService } from '@/core/api/search.service';
 import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestions';
 import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
 import SearchHeader from '@/core/components/search/SearchHeader';
+import { useDebounce } from '@/core/hooks/useDebounce';
 
 export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [searchText, setSearchText] = useState('');
   const [isFocused, setIsFocused] = useState(true); // Default to true so keyboard opens
+
+  // --- API State ---
+  const debouncedSearchText = useDebounce(searchText, 300); // Wait 300ms
+  const [liveResults, setLiveResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (params.openFilter === 'true') {
@@ -29,6 +36,40 @@ export default function SearchScreen() {
 
   const popularSearches = ['شركات تشطيب', 'السالمية', 'سكني', 'شقق للإيجار'];
 
+  // Trigger search when debounced text changes
+  useEffect(() => {
+    const fetchLiveSuggestions = async () => {
+      // Don't search if text is too short or empty
+      if (debouncedSearchText.trim().length < 2) {
+        setLiveResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        // We default to searching companies for the live dropdown, but we could search ALL
+        const response = await searchService.globalSearch({
+          query: debouncedSearchText,
+          limit: 5, // Just get top 5 for the quick dropdown
+        });
+        setLiveResults(response.data);
+      } catch (error) {
+        console.error('Live search failed:', error);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    fetchLiveSuggestions();
+  }, [debouncedSearchText]);
+
+  const handleSelectResult = (id: string) => {
+    // Navigate straight to the detail page (Company or Property)
+    // We'll assume Company for now based on Figma context
+    // router.push(`/company/${id}`);
+    console.log(id);
+  };
+
   const handleRemoveRecent = (term: string) => {
     setRecentSearches((prev) => prev.filter((item) => item !== term));
   };
@@ -40,12 +81,6 @@ export default function SearchScreen() {
       pathname: '/search/results',
       params: { query: term },
     });
-  };
-
-  const handleSelectResult = (id: string) => {
-    // For now, let's just log it.
-    // In Card 3, this will route to the results page: router.push(`/explore/search-results?query=${searchText}`)
-    console.log('Selected Company ID:', id);
   };
 
   return (
@@ -76,6 +111,8 @@ export default function SearchScreen() {
         // Show Live Suggestions if user is typing
         <LiveSearchSuggestions
           searchText={searchText}
+          results={liveResults}
+          isLoading={isSearching}
           onSelect={handleSelectResult}
         />
       )}

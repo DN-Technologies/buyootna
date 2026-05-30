@@ -1,74 +1,118 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import CompanyCard from '@/core/components/CompanyCard';
+import { SearchResultItem, searchService } from '@/core/api/search.service';
 import AlertSuccessToast from '@/core/components/search/AlertSuccessToast';
 import EmptySearchResult from '@/core/components/search/EmptySearchResult';
 import SearchHeader from '@/core/components/search/SearchHeader';
-
-// Type Definitions for strict tab safety
+import SuggestionCard from '@/core/components/search/SuggestionCard';
+import SuggestionCardSkeleton from '@/core/components/skeletons/SuggestionCardSkeleton';
+import { useDebounce } from '@/core/hooks/useDebounce';
 
 export default function SearchResultsScreen() {
   const router = useRouter();
-  const { query } = useLocalSearchParams(); // Retrieve search term passed from previous screen
-  const searchString =
-    typeof query === 'string' ? query : Array.isArray(query) ? query[0] : '';
+  const { query } = useLocalSearchParams();
+
+  // Text state for Search Bar input
+  const [searchText, setSearchText] = useState(
+    typeof query === 'string' ? query : Array.isArray(query) ? query[0] : '',
+  );
+  const [isFocused, setIsFocused] = useState(false);
+  const debouncedSearchText = useDebounce(searchText, 500);
+
+  // API Data States
+  const [results, setResults] = useState<SearchResultItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Fetch function
+  const fetchResults = useCallback(
+    async (pageNumber = 1) => {
+      try {
+        if (pageNumber === 1) setIsLoading(true);
+
+        const response = await searchService.globalSearch({
+          query: debouncedSearchText.trim() || undefined,
+          page: pageNumber,
+          limit: 10,
+        });
+
+        if (pageNumber === 1) {
+          setResults(response.data);
+        } else {
+          setResults((prev) => [...prev, ...response.data]);
+        }
+
+        setHasNextPage(response.meta.hasNextPage);
+        setTotalCount(response.meta.total);
+      } catch (error) {
+        console.error('Failed to fetch results', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [debouncedSearchText],
+  );
+
+  // Sync external route query changes with local search text
+  useEffect(() => {
+    if (query) {
+      setSearchText(typeof query === 'string' ? query : query[0]);
+    }
+  }, [query]);
+
+  // Trigger fetch when query changes
+  useEffect(() => {
+    setPage(1);
+    fetchResults(1);
+  }, [fetchResults]);
+
+  // Handle Load More (Pagination)
+  const handleLoadMore = () => {
+    if (hasNextPage && !isLoading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchResults(nextPage);
+    }
+  };
 
   // --- Toast State ---
   const [showToast, setShowToast] = useState(false);
 
-  // --- 2. Mock Data for Companies (Matching Figma results) ---
-  const mockCompanies: any[] = [
-    // {
-    //   id: '1',
-    //   name: 'شركة البناء المتقن',
-    //   category: 'تشطيب • تصميم داخلي • تنفيذ',
-    //   serviceArea: 'يخدم جميع المناطق',
-    //   projectsCount: '+85',
-    //   logoUrl:
-    //     'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
-    //   isFavorite: false,
-    // },
-    // {
-    //   id: '2',
-    //   name: 'شركة البناء المتقن',
-    //   category: 'تشطيب • تصميم داخلي • تنفيذ',
-    //   serviceArea: 'يخدم جميع المناطق',
-    //   projectsCount: '+85',
-    //   logoUrl:
-    //     'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
-    //   isFavorite: true,
-    // },
-  ];
-
   const handleActivateAlert = () => {
-    // Here we would normally make an API call to save the user's alert preference
-    console.log(`Alert activated for query: ${query}`);
-    setShowToast(true); // Trigger the toast animation
+    console.log(`Alert activated for query: ${searchText}`);
+    setShowToast(true);
   };
 
   const handleExploreNow = () => {
-    // Reset filters or go back to home
     router.push('/home');
   };
 
   return (
     <View className="flex-1 bg-white">
-      {/* --- HEADER LAYER --- */}
+      {/* --- HEADER --- */}
       <SearchHeader
-        searchText={searchString}
-        setSearchText={() => {}}
-        isFocused={false}
-        setIsFocused={() => {}}
+        searchText={searchText}
+        setSearchText={setSearchText}
+        isFocused={isFocused}
+        setIsFocused={setIsFocused}
         onBack={() => router.back()}
-        onFilterPress={() => {}}
+        onFilterPress={() => console.log('Open Filter Modal')}
       />
 
-      {/* --- RESULTS META OVERVIEW LAYER --- */}
+      {/* --- RESULTS META --- */}
       <View className="flex-row items-center justify-between px-5 py-5">
-        {/* Left: Sorting selection indicator */}
+        {/* Left: Sorting */}
         <TouchableOpacity activeOpacity={0.7} className="flex-row items-center">
           <Feather name="chevron-down" size={14} color="#6B6A6A" />
           <Text className="ml-1 font-cairo-semibold text-xs text-[#6B6A6A]">
@@ -82,20 +126,24 @@ export default function SearchResultsScreen() {
           />
         </TouchableOpacity>
 
-        {/* Right: Direct quantity configuration label */}
+        {/* Right: Count */}
         <Text className="font-cairo-medium text-xs text-[#94A3B8]">
-          {mockCompanies.length} نتيجة لبحثك
+          {totalCount} نتيجة لبحثك
         </Text>
       </View>
 
-      {/* --- MAIN VERTICAL SCROLLABLE LIST --- */}
+      {/* --- RESULTS LIST --- */}
       <FlatList
-        data={mockCompanies}
+        data={results}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 50 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 10,
+          paddingBottom: 50,
+        }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <CompanyCard
+          <SuggestionCard
             id={item.id}
             name={item.name}
             category={item.category}
@@ -103,22 +151,40 @@ export default function SearchResultsScreen() {
             projectsCount={item.projectsCount}
             logoUrl={item.logoUrl}
             isFavorite={item.isFavorite}
-            rating={3.5}
-            onPress={() => console.log('View profile setup', item.id)}
+            onPress={() => {
+              router.push(`/company/${item.id}` as any);
+            }}
           />
         )}
         ListEmptyComponent={
-          <EmptySearchResult
-            onActivateAlert={handleActivateAlert}
-            onExploreNow={handleExploreNow}
-          />
+          isLoading ? (
+            <View>
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <SuggestionCardSkeleton key={i} />
+              ))}
+            </View>
+          ) : (
+            <EmptySearchResult
+              onActivateAlert={handleActivateAlert}
+              onExploreNow={handleExploreNow}
+            />
+          )
         }
+        ListFooterComponent={
+          isLoading && results.length > 0 ? (
+            <View className="items-center py-4">
+              <ActivityIndicator size="small" color="#15304D" />
+            </View>
+          ) : null
+        }
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
       />
 
       {/* --- Floating Success Toast --- */}
       <AlertSuccessToast
         visible={showToast}
-        message={`تم تفعيل تنبيهات لـ ${query || 'هذا البحث'}`}
+        message={`تم تفعيل تنبيهات لـ ${searchText || 'هذا البحث'}`}
         onHide={() => setShowToast(false)}
         onUndo={() => console.log('Alert cancelled by user')}
       />

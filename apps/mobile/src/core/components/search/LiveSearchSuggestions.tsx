@@ -1,50 +1,40 @@
-import { FlatList, Keyboard, Text, View } from 'react-native';
+import {
+  FlatList,
+  Keyboard,
+  Text,
+  View,
+} from 'react-native';
 
+import { SearchResultItem } from '@/core/api/search.service';
+
+import SuggestionCardSkeleton from '../skeletons/SuggestionCardSkeleton';
 import SuggestionCard from './SuggestionCard';
 
 export interface LiveSearchSuggestionsProps {
   searchText: string;
+  results: SearchResultItem[];
+  isLoading: boolean;
   onSelect: (id: string) => void;
 }
 
-// Mock Data matching the screenshot
-const MOCK_COMPANIES = [
-  {
-    id: '1',
-    name: 'شركة البناء المتقن',
-    category: 'تشطيب • تصميم داخلي • تنفيذ',
-    serviceArea: 'يخدم جميع المناطق',
-    projectsCount: '85+',
-    logoUrl:
-      'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80', // Placeholder
-  },
-  {
-    id: '2',
-    name: 'شركة البناء الحديث',
-    category: 'تشطيب • تصميم داخلي • تنفيذ',
-    serviceArea: 'يخدم جميع المناطق',
-    projectsCount: '120+',
-    logoUrl:
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=300&q=80',
-  },
-];
-
 export default function LiveSearchSuggestions({
   searchText,
+  results,
+  isLoading,
   onSelect,
 }: LiveSearchSuggestionsProps) {
-  // Simple local filter: if the name or category includes the search text
-  const filteredResults = MOCK_COMPANIES.filter(
-    (company) =>
-      company.name.includes(searchText) ||
-      company.category.includes(searchText),
-  );
-
   return (
     <View className="flex-1 bg-[#FEFEFE]">
-      {filteredResults.length > 0 ? (
+      {isLoading ? (
+        <View style={{ padding: 20 }}>
+          <SuggestionCardSkeleton />
+          <SuggestionCardSkeleton />
+          <SuggestionCardSkeleton />
+          <SuggestionCardSkeleton />
+        </View>
+      ) : results.length > 0 ? (
         <FlatList
-          data={filteredResults}
+          data={results}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
@@ -67,10 +57,13 @@ export default function LiveSearchSuggestions({
       ) : (
         <View className="flex-1 items-center justify-center pt-20">
           <Text className="font-cairo-semibold text-[#94A3B8]">
-            جاري البحث...
+            {'لا توجد نتائج مطابقة لـ "'}
+            {searchText}
+            {'"'}
           </Text>
         </View>
       )}
     </View>
   );
 }
+
