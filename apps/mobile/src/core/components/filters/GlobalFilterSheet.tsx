@@ -7,6 +7,8 @@ import {
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import StandardPropertyTab from '@/core/components/filters/tabs/StandardPropertyTab';
+
 // Define the valid tabs
 export type FilterTab =
   | 'sell'
@@ -121,19 +123,33 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
             </ScrollView>
           </View>
 
-          {/* --- 3. Dynamic Content Area (Placeholder for upcoming Cards) --- */}
-          <ScrollView
-            className="flex-1"
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 100 }}
-          >
-            <View className="flex-1 items-center justify-center pt-20">
-              <Text className="font-cairo-medium text-[#94A3B8]">
-                جاري تجهيز فلاتر قسم (
-                {TABS.find((t) => t.id === activeTab)?.label})...
-              </Text>
-            </View>
-          </ScrollView>
+          {/* --- 3. Dynamic Content Area --- */}
+          <View className="flex-1">
+            {activeTab === 'sell' && <StandardPropertyTab type="sell" />}
+            {activeTab === 'rent' && <StandardPropertyTab type="rent" />}
+
+            {/* Placeholders for upcoming cards */}
+            {activeTab === 'exchange' && (
+              <View className="flex-1 items-center justify-center">
+                <Text>بدل</Text>
+              </View>
+            )}
+            {activeTab === 'companies' && (
+              <View className="flex-1 items-center justify-center">
+                <Text>شركات</Text>
+              </View>
+            )}
+            {activeTab === 'auctions' && (
+              <View className="flex-1 items-center justify-center">
+                <Text>مزادات</Text>
+              </View>
+            )}
+            {activeTab === 'deals' && (
+              <View className="flex-1 items-center justify-center">
+                <Text>صفقات</Text>
+              </View>
+            )}
+          </View>
         </BottomSheetView>
       </BottomSheetModal>
     );
