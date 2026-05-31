@@ -5,15 +5,18 @@ import {
   BottomSheetFooterProps,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import FilterFooter from '@/core/components/filters/FilterFooter';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import AuctionsTab from '@/core/components/filters/tabs/AuctionsTab';
 import CompanyServicesTab from '@/core/components/filters/tabs/CompanyServicesTab';
 import DealsTab from '@/core/components/filters/tabs/DealsTab';
 import ExchangePropertyTab from '@/core/components/filters/tabs/ExchangePropertyTab';
 import StandardPropertyTab from '@/core/components/filters/tabs/StandardPropertyTab';
+import { useFilterStore } from '@/core/store/useFilterStore';
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
 // Define the valid tabs
 export type FilterTab =
@@ -40,8 +43,21 @@ interface GlobalFilterSheetProps {
 
 const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
   ({ onApplyFilters, onClose }, ref) => {
+    // --- Refs ---
+    const govDrawerRef = useRef<BottomSheetModal>(null);
+    const areaDrawerRef = useRef<BottomSheetModal>(null);
+
     // --- State ---
     const [activeTab, setActiveTab] = useState<FilterTab>('sell'); // Default to Sell
+
+    // --- Store Selectors ---
+    const updateField = useFilterStore((state) => state.updateField);
+    const activeTabData = useFilterStore((state) => state[activeTab]);
+
+    // @ts-ignore
+    const activeGovId =
+      activeTabData && 'gov' in activeTabData ? activeTabData.gov?.id : null;
+    const availableAreas = activeGovId ? AREAS[activeGovId] || [] : [];
 
     // --- Bottom Sheet Configuration ---
     // Snap points dictate how high hte sheet opens. 90% gives a nice full-screen feel while leaving a gap at the top.
@@ -76,6 +92,23 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
       [onApplyFilters, handleClose],
     );
 
+    const handleGovSelect = useCallback(
+      (value: any) => {
+        updateField(activeTab, 'gov', value);
+        // @ts-ignore
+        updateField(activeTab, 'area', null);
+      },
+      [activeTab, updateField],
+    );
+
+    const handleAreaSelect = useCallback(
+      (value: any) => {
+        // @ts-ignore
+        updateField(activeTab, 'area', value);
+      },
+      [activeTab, updateField],
+    );
+
     const renderFooter = useCallback(
       (props: BottomSheetFooterProps) => (
         <BottomSheetFooter {...props} bottomInset={0}>
@@ -86,79 +119,120 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
     );
 
     return (
-      <BottomSheetModal
-        ref={ref}
-        index={0}
-        snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
-        enablePanDownToClose={true}
-        // Customize the drag handle pill to match the design
-        handleIndicatorStyle={{
-          backgroundColor: '#D1D5DB',
-          width: 40,
-          height: 4,
-        }}
-        footerComponent={renderFooter}
-      >
-        <View style={{ flex: 1 }} className="bg-white">
-          {/* --- 1. Static Header --- */}
-          <View className="flex-row items-center justify-between px-5 pb-4 pt-2">
-            <Text className="font-cairo-bold text-lg text-[#111111]">
-              تصفية البحث
-            </Text>
-            <TouchableOpacity
-              onPress={handleClose}
-              className="h-8 w-8 items-center justify-center rounded-full bg-gray-50"
-            >
-              <Feather name="x" size={20} color="#111111" />
-            </TouchableOpacity>
-          </View>
+      <>
+        <BottomSheetModal
+          ref={ref}
+          index={0}
+          snapPoints={snapPoints}
+          backdropComponent={renderBackdrop}
+          enablePanDownToClose={true}
+          handleIndicatorStyle={{
+            backgroundColor: '#D1D5DB',
+            width: 40,
+            height: 4,
+          }}
+          footerComponent={renderFooter}
+        >
+          <View style={{ flex: 1 }} className="bg-white">
+            {/* --- 1. Static Header --- */}
+            <View className="flex-row items-center justify-between px-5 pb-4 pt-2">
+              <Text className="font-cairo-bold text-lg text-[#111111]">
+                تصفية البحث
+              </Text>
+              <TouchableOpacity
+                onPress={handleClose}
+                className="h-8 w-8 items-center justify-center rounded-full bg-gray-50"
+              >
+                <Feather name="x" size={20} color="#111111" />
+              </TouchableOpacity>
+            </View>
 
-          {/* --- 2. Scrollable Tab Navigation --- */}
-          <View className="border-b border-gray-100">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 20,
-              }}
-            >
-              {TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <TouchableOpacity
-                    key={tab.id}
-                    activeOpacity={0.7}
-                    onPress={() => setActiveTab(tab.id)}
-                    className="relative items-center px-4 pb-3 pt-1"
-                  >
-                    <Text
-                      className={`text-[15px] leading-[22px] tracking-[-0.41px] ${isActive ? 'font-almarai-bold text-[#15304D]' : 'font-almarai text-[#6B6A6A]'}`}
+            {/* --- 2. Scrollable Tab Navigation --- */}
+            <View className="border-b border-gray-100">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: 20,
+                }}
+              >
+                {TABS.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <TouchableOpacity
+                      key={tab.id}
+                      activeOpacity={0.7}
+                      onPress={() => setActiveTab(tab.id)}
+                      className="relative items-center px-4 pb-3 pt-1"
                     >
-                      {tab.label}
-                    </Text>
+                      <Text
+                        className={`text-[15px] leading-[22px] tracking-[-0.41px] ${isActive ? 'font-almarai-bold text-[#15304D]' : 'font-almarai text-[#6B6A6A]'}`}
+                      >
+                        {tab.label}
+                      </Text>
 
-                    {/* Active Underline Indicator */}
-                    {isActive && (
-                      <View className="absolute bottom-0 h-[2.5px] w-full min-w-[50px] rounded-t-full bg-[#15304D]" />
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
+                      {/* Active Underline Indicator */}
+                      {isActive && (
+                        <View className="absolute bottom-0 h-[2.5px] w-full min-w-[50px] rounded-t-full bg-[#15304D]" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
 
-          {/* --- 3. Dynamic Content Area --- */}
-          <View className="flex-1">
-            {activeTab === 'sell' && <StandardPropertyTab type="sell" />}
-            {activeTab === 'rent' && <StandardPropertyTab type="rent" />}
-            {activeTab === 'exchange' && <ExchangePropertyTab />}
-            {activeTab === 'companies' && <CompanyServicesTab />}
-            {activeTab === 'auctions' && <AuctionsTab />}
-            {activeTab === 'deals' && <DealsTab />}
+            {/* --- 3. Dynamic Content Area --- */}
+            <View className="flex-1">
+              {activeTab === 'sell' && (
+                <StandardPropertyTab
+                  type="sell"
+                  onGovPress={() => govDrawerRef.current?.present()}
+                  onAreaPress={() => areaDrawerRef.current?.present()}
+                />
+              )}
+              {activeTab === 'rent' && (
+                <StandardPropertyTab
+                  type="rent"
+                  onGovPress={() => govDrawerRef.current?.present()}
+                  onAreaPress={() => areaDrawerRef.current?.present()}
+                />
+              )}
+              {activeTab === 'exchange' && (
+                <ExchangePropertyTab
+                  onGovPress={() => govDrawerRef.current?.present()}
+                  onAreaPress={() => areaDrawerRef.current?.present()}
+                />
+              )}
+              {activeTab === 'companies' && (
+                <CompanyServicesTab
+                  onGovPress={() => govDrawerRef.current?.present()}
+                  onAreaPress={() => areaDrawerRef.current?.present()}
+                />
+              )}
+              {activeTab === 'auctions' && <AuctionsTab />}
+              {activeTab === 'deals' && (
+                <DealsTab
+                  onGovPress={() => govDrawerRef.current?.present()}
+                  onAreaPress={() => areaDrawerRef.current?.present()}
+                />
+              )}
+            </View>
           </View>
-        </View>
-      </BottomSheetModal>
+        </BottomSheetModal>
+
+        <SelectionDrawer
+          ref={govDrawerRef}
+          title="اختر المحافظة"
+          data={GOVERNORATES}
+          onSelect={handleGovSelect}
+        />
+        <SelectionDrawer
+          ref={areaDrawerRef}
+          title="اختر المنطقة"
+          data={availableAreas}
+          onSelect={handleAreaSelect}
+        />
+      </>
     );
   },
 );

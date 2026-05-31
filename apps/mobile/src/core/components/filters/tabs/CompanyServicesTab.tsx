@@ -1,12 +1,9 @@
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useRef } from 'react';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { Text, TextInput, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import InlineDropdown from '@/core/components/filters/InlineDropdown';
-import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import { useFilterStore } from '@/core/store/useFilterStore';
-import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
 // --- Configuration Constants ---
 const SPECIALTY_OPTIONS = [
@@ -22,19 +19,20 @@ const SPECIALTY_OPTIONS = [
   { id: 'heaters', label: 'سخانات' },
 ];
 
-export default function CompanyServicesTab() {
+export interface CompanyServicesTabProps {
+  onGovPress: () => void;
+  onAreaPress: () => void;
+}
+
+export default function CompanyServicesTab({
+  onGovPress,
+  onAreaPress,
+}: CompanyServicesTabProps) {
   // 1. Pull the state specifically for THIS tab ('companies')
   const tabState = useFilterStore((state) => state.companies);
 
   // 2. Pull the update function
   const updateField = useFilterStore((state) => state.updateField);
-
-  // --- Modal Drawer Refs ---
-  const govDrawerRef = useRef<BottomSheetModal>(null);
-  const areaDrawerRef = useRef<BottomSheetModal>(null);
-
-  // Dynamic areas list based on selected governorate
-  const availableAreas = tabState.gov ? AREAS[tabState.gov.id] || [] : [];
 
   // Helper function to keep JSX clean
   const setField = (field: keyof typeof tabState, value: any) => {
@@ -87,7 +85,7 @@ export default function CompanyServicesTab() {
             label="المحافظة"
             placeholder="اختر المحافظة"
             value={tabState.gov?.label}
-            onPress={() => govDrawerRef.current?.present()}
+            onPress={() => onGovPress()}
           />
           <DrawerTrigger
             label="المنطقة"
@@ -95,29 +93,14 @@ export default function CompanyServicesTab() {
             value={tabState.area?.label}
             onPress={() => {
               if (tabState.gov) {
-                areaDrawerRef.current?.present();
+                onAreaPress();
               }
             }}
           />
         </View>
       </BottomSheetScrollView>
 
-      {/* --- Modal Layout Drawers --- */}
-      <SelectionDrawer
-        ref={govDrawerRef}
-        title="اختر المحافظة"
-        data={GOVERNORATES}
-        onSelect={(value) => {
-          setField('gov', value);
-          setField('area', null);
-        }}
-      />
-      <SelectionDrawer
-        ref={areaDrawerRef}
-        title="اختر المنطقة"
-        data={availableAreas}
-        onSelect={(value) => setField('area', value)}
-      />
+      {/* --- Drawers rendered in GlobalFilterSheet parent --- */}
     </View>
   );
 }
