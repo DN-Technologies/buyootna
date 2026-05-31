@@ -2,7 +2,10 @@ import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import './globals.css';
 
-import { Almarai_400Regular } from '@expo-google-fonts/almarai';
+import {
+  Almarai_400Regular,
+  Almarai_700Bold,
+} from '@expo-google-fonts/almarai';
 import {
   Cairo_400Regular,
   Cairo_500Medium,
@@ -31,6 +34,7 @@ export default function RootLayout() {
     Cairo_600SemiBold,
     Cairo_700Bold,
     Almarai_400Regular,
+    Almarai_700Bold,
   });
 
   useEffect(() => {

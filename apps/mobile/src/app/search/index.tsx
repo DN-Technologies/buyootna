@@ -1,8 +1,10 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import { SearchResultItem, searchService } from '@/core/api/search.service';
+import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestions';
 import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
 import SearchHeader from '@/core/components/search/SearchHeader';
@@ -19,10 +21,14 @@ export default function SearchScreen() {
   const [liveResults, setLiveResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+
   useEffect(() => {
     if (params.openFilter === 'true') {
-      console.log('Open Filter Modal triggered from Home Search Bar');
-      // When filter modal is implemented, trigger it here.
+      // Small timeout to allow the sheet to be fully rendered and registered before expanding
+      setTimeout(() => {
+        filterSheetRef.current?.present();
+      }, 100);
     }
   }, [params.openFilter]);
 
@@ -95,7 +101,7 @@ export default function SearchScreen() {
         isFocused={isFocused}
         setIsFocused={setIsFocused}
         onBack={() => router.back()}
-        onFilterPress={() => console.log('Open Filter Modal')}
+        onFilterPress={() => filterSheetRef.current?.present()}
       />
 
       {/* 2. Conditional Rendering Magic */}
@@ -116,6 +122,7 @@ export default function SearchScreen() {
           onSelect={handleSelectResult}
         />
       )}
+      <GlobalFilterSheet ref={filterSheetRef} />
     </KeyboardAvoidingView>
   );
 }

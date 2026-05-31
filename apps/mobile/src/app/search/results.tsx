@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 
 import { SearchResultItem, searchService } from '@/core/api/search.service';
+import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import AlertSuccessToast from '@/core/components/search/AlertSuccessToast';
 import EmptySearchResult from '@/core/components/search/EmptySearchResult';
 import SearchHeader from '@/core/components/search/SearchHeader';
@@ -18,6 +20,7 @@ import SuggestionCardSkeleton from '@/core/components/skeletons/SuggestionCardSk
 import { useDebounce } from '@/core/hooks/useDebounce';
 
 export default function SearchResultsScreen() {
+  const filterSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
   const { query } = useLocalSearchParams();
 
@@ -107,7 +110,7 @@ export default function SearchResultsScreen() {
         isFocused={isFocused}
         setIsFocused={setIsFocused}
         onBack={() => router.back()}
-        onFilterPress={() => console.log('Open Filter Modal')}
+        onFilterPress={() => filterSheetRef.current?.present()}
       />
 
       {/* --- RESULTS META --- */}
@@ -188,6 +191,7 @@ export default function SearchResultsScreen() {
         onHide={() => setShowToast(false)}
         onUndo={() => console.log('Alert cancelled by user')}
       />
+      <GlobalFilterSheet ref={filterSheetRef} />
     </View>
   );
 }

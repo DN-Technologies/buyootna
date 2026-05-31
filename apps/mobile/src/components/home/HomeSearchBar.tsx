@@ -4,7 +4,11 @@ import { TextInput, TouchableOpacity, View } from 'react-native';
 
 import { FilterHorizontalIcon, HomeSearchIcon } from '@/assets/icons/home/header/index';
 
-export default function HomeSearchBar() {
+interface HomeSearchBarProps {
+  onFilterPress?: () => void;
+}
+
+export default function HomeSearchBar({ onFilterPress }: HomeSearchBarProps) {
   const router = useRouter();
 
   const handleSearchPress = () => {
@@ -12,11 +16,16 @@ export default function HomeSearchBar() {
   };
 
   const handleFilterPress = () => {
-    router.push({
-      pathname: '/search',
-      params: { openFilter: 'true' },
-    });
+    if (onFilterPress) {
+      onFilterPress();
+    } else {
+      router.push({
+        pathname: '/search',
+        params: { openFilter: 'true' },
+      });
+    }
   };
+
 
   return (
     <View className="mb-6 flex-row items-center">

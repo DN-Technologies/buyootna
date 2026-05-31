@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import React, { useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +11,7 @@ import HomeAll from '@/components/home/sections/HomeAll';
 import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
 import { feedService } from '@/core/api/feed.service';
+import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -24,6 +26,8 @@ type CompanyFilter =
   | 'other';
 
 export default function HomeScreen() {
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+
   // --- State ---
   const [activeTab, setActiveTab] = useState<PrimaryTab>('all');
   const [activePropFilter, setActivePropFilter] =
@@ -66,7 +70,7 @@ export default function HomeScreen() {
         <HomeHeader />
 
         {/* 2. Search Bar */}
-        <HomeSearchBar />
+        <HomeSearchBar onFilterPress={() => filterSheetRef.current?.present()} />
 
         {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
         <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -113,6 +117,7 @@ export default function HomeScreen() {
           <HomeAll feedData={feedData} isLoading={isLoading} />
         </ScrollView>
       )}
+      <GlobalFilterSheet ref={filterSheetRef} />
     </SafeAreaView>
   );
 }
