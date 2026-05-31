@@ -40,8 +40,8 @@ export default function FilterFooter({
 
   return (
     <View
-      className="w-full bg-white px-5 pt-4 border-t border-gray-100"
-      style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+      className="w-full border-t border-gray-100 bg-white px-5 pt-4"
+      style={{ paddingBottom: Math.max(0, insets.bottom - 20) }}
     >
       <View className="flex-row items-center justify-between gap-4">
         {/* --- Submit Button (عرض النتائج) --- */}

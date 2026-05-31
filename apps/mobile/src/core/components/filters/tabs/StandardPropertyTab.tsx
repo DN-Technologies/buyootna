@@ -1,9 +1,11 @@
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRef } from 'react';
 import { View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
 import RangeInputGroup from '@/core/components/filters/RangeInputGroup';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import StepperInput from '@/core/components/filters/StepperInput';
 import { useFilterStore } from '@/core/store/useFilterStore';
 
@@ -28,22 +30,34 @@ const FEATURE_OPTIONS = [
   { id: 'pool', label: 'حمام سباحة' },
 ];
 
+const MOCK_GOVERNORATES = [
+  { id: '1', label: 'العاصمة' },
+  { id: '2', label: 'حولي' },
+  { id: '3', label: 'الأحمدي' },
+];
+
+const MOCK_AREAS = [
+  { id: '1', label: 'السالمية' },
+  { id: '2', label: 'الجابرية' },
+  { id: '3', label: 'سلوى' },
+];
+
 export interface StandardPropertyTabProps {
   type: 'sell' | 'rent';
-  onGovPress: () => void;
-  onAreaPress: () => void;
 }
 
 export default function StandardPropertyTab({
   type,
-  onGovPress,
-  onAreaPress,
 }: StandardPropertyTabProps) {
   // 1. Pull the state specifically for THIS tab ('sell' or 'rent')
   const tabState = useFilterStore((state) => state[type]);
 
   // 2. Pull the update function
   const updateField = useFilterStore((state) => state.updateField);
+
+  // --- Drawer Refs ---
+  const govDrawerRef = useRef<BottomSheetModal>(null);
+  const areaDrawerRef = useRef<BottomSheetModal>(null);
 
   // Helper function to keep JSX clean
   const setField = (field: keyof typeof tabState, value: any) => {
@@ -67,17 +81,13 @@ export default function StandardPropertyTab({
             label="المحافظة"
             placeholder="اختر المحافظة"
             value={tabState.gov?.label}
-            onPress={onGovPress}
+            onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
-            placeholder={tabState.gov ? 'اختر المنطقة' : 'اختر المحافظة أولاً'}
+            placeholder="اختر المنطقة"
             value={tabState.area?.label}
-            onPress={() => {
-              if (tabState.gov) {
-                onAreaPress();
-              }
-            }}
+            onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
         {/* --- 2. Property Category --- */}
@@ -133,7 +143,19 @@ export default function StandardPropertyTab({
         />
       </BottomSheetScrollView>
 
-      {/* --- Drawers rendered in GlobalFilterSheet parent --- */}
+      {/* --- Drawers (Rendered outside the scrollview but inside the tab) --- */}
+      <SelectionDrawer
+        ref={govDrawerRef}
+        title="اختر المحافظة"
+        data={MOCK_GOVERNORATES}
+        onSelect={(value) => setField('gov', value)}
+      />
+      <SelectionDrawer
+        ref={areaDrawerRef}
+        title="اختر المنطقة"
+        data={MOCK_AREAS}
+        onSelect={(value) => setField('area', value)}
+      />
     </View>
   );
 }

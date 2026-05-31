@@ -1,8 +1,10 @@
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { useRef } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import InlineDropdown from '@/core/components/filters/InlineDropdown';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import { useFilterStore } from '@/core/store/useFilterStore';
 
 // --- Configuration Constants ---
@@ -19,20 +21,28 @@ const SPECIALTY_OPTIONS = [
   { id: 'heaters', label: 'سخانات' },
 ];
 
-export interface CompanyServicesTabProps {
-  onGovPress: () => void;
-  onAreaPress: () => void;
-}
+const MOCK_GOVERNORATES = [
+  { id: '1', label: 'العاصمة' },
+  { id: '2', label: 'حولي' },
+  { id: '3', label: 'الأحمدي' },
+];
 
-export default function CompanyServicesTab({
-  onGovPress,
-  onAreaPress,
-}: CompanyServicesTabProps) {
+const MOCK_AREAS = [
+  { id: '1', label: 'السالمية' },
+  { id: '2', label: 'الجابرية' },
+  { id: '3', label: 'سلوى' },
+];
+
+export default function CompanyServicesTab() {
   // 1. Pull the state specifically for THIS tab ('companies')
   const tabState = useFilterStore((state) => state.companies);
 
   // 2. Pull the update function
   const updateField = useFilterStore((state) => state.updateField);
+
+  // --- Modal Drawer Refs ---
+  const govDrawerRef = useRef<BottomSheetModal>(null);
+  const areaDrawerRef = useRef<BottomSheetModal>(null);
 
   // Helper function to keep JSX clean
   const setField = (field: keyof typeof tabState, value: any) => {
@@ -85,22 +95,30 @@ export default function CompanyServicesTab({
             label="المحافظة"
             placeholder="اختر المحافظة"
             value={tabState.gov?.label}
-            onPress={() => onGovPress()}
+            onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
-            placeholder={tabState.gov ? 'اختر المنطقة' : 'اختر المحافظة أولاً'}
+            placeholder="اختر المنطقة"
             value={tabState.area?.label}
-            onPress={() => {
-              if (tabState.gov) {
-                onAreaPress();
-              }
-            }}
+            onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
       </BottomSheetScrollView>
 
-      {/* --- Drawers rendered in GlobalFilterSheet parent --- */}
+      {/* --- Modal Layout Drawers --- */}
+      <SelectionDrawer
+        ref={govDrawerRef}
+        title="اختر المحافظة"
+        data={MOCK_GOVERNORATES}
+        onSelect={(value) => setField('gov', value)}
+      />
+      <SelectionDrawer
+        ref={areaDrawerRef}
+        title="اختر المنطقة"
+        data={MOCK_AREAS}
+        onSelect={(value) => setField('area', value)}
+      />
     </View>
   );
 }
