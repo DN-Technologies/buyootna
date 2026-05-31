@@ -47,7 +47,7 @@ export default function PillGroup({
     <View className="mb-6 w-full">
       {/* Group Title */}
       <Text
-        className="mb-3 font-cairo-medium text-sm leading-[22px] text-[#111111]"
+        className="mb-1 font-cairo-medium text-sm leading-[22px] text-[#111111]"
         style={{
           writingDirection: 'rtl',
         }}
