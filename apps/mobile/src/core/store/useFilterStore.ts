@@ -57,7 +57,7 @@ export interface DealsTabState {
 }
 
 // Group all tabs under one interface
-export interface FilterTabState {
+export interface FilterTabsState {
   sell: StandardTabState;
   rent: StandardTabState;
   exchange: ExchangeTabState;
@@ -67,7 +67,7 @@ export interface FilterTabState {
 }
 
 // --- 2. Initial States ---
-const initialStandardState: StandardTabState = {
+export const initialStandardState: StandardTabState = {
   gov: null,
   area: null,
   category: 'apartment',
@@ -80,7 +80,7 @@ const initialStandardState: StandardTabState = {
   features: [],
 };
 
-const initialExchangeState: ExchangeTabState = {
+export const initialExchangeState: ExchangeTabState = {
   gov: null,
   area: null,
   requestYear: '',
@@ -90,21 +90,21 @@ const initialExchangeState: ExchangeTabState = {
   features: [],
 };
 
-const initialCompaniesState: CompaniesTabState = {
+export const initialCompaniesState: CompaniesTabState = {
   specialty: '',
   requestType: '',
   gov: null,
   area: null,
 };
 
-const initialAuctionsState: AuctionsTabState = {
+export const initialAuctionsState: AuctionsTabState = {
   status: 'starts_soon',
   startDate: '',
   endDate: '',
   propertyTypes: [],
 };
 
-const initialDealsState: DealsTabState = {
+export const initialDealsState: DealsTabState = {
   gov: null,
   area: null,
   salePercentage: '',
@@ -117,19 +117,38 @@ const initialDealsState: DealsTabState = {
   propertyTypes: [],
 };
 
+// Map tab names to their initial states for comparison
+const initialStates: Record<keyof FilterTabsState, any> = {
+  sell: initialStandardState,
+  rent: initialStandardState,
+  exchange: initialExchangeState,
+  companies: initialCompaniesState,
+  auctions: initialAuctionsState,
+  deals: initialDealsState,
+};
+
+// Helper to check if a tab has been modified from its initial state
+export function isTabDirty(
+  tab: keyof FilterTabsState,
+  currentState: any,
+): boolean {
+  const initial = initialStates[tab];
+  return JSON.stringify(currentState) !== JSON.stringify(initial);
+}
+
 // --- 3. The Zustand Store ---
-interface FilterStore extends FilterTabState {
+interface FilterStore extends FilterTabsState {
   // A strictly typed generic function to update any field in any tab
   updateField: <
-    T extends keyof FilterTabState,
-    K extends keyof FilterTabState[T],
+    T extends keyof FilterTabsState,
+    K extends keyof FilterTabsState[T],
   >(
     tab: T,
     field: K,
-    value: FilterTabState[T][K],
+    value: FilterTabsState[T][K],
   ) => void;
   // Reset a specific tab to its initial state
-  resetTab: (tab: keyof FilterTabState) => void;
+  resetTab: (tab: keyof FilterTabsState) => void;
 }
 
 export const useFilterStore = create<FilterStore>((set) => ({
