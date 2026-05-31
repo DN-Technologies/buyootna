@@ -1,6 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
@@ -52,13 +52,13 @@ export default function ExchangePropertyTab() {
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <BottomSheetScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 120,
           paddingTop: 16,
+          paddingBottom: 120,
         }}
       >
         {/* --- 1. Location Selection (Governorate & Area) --- */}
@@ -163,9 +163,9 @@ export default function ExchangePropertyTab() {
           value={tabState.features}
           onChange={(value) => setField('features', value)}
         />
-      </ScrollView>
+      </BottomSheetScrollView>
 
-      {/* --- Modal Layout Drawers --- */}
+      {/* --- Drawers (Rendered outside the scrollview but inside the tab) --- */}
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"

@@ -1,6 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import InlineDropdown from '@/core/components/filters/InlineDropdown';
@@ -51,13 +51,13 @@ export default function CompanyServicesTab() {
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <BottomSheetScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 120,
           paddingTop: 16,
+          paddingBottom: 120,
         }}
       >
         {/* --- 1. Specialty Dropdown --- */}
@@ -104,7 +104,7 @@ export default function CompanyServicesTab() {
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* --- Modal Layout Drawers --- */}
       <SelectionDrawer

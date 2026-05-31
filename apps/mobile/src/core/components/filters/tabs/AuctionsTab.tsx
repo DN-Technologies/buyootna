@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { View } from 'react-native';
 
 import DatePickerGroup from '@/core/components/filters/DatePickerGroup';
 import PillGroup from '@/core/components/filters/PillGroup';
@@ -32,13 +33,13 @@ export default function AuctionsTab() {
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <BottomSheetScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 120,
           paddingTop: 16,
+          paddingBottom: 120,
         }}
       >
         {/* --- 1. Auction Status --- */}
@@ -66,7 +67,7 @@ export default function AuctionsTab() {
           value={tabState.propertyTypes}
           onChange={(value) => setField('propertyTypes', value)}
         />
-      </ScrollView>
+      </BottomSheetScrollView>
     </View>
   );
 }

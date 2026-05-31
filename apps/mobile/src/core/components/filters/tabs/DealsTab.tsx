@@ -1,6 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import DatePickerGroup from '@/core/components/filters/DatePickerGroup';
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
@@ -44,13 +44,13 @@ export default function DealsTab() {
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <BottomSheetScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 120,
           paddingTop: 16,
+          paddingBottom: 120,
         }}
       >
         {/* --- 1. Location Selection --- */}
@@ -123,7 +123,7 @@ export default function DealsTab() {
           value={tabState.propertyTypes}
           onChange={(value) => setField('propertyTypes', value)}
         />
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* --- Modals --- */}
       <SelectionDrawer

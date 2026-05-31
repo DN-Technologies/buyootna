@@ -1,6 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
@@ -66,13 +66,13 @@ export default function StandardPropertyTab({
 
   return (
     <View className="flex-1">
-      <ScrollView
+      <BottomSheetScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 16,
-          paddingBottom: 120,
+          paddingBottom: 24,
         }}
       >
         {/* --- 1. Location Row (Governorate & Area) --- */}
@@ -141,7 +141,7 @@ export default function StandardPropertyTab({
           value={tabState.features}
           onChange={(value) => setField('features', value)}
         />
-      </ScrollView>
+      </BottomSheetScrollView>
 
       {/* --- Drawers (Rendered outside the scrollview but inside the tab) --- */}
       <SelectionDrawer
