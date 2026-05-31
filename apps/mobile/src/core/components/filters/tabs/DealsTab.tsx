@@ -1,14 +1,13 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 
 import DatePickerGroup from '@/core/components/filters/DatePickerGroup';
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
 import RangeInputGroup from '@/core/components/filters/RangeInputGroup';
-import SelectionDrawer, {
-  SelectionItem,
-} from '@/core/components/filters/SelectionDrawer';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
+import { useFilterStore } from '@/core/store/useFilterStore';
 
 const MOCK_GOVERNORATES = [
   { id: '1', label: 'العاصمة' },
@@ -28,22 +27,20 @@ const PROPERTY_TYPES = [
 ];
 
 export default function DealsTab() {
-  const [selectedGov, setSelectedGov] = useState<SelectionItem | null>(null);
-  const [selectedArea, setSelectedArea] = useState<SelectionItem | null>(null);
+  // 1. Pull the state specifically for THIS tab ('deals')
+  const tabState = useFilterStore((state) => state.deals);
 
-  const [salePercentage, setSalePercentage] = useState<string>('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+  // 2. Pull the update function
+  const updateField = useFilterStore((state) => state.updateField);
 
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
-  const [minArea, setMinArea] = useState<string>('');
-  const [maxArea, setMaxArea] = useState<string>('');
-
-  const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
-
+  // --- Modal Drawer Refs ---
   const govDrawerRef = useRef<BottomSheetModal>(null);
   const areaDrawerRef = useRef<BottomSheetModal>(null);
+
+  // Helper function to keep JSX clean
+  const setField = (field: keyof typeof tabState, value: any) => {
+    updateField('deals', field, value);
+  };
 
   return (
     <View className="flex-1">
@@ -61,13 +58,13 @@ export default function DealsTab() {
           <DrawerTrigger
             label="المحافظة"
             placeholder="اختر المحافظة"
-            value={selectedGov?.label}
+            value={tabState.gov?.label}
             onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
             placeholder="اختر المنطقة"
-            value={selectedArea?.label}
+            value={tabState.area?.label}
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
@@ -85,8 +82,8 @@ export default function DealsTab() {
               className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
               placeholder="اكتب نسبة البيع.."
               placeholderTextColor="#D1D5DB"
-              value={salePercentage}
-              onChangeText={setSalePercentage}
+              value={tabState.salePercentage}
+              onChangeText={(value) => setField('salePercentage', value)}
               style={{ writingDirection: 'rtl' }}
             />
           </View>
@@ -94,8 +91,8 @@ export default function DealsTab() {
 
         {/* --- 3. Dates --- */}
         <DatePickerGroup
-          startDate={startDate}
-          endDate={endDate}
+          startDate={tabState.startDate}
+          endDate={tabState.endDate}
           onStartPress={() => console.log('Open Start Date Picker')}
           onEndPress={() => console.log('Open End Date Picker')}
         />
@@ -104,18 +101,18 @@ export default function DealsTab() {
         <RangeInputGroup
           title="السعر"
           placeholderSuffix="د.ك"
-          minValue={minPrice}
-          maxValue={maxPrice}
-          onMinChange={setMinPrice}
-          onMaxChange={setMaxPrice}
+          minValue={tabState.minPrice}
+          maxValue={tabState.maxPrice}
+          onMinChange={(value) => setField('minPrice', value)}
+          onMaxChange={(value) => setField('maxPrice', value)}
         />
         <RangeInputGroup
           title="المساحة"
           placeholderSuffix="م²"
-          minValue={minArea}
-          maxValue={maxArea}
-          onMinChange={setMinArea}
-          onMaxChange={setMaxArea}
+          minValue={tabState.minArea}
+          maxValue={tabState.maxArea}
+          onMinChange={(value) => setField('minArea', value)}
+          onMaxChange={(value) => setField('maxArea', value)}
         />
 
         {/* --- 5. Property Type --- */}
@@ -123,8 +120,8 @@ export default function DealsTab() {
           title="نوع العقار"
           options={PROPERTY_TYPES}
           multiSelect={true}
-          value={propertyTypes}
-          onChange={setPropertyTypes}
+          value={tabState.propertyTypes}
+          onChange={(value) => setField('propertyTypes', value)}
         />
       </ScrollView>
 
@@ -133,13 +130,13 @@ export default function DealsTab() {
         ref={govDrawerRef}
         title="اختر المحافظة"
         data={MOCK_GOVERNORATES}
-        onSelect={setSelectedGov}
+        onSelect={(value) => setField('gov', value)}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
         data={MOCK_AREAS}
-        onSelect={setSelectedArea}
+        onSelect={(value) => setField('area', value)}
       />
     </View>
   );

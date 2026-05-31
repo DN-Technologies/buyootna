@@ -1,10 +1,11 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 
-import DrawerTrigger from '../DrawerTrigger';
-import PillGroup from '../PillGroup';
-import SelectionDrawer, { SelectionItem } from '../SelectionDrawer';
+import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
+import PillGroup from '@/core/components/filters/PillGroup';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
+import { useFilterStore } from '@/core/store/useFilterStore';
 
 // --- Configuration Constants ---
 const STATUS_OPTIONS = [
@@ -34,20 +35,20 @@ const MOCK_AREAS = [
 ];
 
 export default function ExchangePropertyTab() {
-  // --- Form States ---
-  const [selectedGov, setSelectedGov] = useState<SelectionItem | null>(null);
-  const [selectedArea, setSelectedArea] = useState<SelectionItem | null>(null);
+  // 1. Pull the state specifically for THIS tab ('exchange')
+  const tabState = useFilterStore((state) => state.exchange);
 
-  const [requestYear, setRequestYear] = useState<string>('');
-  const [requiredYear, setRequiredYear] = useState<string>('');
-
-  const [status, setStatus] = useState<string>('building');
-  const [areaSize, setAreaSize] = useState<string>('');
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  // 2. Pull the update function
+  const updateField = useFilterStore((state) => state.updateField);
 
   // --- Modal Drawer Refs ---
   const govDrawerRef = useRef<BottomSheetModal>(null);
   const areaDrawerRef = useRef<BottomSheetModal>(null);
+
+  // Helper function to keep JSX clean
+  const setField = (field: keyof typeof tabState, value: any) => {
+    updateField('exchange', field, value);
+  };
 
   return (
     <View className="flex-1">
@@ -65,13 +66,13 @@ export default function ExchangePropertyTab() {
           <DrawerTrigger
             label="المحافظة"
             placeholder="اختر المحافظة"
-            value={selectedGov?.label}
+            value={tabState.gov?.label}
             onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
             placeholder="اختر المنطقة"
-            value={selectedArea?.label}
+            value={tabState.area?.label}
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
@@ -92,8 +93,8 @@ export default function ExchangePropertyTab() {
                 placeholderTextColor="#D1D5DB"
                 keyboardType="numeric"
                 maxLength={4}
-                value={requiredYear}
-                onChangeText={setRequiredYear}
+                value={tabState.requiredYear}
+                onChangeText={(value) => setField('requiredYear', value)}
                 style={{ writingDirection: 'rtl' }}
               />
             </View>
@@ -113,8 +114,8 @@ export default function ExchangePropertyTab() {
                 placeholderTextColor="#D1D5DB"
                 keyboardType="numeric"
                 maxLength={4}
-                value={requestYear}
-                onChangeText={setRequestYear}
+                value={tabState.requestYear}
+                onChangeText={(value) => setField('requestYear', value)}
                 style={{ writingDirection: 'rtl' }}
               />
             </View>
@@ -126,8 +127,8 @@ export default function ExchangePropertyTab() {
           title="الحالة"
           options={STATUS_OPTIONS}
           multiSelect={false}
-          value={status}
-          onChange={setStatus}
+          value={tabState.status}
+          onChange={(value) => setField('status', value)}
         />
 
         {/* --- 4. Total Area Input --- */}
@@ -144,8 +145,8 @@ export default function ExchangePropertyTab() {
               placeholder="300"
               placeholderTextColor="#D1D5DB"
               keyboardType="numeric"
-              value={areaSize}
-              onChangeText={setAreaSize}
+              value={tabState.areaSize}
+              onChangeText={(value) => setField('areaSize', value)}
               style={{ writingDirection: 'rtl' }}
             />
             <Text className="font-cairo text-xs leading-[22px] text-[#989898]">
@@ -159,8 +160,8 @@ export default function ExchangePropertyTab() {
           title="المزايا"
           options={EXCHANGE_FEATURE_OPTIONS}
           multiSelect={true}
-          value={selectedFeatures}
-          onChange={setSelectedFeatures}
+          value={tabState.features}
+          onChange={(value) => setField('features', value)}
         />
       </ScrollView>
 
@@ -169,13 +170,13 @@ export default function ExchangePropertyTab() {
         ref={govDrawerRef}
         title="اختر المحافظة"
         data={MOCK_GOVERNORATES}
-        onSelect={setSelectedGov}
+        onSelect={(value) => setField('gov', value)}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
         data={MOCK_AREAS}
-        onSelect={setSelectedArea}
+        onSelect={(value) => setField('area', value)}
       />
     </View>
   );

@@ -1,12 +1,11 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { ScrollView, Text, TextInput, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import InlineDropdown from '@/core/components/filters/InlineDropdown';
-import SelectionDrawer, {
-  SelectionItem,
-} from '@/core/components/filters/SelectionDrawer';
+import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
+import { useFilterStore } from '@/core/store/useFilterStore';
 
 // --- Configuration Constants ---
 const SPECIALTY_OPTIONS = [
@@ -35,15 +34,20 @@ const MOCK_AREAS = [
 ];
 
 export default function CompanyServicesTab() {
-  // --- Form States ---
-  const [specialty, setSpecialty] = useState<string>('');
-  const [requestType, setRequestType] = useState<string>('');
-  const [selectedGov, setSelectedGov] = useState<SelectionItem | null>(null);
-  const [selectedArea, setSelectedArea] = useState<SelectionItem | null>(null);
+  // 1. Pull the state specifically for THIS tab ('companies')
+  const tabState = useFilterStore((state) => state.companies);
+
+  // 2. Pull the update function
+  const updateField = useFilterStore((state) => state.updateField);
 
   // --- Modal Drawer Refs ---
   const govDrawerRef = useRef<BottomSheetModal>(null);
   const areaDrawerRef = useRef<BottomSheetModal>(null);
+
+  // Helper function to keep JSX clean
+  const setField = (field: keyof typeof tabState, value: any) => {
+    updateField('companies', field, value);
+  };
 
   return (
     <View className="flex-1">
@@ -61,8 +65,8 @@ export default function CompanyServicesTab() {
           title="مجال التخصص"
           placeholder="مكتب هندسي، شركة مقاولات.."
           options={SPECIALTY_OPTIONS}
-          value={specialty}
-          onChange={setSpecialty}
+          value={tabState.specialty}
+          onChange={(value) => setField('specialty', value)}
         />
 
         {/* --- 2. Request Type Text Input --- */}
@@ -78,8 +82,8 @@ export default function CompanyServicesTab() {
               className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
               placeholder="اكتب الخدمة التي تريدها.."
               placeholderTextColor="#D1D5DB"
-              value={requestType}
-              onChangeText={setRequestType}
+              value={tabState.requestType}
+              onChangeText={(value) => setField('requestType', value)}
               style={{ writingDirection: 'rtl' }}
             />
           </View>
@@ -90,13 +94,13 @@ export default function CompanyServicesTab() {
           <DrawerTrigger
             label="المحافظة"
             placeholder="اختر المحافظة"
-            value={selectedGov?.label}
+            value={tabState.gov?.label}
             onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
             placeholder="اختر المنطقة"
-            value={selectedArea?.label}
+            value={tabState.area?.label}
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
@@ -107,13 +111,13 @@ export default function CompanyServicesTab() {
         ref={govDrawerRef}
         title="اختر المحافظة"
         data={MOCK_GOVERNORATES}
-        onSelect={setSelectedGov}
+        onSelect={(value) => setField('gov', value)}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
         data={MOCK_AREAS}
-        onSelect={setSelectedArea}
+        onSelect={(value) => setField('area', value)}
       />
     </View>
   );

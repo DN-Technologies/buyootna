@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
 
 import DatePickerGroup from '@/core/components/filters/DatePickerGroup';
 import PillGroup from '@/core/components/filters/PillGroup';
+import { useFilterStore } from '@/core/store/useFilterStore';
 
 const AUCTION_STATUS_OPTIONS = [
   { id: 'starts_soon', label: 'يبدأ قريباً' },
@@ -19,10 +19,16 @@ const PROPERTY_TYPES = [
 ];
 
 export default function AuctionsTab() {
-  const [status, setStatus] = useState<string>('starts_soon');
-  const [propertyType, setPropertyType] = useState<string>('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+  // 1. Pull the state specifically for THIS tab ('auctions')
+  const tabState = useFilterStore((state) => state.auctions);
+
+  // 2. Pull the update function
+  const updateField = useFilterStore((state) => state.updateField);
+
+  // Helper function to keep JSX clean
+  const setField = (field: keyof typeof tabState, value: any) => {
+    updateField('auctions', field, value);
+  };
 
   return (
     <View className="flex-1">
@@ -40,14 +46,14 @@ export default function AuctionsTab() {
           title="حالة المزاد"
           options={AUCTION_STATUS_OPTIONS}
           multiSelect={false}
-          value={status}
-          onChange={setStatus}
+          value={tabState.status}
+          onChange={(value) => setField('status', value)}
         />
 
         {/* --- 2. Date Range --- */}
         <DatePickerGroup
-          startDate={startDate}
-          endDate={endDate}
+          startDate={tabState.startDate}
+          endDate={tabState.endDate}
           onStartPress={() => console.log('Open Start Date Picker')}
           onEndPress={() => console.log('Open End Date Picker')}
         />
@@ -57,8 +63,8 @@ export default function AuctionsTab() {
           title="نوع العقار"
           options={PROPERTY_TYPES}
           multiSelect={true}
-          value={propertyType}
-          onChange={setPropertyType}
+          value={tabState.propertyTypes}
+          onChange={(value) => setField('propertyTypes', value)}
         />
       </ScrollView>
     </View>
