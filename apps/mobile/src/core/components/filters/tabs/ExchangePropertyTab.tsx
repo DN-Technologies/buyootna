@@ -6,6 +6,7 @@ import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
 import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import { useFilterStore } from '@/core/store/useFilterStore';
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
 // --- Configuration Constants ---
 const STATUS_OPTIONS = [
@@ -22,18 +23,6 @@ const EXCHANGE_FEATURE_OPTIONS = [
   { id: 'three_streets_detached', label: 'ثلاث شوارع - غير متصلة' },
 ];
 
-const MOCK_GOVERNORATES = [
-  { id: '1', label: 'العاصمة' },
-  { id: '2', label: 'حولي' },
-  { id: '3', label: 'الأحمدي' },
-];
-
-const MOCK_AREAS = [
-  { id: '1', label: 'السالمية' },
-  { id: '2', label: 'الجابرية' },
-  { id: '3', label: 'سلوى' },
-];
-
 export default function ExchangePropertyTab() {
   // 1. Pull the state specifically for THIS tab ('exchange')
   const tabState = useFilterStore((state) => state.exchange);
@@ -44,6 +33,9 @@ export default function ExchangePropertyTab() {
   // --- Modal Drawer Refs ---
   const govDrawerRef = useRef<BottomSheetModal>(null);
   const areaDrawerRef = useRef<BottomSheetModal>(null);
+
+  // Dynamic areas list based on selected governorate
+  const availableAreas = tabState.gov ? AREAS[tabState.gov.id] || [] : [];
 
   // Helper function to keep JSX clean
   const setField = (field: keyof typeof tabState, value: any) => {
@@ -71,9 +63,13 @@ export default function ExchangePropertyTab() {
           />
           <DrawerTrigger
             label="المنطقة"
-            placeholder="اختر المنطقة"
+            placeholder={tabState.gov ? 'اختر المنطقة' : 'اختر المحافظة أولاً'}
             value={tabState.area?.label}
-            onPress={() => areaDrawerRef.current?.present()}
+            onPress={() => {
+              if (tabState.gov) {
+                areaDrawerRef.current?.present();
+              }
+            }}
           />
         </View>
 
@@ -169,13 +165,16 @@ export default function ExchangePropertyTab() {
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"
-        data={MOCK_GOVERNORATES}
-        onSelect={(value) => setField('gov', value)}
+        data={GOVERNORATES}
+        onSelect={(value) => {
+          setField('gov', value);
+          setField('area', null);
+        }}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
-        data={MOCK_AREAS}
+        data={availableAreas}
         onSelect={(value) => setField('area', value)}
       />
     </View>
