@@ -7,6 +7,7 @@ import {
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import CompanyServicesTab from '@/core/components/filters/tabs/CompanyServicesTab';
 import ExchangePropertyTab from '@/core/components/filters/tabs/ExchangePropertyTab';
 import StandardPropertyTab from '@/core/components/filters/tabs/StandardPropertyTab';
 
@@ -129,14 +130,10 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
             {activeTab === 'sell' && <StandardPropertyTab type="sell" />}
             {activeTab === 'rent' && <StandardPropertyTab type="rent" />}
             {activeTab === 'exchange' && <ExchangePropertyTab />}
+            {activeTab === 'companies' && <CompanyServicesTab />}
 
             {/* Placeholders for upcoming cards */}
 
-            {activeTab === 'companies' && (
-              <View className="flex-1 items-center justify-center">
-                <Text>شركات</Text>
-              </View>
-            )}
             {activeTab === 'auctions' && (
               <View className="flex-1 items-center justify-center">
                 <Text>مزادات</Text>
