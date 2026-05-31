@@ -1,12 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
+  BottomSheetFooter,
+  BottomSheetFooterProps,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import FilterFooter from '@/core/components/filters/FilterFooter';
 import AuctionsTab from '@/core/components/filters/tabs/AuctionsTab';
 import CompanyServicesTab from '@/core/components/filters/tabs/CompanyServicesTab';
 import DealsTab from '@/core/components/filters/tabs/DealsTab';
@@ -32,17 +34,18 @@ const TABS: { id: FilterTab; label: string }[] = [
 ];
 
 interface GlobalFilterSheetProps {
+  onApplyFilters?: (filterData: any) => void;
   onClose?: () => void;
 }
 
 const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
-  ({ onClose }, ref) => {
+  ({ onApplyFilters, onClose }, ref) => {
     // --- State ---
     const [activeTab, setActiveTab] = useState<FilterTab>('sell'); // Default to Sell
 
     // --- Bottom Sheet Configuration ---
     // Snap points dictate how high hte sheet opens. 90% gives a nice full-screen feel while leaving a gap at the top.
-    const snapPoints = useMemo(() => ['90%'], []);
+    const snapPoints = useMemo(() => ['95%'], []);
 
     // Backdrop renders the dark overlay behind the sheet
     const renderBackdrop = useCallback(
@@ -57,13 +60,30 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
       [],
     );
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
       if (ref && 'current' in ref && ref.current) {
         // @ts-ignore
         ref.current.dismiss();
       }
       if (onClose) onClose();
-    };
+    }, [ref, onClose]);
+
+    const handleApply = useCallback(
+      (data: any) => {
+        if (onApplyFilters) onApplyFilters(data);
+        handleClose(); // Close the sheet after hitting "Show Results"
+      },
+      [onApplyFilters, handleClose],
+    );
+
+    const renderFooter = useCallback(
+      (props: BottomSheetFooterProps) => (
+        <BottomSheetFooter {...props} bottomInset={0}>
+          <FilterFooter activeTab={activeTab} onApplyFilters={handleApply} />
+        </BottomSheetFooter>
+      ),
+      [activeTab, handleApply],
+    );
 
     return (
       <BottomSheetModal
@@ -78,8 +98,9 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
           width: 40,
           height: 4,
         }}
+        footerComponent={renderFooter}
       >
-        <BottomSheetView style={{ flex: 1 }} className="bg-white">
+        <View style={{ flex: 1 }} className="bg-white">
           {/* --- 1. Static Header --- */}
           <View className="flex-row items-center justify-between px-5 pb-4 pt-2">
             <Text className="font-cairo-bold text-lg text-[#111111]">
@@ -136,7 +157,7 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
             {activeTab === 'auctions' && <AuctionsTab />}
             {activeTab === 'deals' && <DealsTab />}
           </View>
-        </BottomSheetView>
+        </View>
       </BottomSheetModal>
     );
   },

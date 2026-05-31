@@ -72,7 +72,7 @@ export default function StandardPropertyTab({
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 16,
-          paddingBottom: 24,
+          paddingBottom: 120,
         }}
       >
         {/* --- 1. Location Row (Governorate & Area) --- */}
