@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
@@ -8,6 +8,7 @@ import RangeInputGroup from '@/core/components/filters/RangeInputGroup';
 import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import StepperInput from '@/core/components/filters/StepperInput';
 import { useFilterStore } from '@/core/store/useFilterStore';
+import { AREAS,GOVERNORATES } from '@/core/utils/data/locations';
 
 // --- Mock Data matching your Figma ---
 const CATEGORY_OPTIONS = [
@@ -28,18 +29,6 @@ const FEATURE_OPTIONS = [
   { id: 'sea_view', label: 'إطلالة بحرية' },
   { id: 'elevator', label: 'مصعد' },
   { id: 'pool', label: 'حمام سباحة' },
-];
-
-const MOCK_GOVERNORATES = [
-  { id: '1', label: 'العاصمة' },
-  { id: '2', label: 'حولي' },
-  { id: '3', label: 'الأحمدي' },
-];
-
-const MOCK_AREAS = [
-  { id: '1', label: 'السالمية' },
-  { id: '2', label: 'الجابرية' },
-  { id: '3', label: 'سلوى' },
 ];
 
 export interface StandardPropertyTabProps {
@@ -63,6 +52,14 @@ export default function StandardPropertyTab({
   const setField = (field: keyof typeof tabState, value: any) => {
     updateField(type, field, value);
   };
+
+  // Dynamically resolve areas based on selected governorate, or show all if none selected
+  const areasToDisplay = useMemo(() => {
+    if (tabState.gov?.id) {
+      return AREAS[tabState.gov.id] || [];
+    }
+    return Object.values(AREAS).flat();
+  }, [tabState.gov]);
 
   return (
     <View className="flex-1">
@@ -147,14 +144,25 @@ export default function StandardPropertyTab({
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"
-        data={MOCK_GOVERNORATES}
-        onSelect={(value) => setField('gov', value)}
+        data={GOVERNORATES}
+        onSelect={(value: any) => {
+          setField('gov', value);
+          // If the current area doesn't belong to this governorate, clear it
+          const currentArea = tabState.area;
+          if (currentArea) {
+            const validAreas = AREAS[value.id] || [];
+            const isAreaValid = validAreas.some((a) => a.id === currentArea.id);
+            if (!isAreaValid) {
+              setField('area', null);
+            }
+          }
+        }}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
-        data={MOCK_AREAS}
-        onSelect={(value) => setField('area', value)}
+        data={areasToDisplay}
+        onSelect={(value: any) => setField('area', value)}
       />
     </View>
   );
