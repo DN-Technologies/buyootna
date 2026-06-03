@@ -148,10 +148,13 @@ export class PropertiesService {
       'properties',
     );
 
+    const { area, ...propertyData } = dto;
+
     // 2. Save property database
     const property = await this.prisma.property.create({
       data: {
-        ...dto,
+        ...propertyData,
+        areaSize: area,
         images: imageUrls,
         userId: userId, // Link it to the user who created it
       },
@@ -164,10 +167,15 @@ export class PropertiesService {
   async update(userId: string, propertyId: string, dto: UpdatePropertyDto) {
     await this.verifyOwnership(userId, propertyId);
 
+    const { area, ...propertyData } = dto;
+
     // Note: If we want to allow image updates later, we'd handle S3 deletions and new uploads here
     return this.prisma.property.update({
       where: { id: propertyId },
-      data: dto,
+      data: {
+        ...propertyData,
+        ...(area !== undefined ? { areaSize: area } : {}),
+      },
     });
   }
 
@@ -281,7 +289,7 @@ export class PropertiesService {
           : p.category === 'COMMERCIAL'
             ? 'تجاري'
             : 'استثماري',
-      area: p.area,
+      area: p.areaSize,
       beds: p.beds,
       baths: p.baths,
       location: p.location,

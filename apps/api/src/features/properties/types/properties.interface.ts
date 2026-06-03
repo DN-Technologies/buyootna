@@ -1,12 +1,12 @@
 export interface PropertyWithCompanyUser {
   id: string;
   images: string[];
-  price: number;
+  price: number | null;
   isFeatured: boolean;
   category: string;
-  area: number;
-  beds: number;
-  baths: number;
+  areaSize: number | null;
+  beds: number | null;
+  baths: number | null;
   location: string;
   user: {
     companyProfile: {
