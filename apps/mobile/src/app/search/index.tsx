@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 
 import { SearchResultItem, searchService } from '@/core/api/search.service';
@@ -22,6 +22,20 @@ export default function SearchScreen() {
   const [isSearching, setIsSearching] = useState(false);
 
   const filterSheetRef = useRef<BottomSheetModal>(null);
+
+  // Navigate to results screen with advanced filter payload
+  const handleAdvancedSearch = useCallback(
+    (data: { tab: string; filters: any }) => {
+      router.push({
+        pathname: '/search/results',
+        params: {
+          tab: data.tab,
+          filters: JSON.stringify(data.filters),
+        },
+      });
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (params.openFilter === 'true') {
@@ -122,7 +136,10 @@ export default function SearchScreen() {
           onSelect={handleSelectResult}
         />
       )}
-      <GlobalFilterSheet ref={filterSheetRef} />
+      <GlobalFilterSheet
+        ref={filterSheetRef}
+        onApplyFilters={handleAdvancedSearch}
+      />
     </KeyboardAvoidingView>
   );
 }

@@ -1,19 +1,17 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
-import { useRef,useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import apiClient from '@/core/api/api';
 import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
-import { AccountType } from '@/core/types';
 import {
   CompanyLoginFormValues,
   CompanySignupFormValues,
@@ -27,6 +25,7 @@ import ProfileBottomSheet, {
   Profile,
 } from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthStore } from '@/store/useAuthStore';
+import { AccountType } from '@/types';
 
 const MOCK_PROFILES: Profile[] = [
   {

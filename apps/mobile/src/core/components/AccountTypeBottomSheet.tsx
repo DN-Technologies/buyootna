@@ -8,7 +8,7 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity,View } from 'react-native';
 
 import SelectionCard from '@/components/SelectionCard';
-import { AccountType } from '@/core/types';
+import { AccountType } from '@/types';
 
 interface AccountTypeBottomSheetProps {
   onContinue: (type: AccountType) => void;

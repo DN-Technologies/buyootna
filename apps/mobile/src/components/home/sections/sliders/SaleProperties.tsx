@@ -52,6 +52,7 @@ export default function SaleProperties({ initialData }: SalePropertiesProps) {
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
       console.error('Failed to load more:', error);
+      setHasNextPage(false);
     } finally {
       setIsLoadingMore(false);
     }

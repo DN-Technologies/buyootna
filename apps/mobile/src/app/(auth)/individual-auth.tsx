@@ -1,13 +1,12 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import { useRef,useState } from 'react';
-import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
+import { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import apiClient from '@/core/api/api';
 import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
-import { AccountType } from '@/core/types';
 import { LoginFormValues, SignupFormValues } from '@/features/auth/authSchemas';
 // Modular Components
 import { IndividualAuthHeader } from '@/features/auth/components/individual/IndividualAuthHeader';
@@ -18,6 +17,7 @@ import ProfileBottomSheet, {
   Profile,
 } from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthStore } from '@/store/useAuthStore';
+import { AccountType } from '@/types';
 
 const MOCK_PROFILES: Profile[] = [
   {

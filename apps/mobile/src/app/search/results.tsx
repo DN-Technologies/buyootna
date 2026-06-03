@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,10 +19,20 @@ import SuggestionCard from '@/core/components/search/SuggestionCard';
 import SuggestionCardSkeleton from '@/core/components/skeletons/SuggestionCardSkeleton';
 import { useDebounce } from '@/core/hooks/useDebounce';
 
+// Holds the active advanced filter context for pagination
+interface AdvancedFilterState {
+  tab: string;
+  filters: any;
+}
+
 export default function SearchResultsScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
-  const { query } = useLocalSearchParams();
+  const {
+    query,
+    tab: routeTab,
+    filters: routeFilters,
+  } = useLocalSearchParams();
 
   // Text state for Search Bar input
   const [searchText, setSearchText] = useState(
@@ -38,7 +48,27 @@ export default function SearchResultsScreen() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Fetch function
+  // Parse route params on initialization to prevent dual fetching race conditions on mount
+  const initialAdvancedFilters = useMemo(() => {
+    if (routeTab && routeFilters) {
+      try {
+        const tab = typeof routeTab === 'string' ? routeTab : routeTab[0];
+        const filters = JSON.parse(
+          typeof routeFilters === 'string' ? routeFilters : routeFilters[0],
+        );
+        return { tab, filters };
+      } catch (e) {
+        console.error('Failed to parse route filter params', e);
+      }
+    }
+    return null;
+  }, [routeTab, routeFilters]);
+
+  // Advanced filter mode state
+  const [advancedFilters, setAdvancedFilters] =
+    useState<AdvancedFilterState | null>(initialAdvancedFilters);
+
+  // --- Text Search ---
   const fetchResults = useCallback(
     async (pageNumber = 1) => {
       try {
@@ -67,6 +97,45 @@ export default function SearchResultsScreen() {
     [debouncedSearchText],
   );
 
+  // --- Advanced Filter Search ---
+  const fetchAdvancedResults = useCallback(
+    async (filterState: AdvancedFilterState, pageNumber = 1) => {
+      try {
+        if (pageNumber === 1) setIsLoading(true);
+
+        const response = await searchService.advancedSearch({
+          tab: filterState.tab,
+          filters: filterState.filters,
+          page: pageNumber,
+        });
+
+        if (pageNumber === 1) {
+          setResults(response.data);
+        } else {
+          setResults((prev) => [...prev, ...response.data]);
+        }
+
+        setHasNextPage(response.meta.hasNextPage);
+        setTotalCount(response.meta.total);
+      } catch (error) {
+        console.error('Failed to fetch advanced results', error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  // Handle "عرض النتائج" from the filter sheet
+  const handleAdvancedSearch = useCallback(
+    (data: { tab: string; filters: any }) => {
+      setSearchText(''); // Clear text search
+      setPage(1);
+      setAdvancedFilters(data);
+    },
+    [],
+  );
+
   // Sync external route query changes with local search text
   useEffect(() => {
     if (query) {
@@ -74,18 +143,35 @@ export default function SearchResultsScreen() {
     }
   }, [query]);
 
-  // Trigger fetch when query changes
+  // When the user types, switch back to text search mode by clearing advanced filters
+  useEffect(() => {
+    if (debouncedSearchText) {
+      setAdvancedFilters(null);
+    }
+  }, [debouncedSearchText]);
+
+  // Unified search runner: triggers when search text OR advanced filters change.
+  // This guarantees we only run ONE search fetch at a time (preventing race conditions).
   useEffect(() => {
     setPage(1);
-    fetchResults(1);
-  }, [fetchResults]);
+    if (advancedFilters) {
+      fetchAdvancedResults(advancedFilters, 1);
+    } else {
+      fetchResults(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchText, advancedFilters]);
 
-  // Handle Load More (Pagination)
+  // Handle Load More (Pagination) — works in both modes
   const handleLoadMore = () => {
     if (hasNextPage && !isLoading) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchResults(nextPage);
+      if (advancedFilters) {
+        fetchAdvancedResults(advancedFilters, nextPage);
+      } else {
+        fetchResults(nextPage);
+      }
     }
   };
 
@@ -191,7 +277,10 @@ export default function SearchResultsScreen() {
         onHide={() => setShowToast(false)}
         onUndo={() => console.log('Alert cancelled by user')}
       />
-      <GlobalFilterSheet ref={filterSheetRef} />
+      <GlobalFilterSheet
+        ref={filterSheetRef}
+        onApplyFilters={handleAdvancedSearch}
+      />
     </View>
   );
 }

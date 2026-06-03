@@ -52,6 +52,7 @@ export default function RentProperties({ initialData }: RentPropertiesProps) {
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
       console.error('Failed to load more rent properties:', error);
+      setHasNextPage(false);
     } finally {
       setIsLoadingMore(false);
     }

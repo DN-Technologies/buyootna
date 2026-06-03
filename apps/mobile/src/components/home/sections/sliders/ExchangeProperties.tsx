@@ -58,6 +58,7 @@ export default function ExchangeProperties({
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
       console.error('Failed to load more exchange properties:', error);
+      setHasNextPage(false);
     } finally {
       setIsLoadingMore(false);
     }

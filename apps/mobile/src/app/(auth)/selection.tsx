@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SelectionCard from '@/components/SelectionCard';
 import AppLogo from '@/core/components/AppLogo';
-import { AccountType } from '@/core/types';
+import { AccountType } from '@/types';
 
 export default function AccountTypeSelectionScreen() {
   const router = useRouter();

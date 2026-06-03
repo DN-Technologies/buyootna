@@ -140,6 +140,7 @@ export default function ServiceCompanies({
       }
     } catch (error) {
       console.error('Failed to load more companies:', error);
+      setHasNextPage(false);
     } finally {
       setIsLoadingMore(false);
     }

@@ -100,19 +100,8 @@ export class CompanySearchStrategy implements SearchStrategy {
       this.prisma.user.count({ where: whereClause }),
     ]);
 
-    const formattedData = companies.map((user) => ({
-      id: user.id,
-      name: user.companyProfile?.name,
-      category: user.companyProfile?.services,
-      serviceArea: user.companyProfile?.serviceAreas || 'يخدم جميع المناطق',
-      projectsCount: '+85',
-      logoUrl:
-        user.companyProfile?.logoUrl || 'https://via.placeholder.com/150',
-      isFavorite: false,
-    }));
-
     return {
-      data: formattedData,
+      data: companies,
       meta: {
         total,
         current: page,
