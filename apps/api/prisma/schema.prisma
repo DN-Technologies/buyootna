@@ -24,9 +24,10 @@ model User {
 }
 
 model IndividualProfile {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -34,6 +35,7 @@ model IndividualProfile {
 model CompanyProfile {
   id              String  @id @default(uuid())
   name            String
+  specialty       String? // e.g., 'finishing', 'plumbing'
   services        String
   hqLocation      String
   serviceAreas    String
@@ -63,4 +65,24 @@ model OtpCode {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
+}
+
+// --- Location Models ---
+model Governorate {
+  id         String     @id @default(uuid())
+  name       String
+  areas      Area[]
+  properties Property[]
+}
+
+model Area {
+  id   String @id @default(uuid())
+  name String
+
+  governorateId String
+  governorate   Governorate @relation(fields: [governorateId], references: [id], onDelete: Cascade)
+
+  properties Property[]
+
+  @@index([governorateId])
 }

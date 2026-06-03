@@ -7,10 +7,10 @@ model Property {
     isFeatured Boolean          @default(false)
 
     // Core Details
-    price       Float
-    area        Float
-    beds        Int
-    baths       Int
+    price       Float?
+    areaSize    Float?
+    beds        Int?   @default(1)
+    baths       Int?   @default(1)
     location    String
     description String @db.Text
 
@@ -24,7 +24,37 @@ model Property {
     userId String
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    governorateId String?
+    governorate   Governorate? @relation(fields: [governorateId], references: [id])
+
+    areaId String?
+    area   Area?   @relation(fields: [areaId], references: [id])
+
+    // --- Polymorphic Filer Fields ---
+
+    // Exchange Specific (البدل)
+    requestYear  Int?
+    requiredYear Int?
+    status       PropertyStatus?
+
+    // Auctions & Deals Specific (مزادات وصفقات)
+    auctionStatus  AuctionStatus?
+    salePercentage Float?
+    startDate      DateTime?
+    endDate        DateTime?
+
+    // Features Matrix (المزايا)
+    features Json @default("[]")
+
     // Timestamps
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    // Performance Indexes for Global Search
+    @@index([type])
+    @@index([price])
+    @@index([areaSize])
+    @@index([governorateId])
+    @@index([areaId])
+    @@index([category])
 }

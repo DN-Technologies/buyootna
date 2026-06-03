@@ -7,10 +7,33 @@ enum ListingType {
   SALE // بيع
   RENT // إيجار
   EXCHANGE // بدل
+  AUCTION // مزاد
+  DEAL // صفقة
 }
 
 enum PropertyCategory {
   RESIDENTIAL // سكني
   COMMERCIAL // تجاري
   INVESTMENT // استثماري
+  INDUSTRIAL // صناعي
+  COASTAL // الشريط الساحلي
+  OFFICE // مكتب
+  PRIVATE // خاص
+  HOUSE // بيت
+  APARTMENT // شقة
+  VILLA // فيلا
+  BUILDING // عمارة
+  LAND // أرض
+  CHALET // شاليه
+}
+
+enum PropertyStatus {
+  BUILDING // مبنى
+  LAND // أرض
+}
+
+enum AuctionStatus {
+  STARTS_SOON // يبدأ قريباً
+  ACTIVE // نشط
+  ENDED // منتهي
 }
