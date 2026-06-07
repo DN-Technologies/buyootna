@@ -36,3 +36,8 @@ services:
   web-superadmin:
     build: ./apps/web/superadmin
     expose: ["3004"]
+
+  marketing:
+    build: ./apps/marketing
+    expose: ["7000"]
+    restart: always
