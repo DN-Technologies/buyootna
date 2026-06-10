@@ -20,11 +20,17 @@ import {
 
 const { width } = Dimensions.get('window');
 
+// 1. Extend the props to include our new trigger function
+interface CustomTabBarProps extends BottomTabBarProps {
+  onOpenPlusSheet: () => void;
+}
+
 export default function CustomTabBar({
   state,
   descriptors,
   navigation,
-}: BottomTabBarProps) {
+  onOpenPlusSheet, // 2. Destructure the prop
+}: CustomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   // Base height + safe area for iPhone
@@ -50,15 +56,10 @@ export default function CustomTabBar({
   const addRouteIndex = state.routes.findIndex((r: any) => r.name === 'add');
   const addRoute = state.routes[addRouteIndex];
 
+  // 3. Intercept the press completely
   const onAddPress = () => {
-    const event = navigation.emit({
-      type: 'tabPress',
-      target: addRoute.key,
-      canPreventDefault: true,
-    });
-    if (state.index !== addRouteIndex && !event.defaultPrevented) {
-      navigation.navigate(addRoute.name);
-    }
+    // Instead of emitting a navigation event, we just open the sheet
+    onOpenPlusSheet();
   };
 
   return (
