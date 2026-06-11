@@ -211,13 +211,76 @@ export class PropertiesService {
 
   // --- UPDATE ---
   async update(userId: string, propertyId: string, dto: UpdatePropertyDto) {
-    await this.verifyOwnership(userId, propertyId);
+    // 1. Verfiy the user owns this property
+    const existingProperty = await this.verifyOwnership(userId, propertyId);
 
-    // Note: If we want to allow image updates later, we'd handle S3 deletions and new uploads here
-    return this.prisma.property.update({
+    // 2. Extract isDraft to determine if this is a "Publish" action
+    const { isDraft, ...updateData } = dto;
+
+    // Check if the user is trying to publish a draft
+    const isPublishingDraft =
+      existingProperty.status === 'DRAFT' && isDraft === false;
+
+    // ==========================================
+    // PATH A: PUBLISHING A SAVED DRAFT
+    // ==========================================
+    if (isPublishingDraft) {
+      return await this.prisma.$transaction(async (tx) => {
+        // Step A1: Check Quota
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { freeAdsRemaining: true },
+        });
+
+        if (!user || user.freeAdsRemaining <= 0) {
+          throw new ForbiddenException(
+            'ليس لديك إعلانات مجانية متبقية. يرجى شراء باقة إعلانية لنشر هذا العقار.',
+          );
+        }
+
+        // Step A2: Update the property to ACTIVE
+        const publishedProperty = await tx.property.update({
+          where: { id: propertyId },
+          data: {
+            ...updateData,
+            status: ListingStatus.ACTIVE,
+          },
+        });
+
+        // Step A3: Deduct Quota
+        await tx.user.update({
+          where: { id: userId },
+          data: { freeAdsRemaining: { decrement: 1 } },
+        });
+
+        return {
+          message: 'تم نشر الإعلان بنجاح!',
+          property: publishedProperty,
+        };
+      });
+    }
+
+    // ==========================================
+    // PATH B: NORMAL UPDATE (Editing an already active ad, or just editing a draft)
+    // ==========================================
+    // If they explicitly send isDraft, update the status accordingly
+    let newStatus = existingProperty.status;
+    if (isDraft === true) newStatus = ListingStatus.DRAFT;
+    if (isDraft === false && existingProperty.status !== 'DRAFT')
+      newStatus = ListingStatus.ACTIVE;
+
+    const updatedProperty = await this.prisma.property.update({
       where: { id: propertyId },
-      data: dto,
+      data: {
+        ...updateData,
+        status: newStatus,
+      },
     });
+
+    return {
+      message: 'تم تحديث الإعلان بنجاح',
+      property: updatedProperty,
+    };
   }
 
   // --- DELETE ---
@@ -275,6 +338,32 @@ export class PropertiesService {
         rating: 4.5, // TODO: Make dynamic when ratings system is built
       },
     };
+  }
+
+  // --- MY ACTIVITY FETCHER ---
+  async getMyActivity(userId: string, statusFilter?: ListingStatus) {
+    const whereClause: Prisma.PropertyWhereInput = { userId };
+
+    // If the frontend  passed a specific tab filter (e.g., ?status=DRAFT)
+    if (statusFilter) {
+      whereClause.status = statusFilter;
+    }
+
+    const properties = await this.prisma.property.findMany({
+      where: whereClause,
+      orderBy: { updatedAt: 'desc' }, // Show newest activity first
+    });
+
+    // Format for the ActivityCard on the frontend
+    return properties.map((p) => ({
+      id: p.id,
+      images: p.images,
+      price: p.price,
+      type: p.type === 'SALE' ? 'بيع' : p.type === 'RENT' ? 'إيجار' : 'بدل',
+      category: p.category,
+      status: p.status, // Tells the frontend whether to show "Publish" or "Edit" button
+      updatedAt: p.updatedAt,
+    }));
   }
 
   // --- INCREMENT VIEW COUNT ---

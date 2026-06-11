@@ -15,7 +15,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { ListingStatus, User } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 
@@ -27,6 +27,16 @@ export class PropertiesController {
   @Get('feed/home')
   async getHomeFeed() {
     return this.propertiesService.getHomeFeed();
+  }
+
+  // My Activity Route
+  @Get('/me/activity')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyActivity(
+    @CurrentUser() user: User,
+    @Query('status') status?: ListingStatus, // Optional query parameter: ?status=DRAFT
+  ) {
+    return this.propertiesService.getMyActivity(user.id, status);
   }
 
   // Public Paginated Endpoint
