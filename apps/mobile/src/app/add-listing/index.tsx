@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
+import ExchangePropertyTab from '@/app/add-listing/tabs/ExchangePropertyTab';
 import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
 import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
 import { useListingStore } from '@/core/store/useListingStore';
@@ -136,11 +137,7 @@ export default function CreateListingScreen() {
               {/* Conditional Tabs */}
               {listingType === 'sell' && <SellPropertyTab />}
               {listingType === 'rent' && <RentPropertyTab />}
-              {listingType === 'exchange' && (
-                <Text className="text-right text-gray-400">
-                  Exchange form goes here...
-                </Text>
-              )}
+              {listingType === 'exchange' && <ExchangePropertyTab />}
             </View>
           </View>
         </ScrollView>
