@@ -37,3 +37,12 @@ enum AuctionStatus {
   ACTIVE // نشط
   ENDED // منتهي
 }
+
+// Lifecycle management for listings
+enum ListingStatus {
+  DRAFT // مسودة
+  ACTIVE // نشط
+  REJECTED // مرفوض
+  EXPIRED // منتهي
+  CLOSED // مغلق (تم البيع/التأجير)
+}

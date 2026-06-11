@@ -1,18 +1,27 @@
 model Property {
     id String @id @default(uuid())
 
+    // State Managment
+    status ListingStatus @default(DRAFT)
+
     // Classification
     type       ListingType
     category   PropertyCategory
     isFeatured Boolean          @default(false)
 
     // Core Details
-    price       Float?
-    areaSize    Float?
-    beds        Int?   @default(1)
-    baths       Int?   @default(1)
-    location    String
-    description String @db.Text
+    price          Float?
+    areaSize       Float?
+    beds           Int?   @default(1)
+    baths          Int?   @default(1)
+    location       String
+    description    String @db.Text
+    propertyAge    Int?
+    propertyIncome Float?
+
+    // Geospatial Coordinates for Map Search
+    latitude  Float?
+    longitude Float?
 
     // Analytics 
     views Int @default(0)
@@ -33,9 +42,9 @@ model Property {
     // --- Polymorphic Filer Fields ---
 
     // Exchange Specific (البدل)
-    requestYear  Int?
-    requiredYear Int?
-    status       PropertyStatus?
+    requestYear    Int?
+    requiredYear   Int?
+    exchangeStatus PropertyStatus?
 
     // Auctions & Deals Specific (مزادات وصفقات)
     auctionStatus  AuctionStatus?
@@ -57,4 +66,6 @@ model Property {
     @@index([governorateId])
     @@index([areaId])
     @@index([category])
+    @@index([status]) // Index for querying Active vs Drafts
+    @@index([latitude, longitude]) // Critical: Compound index for Map Bounding Box Queries
 }
