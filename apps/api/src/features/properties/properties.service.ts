@@ -1,9 +1,10 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ListingStatus, Prisma } from '@prisma/client';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PrismaService } from 'src/core/prisma/prisma.service';
@@ -137,27 +138,75 @@ export class PropertiesService {
   }
 
   // --- CREATE ---
-  async create(
-    userId: string,
-    dto: CreatePropertyDto,
-    files: Express.Multer.File[],
-  ) {
-    // 1. Upload all images to AWS S3 concurrently
-    const imageUrls = await this.storageService.uploadMultipleFiles(
-      files,
-      'properties',
-    );
+  async create(userId: string, dto: CreatePropertyDto) {
+    // 1. Separate the meta flag from the actual database fields
+    const { isDraft, ...propertyData } = dto;
 
-    // 2. Save property database
-    const property = await this.prisma.property.create({
-      data: {
-        ...dto,
-        images: imageUrls,
-        userId: userId, // Link it to the user who created it
-      },
-    });
+    // 2. Determine target status
+    const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
-    return property;
+    // ==========================================
+    // PATH A: PUBLISHING A LIVE AD
+    // ==========================================
+    if (!isDraft) {
+      // We use a Prisma $transaction. If any part of this fails, the whole rolls back.
+      return await this.prisma.$transaction(async (tx) => {
+        // Check the user's remaining free ads
+        const user = await tx.user.findUnique({
+          where: { id: userId },
+          select: { freeAdsRemaining: true },
+        });
+
+        if (!user) {
+          throw new NotFoundException('المستخدم غير موجود');
+        }
+
+        if (user.freeAdsRemaining <= 0) {
+          throw new ForbiddenException(
+            'ليس لديك إعلانات مجانية متبقية. يرجى شراء باقة إعلانية لنشر هذا العقار.',
+          );
+        }
+
+        // Create the property
+        const newProperty = await tx.property.create({
+          data: {
+            ...propertyData,
+            status: targetStatus,
+            userId: userId,
+          },
+        });
+
+        // Deduct 1 from their quota
+        await tx.user.update({
+          where: { id: userId },
+          data: { freeAdsRemaining: { decrement: 1 } },
+        });
+
+        return {
+          message: 'تم إضافة الاعلان بنجاح!',
+          property: newProperty,
+        };
+      });
+    }
+
+    // ==========================================
+    // PATH B: SAVING AS A DRAFT
+    // ==========================================
+    else {
+      // Just save the data, no quota deduction required
+      const draftProperty = await this.prisma.property.create({
+        data: {
+          ...propertyData,
+          status: targetStatus,
+          userId: userId,
+        },
+      });
+
+      return {
+        message: 'تم حفظ الاعلان كمسودة بنجاح.',
+        property: draftProperty,
+      };
+    }
   }
 
   // --- UPDATE ---

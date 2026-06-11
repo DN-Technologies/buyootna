@@ -6,7 +6,6 @@ import {
   Delete,
   UseGuards,
   UseInterceptors,
-  UploadedFiles,
   Patch,
   Get,
   Query,
@@ -54,10 +53,9 @@ export class PropertiesController {
   async create(
     @CurrentUser() user: User,
     @Body() createPropertyDto: CreatePropertyDto,
-    @UploadedFiles() files: Express.Multer.File[],
   ) {
     // Pass the user.userId (from our JWT payload) top the service
-    return this.propertiesService.create(user.id, createPropertyDto, files);
+    return this.propertiesService.create(user.id, createPropertyDto);
   }
 
   @Patch(':id')
