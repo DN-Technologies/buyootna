@@ -2,7 +2,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
-import PlusActionsSheet from '@/core/components/add/PlusActionsSheet';
+import PlusActionsSheet from '@/core/components/add-listing/PlusActionsSheet';
 import CustomTabBar from '@/core/components/CustomTabBar';
 
 export default function MainLayout() {

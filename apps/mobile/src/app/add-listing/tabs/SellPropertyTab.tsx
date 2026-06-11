@@ -229,7 +229,7 @@ export default function SellPropertyTab() {
             )}
             <View className="flex-row items-center gap-3">
               <Image
-                source={require('@/assets/icons/add/premium-icon.svg')}
+                source={require('@/assets/icons/add-listing/premium-icon.svg')}
                 style={{
                   width: 25,
                   height: 25,
@@ -264,7 +264,7 @@ export default function SellPropertyTab() {
           >
             <View className="flex-row items-center gap-3">
               <Image
-                source={require('@/assets/icons/add/normal-icon.svg')}
+                source={require('@/assets/icons/add-listing/normal-icon.svg')}
                 style={{
                   width: 24,
                   height: 24,

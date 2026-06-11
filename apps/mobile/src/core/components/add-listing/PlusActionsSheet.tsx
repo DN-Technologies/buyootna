@@ -7,7 +7,11 @@ import { useRouter } from 'expo-router';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { AddIcon, AlarmIcon, RequestPriceIcon } from '@/assets/icons/add';
+import {
+  AddIcon,
+  AlarmIcon,
+  RequestPriceIcon,
+} from '@/assets/icons/add-listing';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
