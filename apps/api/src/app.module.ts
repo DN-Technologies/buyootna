@@ -8,6 +8,7 @@ import { RecoveryModule } from './features/recovery/recovery.module';
 import { StorageModule } from './core/storage/storage.module';
 import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -15,9 +16,10 @@ import { SearchModule } from './features/search/search.module';
     UsersModule,
     AuthModule,
     RecoveryModule,
-    StorageModule,
     PropertiesModule,
     SearchModule,
+    StorageModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -29,7 +29,7 @@ export class ExchangeSearchStrategy implements SearchStrategy {
     if (filters.requestYear) where.requestYear = filters.requestYear;
     if (filters.requiredYear) where.requiredYear = filters.requiredYear;
     if (filters.status)
-      where.status = filters.status.toUpperCase() as PropertyStatus;
+      where.exchangeStatus = filters.status.toUpperCase() as PropertyStatus;
 
     // Instead of a range, the Exchange tab uses a direct Area Size match (or gte)
     if (filters.areaSize) {
