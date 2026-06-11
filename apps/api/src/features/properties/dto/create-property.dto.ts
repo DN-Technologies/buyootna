@@ -94,4 +94,41 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsEnum(PropertyStatus, { message: 'حالة التخصيص غير صالحة' })
   exchangeStatus?: PropertyStatus;
+
+  // --- 5. Additional Listing Details ---
+
+  @IsOptional()
+  @IsBoolean({ message: 'حالة الإعلان المميز يجب أن تكون قيمة منطقية' })
+  isFeatured?: boolean;
+
+  @IsOptional()
+  @IsString({ message: 'رقم الهاتف يجب أن يكون نصاً' })
+  phoneNumber?: string;
+
+  @IsOptional()
+  @IsString({ message: 'الرقم الآلي يجب أن يكون نصاً' })
+  automatedNumber?: string;
+
+  @IsOptional()
+  @IsArray({ message: 'المزايا يجب أن تكون في شكل قائمة' })
+  features?: Record<string, string>[];
+
+  @IsOptional()
+  @IsString({ message: 'معرّف المحافظة يجب أن يكون نصاً' })
+  governorateId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'معرّف المنطقة يجب أن يكون نصاً' })
+  areaId?: string;
+
+  // Rent-specific text fields
+  @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.RENT)
+  @IsOptional()
+  @IsString({ message: 'المصاريف الإضافية يجب أن تكون نصاً' })
+  additionalExpenses?: string;
+
+  @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.RENT)
+  @IsOptional()
+  @IsString({ message: 'شروط الإيجار يجب أن تكون نصاً' })
+  rentConditions?: string;
 }

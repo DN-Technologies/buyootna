@@ -19,6 +19,12 @@ model Property {
     propertyAge    Int?
     propertyIncome Float?
 
+    // Contact & Listing Details
+    phoneNumber        String?
+    automatedNumber    String?
+    additionalExpenses String?  @db.Text
+    rentConditions     String?  @db.Text
+
     // Geospatial Coordinates for Map Search
     latitude  Float?
     longitude Float?

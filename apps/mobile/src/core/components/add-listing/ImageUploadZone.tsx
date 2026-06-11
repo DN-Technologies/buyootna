@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { useListingStore } from '@/core/store/useListingStore';
 
@@ -9,22 +9,35 @@ export default function ImageUploadZone() {
   const { images, addImages, removeImage } = useListingStore();
 
   const handlePickImages = async () => {
-    // Request permission (you can also handle this more robustly in a real app)
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      alert('نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!');
-      return;
-    }
+    try {
+      // Request permission first
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'إذن مطلوب',
+          'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!',
+          [{ text: 'حسناً' }],
+        );
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Restricted to images as requested
-      allowsMultipleSelection: true,
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        selectionLimit: 10 - images.length, // Limit total to 10
+      });
 
-    if (!result.canceled) {
-      const selectedUris = result.assets.map((asset) => asset.uri);
-      addImages(selectedUris);
+      if (!result.canceled && result.assets) {
+        const selectedUris = result.assets.map((asset) => asset.uri);
+        addImages(selectedUris);
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
+        { text: 'حسناً' },
+      ]);
     }
   };
 
@@ -77,7 +90,7 @@ export default function ImageUploadZone() {
           اضغط هنا <Text className="font-cairo-medium">لرفع صورة</Text>
         </Text>
         <Text className="px-8 text-center font-cairo-medium text-[11px] leading-5 text-[#94A3B8]">
-          الصيغ المدعومة: SVG, JPG, PNG (بحد أقصى 10 ميجا لكل ملف)
+          الصيغ المدعومة: JPG, PNG, WEBP (بحد أقصى 10 ميجا لكل ملف)
         </Text>
       </TouchableOpacity>
     </View>

@@ -23,17 +23,48 @@ import { useListingStore } from '@/core/store/useListingStore';
 export default function CreateListingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { listingType, setListingType, images } = useListingStore();
+  const {
+    listingType,
+    setListingType,
+    images,
+    governorate,
+    area,
+    propertyCategory,
+    areaSize,
+    adDetails,
+    phoneNumber,
+    price,
+    showPrice,
+    monthlyRent,
+    requestYear,
+    requiredYear,
+  } = useListingStore();
 
   const handlePreview = () => {
     // Navigate to the preview screen (Card 9)
     router.push('/add-listing/preview');
   };
 
-  // Determine if the form is "valid" enough to highlight the button is navy.
-  // For now, we will simply check if at least one image is uploaded,
-  // but you can expand this to check required text fields later.
-  const isFormValid = images.length > 0;
+  // Validate required fields based on the selected listing type
+  const isBaseValid =
+    !!governorate &&
+    !!area &&
+    !!propertyCategory &&
+    !!areaSize &&
+    !!adDetails &&
+    !!phoneNumber &&
+    images.length > 0;
+
+  let isTypeValid = true;
+  if (listingType === 'sell') {
+    isTypeValid = !showPrice || !!price;
+  } else if (listingType === 'rent') {
+    isTypeValid = !showPrice || !!monthlyRent;
+  } else if (listingType === 'exchange') {
+    isTypeValid = !!requestYear && !!requiredYear;
+  }
+
+  const isFormValid = isBaseValid && isTypeValid;
 
   return (
     <SafeAreaView className="flex-1 bg-white">

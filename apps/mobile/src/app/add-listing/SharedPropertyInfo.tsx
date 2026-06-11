@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
+import * as Linking from 'expo-linking';
 import { useRef } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Alert, Text, TextInput, View } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 
 // Import our reusable UI components from the Filters epic
@@ -11,26 +12,19 @@ import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import StepperInput from '@/core/components/filters/StepperInput';
 // Import the Zustand store
 import { useListingStore } from '@/core/store/useListingStore';
-
-// --- Mock Data ---
-const MOCK_GOVERNORATES = [
-  { id: '1', label: 'العاصمة' },
-  { id: '2', label: 'حولي' },
-  { id: '3', label: 'الأحمدي' },
-];
-
-const MOCK_AREAS = [
-  { id: '1', label: 'السالمية' },
-  { id: '2', label: 'الجابرية' },
-  { id: '3', label: 'سلوى' },
-];
+// Import real location data
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
 const CATEGORY_OPTIONS = [
+  { id: 'residential', label: 'سكني' },
+  { id: 'commercial', label: 'تجاري' },
+  { id: 'investment', label: 'استثماري' },
   { id: 'apartment', label: 'شقة' },
   { id: 'house', label: 'بيت' },
   { id: 'villa', label: 'فيلا' },
-  { id: 'commercial', label: 'تجاري' },
-  { id: 'investment', label: 'استثماري' },
+  { id: 'land', label: 'أرض' },
+  { id: 'building', label: 'عمارة' },
+  { id: 'chalet', label: 'شاليه' },
 ];
 
 export default function SharedPropertyInfo() {
@@ -53,13 +47,30 @@ export default function SharedPropertyInfo() {
   const areaDrawerRef = useRef<BottomSheetModal>(null);
   const categoryDrawerRef = useRef<BottomSheetModal>(null);
 
-  const handleMapPress = () => {
-    // Logic to open Map Screen/Modal goes here
-    console.log('Open map to select location');
+  // 3. Dynamic area list based on the selected governorate
+  const filteredAreas = governorate ? AREAS[governorate.id] || [] : [];
+
+  const handleMapPress = async () => {
+    // Open the native Maps app centered on Kuwait
+    // The user can then pick/view a location
+    try {
+      const url = 'https://maps.google.com/?q=29.3759,47.9774';
+      // Set default location coordinates to indicate map location is selected
+      updateField('mapLocation', '29.3759, 47.9774');
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('خطأ', 'حدث خطأ أثناء فتح الخريطة', [{ text: 'حسناً' }]);
+    }
   };
 
   const handleClearMap = () => {
     updateField('mapLocation', null);
+  };
+
+  const handleGovernorateSelect = (item: { id: string; label: string }) => {
+    updateField('governorate', item);
+    // Reset the area when governorate changes since areas are dependent
+    updateField('area', null);
   };
 
   return (
@@ -84,11 +95,19 @@ export default function SharedPropertyInfo() {
           label="المنطقة"
           placeholder="اختر المنطقة"
           value={area?.label}
-          onPress={() => areaDrawerRef.current?.present()}
+          onPress={() => {
+            if (!governorate) {
+              Alert.alert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
+                { text: 'حسناً' },
+              ]);
+              return;
+            }
+            areaDrawerRef.current?.present();
+          }}
         />
       </View>
 
-      {/* --- 2. Map Location Row (NEW) --- */}
+      {/* --- 2. Map Location Row --- */}
       <View className="mb-6 w-full">
         <Text
           className="mb-2 font-cairo-semibold text-sm text-[#111111]"
@@ -109,7 +128,7 @@ export default function SharedPropertyInfo() {
             {mapLocation ? mapLocation : 'حدد الموقع على الخريطة'}
           </Text>
 
-          {/* Trash Icon (Left side in RTL) */}
+          {/* Map Icon (Left side in RTL) */}
           <TouchableOpacity onPress={handleClearMap} className="p-1">
             <Feather name="map" size={18} color="#94A3B8" />
           </TouchableOpacity>
@@ -230,13 +249,13 @@ export default function SharedPropertyInfo() {
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"
-        data={MOCK_GOVERNORATES}
-        onSelect={(item) => updateField('governorate', item)}
+        data={GOVERNORATES}
+        onSelect={handleGovernorateSelect}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
-        data={MOCK_AREAS}
+        data={filteredAreas}
         onSelect={(item) => updateField('area', item)}
       />
       <SelectionDrawer

@@ -1,5 +1,49 @@
+import { Platform } from 'react-native';
+
 import apiClient from '@/core/api/api';
 import { PropertyDetailsDto } from '@/types/property';
+
+// The shape of the payload we send to POST /properties
+export interface CreatePropertyPayload {
+  isDraft: boolean;
+  type: 'SALE' | 'RENT' | 'EXCHANGE';
+  category: string;
+  areaSize: number;
+  beds: number;
+  baths: number;
+  location: string;
+  description: string;
+  images: string[];
+  propertyAge?: number;
+  latitude?: number;
+  longitude?: number;
+  price?: number;
+  propertyIncome?: number;
+  requestYear?: number;
+  requiredYear?: number;
+  exchangeStatus?: string;
+  isFeatured?: boolean;
+  phoneNumber?: string;
+  automatedNumber?: string;
+  features?: { id: string; label: string }[];
+  governorateId?: string;
+  areaId?: string;
+  additionalExpenses?: string;
+  rentConditions?: string;
+}
+
+export interface CreatePropertyResponse {
+  message: string;
+  property: {
+    id: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface UploadImagesResponse {
+  message: string;
+  urls: string[];
+}
 
 export const propertiesService = {
   getPropertyById: async (id: string): Promise<PropertyDetailsDto> => {
@@ -12,5 +56,69 @@ export const propertiesService = {
   incrementViews: async (id: string): Promise<void> => {
     // We don't need to return data here, just fire and forget
     await apiClient.patch(`/properties/${id}/view`);
+  },
+
+  /**
+   * Upload local image URIs to the backend (which stores them in S3).
+   * Uses multipart/form-data since we're sending binary files.
+   */
+  uploadImages: async (localUris: string[]): Promise<string[]> => {
+    const formData = new FormData();
+
+    for (const uri of localUris) {
+      // Determine the file extension and MIME type from the URI
+      const filename = uri.split('/').pop() || 'photo.jpg';
+      const match = /\.(\w+)$/.exec(filename);
+      const ext = match ? match[1].toLowerCase() : 'jpg';
+      const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+
+      // React Native's FormData accepts this object shape for file uploads
+      formData.append('images', {
+        uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
+        type: mimeType,
+        name: filename,
+      } as unknown as Blob);
+    }
+
+    const response = await apiClient.post<UploadImagesResponse>(
+      '/media/upload/listings',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        // Image uploads can take longer than the default 10s timeout
+        timeout: 60000,
+      },
+    );
+
+    return response.data.urls;
+  },
+
+  /**
+   * Create a new property listing (publish or save as draft).
+   */
+  createProperty: async (
+    payload: CreatePropertyPayload,
+  ): Promise<CreatePropertyResponse> => {
+    const response = await apiClient.post<CreatePropertyResponse>(
+      '/properties',
+      payload,
+    );
+    return response.data;
+  },
+
+  /**
+   * Update an existing property listing (edit or publish a draft).
+   */
+  updateProperty: async (
+    id: string,
+    payload: Partial<CreatePropertyPayload>,
+  ): Promise<CreatePropertyResponse> => {
+    const response = await apiClient.patch<CreatePropertyResponse>(
+      `/properties/${id}`,
+      payload,
+    );
+    return response.data;
   },
 };

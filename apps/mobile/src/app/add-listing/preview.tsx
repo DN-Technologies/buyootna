@@ -1,7 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   ScrollView,
   Text,
@@ -10,6 +13,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { propertiesService } from '@/core/api/properties.service';
+import SuccessModal from '@/core/components/add-listing/SuccessModal';
 import { useListingStore } from '@/core/store/useListingStore';
 
 // Helper component for the two-column grid items
@@ -36,6 +41,16 @@ export default function AdPreviewScreen() {
 
   // Pull all data from our global state
   const draftData = useListingStore();
+  const {
+    isSubmitting,
+    setSubmitting,
+    setSubmissionError,
+    buildApiPayload,
+    resetForm,
+  } = useListingStore();
+
+  // Local state for the success modal
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // Mapping helpers
   const listingTypeLabel =
@@ -48,20 +63,97 @@ export default function AdPreviewScreen() {
   const adLevelLabel =
     draftData.adLevel === 'premium' ? 'إعلان مميز' : 'إعلان عادي';
 
-  const handleSubmit = () => {
-    // We will handle the actual API submission and success modal in Card 10
-    console.log('Submitting Ad Payload:', draftData.getPreviewData());
-    // Temporarily go back to home or mock success
-    // router.push('/add-listing/success');
+  /**
+   * Core submission logic shared between publish and draft.
+   * 1. Upload images to S3
+   * 2. Build API payload
+   * 3. Create property on backend
+   */
+  const submitListing = async (isDraft: boolean) => {
+    try {
+      setSubmitting(true);
+      setSubmissionError(null);
+
+      // Step 1: Upload images (if any) to get S3 URLs
+      let uploadedUrls: string[] = [];
+      if (draftData.images.length > 0) {
+        uploadedUrls = await propertiesService.uploadImages(draftData.images);
+      }
+
+      // Step 2: Build the API payload from the Zustand store
+      const payload = buildApiPayload(isDraft, uploadedUrls);
+
+      // Step 3: Send to backend
+      await propertiesService.createProperty(payload);
+
+      return true;
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+
+      // Try to extract the backend validation message
+      const axiosError = error as {
+        response?: { data?: { message?: string | string[] } };
+      };
+      const backendMessage = axiosError?.response?.data?.message;
+      const displayMessage = Array.isArray(backendMessage)
+        ? backendMessage.join('\n')
+        : backendMessage || errorMessage;
+
+      setSubmissionError(displayMessage);
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSaveDraft = () => {
-    console.log('Saving as Draft...');
-    // We will handle Drafts in Card 10
+  const handleSubmit = async () => {
+    const success = await submitListing(false);
+    if (success) {
+      setShowSuccess(true);
+    } else {
+      Alert.alert('خطأ', draftData.submissionError || 'فشل في إضافة الإعلان', [
+        { text: 'حسناً' },
+      ]);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    const success = await submitListing(true);
+    if (success) {
+      Alert.alert('تم الحفظ', 'تم حفظ الإعلان كمسودة بنجاح', [
+        {
+          text: 'حسناً',
+          onPress: () => {
+            resetForm();
+            router.replace('/(main)/home');
+          },
+        },
+      ]);
+    } else {
+      Alert.alert('خطأ', draftData.submissionError || 'فشل في حفظ المسودة', [
+        { text: 'حسناً' },
+      ]);
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      {/* --- Loading Overlay --- */}
+      {isSubmitting && (
+        <View
+          className="absolute inset-0 z-50 items-center justify-center bg-black/40"
+          style={{ zIndex: 50 }}
+        >
+          <View className="items-center rounded-2xl bg-white px-10 py-8 shadow-xl">
+            <ActivityIndicator size="large" color="#15304D" />
+            <Text className="mt-4 font-cairo-semibold text-[15px] text-[#15304D]">
+              جاري رفع الإعلان...
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* --- 1. Header --- */}
       <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
         <TouchableOpacity
@@ -131,7 +223,7 @@ export default function AdPreviewScreen() {
             <View className="my-2 border-t border-gray-100" />
 
             {/* Full Width Rows */}
-            <View className="mt-4 mb-4 items-end">
+            <View className="mb-4 mt-4 items-end">
               <Text className="mb-1 text-right font-cairo-medium text-xs text-[#94A3B8]">
                 الموقع
               </Text>
@@ -215,7 +307,10 @@ export default function AdPreviewScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit}
-            className="h-12 w-full items-center justify-center rounded-lg bg-[#15304D]"
+            disabled={isSubmitting}
+            className={`h-12 w-full items-center justify-center rounded-lg ${
+              isSubmitting ? 'bg-[#15304D]/60' : 'bg-[#15304D]'
+            }`}
           >
             <Text className="font-cairo-bold text-[15px] text-white">
               إضافة الاعلان
@@ -226,7 +321,10 @@ export default function AdPreviewScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSaveDraft}
-            className="h-12 w-full items-center justify-center rounded-lg border border-[#15304D] bg-white"
+            disabled={isSubmitting}
+            className={`h-12 w-full items-center justify-center rounded-lg border border-[#15304D] ${
+              isSubmitting ? 'bg-gray-100' : 'bg-white'
+            }`}
           >
             <Text className="font-cairo-bold text-[15px] text-[#15304D]">
               حفظ كمسودة
@@ -234,6 +332,12 @@ export default function AdPreviewScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* --- 5. Success Modal --- */}
+      <SuccessModal
+        visible={showSuccess}
+        onClose={() => setShowSuccess(false)}
+      />
     </SafeAreaView>
   );
 }
