@@ -22,6 +22,12 @@ export interface ListingStateData {
   rooms: number;
   baths: number;
   features: string[]; // المزايا (Array of IDs)
+  mapLocation: string | null; // e.g., "Lat, Lng" or a location object
+  propertyAge: string;
+
+  showPrice: boolean; // Toggle state
+  showIncome: boolean; // Toggle state
+  propertyIncome: string; // The text input value
 
   // 2. Pricing & Financials (Dynamic based on tab)
   price: string; // للبيع
@@ -69,6 +75,11 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   rooms: 1,
   baths: 1,
   features: [],
+  mapLocation: null,
+  propertyAge: '',
+  showPrice: true,
+  showIncome: false,
+  propertyIncome: '',
   price: '',
   monthlyRent: '',
   additionalExpenses: '',

@@ -13,7 +13,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { ListingType, useListingStore } from '@/core/store/useListingStore';
+import SellPropertyTab from '@/app/add-listing/SellPropertyTab';
+import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
+import { useListingStore } from '@/core/store/useListingStore';
 
 export default function CreateListingScreen() {
   const router = useRouter();
@@ -132,18 +134,10 @@ export default function CreateListingScreen() {
             </View>
 
             <View>
-              <Text
-                className="mb-6 pb-2 font-cairo-semibold text-lg text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                معلومات العقار
-              </Text>
+              <SharedPropertyInfo />
 
-              {listingType === 'sell' && (
-                <Text className="text-right text-gray-400">
-                  Sell form goes here...
-                </Text>
-              )}
+              {/* Conditional Tabs */}
+              {listingType === 'sell' && <SellPropertyTab />}
               {listingType === 'rent' && (
                 <Text className="text-right text-gray-400">
                   Rent form goes here...

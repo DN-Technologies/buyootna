@@ -14,7 +14,7 @@ export default function DrawerTrigger({
   onPress,
 }: DrawerTriggerProps) {
   return (
-    <View className="mb-6 flex-1">
+    <View className="mb-6 flex-1" style={{ flex: 1 }}>
       <Text
         className="mb-1 font-cairo-medium text-sm text-[#111111]"
         style={{
@@ -26,7 +26,8 @@ export default function DrawerTrigger({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={onPress}
-        className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4"
+        className="h-[40px] w-full justify-center rounded-md border border-gray-200 bg-white px-4"
+        style={{ width: '100%' }}
       >
         <Text
           className={`font-cairo text-[13px] leading-[22px] ${value ? 'text-[#111111]' : 'text-[#979797]'}`}
