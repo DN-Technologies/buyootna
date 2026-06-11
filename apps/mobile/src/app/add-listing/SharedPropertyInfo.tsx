@@ -201,7 +201,7 @@ export default function SharedPropertyInfo() {
               onChangeText={(text) => updateField('automatedNumber', text)}
             />
             <Image
-              source={require('@/assets/icons/add/automated-number.png')}
+              source={require('@/assets/icons/add-listing/automated-number.png')}
               style={{ width: 17, height: 16 }}
             />
           </View>

@@ -8,19 +8,32 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
 import ExchangePropertyTab from '@/app/add-listing/tabs/ExchangePropertyTab';
 import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
 import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
+import ImageUploadZone from '@/core/components/add-listing/ImageUploadZone';
 import { useListingStore } from '@/core/store/useListingStore';
 
 export default function CreateListingScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { listingType, setListingType, images } = useListingStore();
 
-  // Connect to our Zustand store
-  const { listingType, setListingType } = useListingStore();
+  const handlePreview = () => {
+    // Navigate to the preview screen (Card 9)
+    router.push('/add-listing/preview');
+  };
+
+  // Determine if the form is "valid" enough to highlight the button is navy.
+  // For now, we will simply check if at least one image is uploaded,
+  // but you can expand this to check required text fields later.
+  const isFormValid = images.length > 0;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -139,8 +152,27 @@ export default function CreateListingScreen() {
               {listingType === 'rent' && <RentPropertyTab />}
               {listingType === 'exchange' && <ExchangePropertyTab />}
             </View>
+
+            {/* --- Image Upload Zone --- */}
+            <ImageUploadZone />
           </View>
         </ScrollView>
+
+        {/* --- Sticky Footer --- */}
+        <View
+          className="absolute bottom-[-40px] w-full bg-white px-5 pt-4"
+          style={{ paddingBottom: Math.max(insets.bottom, 20) }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handlePreview}
+            className={`h-[48px] w-full items-center justify-center rounded-[24px] py-4 ${isFormValid ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'}`}
+          >
+            <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
+              معاينة الاعلان
+            </Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

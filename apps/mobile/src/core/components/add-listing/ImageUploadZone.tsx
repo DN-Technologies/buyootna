@@ -29,8 +29,11 @@ export default function ImageUploadZone() {
   };
 
   return (
-    <View className="mb-8 w-full">
-      <Text className="mb-4 text-right font-cairo-bold text-lg text-[#111111]">
+    <View className="mb-2 w-full">
+      <Text
+        className="mb-2 font-cairo-semibold text-lg text-[#111111]"
+        style={{ writingDirection: 'rtl' }}
+      >
         الصور
       </Text>
 
@@ -40,7 +43,7 @@ export default function ImageUploadZone() {
           {images.map((uri, index) => (
             <View
               key={index}
-              className="relative h-[100px] w-[100px] overflow-hidden rounded-xl border border-gray-200"
+              className="relative h-[100px] w-[100px] overflow-hidden rounded-lg border border-gray-200"
             >
               <Image
                 source={{ uri }}
@@ -65,13 +68,13 @@ export default function ImageUploadZone() {
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={handlePickImages}
-        className="w-full items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white py-8"
+        className="w-full items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-white py-8"
       >
         <View className="mb-4 h-12 w-12 items-center justify-center rounded-full bg-[#F4F8FB]">
-          <Feather name="file" size={24} color="#15304D" />
+          <Feather name="image" size={24} color="#15304D" />
         </View>
-        <Text className="mb-1 font-cairo-bold text-[15px] text-[#111111]">
-          اضغط هنا <Text className="font-cairo-medium">لرفع صورة أو فيديو</Text>
+        <Text className="mb-1 font-cairo-semibold text-[15px] text-[#111111]">
+          اضغط هنا <Text className="font-cairo-medium">لرفع صورة</Text>
         </Text>
         <Text className="px-8 text-center font-cairo-medium text-[11px] leading-5 text-[#94A3B8]">
           الصيغ المدعومة: SVG, JPG, PNG (بحد أقصى 10 ميجا لكل ملف)
