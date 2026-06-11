@@ -8,18 +8,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SellPropertyTab from '@/app/add-listing/SellPropertyTab';
 import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
+import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
+import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
 import { useListingStore } from '@/core/store/useListingStore';
 
 export default function CreateListingScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   // Connect to our Zustand store
   const { listingType, setListingType } = useListingStore();
@@ -138,11 +135,7 @@ export default function CreateListingScreen() {
 
               {/* Conditional Tabs */}
               {listingType === 'sell' && <SellPropertyTab />}
-              {listingType === 'rent' && (
-                <Text className="text-right text-gray-400">
-                  Rent form goes here...
-                </Text>
-              )}
+              {listingType === 'rent' && <RentPropertyTab />}
               {listingType === 'exchange' && (
                 <Text className="text-right text-gray-400">
                   Exchange form goes here...
