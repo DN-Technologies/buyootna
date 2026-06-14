@@ -36,6 +36,12 @@ model IndividualProfile {
   updatedAt DateTime @updatedAt
 }
 
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model CompanyProfile {
   id              String  @id @default(uuid())
   name            String
@@ -50,10 +56,13 @@ model CompanyProfile {
   logoUrl         String?
   licenseFileUrl  String?
 
-  isVerified Boolean @default(false)
+  isVerified Boolean        @default(false)
+  status     ApprovalStatus @default(PENDING)
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  reviewRequests ReviewRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,14 +80,30 @@ model OfficeProfile {
   logoUrl         String?
   licenseFileUrl  String?
 
-  isVerified Boolean @default(false)
+  isVerified Boolean        @default(false)
+  status     ApprovalStatus @default(PENDING)
 
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  reviewRequests ReviewRequest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model ReviewRequest {
+  id               String          @id @default(uuid())
+  companyProfile   CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  companyProfileId String?
+  officeProfile    OfficeProfile?  @relation(fields: [officeProfileId], references: [id], onDelete: Cascade)
+  officeProfileId  String?
+  status           ApprovalStatus  @default(PENDING)
+  notes            String?         @db.Text
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
 
 // --- Password Recovery ---
 model OtpCode {

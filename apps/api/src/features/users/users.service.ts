@@ -112,6 +112,15 @@ export class UsersService {
           },
         });
 
+        // Add ReviewRequest for Option C
+        await tx.reviewRequest.create({
+          data: {
+            companyProfileId: profile.id,
+            status: 'PENDING',
+            notes: 'طلب تسجيل شركة جديدة',
+          },
+        });
+
         return { user, profile };
       });
 
@@ -136,13 +145,18 @@ export class UsersService {
       role: 'COMPANY',
       companyProfile: {
         isNot: null,
+        is: {
+          status: 'APPROVED',
+        },
       },
     };
 
     // If the frontend sends a category filter (and it's not 'all'), filter by the services string
     if (category && category !== 'all') {
       whereClause.companyProfile = {
+        isNot: null,
         is: {
+          status: 'APPROVED',
           services: {
             contains: category, // Matches substrings like 'تشطيب'
             mode: 'insensitive',
@@ -174,7 +188,7 @@ export class UsersService {
         projectsCount: '+50', // Placeholder
         serviceArea: c.companyProfile!.serviceAreas,
         logoUrl: c.companyProfile!.logoUrl,
-        isVerified: true,
+        isVerified: c.companyProfile!.isVerified,
       }));
 
     return {
@@ -237,6 +251,15 @@ export class UsersService {
             licenseExpiry: dto.licenseExpiry,
             logoUrl: logoUrl,
             licenseFileUrl: licenseFileUrl,
+          },
+        });
+
+        // Add ReviewRequest for Option C
+        await tx.reviewRequest.create({
+          data: {
+            officeProfileId: profile.id,
+            status: 'PENDING',
+            notes: 'طلب تسجيل مكتب عقاري جديد',
           },
         });
 

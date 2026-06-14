@@ -18,7 +18,9 @@ export class CompanySearchStrategy implements SearchStrategy {
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
-    const companyProfileFilter: Prisma.CompanyProfileWhereInput = {};
+    const companyProfileFilter: Prisma.CompanyProfileWhereInput = {
+      status: 'APPROVED',
+    };
 
     if (filters.specialty) {
       companyProfileFilter.OR = [
@@ -82,10 +84,7 @@ export class CompanySearchStrategy implements SearchStrategy {
       role: 'COMPANY',
       companyProfile: {
         isNot: null,
-        is:
-          Object.keys(companyProfileFilter).length > 0
-            ? companyProfileFilter
-            : undefined,
+        is: companyProfileFilter,
       },
     };
 

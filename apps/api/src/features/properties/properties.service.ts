@@ -69,9 +69,17 @@ export class PropertiesService {
           },
         }),
 
-        // 4. Top 5 Companies (Users with Role = Company who have a profile)
+        // 4. Top 5 Companies (Users with Role = Company who have an approved profile)
         this.prisma.user.findMany({
-          where: { role: 'COMPANY', companyProfile: { isNot: null } },
+          where: {
+            role: 'COMPANY',
+            companyProfile: {
+              isNot: null,
+              is: {
+                status: 'APPROVED',
+              },
+            },
+          },
           orderBy: { createdAt: 'desc' },
           take: 5,
           include: {
