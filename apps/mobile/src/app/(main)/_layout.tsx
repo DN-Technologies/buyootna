@@ -1,17 +1,25 @@
 import BottomSheet from '@gorhom/bottom-sheet';
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter } from 'expo-router';
 import { useRef } from 'react';
 
 import PlusActionsSheet from '@/core/components/add-listing/PlusActionsSheet';
 import CustomTabBar from '@/core/components/CustomTabBar';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function MainLayout() {
+  const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+
   // 1. Reference to control the bottom sheet from this top-level layout
   const plusSheetRef = useRef<BottomSheet>(null);
 
   // 2. Function to trigger the sheet, which we pass down to the CustomTabBar
   const handleOpenPlusSheet = () => {
-    plusSheetRef.current?.expand();
+    if (!token) {
+      router.push('/(auth)/selection');
+    } else {
+      plusSheetRef.current?.expand();
+    }
   };
   return (
     <>

@@ -1,0 +1,10 @@
+{
+  "unauthorized": "Unauthorized access. Please login first.",
+  "forbidden": "You are forbidden from accessing this page.",
+  "bad_request": "Bad request. Please verify your input data.",
+  "internal_server_error": "Internal server error. Please try again later.",
+  "not_found": "Requested resource was not found.",
+  "email_must_be_an_email": "Email must be a valid email address.",
+  "password_should_not_be_empty": "Password should not be empty.",
+  "phone_should_not_be_empty": "Phone should not be empty."
+}
