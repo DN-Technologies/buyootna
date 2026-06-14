@@ -26,6 +26,7 @@ export default function SellPropertyTab() {
     phoneNumber,
     adDetails,
     adLevel,
+    features,
     updateField,
   } = useListingStore();
 
@@ -38,7 +39,7 @@ export default function SellPropertyTab() {
         <DrawerTrigger
           label="المزايا"
           placeholder="ما يميز عقارك"
-          value={''} // You can map selected feature IDs to a string here later
+          value={features?.join('، ')}
           onPress={() => featuresDrawerRef.current?.present()}
         />
       </View>
@@ -293,8 +294,7 @@ export default function SellPropertyTab() {
         ref={featuresDrawerRef}
         title="ما يميز عقارك"
         data={MOCK_FEATURES}
-        onSelect={(item) => console.log('Selected feature:', item)}
-        // Note: For multi-select, you will need a slightly modified drawer component.
+        onSelect={(item) => updateField('features', [item.label])}
       />
     </View>
   );

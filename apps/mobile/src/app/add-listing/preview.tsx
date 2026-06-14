@@ -5,13 +5,15 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { propertiesService } from '@/core/api/properties.service';
 import SuccessModal from '@/core/components/add-listing/SuccessModal';
@@ -25,11 +27,11 @@ const PreviewItem = ({
   label: string;
   value: string | number | undefined | null;
 }) => (
-  <View className="flex-1 items-end">
-    <Text className="mb-1 text-right font-cairo-medium text-xs text-[#94A3B8]">
+  <View className="flex-1 items-start">
+    <Text className="text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
       {label}
     </Text>
-    <Text className="text-right font-cairo-semibold text-[15px] text-[#111111]">
+    <Text className="text-right font-cairo-bold text-[13px] text-[#15304D]">
       {value || '-'}
     </Text>
   </View>
@@ -155,7 +157,7 @@ export default function AdPreviewScreen() {
       )}
 
       {/* --- 1. Header --- */}
-      <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
+      <View className="flex-row items-center justify-between px-5 py-4">
         <TouchableOpacity
           onPress={() => router.back()}
           className="h-8 w-8 items-center justify-center"
@@ -165,7 +167,7 @@ export default function AdPreviewScreen() {
             style={{ width: 12, height: 16 }}
           />
         </TouchableOpacity>
-        <Text className="font-cairo-bold text-lg text-[#111111]">
+        <Text className="font-cairo-semibold text-lg text-[#111111]">
           معاينة الإعلان
         </Text>
         <View className="w-8" />
@@ -178,19 +180,33 @@ export default function AdPreviewScreen() {
       >
         <View className="px-5 pt-6">
           {/* Subtitle */}
-          <Text className="mb-6 text-center font-cairo-medium text-sm text-[#64748B]">
+          <Text
+            className="mb-2 font-cairo-medium text-[12px] text-[#A0A0A0]"
+            style={{ writingDirection: 'rtl' }}
+          >
             هذه معاينة لكيف سيظهر إعلانك للمستخدمين
           </Text>
 
           {/* --- 2. Details Card --- */}
-          <View className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            {/* Row 1 */}
-            <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-              <PreviewItem label="المساحة" value={`${draftData.areaSize} م²`} />
+          <View className="mb-6">
+            {/* Row 1: نوع الاعلان */}
+            <View className="mb-4 flex-row">
               <PreviewItem label="نوع الاعلان" value={listingTypeLabel} />
             </View>
 
-            {/* Row 2 */}
+            {/* Row 2: فئة العقار & المساحة */}
+            <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
+              <PreviewItem
+                label="فئة العقار"
+                value={draftData.propertyCategory?.label}
+              />
+              <PreviewItem
+                label="المساحة"
+                value={draftData.areaSize ? `${draftData.areaSize} م²` : '-'}
+              />
+            </View>
+
+            {/* Row 3: عمر العقار & الرقم الالي للعقار */}
             <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
               <PreviewItem
                 label="عمر العقار"
@@ -199,63 +215,59 @@ export default function AdPreviewScreen() {
                 }
               />
               <PreviewItem
-                label="فئة العقار"
-                value={draftData.propertyCategory?.label}
-              />
-            </View>
-
-            {/* Row 3 */}
-            <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-              <PreviewItem label="عدد الحمامات" value={draftData.baths} />
-              <PreviewItem
                 label="الرقم الالي للعقار"
                 value={draftData.automatedNumber}
               />
             </View>
 
-            {/* Row 4 */}
+            {/* Row 4: عدد الحمامات & عدد الغرف */}
             <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-              <PreviewItem label="رقم الهاتف" value={draftData.phoneNumber} />
+              <PreviewItem label="عدد الحمامات" value={draftData.baths} />
               <PreviewItem label="عدد الغرف" value={draftData.rooms} />
             </View>
 
-            {/* Divider */}
-            <View className="my-2 border-t border-gray-100" />
+            {/* Row 5: المزايا & رقم الهاتف */}
+            <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
+              <PreviewItem
+                label="المزايا"
+                value={draftData.features?.join('، ') || '-'}
+              />
+              <PreviewItem label="رقم الهاتف" value={draftData.phoneNumber} />
+            </View>
 
             {/* Full Width Rows */}
-            <View className="mb-4 mt-4 items-end">
-              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#94A3B8]">
+            <View className="mb-4 items-start">
+              <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
                 الموقع
               </Text>
-              <Text className="text-right font-cairo-semibold text-[15px] text-[#111111]">
-                {draftData.governorate?.label} - {draftData.area?.label}{' '}
-                {draftData.mapLocation ? `(${draftData.mapLocation})` : ''}
+              <Text className="text-right font-cairo-semibold text-[13px] text-[#15304D]">
+                {draftData.governorate?.label} - {draftData.area?.label}
               </Text>
             </View>
 
-            <View className="mb-4 w-full items-end">
-              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#94A3B8]">
+            <View className="mb-4 w-full items-start">
+              <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
                 تفاصيل الاعلان
               </Text>
-              <Text className="text-right font-cairo-semibold text-[14px] leading-6 text-[#111111]">
+              <Text className="text-right font-cairo-semibold text-[13px] text-[#15304D]">
                 {draftData.adDetails || 'لا يوجد تفاصيل.'}
               </Text>
             </View>
 
-            <View className="items-end">
-              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#94A3B8]">
-                نوع اعلانك
+            <View className="items-start">
+              <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
+                نوع الاعلان
               </Text>
-              <Text className="text-right font-cairo-bold text-[15px] text-[#111111]">
+              <Text className="text-right font-cairo-bold text-[13px] text-[#15304D]">
                 {adLevelLabel}
               </Text>
             </View>
           </View>
 
           {/* --- 3. Image Preview --- */}
-          <View className="mb-8 w-full">
+          <View className="w-full">
             <Text
-              className="mb-3 pb-2 font-cairo-semibold text-base text-[#111111]"
+              className="pb-1 font-cairo-medium text-[12px] text-[#A0A0A0]"
               style={{ writingDirection: 'rtl' }}
             >
               الصور
@@ -299,20 +311,21 @@ export default function AdPreviewScreen() {
 
       {/* --- 4. Sticky Footer Actions --- */}
       <View
-        className="absolute bottom-0 w-full border-t border-gray-100 bg-white px-5 pt-4"
+        className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 pt-4"
         style={{ paddingBottom: Math.max(insets.bottom, 20) }}
       >
-        <View className="flex-col gap-3" style={{ gap: 12 }}>
+        <View className="flex-row gap-3">
           {/* Solid Publish Button */}
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit}
             disabled={isSubmitting}
-            className={`h-12 w-full items-center justify-center rounded-lg ${
+            style={{ flex: 1.3 }}
+            className={`h-12 items-center justify-center rounded-full ${
               isSubmitting ? 'bg-[#15304D]/60' : 'bg-[#15304D]'
             }`}
           >
-            <Text className="font-cairo-bold text-[15px] text-white">
+            <Text className="font-cairo-semibold text-[14px] text-white">
               إضافة الاعلان
             </Text>
           </TouchableOpacity>
@@ -322,11 +335,12 @@ export default function AdPreviewScreen() {
             activeOpacity={0.8}
             onPress={handleSaveDraft}
             disabled={isSubmitting}
-            className={`h-12 w-full items-center justify-center rounded-lg border border-[#15304D] ${
+            style={{ flex: 1 }}
+            className={`h-12 items-center justify-center rounded-full border border-[#E2E8F0] ${
               isSubmitting ? 'bg-gray-100' : 'bg-white'
             }`}
           >
-            <Text className="font-cairo-bold text-[15px] text-[#15304D]">
+            <Text className="font-cairo-semibold text-[14px] text-[#111111]">
               حفظ كمسودة
             </Text>
           </TouchableOpacity>

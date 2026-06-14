@@ -27,6 +27,7 @@ export default function ExchangePropertyTab() {
     allocationState,
     adDetails,
     adLevel,
+    features,
     updateField,
   } = useListingStore();
 
@@ -92,7 +93,7 @@ export default function ExchangePropertyTab() {
         <DrawerTrigger
           label="المزايا"
           placeholder="ما يميز عقارك"
-          value={''} // Map selected feature IDs later
+          value={features?.join('، ')}
           onPress={() => featuresDrawerRef.current?.present()}
         />
       </View>
@@ -336,7 +337,7 @@ export default function ExchangePropertyTab() {
         ref={featuresDrawerRef}
         title="ما يميز عقارك"
         data={MOCK_FEATURES}
-        onSelect={(item) => console.log('Selected feature:', item)}
+        onSelect={(item) => updateField('features', [item.label])}
       />
     </View>
   );
