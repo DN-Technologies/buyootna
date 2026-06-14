@@ -7,118 +7,92 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  email    String? @unique
-  phone    String? @unique
-  password String
-  role     Role
-
-  // Business Logic - Free Ads Quota
-  freeAdsRemaining Int @default(1)
-
-  // Relation
-  individualProfile IndividualProfile?
+  id                String             @id @default(uuid())
+  email             String?            @unique
+  phone             String?            @unique
+  password          String
+  role              Role
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  freeAdsRemaining  Int                @default(1)
   companyProfile    CompanyProfile?
+  individualProfile IndividualProfile?
   officeProfile     OfficeProfile?
   otpCode           OtpCode?
   properties        Property[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model IndividualProfile {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id        String   @id @default(uuid())
+  userId    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CompanyProfile {
-  id              String  @id @default(uuid())
-  name            String
-  specialty       String? // e.g., 'finishing', 'plumbing'
-  services        String? // Made optional
-  hqLocation      String
-  serviceAreas    String
-  about           String? @db.Text // Made optional
-  licenseActivity String?
-  licenseNumber   String? // Added license number
-  licenseExpiry   String?
-  logoUrl         String?
-  licenseFileUrl  String?
-
-  isVerified Boolean        @default(false)
-  status     ApprovalStatus @default(PENDING)
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  reviewRequests ReviewRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model OfficeProfile {
-  id              String   @id @default(uuid())
+  id              String          @id @default(uuid())
   name            String
   services        String?
   hqLocation      String
-  about           String?  @db.Text // Made optional
+  serviceAreas    String
+  about           String?
+  licenseActivity String?
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+  userId          String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  isVerified      Boolean         @default(false)
+  specialty       String?
+  licenseNumber   String?
+  status          ApprovalStatus  @default(PENDING)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewRequests  ReviewRequest[]
+}
+
+model OfficeProfile {
+  id              String          @id @default(uuid())
+  name            String
+  services        String?
+  hqLocation      String
+  about           String?
   licenseActivity String?
   licenseNumber   String?
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?
-
-  isVerified Boolean        @default(false)
-  status     ApprovalStatus @default(PENDING)
-
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  reviewRequests ReviewRequest[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isVerified      Boolean         @default(false)
+  userId          String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  status          ApprovalStatus  @default(PENDING)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewRequests  ReviewRequest[]
 }
 
 model ReviewRequest {
   id               String          @id @default(uuid())
-  companyProfile   CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
   companyProfileId String?
-  officeProfile    OfficeProfile?  @relation(fields: [officeProfileId], references: [id], onDelete: Cascade)
   officeProfileId  String?
   status           ApprovalStatus  @default(PENDING)
-  notes            String?         @db.Text
+  notes            String?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+  companyProfile   CompanyProfile? @relation(fields: [companyProfileId], references: [id], onDelete: Cascade)
+  officeProfile    OfficeProfile?  @relation(fields: [officeProfileId], references: [id], onDelete: Cascade)
 }
 
-
-// --- Password Recovery ---
 model OtpCode {
   id        String   @id @default(uuid())
-  code      String // The 6-digit OTP
-  expiresAt DateTime // When this OTP becomes invalid
-
-  // Relation to User
-  userId String @unique // One active OTP per user at a time
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  code      String
+  expiresAt DateTime
+  userId    String   @unique
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// --- Location Models ---
 model Governorate {
   id         String     @id @default(uuid())
   name       String
@@ -127,13 +101,17 @@ model Governorate {
 }
 
 model Area {
-  id   String @id @default(uuid())
-  name String
-
+  id            String      @id @default(uuid())
+  name          String
   governorateId String
   governorate   Governorate @relation(fields: [governorateId], references: [id], onDelete: Cascade)
-
-  properties Property[]
+  properties    Property[]
 
   @@index([governorateId])
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

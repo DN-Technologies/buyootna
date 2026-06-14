@@ -1,77 +1,48 @@
 model Property {
-    id String @id @default(uuid())
+  id                 String           @id @default(uuid())
+  type               ListingType
+  category           PropertyCategory
+  isFeatured         Boolean          @default(false)
+  price              Float?
+  beds               Int?             @default(1)
+  baths              Int?             @default(1)
+  location           String
+  description        String
+  images             String[]
+  userId             String
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  views              Int              @default(0)
+  areaId             String?
+  areaSize           Float?
+  auctionStatus      AuctionStatus?
+  endDate            DateTime?
+  features           Json             @default("[]")
+  governorateId      String?
+  requestYear        Int?
+  requiredYear       Int?
+  salePercentage     Float?
+  startDate          DateTime?
+  exchangeStatus     PropertyStatus?
+  latitude           Float?
+  longitude          Float?
+  propertyAge        Int?
+  propertyIncome     Float?
+  status             ListingStatus    @default(DRAFT)
+  additionalExpenses String?
+  automatedNumber    String?
+  phoneNumber        String?
+  rentConditions     String?
+  area               Area?            @relation(fields: [areaId], references: [id])
+  governorate        Governorate?     @relation(fields: [governorateId], references: [id])
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    // State Managment
-    status ListingStatus @default(DRAFT)
-
-    // Classification
-    type       ListingType
-    category   PropertyCategory
-    isFeatured Boolean          @default(false)
-
-    // Core Details
-    price          Float?
-    areaSize       Float?
-    beds           Int?   @default(1)
-    baths          Int?   @default(1)
-    location       String
-    description    String @db.Text
-    propertyAge    Int?
-    propertyIncome Float?
-
-    // Contact & Listing Details
-    phoneNumber        String?
-    automatedNumber    String?
-    additionalExpenses String?  @db.Text
-    rentConditions     String?  @db.Text
-
-    // Geospatial Coordinates for Map Search
-    latitude  Float?
-    longitude Float?
-
-    // Analytics 
-    views Int @default(0)
-
-    // Media (Array of S3 URLs)
-    images String[]
-
-    // Relations
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    governorateId String?
-    governorate   Governorate? @relation(fields: [governorateId], references: [id])
-
-    areaId String?
-    area   Area?   @relation(fields: [areaId], references: [id])
-
-    // --- Polymorphic Filer Fields ---
-
-    // Exchange Specific (البدل)
-    requestYear    Int?
-    requiredYear   Int?
-    exchangeStatus PropertyStatus?
-
-    // Auctions & Deals Specific (مزادات وصفقات)
-    auctionStatus  AuctionStatus?
-    salePercentage Float?
-    startDate      DateTime?
-    endDate        DateTime?
-
-    // Features Matrix (المزايا)
-    features Json @default("[]")
-
-    // Timestamps
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    // Performance Indexes for Global Search
-    @@index([type])
-    @@index([price])
-    @@index([areaSize])
-    @@index([governorateId])
-    @@index([areaId])
-    @@index([category])
-    @@index([status]) // Index for querying Active vs Drafts
-    @@index([latitude, longitude]) // Critical: Compound index for Map Bounding Box Queries
+  @@index([type])
+  @@index([price])
+  @@index([areaSize])
+  @@index([governorateId])
+  @@index([areaId])
+  @@index([category])
+  @@index([status])
+  @@index([latitude, longitude])
 }

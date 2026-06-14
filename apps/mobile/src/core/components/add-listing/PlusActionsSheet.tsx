@@ -4,22 +4,25 @@ import BottomSheet, {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { forwardRef, useCallback, useMemo } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   AddIcon,
   AlarmIcon,
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
+import apiClient from '@/core/api/api';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
+  onQuotaExhausted: () => void;
 }
 
 const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
-  ({ onClose }, ref) => {
+  ({ onClose, onQuotaExhausted }, ref) => {
     const router = useRouter();
+    const [isCheckingQuota, setIsCheckingQuota] = useState(false);
 
     // Height just enough to fit the 3 buttons comfortably
     const snapPoints = useMemo(() => ['40%'], []);
@@ -42,10 +45,35 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
       if (onClose) onClose();
     };
 
-    const handleAddAd = () => {
-      handleClose();
-      // Navigate to the creation flow (we will build this screen in Card 3)
-      router.push('/add-listing');
+    const handleAddAd = async () => {
+      if (isCheckingQuota) return;
+
+      try {
+        setIsCheckingQuota(true);
+        // Call /users/me endpoint to fetch current profile with latest remaining free ads count
+        const response = await apiClient.get('/users/me');
+        const user = response.data.user;
+
+        setIsCheckingQuota(false);
+
+        if (user && typeof user.freeAdsRemaining === 'number') {
+          if (user.freeAdsRemaining <= 0) {
+            // Quota is exhausted. Close the actions sheet and present QuotaExhaustedSheet
+            handleClose();
+            onQuotaExhausted();
+          } else {
+            // User has free ads remaining. Close the actions sheet and navigate to create listing screen
+            handleClose();
+            router.push('/add-listing');
+          }
+        } else {
+          Alert.alert('خطأ', 'فشل في قراءة بيانات حسابك. يرجى المحاولة لاحقاً.', [{ text: 'حسناً' }]);
+        }
+      } catch (error) {
+        setIsCheckingQuota(false);
+        console.error('Error checking quota:', error);
+        Alert.alert('خطأ في الاتصال', 'فشل في التحقق من الإعلانات المتاحة. تأكد من اتصالك بالشبكة.', [{ text: 'حسناً' }]);
+      }
     };
 
     return (
@@ -79,10 +107,15 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleAddAd}
+              disabled={isCheckingQuota}
               className="w-full flex-row items-center gap-3 rounded-md bg-[#15304D] px-5 py-4"
             >
               <View className="h-8 w-8 items-center justify-center rounded-full bg-white">
-                <AddIcon size={15} color="#15304D" />
+                {isCheckingQuota ? (
+                  <ActivityIndicator size="small" color="#15304D" />
+                ) : (
+                  <AddIcon size={15} color="#15304D" />
+                )}
               </View>
               <Text className="font-cairo-bold text-base leading-[22px] text-white">
                 اضافة اعلان

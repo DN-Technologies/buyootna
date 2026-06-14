@@ -5,45 +5,44 @@ enum Role {
 }
 
 enum ListingType {
-  SALE // بيع
-  RENT // إيجار
-  EXCHANGE // بدل
-  AUCTION // مزاد
-  DEAL // صفقة
+  SALE
+  RENT
+  EXCHANGE
+  AUCTION
+  DEAL
 }
 
 enum PropertyCategory {
-  RESIDENTIAL // سكني
-  COMMERCIAL // تجاري
-  INVESTMENT // استثماري
-  INDUSTRIAL // صناعي
-  COASTAL // الشريط الساحلي
-  OFFICE // مكتب
-  PRIVATE // خاص
-  HOUSE // بيت
-  APARTMENT // شقة
-  VILLA // فيلا
-  BUILDING // عمارة
-  LAND // أرض
-  CHALET // شاليه
+  COMMERCIAL
+  INVESTMENT
+  INDUSTRIAL
+  COASTAL
+  OFFICE
+  PRIVATE
+  HOUSE
+  APARTMENT
+  VILLA
+  BUILDING
+  LAND
+  CHALET
+  RESIDENTIAL
 }
 
 enum PropertyStatus {
-  BUILDING // مبنى
-  LAND // أرض
+  BUILDING
+  LAND
 }
 
 enum AuctionStatus {
-  STARTS_SOON // يبدأ قريباً
-  ACTIVE // نشط
-  ENDED // منتهي
+  STARTS_SOON
+  ACTIVE
+  ENDED
 }
 
-// Lifecycle management for listings
 enum ListingStatus {
-  DRAFT // مسودة
-  ACTIVE // نشط
-  REJECTED // مرفوض
-  EXPIRED // منتهي
-  CLOSED // مغلق (تم البيع/التأجير)
+  DRAFT
+  ACTIVE
+  REJECTED
+  EXPIRED
+  CLOSED
 }
