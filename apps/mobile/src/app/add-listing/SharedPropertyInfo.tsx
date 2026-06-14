@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
-import * as Linking from 'expo-linking';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Text, TextInput, View } from 'react-native';
 import { TouchableOpacity } from 'react-native';
+
+import MapPickerModal from '@/core/components/MapPickerModal';
 
 // Import our reusable UI components from the Filters epic
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
@@ -38,9 +39,12 @@ export default function SharedPropertyInfo() {
     rooms,
     baths,
     mapLocation,
+    mapLocationLabel,
     propertyAge,
     updateField,
   } = useListingStore();
+
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   // 2. Refs for the Bottom Sheet Drawers
   const govDrawerRef = useRef<BottomSheetModal>(null);
@@ -50,21 +54,13 @@ export default function SharedPropertyInfo() {
   // 3. Dynamic area list based on the selected governorate
   const filteredAreas = governorate ? AREAS[governorate.id] || [] : [];
 
-  const handleMapPress = async () => {
-    // Open the native Maps app centered on Kuwait
-    // The user can then pick/view a location
-    try {
-      const url = 'https://maps.google.com/?q=29.3759,47.9774';
-      // Set default location coordinates to indicate map location is selected
-      updateField('mapLocation', '29.3759, 47.9774');
-      await Linking.openURL(url);
-    } catch {
-      Alert.alert('خطأ', 'حدث خطأ أثناء فتح الخريطة', [{ text: 'حسناً' }]);
-    }
+  const handleMapPress = () => {
+    setShowMapPicker(true);
   };
 
   const handleClearMap = () => {
     updateField('mapLocation', null);
+    updateField('mapLocationLabel', null);
   };
 
   const handleGovernorateSelect = (item: { id: string; label: string }) => {
@@ -122,10 +118,10 @@ export default function SharedPropertyInfo() {
         >
           {/* Location Text (Right side in RTL) */}
           <Text
-            className={`flex-1 font-cairo ${mapLocation ? 'text-[#111111]' : 'text-[#D1D5DB]'}`}
+            className={`flex-1 font-cairo ${mapLocationLabel || mapLocation ? 'text-[#111111]' : 'text-[#D1D5DB]'}`}
             style={{ writingDirection: 'rtl' }}
           >
-            {mapLocation ? mapLocation : 'حدد الموقع على الخريطة'}
+            {mapLocationLabel ? mapLocationLabel : mapLocation ? mapLocation : 'حدد الموقع على الخريطة'}
           </Text>
 
           {/* Map Icon (Left side in RTL) */}
@@ -264,6 +260,28 @@ export default function SharedPropertyInfo() {
         data={CATEGORY_OPTIONS}
         onSelect={(item) => updateField('propertyCategory', item)}
       />
+
+      {(() => {
+        let initialLat: number | undefined;
+        let initialLng: number | undefined;
+        if (mapLocation && mapLocation.includes(',')) {
+          const [latStr, lngStr] = mapLocation.split(',');
+          initialLat = parseFloat(latStr);
+          initialLng = parseFloat(lngStr);
+        }
+        return (
+          <MapPickerModal
+            visible={showMapPicker}
+            onClose={() => setShowMapPicker(false)}
+            onConfirm={(addressName, lat, lng) => {
+              updateField('mapLocation', `${lat},${lng}`);
+              updateField('mapLocationLabel', addressName);
+            }}
+            initialLat={initialLat}
+            initialLng={initialLng}
+          />
+        );
+      })()}
     </View>
   );
 }

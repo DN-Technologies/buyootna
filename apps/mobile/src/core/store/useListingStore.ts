@@ -25,6 +25,7 @@ export interface ListingStateData {
   baths: number;
   features: string[]; // المزايا (Array of IDs)
   mapLocation: string | null; // e.g., "Lat, Lng" or a location object
+  mapLocationLabel: string | null;
   propertyAge: string;
 
   showPrice: boolean; // Toggle state
@@ -116,6 +117,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   baths: 1,
   features: [],
   mapLocation: null,
+  mapLocationLabel: null,
   propertyAge: '',
   showPrice: true,
   showIncome: false,
@@ -198,6 +200,13 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
     if (state.automatedNumber) {
       payload.automatedNumber = state.automatedNumber;
+    }
+
+    // Map latitude and longitude from mapLocation
+    if (state.mapLocation && state.mapLocation.includes(',')) {
+      const [latStr, lngStr] = state.mapLocation.split(',');
+      payload.latitude = parseFloat(latStr.trim());
+      payload.longitude = parseFloat(lngStr.trim());
     }
 
     // Features (store as full objects for richer data)
