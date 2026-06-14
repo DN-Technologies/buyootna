@@ -11,7 +11,7 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
 
 const apiClient = create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
