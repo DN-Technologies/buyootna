@@ -72,10 +72,13 @@ export default function IndividualAuthScreen() {
       // The router guard in _layout.tsx will automatically push them to /(main)
       router.push('/(main)/home');
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const backendMessage = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'حدث خطأ في الاتصال';
+      let backendMessage = 'حدث خطأ في الاتصال';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        backendMessage = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        backendMessage = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('فشل تسجيل الدخول', backendMessage);
     } finally {
       setIsLoading(false);
@@ -94,10 +97,13 @@ export default function IndividualAuthScreen() {
       Alert.alert('تم بنجاح', 'تم إنشاء الحساب بنجاح، يرجى تسجيل الدخول');
       setMode('login'); // Automatically switch them to the login tab
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const backendMessage = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'حدث خطأ أثناء إنشاء الحساب';
+      let backendMessage = 'حدث خطأ أثناء إنشاء الحساب';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        backendMessage = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        backendMessage = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('فشل التسجيل', backendMessage);
     } finally {
       setIsLoading(false);

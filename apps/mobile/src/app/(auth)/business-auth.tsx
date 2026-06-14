@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import * as DocumentPicker from 'expo-document-picker';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Alert,
@@ -108,10 +108,14 @@ export default function BusinessAuthScreen() {
       await setAuth(response.data.user, response.data.access_token);
       router.replace('/(main)/home');
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const errorMsg = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'حدث خطأ في الاتصال';
+      let errorMsg = 'حدث خطأ في الاتصال';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        errorMsg = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        errorMsg =
+          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('فشل تسجيل الدخول', errorMsg);
     } finally {
       setIsLoading(false);
@@ -169,24 +173,27 @@ export default function BusinessAuthScreen() {
       }
 
       // 4. Send request to the correct endpoint
-      const endpoint = type === 'office' ? '/users/register/office' : '/users/register/company';
-      await apiClient.post(
-        endpoint,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
+      const endpoint =
+        type === 'office'
+          ? '/users/register/office'
+          : '/users/register/company';
+      await apiClient.post(endpoint, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
         },
-      );
+      });
 
       // Return a flag or trigger parent state to show custom success modal
       return true;
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const errorMsg = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'حدث خطأ أثناء إنشاء الحساب';
+      let errorMsg = 'حدث خطأ أثناء إنشاء الحساب';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        errorMsg = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        errorMsg =
+          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('فشل التسجيل', errorMsg);
       return false;
     } finally {

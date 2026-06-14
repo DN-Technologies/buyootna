@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import React from 'react';
-import { TouchableOpacity,View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
 import AppLogo from '@/core/components/AppLogo';
 
@@ -14,7 +14,7 @@ export const ForgotPasswordHeader: React.FC<ForgotPasswordHeaderProps> = ({
   return (
     <View>
       {/* Header Back Button */}
-      <View className="ml-auto w-min">
+      <View className="mr-auto w-min">
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onBack}

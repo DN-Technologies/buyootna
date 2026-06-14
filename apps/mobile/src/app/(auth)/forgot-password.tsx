@@ -35,7 +35,16 @@ export default function ForgotPasswordScreen() {
       setIdentifier(data.identifier);
       setStep(2);
       setTimer(45);
-    } catch (error) {}
+    } catch (error: any) {
+      let errorMsg = 'تعذر إرسال رمز التحقق';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        errorMsg = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
+      Alert.alert('خطأ', errorMsg);
+    }
   };
 
   const onStep2Submit = async (data: VerifyOtpValues) => {
@@ -49,10 +58,13 @@ export default function ForgotPasswordScreen() {
       setResetToken(response.data.resetToken);
       setStep(3);
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const errorMsg = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'رمز التحقق غير صحيح';
+      let errorMsg = 'رمز التحقق غير صحيح';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        errorMsg = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('خطأ', errorMsg);
     }
   };
@@ -67,10 +79,13 @@ export default function ForgotPasswordScreen() {
       // Trigger the Success Bottom Sheet!
       successSheetRef.current?.present();
     } catch (error: any) {
-      const message = error.response?.data?.message;
-      const errorMsg = Array.isArray(message)
-        ? message.join('\n')
-        : message || 'تعذر تحديث كلمة المرور';
+      let errorMsg = 'تعذر تحديث كلمة المرور';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        errorMsg = Array.isArray(message) ? message.join('\n') : message;
+      } else if (error.message === 'Network Error' || !error.response) {
+        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
       Alert.alert('خطأ', errorMsg);
     }
   };
