@@ -16,44 +16,49 @@ export const companyLoginSchema = z.object({
 
 export type CompanyLoginFormValues = z.infer<typeof companyLoginSchema>;
 
-// Full Multi-step Signup Schema
 export const companySignupSchema = z
   .object({
+    type: z.enum(['company', 'office']),
     // Step 1: Basic Info
-    name: z.string({ message: 'اسم الشركة مطلوب' }).min(2, 'الاسم قصير جداً'),
+    name: z.string({ message: 'الاسم مطلوب' }).min(2, 'الاسم قصير جداً'),
     email: z
       .string({ message: 'البريد الإلكتروني مطلوب' })
       .email('البريد الإلكتروني غير صالح'),
     phone: z
       .string({ message: 'رقم الهاتف مطلوب' })
-      .regex(/^[569]\d{7}$/, 'رقم هاتف كويتي غير صالح'),
+      .regex(/^\+?\d{8,15}$/, 'رقم الهاتف غير صالح'),
     password: z
       .string({ message: 'كلمة المرور مطلوبة' })
       .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
     confirmPassword: z.string({ message: 'تأكيد كلمة المرور مطلوب' }),
 
     // Step 2: Details
-    services: z.string({ message: 'الخدمات مطلوبة' }).min(1, 'الخدمات مطلوبة'),
+    services: z.string().optional(),
     hqLocation: z
       .string({ message: 'المقر الرئيسي مطلوب' })
       .min(1, 'المقر الرئيسي مطلوب'),
-    serviceAreas: z
-      .string({ message: 'مناطق تقديم الخدمة مطلوبة' })
-      .min(1, 'مناطق تقديم الخدمة مطلوبة'),
-    about: z
-      .string({ message: 'نبذة عن الشركة مطلوبة' })
-      .min(10, 'يرجى كتابة نبذة كافية'),
+    serviceAreas: z.string().optional(),
+    about: z.string().optional(),
     logo: z.any().optional(),
 
     // Step 3: Licensing
     licenseActivity: z.string().optional(),
+    licenseNumber: z.string().optional(),
     licenseExpiry: z.string().optional(),
-    // File upload is often handled separately or as a string URI in forms
     licenseFile: z.any().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'كلمات المرور غير متطابقة',
     path: ['confirmPassword'],
+  })
+  .refine((data) => {
+    if (data.type === 'company') {
+      return !!data.serviceAreas && data.serviceAreas.length > 0;
+    }
+    return true;
+  }, {
+    message: 'مناطق تقديم الخدمة مطلوبة',
+    path: ['serviceAreas'],
   });
 
 export type CompanySignupFormValues = z.infer<typeof companySignupSchema>;
@@ -69,7 +74,6 @@ export const STEP_1_FIELDS: (keyof CompanySignupFormValues)[] = [
 export const STEP_2_FIELDS: (keyof CompanySignupFormValues)[] = [
   'services',
   'hqLocation',
-  'serviceAreas',
   'about',
   'logo',
 ];

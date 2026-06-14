@@ -28,8 +28,7 @@ export const signupSchema = z
     phone: z
       .string({ message: 'رقم الهاتف مطلوب' })
       .min(1, 'رقم الهاتف مطلوب')
-      // Matches exactly 8 digits starting with 5, 6, or 9 (Kuwait mobile format)
-      .regex(/^[569]\d{7}$/, 'رقم هاتف كويتي غير صالح'),
+      .regex(/^\+?\d{8,15}$/, 'رقم الهاتف غير صالح'),
     password: z
       .string({ message: 'كلمة المرور مطلوبة' })
       .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),

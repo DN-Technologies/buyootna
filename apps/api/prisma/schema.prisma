@@ -19,6 +19,7 @@ model User {
   // Relation
   individualProfile IndividualProfile?
   companyProfile    CompanyProfile?
+  officeProfile     OfficeProfile?
   otpCode           OtpCode?
   properties        Property[]
 
@@ -39,11 +40,33 @@ model CompanyProfile {
   id              String  @id @default(uuid())
   name            String
   specialty       String? // e.g., 'finishing', 'plumbing'
-  services        String
+  services        String? // Made optional
   hqLocation      String
   serviceAreas    String
-  about           String  @db.Text
+  about           String? @db.Text // Made optional
   licenseActivity String?
+  licenseNumber   String? // Added license number
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+
+  isVerified Boolean @default(false)
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OfficeProfile {
+  id              String   @id @default(uuid())
+  name            String
+  services        String?
+  hqLocation      String
+  about           String?  @db.Text // Made optional
+  licenseActivity String?
+  licenseNumber   String?
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

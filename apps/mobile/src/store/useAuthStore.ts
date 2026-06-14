@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
-export type UserRole = 'INDIVIDUAL' | 'COMPANY';
+export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
 
 export interface User {
   id: string;

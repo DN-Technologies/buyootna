@@ -5,7 +5,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import SelectionCard from '@/components/SelectionCard';
 import { AccountType } from '@/types';
@@ -55,6 +55,9 @@ const AccountTypeBottomSheet = forwardRef<
       <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
         {/* Header Section */}
         <View className="mb-6 flex-row items-start justify-between">
+          <Text className="mb-2 mt-3 font-cairo-semibold text-xl text-charcoal">
+            اختر نوع حسابك للبدء
+          </Text>
           {/* Close Button (X) */}
           <TouchableOpacity
             activeOpacity={0.7}
@@ -63,10 +66,6 @@ const AccountTypeBottomSheet = forwardRef<
           >
             <Feather name="x" size={20} color="#64748B" />
           </TouchableOpacity>
-
-          <Text className="mb-2 mt-3 font-cairo-semibold text-xl text-charcoal">
-            اختر نوع حسابك للبدء
-          </Text>
         </View>
 
         {/* Selection Cards */}
@@ -79,6 +78,18 @@ const AccountTypeBottomSheet = forwardRef<
             onPress={() => {
               setSelectedType('individual');
               onContinue('individual');
+              handleClose();
+            }}
+          />
+
+          <SelectionCard
+            title="مكتب عقاري"
+            description="للمكاتب العقارية التي تقدم خدمات واستشارات عقارية."
+            type="office"
+            isSelected={selectedType === 'office'}
+            onPress={() => {
+              setSelectedType('office');
+              onContinue('office');
               handleClose();
             }}
           />

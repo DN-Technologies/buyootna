@@ -432,7 +432,7 @@ export class PropertiesService {
       .map((c) => ({
         id: c.companyProfile!.id,
         name: c.companyProfile!.name,
-        category: c.companyProfile!.services,
+        category: c.companyProfile!.services || '',
         rating: 4.5, // TODO: Implement real ratings later
         projectsCount: '+50', // TODO: Make dynamic later
         serviceArea: c.companyProfile!.serviceAreas,

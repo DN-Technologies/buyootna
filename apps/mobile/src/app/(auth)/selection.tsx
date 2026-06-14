@@ -14,8 +14,10 @@ export default function AccountTypeSelectionScreen() {
   const handleStartRegistration = () => {
     if (selectedType === 'individual') {
       router.push('/(auth)/individual-auth');
+    } else if (selectedType === 'office') {
+      router.push({ pathname: '/(auth)/business-auth', params: { type: 'office' } } as any);
     } else if (selectedType === 'company') {
-      router.push('/(auth)/company-auth');
+      router.push({ pathname: '/(auth)/business-auth', params: { type: 'company' } } as any);
     }
   };
 
@@ -43,6 +45,14 @@ export default function AccountTypeSelectionScreen() {
             type="individual"
             isSelected={selectedType === 'individual'}
             onPress={() => setSelectedType('individual')}
+          />
+
+          <SelectionCard
+            title="مكتب عقاري"
+            description="للمكاتب العقارية التي تقدم خدمات واستشارات عقارية."
+            type="office"
+            isSelected={selectedType === 'office'}
+            onPress={() => setSelectedType('office')}
           />
 
           <SelectionCard

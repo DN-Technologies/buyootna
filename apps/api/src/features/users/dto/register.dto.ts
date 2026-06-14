@@ -38,8 +38,8 @@ export class RegisterCompanyDto {
   password: string;
 
   @IsString()
-  @IsNotEmpty()
-  services: string;
+  @IsOptional()
+  services?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -50,12 +50,58 @@ export class RegisterCompanyDto {
   serviceAreas: string;
 
   @IsString()
-  @IsNotEmpty()
-  about: string;
+  @IsOptional()
+  about?: string;
 
   @IsString()
   @IsOptional()
   licenseActivity?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseExpiry?: string;
+}
+
+export class RegisterOfficeDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
+  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
+  email: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
+  phone: string;
+
+  @IsString()
+  @MinLength(8)
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  hqLocation: string;
+
+  @IsString()
+  @IsOptional()
+  about?: string;
+
+  @IsString()
+  @IsOptional()
+  services?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseActivity?: string;
+
+  @IsString()
+  @IsOptional()
+  licenseNumber?: string;
 
   @IsString()
   @IsOptional()

@@ -1,6 +1,7 @@
 enum Role {
   INDIVIDUAL
   COMPANY
+  OFFICE
 }
 
 enum ListingType {

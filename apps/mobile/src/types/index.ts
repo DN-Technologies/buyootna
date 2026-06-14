@@ -1,1 +1,1 @@
-export type AccountType = 'individual' | 'company' | null;
+export type AccountType = 'individual' | 'office' | 'company' | null;

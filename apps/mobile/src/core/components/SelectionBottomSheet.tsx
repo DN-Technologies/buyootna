@@ -4,8 +4,8 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import React, { forwardRef, useCallback,useMemo } from 'react';
-import { ScrollView,Text, TouchableOpacity, View } from 'react-native';
+import React, { forwardRef, useCallback, useMemo } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface SelectionBottomSheetProps {
   title: string;

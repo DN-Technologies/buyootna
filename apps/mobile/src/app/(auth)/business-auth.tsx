@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import * as DocumentPicker from 'expo-document-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Alert,
@@ -56,10 +56,13 @@ const MOCK_PROFILES: Profile[] = [
 
 type AuthMode = 'login' | 'signup';
 
-export default function CompanyAuthScreen() {
+export default function BusinessAuthScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ type?: 'company' | 'office' }>();
+  const type = params.type || 'company';
+
   const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const [logoFile, setLogoFile] =
@@ -114,9 +117,13 @@ export default function CompanyAuthScreen() {
     }
   };
 
-  const handleAccountTypeChange = (type: AccountType) => {
-    if (type === 'individual') {
+  const handleAccountTypeChange = (newType: AccountType) => {
+    if (newType === 'individual') {
       router.replace('/(auth)/individual-auth');
+    } else if (newType === 'office') {
+      router.setParams({ type: 'office' });
+    } else if (newType === 'company') {
+      router.setParams({ type: 'company' });
     }
   };
 
@@ -135,14 +142,14 @@ export default function CompanyAuthScreen() {
       formData.append('email', data.email);
       formData.append('phone', data.phone);
       formData.append('password', data.password);
-      formData.append('services', data.services);
+      formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation);
-      formData.append('serviceAreas', data.serviceAreas);
-      formData.append('about', data.about);
+      formData.append('about', data.about || '');
       formData.append('licenseActivity', data.licenseActivity || '');
+      formData.append('licenseNumber', data.licenseNumber || '');
       formData.append('licenseExpiry', data.licenseExpiry || '');
 
-      // 3. Append files (React Native requires this specific object structure)
+      // 3. Append files
       if (logoFile) {
         formData.append('logo', {
           uri: logoFile.uri,
@@ -159,9 +166,10 @@ export default function CompanyAuthScreen() {
         } as any);
       }
 
-      // 4. Send request (Axios will automatically set the correct Boundary headers)
-      const response = await apiClient.post(
-        '/users/register/company',
+      // 4. Send request to the correct endpoint
+      const endpoint = type === 'office' ? '/users/register/office' : '/users/register/company';
+      await apiClient.post(
+        endpoint,
         formData,
         {
           headers: {
@@ -170,13 +178,14 @@ export default function CompanyAuthScreen() {
         },
       );
 
-      Alert.alert('تم بنجاح', 'تم إنشاء حساب الشركة بنجاح، يرجى تسجيل الدخول');
-      setMode('login');
+      // Return a flag or trigger parent state to show custom success modal
+      return true;
     } catch (error: any) {
       Alert.alert(
         'فشل التسجيل',
         error.response?.data?.message || 'حدث خطأ أثناء إنشاء الحساب',
       );
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -198,6 +207,7 @@ export default function CompanyAuthScreen() {
         >
           {/* Header & Account Type Selector */}
           <CompanyAuthHeader
+            type={type}
             onSelectAccountType={() => accountTypeSheetRef.current?.present()}
           />
 
@@ -213,6 +223,7 @@ export default function CompanyAuthScreen() {
             />
           ) : (
             <CompanySignupForm
+              type={type}
               onSubmit={onSignupFinal}
               logoFile={logoFile}
               pickLogo={pickLogo}
@@ -226,7 +237,7 @@ export default function CompanyAuthScreen() {
 
       <AccountTypeBottomSheet
         ref={accountTypeSheetRef}
-        initialType="company"
+        initialType={type}
         onContinue={handleAccountTypeChange}
       />
 

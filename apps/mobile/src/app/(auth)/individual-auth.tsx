@@ -101,8 +101,8 @@ export default function IndividualAuthScreen() {
   };
 
   const handleAccountTypeChange = (type: AccountType) => {
-    if (type === 'company') {
-      router.replace('/(auth)/company-auth');
+    if (type === 'company' || type === 'office') {
+      router.replace({ pathname: '/(auth)/business-auth', params: { type } } as any);
     }
   };
 

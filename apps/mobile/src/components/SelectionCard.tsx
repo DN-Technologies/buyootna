@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface SelectionCardProps {
   title: string;
   description: string;
-  type: 'individual' | 'company';
+  type: 'individual' | 'office' | 'company';
   isSelected: boolean;
   onPress: () => void;
 }
@@ -19,39 +19,24 @@ export default function SelectionCard({
   // Dynamic styling based on selection state
   const containerBg = isSelected ? 'bg-secondary' : 'bg-white';
   const borderColor = isSelected ? 'border-secondary' : 'border-gray-200';
-  const descColor = isSelected ? 'text-gray-300' : 'text-gray-medium';
+  const descColor = isSelected ? 'text-gray-300' : 'text-[#6B6A6A]';
+  const iconBg = isSelected ? 'bg-white' : 'bg-[#F5F7F9]';
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
       style={{
-        borderRadius: 8,
+        borderRadius: 12,
       }}
-      className={`rounedd-2xl mb-4 flex-row items-center gap-3 border-[1.5px] px-2 py-3 ${containerBg} ${borderColor}`}
+      className={`mb-4 flex-row items-center gap-4 border-[1.5px] p-4 ${containerBg} ${borderColor}`}
     >
-      {/* Text Content */}
-      <View className="flex-1 items-start">
-        <Text
-          className={`mb-1 w-full text-right font-cairo-semibold text-lg ${
-            isSelected ? 'text-white' : 'text-charcoal'
-          }`}
-        >
-          {title}
-        </Text>
-        <Text
-          className={`w-full text-right font-cairo-medium text-sm leading-5 ${descColor}`}
-        >
-          {description}
-        </Text>
-      </View>
-
-      {/* Icon Container */}
+      {/* Icon Container - appears on the right in RTL */}
       <View
-        style={{ width: 40, height: 40 }}
-        className="mr-4 items-center justify-center rounded-full bg-[#F5F7F9]"
+        style={{ width: 44, height: 44 }}
+        className={`items-center justify-center rounded-full ${iconBg}`}
       >
-        {type === 'individual' ? (
+        {type === 'individual' && (
           <Image
             source={require('@/assets/icons/individual-icon.svg')}
             style={{
@@ -59,7 +44,17 @@ export default function SelectionCard({
               height: 25,
             }}
           />
-        ) : (
+        )}
+        {type === 'office' && (
+          <Image
+            source={require('@/assets/icons/owner-icon.svg')}
+            style={{
+              width: 25,
+              height: 25,
+            }}
+          />
+        )}
+        {type === 'company' && (
           <Image
             source={require('@/assets/icons/company-icon.svg')}
             style={{
@@ -68,6 +63,28 @@ export default function SelectionCard({
             }}
           />
         )}
+      </View>
+
+      {/* Text Content - appears on the left in RTL, right-aligned text */}
+      <View className="flex-1 items-start">
+        <Text
+          className={`mb-1 w-full font-cairo-semibold text-lg ${
+            isSelected ? 'text-white' : 'text-charcoal'
+          }`}
+          style={{
+            writingDirection: 'rtl',
+          }}
+        >
+          {title}
+        </Text>
+        <Text
+          className={`w-full font-cairo-medium text-sm leading-5 ${descColor}`}
+          style={{
+            writingDirection: 'rtl',
+          }}
+        >
+          {description}
+        </Text>
       </View>
     </TouchableOpacity>
   );

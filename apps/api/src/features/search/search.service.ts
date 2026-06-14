@@ -108,7 +108,7 @@ export class SearchService {
     const formattedData = companies.map((user) => ({
       id: user.id, // Using user ID for routing
       name: user.companyProfile?.name,
-      category: user.companyProfile?.services,
+      category: user.companyProfile?.services || '',
       serviceArea: user.companyProfile?.serviceAreas || 'يخدم جميع المناطق',
       projectsCount: '+85', // TODO: Make dynamic from real projects table later
       logoUrl:
