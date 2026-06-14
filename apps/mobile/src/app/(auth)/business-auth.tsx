@@ -108,10 +108,11 @@ export default function BusinessAuthScreen() {
       await setAuth(response.data.user, response.data.access_token);
       router.replace('/(main)/home');
     } catch (error: any) {
-      Alert.alert(
-        'فشل تسجيل الدخول',
-        error.response?.data?.message || 'حدث خطأ في الاتصال',
-      );
+      const message = error.response?.data?.message;
+      const errorMsg = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'حدث خطأ في الاتصال';
+      Alert.alert('فشل تسجيل الدخول', errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -144,6 +145,7 @@ export default function BusinessAuthScreen() {
       formData.append('password', data.password);
       formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation);
+      formData.append('serviceAreas', data.serviceAreas || '');
       formData.append('about', data.about || '');
       formData.append('licenseActivity', data.licenseActivity || '');
       formData.append('licenseNumber', data.licenseNumber || '');
@@ -181,10 +183,11 @@ export default function BusinessAuthScreen() {
       // Return a flag or trigger parent state to show custom success modal
       return true;
     } catch (error: any) {
-      Alert.alert(
-        'فشل التسجيل',
-        error.response?.data?.message || 'حدث خطأ أثناء إنشاء الحساب',
-      );
+      const message = error.response?.data?.message;
+      const errorMsg = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'حدث خطأ أثناء إنشاء الحساب';
+      Alert.alert('فشل التسجيل', errorMsg);
       return false;
     } finally {
       setIsLoading(false);

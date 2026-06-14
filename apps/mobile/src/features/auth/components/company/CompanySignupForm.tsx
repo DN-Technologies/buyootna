@@ -9,11 +9,11 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Modal,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import SelectionBottomSheet from '@/core/components/SelectionBottomSheet';
+import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
 import MapPickerModal from '@/core/components/MapPickerModal';
 import {
   CompanySignupFormValues,
@@ -47,12 +47,12 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [hqAddressLabel, setHqAddressLabel] = useState<string>('');
   const [showMapPicker, setShowMapPicker] = useState(false);
 
   const activitySheetRef = useRef<BottomSheetModal>(null);
   const serviceAreasSheetRef = useRef<BottomSheetModal>(null);
+  const successSheetRef = useRef<BottomSheetModal>(null);
 
   const { control, handleSubmit, trigger, setValue, watch } =
     useForm<CompanySignupFormValues>({
@@ -102,12 +102,12 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const handleFinalSubmit = async (data: CompanySignupFormValues) => {
     const success = await onSubmit(data);
     if (success) {
-      setShowSuccessModal(true);
+      successSheetRef.current?.present();
     }
   };
 
   const closeSuccessModal = () => {
-    setShowSuccessModal(false);
+    successSheetRef.current?.dismiss();
     router.replace('/(main)/home');
   };
 
@@ -232,62 +232,15 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         );
       })()}
 
-      {/* Custom Success Modal */}
-      <Modal
-        visible={showSuccessModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={closeSuccessModal}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: 24,
-          }}
-        >
-          <View className="w-full items-center rounded-3xl bg-white p-6">
-            {/* Success Icon */}
-            <View className="mb-6 h-16 w-16 items-center justify-center rounded-full bg-[#22C55E]/10">
-              <Feather name="file-text" size={32} color="#22C55E" />
-              <View
-                style={{ position: 'absolute', bottom: -2, right: -2 }}
-                className="rounded-full border border-white bg-[#22C55E] p-0.5"
-              >
-                <Feather name="check" size={12} color="white" />
-              </View>
-            </View>
-
-            {/* Success Title */}
-            <Text className="mb-2 text-center font-cairo-bold text-xl text-charcoal">
-              تم إرسال طلبك بنجاح
-            </Text>
-
-            {/* Success Description */}
-            <Text className="mb-6 text-center font-cairo-medium text-sm leading-6 text-[#6B6A6A]">
-              {successMessage}
-            </Text>
-
-            {/* Action Button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={closeSuccessModal}
-              className="mb-4 w-full items-center justify-center rounded-3xl bg-primary py-4"
-            >
-              <Text className="font-cairo-bold text-lg text-white">
-                العودة الى الرئيسية
-              </Text>
-            </TouchableOpacity>
-
-            {/* Expected Review Period */}
-            <Text className="text-center font-cairo-medium text-xs text-[#9CA3AF]">
-              مدة المراجعة المتوقعة خلال 24 ساعة
-            </Text>
-          </View>
-        </View>
-      </Modal>
+      <SuccessBottomSheet
+        ref={successSheetRef}
+        title="تم إرسال طلبك بنجاح"
+        description={successMessage}
+        buttonText="العودة الى الرئيسية"
+        onPress={closeSuccessModal}
+        iconType="document-search"
+        footerText="مدة المراجعة المتوقعة خلال 24 ساعة"
+      />
     </View>
   );
 };

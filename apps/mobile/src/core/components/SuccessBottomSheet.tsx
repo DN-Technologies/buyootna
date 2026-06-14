@@ -5,23 +5,29 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useCallback, useMemo } from 'react';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface SuccessBottomSheetProps {
   title: string;
   description: string;
   buttonText: string;
   onPress: () => void;
-  // Optional: Allow you to switch to the green "document" icon for company signup later
-  iconName?: keyof typeof Feather.glyphMap;
+  iconType?: 'check' | 'document-search';
+  footerText?: string;
 }
 
 const SuccessBottomSheet = forwardRef<
   BottomSheetModal,
   SuccessBottomSheetProps
->(({ title, description, buttonText, onPress, iconName = 'check' }, ref) => {
-  const snapPoints = useMemo(() => ['40%'], []);
+>(({ title, description, buttonText, onPress, iconType = 'check', footerText }, ref) => {
+  const snapPoints = useMemo(() => {
+    if (footerText) {
+      return ['45%'];
+    }
+    return ['40%'];
+  }, [footerText]);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -46,19 +52,46 @@ const SuccessBottomSheet = forwardRef<
     >
       <BottomSheetView className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4">
         <View className="mt-4 items-center">
-          {/* Success Icon Circle */}
-          <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <Image
-              source={require('@/assets/icons/success-icon.svg')}
-              style={{ width: 74, height: 74 }}
-            />
-          </View>
+          {/* Dynamic Success Icon */}
+          {iconType === 'document-search' ? (
+            <LinearGradient
+              colors={['#33D679', '#AADB53']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="mb-6 h-20 w-20 items-center justify-center rounded-full"
+            >
+              <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}>
+                <Feather name="file-text" size={32} color="white" />
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: -2,
+                    right: -2,
+                    backgroundColor: '#38D97D',
+                    borderRadius: 10,
+                    padding: 1,
+                    borderWidth: 1.5,
+                    borderColor: 'white',
+                  }}
+                >
+                  <Feather name="search" size={10} color="white" />
+                </View>
+              </View>
+            </LinearGradient>
+          ) : (
+            <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-green-100">
+              <Image
+                source={require('@/assets/icons/success-icon.svg')}
+                style={{ width: 74, height: 74 }}
+              />
+            </View>
+          )}
 
           {/* Text Content */}
-          <Text className="text-center font-cairo-bold text-xl text-[#111111]">
+          <Text className="text-center font-cairo-bold text-xl text-[#111111] mb-2">
             {title}
           </Text>
-          <Text className="mb-3 px-4 text-center font-cairo-semibold text-sm leading-6 text-[#6B6A6A]">
+          <Text className="mb-6 px-4 text-center font-cairo-semibold text-sm leading-6 text-[#6B6A6A]">
             {description}
           </Text>
         </View>
@@ -67,12 +100,19 @@ const SuccessBottomSheet = forwardRef<
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onPress}
-          className="mb-2 w-full items-center justify-center rounded-3xl bg-[#15304D] py-4"
+          className="mb-4 w-full items-center justify-center rounded-3xl bg-[#15304D] py-4"
         >
           <Text className="font-cairo-bold text-lg text-white">
             {buttonText}
           </Text>
         </TouchableOpacity>
+
+        {/* Optional Footer Text */}
+        {footerText && (
+          <Text className="text-center font-cairo-medium text-xs text-[#9CA3AF]">
+            {footerText}
+          </Text>
+        )}
       </BottomSheetView>
     </BottomSheetModal>
   );

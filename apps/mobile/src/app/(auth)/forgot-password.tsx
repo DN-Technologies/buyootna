@@ -49,10 +49,11 @@ export default function ForgotPasswordScreen() {
       setResetToken(response.data.resetToken);
       setStep(3);
     } catch (error: any) {
-      Alert.alert(
-        'خطأ',
-        error.response?.data?.message || 'رمز التحقق غير صحيح',
-      );
+      const message = error.response?.data?.message;
+      const errorMsg = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'رمز التحقق غير صحيح';
+      Alert.alert('خطأ', errorMsg);
     }
   };
 
@@ -66,10 +67,11 @@ export default function ForgotPasswordScreen() {
       // Trigger the Success Bottom Sheet!
       successSheetRef.current?.present();
     } catch (error: any) {
-      Alert.alert(
-        'خطأ',
-        error.response?.data?.message || 'تعذر تحديث كلمة المرور',
-      );
+      const message = error.response?.data?.message;
+      const errorMsg = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'تعذر تحديث كلمة المرور';
+      Alert.alert('خطأ', errorMsg);
     }
   };
 

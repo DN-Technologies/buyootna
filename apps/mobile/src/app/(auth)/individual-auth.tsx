@@ -72,8 +72,10 @@ export default function IndividualAuthScreen() {
       // The router guard in _layout.tsx will automatically push them to /(main)
       router.push('/(main)/home');
     } catch (error: any) {
-      const backendMessage =
-        error.response?.data?.message || 'حدث خطأ في الاتصال';
+      const message = error.response?.data?.message;
+      const backendMessage = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'حدث خطأ في الاتصال';
       Alert.alert('فشل تسجيل الدخول', backendMessage);
     } finally {
       setIsLoading(false);
@@ -92,8 +94,10 @@ export default function IndividualAuthScreen() {
       Alert.alert('تم بنجاح', 'تم إنشاء الحساب بنجاح، يرجى تسجيل الدخول');
       setMode('login'); // Automatically switch them to the login tab
     } catch (error: any) {
-      const backendMessage =
-        error.response?.data?.message || 'حدث خطأ أثناء إنشاء الحساب';
+      const message = error.response?.data?.message;
+      const backendMessage = Array.isArray(message)
+        ? message.join('\n')
+        : message || 'حدث خطأ أثناء إنشاء الحساب';
       Alert.alert('فشل التسجيل', backendMessage);
     } finally {
       setIsLoading(false);
