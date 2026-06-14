@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -162,7 +163,7 @@ export default function AdPreviewScreen() {
           onPress={() => router.back()}
           className="h-8 w-8 items-center justify-center"
         >
-          <Image
+          <ExpoImage
             source={require('@/assets/icons/arrow-back.svg')}
             style={{ width: 12, height: 16 }}
           />
@@ -249,7 +250,10 @@ export default function AdPreviewScreen() {
               <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
                 تفاصيل الاعلان
               </Text>
-              <Text className="text-right font-cairo-semibold text-[13px] text-[#15304D]">
+              <Text
+                className="font-cairo-semibold text-[13px] text-[#15304D]"
+                style={{ writingDirection: 'rtl' }}
+              >
                 {draftData.adDetails || 'لا يوجد تفاصيل.'}
               </Text>
             </View>
@@ -276,7 +280,7 @@ export default function AdPreviewScreen() {
               <Image
                 source={{ uri: draftData.images[0] }}
                 className="h-48 w-full rounded-xl"
-                contentFit="cover"
+                resizeMode="cover"
               />
             ) : (
               <View className="h-48 w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
@@ -300,7 +304,7 @@ export default function AdPreviewScreen() {
                     key={idx}
                     source={{ uri }}
                     className="ml-3 h-16 w-16 rounded-lg"
-                    contentFit="cover"
+                    resizeMode="cover"
                   />
                 ))}
               </ScrollView>

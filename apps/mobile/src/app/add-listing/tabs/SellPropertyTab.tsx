@@ -59,7 +59,7 @@ export default function SellPropertyTab() {
             className="font-cairo-medium text-sm text-[#111111]"
             style={{ writingDirection: 'rtl' }}
           >
-            السعر
+            السعر {showPrice && <Text className="text-red-500">*</Text>}
           </Text>
           <Switch
             value={showPrice}

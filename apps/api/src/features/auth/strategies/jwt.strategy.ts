@@ -22,6 +22,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // Passport verifies the signature automatically.
   // This method just transforms the decoded payload.
   validate(payload: JwtPayload) {
-    return { userId: payload.sub, email: payload.email, role: payload.role };
+    return {
+      id: payload.sub,
+      userId: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }

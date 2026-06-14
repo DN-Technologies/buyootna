@@ -96,8 +96,8 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  async getProfile(@CurrentUser() user: any) {
-    const fullUser = await this.usersService.findFullUser(user.userId);
+  async getProfile(@CurrentUser() user: User) {
+    const fullUser = await this.usersService.findFullUser(user.id);
     return {
       message: 'You have successfully accessed a protected route!',
       user: fullUser,

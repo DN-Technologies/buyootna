@@ -64,6 +64,10 @@ export class PropertiesController {
     @CurrentUser() user: User,
     @Body() createPropertyDto: CreatePropertyDto,
   ) {
+    console.log(
+      'Incoming CreatePropertyDto:',
+      JSON.stringify(createPropertyDto, null, 2),
+    );
     // Pass the user.userId (from our JWT payload) top the service
     return this.propertiesService.create(user.id, createPropertyDto);
   }

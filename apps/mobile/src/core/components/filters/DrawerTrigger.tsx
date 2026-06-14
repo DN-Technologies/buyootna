@@ -5,6 +5,7 @@ export interface DrawerTriggerProps {
   placeholder: string;
   value?: string;
   onPress: () => void;
+  required?: boolean;
 }
 
 export default function DrawerTrigger({
@@ -12,6 +13,7 @@ export default function DrawerTrigger({
   placeholder,
   value,
   onPress,
+  required,
 }: DrawerTriggerProps) {
   return (
     <View className="mb-6 flex-1" style={{ flex: 1 }}>
@@ -22,6 +24,7 @@ export default function DrawerTrigger({
         }}
       >
         {label}
+        {required && <Text className="text-red-500"> *</Text>}
       </Text>
       <TouchableOpacity
         activeOpacity={0.7}

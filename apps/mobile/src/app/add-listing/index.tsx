@@ -52,8 +52,7 @@ export default function CreateListingScreen() {
     !!propertyCategory &&
     !!areaSize &&
     !!adDetails &&
-    !!phoneNumber &&
-    images.length > 0;
+    !!phoneNumber;
 
   let isTypeValid = true;
   if (listingType === 'sell') {
@@ -197,6 +196,7 @@ export default function CreateListingScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handlePreview}
+            disabled={!isFormValid}
             className={`h-[48px] w-full items-center justify-center rounded-[24px] py-4 ${isFormValid ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'}`}
           >
             <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
