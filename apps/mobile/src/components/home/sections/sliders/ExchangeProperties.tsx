@@ -10,6 +10,7 @@ import {
 
 import { feedService } from '@/core/api/feed.service';
 import PropertyCard from '@/core/components/PropertyCard';
+import { formatTimeAgo } from '@/core/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -75,7 +76,11 @@ export default function ExchangeProperties({
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View className="mr-4">
-            <PropertyCard {...item} cardWidth={HORIZONTAL_CARD_WIDTH} />
+            <PropertyCard
+              {...item}
+              timeAgo={item.createdAt ? formatTimeAgo(item.createdAt) : undefined}
+              cardWidth={HORIZONTAL_CARD_WIDTH}
+            />
           </View>
         )}
         // Infinite Scroll Triggers:

@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from 'react-native';
 
 import { feedService } from '@/core/api/feed.service';
 import PropertyCard from '@/core/components/PropertyCard';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
+import { formatTimeAgo } from '@/core/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
 interface HomePropertiesProps {
@@ -142,6 +149,7 @@ export default function HomeProperties({
           beds={item.beds}
           baths={item.baths}
           location={item.location}
+          timeAgo={item.createdAt ? formatTimeAgo(item.createdAt) : undefined}
           // Note: Since this is vertical, we DO NOT pass cardWidth.
           // It will naturally fill 100% of the screen width minus padding.
         />

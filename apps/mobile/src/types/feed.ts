@@ -10,6 +10,7 @@ export interface PropertyDto {
   beds: number;
   baths: number;
   location: string;
+  createdAt: string;
 }
 
 // --- Company Modal ---

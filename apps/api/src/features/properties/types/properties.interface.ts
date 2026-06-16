@@ -8,6 +8,7 @@ export interface PropertyWithCompanyUser {
   beds: number | null;
   baths: number | null;
   location: string;
+  createdAt: Date;
   user: {
     companyProfile: {
       name: string;

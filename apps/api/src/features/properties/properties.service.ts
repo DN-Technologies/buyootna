@@ -446,6 +446,7 @@ export class PropertiesService {
       beds: p.beds,
       baths: p.baths,
       location: p.location,
+      createdAt: p.createdAt,
     }));
   }
 
