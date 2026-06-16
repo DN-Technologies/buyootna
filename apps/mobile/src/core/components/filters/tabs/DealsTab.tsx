@@ -1,5 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { Text, TextInput, View } from 'react-native';
 
 import DatePickerGroup from '@/core/components/filters/DatePickerGroup';
@@ -8,15 +8,8 @@ import PillGroup from '@/core/components/filters/PillGroup';
 import RangeInputGroup from '@/core/components/filters/RangeInputGroup';
 import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import { useFilterStore } from '@/core/store/useFilterStore';
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
-const MOCK_GOVERNORATES = [
-  { id: '1', label: 'العاصمة' },
-  { id: '2', label: 'حولي' },
-];
-const MOCK_AREAS = [
-  { id: '1', label: 'السالمية' },
-  { id: '2', label: 'الجابرية' },
-];
 const PROPERTY_TYPES = [
   { id: 'industrial', label: 'صناعي' },
   { id: 'commercial', label: 'تجاري' },
@@ -42,6 +35,29 @@ export default function DealsTab() {
     updateField('deals', field, value);
   };
 
+  // Dynamically resolve areas based on selected governorates, or show all if none selected
+  const areasToDisplay = useMemo(() => {
+    let baseAreas = [];
+    if (tabState.govs && tabState.govs.length > 0) {
+      baseAreas = tabState.govs.flatMap((gov) => AREAS[gov.id] || []);
+    } else {
+      baseAreas = Object.values(AREAS).flat();
+    }
+    // Prepend the "All" (الكل) option
+    return [{ id: 'all', label: 'الكل' }, ...baseAreas];
+  }, [tabState.govs]);
+
+  // Format comma-separated labels for trigger buttons
+  const formattedGovValue = useMemo(() => {
+    if (!tabState.govs || tabState.govs.length === 0) return undefined;
+    return tabState.govs.map((g) => g.label).join('، ');
+  }, [tabState.govs]);
+
+  const formattedAreaValue = useMemo(() => {
+    if (!tabState.areas || tabState.areas.length === 0) return undefined;
+    return tabState.areas.map((a) => a.label).join('، ');
+  }, [tabState.areas]);
+
   return (
     <View className="flex-1">
       <BottomSheetScrollView
@@ -58,13 +74,13 @@ export default function DealsTab() {
           <DrawerTrigger
             label="المحافظة"
             placeholder="اختر المحافظة"
-            value={tabState.gov?.label}
+            value={formattedGovValue}
             onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
             placeholder="اختر المنطقة"
-            value={tabState.area?.label}
+            value={formattedAreaValue}
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
@@ -129,14 +145,29 @@ export default function DealsTab() {
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"
-        data={MOCK_GOVERNORATES}
-        onSelect={(value) => setField('gov', value)}
+        data={GOVERNORATES}
+        multiSelect={true}
+        selectedItems={tabState.govs}
+        onSelectMultiple={(selectedGovs) => {
+          setField('govs', selectedGovs);
+          if (selectedGovs.length > 0) {
+            const allowedAreaIds = new Set(
+              selectedGovs.flatMap((gov) => (AREAS[gov.id] || []).map((a) => a.id))
+            );
+            const updatedAreas = tabState.areas.filter(
+              (area) => area.id === 'all' || allowedAreaIds.has(area.id)
+            );
+            setField('areas', updatedAreas);
+          }
+        }}
       />
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
-        data={MOCK_AREAS}
-        onSelect={(value) => setField('area', value)}
+        data={areasToDisplay}
+        multiSelect={true}
+        selectedItems={tabState.areas}
+        onSelectMultiple={(selectedAreas) => setField('areas', selectedAreas)}
       />
     </View>
   );

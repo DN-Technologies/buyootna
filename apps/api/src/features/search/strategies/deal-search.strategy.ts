@@ -22,8 +22,12 @@ export class DealSearchStrategy implements SearchStrategy {
       type: ListingType.DEAL,
     };
 
-    if (filters.gov?.id) where.governorateId = filters.gov.id;
-    if (filters.area?.id) where.areaId = filters.area.id;
+    if (filters.govs && filters.govs.length > 0) {
+      where.governorateId = { in: filters.govs.map((g) => g.id) };
+    }
+    if (filters.areas && filters.areas.length > 0) {
+      where.areaId = { in: filters.areas.map((a) => a.id) };
+    }
 
     if (filters.salePercentage) {
       where.salePercentage = { gte: filters.salePercentage };

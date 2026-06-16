@@ -53,13 +53,28 @@ export default function StandardPropertyTab({
     updateField(type, field, value);
   };
 
-  // Dynamically resolve areas based on selected governorate, or show all if none selected
+  // Dynamically resolve areas based on selected governorates, or show all if none selected
   const areasToDisplay = useMemo(() => {
-    if (tabState.gov?.id) {
-      return AREAS[tabState.gov.id] || [];
+    let baseAreas = [];
+    if (tabState.govs && tabState.govs.length > 0) {
+      baseAreas = tabState.govs.flatMap((gov) => AREAS[gov.id] || []);
+    } else {
+      baseAreas = Object.values(AREAS).flat();
     }
-    return Object.values(AREAS).flat();
-  }, [tabState.gov]);
+    // Prepend the "All" (الكل) option
+    return [{ id: 'all', label: 'الكل' }, ...baseAreas];
+  }, [tabState.govs]);
+
+  // Format comma-separated labels for trigger buttons
+  const formattedGovValue = useMemo(() => {
+    if (!tabState.govs || tabState.govs.length === 0) return undefined;
+    return tabState.govs.map((g) => g.label).join('، ');
+  }, [tabState.govs]);
+
+  const formattedAreaValue = useMemo(() => {
+    if (!tabState.areas || tabState.areas.length === 0) return undefined;
+    return tabState.areas.map((a) => a.label).join('، ');
+  }, [tabState.areas]);
 
   return (
     <View className="flex-1">
@@ -77,13 +92,13 @@ export default function StandardPropertyTab({
           <DrawerTrigger
             label="المحافظة"
             placeholder="اختر المحافظة"
-            value={tabState.gov?.label}
+            value={formattedGovValue}
             onPress={() => govDrawerRef.current?.present()}
           />
           <DrawerTrigger
             label="المنطقة"
             placeholder="اختر المنطقة"
-            value={tabState.area?.label}
+            value={formattedAreaValue}
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
@@ -145,16 +160,19 @@ export default function StandardPropertyTab({
         ref={govDrawerRef}
         title="اختر المحافظة"
         data={GOVERNORATES}
-        onSelect={(value: any) => {
-          setField('gov', value);
-          // If the current area doesn't belong to this governorate, clear it
-          const currentArea = tabState.area;
-          if (currentArea) {
-            const validAreas = AREAS[value.id] || [];
-            const isAreaValid = validAreas.some((a) => a.id === currentArea.id);
-            if (!isAreaValid) {
-              setField('area', null);
-            }
+        multiSelect={true}
+        selectedItems={tabState.govs}
+        onSelectMultiple={(selectedGovs) => {
+          setField('govs', selectedGovs);
+          // Filter out selected areas that don't belong to any of the new selected governorates
+          if (selectedGovs.length > 0) {
+            const allowedAreaIds = new Set(
+              selectedGovs.flatMap((gov) => (AREAS[gov.id] || []).map((a) => a.id))
+            );
+            const updatedAreas = tabState.areas.filter(
+              (area) => area.id === 'all' || allowedAreaIds.has(area.id)
+            );
+            setField('areas', updatedAreas);
           }
         }}
       />
@@ -162,7 +180,9 @@ export default function StandardPropertyTab({
         ref={areaDrawerRef}
         title="اختر المنطقة"
         data={areasToDisplay}
-        onSelect={(value: any) => setField('area', value)}
+        multiSelect={true}
+        selectedItems={tabState.areas}
+        onSelectMultiple={(selectedAreas) => setField('areas', selectedAreas)}
       />
     </View>
   );

@@ -21,7 +21,7 @@ export class PrismaService
       connectionString: process.env.DATABASE_URL,
       max: 3, // Prevent connection pool exhaustion on Neon serverless DB
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      connectionTimeoutMillis: 15000,
     });
     const adapter = new PrismaPg(pool);
     super({ adapter });

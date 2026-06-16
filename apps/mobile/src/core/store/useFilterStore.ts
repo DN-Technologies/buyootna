@@ -7,8 +7,8 @@ export interface SelectionItem {
 }
 
 export interface StandardTabState {
-  gov: SelectionItem | null;
-  area: SelectionItem | null;
+  govs: SelectionItem[];
+  areas: SelectionItem[];
   category: string;
   rooms: number;
   baths: number;
@@ -20,8 +20,8 @@ export interface StandardTabState {
 }
 
 export interface ExchangeTabState {
-  gov: SelectionItem | null;
-  area: SelectionItem | null;
+  govs: SelectionItem[];
+  areas: SelectionItem[];
   requestYear: string;
   requiredYear: string;
   status: string;
@@ -32,8 +32,8 @@ export interface ExchangeTabState {
 export interface CompaniesTabState {
   specialty: string;
   requestType: string;
-  gov: SelectionItem | null;
-  area: SelectionItem | null;
+  govs: SelectionItem[];
+  areas: SelectionItem[];
 }
 
 export interface AuctionsTabState {
@@ -44,8 +44,8 @@ export interface AuctionsTabState {
 }
 
 export interface DealsTabState {
-  gov: SelectionItem | null;
-  area: SelectionItem | null;
+  govs: SelectionItem[];
+  areas: SelectionItem[];
   salePercentage: string;
   startDate: string;
   endDate: string;
@@ -68,8 +68,8 @@ export interface FilterTabsState {
 
 // --- 2. Initial States ---
 export const initialStandardState: StandardTabState = {
-  gov: null,
-  area: null,
+  govs: [],
+  areas: [],
   category: 'apartment',
   rooms: 1,
   baths: 1,
@@ -81,8 +81,8 @@ export const initialStandardState: StandardTabState = {
 };
 
 export const initialExchangeState: ExchangeTabState = {
-  gov: null,
-  area: null,
+  govs: [],
+  areas: [],
   requestYear: '',
   requiredYear: '',
   status: 'building',
@@ -93,8 +93,8 @@ export const initialExchangeState: ExchangeTabState = {
 export const initialCompaniesState: CompaniesTabState = {
   specialty: '',
   requestType: '',
-  gov: null,
-  area: null,
+  govs: [],
+  areas: [],
 };
 
 export const initialAuctionsState: AuctionsTabState = {
@@ -105,8 +105,8 @@ export const initialAuctionsState: AuctionsTabState = {
 };
 
 export const initialDealsState: DealsTabState = {
-  gov: null,
-  area: null,
+  govs: [],
+  areas: [],
   salePercentage: '',
   startDate: '',
   endDate: '',

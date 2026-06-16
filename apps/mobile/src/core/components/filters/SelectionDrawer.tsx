@@ -4,6 +4,7 @@ import {
   FlatList,
   Keyboard,
   Modal,
+  ScrollView,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -18,11 +19,28 @@ export interface SelectionItem {
 export interface SelectionDrawerProps {
   title: string;
   data: SelectionItem[];
-  onSelect: (item: SelectionItem) => void;
+  multiSelect?: boolean;
+  // If multiSelect is true:
+  selectedItems?: SelectionItem[];
+  onSelectMultiple?: (items: SelectionItem[]) => void;
+  // If multiSelect is false or omitted:
+  selectedItem?: SelectionItem | null;
+  onSelect?: (item: SelectionItem) => void;
 }
 
 const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
-  ({ title, data, onSelect }, ref) => {
+  (
+    {
+      title,
+      data,
+      multiSelect = false,
+      selectedItems = [],
+      onSelectMultiple,
+      selectedItem = null,
+      onSelect,
+    },
+    ref,
+  ) => {
     // --- State ---
     const [visible, setVisible] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -45,9 +63,38 @@ const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
       Keyboard.dismiss();
     };
 
-    const handleSelect = (item: SelectionItem) => {
-      onSelect(item);
-      handleClose();
+    const handleToggle = (item: SelectionItem) => {
+      if (!onSelectMultiple) return;
+
+      let newSelected: SelectionItem[];
+      if (item.id === 'all') {
+        // If "All" is tapped:
+        // Toggle "All". If already selected, clear it. Otherwise, select ONLY "All".
+        const exists = selectedItems.some((i) => i.id === 'all');
+        newSelected = exists ? [] : [item];
+      } else {
+        // If a normal item is tapped:
+        // Remove "All" if it was selected.
+        const withoutAll = selectedItems.filter((i) => i.id !== 'all');
+        const exists = withoutAll.some((i) => i.id === item.id);
+        if (exists) {
+          newSelected = withoutAll.filter((i) => i.id !== item.id);
+        } else {
+          newSelected = [...withoutAll, item];
+        }
+      }
+      onSelectMultiple(newSelected);
+    };
+
+    const handleRowPress = (item: SelectionItem) => {
+      if (multiSelect) {
+        handleToggle(item);
+      } else {
+        if (onSelect) {
+          onSelect(item);
+        }
+        handleClose();
+      }
     };
 
     // --- Search Filter Logic ---
@@ -55,6 +102,19 @@ const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
       if (!searchText.trim()) return data;
       return data.filter((item) => item.label.includes(searchText));
     }, [searchText, data]);
+
+    const renderCheckbox = (isSelected: boolean) => {
+      if (isSelected) {
+        return (
+          <View className="h-5 w-5 items-center justify-center rounded-md bg-[#15304D]">
+            <Feather name="check" size={12} color="white" />
+          </View>
+        );
+      }
+      return (
+        <View className="h-5 w-5 rounded-md border border-gray-300 bg-white" />
+      );
+    };
 
     return (
       <Modal
@@ -79,6 +139,32 @@ const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
                   <View className="w-8" />
                 </View>
 
+                {/* --- 2. Selected Pills (Horizontal Scroll) --- */}
+                {multiSelect && selectedItems.length > 0 && (
+                  <View className="px-5 pb-4">
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{ gap: 8 }}
+                      className="flex-row"
+                    >
+                      {selectedItems.map((item) => (
+                        <TouchableOpacity
+                          key={item.id}
+                          activeOpacity={0.7}
+                          onPress={() => handleToggle(item)}
+                          className="flex-row items-center gap-1.5 rounded-full border border-[#15304D]/10 bg-[#15304D]/5 px-3.5 py-1.5"
+                        >
+                          <Text className="font-cairo text-xs leading-[18px] text-[#15304D]">
+                            {item.label}
+                          </Text>
+                          <Feather name="x" size={14} color="#15304D" />
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
                 {/* --- 3. Scrollable List --- */}
                 <FlatList
                   data={filteredData}
@@ -89,17 +175,52 @@ const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
                   }}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => handleSelect(item)}
-                      className="flex-row items-center justify-between border-b border-gray-50 py-3"
-                    >
-                      <Text className="font-cairo text-[14px] leading-[22px] text-[#111111]">
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                  renderItem={({ item }) => {
+                    const isSelected = multiSelect
+                      ? selectedItems.some((i) => i.id === item.id)
+                      : selectedItem?.id === item.id;
+
+                    return (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => handleRowPress(item)}
+                        className={`mb-1 flex-row items-center justify-between rounded-lg px-3 py-3 ${
+                          isSelected ? 'bg-[#15304D]/5' : 'bg-transparent'
+                        }`}
+                      >
+                        {multiSelect ? (
+                          <>
+                            {renderCheckbox(isSelected)}
+                            <Text
+                              className={`mx-3 flex-1 font-cairo text-[14px] leading-[22px] ${
+                                isSelected
+                                  ? 'font-cairo-semibold text-[#15304D]'
+                                  : 'text-[#111111]'
+                              }`}
+                              style={{
+                                writingDirection: 'rtl',
+                              }}
+                            >
+                              {item.label}
+                            </Text>
+                          </>
+                        ) : (
+                          <Text
+                            className={`flex-1 text-right font-cairo text-[14px] leading-[22px] ${
+                              isSelected
+                                ? 'font-cairo-semibold text-[#15304D]'
+                                : 'text-[#111111]'
+                            }`}
+                            style={{
+                              writingDirection: 'rtl',
+                            }}
+                          >
+                            {item.label}
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }}
                   ListEmptyComponent={
                     <View className="items-center justify-center pt-10">
                       <Text className="font-cairo-medium text-[#94A3B8]">

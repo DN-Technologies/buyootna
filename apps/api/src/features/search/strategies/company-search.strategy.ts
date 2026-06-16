@@ -38,39 +38,49 @@ export class CompanySearchStrategy implements SearchStrategy {
       };
     }
 
-    if (filters.gov?.label || filters.area?.label) {
+    if (
+      (filters.govs && filters.govs.length > 0) ||
+      (filters.areas && filters.areas.length > 0)
+    ) {
       const locationConditions: Prisma.CompanyProfileWhereInput[] = [];
 
-      if (filters.gov?.label) {
+      if (filters.govs && filters.govs.length > 0) {
         locationConditions.push({
           OR: [
-            {
+            ...filters.govs.map((gov) => ({
               serviceAreas: {
-                contains: filters.gov.label,
-                mode: 'insensitive',
+                contains: gov.label,
+                mode: 'insensitive' as const,
               },
-            },
-            { serviceAreas: { contains: 'جميع', mode: 'insensitive' } },
+            })),
             {
-              hqLocation: { contains: filters.gov.label, mode: 'insensitive' },
+              serviceAreas: { contains: 'جميع', mode: 'insensitive' as const },
             },
+            ...filters.govs.map((gov) => ({
+              hqLocation: { contains: gov.label, mode: 'insensitive' as const },
+            })),
           ],
         });
       }
 
-      if (filters.area?.label) {
+      if (filters.areas && filters.areas.length > 0) {
         locationConditions.push({
           OR: [
-            {
+            ...filters.areas.map((area) => ({
               serviceAreas: {
-                contains: filters.area.label,
-                mode: 'insensitive',
+                contains: area.label,
+                mode: 'insensitive' as const,
               },
-            },
-            { serviceAreas: { contains: 'جميع', mode: 'insensitive' } },
+            })),
             {
-              hqLocation: { contains: filters.area.label, mode: 'insensitive' },
+              serviceAreas: { contains: 'جميع', mode: 'insensitive' as const },
             },
+            ...filters.areas.map((area) => ({
+              hqLocation: {
+                contains: area.label,
+                mode: 'insensitive' as const,
+              },
+            })),
           ],
         });
       }

@@ -19,14 +19,16 @@ export class SelectionItemDto {
 
 export class StandardFilterDto {
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  gov?: SelectionItemDto;
+  govs?: SelectionItemDto[];
 
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  area?: SelectionItemDto;
+  areas?: SelectionItemDto[];
 
   @IsOptional() @IsString() category?: string;
   @IsOptional() @IsNumber() @Type(() => Number) rooms?: number;
@@ -43,13 +45,15 @@ export class StandardFilterDto {
 
 export class ExchangeFilterDto {
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  gov?: SelectionItemDto;
+  govs?: SelectionItemDto[];
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  area?: SelectionItemDto;
+  areas?: SelectionItemDto[];
 
   @IsOptional() @IsNumber() @Type(() => Number) requestYear?: number;
   @IsOptional() @IsNumber() @Type(() => Number) requiredYear?: number;
@@ -65,13 +69,15 @@ export class CompanyFilterDto {
   @IsOptional() @IsString() requestType?: string;
 
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  gov?: SelectionItemDto;
+  govs?: SelectionItemDto[];
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  area?: SelectionItemDto;
+  areas?: SelectionItemDto[];
 }
 
 export class AuctionFilterDto {
@@ -84,13 +90,15 @@ export class AuctionFilterDto {
 
 export class DealFilterDto {
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  gov?: SelectionItemDto;
+  govs?: SelectionItemDto[];
   @IsOptional()
-  @ValidateNested()
+  @IsArray()
+  @ValidateNested({ each: true })
   @Type(() => SelectionItemDto)
-  area?: SelectionItemDto;
+  areas?: SelectionItemDto[];
 
   @IsOptional() @IsNumber() @Type(() => Number) salePercentage?: number;
 
