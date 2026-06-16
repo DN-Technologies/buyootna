@@ -19,13 +19,7 @@ export default function FilterPill({
         isActive ? 'border-[#B28648]' : 'border-transparent'
       }`}
     >
-      <Text
-        className={`font-cairo text-[13px] ${
-          isActive ? 'text-[#15304D]' : 'text-[#94A3B8]'
-        }`}
-      >
-        {label}
-      </Text>
+      <Text className="font-cairo text-[13px] text-[#111111]">{label}</Text>
     </TouchableOpacity>
   );
 }

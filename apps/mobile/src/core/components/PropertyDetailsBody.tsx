@@ -112,14 +112,16 @@ export default function PropertyDetailsBody({
       )}
 
       {/* --- 4. Main Description (الوصف) --- */}
-      <Section title="الوصف">
-        <Text
-          className="font-cairo-medium text-sm leading-7 text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          {description}
-        </Text>
-      </Section>
+      {type !== 'EXCHANGE' && (
+        <Section title="الوصف">
+          <Text
+            className="font-cairo-medium text-sm leading-7 text-[#111111]"
+            style={{ writingDirection: 'rtl' }}
+          >
+            {description}
+          </Text>
+        </Section>
+      )}
     </View>
   );
 }

@@ -29,7 +29,7 @@ export default function DrawerTrigger({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={onPress}
-        className="h-[40px] w-full justify-center rounded-md border border-gray-200 bg-white px-4"
+        className="h-[40px] w-full justify-center rounded-md border border-[#ECECEC] bg-white px-4"
         style={{ width: '100%' }}
       >
         <Text

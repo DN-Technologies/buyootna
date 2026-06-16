@@ -320,6 +320,14 @@ export class PropertiesService {
                 isVerified: true,
               },
             },
+            officeProfile: {
+              select: {
+                name: true,
+                logoUrl: true,
+                isVerified: true,
+                licenseNumber: true,
+              },
+            },
           },
         },
       },
@@ -335,16 +343,23 @@ export class PropertiesService {
       // Create a clean 'host' object for the frontend
       host: {
         id: property.user.id,
-        name: property.user.companyProfile
-          ? property.user.companyProfile.name
-          : 'مستخدم',
+        name: property.user.officeProfile
+          ? property.user.officeProfile.name
+          : property.user.companyProfile
+            ? property.user.companyProfile.name
+            : 'مستخدم',
         avatarUrl:
+          property.user.officeProfile?.logoUrl ||
           property.user.companyProfile?.logoUrl ||
           'https://via.placeholder.com/150',
         joinedDate: this.formatDateToMonthYear(property.user.createdAt),
-        isVerified: property.user.companyProfile?.isVerified ?? false,
+        isVerified:
+          property.user.officeProfile?.isVerified ||
+          property.user.companyProfile?.isVerified ||
+          false,
         rating: 4.5, // TODO: Make dynamic when ratings system is built
       },
+      licenseNumber: property.user.officeProfile?.licenseNumber || undefined,
     };
   }
 

@@ -97,7 +97,7 @@ export default function SuggestionCard({
           >
             <HeartIcon
               size={22}
-              color={isFavorite ? '#BA0003' : '#94A3B8'}
+              color={isFavorite ? '#BA0003' : '#111111'}
               filled={isFavorite}
             />
           </TouchableOpacity>

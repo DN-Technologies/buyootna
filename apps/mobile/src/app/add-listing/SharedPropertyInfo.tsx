@@ -116,7 +116,7 @@ export default function SharedPropertyInfo() {
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={handleMapPress}
-          className="h-12 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-4"
+          className="h-12 flex-row items-center justify-between rounded-xl border border-[#ECECEC] bg-white px-4"
         >
           {/* Location Text (Right side in RTL) */}
           <Text
@@ -158,7 +158,7 @@ export default function SharedPropertyInfo() {
             المساحة <Text className="text-red-500">*</Text>
           </Text>
           <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3"
+            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
             style={{ width: '100%' }}
           >
             <TextInput
@@ -186,7 +186,7 @@ export default function SharedPropertyInfo() {
             عمر العقار
           </Text>
           <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3"
+            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
             style={{ width: '100%' }}
           >
             <TextInput
@@ -210,7 +210,7 @@ export default function SharedPropertyInfo() {
             الرقم الالي للعقار
           </Text>
           <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3"
+            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
             style={{ width: '100%' }}
           >
             <TextInput

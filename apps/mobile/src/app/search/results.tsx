@@ -202,21 +202,24 @@ export default function SearchResultsScreen() {
       {/* --- RESULTS META --- */}
       <View className="flex-row items-center justify-between px-5 py-5">
         {/* Left: Sorting */}
-        <TouchableOpacity activeOpacity={0.7} className="flex-row items-center">
-          <Feather name="chevron-down" size={14} color="#6B6A6A" />
-          <Text className="ml-1 font-cairo-semibold text-xs text-[#6B6A6A]">
+        <TouchableOpacity
+          activeOpacity={0.7}
+          className="flex-row items-center gap-1"
+        >
+          <Feather name="align-left" size={14} color="#6B6A6A" />
+          <Text className="font-cairo-semibold text-xs leading-[22px] text-[#6B6A6A]">
             الترتيب حسب
           </Text>
           <Feather
-            name="align-left"
+            name="chevron-down"
             size={14}
             color="#6B6A6A"
-            className="ml-1.5"
+            className="relative top-0.5"
           />
         </TouchableOpacity>
 
         {/* Right: Count */}
-        <Text className="font-cairo-medium text-xs text-[#94A3B8]">
+        <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
           {totalCount} نتيجة لبحثك
         </Text>
       </View>

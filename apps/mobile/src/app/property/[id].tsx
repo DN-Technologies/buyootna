@@ -96,8 +96,6 @@ export default function PropertyDetailsScreen() {
     );
   }
 
-
-
   const displayTitle = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type)}`;
 
   return (
@@ -133,11 +131,15 @@ export default function PropertyDetailsScreen() {
           views={property.views}
           area={property.area}
           location={property.location}
-          floor={3} // DB doesn't have floor yet, default to a fallback
+          floor={property.floors}
           beds={property.beds}
           baths={property.baths}
-          requestYear="2021"
-          requiredYear="2025"
+          requestYear={property.requestYear?.toString()}
+          requiredYear={property.requiredYear?.toString()}
+          licenseNumber={property.licenseNumber}
+          exchangeRequirement={
+            property.type === 'EXCHANGE' ? property.description : undefined
+          }
         />
 
         {/* --- Card 4: Map Preview --- */}
@@ -154,11 +156,7 @@ export default function PropertyDetailsScreen() {
             type={property.type}
             description={property.description}
             features={['شارع واحد', 'مصعد', 'جراج']} // fallback features
-            exchangeRequirement={
-              property.type === 'EXCHANGE'
-                ? 'أرغب بالبدل في منطقة جابر الأحمد أو المنطقة العاشرة. يفضل زاوية أو شارع واحد. مستعد للتفاوض مع المواقع المميزة.'
-                : undefined
-            }
+            exchangeRequirement={undefined}
             additionalCosts={
               property.type === 'RENT'
                 ? 'الكهرباء والماء: على المستأجر (غير مشمولة في الإيجار).\nالإنترنت: متوفر اشتراك فايبر (يتحمله المستأجر).'

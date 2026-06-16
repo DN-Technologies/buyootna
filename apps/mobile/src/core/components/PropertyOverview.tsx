@@ -7,7 +7,9 @@ import {
   BathIcon,
   BedIcon,
   FloorIcon,
+  LicenseIcon,
   LocationIcon,
+  RequestIcon,
 } from '@/assets/icons/home/property';
 
 export interface PropertyOverviewProps {
@@ -26,6 +28,8 @@ export interface PropertyOverviewProps {
   // Exchange specific
   requestYear?: string;
   requiredYear?: string;
+  licenseNumber?: string;
+  exchangeRequirement?: string;
 }
 
 export default function PropertyOverview({
@@ -42,6 +46,8 @@ export default function PropertyOverview({
   baths,
   requestYear,
   requiredYear,
+  licenseNumber,
+  exchangeRequirement,
 }: PropertyOverviewProps) {
   return (
     <View className="bg-white px-5 pt-5">
@@ -53,6 +59,14 @@ export default function PropertyOverview({
           <Text className="font-cairo-semibold text-base text-[#111111]">
             {title}
           </Text>
+          {licenseNumber && (
+            <View className="mt-1 flex-row items-center gap-1.5">
+              <LicenseIcon color="#15304D" size={16} />
+              <Text className="font-cairo-semibold text-[13px] text-[#15304D]">
+                رقم الرخصة {licenseNumber}
+              </Text>
+            </View>
+          )}
           {/*  Price (Hidden for Exchange usually, but handles 0 gracefully) */}
           {type !== 'EXCHANGE' ? (
             <View className="items-start">
@@ -98,7 +112,12 @@ export default function PropertyOverview({
             <Text className="mr-1 font-cairo-semibold text-xs text-[#6B6A6A]">
               {timeAgo} -
             </Text>
-            <Feather name="eye" size={12} color="#6B6A6A" />
+            <Feather
+              name="eye"
+              size={12}
+              color="#6B6A6A"
+              className="relative -top-0.5"
+            />
             <Text className="ml-1 font-cairo-semibold text-xs text-[#6B6A6A]">
               {views}
             </Text>
@@ -107,30 +126,24 @@ export default function PropertyOverview({
       </View>
 
       {/* ---  DYNAMIC Specs Row --- */}
-      <View className="my-6 flex-row items-center justify-between">
+      <View className="mb-6 flex-row items-center">
         {type === 'EXCHANGE' ? (
           // EXCHANGE SPECS (سنة الطلب / السنة المطلوبة)
           <>
-            <View className="flex-row items-center">
-              <Text className="mr-2 font-cairo-semibold text-sm text-[#111111]">
-                {requiredYear}
+            <View className="flex-row items-center gap-1.5">
+              <RequestIcon color="#15304D" size={16} />
+              <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
+                سنة الطلب {requestYear}
               </Text>
-              <Text className="font-cairo-medium text-xs text-[#94A3B8]">
-                السنة المطلوبة
-              </Text>
-              <Feather name="calendar" size={14} color="#94A3B8" />
             </View>
 
             <View className="mx-4 h-4 w-[1px] bg-gray-300" />
 
-            <View className="flex-row items-center">
-              <Text className="mr-2 font-cairo-semibold text-sm text-[#111111]">
-                {requestYear}
+            <View className="flex-row items-center gap-1.5">
+              <RequestIcon color="#15304D" size={16} />
+              <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
+                السنة المطلوبة {requiredYear}
               </Text>
-              <Text className="font-cairo-medium text-xs text-[#94A3B8]">
-                سنة الطلب
-              </Text>
-              <Feather name="file-text" size={14} color="#94A3B8" />
             </View>
           </>
         ) : (
@@ -163,6 +176,24 @@ export default function PropertyOverview({
           </>
         )}
       </View>
+
+      {/* --- EXCHANGE REQUIREMENT --- */}
+      {type === 'EXCHANGE' && exchangeRequirement && (
+        <View className="mb-6 items-start">
+          <Text
+            className="mb-2 font-cairo-semibold text-sm text-[#6B6A6A]"
+            style={{ writingDirection: 'rtl' }}
+          >
+            المطلوب
+          </Text>
+          <Text
+            className="font-cairo-semibold text-sm leading-6 text-[#111111]"
+            style={{ writingDirection: 'rtl' }}
+          >
+            {exchangeRequirement}
+          </Text>
+        </View>
+      )}
 
       {/* --- Area & Location --- */}
       <View className="space-y-2">

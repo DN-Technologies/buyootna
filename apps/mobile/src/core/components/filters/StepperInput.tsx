@@ -42,7 +42,7 @@ export default function StepperInput({
         {title}
       </Text>
 
-      <View className="h-[40px] flex-row items-center justify-between rounded-md border border-[#D7D7D7] bg-white px-4">
+      <View className="h-[40px] flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4">
         <TouchableOpacity
           onPress={handleIncrement}
           disabled={isAtMax}

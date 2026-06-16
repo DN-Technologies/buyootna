@@ -108,7 +108,7 @@ export default function SellPropertyTab() {
 
         {showIncome && (
           <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3"
+            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
             style={{ width: '100%' }}
           >
             <TextInput
@@ -138,7 +138,7 @@ export default function SellPropertyTab() {
         >
           {/* Phone Input */}
           <View
-            className="h-[40px] flex-1 flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4 py-3"
+            className="h-[40px] flex-1 flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
             style={{ height: 40, flex: 1 }}
           >
             <TextInput
@@ -154,7 +154,7 @@ export default function SellPropertyTab() {
 
           {/* Static Country Code */}
           <View
-            className="h-[40px] flex-row items-center justify-center rounded-md border border-gray-200 bg-white px-3"
+            className="h-[40px] flex-row items-center justify-center rounded-md border border-[#ECECEC] bg-white px-3"
             style={{ height: 40 }}
           >
             <Text className="font-cairo-semibold text-[#111111]">+965</Text>
@@ -177,7 +177,7 @@ export default function SellPropertyTab() {
           تفاصيل الاعلان <Text className="text-red-500">*</Text>
         </Text>
         <View
-          className="h-32 w-full rounded-md border border-gray-200 bg-white px-4 py-3"
+          className="h-32 w-full rounded-md border border-[#ECECEC] bg-white px-4 py-3"
           style={{ width: '100%' }}
         >
           <TextInput
@@ -209,7 +209,7 @@ export default function SellPropertyTab() {
             className={`flex-1 items-center justify-center rounded-lg border-2 ${
               adLevel === 'premium'
                 ? 'border-transparent'
-                : 'border-gray-200 bg-white'
+                : 'border-[#ECECEC] bg-white'
             }`}
             style={{ flex: 1, overflow: 'hidden' }}
           >
@@ -259,7 +259,7 @@ export default function SellPropertyTab() {
             className={`flex-1 items-center justify-center rounded-lg border-2 ${
               adLevel === 'normal'
                 ? 'border-[#15304D] bg-[#F4F8FB]'
-                : 'border-gray-200 bg-white'
+                : 'border-[#ECECEC] bg-white'
             }`}
             style={{ flex: 1 }}
           >

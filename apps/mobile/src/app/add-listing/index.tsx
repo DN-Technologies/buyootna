@@ -26,7 +26,7 @@ export default function CreateListingScreen() {
   const {
     listingType,
     setListingType,
-    images,
+    // images,
     governorate,
     area,
     propertyCategory,

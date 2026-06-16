@@ -12,6 +12,10 @@ export interface PropertyDetailsDto {
   views: number;
   images: string[];
   createdAt: string;
+  floors?: number;
+  requestYear?: number;
+  requiredYear?: number;
+  licenseNumber?: string;
   host: {
     id: string;
     name: string;
