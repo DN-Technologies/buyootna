@@ -117,11 +117,11 @@ export default function CustomTabBar({
               IconComponent = SearchIcon;
               label = 'استكشف';
               break;
-            case 'chats':
+            case 'activity':
               IconComponent = ActivityIcon;
               label = 'نشاطي';
               break;
-            case 'profile':
+            case 'more':
               IconComponent = MenuIcon;
               label = 'المزيد';
               break;

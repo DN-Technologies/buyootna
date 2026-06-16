@@ -54,8 +54,8 @@ export default function MainLayout() {
           }
         />
 
-        <Tabs.Screen name="chats" />
-        <Tabs.Screen name="profile" />
+        <Tabs.Screen name="activity" />
+        <Tabs.Screen name="more" />
       </Tabs>
       {/* Mounted outside the Tabs so the dark backdrop covers the entire screen, including the tab bar */}
       <PlusActionsSheet
