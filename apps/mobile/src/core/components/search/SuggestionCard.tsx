@@ -105,10 +105,13 @@ export default function SuggestionCard({
 
         {/* Bottom Row: Stats  */}
         <View className="flex-row items-center justify-between px-1">
-          <View className="w-full flex-row gap-4">
+          <View className="w-full flex-row items-center">
             {/* Service Area  */}
-            <View className="items-start">
-              <Text className="font-cairo-bold text-xs text-[#111111]">
+            <View className="flex-[2] items-start">
+              <Text
+                className="font-cairo-bold text-xs text-[#111111]"
+                numberOfLines={1}
+              >
                 {serviceArea}
               </Text>
               <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
@@ -117,14 +120,15 @@ export default function SuggestionCard({
             </View>
 
             {/* Vertical Divider */}
-            <View className="flex-1 items-center justify-center">
-              <View className="mx-2 h-8 w-[1px] max-w-[1px] bg-[#E2E8F0]" />
-            </View>
+            <View className="mx-4 h-8 w-[1px] bg-[#E2E8F0]" />
 
             {/* Projects Count  */}
-            <View className="items-end">
+            <View className="min-w-[80px] items-end">
               <View className="items-start">
-                <Text className="font-cairo-bold text-xs text-[#111111]">
+                <Text
+                  className="font-cairo-bold text-xs text-[#111111]"
+                  numberOfLines={1}
+                >
                   {projectsCount}
                 </Text>
                 <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
