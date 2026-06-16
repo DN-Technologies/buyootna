@@ -26,6 +26,7 @@ export interface CreatePropertyPayload {
   phoneNumber?: string;
   automatedNumber?: string;
   features?: { id: string; label: string }[];
+  floors?: number;
   governorateId?: string;
   areaId?: string;
   additionalExpenses?: string;

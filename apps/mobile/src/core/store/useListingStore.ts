@@ -23,6 +23,7 @@ export interface ListingStateData {
   automatedNumber: string; // الرقم الالي للعقار
   rooms: number;
   baths: number;
+  floors: number;
   features: string[]; // المزايا (Array of IDs)
   mapLocation: string | null; // e.g., "Lat, Lng" or a location object
   mapLocationLabel: string | null;
@@ -115,6 +116,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   automatedNumber: '',
   rooms: 1,
   baths: 1,
+  floors: 0,
   features: [],
   mapLocation: null,
   mapLocationLabel: null,
@@ -200,6 +202,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     }
     if (state.automatedNumber) {
       payload.automatedNumber = state.automatedNumber;
+    }
+    if (state.propertyCategory?.id !== 'apartment') {
+      payload.floors = state.floors;
     }
 
     // Map latitude and longitude from mapLocation

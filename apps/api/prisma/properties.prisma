@@ -17,6 +17,7 @@ model Property {
   areaSize           Float?
   auctionStatus      AuctionStatus?
   endDate            DateTime?
+  floors             Int?
   features           Json             @default("[]")
   governorateId      String?
   requestYear        Int?

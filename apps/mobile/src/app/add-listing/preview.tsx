@@ -221,8 +221,11 @@ export default function AdPreviewScreen() {
               />
             </View>
 
-            {/* Row 4: عدد الحمامات & عدد الغرف */}
+            {/* Row 4: عدد الحمامات & عدد الغرف & عدد الأدوار */}
             <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
+              {draftData.propertyCategory?.id !== 'apartment' && (
+                <PreviewItem label="عدد الادوار" value={draftData.floors} />
+              )}
               <PreviewItem label="عدد الحمامات" value={draftData.baths} />
               <PreviewItem label="عدد الغرف" value={draftData.rooms} />
             </View>

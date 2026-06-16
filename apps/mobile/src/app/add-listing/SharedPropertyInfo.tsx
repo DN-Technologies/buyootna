@@ -37,6 +37,7 @@ export default function SharedPropertyInfo() {
     automatedNumber,
     rooms,
     baths,
+    floors,
     mapLocation,
     mapLocationLabel,
     propertyAge,
@@ -229,19 +230,28 @@ export default function SharedPropertyInfo() {
         </View>
       </View>
 
-      {/* --- 5. Steppers Row (Rooms & Baths) --- */}
+      {/* --- 5. Steppers Row (Rooms & Baths & Floors) --- */}
       <View className="mb-2 w-full flex-row gap-3">
-        <StepperInput
-          title="عدد الغرف"
-          value={rooms}
-          onChange={(val) => updateField('rooms', val)}
-          min={0}
-          max={20}
-        />
+        {propertyCategory?.id !== 'apartment' && (
+          <StepperInput
+            title="عدد الادوار"
+            value={floors}
+            onChange={(val) => updateField('floors', val)}
+            min={0}
+            max={20}
+          />
+        )}
         <StepperInput
           title="عدد الحمامات"
           value={baths}
           onChange={(val) => updateField('baths', val)}
+          min={0}
+          max={20}
+        />
+        <StepperInput
+          title="عدد الغرف"
+          value={rooms}
+          onChange={(val) => updateField('rooms', val)}
           min={0}
           max={20}
         />

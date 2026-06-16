@@ -110,6 +110,11 @@ export class CreatePropertyDto {
   automatedNumber?: string;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'عدد الأدوار يجب أن يكون رقماً' })
+  floors?: number;
+
+  @IsOptional()
   @IsArray({ message: 'المزايا يجب أن تكون في شكل قائمة' })
   features?: Record<string, string>[];
 

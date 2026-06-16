@@ -206,7 +206,7 @@ const SelectionDrawer = forwardRef<any, SelectionDrawerProps>(
                           </>
                         ) : (
                           <Text
-                            className={`flex-1 text-right font-cairo text-[14px] leading-[22px] ${
+                            className={`flex-1 font-cairo text-[14px] leading-[22px] ${
                               isSelected
                                 ? 'font-cairo-semibold text-[#15304D]'
                                 : 'text-[#111111]'
