@@ -1,7 +1,9 @@
+import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   RefreshControl,
   ScrollView,
   Text,
@@ -11,12 +13,17 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AddIcon } from '@/assets/icons/tab';
-import ActivitySearchBar from '@/components/activity/ActivitySearchBar';
+import ActiveAdCard from '@/core/components/activity/ActiveAdCard';
+import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
+import DraftAdCard from '@/core/components/activity/DraftAdCard';
 import { useMyActivity } from '@/hooks/useMyActivity';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const ACTIVITY_TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
+
 export default function ActivityScreen() {
   const router = useRouter();
+  const { token } = useAuthStore();
 
   // Local UI state
   const [activeTab, setActiveTab] = useState('اعلاناتي');
@@ -32,6 +39,48 @@ export default function ActivityScreen() {
     refetch,
     freeAdsRemaining,
   } = useMyActivity();
+
+  if (!token) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F8FAFC]" edges={['top', 'left', 'right']}>
+        {/* --- Header --- */}
+        <View className="flex-row items-center justify-between px-5 py-4 ">
+          <View className="" />
+          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
+            نشاطي
+          </Text>
+          <View className="w-10 h-10" />
+        </View>
+
+        {/* --- Lock Container --- */}
+        <View className="flex-1 items-center justify-center px-6 pb-20">
+          <View className="mb-6 h-24 w-24 items-center justify-center rounded-full bg-[#15304D]/10">
+            <View className="h-16 w-16 items-center justify-center rounded-full bg-[#15304D]">
+              <Feather name="lock" size={30} color="white" />
+            </View>
+          </View>
+
+          <Text className="mb-3 font-cairo-bold text-xl text-[#15304D] text-center">
+            تسجيل الدخول مطلوب
+          </Text>
+
+          <Text className="mb-8 font-cairo text-[14px] leading-6 text-[#6B6A6A] text-center">
+            يرجى تسجيل الدخول إلى حسابك لتتمكن من إضافة عقاراتك وإدارة مسوداتك، ومتابعة عروضك وتنبيهاتك أولاً بأول.
+          </Text>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push('/(auth)/selection' as any)}
+            className="h-[52px] w-full items-center justify-center rounded-full bg-[#15304D] shadow-lg shadow-[#15304D]/25"
+          >
+            <Text className="font-cairo-semibold text-[15px] text-white">
+              تسجيل الدخول أو إنشاء حساب
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // Dynamic counts for filter pills
   const allCount = data.length;
@@ -50,10 +99,22 @@ export default function ActivityScreen() {
       ? data
       : data.filter((item) => item.status === activeFilterId);
 
+  const handleOpenOptions = (propertyId: string) => {
+    console.log('Open options for:', propertyId);
+  };
+
+  const handlePublishDraft = (property: any) => {
+    console.log('Publish draft:', property.id);
+  };
+
+  const handleDeleteDraft = (propertyId: string) => {
+    console.log('Delete draft:', propertyId);
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+    <SafeAreaView className="flex-1 bg-[#F8FAFC]" edges={['top', 'left', 'right']}>
       {/* --- 1. Top Header --- */}
-      <View className="flex-row items-center justify-between px-5 py-4">
+      <View className="flex-row items-center justify-between bg-white px-5 py-4">
         <View className="" />
         <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
           نشاطي
@@ -88,8 +149,15 @@ export default function ActivityScreen() {
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1"
+      {/* Scrolling list */}
+      <FlatList
+        data={activeTab === 'اعلاناتي' ? filteredData : []}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 100,
+          paddingTop: 16,
+        }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -98,83 +166,83 @@ export default function ActivityScreen() {
             tintColor="#15304D"
           />
         }
-      >
-        <View className="px-5 pb-24 pt-4">
-          {/* --- 4. Filter Pills --- */}
-          {activeTab === 'اعلاناتي' && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="mb-6"
-              contentContainerStyle={{ flexDirection: 'row-reverse' }}
-            >
-              {filterPills.map((pill) => (
+        // Render List Header (Filters & Quota Banner)
+        ListHeaderComponent={
+          activeTab === 'اعلاناتي' ? (
+            <>
+              {/* --- 4. Filter Pills --- */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="mb-6"
+                contentContainerStyle={{ flexDirection: 'row-reverse' }}
+              >
+                {filterPills.map((pill) => (
+                  <TouchableOpacity
+                    key={pill.id}
+                    onPress={() => setActiveFilterId(pill.id as any)}
+                    className={`mr-2 rounded-full border px-4 py-1 ${
+                      activeFilterId === pill.id
+                        ? 'border-[#B28648] bg-[#F5F7F9]'
+                        : 'border-transparent bg-[#F5F7F9]'
+                    }`}
+                  >
+                    <Text className="font-cairo text-[14px] text-[#111111]">
+                      {pill.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              {/* --- 5. Dynamic Quota Banner --- */}
+              <View className="mb-6">
+                <View className="flex-row items-center justify-between rounded-lg bg-[#F8FAFC] p-4">
+                  <Text className="relative -top-3 mr-4 text-3xl">🎉</Text>
+                  <View className="flex-1">
+                    <Text
+                      className="font-cairo-semibold text-[14px] text-[#15304D]"
+                      style={{ writingDirection: 'rtl' }}
+                    >
+                      {freeAdsRemaining > 0
+                        ? 'أعلن عن عقارك مجاناً'
+                        : 'متبقي لديك 0 إعلان مجاني'}
+                    </Text>
+                    <Text
+                      className="font-cairo text-[12px] leading-5 text-[#6B6A6A]"
+                      style={{ writingDirection: 'rtl' }}
+                    >
+                      {freeAdsRemaining > 0
+                        ? 'متبقي لديك 1 إعلان مجاني جاهز للنشر الآن. استغل الفرصة واجذب المشترين.'
+                        : 'استهلكت إعلانك المجاني، رقي حسابك الآن لنشر عدد غير محدود من العقارات.'}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Action Button */}
                 <TouchableOpacity
-                  key={pill.id}
-                  onPress={() => setActiveFilterId(pill.id as any)}
-                  className={`mr-2 rounded-full border px-4 py-1 ${
-                    activeFilterId === pill.id
-                      ? 'border-[#B28648] bg-[#F5F7F9]'
-                      : 'border-transparent bg-[#F5F7F9]'
-                  }`}
+                  activeOpacity={0.8}
+                  onPress={() =>
+                    router.push(
+                      (freeAdsRemaining > 0
+                        ? '/add-listing'
+                        : '/packages') as any,
+                    )
+                  }
+                  className="mt-10 h-[50px] w-full items-center justify-center rounded-full bg-[#15304D]"
                 >
-                  <Text className="text-[#111111] text-[14px] font-cairo">
-                    {pill.label}
+                  <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
+                    {freeAdsRemaining > 0
+                      ? 'أنشئ إعلانك المجاني الآن'
+                      : 'اشتر باقة إعلانات'}
                   </Text>
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-
-          {/* --- 5. Dynamic Quota Banner --- */}
-          {activeTab === 'اعلاناتي' && (
-            <View className="mb-6">
-              {/* Light background card for text & emoji */}
-              <View className="flex-row items-center justify-between rounded-lg bg-[#F8FAFC] p-4">
-                <Text className="relative -top-3 mr-4 text-3xl">🎉</Text>
-                <View className="flex-1">
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15304D]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    {freeAdsRemaining > 0
-                      ? 'أعلن عن عقارك مجاناً'
-                      : 'متبقي لديك 0 إعلان مجاني'}
-                  </Text>
-                  <Text
-                    className="font-cairo text-[12px] leading-5 text-[#6B6A6A]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    {freeAdsRemaining > 0
-                      ? 'متبقي لديك 1 إعلان مجاني جاهز للنشر الآن. استغل الفرصة واجذب المشترين.'
-                      : 'استهلكت إعلانك المجاني، رقي حسابك الآن لنشر عدد غير محدود من العقارات.'}
-                  </Text>
-                </View>
               </View>
-
-              {/* Action Button outside the card */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() =>
-                  router.push(
-                    (freeAdsRemaining > 0
-                      ? '/add-listing'
-                      : '/packages') as any,
-                  )
-                }
-                className="mt-10 h-[50px] w-full items-center justify-center rounded-full bg-[#15304D]"
-              >
-                <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
-                  {freeAdsRemaining > 0
-                    ? 'أنشئ إعلانك المجاني الآن'
-                    : 'اشتر باقة إعلانات'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* --- 6. List Area --- */}
-          {isLoading && filteredData.length === 0 ? (
+            </>
+          ) : null
+        }
+        // Render Empty State
+        ListEmptyComponent={
+          isLoading ? (
             <View className="items-center py-10">
               <ActivityIndicator size="large" color="#15304D" />
             </View>
@@ -182,23 +250,34 @@ export default function ActivityScreen() {
             <View className="items-center py-10">
               <Text className="font-cairo-medium text-red-500">{error}</Text>
             </View>
-          ) : filteredData.length === 0 ? (
+          ) : (
             <View className="items-center py-10">
               <Text className="font-cairo-medium text-gray-400">
                 لا توجد إعلانات حالياً
               </Text>
             </View>
-          ) : (
-            <View className="space-y-4">
-              {/* We will map over 'data' and render the cards in Card 2 */}
-              <Text className="text-center font-cairo-medium text-gray-400">
-                {filteredData.length} اعلانات جاهزة للعرض (سيتم بناء الكروت في
-                الخطوة التالية)
-              </Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+          )
+        }
+        // --- Render the Cards based on Status ---
+        renderItem={({ item }) => {
+          if (item.status === 'DRAFT') {
+            return (
+              <DraftAdCard
+                property={item}
+                onPublishPress={() => handlePublishDraft(item)}
+                onDeletePress={() => handleDeleteDraft(item.id)}
+              />
+            );
+          }
+
+          return (
+            <ActiveAdCard
+              property={item}
+              onOptionsPress={() => handleOpenOptions(item.id)}
+            />
+          );
+        }}
+      />
     </SafeAreaView>
   );
 }

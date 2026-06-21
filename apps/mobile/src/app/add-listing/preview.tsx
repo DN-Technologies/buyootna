@@ -72,7 +72,7 @@ export default function AdPreviewScreen() {
    * 2. Build API payload
    * 3. Create property on backend
    */
-  const submitListing = async (isDraft: boolean) => {
+  const submitListing = async (isDraft: boolean): Promise<{ success: boolean; error?: string }> => {
     try {
       setSubmitting(true);
       setSubmissionError(null);
@@ -89,7 +89,7 @@ export default function AdPreviewScreen() {
       // Step 3: Send to backend
       await propertiesService.createProperty(payload);
 
-      return true;
+      return { success: true };
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
@@ -104,26 +104,26 @@ export default function AdPreviewScreen() {
         : backendMessage || errorMessage;
 
       setSubmissionError(displayMessage);
-      return false;
+      return { success: false, error: displayMessage };
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleSubmit = async () => {
-    const success = await submitListing(false);
-    if (success) {
+    const res = await submitListing(false);
+    if (res.success) {
       setShowSuccess(true);
     } else {
-      Alert.alert('خطأ', draftData.submissionError || 'فشل في إضافة الإعلان', [
+      Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان', [
         { text: 'حسناً' },
       ]);
     }
   };
 
   const handleSaveDraft = async () => {
-    const success = await submitListing(true);
-    if (success) {
+    const res = await submitListing(true);
+    if (res.success) {
       Alert.alert('تم الحفظ', 'تم حفظ الإعلان كمسودة بنجاح', [
         {
           text: 'حسناً',
@@ -134,7 +134,7 @@ export default function AdPreviewScreen() {
         },
       ]);
     } else {
-      Alert.alert('خطأ', draftData.submissionError || 'فشل في حفظ المسودة', [
+      Alert.alert('خطأ', res.error || 'فشل في حفظ المسودة', [
         { text: 'حسناً' },
       ]);
     }

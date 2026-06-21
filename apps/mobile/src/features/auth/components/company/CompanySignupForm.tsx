@@ -1,20 +1,15 @@
+import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
+import MapPickerModal from '@/core/components/MapPickerModal';
 import SelectionBottomSheet from '@/core/components/SelectionBottomSheet';
 import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
-import MapPickerModal from '@/core/components/MapPickerModal';
 import {
   CompanySignupFormValues,
   companySignupSchema,
@@ -218,6 +213,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           initialLat = parseFloat(latStr);
           initialLng = parseFloat(lngStr);
         }
+        return;
         return (
           <MapPickerModal
             visible={showMapPicker}

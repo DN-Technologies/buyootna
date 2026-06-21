@@ -285,6 +285,7 @@ export default function SharedPropertyInfo() {
           initialLat = parseFloat(latStr);
           initialLng = parseFloat(lngStr);
         }
+        return null;
         return (
           <MapPickerModal
             visible={showMapPicker}

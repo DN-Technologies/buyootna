@@ -74,7 +74,7 @@ export default function AccountTypeSelectionScreen() {
           }`}
         >
           <Text
-            className={`text-lg font-bold ${
+            className={`text-[15px] font-cairo-medium leading-[24px] ${
               selectedType ? 'text-white' : 'text-gray-500'
             }`}
           >

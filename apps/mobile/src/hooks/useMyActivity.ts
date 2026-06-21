@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import apiClient from '@/core/api/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export interface ActivityItem {
   id: string;
@@ -10,15 +11,21 @@ export interface ActivityItem {
   category: string;
   status: 'ACTIVE' | 'DRAFT';
   updatedAt: string;
+  isPremium?: boolean;
 }
 
 export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
+  const { token } = useAuthStore();
   const [data, setData] = useState<ActivityItem[]>([]);
   const [freeAdsRemaining, setFreeAdsRemaining] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -40,7 +47,7 @@ export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
     } finally {
       setIsLoading(false);
     }
-  }, [status]);
+  }, [status, token]);
 
   useEffect(() => {
     fetchData();
