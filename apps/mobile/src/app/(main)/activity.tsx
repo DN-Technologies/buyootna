@@ -28,7 +28,7 @@ export default function ActivityScreen() {
   // Local UI state
   const [activeTab, setActiveTab] = useState('اعلاناتي');
   const [activeFilterId, setActiveFilterId] = useState<
-    'ALL' | 'ACTIVE' | 'DRAFT'
+    'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'
   >('ALL');
 
   // Fetch Data (we fetch all listings and filter on the client side to compute dynamic counts)
@@ -86,9 +86,11 @@ export default function ActivityScreen() {
   const allCount = data.length;
   const activeCount = data.filter((item) => item.status === 'ACTIVE').length;
   const draftCount = data.filter((item) => item.status === 'DRAFT').length;
+  const premiumCount = data.filter((item) => item.isPremium).length;
 
   const filterPills = [
     { id: 'DRAFT', label: `مسودة (${draftCount})` },
+    { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
     { id: 'ACTIVE', label: `نشطة (${activeCount})` },
     { id: 'ALL', label: `الكل (${allCount})` },
   ];
@@ -97,7 +99,9 @@ export default function ActivityScreen() {
   const filteredData =
     activeFilterId === 'ALL'
       ? data
-      : data.filter((item) => item.status === activeFilterId);
+      : activeFilterId === 'PREMIUM'
+        ? data.filter((item) => item.isPremium)
+        : data.filter((item) => item.status === activeFilterId);
 
   const handleOpenOptions = (propertyId: string) => {
     console.log('Open options for:', propertyId);
