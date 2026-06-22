@@ -1,15 +1,18 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { router } from 'expo-router';
-import { useRef, useState } from 'react';
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
+  Platform,
   RefreshControl,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AddIcon } from '@/assets/icons/tab';
 import ActiveAdCard from '@/core/components/activity/ActiveAdCard';
@@ -27,6 +30,11 @@ const ACTIVITY_TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
 export default function ActivityScreen() {
   const { token } = useAuthStore();
+  const insets = useSafeAreaInsets();
+
+  // Tab Bar height calculation matches CustomTabBar.tsx
+  const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
+  const toastBottomOffset = tabBarHeight + 16;
 
   // Local UI state
   const [activeTab, setActiveTab] = useState('اعلاناتي');
@@ -37,6 +45,54 @@ export default function ActivityScreen() {
   // Bottom sheet reference and current active draft preview property
   const draftSheetRef = useRef<BottomSheetModal>(null);
   const [selectedDraft, setSelectedDraft] = useState<any>(null);
+
+  // Toast notification state and animation
+  const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
+  const [showToast, setShowToast] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(40)).current;
+
+  useEffect(() => {
+    if (params.showUpdateSuccess === 'true') {
+      setShowToast(true);
+
+      // Animate In
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 350,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Hide after 3.5 seconds
+      const timer = setTimeout(() => {
+        // Animate Out
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+          Animated.timing(slideAnim, {
+            toValue: 20,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setShowToast(false);
+          router.setParams({ showUpdateSuccess: undefined });
+        });
+      }, 3500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [params.showUpdateSuccess, fadeAnim, slideAnim]);
 
   // Fetch Data (we fetch all listings and filter on the client side to compute dynamic counts)
   const {
@@ -221,6 +277,27 @@ export default function ActivityScreen() {
         onDeletePress={() => handleDeleteDraft(selectedDraft?.id)}
         onEditPress={() => console.log('Edit draft:', selectedDraft?.id)}
       />
+
+      {/* --- Success Toast Notification --- */}
+      {showToast && (
+        <Animated.View
+          style={{
+            bottom: toastBottomOffset,
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+            elevation: 5,
+          }}
+          className="absolute left-[20px] right-[20px] z-[999] flex-row-reverse items-center justify-center gap-2.5 rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
+        >
+          <Image
+            source={require('@/assets/icons/success-icon.svg')}
+            style={{ width: 24, height: 24 }}
+          />
+          <Text className="font-cairo-semibold text-[14px] leading-[22px] text-[#111111] text-right">
+            تم تحديث بيانات الإعلان بنجاح.
+          </Text>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }

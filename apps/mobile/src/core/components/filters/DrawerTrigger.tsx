@@ -1,11 +1,15 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { LockIcon } from '@/assets/icons/home/property';
+
 export interface DrawerTriggerProps {
   label: string;
   placeholder: string;
   value?: string;
   onPress: () => void;
   required?: boolean;
+  disabled?: boolean;
+  locked?: boolean;
 }
 
 export default function DrawerTrigger({
@@ -14,6 +18,8 @@ export default function DrawerTrigger({
   value,
   onPress,
   required,
+  disabled,
+  locked,
 }: DrawerTriggerProps) {
   return (
     <View className="mb-6 flex-1" style={{ flex: 1 }}>
@@ -29,18 +35,23 @@ export default function DrawerTrigger({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={onPress}
-        className="h-[40px] w-full justify-center rounded-md border border-[#ECECEC] bg-white px-4"
+        disabled={disabled}
+        className={`h-[40px] w-full justify-center rounded-md border border-[#ECECEC] px-4 ${disabled ? 'bg-gray-50' : 'bg-white'}`}
         style={{ width: '100%' }}
       >
-        <Text
-          className={`font-cairo text-[13px] leading-[22px] ${value ? 'text-[#111111]' : 'text-[#979797]'}`}
-          style={{
-            writingDirection: 'rtl',
-          }}
-        >
-          {value || placeholder}
-        </Text>
+        <View className="flex-row items-center justify-between gap-2 w-full">
+          <Text
+            className={`font-cairo text-[13px] leading-[22px] ${value ? 'text-[#111111]' : 'text-[#979797]'}`}
+            style={{
+              writingDirection: 'rtl',
+            }}
+          >
+            {value || placeholder}
+          </Text>
+          {locked && <LockIcon size={14} color="#94A3B8" />}
+        </View>
       </TouchableOpacity>
     </View>
   );
 }
+

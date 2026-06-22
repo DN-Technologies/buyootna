@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { Alert, Text, TextInput, View } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 
+import { LockIcon } from '@/assets/icons/home/property';
 // Import our reusable UI components from the Filters epic
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
@@ -41,6 +42,7 @@ export default function SharedPropertyInfo() {
     mapLocation,
     mapLocationLabel,
     propertyAge,
+    isEdit,
     updateField,
   } = useListingStore();
 
@@ -87,6 +89,8 @@ export default function SharedPropertyInfo() {
           value={governorate?.label}
           onPress={() => govDrawerRef.current?.present()}
           required={true}
+          disabled={isEdit && !!governorate}
+          locked={isEdit && !!governorate}
         />
         <DrawerTrigger
           label="المنطقة"
@@ -102,6 +106,8 @@ export default function SharedPropertyInfo() {
             areaDrawerRef.current?.present();
           }}
           required={true}
+          disabled={isEdit && !!area}
+          locked={isEdit && !!area}
         />
       </View>
 
@@ -145,6 +151,8 @@ export default function SharedPropertyInfo() {
           value={propertyCategory?.label}
           onPress={() => categoryDrawerRef.current?.present()}
           required={true}
+          disabled={isEdit && !!propertyCategory}
+          locked={isEdit && !!propertyCategory}
         />
 
         {/* Area Size Text Input */}
@@ -158,8 +166,8 @@ export default function SharedPropertyInfo() {
             المساحة <Text className="text-red-500">*</Text>
           </Text>
           <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-            style={{ width: '100%' }}
+            className={`h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] px-4 py-3 ${isEdit ? 'bg-gray-50' : 'bg-white'}`}
+            style={{ width: '100%', gap: 8 }}
           >
             <TextInput
               className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
@@ -169,8 +177,12 @@ export default function SharedPropertyInfo() {
               keyboardType="numeric"
               value={areaSize}
               onChangeText={(text) => updateField('areaSize', text)}
+              editable={!isEdit || !areaSize}
             />
-            <Text className="font-cairo-medium text-xs text-[#94A3B8]">م²</Text>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="font-cairo-medium text-xs text-[#94A3B8]">م²</Text>
+              {(isEdit && !!areaSize) && <LockIcon size={14} color="#94A3B8" />}
+            </View>
           </View>
         </View>
       </View>
@@ -285,7 +297,6 @@ export default function SharedPropertyInfo() {
           initialLat = parseFloat(latStr);
           initialLng = parseFloat(lngStr);
         }
-        return null;
         return (
           <MapPickerModal
             visible={showMapPicker}

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 import type { CreatePropertyPayload } from '@/core/api/properties.service';
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
+import type { PropertyDetailsDto } from '@/types/property';
 
 // --- Types & interface ---
 
@@ -55,6 +57,9 @@ export interface ListingStateData {
   // 6. Submission State
   isSubmitting: boolean;
   submissionError: string | null;
+
+  // 7. Edit State
+  isEdit: boolean;
 }
 
 // Interface for the Zustand Store Methods
@@ -79,6 +84,7 @@ interface ListingStore extends ListingStateData {
     isDraft: boolean,
     uploadedImageUrls: string[],
   ) => CreatePropertyPayload;
+  populateFromProperty: (property: PropertyDetailsDto) => void;
 }
 
 // --- Mapping Helpers ---
@@ -137,6 +143,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   images: [],
   isSubmitting: false,
   submissionError: null,
+  isEdit: false,
 };
 
 // --- Store Implementation ---
@@ -163,6 +170,84 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   // Submission state helpers
   setSubmitting: (value) => set({ isSubmitting: value }),
   setSubmissionError: (error) => set({ submissionError: error }),
+
+  populateFromProperty: (property) => {
+    // Reverse map CATEGORY
+    const categoryId = Object.keys(CATEGORY_MAP).find(
+      (key) => CATEGORY_MAP[key] === property.category,
+    ) || 'residential';
+    
+    const categoryLabel = {
+      apartment: 'شقة',
+      house: 'بيت',
+      villa: 'فيلا',
+      commercial: 'تجاري',
+      investment: 'استثماري',
+      residential: 'سكني',
+      industrial: 'صناعي',
+      coastal: 'ساحلي',
+      office: 'مكتب',
+      private: 'خاص',
+      building: 'عمارة',
+      land: 'أرض',
+      chalet: 'شاليه',
+    }[categoryId] || 'سكني';
+
+    // Lookup governorate and area from locations
+    let governorate = GOVERNORATES.find(g => g.id === property.governorateId) || null;
+    let area = property.governorateId && property.areaId 
+      ? (AREAS[property.governorateId]?.find(a => a.id === property.areaId) || null) 
+      : null;
+
+    // Fallback: if governorate or area is not found, look up based on the location text
+    if ((!governorate || !area) && property.location) {
+      const cleanLoc = property.location.replace(/،/g, ' ').replace(/\s+/g, ' ').trim();
+      let foundGovId: string | null = null;
+      let foundArea: any = null;
+
+      for (const [govId, areaList] of Object.entries(AREAS)) {
+        const matchingArea = areaList.find(
+          a => cleanLoc.includes(a.label) || a.label.includes(cleanLoc)
+        );
+        if (matchingArea) {
+          foundGovId = govId;
+          foundArea = matchingArea;
+          break;
+        }
+      }
+
+      if (foundGovId && foundArea) {
+        governorate = GOVERNORATES.find(g => g.id === foundGovId) || null;
+        area = foundArea;
+      }
+    }
+
+    set({
+      isEdit: true,
+      listingType: property.type === 'SALE' ? 'sell' : property.type === 'RENT' ? 'rent' : 'exchange',
+      governorate,
+      area,
+      propertyCategory: { id: categoryId, label: categoryLabel },
+      areaSize: property.areaSize ? property.areaSize.toString() : '',
+      automatedNumber: property.automatedNumber || '',
+      rooms: property.beds || 1,
+      baths: property.baths || 1,
+      floors: property.floors || 0,
+      features: property.features
+        ? (property.features as any[]).map((f: any) => f.label || f)
+        : [],
+      propertyAge: property.propertyAge ? property.propertyAge.toString() : '',
+      showPrice: property.price !== null && property.price !== undefined,
+      price: property.price ? property.price.toString() : '',
+      monthlyRent: property.price ? property.price.toString() : '',
+      requestYear: property.requestYear ? property.requestYear.toString() : '',
+      requiredYear: property.requiredYear ? property.requiredYear.toString() : '',
+      adDetails: property.description || '',
+      phoneNumber: property.phoneNumber || '',
+      images: property.images || [],
+      adLevel: property.isFeatured ? 'premium' : 'normal',
+    });
+  },
 
   // Serializer function for the Preview Screen
   getPreviewData: () => {

@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as DocumentPicker from 'expo-document-picker';
@@ -213,7 +212,6 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
           initialLat = parseFloat(latStr);
           initialLng = parseFloat(lngStr);
         }
-        return;
         return (
           <MapPickerModal
             visible={showMapPicker}

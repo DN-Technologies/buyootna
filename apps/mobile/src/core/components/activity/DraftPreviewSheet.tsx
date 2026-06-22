@@ -3,6 +3,7 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
+import { router } from 'expo-router';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
@@ -290,6 +291,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
               activeOpacity={0.8}
               onPress={() => {
                 handleClose();
+                router.push(`/edit-listing/${property.id}`);
                 if (onEditPress) onEditPress();
               }}
               className="h-[40px] flex-1 items-center justify-center rounded-full bg-[#15304D]"

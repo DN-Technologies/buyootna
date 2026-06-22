@@ -16,6 +16,16 @@ export interface PropertyDetailsDto {
   requestYear?: number;
   requiredYear?: number;
   licenseNumber?: string;
+  governorateId?: string | null;
+  areaId?: string | null;
+  areaSize?: number | null;
+  automatedNumber?: string | null;
+  propertyAge?: number | null;
+  phoneNumber?: string | null;
+  features?: { id: string; label: string }[] | null;
+  propertyIncome?: number | null;
+  additionalExpenses?: string | null;
+  rentConditions?: string | null;
   host: {
     id: string;
     name: string;
