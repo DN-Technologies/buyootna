@@ -388,6 +388,14 @@ export class PropertiesService {
       updatedAt: p.updatedAt,
       isPremium: p.isFeatured,
       isHidden: p.isHidden,
+      location: p.location,
+      description: p.description,
+      automatedNumber: p.automatedNumber,
+      beds: p.beds,
+      baths: p.baths,
+      areaSize: p.areaSize,
+      floors: p.floors,
+      views: p.views,
     }));
   }
 

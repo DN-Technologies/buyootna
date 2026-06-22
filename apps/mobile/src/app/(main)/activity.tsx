@@ -1,5 +1,6 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,6 +17,7 @@ import ActivityFilterPills from '@/core/components/activity/ActivityFilterPills'
 import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
 import AuthLockView from '@/core/components/activity/AuthLockView';
 import DraftAdCard from '@/core/components/activity/DraftAdCard';
+import DraftPreviewSheet from '@/core/components/activity/DraftPreviewSheet';
 import FreeQuotaBanner from '@/core/components/activity/FreeQuotaBanner';
 import SubscriptionSlotsRow from '@/core/components/activity/SubscriptionSlotsRow';
 import { useMyActivity } from '@/hooks/useMyActivity';
@@ -31,6 +33,10 @@ export default function ActivityScreen() {
   const [activeFilterId, setActiveFilterId] = useState<
     'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'
   >('ALL');
+
+  // Bottom sheet reference and current active draft preview property
+  const draftSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedDraft, setSelectedDraft] = useState<any>(null);
 
   // Fetch Data (we fetch all listings and filter on the client side to compute dynamic counts)
   const {
@@ -78,7 +84,8 @@ export default function ActivityScreen() {
   };
 
   const handlePublishDraft = (property: any) => {
-    console.log('Publish draft:', property.id);
+    setSelectedDraft(property);
+    draftSheetRef.current?.present();
   };
 
   const handleDeleteDraft = (propertyId: string) => {
@@ -91,7 +98,7 @@ export default function ActivityScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FAFC]" edges={['top', 'left', 'right']}>
+    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* --- 1. Top Header --- */}
       <View className="flex-row items-center justify-between px-5 py-4">
         <View className="" />
@@ -205,6 +212,14 @@ export default function ActivityScreen() {
             />
           );
         }}
+      />
+
+      {/* --- Property Preview Bottom Sheet --- */}
+      <DraftPreviewSheet
+        ref={draftSheetRef}
+        property={selectedDraft}
+        onDeletePress={() => handleDeleteDraft(selectedDraft?.id)}
+        onEditPress={() => console.log('Edit draft:', selectedDraft?.id)}
       />
     </SafeAreaView>
   );

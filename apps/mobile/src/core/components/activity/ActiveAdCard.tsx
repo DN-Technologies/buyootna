@@ -36,7 +36,7 @@ export default function ActiveAdCard({
     property.images?.[0] || 'https://via.placeholder.com/400x250?text=No+Image';
 
   return (
-    <View className="mb-4 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm shadow-gray-200/30">
+    <View className="mb-4 overflow-hidden rounded-md border border-[#FEFEFE] shadow-sm shadow-gray-200/30">
       {/* --- Image Header & Badges --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image

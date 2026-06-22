@@ -13,6 +13,16 @@ export interface ActivityItem {
   updatedAt: string;
   isPremium?: boolean;
   isHidden?: boolean;
+
+  // Detailed fields for previewing listings
+  location?: string;
+  description?: string;
+  automatedNumber?: string | null;
+  beds?: number | null;
+  baths?: number | null;
+  areaSize?: number | null;
+  floors?: number | null;
+  views?: number;
 }
 
 export interface SubscriptionInfo {

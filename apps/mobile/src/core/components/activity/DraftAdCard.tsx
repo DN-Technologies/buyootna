@@ -26,7 +26,7 @@ export default function DraftAdCard({
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
   return (
-    <View className="mb-4 overflow-hidden rounded-sm border border-gray-100 bg-white shadow-sm shadow-gray-200/30">
+    <View className="mb-4 overflow-hidden rounded-md border border-gray-100 bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
       {/* --- Image Header & Pagination Dots --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
