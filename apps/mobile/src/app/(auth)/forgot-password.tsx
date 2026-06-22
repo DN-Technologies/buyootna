@@ -1,5 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useRef,useState } from 'react';
 import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
 import { Alert } from 'react-native';
@@ -24,7 +24,6 @@ export default function ForgotPasswordScreen() {
   const [timer, setTimer] = useState(0);
   const [resetToken, setResetToken] = useState('');
   const successSheetRef = useRef<BottomSheetModal>(null);
-  const router = useRouter();
 
   const onStep1Submit = async (data: RequestOtpValues) => {
     try {

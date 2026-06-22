@@ -1,5 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,7 +28,6 @@ type CompanyFilter =
 
 export default function HomeScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
-  const router = useRouter();
 
   // Navigate to results screen with advanced filter payload
   const handleAdvancedSearch = useCallback(
@@ -41,7 +40,7 @@ export default function HomeScreen() {
         },
       });
     },
-    [router],
+    [],
   );
 
   // --- State ---

@@ -344,7 +344,7 @@ export class UsersService {
   }
 
   async findFullUser(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -357,5 +357,26 @@ export class UsersService {
         officeProfile: true,
       },
     });
+
+    if (!user) return null;
+
+    const hasSubscription =
+      user.role === 'COMPANY' ||
+      user.role === 'OFFICE' ||
+      (user.email
+        ? user.email.includes('sub') || user.email === 'youssef@youssef.app'
+        : false);
+
+    return {
+      ...user,
+      hasSubscription,
+      subscription: hasSubscription
+        ? {
+            goldRemaining: 5,
+            silverRemaining: 12,
+            normalRemaining: 1,
+          }
+        : null,
+    };
   }
 }

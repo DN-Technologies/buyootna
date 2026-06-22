@@ -30,6 +30,7 @@ model Property {
   propertyAge        Int?
   propertyIncome     Float?
   status             ListingStatus    @default(DRAFT)
+  isHidden           Boolean          @default(false)
   additionalExpenses String?
   automatedNumber    String?
   phoneNumber        String?

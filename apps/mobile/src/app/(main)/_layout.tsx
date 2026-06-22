@@ -1,5 +1,5 @@
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Tabs, useRouter } from 'expo-router';
+import { router,Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import PlusActionsSheet from '@/core/components/add-listing/PlusActionsSheet';
@@ -8,7 +8,6 @@ import CustomTabBar from '@/core/components/CustomTabBar';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function MainLayout() {
-  const router = useRouter();
   const token = useAuthStore((state) => state.token);
 
   // References to control bottom sheets from this top-level layout

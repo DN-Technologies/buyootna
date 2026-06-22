@@ -1,5 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Alert } from 'react-native';
@@ -52,7 +52,6 @@ export default function IndividualAuthScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [isLoading, setIsLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
-  const router = useRouter();
 
   // Refs for the Bottom Sheets
   const accountTypeSheetRef = useRef<BottomSheetModal>(null);

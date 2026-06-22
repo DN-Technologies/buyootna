@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import * as DocumentPicker from 'expo-document-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { router,useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Alert,
@@ -57,7 +57,6 @@ const MOCK_PROFILES: Profile[] = [
 type AuthMode = 'login' | 'signup';
 
 export default function BusinessAuthScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams<{ type?: 'company' | 'office' }>();
   const type = params.type || 'company';
 

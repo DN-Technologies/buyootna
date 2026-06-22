@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, TouchableOpacity,View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +8,6 @@ import AppLogo from '@/core/components/AppLogo';
 import { AccountType } from '@/types';
 
 export default function AccountTypeSelectionScreen() {
-  const router = useRouter();
   const [selectedType, setSelectedType] = useState<AccountType>(null);
 
   const handleStartRegistration = () => {

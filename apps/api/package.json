@@ -19,6 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seeds/seed.ts",
+    "seed:draft": "ts-node prisma/seeds/seed-draft.ts",
     "db:push": "prisma db push --schema=prisma",
     "prisma:generate": "prisma generate --schema=prisma",
     "prisma:studio": "prisma studio --schema=prisma",

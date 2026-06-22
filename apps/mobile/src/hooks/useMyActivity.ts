@@ -12,12 +12,23 @@ export interface ActivityItem {
   status: 'ACTIVE' | 'DRAFT';
   updatedAt: string;
   isPremium?: boolean;
+  isHidden?: boolean;
+}
+
+export interface SubscriptionInfo {
+  goldRemaining: number;
+  silverRemaining: number;
+  normalRemaining: number;
 }
 
 export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
   const { token } = useAuthStore();
   const [data, setData] = useState<ActivityItem[]>([]);
   const [freeAdsRemaining, setFreeAdsRemaining] = useState<number>(0);
+  const [hasSubscription, setHasSubscription] = useState<boolean>(false);
+  const [subscription, setSubscription] = useState<SubscriptionInfo | undefined>(
+    undefined,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +50,8 @@ export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
       setData(activityResponse.data);
       if (userResponse.data?.user) {
         setFreeAdsRemaining(userResponse.data.user.freeAdsRemaining ?? 0);
+        setHasSubscription(userResponse.data.user.hasSubscription ?? false);
+        setSubscription(userResponse.data.user.subscription);
       }
     } catch (err: any) {
       console.error('Error fetching my activity:', err);
@@ -56,6 +69,8 @@ export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
   return {
     data,
     freeAdsRemaining,
+    hasSubscription,
+    subscription,
     isLoading,
     error,
     refetch: fetchData,

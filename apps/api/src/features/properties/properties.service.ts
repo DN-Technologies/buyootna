@@ -386,6 +386,8 @@ export class PropertiesService {
       category: p.category,
       status: p.status, // Tells the frontend whether to show "Publish" or "Edit" button
       updatedAt: p.updatedAt,
+      isPremium: p.isFeatured,
+      isHidden: p.isHidden,
     }));
   }
 

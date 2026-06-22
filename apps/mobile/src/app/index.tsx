@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { verifyInstallation } from 'nativewind';
 import { useEffect } from 'react';
@@ -14,7 +14,6 @@ import Animated, {
 import AppLogo from '@/core/components/AppLogo';
 
 export default function InitialSplashSequence() {
-  const router = useRouter();
 
   // Animation Values
   const dotOpacity = useSharedValue(1);
@@ -42,7 +41,7 @@ export default function InitialSplashSequence() {
         }
       }),
     );
-  }, [bgColor, dotOpacity, logoOpacity, router]);
+  }, [bgColor, dotOpacity, logoOpacity]);
 
   const animatedBackground = useAnimatedStyle(() => ({
     backgroundColor: bgColor.value,

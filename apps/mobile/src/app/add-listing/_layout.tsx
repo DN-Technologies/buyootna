@@ -1,11 +1,10 @@
-import { Stack, useRouter } from 'expo-router';
+import { router,Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AddListingLayout() {
-  const router = useRouter();
   const token = useAuthStore((state) => state.token);
   const isLoading = useAuthStore((state) => state.isLoading);
 
@@ -14,7 +13,7 @@ export default function AddListingLayout() {
       // If auth load finished and no token is present, redirect to selection screen
       router.replace('/(auth)/selection');
     }
-  }, [token, isLoading, router]);
+  }, [token, isLoading]);
 
   if (isLoading || !token) {
     return (

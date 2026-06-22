@@ -1,11 +1,9 @@
-import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -14,15 +12,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AddIcon } from '@/assets/icons/tab';
 import ActiveAdCard from '@/core/components/activity/ActiveAdCard';
+import ActivityFilterPills from '@/core/components/activity/ActivityFilterPills';
 import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
+import AuthLockView from '@/core/components/activity/AuthLockView';
 import DraftAdCard from '@/core/components/activity/DraftAdCard';
+import FreeQuotaBanner from '@/core/components/activity/FreeQuotaBanner';
+import SubscriptionSlotsRow from '@/core/components/activity/SubscriptionSlotsRow';
 import { useMyActivity } from '@/hooks/useMyActivity';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const ACTIVITY_TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
 export default function ActivityScreen() {
-  const router = useRouter();
   const { token } = useAuthStore();
 
   // Local UI state
@@ -38,47 +39,16 @@ export default function ActivityScreen() {
     error,
     refetch,
     freeAdsRemaining,
+    hasSubscription,
+    subscription,
   } = useMyActivity();
 
+  // Handle redirect to login if unauthenticated
   if (!token) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F8FAFC]" edges={['top', 'left', 'right']}>
-        {/* --- Header --- */}
-        <View className="flex-row items-center justify-between px-5 py-4 ">
-          <View className="" />
-          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
-            نشاطي
-          </Text>
-          <View className="w-10 h-10" />
-        </View>
-
-        {/* --- Lock Container --- */}
-        <View className="flex-1 items-center justify-center px-6 pb-20">
-          <View className="mb-6 h-24 w-24 items-center justify-center rounded-full bg-[#15304D]/10">
-            <View className="h-16 w-16 items-center justify-center rounded-full bg-[#15304D]">
-              <Feather name="lock" size={30} color="white" />
-            </View>
-          </View>
-
-          <Text className="mb-3 font-cairo-bold text-xl text-[#15304D] text-center">
-            تسجيل الدخول مطلوب
-          </Text>
-
-          <Text className="mb-8 font-cairo text-[14px] leading-6 text-[#6B6A6A] text-center">
-            يرجى تسجيل الدخول إلى حسابك لتتمكن من إضافة عقاراتك وإدارة مسوداتك، ومتابعة عروضك وتنبيهاتك أولاً بأول.
-          </Text>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => router.push('/(auth)/selection' as any)}
-            className="h-[52px] w-full items-center justify-center rounded-full bg-[#15304D] shadow-lg shadow-[#15304D]/25"
-          >
-            <Text className="font-cairo-semibold text-[15px] text-white">
-              تسجيل الدخول أو إنشاء حساب
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <AuthLockView
+        onLoginPress={() => router.push('/(auth)/selection' as any)}
+      />
     );
   }
 
@@ -88,7 +58,7 @@ export default function ActivityScreen() {
   const draftCount = data.filter((item) => item.status === 'DRAFT').length;
   const premiumCount = data.filter((item) => item.isPremium).length;
 
-  const filterPills = [
+  const filterPills: { id: 'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'; label: string }[] = [
     { id: 'DRAFT', label: `مسودة (${draftCount})` },
     { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
     { id: 'ACTIVE', label: `نشطة (${activeCount})` },
@@ -115,10 +85,15 @@ export default function ActivityScreen() {
     console.log('Delete draft:', propertyId);
   };
 
+  const handlePromoAction = () => {
+    const route = freeAdsRemaining > 0 ? '/add-listing' : '/packages';
+    router.push(route as any);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-[#F8FAFC]" edges={['top', 'left', 'right']}>
       {/* --- 1. Top Header --- */}
-      <View className="flex-row items-center justify-between bg-white px-5 py-4">
+      <View className="flex-row items-center justify-between px-5 py-4">
         <View className="" />
         <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
           نشاطي
@@ -135,7 +110,7 @@ export default function ActivityScreen() {
       />
 
       {/* --- 3. Top Navigation Tabs --- */}
-      <View className="border-b border-gray-100 bg-white">
+      <View>
         <View className="flex-row justify-around px-5">
           {ACTIVITY_TABS.map((tab) => (
             <TouchableOpacity
@@ -173,75 +148,24 @@ export default function ActivityScreen() {
         // Render List Header (Filters & Quota Banner)
         ListHeaderComponent={
           activeTab === 'اعلاناتي' ? (
-            <>
+            <View style={{ width: '100%' }}>
               {/* --- 4. Filter Pills --- */}
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="mb-6"
-                contentContainerStyle={{ flexDirection: 'row-reverse' }}
-              >
-                {filterPills.map((pill) => (
-                  <TouchableOpacity
-                    key={pill.id}
-                    onPress={() => setActiveFilterId(pill.id as any)}
-                    className={`mr-2 rounded-full border px-4 py-1 ${
-                      activeFilterId === pill.id
-                        ? 'border-[#B28648] bg-[#F5F7F9]'
-                        : 'border-transparent bg-[#F5F7F9]'
-                    }`}
-                  >
-                    <Text className="font-cairo text-[14px] text-[#111111]">
-                      {pill.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              <ActivityFilterPills
+                filterPills={filterPills}
+                activeFilterId={activeFilterId}
+                onFilterChange={setActiveFilterId}
+              />
 
-              {/* --- 5. Dynamic Quota Banner --- */}
-              <View className="mb-6">
-                <View className="flex-row items-center justify-between rounded-lg bg-[#F8FAFC] p-4">
-                  <Text className="relative -top-3 mr-4 text-3xl">🎉</Text>
-                  <View className="flex-1">
-                    <Text
-                      className="font-cairo-semibold text-[14px] text-[#15304D]"
-                      style={{ writingDirection: 'rtl' }}
-                    >
-                      {freeAdsRemaining > 0
-                        ? 'أعلن عن عقارك مجاناً'
-                        : 'متبقي لديك 0 إعلان مجاني'}
-                    </Text>
-                    <Text
-                      className="font-cairo text-[12px] leading-5 text-[#6B6A6A]"
-                      style={{ writingDirection: 'rtl' }}
-                    >
-                      {freeAdsRemaining > 0
-                        ? 'متبقي لديك 1 إعلان مجاني جاهز للنشر الآن. استغل الفرصة واجذب المشترين.'
-                        : 'استهلكت إعلانك المجاني، رقي حسابك الآن لنشر عدد غير محدود من العقارات.'}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Action Button */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() =>
-                    router.push(
-                      (freeAdsRemaining > 0
-                        ? '/add-listing'
-                        : '/packages') as any,
-                    )
-                  }
-                  className="mt-10 h-[50px] w-full items-center justify-center rounded-full bg-[#15304D]"
-                >
-                  <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
-                    {freeAdsRemaining > 0
-                      ? 'أنشئ إعلانك المجاني الآن'
-                      : 'اشتر باقة إعلانات'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
+              {/* --- 5. Dynamic Quota Banner or Subscription Slots --- */}
+              {hasSubscription ? (
+                <SubscriptionSlotsRow subscription={subscription} />
+              ) : (
+                <FreeQuotaBanner
+                  freeAdsRemaining={freeAdsRemaining}
+                  onPressAction={handlePromoAction}
+                />
+              )}
+            </View>
           ) : null
         }
         // Render Empty State
