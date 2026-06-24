@@ -66,6 +66,17 @@ const ProfileBottomSheet = forwardRef<
       <BottomSheetView className="flex-1 px-6 pb-10 pt-2">
         {/* Header */}
         <View className="mb-6 flex-row items-start justify-between">
+          <View>
+            <Text
+              className="mb-0.5 font-cairo-semibold text-lg text-charcoal"
+              style={{ writingDirection: 'rtl' }}
+            >
+              اختر الملف الشخصي
+            </Text>
+            <Text className="font-cairo-medium text-xs text-gray-medium">
+              يمكنك التبديل بين الملفات لاحقاً من الإعدادات
+            </Text>
+          </View>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={handleClose}
@@ -73,15 +84,6 @@ const ProfileBottomSheet = forwardRef<
           >
             <Feather name="x" size={24} color="#111111" />
           </TouchableOpacity>
-
-          <View className="items-end">
-            <Text className="mb-0.5 font-cairo-bold text-xl text-charcoal">
-              اختر الملف الشخصي
-            </Text>
-            <Text className="font-cairo-medium text-xs text-gray-medium">
-              يمكنك التبديل بين الملفات لاحقاً من الإعدادات
-            </Text>
-          </View>
         </View>
 
         {/* Profiles List */}
@@ -103,6 +105,39 @@ const ProfileBottomSheet = forwardRef<
                   isSelected ? 'bg-primary' : 'border border-gray-100 bg-white'
                 }`}
               >
+                {/* Icon (Far Right) */}
+                <View
+                  className={`h-11 w-11 items-center justify-center rounded-full ${
+                    isSelected ? 'bg-white' : 'bg-accent'
+                  }`}
+                >
+                  <Image
+                    source={profile.icon}
+                    style={{ width: 24, height: 24 }}
+                    contentFit="contain"
+                  />
+                </View>
+
+                {/* Info (Right Aligned) */}
+                <View className="ml-4 flex-1">
+                  <Text
+                    className={`font-cairo-bold text-[16px] ${
+                      isSelected ? 'text-white' : 'text-charcoal'
+                    }`}
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    {profile.name}
+                  </Text>
+                  <Text
+                    className={`-mt-1 font-cairo-medium text-[12px] ${
+                      isSelected ? 'text-white/80' : 'text-gray-medium'
+                    }`}
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    {profile.email}
+                  </Text>
+                </View>
+
                 {/* Tag (Far Left) */}
                 <View
                   className={`rounded-full px-3.5 py-1 ${
@@ -118,37 +153,6 @@ const ProfileBottomSheet = forwardRef<
                     {profile.typeName}
                   </Text>
                 </View>
-
-                {/* Info (Right Aligned) */}
-                <View className="mr-4 flex-1 items-end">
-                  <Text
-                    className={`font-cairo-bold text-[17px] ${
-                      isSelected ? 'text-white' : 'text-charcoal'
-                    }`}
-                  >
-                    {profile.name}
-                  </Text>
-                  <Text
-                    className={`-mt-1 font-cairo-medium text-[13px] ${
-                      isSelected ? 'text-white/80' : 'text-gray-medium'
-                    }`}
-                  >
-                    {profile.email}
-                  </Text>
-                </View>
-
-                {/* Icon (Far Right) */}
-                <View
-                  className={`h-11 w-11 items-center justify-center rounded-full ${
-                    isSelected ? 'bg-white' : 'bg-accent'
-                  }`}
-                >
-                  <Image
-                    source={profile.icon}
-                    style={{ width: 24, height: 24 }}
-                    contentFit="contain"
-                  />
-                </View>
               </TouchableOpacity>
             );
           })}
@@ -159,8 +163,15 @@ const ProfileBottomSheet = forwardRef<
           activeOpacity={0.8}
           onPress={onAddAccount}
           style={{ height: 50, borderRadius: 24 }}
-          className="w-full flex-row items-center justify-center border border-primary"
+          className="w-full flex-row items-center justify-center gap-2 border border-primary"
         >
+          <View style={{ width: 8 }} />
+          <Feather
+            name="plus"
+            size={18}
+            color="#15304D"
+            className="relative -top-[3px]"
+          />
           <Text
             className="font-cairo-bold text-sm text-primary"
             style={{
@@ -170,13 +181,6 @@ const ProfileBottomSheet = forwardRef<
           >
             اضافة حساب جديد
           </Text>
-          <View style={{ width: 8 }} />
-          <Feather
-            name="plus"
-            size={18}
-            color="#15304D"
-            className="relative -top-[3px]"
-          />
         </TouchableOpacity>
       </BottomSheetView>
     </BottomSheetModal>

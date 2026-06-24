@@ -1,5 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
+import React, { useRef } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,11 +16,72 @@ import {
   StarIcon,
 } from '@/assets/icons/more';
 import MenuItem from '@/core/components/more/MenuItem';
-import { useAuthStore } from '@/store/useAuthStore';
+import ProfileBottomSheet, {
+  Profile,
+} from '@/features/auth/components/ProfileBottomSheet';
+import { useAuthStore, UserRole } from '@/store/useAuthStore';
+
+const MOCK_PROFILES: Profile[] = [
+  {
+    id: '1',
+    name: 'سالم الشيخ',
+    email: 'salinelshekh@gmail.com',
+    type: 'individual',
+    typeName: 'فرد',
+    icon: require('@/assets/icons/individual-icon.svg'),
+  },
+  {
+    id: '2',
+    name: 'شركة كيان العقارية',
+    email: 'kayan@gmail.com',
+    type: 'company',
+    typeName: 'شركة',
+    icon: require('@/assets/icons/company-icon.svg'),
+  },
+  {
+    id: '3',
+    name: 'مكتب سالم العقاري',
+    email: 'salinelshekh@gmail.com',
+    type: 'owner',
+    typeName: 'مالك عقار',
+    icon: require('@/assets/icons/owner-icon.svg'),
+  },
+];
 
 export default function ProfileDashboardScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+
+  const profileSheetRef = useRef<BottomSheetModal>(null);
+
+  const getSelectedProfileId = () => {
+    if (user?.role === 'COMPANY') return '2';
+    if (user?.role === 'OFFICE') return '3';
+    return '1';
+  };
+
+  const handleProfileSelect = (profile: Profile) => {
+    const mappedRole =
+      profile.type === 'company'
+        ? 'COMPANY'
+        : profile.type === 'owner'
+          ? 'OFFICE'
+          : 'INDIVIDUAL';
+    useAuthStore.setState({
+      user: {
+        ...user!,
+        role: mappedRole as UserRole,
+        name: profile.name,
+        email: profile.email,
+      },
+    });
+    console.log('Switched to profile:', profile);
+  };
+
+  const handleAddAccount = () => {
+    profileSheetRef.current?.dismiss();
+    router.push('/(auth)/selection');
+  };
 
   const handleLogout = () => {
     logout();
@@ -51,7 +114,10 @@ export default function ProfileDashboardScreen() {
               </View>
 
               {/* Account Type Selector */}
-              <TouchableOpacity className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1">
+              <TouchableOpacity
+                onPress={() => profileSheetRef.current?.present()}
+                className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1"
+              >
                 <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
                   {user?.role === 'COMPANY'
                     ? 'شركة'
@@ -190,6 +256,14 @@ export default function ProfileDashboardScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <ProfileBottomSheet
+        ref={profileSheetRef}
+        profiles={MOCK_PROFILES}
+        selectedId={getSelectedProfileId()}
+        onSelect={handleProfileSelect}
+        onAddAccount={handleAddAccount}
+      />
     </SafeAreaView>
   );
 }
