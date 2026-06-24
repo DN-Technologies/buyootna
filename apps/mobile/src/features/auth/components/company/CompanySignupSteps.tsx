@@ -4,12 +4,12 @@ import * as DocumentPicker from 'expo-document-picker';
 import React from 'react';
 import { Control, Controller } from 'react-hook-form';
 import {
+  Alert,
+  Linking,
   Platform,
   Text,
   TouchableOpacity,
   View,
-  Linking,
-  Alert,
 } from 'react-native';
 
 import FormInput from '@/components/FormInput';

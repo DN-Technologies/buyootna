@@ -8,6 +8,9 @@ export interface User {
   email: string;
   phone: string;
   role: UserRole;
+  name?: string;
+  avatarUrl?: string;
+  freeAdsRemaining?: number;
 }
 
 interface AuthState {

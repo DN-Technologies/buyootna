@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,12 +12,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import AvatarPicker from '@/core/components/more/AvatarPicker';
+
 // Initial mock data (This will come from your global store/API in Card 4)
 const INITIAL_DATA = {
   name: 'سالم الشيخ',
   email: 'salemelshekh@gmail.com',
   phone: '58094586',
   whatsapp: '60468839',
+  avatarUrl: 'https://via.placeholder.com/150',
 };
 
 type FormData = typeof INITIAL_DATA;
@@ -62,25 +64,17 @@ export default function EditProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
         >
-          {/* --- 2. Avatar Section (UI Placeholder for Card 3) --- */}
-          <View className="mb-8 mt-8 items-center">
-            <View className="relative">
-              <View className="h-24 w-24 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
-                <Image
-                  source={{ uri: 'https://via.placeholder.com/150' }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
-              </View>
-              {/* Camera Icon Badge */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                className="absolute -bottom-2 -left-2 h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15304D]"
-              >
-                <Feather name="camera" size={14} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
+          {/* --- 2. Avatar Section --- */}
+          <Controller
+            control={control}
+            name="avatarUrl"
+            render={({ field: { onChange, value } }) => (
+              <AvatarPicker
+                currentAvatarUrl={value}
+                onUploadSuccess={onChange}
+              />
+            )}
+          />
 
           {/* --- 3. Form Inputs --- */}
           <View className="gap-5 px-5">

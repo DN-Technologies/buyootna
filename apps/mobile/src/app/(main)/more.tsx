@@ -14,12 +14,14 @@ import {
   StarIcon,
 } from '@/assets/icons/more';
 import MenuItem from '@/core/components/more/MenuItem';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function ProfileDashboardScreen() {
   const router = useRouter();
+  const { user, logout } = useAuthStore();
 
   const handleLogout = () => {
-    // Clear secure store token, reset Zustand state, and route to Login
+    logout();
     console.log('Logging out...');
   };
 
@@ -40,7 +42,9 @@ export default function ProfileDashboardScreen() {
               {/* Overlapping Avatar */}
               <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
                 <Image
-                  source={{ uri: 'https://via.placeholder.com/150' }} // Replace with actual user avatar
+                  source={{
+                    uri: user?.avatarUrl || 'https://via.placeholder.com/150',
+                  }} // Replace with actual user avatar
                   className="h-full w-full"
                   resizeMode="cover"
                 />
@@ -49,7 +53,11 @@ export default function ProfileDashboardScreen() {
               {/* Account Type Selector */}
               <TouchableOpacity className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1">
                 <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
-                  فرد
+                  {user?.role === 'COMPANY'
+                    ? 'شركة'
+                    : user?.role === 'OFFICE'
+                      ? 'مكتب'
+                      : 'فرد'}
                 </Text>
                 <Feather name="chevron-down" size={18} color="#64748B" />
               </TouchableOpacity>
@@ -58,10 +66,10 @@ export default function ProfileDashboardScreen() {
             {/* User Info */}
             <View className="mb-5 items-start">
               <Text className="font-cairo-bold text-lg text-[#111111]">
-                محمد الحاتم
+                {user?.name || 'محمد الحاتم'}
               </Text>
               <Text className="font-cairo-medium text-xs text-[#64748B]">
-                mohamedelotby@gmail.com
+                {user?.email || 'mohamedelotby@gmail.com'}
               </Text>
             </View>
 
