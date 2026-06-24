@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,119 +13,220 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useAuthStore } from '@/store/useAuthStore';
+// Initial mock data (This will come from your global store/API in Card 4)
+const INITIAL_DATA = {
+  name: 'سالم الشيخ',
+  email: 'salemelshekh@gmail.com',
+  phone: '58094586',
+  whatsapp: '60468839',
+};
+
+type FormData = typeof INITIAL_DATA;
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const { user } = useAuthStore();
 
-  const [name, setName] = useState('محمد الحاتم');
-  const [email, setEmail] = useState(user?.email || 'mohamedelotby@gmail.com');
-  const [phone, setPhone] = useState(user?.phone || '96590000000+');
+  // Initialize React Hook Form
+  const {
+    control,
+    handleSubmit,
+    formState: { isDirty, isValid, errors },
+  } = useForm<FormData>({
+    defaultValues: INITIAL_DATA,
+    mode: 'onChange', // Validates on every keystroke to update button state
+  });
 
-  const handleSave = () => {
-    // Save logic placeholder
-    console.log('Saving profile data:', { name, email, phone });
-    router.back();
+  const onSubmit = (data: FormData) => {
+    // We will wire this up to the API in Card 4
+    console.log('Valid and Dirty Form Submitted:', data);
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-gray-50"
-        >
-          <Feather name="arrow-left" size={20} color="#111" />
-        </TouchableOpacity>
-        <Text className="font-cairo-semibold text-lg text-[#111]">تعديل الملف الشخصي</Text>
-        <View className="w-10" />
-      </View>
-
+    <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          <View className="px-5 py-8">
-            {/* Avatar Section */}
-            <View className="items-center mb-8">
-              <View className="relative">
-                <View className="h-24 w-24 overflow-hidden rounded-full border-4 border-gray-100 bg-gray-200">
-                  {/* Avatar image can be integrated here */}
-                  <View className="h-full w-full items-center justify-center bg-gray-100">
-                    <Feather name="user" size={40} color="#94A3B8" />
-                  </View>
-                </View>
-                <TouchableOpacity className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full bg-[#15304D] border-2 border-white shadow-sm">
-                  <Feather name="camera" size={14} color="#FFF" />
+        {/* --- 1. Header --- */}
+        <View className="flex-row items-center justify-between border-b border-gray-50 px-5 py-4">
+          <TouchableOpacity onPress={() => router.back()} className="w-8">
+            <Feather name="chevron-right" size={24} color="#111111" />
+          </TouchableOpacity>
+          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
+            تعديل الملف الشخصي
+          </Text>
+          <View className="w-8" />
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* --- 2. Avatar Section (UI Placeholder for Card 3) --- */}
+          <View className="mb-8 mt-8 items-center">
+            <View className="relative">
+              <View className="h-24 w-24 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+                <Image
+                  source={{ uri: 'https://via.placeholder.com/150' }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+              </View>
+              {/* Camera Icon Badge */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="absolute -bottom-2 -left-2 h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15304D]"
+              >
+                <Feather name="camera" size={14} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* --- 3. Form Inputs --- */}
+          <View className="gap-5 px-5">
+            {/* Name Input */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-medium text-xs text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الاسم
+              </Text>
+              <Controller
+                control={control}
+                name="name"
+                rules={{ required: 'الاسم مطلوب' }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className={`border ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="أدخل اسمك"
+                    textAlign="right"
+                  />
+                )}
+              />
+            </View>
+
+            {/* Email Input */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-medium text-xs text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                البريد الالكتروني
+              </Text>
+              <Controller
+                control={control}
+                name="email"
+                rules={{
+                  required: 'البريد الالكتروني مطلوب',
+                  pattern: {
+                    value: /\S+@\S+\.\S+/,
+                    message: 'بريد الكتروني غير صالح',
+                  },
+                }}
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    className={`border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    placeholder="example@gmail.com"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    textAlign="right"
+                  />
+                )}
+              />
+            </View>
+
+            {/* Phone Input (Compound) */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-medium text-xs text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                رقم الهاتف
+              </Text>
+              <View className="flex-row gap-2">
+                <Controller
+                  control={control}
+                  name="phone"
+                  rules={{ required: 'رقم الهاتف مطلوب', minLength: 8 }}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className={`flex-1 border ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                      keyboardType="phone-pad"
+                      textAlign="right"
+                    />
+                  )}
+                />
+                {/* Country Code Dropdown */}
+                <TouchableOpacity className="w-24 flex-row items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
+                  <Text className="font-cairo-medium text-sm leading-[22px] text-[#64748B]">
+                    +965
+                  </Text>
+                  <Feather name="chevron-down" size={16} color="#111111" />
                 </TouchableOpacity>
               </View>
-              <Text className="mt-3 font-cairo-semibold text-sm text-[#15304D]">
-                تغيير الصورة الشخصية
+            </View>
+
+            {/* WhatsApp Input (Compound) */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-medium text-xs text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                رقم الواتساب
               </Text>
-            </View>
-
-            {/* Form Fields */}
-            <View className="space-y-6">
-              {/* Full Name */}
-              <View className="items-end">
-                <Text className="mb-2 font-cairo-bold text-xs text-[#64748B]">
-                  الاسم الكامل
-                </Text>
-                <TextInput
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="أدخل الاسم الكامل"
-                  placeholderTextColor="#94A3B8"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo text-sm text-[#111] focus:border-[#15304D]"
+              <View className="flex-row gap-2">
+                <Controller
+                  control={control}
+                  name="whatsapp"
+                  rules={{ required: 'رقم الواتساب مطلوب', minLength: 8 }}
+                  render={({ field: { onChange, onBlur, value } }) => (
+                    <TextInput
+                      className={`flex-1 border ${errors.whatsapp ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      value={value}
+                      keyboardType="phone-pad"
+                      textAlign="right"
+                    />
+                  )}
                 />
-              </View>
-
-              {/* Email Address */}
-              <View className="items-end mt-4">
-                <Text className="mb-2 font-cairo-bold text-xs text-[#64748B]">
-                  البريد الإلكتروني
-                </Text>
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="example@domain.com"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo text-sm text-[#111] focus:border-[#15304D]"
-                />
-              </View>
-
-              {/* Phone Number */}
-              <View className="items-end mt-4">
-                <Text className="mb-2 font-cairo-bold text-xs text-[#64748B]">
-                  رقم الهاتف
-                </Text>
-                <TextInput
-                  value={phone}
-                  onChangeText={setPhone}
-                  placeholder="965XXXXXXXX+"
-                  placeholderTextColor="#94A3B8"
-                  keyboardType="phone-pad"
-                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo text-sm text-[#111] focus:border-[#15304D]"
-                />
+                {/* Country Code Dropdown */}
+                <TouchableOpacity className="w-24 flex-row items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
+                  <Text className="font-cairo-medium text-sm leading-[22px] text-[#64748B]">
+                    +965
+                  </Text>
+                  <Feather name="chevron-down" size={16} color="#111111" />
+                </TouchableOpacity>
               </View>
             </View>
-
-            {/* Save Button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleSave}
-              className="mt-12 w-full items-center justify-center rounded-xl bg-[#15304D] py-4"
-            >
-              <Text className="font-cairo-bold text-base text-white">حفظ التعديلات</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* --- 4. Dynamic Sticky Submit Button --- */}
+        <View className="border-t border-gray-50 bg-white px-5 py-4">
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleSubmit(onSubmit)}
+            disabled={!isDirty || !isValid}
+            className={`h-[48px] w-full items-center justify-center rounded-[24px] ${
+              isDirty && isValid ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'
+            }`}
+          >
+            <Text className="font-cairo-bold text-[15px] text-white">
+              تعديل البيانات
+            </Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
