@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,44 +16,25 @@ import {
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
+import apiClient from '@/core/api/api';
 import MenuItem from '@/core/components/more/MenuItem';
 import ProfileBottomSheet, {
   Profile,
 } from '@/features/auth/components/ProfileBottomSheet';
-import { useAuthStore, UserRole } from '@/store/useAuthStore';
-
-const MOCK_PROFILES: Profile[] = [
-  {
-    id: '1',
-    name: 'سالم الشيخ',
-    email: 'salinelshekh@gmail.com',
-    type: 'individual',
-    typeName: 'فرد',
-    icon: require('@/assets/icons/individual-icon.svg'),
-  },
-  {
-    id: '2',
-    name: 'شركة كيان العقارية',
-    email: 'kayan@gmail.com',
-    type: 'company',
-    typeName: 'شركة',
-    icon: require('@/assets/icons/company-icon.svg'),
-  },
-  {
-    id: '3',
-    name: 'مكتب سالم العقاري',
-    email: 'salinelshekh@gmail.com',
-    type: 'owner',
-    typeName: 'مالك عقار',
-    icon: require('@/assets/icons/owner-icon.svg'),
-  },
-];
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function ProfileDashboardScreen() {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, refreshProfile } = useAuthStore();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
+
+  // Sync user profile state from NestJS backend when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshProfile();
+    }, [refreshProfile]),
+  );
 
   const getSelectedProfileId = () => {
     if (user?.role === 'COMPANY') return '2';
@@ -60,22 +42,85 @@ export default function ProfileDashboardScreen() {
     return '1';
   };
 
-  const handleProfileSelect = (profile: Profile) => {
+  const getProfilesList = (): Profile[] => {
+    const list: Profile[] = [];
+
+    list.push({
+      id: '1',
+      name: user?.name || 'سالم الشيخ',
+      email: user?.email || 'salinelshekh@gmail.com',
+      type: 'individual',
+      typeName: 'فرد',
+      icon: require('@/assets/icons/individual-icon.svg'),
+    });
+
+    if (user?.companyProfile) {
+      list.push({
+        id: '2',
+        name: user.companyProfile.name || 'شركة كيان العقارية',
+        email: user.email || 'kayan@gmail.com',
+        type: 'company',
+        typeName: 'شركة',
+        icon: require('@/assets/icons/company-icon.svg'),
+      });
+    }
+
+    if (user?.officeProfile) {
+      list.push({
+        id: '3',
+        name: user.officeProfile.name || 'مكتب سالم العقاري',
+        email: user.email || 'salinelshekh@gmail.com',
+        type: 'owner',
+        typeName: 'مالك عقار',
+        icon: require('@/assets/icons/owner-icon.svg'),
+      });
+    }
+
+    return list;
+  };
+
+  const getActiveProfileDetails = () => {
+    if (user?.role === 'COMPANY' && user.companyProfile) {
+      return {
+        name: user.companyProfile.name || 'شركة كيان العقارية',
+        avatarUrl:
+          user.companyProfile.logoUrl || 'https://via.placeholder.com/150',
+      };
+    }
+    if (user?.role === 'OFFICE' && user.officeProfile) {
+      return {
+        name: user.officeProfile.name || 'مكتب سالم العقاري',
+        avatarUrl:
+          user.officeProfile.logoUrl || 'https://via.placeholder.com/150',
+      };
+    }
+    return {
+      name: user?.name || 'سالم الشيخ',
+      avatarUrl: user?.avatarUrl || 'https://via.placeholder.com/150',
+    };
+  };
+
+  const { name: activeName, avatarUrl: activeAvatarUrl } =
+    getActiveProfileDetails();
+
+  const handleProfileSelect = async (profile: Profile) => {
     const mappedRole =
       profile.type === 'company'
         ? 'COMPANY'
         : profile.type === 'owner'
           ? 'OFFICE'
           : 'INDIVIDUAL';
-    useAuthStore.setState({
-      user: {
-        ...user!,
-        role: mappedRole as UserRole,
-        name: profile.name,
-        email: profile.email,
-      },
-    });
-    console.log('Switched to profile:', profile);
+    try {
+      // 1. Call backend patch route to switch active role
+      await apiClient.patch('/users/role', { role: mappedRole });
+
+      // 2. Fetch fresh profile data to update Zustand store
+      await refreshProfile();
+
+      console.log('Successfully switched active role to:', mappedRole);
+    } catch (e) {
+      console.error('Failed to switch role:', e);
+    }
   };
 
   const handleAddAccount = () => {
@@ -106,7 +151,7 @@ export default function ProfileDashboardScreen() {
               <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
                 <Image
                   source={{
-                    uri: user?.avatarUrl || 'https://via.placeholder.com/150',
+                    uri: activeAvatarUrl,
                   }} // Replace with actual user avatar
                   className="h-full w-full"
                   resizeMode="cover"
@@ -132,7 +177,7 @@ export default function ProfileDashboardScreen() {
             {/* User Info */}
             <View className="mb-5 items-start">
               <Text className="font-cairo-bold text-lg text-[#111111]">
-                {user?.name || 'محمد الحاتم'}
+                {activeName}
               </Text>
               <Text className="font-cairo-medium text-xs text-[#64748B]">
                 {user?.email || 'mohamedelotby@gmail.com'}
@@ -259,7 +304,7 @@ export default function ProfileDashboardScreen() {
 
       <ProfileBottomSheet
         ref={profileSheetRef}
-        profiles={MOCK_PROFILES}
+        profiles={getProfilesList()}
         selectedId={getSelectedProfileId()}
         onSelect={handleProfileSelect}
         onAddAccount={handleAddAccount}

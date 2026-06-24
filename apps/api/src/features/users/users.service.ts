@@ -343,6 +343,13 @@ export class UsersService {
     throw new InternalServerErrorException('نوع الحساب غير صالح');
   }
 
+  async updateRole(userId: string, role: Role) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    });
+  }
+
   async findFullUser(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

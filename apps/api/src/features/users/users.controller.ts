@@ -20,6 +20,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { User } from '@prisma/client';
+import { Role } from '@prisma/client';
 import {
   FileFieldsInterceptor,
   FileInterceptor,
@@ -92,6 +93,12 @@ export class UsersController {
     @UploadedFile() logo?: Express.Multer.File,
   ) {
     return this.usersService.updateProfile(user.id, user.role, dto, logo);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('role')
+  async switchRole(@CurrentUser() user: User, @Body('role') role: Role) {
+    return this.usersService.updateRole(user.id, role);
   }
 
   @UseGuards(AuthGuard('jwt'))
