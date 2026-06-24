@@ -20,6 +20,7 @@ model User {
   officeProfile     OfficeProfile?
   otpCode           OtpCode?
   properties        Property[]
+  deletionLogs      PropertyDeletionLog[]
 }
 
 model IndividualProfile {

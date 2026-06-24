@@ -136,7 +136,7 @@ export default function ActiveAdCard({
             <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
               عدد المشاهدات
             </Text>
-            <Text className="font-cairo-bold text-[14px] text-[#15304D]">50</Text>
+            <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.views || 0}</Text>
           </View>
 
           {/* Divider */}

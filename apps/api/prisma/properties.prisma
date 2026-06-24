@@ -48,3 +48,12 @@ model Property {
   @@index([status])
   @@index([latitude, longitude])
 }
+
+model PropertyDeletionLog {
+  id         String   @id @default(uuid())
+  propertyId String
+  userId     String
+  reason     String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

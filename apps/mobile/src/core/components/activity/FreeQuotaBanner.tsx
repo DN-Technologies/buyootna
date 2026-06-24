@@ -26,7 +26,7 @@ export default function FreeQuotaBanner({
             style={{ writingDirection: 'rtl' }}
           >
             {freeAdsRemaining > 0
-              ? 'متبقي لديك 1 إعلان مجاني جاهز للنشر الآن. استغل الفرصة واجذب المشترين.'
+              ? `متبقي لديك ${freeAdsRemaining} إعلان مجاني جاهز للنشر الآن. استغل الفرصة واجذب المشترين.`
               : 'استهلكت إعلانك المجاني، رقي حسابك الآن لنشر عدد غير محدود من العقارات.'}
           </Text>
         </View>

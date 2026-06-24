@@ -292,10 +292,20 @@ export class PropertiesService {
   }
 
   // --- DELETE ---
-  async remove(userId: string, propertyId: string) {
+  async remove(userId: string, propertyId: string, reason?: string) {
     await this.verifyOwnership(userId, propertyId);
 
     // TODO: Optionally loop throght property.images and delete them from AWS S3 to save space
+
+    if (reason) {
+      await this.prisma.propertyDeletionLog.create({
+        data: {
+          propertyId,
+          userId,
+          reason,
+        },
+      });
+    }
 
     await this.prisma.property.delete({
       where: { id: propertyId },

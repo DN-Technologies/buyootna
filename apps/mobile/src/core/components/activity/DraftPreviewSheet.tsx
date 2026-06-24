@@ -4,7 +4,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
-import { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import {
@@ -28,15 +28,22 @@ interface DraftPreviewSheetProps {
   onClose?: () => void;
   onDeletePress?: () => void;
   onEditPress?: () => void;
+  onPublishPress?: (propertyId: string) => Promise<void>;
 }
 
 const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
-  ({ property, onClose, onDeletePress, onEditPress }, ref) => {
+  ({ property, onClose, onDeletePress, onEditPress, onPublishPress }, ref) => {
     // Snap points: 85% of screen height provides a comprehensive viewing sheet
     const snapPoints = useMemo(() => ['85%'], []);
 
     // Local toggle state for the publish switch (purely interactive UI placeholder)
     const [isPublished, setIsPublished] = useState(false);
+
+    useEffect(() => {
+      if (property) {
+        setIsPublished(property.status === 'ACTIVE');
+      }
+    }, [property]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -88,7 +95,18 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Local Switch Toggle (Publish Switch) */}
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => setIsPublished(!isPublished)}
+              onPress={async () => {
+                if (onPublishPress && !isPublished) {
+                  try {
+                    await onPublishPress(property.id);
+                    handleClose();
+                  } catch {
+                    // Handled inside the parent callback
+                  }
+                } else {
+                  setIsPublished(!isPublished);
+                }
+              }}
             >
               <View
                 className="w-11 h-6 rounded-full p-0.5 justify-center"
@@ -258,7 +276,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
               <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
                 عدد المشاهدات
               </Text>
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">50</Text>
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.views || 0}</Text>
             </View>
 
             {/* Separator */}

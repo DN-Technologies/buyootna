@@ -84,7 +84,11 @@ export class PropertiesController {
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
-  async remove(@CurrentUser() user: User, @Param('id') id: string) {
-    return this.propertiesService.remove(user.id, id);
+  async remove(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Body() dto?: { reason?: string },
+  ) {
+    return this.propertiesService.remove(user.id, id, dto?.reason);
   }
 }
