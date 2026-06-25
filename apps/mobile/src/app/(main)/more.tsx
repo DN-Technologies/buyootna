@@ -228,7 +228,7 @@ export default function ProfileDashboardScreen() {
                 icon={ChatIcon}
                 title="المحادثات"
                 badgeCount={3}
-                onPress={() => {}}
+                onPress={() => router.push('/chat')}
               />
               <MenuItem icon={SavedIcon} title="المحفوظات" onPress={() => {}} />
             </View>
