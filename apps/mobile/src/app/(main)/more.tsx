@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -282,7 +282,7 @@ export default function ProfileDashboardScreen() {
               <MenuItem
                 icon={SettingsIcon}
                 title="اعدادات الحساب"
-                onPress={() => {}}
+                onPress={() => router.push('/settings')}
               />
             </View>
           </View>
