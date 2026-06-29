@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { DeviceIcon } from '@/assets/icons/settings';
+import DeviceCard from '@/core/components/more/DeviceCard';
+import LogoutConfirmationModal from '@/core/components/more/LogoutConfirmationModal';
 
 interface DeviceItem {
   id: string;
@@ -42,6 +43,10 @@ export default function RegisteredDevicesScreen() {
     },
   ]);
 
+  // Modal Visibility States
+  const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
+  const [showLogoutAll, setShowLogoutAll] = useState(false);
+
   const handleLogoutDevice = (id: string) => {
     setDevices(devices.filter((device) => device.id !== id));
   };
@@ -71,7 +76,7 @@ export default function RegisteredDevicesScreen() {
         <View className="px-5">
           {/* --- Master Log Out Button --- */}
           <TouchableOpacity
-            onPress={handleLogoutAllDevices}
+            onPress={() => setShowLogoutAll(true)}
             className="mb-8 flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white py-3.5"
           >
             <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#9C1E28]">
@@ -82,48 +87,33 @@ export default function RegisteredDevicesScreen() {
           {/* --- Devices List --- */}
           <View>
             {devices.map((device) => (
-              <View
+              <DeviceCard
                 key={device.id}
-                className="mb-4 flex-row items-center justify-between rounded-2xl border border-gray-100 bg-white p-4"
-              >
-                {/* Right Side: Badge & Info */}
-                <View className="flex-row items-center gap-3">
-                  {/* Circular Phone Icon Badge */}
-                  <View className="h-[44px] w-[44px] items-center justify-center rounded-full bg-[#F0F4F8]">
-                    <DeviceIcon size={20} color="#15304D" />
-                  </View>
-
-                  {/* Info Details */}
-                  <View className="items-start">
-                    <Text className="font-cairo-semibold text-[14px] text-[#111111]">
-                      {device.name}
-                    </Text>
-                    <View className="mt-0.5 flex-row items-center gap-1">
-                      {device.isActive && (
-                        <View className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-                      )}
-                      <Text
-                        className={`font-cairo-medium text-[11px] leading-[18px] ${
-                          device.isActive ? 'text-[#22C55E]' : 'text-[#7E8A97]'
-                        }`}
-                      >
-                        {device.status} • {device.location}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                {/* Left Side: Log Out Button */}
-                <TouchableOpacity onPress={() => handleLogoutDevice(device.id)}>
-                  <Text className="font-cairo-medium text-[12px] leading-[20px] text-[#9C1E28]">
-                    تسجيل الخروج
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                device={device}
+                onLogoutPress={() => setSelectedDevice(device)}
+              />
             ))}
           </View>
         </View>
       </ScrollView>
+
+      {/* --- Confirmation Bottom Sheet for single device --- */}
+      <LogoutConfirmationModal
+        visible={!!selectedDevice}
+        title="تسجيل الخروج ؟"
+        description={`هل تريد تسجيل الخروج من جهاز “ ${selectedDevice?.name} ” ؟ سيتعين عليك إدخال كلمة المرور مجدداً للوصول إلى حسابك من هذا الجهاز.`}
+        onConfirm={() => selectedDevice && handleLogoutDevice(selectedDevice.id)}
+        onClose={() => setSelectedDevice(null)}
+      />
+
+      {/* --- Confirmation Bottom Sheet for all devices --- */}
+      <LogoutConfirmationModal
+        visible={showLogoutAll}
+        title="تسجيل الخروج من جميع الأجهزة ؟"
+        description="سيتم إنهاء الجلسة وتسجيل الخروج فوراً من كافة المتصفحات والأجهزة المتصلة بحسابك، باستثناء هذا الجهاز الحالي. هذا الإجراء يحمي حسابك إذا كنت تشك في وجود نشاط غير مصرح به."
+        onConfirm={handleLogoutAllDevices}
+        onClose={() => setShowLogoutAll(false)}
+      />
     </SafeAreaView>
   );
 }
