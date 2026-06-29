@@ -89,9 +89,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={NotificationIcon}
                 title="الإشعارات"
-                onPress={() =>
-                  console.log('Navigate to Notifications settings')
-                }
+                onPress={() => router.push('/notifications')}
               />
             </View>
           </View>
