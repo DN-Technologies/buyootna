@@ -179,4 +179,12 @@ export const LockIcon = ({ color = '#94A3B8', size = 16 }: IconProps) => (
   </Svg>
 );
 
-
+export const CompanyIcon = ({ color = '#15304D', size = 20 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 25 25" fill="none">
+    <Path
+      d="M6.25 17.1875H7.8125M9.375 17.1875H10.9375M9.375 12.5H10.9375M6.25 12.5H7.8125M6.25 7.8125H7.8125M9.375 7.8125H10.9375M21.0938 21.0938H3.90625V3.90625H13.2812V11.7188H21.0938V21.0938ZM13.2812 14.8438H17.9688V21.0938H13.2812V14.8438Z"
+      stroke={color}
+      strokeWidth={1.5625}
+    />
+  </Svg>
+);
