@@ -111,7 +111,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={DeviceIcon}
                 title="الاجهزة المسجلة"
-                onPress={() => console.log('Navigate to Registered Devices')}
+                onPress={() => router.push('/devices')}
               />
             </View>
           </View>

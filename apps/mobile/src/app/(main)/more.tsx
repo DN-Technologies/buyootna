@@ -260,7 +260,7 @@ export default function ProfileDashboardScreen() {
               الحساب والاشتراك
             </Text>
             <View className="rounded-md bg-[#F9FAFE] px-4">
-              <MenuItem icon={QuotaIcon} title="الباقات" onPress={() => {}} />
+              <MenuItem icon={QuotaIcon} title="الباقات" onPress={() => router.push('/packages')} />
               <MenuItem
                 icon={MoneyIcon}
                 title="رصيد الحساب"
