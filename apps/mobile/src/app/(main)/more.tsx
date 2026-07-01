@@ -18,6 +18,7 @@ import {
 } from '@/assets/icons/more';
 import apiClient from '@/core/api/api';
 import MenuItem from '@/core/components/more/MenuItem';
+import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet, {
   Profile,
 } from '@/features/auth/components/ProfileBottomSheet';
@@ -28,6 +29,7 @@ export default function ProfileDashboardScreen() {
   const { user, logout, refreshProfile } = useAuthStore();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
+  const logoutSheetRef = useRef<BottomSheetModal>(null);
 
   // Sync user profile state from NestJS backend when screen gains focus
   useFocusEffect(
@@ -129,6 +131,11 @@ export default function ProfileDashboardScreen() {
   };
 
   const handleLogout = () => {
+    logoutSheetRef.current?.present();
+  };
+
+  const handleConfirmLogout = () => {
+    logoutSheetRef.current?.dismiss();
     logout();
     console.log('Logging out...');
   };
@@ -308,6 +315,12 @@ export default function ProfileDashboardScreen() {
         selectedId={getSelectedProfileId()}
         onSelect={handleProfileSelect}
         onAddAccount={handleAddAccount}
+      />
+
+      <LogoutBottomSheet
+        ref={logoutSheetRef}
+        onLogout={handleConfirmLogout}
+        onCancel={() => logoutSheetRef.current?.dismiss()}
       />
     </SafeAreaView>
   );
