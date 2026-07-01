@@ -164,7 +164,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={InfoIcon}
                 title="عن بيوتنا"
-                onPress={() => console.log('Navigate to About Buyootna')}
+                onPress={() => router.push('/about')}
               />
               <MenuItem
                 icon={ShowIcon}
