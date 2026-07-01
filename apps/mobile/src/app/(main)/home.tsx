@@ -49,6 +49,7 @@ export default function HomeScreen() {
     useState<PropertyFilter>('all');
   const [activeCompFilter, setActiveCompFilter] =
     useState<CompanyFilter>('all');
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,6 +98,8 @@ export default function HomeScreen() {
           onPropFilterChange={setActivePropFilter}
           activeCompFilter={activeCompFilter}
           onCompFilterChange={setActiveCompFilter}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
       </View>
 
@@ -106,6 +109,7 @@ export default function HomeScreen() {
           activeFilter={activePropFilter}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          viewMode={viewMode}
         />
       ) : activeTab === 'companies' ? (
         <HomeCompanies
@@ -129,7 +133,7 @@ export default function HomeScreen() {
             />
           }
         >
-          <HomeAll feedData={feedData} isLoading={isLoading} />
+          <HomeAll feedData={feedData} isLoading={isLoading} viewMode={viewMode} />
         </ScrollView>
       )}
       <GlobalFilterSheet

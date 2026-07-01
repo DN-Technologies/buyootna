@@ -13,9 +13,10 @@ import ServiceCompanies from './sliders/ServiceCompanies';
 interface HomeAllProps {
   feedData: HomeFeedResponse | null;
   isLoading: boolean;
+  viewMode?: 'card' | 'list';
 }
 
-export default function HomeAll({ feedData, isLoading }: HomeAllProps) {
+export default function HomeAll({ feedData, isLoading, viewMode = 'card' }: HomeAllProps) {
 
   // --- Loading Screen ---
   if (isLoading) {
@@ -46,13 +47,13 @@ export default function HomeAll({ feedData, isLoading }: HomeAllProps) {
   return (
     <View>
       {/* --- Section: عقارات للبيع (Properties for Sale) --- */}
-      <SaleProperties initialData={feedData?.sale || []} />
+      <SaleProperties initialData={feedData?.sale || []} viewMode={viewMode} />
 
       {/* --- Section: عقارات للايجار (Properties for Rent) --- */}
-      <RentProperties initialData={feedData?.rent || []} />
+      <RentProperties initialData={feedData?.rent || []} viewMode={viewMode} />
 
       {/* --- Section: عقارات للبدل (Properties for Exchange) --- */}
-      <ExchangeProperties initialData={feedData?.exchange || []} />
+      <ExchangeProperties initialData={feedData?.exchange || []} viewMode={viewMode} />
 
       {/* --- Section: شركات الخدمات (Service Companies) --- */}
       <ServiceCompanies initialData={feedData?.companies || []} />

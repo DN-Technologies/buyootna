@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -9,9 +11,13 @@ import {
 } from 'react-native';
 
 import { feedService } from '@/core/api/feed.service';
+import { propertiesService } from '@/core/api/properties.service';
 import PropertyCard from '@/core/components/PropertyCard';
+import PropertyDetailsSheet from '@/core/components/PropertyDetailsSheet';
+import PropertyListItem from '@/core/components/PropertyListItem';
 import { formatTimeAgo } from '@/core/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
+import { PropertyDetailsDto } from '@/types/property';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HORIZONTAL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
@@ -29,13 +35,24 @@ const SectionHeader = ({ title }: { title: string }) => (
 
 interface RentPropertiesProps {
   initialData: PropertyDto[];
+  viewMode?: 'card' | 'list';
 }
 
-export default function RentProperties({ initialData }: RentPropertiesProps) {
+export default function RentProperties({
+  initialData,
+  viewMode = 'card',
+}: RentPropertiesProps) {
+  const router = useRouter();
   const [data, setData] = useState<PropertyDto[]>(initialData);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
+
+  // Bottom Sheet Ref & Selected Property State
+  const detailsSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedProperty, setSelectedProperty] =
+    useState<PropertyDetailsDto | null>(null);
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
   // Triggered when user scrolls to the end of the horizontal list
   const fetchMoreData = async () => {
@@ -59,6 +76,20 @@ export default function RentProperties({ initialData }: RentPropertiesProps) {
     }
   };
 
+  const handleShowDetails = async (id: string) => {
+    if (isFetchingDetails) return;
+    setIsFetchingDetails(true);
+    try {
+      const fullDetails = await propertiesService.getPropertyById(id);
+      setSelectedProperty(fullDetails);
+      detailsSheetRef.current?.present();
+    } catch (error) {
+      console.error('Failed to fetch details:', error);
+    } finally {
+      setIsFetchingDetails(false);
+    }
+  };
+
   return (
     <View className="justify-center">
       <SectionHeader title="عقارات للايجار" />
@@ -70,11 +101,29 @@ export default function RentProperties({ initialData }: RentPropertiesProps) {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View className="mr-4">
-            <PropertyCard
-              {...item}
-              timeAgo={item.createdAt ? formatTimeAgo(item.createdAt) : undefined}
-              cardWidth={HORIZONTAL_CARD_WIDTH}
-            />
+            {viewMode === 'list' ? (
+              <PropertyListItem
+                id={item.id}
+                price={item.price}
+                companyName={item.companyName}
+                isFeatured={item.isFeatured}
+                category={item.type}
+                area={item.area}
+                location={item.location}
+                propertyIncome={item.propertyIncome}
+                cardWidth={HORIZONTAL_CARD_WIDTH}
+                onPress={() => handleShowDetails(item.id)}
+                onShowDetails={() => handleShowDetails(item.id)}
+              />
+            ) : (
+              <PropertyCard
+                {...item}
+                timeAgo={
+                  item.createdAt ? formatTimeAgo(item.createdAt) : undefined
+                }
+                cardWidth={HORIZONTAL_CARD_WIDTH}
+              />
+            )}
           </View>
         )}
         // Infinite Scroll Triggers:
@@ -82,10 +131,22 @@ export default function RentProperties({ initialData }: RentPropertiesProps) {
         onEndReachedThreshold={0.5} // Trigger fetch when halfway through the last card
         ListFooterComponentClassName="items-center justify-center"
         ListFooterComponent={
-          isLoadingMore ? (
+          isLoadingMore || isFetchingDetails ? (
             <ActivityIndicator size="small" color="#15304D" className="ml-4" />
           ) : null
         }
+      />
+
+      <PropertyDetailsSheet
+        ref={detailsSheetRef}
+        property={selectedProperty}
+        onClose={() => detailsSheetRef.current?.dismiss()}
+        onViewProperty={() => {
+          if (selectedProperty) {
+            detailsSheetRef.current?.dismiss();
+            router.push(`/property/${selectedProperty.id}`);
+          }
+        }}
       />
     </View>
   );

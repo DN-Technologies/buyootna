@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -45,27 +44,17 @@ export default function ExploreScreen() {
           paddingTop: 10,
         }}
       >
-        <ExploreSection
-          title="عقارات"
-          items={propertiesData}
-          showViewAll
-        />
-        
+        <ExploreSection title="عقارات" items={propertiesData} showViewAll />
+
         <ExploreSection
           title="خدمات الشركات"
           items={companyServicesData}
           showViewAll
         />
 
-        <ExploreSection
-          title="قوائم"
-          items={listsData}
-        />
+        <ExploreSection title="قوائم" items={listsData} />
 
-        <ExploreSection
-          title="حاسبات ذكية"
-          items={smartCalculatorsData}
-        />
+        <ExploreSection title="حاسبات ذكية" items={smartCalculatorsData} />
       </ScrollView>
     </SafeAreaView>
   );

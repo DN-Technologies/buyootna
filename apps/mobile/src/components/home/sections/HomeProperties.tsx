@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -8,27 +10,40 @@ import {
 } from 'react-native';
 
 import { feedService } from '@/core/api/feed.service';
+import { propertiesService } from '@/core/api/properties.service';
 import PropertyCard from '@/core/components/PropertyCard';
+import PropertyDetailsSheet from '@/core/components/PropertyDetailsSheet';
+import PropertyListItem from '@/core/components/PropertyListItem';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
 import { formatTimeAgo } from '@/core/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
+import { PropertyDetailsDto } from '@/types/property';
 
 interface HomePropertiesProps {
   activeFilter: 'all' | 'sale' | 'rent' | 'exchange';
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
+  viewMode?: 'card' | 'list';
 }
 
 export default function HomeProperties({
   activeFilter = 'all',
   refreshing = false,
   onRefresh,
+  viewMode = 'card',
 }: HomePropertiesProps) {
+  const router = useRouter();
   const [data, setData] = useState<PropertyDto[]>([]);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isFilterLoading, setIsFilterLoading] = useState(true);
+
+  // Bottom Sheet Ref & Selected Property State
+  const detailsSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedProperty, setSelectedProperty] =
+    useState<PropertyDetailsDto | null>(null);
+  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
   // Helper to map frontent filter strings to backend Prisma Enums
   const getBackendType = (filter: string) => {
@@ -92,6 +107,21 @@ export default function HomeProperties({
     }
   };
 
+  // Handle "عرض تفاصيل" click
+  const handleShowDetails = async (id: string) => {
+    if (isFetchingDetails) return;
+    setIsFetchingDetails(true);
+    try {
+      const fullDetails = await propertiesService.getPropertyById(id);
+      setSelectedProperty(fullDetails);
+      detailsSheetRef.current?.present();
+    } catch (error) {
+      console.error('Failed to fetch property details:', error);
+    } finally {
+      setIsFetchingDetails(false);
+    }
+  };
+
   // --- 3. Render States ---
   if (isFilterLoading) {
     return (
@@ -118,52 +148,116 @@ export default function HomeProperties({
   }
 
   return (
-    <FlatList
-      data={data}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={{
-        paddingHorizontal: 20,
-        paddingBottom: 120,
-        paddingTop: 10,
-      }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#15304D']}
-            tintColor="#15304D"
-          />
-        ) : undefined
-      }
-      renderItem={({ item }) => (
-        <PropertyCard
-          id={item.id}
-          images={item.images}
-          price={item.price}
-          companyName={item.companyName}
-          isFeatured={item.isFeatured}
-          type={item.type}
-          area={item.area}
-          beds={item.beds}
-          baths={item.baths}
-          location={item.location}
-          timeAgo={item.createdAt ? formatTimeAgo(item.createdAt) : undefined}
-          // Note: Since this is vertical, we DO NOT pass cardWidth.
-          // It will naturally fill 100% of the screen width minus padding.
+    <View className="flex-1">
+      {/* 1. Card View FlatList */}
+      <View style={viewMode === 'card' ? { flex: 1 } : { display: 'none' }}>
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 120,
+            paddingTop: 10,
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#15304D']}
+                tintColor="#15304D"
+              />
+            ) : undefined
+          }
+          renderItem={({ item }) => (
+            <PropertyCard
+              id={item.id}
+              images={item.images}
+              price={item.price}
+              companyName={item.companyName}
+              isFeatured={item.isFeatured}
+              type={item.type}
+              area={item.area}
+              beds={item.beds}
+              baths={item.baths}
+              location={item.location}
+              timeAgo={
+                item.createdAt ? formatTimeAgo(item.createdAt) : undefined
+              }
+            />
+          )}
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoadingMore || isFetchingDetails ? (
+              <View className="items-center py-4">
+                <ActivityIndicator size="small" color="#15304D" />
+              </View>
+            ) : null
+          }
         />
-      )}
-      // Infinite Scroll Props:
-      onEndReached={fetchMoreData}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        isLoadingMore ? (
-          <View className="items-center py-4">
-            <ActivityIndicator size="small" color="#15304D" />
-          </View>
-        ) : null
-      }
-    />
+      </View>
+
+      {/* 2. List View FlatList */}
+      <View style={viewMode === 'list' ? { flex: 1 } : { display: 'none' }}>
+        <FlatList
+          data={data}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: 120,
+            paddingTop: 10,
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#15304D']}
+                tintColor="#15304D"
+              />
+            ) : undefined
+          }
+          renderItem={({ item }) => (
+            <PropertyListItem
+              id={item.id}
+              price={item.price}
+              companyName={item.companyName}
+              isFeatured={item.isFeatured}
+              category={item.type}
+              area={item.area}
+              location={item.location}
+              propertyIncome={item.propertyIncome}
+              onPress={() => handleShowDetails(item.id)}
+              onShowDetails={() => handleShowDetails(item.id)}
+            />
+          )}
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoadingMore || isFetchingDetails ? (
+              <View className="items-center py-4">
+                <ActivityIndicator size="small" color="#15304D" />
+              </View>
+            ) : null
+          }
+        />
+      </View>
+
+      {/* Expanded details bottom sheet */}
+      <PropertyDetailsSheet
+        ref={detailsSheetRef}
+        property={selectedProperty}
+        onClose={() => detailsSheetRef.current?.dismiss()}
+        onViewProperty={() => {
+          if (selectedProperty) {
+            detailsSheetRef.current?.dismiss();
+            router.push(`/property/${selectedProperty.id}`);
+          }
+        }}
+      />
+    </View>
   );
 }

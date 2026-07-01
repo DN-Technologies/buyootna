@@ -11,6 +11,7 @@ export interface PropertyDto {
   baths: number;
   location: string;
   createdAt: string;
+  propertyIncome?: number | null;
 }
 
 // --- Company Modal ---
