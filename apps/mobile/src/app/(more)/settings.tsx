@@ -191,7 +191,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={PrivacyIcon}
                 title="سياسة الخصوصية"
-                onPress={() => console.log('Navigate to Privacy Policy')}
+                onPress={() => router.push('/privacy')}
               />
               <MenuItem
                 icon={TermsIcon}
