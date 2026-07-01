@@ -196,7 +196,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={TermsIcon}
                 title="الشروط والأحكام"
-                onPress={() => console.log('Navigate to Terms & Conditions')}
+                onPress={() => router.push('/terms')}
               />
             </View>
           </View>
