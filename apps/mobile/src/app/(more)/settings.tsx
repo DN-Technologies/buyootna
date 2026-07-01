@@ -174,7 +174,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={CallIcon}
                 title="تواصل معنا"
-                onPress={() => console.log('Navigate to Contact Us')}
+                onPress={() => router.push('/contact')}
               />
             </View>
           </View>
