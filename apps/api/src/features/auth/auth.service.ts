@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -49,5 +53,38 @@ export class AuthService {
       access_token: this.jwtService.sign(payload),
       user: user, // Send user details back to the frontend to update global state
     };
+  }
+
+  // 3. Verify OTP during individual registration
+  async verifyRegistrationOtp(phone: string, otp: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+    });
+
+    if (!user) {
+      throw new BadRequestException('رقم الهاتف غير مسجل');
+    }
+
+    const otpRecord = await this.prisma.otpCode.findUnique({
+      where: { userId: user.id },
+    });
+
+    if (!otpRecord || otpRecord.code !== otp) {
+      throw new BadRequestException('رمز التحقق غير صحيح');
+    }
+
+    if (new Date() > otpRecord.expiresAt) {
+      throw new BadRequestException('رمز التحقق منتهي الصلاحية');
+    }
+
+    // OTP is valid! Delete it so it can't be reused
+    await this.prisma.otpCode.delete({ where: { userId: user.id } });
+
+    // Return access token and user info
+    const userWithoutPassword = { ...user };
+    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+      .password;
+
+    return this.login(userWithoutPassword);
   }
 }

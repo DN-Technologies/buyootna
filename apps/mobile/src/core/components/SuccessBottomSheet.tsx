@@ -47,8 +47,8 @@ const SuccessBottomSheet = forwardRef<
       index={0}
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
-      handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
-      backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
+      handleIndicatorStyle={{ backgroundColor: '#111111', width: 40, height: 4 }}
+      backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
     >
       <BottomSheetView className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4">
         <View className="mt-4 items-center">
@@ -100,9 +100,9 @@ const SuccessBottomSheet = forwardRef<
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onPress}
-          className="mb-4 w-full items-center justify-center rounded-3xl bg-[#15304D] py-4"
+          className="mb-4 h-[48px] w-full items-center justify-center rounded-3xl bg-[#15304D]"
         >
-          <Text className="font-cairo-bold text-lg text-white">
+          <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
             {buttonText}
           </Text>
         </TouchableOpacity>

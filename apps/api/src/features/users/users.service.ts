@@ -46,6 +46,22 @@ export class UsersService {
           data: { userId: user.id },
         });
 
+        // Generate a 6-digit random registration OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        await tx.otpCode.create({
+          data: {
+            userId: user.id,
+            code: otp,
+            expiresAt,
+          },
+        });
+
+        console.log(
+          `\n🔑 [MOCK SMS] Your Registration OTP for user ${dto.phone} is: ${otp}\n`,
+        );
+
         return { user, profile };
       });
 

@@ -45,7 +45,7 @@ export const SignupStep1: React.FC<StepProps> = ({ control, type }) => {
         control={control}
         name="phone"
         label="رقم الهاتف*"
-        placeholder="01282388770"
+        placeholder="55123456"
         keyboardType="phone-pad"
       />
       <FormInput

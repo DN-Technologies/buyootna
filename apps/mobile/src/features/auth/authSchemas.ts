@@ -8,7 +8,7 @@ export const loginSchema = z.object({
     .min(1, 'هذا الحقل مطلوب')
     .refine((val) => {
       const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-      const isPhone = /^\d+$/.test(val); // Accepts any numeric string for flexibility
+      const isPhone = /^\+?\d+$/.test(val); // Accepts any numeric string with optional + for flexibility
       return isEmail || isPhone;
     }, 'أدخل بريد إلكتروني أو رقم هاتف صحيح'),
   password: z
@@ -28,7 +28,7 @@ export const signupSchema = z
     phone: z
       .string({ message: 'رقم الهاتف مطلوب' })
       .min(1, 'رقم الهاتف مطلوب')
-      .regex(/^\+?\d{8,15}$/, 'رقم الهاتف غير صالح'),
+      .regex(/^(?:\+?965)?[569]\d{7}$/, 'رقم الهاتف يجب أن يكون رقم كويتي صالح'),
     password: z
       .string({ message: 'كلمة المرور مطلوبة' })
       .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),

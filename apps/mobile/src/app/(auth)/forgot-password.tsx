@@ -21,7 +21,6 @@ import {
 export default function ForgotPasswordScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [identifier, setIdentifier] = useState('');
-  const [timer, setTimer] = useState(0);
   const [resetToken, setResetToken] = useState('');
   const successSheetRef = useRef<BottomSheetModal>(null);
 
@@ -33,7 +32,6 @@ export default function ForgotPasswordScreen() {
 
       setIdentifier(data.identifier);
       setStep(2);
-      setTimer(45);
     } catch (error: any) {
       let errorMsg = 'تعذر إرسال رمز التحقق';
       if (error.response?.data?.message) {

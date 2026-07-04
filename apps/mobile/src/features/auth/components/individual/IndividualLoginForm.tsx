@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator,Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import FormInput from '@/components/FormInput';
 import { LoginFormValues, loginSchema } from '@/features/auth/authSchemas';
@@ -52,28 +52,26 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
       <View className="mb-8 w-full flex-row items-center justify-between">
         <TouchableOpacity
           activeOpacity={0.7}
+          className="flex-row items-center"
+          onPress={() => setRememberMe(!rememberMe)}
+        >
+          <View
+            className={`mr-2 h-5 w-5 rounded border-[1.5px] ${
+              rememberMe ? 'border-primary bg-primary' : 'border-[#6B6A6A]'
+            } items-center justify-center`}
+          >
+            {rememberMe && <Feather name="check" size={14} color="white" />}
+          </View>
+          <Text className="font-cairo text-[12px] text-[#6B6A6A]">تذكري</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.7}
           onPress={() => router.push('/(auth)/forgot-password')}
         >
           <Text className="font-cairo-medium text-sm text-primary">
             هل نسيت كلمة المرور؟
           </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-row items-center"
-          onPress={() => setRememberMe(!rememberMe)}
-        >
-          <Text className="font-cairo-medium text-sm text-slate-700">
-            تذكري
-          </Text>
-          <View
-            className={`ml-2 h-5 w-5 rounded border-[1.5px] ${
-              rememberMe ? 'border-primary bg-primary' : 'border-gray-400'
-            } items-center justify-center`}
-          >
-            {rememberMe && <Feather name="check" size={14} color="white" />}
-          </View>
         </TouchableOpacity>
       </View>
 
@@ -81,12 +79,12 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
         activeOpacity={0.8}
         onPress={handleSubmit(handleLogin)}
         disabled={isLoading}
-        className={`mb-4 w-full items-center justify-center rounded-3xl py-4 ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
+        className={`mb-4 h-[48px] w-full items-center justify-center rounded-3xl bg-primary ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
       >
         {isLoading ? (
           <ActivityIndicator color="white" size="small" />
         ) : (
-          <Text className="font-cairo-bold text-lg text-white">
+          <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
             تسجيل الدخول
           </Text>
         )}

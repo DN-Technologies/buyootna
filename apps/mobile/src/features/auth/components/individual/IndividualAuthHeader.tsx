@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import AppLogo from '@/core/components/AppLogo';
 
@@ -23,10 +23,6 @@ export const IndividualAuthHeader: React.FC<IndividualAuthHeaderProps> = ({
         onPress={onSelectAccountType}
         className="flex-row items-center px-4 py-2"
       >
-        <Feather name="chevron-down" size={16} color="#6B6A6A" />
-        <Text className="mx-2 font-cairo-semibold text-base text-charcoal">
-          فرد
-        </Text>
         <Image
           source={require('@/assets/icons/individual-icon.svg')}
           style={{
@@ -34,6 +30,10 @@ export const IndividualAuthHeader: React.FC<IndividualAuthHeaderProps> = ({
             height: 18,
           }}
         />
+        <Text className="mx-2 font-cairo-semibold text-base leading-[22px] text-charcoal">
+          فرد
+        </Text>
+        <Feather name="chevron-up" size={16} color="#6B6A6A" />
       </TouchableOpacity>
     </View>
   );

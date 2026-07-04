@@ -25,4 +25,9 @@ export class AuthController {
     // req.user is populated by the LocalStrategy if successful
     return this.authService.login(req.user);
   }
+
+  @Post('register/verify-otp')
+  async verifyRegisterOtp(@Body() dto: { phone: string; otp: string }) {
+    return this.authService.verifyRegistrationOtp(dto.phone, dto.otp);
+  }
 }

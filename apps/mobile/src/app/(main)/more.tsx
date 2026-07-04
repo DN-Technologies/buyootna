@@ -208,7 +208,7 @@ export default function ProfileDashboardScreen() {
 
     list.push({
       id: '1',
-      name: user?.name || 'سالم الشيخ',
+      name: user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف'),
       email: user?.email || 'salinelshekh@gmail.com',
       type: 'individual',
       typeName: 'فرد',
@@ -256,7 +256,7 @@ export default function ProfileDashboardScreen() {
       };
     }
     return {
-      name: user?.name || 'سالم الشيخ',
+      name: user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف'),
       avatarUrl: user?.avatarUrl || 'https://via.placeholder.com/150',
     };
   };

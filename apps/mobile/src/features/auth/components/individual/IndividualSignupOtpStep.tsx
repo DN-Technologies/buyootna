@@ -1,0 +1,171 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect, useRef, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import {
+  verifyOtpSchema,
+  VerifyOtpValues,
+} from '@/features/auth/recoverySchemas';
+
+interface IndividualSignupOtpStepProps {
+  phone: string;
+  onSubmit: (otp: string) => void;
+  onResendOtp: () => void;
+  isLoading?: boolean;
+}
+
+const maskPhoneNumber = (phone: string) => {
+  if (!phone) return '';
+  let clean = phone.trim();
+  let prefix = '';
+  if (clean.startsWith('+')) {
+    prefix = clean.slice(0, 4) + ' ';
+    clean = clean.slice(4);
+  } else if (clean.startsWith('965') && clean.length > 8) {
+    prefix = '+965 ';
+    clean = clean.slice(3);
+  }
+
+  if (clean.length <= 4) {
+    return `${prefix}•••• ${clean}`;
+  }
+  const last4 = clean.slice(-4);
+  return `${prefix}•••• ${last4}`;
+};
+
+export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = ({
+  phone,
+  onSubmit,
+  onResendOtp,
+  isLoading = false,
+}) => {
+  const [timer, setTimer] = useState(45);
+  const otpInputRef = useRef<TextInput>(null);
+
+  const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
+    resolver: zodResolver(verifyOtpSchema),
+    mode: 'onChange',
+  });
+
+  const otpValue = watch('otp');
+  const isOtpDisabled = !otpValue || otpValue.trim().length < 6 || isLoading;
+
+  // Timer Logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout | number;
+    if (timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const handleVerify = (data: VerifyOtpValues) => {
+    onSubmit(data.otp);
+  };
+
+  const handleResend = () => {
+    setTimer(45);
+    onResendOtp();
+  };
+
+  return (
+    <View className="flex-1 justify-between mt-4">
+      <View>
+        <View className="mb-10 items-center">
+          <Text className="mb-2 font-cairo-bold text-2xl text-charcoal">
+            تحقق من الرمز
+          </Text>
+          <Text className="px-4 text-center font-cairo-semibold text-sm text-gray-medium">
+            أرسلنا رمز التحقق المكون من 6 أرقام إلى {maskPhoneNumber(phone)}
+          </Text>
+        </View>
+
+        {/* Custom OTP Input */}
+        <Controller
+          control={control}
+          name="otp"
+          render={({
+            field: { onChange, value = '' },
+            fieldState: { error },
+          }) => (
+            <View className="mb-6 items-center">
+              {/* The 6 visible boxes */}
+              <View
+                className="w-full flex-row justify-between"
+                style={{ direction: 'ltr' }}
+              >
+                {[0, 1, 2, 3, 4, 5].map((index) => (
+                  <View
+                    key={index}
+                    className={`h-14 w-12 items-center justify-center rounded-xl border-[1.5px] bg-white ${
+                      value.length === index
+                        ? 'border-secondary'
+                        : error
+                          ? 'border-red-500'
+                          : 'border-gray-300'
+                    }`}
+                  >
+                    <Text className="font-cairo-bold text-xl text-charcoal">
+                      {value[index] || ''}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {/* The Hidden Actual Input */}
+              <TextInput
+                ref={otpInputRef}
+                value={value}
+                onChangeText={(text) => {
+                  const clean = text.replace(/[^0-9]/g, '');
+                  if (clean.length <= 6) onChange(clean);
+                }}
+                keyboardType="number-pad"
+                maxLength={6}
+                className="absolute h-full w-full opacity-0"
+                autoFocus
+              />
+
+              {error && (
+                <Text className="mt-2 font-cairo-semibold text-xs text-red-500">
+                  {error.message}
+                </Text>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Resend Timer */}
+        <View className="mb-8 items-center">
+          {timer > 0 ? (
+            <Text className="font-cairo-semibold text-sm text-[#A6A6A6]">
+              إعادة إرسال الرمز خلال 00:{timer.toString().padStart(2, '0')}
+            </Text>
+          ) : (
+            <TouchableOpacity activeOpacity={0.7} onPress={handleResend}>
+              <Text className="font-cairo-bold text-sm text-[#15304D] underline">
+                إعادة إرسال الرمز
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      <View className="w-full pb-4">
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={handleSubmit(handleVerify)}
+          disabled={isOtpDisabled}
+          className={`h-[48px] w-full items-center justify-center rounded-3xl ${
+            isOtpDisabled ? 'bg-[#A6A6A6]' : 'bg-[#15304D]'
+          }`}
+        >
+          <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
+            التحقق من الرمز
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};

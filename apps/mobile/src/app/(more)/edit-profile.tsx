@@ -13,32 +13,40 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AvatarPicker from '@/core/components/more/AvatarPicker';
+import { useAuthStore } from '@/store/useAuthStore';
 
-// Initial mock data (This will come from your global store/API in Card 4)
-const INITIAL_DATA = {
-  name: 'سالم الشيخ',
-  email: 'salemelshekh@gmail.com',
-  phone: '58094586',
-  whatsapp: '60468839',
-  avatarUrl: 'https://via.placeholder.com/150',
-};
-
-type FormData = typeof INITIAL_DATA;
+interface ProfileFormData {
+  name: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  avatarUrl: string;
+}
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const { user } = useAuthStore();
+
+  const derivedName =
+    user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف');
 
   // Initialize React Hook Form
   const {
     control,
     handleSubmit,
     formState: { isDirty, isValid, errors },
-  } = useForm<FormData>({
-    defaultValues: INITIAL_DATA,
+  } = useForm<ProfileFormData>({
+    defaultValues: {
+      name: derivedName,
+      email: user?.email || '',
+      phone: user?.phone || '',
+      whatsapp: user?.phone || '',
+      avatarUrl: user?.avatarUrl || 'https://via.placeholder.com/150',
+    },
     mode: 'onChange', // Validates on every keystroke to update button state
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: ProfileFormData) => {
     // We will wire this up to the API in Card 4
     console.log('Valid and Dirty Form Submitted:', data);
   };

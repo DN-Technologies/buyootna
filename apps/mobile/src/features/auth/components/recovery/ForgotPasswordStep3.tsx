@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import FormInput from '@/components/FormInput';
 import {
@@ -54,7 +53,7 @@ export const ForgotPasswordStep3: React.FC<ForgotPasswordStep3Props> = ({
           isStep3Disabled ? 'bg-[#9CA3AF]' : 'bg-secondary'
         }`}
       >
-        <Text className="font-cairo-bold text-lg text-white">
+        <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
           تحديث كلمة المرور
         </Text>
       </TouchableOpacity>

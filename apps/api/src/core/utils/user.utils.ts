@@ -9,10 +9,10 @@ export function isEmail(val: string): boolean {
 }
 
 /**
- * Checks if a string is a valid phone number (accepting Kuwait or Egypt).
+ * Checks if a string is a valid Kuwait mobile phone number (optional country code +965 / 965 and 8 digits starting with 5, 6, or 9).
  */
 export function isPhone(val: string): boolean {
-  return /^[569]\d{7}$|^01[0125][0-9]{8}$/.test(val);
+  return /^(?:\+?965)?[569]\d{7}$/.test(val);
 }
 
 /**

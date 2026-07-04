@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, TouchableOpacity,View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SelectionCard from '@/components/SelectionCard';
@@ -14,9 +14,15 @@ export default function AccountTypeSelectionScreen() {
     if (selectedType === 'individual') {
       router.push('/(auth)/individual-auth');
     } else if (selectedType === 'office') {
-      router.push({ pathname: '/(auth)/business-auth', params: { type: 'office' } } as any);
+      router.push({
+        pathname: '/(auth)/business-auth',
+        params: { type: 'office' },
+      } as any);
     } else if (selectedType === 'company') {
-      router.push({ pathname: '/(auth)/business-auth', params: { type: 'company' } } as any);
+      router.push({
+        pathname: '/(auth)/business-auth',
+        params: { type: 'company' },
+      } as any);
     }
   };
 
@@ -68,12 +74,12 @@ export default function AccountTypeSelectionScreen() {
           activeOpacity={0.8}
           disabled={!selectedType}
           onPress={handleStartRegistration}
-          className={`w-full items-center justify-center rounded-3xl py-4 ${
-            selectedType ? 'bg-[#0B2239]' : 'bg-[#A6A6A6]'
+          className={`h-[48px] w-full items-center justify-center rounded-3xl ${
+            selectedType ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'
           }`}
         >
           <Text
-            className={`text-[15px] font-cairo-medium leading-[24px] ${
+            className={`font-cairo-semibold text-[14px] leading-[24px] ${
               selectedType ? 'text-white' : 'text-gray-500'
             }`}
           >
