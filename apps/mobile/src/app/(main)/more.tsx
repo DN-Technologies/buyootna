@@ -17,16 +17,35 @@ import {
   StarIcon,
 } from '@/assets/icons/more';
 import apiClient from '@/core/api/api';
+import AuthGuardSheet from '@/core/components/AuthGuardSheet';
 import MenuItem from '@/core/components/more/MenuItem';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet, {
   Profile,
 } from '@/features/auth/components/ProfileBottomSheet';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useAuthStore } from '@/store/useAuthStore';
+
+const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="info" color={color} size={size} />
+);
+const HelpIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="help-circle" color={color} size={size} />
+);
+const PhoneIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="phone" color={color} size={size} />
+);
+const ShieldIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="shield" color={color} size={size} />
+);
+const FileIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="file-text" color={color} size={size} />
+);
 
 export default function ProfileDashboardScreen() {
   const router = useRouter();
-  const { user, logout, refreshProfile } = useAuthStore();
+  const { user, token, logout, refreshProfile } = useAuthStore();
+  const { guardAction, authSheetRef } = useAuthGuard();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -34,9 +53,149 @@ export default function ProfileDashboardScreen() {
   // Sync user profile state from NestJS backend when screen gains focus
   useFocusEffect(
     useCallback(() => {
-      refreshProfile();
-    }, [refreshProfile]),
+      if (token) {
+        refreshProfile();
+      }
+    }, [refreshProfile, token]),
   );
+
+  if (!token) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* --- 1. Profile Greeting Card --- */}
+          <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
+            {/* Top Navy Blue Banner */}
+            <View className="h-20 w-full bg-[#15304D]" />
+
+            <View className="px-5 pb-5 pt-3">
+              {/* Avatar Outline & Greeting */}
+              <View className="-mt-10 mb-4 flex-row items-end justify-between">
+                <View className="h-20 w-20 items-center justify-center overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
+                  <Feather name="user" size={36} color="#94A3B8" />
+                </View>
+              </View>
+
+              <View className="mb-4 items-start">
+                <Text className="font-cairo-bold text-lg text-[#111111]">
+                  مرحبا بك !
+                </Text>
+                <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
+                  أنشئ حسابك للوصول إلى جميع المميزات
+                </Text>
+              </View>
+
+              {/* Create Account Link */}
+              <TouchableOpacity
+                onPress={() => router.push('/(auth)/selection')}
+                className="w-full flex-row items-center justify-center rounded-[24px] bg-[#15304D] py-2.5"
+              >
+                <Text className="font-cairo-bold text-sm leading-[22px] text-white">
+                  إنشاء حساب
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* --- 2. Menu Sections --- */}
+          <View className="gap-6 px-5">
+            {/* Activity Section */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                نشاطي
+              </Text>
+              <View className="rounded-md bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={ChatIcon}
+                  title="المحادثات"
+                  onPress={() => guardAction(() => router.push('/chat'))}
+                />
+                <MenuItem
+                  icon={SavedIcon}
+                  title="المحفوظات"
+                  onPress={() => guardAction(() => {})}
+                />
+              </View>
+            </View>
+
+            {/* Support & Help Section */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الدعم والمساعدة
+              </Text>
+              <View className="rounded-md bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={InfoIcon}
+                  title="عن بيوتنا"
+                  onPress={() => router.push('/(more)/about')}
+                />
+                <MenuItem
+                  icon={HelpIcon}
+                  title="الأسئلة الشائعة"
+                  onPress={() => {}}
+                />
+                <MenuItem
+                  icon={PhoneIcon}
+                  title="تواصل معنا"
+                  onPress={() => router.push('/(more)/contact')}
+                />
+              </View>
+            </View>
+
+            {/* Policies Section */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                السياسات
+              </Text>
+              <View className="rounded-md bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={ShieldIcon}
+                  title="سياسة الخصوصية"
+                  onPress={() => router.push('/(more)/privacy')}
+                />
+                <MenuItem
+                  icon={FileIcon}
+                  title="الشروط والأحكام"
+                  onPress={() => router.push('/(more)/terms')}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* --- 3. Login Button --- */}
+          <View className="mt-8 px-5">
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/individual-auth')}
+              className="flex-row items-center justify-center gap-2 rounded-full border border-[#15304D] bg-white py-4"
+            >
+              <Text className="font-cairo-bold text-[15px] leading-[24px] text-[#15304D]">
+                تسجيل الدخول
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Footer */}
+          <Text className="mt-6 text-center font-cairo-medium text-xs text-[#6B6A6A]">
+            تم انشاء وتطوير التطبيق بواسطة دار النخبة
+          </Text>
+        </ScrollView>
+
+        <AuthGuardSheet ref={authSheetRef} />
+      </SafeAreaView>
+    );
+  }
 
   const getSelectedProfileId = () => {
     if (user?.role === 'COMPANY') return '2';
@@ -267,7 +426,11 @@ export default function ProfileDashboardScreen() {
               الحساب والاشتراك
             </Text>
             <View className="rounded-md bg-[#F9FAFE] px-4">
-              <MenuItem icon={QuotaIcon} title="الباقات" onPress={() => router.push('/packages')} />
+              <MenuItem
+                icon={QuotaIcon}
+                title="الباقات"
+                onPress={() => router.push('/packages')}
+              />
               <MenuItem
                 icon={MoneyIcon}
                 title="رصيد الحساب"

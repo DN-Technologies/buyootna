@@ -70,7 +70,8 @@ export default function AvatarPicker({
       const match = /\.(\w+)$/.exec(filename);
       const ext = match ? match[1].toLowerCase() : 'jpg';
       const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      const normalizedUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+      const normalizedUri =
+        Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
 
       formData.append('file', {
         uri: normalizedUri,
@@ -78,12 +79,16 @@ export default function AvatarPicker({
         type,
       } as unknown as Blob);
 
-      const response = await apiClient.post<{ url: string }>('/media/upload/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
+      const response = await apiClient.post<{ url: string }>(
+        '/media/upload/avatar',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 60000,
         },
-        timeout: 60000,
-      });
+      );
 
       if (onUploadSuccess && response.data.url) {
         onUploadSuccess(response.data.url);
@@ -99,7 +104,6 @@ export default function AvatarPicker({
       setIsUploading(false);
     }
   };
-
 
   return (
     <View className="mb-8 mt-8 items-center">
@@ -125,7 +129,7 @@ export default function AvatarPicker({
           activeOpacity={0.8}
           onPress={pickImage}
           disabled={isUploading}
-          className="absolute -bottom-2 -right-2 h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15304D]"
+          className="absolute -bottom-2 -left-2 h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-[#15304D]"
         >
           <Feather name="camera" size={14} color="#FFFFFF" />
         </TouchableOpacity>

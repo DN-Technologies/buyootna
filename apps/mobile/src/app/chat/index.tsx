@@ -14,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChatListItem from '@/core/components/chat/ChatListItem';
 import EmptyChatState from '@/core/components/chat/EmptyChatState';
+import GuestEmptyState from '@/core/components/GuestEmptyState';
+import { useAuthStore } from '@/store/useAuthStore';
 
 // --- MOCK DATA ---
 const MOCK_CHATS = [
@@ -57,9 +59,30 @@ const MOCK_CHATS = [
 
 export default function ChatsInboxScreen() {
   const router = useRouter();
+  const token = useAuthStore((state) => state.token);
   const [activeTab, setActiveTab] = useState<'ALL' | 'UNREAD'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
+
+  if (!token) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        {/* --- 1. Header --- */}
+        <View className="flex-row items-center justify-between px-2 py-4">
+          <TouchableOpacity onPress={() => router.back()} className="w-10">
+            <Feather name="chevron-right" size={24} color="#111111" />
+          </TouchableOpacity>
+          <Text className="font-cairo-bold text-xl text-[#111111]">محادثاتي</Text>
+          <View className="w-10" />
+        </View>
+        <GuestEmptyState
+          icon="message-square"
+          title="ابدأ محادثاتك الان"
+          description="سجل حسابك للتواصل مع المكاتب العقارية والعملاء بسهولة ومتابعة الرسائل."
+        />
+      </SafeAreaView>
+    );
+  }
 
   // Filter for normal list
   const displayedChats =

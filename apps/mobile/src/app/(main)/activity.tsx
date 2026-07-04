@@ -23,12 +23,12 @@ import apiClient from '@/core/api/api';
 import ActiveAdCard from '@/core/components/activity/ActiveAdCard';
 import ActivityFilterPills from '@/core/components/activity/ActivityFilterPills';
 import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
-import AuthLockView from '@/core/components/activity/AuthLockView';
 import DeleteConfirmationSheet from '@/core/components/activity/DeleteConfirmationSheet';
 import DraftAdCard from '@/core/components/activity/DraftAdCard';
 import DraftPreviewSheet from '@/core/components/activity/DraftPreviewSheet';
 import FreeQuotaBanner from '@/core/components/activity/FreeQuotaBanner';
 import SubscriptionSlotsRow from '@/core/components/activity/SubscriptionSlotsRow';
+import GuestEmptyState from '@/core/components/GuestEmptyState';
 import { useMyActivity } from '@/hooks/useMyActivity';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -134,9 +134,24 @@ export default function ActivityScreen() {
   // Handle redirect to login if unauthenticated
   if (!token) {
     return (
-      <AuthLockView
-        onLoginPress={() => router.push('/(auth)/selection' as any)}
-      />
+      <SafeAreaView
+        className="flex-1 bg-white"
+        edges={['top', 'left', 'right']}
+      >
+        {/* --- 1. Top Header --- */}
+        <View className="flex-row items-center justify-between px-5 py-4">
+          <View className="w-10" />
+          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
+            نشاطي
+          </Text>
+          <View className="w-10" />
+        </View>
+        <GuestEmptyState
+          icon="send"
+          title="ابدأ رحلتك العقارية"
+          description="سجل حسابك لإدارة الإعلانات والتنبيهات وعروض الأسعار الخاصة بك"
+        />
+      </SafeAreaView>
     );
   }
 

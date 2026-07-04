@@ -9,10 +9,12 @@ import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestion
 import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
 import SearchHeader from '@/core/components/search/SearchHeader';
 import { useDebounce } from '@/core/hooks/useDebounce';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const token = useAuthStore((state) => state.token);
   const [searchText, setSearchText] = useState('');
   const [isFocused, setIsFocused] = useState(true); // Default to true so keyboard opens
 
@@ -122,7 +124,7 @@ export default function SearchScreen() {
       {searchText.trim().length === 0 ? (
         // Show History if input is empty
         <SearchActiveOverlay
-          recentSearches={recentSearches}
+          recentSearches={token ? recentSearches : []}
           popularSearches={popularSearches}
           onSelectSearch={handleSelectSearch}
           onRemoveRecent={handleRemoveRecent}

@@ -1,9 +1,10 @@
 import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { router,Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import PlusActionsSheet from '@/core/components/add-listing/PlusActionsSheet';
 import QuotaExhaustedSheet from '@/core/components/add-listing/QuotaExhaustedSheet';
+import AuthGuardSheet from '@/core/components/AuthGuardSheet';
 import CustomTabBar from '@/core/components/CustomTabBar';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -13,11 +14,12 @@ export default function MainLayout() {
   // References to control bottom sheets from this top-level layout
   const plusSheetRef = useRef<BottomSheet>(null);
   const quotaSheetRef = useRef<BottomSheetModal>(null);
+  const authGuardSheetRef = useRef<BottomSheetModal>(null);
 
   // Function to trigger the sheet, which we pass down to the CustomTabBar
   const handleOpenPlusSheet = () => {
     if (!token) {
-      router.push('/(auth)/selection');
+      authGuardSheetRef.current?.present();
     } else {
       plusSheetRef.current?.expand();
     }
@@ -62,6 +64,7 @@ export default function MainLayout() {
         onQuotaExhausted={handleOpenQuotaSheet}
       />
       <QuotaExhaustedSheet ref={quotaSheetRef} />
+      <AuthGuardSheet ref={authGuardSheetRef} />
     </>
   );
 }
