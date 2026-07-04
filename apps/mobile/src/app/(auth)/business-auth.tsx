@@ -147,8 +147,10 @@ export default function BusinessAuthScreen() {
       formData.append('phone', data.phone);
       formData.append('password', data.password);
       formData.append('services', data.services || '');
-      formData.append('hqLocation', data.hqLocation);
-      formData.append('serviceAreas', data.serviceAreas || '');
+      formData.append('hqLocation', data.hqLocation || '');
+      if (type === 'company' && data.serviceAreas) {
+        formData.append('serviceAreas', data.serviceAreas);
+      }
       formData.append('about', data.about || '');
       formData.append('licenseActivity', data.licenseActivity || '');
       formData.append('licenseNumber', data.licenseNumber || '');

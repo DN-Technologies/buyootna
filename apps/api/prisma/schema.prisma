@@ -35,8 +35,8 @@ model CompanyProfile {
   id              String          @id @default(uuid())
   name            String
   services        String?
-  hqLocation      String
-  serviceAreas    String
+  hqLocation      String?
+  serviceAreas    String?
   about           String?
   licenseActivity String?
   licenseExpiry   String?
@@ -47,7 +47,7 @@ model CompanyProfile {
   updatedAt       DateTime        @updatedAt
   isVerified      Boolean         @default(false)
   specialty       String?
-  licenseNumber   String?
+  licenseNumber   String
   status          ApprovalStatus  @default(PENDING)
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviewRequests  ReviewRequest[]
@@ -57,10 +57,10 @@ model OfficeProfile {
   id              String          @id @default(uuid())
   name            String
   services        String?
-  hqLocation      String
+  hqLocation      String?
   about           String?
   licenseActivity String?
-  licenseNumber   String?
+  licenseNumber   String
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

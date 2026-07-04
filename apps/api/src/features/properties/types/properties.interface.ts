@@ -21,7 +21,7 @@ export interface CompanyUserProfile {
     id: string;
     name: string;
     services: string | null;
-    serviceAreas: string;
+    serviceAreas: string | null;
     logoUrl: string | null;
     isVerified: boolean;
   } | null;

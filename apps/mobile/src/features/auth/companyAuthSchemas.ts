@@ -34,31 +34,22 @@ export const companySignupSchema = z
 
     // Step 2: Details
     services: z.string().optional(),
-    hqLocation: z
-      .string({ message: 'المقر الرئيسي مطلوب' })
-      .min(1, 'المقر الرئيسي مطلوب'),
+    hqLocation: z.string().optional(),
     serviceAreas: z.string().optional(),
     about: z.string().optional(),
     logo: z.any().optional(),
 
     // Step 3: Licensing
     licenseActivity: z.string().optional(),
-    licenseNumber: z.string().optional(),
+    licenseNumber: z
+      .string({ message: 'رقم الرخصة مطلوب' })
+      .min(1, 'رقم الرخصة مطلوب'),
     licenseExpiry: z.string().optional(),
     licenseFile: z.any().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'كلمات المرور غير متطابقة',
     path: ['confirmPassword'],
-  })
-  .refine((data) => {
-    if (data.type === 'company') {
-      return !!data.serviceAreas && data.serviceAreas.length > 0;
-    }
-    return true;
-  }, {
-    message: 'مناطق تقديم الخدمة مطلوبة',
-    path: ['serviceAreas'],
   });
 
 export type CompanySignupFormValues = z.infer<typeof companySignupSchema>;

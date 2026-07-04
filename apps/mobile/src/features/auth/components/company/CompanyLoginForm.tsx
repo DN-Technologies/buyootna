@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ActivityIndicator,Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import FormInput from '@/components/FormInput';
 import {
@@ -83,12 +83,12 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
           activeOpacity={0.8}
           onPress={handleSubmit(handleLogin)}
           disabled={isLoading}
-          className={`mb-4 w-full items-center justify-center rounded-3xl py-4 ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
+          className={`mb-4 h-[48px] w-full items-center justify-center rounded-3xl bg-primary ${isLoading ? 'bg-primary/70' : 'bg-primary'}`}
         >
           {isLoading ? (
             <ActivityIndicator color="white" size="small" />
           ) : (
-            <Text className="font-cairo-bold text-lg text-white">
+            <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
               تسجيل الدخول
             </Text>
           )}

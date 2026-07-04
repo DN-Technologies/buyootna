@@ -148,9 +148,9 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handlePrevStep}
-              className="items-center justify-center px-6 py-4"
+              className="h-[48px] items-center justify-center px-6 py-4"
             >
-              <Text className="font-cairo-semibold text-lg text-charcoal">
+              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-charcoal">
                 السابق
               </Text>
             </TouchableOpacity>
@@ -162,12 +162,12 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
               step < 3 ? handleNextStep : handleSubmit(handleFinalSubmit)
             }
             disabled={step === 3 && isLoading}
-            className={`flex-1 items-center justify-center rounded-3xl py-4 ${step === 3 && isLoading ? 'bg-primary/70' : 'bg-primary'}`}
+            className={`h-[48px] flex-1 items-center justify-center rounded-3xl ${step === 3 && isLoading ? 'bg-primary/70' : 'bg-primary'}`}
           >
             {step === 3 && isLoading ? (
               <ActivityIndicator color="white" size="small" />
             ) : (
-              <Text className="font-cairo-bold text-lg text-white">
+              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
                 {step < 3 ? 'التالي' : 'إنشاء حساب'}
               </Text>
             )}
@@ -233,7 +233,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         buttonText="العودة الى الرئيسية"
         onPress={closeSuccessModal}
         iconType="document-search"
-        footerText="مدة المراجعة المتوقعة خلال 24 ساعة"
+        footerText="مدة المراجعة المتوقعة: خلال 24 ساعة"
       />
     </View>
   );

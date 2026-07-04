@@ -42,12 +42,12 @@ export class RegisterCompanyDto {
   services?: string;
 
   @IsString()
-  @IsNotEmpty()
-  hqLocation: string;
+  @IsOptional()
+  hqLocation?: string;
 
   @IsString()
-  @IsNotEmpty()
-  serviceAreas: string;
+  @IsOptional()
+  serviceAreas?: string;
 
   @IsString()
   @IsOptional()
@@ -58,8 +58,8 @@ export class RegisterCompanyDto {
   licenseActivity?: string;
 
   @IsString()
-  @IsOptional()
-  licenseNumber?: string;
+  @IsNotEmpty({ message: 'رقم الرخصة مطلوب' })
+  licenseNumber: string;
 
   @IsString()
   @IsOptional()
@@ -84,8 +84,8 @@ export class RegisterOfficeDto {
   password: string;
 
   @IsString()
-  @IsNotEmpty()
-  hqLocation: string;
+  @IsOptional()
+  hqLocation?: string;
 
   @IsString()
   @IsOptional()
@@ -100,8 +100,8 @@ export class RegisterOfficeDto {
   licenseActivity?: string;
 
   @IsString()
-  @IsOptional()
-  licenseNumber?: string;
+  @IsNotEmpty({ message: 'رقم الرخصة مطلوب' })
+  licenseNumber: string;
 
   @IsString()
   @IsOptional()
