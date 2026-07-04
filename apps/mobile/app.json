@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.youssefdevusf.buyootna",
+      "bundleIdentifier": "com.youssefusfdev.buyootna",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.youssefdevusf.buyootnamobile"
+      "package": "com.youssefusfdev.buyootnamobile"
     },
     "web": {
       "output": "static",
