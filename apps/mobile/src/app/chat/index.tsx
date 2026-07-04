@@ -103,7 +103,7 @@ export default function ChatsInboxScreen() {
 
           <TextInput
             className="flex-1 py-2 text-right font-cairo-medium text-[14px] text-[#111111]"
-            placeholder="ابحث باسم المستخدم أو العقار..."
+            placeholder="ابحث باسم المستخدم، العقار أو المحادثة..."
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}

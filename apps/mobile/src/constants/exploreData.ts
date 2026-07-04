@@ -77,7 +77,7 @@ export const listsData: CategoryItemProps[] = [
     icon: DealsIcon,
     title: 'صفقات',
     onPress: () => console.log('Deals'),
-    iconSize: 24,
+    iconSize: 26,
   },
 ];
 

@@ -1,11 +1,5 @@
 import React from 'react';
-import Svg, {
-  ClipPath,
-  Defs,
-  G,
-  Path,
-  Rect,
-} from 'react-native-svg';
+import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 
 export interface IconProps {
   color?: string;
@@ -69,7 +63,7 @@ export const DealsIcon = ({ color = '#15304D', size = 26 }: IconProps) => (
     </G>
     <Defs>
       <ClipPath id="clip_deals">
-        <Rect width={size} height={size} fill="white" />
+        <Rect width={size + 2} height={size} fill="white" />
       </ClipPath>
     </Defs>
   </Svg>
@@ -88,7 +82,10 @@ export const FinishedIcon = ({ color = '#111111', size = 28 }: IconProps) => (
 );
 
 // 6. inter_design.svg -> Interior Design / تصميم داخلي (28x28)
-export const InterDesignIcon = ({ color = '#111111', size = 28 }: IconProps) => (
+export const InterDesignIcon = ({
+  color = '#111111',
+  size = 28,
+}: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 28 28" fill="none">
     <Path
       d="M10.7538 3.20829H19.2075C19.3094 3.20794 19.4098 3.233 19.4995 3.28121C19.5893 3.32943 19.6656 3.39927 19.7215 3.48442C19.7775 3.56956 19.8113 3.66732 19.8199 3.76883C19.8286 3.87035 19.8118 3.97241 19.771 4.06579L16.4635 11.7856H22.039C22.0857 11.7861 22.1313 11.7999 22.1704 11.8254C22.2095 11.8509 22.2405 11.8871 22.2597 11.9296C22.279 11.9722 22.2857 12.0193 22.279 12.0655C22.2724 12.1117 22.2526 12.1551 22.2222 12.1905L10.8518 24.6866C10.8208 24.733 10.7742 24.7667 10.7204 24.7817C10.6666 24.7966 10.6093 24.7918 10.5588 24.7681C10.5083 24.7444 10.4679 24.7034 10.445 24.6525C10.4222 24.6016 10.4183 24.5441 10.4342 24.4906L11.5623 15.4606H6.34267C6.2413 15.462 6.14117 15.4382 6.05122 15.3915C5.96128 15.3447 5.88432 15.2763 5.82724 15.1926C5.77015 15.1088 5.73471 15.0122 5.72408 14.9113C5.71346 14.8105 5.72797 14.7086 5.76634 14.6148L10.1763 3.58746C10.2231 3.47327 10.3032 3.37587 10.4063 3.308C10.5093 3.24014 10.6305 3.20614 10.7538 3.20829Z"
