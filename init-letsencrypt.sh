@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker)" ]; then
   exit 1
 fi
 
-domains=(api.buyootna.cloud daralnokhba.online)
+domains=(api.buyootna.cloud daralnokhba.online buyootna.cloud,www.buyootna.cloud)
 rsa_key_size=4096
 data_path="./certbot"
 email="" # Set your email here (recommended for renewal notices)
@@ -29,8 +29,9 @@ fi
 
 domains_to_request=()
 for domain in "${domains[@]}"; do
-  if [ -d "$data_path/conf/live/$domain" ]; then
-    read -p "Existing data found for $domain. Continue and replace existing certificate? (y/N) " decision
+  dir_name=$(echo "$domain" | cut -d',' -f1)
+  if [ -d "$data_path/conf/live/$dir_name" ]; then
+    read -p "Existing data found for $dir_name. Continue and replace existing certificate? (y/N) " decision
     if [ "$decision" != "Y" ] && [ "$decision" != "y" ]; then
       echo "Skipping certificate request for $domain (retaining existing certificate)."
       continue
@@ -47,9 +48,10 @@ if [ ${#domains_to_request[@]} -eq 0 ]; then
 fi
 
 for domain in "${domains_to_request[@]}"; do
-  echo "### Creating dummy certificate for $domain ..."
-  path="/etc/letsencrypt/live/$domain"
-  mkdir -p "$data_path/conf/live/$domain"
+  dir_name=$(echo "$domain" | cut -d',' -f1)
+  echo "### Creating dummy certificate for $dir_name ($domain) ..."
+  path="/etc/letsencrypt/live/$dir_name"
+  mkdir -p "$data_path/conf/live/$dir_name"
   docker compose run --rm --entrypoint "\
     openssl req -x509 -nodes -newkey rsa:$rsa_key_size -days 1 \
       -keyout '$path/privkey.pem' \
@@ -63,11 +65,12 @@ docker compose up --force-recreate -d nginx
 echo
 
 for domain in "${domains_to_request[@]}"; do
-  echo "### Deleting dummy certificate for $domain ..."
+  dir_name=$(echo "$domain" | cut -d',' -f1)
+  echo "### Deleting dummy certificate for $dir_name ..."
   docker compose run --rm --entrypoint "\
-    rm -Rf /etc/letsencrypt/live/$domain && \
-    rm -Rf /etc/letsencrypt/archive/$domain && \
-    rm -Rf /etc/letsencrypt/renewal/$domain.conf" certbot
+    rm -Rf /etc/letsencrypt/live/$dir_name && \
+    rm -Rf /etc/letsencrypt/archive/$dir_name && \
+    rm -Rf /etc/letsencrypt/renewal/$dir_name.conf" certbot
   echo
 
   echo "### Requesting Let's Encrypt certificate for $domain ..."
