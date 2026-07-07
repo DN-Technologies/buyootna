@@ -6,8 +6,11 @@ import {
   FlatList,
   RefreshControl,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
+
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 
 import { feedService } from '@/core/api/feed.service';
 import { propertiesService } from '@/core/api/properties.service';
@@ -33,6 +36,8 @@ export default function HomeProperties({
   viewMode = 'card',
 }: HomePropertiesProps) {
   const router = useRouter();
+  const { width: windowWidth } = useWindowDimensions();
+  const { isTablet, cardColumns } = useResponsiveLayout();
   const [data, setData] = useState<PropertyDto[]>([]);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -152,6 +157,9 @@ export default function HomeProperties({
       {/* 1. Card View FlatList */}
       <View style={viewMode === 'card' ? { flex: 1 } : { display: 'none' }}>
         <FlatList
+          key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
+          numColumns={isTablet ? cardColumns : 1}
+          columnWrapperStyle={isTablet ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 } : undefined}
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
@@ -182,6 +190,7 @@ export default function HomeProperties({
               beds={item.beds}
               baths={item.baths}
               location={item.location}
+              cardWidth={isTablet ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns : '100%'}
               timeAgo={
                 item.createdAt ? formatTimeAgo(item.createdAt) : undefined
               }

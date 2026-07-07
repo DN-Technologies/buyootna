@@ -18,20 +18,23 @@ export const propertiesData: CategoryItemProps[] = [
   {
     icon: SaleIcon,
     title: 'بيع',
-    onPress: () => console.log('Sale category'),
     iconSize: 26,
+    searchTab: 'properties',
+    searchFilters: { type: 'SALE' },
   },
   {
     icon: RentIcon,
     title: 'ايجار',
-    onPress: () => console.log('Rent category'),
     iconSize: 26,
+    searchTab: 'properties',
+    searchFilters: { type: 'RENT' },
   },
   {
     icon: SwapIcon,
     title: 'بدل',
-    onPress: () => console.log('Swap category'),
     iconSize: 22,
+    searchTab: 'properties',
+    searchFilters: { type: 'EXCHANGE' },
   },
 ];
 
@@ -39,30 +42,34 @@ export const companyServicesData: CategoryItemProps[] = [
   {
     icon: InterDesignIcon,
     title: 'تصميم داخلي',
-    onPress: () => console.log('Interior design'),
     iconColor: '#111111',
     iconSize: 26,
+    searchTab: 'companies',
+    searchFilters: { service: 'interior_design' },
   },
   {
     icon: FinishedIcon,
     title: 'تشطيب',
-    onPress: () => console.log('Finishing'),
     iconColor: '#111111',
     iconSize: 26,
+    searchTab: 'companies',
+    searchFilters: { service: 'finishing' },
   },
   {
     icon: PoolIcon,
     title: 'حمام سباحة',
-    onPress: () => console.log('Swimming pool'),
     iconColor: '#111111',
     iconSize: 26,
+    searchTab: 'companies',
+    searchFilters: { service: 'swimming_pool' },
   },
   {
     icon: OfficesIcon,
     title: 'مكاتب هندسية',
-    onPress: () => console.log('Engineering offices'),
     iconColor: '#111111',
     iconSize: 24,
+    searchTab: 'companies',
+    searchFilters: { service: 'engineering_offices' },
   },
 ];
 
@@ -70,14 +77,16 @@ export const listsData: CategoryItemProps[] = [
   {
     icon: AuctionsIcon,
     title: 'مزادات',
-    onPress: () => console.log('Auctions'),
     iconSize: 26,
+    searchTab: 'properties',
+    searchFilters: { type: 'AUCTION' },
   },
   {
     icon: DealsIcon,
     title: 'صفقات',
-    onPress: () => console.log('Deals'),
     iconSize: 26,
+    searchTab: 'properties',
+    searchFilters: { type: 'DEAL' },
   },
 ];
 

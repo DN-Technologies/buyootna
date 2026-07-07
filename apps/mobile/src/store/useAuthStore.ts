@@ -2,6 +2,9 @@ import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
 import apiClient, { setAuthToken, setOnUnauthorized } from '@/core/api/api';
+import { socketService } from '@/core/services/socket.service';
+import { useFavoritesStore } from './useFavoritesStore';
+import { useChatStore } from './useChatStore';
 
 export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
 
@@ -44,6 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
       try {
         await SecureStore.setItemAsync('auth_token', token);
         setAuthToken(token); // keep api interceptor in sync
+        socketService.connect(token);
         set({ user, token, isLoading: false });
       } catch (e) {
         console.error('Failed to save secure token:', e);
@@ -55,6 +59,9 @@ export const useAuthStore = create<AuthState>((set, get) => {
       try {
         await SecureStore.deleteItemAsync('auth_token');
         setAuthToken(null); // clear token in api interceptor
+        socketService.disconnect();
+        useFavoritesStore.getState().clear();
+        useChatStore.getState().clear();
         set({ user: null, token: null, isLoading: false });
       } catch (e) {
         console.error('Failed to delete secure token:', e);
@@ -68,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
         if (token) {
           // Sync token to the interceptor BEFORE making the API call
           setAuthToken(token);
+          socketService.connect(token);
           set({ token });
           try {
             const response = await apiClient.get<{ user: User }>('/users/me');

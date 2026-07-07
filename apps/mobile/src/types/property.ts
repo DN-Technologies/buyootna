@@ -26,6 +26,8 @@ export interface PropertyDetailsDto {
   propertyIncome?: number | null;
   additionalExpenses?: string | null;
   rentConditions?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   host: {
     id: string;
     name: string;

@@ -38,6 +38,8 @@ model Property {
   area               Area?            @relation(fields: [areaId], references: [id])
   governorate        Governorate?     @relation(fields: [governorateId], references: [id])
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favorites          Favorite[]
+  conversations      Conversation[]
 
   @@index([type])
   @@index([price])

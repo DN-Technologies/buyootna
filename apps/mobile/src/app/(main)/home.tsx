@@ -13,6 +13,7 @@ import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
 import { feedService } from '@/core/api/feed.service';
 import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
+import ContentContainer from '@/core/components/ContentContainer';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -81,7 +82,8 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      <View className="px-5 pt-4">
+      <ContentContainer className="flex-1">
+        <View className="px-5 pt-4">
         {/* 1. Header Section */}
         <HomeHeader />
 
@@ -140,6 +142,7 @@ export default function HomeScreen() {
         ref={filterSheetRef}
         onApplyFilters={handleAdvancedSearch}
       />
+      </ContentContainer>
     </SafeAreaView>
   );
 }

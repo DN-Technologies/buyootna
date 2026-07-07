@@ -47,6 +47,21 @@ export default function ActivityScreen() {
   const [activeFilterId, setActiveFilterId] = useState<
     'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'
   >('ALL');
+  const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC'>('NEWEST');
+
+  const handleSortPress = () => {
+    Alert.alert(
+      'ترتيب الإعلانات',
+      'اختر طريقة ترتيب الإعلانات:',
+      [
+        { text: 'الأحدث أولاً', onPress: () => setSortBy('NEWEST') },
+        { text: 'السعر: من الأعلى إلى الأقل', onPress: () => setSortBy('PRICE_DESC') },
+        { text: 'السعر: من الأقل إلى الأعلى', onPress: () => setSortBy('PRICE_ASC') },
+        { text: 'إلغاء', style: 'cancel' },
+      ],
+      { cancelable: true }
+    );
+  };
 
   // Bottom sheet reference and current active draft preview property
   const draftSheetRef = useRef<BottomSheetModal>(null);
@@ -179,6 +194,13 @@ export default function ActivityScreen() {
         ? data.filter((item) => item.isPremium)
         : data.filter((item) => item.status === activeFilterId);
 
+  // Apply sorting
+  const sortedAndFilteredData = [...filteredData].sort((a: any, b: any) => {
+    if (sortBy === 'PRICE_ASC') return a.price - b.price;
+    if (sortBy === 'PRICE_DESC') return b.price - a.price;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const handleOpenOptions = (propertyId: string) => {
     console.log('Open options for:', propertyId);
   };
@@ -249,8 +271,10 @@ export default function ActivityScreen() {
 
       {/* --- 2. Search Bar --- */}
       <ActivitySearchBar
-        onFilterPress={() => console.log('Filter Pressed')}
-        onSortPress={() => console.log('Sort Pressed')}
+        onFilterPress={() => {
+          setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'));
+        }}
+        onSortPress={handleSortPress}
       />
 
       {/* --- 3. Top Navigation Tabs --- */}
@@ -274,7 +298,7 @@ export default function ActivityScreen() {
 
       {/* Scrolling list */}
       <FlatList
-        data={activeTab === 'اعلاناتي' ? filteredData : []}
+        data={activeTab === 'اعلاناتي' ? sortedAndFilteredData : []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingHorizontal: 20,

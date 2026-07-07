@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +13,22 @@ import {
 } from '@/constants/exploreData';
 
 export default function ExploreScreen() {
+  const router = useRouter();
+
+  const handleItemPress = (item: any) => {
+    if (item.isSoon) return;
+
+    if (item.searchTab && item.searchFilters) {
+      router.push({
+        pathname: '/search/results',
+        params: {
+          tab: item.searchTab,
+          filters: JSON.stringify(item.searchFilters),
+        },
+      });
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* --- 1. Header --- */}
@@ -44,15 +61,43 @@ export default function ExploreScreen() {
           paddingTop: 10,
         }}
       >
-        <ExploreSection title="عقارات" items={propertiesData} showViewAll />
+        <ExploreSection
+          title="عقارات"
+          items={propertiesData.map((item) => ({
+            ...item,
+            onPress: () => handleItemPress(item),
+          }))}
+          showViewAll
+          onViewAllPress={() => {
+            router.push({
+              pathname: '/search/results',
+              params: { tab: 'properties' },
+            });
+          }}
+        />
 
         <ExploreSection
           title="خدمات الشركات"
-          items={companyServicesData}
+          items={companyServicesData.map((item) => ({
+            ...item,
+            onPress: () => handleItemPress(item),
+          }))}
           showViewAll
+          onViewAllPress={() => {
+            router.push({
+              pathname: '/search/results',
+              params: { tab: 'companies' },
+            });
+          }}
         />
 
-        <ExploreSection title="قوائم" items={listsData} />
+        <ExploreSection
+          title="قوائم"
+          items={listsData.map((item) => ({
+            ...item,
+            onPress: () => handleItemPress(item),
+          }))}
+        />
 
         <ExploreSection title="حاسبات ذكية" items={smartCalculatorsData} />
       </ScrollView>

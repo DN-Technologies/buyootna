@@ -8,7 +8,7 @@ interface ChatPinnedContextProps {
   title: string;
   badgeText: string;
   price: string;
-  area: string;
+  area?: string;
   onDismiss: () => void;
 }
 
@@ -46,7 +46,7 @@ export default function ChatPinnedContext({
             className="mt-0.5 font-cairo-medium text-[11px] text-[#7E8A97]"
             style={{ writingDirection: 'rtl' }}
           >
-            {price} • {area}
+            {price}{area ? ` • ${area}` : ''}
           </Text>
         </View>
       </View>

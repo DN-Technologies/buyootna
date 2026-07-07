@@ -5,6 +5,7 @@ import {
   Platform,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,9 +19,6 @@ import {
   SearchIcon,
 } from '@/assets/icons/tab/index';
 
-const { width } = Dimensions.get('window');
-
-// 1. Extend the props to include our new trigger function
 interface CustomTabBarProps extends BottomTabBarProps {
   onOpenPlusSheet: () => void;
 }
@@ -29,15 +27,21 @@ export default function CustomTabBar({
   state,
   descriptors,
   navigation,
-  onOpenPlusSheet, // 2. Destructure the prop
+  onOpenPlusSheet,
 }: CustomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+
+  // iPad constraint: floating centered tab bar
+  const isTablet = windowWidth >= 768;
+  const barWidth = isTablet ? 500 : windowWidth;
+  const leftOffset = isTablet ? (windowWidth - barWidth) / 2 : 0;
 
   // Base height + safe area for iPhone
   const BAR_HEIGHT = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
 
   // SVG Math
-  const center = width / 2;
+  const center = barWidth / 2;
   const curveWidth = 45;
   const curveDepth = 55;
 
@@ -46,42 +50,41 @@ export default function CustomTabBar({
     L ${center - curveWidth - 22} 0
     C ${center - curveWidth + 10} 0, ${center - curveWidth + 5} ${curveDepth}, ${center} ${curveDepth}
     C ${center + curveWidth - 5} ${curveDepth}, ${center + curveWidth - 10} 0, ${center + curveWidth + 22} 0
-    L ${width} 0
-    L ${width} ${BAR_HEIGHT}
+    L ${barWidth} 0
+    L ${barWidth} ${BAR_HEIGHT}
     L 0 ${BAR_HEIGHT}
     Z
   `;
 
-  // Find the 'add' route to render it separately
   const addRouteIndex = state.routes.findIndex((r: any) => r.name === 'add');
   const addRoute = state.routes[addRouteIndex];
 
-  // 3. Intercept the press completely
   const onAddPress = () => {
-    // Instead of emitting a navigation event, we just open the sheet
     onOpenPlusSheet();
   };
 
   return (
     <View
-      className="absolute bottom-0 w-full"
+      className={`absolute bottom-0 z-50 ${isTablet ? 'rounded-t-[32px] overflow-hidden' : ''}`}
       style={{
+        width: barWidth,
+        left: leftOffset,
         height: BAR_HEIGHT,
         elevation: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.08,
         shadowRadius: 10,
       }}
     >
       {/* 1. Background Curve */}
-      <Svg width={width} height={BAR_HEIGHT} className="absolute top-0">
+      <Svg width={barWidth} height={BAR_HEIGHT} className="absolute top-0">
         <Path d={path} fill="#15304D" />
       </Svg>
 
-      {/* 2. Standard Tab Icons (Overlapping the SVG) */}
+      {/* 2. Standard Tab Icons */}
       <View
-        className="absolute h-full w-full flex-row items-center justify-between px-2"
+        className="absolute h-full w-full flex-row items-center justify-between px-4"
         style={{
           paddingTop: 10,
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 16,
@@ -89,7 +92,6 @@ export default function CustomTabBar({
       >
         {state.routes.map((route: any, index: number) => {
           if (route.name === 'add') {
-            // Leave a blank space exactly where the floating button will go
             return <View key={route.key} style={{ width: 70 }} />;
           }
 
@@ -136,9 +138,9 @@ export default function CustomTabBar({
               onPress={onPress}
               className="flex-1 items-center justify-center space-y-1"
             >
-              <IconComponent size={24} color={iconColor} />
+              <IconComponent size={22} color={iconColor} />
               <Text
-                className={`font-cairo-bold text-[11px] ${isFocused ? 'text-[#FFD084]' : 'text-white'}`}
+                className={`font-cairo-bold text-[10px] ${isFocused ? 'text-[#FFD084]' : 'text-white'}`}
               >
                 {label}
               </Text>
@@ -154,19 +156,19 @@ export default function CustomTabBar({
           onPress={onAddPress}
           className="absolute items-center justify-center rounded-full bg-[#15304D]"
           style={{
-            width: 64,
-            height: 64,
-            left: width / 2 - 32,
-            top: -25,
+            width: 60,
+            height: 60,
+            left: barWidth / 2 - 30,
+            top: -22,
             elevation: 8,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 5,
+            shadowOpacity: 0.25,
+            shadowRadius: 4,
           }}
         >
           <AddIcon
-            size={38}
+            size={34}
             color={state.index === addRouteIndex ? '#FFD084' : '#FFFFFF'}
           />
         </TouchableOpacity>

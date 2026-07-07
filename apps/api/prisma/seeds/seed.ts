@@ -154,6 +154,10 @@ async function main() {
   // 1. Clean existing records in correct order to avoid foreign key conflicts
   console.log('🧹 Cleaning old records...');
   await prisma.propertyDeletionLog.deleteMany();
+  await prisma.favorite.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.conversationParticipant.deleteMany();
+  await prisma.conversation.deleteMany();
   await prisma.property.deleteMany();
   await prisma.reviewRequest.deleteMany();
   await prisma.companyProfile.deleteMany();
@@ -350,6 +354,92 @@ async function main() {
   }
 
   console.log(`✅ Seeded ${propertiesData.length} properties.`);
+
+  // 5. Seed Dedicated App Store Reviewer Account
+  console.log('🛡️ Seeding Dedicated App Store Reviewer Account...');
+  const reviewerUserId = randomUUID();
+  await prisma.user.create({
+    data: {
+      id: reviewerUserId,
+      email: 'reviewer@buyootna.com',
+      phone: '+96512345678',
+      password: hashedPassword,
+      role: Role.INDIVIDUAL,
+    },
+  });
+
+  await prisma.individualProfile.create({
+    data: {
+      id: randomUUID(),
+      userId: reviewerUserId,
+    },
+  });
+
+  // Connect reviewer to 3 random favorited properties
+  const dbProperties = await prisma.property.findMany({
+    where: { status: ListingStatus.ACTIVE },
+    take: 3,
+  });
+
+  for (const prop of dbProperties) {
+    await prisma.favorite.create({
+      data: {
+        userId: reviewerUserId,
+        propertyId: prop.id,
+      },
+    });
+  }
+
+  // Seed chat history for reviewer
+  if (dbProperties.length > 0) {
+    const targetProp = dbProperties[0];
+    const sellerId = targetProp.userId;
+
+    const convId = randomUUID();
+    const reviewerParticipantId = randomUUID();
+    const sellerParticipantId = randomUUID();
+
+    await prisma.conversation.create({
+      data: {
+        id: convId,
+        propertyId: targetProp.id,
+        participants: {
+          createMany: {
+            data: [
+              { id: reviewerParticipantId, userId: reviewerUserId },
+              { id: sellerParticipantId, userId: sellerId },
+            ],
+          },
+        },
+        messages: {
+          createMany: {
+            data: [
+              {
+                id: randomUUID(),
+                senderId: sellerId,
+                type: 'TEXT',
+                content: 'مرحباً، هل أنت مهتم بمعاينة العقار الموضح؟',
+              },
+              {
+                id: randomUUID(),
+                senderId: reviewerUserId,
+                type: 'TEXT',
+                content: 'نعم، أود الحصول على مزيد من التفاصيل وموعد المعاينة.',
+              },
+              {
+                id: randomUUID(),
+                senderId: sellerId,
+                type: 'TEXT',
+                content: 'بالتأكيد، يمكننا التنسيق في عطلة نهاية الأسبوع.',
+              },
+            ],
+          },
+        },
+      },
+    });
+  }
+  console.log('✅ Seeded App Store Reviewer demo account (reviewer@buyootna.com / password123)');
+
   console.log('🎉 Seeding process completed successfully!');
 }
 

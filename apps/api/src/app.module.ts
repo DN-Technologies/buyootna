@@ -14,6 +14,8 @@ import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
 import { MediaModule } from './media/media.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
+import { FavoritesModule } from './features/favorites/favorites.module';
+import { ChatModule } from './features/chat/chat.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { HttpExceptionFilter } from './core/filters/http-exception.filter';
     SearchModule,
     StorageModule,
     MediaModule,
+    FavoritesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

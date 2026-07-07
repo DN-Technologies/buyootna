@@ -18,6 +18,7 @@ import {
 } from '@/assets/icons/more';
 import apiClient from '@/core/api/api';
 import AuthGuardSheet from '@/core/components/AuthGuardSheet';
+import ContentContainer from '@/core/components/ContentContainer';
 import MenuItem from '@/core/components/more/MenuItem';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet, {
@@ -66,6 +67,7 @@ export default function ProfileDashboardScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
         >
+          <ContentContainer>
           {/* --- 1. Profile Greeting Card --- */}
           <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
             {/* Top Navy Blue Banner */}
@@ -119,7 +121,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={SavedIcon}
                   title="المحفوظات"
-                  onPress={() => guardAction(() => {})}
+                  onPress={() => guardAction(() => router.push('/(more)/favorites'))}
                 />
               </View>
             </View>
@@ -141,7 +143,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={HelpIcon}
                   title="الأسئلة الشائعة"
-                  onPress={() => {}}
+                  onPress={() => router.push('/(more)/faq')}
                 />
                 <MenuItem
                   icon={PhoneIcon}
@@ -190,6 +192,7 @@ export default function ProfileDashboardScreen() {
           <Text className="mt-6 text-center font-cairo-medium text-xs text-[#6B6A6A]">
             تم انشاء وتطوير التطبيق بواسطة دار النخبة
           </Text>
+          </ContentContainer>
         </ScrollView>
 
         <AuthGuardSheet ref={authSheetRef} />
@@ -305,6 +308,7 @@ export default function ProfileDashboardScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
+        <ContentContainer>
         {/* --- 1. Profile Header Card --- */}
         <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
           {/* Top Navy Blue Banner */}
@@ -396,23 +400,10 @@ export default function ProfileDashboardScreen() {
                 badgeCount={3}
                 onPress={() => router.push('/chat')}
               />
-              <MenuItem icon={SavedIcon} title="المحفوظات" onPress={() => {}} />
-            </View>
-          </View>
-
-          {/* Reviews Section */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              التقييمات
-            </Text>
-            <View className="rounded-md bg-[#F9FAFE] px-4">
               <MenuItem
-                icon={StarIcon}
-                title="التقييمات والمراجعات"
-                onPress={() => {}}
+                icon={SavedIcon}
+                title="المحفوظات"
+                onPress={() => router.push('/(more)/favorites')}
               />
             </View>
           </View>
@@ -431,12 +422,6 @@ export default function ProfileDashboardScreen() {
                 title="الباقات"
                 onPress={() => router.push('/packages')}
               />
-              <MenuItem
-                icon={MoneyIcon}
-                title="رصيد الحساب"
-                onPress={() => {}}
-              />
-              <MenuItem icon={BillIcon} title="الفواتير" onPress={() => {}} />
             </View>
           </View>
 
@@ -456,6 +441,55 @@ export default function ProfileDashboardScreen() {
               />
             </View>
           </View>
+
+          {/* Support & Help Section */}
+          <View>
+            <Text
+              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              الدعم والمساعدة
+            </Text>
+            <View className="rounded-md bg-[#F9FAFE] px-4">
+              <MenuItem
+                icon={InfoIcon}
+                title="عن بيوتنا"
+                onPress={() => router.push('/(more)/about')}
+              />
+              <MenuItem
+                icon={HelpIcon}
+                title="الأسئلة الشائعة"
+                onPress={() => router.push('/(more)/faq')}
+              />
+              <MenuItem
+                icon={PhoneIcon}
+                title="تواصل معنا"
+                onPress={() => router.push('/(more)/contact')}
+              />
+            </View>
+          </View>
+
+          {/* Policies Section */}
+          <View>
+            <Text
+              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              السياسات
+            </Text>
+            <View className="rounded-md bg-[#F9FAFE] px-4">
+              <MenuItem
+                icon={ShieldIcon}
+                title="سياسة الخصوصية"
+                onPress={() => router.push('/(more)/privacy')}
+              />
+              <MenuItem
+                icon={FileIcon}
+                title="الشروط والأحكام"
+                onPress={() => router.push('/(more)/terms')}
+              />
+            </View>
+          </View>
         </View>
 
         {/* --- 3. Logout Button --- */}
@@ -470,6 +504,7 @@ export default function ProfileDashboardScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+        </ContentContainer>
       </ScrollView>
 
       <ProfileBottomSheet

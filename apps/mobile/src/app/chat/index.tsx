@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -15,47 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatListItem from '@/core/components/chat/ChatListItem';
 import EmptyChatState from '@/core/components/chat/EmptyChatState';
 import GuestEmptyState from '@/core/components/GuestEmptyState';
+import ContentContainer from '@/core/components/ContentContainer';
 import { useAuthStore } from '@/store/useAuthStore';
-
-// --- MOCK DATA ---
-const MOCK_CHATS = [
-  {
-    id: '1',
-    user: {
-      name: 'محمد العتيبي',
-      avatarUrl: 'https://i.pravatar.cc/150?img=11',
-      isOnline: true,
-    },
-    propertyContext: 'شقة السالمية',
-    lastMessage: 'ارغب في التفاوض والاتفاق عن عقار السالمية...',
-    timestamp: '15 دقيقة',
-    unreadCount: 3,
-  },
-  {
-    id: '2',
-    user: {
-      name: 'محمد العتيبي',
-      avatarUrl: 'https://i.pravatar.cc/150?img=12',
-      isOnline: true,
-    },
-    propertyContext: 'عمارة العاصمة',
-    lastMessage: 'ارغب في التفاوض والاتفاق عن عقار السالمية...',
-    timestamp: '15 دقيقة',
-    unreadCount: 3,
-  },
-  {
-    id: '3',
-    user: {
-      name: 'محمد العتيبي',
-      avatarUrl: 'https://i.pravatar.cc/150?img=13',
-      isOnline: true,
-    },
-    propertyContext: 'شقة السالمية',
-    lastMessage: 'ارغب في التفاوض والاتفاق عن عقار السالمية...',
-    timestamp: '15 دقيقة',
-    isRead: true,
-  },
-];
+import { useChatStore } from '@/store/useChatStore';
+import { socketService } from '@/core/services/socket.service';
 
 export default function ChatsInboxScreen() {
   const router = useRouter();
@@ -64,22 +27,42 @@ export default function ChatsInboxScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
 
+  const conversations = useChatStore((state) => state.conversations);
+  const loadConversations = useChatStore((state) => state.loadConversations);
+  const receiveMessage = useChatStore((state) => state.receiveMessage);
+  const isLoading = useChatStore((state) => state.isLoadingConversations);
+
+  useEffect(() => {
+    if (token) {
+      loadConversations(1);
+
+      // Listen for socket events to update unread count / last message dynamically
+      const unsubscribe = socketService.onConversationUpdated((data) => {
+        receiveMessage(data.conversationId, data.lastMessage);
+      });
+
+      return unsubscribe;
+    }
+  }, [token, loadConversations, receiveMessage]);
+
   if (!token) {
     return (
       <SafeAreaView className="flex-1 bg-white">
-        {/* --- 1. Header --- */}
-        <View className="flex-row items-center justify-between px-2 py-4">
-          <TouchableOpacity onPress={() => router.back()} className="w-10">
-            <Feather name="chevron-right" size={24} color="#111111" />
-          </TouchableOpacity>
-          <Text className="font-cairo-bold text-xl text-[#111111]">محادثاتي</Text>
-          <View className="w-10" />
-        </View>
-        <GuestEmptyState
-          icon="message-square"
-          title="ابدأ محادثاتك الان"
-          description="سجل حسابك للتواصل مع المكاتب العقارية والعملاء بسهولة ومتابعة الرسائل."
-        />
+        <ContentContainer className="flex-1">
+          {/* --- 1. Header --- */}
+          <View className="flex-row items-center justify-between px-2 py-4">
+            <TouchableOpacity onPress={() => router.back()} className="w-10">
+              <Feather name="chevron-right" size={24} color="#111111" />
+            </TouchableOpacity>
+            <Text className="font-cairo-bold text-xl text-[#111111]">محادثاتي</Text>
+            <View className="w-10" />
+          </View>
+          <GuestEmptyState
+            icon="message-square"
+            title="ابدأ محادثاتك الان"
+            description="سجل حسابك للتواصل مع المكاتب العقارية والعملاء بسهولة ومتابعة الرسائل."
+          />
+        </ContentContainer>
       </SafeAreaView>
     );
   }
@@ -87,20 +70,21 @@ export default function ChatsInboxScreen() {
   // Filter for normal list
   const displayedChats =
     activeTab === 'ALL'
-      ? MOCK_CHATS
-      : MOCK_CHATS.filter((chat) => (chat.unreadCount ?? 0) > 0);
+      ? conversations
+      : conversations.filter((chat) => (chat.unreadCount ?? 0) > 0);
 
   // Filter for active list
-  const searchResults = MOCK_CHATS.filter(
+  const searchResults = conversations.filter(
     (chat) =>
-      chat.user.name.includes(searchQuery) ||
-      chat.propertyContext?.includes(searchQuery),
+      chat.otherUser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      chat.propertyContext?.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      {/* --- 1. Header --- */}
-      <View className="flex-row items-center justify-between px-2 py-4">
+      <ContentContainer className="flex-1">
+        {/* --- 1. Header --- */}
+        <View className="flex-row items-center justify-between px-2 py-4">
         <TouchableOpacity onPress={() => router.back()} className="w-10">
           <Feather name="chevron-right" size={24} color="#111111" />
         </TouchableOpacity>
@@ -166,15 +150,12 @@ export default function ChatsInboxScreen() {
             >
               <View className="relative">
                 <Image
-                  source={{ uri: item.user.avatarUrl }}
+                  source={{ uri: item.otherUser.avatarUrl }}
                   className="h-10 w-10 rounded-full"
                 />
-                {item.user.isOnline && (
-                  <View className="absolute bottom-0 left-0 h-3 w-3 rounded-full border-2 border-white bg-[#22C55E]" />
-                )}
               </View>
               <Text className="font-cairo-bold text-[15px] text-[#111111]">
-                {item.user.name}
+                {item.otherUser.name}
               </Text>
             </TouchableOpacity>
           )}
@@ -211,15 +192,45 @@ export default function ChatsInboxScreen() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
             ListEmptyComponent={EmptyChatState}
-            renderItem={({ item }) => (
-              <ChatListItem
-                {...item}
-                onPress={() => router.push(`/chat/${item.id}`)}
-              />
-            )}
+            refreshing={isLoading}
+            onRefresh={() => loadConversations(1, true)}
+            renderItem={({ item }) => {
+              const displayLastMessage = item.lastMessage
+                ? item.lastMessage.type === 'IMAGE'
+                  ? '📷 صورة'
+                  : item.lastMessage.type === 'PROPERTY'
+                    ? '🏠 مشاركة عقار'
+                    : item.lastMessage.content || ''
+                : 'بدء المحادثة';
+
+              const timestampText = item.lastMessage
+                ? new Date(item.lastMessage.createdAt).toLocaleTimeString('ar-KW', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  })
+                : '';
+
+              return (
+                <ChatListItem
+                  id={item.id}
+                  user={{
+                    name: item.otherUser.name,
+                    avatarUrl: item.otherUser.avatarUrl,
+                    isOnline: false,
+                  }}
+                  propertyContext={item.propertyContext ? `${item.propertyContext.category}` : undefined}
+                  lastMessage={displayLastMessage}
+                  timestamp={timestampText}
+                  unreadCount={item.unreadCount}
+                  onPress={() => router.push(`/chat/${item.id}`)}
+                />
+              );
+            }}
           />
         </>
       )}
+      </ContentContainer>
     </SafeAreaView>
   );
 }

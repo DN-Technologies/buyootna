@@ -9,7 +9,6 @@ interface ChatInputBarProps {
   showAttachmentMenu: boolean;
   setShowAttachmentMenu: (show: boolean) => void;
   onAttachImage: () => void;
-  onAttachFile: () => void;
 }
 
 export default function ChatInputBar({
@@ -19,7 +18,6 @@ export default function ChatInputBar({
   showAttachmentMenu,
   setShowAttachmentMenu,
   onAttachImage,
-  onAttachFile,
 }: ChatInputBarProps) {
   return (
     <View className="relative z-50 flex-row items-end border-t border-gray-100 bg-white px-5 py-3">
@@ -28,7 +26,7 @@ export default function ChatInputBar({
         {showAttachmentMenu && (
           <View className="absolute bottom-full left-[2px] mb-2 w-48 rounded-xl bg-white shadow-md shadow-gray-200">
             <TouchableOpacity
-              className="border-b border-gray-50 px-4 py-2"
+              className="px-4 py-2"
               onPress={() => {
                 onAttachImage();
                 setShowAttachmentMenu(false);
@@ -39,20 +37,6 @@ export default function ChatInputBar({
                 style={{ writingDirection: 'rtl' }}
               >
                 ارفاق صورة
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="px-4 py-2"
-              onPress={() => {
-                onAttachFile();
-                setShowAttachmentMenu(false);
-              }}
-            >
-              <Text
-                className="font-cairo text-sm leading-[22px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                ارفاق ملف
               </Text>
             </TouchableOpacity>
 

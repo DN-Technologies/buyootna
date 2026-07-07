@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChatHeader from '@/core/components/chat/ChatHeader';
@@ -11,91 +11,107 @@ import ImageDownloadBottomSheet from '@/core/components/chat/ImageDownloadBottom
 import ImageMessageBubble from '@/core/components/chat/ImageMessageBubble';
 import MessageBubble from '@/core/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/core/components/chat/PropertyMessageBubble';
+import ContentContainer from '@/core/components/ContentContainer';
 
-// --- UPGRADED MOCK HISTORY ---
-// Using a generic type discriminator (`type`) to know what to render
-const MOCK_MESSAGES = [
-  {
-    id: '1',
-    type: 'TEXT',
-    text: 'حسنا في انتظارك.',
-    isMine: true,
-    timestamp: '14:22',
-    isRead: true,
-  },
-  {
-    id: '2',
-    type: 'IMAGE',
-    imageUrl: 'https://via.placeholder.com/400x300',
-    isMine: true,
-    timestamp: '14:22',
-    isRead: true,
-  },
-  {
-    id: '3',
-    type: 'TEXT',
-    text: 'سأقوم بالاتصال بك من خلال الرقم الموضح',
-    isMine: false,
-    timestamp: '14:22',
-  },
-  {
-    id: '4',
-    type: 'TEXT',
-    text: 'مرحبا استاذ محمد، نعم قابل للتفاوض.',
-    isMine: true,
-    timestamp: '14:22',
-    isRead: true,
-  },
-  {
-    id: '5',
-    type: 'TEXT',
-    text: 'هل عقار السالمية متاح للتفاوض في سعر الايجار؟',
-    isMine: false,
-    timestamp: '14:22',
-  },
-  { id: '6', type: 'DATE', text: 'أمس' },
-  {
-    id: '7',
-    type: 'PROPERTY',
-    property: {
-      id: 'prop-123',
-      imageUrl:
-        'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
-      price: 150000,
-      title: 'شقة بالسالمية',
-      type: 'شقة',
-      area: 200,
-      bedrooms: 3,
-      bathrooms: 2,
-      location: 'السالمية، شارع 2، بناية 10، شقة 4',
-    },
-    isMine: false,
-    timestamp: '14:22',
-  },
-];
+import { useChatStore } from '@/store/useChatStore';
+import { socketService } from '@/core/services/socket.service';
 
 export default function ChatDetailsScreen() {
   const { id } = useLocalSearchParams();
+  const conversationId = typeof id === 'string' ? id : id[0];
+
   const [inputText, setInputText] = useState('');
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
+  const [showPinnedContext, setShowPinnedContext] = useState(true);
+
+  // Zustand Chat Store selectors
+  const activeMessages = useChatStore((state) => state.activeMessages);
+  const loadMessages = useChatStore((state) => state.loadMessages);
+  const sendMessage = useChatStore((state) => state.sendMessage);
+  const receiveMessage = useChatStore((state) => state.receiveMessage);
+  const setActiveConversation = useChatStore((state) => state.setActiveConversation);
+  const hasNextPage = useChatStore((state) => state.hasNextMessagesPage);
+  const nextCursor = useChatStore((state) => state.nextMessagesCursor);
+  const isLoading = useChatStore((state) => state.isLoadingMessages);
+
+  // Find conversation summary details for header display
+  const conversation = useChatStore((state) =>
+    state.conversations.find((c) => c.id === conversationId),
+  );
+
+  const otherUserName = conversation?.otherUser.name || 'مستخدم بيوتنا';
+  const otherUserAvatar = conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
+  const propertyContext = conversation?.propertyContext;
+
+  useEffect(() => {
+    if (conversationId) {
+      // Set active conversation and mark as read
+      setActiveConversation(conversationId);
+      loadMessages(conversationId, undefined, true);
+      
+      // Join socket room
+      socketService.joinConversation(conversationId);
+
+      // Listen for socket events
+      const unsubscribe = socketService.onNewMessage((msg) => {
+        receiveMessage(conversationId, msg);
+      });
+
+      return () => {
+        setActiveConversation(null);
+        socketService.leaveConversation(conversationId);
+        unsubscribe();
+      };
+    }
+  }, [conversationId, setActiveConversation, loadMessages, receiveMessage]);
+
+  const handleSendMessage = () => {
+    if (!inputText.trim()) return;
+    sendMessage(conversationId, {
+      content: inputText.trim(),
+      type: 'TEXT',
+    });
+    setInputText('');
+  };
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isLoading && nextCursor) {
+      loadMessages(conversationId, nextCursor);
+    }
+  };
+
+  const handleReportUser = () => {
+    Alert.alert('إبلاغ عن مستخدم', 'هل تريد تقديم بلاغ ضد هذا المستخدم لمخالفته شروط الاستخدام؟', [
+      { text: 'إلغاء', style: 'cancel' },
+      {
+        text: 'إبلاغ',
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert('تم الإرسال', 'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.');
+        },
+      },
+    ]);
+  };
 
   // Main Message Renderer
   const renderMessage = ({ item }: { item: any }) => {
     switch (item.type) {
       case 'DATE':
-        return <DateSeparator dateText={item.text} />;
+        return <DateSeparator dateText={item.content} />;
       case 'PROPERTY':
         return (
           <PropertyMessageBubble
             property={item.property}
             isMine={item.isMine}
             timestamp={item.timestamp}
-            isRead={item.isRead}
-            onPressProperty={() =>
-              console.log('Navigate to property:', item.property.id)
-            }
+            isRead={!item.sending}
+            onPressProperty={() => {
+              if (item.propertyId) {
+                // Navigate to property details
+              }
+            }}
           />
         );
       case 'IMAGE':
@@ -104,7 +120,7 @@ export default function ChatDetailsScreen() {
             imageUrl={item.imageUrl}
             isMine={item.isMine}
             timestamp={item.timestamp}
-            isRead={item.isRead}
+            isRead={!item.sending}
             onPressImage={() => setShowImageOptions(true)}
           />
         );
@@ -112,14 +128,17 @@ export default function ChatDetailsScreen() {
       default:
         return (
           <MessageBubble
-            text={item.text}
+            text={item.content}
             isMine={item.isMine}
             timestamp={item.timestamp}
-            isRead={item.isRead}
+            isRead={!item.sending}
           />
         );
     }
   };
+
+  // Sort messages so newest are at bottom for inverted FlatList
+  const sortedMessages = [...activeMessages].reverse();
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -134,49 +153,53 @@ export default function ChatDetailsScreen() {
         />
       )}
 
+      <ContentContainer className="flex-1">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
         <ChatHeader
-          userName="محمد العتيبي"
-          isOnline={true}
-          avatarUrl="https://i.pravatar.cc/150?img=11"
-          onReportUser={() => console.log('Report user')}
+          userName={otherUserName}
+          isOnline={false}
+          avatarUrl={otherUserAvatar}
+          onReportUser={handleReportUser}
           showMoreMenu={showMoreMenu}
           setShowMoreMenu={setShowMoreMenu}
         />
 
-        <ChatPinnedContext
-          title="شقة بالسالمية"
-          badgeText="للبيع"
-          price="450,000 د.ك"
-          area="200 م2"
-          onDismiss={() => console.log('Dismiss pinned context')}
-        />
+        {propertyContext && showPinnedContext && (
+          <ChatPinnedContext
+            title={`${propertyContext.category}`}
+            badgeText={propertyContext.type === 'SALE' ? 'للبيع' : propertyContext.type === 'RENT' ? 'للإيجار' : 'للبدل'}
+            price={`${propertyContext.price.toLocaleString()} د.ك`}
+            onDismiss={() => setShowPinnedContext(false)}
+          />
+        )}
 
         <FlatList
           inverted
-          data={MOCK_MESSAGES}
+          data={sortedMessages}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20 }}
           showsVerticalScrollIndicator={false}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
           renderItem={renderMessage}
         />
 
         <ChatInputBar
           inputText={inputText}
           onInputChange={setInputText}
-          onSend={() => console.log('Send message')}
+          onSend={handleSendMessage}
           showAttachmentMenu={showAttachmentMenu}
           setShowAttachmentMenu={setShowAttachmentMenu}
           onAttachImage={() => {
             console.log('Attach image');
             setShowImageOptions(true);
           }}
-          onAttachFile={() => console.log('Attach file')}
         />
       </KeyboardAvoidingView>
+      </ContentContainer>
 
       <ImageDownloadBottomSheet
         visible={showImageOptions}
@@ -186,4 +209,3 @@ export default function ChatDetailsScreen() {
     </SafeAreaView>
   );
 }
-

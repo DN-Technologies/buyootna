@@ -21,6 +21,9 @@ model User {
   otpCode           OtpCode?
   properties        Property[]
   deletionLogs      PropertyDeletionLog[]
+  favorites         Favorite[]
+  conversations     ConversationParticipant[]
+  messages          Message[]
 }
 
 model IndividualProfile {

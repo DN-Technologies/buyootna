@@ -21,12 +21,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '@/store/useAuthStore';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 
 // Prevent auto-hide, we will hide it manually once our custom animated splash mounts
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const loadPersistedAuth = useAuthStore((state) => state.loadPersistedAuth);
+  const token = useAuthStore((state) => state.token);
+  const loadFavorites = useFavoritesStore((state) => state.loadFavorites);
 
   const [loaded, error] = useFonts({
     Cairo_400Regular,
@@ -56,6 +59,12 @@ export default function RootLayout() {
     // Safely hydrate our authentication tokens from hardware storage
     loadPersistedAuth();
   }, [loadPersistedAuth]);
+
+  useEffect(() => {
+    if (token) {
+      loadFavorites();
+    }
+  }, [token, loadFavorites]);
 
   if (!loaded && !error) {
     return null;

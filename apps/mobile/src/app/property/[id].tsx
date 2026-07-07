@@ -2,12 +2,24 @@ import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Linking,
+  ScrollView,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { propertiesService } from '@/core/api/properties.service';
+import { chatService } from '@/core/api/chat.service';
+import AuthGuardSheet from '@/core/components/AuthGuardSheet';
+import ContentContainer from '@/core/components/ContentContainer';
 import ListerProfileSnippet from '@/core/components/ListerProfileSnippet';
 import MapPreview from '@/core/components/MapPreview';
+import MapViewModal from '@/core/components/MapViewModal';
 import PropertyActionBar from '@/core/components/PropertyActionBar';
 import PropertyDetailsBody from '@/core/components/PropertyDetailsBody';
 import PropertyMediaHeader from '@/core/components/PropertyMediaHeader';
@@ -18,6 +30,8 @@ import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/core/utils/helpers/property';
+import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { PropertyDetailsDto } from '@/types/property';
 
 export default function PropertyDetailsScreen() {
@@ -25,11 +39,88 @@ export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { guardAction, authSheetRef } = useAuthGuard();
 
   // --- Real State Management ---
   const [property, setProperty] = useState<PropertyDetailsDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showMapModal, setShowMapModal] = useState(false);
+
+  // Zustand Favorites Store
+  const isFavorite = useFavoritesStore((state) =>
+    state.isFavorited(id as string),
+  );
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const handleWhatsapp = () => {
+    if (!property?.phoneNumber) {
+      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+      return;
+    }
+    let cleaned = property.phoneNumber.replace(/[^0-9+]/g, '');
+    if (
+      cleaned.length === 8 &&
+      !cleaned.startsWith('+') &&
+      !cleaned.startsWith('965')
+    ) {
+      cleaned = `965${cleaned}`;
+    } else if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
+    const url = `whatsapp://send?phone=${cleaned}`;
+    Linking.openURL(url).catch(() => {
+      const webUrl = `https://wa.me/${cleaned}`;
+      Linking.openURL(webUrl).catch(() => {
+        Alert.alert('خطأ', 'تعذر فتح تطبيق الواتساب');
+      });
+    });
+  };
+
+  const handleCall = () => {
+    if (!property?.phoneNumber) {
+      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+      return;
+    }
+    let cleaned = property.phoneNumber.replace(/[^0-9+]/g, '');
+    const url = `tel:${cleaned}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+    });
+  };
+
+  const handleChat = () => {
+    if (!property) return;
+    guardAction(async () => {
+      try {
+        const response = await chatService.createConversation(property.host.id, property.id);
+        router.push(`/chat/${response.id}`);
+      } catch (error) {
+        console.error('Failed to start chat conversation:', error);
+        Alert.alert('خطأ', 'تعذر بدء المحادثة مع البائع');
+      }
+    });
+  };
+
+  const handleShare = async () => {
+    if (!property) return;
+    const displayTitle = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type)}`;
+    try {
+      await Share.share({
+        title: displayTitle,
+        message: `شاهد هذا العقار على بيوتنا:\n${displayTitle}\nالسعر: ${property.price} د.ك\nالموقع: ${property.location}\nالرابط: https://buyootna.cloud/property/${property.id}`,
+      });
+    } catch (error) {
+      console.error('Error sharing property:', error);
+    }
+  };
+
+  const handleFavoriteToggle = () => {
+    if (!property) return;
+    guardAction(async () => {
+      await toggleFavorite(property.id);
+    });
+  };
 
   useEffect(() => {
     const fetchPropertyData = async () => {
@@ -107,6 +198,7 @@ export default function PropertyDetailsScreen() {
         showsVerticalScrollIndicator={false}
         bounces={false} // Prevents pulling the image down from the top on iOS
       >
+        <ContentContainer>
         {/* --- Media Header (Scrolls with page) --- */}
         <PropertyMediaHeader
           images={
@@ -116,9 +208,9 @@ export default function PropertyDetailsScreen() {
           }
           insets={insets}
           onBack={() => router.back()}
-          isFavorite={true}
-          onFavorite={() => console.log('Toggle Favorite')}
-          onShare={() => console.log('Share Clicked')}
+          isFavorite={isFavorite}
+          onFavorite={handleFavoriteToggle}
+          onShare={handleShare}
         />
 
         {/* --- Card 3: Property Specs --- */}
@@ -181,15 +273,21 @@ export default function PropertyDetailsScreen() {
             onPress={() => console.log('Navigate to Host Profile')}
           />
         </View>
+        </ContentContainer>
       </ScrollView>
 
       {/* --- 3. Fixed Bottom Action Bar --- */}
-      <PropertyActionBar
-        insets={insets}
-        onWhatsapp={() => console.log('WhatsApp Clicked')}
-        onCall={() => console.log('Call Clicked')}
-        onChat={() => console.log('Chat Clicked')}
-      />
+      <ContentContainer className="absolute bottom-0 w-full bg-white z-50">
+        <PropertyActionBar
+          insets={insets}
+          onWhatsapp={handleWhatsapp}
+          onCall={handleCall}
+          onChat={handleChat}
+        />
+      </ContentContainer>
+
+      {/* --- Auth Guard Bottom Sheet --- */}
+      <AuthGuardSheet ref={authSheetRef} />
     </View>
   );
 }

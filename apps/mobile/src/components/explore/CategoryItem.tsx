@@ -9,6 +9,8 @@ export interface CategoryItemProps {
   onPress?: () => void;
   iconColor?: string;
   iconSize?: number;
+  searchTab?: 'properties' | 'companies';
+  searchFilters?: Record<string, any>;
 }
 
 export default function CategoryItem({
