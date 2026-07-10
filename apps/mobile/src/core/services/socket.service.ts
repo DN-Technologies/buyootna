@@ -1,8 +1,8 @@
-import { Platform } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
-const DEV_API_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
-const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
+import { validateApiUrl } from '@/core/api/api';
+
+const API_URL = validateApiUrl();
 
 class SocketService {
   private socket: Socket | null = null;
@@ -55,7 +55,15 @@ class SocketService {
     }
   }
 
-  sendMessage(conversationId: string, payload: { content?: string; type?: string; imageUrl?: string; propertyId?: string }) {
+  sendMessage(
+    conversationId: string,
+    payload: {
+      content?: string;
+      type?: string;
+      imageUrl?: string;
+      propertyId?: string;
+    },
+  ) {
     if (this.socket) {
       this.socket.emit('send_message', { conversationId, ...payload });
     }

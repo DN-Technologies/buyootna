@@ -1,11 +1,20 @@
 import { create } from 'axios';
 import { Platform } from 'react-native';
 
-// Android emulator uses 10.0.2.2 to reach host machine, iOS simulator uses localhost
-const DEV_API_URL =
-  Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+export function validateApiUrl(): string {
+  const url = process.env.EXPO_PUBLIC_API_URL;
+  if (!url) {
+    if (__DEV__) {
+      return Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+    }
+    throw new Error(
+      'EXPO_PUBLIC_API_URL is not defined in the environment variables. Please set it in your .env file.',
+    );
+  }
+  return url;
+}
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || DEV_API_URL;
+const API_URL = validateApiUrl();
 
 const apiClient = create({
   baseURL: API_URL,

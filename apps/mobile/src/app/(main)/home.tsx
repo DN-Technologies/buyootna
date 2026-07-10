@@ -12,8 +12,8 @@ import HomeAll from '@/components/home/sections/HomeAll';
 import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
 import { feedService } from '@/core/api/feed.service';
-import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import ContentContainer from '@/core/components/ContentContainer';
+import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -84,64 +84,70 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ContentContainer className="flex-1">
         <View className="px-5 pt-4">
-        {/* 1. Header Section */}
-        <HomeHeader />
+          {/* 1. Header Section */}
+          <HomeHeader />
 
-        {/* 2. Search Bar */}
-        <HomeSearchBar onFilterPress={() => filterSheetRef.current?.present()} />
+          {/* 2. Search Bar */}
+          <HomeSearchBar
+            onFilterPress={() => filterSheetRef.current?.present()}
+          />
 
-        {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
-        <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
+          <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* 4. Secondary Tabs (Filter Pills) */}
-        <HomeFilterPills
-          activeTab={activeTab}
-          activePropFilter={activePropFilter}
-          onPropFilterChange={setActivePropFilter}
-          activeCompFilter={activeCompFilter}
-          onCompFilterChange={setActiveCompFilter}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-      </View>
+          {/* 4. Secondary Tabs (Filter Pills) */}
+          <HomeFilterPills
+            activeTab={activeTab}
+            activePropFilter={activePropFilter}
+            onPropFilterChange={setActivePropFilter}
+            activeCompFilter={activeCompFilter}
+            onCompFilterChange={setActiveCompFilter}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        </View>
 
-      {/* 5. Scrolling Content Area (The Feed) */}
-      {activeTab === 'properties' ? (
-        <HomeProperties
-          activeFilter={activePropFilter}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          viewMode={viewMode}
-        />
-      ) : activeTab === 'companies' ? (
-        <HomeCompanies
-          activeFilter={activeCompFilter}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
-      ) : (
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{
-            paddingBottom: 130,
-          }} // Extra padding for the custom bottom bar
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={['#15304D']}
-              tintColor="#15304D"
+        {/* 5. Scrolling Content Area (The Feed) */}
+        {activeTab === 'properties' ? (
+          <HomeProperties
+            activeFilter={activePropFilter}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            viewMode={viewMode}
+          />
+        ) : activeTab === 'companies' ? (
+          <HomeCompanies
+            activeFilter={activeCompFilter}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        ) : (
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{
+              paddingBottom: 130,
+            }} // Extra padding for the custom bottom bar
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#15304D']}
+                tintColor="#15304D"
+              />
+            }
+          >
+            <HomeAll
+              feedData={feedData}
+              isLoading={isLoading}
+              viewMode={viewMode}
             />
-          }
-        >
-          <HomeAll feedData={feedData} isLoading={isLoading} viewMode={viewMode} />
-        </ScrollView>
-      )}
-      <GlobalFilterSheet
-        ref={filterSheetRef}
-        onApplyFilters={handleAdvancedSearch}
-      />
+          </ScrollView>
+        )}
+        <GlobalFilterSheet
+          ref={filterSheetRef}
+          onApplyFilters={handleAdvancedSearch}
+        />
       </ContentContainer>
     </SafeAreaView>
   );
