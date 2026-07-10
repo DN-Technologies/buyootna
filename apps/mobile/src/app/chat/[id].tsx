@@ -1,6 +1,12 @@
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChatHeader from '@/core/components/chat/ChatHeader';
@@ -12,9 +18,8 @@ import ImageMessageBubble from '@/core/components/chat/ImageMessageBubble';
 import MessageBubble from '@/core/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/core/components/chat/PropertyMessageBubble';
 import ContentContainer from '@/core/components/ContentContainer';
-
-import { useChatStore } from '@/store/useChatStore';
 import { socketService } from '@/core/services/socket.service';
+import { useChatStore } from '@/store/useChatStore';
 
 export default function ChatDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -31,7 +36,9 @@ export default function ChatDetailsScreen() {
   const loadMessages = useChatStore((state) => state.loadMessages);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const receiveMessage = useChatStore((state) => state.receiveMessage);
-  const setActiveConversation = useChatStore((state) => state.setActiveConversation);
+  const setActiveConversation = useChatStore(
+    (state) => state.setActiveConversation,
+  );
   const hasNextPage = useChatStore((state) => state.hasNextMessagesPage);
   const nextCursor = useChatStore((state) => state.nextMessagesCursor);
   const isLoading = useChatStore((state) => state.isLoadingMessages);
@@ -42,7 +49,8 @@ export default function ChatDetailsScreen() {
   );
 
   const otherUserName = conversation?.otherUser.name || 'مستخدم بيوتنا';
-  const otherUserAvatar = conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
+  const otherUserAvatar =
+    conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
   const propertyContext = conversation?.propertyContext;
 
   useEffect(() => {
@@ -50,7 +58,7 @@ export default function ChatDetailsScreen() {
       // Set active conversation and mark as read
       setActiveConversation(conversationId);
       loadMessages(conversationId, undefined, true);
-      
+
       // Join socket room
       socketService.joinConversation(conversationId);
 
@@ -83,16 +91,23 @@ export default function ChatDetailsScreen() {
   };
 
   const handleReportUser = () => {
-    Alert.alert('إبلاغ عن مستخدم', 'هل تريد تقديم بلاغ ضد هذا المستخدم لمخالفته شروط الاستخدام؟', [
-      { text: 'إلغاء', style: 'cancel' },
-      {
-        text: 'إبلاغ',
-        style: 'destructive',
-        onPress: () => {
-          Alert.alert('تم الإرسال', 'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.');
+    Alert.alert(
+      'إبلاغ عن مستخدم',
+      'هل تريد تقديم بلاغ ضد هذا المستخدم لمخالفته شروط الاستخدام؟',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'إبلاغ',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert(
+              'تم الإرسال',
+              'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
+            );
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   // Main Message Renderer
@@ -154,51 +169,66 @@ export default function ChatDetailsScreen() {
       )}
 
       <ContentContainer className="flex-1">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
-      >
-        <ChatHeader
-          userName={otherUserName}
-          isOnline={false}
-          avatarUrl={otherUserAvatar}
-          onReportUser={handleReportUser}
-          showMoreMenu={showMoreMenu}
-          setShowMoreMenu={setShowMoreMenu}
-        />
-
-        {propertyContext && showPinnedContext && (
-          <ChatPinnedContext
-            title={`${propertyContext.category}`}
-            badgeText={propertyContext.type === 'SALE' ? 'للبيع' : propertyContext.type === 'RENT' ? 'للإيجار' : 'للبدل'}
-            price={`${propertyContext.price.toLocaleString()} د.ك`}
-            onDismiss={() => setShowPinnedContext(false)}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          className="flex-1"
+        >
+          <ChatHeader
+            userName={otherUserName}
+            isOnline={false}
+            avatarUrl={otherUserAvatar}
+            onReportUser={handleReportUser}
+            showMoreMenu={showMoreMenu}
+            setShowMoreMenu={setShowMoreMenu}
           />
-        )}
 
-        <FlatList
-          inverted
-          data={sortedMessages}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20 }}
-          showsVerticalScrollIndicator={false}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
-          renderItem={renderMessage}
-        />
+          {propertyContext && showPinnedContext && (
+            <ChatPinnedContext
+              title={`${propertyContext.category}`}
+              badgeText={
+                propertyContext.type === 'SALE'
+                  ? 'للبيع'
+                  : propertyContext.type === 'RENT'
+                    ? 'للإيجار'
+                    : 'للبدل'
+              }
+              price={
+                propertyContext.price && propertyContext.price > 0
+                  ? `${propertyContext.price.toLocaleString()} د.ك`
+                  : propertyContext.type === 'EXCHANGE'
+                    ? 'للبدل'
+                    : 'السعر غير معلن'
+              }
+              onDismiss={() => setShowPinnedContext(false)}
+            />
+          )}
 
-        <ChatInputBar
-          inputText={inputText}
-          onInputChange={setInputText}
-          onSend={handleSendMessage}
-          showAttachmentMenu={showAttachmentMenu}
-          setShowAttachmentMenu={setShowAttachmentMenu}
-          onAttachImage={() => {
-            console.log('Attach image');
-            setShowImageOptions(true);
-          }}
-        />
-      </KeyboardAvoidingView>
+          <FlatList
+            inverted
+            data={sortedMessages}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{
+              paddingHorizontal: 20,
+              paddingVertical: 20,
+            }}
+            showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            renderItem={renderMessage}
+          />
+
+          <ChatInputBar
+            inputText={inputText}
+            onInputChange={setInputText}
+            onSend={handleSendMessage}
+            showAttachmentMenu={showAttachmentMenu}
+            setShowAttachmentMenu={setShowAttachmentMenu}
+            onAttachImage={() => {
+              console.log('Attach image');
+              setShowImageOptions(true);
+            }}
+          />
+        </KeyboardAvoidingView>
       </ContentContainer>
 
       <ImageDownloadBottomSheet

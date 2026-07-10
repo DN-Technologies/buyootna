@@ -37,6 +37,7 @@ export interface ChatMessage {
   imageUrl?: string;
   propertyId?: string;
   isMine: boolean;
+  senderId?: string;
   timestamp: string;
   createdAt: string;
   sending?: boolean; // For optimistic UI states

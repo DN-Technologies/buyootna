@@ -8,7 +8,7 @@ interface PropertyContextProps {
   property: {
     id: string;
     imageUrl: string;
-    price: number;
+    price?: number | null;
     title: string;
     type?: string;
     area?: number;
@@ -120,12 +120,20 @@ export default function PropertyMessageBubble({
           <View className="p-4">
             {/* Price section - unified styling */}
             <View className="mb-2 flex-row items-baseline gap-1.5">
-              <Text className="font-cairo-bold text-2xl text-[#15304D]">
-                {property.price.toLocaleString()}
-              </Text>
-              <Text className="font-cairo-bold text-sm text-[#15304D]">
-                د.ك
-              </Text>
+              {property.price && property.price > 0 ? (
+                <>
+                  <Text className="font-cairo-bold text-2xl text-[#15304D]">
+                    {property.price.toLocaleString()}
+                  </Text>
+                  <Text className="font-cairo-bold text-sm text-[#15304D]">
+                    د.ك
+                  </Text>
+                </>
+              ) : (
+                <Text className="font-cairo-bold text-lg text-[#15304D]">
+                  {property.type === 'EXCHANGE' || property.type === 'للبدل' ? 'للبدل' : 'السعر غير معلن'}
+                </Text>
+              )}
             </View>
 
             {/* Specs row with icons */}

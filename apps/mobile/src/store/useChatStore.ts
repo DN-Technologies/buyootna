@@ -1,6 +1,13 @@
 import { create } from 'zustand';
-import { chatService, ConversationSummary, ChatMessage } from '@/core/api/chat.service';
+
+import {
+  ChatMessage,
+  chatService,
+  ConversationSummary,
+} from '@/core/api/chat.service';
 import { socketService } from '@/core/services/socket.service';
+
+import { useAuthStore } from './useAuthStore';
 
 interface ChatState {
   conversations: ConversationSummary[];
@@ -13,8 +20,20 @@ interface ChatState {
 
   // Actions
   loadConversations: (page?: number, shouldRefresh?: boolean) => Promise<void>;
-  loadMessages: (conversationId: string, cursor?: string, shouldRefresh?: boolean) => Promise<void>;
-  sendMessage: (conversationId: string, payload: { content?: string; type?: 'TEXT' | 'IMAGE' | 'PROPERTY'; imageUrl?: string; propertyId?: string }) => void;
+  loadMessages: (
+    conversationId: string,
+    cursor?: string,
+    shouldRefresh?: boolean,
+  ) => Promise<void>;
+  sendMessage: (
+    conversationId: string,
+    payload: {
+      content?: string;
+      type?: 'TEXT' | 'IMAGE' | 'PROPERTY';
+      imageUrl?: string;
+      propertyId?: string;
+    },
+  ) => void;
   receiveMessage: (conversationId: string, message: ChatMessage) => void;
   markConversationAsRead: (conversationId: string) => Promise<void>;
   setActiveConversation: (conversationId: string | null) => void;
@@ -36,7 +55,8 @@ export const useChatStore = create<ChatState>((set, get) => {
       try {
         const res = await chatService.getConversations(page, 20);
         set((state) => ({
-          conversations: page === 1 ? res.data : [...state.conversations, ...res.data],
+          conversations:
+            page === 1 ? res.data : [...state.conversations, ...res.data],
           isLoadingConversations: false,
         }));
       } catch (error) {
@@ -45,12 +65,19 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
-    loadMessages: async (conversationId: string, cursor?: string, shouldRefresh = false) => {
+    loadMessages: async (
+      conversationId: string,
+      cursor?: string,
+      shouldRefresh = false,
+    ) => {
       set({ isLoadingMessages: true });
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
         set((state) => ({
-          activeMessages: cursor && !shouldRefresh ? [...res.data, ...state.activeMessages] : res.data,
+          activeMessages:
+            cursor && !shouldRefresh
+              ? [...res.data, ...state.activeMessages]
+              : res.data,
           hasNextMessagesPage: res.meta.hasNextPage,
           nextMessagesCursor: res.meta.nextCursor,
           isLoadingMessages: false,
@@ -88,19 +115,29 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     receiveMessage: (conversationId, message) => {
+      const currentUserId = useAuthStore.getState().user?.id;
+      const isMine =
+        message.isMine ??
+        (message.senderId ? message.senderId === currentUserId : false);
+
+      const messageWithIsMine = {
+        ...message,
+        isMine,
+      };
+
       // If this message belongs to the active conversation, add it to activeMessages
       if (get().activeConversationId === conversationId) {
         set((state) => {
           // Remove optimistic message if exists
           const filtered = state.activeMessages.filter(
-            (msg) => msg.content !== message.content || !msg.sending,
+            (msg) => msg.content !== messageWithIsMine.content || !msg.sending,
           );
-          
+
           // Check if message is already added
-          const exists = filtered.some((m) => m.id === message.id);
+          const exists = filtered.some((m) => m.id === messageWithIsMine.id);
           if (exists) return { activeMessages: filtered };
 
-          return { activeMessages: [...filtered, message] };
+          return { activeMessages: [...filtered, messageWithIsMine] };
         });
       }
 
@@ -108,14 +145,13 @@ export const useChatStore = create<ChatState>((set, get) => {
       set((state) => {
         const conversations = state.conversations.map((conv) => {
           if (conv.id === conversationId) {
-            const isMine = message.isMine;
             return {
               ...conv,
               lastMessage: {
-                id: message.id,
-                content: message.content || null,
-                type: message.type,
-                createdAt: message.createdAt,
+                id: messageWithIsMine.id,
+                content: messageWithIsMine.content || null,
+                type: messageWithIsMine.type,
+                createdAt: messageWithIsMine.createdAt,
                 isMine,
               },
               unreadCount:
@@ -128,7 +164,9 @@ export const useChatStore = create<ChatState>((set, get) => {
         });
 
         // Re-order conversations to put the updated one on top
-        const updatedIndex = conversations.findIndex((c) => c.id === conversationId);
+        const updatedIndex = conversations.findIndex(
+          (c) => c.id === conversationId,
+        );
         if (updatedIndex > -1) {
           const [updatedConv] = conversations.splice(updatedIndex, 1);
           conversations.unshift(updatedConv);
