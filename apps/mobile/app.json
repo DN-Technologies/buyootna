@@ -31,6 +31,13 @@
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsImpl": "mapbox",
+          "RNMapboxMapsDownloadToken": "pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ"
+        }
+      ],
       "expo-router",
       "./plugins/withPrebuiltDsyms",
       [
@@ -54,7 +61,7 @@
         {
           "photosPermission": "يحتاج التطبيق للوصول إلى صورك لإضافتها إلى إعلانك"
         }
-      ]
+      ],
     ],
     "experiments": {
       "typedRoutes": true,

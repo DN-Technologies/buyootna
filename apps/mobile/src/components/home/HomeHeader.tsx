@@ -59,7 +59,10 @@ export default function HomeHeader() {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => router.push('/map')}
+          activeOpacity={0.7}
+        >
           <MapIcon size={24} color="#111111" />
         </TouchableOpacity>
       </View>

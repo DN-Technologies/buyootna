@@ -3,8 +3,9 @@ import { create } from 'zustand';
 
 import apiClient, { setAuthToken, setOnUnauthorized } from '@/core/api/api';
 import { socketService } from '@/core/services/socket.service';
-import { useFavoritesStore } from './useFavoritesStore';
+
 import { useChatStore } from './useChatStore';
+import { useFavoritesStore } from './useFavoritesStore';
 
 export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
 
