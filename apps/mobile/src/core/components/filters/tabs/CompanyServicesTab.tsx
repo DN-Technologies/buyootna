@@ -1,6 +1,6 @@
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import InlineDropdown from '@/core/components/filters/InlineDropdown';
@@ -90,7 +90,7 @@ export default function CompanyServicesTab() {
             نوع الطلب
           </Text>
           <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
-            <TextInput
+            <BottomSheetTextInput
               className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
               placeholder="اكتب الخدمة التي تريدها.."
               placeholderTextColor="#D1D5DB"

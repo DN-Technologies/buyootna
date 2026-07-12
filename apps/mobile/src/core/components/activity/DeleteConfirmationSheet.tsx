@@ -1,10 +1,11 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetTextInput,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 interface DeleteConfirmationSheetProps {
@@ -230,7 +231,7 @@ const DeleteConfirmationSheet = forwardRef<
 
               {/* Multi-line Custom Input */}
               {selectedReason === 'OTHER' && (
-                <TextInput
+                <BottomSheetTextInput
                   multiline
                   value={customReason}
                   onChangeText={setCustomReason}

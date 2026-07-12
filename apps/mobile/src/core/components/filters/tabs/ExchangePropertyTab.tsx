@@ -1,6 +1,6 @@
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
@@ -99,7 +99,7 @@ export default function ExchangePropertyTab() {
               السنة المطلوبة
             </Text>
             <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
-              <TextInput
+              <BottomSheetTextInput
                 className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
                 placeholder="2026"
                 placeholderTextColor="#D1D5DB"
@@ -120,7 +120,7 @@ export default function ExchangePropertyTab() {
               سنة الطلب
             </Text>
             <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
-              <TextInput
+              <BottomSheetTextInput
                 className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
                 placeholder="2019"
                 placeholderTextColor="#D1D5DB"
@@ -152,7 +152,7 @@ export default function ExchangePropertyTab() {
             المساحة
           </Text>
           <View className="h-[40px] flex-row items-center justify-between rounded-md border border-gray-200 bg-white px-4">
-            <TextInput
+            <BottomSheetTextInput
               className="mr-2 h-10 flex-1 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
               placeholder="300"
               placeholderTextColor="#D1D5DB"

@@ -1,4 +1,5 @@
-import { Text, TextInput, View } from 'react-native';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { Text, View } from 'react-native';
 
 export interface RangeInputGroupProps {
   title: string;
@@ -29,7 +30,7 @@ export default function RangeInputGroup({
       <View className="flex-row gap-3">
         {/* MAX Input */}
         <View className="h-[40px] flex-1 flex-row items-center justify-between rounded-md border border-[#D7D7D7] bg-white px-4 py-1.5">
-          <TextInput
+          <BottomSheetTextInput
             className="h-10 flex-1 font-cairo leading-[24px] text-[#111111]"
             style={{ writingDirection: 'rtl' }}
             placeholder="الحد الأقصى"
@@ -45,7 +46,7 @@ export default function RangeInputGroup({
 
         {/* MIN Input */}
         <View className="h-[40px] flex-1 flex-row items-center justify-between rounded-md border border-[#D7D7D7] bg-white px-4 py-1.5">
-          <TextInput
+          <BottomSheetTextInput
             className="h-10 flex-1 font-cairo leading-[24px] text-[#111111]"
             style={{ writingDirection: 'rtl' }}
             placeholder="الحد الأدنى"
