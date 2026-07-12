@@ -126,24 +126,6 @@ export default function PropertyCard({
 
         {/* Absolute Top Right: Badges */}
         <View className="absolute right-3 top-3 flex-row gap-2">
-          <View
-            style={{
-              height: 25,
-              minWidth: 55,
-              paddingHorizontal: 10,
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              borderTopLeftRadius: 10,
-              borderTopRightRadius: 8,
-              borderBottomRightRadius: 0,
-              borderBottomLeftRadius: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text className="font-almarai text-[12px] leading-[14.4px] text-[#111111]">
-              {type}
-            </Text>
-          </View>
           {isFeatured && (
             <LinearGradient
               colors={['#FF8D28', '#FACC15']}
@@ -227,7 +209,7 @@ export default function PropertyCard({
         <View className="mb-2 flex-row items-center gap-3">
           <View className="flex-row items-center gap-1">
             <Text className="font-cairo-semibold text-sm text-[#111111]">
-              شقة •
+              شقة{type ? ` ${type}` : ''} •
             </Text>
             <Text className="font-cairo-semibold text-sm text-[#111111]">
               {area} م²

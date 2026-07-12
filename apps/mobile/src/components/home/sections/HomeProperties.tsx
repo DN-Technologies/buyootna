@@ -10,8 +10,6 @@ import {
   View,
 } from 'react-native';
 
-import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
-
 import { feedService } from '@/core/api/feed.service';
 import { propertiesService } from '@/core/api/properties.service';
 import PropertyCard from '@/core/components/PropertyCard';
@@ -19,6 +17,7 @@ import PropertyDetailsSheet from '@/core/components/PropertyDetailsSheet';
 import PropertyListItem from '@/core/components/PropertyListItem';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
 import { formatTimeAgo } from '@/core/utils/helpers/property';
+import { useResponsiveLayout } from '@/hooks/useResponsiveLayout';
 import { PropertyDto } from '@/types/feed';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -159,7 +158,11 @@ export default function HomeProperties({
         <FlatList
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
-          columnWrapperStyle={isTablet ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 } : undefined}
+          columnWrapperStyle={
+            isTablet
+              ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 }
+              : undefined
+          }
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
@@ -190,7 +193,11 @@ export default function HomeProperties({
               beds={item.beds}
               baths={item.baths}
               location={item.location}
-              cardWidth={isTablet ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns : '100%'}
+              cardWidth={
+                isTablet
+                  ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns
+                  : '100%'
+              }
               timeAgo={
                 item.createdAt ? formatTimeAgo(item.createdAt) : undefined
               }
