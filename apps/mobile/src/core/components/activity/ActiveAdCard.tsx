@@ -1,22 +1,37 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Text,  View } from 'react-native';
+import { useState } from 'react';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
+import { MoreIcon } from '@/assets/icons/activity';
 import {
   getArabicCategoryLabel,
+  getArabicTypeLabel,
 } from '@/core/utils/helpers/property';
 import { ActivityItem } from '@/hooks/useMyActivity';
 
 interface ActiveAdCardProps {
   property: ActivityItem;
-  onOptionsPress: () => void;
+  onEditPress: (id: string) => void;
+  onFeaturePress: (id: string) => void;
+  onDeletePress: (id: string) => void;
 }
 
 const formatDate = (dateStr: string) => {
   try {
     const date = new Date(dateStr);
     const months = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
     ];
     const day = date.getDate();
     const month = months[date.getMonth()];
@@ -29,14 +44,20 @@ const formatDate = (dateStr: string) => {
 
 export default function ActiveAdCard({
   property,
-  onOptionsPress,
+  onEditPress,
+  onFeaturePress,
+  onDeletePress,
 }: ActiveAdCardProps) {
+  const [showMenu, setShowMenu] = useState(false);
+
   // Use a fallback image if none exists
   const coverImage =
     property.images?.[0] || 'https://via.placeholder.com/400x250?text=No+Image';
 
+  const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
+
   return (
-    <View className="mb-4 overflow-hidden rounded-md border border-[#FEFEFE] shadow-sm shadow-gray-200/30">
+    <View className="z-10 mb-4 overflow-hidden rounded-md border border-[#FEFEFE] bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
       {/* --- Image Header & Badges --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
@@ -83,7 +104,7 @@ export default function ActiveAdCard({
 
         {/* Optional: Hidden Ad Badge */}
         {property.isHidden && (
-          <View className="absolute left-4 top-4 rounded-lg bg-white border border-gray-200 px-3 py-1.5 shadow-sm">
+          <View className="absolute left-4 top-4 rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
             <Text className="font-cairo-bold text-[11px] text-[#111111]">
               اعلان مخفي
             </Text>
@@ -91,7 +112,7 @@ export default function ActiveAdCard({
         )}
 
         {/* Pagination Dots  */}
-        <View className="absolute bottom-4 left-0 right-0 flex-row justify-center items-center gap-1.5">
+        <View className="absolute bottom-4 left-0 right-0 flex-row items-center justify-center gap-1.5">
           <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
           <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
           <View className="h-1.5 w-4 rounded-full bg-[#15304D]" />
@@ -99,26 +120,77 @@ export default function ActiveAdCard({
       </View>
 
       {/* --- Content Body --- */}
-      <View className="p-4">
+      <View className="relative p-4">
         {/* Title, Date & Options Trigger */}
-        <View className="mb-1 flex-row items-center justify-between">
-
-
+        <View className="z-20 mb-1 flex-row items-center justify-between">
           {/* Right: Category Label */}
           <Text className="font-cairo-bold text-[16px] text-[#111111]">
-            {getArabicCategoryLabel(property.category)}
+            {displayLabel}
           </Text>
 
-          {/* Left: 3-Dot Options & Date */}
-          <View className="flex-row items-center gap-1.5">
-            <Text className="font-cairo text-xs text-[#6B6A6A]">
-              {formatDate(property.updatedAt)}
-            </Text>
+          {/* Left: 3-Dot Options Trigger */}
+          <View className="relative z-50">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setShowMenu(!showMenu)}
+              className="p-1"
+            >
+              <MoreIcon size={15} color="#64748B" />
+            </TouchableOpacity>
+
+            {showMenu && (
+              <View className="absolute right-[-4px] top-4 z-50 mt-4 w-[196px] rounded-md bg-white shadow-md shadow-gray-200">
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowMenu(false);
+                    onEditPress(property.id);
+                  }}
+                  className="px-4 py-3"
+                >
+                  <Text
+                    className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    تعديل
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowMenu(false);
+                    onFeaturePress(property.id);
+                  }}
+                  className="px-4 py-3"
+                >
+                  <Text
+                    className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    تمييز الإعلان
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowMenu(false);
+                    onDeletePress(property.id);
+                  }}
+                  className="px-4 py-3"
+                >
+                  <Text
+                    className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    حذف
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Price Row  */}
-        <View className="mb-4 flex-row items-center ">
+        {/* Price & Publication Date Row */}
+        <View className="mb-4 flex-row items-center justify-between">
           <View className="flex-row items-baseline gap-1">
             <Text className="font-cairo-bold text-lg text-[#111111]">
               {property.price?.toLocaleString()}
@@ -127,16 +199,21 @@ export default function ActiveAdCard({
               د.ك
             </Text>
           </View>
+          <Text className="font-cairo text-xs text-[#6B6A6A]">
+            تاريخ النشر: {formatDate(property.updatedAt)}
+          </Text>
         </View>
 
         {/* --- Stats Container Box (From Figma design) --- */}
-        <View className="flex-row items-center justify-around rounded-2xl bg-[#F8FAFC] border border-gray-100/50 py-3 px-2">
+        <View className="z-10 flex-row items-center justify-around rounded-2xl border border-gray-100/50 bg-[#F8FAFC] px-2 py-3">
           {/* Column 1: Views (Renders on far right in RTL) */}
           <View className="flex-1 items-center">
             <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
               عدد المشاهدات
             </Text>
-            <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.views || 0}</Text>
+            <Text className="font-cairo-bold text-[14px] text-[#15304D]">
+              {property.views || 0}
+            </Text>
           </View>
 
           {/* Divider */}
@@ -147,7 +224,9 @@ export default function ActiveAdCard({
             <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
               مرات الحفظ
             </Text>
-            <Text className="font-cairo-bold text-[14px] text-[#15304D]">80</Text>
+            <Text className="font-cairo-bold text-[14px] text-[#15304D]">
+              80
+            </Text>
           </View>
 
           {/* Divider */}
@@ -158,7 +237,9 @@ export default function ActiveAdCard({
             <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
               عدد التواصل
             </Text>
-            <Text className="font-cairo-bold text-[14px] text-[#15304D]">4</Text>
+            <Text className="font-cairo-bold text-[14px] text-[#15304D]">
+              4
+            </Text>
           </View>
         </View>
       </View>

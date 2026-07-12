@@ -26,6 +26,7 @@ import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
 import DeleteConfirmationSheet from '@/core/components/activity/DeleteConfirmationSheet';
 import DraftAdCard from '@/core/components/activity/DraftAdCard';
 import DraftPreviewSheet from '@/core/components/activity/DraftPreviewSheet';
+import FeatureAdSheet from '@/core/components/activity/FeatureAdSheet';
 import FreeQuotaBanner from '@/core/components/activity/FreeQuotaBanner';
 import SubscriptionSlotsRow from '@/core/components/activity/SubscriptionSlotsRow';
 import GuestEmptyState from '@/core/components/GuestEmptyState';
@@ -71,18 +72,24 @@ export default function ActivityScreen() {
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
 
+  // References and states for featuring ads
+  const featureAdSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+
   // Toast notification state and animation
   const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState(
     'تم تحديث بيانات الإعلان بنجاح.',
   );
+  const [toastSubtitle, setToastSubtitle] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
 
   const triggerToast = useCallback(
-    (message: string) => {
+    (message: string, subtitle?: string | null) => {
       setToastMessage(message);
+      setToastSubtitle(subtitle || null);
       setShowToast(true);
 
       // Reset animations
@@ -203,6 +210,29 @@ export default function ActivityScreen() {
 
   const handleOpenOptions = (propertyId: string) => {
     console.log('Open options for:', propertyId);
+  };
+
+  const handleEditAd = (propertyId: string) => {
+    console.log('Edit ad:', propertyId);
+    router.push({
+      pathname: '/add-listing',
+      params: { editId: propertyId },
+    });
+  };
+
+  const handleFeatureAd = (propertyId: string) => {
+    setSelectedPropertyId(propertyId);
+    featureAdSheetRef.current?.present();
+  };
+
+  const handleDeleteAd = (propertyId: string) => {
+    setPropertyToDelete(propertyId);
+    deleteSheetRef.current?.present();
+  };
+
+  const handleFeatureSuccess = () => {
+    triggerToast('تم تمييز اعلانك', 'التميز نشط حتى 25 مايو');
+    refetch();
   };
 
   const handlePublishDraft = (property: any) => {
@@ -369,7 +399,9 @@ export default function ActivityScreen() {
           return (
             <ActiveAdCard
               property={item}
-              onOptionsPress={() => handleOpenOptions(item.id)}
+              onEditPress={handleEditAd}
+              onFeaturePress={handleFeatureAd}
+              onDeletePress={handleDeleteAd}
             />
           );
         }}
@@ -391,6 +423,13 @@ export default function ActivityScreen() {
         onCancel={handleCancelDelete}
       />
 
+      {/* --- Feature Ad Bottom Sheet --- */}
+      <FeatureAdSheet
+        ref={featureAdSheetRef}
+        propertyId={selectedPropertyId || undefined}
+        onSuccess={handleFeatureSuccess}
+      />
+
       {/* --- Success Toast Notification --- */}
       {showToast && (
         <Animated.View
@@ -400,15 +439,24 @@ export default function ActivityScreen() {
             transform: [{ translateY: slideAnim }],
             elevation: 5,
           }}
-          className="absolute left-[20px] right-[20px] z-[999] flex-row-reverse items-center justify-center gap-2.5 rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
+          className="absolute left-[20px] right-[20px] z-[999] flex-row-reverse items-center justify-between rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
         >
-          <Image
-            source={require('@/assets/icons/success-icon.svg')}
-            style={{ width: 24, height: 24 }}
-          />
-          <Text className="text-right font-cairo-semibold text-[14px] leading-[22px] text-[#111111]">
-            {toastMessage}
-          </Text>
+          <View className="flex-row-reverse items-center gap-2.5">
+            <Image
+              source={require('@/assets/icons/success-icon.svg')}
+              style={{ width: 24, height: 24 }}
+            />
+            <View className="items-end">
+              <Text className="text-right font-cairo-semibold text-[14px] leading-[22px] text-[#111111]">
+                {toastMessage}
+              </Text>
+              {toastSubtitle && (
+                <Text className="text-right font-cairo text-[12px] leading-[18px] text-[#6B6A6A] mt-0.5">
+                  {toastSubtitle}
+                </Text>
+              )}
+            </View>
+          </View>
         </Animated.View>
       )}
     </SafeAreaView>
