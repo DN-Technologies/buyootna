@@ -2,6 +2,8 @@ import Mapbox, { Camera, MapView } from '@rnmapbox/maps';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import MapLayers from '@/features/components/map/MapLayers';
+
 // Initialize Mapbox with PUBLIC token
 Mapbox.setAccessToken(
   'pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ',
@@ -61,7 +63,8 @@ export default function DiscoveryMap({ onBoundsChanged }: DiscoveryMapProps) {
           animationDuration={2000}
         />
 
-        {/* We will add ShapeSource and SymbolLayers here in Card 3 */}
+        {/* Render High-Performance Vector Layers */}
+        {isMapReady && <MapLayers />}
       </MapView>
     </View>
   );
