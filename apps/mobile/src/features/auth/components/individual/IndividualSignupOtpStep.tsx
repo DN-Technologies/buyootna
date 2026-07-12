@@ -89,9 +89,11 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
             field: { onChange, value = '' },
             fieldState: { error },
           }) => (
-            <View className="mb-6 items-center">
-              {/* The 6 visible boxes */}
-              <View
+            <View className="mb-6 items-center w-full">
+              {/* Pressable area to focus hidden TextInput */}
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => otpInputRef.current?.focus()}
                 className="w-full flex-row justify-between"
                 style={{ direction: 'ltr' }}
               >
@@ -100,18 +102,18 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
                     key={index}
                     className={`h-14 w-12 items-center justify-center rounded-xl border-[1.5px] bg-white ${
                       value.length === index
-                        ? 'border-secondary'
+                        ? 'border-[#B28648]'
                         : error
                           ? 'border-red-500'
                           : 'border-gray-300'
                     }`}
                   >
-                    <Text className="font-cairo-bold text-xl text-charcoal">
+                    <Text className="font-cairo-bold text-xl text-[#111111]">
                       {value[index] || ''}
                     </Text>
                   </View>
                 ))}
-              </View>
+              </TouchableOpacity>
 
               {/* The Hidden Actual Input */}
               <TextInput
@@ -123,7 +125,8 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
                 }}
                 keyboardType="number-pad"
                 maxLength={6}
-                className="absolute h-full w-full opacity-0"
+                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0 }}
+                pointerEvents="none"
                 autoFocus
               />
 

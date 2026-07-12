@@ -59,9 +59,11 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
             field: { onChange, value = '' },
             fieldState: { error },
           }) => (
-            <View className="mb-6 items-center">
-              {/* The 6 visible boxes */}
-              <View
+            <View className="mb-6 items-center w-full">
+              {/* Pressable area to focus hidden TextInput */}
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => otpInputRef.current?.focus()}
                 className="w-full flex-row justify-between"
                 style={{ direction: 'ltr' }}
               >
@@ -81,7 +83,7 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
                     </Text>
                   </View>
                 ))}
-              </View>
+              </TouchableOpacity>
 
               {/* The Hidden Actual Input */}
               <TextInput
@@ -93,7 +95,8 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
                 }}
                 keyboardType="number-pad"
                 maxLength={6}
-                className="absolute h-full w-full opacity-0"
+                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0 }}
+                pointerEvents="none"
                 autoFocus
               />
 
