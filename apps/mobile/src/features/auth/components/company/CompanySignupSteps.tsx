@@ -279,7 +279,7 @@ export const SignupStep3: React.FC<Step3Props> = ({
         editable={false}
         pointerEvents="none"
         isRequired={false}
-        leftIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
+        rightIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
       />
     </TouchableOpacity>
 

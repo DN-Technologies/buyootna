@@ -1,4 +1,4 @@
-import BottomSheet, { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
@@ -12,7 +12,7 @@ export default function MainLayout() {
   const token = useAuthStore((state) => state.token);
 
   // References to control bottom sheets from this top-level layout
-  const plusSheetRef = useRef<BottomSheet>(null);
+  const plusSheetRef = useRef<BottomSheetModal>(null);
   const quotaSheetRef = useRef<BottomSheetModal>(null);
   const authGuardSheetRef = useRef<BottomSheetModal>(null);
 
@@ -21,7 +21,7 @@ export default function MainLayout() {
     if (!token) {
       authGuardSheetRef.current?.present();
     } else {
-      plusSheetRef.current?.expand();
+      plusSheetRef.current?.present();
     }
   };
 

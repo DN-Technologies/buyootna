@@ -1,11 +1,18 @@
 import { Feather } from '@expo/vector-icons';
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
+  BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import {
   AddIcon,
@@ -19,7 +26,7 @@ export interface PlusActionsSheetProps {
   onQuotaExhausted: () => void;
 }
 
-const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
+const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
   ({ onClose, onQuotaExhausted }, ref) => {
     const router = useRouter();
     const [isCheckingQuota, setIsCheckingQuota] = useState(false);
@@ -41,7 +48,7 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
 
     const handleClose = () => {
       // @ts-ignore
-      ref.current?.close();
+      ref.current?.dismiss();
       if (onClose) onClose();
     };
 
@@ -67,19 +74,27 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
             router.push('/add-listing');
           }
         } else {
-          Alert.alert('خطأ', 'فشل في قراءة بيانات حسابك. يرجى المحاولة لاحقاً.', [{ text: 'حسناً' }]);
+          Alert.alert(
+            'خطأ',
+            'فشل في قراءة بيانات حسابك. يرجى المحاولة لاحقاً.',
+            [{ text: 'حسناً' }],
+          );
         }
       } catch (error) {
         setIsCheckingQuota(false);
         console.error('Error checking quota:', error);
-        Alert.alert('خطأ في الاتصال', 'فشل في التحقق من الإعلانات المتاحة. تأكد من اتصالك بالشبكة.', [{ text: 'حسناً' }]);
+        Alert.alert(
+          'خطأ في الاتصال',
+          'فشل في التحقق من الإعلانات المتاحة. تأكد من اتصالك بالشبكة.',
+          [{ text: 'حسناً' }],
+        );
       }
     };
 
     return (
-      <BottomSheet
+      <BottomSheetModal
         ref={ref}
-        index={-1}
+        index={0}
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
@@ -88,7 +103,7 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
           width: 40,
           height: 4,
         }}
-        backgroundStyle={{ borderRadius: 24 }}
+        backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
         <BottomSheetView style={{ flex: 1 }}>
           <View style={{ flex: 1 }} className="bg-white px-5 pt-2">
@@ -153,7 +168,7 @@ const PlusActionsSheet = forwardRef<BottomSheet, PlusActionsSheetProps>(
             </View>
           </View>
         </BottomSheetView>
-      </BottomSheet>
+      </BottomSheetModal>
     );
   },
 );
