@@ -8,7 +8,7 @@ import {
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { forwardRef, useCallback, useMemo } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   BathIcon,
@@ -60,12 +60,12 @@ const PropertyDetailsSheet = forwardRef<
     [],
   );
 
-  if (!property) return null;
-
-  const displayTitle = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type)}`;
+  const displayTitle = property
+    ? `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type)}`
+    : 'تفاصيل العقار';
 
   const formattedPrice =
-    property.price && property.price > 0 ? (
+    property && property.price && property.price > 0 ? (
       <Text className="font-cairo-bold text-2xl text-[#15304D]">
         {property.price.toLocaleString()}{' '}
         <Text className="font-cairo-semibold text-sm text-[#15304D]">د.ك</Text>
@@ -97,22 +97,26 @@ const PropertyDetailsSheet = forwardRef<
           </Text>
           {/* Actions (Left Side) */}
           <View className="flex-row items-center gap-3">
-            {/* Favorite */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={onFavorite}
-              className="h-8 w-8 items-center justify-center rounded-full"
-            >
-              <HeartIcon color="#111111" size={16} />
-            </TouchableOpacity>
-            {/* Share */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={onShare}
-              className="h-8 w-8 items-center justify-center rounded-full"
-            >
-              <ShareIcon color="#111111" size={16} />
-            </TouchableOpacity>
+            {property && (
+              <>
+                {/* Favorite */}
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onFavorite}
+                  className="h-8 w-8 items-center justify-center rounded-full"
+                >
+                  <HeartIcon color="#111111" size={16} />
+                </TouchableOpacity>
+                {/* Share */}
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onShare}
+                  className="h-8 w-8 items-center justify-center rounded-full"
+                >
+                  <ShareIcon color="#111111" size={16} />
+                </TouchableOpacity>
+              </>
+            )}
             {/* Close */}
             <TouchableOpacity
               activeOpacity={0.7}
@@ -124,10 +128,18 @@ const PropertyDetailsSheet = forwardRef<
           </View>
         </View>
 
-        <BottomSheetScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 50 }}
-        >
+        {!property ? (
+          <View className="flex-1 items-center justify-center py-10">
+            <ActivityIndicator size="large" color="#15304D" />
+            <Text className="mt-4 font-cairo text-sm text-[#6B6A6A]">
+              جاري تحميل التفاصيل...
+            </Text>
+          </View>
+        ) : (
+          <BottomSheetScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 50 }}
+          >
           {/* Main Content */}
           <View className="p-5">
             {/* Property Image Container */}
@@ -371,6 +383,7 @@ const PropertyDetailsSheet = forwardRef<
             </TouchableOpacity>
           </View>
         </BottomSheetScrollView>
+      )}
       </BottomSheetView>
     </BottomSheetModal>
   );

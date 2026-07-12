@@ -99,7 +99,12 @@ export default function HomeProperties({
         10,
       );
 
-      setData((prev) => [...prev, ...response.data]);
+      setData((prev) => {
+        const combined = [...prev, ...response.data];
+        return combined.filter(
+          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+        );
+      });
       setPage(response.meta.current);
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
@@ -111,14 +116,16 @@ export default function HomeProperties({
 
   // Handle "عرض تفاصيل" click
   const handleShowDetails = async (id: string) => {
+    setSelectedProperty(null);
+    detailsSheetRef.current?.present();
     if (isFetchingDetails) return;
     setIsFetchingDetails(true);
     try {
       const fullDetails = await propertiesService.getPropertyById(id);
       setSelectedProperty(fullDetails);
-      detailsSheetRef.current?.present();
     } catch (error) {
       console.error('Failed to fetch property details:', error);
+      detailsSheetRef.current?.dismiss();
     } finally {
       setIsFetchingDetails(false);
     }

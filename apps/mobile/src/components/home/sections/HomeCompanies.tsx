@@ -88,7 +88,12 @@ export default function HomeCompanies({
         10,
       );
 
-      setData((prev) => [...prev, ...response.data]);
+      setData((prev) => {
+        const combined = [...prev, ...response.data];
+        return combined.filter(
+          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+        );
+      });
       setPage(response.meta.current);
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {

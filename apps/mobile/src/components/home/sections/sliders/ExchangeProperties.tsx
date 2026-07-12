@@ -69,7 +69,12 @@ export default function ExchangeProperties({
         10,
       );
 
-      setData((prev) => [...prev, ...response.data]); // Append new items
+      setData((prev) => {
+        const combined = [...prev, ...response.data];
+        return combined.filter(
+          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+        );
+      });
       setPage(response.meta.current);
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
@@ -81,14 +86,16 @@ export default function ExchangeProperties({
   };
 
   const handleShowDetails = async (id: string) => {
+    setSelectedProperty(null);
+    detailsSheetRef.current?.present();
     if (isFetchingDetails) return;
     setIsFetchingDetails(true);
     try {
       const fullDetails = await propertiesService.getPropertyById(id);
       setSelectedProperty(fullDetails);
-      detailsSheetRef.current?.present();
     } catch (error) {
       console.error('Failed to fetch details:', error);
+      detailsSheetRef.current?.dismiss();
     } finally {
       setIsFetchingDetails(false);
     }
