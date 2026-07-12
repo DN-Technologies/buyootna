@@ -193,7 +193,7 @@ const PropertyDetailsSheet = forwardRef<
                 <View key="area" className="flex-row items-center gap-1.5">
                   <AreaIcon color="#15304D" size={17} />
                   <Text className="font-cairo-medium text-sm leading-[22px] text-[#111111]">
-                    {property.area ?? 200} م²
+                    {property.areaSize} م²
                   </Text>
                 </View>,
               );

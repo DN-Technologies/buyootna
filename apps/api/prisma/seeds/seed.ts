@@ -323,6 +323,7 @@ async function main() {
 
     propertiesData.push({
       id: randomUUID(),
+      referenceNumber: 1000000 + i,
       userId: randomUser.id,
       type,
       category,

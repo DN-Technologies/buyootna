@@ -6,7 +6,6 @@ import {
   FlatList,
   RefreshControl,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -35,7 +34,6 @@ export default function HomeProperties({
   viewMode = 'card',
 }: HomePropertiesProps) {
   const router = useRouter();
-  const { width: windowWidth } = useWindowDimensions();
   const { isTablet, cardColumns } = useResponsiveLayout();
   const [data, setData] = useState<PropertyDto[]>([]);
   const [page, setPage] = useState(1);

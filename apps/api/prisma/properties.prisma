@@ -1,5 +1,6 @@
 model Property {
   id                 String           @id @default(uuid())
+  referenceNumber    Int              @unique
   type               ListingType
   category           PropertyCategory
   isFeatured         Boolean          @default(false)

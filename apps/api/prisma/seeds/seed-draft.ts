@@ -39,6 +39,7 @@ async function main() {
   // Draft 1: Sale (Apartment in Salmiya)
   const draft1 = await prisma.property.create({
     data: {
+      referenceNumber: 2000001,
       userId: user.id,
       type: 'SALE',
       category: 'APARTMENT',
@@ -64,6 +65,7 @@ async function main() {
   // Draft 2: Rent (Villa in Zahra)
   const draft2 = await prisma.property.create({
     data: {
+      referenceNumber: 2000002,
       userId: user.id,
       type: 'RENT',
       category: 'VILLA',
@@ -88,6 +90,7 @@ async function main() {
   // Draft 3: Exchange (House in Jaber Al-Ahmed)
   const draft3 = await prisma.property.create({
     data: {
+      referenceNumber: 2000003,
       userId: user.id,
       type: 'EXCHANGE',
       category: 'HOUSE',

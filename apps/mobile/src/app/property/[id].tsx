@@ -13,13 +13,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { propertiesService } from '@/core/api/properties.service';
 import { chatService } from '@/core/api/chat.service';
+import { propertiesService } from '@/core/api/properties.service';
 import AuthGuardSheet from '@/core/components/AuthGuardSheet';
 import ContentContainer from '@/core/components/ContentContainer';
 import ListerProfileSnippet from '@/core/components/ListerProfileSnippet';
 import MapPreview from '@/core/components/MapPreview';
-import MapViewModal from '@/core/components/MapViewModal';
 import PropertyActionBar from '@/core/components/PropertyActionBar';
 import PropertyDetailsBody from '@/core/components/PropertyDetailsBody';
 import PropertyMediaHeader from '@/core/components/PropertyMediaHeader';
@@ -45,7 +44,6 @@ export default function PropertyDetailsScreen() {
   const [property, setProperty] = useState<PropertyDetailsDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showMapModal, setShowMapModal] = useState(false);
 
   // Zustand Favorites Store
   const isFavorite = useFavoritesStore((state) =>
@@ -93,7 +91,10 @@ export default function PropertyDetailsScreen() {
     if (!property) return;
     guardAction(async () => {
       try {
-        const response = await chatService.createConversation(property.host.id, property.id);
+        const response = await chatService.createConversation(
+          property.host.id,
+          property.id,
+        );
         router.push(`/chat/${response.id}`);
       } catch (error) {
         console.error('Failed to start chat conversation:', error);
@@ -199,85 +200,92 @@ export default function PropertyDetailsScreen() {
         bounces={false} // Prevents pulling the image down from the top on iOS
       >
         <ContentContainer>
-        {/* --- Media Header (Scrolls with page) --- */}
-        <PropertyMediaHeader
-          images={
-            property.images && property.images.length > 0
-              ? property.images
-              : ['https://via.placeholder.com/600x400']
-          }
-          insets={insets}
-          onBack={() => router.back()}
-          isFavorite={isFavorite}
-          onFavorite={handleFavoriteToggle}
-          onShare={handleShare}
-        />
-
-        {/* --- Card 3: Property Specs --- */}
-        <PropertyOverview
-          type={property.type}
-          title={displayTitle}
-          price={property.price}
-          isFeatured={property.isFeatured}
-          timeAgo={formatTimeAgo(property.createdAt)}
-          views={property.views}
-          area={property.area}
-          location={property.location}
-          floor={property.floors}
-          beds={property.beds}
-          baths={property.baths}
-          requestYear={property.requestYear?.toString()}
-          requiredYear={property.requiredYear?.toString()}
-          licenseNumber={property.licenseNumber}
-          exchangeRequirement={
-            property.type === 'EXCHANGE' ? property.description : undefined
-          }
-        />
-
-        {/* --- Card 4: Map Preview --- */}
-        <View className="mt-4">
-          <MapPreview
-            location={property.location}
-            onPress={() => console.log('Open Full Map Modal')}
+          {/* --- Media Header (Scrolls with page) --- */}
+          <PropertyMediaHeader
+            images={
+              property.images && property.images.length > 0
+                ? property.images
+                : ['https://via.placeholder.com/600x400']
+            }
+            insets={insets}
+            onBack={() => router.back()}
+            isFavorite={isFavorite}
+            onFavorite={handleFavoriteToggle}
+            onShare={handleShare}
           />
-        </View>
 
-        {/* --- Card 5: Dynamic Details Sections --- */}
-        <View className="mt-2">
-          <PropertyDetailsBody
+          {/* --- Card 3: Property Specs --- */}
+          <PropertyOverview
             type={property.type}
-            description={property.description}
-            features={['شارع واحد', 'مصعد', 'جراج']} // fallback features
-            exchangeRequirement={undefined}
-            additionalCosts={
-              property.type === 'RENT'
-                ? 'الكهرباء والماء: على المستأجر (غير مشمولة في الإيجار).\nالإنترنت: متوفر اشتراك فايبر (يتحمله المستأجر).'
-                : undefined
-            }
-            rentTerms={
-              property.type === 'RENT'
-                ? 'الفئة المستهدفة: عائلات فقط.\nمدة العقد: سنة واحدة (تجدد تلقائياً).\nالتأمين: مطلوب تأمين نصف شهر (مسترد عند الإخلاء).'
-                : undefined
+            title={displayTitle}
+            price={property.price}
+            isFeatured={property.isFeatured}
+            timeAgo={formatTimeAgo(property.createdAt)}
+            views={property.views}
+            area={property.areaSize ?? property.area}
+            location={property.location}
+            floor={property.floors}
+            beds={property.beds}
+            baths={property.baths}
+            requestYear={property.requestYear?.toString()}
+            requiredYear={property.requiredYear?.toString()}
+            licenseNumber={property.licenseNumber}
+            exchangeRequirement={
+              property.type === 'EXCHANGE' ? property.description : undefined
             }
           />
-        </View>
 
-        {/* --- Card 6: Lister/Host Profile Snippet --- */}
-        <View className="mt-4 px-5">
-          <ListerProfileSnippet
-            name={property.host.name}
-            joinedDate={property.host.joinedDate}
-            rating={property.host.rating}
-            avatarUrl={property.host.avatarUrl}
-            isVerified={property.host.isVerified}
-            onPress={() => console.log('Navigate to Host Profile')}
-          />
-        </View>
+          {/* --- Card 4: Map Preview --- */}
+          <View className="mt-4">
+            <MapPreview
+              location={property.location}
+              onPress={() => console.log('Open Full Map Modal')}
+            />
+          </View>
+
+          {/* --- Card 5: Dynamic Details Sections --- */}
+          <View className="mt-2">
+            <PropertyDetailsBody
+              type={property.type}
+              description={property.description}
+              features={['شارع واحد', 'مصعد', 'جراج']} // fallback features
+              exchangeRequirement={undefined}
+              additionalCosts={
+                property.type === 'RENT'
+                  ? 'الكهرباء والماء: على المستأجر (غير مشمولة في الإيجار).\nالإنترنت: متوفر اشتراك فايبر (يتحمله المستأجر).'
+                  : undefined
+              }
+              rentTerms={
+                property.type === 'RENT'
+                  ? 'الفئة المستهدفة: عائلات فقط.\nمدة العقد: سنة واحدة (تجدد تلقائياً).\nالتأمين: مطلوب تأمين نصف شهر (مسترد عند الإخلاء).'
+                  : undefined
+              }
+            />
+          </View>
+
+          {/* --- Card 6: Lister/Host Profile Snippet --- */}
+          <View className="mt-4 px-5">
+            <ListerProfileSnippet
+              name={property.host.name}
+              joinedDate={property.host.joinedDate}
+              rating={property.host.rating}
+              avatarUrl={property.host.avatarUrl}
+              isVerified={property.host.isVerified}
+              onPress={() => console.log('Navigate to Host Profile')}
+            />
+          </View>
+
+          {/* --- Ad Reference Number --- */}
+          {property.referenceNumber && (
+            <Text className="my-6 text-center font-cairo-semibold text-sm text-[#6B6A6A]">
+              رقم المرجعي للاعلان: {property.referenceNumber}
+            </Text>
+          )}
         </ContentContainer>
       </ScrollView>
 
       {/* --- 3. Fixed Bottom Action Bar --- */}
-      <ContentContainer className="absolute bottom-0 w-full bg-white z-50">
+      <ContentContainer className="absolute bottom-0 z-50 w-full bg-white">
         <PropertyActionBar
           insets={insets}
           onWhatsapp={handleWhatsapp}

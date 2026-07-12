@@ -145,6 +145,10 @@ export class PropertiesService {
     };
   }
 
+  private generateReferenceNumber(): number {
+    return Math.floor(1000000 + Math.random() * 9000000);
+  }
+
   // --- CREATE ---
   async create(userId: string, dto: CreatePropertyDto) {
     // 1. Separate the meta flag from the actual database fields
@@ -175,10 +179,24 @@ export class PropertiesService {
           );
         }
 
+        // Generate unique reference number inside transaction
+        let referenceNumber = 0;
+        let isUnique = false;
+        while (!isUnique) {
+          referenceNumber = this.generateReferenceNumber();
+          const existing = await tx.property.findUnique({
+            where: { referenceNumber },
+          });
+          if (!existing) {
+            isUnique = true;
+          }
+        }
+
         // Create the property
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
+            referenceNumber,
             status: targetStatus,
             userId: userId,
           },
@@ -201,10 +219,24 @@ export class PropertiesService {
     // PATH B: SAVING AS A DRAFT
     // ==========================================
     else {
+      // Generate unique reference number
+      let referenceNumber = 0;
+      let isUnique = false;
+      while (!isUnique) {
+        referenceNumber = this.generateReferenceNumber();
+        const existing = await this.prisma.property.findUnique({
+          where: { referenceNumber },
+        });
+        if (!existing) {
+          isUnique = true;
+        }
+      }
+
       // Just save the data, no quota deduction required
       const draftProperty = await this.prisma.property.create({
         data: {
           ...propertyData,
+          referenceNumber,
           status: targetStatus,
           userId: userId,
         },
