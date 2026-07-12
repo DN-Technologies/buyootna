@@ -1,33 +1,44 @@
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 
+import AddPropertyFAB from '@/features/components/map/AddPropertyFAB';
 import DiscoveryMap, {
   MapBounds,
 } from '@/features/components/map/DiscoveryMap';
+import MapOverlayUI from '@/features/components/map/MapOverlayUI';
 
 export default function MapDashboardScreen() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
 
-  // Callback to handle map movements
+  // State for the active category pill
+  const [activeCategory, setActiveCategory] = useState('بيع');
+
   const handleBoundsChanged = useCallback((bounds: MapBounds) => {
     setCurrentBounds(bounds);
-
-    // In Card 3, we will trigger our API call here:
-    // fetchPropertiesInBounds(bounds.sw, bounds.ne);
-    console.log('Map moved! New bounds to query:', bounds);
+    console.log('Map moved! Query backend with bounds:', bounds);
   }, []);
 
-  return (
-    // Note: We don't use SafeAreaView for the Map wrapper so it bleeds beautifully under the notch
-    <View className="flex-1 bg-white">
-      {/* 
-        This is where our floating UI (Search bar, Pills, Dropdowns) will go in Card 2 
-        It will be position: 'absolute' layered over the map 
-      */}
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+    // In Card 3, changing this will trigger a fresh filter query to the backend
+    console.log('Filter switched to:', category);
+  };
 
-      {/* The Core Mapbox Map */}
+  return (
+    <View className="flex-1 bg-[#F8FAFC]">
+      {/* 1. Map Layer (Base) */}
       <DiscoveryMap onBoundsChanged={handleBoundsChanged} />
+
+      {/* 2. Top Header Overlay (Search, Tabs, Dropdowns) */}
+      <MapOverlayUI
+        activeCategory={activeCategory}
+        onCategoryChange={handleCategoryChange}
+        onOpenFilters={() => console.log('Open Detailed Filters Sheet')}
+      />
+
+      {/* 3. Bottom Left Overlay (FAB) */}
+      <AddPropertyFAB />
     </View>
   );
 }
