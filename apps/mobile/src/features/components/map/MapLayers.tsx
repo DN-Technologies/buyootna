@@ -12,8 +12,20 @@ import { generateMockGeoJSON } from '@/features/utils/mockGeoJSON';
 // import defaultCompanyIcon from '@/assets/images/map/company-base.png';
 // import pillBg from '@/assets/images/map/pill-bg.png';
 
-export default function MapLayers() {
+interface MapLayersProps {
+  selectedId: string | null;
+  onMarkerPress: (feature: any) => void;
+}
+
+export default function MapLayers({ selectedId, onMarkerPress }: MapLayersProps) {
   const geoJSONData = generateMockGeoJSON();
+
+  const handlePress = (event: any) => {
+    const feature = event.features[0];
+    if (feature && feature.properties) {
+      onMarkerPress(feature);
+    }
+  };
 
   return (
     <>
@@ -35,6 +47,7 @@ export default function MapLayers() {
         cluster={true}
         clusterRadius={50} // Distance in pixels to group points
         clusterMaxZoomLevel={14} // Stop clustering when zoomed in close
+        onPress={handlePress} // Listen for taps on markers
       >
         {/* --- LAYER A: Dark Blue Clusters (18+, 801) --- */}
         <CircleLayer
@@ -82,16 +95,17 @@ export default function MapLayers() {
           style={{
             textField: ['get', 'priceLabel'],
             textSize: 12,
+            // Dynamic text color based on selection state
             textColor: [
               'case',
-              ['boolean', ['get', 'isSelected'], false],
-              '#FFFFFF', // Gold background implies white text in Figma
+              ['==', ['get', 'id'], selectedId || ''],
+              '#FFFFFF', // White text when selected
               '#15304D', // Default dark text
             ],
-            // Use an SDF image or standard text halos to create the pill background effect efficiently
+            // Dynamic halo/background color based on selection state
             textHaloColor: [
               'case',
-              ['boolean', ['get', 'isSelected'], false],
+              ['==', ['get', 'id'], selectedId || ''],
               '#D4AF37', // Gold for active
               '#FFFFFF', // White for default
             ],
@@ -129,9 +143,19 @@ export default function MapLayers() {
             iconSize: 1,
             textField: ['get', 'rating'],
             textSize: 10,
-            textColor: '#15304D',
+            textColor: [
+              'case',
+              ['==', ['get', 'id'], selectedId || ''],
+              '#FFFFFF', // White text when selected
+              '#15304D', // Default dark text
+            ],
             textOffset: [0, 1.5], // Push the rating text below the circular company logo
-            textHaloColor: '#FFFFFF',
+            textHaloColor: [
+              'case',
+              ['==', ['get', 'id'], selectedId || ''],
+              '#D4AF37', // Gold for active
+              '#FFFFFF', // White for default
+            ],
             textHaloWidth: 2,
           }}
         />

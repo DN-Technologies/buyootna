@@ -19,9 +19,15 @@ export interface MapBounds {
 
 interface DiscoveryMapProps {
   onBoundsChanged: (bounds: MapBounds) => void;
+  selectedId: string | null;
+  onMarkerPress: (feature: any) => void;
 }
 
-export default function DiscoveryMap({ onBoundsChanged }: DiscoveryMapProps) {
+export default function DiscoveryMap({
+  onBoundsChanged,
+  selectedId,
+  onMarkerPress,
+}: DiscoveryMapProps) {
   const mapRef = useRef<MapView>(null);
   const [isMapReady, setIsMapReady] = useState(false);
 
@@ -64,7 +70,9 @@ export default function DiscoveryMap({ onBoundsChanged }: DiscoveryMapProps) {
         />
 
         {/* Render High-Performance Vector Layers */}
-        {isMapReady && <MapLayers />}
+        {isMapReady && (
+          <MapLayers selectedId={selectedId} onMarkerPress={onMarkerPress} />
+        )}
       </MapView>
     </View>
   );
