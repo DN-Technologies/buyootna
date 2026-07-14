@@ -282,7 +282,7 @@ export default function ActivityScreen() {
   };
 
   const handlePromoAction = () => {
-    const route = freeAdsRemaining > 0 ? '/add-listing' : '/packages';
+    const route = freeAdsRemaining > 0 ? '/add-listing' : '/plans';
     router.push(route as any);
   };
 

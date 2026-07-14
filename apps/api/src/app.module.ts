@@ -16,6 +16,7 @@ import { MediaModule } from './media/media.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 import { FavoritesModule } from './features/favorites/favorites.module';
 import { ChatModule } from './features/chat/chat.module';
+import { MapModule } from './features/map/map.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ChatModule } from './features/chat/chat.module';
     MediaModule,
     FavoritesModule,
     ChatModule,
+    MapModule,
   ],
   controllers: [AppController],
   providers: [

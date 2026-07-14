@@ -1,6 +1,13 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 
+import {
+  boundsToParams,
+  categoryToMapType,
+  mapService,
+} from '@/core/api/map.service';
+import type { SelectionItem } from '@/core/components/filters/SelectionDrawer';
+import { useDebounce } from '@/core/hooks/useDebounce';
 import AddPropertyFAB from '@/features/components/map/AddPropertyFAB';
 import DiscoveryMap, {
   MapBounds,
@@ -9,41 +16,119 @@ import { EmptySearchSheet } from '@/features/components/map/EmptySearchSheet';
 import { PropertyPreviewCard } from '@/features/components/map/FloatingPreviewCards';
 import { MapListToggle } from '@/features/components/map/MapListToggle';
 import MapOverlayUI from '@/features/components/map/MapOverlayUI';
+import type { MapFeatureProperties } from '@/features/utils/mockGeoJSON';
+
+const EMPTY_GEOJSON: GeoJSON.FeatureCollection<
+  GeoJSON.Point,
+  MapFeatureProperties
+> = {
+  type: 'FeatureCollection',
+  features: [],
+};
 
 export default function MapDashboardScreen() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
+  const [geoJSON, setGeoJSON] =
+    useState<GeoJSON.FeatureCollection<GeoJSON.Point, MapFeatureProperties>>(
+      EMPTY_GEOJSON,
+    );
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // State for the active category pill
   const [activeCategory, setActiveCategory] = useState('بيع');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGovernorate, setSelectedGovernorate] =
+    useState<SelectionItem | null>(null);
+  const [selectedArea, setSelectedArea] = useState<SelectionItem | null>(null);
 
-  // State for the selected map feature
   const [selectedFeature, setSelectedFeature] = useState<any | null>(null);
 
-  // Simulated search results count state to test empty search sheet
-  const [searchResultsCount, setSearchResultsCount] = useState<number>(0);
-
-  // Animation value for the bottom preview card
   const slideAnim = useRef(new Animated.Value(200)).current;
+
+  const debouncedBounds = useDebounce(currentBounds, 400);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const handleBoundsChanged = useCallback((bounds: MapBounds) => {
     setCurrentBounds(bounds);
-    console.log('Map moved! Query backend with bounds:', bounds);
   }, []);
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
-    // Simulate empty results when changing categories for testing
-    setSearchResultsCount(0);
-    console.log('Filter switched to:', category);
+    setSelectedFeature(null);
   };
+
+  const handleGovernorateChange = (item: SelectionItem | null) => {
+    setSelectedGovernorate(item);
+    setSelectedArea(null);
+    setSelectedFeature(null);
+  };
+
+  const handleAreaChange = (item: SelectionItem | null) => {
+    setSelectedArea(item);
+    setSelectedFeature(null);
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setSelectedGovernorate(null);
+    setSelectedArea(null);
+    setSelectedFeature(null);
+  };
+
+  useEffect(() => {
+    if (!debouncedBounds) return;
+
+    let cancelled = false;
+
+    const fetchMapData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await mapService.discover({
+          ...boundsToParams(debouncedBounds),
+          type: categoryToMapType(activeCategory),
+          ...(selectedGovernorate?.id
+            ? { governorateId: selectedGovernorate.id }
+            : {}),
+          ...(selectedArea?.id ? { areaId: selectedArea.id } : {}),
+          ...(debouncedSearchQuery.trim()
+            ? { searchQuery: debouncedSearchQuery.trim() }
+            : {}),
+        });
+
+        if (!cancelled) {
+          setGeoJSON(response);
+          setHasFetched(true);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch map data:', error);
+        if (!cancelled) {
+          setGeoJSON(EMPTY_GEOJSON);
+          setHasFetched(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchMapData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    debouncedBounds,
+    activeCategory,
+    selectedGovernorate?.id,
+    selectedArea?.id,
+    debouncedSearchQuery,
+  ]);
 
   const handleMarkerPress = useCallback(
     (feature: any) => {
       setSelectedFeature(feature);
-      console.log('Marker clicked! ID:', feature.properties?.id);
 
-      // Slide the card up smoothly
       Animated.spring(slideAnim, {
         toValue: 0,
         useNativeDriver: true,
@@ -55,7 +140,6 @@ export default function MapDashboardScreen() {
   );
 
   const handleCloseCard = useCallback(() => {
-    // Slide the card back down
     Animated.timing(slideAnim, {
       toValue: 200,
       duration: 200,
@@ -65,35 +149,33 @@ export default function MapDashboardScreen() {
     });
   }, [slideAnim]);
 
-  const handleClearFilters = () => {
-    // Reset filters and refetch data
-    console.log('Filters cleared, showing broader results');
-    setSearchResultsCount(120);
-  };
-
-  const handleShowAll = () => {
-    // Zoom map out to full country bounds and refetch
-    console.log('Zooming out to show all properties');
-    setSearchResultsCount(450);
-  };
+  const showEmptySheet =
+    hasFetched &&
+    !isLoading &&
+    geoJSON.features.length === 0 &&
+    !selectedFeature;
 
   return (
     <View className="flex-1 bg-[#F8FAFC]">
-      {/* 1. Map Layer (Base) */}
       <DiscoveryMap
+        geoJSON={geoJSON}
         onBoundsChanged={handleBoundsChanged}
         selectedId={selectedFeature?.properties?.id || null}
         onMarkerPress={handleMarkerPress}
       />
 
-      {/* 2. Top Header Overlay (Search, Tabs, Dropdowns) */}
       <MapOverlayUI
         activeCategory={activeCategory}
         onCategoryChange={handleCategoryChange}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        selectedGovernorate={selectedGovernorate}
+        selectedArea={selectedArea}
+        onGovernorateChange={handleGovernorateChange}
+        onAreaChange={handleAreaChange}
         onOpenFilters={() => console.log('Open Detailed Filters Sheet')}
       />
 
-      {/* 3. Floating Action Buttons (Hidden if a preview card is open) */}
       {!selectedFeature && (
         <View pointerEvents="box-none" className="absolute inset-0 z-10">
           <AddPropertyFAB />
@@ -101,24 +183,21 @@ export default function MapDashboardScreen() {
         </View>
       )}
 
-      {/* 4. Bottom Context Area (Preview Card OR Empty State) */}
       <Animated.View
         pointerEvents="box-none"
         className="absolute bottom-[90px] left-0 right-0 z-20"
         style={{ transform: [{ translateY: selectedFeature ? slideAnim : 0 }] }}
       >
         {selectedFeature ? (
-          // Show the property details if a marker is tapped
           <PropertyPreviewCard
             property={selectedFeature.properties}
             onClose={handleCloseCard}
           />
-        ) : searchResultsCount === 0 ? (
-          // Show the Empty Search Sheet if no properties are in the current viewport
+        ) : showEmptySheet ? (
           <EmptySearchSheet
             activeCategory={activeCategory}
             onModifyFilters={handleClearFilters}
-            onShowAll={handleShowAll}
+            onShowAll={handleClearFilters}
           />
         ) : null}
       </Animated.View>

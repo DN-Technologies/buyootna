@@ -126,7 +126,7 @@ export default function NotificationsScreen() {
           {/* --- Switch Lists --- */}
           <View>
             <NotificationSwitchRow
-              title="إشارات التطبيق"
+              title="الإشعارات التطبيق"
               value={appNotifications}
               onValueChange={setAppNotifications}
             />

@@ -1,8 +1,9 @@
 import Mapbox, { Camera, MapView } from '@rnmapbox/maps';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import MapLayers from '@/features/components/map/MapLayers';
+import type { MapFeatureProperties } from '@/features/utils/mockGeoJSON';
 
 // Initialize Mapbox with PUBLIC token
 Mapbox.setAccessToken(
@@ -18,12 +19,14 @@ export interface MapBounds {
 }
 
 interface DiscoveryMapProps {
+  geoJSON: GeoJSON.FeatureCollection<GeoJSON.Point, MapFeatureProperties>;
   onBoundsChanged: (bounds: MapBounds) => void;
   selectedId: string | null;
   onMarkerPress: (feature: any) => void;
 }
 
 export default function DiscoveryMap({
+  geoJSON,
   onBoundsChanged,
   selectedId,
   onMarkerPress,
@@ -31,20 +34,28 @@ export default function DiscoveryMap({
   const mapRef = useRef<MapView>(null);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Triggered whenver the user finishes moving/zooming the map
-  const handleRegionDidChange = async () => {
-    if (!mapRef.current || !isMapReady) return;
+  const emitBounds = useCallback(async () => {
+    if (!mapRef.current) return;
 
     try {
-      // Extract the visible bounding box to pass to the backend for data fetching
       const bounds = await mapRef.current.getVisibleBounds();
       onBoundsChanged({
-        ne: bounds[0], // Top Right corner
-        sw: bounds[1], // Bottom Left corner
+        ne: bounds[0],
+        sw: bounds[1],
       });
     } catch (error) {
       console.warn('Failed to get map bounds:', error);
     }
+  }, [onBoundsChanged]);
+
+  const handleRegionDidChange = async () => {
+    if (!isMapReady) return;
+    await emitBounds();
+  };
+
+  const handleMapReady = async () => {
+    setIsMapReady(true);
+    await emitBounds();
   };
 
   return (
@@ -57,7 +68,7 @@ export default function DiscoveryMap({
         logoEnabled={false} // Clean UI requirement
         compassEnabled={false}
         attributionEnabled={false}
-        onDidFinishLoadingMap={() => setIsMapReady(true)}
+        onDidFinishLoadingMap={handleMapReady}
         onRegionDidChange={handleRegionDidChange}
       >
         <Camera
@@ -71,7 +82,11 @@ export default function DiscoveryMap({
 
         {/* Render High-Performance Vector Layers */}
         {isMapReady && (
-          <MapLayers selectedId={selectedId} onMarkerPress={onMarkerPress} />
+          <MapLayers
+            geoJSON={geoJSON}
+            selectedId={selectedId}
+            onMarkerPress={onMarkerPress}
+          />
         )}
       </MapView>
     </View>

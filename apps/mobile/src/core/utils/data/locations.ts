@@ -25,7 +25,7 @@ export const GOVERNORATES: LocationItem[] = [
     "label": "الفروانية"
   },
   {
-    "id": "mubarak_al_kabeer",
+    "id": "mubarak_alkabeer",
     "label": "مبارك الكبير"
   }
 ];
@@ -545,54 +545,34 @@ export const AREAS: Record<string, LocationItem[]> = {
       "label": "العارضية"
     }
   ],
-  "mubarak_al_kabeer": [
+  "mubarak_alkabeer": [
     {
-      "id": "mubarak_al_kabeer_1",
-      "label": "العدان"
-    },
-    {
-      "id": "mubarak_al_kabeer_2",
-      "label": "الفنيطيس"
-    },
-    {
-      "id": "mubarak_al_kabeer_3",
-      "label": "القرين"
-    },
-    {
-      "id": "mubarak_al_kabeer_4",
-      "label": "القصور"
-    },
-    {
-      "id": "mubarak_al_kabeer_5",
-      "label": "المسايل"
-    },
-    {
-      "id": "mubarak_al_kabeer_6",
-      "label": "المسيلة"
-    },
-    {
-      "id": "mubarak_al_kabeer_7",
-      "label": "أبو الحصانية"
-    },
-    {
-      "id": "mubarak_al_kabeer_8",
-      "label": "أبو فطيرة"
-    },
-    {
-      "id": "mubarak_al_kabeer_9",
-      "label": "جنوب صباح السالم"
-    },
-    {
-      "id": "mubarak_al_kabeer_10",
+      "id": "mubarak_1",
       "label": "صباح السالم"
     },
     {
-      "id": "mubarak_al_kabeer_11",
-      "label": "ضاحية صباح السالم"
+      "id": "mubarak_2",
+      "label": "المسيلة"
     },
     {
-      "id": "mubarak_al_kabeer_12",
-      "label": "غرب أبو فطيرة الحرفية"
+      "id": "mubarak_3",
+      "label": "الفنيطيس"
+    },
+    {
+      "id": "mubarak_4",
+      "label": "أبو الحصانية"
+    },
+    {
+      "id": "mubarak_5",
+      "label": "العدان"
+    },
+    {
+      "id": "mubarak_6",
+      "label": "القصور"
+    },
+    {
+      "id": "mubarak_7",
+      "label": "القرين"
     }
   ]
 };

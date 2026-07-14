@@ -5,20 +5,19 @@ import {
   SymbolLayer,
 } from '@rnmapbox/maps';
 
-import { generateMockGeoJSON } from '@/features/utils/mockGeoJSON';
-
-// Ensure you have these local assets in your project to use as base images for complex markers
-// import exchangeIcon from '@/assets/images/map/exchange-icon.png';
-// import defaultCompanyIcon from '@/assets/images/map/company-base.png';
-// import pillBg from '@/assets/images/map/pill-bg.png';
+import type { MapFeatureProperties } from '@/features/utils/mockGeoJSON';
 
 interface MapLayersProps {
+  geoJSON: GeoJSON.FeatureCollection<GeoJSON.Point, MapFeatureProperties>;
   selectedId: string | null;
   onMarkerPress: (feature: any) => void;
 }
 
-export default function MapLayers({ selectedId, onMarkerPress }: MapLayersProps) {
-  const geoJSONData = generateMockGeoJSON();
+export default function MapLayers({
+  geoJSON,
+  selectedId,
+  onMarkerPress,
+}: MapLayersProps) {
 
   const handlePress = (event: any) => {
     const feature = event.features[0];
@@ -43,7 +42,7 @@ export default function MapLayers({ selectedId, onMarkerPress }: MapLayersProps)
       {/* 2. ShapeSource: The Data Engine */}
       <ShapeSource
         id="propertiesSource"
-        shape={geoJSONData}
+        shape={geoJSON}
         cluster={true}
         clusterRadius={50} // Distance in pixels to group points
         clusterMaxZoomLevel={14} // Stop clustering when zoomed in close

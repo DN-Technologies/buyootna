@@ -45,6 +45,8 @@ model CompanyProfile {
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?
+  latitude        Float?
+  longitude       Float?
   userId          String          @unique
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -54,6 +56,8 @@ model CompanyProfile {
   status          ApprovalStatus  @default(PENDING)
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviewRequests  ReviewRequest[]
+
+  @@index([latitude, longitude])
 }
 
 model OfficeProfile {

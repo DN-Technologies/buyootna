@@ -120,8 +120,8 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   propertyCategory: null,
   areaSize: '',
   automatedNumber: '',
-  rooms: 1,
-  baths: 1,
+  rooms: 0,
+  baths: 0,
   floors: 0,
   features: [],
   mapLocation: null,
@@ -230,8 +230,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       propertyCategory: { id: categoryId, label: categoryLabel },
       areaSize: property.areaSize ? property.areaSize.toString() : '',
       automatedNumber: property.automatedNumber || '',
-      rooms: property.beds || 1,
-      baths: property.baths || 1,
+      rooms: property.beds ?? 0,
+      baths: property.baths ?? 0,
       floors: property.floors || 0,
       features: property.features
         ? (property.features as any[]).map((f: any) => f.label || f)

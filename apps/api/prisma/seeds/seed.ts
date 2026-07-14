@@ -11,6 +11,7 @@ import { Pool } from 'pg';
 import 'dotenv/config';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { randomCoordinateForArea } from './kuwait-coordinates';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -188,8 +189,8 @@ async function main() {
   console.log('🔑 Pre-hashing password for users...');
   const hashedPassword = await bcrypt.hash('password123', 10);
 
-  // 3. Generate 200 Company Users and Profiles
-  console.log('👤 Seeding 200 Company Users & Profiles...');
+  // 3. Generate 500 Company Users and Profiles
+  console.log('👤 Seeding 500 Company Users & Profiles...');
   const usersData: any[] = [];
   const companyProfilesData: any[] = [];
 
@@ -203,12 +204,25 @@ async function main() {
     role: Role.COMPANY,
   });
 
+  // Pick all areas to randomly assign to properties and companies
+  const allAreas = GOVERNORATES.flatMap((g) =>
+    g.areas.map((a) => ({
+      govId: g.id,
+      govName: g.name,
+      areaId: a.id,
+      areaName: a.name,
+    })),
+  );
+
+  const developerArea = allAreas[0];
+  const developerCoords = randomCoordinateForArea(developerArea.areaId);
+
   companyProfilesData.push({
     id: randomUUID(),
     userId: developerUserId,
     name: 'بيوتنا العقارية التطويرية',
     services: 'إدارة أملاك • وساطة عقارية • تقييم عقاري',
-    hqLocation: 'مدينة الكويت، العاصمة',
+    hqLocation: `${developerArea.areaName}، ${developerArea.govName}`,
     serviceAreas: 'جميع مناطق الكويت',
     about:
       'الشركة الرسمية المطورة لمنصة بيوتنا العقارية في دولة الكويت لتقديم الخدمات العقارية المتكاملة.',
@@ -220,10 +234,12 @@ async function main() {
     licenseNumber: 'LIC-DEV-999',
     isVerified: true,
     status: ApprovalStatus.APPROVED,
+    latitude: developerCoords.latitude,
+    longitude: developerCoords.longitude,
   });
 
-  // Seed the remaining 199 companies
-  for (let i = 1; i <= 199; i++) {
+  // Seed the remaining 499 companies
+  for (let i = 1; i <= 499; i++) {
     const userId = randomUUID();
     const name = `${COMPANY_NAMES[i % COMPANY_NAMES.length]} ${i}`;
     const category = SERVICES_LIST[i % SERVICES_LIST.length];
@@ -236,12 +252,15 @@ async function main() {
       role: Role.COMPANY,
     });
 
+    const companyArea = allAreas[i % allAreas.length];
+    const companyCoords = randomCoordinateForArea(companyArea.areaId);
+
     companyProfilesData.push({
       id: randomUUID(),
       userId,
       name,
       services: category,
-      hqLocation: 'مدينة الكويت',
+      hqLocation: `${companyArea.areaName}، ${companyArea.govName}`,
       serviceAreas: 'جميع المناطق',
       about: `شركة ${name} الرائدة في تقديم الخدمات العقارية والصيانة بجودة واحترافية متناهية في السوق الكويتي.`,
       licenseActivity: 'خدمات عقارية عامة',
@@ -251,6 +270,8 @@ async function main() {
       licenseNumber: `LIC-COMP-${100000 + i}`,
       isVerified: i % 2 === 0, // 50% verified
       status: ApprovalStatus.APPROVED, // Approved so they are visible in queries
+      latitude: companyCoords.latitude,
+      longitude: companyCoords.longitude,
     });
   }
 
@@ -259,19 +280,14 @@ async function main() {
   await prisma.companyProfile.createMany({ data: companyProfilesData });
   console.log(`✅ Seeded ${usersData.length} company users and profiles.`);
 
-  // 4. Generate 1000 Properties
-  console.log('🏠 Seeding 1000 Properties...');
+  // 4. Generate 4500 Properties
+  console.log('🏠 Seeding 4500 Properties...');
   const propertiesData: any[] = [];
   const listingTypes: ListingType[] = [
     ListingType.SALE,
     ListingType.RENT,
     ListingType.EXCHANGE,
   ];
-
-  // Pick all areas to randomly assign to properties
-  const allAreas = GOVERNORATES.flatMap((g) =>
-    g.areas.map((a) => ({ govId: g.id, areaId: a.id })),
-  );
 
   const propertyCategories: PropertyCategory[] = [
     PropertyCategory.APARTMENT,
@@ -283,7 +299,7 @@ async function main() {
     PropertyCategory.INVESTMENT,
   ];
 
-  for (let i = 1; i <= 1000; i++) {
+  for (let i = 1; i <= 4500; i++) {
     // Distribute properties randomly among seeded company users
     const randomUser = usersData[i % usersData.length];
     const randomArea = allAreas[i % allAreas.length];
@@ -321,6 +337,8 @@ async function main() {
       PROPERTY_IMAGES[(i + 1) % PROPERTY_IMAGES.length],
     ];
 
+    const { latitude, longitude } = randomCoordinateForArea(randomArea.areaId);
+
     propertiesData.push({
       id: randomUUID(),
       referenceNumber: 1000000 + i,
@@ -341,6 +359,8 @@ async function main() {
       areaSize,
       phoneNumber: randomUser.phone,
       views: i % 100, // mock views
+      latitude,
+      longitude,
     });
   }
 
