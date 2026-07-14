@@ -271,7 +271,16 @@ export default function PropertyDetailsScreen() {
               rating={property.host.rating}
               avatarUrl={property.host.avatarUrl}
               isVerified={property.host.isVerified}
-              onPress={() => console.log('Navigate to Host Profile')}
+              onPress={() => {
+                if (
+                  property.host.role === 'COMPANY' ||
+                  property.host.role === 'OFFICE'
+                ) {
+                  Alert.alert('تنبيه', 'تفاصيل الشركة/المكتب ستكون متاحة قريباً');
+                } else {
+                  router.push(`/profile/${property.host.id}`);
+                }
+              }}
             />
           </View>
 

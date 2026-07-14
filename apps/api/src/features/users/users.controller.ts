@@ -9,6 +9,8 @@ import {
   UploadedFiles,
   UseGuards,
   UseInterceptors,
+  Param,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -109,5 +111,14 @@ export class UsersController {
       message: 'You have successfully accessed a protected route!',
       user: fullUser,
     };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const fullUser = await this.usersService.findFullUser(id);
+    if (!fullUser) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+    return fullUser;
   }
 }

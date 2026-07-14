@@ -99,7 +99,7 @@ export class PropertiesService {
 
   // --- PAGINATED FEED (For Infinite Scroll) ---
   async findAll(filters: GetPropertiesFilterDto) {
-    const { type, page = 1, limit = 10 } = filters;
+    const { type, page = 1, limit = 10, userId } = filters;
 
     // Calculate how many records to skip based on the curretn page
     const skip = (page - 1) * limit;
@@ -108,6 +108,9 @@ export class PropertiesService {
     const whereClause: Prisma.PropertyWhereInput = {};
     if (type) {
       whereClause.type = type;
+    }
+    if (userId) {
+      whereClause.userId = userId;
     }
 
     // Run both queries concurrently: get the data AND the total count
@@ -400,6 +403,11 @@ export class PropertiesService {
           property.user.companyProfile?.isVerified ||
           false,
         rating: 4.5, // TODO: Make dynamic when ratings system is built
+        role: property.user.officeProfile
+          ? 'OFFICE'
+          : property.user.companyProfile
+            ? 'COMPANY'
+            : 'INDIVIDUAL',
       },
       licenseNumber: property.user.officeProfile?.licenseNumber || undefined,
     };

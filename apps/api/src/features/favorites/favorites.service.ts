@@ -117,6 +117,11 @@ export class FavoritesService {
           id: prop.user.id,
           name: hostName,
           avatarUrl: hostAvatar,
+          role: prop.user.officeProfile
+            ? 'OFFICE'
+            : prop.user.companyProfile
+              ? 'COMPANY'
+              : 'INDIVIDUAL',
         },
       };
     });

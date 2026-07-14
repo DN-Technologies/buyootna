@@ -36,5 +36,6 @@ export interface PropertyDetailsDto {
     joinedDate: string;
     isVerified: boolean;
     rating: number;
+    role?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
   };
 }
