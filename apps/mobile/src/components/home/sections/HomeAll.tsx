@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -16,8 +15,11 @@ interface HomeAllProps {
   viewMode?: 'card' | 'list';
 }
 
-export default function HomeAll({ feedData, isLoading, viewMode = 'card' }: HomeAllProps) {
-
+export default function HomeAll({
+  feedData,
+  isLoading,
+  viewMode = 'card',
+}: HomeAllProps) {
   // --- Loading Screen ---
   if (isLoading) {
     return (
@@ -53,7 +55,10 @@ export default function HomeAll({ feedData, isLoading, viewMode = 'card' }: Home
       <RentProperties initialData={feedData?.rent || []} viewMode={viewMode} />
 
       {/* --- Section: عقارات للبدل (Properties for Exchange) --- */}
-      <ExchangeProperties initialData={feedData?.exchange || []} viewMode={viewMode} />
+      <ExchangeProperties
+        initialData={feedData?.exchange || []}
+        viewMode={viewMode}
+      />
 
       {/* --- Section: شركات الخدمات (Service Companies) --- */}
       <ServiceCompanies initialData={feedData?.companies || []} />

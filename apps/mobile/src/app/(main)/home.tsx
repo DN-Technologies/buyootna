@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import HomeFilterPills from '@/components/home/HomeFilterPills';
 import HomeHeader from '@/components/home/HomeHeader';
+import HomeHeaderSkeleton from '@/components/home/HomeHeaderSkeleton';
 import HomePrimaryTabs from '@/components/home/HomePrimaryTabs';
 import HomeSearchBar from '@/components/home/HomeSearchBar';
 import HomeAll from '@/components/home/sections/HomeAll';
@@ -80,33 +81,33 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const renderHeader = (withHorizontalPadding = true) => (
+    <View className={`pt-4 ${withHorizontalPadding ? 'px-[20px]' : ''}`}>
+      {/* 1. Header Section */}
+      <HomeHeader />
+
+      {/* 2. Search Bar */}
+      <HomeSearchBar onFilterPress={() => filterSheetRef.current?.present()} />
+
+      {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
+      <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* 4. Secondary Tabs (Filter Pills) */}
+      <HomeFilterPills
+        activeTab={activeTab}
+        activePropFilter={activePropFilter}
+        onPropFilterChange={setActivePropFilter}
+        activeCompFilter={activeCompFilter}
+        onCompFilterChange={setActiveCompFilter}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+    </View>
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ContentContainer className="flex-1">
-        <View className="px-5 pt-4">
-          {/* 1. Header Section */}
-          <HomeHeader />
-
-          {/* 2. Search Bar */}
-          <HomeSearchBar
-            onFilterPress={() => filterSheetRef.current?.present()}
-          />
-
-          {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
-          <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-          {/* 4. Secondary Tabs (Filter Pills) */}
-          <HomeFilterPills
-            activeTab={activeTab}
-            activePropFilter={activePropFilter}
-            onPropFilterChange={setActivePropFilter}
-            activeCompFilter={activeCompFilter}
-            onCompFilterChange={setActiveCompFilter}
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-        </View>
-
         {/* 5. Scrolling Content Area (The Feed) */}
         {activeTab === 'properties' ? (
           <HomeProperties
@@ -114,16 +115,30 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             viewMode={viewMode}
+            ListHeaderComponent={
+              isLoading ? (
+                <HomeHeaderSkeleton withHorizontalPadding={false} />
+              ) : (
+                renderHeader(false)
+              )
+            }
           />
         ) : activeTab === 'companies' ? (
           <HomeCompanies
             activeFilter={activeCompFilter}
             refreshing={refreshing}
             onRefresh={onRefresh}
+            ListHeaderComponent={
+              isLoading ? (
+                <HomeHeaderSkeleton withHorizontalPadding={false} />
+              ) : (
+                renderHeader(false)
+              )
+            }
           />
         ) : (
           <ScrollView
-            className="flex-1"
+            className="flex-1 pt-4"
             contentContainerStyle={{
               paddingBottom: 130,
             }} // Extra padding for the custom bottom bar
@@ -137,6 +152,11 @@ export default function HomeScreen() {
               />
             }
           >
+            {isLoading ? (
+              <HomeHeaderSkeleton withHorizontalPadding={true} />
+            ) : (
+              renderHeader(true)
+            )}
             <HomeAll
               feedData={feedData}
               isLoading={isLoading}

@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { MapIcon, NotificationIcon } from '@/assets/icons/home/header/index';
@@ -37,7 +36,7 @@ export default function HomeHeader() {
           {token && (
             <Text className="font-cairo-bold text-base text-[#111111]">
               {/* Fallback to a default name if user data doesn't have it yet */}
-              {user?.email ? user.email.split('@')[0] : 'نواف الجارحي'}
+              {user?.email ? user.email.split('@')[0] : 'مستخدم'}
             </Text>
           )}
         </View>

@@ -25,6 +25,7 @@ interface HomePropertiesProps {
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
   viewMode?: 'card' | 'list';
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
 export default function HomeProperties({
@@ -32,6 +33,7 @@ export default function HomeProperties({
   refreshing = false,
   onRefresh,
   viewMode = 'card',
+  ListHeaderComponent,
 }: HomePropertiesProps) {
   const router = useRouter();
   const { isTablet, cardColumns } = useResponsiveLayout();
@@ -131,20 +133,18 @@ export default function HomeProperties({
     }
   };
 
-  // --- 3. Render States ---
-  if (isFilterLoading) {
+  const renderEmptyComponent = () => {
+    if (isFilterLoading) {
+      return (
+        <View style={{ paddingTop: 10 }}>
+          {[1, 2, 3].map((key) => (
+            <PropertySkeleton key={key} cardWidth="100%" />
+          ))}
+        </View>
+      );
+    }
     return (
-      <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
-        {[1, 2, 3].map((key) => (
-          <PropertySkeleton key={key} cardWidth="100%" />
-        ))}
-      </View>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <View className="items-center justify-center px-5 py-20">
+      <View className="items-center justify-center py-20">
         <Text className="mb-2 font-cairo-bold text-lg text-[#111111]">
           لا توجد عقارات
         </Text>
@@ -154,7 +154,7 @@ export default function HomeProperties({
         </Text>
       </View>
     );
-  }
+  };
 
   return (
     <View className="flex-1">
@@ -163,6 +163,8 @@ export default function HomeProperties({
         <FlatList
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
+          ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={renderEmptyComponent}
           columnWrapperStyle={
             isTablet
               ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 }
@@ -225,6 +227,8 @@ export default function HomeProperties({
         <FlatList
           data={data}
           keyExtractor={(item) => item.id}
+          ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={renderEmptyComponent}
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingBottom: 120,

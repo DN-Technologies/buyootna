@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 type PrimaryTab = 'all' | 'properties' | 'companies';
@@ -8,7 +7,10 @@ interface HomePrimaryTabsProps {
   onTabChange: (tab: PrimaryTab) => void;
 }
 
-export default function HomePrimaryTabs({ activeTab, onTabChange }: HomePrimaryTabsProps) {
+export default function HomePrimaryTabs({
+  activeTab,
+  onTabChange,
+}: HomePrimaryTabsProps) {
   return (
     <View className="mb-4 flex-row items-center border-b border-gray-200">
       <TouchableOpacity

@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from 'react-native';
 
 import { feedService } from '@/core/api/feed.service';
 import CompanyCard from '@/core/components/CompanyCard';
@@ -17,12 +23,14 @@ interface HomeCompaniesProps {
     | 'other';
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
 export default function HomeCompanies({
   activeFilter = 'all',
   refreshing = false,
   onRefresh,
+  ListHeaderComponent,
 }: HomeCompaniesProps) {
   const [data, setData] = useState<CompanyDto[]>([]);
   const [page, setPage] = useState(1);
@@ -103,20 +111,18 @@ export default function HomeCompanies({
     }
   };
 
-  // --- 3. Render States ---
-  if (isFilterLoading) {
+  const renderEmptyComponent = () => {
+    if (isFilterLoading) {
+      return (
+        <View style={{ paddingTop: 10 }}>
+          {[1, 2, 3].map((key) => (
+            <CompanySkeleton key={key} cardWidth="100%" />
+          ))}
+        </View>
+      );
+    }
     return (
-      <View style={{ paddingHorizontal: 20, paddingTop: 10 }}>
-        {[1, 2, 3].map((key) => (
-          <CompanySkeleton key={key} cardWidth="100%" />
-        ))}
-      </View>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <View className="items-center justify-center px-5 py-20">
+      <View className="items-center justify-center py-20">
         <Text className="mb-2 font-cairo-bold text-lg text-[#111111]">
           لا توجد شركات
         </Text>
@@ -126,12 +132,14 @@ export default function HomeCompanies({
         </Text>
       </View>
     );
-  }
+  };
 
   return (
     <FlatList
       data={data}
       keyExtractor={(item) => item.id}
+      ListHeaderComponent={ListHeaderComponent}
+      ListEmptyComponent={renderEmptyComponent}
       contentContainerStyle={{
         paddingHorizontal: 20,
         paddingBottom: 120,

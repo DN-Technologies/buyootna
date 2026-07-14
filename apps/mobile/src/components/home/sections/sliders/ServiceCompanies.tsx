@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -124,7 +124,8 @@ export default function ServiceCompanies({
           setData((prev) => {
             const combined = [...prev, ...newData];
             return combined.filter(
-              (item, idx) => combined.findIndex((i) => i.id === item.id) === idx
+              (item, idx) =>
+                combined.findIndex((i) => i.id === item.id) === idx,
             );
           });
           setPage(nextPage);
@@ -142,7 +143,7 @@ export default function ServiceCompanies({
         setData((prev) => {
           const combined = [...prev, ...response.data];
           return combined.filter(
-            (item, idx) => combined.findIndex((i) => i.id === item.id) === idx
+            (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
           );
         });
         setPage(response.meta.current);

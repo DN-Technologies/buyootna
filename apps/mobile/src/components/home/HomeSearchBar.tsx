@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { TextInput, TouchableOpacity, View } from 'react-native';
 
 import {
@@ -12,7 +11,6 @@ interface HomeSearchBarProps {
 }
 
 export default function HomeSearchBar({ onFilterPress }: HomeSearchBarProps) {
-
   const handleSearchPress = () => {
     router.push('/search');
   };
