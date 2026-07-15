@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Platform,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -70,8 +69,7 @@ export default function AvatarPicker({
       const match = /\.(\w+)$/.exec(filename);
       const ext = match ? match[1].toLowerCase() : 'jpg';
       const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-      const normalizedUri =
-        Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+      const normalizedUri = uri;
 
       formData.append('file', {
         uri: normalizedUri,

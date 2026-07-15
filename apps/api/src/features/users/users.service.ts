@@ -300,11 +300,36 @@ export class UsersService {
     dto: UpdateProfileDto,
     logoFile?: Express.Multer.File,
   ) {
-    // 1. Handle file upload if a new logo is uploaded
+    // 1. Update basic user fields if provided
+    const userUpdateData: Prisma.UserUpdateInput = {};
+    if (dto.name !== undefined) userUpdateData.name = dto.name;
+    if (dto.phone !== undefined) userUpdateData.phone = dto.phone;
+    if (dto.email !== undefined) userUpdateData.email = dto.email;
+    if (dto.whatsapp !== undefined) userUpdateData.whatsapp = dto.whatsapp;
+
+    // 2. Handle file upload if a new logo/avatar is uploaded
     let logoUrl: string | undefined = undefined;
     if (logoFile) {
-      const folder = role === Role.COMPANY ? 'company-logos' : 'office-logos';
+      const folder =
+        role === Role.COMPANY
+          ? 'company-logos'
+          : role === Role.OFFICE
+            ? 'office-logos'
+            : 'avatars';
       logoUrl = await this.storageService.uploadFile(logoFile, folder);
+    }
+
+    if (logoUrl) {
+      userUpdateData.avatarUrl = logoUrl;
+    } else if (dto.avatarUrl !== undefined) {
+      userUpdateData.avatarUrl = dto.avatarUrl;
+    }
+
+    if (Object.keys(userUpdateData).length > 0) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: userUpdateData,
+      });
     }
 
     if (role === Role.COMPANY) {
@@ -325,7 +350,7 @@ export class UsersService {
           logoUrl: logoUrl ?? profile.logoUrl,
         },
       });
-      return updated;
+      return { user: await this.findFullUser(userId), profile: updated };
     }
 
     if (role === Role.OFFICE) {
@@ -344,7 +369,7 @@ export class UsersService {
           logoUrl: logoUrl ?? profile.logoUrl,
         },
       });
-      return updated;
+      return { user: await this.findFullUser(userId), profile: updated };
     }
 
     if (role === Role.INDIVIDUAL) {
@@ -352,11 +377,25 @@ export class UsersService {
         where: { userId },
       });
       if (!profile) throw new NotFoundException('الملف الشخصي غير موجود');
-      // Individuals don't have fields in IndividualProfile yet, but we return success
-      return profile;
+      return { user: await this.findFullUser(userId), profile };
     }
 
     throw new InternalServerErrorException('نوع الحساب غير صالح');
+  }
+
+  async deleteAccount(userId: string) {
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
+    return { success: true, message: 'تم حذف الحساب بنجاح' };
+  }
+
+  async disableAccount(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isDisabled: true },
+    });
+    return { success: true, message: 'تم تعطيل الحساب بنجاح' };
   }
 
   async updateRole(userId: string, role: Role) {
@@ -375,6 +414,10 @@ export class UsersService {
         phone: true,
         role: true,
         freeAdsRemaining: true,
+        name: true,
+        whatsapp: true,
+        avatarUrl: true,
+        isDisabled: true,
         individualProfile: true,
         companyProfile: true,
         officeProfile: true,

@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import apiClient from '@/core/api/api';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -75,7 +73,7 @@ export const propertiesService = {
 
       // React Native's FormData accepts this object shape for file uploads
       formData.append('images', {
-        uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
+        uri: uri,
         type: mimeType,
         name: filename,
       } as unknown as Blob);

@@ -1,9 +1,11 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseGuards, Patch } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
-import { User } from '@prisma/client';
+import type { User } from '@prisma/client';
+import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
@@ -29,5 +31,18 @@ export class AuthController {
   @Post('register/verify-otp')
   async verifyRegisterOtp(@Body() dto: { phone: string; otp: string }) {
     return this.authService.verifyRegistrationOtp(dto.phone, dto.otp);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('change-password')
+  async changePassword(
+    @CurrentUser() user: User,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      user.id,
+      dto.oldPassword,
+      dto.newPassword,
+    );
   }
 }

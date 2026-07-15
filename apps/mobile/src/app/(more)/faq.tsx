@@ -1,8 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { faqService } from '@/core/api/faq.service';
 
 interface FAQItem {
   id: string;
@@ -10,42 +18,27 @@ interface FAQItem {
   answer: string;
 }
 
-const FAQ_DATA: FAQItem[] = [
-  {
-    id: '1',
-    question: 'ما هو تطبيق بيوتنا؟',
-    answer:
-      'تطبيق بيوتنا هو منصة عقارية كويتية متخصصة تهدف لتسهيل عملية البحث، البيع، الإيجار، والبدل لمختلف فئات العقارات في الكويت.',
-  },
-  {
-    id: '2',
-    question: 'كيف يمكنني إضافة إعلان جديد؟',
-    answer:
-      'يمكنك إضافة إعلان بالضغط على زر (+) في القائمة السفلية، ثم ملء تفاصيل العقار كالموقع والمساحة والسعر وإرفاق الصور المطلوبة ونشره مباشرة.',
-  },
-  {
-    id: '3',
-    question: 'هل توجد عمولات على عمليات البيع أو الإيجار؟',
-    answer:
-      'لا، تطبيق بيوتنا منصة مجانية للإعلان العقاري ولا يتقاضى أي عمولة على الصفقات المبرمة بين البائع والمشتري.',
-  },
-  {
-    id: '4',
-    question: 'ما هي باقات الإعلانات المميزة؟',
-    answer:
-      'توفر باقات الإعلانات المميزة ظهوراً أكبر لإعلانك في أعلى نتائج البحث وواجهة التطبيق الرئيسية لزيادة فرص الاتصال والمشاهدات.',
-  },
-  {
-    id: '5',
-    question: 'كيف يمكنني التواصل مع صاحب العقار؟',
-    answer:
-      'يمكنك التواصل مباشرة مع صاحب الإعلان من خلال صفحة تفاصيل العقار بالضغط على أزرار الاتصال الهاتفي، أو الواتساب، أو عبر المحادثة المباشرة المدمجة بالتطبيق.',
-  },
-];
-
 export default function FAQScreen() {
   const router = useRouter();
+  const [faqs, setFaqs] = useState<FAQItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  const fetchFAQs = async () => {
+    setIsLoading(true);
+    try {
+      const data = await faqService.getFAQs();
+      setFaqs(data);
+    } catch (e) {
+      console.error('Failed to load FAQs:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFAQs();
+  }, []);
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);
@@ -71,44 +64,48 @@ export default function FAQScreen() {
         contentContainerStyle={{ padding: 20 }}
         showsVerticalScrollIndicator={false}
       >
-        {FAQ_DATA.map((item) => {
-          const isExpanded = expandedId === item.id;
-          return (
-            <View
-              key={item.id}
-              className="mb-4 overflow-hidden rounded-2xl border border-gray-100 bg-[#F9FAFE] p-4"
-            >
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => toggleExpand(item.id)}
-                className="flex-row items-center justify-between"
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#15304D" className="py-20" />
+        ) : (
+          faqs.map((item) => {
+            const isExpanded = expandedId === item.id;
+            return (
+              <View
+                key={item.id}
+                className="mb-4 overflow-hidden rounded-2xl border border-gray-100 bg-[#F9FAFE] p-4"
               >
-                <Feather
-                  name={isExpanded ? 'chevron-up' : 'chevron-down'}
-                  size={18}
-                  color="#15304D"
-                />
-                <Text
-                  className="ml-3 flex-1 text-right font-cairo-bold text-[14px] text-[#15304D]"
-                  style={{ writingDirection: 'rtl' }}
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => toggleExpand(item.id)}
+                  className="flex-row items-center justify-between"
                 >
-                  {item.question}
-                </Text>
-              </TouchableOpacity>
-
-              {isExpanded && (
-                <View className="mt-3 border-t border-gray-100 pt-3">
+                  <Feather
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    color="#15304D"
+                  />
                   <Text
-                    className="text-right font-cairo-medium text-[13px] leading-6 text-[#6B6A6A]"
+                    className="ml-3 flex-1 text-right font-cairo-bold text-[14px] text-[#15304D]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    {item.answer}
+                    {item.question}
                   </Text>
-                </View>
-              )}
-            </View>
-          );
-        })}
+                </TouchableOpacity>
+
+                {isExpanded && (
+                  <View className="mt-3 border-t border-gray-100 pt-3">
+                    <Text
+                      className="text-right font-cairo-medium text-[13px] leading-6 text-[#6B6A6A]"
+                      style={{ writingDirection: 'rtl' }}
+                    >
+                      {item.answer}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          })
+        )}
       </ScrollView>
     </SafeAreaView>
   );

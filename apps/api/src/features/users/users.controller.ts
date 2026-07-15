@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   Param,
   NotFoundException,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -101,6 +102,18 @@ export class UsersController {
   @Patch('role')
   async switchRole(@CurrentUser() user: User, @Body('role') role: Role) {
     return this.usersService.updateRole(user.id, role);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('account')
+  async deleteAccount(@CurrentUser() user: User) {
+    return this.usersService.deleteAccount(user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('account/disable')
+  async disableAccount(@CurrentUser() user: User) {
+    return this.usersService.disableAccount(user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))

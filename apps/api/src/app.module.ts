@@ -17,6 +17,11 @@ import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 import { FavoritesModule } from './features/favorites/favorites.module';
 import { ChatModule } from './features/chat/chat.module';
 import { MapModule } from './features/map/map.module';
+import { FaqModule } from './features/faq/faq.module';
+import { SettingsModule } from './features/settings/settings.module';
+import { NotificationsModule } from './features/notifications/notifications.module';
+import { DevicesModule } from './features/devices/devices.module';
+import { PlansModule } from './features/plans/plans.module';
 
 @Module({
   imports: [
@@ -42,6 +47,11 @@ import { MapModule } from './features/map/map.module';
     FavoritesModule,
     ChatModule,
     MapModule,
+    FaqModule,
+    SettingsModule,
+    NotificationsModule,
+    DevicesModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [

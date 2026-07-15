@@ -13,18 +13,47 @@ export default function HomeHeader() {
   const { user, token } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
 
+  const getActiveProfileDetails = () => {
+    if (user?.role === 'COMPANY' && user.companyProfile) {
+      return {
+        name: user.companyProfile.name,
+        avatarUrl: user.companyProfile.logoUrl,
+      };
+    }
+    if (user?.role === 'OFFICE' && user.officeProfile) {
+      return {
+        name: user.officeProfile.name,
+        avatarUrl: user.officeProfile.logoUrl,
+      };
+    }
+    return {
+      name: user?.name || (user?.email ? user.email.split('@')[0] : 'مستخدم'),
+      avatarUrl: user?.avatarUrl,
+    };
+  };
+
+  const { name: activeName, avatarUrl: activeAvatarUrl } = getActiveProfileDetails();
+
   return (
     <View className="mb-2 flex-row items-center justify-between">
       {/* Right Side (RTL) - Avatar & Greeting */}
       <View className="flex-row items-center gap-2">
         <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gray-100">
           {token ? (
-            /* User Mock Image from Figma design */
-            <Image
-              source={require('@/assets/mock/user-mock-image.png')}
-              style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-            />
+            activeAvatarUrl ? (
+              <Image
+                source={{ uri: activeAvatarUrl }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            ) : (
+              /* User Mock Image from Figma design */
+              <Image
+                source={require('@/assets/mock/user-mock-image.png')}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            )
           ) : (
             <Feather name="user" size={24} color="#94A3B8" />
           )}
@@ -35,8 +64,7 @@ export default function HomeHeader() {
           </Text>
           {token && (
             <Text className="font-cairo-bold text-base text-[#111111]">
-              {/* Fallback to a default name if user data doesn't have it yet */}
-              {user?.email ? user.email.split('@')[0] : 'مستخدم'}
+              {activeName}
             </Text>
           )}
         </View>

@@ -4,16 +4,72 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import heicConvert from 'heic-convert';
 import { StorageService } from 'src/core/storage/storage.service';
 
 @Controller('media')
 export class MediaController {
   constructor(private readonly storageService: StorageService) {}
+
+  @Post('upload/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAvatar(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
+          new FileTypeValidator({
+            fileType: '.(png|jpeg|jpg|webp|heic|heif|HEIC|HEIF)',
+          }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const ext = file.originalname.split('.').pop()?.toLowerCase();
+    let processedFile = file;
+    if (
+      ext === 'heic' ||
+      ext === 'heif' ||
+      file.mimetype === 'image/heic' ||
+      file.mimetype === 'image/heif'
+    ) {
+      try {
+        const outputBuffer = await heicConvert({
+          buffer: file.buffer,
+          format: 'JPEG',
+          quality: 0.8,
+        });
+        const newFilename = file.originalname.replace(
+          /\.(heic|heif)$/i,
+          '.jpg',
+        );
+        processedFile = {
+          ...file,
+          buffer: Buffer.from(outputBuffer),
+          originalname: newFilename,
+          mimetype: 'image/jpeg',
+        };
+      } catch (error) {
+        console.error('Failed to convert HEIC/HEIF avatar to JPEG:', error);
+      }
+    }
+
+    const uploadedUrl = await this.storageService.uploadFile(
+      processedFile,
+      'avatars',
+    );
+
+    return {
+      message: 'تم رفع الصورة بنجاح',
+      url: uploadedUrl,
+    };
+  }
 
   @Post('upload/listings')
   @UseInterceptors(FilesInterceptor('images', 10)) // Accepts up to 10 files under the 'images' key

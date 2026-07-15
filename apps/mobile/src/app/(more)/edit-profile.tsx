@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { settingsService } from '@/core/api/settings.service';
 import AvatarPicker from '@/core/components/more/AvatarPicker';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -46,9 +48,26 @@ export default function EditProfileScreen() {
     mode: 'onChange', // Validates on every keystroke to update button state
   });
 
-  const onSubmit = (data: ProfileFormData) => {
-    // We will wire this up to the API in Card 4
-    console.log('Valid and Dirty Form Submitted:', data);
+  const onSubmit = async (data: ProfileFormData) => {
+    try {
+      await settingsService.updateProfile({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        whatsapp: data.whatsapp,
+        avatarUrl: data.avatarUrl,
+      });
+      await useAuthStore.getState().refreshProfile();
+      Alert.alert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [
+        { text: 'موافق', onPress: () => router.back() },
+      ]);
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      Alert.alert(
+        'خطأ',
+        error.response?.data?.message || 'حدث خطأ أثناء تحديث البيانات',
+      );
+    }
   };
 
   return (
@@ -129,15 +148,11 @@ export default function EditProfileScreen() {
                     message: 'بريد الكتروني غير صالح',
                   },
                 }}
-                render={({ field: { onChange, onBlur, value } }) => (
+                render={({ field: { value } }) => (
                   <TextInput
-                    className={`border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
+                    className="border border-gray-200 rounded-xl bg-gray-50 px-4 py-3.5 text-right font-cairo-medium text-gray-400"
                     value={value}
-                    placeholder="example@gmail.com"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
+                    editable={false}
                     textAlign="right"
                   />
                 )}

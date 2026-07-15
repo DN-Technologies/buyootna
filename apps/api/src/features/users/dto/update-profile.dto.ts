@@ -26,4 +26,21 @@ export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   specialty?: string;
+
+  // Individual fields
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  whatsapp?: string;
+
+  @IsString()
+  @IsOptional()
+  avatarUrl?: string;
 }

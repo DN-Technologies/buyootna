@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
@@ -41,7 +49,12 @@ export class ChatController {
     @Query('limit') limit?: string,
   ) {
     const limitNum = limit ? parseInt(limit, 10) : 20;
-    return this.chatService.getMessages(conversationId, user.id, cursor, limitNum);
+    return this.chatService.getMessages(
+      conversationId,
+      user.id,
+      cursor,
+      limitNum,
+    );
   }
 
   @Post('conversations/:id/read')

@@ -1,9 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { devicesService } from '@/core/api/devices.service';
 import DeviceCard from '@/core/components/more/DeviceCard';
 import LogoutConfirmationModal from '@/core/components/more/LogoutConfirmationModal';
 
@@ -18,42 +25,54 @@ interface DeviceItem {
 export default function RegisteredDevicesScreen() {
   const router = useRouter();
 
-  // Mock devices list matching the design
-  const [devices, setDevices] = useState<DeviceItem[]>([
-    {
-      id: '1',
-      name: 'iPhone 15 Pro',
-      isActive: true,
-      status: 'نشط الان',
-      location: 'السالمية، الكويت',
-    },
-    {
-      id: '2',
-      name: 'Samsung Galaxy S24',
-      isActive: false,
-      status: 'نشط منذ ساعتين',
-      location: 'السالمية، الكويت',
-    },
-    {
-      id: '3',
-      name: 'iPhone 15 Pro',
-      isActive: false,
-      status: 'آخر نشاط: أمس 8:30 م',
-      location: 'السالمية، الكويت',
-    },
-  ]);
+  const [devices, setDevices] = useState<DeviceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Modal Visibility States
   const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
   const [showLogoutAll, setShowLogoutAll] = useState(false);
 
-  const handleLogoutDevice = (id: string) => {
-    setDevices(devices.filter((device) => device.id !== id));
+  const fetchDevices = async () => {
+    setIsLoading(true);
+    try {
+      const response = await devicesService.getDevices();
+      const mapped = response.map((session) => ({
+        id: session.id,
+        name: session.deviceName,
+        isActive: session.isActive,
+        status: session.isActive ? 'نشط الان' : 'نشط مؤخراً',
+        location: session.location || 'الكويت',
+      }));
+      setDevices(mapped);
+    } catch (e) {
+      console.error('Failed to load registered devices:', e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLogoutAllDevices = () => {
-    // Keep only the active device
-    setDevices(devices.filter((device) => device.isActive));
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const handleLogoutDevice = async (id: string) => {
+    try {
+      await devicesService.revokeDevice(id);
+      setDevices(devices.filter((device) => device.id !== id));
+      setSelectedDevice(null);
+    } catch (e) {
+      console.error('Failed to logout device:', e);
+    }
+  };
+
+  const handleLogoutAllDevices = async () => {
+    try {
+      await devicesService.revokeAllDevices();
+      setDevices(devices.filter((device) => device.isActive));
+      setShowLogoutAll(false);
+    } catch (e) {
+      console.error('Failed to logout all devices:', e);
+    }
   };
 
   return (
@@ -85,15 +104,19 @@ export default function RegisteredDevicesScreen() {
           </TouchableOpacity>
 
           {/* --- Devices List --- */}
-          <View>
-            {devices.map((device) => (
-              <DeviceCard
-                key={device.id}
-                device={device}
-                onLogoutPress={() => setSelectedDevice(device)}
-              />
-            ))}
-          </View>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#15304D" className="py-20" />
+          ) : (
+            <View>
+              {devices.map((device) => (
+                <DeviceCard
+                  key={device.id}
+                  device={device}
+                  onLogoutPress={() => setSelectedDevice(device)}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </ScrollView>
 
@@ -102,7 +125,9 @@ export default function RegisteredDevicesScreen() {
         visible={!!selectedDevice}
         title="تسجيل الخروج ؟"
         description={`هل تريد تسجيل الخروج من جهاز “ ${selectedDevice?.name} ” ؟ سيتعين عليك إدخال كلمة المرور مجدداً للوصول إلى حسابك من هذا الجهاز.`}
-        onConfirm={() => selectedDevice && handleLogoutDevice(selectedDevice.id)}
+        onConfirm={() =>
+          selectedDevice && handleLogoutDevice(selectedDevice.id)
+        }
         onClose={() => setSelectedDevice(null)}
       />
 

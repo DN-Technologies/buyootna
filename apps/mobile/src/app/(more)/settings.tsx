@@ -1,7 +1,17 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -16,16 +26,156 @@ import {
   ShowIcon,
   TermsIcon,
 } from '@/assets/icons/settings';
+import { settingsService } from '@/core/api/settings.service';
 import MenuItem from '@/core/components/more/MenuItem';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const token = useAuthStore((state) => state.token);
 
   // Privacy Toggle States
   const [showPhone, setShowPhone] = useState(true);
   const [showWhatsapp, setShowWhatsapp] = useState(true);
   const [hideActivity, setHideActivity] = useState(false);
   const [hideOfficeAds, setHideOfficeAds] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Password Change Modal States
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isChangingPass, setIsChangingPass] = useState(false);
+
+  useEffect(() => {
+    if (token) {
+      loadSettings();
+    }
+  }, [token]);
+
+  const loadSettings = async () => {
+    setIsLoading(true);
+    try {
+      const settings = await settingsService.getSettings();
+      setShowPhone(settings.showPhone);
+      setShowWhatsapp(settings.showWhatsapp);
+      setHideActivity(settings.hideActivity);
+      setHideOfficeAds(settings.hideOfficeAds);
+    } catch (e) {
+      console.error('Failed to load settings:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleShowPhone = async (val: boolean) => {
+    setShowPhone(val);
+    try {
+      await settingsService.updateSettings({ showPhone: val });
+    } catch (e) {
+      console.error('Failed to update showPhone:', e);
+    }
+  };
+
+  const handleToggleShowWhatsapp = async (val: boolean) => {
+    setShowWhatsapp(val);
+    try {
+      await settingsService.updateSettings({ showWhatsapp: val });
+    } catch (e) {
+      console.error('Failed to update showWhatsapp:', e);
+    }
+  };
+
+  const handleToggleHideActivity = async (val: boolean) => {
+    setHideActivity(val);
+    try {
+      await settingsService.updateSettings({ hideActivity: val });
+    } catch (e) {
+      console.error('Failed to update hideActivity:', e);
+    }
+  };
+
+  const handleToggleHideOfficeAds = async (val: boolean) => {
+    setHideOfficeAds(val);
+    try {
+      await settingsService.updateSettings({ hideOfficeAds: val });
+    } catch (e) {
+      console.error('Failed to update hideOfficeAds:', e);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'حذف الحساب نهائياً',
+      'هل أنت متأكد من رغبتك في حذف الحساب نهائياً؟ هذا الإجراء لا يمكن التراجع عنه وسيتم مسح جميع بياناتك.',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'حذف',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await settingsService.deleteAccount();
+              await useAuthStore.getState().logout();
+              router.replace('/(auth)/individual-auth');
+            } catch (error) {
+              console.error(error);
+              Alert.alert('خطأ', 'حدث خطأ أثناء حذف الحساب');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDisableAccount = () => {
+    Alert.alert(
+      'تعطيل الحساب مؤقتاً',
+      'هل تريد تعطيل حسابك مؤقتاً؟ يمكنك تسجيل الدخول مرة أخرى في أي وقت لتنشيطه.',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'تعطيل',
+          onPress: async () => {
+            try {
+              await settingsService.disableAccount();
+              await useAuthStore.getState().logout();
+              router.replace('/(auth)/individual-auth');
+            } catch (error) {
+              console.error(error);
+              Alert.alert('خطأ', 'حدث خطأ أثناء تعطيل الحساب');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      Alert.alert('تنبيه', 'يرجى ملء جميع الحقول');
+      return;
+    }
+    if (newPassword.length < 6) {
+      Alert.alert('تنبيه', 'يجب أن تكون كلمة المرور الجديدة 6 أحرف على الأقل');
+      return;
+    }
+    setIsChangingPass(true);
+    try {
+      await settingsService.changePassword(oldPassword, newPassword);
+      Alert.alert('نجاح', 'تم تغيير كلمة المرور بنجاح');
+      setShowPasswordModal(false);
+      setOldPassword('');
+      setNewPassword('');
+    } catch (error: any) {
+      Alert.alert(
+        'خطأ',
+        error.response?.data?.message || 'فشل تغيير كلمة المرور',
+      );
+    } finally {
+      setIsChangingPass(false);
+    }
+  };
 
   // Helper component for Switch rows
   const SettingsSwitchItem = ({
@@ -76,7 +226,10 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 20 }}
       >
-        <View className="gap-6 px-5">
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#15304D" className="py-20" />
+        ) : (
+          <View className="gap-6 px-5">
           {/* --- Section: Notifications --- */}
           <View>
             <Text
@@ -106,7 +259,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={LockIcon}
                 title="تغيير كلمة المرور"
-                onPress={() => console.log('Navigate to Change Password')}
+                onPress={() => setShowPasswordModal(true)}
               />
               <MenuItem
                 icon={DeviceIcon}
@@ -129,25 +282,25 @@ export default function SettingsScreen() {
                 icon={InfoIcon}
                 title="اظهار رقم الهاتف"
                 value={showPhone}
-                onValueChange={setShowPhone}
+                onValueChange={handleToggleShowPhone}
               />
               <SettingsSwitchItem
                 icon={ShowIcon}
                 title="اظهار رقم الواتساب"
                 value={showWhatsapp}
-                onValueChange={setShowWhatsapp}
+                onValueChange={handleToggleShowWhatsapp}
               />
               <SettingsSwitchItem
                 icon={HideIcon}
                 title="اخفاء النشاط"
                 value={hideActivity}
-                onValueChange={setHideActivity}
+                onValueChange={handleToggleHideActivity}
               />
               <SettingsSwitchItem
                 icon={HideAdIcon}
                 title="اخفاء اعلانات المكاتب"
                 value={hideOfficeAds}
-                onValueChange={setHideOfficeAds}
+                onValueChange={handleToggleHideOfficeAds}
               />
             </View>
           </View>
@@ -169,7 +322,7 @@ export default function SettingsScreen() {
               <MenuItem
                 icon={ShowIcon}
                 title="الأسئلة الشائعة"
-                onPress={() => console.log('Navigate to FAQs')}
+                onPress={() => router.push('/faq')}
               />
               <MenuItem
                 icon={CallIcon}
@@ -205,7 +358,7 @@ export default function SettingsScreen() {
           <View className="mt-4 gap-3">
             {/* Delete Account */}
             <TouchableOpacity
-              onPress={() => console.log('Delete account clicked')}
+              onPress={handleDeleteAccount}
               className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white leading-[22px]"
             >
               <Feather name="user-x" size={18} color="#9C1E28" />
@@ -216,7 +369,7 @@ export default function SettingsScreen() {
 
             {/* Temporarily Disable Account */}
             <TouchableOpacity
-              onPress={() => console.log('Disable account clicked')}
+              onPress={handleDisableAccount}
               className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#B97500] bg-white"
             >
               <Feather name="pause-circle" size={18} color="#B97500" />
@@ -226,7 +379,77 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      )}
+    </ScrollView>
+
+      {/* Change Password Modal */}
+      <Modal
+        visible={showPasswordModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPasswordModal(false)}
+      >
+        <View className="flex-1 items-center justify-center bg-black/50 px-5">
+          <View className="w-full rounded-3xl bg-white p-6">
+            <Text className="mb-4 text-center font-cairo-bold text-lg text-[#15304D]">
+              تغيير كلمة المرور
+            </Text>
+
+            <View className="mb-4">
+              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#111111]">
+                كلمة المرور القديمة
+              </Text>
+              <TextInput
+                secureTextEntry
+                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo-medium text-[#111111]"
+                value={oldPassword}
+                onChangeText={setOldPassword}
+                placeholder="أدخل كلمة المرور القديمة"
+                textAlign="right"
+              />
+            </View>
+
+            <View className="mb-6">
+              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#111111]">
+                كلمة المرور الجديدة
+              </Text>
+              <TextInput
+                secureTextEntry
+                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo-medium text-[#111111]"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="أدخل كلمة المرور الجديدة"
+                textAlign="right"
+              />
+            </View>
+
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                disabled={isChangingPass}
+                onPress={() => setShowPasswordModal(false)}
+                className="flex-1 items-center justify-center rounded-full border border-gray-200 py-3"
+              >
+                <Text className="font-cairo-bold text-sm text-[#6B6A6A]">
+                  إلغاء
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={isChangingPass}
+                onPress={handleChangePassword}
+                className="flex-1 items-center justify-center rounded-full bg-[#15304D] py-3"
+              >
+                {isChangingPass ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text className="font-cairo-bold text-sm text-white">
+                    حفظ
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

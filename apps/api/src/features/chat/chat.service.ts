@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { SendMessageDto } from './dto/send-message.dto';
 
@@ -7,7 +11,11 @@ export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Find or create a 1:1 conversation between two users
-  async findOrCreateConversation(userId: string, recipientId: string, propertyId?: string) {
+  async findOrCreateConversation(
+    userId: string,
+    recipientId: string,
+    propertyId?: string,
+  ) {
     if (userId === recipientId) {
       throw new ForbiddenException('لا يمكنك بدء محادثة مع نفسك');
     }
@@ -48,10 +56,7 @@ export class ChatService {
       data: {
         propertyId: propertyId || null,
         participants: {
-          create: [
-            { userId },
-            { userId: recipientId },
-          ],
+          create: [{ userId }, { userId: recipientId }],
         },
       },
       include: {
@@ -126,18 +131,22 @@ export class ChatService {
             ? otherUser.email.split('@')[0]
             : 'مستخدم بيوتنا';
 
-      const otherUserAvatar = otherUser?.officeProfile?.logoUrl ||
+      const otherUserAvatar =
+        otherUser?.officeProfile?.logoUrl ||
         otherUser?.companyProfile?.logoUrl ||
         'https://via.placeholder.com/150';
 
       const lastMessage = conv.messages[0];
-      const myParticipantRecord = conv.participants.find((p) => p.userId === userId);
+      const myParticipantRecord = conv.participants.find(
+        (p) => p.userId === userId,
+      );
 
       // Unread count is count of messages sent by someone else after our lastReadAt
       const unreadCount = conv.messages.filter(
         (msg) =>
           msg.senderId !== userId &&
-          (!myParticipantRecord?.lastReadAt || msg.createdAt > myParticipantRecord.lastReadAt),
+          (!myParticipantRecord?.lastReadAt ||
+            msg.createdAt > myParticipantRecord.lastReadAt),
       ).length;
 
       return {
@@ -154,7 +163,8 @@ export class ChatService {
               id: conv.property.id,
               type: conv.property.type,
               category: conv.property.category,
-              imageUrl: conv.property.images[0] || 'https://via.placeholder.com/150',
+              imageUrl:
+                conv.property.images[0] || 'https://via.placeholder.com/150',
               price: conv.property.price,
             }
           : null,
@@ -191,7 +201,12 @@ export class ChatService {
   }
 
   // Get messages for a single conversation (cursor-based pagination for infinite scroll)
-  async getMessages(conversationId: string, userId: string, cursor?: string, limit = 20) {
+  async getMessages(
+    conversationId: string,
+    userId: string,
+    cursor?: string,
+    limit = 20,
+  ) {
     // Verify user is participant
     const isParticipant = await this.prisma.conversationParticipant.findUnique({
       where: {
@@ -221,7 +236,7 @@ export class ChatService {
 
     let nextCursor: string | undefined = undefined;
     const hasNextPage = messages.length > limit;
-    
+
     if (hasNextPage) {
       const nextItem = messages.pop();
       nextCursor = nextItem?.id;
@@ -246,7 +261,11 @@ export class ChatService {
   }
 
   // Send a message (called via REST or WS)
-  async sendMessage(senderId: string, conversationId: string, dto: SendMessageDto) {
+  async sendMessage(
+    senderId: string,
+    conversationId: string,
+    dto: SendMessageDto,
+  ) {
     // Verify sender is participant
     const isParticipant = await this.prisma.conversationParticipant.findUnique({
       where: {

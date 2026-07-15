@@ -24,6 +24,14 @@ model User {
   favorites         Favorite[]
   conversations     ConversationParticipant[]
   messages          Message[]
+  
+  name              String?
+  whatsapp          String?
+  avatarUrl         String?
+  isDisabled        Boolean            @default(false)
+  settings          UserSettings?
+  notifPreferences  NotificationPreferences?
+  sessions          Session[]
 }
 
 model IndividualProfile {
@@ -122,4 +130,64 @@ enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model UserSettings {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  showPhone     Boolean  @default(true)
+  showWhatsapp  Boolean  @default(true)
+  hideActivity  Boolean  @default(false)
+  hideOfficeAds Boolean  @default(false)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model NotificationPreferences {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  appEnabled   Boolean  @default(true)
+  emailEnabled Boolean  @default(false)
+  phoneEnabled Boolean  @default(false)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  userId     String
+  deviceName String
+  isActive   Boolean  @default(true)
+  lastActive DateTime @default(now())
+  location   String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Plan {
+  id            String   @id @default(uuid())
+  slug          String   @unique // 'regular', 'silver', 'gold'
+  name          String // 'العادية', 'الفضية', 'الذهبية'
+  price         Float    @default(0)
+  originalPrice Float?
+  discountText  String?
+  badge         String?
+  features      String[] // Postgres array
+  color         String   @default("#15304D")
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(uuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

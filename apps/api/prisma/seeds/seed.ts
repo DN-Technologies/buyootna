@@ -459,7 +459,171 @@ async function main() {
       },
     });
   }
-  console.log('✅ Seeded App Store Reviewer demo account (reviewer@buyootna.com / password123)');
+  console.log(
+    '✅ Seeded App Store Reviewer demo account (reviewer@buyootna.com / password123)',
+  );
+
+  // 6. Seed Dedicated Individual Test User with Listings
+  console.log('👤 Seeding Testing Individual User with listings...');
+  const individualUserId = randomUUID();
+  await prisma.user.create({
+    data: {
+      id: individualUserId,
+      email: 'individual@buyootna.com',
+      phone: '+96599998888',
+      password: hashedPassword,
+      role: Role.INDIVIDUAL,
+    },
+  });
+
+  await prisma.individualProfile.create({
+    data: {
+      id: randomUUID(),
+      userId: individualUserId,
+    },
+  });
+
+  // Create 5 listings for this individual user
+  for (let i = 1; i <= 5; i++) {
+    const randomArea = allAreas[(i + 50) % allAreas.length];
+    const type = i % 2 === 0 ? ListingType.RENT : ListingType.SALE;
+    const category =
+      i % 2 === 0 ? PropertyCategory.APARTMENT : PropertyCategory.VILLA;
+
+    const areaSize = 150 + i * 30;
+    const price = type === ListingType.RENT ? 400 + i * 50 : 120000 + i * 20000;
+
+    const { latitude, longitude } = randomCoordinateForArea(randomArea.areaId);
+
+    await prisma.property.create({
+      data: {
+        id: randomUUID(),
+        referenceNumber: 2000000 + i,
+        userId: individualUserId,
+        type,
+        category,
+        isFeatured: i === 2,
+        price,
+        beds: 3,
+        baths: 2,
+        location: `بيت للبيع/شقة للإيجار للمالك الشخصي ${i}`,
+        description: `مساحة ${areaSize}م² - عقار شخصي مميز معروض مباشرة من المالك للتواصل والمعاينة.`,
+        images: [
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+          'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+        ],
+        status: ListingStatus.ACTIVE,
+        isHidden: false,
+        governorateId: randomArea.govId,
+        areaId: randomArea.areaId,
+        areaSize,
+        phoneNumber: '+96599998888',
+        views: 12 + i,
+        latitude,
+        longitude,
+      },
+    });
+  }
+  console.log('✅ Seeded individual@buyootna.com with 5 listings.');
+
+  // --- Seed Plans ---
+  console.log('🌱 Seeding subscription plans...');
+  const plans = [
+    {
+      slug: 'regular',
+      name: 'العادية',
+      price: 0,
+      features: [
+        'اعلان واحد نشط.',
+        'مدة النشر 10 ايام.',
+        'حتى 5 صورة للعقار.',
+        'ظهور في نتائج البحث.',
+        'تواصل مباشر مع المهتمين.',
+      ],
+      color: '#15304D',
+      sortOrder: 1,
+    },
+    {
+      slug: 'silver',
+      name: 'الفضية',
+      price: 5,
+      features: [
+        'اعلان واحد نشط.',
+        'مدة النشر 45 يوم.',
+        'حتى 10 صورة للعقار.',
+        'تثبيت 5 ايام في نتائج البحث.',
+        'ظهور في نتائج البحث المميزة.',
+        'تواصل مباشر مع المهتمين.',
+      ],
+      color: '#15304D',
+      sortOrder: 2,
+    },
+    {
+      slug: 'gold',
+      name: 'الذهبية',
+      price: 10,
+      originalPrice: 20,
+      discountText: 'خصم 50%',
+      badge: 'موصى به',
+      features: [
+        '4 اعلانات نشطة في نفس الوقت.',
+        'مدة النشر 60 يوم.',
+        'حتى 15 صورة للعقار.',
+        'تثبيت 7 ايام في نتائج البحث.',
+        'اولوية الظهور في البحث الجغرافي.',
+      ],
+      color: '#15304D',
+      sortOrder: 3,
+    },
+  ];
+
+  for (const plan of plans) {
+    await prisma.plan.upsert({
+      where: { slug: plan.slug },
+      update: plan,
+      create: plan,
+    });
+  }
+  console.log('✅ Seeded subscription plans.');
+
+  // --- Seed FAQs ---
+  console.log('🌱 Seeding FAQs...');
+  const faqs = [
+    {
+      question: 'ما هو تطبيق بيوتنا؟',
+      answer: 'تطبيق بيوتنا هو منصة عقارية كويتية متخصصة تهدف لتسهيل عملية البحث، البيع، الإيجار، والبدل لمختلف فئات العقارات في الكويت.',
+      sortOrder: 1,
+    },
+    {
+      question: 'كيف يمكنني إضافة إعلان جديد؟',
+      answer: 'يمكنك إضافة إعلان بالضغط على زر (+) في القائمة السفلية، ثم ملء تفاصيل العقار كالموقع والمساحة والسعر وإرفاق الصور المطلوبة ونشره مباشرة.',
+      sortOrder: 2,
+    },
+    {
+      question: 'هل توجد عمولات على عمليات البيع أو الإيجار؟',
+      answer: 'لا، تطبيق بيوتنا منصة مجانية للإعلان العقاري ولا يتقاضى أي عمولة على الصفقات المبرمة بين البائع والمشتري.',
+      sortOrder: 3,
+    },
+    {
+      question: 'ما هي باقات الإعلانات المميزة؟',
+      answer: 'توفر باقات الإعلانات المميزة ظهوراً أكبر لإعلانك في أعلى نتائج البحث وواجهة التطبيق الرئيسية لزيادة فرص الاتصال والمشاهدات.',
+      sortOrder: 4,
+    },
+    {
+      question: 'كيف يمكنني التواصل مع صاحب العقار؟',
+      answer: 'يمكنك التواصل مباشرة مع صاحب الإعلان من خلال صفحة تفاصيل العقار بالضغط على أزرار الاتصال الهاتفي، أو الواتساب، أو عبر المحادثة المباشرة المدمجة بالتطبيق.',
+      sortOrder: 5,
+    },
+  ];
+
+  // Clear and insert FAQs to avoid duplicates during repeat runs
+  await prisma.fAQ.deleteMany({});
+  for (const faq of faqs) {
+    await prisma.fAQ.create({
+      data: faq,
+    });
+  }
+  console.log('✅ Seeded FAQs.');
 
   console.log('🎉 Seeding process completed successfully!');
 }

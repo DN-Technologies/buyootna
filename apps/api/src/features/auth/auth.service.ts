@@ -31,6 +31,10 @@ export class AuthService {
       throw new UnauthorizedException('البيانات غير صحيحة');
     }
 
+    if (user.isDisabled) {
+      throw new UnauthorizedException('الحساب معطل مؤقتاً');
+    }
+
     // Compare passwords
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
@@ -86,5 +90,27 @@ export class AuthService {
       .password;
 
     return this.login(userWithoutPassword);
+  }
+
+  async changePassword(userId: string, oldPass: string, newPass: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new BadRequestException('المستخدم غير موجود');
+    }
+
+    const isMatch = await bcrypt.compare(oldPass, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('كلمة المرور القديمة غير صحيحة');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPass, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    return { message: 'تم تغيير كلمة المرور بنجاح' };
   }
 }

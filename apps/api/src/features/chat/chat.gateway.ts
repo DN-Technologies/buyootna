@@ -30,8 +30,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: Socket) {
     try {
       // Get token from auth payload or headers
-      const token = 
-        client.handshake.auth?.token || 
+      const token =
+        client.handshake.auth?.token ||
         client.handshake.headers?.authorization?.split(' ')[1];
 
       if (!token) {
@@ -105,15 +105,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (conversation) {
         for (const participant of conversation.participants) {
           if (participant.userId !== senderId) {
-            this.server.to(`user:${participant.userId}`).emit('conversation_updated', {
-              conversationId: payload.conversationId,
-              lastMessage: message,
-            });
+            this.server
+              .to(`user:${participant.userId}`)
+              .emit('conversation_updated', {
+                conversationId: payload.conversationId,
+                lastMessage: message,
+              });
           }
         }
       }
     } catch (error) {
-      console.error('Failed to handle send_message socket event:', error.message);
+      console.error(
+        'Failed to handle send_message socket event:',
+        error.message,
+      );
       client.emit('error', { message: 'تعذر إرسال الرسالة عبر الخادم' });
     }
   }
