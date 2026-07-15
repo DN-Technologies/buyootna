@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker)" ]; then
   exit 1
 fi
 
-domains=(api.buyootna.cloud daralnokhba.online buyootna.cloud,www.buyootna.cloud)
+domains=(api.buyootna.cloud daralnokhba.online buyootna.cloud,www.buyootna.cloud companies.buyootna.cloud offices.buyootna.cloud management.buyootna.cloud admin.buyootna.cloud)
 rsa_key_size=4096
 data_path="./certbot"
 email="" # Set your email here (recommended for renewal notices)
