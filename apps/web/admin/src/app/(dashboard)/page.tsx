@@ -16,7 +16,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-right">
       {/* PageHeader Greeting */}
       <PageHeader
         breadcrumbs={['الرئيسية']}

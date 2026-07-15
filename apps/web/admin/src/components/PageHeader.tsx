@@ -21,7 +21,7 @@ export default function PageHeader({
 }: PageHeaderProps) {
   return (
     <div
-      className="border-b border-[#ECECEC] pb-[20px] pt-[10px] px-8 bg-white -mx-6 -mt-6 md:-mx-8 md:-mt-8 mb-6 flex flex-col gap-1.5 text-right shrink-0"
+      className="border-b border-[#ECECEC] pb-[20px] pt-[10px] px-8  -mx-6 -mt-6 md:-mx-8 md:-mt-8 mb-6 flex flex-col gap-1.5 text-right shrink-0"
       dir="rtl"
     >
       {/* Breadcrumbs */}

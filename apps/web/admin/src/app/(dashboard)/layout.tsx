@@ -21,7 +21,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-[#F9FAFB] text-[#111111]" dir="rtl">
+    <div className="min-h-screen flex bg-white text-[#111111]" dir="rtl">
       {/* Desktop Sidebar (Always Visible) */}
       <div className="hidden md:block shrink-0 h-screen sticky top-0">
         <SideNav />

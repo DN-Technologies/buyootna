@@ -16,6 +16,7 @@ import {
   Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface NavItem {
   title: string
@@ -72,10 +73,8 @@ export default function SideNav() {
       {/* Brand Header */}
       <div className="h-[70px] border-b border-[#ECECEC] flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#15304D]/10 flex items-center justify-center text-[#15304D]">
-            <Building2 className="w-6 h-6" />
-          </div>
-          <span className="font-['Cairo'] font-bold text-[20px] text-[#15304D]">
+          <Image src="/logo.svg" alt="Logo" width={50} height={50} />
+          <span className="font-['Cairo'] font-bold text-[20px] text-primary">
             بيوتنا
           </span>
         </div>
@@ -104,8 +103,8 @@ export default function SideNav() {
                     className={cn(
                       'flex items-center justify-start gap-3 h-[42px] px-3 rounded-xl transition duration-150 text-right w-full',
                       isActive
-                        ? 'bg-[#15304D] text-white font-bold'
-                        : 'bg-white text-[#111111] hover:bg-[#F8F9FA] hover:text-[#15304D] font-medium',
+                        ? 'bg-primtext-primary text-white font-bold'
+                        : 'bg-white text-[#111111] hover:bg-[#F8F9FA] hover:text-primary font-medium',
                     )}
                   >
                     <Icon
