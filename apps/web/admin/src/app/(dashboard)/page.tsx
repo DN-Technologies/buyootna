@@ -157,6 +157,35 @@ const recentRegistrations = [
   },
 ]
 
+const recentActivities = [
+  {
+    id: '1',
+    text: 'قام المشرف أحمد بتعديل باقات الشركات.',
+    time: 'منذ ساعتين',
+  },
+  {
+    id: '2',
+    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
+    time: 'منذ 30 دقيقة',
+  },
+  { id: '3', text: 'تم استلام بلاغ جديد لخدمة التشطيب.', time: 'منذ ساعتين' },
+  {
+    id: '4',
+    text: 'تم الاشتراك في باقة سنوية جديدة من مكتب المستقبل للعقارات.',
+    time: 'منذ ساعتين',
+  },
+  {
+    id: '5',
+    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
+    time: 'منذ ساعتين',
+  },
+  {
+    id: '6',
+    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
+    time: 'منذ ساعتين',
+  },
+]
+
 const reports = [
   {
     id: '1',
@@ -676,7 +705,7 @@ export default function DashboardPage() {
 
       {/* Row 4: Details Tables & Sidebar (Pending Approvals + Recent Registrations + Reports + Verification Requests + Quick Actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        {/* Left Column: Data Tables (Pending Approvals + Recent Registrations) */}
+        {/* Left Column: Data Tables (Pending Approvals + Recent Registrations + Recent Activities) */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Pending approvals table */}
           <Card
@@ -863,6 +892,45 @@ export default function DashboardPage() {
               </table>
             </div>
           </Card>
+
+          {/* Figma compliant Recent Activities Card (node 2376:5896) */}
+          <Card
+            className="bg-white border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+            data-node-id="2376:5896"
+          >
+            <div className="flex items-start justify-between w-full px-6 pb-4">
+              <Button
+                variant="ghost"
+                className="text-primary font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+              >
+                عرض سجل الأنشطة
+              </Button>
+              <div className="space-y-1 text-right">
+                <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
+                  اخر الانشطة
+                </h3>
+                <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
+                  احدث الانشطة والاجراءات
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col w-full divide-y divide-[#ECECEC] border-t border-[#ECECEC]">
+              {recentActivities.map((act) => (
+                <div
+                  key={act.id}
+                  className="flex items-center justify-between px-6 h-[48px] w-full hover:bg-[#F9FAFB]/50 transition duration-150"
+                >
+                  <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] text-left shrink-0">
+                    {act.time}
+                  </span>
+                  <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right truncate pl-4 flex-1">
+                    {act.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
 
         {/* Right Column: Stacked Sidebar (Reports Needing Review + Verification Requests + Quick Actions) */}
@@ -927,13 +995,18 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          {/* Figma compliant Verification Requests Card (node 2376:5816) */}
+          {/* Verification Requests Card */}
           <Card
             className="bg-white border-[#ECECEC] py-[20px] flex flex-col gap-4 relative select-none"
             data-node-id="2376:5816"
           >
-            {/* Header */}
             <div className="flex items-start justify-between w-full px-[18px]">
+              <Button
+                variant="ghost"
+                className="text-primary font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+              >
+                عرض الكل
+              </Button>
               <div className="space-y-1 text-right">
                 <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
                   طلبات التحقق
@@ -942,43 +1015,32 @@ export default function DashboardPage() {
                   حسابات تنتظر مراجعة مستندات التوثيق
                 </p>
               </div>
-              <Button
-                variant="ghost"
-                className="text-primary font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
-              >
-                عرض الكل
-              </Button>
             </div>
 
-            {/* List Table */}
             <div className="flex flex-col w-full">
-              {/* Columns Header */}
               <div className="border-b border-[#ECECEC] pb-3 pt-2 w-full px-[18px]">
                 <div className="flex items-center justify-between w-full text-right">
-                  <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[140px] text-right">
-                    المستخدم
+                  <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[80px]">
+                    الاجراءات
                   </span>
                   <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[100px] text-center">
                     النوع
                   </span>
-                  <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[80px]">
-                    الاجراءات
+                  <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[140px] text-right">
+                    المستخدم
                   </span>
                 </div>
               </div>
 
-              {/* Rows */}
               <div className="flex flex-col w-full divide-y divide-[#ECECEC]">
                 {verificationRequests.map((req) => (
                   <div
                     key={req.id}
                     className="flex items-center justify-between py-3 px-[18px] w-full hover:bg-[#F9FAFB]/50 transition duration-150 h-[48px]"
                   >
-                    {/* User name */}
-                    <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right w-[140px] truncate">
-                      {req.user}
-                    </span>
-                    {/* Type badge */}
+                    <button className="text-primary font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-[80px]">
+                      مراجعة
+                    </button>
                     <div className="w-[100px] flex justify-center">
                       <span
                         className={`px-2 py-0.5 rounded-[99px] text-[11px] font-['Cairo'] font-medium ${req.typeBg} ${req.typeColor}`}
@@ -986,10 +1048,9 @@ export default function DashboardPage() {
                         {req.type}
                       </span>
                     </div>
-                    {/* Action link */}
-                    <button className="text-primary font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-[80px]">
-                      مراجعة
-                    </button>
+                    <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right w-[140px] truncate">
+                      {req.user}
+                    </span>
                   </div>
                 ))}
               </div>
