@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function NotificationsPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات إدارة الإشعارات...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">إدارة الإشعارات</h1>
-        <p className="text-sm text-[#6B6A6A]">إرسال وتوجيه الإشعارات المباشرة للمستخدمين عبر التطبيق أو الرسائل النصية.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","إدارة الإشعارات"]} 
+        title="إدارة الإشعارات" 
+        subtitle="إرسال وتوجيه الإشعارات المباشرة للمستخدمين عبر التطبيق أو الرسائل النصية." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

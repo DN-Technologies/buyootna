@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function BillingPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات الاشتراكات والفواتير...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">الاشتراكات والفواتير</h1>
-        <p className="text-sm text-[#6B6A6A]">متابعة عمليات الدفع، مراجعة الفواتير المصدرة وتدقيق الاشتراكات النشطة والمنتهية الصلاحية.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","الاشتراكات والفواتير"]} 
+        title="الاشتراكات والفواتير" 
+        subtitle="متابعة عمليات الدفع، مراجعة الفواتير المصدرة وتدقيق الاشتراكات النشطة والمنتهية الصلاحية." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

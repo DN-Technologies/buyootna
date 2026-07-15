@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function PlansPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات الباقات والأسعار...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">الباقات والأسعار</h1>
-        <p className="text-sm text-[#6B6A6A]">تعديل مزايا وأسعار باقات بيوتنا (الفضية، الذهبية، العادية) وإتاحة الخصومات.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","الباقات والأسعار"]} 
+        title="الباقات والأسعار" 
+        subtitle="تعديل مزايا وأسعار باقات بيوتنا (الفضية، الذهبية، العادية) وإتاحة الخصومات." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

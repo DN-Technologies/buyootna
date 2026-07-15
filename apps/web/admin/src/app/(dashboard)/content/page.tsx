@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function ContentPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات إدارة المحتوى...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">إدارة المحتوى</h1>
-        <p className="text-sm text-[#6B6A6A]">تحديث شروط الاستخدام، سياسة الخصوصية، الأسئلة الشائعة وتدقيق الإعلانات النشطة.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","إدارة المحتوى"]} 
+        title="إدارة المحتوى" 
+        subtitle="تحديث شروط الاستخدام، سياسة الخصوصية، الأسئلة الشائعة وتدقيق الإعلانات النشطة." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

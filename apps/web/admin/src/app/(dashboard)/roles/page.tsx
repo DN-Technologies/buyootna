@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function RolesPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات الأدوار والصلاحيات...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">الأدوار والصلاحيات</h1>
-        <p className="text-sm text-[#6B6A6A]">تحديد الصلاحيات الأمنية للمشرفين والمدراء المساعدين وإسناد الأدوار التنظيمية.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","الأدوار والصلاحيات"]} 
+        title="الأدوار والصلاحيات" 
+        subtitle="تحديد الصلاحيات الأمنية للمشرفين والمدراء المساعدين وإسناد الأدوار التنظيمية." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

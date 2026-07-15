@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function UsersPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات إدارة المستخدمين...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">إدارة المستخدمين</h1>
-        <p className="text-sm text-[#6B6A6A]">عرض وتعديل حسابات الأفراد، الشركات، والمكاتب العقارية وتفعيل أو تعطيل الحسابات.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","المستخدمون"]} 
+        title="إدارة المستخدمين" 
+        subtitle="عرض وتعديل حسابات الأفراد، الشركات، والمكاتب العقارية وتفعيل أو تعطيل الحسابات." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">

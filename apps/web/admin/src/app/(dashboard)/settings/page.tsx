@@ -2,15 +2,21 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
+import PageHeader from "@/components/PageHeader";
 
 export default function SettingsPage() {
+  const handleExport = () => {
+    alert("جاري تصدير بيانات إعدادات النظام...");
+  };
+
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Title block */}
-      <div className="flex flex-col gap-1">
-        <h1 className="font-['Cairo'] text-2xl font-bold text-[#15304D]">إعدادات النظام</h1>
-        <p className="text-sm text-[#6B6A6A]">تحديث الإعدادات العامة للمنصة، حدود الحصص المجانية ومعايير مراجعة الطلبات.</p>
-      </div>
+      <PageHeader 
+        breadcrumbs={["الرئيسية","إعدادات النظام"]} 
+        title="إعدادات النظام" 
+        subtitle="تحديث الإعدادات العامة للمنصة، حدود الحصص المجانية ومعايير مراجعة الطلبات." 
+        onExport={handleExport}
+      />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">
