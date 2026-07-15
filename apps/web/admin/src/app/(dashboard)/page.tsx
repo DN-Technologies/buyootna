@@ -94,6 +94,49 @@ const pendingRequests = [
   },
 ]
 
+const reports = [
+  {
+    id: '1',
+    type: 'عقار',
+    title: 'فيلا بالتجمع الخامس',
+    reason: 'معلومات غير صحيحة',
+    time: 'منذ 47 دقيقة',
+    priority: 'عاجل',
+    priorityColor: 'text-[#9c1e28]',
+    bulletColor: 'bg-[#9c1e28]',
+  },
+  {
+    id: '2',
+    type: 'عقار',
+    title: 'فيلا بالتجمع الخامس',
+    reason: 'معلومات غير صحيحة',
+    time: 'منذ 47 دقيقة',
+    priority: 'عاجل',
+    priorityColor: 'text-[#9c1e28]',
+    bulletColor: 'bg-[#9c1e28]',
+  },
+  {
+    id: '3',
+    type: 'عقار',
+    title: 'فيلا بالتجمع الخامس',
+    reason: 'معلومات غير صحيحة',
+    time: 'منذ 47 دقيقة',
+    priority: 'منخفضة',
+    priorityColor: 'text-[#344054]',
+    bulletColor: 'bg-[#344054]',
+  },
+  {
+    id: '4',
+    type: 'عقار',
+    title: 'فيلا بالتجمع الخامس',
+    reason: 'معلومات غير صحيحة',
+    time: 'منذ 47 دقيقة',
+    priority: 'متوسط',
+    priorityColor: 'text-[#b97500]',
+    bulletColor: 'bg-[#b97500]',
+  },
+]
+
 export default function DashboardPage() {
   const [activeMonthIdx, setActiveMonthIdx] = useState<number>(11) // January (index 11) is active by default
   const [isHovered, setIsHovered] = useState<boolean>(true)
@@ -464,11 +507,7 @@ export default function DashboardPage() {
                 className="w-full h-full transform -rotate-90"
                 viewBox="0 0 100 100"
               >
-                {/* 1. Individuals Segment (Blue #3B82F6): Value 200/270 (74.1%)
-                    Circumference = 2 * PI * r = 2 * PI * 38 = 238.76
-                    Length = 74.1% of 238.76 = 176.9
-                    Offset = 0
-                */}
+                {/* 1. Individuals Segment (Blue #3B82F6): Value 200/270 (74.1%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -481,10 +520,7 @@ export default function DashboardPage() {
                   className="transition-all duration-300"
                 />
 
-                {/* 2. Real Estate Offices Segment (Gold #EAB308): Value 50/270 (18.5%)
-                    Length = 18.5% of 238.76 = 44.2
-                    Offset = -176.9 - gap
-                */}
+                {/* 2. Real Estate Offices Segment (Gold #EAB308): Value 50/270 (18.5%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -497,10 +533,7 @@ export default function DashboardPage() {
                   className="transition-all duration-300"
                 />
 
-                {/* 3. Companies Segment (Green #10B981): Value 20/270 (7.4%)
-                    Length = 7.4% of 238.76 = 17.7
-                    Offset = -221.1 - gap
-                */}
+                {/* 3. Companies Segment (Green #10B981): Value 20/270 (7.4%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -560,10 +593,13 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Row 4: Details Tables/Actions (Pending Approvals + Quick Actions) */}
+      {/* Row 4: Details Tables & Sidebar (Pending Approvals + Reports + Quick Actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        {/* Pending approvals table */}
-        <Card className="lg:col-span-2 bg-white border-[#ECECEC]">
+        {/* Pending approvals table (lg:col-span-2) */}
+        <Card
+          className="lg:col-span-2 bg-white border-[#ECECEC]"
+          data-node-id="pending-approvals-card"
+        >
           <CardHeader className="flex flex-row items-center justify-between border-b border-[#ECECEC] pb-4">
             <div>
               <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
@@ -650,43 +686,113 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Quick Actions Panel */}
-        <Card className="bg-white border-[#ECECEC]">
-          <CardHeader className="border-b border-[#ECECEC] pb-4">
-            <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
-              إجراءات سريعة
-            </CardTitle>
-            <p className="text-xs text-[#6B6A6A] mt-1">
-              الوصول السريع للمهام الإدارية المعتادة.
-            </p>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-4">
-            <Button
-              variant="outline"
-              className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
-            >
-              إرسال تنبيه عام للمنصة
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
-            >
-              تحديث أسعار الباقات والاشتراكات
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
-            >
-              توليد تقرير الإيرادات الشهري
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
-            >
-              مراجعة سجلات الأخطاء والعمليات
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <Card
+            className="bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+            data-node-id="2376:5216"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between w-full pb-2">
+              <div className="space-y-1 text-right">
+                <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
+                  البلاغات التي تحتاج مراجعة
+                </h3>
+                <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
+                  آخر البلاغات التي لم يتم التعامل معها
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                className="text-primary font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+              >
+                عرض الكل
+              </Button>
+            </div>
+
+            {/* List items */}
+            <div className="flex flex-col w-full">
+              {reports.map((rep, idx) => (
+                <div
+                  key={rep.id}
+                  className={`flex items-center justify-between py-3.5 w-full ${
+                    idx < reports.length - 1 ? 'border-b border-[#ECEEEF]' : ''
+                  }`}
+                >
+                  {/* Report Info & Priority (Right RTL) */}
+                  <div className="flex flex-col gap-1.5 items-start text-right">
+                    {/* Priority indicator pill */}
+                    <div className="flex items-center gap-1  h-[20px] rounded-[99px]">
+                      <span
+                        className={`w-2 h-2 rounded-full ${rep.bulletColor}`}
+                      />
+                      <span
+                        className={`font-['Cairo'] font-medium text-[12px] ${rep.priorityColor}`}
+                      >
+                        {rep.priority}
+                      </span>
+                    </div>
+                    {/* Label & Title */}
+                    <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
+                      <span>عقار </span>
+                      <span className="font-normal text-[#111111]">
+                        {rep.title}
+                      </span>
+                    </p>
+                    {/* Time/Meta */}
+                    <p className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] leading-none mt-0.5">
+                      {rep.reason} · {rep.time}
+                    </p>
+                  </div>
+                  {/* Details Action (Left RTL) */}
+                  <button className="text-primary font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
+                    التفاصيل
+                  </button>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          {/* Quick Actions Panel */}
+          <Card
+            className="bg-white border-[#ECECEC]"
+            data-node-id="quick-actions-card"
+          >
+            <CardHeader className="border-b border-[#ECECEC] pb-4">
+              <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
+                إجراءات سريعة
+              </CardTitle>
+              <p className="text-xs text-[#6B6A6A] mt-1">
+                الوصول السريع للمهام الإدارية المعتادة.
+              </p>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              <Button
+                variant="outline"
+                className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
+              >
+                إرسال تنبيه عام للمنصة
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
+              >
+                تحديث أسعار الباقات والاشتراكات
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
+              >
+                توليد تقرير الإيرادات الشهري
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start text-sm font-semibold font-['Cairo'] h-11 border-[#ECECEC] hover:bg-[#F8F9FA] hover:text-primary"
+              >
+                مراجعة سجلات الأخطاء والعمليات
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
