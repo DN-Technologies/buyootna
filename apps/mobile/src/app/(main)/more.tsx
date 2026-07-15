@@ -3,15 +3,25 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ShareIcon } from '@/assets/icons/home/property';
 import {
+  BillIcon,
   ChatIcon,
+  MoneyIcon,
   QuotaIcon,
   SavedIcon,
   SettingsIcon,
+  StarIcon,
 } from '@/assets/icons/more';
 import apiClient from '@/core/api/api';
 import AuthGuardSheet from '@/core/components/AuthGuardSheet';
@@ -409,6 +419,28 @@ export default function ProfileDashboardScreen() {
               </View>
             </View>
 
+            {/* Ratings Section */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                التقييمات
+              </Text>
+              <View className="rounded-md bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={StarIcon}
+                  title="التقييمات والمراجعات"
+                  onPress={() =>
+                    Alert.alert(
+                      'قريباً',
+                      'ميزة التقييمات والمراجعات ستكون متوفرة قريباً',
+                    )
+                  }
+                />
+              </View>
+            </View>
+
             {/* Account & Subscriptions Section */}
             <View>
               <Text
@@ -422,6 +454,31 @@ export default function ProfileDashboardScreen() {
                   icon={QuotaIcon}
                   title="الباقات"
                   onPress={() => router.push('/plans')}
+                />
+                <MenuItem
+                  icon={MoneyIcon}
+                  title="رصيد الحساب"
+                  onPress={() =>
+                    Alert.alert(
+                      'قريباً',
+                      'ميزة رصيد الحساب ستكون متوفرة قريباً',
+                    )
+                  }
+                />
+                <MenuItem
+                  icon={BillIcon}
+                  title="الفواتير"
+                  onPress={() => router.push('/(more)/invoices')}
+                />
+                <MenuItem
+                  icon={BillIcon}
+                  title="فواتير الخدمات"
+                  onPress={() =>
+                    Alert.alert(
+                      'قريباً',
+                      'ميزة فواتير الخدمات ستكون متوفرة قريباً',
+                    )
+                  }
                 />
               </View>
             </View>
@@ -442,55 +499,6 @@ export default function ProfileDashboardScreen() {
                 />
               </View>
             </View>
-
-            {/* Support & Help Section */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                الدعم والمساعدة
-              </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
-                <MenuItem
-                  icon={InfoIcon}
-                  title="عن بيوتنا"
-                  onPress={() => router.push('/(more)/about')}
-                />
-                <MenuItem
-                  icon={HelpIcon}
-                  title="الأسئلة الشائعة"
-                  onPress={() => router.push('/(more)/faq')}
-                />
-                <MenuItem
-                  icon={PhoneIcon}
-                  title="تواصل معنا"
-                  onPress={() => router.push('/(more)/contact')}
-                />
-              </View>
-            </View>
-
-            {/* Policies Section */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                السياسات
-              </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
-                <MenuItem
-                  icon={ShieldIcon}
-                  title="سياسة الخصوصية"
-                  onPress={() => router.push('/(more)/privacy')}
-                />
-                <MenuItem
-                  icon={FileIcon}
-                  title="الشروط والأحكام"
-                  onPress={() => router.push('/(more)/terms')}
-                />
-              </View>
-            </View>
           </View>
 
           {/* --- 3. Logout Button --- */}
@@ -505,6 +513,11 @@ export default function ProfileDashboardScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Footer */}
+          <Text className="mt-6 text-center font-cairo-medium text-xs text-[#6B6A6A]">
+            تم انشاء وتطوير التطبيق بواسطة دار النخبة
+          </Text>
         </ContentContainer>
       </ScrollView>
 

@@ -22,6 +22,7 @@ import { SettingsModule } from './features/settings/settings.module';
 import { NotificationsModule } from './features/notifications/notifications.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { PlansModule } from './features/plans/plans.module';
+import { InvoicesModule } from './features/invoices/invoices.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PlansModule } from './features/plans/plans.module';
     NotificationsModule,
     DevicesModule,
     PlansModule,
+    InvoicesModule,
   ],
   controllers: [AppController],
   providers: [

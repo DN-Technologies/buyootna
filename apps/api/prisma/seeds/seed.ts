@@ -591,27 +591,32 @@ async function main() {
   const faqs = [
     {
       question: 'ما هو تطبيق بيوتنا؟',
-      answer: 'تطبيق بيوتنا هو منصة عقارية كويتية متخصصة تهدف لتسهيل عملية البحث، البيع، الإيجار، والبدل لمختلف فئات العقارات في الكويت.',
+      answer:
+        'تطبيق بيوتنا هو منصة عقارية كويتية متخصصة تهدف لتسهيل عملية البحث، البيع، الإيجار، والبدل لمختلف فئات العقارات في الكويت.',
       sortOrder: 1,
     },
     {
       question: 'كيف يمكنني إضافة إعلان جديد؟',
-      answer: 'يمكنك إضافة إعلان بالضغط على زر (+) في القائمة السفلية، ثم ملء تفاصيل العقار كالموقع والمساحة والسعر وإرفاق الصور المطلوبة ونشره مباشرة.',
+      answer:
+        'يمكنك إضافة إعلان بالضغط على زر (+) في القائمة السفلية، ثم ملء تفاصيل العقار كالموقع والمساحة والسعر وإرفاق الصور المطلوبة ونشره مباشرة.',
       sortOrder: 2,
     },
     {
       question: 'هل توجد عمولات على عمليات البيع أو الإيجار؟',
-      answer: 'لا، تطبيق بيوتنا منصة مجانية للإعلان العقاري ولا يتقاضى أي عمولة على الصفقات المبرمة بين البائع والمشتري.',
+      answer:
+        'لا، تطبيق بيوتنا منصة مجانية للإعلان العقاري ولا يتقاضى أي عمولة على الصفقات المبرمة بين البائع والمشتري.',
       sortOrder: 3,
     },
     {
       question: 'ما هي باقات الإعلانات المميزة؟',
-      answer: 'توفر باقات الإعلانات المميزة ظهوراً أكبر لإعلانك في أعلى نتائج البحث وواجهة التطبيق الرئيسية لزيادة فرص الاتصال والمشاهدات.',
+      answer:
+        'توفر باقات الإعلانات المميزة ظهوراً أكبر لإعلانك في أعلى نتائج البحث وواجهة التطبيق الرئيسية لزيادة فرص الاتصال والمشاهدات.',
       sortOrder: 4,
     },
     {
       question: 'كيف يمكنني التواصل مع صاحب العقار؟',
-      answer: 'يمكنك التواصل مباشرة مع صاحب الإعلان من خلال صفحة تفاصيل العقار بالضغط على أزرار الاتصال الهاتفي، أو الواتساب، أو عبر المحادثة المباشرة المدمجة بالتطبيق.',
+      answer:
+        'يمكنك التواصل مباشرة مع صاحب الإعلان من خلال صفحة تفاصيل العقار بالضغط على أزرار الاتصال الهاتفي، أو الواتساب، أو عبر المحادثة المباشرة المدمجة بالتطبيق.',
       sortOrder: 5,
     },
   ];
@@ -624,6 +629,79 @@ async function main() {
     });
   }
   console.log('✅ Seeded FAQs.');
+
+  // --- Seed Invoices ---
+  console.log('🌱 Seeding invoices...');
+  await prisma.invoice.deleteMany({});
+
+  const sampleInvoices = [
+    {
+      invoiceNo: 'INV-20365',
+      planName: 'الباقة الذهبية',
+      planDetails: 'باقة 5 اعلانات',
+      amount: 100.0,
+      status: 'PAID',
+      paidAt: new Date('2026-05-05T10:00:00Z'),
+      dueDate: null,
+      delayDays: null,
+      userId: reviewerUserId,
+      createdAt: new Date('2026-05-05T09:00:00Z'),
+    },
+    {
+      invoiceNo: 'INV-20366',
+      planName: 'الباقة الذهبية',
+      planDetails: 'باقة 5 اعلانات',
+      amount: 100.0,
+      status: 'OVERDUE',
+      paidAt: null,
+      dueDate: new Date('2026-05-30T23:59:59Z'),
+      delayDays: 5,
+      userId: reviewerUserId,
+      createdAt: new Date('2026-05-15T09:00:00Z'),
+    },
+    {
+      invoiceNo: 'INV-20367',
+      planName: 'الباقة الذهبية',
+      planDetails: 'باقة 5 اعلانات',
+      amount: 100.0,
+      status: 'CANCELLED',
+      paidAt: null,
+      dueDate: new Date('2026-04-30T23:59:59Z'),
+      delayDays: null,
+      userId: reviewerUserId,
+      createdAt: new Date('2026-04-10T09:00:00Z'),
+    },
+    {
+      invoiceNo: 'INV-10111',
+      planName: 'الباقة الفضية',
+      planDetails: 'باقة 2 اعلانات',
+      amount: 50.0,
+      status: 'PAID',
+      paidAt: new Date('2026-06-01T12:00:00Z'),
+      dueDate: null,
+      delayDays: null,
+      userId: individualUserId,
+      createdAt: new Date('2026-06-01T11:00:00Z'),
+    },
+  ];
+
+  for (const inv of sampleInvoices) {
+    await prisma.invoice.create({
+      data: {
+        invoiceNo: inv.invoiceNo,
+        planName: inv.planName,
+        planDetails: inv.planDetails,
+        amount: inv.amount,
+        status: inv.status as any,
+        paidAt: inv.paidAt,
+        dueDate: inv.dueDate,
+        delayDays: inv.delayDays,
+        userId: inv.userId,
+        createdAt: inv.createdAt,
+      },
+    });
+  }
+  console.log('✅ Seeded Invoices.');
 
   console.log('🎉 Seeding process completed successfully!');
 }

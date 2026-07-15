@@ -32,6 +32,7 @@ model User {
   settings          UserSettings?
   notifPreferences  NotificationPreferences?
   sessions          Session[]
+  invoices          Invoice[]
 }
 
 model IndividualProfile {
@@ -190,4 +191,29 @@ model FAQ {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id          String        @id @default(uuid())
+  invoiceNo   String        @unique
+  planName    String
+  planDetails String?
+  amount      Float
+  status      InvoiceStatus @default(PENDING)
+  paidAt      DateTime?
+  dueDate     DateTime?
+  delayDays   Int?          // e.g. 5 for notice
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  OVERDUE
+  CANCELLED
 }
