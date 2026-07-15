@@ -48,16 +48,10 @@ const reports = [
 export default function ReportsCard() {
   return (
     <Card
-      className="bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+      className="bg-white lg:col-span-1 border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
       data-node-id="2376:5216"
     >
       <div className="flex items-start justify-between w-full pb-2">
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
-        >
-          عرض الكل
-        </Button>
         <div className="space-y-1 text-right">
           <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
             البلاغات التي تحتاج مراجعة
@@ -66,6 +60,12 @@ export default function ReportsCard() {
             آخر البلاغات التي لم يتم التعامل معها
           </p>
         </div>
+        <Button
+          variant="ghost"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+        >
+          عرض الكل
+        </Button>
       </div>
 
       <div className="flex flex-col w-full">
@@ -76,12 +76,8 @@ export default function ReportsCard() {
               idx < reports.length - 1 ? 'border-b border-[#ECEEEF]' : ''
             }`}
           >
-            <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
-              التفاصيل
-            </button>
-
-            <div className="flex flex-col gap-1.5 items-end text-right">
-              <div className="flex items-center gap-1 justify-end h-[20px] rounded-[99px]">
+            <div className="flex flex-col gap-1.5 items-start text-right">
+              <div className="flex items-center gap-1  h-[20px] rounded-[99px]">
                 <span
                   className={`font-['Cairo'] font-medium text-[12px] ${rep.priorityColor}`}
                 >
@@ -97,6 +93,9 @@ export default function ReportsCard() {
                 {rep.reason} · {rep.time}
               </p>
             </div>
+            <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
+              التفاصيل
+            </button>
           </div>
         ))}
       </div>

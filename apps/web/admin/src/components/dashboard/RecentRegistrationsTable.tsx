@@ -69,16 +69,10 @@ const recentRegistrations = [
 export default function RecentRegistrationsTable() {
   return (
     <Card
-      className="bg-white border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+      className="bg-white lg:col-span-2 border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
       data-node-id="2376:5586"
     >
       <div className="flex items-start justify-between w-full px-6 pb-4">
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
-        >
-          عرض الكل
-        </Button>
         <div className="space-y-1 text-right">
           <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
             التسجيلات الاخيرة
@@ -87,6 +81,12 @@ export default function RecentRegistrationsTable() {
             تحليل مالي شهري لعام 2026
           </p>
         </div>
+        <Button
+          variant="ghost"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+        >
+          عرض الكل
+        </Button>
       </div>
 
       <div className="overflow-x-auto w-full">
@@ -148,10 +148,10 @@ export default function RecentRegistrationsTable() {
                 <td className="px-6 py-2 text-left">
                   <div className="flex justify-end items-center gap-3">
                     <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
-                      <MoreVertical className="w-5 h-5 text-[#6B6A6A]" />
+                      <Eye className="w-5 h-5 text-[#6B6A6A]" />
                     </button>
                     <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
-                      <Eye className="w-5 h-5 text-[#6B6A6A]" />
+                      <MoreVertical className="w-5 h-5 text-[#6B6A6A]" />
                     </button>
                   </div>
                 </td>

@@ -61,12 +61,6 @@ export default function VerificationRequestsCard() {
       data-node-id="2376:5816"
     >
       <div className="flex items-start justify-between w-full px-[18px]">
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
-        >
-          عرض الكل
-        </Button>
         <div className="space-y-1 text-right">
           <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
             طلبات التحقق
@@ -75,19 +69,25 @@ export default function VerificationRequestsCard() {
             حسابات تنتظر مراجعة مستندات التوثيق
           </p>
         </div>
+        <Button
+          variant="ghost"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+        >
+          عرض الكل
+        </Button>
       </div>
 
       <div className="flex flex-col w-full">
         <div className="border-b border-[#ECECEC] pb-3 pt-2 w-full px-[18px]">
           <div className="flex items-center justify-between w-full text-right">
-            <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[80px]">
-              الاجراءات
+            <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[140px] text-right">
+              المستخدم
             </span>
             <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[100px] text-center">
               النوع
             </span>
-            <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[140px] text-right">
-              المستخدم
+            <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] w-[80px]">
+              الاجراءات
             </span>
           </div>
         </div>
@@ -98,9 +98,9 @@ export default function VerificationRequestsCard() {
               key={req.id}
               className="flex items-center justify-between py-3 px-[18px] w-full hover:bg-[#F9FAFB]/50 transition duration-150 h-[48px]"
             >
-              <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-[80px]">
-                مراجعة
-              </button>
+              <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right w-[140px] truncate">
+                {req.user}
+              </span>
               <div className="w-[100px] flex justify-center">
                 <span
                   className={`px-2 py-0.5 rounded-[99px] text-[11px] font-['Cairo'] font-medium ${req.typeBg} ${req.typeColor}`}
@@ -108,9 +108,9 @@ export default function VerificationRequestsCard() {
                   {req.type}
                 </span>
               </div>
-              <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right w-[140px] truncate">
-                {req.user}
-              </span>
+              <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-[80px]">
+                مراجعة
+              </button>
             </div>
           ))}
         </div>

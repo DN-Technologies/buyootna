@@ -34,16 +34,10 @@ const recentActivities = [
 export default function RecentActivitiesCard() {
   return (
     <Card
-      className="bg-white border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+      className="bg-white lg:col-span-2  border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
       data-node-id="2376:5896"
     >
       <div className="flex items-start justify-between w-full px-6 pb-4">
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
-        >
-          عرض سجل الأنشطة
-        </Button>
         <div className="space-y-1 text-right">
           <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
             اخر الانشطة
@@ -52,6 +46,12 @@ export default function RecentActivitiesCard() {
             احدث الانشطة والاجراءات
           </p>
         </div>
+        <Button
+          variant="ghost"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+        >
+          عرض سجل الأنشطة
+        </Button>
       </div>
 
       <div className="flex flex-col w-full divide-y divide-[#ECECEC] border-t border-[#ECECEC]">
@@ -60,12 +60,12 @@ export default function RecentActivitiesCard() {
             key={act.id}
             className="flex items-center justify-between px-6 h-[48px] w-full hover:bg-[#F9FAFB]/50 transition duration-150"
           >
-            <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] text-left shrink-0">
-              {act.time}
-            </span>
             <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right truncate pl-4 flex-1">
               {act.text}
             </p>
+            <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] text-left shrink-0">
+              {act.time}
+            </span>
           </div>
         ))}
       </div>

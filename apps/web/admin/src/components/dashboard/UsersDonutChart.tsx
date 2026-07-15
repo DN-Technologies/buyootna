@@ -62,37 +62,37 @@ export default function UsersDonutChart() {
 
       <div className="flex flex-col gap-3.5 w-full mt-auto">
         <div className="flex items-center justify-between w-full h-[22.5px]">
-          <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            200
-          </span>
           <div className="flex items-center justify-end gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
             <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
               الأفراد
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
           </div>
+          <span className="font-sans font-semibold text-[13px] text-[#111111]">
+            200
+          </span>
         </div>
         <div className="flex items-center justify-between w-full h-[22.5px]">
-          <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            20
-          </span>
           <div className="flex items-center justify-end gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#10B981]" />
             <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
               الشركات
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#10B981]" />
           </div>
+          <span className="font-sans font-semibold text-[13px] text-[#111111]">
+            20
+          </span>
         </div>
         <div className="flex items-center justify-between w-full h-[22.5px]">
-          <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            50
-          </span>
           <div className="flex items-center justify-end gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
             <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
               المكاتب العقارية
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
           </div>
+          <span className="font-sans font-semibold text-[13px] text-[#111111]">
+            50
+          </span>
         </div>
       </div>
     </Card>
