@@ -74,6 +74,15 @@ export default function DashboardLayout({
 
           {/* Left Side (RTL): Profile Details & Notification Bell */}
           <div className="flex items-center gap-6">
+            {/* Notification Bell with Red Dot */}
+            <button className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#111111] hover:bg-[#F8F9FA] transition">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-[8px] left-[17px] w-1.5 h-1.5 rounded-full bg-[#BA0003]" />
+            </button>
+
+            {/* Vertical Divider */}
+            <div className="w-px h-[32px] bg-[#ECECEC]" />
+
             {/* Profile Dropdown Toggle */}
             <div className="relative">
               <div
@@ -81,6 +90,13 @@ export default function DashboardLayout({
                 className="flex items-center gap-3 cursor-pointer hover:opacity-85 transition"
               >
                 <ChevronDown className="w-4 h-4 text-[#111111]" />
+                <div className="relative rounded-[200px] w-10 h-10 overflow-hidden bg-gray-100 border border-[#ECECEC]">
+                  <img
+                    alt="نواف الجارحي"
+                    className="object-cover w-full h-full"
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  />
+                </div>
                 <div className="flex flex-col gap-0.5 text-right">
                   <p className="font-['Cairo'] font-semibold text-[16px] text-[#111111] leading-none">
                     نواف الجارحي
@@ -88,13 +104,6 @@ export default function DashboardLayout({
                   <p className="font-['Cairo'] font-normal text-[13px] text-[#6B6A6A] leading-none">
                     مشرف
                   </p>
-                </div>
-                <div className="relative rounded-[200px] w-10 h-10 overflow-hidden bg-gray-100 border border-[#ECECEC]">
-                  <img
-                    alt="نواف الجارحي"
-                    className="object-cover w-full h-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  />
                 </div>
               </div>
 
@@ -117,15 +126,6 @@ export default function DashboardLayout({
                 </>
               )}
             </div>
-
-            {/* Vertical Divider */}
-            <div className="w-px h-[32px] bg-[#ECECEC]" />
-
-            {/* Notification Bell with Red Dot */}
-            <button className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#111111] hover:bg-[#F8F9FA] transition">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-[8px] left-[17px] w-1.5 h-1.5 rounded-full bg-[#BA0003]" />
-            </button>
           </div>
         </header>
 

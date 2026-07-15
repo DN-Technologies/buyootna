@@ -48,7 +48,7 @@ export default function PageHeader({
             {title}
           </h1>
           {subtitle && (
-            <p className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A] leading-[1.5] tracking-[0.32px] mt-1">
+            <p className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A] leading-normal tracking-[0.32px] mt-1">
               {subtitle}
             </p>
           )}

@@ -1,45 +1,46 @@
 'use client'
 
 import React from 'react'
-import {
-  Users,
-  FileCheck,
-  CheckCircle2,
-  TrendingUp,
-  AlertCircle,
-  ArrowLeft,
-} from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@buyootna/ui'
 import PageHeader from '@/components/PageHeader'
 
-const stats = [
+const metrics = [
   {
+    id: 'users',
     title: 'إجمالي المستخدمين',
-    value: '1,248',
-    change: '+12% هذا الشهر',
-    icon: Users,
-    color: 'text-blue-600 bg-blue-50 border-blue-100',
+    value: '500',
+    trend: '8.1%',
+    isPositive: true,
+    linePath: 'M 0 32 Q 20 30, 40 28 T 80 20 T 100 8',
+    areaPath: 'M 0 32 Q 20 30, 40 28 T 80 20 T 100 8 L 100 40 L 0 40 Z',
   },
   {
-    title: 'الطلبات قيد المراجعة',
-    value: '24',
-    change: '6 طلبات جديدة اليوم',
-    icon: AlertCircle,
-    color: 'text-amber-600 bg-amber-50 border-amber-100',
+    id: 'demo',
+    title: 'الحسابات التجريبية',
+    value: '100',
+    trend: '8.1%',
+    isPositive: true,
+    linePath: 'M 0 8 Q 30 12, 60 22 T 100 32',
+    areaPath: 'M 0 8 Q 30 12, 60 22 T 100 32 L 100 40 L 0 40 Z',
   },
   {
-    title: 'الاشتراكات النشطة',
-    value: '382',
-    change: '+8.5% من الأسبوع الماضي',
-    icon: CheckCircle2,
-    color: 'text-green-600 bg-green-50 border-green-100',
+    id: 'reports',
+    title: 'البلاغات الجديدة',
+    value: '10',
+    trend: '3.2%',
+    isPositive: false,
+    linePath: 'M 0 32 Q 25 28, 50 26 T 75 22 T 100 16',
+    areaPath: 'M 0 32 Q 25 28, 50 26 T 75 22 T 100 16 L 100 40 L 0 40 Z',
   },
   {
-    title: 'الإيرادات الشهرية',
-    value: '4,850 د.ك',
-    change: '+18% نمو متوقع',
-    icon: TrendingUp,
-    color: 'text-purple-600 bg-purple-50 border-purple-100',
+    id: 'revenue',
+    title: 'إجمالي الإيرادات',
+    value: '84,800 د.ك',
+    trend: '8.1%',
+    isPositive: true,
+    linePath: 'M 0 12 Q 25 15, 50 22 T 100 28',
+    areaPath: 'M 0 12 Q 25 15, 50 22 T 100 28 L 100 40 L 0 40 Z',
   },
 ]
 
@@ -80,12 +81,11 @@ const pendingRequests = [
 
 export default function DashboardPage() {
   const handleExport = () => {
-    alert('جاري تحضير ملف التصدير...')
+    alert('جاري تحضير ملف التصدير للوحة التحكم...')
   }
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Figma compliant PageTitle Greeting (node 2376:5365) */}
       <PageHeader
         breadcrumbs={['الرئيسية']}
         title="مرحبا ابراهيم !"
@@ -93,35 +93,112 @@ export default function DashboardPage() {
         onExport={handleExport}
       />
 
-      {/* Grid Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => {
-          const Icon = stat.icon
-          return (
-            <Card key={i} className="bg-white border-[#ECECEC]">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xs font-['Cairo'] font-semibold text-[#6B6A6A]">
-                  {stat.title}
-                </CardTitle>
-                <div className={`p-2 rounded-lg border ${stat.color}`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold font-['Cairo'] text-[#111111]">
-                  {stat.value}
-                </div>
-                <p className="text-xs text-green-600 mt-1 font-['Cairo']">
-                  {stat.change}
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {metrics.map((metric) => (
+          <div
+            key={metric.id}
+            className="bg-white border border-[#ECECEC] rounded-[8px] p-4 flex flex-col gap-2 relative overflow-hidden select-none"
+            data-node-id={`card-${metric.id}`}
+          >
+            {/* Top row: badge + title */}
+            <div className="flex items-start justify-between relative">
+              <p className="font-['Cairo'] font-medium text-[14px] text-[#6b6a6a] leading-[1.2]">
+                {metric.title}
+              </p>
+
+              <div
+                className={`flex gap-[2px] items-center px-1.5 py-0.5 rounded-[6px] ${
+                  metric.isPositive
+                    ? 'bg-[#12c281]/10 text-[#12C281]'
+                    : 'bg-[#f54651]/10 text-[#F54651]'
+                }`}
+              >
+                <span className="text-[11px] font-semibold font-sans leading-none">
+                  {metric.trend}
+                </span>
+                {metric.isPositive ? (
+                  <svg
+                    className="w-2.5 h-2.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-2.5 h-2.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25"
+                    />
+                  </svg>
+                )}
+              </div>
+            </div>
+
+            {/* Value */}
+            <div className="flex flex-col justify-center relative mt-1 select-text">
+              <p className="font-['Cairo'] font-bold text-[24px] text-[#111111] leading-[1.4] text-right">
+                {metric.value}
+              </p>
+            </div>
+
+            {/* Sparkline Graphic */}
+            <div className="h-[40px] w-full mt-2 relative -mx-4 -mb-4 overflow-hidden">
+              <svg
+                className="w-[calc(100%+32px)] h-full"
+                viewBox="0 0 100 40"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient
+                    id={`grad-${metric.id}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor={metric.isPositive ? '#12C281' : '#F54651'}
+                      stopOpacity="0.15"
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={metric.isPositive ? '#12C281' : '#F54651'}
+                      stopOpacity="0.0"
+                    />
+                  </linearGradient>
+                </defs>
+                {/* Gradient Area Fill */}
+                <path d={metric.areaPath} fill={`url(#grad-${metric.id})`} />
+                {/* Stroke Path */}
+                <path
+                  d={metric.linePath}
+                  fill="none"
+                  stroke={metric.isPositive ? '#12C281' : '#F54651'}
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Section Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
         {/* Pending approvals table */}
         <Card className="lg:col-span-2 bg-white border-[#ECECEC]">
           <CardHeader className="flex flex-row items-center justify-between border-b border-[#ECECEC] pb-4">
@@ -213,7 +290,7 @@ export default function DashboardPage() {
         {/* Quick Actions Panel */}
         <Card className="bg-white border-[#ECECEC]">
           <CardHeader className="border-b border-[#ECECEC] pb-4">
-            <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
+            <CardTitle className="text-base font-['Cairo'] font-bold text-primary```">
               إجراءات سريعة
             </CardTitle>
             <p className="text-xs text-[#6B6A6A] mt-1">
