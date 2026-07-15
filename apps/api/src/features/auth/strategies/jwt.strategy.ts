@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role } from '@prisma/client';
+import { PrismaService } from '../../../core/prisma/prisma.service';
 
 export interface JwtPayload {
   sub: string;
@@ -11,7 +12,7 @@ export interface JwtPayload {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -20,13 +21,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // Passport verifies the signature automatically.
-  // This method just transforms the decoded payload.
-  validate(payload: JwtPayload) {
-    return {
-      id: payload.sub,
-      userId: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    };
+  // This method checks if the user actually exists in the database.
+  async validate(payload: JwtPayload) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+    if (!user) {
+      throw new UnauthorizedException(
+        'المستخدم غير موجود أو انتهت صلاحية الجلسة',
+      );
+    }
+    return user;
   }
 }

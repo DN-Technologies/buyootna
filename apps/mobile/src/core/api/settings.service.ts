@@ -41,15 +41,26 @@ export const settingsService = {
     return response.data;
   },
 
+  requestChangePasswordOtp: async (): Promise<{ message: string }> => {
+    const response = await apiClient.post<{ message: string }>(
+      '/auth/change-password/request-otp',
+    );
+    return response.data;
+  },
+
   changePassword: async (
     oldPassword: string,
     newPassword: string,
+    otp: string,
+    logoutAllDevices?: boolean,
   ): Promise<{ message: string }> => {
     const response = await apiClient.patch<{ message: string }>(
       '/auth/change-password',
       {
         oldPassword,
         newPassword,
+        otp,
+        logoutAllDevices,
       },
     );
     return response.data;

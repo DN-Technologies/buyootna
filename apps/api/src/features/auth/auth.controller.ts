@@ -34,6 +34,12 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post('change-password/request-otp')
+  async requestChangePasswordOtp(@CurrentUser() user: User) {
+    return this.authService.requestChangePasswordOtp(user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Patch('change-password')
   async changePassword(
     @CurrentUser() user: User,
@@ -43,6 +49,8 @@ export class AuthController {
       user.id,
       dto.oldPassword,
       dto.newPassword,
+      dto.otp,
+      dto.logoutAllDevices,
     );
   }
 }

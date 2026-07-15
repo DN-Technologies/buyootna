@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   ScrollView,
   Switch,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -40,12 +38,6 @@ export default function SettingsScreen() {
   const [hideActivity, setHideActivity] = useState(false);
   const [hideOfficeAds, setHideOfficeAds] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Password Change Modal States
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [isChangingPass, setIsChangingPass] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -151,32 +143,6 @@ export default function SettingsScreen() {
     );
   };
 
-  const handleChangePassword = async () => {
-    if (!oldPassword || !newPassword) {
-      Alert.alert('تنبيه', 'يرجى ملء جميع الحقول');
-      return;
-    }
-    if (newPassword.length < 6) {
-      Alert.alert('تنبيه', 'يجب أن تكون كلمة المرور الجديدة 6 أحرف على الأقل');
-      return;
-    }
-    setIsChangingPass(true);
-    try {
-      await settingsService.changePassword(oldPassword, newPassword);
-      Alert.alert('نجاح', 'تم تغيير كلمة المرور بنجاح');
-      setShowPasswordModal(false);
-      setOldPassword('');
-      setNewPassword('');
-    } catch (error: any) {
-      Alert.alert(
-        'خطأ',
-        error.response?.data?.message || 'فشل تغيير كلمة المرور',
-      );
-    } finally {
-      setIsChangingPass(false);
-    }
-  };
-
   // Helper component for Switch rows
   const SettingsSwitchItem = ({
     icon: Icon,
@@ -230,226 +196,157 @@ export default function SettingsScreen() {
           <ActivityIndicator size="large" color="#15304D" className="py-20" />
         ) : (
           <View className="gap-6 px-5">
-          {/* --- Section: Notifications --- */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الاشعارات
-            </Text>
-            <View className="rounded-xl bg-[#F9FAFE] px-4">
-              <MenuItem
-                icon={NotificationIcon}
-                title="الإشعارات"
-                onPress={() => router.push('/notifications')}
-              />
-            </View>
-          </View>
-
-          {/* --- Section: Account & Security --- */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الحساب والامان
-            </Text>
-            <View className="rounded-xl bg-[#F9FAFE] px-4">
-              <MenuItem
-                icon={LockIcon}
-                title="تغيير كلمة المرور"
-                onPress={() => setShowPasswordModal(true)}
-              />
-              <MenuItem
-                icon={DeviceIcon}
-                title="الاجهزة المسجلة"
-                onPress={() => router.push('/devices')}
-              />
-            </View>
-          </View>
-
-          {/* --- Section: Privacy --- */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الخصوصية
-            </Text>
-            <View className="rounded-xl bg-[#F9FAFE] px-4">
-              <SettingsSwitchItem
-                icon={InfoIcon}
-                title="اظهار رقم الهاتف"
-                value={showPhone}
-                onValueChange={handleToggleShowPhone}
-              />
-              <SettingsSwitchItem
-                icon={ShowIcon}
-                title="اظهار رقم الواتساب"
-                value={showWhatsapp}
-                onValueChange={handleToggleShowWhatsapp}
-              />
-              <SettingsSwitchItem
-                icon={HideIcon}
-                title="اخفاء النشاط"
-                value={hideActivity}
-                onValueChange={handleToggleHideActivity}
-              />
-              <SettingsSwitchItem
-                icon={HideAdIcon}
-                title="اخفاء اعلانات المكاتب"
-                value={hideOfficeAds}
-                onValueChange={handleToggleHideOfficeAds}
-              />
-            </View>
-          </View>
-
-          {/* --- Section: Support & Help --- */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الدعم والمساعدة
-            </Text>
-            <View className="rounded-xl bg-[#F9FAFE] px-4">
-              <MenuItem
-                icon={InfoIcon}
-                title="عن بيوتنا"
-                onPress={() => router.push('/about')}
-              />
-              <MenuItem
-                icon={ShowIcon}
-                title="الأسئلة الشائعة"
-                onPress={() => router.push('/faq')}
-              />
-              <MenuItem
-                icon={CallIcon}
-                title="تواصل معنا"
-                onPress={() => router.push('/contact')}
-              />
-            </View>
-          </View>
-
-          {/* --- Section: Policies --- */}
-          <View>
-            <Text
-              className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              السياسات
-            </Text>
-            <View className="rounded-xl bg-[#F9FAFE] px-4">
-              <MenuItem
-                icon={PrivacyIcon}
-                title="سياسة الخصوصية"
-                onPress={() => router.push('/privacy')}
-              />
-              <MenuItem
-                icon={TermsIcon}
-                title="الشروط والأحكام"
-                onPress={() => router.push('/terms')}
-              />
-            </View>
-          </View>
-
-          {/* --- Action Buttons --- */}
-          <View className="mt-4 gap-3">
-            {/* Delete Account */}
-            <TouchableOpacity
-              onPress={handleDeleteAccount}
-              className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white leading-[22px]"
-            >
-              <Feather name="user-x" size={18} color="#9C1E28" />
-              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#9C1E28]">
-                حذف الحساب
-              </Text>
-            </TouchableOpacity>
-
-            {/* Temporarily Disable Account */}
-            <TouchableOpacity
-              onPress={handleDisableAccount}
-              className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#B97500] bg-white"
-            >
-              <Feather name="pause-circle" size={18} color="#B97500" />
-              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#B97500]">
-                تعطيل الحساب مؤقتا
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-    </ScrollView>
-
-      {/* Change Password Modal */}
-      <Modal
-        visible={showPasswordModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowPasswordModal(false)}
-      >
-        <View className="flex-1 items-center justify-center bg-black/50 px-5">
-          <View className="w-full rounded-3xl bg-white p-6">
-            <Text className="mb-4 text-center font-cairo-bold text-lg text-[#15304D]">
-              تغيير كلمة المرور
-            </Text>
-
-            <View className="mb-4">
-              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#111111]">
-                كلمة المرور القديمة
-              </Text>
-              <TextInput
-                secureTextEntry
-                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo-medium text-[#111111]"
-                value={oldPassword}
-                onChangeText={setOldPassword}
-                placeholder="أدخل كلمة المرور القديمة"
-                textAlign="right"
-              />
-            </View>
-
-            <View className="mb-6">
-              <Text className="mb-1 text-right font-cairo-medium text-xs text-[#111111]">
-                كلمة المرور الجديدة
-              </Text>
-              <TextInput
-                secureTextEntry
-                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-right font-cairo-medium text-[#111111]"
-                value={newPassword}
-                onChangeText={setNewPassword}
-                placeholder="أدخل كلمة المرور الجديدة"
-                textAlign="right"
-              />
-            </View>
-
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                disabled={isChangingPass}
-                onPress={() => setShowPasswordModal(false)}
-                className="flex-1 items-center justify-center rounded-full border border-gray-200 py-3"
+            {/* --- Section: Notifications --- */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
               >
-                <Text className="font-cairo-bold text-sm text-[#6B6A6A]">
-                  إلغاء
+                الاشعارات
+              </Text>
+              <View className="rounded-xl bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={NotificationIcon}
+                  title="الإشعارات"
+                  onPress={() => router.push('/notifications')}
+                />
+              </View>
+            </View>
+
+            {/* --- Section: Account & Security --- */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الحساب والامان
+              </Text>
+              <View className="rounded-xl bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={LockIcon}
+                  title="تغيير كلمة المرور"
+                  onPress={() => router.push('/change-password')}
+                />
+                <MenuItem
+                  icon={DeviceIcon}
+                  title="الاجهزة المسجلة"
+                  onPress={() => router.push('/devices')}
+                />
+              </View>
+            </View>
+
+            {/* --- Section: Privacy --- */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الخصوصية
+              </Text>
+              <View className="rounded-xl bg-[#F9FAFE] px-4">
+                <SettingsSwitchItem
+                  icon={InfoIcon}
+                  title="اظهار رقم الهاتف"
+                  value={showPhone}
+                  onValueChange={handleToggleShowPhone}
+                />
+                <SettingsSwitchItem
+                  icon={ShowIcon}
+                  title="اظهار رقم الواتساب"
+                  value={showWhatsapp}
+                  onValueChange={handleToggleShowWhatsapp}
+                />
+                <SettingsSwitchItem
+                  icon={HideIcon}
+                  title="اخفاء النشاط"
+                  value={hideActivity}
+                  onValueChange={handleToggleHideActivity}
+                />
+                <SettingsSwitchItem
+                  icon={HideAdIcon}
+                  title="اخفاء اعلانات المكاتب"
+                  value={hideOfficeAds}
+                  onValueChange={handleToggleHideOfficeAds}
+                />
+              </View>
+            </View>
+
+            {/* --- Section: Support & Help --- */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الدعم والمساعدة
+              </Text>
+              <View className="rounded-xl bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={InfoIcon}
+                  title="عن بيوتنا"
+                  onPress={() => router.push('/about')}
+                />
+                <MenuItem
+                  icon={ShowIcon}
+                  title="الأسئلة الشائعة"
+                  onPress={() => router.push('/faq')}
+                />
+                <MenuItem
+                  icon={CallIcon}
+                  title="تواصل معنا"
+                  onPress={() => router.push('/contact')}
+                />
+              </View>
+            </View>
+
+            {/* --- Section: Policies --- */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                السياسات
+              </Text>
+              <View className="rounded-xl bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={PrivacyIcon}
+                  title="سياسة الخصوصية"
+                  onPress={() => router.push('/privacy')}
+                />
+                <MenuItem
+                  icon={TermsIcon}
+                  title="الشروط والأحكام"
+                  onPress={() => router.push('/terms')}
+                />
+              </View>
+            </View>
+
+            {/* --- Action Buttons --- */}
+            <View className="mt-4 gap-3">
+              {/* Delete Account */}
+              <TouchableOpacity
+                onPress={handleDeleteAccount}
+                className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white leading-[22px]"
+              >
+                <Feather name="user-x" size={18} color="#9C1E28" />
+                <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#9C1E28]">
+                  حذف الحساب
                 </Text>
               </TouchableOpacity>
+
+              {/* Temporarily Disable Account */}
               <TouchableOpacity
-                disabled={isChangingPass}
-                onPress={handleChangePassword}
-                className="flex-1 items-center justify-center rounded-full bg-[#15304D] py-3"
+                onPress={handleDisableAccount}
+                className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#B97500] bg-white"
               >
-                {isChangingPass ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text className="font-cairo-bold text-sm text-white">
-                    حفظ
-                  </Text>
-                )}
+                <Feather name="pause-circle" size={18} color="#B97500" />
+                <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#B97500]">
+                  تعطيل الحساب مؤقتا
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }

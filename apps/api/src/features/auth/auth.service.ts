@@ -92,7 +92,34 @@ export class AuthService {
     return this.login(userWithoutPassword);
   }
 
-  async changePassword(userId: string, oldPass: string, newPass: string) {
+  async requestChangePasswordOtp(user: User) {
+    if (!user.phone) {
+      throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await this.prisma.otpCode.upsert({
+      where: { userId: user.id },
+      update: { code: otp, expiresAt },
+      create: { userId: user.id, code: otp, expiresAt },
+    });
+
+    console.log(
+      `\n🔑 [MOCK SMS/EMAIL] Password change OTP for user ${user.id} (${user.phone}) is: ${otp}\n`,
+    );
+
+    return { message: 'تم إرسال رمز التحقق بنجاح' };
+  }
+
+  async changePassword(
+    userId: string,
+    oldPass: string,
+    newPass: string,
+    otp: string,
+    logoutAllDevices?: boolean,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -100,16 +127,45 @@ export class AuthService {
       throw new BadRequestException('المستخدم غير موجود');
     }
 
+    const otpRecord = await this.prisma.otpCode.findUnique({
+      where: { userId },
+    });
+
+    if (!otpRecord || otpRecord.code !== otp) {
+      throw new BadRequestException('رمز التحقق غير صحيح');
+    }
+
+    if (new Date() > otpRecord.expiresAt) {
+      throw new BadRequestException('رمز التحقق منتهي الصلاحية');
+    }
+
     const isMatch = await bcrypt.compare(oldPass, user.password);
     if (!isMatch) {
       throw new BadRequestException('كلمة المرور القديمة غير صحيحة');
     }
+
+    await this.prisma.otpCode.delete({ where: { userId } });
 
     const hashedNewPassword = await bcrypt.hash(newPass, 10);
     await this.prisma.user.update({
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
+
+    if (logoutAllDevices) {
+      const latest = await this.prisma.session.findFirst({
+        where: { userId, isActive: true },
+        orderBy: { lastActive: 'desc' },
+      });
+      if (latest) {
+        await this.prisma.session.deleteMany({
+          where: {
+            userId,
+            id: { not: latest.id },
+          },
+        });
+      }
+    }
 
     return { message: 'تم تغيير كلمة المرور بنجاح' };
   }
