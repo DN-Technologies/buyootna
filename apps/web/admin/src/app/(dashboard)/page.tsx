@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Eye, MoreVertical } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@buyootna/ui'
 import PageHeader from '@/components/PageHeader'
 
@@ -94,6 +94,69 @@ const pendingRequests = [
   },
 ]
 
+const recentRegistrations = [
+  {
+    id: '1',
+    name: 'أحمد سعيد',
+    email: 'Ahmed@gmail.com',
+    type: 'فرد',
+    subscription: 'ــــــ',
+    subColor: 'text-[#a0a0a0]',
+    subBg: 'bg-transparent',
+    date: 'منذ ساعتين',
+  },
+  {
+    id: '2',
+    name: 'فاطمة الحربي',
+    email: 'fatima@desertdelights.com',
+    type: 'فرد',
+    subscription: 'المجاني',
+    subColor: 'text-[#2563eb]',
+    subBg: 'bg-[#eaf0fd]',
+    date: 'منذ 30 دقيقة',
+  },
+  {
+    id: '3',
+    name: 'محمد الزهراني',
+    email: 'mohammed@oasistreats.net',
+    type: 'مكتب عقاري',
+    subscription: 'الفضية',
+    subColor: 'text-[#344054]',
+    subBg: 'bg-[#f2f4f7]',
+    date: 'منذ يوم',
+  },
+  {
+    id: '4',
+    name: 'محمد الزهراني',
+    email: 'mohammed@oasistreats.net',
+    type: 'شركة',
+    subscription: 'السنوية',
+    subColor: 'text-[#12c281]',
+    subBg: 'bg-[#12c281]/10',
+    date: 'منذ 5 دقائق',
+  },
+  {
+    id: '5',
+    name: 'محمد الزهراني',
+    email: 'mohammed@oasistreats.net',
+    type: 'فرد',
+    subscription: 'ــــــ',
+    subColor: 'text-[#a0a0a0]',
+    subBg: 'bg-transparent',
+    date: 'منذ 5 دقائق',
+  },
+  {
+    id: '6',
+    name: 'محمد الزهراني',
+    email: 'mohammed@oasistreats.net',
+    type: 'فرد',
+    subscription: 'ــــــ',
+    subColor: 'text-[#a0a0a0]',
+    subBg: 'bg-transparent',
+    date: 'منذ 5 دقائق',
+  },
+]
+
 const reports = [
   {
     id: '1',
@@ -176,7 +239,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      {/* Figma compliant PageTitle Greeting (node 2376:5365) */}
+      {/* PageHeader Greeting */}
       <PageHeader
         breadcrumbs={['الرئيسية']}
         title="مرحبا ابراهيم !"
@@ -184,7 +247,7 @@ export default function DashboardPage() {
         onExport={handleExport}
       />
 
-      {/* Figma compliant Metrics Grid (node 2376:5369) */}
+      {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((metric) => (
           <div
@@ -192,7 +255,6 @@ export default function DashboardPage() {
             className="bg-white border border-[#ECECEC] rounded-[8px] p-4 flex flex-col gap-2 relative overflow-hidden select-none"
             data-node-id={`card-${metric.id}`}
           >
-            {/* Top row: badge + title */}
             <div className="flex items-start justify-between relative">
               <div
                 className={`flex gap-[2px] items-center px-1.5 py-0.5 rounded-[6px] ${
@@ -240,14 +302,13 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            {/* Value */}
             <div className="flex flex-col items-end justify-center relative mt-1 select-text">
               <p className="font-['Cairo'] font-bold text-[24px] text-[#111111] leading-[1.4] text-right">
                 {metric.value}
               </p>
             </div>
 
-            {/* Sparkline Graphic */}
+            {/* Sparkline */}
             <div className="h-[40px] w-full mt-2 relative -mx-4 -mb-4 overflow-hidden">
               <svg
                 className="w-[calc(100%+32px)] h-full"
@@ -274,9 +335,7 @@ export default function DashboardPage() {
                     />
                   </linearGradient>
                 </defs>
-                {/* Gradient Area Fill */}
                 <path d={metric.areaPath} fill={`url(#grad-${metric.id})`} />
-                {/* Stroke Path */}
                 <path
                   d={metric.linePath}
                   fill="none"
@@ -291,14 +350,12 @@ export default function DashboardPage() {
 
       {/* Row 3: Charts Grid (Revenue Area Chart + Users Donut Chart) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Figma compliant Revenue & Expenses Area Chart Card (node 2376:5464) */}
+        {/* Revenue Area Chart */}
         <Card
           className="lg:col-span-2 bg-white border-[#ECECEC] p-[20px] select-none relative overflow-hidden"
           data-node-id="2376:5464"
         >
-          {/* Header */}
           <div className="flex items-start justify-between w-full pb-6">
-            {/* Dropdown Selector (Left side in RTL) */}
             <Button
               variant="outline"
               className="bg-white border border-[#E2E8F0] rounded-[6px] h-[30px] px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
@@ -307,7 +364,6 @@ export default function DashboardPage() {
               <span>هذه السنة</span>
             </Button>
 
-            {/* Titles (Right side in RTL) */}
             <div className="space-y-1 text-right">
               <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
                 الإيرادات والمصروفات
@@ -318,9 +374,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* SVG Chart Wrapper */}
           <div className="relative w-full h-[260px] mt-2">
-            {/* Active Tooltip Popover (Figma node 2376:5554 style) */}
             {isHovered && activeMonth && (
               <div
                 className="absolute bg-white border border-[#eceeef] shadow-lg rounded-[6px] px-[12px] py-[10px] z-10 flex flex-col gap-1.5 pointer-events-none transition-all duration-150 ease-out text-right border-solid"
@@ -345,16 +399,14 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* The Graph */}
             <svg
               className="w-full h-[220px]"
               viewBox="0 0 800 240"
               preserveAspectRatio="none"
               onMouseMove={handleMouseMove}
-              onMouseLeave={() => setIsHovered(true)} // Keep hovered on last point by default
+              onMouseLeave={() => setIsHovered(true)}
             >
               <defs>
-                {/* Area Gradient */}
                 <linearGradient
                   id="chart-area-grad"
                   x1="0"
@@ -367,7 +419,7 @@ export default function DashboardPage() {
                 </linearGradient>
               </defs>
 
-              {/* Horizontal Grid Lines */}
+              {/* Horizontal Grid */}
               {[0, 60, 120, 180, 240].map((y, idx) => (
                 <line
                   key={idx}
@@ -381,7 +433,7 @@ export default function DashboardPage() {
                 />
               ))}
 
-              {/* Vertical Grid Lines */}
+              {/* Vertical Grid */}
               {chartMonths.map((m, idx) => (
                 <line
                   key={idx}
@@ -395,7 +447,7 @@ export default function DashboardPage() {
                 />
               ))}
 
-              {/* Y-Axis Value Labels (Right side in RTL, outside the grid) */}
+              {/* Y-Axis Labels */}
               {[
                 { val: '360', y: 8 },
                 { val: '270', y: 68 },
@@ -415,10 +467,7 @@ export default function DashboardPage() {
                 </text>
               ))}
 
-              {/* Area Fill path */}
               <path d={svgAreaD} fill="url(#chart-area-grad)" />
-
-              {/* Stroke line path */}
               <path
                 d={svgLineD}
                 fill="none"
@@ -426,7 +475,6 @@ export default function DashboardPage() {
                 strokeWidth="2.5"
               />
 
-              {/* Hover Vertical Guide Line */}
               {isHovered && activeMonth && (
                 <line
                   x1={activeMonth.x}
@@ -439,10 +487,8 @@ export default function DashboardPage() {
                 />
               )}
 
-              {/* Hover highlighted circle */}
               {isHovered && activeMonth && (
                 <>
-                  {/* Glow ring */}
                   <circle
                     cx={activeMonth.x}
                     cy={activeMonth.y}
@@ -450,7 +496,6 @@ export default function DashboardPage() {
                     fill="#3B82F6"
                     fillOpacity="0.3"
                   />
-                  {/* Core dot */}
                   <circle
                     cx={activeMonth.x}
                     cy={activeMonth.y}
@@ -463,7 +508,7 @@ export default function DashboardPage() {
               )}
             </svg>
 
-            {/* X-Axis labels (RTL bottom) */}
+            {/* X-Axis Labels */}
             <div className="absolute left-[60px] right-[80px] bottom-0 flex justify-between select-none">
               {chartMonths.map((m, idx) => (
                 <div
@@ -473,10 +518,7 @@ export default function DashboardPage() {
                       ? 'text-[#111111] font-bold'
                       : 'text-[#A0A0A0]'
                   }`}
-                  style={{
-                    width: '40px',
-                    textAlign: 'center',
-                  }}
+                  style={{ width: '40px', textAlign: 'center' }}
                 >
                   {m.name}
                 </div>
@@ -485,12 +527,11 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Figma compliant Users Donut Chart Card (node 2376:5436) */}
+        {/* Users Donut Chart */}
         <Card
           className="lg:col-span-1 bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
           data-node-id="2376:5436"
         >
-          {/* Header */}
           <div className="space-y-1 text-right">
             <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
               المستخدمون
@@ -500,14 +541,12 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Donut graphic circle */}
           <div className="flex items-center justify-center py-4">
             <div className="relative w-[170px] h-[170px]">
               <svg
                 className="w-full h-full transform -rotate-90"
                 viewBox="0 0 100 100"
               >
-                {/* 1. Individuals Segment (Blue #3B82F6): Value 200/270 (74.1%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -519,8 +558,6 @@ export default function DashboardPage() {
                   strokeDashoffset="0"
                   className="transition-all duration-300"
                 />
-
-                {/* 2. Real Estate Offices Segment (Gold #EAB308): Value 50/270 (18.5%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -532,8 +569,6 @@ export default function DashboardPage() {
                   strokeDashoffset="-177"
                   className="transition-all duration-300"
                 />
-
-                {/* 3. Companies Segment (Green #10B981): Value 20/270 (7.4%) */}
                 <circle
                   cx="50"
                   cy="50"
@@ -549,9 +584,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Details list (RTL Legend) */}
           <div className="flex flex-col gap-3.5 w-full mt-auto">
-            {/* Row 1: Individuals */}
             <div className="flex items-center justify-between w-full h-[22.5px]">
               <span className="font-sans font-semibold text-[13px] text-[#111111]">
                 200
@@ -563,8 +596,6 @@ export default function DashboardPage() {
                 <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
               </div>
             </div>
-
-            {/* Row 2: Companies */}
             <div className="flex items-center justify-between w-full h-[22.5px]">
               <span className="font-sans font-semibold text-[13px] text-[#111111]">
                 20
@@ -576,8 +607,6 @@ export default function DashboardPage() {
                 <span className="w-2 h-2 rounded-full bg-[#10B981]" />
               </div>
             </div>
-
-            {/* Row 3: Offices */}
             <div className="flex items-center justify-between w-full h-[22.5px]">
               <span className="font-sans font-semibold text-[13px] text-[#111111]">
                 50
@@ -593,112 +622,113 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Row 4: Details Tables & Sidebar (Pending Approvals + Reports + Quick Actions) */}
+      {/* Row 4: Details Tables & Sidebar (Pending Approvals + Recent Registrations + Reports + Quick Actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        {/* Pending approvals table (lg:col-span-2) */}
-        <Card
-          className="lg:col-span-2 bg-white border-[#ECECEC]"
-          data-node-id="pending-approvals-card"
-        >
-          <CardHeader className="flex flex-row items-center justify-between border-b border-[#ECECEC] pb-4">
-            <div>
-              <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
-                طلبات الاعتماد قيد الانتظار
-              </CardTitle>
-              <p className="text-xs text-[#6B6A6A] mt-1">
-                طلبات جديدة للتسجيل كشركات أو مكاتب عقارية بحاجة لمراجعة
-                التراخيص.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="font-['Cairo'] font-semibold text-xs gap-1"
-            >
-              عرض الكل
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-4 p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-right text-sm">
-                <thead>
-                  <tr className="border-b border-[#ECECEC] text-[#6B6A6A]">
-                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
-                      الجهة الطالبة
-                    </th>
-                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
-                      نوع الحساب
-                    </th>
-                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
-                      رقم الترخيص
-                    </th>
-                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
-                      التاريخ
-                    </th>
-                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs text-left">
-                      الإجراء
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#ECECEC]">
-                  {pendingRequests.map((req) => (
-                    <tr
-                      key={req.id}
-                      className="hover:bg-[#F9FAFB]/50 transition duration-150"
-                    >
-                      <td className="px-6 py-3.5 font-semibold text-[#111111]">
-                        {req.name}
-                      </td>
-                      <td className="px-6 py-3.5 text-[#6B6A6A] text-xs">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                            req.type === 'شركة'
-                              ? 'bg-blue-50 text-blue-600'
-                              : 'bg-purple-50 text-purple-600'
-                          }`}
-                        >
-                          {req.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3.5 text-[#6B6A6A] font-mono text-xs">
-                        {req.license}
-                      </td>
-                      <td className="px-6 py-3.5 text-[#6B6A6A] text-xs">
-                        {req.date}
-                      </td>
-                      <td className="px-6 py-3.5 text-left">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            className="bg-primary text-white hover:bg-primary/90 text-xs font-semibold px-2.5 py-1"
-                          >
-                            مراجعة
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        {/* Left Column: Data Tables (Pending Approvals + Recent Registrations) */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Pending approvals table */}
           <Card
-            className="bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
-            data-node-id="2376:5216"
+            className="bg-white border-[#ECECEC]"
+            data-node-id="pending-approvals-card"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between w-full pb-2">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-[#ECECEC] pb-4">
+              <div>
+                <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
+                  طلبات الاعتماد قيد الانتظار
+                </CardTitle>
+                <p className="text-xs text-[#6B6A6A] mt-1">
+                  طلبات جديدة للتسجيل كشركات أو مكاتب عقارية بحاجة لمراجعة
+                  التراخيص.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-['Cairo'] font-semibold text-xs gap-1"
+              >
+                عرض الكل
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-4 p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-right text-sm">
+                  <thead>
+                    <tr className="border-b border-[#ECECEC] text-[#6B6A6A]">
+                      <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                        الجهة الطالبة
+                      </th>
+                      <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                        نوع الحساب
+                      </th>
+                      <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                        رقم الترخيص
+                      </th>
+                      <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                        التاريخ
+                      </th>
+                      <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs text-left">
+                        الإجراء
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#ECECEC]">
+                    {pendingRequests.map((req) => (
+                      <tr
+                        key={req.id}
+                        className="hover:bg-[#F9FAFB]/50 transition duration-150"
+                      >
+                        <td className="px-6 py-3.5 font-semibold text-[#111111]">
+                          {req.name}
+                        </td>
+                        <td className="px-6 py-3.5 text-[#6B6A6A] text-xs">
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                              req.type === 'شركة'
+                                ? 'bg-blue-50 text-blue-600'
+                                : 'bg-purple-50 text-purple-600'
+                            }`}
+                          >
+                            {req.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5 text-[#6B6A6A] font-mono text-xs">
+                          {req.license}
+                        </td>
+                        <td className="px-6 py-3.5 text-[#6B6A6A] text-xs">
+                          {req.date}
+                        </td>
+                        <td className="px-6 py-3.5 text-left">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="bg-primary text-white hover:bg-primary/90 text-xs font-semibold px-2.5 py-1"
+                            >
+                              مراجعة
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Figma compliant Recent Registrations Table (node 2376:5586) */}
+          <Card
+            className="bg-white border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+            data-node-id="2376:5586"
+          >
+            <div className="flex items-start justify-between w-full px-6 pb-4">
               <div className="space-y-1 text-right">
                 <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
-                  البلاغات التي تحتاج مراجعة
+                  التسجيلات الاخيرة
                 </h3>
                 <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
-                  آخر البلاغات التي لم يتم التعامل معها
+                  تحليل مالي شهري لعام 2026
                 </p>
               </div>
               <Button
@@ -709,7 +739,104 @@ export default function DashboardPage() {
               </Button>
             </div>
 
-            {/* List items */}
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-right text-sm">
+                <thead>
+                  <tr className="bg-[#F7FAF9] border-b border-[#ECECEC] text-[#6B6A6A]">
+                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                      اسم المستخدم
+                    </th>
+                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                      نوع الحساب
+                    </th>
+                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                      الاشتراك
+                    </th>
+                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs">
+                      تاريخ التسجيل
+                    </th>
+                    <th className="px-6 py-3 font-semibold font-['Cairo'] text-xs text-left">
+                      الاجراءات
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#ECECEC]">
+                  {recentRegistrations.map((reg) => (
+                    <tr
+                      key={reg.id}
+                      className="hover:bg-[#F9FAFB]/50 transition duration-150 h-[48px]"
+                    >
+                      <td className="px-6 py-2">
+                        <div className="flex flex-col gap-0.5 text-right leading-none">
+                          <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111]">
+                            {reg.name}
+                          </span>
+                          <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a]">
+                            {reg.email}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-2 font-['Cairo'] font-normal text-[13px] text-[#111111]">
+                        {reg.type}
+                      </td>
+                      <td className="px-6 py-2">
+                        {reg.subscription === 'ــــــ' ? (
+                          <span className="font-['Cairo'] font-medium text-[11px] text-[#a0a0a0]">
+                            ــــــ
+                          </span>
+                        ) : (
+                          <span
+                            className={`px-2 py-0.5 rounded-[99px] text-[12px] font-['Cairo'] font-medium ${reg.subBg} ${reg.subColor}`}
+                          >
+                            {reg.subscription}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-2 font-['Cairo'] font-normal text-[12px] text-[#6b6a6a]">
+                        {reg.date}
+                      </td>
+                      <td className="px-6 py-2 text-left">
+                        <div className="flex justify-end items-center gap-3">
+                          <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
+                            <Eye className="w-5 h-5 text-[#6B6A6A]" />
+                          </button>
+                          <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
+                            <MoreVertical className="w-5 h-5 text-[#6B6A6A]" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        {/* Right Column: Stacked Sidebar (Reports Needing Review + Quick Actions) */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          {/* Reports Needing Review Card */}
+          <Card
+            className="bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+            data-node-id="2376:5216"
+          >
+            <div className="flex items-start justify-between w-full pb-2">
+              <Button
+                variant="ghost"
+                className="text-primary font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+              >
+                عرض الكل
+              </Button>
+              <div className="space-y-1 text-right">
+                <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
+                  البلاغات التي تحتاج مراجعة
+                </h3>
+                <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
+                  آخر البلاغات التي لم يتم التعامل معها
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-col w-full">
               {reports.map((rep, idx) => (
                 <div
@@ -718,35 +845,31 @@ export default function DashboardPage() {
                     idx < reports.length - 1 ? 'border-b border-[#ECEEEF]' : ''
                   }`}
                 >
-                  {/* Report Info & Priority (Right RTL) */}
-                  <div className="flex flex-col gap-1.5 items-start text-right">
-                    {/* Priority indicator pill */}
-                    <div className="flex items-center gap-1  h-[20px] rounded-[99px]">
-                      <span
-                        className={`w-2 h-2 rounded-full ${rep.bulletColor}`}
-                      />
+                  <button className="text-primary font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
+                    التفاصيل
+                  </button>
+
+                  <div className="flex flex-col gap-1.5 items-end text-right">
+                    <div className="flex items-center gap-1 justify-end h-[20px] rounded-[99px]">
                       <span
                         className={`font-['Cairo'] font-medium text-[12px] ${rep.priorityColor}`}
                       >
                         {rep.priority}
                       </span>
+                      <span
+                        className={`w-2 h-2 rounded-full ${rep.bulletColor}`}
+                      />
                     </div>
-                    {/* Label & Title */}
                     <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
                       <span>عقار </span>
                       <span className="font-normal text-[#111111]">
                         {rep.title}
                       </span>
                     </p>
-                    {/* Time/Meta */}
                     <p className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] leading-none mt-0.5">
                       {rep.reason} · {rep.time}
                     </p>
                   </div>
-                  {/* Details Action (Left RTL) */}
-                  <button className="text-primary font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
-                    التفاصيل
-                  </button>
                 </div>
               ))}
             </div>
