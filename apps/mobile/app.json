@@ -12,7 +12,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.youssefusfdev.buyootna",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "يستخدم التطبيق موقعك الجغرافي لتحديد مكانك وعرض العقارات والخدمات القريبة منك على الخريطة."
       }
     },
     "android": {
