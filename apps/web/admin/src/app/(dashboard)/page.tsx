@@ -56,7 +56,7 @@ const chartMonths = [
   { name: 'ابريل', value: '210,000 د.ك', x: 540, y: 115 },
   { name: 'مارس', value: '235,000 د.ك', x: 600, y: 106 },
   { name: 'فبراير', value: '250,000 د.ك', x: 660, y: 95 },
-  { name: 'يناير', value: '137,000 د.ك', x: 720, y: 56 }, // High point to match figma
+  { name: 'يناير', value: '137,000 د.ك', x: 720, y: 56 },
 ]
 
 const pendingRequests = [
@@ -246,190 +246,321 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Figma compliant Revenue & Expenses Area Chart Card (node 2376:5464) */}
-      <Card
-        className="bg-white border-[#ECECEC] p-[20px] select-none relative overflow-hidden"
-        data-node-id="2376:5464"
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between w-full pb-6">
-          {/* Dropdown Selector (Left side in RTL) */}
-          <Button
-            variant="outline"
-            className="bg-white border border-[#E2E8F0] rounded-[6px] h-[30px] px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
-          >
-            <ChevronDown className="w-3.5 h-3.5 text-[#111111]" />
-            <span>هذه السنة</span>
-          </Button>
+      {/* Row 3: Charts Grid (Revenue Area Chart + Users Donut Chart) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Figma compliant Revenue & Expenses Area Chart Card (node 2376:5464) */}
+        <Card
+          className="lg:col-span-2 bg-white border-[#ECECEC] p-[20px] select-none relative overflow-hidden"
+          data-node-id="2376:5464"
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between w-full pb-6">
+            {/* Dropdown Selector (Left side in RTL) */}
+            <Button
+              variant="outline"
+              className="bg-white border border-[#E2E8F0] rounded-[6px] h-[30px] px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
+            >
+              <ChevronDown className="w-3.5 h-3.5 text-[#111111]" />
+              <span>هذه السنة</span>
+            </Button>
 
-          {/* Titles (Right side in RTL) */}
+            {/* Titles (Right side in RTL) */}
+            <div className="space-y-1 text-right">
+              <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
+                الإيرادات والمصروفات
+              </h3>
+              <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
+                تحليل مالي شهري لعام 2026
+              </p>
+            </div>
+          </div>
+
+          {/* SVG Chart Wrapper */}
+          <div className="relative w-full h-[260px] mt-2">
+            {/* Active Tooltip Popover (Figma node 2376:5554 style) */}
+            {isHovered && activeMonth && (
+              <div
+                className="absolute bg-white border border-[#eceeef] shadow-lg rounded-[6px] px-[12px] py-[10px] z-10 flex flex-col gap-1.5 pointer-events-none transition-all duration-150 ease-out text-right border-solid"
+                style={{
+                  left: `${(activeMonth.x / 800) * 100}%`,
+                  top: `${(activeMonth.y / 240) * 100 - 32}%`,
+                  transform: 'translate(-50%, -100%)',
+                }}
+              >
+                <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
+                  {activeMonth.name}
+                </p>
+                <div className="flex items-center justify-end gap-2 shrink-0">
+                  <span className="font-['Cairo'] font-normal text-[12px] text-[#111111]">
+                    {activeMonth.value}
+                  </span>
+                  <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a]">
+                    الايرادات
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
+                </div>
+              </div>
+            )}
+
+            {/* The Graph */}
+            <svg
+              className="w-full h-[220px]"
+              viewBox="0 0 800 240"
+              preserveAspectRatio="none"
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setIsHovered(true)} // Keep hovered on last point by default
+            >
+              <defs>
+                {/* Area Gradient */}
+                <linearGradient
+                  id="chart-area-grad"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+
+              {/* Horizontal Grid Lines */}
+              {[0, 60, 120, 180, 240].map((y, idx) => (
+                <line
+                  key={idx}
+                  x1="60"
+                  y1={y}
+                  x2="720"
+                  y2={y}
+                  stroke="#ECECEC"
+                  strokeDasharray="4 4"
+                  strokeWidth="1"
+                />
+              ))}
+
+              {/* Vertical Grid Lines */}
+              {chartMonths.map((m, idx) => (
+                <line
+                  key={idx}
+                  x1={m.x}
+                  y1="0"
+                  x2={m.x}
+                  y2="240"
+                  stroke="#ECECEC"
+                  strokeDasharray="4 4"
+                  strokeWidth="1"
+                />
+              ))}
+
+              {/* Y-Axis Value Labels (Right side in RTL, outside the grid) */}
+              {[
+                { val: '360', y: 8 },
+                { val: '270', y: 68 },
+                { val: '180', y: 128 },
+                { val: '90', y: 188 },
+                { val: '0', y: 236 },
+              ].map((axis, idx) => (
+                <text
+                  key={idx}
+                  x="745"
+                  y={axis.y}
+                  textAnchor="start"
+                  fill="#6B6A6A"
+                  className="font-sans text-[11px]"
+                >
+                  {axis.val}
+                </text>
+              ))}
+
+              {/* Area Fill path */}
+              <path d={svgAreaD} fill="url(#chart-area-grad)" />
+
+              {/* Stroke line path */}
+              <path
+                d={svgLineD}
+                fill="none"
+                stroke="#3B82F6"
+                strokeWidth="2.5"
+              />
+
+              {/* Hover Vertical Guide Line */}
+              {isHovered && activeMonth && (
+                <line
+                  x1={activeMonth.x}
+                  y1="0"
+                  x2={activeMonth.x}
+                  y2="240"
+                  stroke="#3B82F6"
+                  strokeWidth="1.5"
+                  strokeDasharray="2 2"
+                />
+              )}
+
+              {/* Hover highlighted circle */}
+              {isHovered && activeMonth && (
+                <>
+                  {/* Glow ring */}
+                  <circle
+                    cx={activeMonth.x}
+                    cy={activeMonth.y}
+                    r="7"
+                    fill="#3B82F6"
+                    fillOpacity="0.3"
+                  />
+                  {/* Core dot */}
+                  <circle
+                    cx={activeMonth.x}
+                    cy={activeMonth.y}
+                    r="4.5"
+                    fill="#ffffff"
+                    stroke="#3B82F6"
+                    strokeWidth="2"
+                  />
+                </>
+              )}
+            </svg>
+
+            {/* X-Axis labels (RTL bottom) */}
+            <div className="absolute left-[60px] right-[80px] bottom-0 flex justify-between select-none">
+              {chartMonths.map((m, idx) => (
+                <div
+                  key={idx}
+                  className={`font-['Cairo'] text-[11px] font-medium transition duration-150 ${
+                    activeMonthIdx === idx
+                      ? 'text-[#111111] font-bold'
+                      : 'text-[#A0A0A0]'
+                  }`}
+                  style={{
+                    width: '40px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {m.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* Figma compliant Users Donut Chart Card (node 2376:5436) */}
+        <Card
+          className="lg:col-span-1 bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+          data-node-id="2376:5436"
+        >
+          {/* Header */}
           <div className="space-y-1 text-right">
             <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
-              الإيرادات والمصروفات
+              المستخدمون
             </h3>
             <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
-              تحليل مالي شهري لعام 2026
+              تابع اعداد المستخدمون حسب نوع كل حساب
             </p>
           </div>
-        </div>
 
-        {/* SVG Chart Wrapper */}
-        <div className="relative w-full h-[260px] mt-2">
-          {/* Active Tooltip Popover (Figma node 2376:5554 style) */}
-          {isHovered && activeMonth && (
-            <div
-              className="absolute bg-white border border-[#eceeef] shadow-lg rounded-[6px] px-[12px] py-[10px] z-10 flex flex-col gap-1.5 pointer-events-none transition-all duration-150 ease-out text-right border-solid"
-              style={{
-                left: `${(activeMonth.x / 800) * 100}%`,
-                top: `${(activeMonth.y / 240) * 100 - 32}%`,
-                transform: 'translate(-50%, -100%)',
-              }}
-            >
-              <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
-                {activeMonth.name}
-              </p>
-              <div className="flex items-center justify-end gap-2 shrink-0">
-                <span className="font-['Cairo'] font-normal text-[12px] text-[#111111]">
-                  {activeMonth.value}
-                </span>
-                <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a]">
-                  الايرادات
+          {/* Donut graphic circle */}
+          <div className="flex items-center justify-center py-4">
+            <div className="relative w-[170px] h-[170px]">
+              <svg
+                className="w-full h-full transform -rotate-90"
+                viewBox="0 0 100 100"
+              >
+                {/* 1. Individuals Segment (Blue #3B82F6): Value 200/270 (74.1%)
+                    Circumference = 2 * PI * r = 2 * PI * 38 = 238.76
+                    Length = 74.1% of 238.76 = 176.9
+                    Offset = 0
+                */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="38"
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="12"
+                  strokeDasharray="174 238.76"
+                  strokeDashoffset="0"
+                  className="transition-all duration-300"
+                />
+
+                {/* 2. Real Estate Offices Segment (Gold #EAB308): Value 50/270 (18.5%)
+                    Length = 18.5% of 238.76 = 44.2
+                    Offset = -176.9 - gap
+                */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="38"
+                  fill="none"
+                  stroke="#EAB308"
+                  strokeWidth="12"
+                  strokeDasharray="42 238.76"
+                  strokeDashoffset="-177"
+                  className="transition-all duration-300"
+                />
+
+                {/* 3. Companies Segment (Green #10B981): Value 20/270 (7.4%)
+                    Length = 7.4% of 238.76 = 17.7
+                    Offset = -221.1 - gap
+                */}
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="38"
+                  fill="none"
+                  stroke="#10B981"
+                  strokeWidth="12"
+                  strokeDasharray="15 238.76"
+                  strokeDashoffset="-222"
+                  className="transition-all duration-300"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Details list (RTL Legend) */}
+          <div className="flex flex-col gap-3.5 w-full mt-auto">
+            {/* Row 1: Individuals */}
+            <div className="flex items-center justify-between w-full h-[22.5px]">
+              <span className="font-sans font-semibold text-[13px] text-[#111111]">
+                200
+              </span>
+              <div className="flex items-center justify-end gap-2.5">
+                <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
+                  الأفراد
                 </span>
                 <span className="w-2 h-2 rounded-full bg-[#3B82F6]" />
               </div>
             </div>
-          )}
 
-          {/* The Graph */}
-          <svg
-            className="w-full h-[220px]"
-            viewBox="0 0 800 240"
-            preserveAspectRatio="none"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setIsHovered(true)} // Keep hovered on last point by default
-          >
-            <defs>
-              {/* Area Gradient */}
-              <linearGradient id="chart-area-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.0" />
-              </linearGradient>
-            </defs>
-
-            {/* Horizontal Grid Lines */}
-            {[0, 60, 120, 180, 240].map((y, idx) => (
-              <line
-                key={idx}
-                x1="60"
-                y1={y}
-                x2="720"
-                y2={y}
-                stroke="#ECECEC"
-                strokeDasharray="4 4"
-                strokeWidth="1"
-              />
-            ))}
-
-            {/* Vertical Grid Lines */}
-            {chartMonths.map((m, idx) => (
-              <line
-                key={idx}
-                x1={m.x}
-                y1="0"
-                x2={m.x}
-                y2="240"
-                stroke="#ECECEC"
-                strokeDasharray="4 4"
-                strokeWidth="1"
-              />
-            ))}
-
-            {/* Y-Axis Value Labels (Right side in RTL, outside the grid) */}
-            {[
-              { val: '360', y: 8 },
-              { val: '270', y: 68 },
-              { val: '180', y: 128 },
-              { val: '90', y: 188 },
-              { val: '0', y: 236 },
-            ].map((axis, idx) => (
-              <text
-                key={idx}
-                x="745"
-                y={axis.y}
-                textAnchor="start"
-                fill="#6B6A6A"
-                className="font-sans text-[11px]"
-              >
-                {axis.val}
-              </text>
-            ))}
-
-            {/* Area Fill path */}
-            <path d={svgAreaD} fill="url(#chart-area-grad)" />
-
-            {/* Stroke line path */}
-            <path d={svgLineD} fill="none" stroke="#3B82F6" strokeWidth="2.5" />
-
-            {/* Hover Vertical Guide Line */}
-            {isHovered && activeMonth && (
-              <line
-                x1={activeMonth.x}
-                y1="0"
-                x2={activeMonth.x}
-                y2="240"
-                stroke="#3B82F6"
-                strokeWidth="1.5"
-                strokeDasharray="2 2"
-              />
-            )}
-
-            {/* Hover highlighted circle */}
-            {isHovered && activeMonth && (
-              <>
-                {/* Glow ring */}
-                <circle
-                  cx={activeMonth.x}
-                  cy={activeMonth.y}
-                  r="7"
-                  fill="#3B82F6"
-                  fillOpacity="0.3"
-                />
-                {/* Core dot */}
-                <circle
-                  cx={activeMonth.x}
-                  cy={activeMonth.y}
-                  r="4.5"
-                  fill="#ffffff"
-                  stroke="#3B82F6"
-                  strokeWidth="2"
-                />
-              </>
-            )}
-          </svg>
-
-          {/* X-Axis labels (RTL bottom) */}
-          <div className="absolute left-[60px] right-[80px] bottom-0 flex justify-between select-none">
-            {chartMonths.map((m, idx) => (
-              <div
-                key={idx}
-                className={`font-['Cairo'] text-[11px] font-medium transition duration-150 ${
-                  activeMonthIdx === idx
-                    ? 'text-[#111111] font-bold'
-                    : 'text-[#A0A0A0]'
-                }`}
-                style={{
-                  width: '40px',
-                  textAlign: 'center',
-                }}
-              >
-                {m.name}
+            {/* Row 2: Companies */}
+            <div className="flex items-center justify-between w-full h-[22.5px]">
+              <span className="font-sans font-semibold text-[13px] text-[#111111]">
+                20
+              </span>
+              <div className="flex items-center justify-end gap-2.5">
+                <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
+                  الشركات
+                </span>
+                <span className="w-2 h-2 rounded-full bg-[#10B981]" />
               </div>
-            ))}
-          </div>
-        </div>
-      </Card>
+            </div>
 
-      {/* Section Tables */}
+            {/* Row 3: Offices */}
+            <div className="flex items-center justify-between w-full h-[22.5px]">
+              <span className="font-sans font-semibold text-[13px] text-[#111111]">
+                50
+              </span>
+              <div className="flex items-center justify-end gap-2.5">
+                <span className="font-['Cairo'] font-semibold text-[12px] text-[#6b6a6a] leading-none">
+                  المكاتب العقارية
+                </span>
+                <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Row 4: Details Tables/Actions (Pending Approvals + Quick Actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
         {/* Pending approvals table */}
         <Card className="lg:col-span-2 bg-white border-[#ECECEC]">
