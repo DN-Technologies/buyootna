@@ -27,14 +27,14 @@ export function EmptySearchSheet({
   };
 
   return (
-    <View className="mx-5 items-end rounded-2xl border border-gray-100 bg-white p-5 shadow-lg shadow-gray-400/30">
+    <View className="mx-5 items-start rounded-2xl border border-gray-100 bg-white p-5 shadow-lg shadow-gray-400/30">
       {/* Title */}
       <Text className="mb-4 text-right font-cairo-bold text-[15px] text-[#111111]">
         {getEmptyMessage()}
       </Text>
 
       {/* Action Buttons */}
-      <View className="w-full flex-row items-center justify-end space-x-4 space-x-reverse">
+      <View className="w-full flex-row items-center gap-4">
         <TouchableOpacity activeOpacity={0.7} onPress={onShowAll}>
           <Text className="font-cairo-bold text-[13px] text-[#64748B]">
             عرض كل العقارات

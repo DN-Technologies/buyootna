@@ -1,6 +1,13 @@
-import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+
+import {
+  BathIcon,
+  BedIcon,
+  HeartIcon,
+  LocationIcon,
+} from '@/assets/icons/home/cards';
 
 // --- 1. Property Preview Card ---
 export function PropertyPreviewCard({
@@ -12,59 +19,103 @@ export function PropertyPreviewCard({
 }) {
   const router = useRouter();
 
+  const typeLabel =
+    property.type === 'rent'
+      ? 'شقة للايجار'
+      : property.type === 'exchange'
+        ? 'شقة للبدل'
+        : 'شقة للبيع';
+
   return (
     <TouchableOpacity
       activeOpacity={0.95}
       onPress={() => router.push(`/property/${property.id}`)}
-      className="mx-5 flex-row items-center justify-end rounded-2xl border border-gray-100 bg-white p-3 shadow-lg shadow-gray-400/30"
+      className="mx-5 min-h-[126px] flex-row items-center justify-between rounded-sm bg-white shadow-lg shadow-gray-400/30"
     >
-      {/* Left Side: Details & Actions */}
-      <View className="mr-3 h-28 flex-1 items-end justify-between py-1">
-        {/* Top Row: Price & Favorite */}
-        <View className="w-full flex-row items-start justify-between">
-          <TouchableOpacity onPress={onClose} className="p-1">
-            <Feather name="heart" size={20} color="#94A3B8" />
-          </TouchableOpacity>
-          <View className="flex-row items-baseline space-x-1 space-x-reverse">
-            <Text className="font-cairo-bold text-lg text-[#15304D]">
-              150,000
-            </Text>
-            <Text className="font-cairo-bold text-xs text-[#15304D]">د.ك</Text>
-          </View>
-        </View>
-
-        {/* Middle: Title & Specs */}
-        <View className="mt-1 w-full items-end">
-          <Text className="mb-1 font-cairo-medium text-xs text-[#64748B]">
-            شركة يعقوب عبد العقارية
-          </Text>
-          <Text className="font-cairo-bold text-[11px] text-[#111111]">
-            شقة للبيع • 200 م • 3 سرير • 2 حمام
-          </Text>
-        </View>
-
-        {/* Bottom Row: Location */}
-        <View className="mt-1 w-full flex-row items-center justify-end">
-          <Text
-            className="mr-1 font-cairo-medium text-[10px] text-[#94A3B8]"
-            numberOfLines={1}
-          >
-            السالمية، شارع 2، بناية 10، شقة 4
-          </Text>
-          <Feather name="map-pin" size={10} color="#94A3B8" />
-        </View>
-      </View>
-
-      {/* Right Side: Image (RTL layout) */}
-      <View className="relative h-28 w-28 overflow-hidden rounded-xl">
+      {/* Right Side: Image with Featured Badge */}
+      <View className="relative h-[126px] w-[117px] overflow-hidden">
         <Image
-          source={{ uri: 'https://via.placeholder.com/150' }}
+          source={{
+            uri: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300',
+          }}
           className="h-full w-full"
           resizeMode="cover"
         />
         {/* Featured Badge */}
-        <View className="absolute right-2 top-2 rounded bg-[#F99F38] px-2 py-0.5">
-          <Text className="font-cairo-bold text-[9px] text-white">مميز</Text>
+        <LinearGradient
+          colors={['#FF8D28', '#FACC15']}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          className="absolute left-2 top-2 rounded-lg px-2.5 py-0.5 shadow-sm"
+        >
+          <Text className="font-cairo-bold text-[9px] text-[#111111]">مميز</Text>
+        </LinearGradient>
+      </View>
+
+      {/* Left Side: Details & Actions */}
+      <View className="mx-3 flex-1 items-start justify-between">
+        {/* Top Row: Price & Favorite */}
+        <View className="w-full flex-row items-center justify-between">
+          <View className="flex-row items-baseline gap-1">
+            <Text className="font-cairo-semibold text-[22px] text-[#15304D]">
+              {property.priceLabel
+                ? property.priceLabel.replace(' د.ك', '')
+                : '150,000'}
+            </Text>
+            <Text className="font-cairo-bold text-xs text-[#15304D]">د.ك</Text>
+          </View>
+          <TouchableOpacity onPress={onClose} className="p-1">
+            <HeartIcon color="#15304D" size={20} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Middle 1: Company Name */}
+        <Text
+          className="mb-1 w-full font-cairo text-[12px] text-[#111]"
+          style={{ writingDirection: 'rtl' }}
+        >
+          {property.companyName ?? 'شركة يعقوب عبد العقارية'}
+        </Text>
+
+        {/* Middle 2: Specs with Custom Icons (Styled like PropertyCard.tsx) */}
+        <View className="my-1.5 w-full flex-row items-center gap-3">
+          <View className="flex-row items-center gap-1">
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
+              {typeLabel} •
+            </Text>
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
+              {property.area ?? 200} م²
+            </Text>
+          </View>
+
+          <View className="h-3 w-[1px] bg-[#111111]" />
+
+          <View className="flex-row items-center gap-1.5">
+            <BedIcon color="#111111" size={16} />
+            <Text className="text-sm font-normal text-[#111111]">
+              {property.beds ?? 3}
+            </Text>
+          </View>
+
+          <View className="h-3 w-[1px] bg-[#111111]" />
+
+          <View className="flex-row items-center gap-1.5">
+            <BathIcon color="#111111" size={16} />
+            <Text className="text-sm font-normal text-[#111111]">
+              {property.baths ?? 2}
+            </Text>
+          </View>
+        </View>
+
+        {/* Bottom Row: Location (Styled like PropertyCard.tsx) */}
+        <View className="w-full flex-row items-center gap-1.5">
+          <LocationIcon color="#6B6A6A" size={16} />
+          <Text
+            className="font-cairo-medium text-sm leading-[23px] text-[#6B6A6A]"
+            numberOfLines={1}
+          >
+            {property.location ?? 'السالمية، شارع 2، بناية 10، شقة 4'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

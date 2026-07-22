@@ -14,7 +14,6 @@ import DiscoveryMap, {
 } from '@/features/components/map/DiscoveryMap';
 import { EmptySearchSheet } from '@/features/components/map/EmptySearchSheet';
 import { PropertyPreviewCard } from '@/features/components/map/FloatingPreviewCards';
-import { MapListToggle } from '@/features/components/map/MapListToggle';
 import MapOverlayUI from '@/features/components/map/MapOverlayUI';
 import type { MapFeatureProperties } from '@/features/utils/mockGeoJSON';
 
@@ -179,13 +178,13 @@ export default function MapDashboardScreen() {
       {!selectedFeature && (
         <View pointerEvents="box-none" className="absolute inset-0 z-10">
           <AddPropertyFAB />
-          <MapListToggle />
+          {/* <MapListToggle /> */}
         </View>
       )}
 
       <Animated.View
         pointerEvents="box-none"
-        className="absolute bottom-[90px] left-0 right-0 z-20"
+        className="absolute bottom-[30px] left-0 right-0 z-20"
         style={{ transform: [{ translateY: selectedFeature ? slideAnim : 0 }] }}
       >
         {selectedFeature ? (
