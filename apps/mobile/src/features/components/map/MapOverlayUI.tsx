@@ -10,7 +10,7 @@ import SelectionDrawer, {
 } from '@/core/components/filters/SelectionDrawer';
 import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
-const CATEGORIES = ['شركات', 'بدل', 'ايجار', 'بيع'];
+const CATEGORIES = ['بيع', 'ايجار', 'بدل', 'شركات'];
 
 interface MapOverlayUIProps {
   activeCategory: string;
@@ -54,13 +54,13 @@ export default function MapOverlayUI({
         style={{ paddingTop: Math.max(insets.top, 12) }}
       >
         <View className="flex-row items-center gap-2 px-5 py-1.5">
-          {/* Filter Button */}
+          {/* List View / Stack Layers Button */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={onOpenFilters}
+            onPress={() => router.push('/')}
             className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
           >
-            <FilterHorizontalIcon size={18} color="#111111" />
+            <Feather name="layers" size={20} color="#111111" />
           </TouchableOpacity>
 
           {/* Tab Pill Container */}
@@ -93,38 +93,22 @@ export default function MapOverlayUI({
             })}
           </View>
 
-          {/* List View / Stack Layers Button */}
+          {/* Filter Button */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push('/')}
+            onPress={onOpenFilters}
             className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
           >
-            <Feather name="layers" size={20} color="#111111" />
+            <FilterHorizontalIcon size={18} color="#111111" />
           </TouchableOpacity>
         </View>
 
         <View className="mt-3 flex-row items-center justify-between gap-3 px-5">
-          {/* Area Dropdown (Left) */}
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
-            onPress={() => areaDrawerRef.current?.present()}
-          >
-            <Feather name="chevron-down" size={16} color="#64748B" />
-            <Text
-              className={`font-cairo-medium text-[13px] ${
-                selectedArea ? 'text-[#111111]' : 'text-[#64748B]'
-              }`}
-            >
-              {selectedArea?.label ?? 'المنطقة'}
-            </Text>
-          </TouchableOpacity>
-
-          {/* Governorate Dropdown (Right) */}
+          {/* Governorate Dropdown (Left) */}
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
             onPress={() => govDrawerRef.current?.present()}
           >
-            <Feather name="chevron-down" size={16} color="#64748B" />
             <Text
               className={`font-cairo-medium text-[13px] ${
                 selectedGovernorate ? 'text-[#111111]' : 'text-[#64748B]'
@@ -132,6 +116,22 @@ export default function MapOverlayUI({
             >
               {selectedGovernorate?.label ?? 'المحافظة'}
             </Text>
+            <Feather name="chevron-down" size={16} color="#64748B" />
+          </TouchableOpacity>
+
+          {/* Area Dropdown (Right) */}
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+            onPress={() => areaDrawerRef.current?.present()}
+          >
+            <Text
+              className={`font-cairo-medium text-[13px] ${
+                selectedArea ? 'text-[#111111]' : 'text-[#64748B]'
+              }`}
+            >
+              {selectedArea?.label ?? 'المنطقة'}
+            </Text>
+            <Feather name="chevron-down" size={16} color="#64748B" />
           </TouchableOpacity>
         </View>
       </View>

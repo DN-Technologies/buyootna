@@ -11,6 +11,9 @@ export function validateApiUrl(): string {
       'EXPO_PUBLIC_API_URL is not defined in the environment variables. Please set it in your .env file.',
     );
   }
+  if (__DEV__ && Platform.OS === 'android' && (url.includes('localhost') || url.includes('127.0.0.1'))) {
+    return url.replace('localhost', '10.0.2.2').replace('127.0.0.1', '10.0.2.2');
+  }
   return url;
 }
 
