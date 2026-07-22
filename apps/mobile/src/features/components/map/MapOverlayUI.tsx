@@ -1,20 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import {
-  FilterHorizontalIcon,
-  HomeSearchIcon,
-  ListViewIcon,
-} from '@/assets/icons/home/header';
+import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import SelectionDrawer, {
   type SelectionItem,
 } from '@/core/components/filters/SelectionDrawer';
 import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
-const CATEGORIES = ['بيع', 'ايجار', 'بدل', 'شركات'];
+const CATEGORIES = ['شركات', 'بدل', 'ايجار', 'بيع'];
 
 interface MapOverlayUIProps {
   activeCategory: string;
@@ -57,77 +53,63 @@ export default function MapOverlayUI({
         className="pointer-events-auto border-b border-gray-100 bg-white pb-3.5 shadow-sm shadow-gray-100/50"
         style={{ paddingTop: Math.max(insets.top, 12) }}
       >
-        <View className="flex-row items-center justify-between gap-3 px-5 py-1.5">
+        <View className="flex-row items-center gap-2 px-5 py-1.5">
+          {/* Filter Button */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push('/')}
-            className="h-10 w-10 items-center justify-center"
-          >
-            <ListViewIcon size={22} color="#111111" />
-          </TouchableOpacity>
-
-          <View className="h-10 flex-1 flex-row items-center rounded-full border border-gray-100 bg-[#F8FAFC] px-4">
-            <TextInput
-              placeholder="ابحث عن عقار أو خدمة..."
-              placeholderTextColor="#94A3B8"
-              value={searchQuery}
-              onChangeText={onSearchQueryChange}
-              className="mr-2 flex-1 py-0 text-right font-cairo-medium text-[13px] text-[#111111]"
-              textAlign="right"
-            />
-            <HomeSearchIcon size={18} color="#94A3B8" />
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
             onPress={onOpenFilters}
-            className="h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white"
+            className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
           >
             <FilterHorizontalIcon size={18} color="#111111" />
           </TouchableOpacity>
-        </View>
 
-        <View className="mt-2 flex-row justify-between border-b border-gray-50 px-5">
-          {CATEGORIES.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              onPress={() => onCategoryChange(cat)}
-              className={`border-b-2 px-1 pb-2 ${
-                activeCategory === cat
-                  ? 'border-[#15304D]'
-                  : 'border-transparent'
-              }`}
-            >
-              <Text
-                className={`font-cairo-bold text-[14px] ${
-                  activeCategory === cat ? 'text-[#15304D]' : 'text-[#64748B]'
-                }`}
-              >
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {/* Tab Pill Container */}
+          <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
+            {CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <TouchableOpacity
+                  key={cat}
+                  onPress={() => onCategoryChange(cat)}
+                  className="h-full flex-1 items-center justify-center rounded-full"
+                  activeOpacity={0.7}
+                >
+                  <View className="items-center justify-center">
+                    <Text
+                      className={`${
+                        isActive
+                          ? 'font-cairo-bold text-[#15304D]'
+                          : 'font-cairo text-[#6B6A6A]'
+                      } text-sm leading-[22px]`}
+                    >
+                      {cat}
+                    </Text>
+                    {isActive && (
+                      <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* List View / Stack Layers Button */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push('/')}
+            className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+          >
+            <Feather name="layers" size={20} color="#111111" />
+          </TouchableOpacity>
         </View>
 
         <View className="mt-3 flex-row items-center justify-between gap-3 px-5">
+          {/* Area Dropdown (Left) */}
           <TouchableOpacity
-            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2"
-            onPress={() => govDrawerRef.current?.present()}
-          >
-            <Text
-              className={`font-cairo-medium text-[13px] ${
-                selectedGovernorate ? 'text-[#111111]' : 'text-[#64748B]'
-              }`}
-            >
-              {selectedGovernorate?.label ?? 'المحافظة'}
-            </Text>
-            <Feather name="chevron-down" size={16} color="#64748B" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2"
+            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
             onPress={() => areaDrawerRef.current?.present()}
           >
+            <Feather name="chevron-down" size={16} color="#64748B" />
             <Text
               className={`font-cairo-medium text-[13px] ${
                 selectedArea ? 'text-[#111111]' : 'text-[#64748B]'
@@ -135,7 +117,21 @@ export default function MapOverlayUI({
             >
               {selectedArea?.label ?? 'المنطقة'}
             </Text>
+          </TouchableOpacity>
+
+          {/* Governorate Dropdown (Right) */}
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2.5"
+            onPress={() => govDrawerRef.current?.present()}
+          >
             <Feather name="chevron-down" size={16} color="#64748B" />
+            <Text
+              className={`font-cairo-medium text-[13px] ${
+                selectedGovernorate ? 'text-[#111111]' : 'text-[#64748B]'
+              }`}
+            >
+              {selectedGovernorate?.label ?? 'المحافظة'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
