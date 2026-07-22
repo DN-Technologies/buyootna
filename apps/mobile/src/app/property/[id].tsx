@@ -239,7 +239,8 @@ export default function PropertyDetailsScreen() {
           <View className="mt-4">
             <MapPreview
               location={property.location}
-              onPress={() => console.log('Open Full Map Modal')}
+              latitude={property.latitude}
+              longitude={property.longitude}
             />
           </View>
 

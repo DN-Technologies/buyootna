@@ -104,7 +104,7 @@ export default function PropertyDetailSkeleton() {
         {/* Card 2: Map Preview Placeholder */}
         <View className="mt-4 px-5">
           <View className="h-32 w-full items-center justify-center rounded-xl bg-slate-100">
-            <View className="h-10 w-36 rounded-full bg-white shadow-sm" />
+            <View className="h-10 w-36 rounded-full bg-white" />
           </View>
         </View>
 
