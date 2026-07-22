@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -18,11 +19,11 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { AddIcon } from '@/assets/icons/tab';
+import { SortingIcon } from '@/assets/icons/activity';
+import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import apiClient from '@/core/api/api';
 import ActiveAdCard from '@/core/components/activity/ActiveAdCard';
 import ActivityFilterPills from '@/core/components/activity/ActivityFilterPills';
-import ActivitySearchBar from '@/core/components/activity/ActivitySearchBar';
 import DeleteConfirmationSheet from '@/core/components/activity/DeleteConfirmationSheet';
 import DraftAdCard from '@/core/components/activity/DraftAdCard';
 import DraftPreviewSheet from '@/core/components/activity/DraftPreviewSheet';
@@ -33,7 +34,7 @@ import GuestEmptyState from '@/core/components/GuestEmptyState';
 import { useMyActivity } from '@/hooks/useMyActivity';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const ACTIVITY_TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
+const TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
 export default function ActivityScreen() {
   const { token } = useAuthStore();
@@ -48,7 +49,9 @@ export default function ActivityScreen() {
   const [activeFilterId, setActiveFilterId] = useState<
     'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'
   >('ALL');
-  const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC'>('NEWEST');
+  const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC'>(
+    'NEWEST',
+  );
 
   const handleSortPress = () => {
     Alert.alert(
@@ -56,11 +59,35 @@ export default function ActivityScreen() {
       'اختر طريقة ترتيب الإعلانات:',
       [
         { text: 'الأحدث أولاً', onPress: () => setSortBy('NEWEST') },
-        { text: 'السعر: من الأعلى إلى الأقل', onPress: () => setSortBy('PRICE_DESC') },
-        { text: 'السعر: من الأقل إلى الأعلى', onPress: () => setSortBy('PRICE_ASC') },
+        {
+          text: 'السعر: من الأعلى إلى الأقل',
+          onPress: () => setSortBy('PRICE_DESC'),
+        },
+        {
+          text: 'السعر: من الأقل إلى الأعلى',
+          onPress: () => setSortBy('PRICE_ASC'),
+        },
         { text: 'إلغاء', style: 'cancel' },
       ],
-      { cancelable: true }
+      { cancelable: true },
+    );
+  };
+
+  const handleTrashPress = () => {
+    Alert.alert(
+      'مسح النشاط',
+      'هل أنت متأكد من رغبتك في مسح السجل أو التنبيهات؟',
+      [
+        { text: 'إلغاء', style: 'cancel' },
+        {
+          text: 'مسح الكل',
+          style: 'destructive',
+          onPress: () => {
+            console.log('Bulk clear requested');
+          },
+        },
+      ],
+      { cancelable: true },
     );
   };
 
@@ -74,7 +101,9 @@ export default function ActivityScreen() {
 
   // References and states for featuring ads
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(null);
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
+    null,
+  );
 
   // Toast notification state and animation
   const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
@@ -290,40 +319,79 @@ export default function ActivityScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* --- 1. Top Header --- */}
       <View className="flex-row items-center justify-between px-5 py-4">
-        <View className="" />
+        {/* Trash Button */}
+        <TouchableOpacity
+          onPress={handleTrashPress}
+          className="h-10 w-10 items-center justify-start rounded-full"
+        >
+          <Feather name="trash-2" size={24} color="#B91C1C" />
+        </TouchableOpacity>
+
+        {/* Centered Title */}
         <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
           نشاطي
         </Text>
-        <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full">
-          <AddIcon size={30} color="#111111" />
+
+        {/* Plus Button */}
+        <TouchableOpacity
+          onPress={() => router.push('/add-listing')}
+          className="h-10 w-10 items-center justify-end rounded-full"
+        >
+          <Feather name="plus" size={24} color="#111111" />
         </TouchableOpacity>
       </View>
 
-      {/* --- 2. Search Bar --- */}
-      <ActivitySearchBar
-        onFilterPress={() => {
-          setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'));
-        }}
-        onSortPress={handleSortPress}
-      />
-
-      {/* --- 3. Top Navigation Tabs --- */}
-      <View>
-        <View className="flex-row justify-around px-5">
-          {ACTIVITY_TABS.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              className={`border-b-2 px-8 pb-2 pt-1 ${activeTab === tab ? 'border-[#15304D]' : 'border-transparent'}`}
-            >
-              <Text
-                className={`text-[15px] ${activeTab === tab ? 'font-cairo-bold text-[#15304D]' : 'font-cairo text-[#6B6A6A]'}`}
+      {/* Tabs & Controls Row */}
+      <View className="mb-4 flex-row items-center gap-2 px-5">
+        {/* Tab Pill Container */}
+        <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity
+                key={tab}
+                onPress={() => setActiveTab(tab)}
+                className="h-full flex-1 items-center justify-center rounded-full"
+                activeOpacity={0.7}
               >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <View className="items-center justify-center">
+                  <Text
+                    className={`${
+                      isActive
+                        ? 'font-cairo-bold text-[#15304D]'
+                        : 'font-cairo text-[#6B6A6A]'
+                    } text-sm leading-[22px]`}
+                  >
+                    {tab}
+                  </Text>
+                  {isActive && (
+                    <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
+
+        {/* Filter Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'));
+          }}
+          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+        >
+          <FilterHorizontalIcon size={18} color="#111111" />
+        </TouchableOpacity>
+
+        {/* Sort Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={handleSortPress}
+          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+        >
+          <SortingIcon size={18} color="#111111" />
+        </TouchableOpacity>
       </View>
 
       {/* Scrolling list */}
@@ -451,7 +519,7 @@ export default function ActivityScreen() {
                 {toastMessage}
               </Text>
               {toastSubtitle && (
-                <Text className="text-right font-cairo text-[12px] leading-[18px] text-[#6B6A6A] mt-0.5">
+                <Text className="mt-0.5 text-right font-cairo text-[12px] leading-[18px] text-[#6B6A6A]">
                   {toastSubtitle}
                 </Text>
               )}

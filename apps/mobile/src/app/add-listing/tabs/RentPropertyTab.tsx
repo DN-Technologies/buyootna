@@ -1,12 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRef } from 'react';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
-import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
 import { useListingStore } from '@/core/store/useListingStore';
 
 // Mock Data for Features
@@ -14,7 +10,7 @@ const MOCK_FEATURES = [
   { id: '1', label: 'مكيف' },
   { id: '2', label: 'اطلالة بحرية' },
   { id: '3', label: 'مصعد' },
-  { id: '4', label: 'جراج' },
+  { id: '4', label: 'كراج' },
   { id: '5', label: 'حمام سباحة' },
 ];
 
@@ -28,21 +24,62 @@ export default function RentPropertyTab() {
     adDetails,
     adLevel,
     features,
+    backendFeatures,
     updateField,
   } = useListingStore();
 
-  const featuresDrawerRef = useRef<BottomSheetModal>(null);
+  const featuresList = backendFeatures?.rent || MOCK_FEATURES;
 
   return (
     <View className="pb-8">
-      {/* --- 1. Features Dropdown --- */}
-      <View className="mb-8">
-        <DrawerTrigger
-          label="المزايا"
-          placeholder="ما يميز عقارك"
-          value={features?.join('، ')}
-          onPress={() => featuresDrawerRef.current?.present()}
-        />
+      {/* --- 1. Features Chips (Multi-Select) --- */}
+      <View className="mb-6 w-full">
+        <Text
+          className="mb-3 font-cairo-medium text-sm text-[#111111]"
+          style={{ writingDirection: 'rtl' }}
+        >
+          المزايا
+        </Text>
+        <View className="flex-row flex-wrap justify-start gap-2">
+          {featuresList.map((feature) => {
+            const isSelected = features?.includes(feature.label);
+            return (
+              <TouchableOpacity
+                key={feature.id}
+                onPress={() => {
+                  const currentFeatures = features || [];
+                  if (isSelected) {
+                    updateField(
+                      'features',
+                      currentFeatures.filter((f) => f !== feature.label),
+                    );
+                  } else {
+                    updateField('features', [
+                      ...currentFeatures,
+                      feature.label,
+                    ]);
+                  }
+                }}
+                activeOpacity={0.7}
+                className={`mb-2 rounded-full border px-5 py-1.5 ${
+                  isSelected
+                    ? 'border-[#15304D] bg-[#F4F8FB]'
+                    : 'border-transparent bg-[#F5F7F9]'
+                }`}
+              >
+                <Text
+                  className={`font-cairo text-[13px] ${
+                    isSelected
+                      ? 'font-cairo-semibold text-[#15304D]'
+                      : 'text-[#6B6A6A]'
+                  }`}
+                >
+                  {feature.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       {/* --- 2. Price & Details Section Title --- */}
@@ -312,14 +349,6 @@ export default function RentPropertyTab() {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* --- Modals --- */}
-      <SelectionDrawer
-        ref={featuresDrawerRef}
-        title="ما يميز عقارك"
-        data={MOCK_FEATURES}
-        onSelect={(item) => updateField('features', [item.label])}
-      />
     </View>
   );
 }

@@ -1,5 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -38,7 +39,12 @@ export default function CreateListingScreen() {
     monthlyRent,
     requestYear,
     requiredYear,
+    fetchFeatures,
   } = useListingStore();
+
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
 
   const handlePreview = () => {
     // Navigate to the preview screen (Card 9)

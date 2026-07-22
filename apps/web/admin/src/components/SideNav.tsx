@@ -103,7 +103,7 @@ export default function SideNav() {
                     className={cn(
                       'flex items-center justify-start gap-3 h-[42px] px-3 rounded-xl transition duration-150 text-right w-full',
                       isActive
-                        ? 'bg-primtext-primary text-white font-bold'
+                        ? 'bg-primary text-white font-bold'
                         : 'bg-white text-[#111111] hover:bg-[#F8F9FA] hover:text-primary font-medium',
                     )}
                   >

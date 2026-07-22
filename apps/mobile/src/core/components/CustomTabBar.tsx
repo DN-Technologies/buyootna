@@ -1,7 +1,6 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import {
-  Dimensions,
   Platform,
   Text,
   TouchableOpacity,
@@ -65,7 +64,7 @@ export default function CustomTabBar({
 
   return (
     <View
-      className={`absolute bottom-0 z-50 ${isTablet ? 'rounded-t-[32px] overflow-hidden' : ''}`}
+      className={`absolute bottom-0 z-50 ${isTablet ? 'overflow-hidden rounded-t-[32px]' : ''}`}
       style={{
         width: barWidth,
         left: leftOffset,

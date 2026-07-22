@@ -120,4 +120,15 @@ export const propertiesService = {
     );
     return response.data;
   },
+  /**
+   * Fetch features metadata list from backend.
+   */
+  getFeaturesMetadata: async (): Promise<{
+    sell: { id: string; label: string }[];
+    rent: { id: string; label: string }[];
+    exchange: { id: string; label: string }[];
+  }> => {
+    const response = await apiClient.get('/properties/metadata/features');
+    return response.data;
+  },
 };

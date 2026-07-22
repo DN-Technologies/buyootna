@@ -1,14 +1,18 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FilterHorizontalIcon, MapIcon } from '@/assets/icons/home/header';
 import HomeFilterPills from '@/components/home/HomeFilterPills';
-import HomeHeader from '@/components/home/HomeHeader';
 import HomeHeaderSkeleton from '@/components/home/HomeHeaderSkeleton';
-import HomePrimaryTabs from '@/components/home/HomePrimaryTabs';
-import HomeSearchBar from '@/components/home/HomeSearchBar';
 import HomeAll from '@/components/home/sections/HomeAll';
 import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
@@ -46,7 +50,7 @@ export default function HomeScreen() {
   );
 
   // --- State ---
-  const [activeTab, setActiveTab] = useState<PrimaryTab>('all');
+  const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
     useState<PropertyFilter>('all');
   const [activeCompFilter, setActiveCompFilter] =
@@ -81,16 +85,63 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  const TABS = [
+    { id: 'properties', label: 'عقارات' },
+    { id: 'companies', label: 'شركات' },
+  ];
+
   const renderHeader = (withHorizontalPadding = true) => (
-    <View className={`pt-4 ${withHorizontalPadding ? 'px-[20px]' : ''}`}>
-      {/* 1. Header Section */}
-      <HomeHeader />
+    <View className={` ${withHorizontalPadding ? 'px-[20px]' : ''}`}>
+      {/* Tabs & Controls Row */}
+      <View className="mb-4 flex-row items-center gap-2">
+        {/* Tab Pill Container */}
+        <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <TouchableOpacity
+                key={tab.id}
+                onPress={() => setActiveTab(tab.id as any)}
+                className="h-full flex-1 items-center justify-center rounded-full"
+                activeOpacity={0.7}
+              >
+                <View className="items-center justify-center">
+                  <Text
+                    className={`${
+                      isActive
+                        ? 'font-cairo-bold text-[#15304D]'
+                        : 'font-cairo text-[#6B6A6A]'
+                    } text-sm leading-[22px]`}
+                  >
+                    {tab.label}
+                  </Text>
+                  {isActive && (
+                    <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-      {/* 2. Search Bar */}
-      <HomeSearchBar onFilterPress={() => filterSheetRef.current?.present()} />
+        {/* Filter Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => filterSheetRef.current?.present()}
+          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+        >
+          <FilterHorizontalIcon size={18} color="#111111" />
+        </TouchableOpacity>
 
-      {/* 3. Primary Tabs (الجميع | عقارات | شركات) */}
-      <HomePrimaryTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Map Button */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.push('/map')}
+          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+        >
+          <MapIcon size={18} color="#111111" />
+        </TouchableOpacity>
+      </View>
 
       {/* 4. Secondary Tabs (Filter Pills) */}
       <HomeFilterPills

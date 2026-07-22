@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { CreatePropertyPayload } from '@/core/api/properties.service';
+import { CreatePropertyPayload, propertiesService } from '@/core/api/properties.service';
 import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 import type { PropertyDetailsDto } from '@/types/property';
 
@@ -59,7 +59,15 @@ export interface ListingStateData {
   submissionError: string | null;
 
   // 7. Edit State
+  // 7. Edit State
   isEdit: boolean;
+
+  // 8. Backend Features list
+  backendFeatures: {
+    sell: SelectionItem[];
+    rent: SelectionItem[];
+    exchange: SelectionItem[];
+  } | null;
 }
 
 // Interface for the Zustand Store Methods
@@ -73,6 +81,7 @@ interface ListingStore extends ListingStateData {
   addImages: (uris: string[]) => void;
   removeImage: (index: number) => void;
   resetForm: () => void;
+  fetchFeatures: () => Promise<void>;
 
   // Submission
   setSubmitting: (value: boolean) => void;
@@ -144,6 +153,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   isSubmitting: false,
   submissionError: null,
   isEdit: false,
+  backendFeatures: null,
 };
 
 // --- Store Implementation ---
@@ -166,6 +176,15 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   // Reset the entire form back to default
   resetForm: () => set({ listingType: 'sell', ...initialState }),
+
+  fetchFeatures: async () => {
+    try {
+      const data = await propertiesService.getFeaturesMetadata();
+      set({ backendFeatures: data });
+    } catch (e) {
+      console.error('Failed to fetch features metadata:', e);
+    }
+  },
 
   // Submission state helpers
   setSubmitting: (value) => set({ isSubmitting: value }),

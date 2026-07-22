@@ -29,6 +29,32 @@ export class PropertiesController {
     return this.propertiesService.getHomeFeed();
   }
 
+  // Public Features Metadata Endpoint
+  @Get('metadata/features')
+  getFeatures() {
+    return {
+      sell: [
+        { id: '1', label: 'بطن وظهر' },
+        { id: '2', label: 'زاوية' },
+        { id: '3', label: 'شارع واحد' },
+        { id: '4', label: 'ثلاث شوارع' },
+      ],
+      rent: [
+        { id: '1', label: 'مكيف' },
+        { id: '2', label: 'اطلالة بحرية' },
+        { id: '3', label: 'مصعد' },
+        { id: '4', label: 'كراج' },
+        { id: '5', label: 'حمام سباحة' },
+      ],
+      exchange: [
+        { id: '1', label: 'بطن وظهر' },
+        { id: '2', label: 'زاوية' },
+        { id: '3', label: 'شارع واحد' },
+        { id: '4', label: 'ارتداد كبير' },
+      ],
+    };
+  }
+
   // My Activity Route
   @Get('/me/activity')
   @UseGuards(AuthGuard('jwt'))
