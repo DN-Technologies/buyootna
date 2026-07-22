@@ -1,4 +1,5 @@
 import { Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -14,6 +15,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient from '@/core/api/api';
+import ContentContainer from '@/core/components/ContentContainer';
+import PropertyActionBar from '@/core/components/PropertyActionBar';
 import PropertyCard from '@/core/components/PropertyCard';
 import PropertyListItem from '@/core/components/PropertyListItem';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
@@ -167,11 +170,10 @@ export default function UserProfileScreen() {
     return (
       <View className="mb-4">
         {/* Cover Image Placeholder */}
-        <View className="h-28 w-full bg-[#15304D]" />
-
+        <View className="mx-5 h-24 rounded-t-md bg-[#15304D]" />
         {/* Profile Card Overlay */}
         <View
-          className="mx-5 -mt-10 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm"
+          className="mx-5 -mt-10 rounded-b-md border border-gray-100 bg-white p-5 shadow-sm"
           style={{
             elevation: 2,
             shadowColor: '#000',
@@ -180,52 +182,73 @@ export default function UserProfileScreen() {
             shadowRadius: 8,
           }}
         >
-          {/* Main Info Row (RTL format) */}
-          <View className="flex-row-reverse items-center justify-between">
-            <View className="flex-row-reverse items-center gap-3">
-              {/* Avatar */}
-              <View className="h-16 w-16 overflow-hidden rounded-2xl border border-gray-100 bg-slate-100">
-                <Image
-                  source={{ uri: userProfile.avatarUrl }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
+          {/* Overlapping Avatar (Positioned absolutely on the right) */}
+          <View className="absolute -top-10 left-5 z-10 h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-sm">
+            <Image
+              source={{ uri: userProfile.avatarUrl }}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
+          </View>
+
+          {/* Spacer to push content below the absolute avatar */}
+          <View className="h-10" />
+
+          {/* Name, Rating & Status Badge Row (Explicitly right-to-left flexDirection) */}
+          <View
+            style={{ flexDirection: 'row' }}
+            className="mt-3 items-start justify-between"
+          >
+            {/* Right side: Name & Rating (Explicitly right-aligned) */}
+            <View>
+              <View
+                style={{ flexDirection: 'row' }}
+                className="items-center gap-1"
+              >
+                <Text className="text-right font-cairo-bold text-lg text-[#111111]">
+                  {userProfile.name}
+                </Text>
+                {userProfile.role !== 'INDIVIDUAL' && (
+                  <MaterialIcons name="verified" size={16} color="#018B1B" />
+                )}
               </View>
 
-              {/* Name & Rating */}
-              <View className="items-start">
-                <View className="flex-row-reverse items-center gap-1">
-                  <Text className="text-right font-cairo-bold text-lg text-[#111111]">
-                    {userProfile.name}
-                  </Text>
-                  {userProfile.role !== 'INDIVIDUAL' && (
-                    <MaterialIcons name="verified" size={16} color="#018B1B" />
-                  )}
-                </View>
-
-                <View className="mt-0.5 flex-row items-center gap-1">
-                  <FontAwesome name="star" size={14} color="#F59E0B" />
-                  <Text className="font-sans text-sm text-[#111111]">
-                    {userProfile.rating}
-                  </Text>
-                  <Text className="ml-1 font-cairo text-xs text-[#6B6A6A]">
-                    (214 تقييم)
-                  </Text>
-                </View>
+              <View
+                style={{ flexDirection: 'row' }}
+                className="mt-0.5 items-center gap-1"
+              >
+                <FontAwesome
+                  name="star"
+                  size={14}
+                  color="#F59E0B"
+                  className="relative -top-1"
+                />
+                <Text className="font-sans text-sm text-[#111111]">
+                  {userProfile.rating}
+                </Text>
+                <Text className="mr-1 font-cairo text-xs text-[#6B6A6A]">
+                  (214 تقييم)
+                </Text>
               </View>
             </View>
 
-            {/* Active Status Badge */}
-            <View className="flex-row items-center gap-1 rounded-full bg-[#E8F8EE] px-3 py-1">
-              <View className="h-1.5 w-1.5 rounded-full bg-[#018B1B]" />
-              <Text className="font-cairo-bold text-[10px] text-[#018B1B]">
+            {/* Left side: Active Status Badge (Explicitly left-aligned layout) */}
+            <View
+              style={{ flexDirection: 'row' }}
+              className="items-center gap-1 rounded-full px-3 py-1"
+            >
+              <View className="h-2 w-2 rounded-full bg-[#15A72B]" />
+              <Text className="font-cairo text-xs leading-[24px] text-[#15A72B]">
                 نشط الآن
               </Text>
             </View>
           </View>
 
-          {/* Stats Bar Component */}
-          <View className="mt-4 flex-row items-center justify-between rounded-xl bg-[#F8F9FC] p-3">
+          {/* Stats Bar Component (Explicitly right-to-left layout) */}
+          <View
+            style={{ flexDirection: 'row' }}
+            className="mt-4 items-center justify-between rounded-xl bg-[#F8F9FC] p-4"
+          >
             <View className="flex-1 items-center">
               <Text className="font-sans text-sm font-bold text-[#111111]">
                 {properties.length}
@@ -301,13 +324,6 @@ export default function UserProfileScreen() {
         {/* Tab-specific Filters header */}
         {activeTab === 'listings' && properties.length > 0 && (
           <View className="mt-4 flex-row items-center justify-between px-5">
-            <View className="flex-row items-center gap-1.5">
-              <Feather name="sliders" size={16} color="#6B6A6A" />
-              <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
-                تصفية
-              </Text>
-            </View>
-
             {/* View Mode buttons */}
             <View className="flex-row items-center gap-1 rounded-xl bg-[#F5F7F9] p-1">
               <TouchableOpacity
@@ -336,6 +352,12 @@ export default function UserProfileScreen() {
                   size={14}
                 />
               </TouchableOpacity>
+            </View>
+            <View className="flex-row items-center gap-1.5">
+              <Feather name="sliders" size={16} color="#6B6A6A" />
+              <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
+                تصفية
+              </Text>
             </View>
           </View>
         )}
@@ -383,108 +405,81 @@ export default function UserProfileScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Absolute Header Overlay */}
-      <View
-        style={{ top: insets.top + 10 }}
-        className="absolute left-5 right-5 z-50 flex-row items-center justify-between"
-      >
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-black/20"
-        >
-          {/* Arrow points right because app layout is RTL */}
-          <Feather name="arrow-right" size={22} color="white" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-          className="h-10 w-10 items-center justify-center rounded-full bg-black/20"
-        >
-          <Feather name="more-vertical" size={22} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Main Content Area */}
-      <FlatList
-        data={activeTab === 'listings' ? properties : []}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderProfileHeader}
-        ListEmptyComponent={renderEmptyComponent}
-        contentContainerStyle={{
-          paddingBottom: insets.bottom + 85,
-        }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View className="mt-2 px-5">
-            {viewMode === 'list' ? (
-              <PropertyListItem
-                id={item.id}
-                price={item.price}
-                companyName={item.companyName}
-                isFeatured={item.isFeatured}
-                category={item.type}
-                area={item.area}
-                location={item.location}
-                propertyIncome={item.propertyIncome}
-                onShowDetails={() => router.push(`/property/${item.id}`)}
-              />
-            ) : (
-              <PropertyCard
-                id={item.id}
-                images={item.images}
-                price={item.price}
-                companyName={item.companyName}
-                isFeatured={item.isFeatured}
-                type={item.type}
-                area={item.area}
-                beds={item.beds}
-                baths={item.baths}
-                location={item.location}
-              />
-            )}
-          </View>
-        )}
-      />
-
-      {/* Fixed Bottom Action Bar */}
-      {userProfile && (
+      <ContentContainer className="flex-1">
         <View
-          style={{ paddingBottom: Math.max(insets.bottom, 12), paddingTop: 12 }}
-          className="absolute bottom-0 left-0 right-0 flex-row items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 shadow-lg"
+          style={{ flexDirection: 'row', paddingTop: insets.top + 4 }}
+          className="w-full flex-row items-center justify-between bg-white px-5 pb-4"
         >
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={handleCall}
-            className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full border border-[#15304D]"
+            onPress={() => router.back()}
+            className="p-2"
           >
-            <Feather name="phone" size={16} color="#15304D" />
-            <Text className="font-cairo-bold text-sm text-[#15304D]">
-              اتصال
-            </Text>
+            <ExpoImage
+              source={require('@/assets/icons/arrow-back.svg')}
+              style={{ width: 10, height: 14, tintColor: '#111111' }}
+              contentFit="contain"
+            />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleWhatsapp}
-            className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full border border-[#018B1B] bg-[#E8F8EE]"
-          >
-            <FontAwesome name="whatsapp" size={18} color="#018B1B" />
-            <Text className="font-cairo-bold text-sm text-[#018B1B]">
-              واتساب
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleChat}
-            className="h-12 flex-1 flex-row items-center justify-center gap-2 rounded-full bg-[#15304D]"
-          >
-            <Feather name="message-square" size={16} color="white" />
-            <Text className="font-cairo-bold text-sm text-white">دردشة</Text>
+          <TouchableOpacity activeOpacity={0.8}>
+            <Feather name="more-vertical" size={20} color="#111111" />
           </TouchableOpacity>
         </View>
-      )}
+        {/* Main Content Area */}
+        <FlatList
+          data={activeTab === 'listings' ? properties : []}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderProfileHeader}
+          ListEmptyComponent={renderEmptyComponent}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 85,
+          }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View className="mt-2 px-5">
+              {viewMode === 'list' ? (
+                <PropertyListItem
+                  id={item.id}
+                  price={item.price}
+                  companyName={item.companyName}
+                  isFeatured={item.isFeatured}
+                  category={item.type}
+                  area={item.area}
+                  location={item.location}
+                  propertyIncome={item.propertyIncome}
+                  onShowDetails={() => router.push(`/property/${item.id}`)}
+                />
+              ) : (
+                <PropertyCard
+                  id={item.id}
+                  images={item.images}
+                  price={item.price}
+                  companyName={item.companyName}
+                  isFeatured={item.isFeatured}
+                  type={item.type}
+                  area={item.area}
+                  beds={item.beds}
+                  baths={item.baths}
+                  location={item.location}
+                />
+              )}
+            </View>
+          )}
+        />
+
+        {/* Fixed Bottom Action Bar */}
+        {userProfile && (
+          <ContentContainer className="absolute bottom-0 z-50 w-full bg-white">
+            <PropertyActionBar
+              insets={insets}
+              onWhatsapp={handleWhatsapp}
+              onCall={handleCall}
+              onChat={handleChat}
+            />
+          </ContentContainer>
+        )}
+      </ContentContainer>
     </View>
   );
 }
