@@ -4,12 +4,14 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ReviewsSummarySectionProps {
   onAddReview: () => void;
+  onSortPress?: () => void;
   totalRatingsCount?: number;
   averageRating?: number;
 }
 
 export default function ReviewsSummarySection({
   onAddReview,
+  onSortPress,
   totalRatingsCount = 100,
   averageRating = 4.5,
 }: ReviewsSummarySectionProps) {
@@ -24,12 +26,16 @@ export default function ReviewsSummarySection({
   return (
     <View className="mt-4 px-5">
       {/* Sort row */}
-      <View className="flex-row items-center gap-1.5">
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={onSortPress}
+        className="flex-row items-center gap-1.5"
+      >
         <Feather name="sliders" size={16} color="#111111" />
         <Text className="font-cairo-semibold text-sm text-[#111111]">
           الترتيب حسب
         </Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Share your opinion / Add review button */}
       <TouchableOpacity

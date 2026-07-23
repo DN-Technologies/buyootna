@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,6 +16,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient from '@/core/api/api';
 import ContentContainer from '@/core/components/ContentContainer';
+import AddReviewSheet from '@/core/components/profile/AddReviewSheet';
+import {
+  FilterBottomSheet,
+  SortBottomSheet,
+} from '@/core/components/profile/ProfileFilterSheet';
 import ProfileHeaderCard from '@/core/components/profile/ProfileHeaderCard';
 import ProfileTabNavigation from '@/core/components/profile/ProfileTabNavigation';
 import ReviewCardItem from '@/core/components/profile/ReviewCardItem';
@@ -44,6 +50,12 @@ export default function UserProfileScreen() {
     'listings',
   );
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  const [propertyFilter, setPropertyFilter] = useState('all');
+  const [propertySort, setPropertySort] = useState('all');
+
+  const addReviewSheetRef = useRef<BottomSheetModal>(null);
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+  const sortSheetRef = useRef<BottomSheetModal>(null);
 
   // Load User Info & Properties
   useEffect(() => {
@@ -156,31 +168,23 @@ export default function UserProfileScreen() {
   };
 
   const handleAddReview = () => {
-    Alert.alert(
-      'شارك برأيك',
-      'شكراً لمشاركتك! أضفنا تقييمك بنجاح للتقييمات المخزنة.',
-      [
-        {
-          text: 'إضافة تقييم تجريبي',
-          onPress: () => {
-            const newRev: ReviewItem = {
-              id: `rev-${Date.now()}`,
-              userName: 'مستخدم بيوتنا',
-              avatarUrl:
-                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-              timeAgo: 'الآن',
-              rating: 5,
-              comment: 'تجربة ممتازة وتواصل سريع للغاية عبر تطبيق بيوتنا.',
-              likes: 1,
-              dislikes: 0,
-              userLiked: true,
-            };
-            setReviews((prev) => [newRev, ...prev]);
-          },
-        },
-        { text: 'إلغاء', style: 'cancel' },
-      ],
-    );
+    addReviewSheetRef.current?.present();
+  };
+
+  const handleReviewSubmit = (commentText: string) => {
+    const newRev: ReviewItem = {
+      id: `rev-${Date.now()}`,
+      userName: 'مستخدم بيوتنا',
+      avatarUrl:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      timeAgo: 'الآن',
+      rating: 5,
+      comment: commentText,
+      likes: 0,
+      dislikes: 0,
+      userLiked: false,
+    };
+    setReviews((prev) => [newRev, ...prev]);
   };
 
   const handleToggleLike = (reviewId: string) => {
@@ -274,17 +278,24 @@ export default function UserProfileScreen() {
                 />
               </TouchableOpacity>
             </View>
-            <View className="flex-row items-center gap-1.5">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => filterSheetRef.current?.present()}
+              className="flex-row items-center gap-1.5"
+            >
               <Feather name="sliders" size={16} color="#6B6A6A" />
               <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
                 تصفية
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         )}
 
         {activeTab === 'reviews' && (
-          <ReviewsSummarySection onAddReview={handleAddReview} />
+          <ReviewsSummarySection
+            onAddReview={handleAddReview}
+            onSortPress={() => sortSheetRef.current?.present()}
+          />
         )}
       </View>
     );
@@ -358,7 +369,13 @@ export default function UserProfileScreen() {
           data={
             activeTab === 'listings'
               ? (properties as any[])
-              : (reviews as any[])
+              : (reviews
+                  .slice()
+                  .sort((a, b) => {
+                    if (propertySort === 'rating_desc') return b.rating - a.rating;
+                    if (propertySort === 'rating_asc') return a.rating - b.rating;
+                    return 0;
+                  }) as any[])
           }
           keyExtractor={(item) => item.id}
           ListHeaderComponent={renderHeader}
@@ -418,6 +435,20 @@ export default function UserProfileScreen() {
             />
           </ContentContainer>
         )}
+
+        <AddReviewSheet ref={addReviewSheetRef} onSubmit={handleReviewSubmit} />
+
+        <FilterBottomSheet
+          ref={filterSheetRef}
+          selectedValue={propertyFilter}
+          onSelect={setPropertyFilter}
+        />
+
+        <SortBottomSheet
+          ref={sortSheetRef}
+          selectedValue={propertySort}
+          onSelect={setPropertySort}
+        />
       </ContentContainer>
     </View>
   );
