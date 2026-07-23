@@ -18,7 +18,7 @@ COPY packages/ui ./packages/ui
 COPY apps/web/landing ./apps/web/landing
 
 # Build the standalone Next.js application
-RUN pnpm --filter @buyootna/web-landing build
+RUN pnpm --filter @buyootna/web-landing build && mkdir -p apps/web/landing/public
 
 # --- STAGE 2: Runner ---
 FROM node:20-alpine AS runner

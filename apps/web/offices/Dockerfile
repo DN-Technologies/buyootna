@@ -18,7 +18,7 @@ COPY packages/ui ./packages/ui
 COPY apps/web/offices ./apps/web/offices
 
 # Build the standalone Next.js application
-RUN pnpm --filter @buyootna/web-offices build
+RUN pnpm --filter @buyootna/web-offices build && mkdir -p apps/web/offices/public
 
 # --- STAGE 2: Runner ---
 FROM node:20-alpine AS runner
