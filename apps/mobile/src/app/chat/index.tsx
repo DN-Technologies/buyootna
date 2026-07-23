@@ -16,7 +16,9 @@ import ChatListItem from '@/core/components/chat/ChatListItem';
 import EmptyChatState from '@/core/components/chat/EmptyChatState';
 import ContentContainer from '@/core/components/ContentContainer';
 import GuestEmptyState from '@/core/components/GuestEmptyState';
+import ChatListSkeleton from '@/core/components/skeletons/ChatSkeleton';
 import { socketService } from '@/core/services/socket.service';
+import { getArabicCategoryLabel } from '@/core/utils/helpers/property';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
 
@@ -192,55 +194,59 @@ export default function ChatsInboxScreen() {
               </TouchableOpacity>
             </View>
 
-            <FlatList
-              data={displayedChats}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              ListEmptyComponent={EmptyChatState}
-              refreshing={isLoading}
-              onRefresh={() => loadConversations(1, true)}
-              renderItem={({ item }) => {
-                const displayLastMessage = item.lastMessage
-                  ? item.lastMessage.type === 'IMAGE'
-                    ? '📷 صورة'
-                    : item.lastMessage.type === 'PROPERTY'
-                      ? '🏠 مشاركة عقار'
-                      : item.lastMessage.content || ''
-                  : 'بدء المحادثة';
+            {isLoading && conversations.length === 0 ? (
+              <ChatListSkeleton count={6} />
+            ) : (
+              <FlatList
+                data={displayedChats}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                ListEmptyComponent={EmptyChatState}
+                refreshing={isLoading}
+                onRefresh={() => loadConversations(1, true)}
+                renderItem={({ item }) => {
+                  const displayLastMessage = item.lastMessage
+                    ? item.lastMessage.type === 'IMAGE'
+                      ? '📷 صورة'
+                      : item.lastMessage.type === 'PROPERTY'
+                        ? '🏠 مشاركة عقار'
+                        : item.lastMessage.content || ''
+                    : 'بدء المحادثة';
 
-                const timestampText = item.lastMessage
-                  ? new Date(item.lastMessage.createdAt).toLocaleTimeString(
-                      'ar-KW',
-                      {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      },
-                    )
-                  : '';
+                  const timestampText = item.lastMessage
+                    ? new Date(item.lastMessage.createdAt).toLocaleTimeString(
+                        'ar-KW',
+                        {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        },
+                      )
+                    : '';
 
-                return (
-                  <ChatListItem
-                    id={item.id}
-                    user={{
-                      name: item.otherUser.name,
-                      avatarUrl: item.otherUser.avatarUrl,
-                      isOnline: false,
-                    }}
-                    propertyContext={
-                      item.propertyContext
-                        ? `${item.propertyContext.category}`
-                        : undefined
-                    }
-                    lastMessage={displayLastMessage}
-                    timestamp={timestampText}
-                    unreadCount={item.unreadCount}
-                    onPress={() => router.push(`/chat/${item.id}`)}
-                  />
-                );
-              }}
-            />
+                  return (
+                    <ChatListItem
+                      id={item.id}
+                      user={{
+                        name: item.otherUser.name,
+                        avatarUrl: item.otherUser.avatarUrl,
+                        isOnline: false,
+                      }}
+                      propertyContext={
+                        item.propertyContext
+                          ? getArabicCategoryLabel(item.propertyContext.category)
+                          : undefined
+                      }
+                      lastMessage={displayLastMessage}
+                      timestamp={timestampText}
+                      unreadCount={item.unreadCount}
+                      onPress={() => router.push(`/chat/${item.id}`)}
+                    />
+                  );
+                }}
+              />
+            )}
           </>
         )}
       </ContentContainer>

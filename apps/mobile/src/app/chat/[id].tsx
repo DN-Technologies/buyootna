@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -19,9 +19,14 @@ import MessageBubble from '@/core/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/core/components/chat/PropertyMessageBubble';
 import ContentContainer from '@/core/components/ContentContainer';
 import { socketService } from '@/core/services/socket.service';
+import {
+  getArabicCategoryLabel,
+  getArabicTypeLabel,
+} from '@/core/utils/helpers/property';
 import { useChatStore } from '@/store/useChatStore';
 
 export default function ChatDetailsScreen() {
+  const router = useRouter();
   const { id } = useLocalSearchParams();
   const conversationId = typeof id === 'string' ? id : id[0];
 
@@ -123,8 +128,9 @@ export default function ChatDetailsScreen() {
             timestamp={item.timestamp}
             isRead={!item.sending}
             onPressProperty={() => {
-              if (item.propertyId) {
-                // Navigate to property details
+              const propId = item.propertyId || item.property?.id || propertyContext?.id;
+              if (propId) {
+                router.push(`/property/${propId}`);
               }
             }}
           />
@@ -184,21 +190,26 @@ export default function ChatDetailsScreen() {
 
           {propertyContext && showPinnedContext && (
             <ChatPinnedContext
-              title={`${propertyContext.category}`}
-              badgeText={
-                propertyContext.type === 'SALE'
-                  ? 'للبيع'
-                  : propertyContext.type === 'RENT'
-                    ? 'للإيجار'
-                    : 'للبدل'
+              imageUrl={propertyContext.imageUrl}
+              title={
+                propertyContext.location
+                  ? `${getArabicCategoryLabel(propertyContext.category)} بـ ${propertyContext.location}`
+                  : getArabicCategoryLabel(propertyContext.category) || 'عقار'
               }
+              badgeText={getArabicTypeLabel(propertyContext.type)}
               price={
                 propertyContext.price && propertyContext.price > 0
                   ? `${propertyContext.price.toLocaleString()} د.ك`
-                  : propertyContext.type === 'EXCHANGE'
+                  : propertyContext.type === 'EXCHANGE' || propertyContext.type === 'للبدل'
                     ? 'للبدل'
                     : 'السعر غير معلن'
               }
+              area={propertyContext.area ? `${propertyContext.area} م²` : undefined}
+              onPress={() => {
+                if (propertyContext.id) {
+                  router.push(`/property/${propertyContext.id}`);
+                }
+              }}
               onDismiss={() => setShowPinnedContext(false)}
             />
           )}

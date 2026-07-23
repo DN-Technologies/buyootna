@@ -3,6 +3,7 @@ import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
+import { getArabicTypeLabel } from '@/core/utils/helpers/property';
 
 interface PropertyContextProps {
   property: {
@@ -44,7 +45,7 @@ export default function PropertyMessageBubble({
           {/* Type and Area */}
           {(property.type || property.area) && (
             <Text className="font-cairo-medium text-[13px] text-[#15304D]">
-              {property.type}
+              {getArabicTypeLabel(property.type)}
               {property.type && property.area ? ' • ' : ''}
               {property.area ? `${property.area} م` : ''}
             </Text>

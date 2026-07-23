@@ -237,9 +237,7 @@ export default function ActivityScreen() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-  const handleOpenOptions = (propertyId: string) => {
-    console.log('Open options for:', propertyId);
-  };
+
 
   const handleEditAd = (propertyId: string) => {
     console.log('Edit ad:', propertyId);
@@ -260,7 +258,7 @@ export default function ActivityScreen() {
   };
 
   const handleFeatureSuccess = () => {
-    triggerToast('تم تمييز اعلانك', 'التميز نشط حتى 25 مايو');
+    triggerToast('تم تمييز إعلانك بنجاح', 'تم تفعيل التميز لهذا الإعلان');
     refetch();
   };
 

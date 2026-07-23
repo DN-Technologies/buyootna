@@ -16,8 +16,10 @@ export const formatTimeAgo = (dateStr: string): string => {
   }
 };
 
-export const getArabicTypeLabel = (type: 'SALE' | 'RENT' | 'EXCHANGE'): string => {
-  switch (type) {
+export const getArabicTypeLabel = (type?: string | null): string => {
+  if (!type) return '';
+  const key = type.toUpperCase();
+  switch (key) {
     case 'SALE':
       return 'للبيع';
     case 'RENT':
@@ -25,12 +27,34 @@ export const getArabicTypeLabel = (type: 'SALE' | 'RENT' | 'EXCHANGE'): string =
     case 'EXCHANGE':
       return 'للبدل';
     default:
-      return '';
+      return type;
   }
 };
 
-export const getArabicCategoryLabel = (cat: string): string => {
-  switch (cat) {
+export const getArabicCategoryLabel = (cat?: string | null): string => {
+  if (!cat) return '';
+  const key = cat.toUpperCase();
+  switch (key) {
+    case 'APARTMENT':
+      return 'شقة';
+    case 'HOUSE':
+      return 'بيت';
+    case 'VILLA':
+      return 'فيلا';
+    case 'DUPLIX':
+      return 'دوبلكس';
+    case 'LAND':
+      return 'أرض';
+    case 'BUILDING':
+      return 'عمارة';
+    case 'OFFICE':
+      return 'مكتب';
+    case 'CHALET':
+      return 'شاليه';
+    case 'FARM':
+      return 'مزرعة';
+    case 'REST_HOUSE':
+      return 'استراحة';
     case 'RESIDENTIAL':
       return 'عقار سكني';
     case 'COMMERCIAL':
@@ -38,6 +62,6 @@ export const getArabicCategoryLabel = (cat: string): string => {
     case 'INVESTMENT':
       return 'عقار استثماري';
     default:
-      return 'عقار';
+      return cat;
   }
 };

@@ -4,6 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { Prisma, Property } from '@prisma/client';
 import { SendMessageDto } from './dto/send-message.dto';
 
 @Injectable()
@@ -28,10 +29,20 @@ export class ChatService {
       throw new NotFoundException('المستلم غير موجود');
     }
 
-    // Find conversation with these exact two participants (and same optional property context)
+    // Verify property exists if propertyId is provided
+    let validPropertyId: string | null = null;
+    if (propertyId) {
+      const prop = await this.prisma.property.findUnique({
+        where: { id: propertyId },
+      });
+      if (prop) {
+        validPropertyId = propertyId;
+      }
+    }
+
+    // Find conversation with these exact two participants
     const existingConversations = await this.prisma.conversation.findMany({
       where: {
-        propertyId: propertyId || null,
         AND: [
           { participants: { some: { userId } } },
           { participants: { some: { userId: recipientId } } },
@@ -43,26 +54,35 @@ export class ChatService {
     });
 
     // Check if there is one that has exactly 2 participants
-    const conversation = existingConversations.find(
+    let conversation = existingConversations.find(
       (c) => c.participants.length === 2,
     );
 
     if (conversation) {
-      return conversation;
+      // If conversation already exists and a validPropertyId is passed, update propertyId context
+      if (validPropertyId && conversation.propertyId !== validPropertyId) {
+        conversation = await this.prisma.conversation.update({
+          where: { id: conversation.id },
+          data: { propertyId: validPropertyId, updatedAt: new Date() },
+          include: { participants: true },
+        });
+      }
+    } else {
+      // Otherwise, create a new conversation
+      conversation = await this.prisma.conversation.create({
+        data: {
+          propertyId: validPropertyId,
+          participants: {
+            create: [{ userId }, { userId: recipientId }],
+          },
+        },
+        include: {
+          participants: true,
+        },
+      });
     }
 
-    // Otherwise, create a new conversation
-    return this.prisma.conversation.create({
-      data: {
-        propertyId: propertyId || null,
-        participants: {
-          create: [{ userId }, { userId: recipientId }],
-        },
-      },
-      include: {
-        participants: true,
-      },
-    });
+    return conversation;
   }
 
   // List all conversations for the user
@@ -74,6 +94,9 @@ export class ChatService {
         participants: {
           some: { userId },
         },
+        messages: {
+          some: {},
+        },
       },
       include: {
         property: {
@@ -83,6 +106,8 @@ export class ChatService {
             category: true,
             images: true,
             price: true,
+            areaSize: true,
+            location: true,
           },
         },
         participants: {
@@ -118,73 +143,83 @@ export class ChatService {
       take: limit,
     });
 
-    const formattedConversations = conversations.map((conv) => {
-      // Find the participant that is NOT the current user
-      const otherPart = conv.participants.find((p) => p.userId !== userId);
-      const otherUser = otherPart?.user;
+    const formattedConversations = await Promise.all(
+      conversations.map(async (conv) => {
+        // Find the participant that is NOT the current user
+        const otherPart = conv.participants.find((p) => p.userId !== userId);
+        const otherUser = otherPart?.user;
 
-      const otherUserName = otherUser?.officeProfile
-        ? otherUser.officeProfile.name
-        : otherUser?.companyProfile
-          ? otherUser.companyProfile.name
-          : otherUser?.email
-            ? otherUser.email.split('@')[0]
-            : 'مستخدم بيوتنا';
+        const otherUserName = otherUser?.officeProfile
+          ? otherUser.officeProfile.name
+          : otherUser?.companyProfile
+            ? otherUser.companyProfile.name
+            : otherUser?.email
+              ? otherUser.email.split('@')[0]
+              : 'مستخدم بيوتنا';
 
-      const otherUserAvatar =
-        otherUser?.officeProfile?.logoUrl ||
-        otherUser?.companyProfile?.logoUrl ||
-        'https://via.placeholder.com/150';
+        const otherUserAvatar =
+          otherUser?.officeProfile?.logoUrl ||
+          otherUser?.companyProfile?.logoUrl ||
+          'https://via.placeholder.com/150';
 
-      const lastMessage = conv.messages[0];
-      const myParticipantRecord = conv.participants.find(
-        (p) => p.userId === userId,
-      );
+        const lastMessage = conv.messages[0];
+        const myParticipantRecord = conv.participants.find(
+          (p) => p.userId === userId,
+        );
 
-      // Unread count is count of messages sent by someone else after our lastReadAt
-      const unreadCount = conv.messages.filter(
-        (msg) =>
-          msg.senderId !== userId &&
-          (!myParticipantRecord?.lastReadAt ||
-            msg.createdAt > myParticipantRecord.lastReadAt),
-      ).length;
+        // Calculate accurate unread count from db
+        const unreadCount = await this.prisma.message.count({
+          where: {
+            conversationId: conv.id,
+            senderId: { not: userId },
+            ...(myParticipantRecord?.lastReadAt
+              ? { createdAt: { gt: myParticipantRecord.lastReadAt } }
+              : {}),
+          },
+        });
 
-      return {
-        id: conv.id,
-        createdAt: conv.createdAt,
-        updatedAt: conv.updatedAt,
-        otherUser: {
-          id: otherUser?.id || '',
-          name: otherUserName,
-          avatarUrl: otherUserAvatar,
-        },
-        propertyContext: conv.property
-          ? {
-              id: conv.property.id,
-              type: conv.property.type,
-              category: conv.property.category,
-              imageUrl:
-                conv.property.images[0] || 'https://via.placeholder.com/150',
-              price: conv.property.price,
-            }
-          : null,
-        lastMessage: lastMessage
-          ? {
-              id: lastMessage.id,
-              content: lastMessage.content,
-              type: lastMessage.type,
-              createdAt: lastMessage.createdAt,
-              isMine: lastMessage.senderId === userId,
-            }
-          : null,
-        unreadCount,
-      };
-    });
+        return {
+          id: conv.id,
+          createdAt: conv.createdAt,
+          updatedAt: conv.updatedAt,
+          otherUser: {
+            id: otherUser?.id || '',
+            name: otherUserName,
+            avatarUrl: otherUserAvatar,
+          },
+          propertyContext: conv.property
+            ? {
+                id: conv.property.id,
+                type: conv.property.type,
+                category: conv.property.category,
+                imageUrl:
+                  conv.property.images[0] || 'https://via.placeholder.com/150',
+                price: conv.property.price,
+                area: conv.property.areaSize ?? undefined,
+                location: conv.property.location,
+              }
+            : null,
+          lastMessage: lastMessage
+            ? {
+                id: lastMessage.id,
+                content: lastMessage.content,
+                type: lastMessage.type,
+                createdAt: lastMessage.createdAt,
+                isMine: lastMessage.senderId === userId,
+              }
+            : null,
+          unreadCount,
+        };
+      }),
+    );
 
     const total = await this.prisma.conversation.count({
       where: {
         participants: {
           some: { userId },
+        },
+        messages: {
+          some: {},
         },
       },
     });
@@ -221,7 +256,27 @@ export class ChatService {
       throw new ForbiddenException('ليس لديك صلاحية لعرض هذه المحادثة');
     }
 
-    const queryOptions: any = {
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: {
+        property: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                phone: true,
+                companyProfile: { select: { name: true, logoUrl: true } },
+                officeProfile: { select: { name: true, logoUrl: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const queryOptions: Prisma.MessageFindManyArgs = {
       where: { conversationId },
       orderBy: { createdAt: 'desc' },
       take: limit + 1, // Take one extra to check if there is a next page
@@ -242,6 +297,23 @@ export class ChatService {
       nextCursor = nextItem?.id;
     }
 
+    const prop = conversation?.property;
+    const otherPart = conversation?.participants.find(
+      (p) => p.userId !== userId,
+    );
+    const otherUser = otherPart?.user;
+    const otherUserName = otherUser?.officeProfile
+      ? otherUser.officeProfile.name
+      : otherUser?.companyProfile
+        ? otherUser.companyProfile.name
+        : otherUser?.email
+          ? otherUser.email.split('@')[0]
+          : 'مستخدم بيوتنا';
+    const otherUserAvatar =
+      otherUser?.officeProfile?.logoUrl ||
+      otherUser?.companyProfile?.logoUrl ||
+      'https://via.placeholder.com/150';
+
     return {
       data: messages.reverse().map((msg) => ({
         id: msg.id,
@@ -249,6 +321,20 @@ export class ChatService {
         content: msg.content,
         imageUrl: msg.imageUrl,
         propertyId: msg.propertyId,
+        property:
+          (msg.propertyId || msg.type === 'PROPERTY') && prop
+            ? {
+                id: prop.id,
+                imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+                price: prop.price,
+                title: `${prop.category} ${prop.type}`,
+                type: prop.type,
+                area: prop.areaSize ?? undefined,
+                bedrooms: prop.beds ?? undefined,
+                bathrooms: prop.baths ?? undefined,
+                location: prop.location,
+              }
+            : undefined,
         isMine: msg.senderId === userId,
         timestamp: this.formatTime(msg.createdAt),
         createdAt: msg.createdAt,
@@ -256,6 +342,24 @@ export class ChatService {
       meta: {
         nextCursor,
         hasNextPage,
+        propertyContext: prop
+          ? {
+              id: prop.id,
+              type: prop.type,
+              category: prop.category,
+              imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+              price: prop.price,
+              area: prop.areaSize ?? undefined,
+              location: prop.location,
+            }
+          : null,
+        otherUser: otherUser
+          ? {
+              id: otherUser.id,
+              name: otherUserName,
+              avatarUrl: otherUserAvatar,
+            }
+          : null,
       },
     };
   }
@@ -293,13 +397,23 @@ export class ChatService {
         },
       });
 
-      // 2. Update conversation updatedAt so it floats to top
+      // 2. Fetch conversation property context if message relates to property
+      let prop: Property | null = null;
+      if (dto.propertyId || message.type === 'PROPERTY') {
+        const conv = await tx.conversation.findUnique({
+          where: { id: conversationId },
+          include: { property: true },
+        });
+        prop = conv?.property ?? null;
+      }
+
+      // 3. Update conversation updatedAt so it floats to top
       await tx.conversation.update({
         where: { id: conversationId },
         data: { updatedAt: new Date() },
       });
 
-      // 3. Auto mark as read for sender
+      // 4. Auto mark as read for sender
       await tx.conversationParticipant.update({
         where: {
           conversationId_userId: {
@@ -316,6 +430,19 @@ export class ChatService {
         content: message.content,
         imageUrl: message.imageUrl,
         propertyId: message.propertyId,
+        property: prop
+          ? {
+              id: prop.id,
+              imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+              price: prop.price,
+              title: `${prop.category} ${prop.type}`,
+              type: prop.type,
+              area: prop.areaSize ?? undefined,
+              bedrooms: prop.beds ?? undefined,
+              bathrooms: prop.baths ?? undefined,
+              location: prop.location,
+            }
+          : undefined,
         senderId,
         timestamp: this.formatTime(message.createdAt),
         createdAt: message.createdAt,

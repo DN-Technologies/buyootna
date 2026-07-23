@@ -12,6 +12,8 @@ export interface PropertyContext {
   category: string;
   imageUrl: string;
   price: number;
+  area?: number;
+  location?: string;
 }
 
 export interface ConversationSummary {
@@ -36,6 +38,18 @@ export interface ChatMessage {
   content?: string;
   imageUrl?: string;
   propertyId?: string;
+  property?: {
+    id: string;
+    imageUrl: string;
+    price?: number | null;
+    title: string;
+    type?: string;
+    area?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    specs?: string;
+    location: string;
+  };
   isMine: boolean;
   senderId?: string;
   timestamp: string;
@@ -58,6 +72,8 @@ export interface GetMessagesResponse {
   meta: {
     nextCursor?: string;
     hasNextPage: boolean;
+    propertyContext?: PropertyContext | null;
+    otherUser?: ChatParticipant | null;
   };
 }
 

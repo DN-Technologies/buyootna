@@ -48,20 +48,7 @@ export default function PlansScreen() {
     }
   };
 
-  const parseQueryParams = (url: string) => {
-    const params: Record<string, string> = {};
-    const queryString = url.split('?')[1];
-    if (queryString) {
-      const pairs = queryString.split('&');
-      for (const pair of pairs) {
-        const [key, value] = pair.split('=');
-        if (key && value) {
-          params[decodeURIComponent(key)] = decodeURIComponent(value);
-        }
-      }
-    }
-    return params;
-  };
+
 
   const handleBuyPlan = async (planSlug: string) => {
     if (planSlug === 'regular') {

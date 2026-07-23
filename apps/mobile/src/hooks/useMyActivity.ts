@@ -23,6 +23,7 @@ export interface ActivityItem {
   areaSize?: number | null;
   floors?: number | null;
   views?: number;
+  features?: any[] | null;
 }
 
 export interface SubscriptionInfo {

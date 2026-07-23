@@ -73,15 +73,51 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({ isLoadingMessages: true });
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
-        set((state) => ({
-          activeMessages:
-            cursor && !shouldRefresh
-              ? [...res.data, ...state.activeMessages]
-              : res.data,
-          hasNextMessagesPage: res.meta.hasNextPage,
-          nextMessagesCursor: res.meta.nextCursor,
-          isLoadingMessages: false,
-        }));
+        set((state) => {
+          let updatedConversations = state.conversations;
+
+          if (res.meta.otherUser || res.meta.propertyContext) {
+            const existingIndex = state.conversations.findIndex(
+              (c) => c.id === conversationId,
+            );
+
+            if (existingIndex > -1) {
+              updatedConversations = [...state.conversations];
+              updatedConversations[existingIndex] = {
+                ...updatedConversations[existingIndex],
+                propertyContext:
+                  res.meta.propertyContext !== undefined
+                    ? res.meta.propertyContext
+                    : updatedConversations[existingIndex].propertyContext,
+                otherUser:
+                  res.meta.otherUser ??
+                  updatedConversations[existingIndex].otherUser,
+              };
+            } else if (res.meta.otherUser) {
+              const newConv: ConversationSummary = {
+                id: conversationId,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                otherUser: res.meta.otherUser,
+                propertyContext: res.meta.propertyContext || null,
+                lastMessage: null,
+                unreadCount: 0,
+              };
+              updatedConversations = [newConv, ...state.conversations];
+            }
+          }
+
+          return {
+            conversations: updatedConversations,
+            activeMessages:
+              cursor && !shouldRefresh
+                ? [...res.data, ...state.activeMessages]
+                : res.data,
+            hasNextMessagesPage: res.meta.hasNextPage,
+            nextMessagesCursor: res.meta.nextCursor,
+            isLoadingMessages: false,
+          };
+        });
       } catch (error) {
         console.error('Failed to load messages:', error);
         set({ isLoadingMessages: false });

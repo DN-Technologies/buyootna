@@ -33,6 +33,7 @@ import ProfileBottomSheet, {
 } from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useChatStore } from '@/store/useChatStore';
 
 const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="info" color={color} size={size} />
@@ -55,6 +56,14 @@ export default function ProfileDashboardScreen() {
   const { user, token, logout, refreshProfile } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
 
+  const conversations = useChatStore((state) => state.conversations);
+  const loadConversations = useChatStore((state) => state.loadConversations);
+
+  const unreadChatCount = conversations.reduce(
+    (acc, conv) => acc + (conv.unreadCount || 0),
+    0,
+  );
+
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
 
@@ -63,8 +72,9 @@ export default function ProfileDashboardScreen() {
     useCallback(() => {
       if (token) {
         refreshProfile();
+        loadConversations(1);
       }
-    }, [refreshProfile, token]),
+    }, [refreshProfile, token, loadConversations]),
   );
 
   if (!token) {
@@ -408,7 +418,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={ChatIcon}
                   title="المحادثات"
-                  badgeCount={3}
+                  badgeCount={unreadChatCount}
                   onPress={() => router.push('/chat')}
                 />
                 <MenuItem

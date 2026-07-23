@@ -15,5 +15,5 @@ export function useProtectedRoute(user: any, isLoading: boolean) {
     if (user && inAuthGroup) {
       router.replace('/(main)/home');
     }
-  }, [user, segments, isLoading]);
+  }, [user, segments, isLoading, router]);
 }

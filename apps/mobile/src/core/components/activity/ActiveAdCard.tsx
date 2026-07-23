@@ -97,7 +97,7 @@ export default function ActiveAdCard({
         {property.isPremium && (
           <View className="absolute left-4 top-4 rounded-lg bg-[#FA9E1B] px-3 py-1.5 shadow-sm">
             <Text className="font-cairo-bold text-[11px] text-[#111111]">
-              التميز نشط حتى 25 مايو
+              إعلان مميز
             </Text>
           </View>
         )}

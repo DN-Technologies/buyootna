@@ -30,6 +30,7 @@ import {
   getArabicTypeLabel,
 } from '@/core/utils/helpers/property';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -39,6 +40,7 @@ export default function PropertyDetailsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { guardAction, authSheetRef } = useAuthGuard();
+  const { user } = useAuthStore();
 
   // --- Real State Management ---
   const [property, setProperty] = useState<PropertyDetailsDto | null>(null);
@@ -90,15 +92,23 @@ export default function PropertyDetailsScreen() {
   const handleChat = () => {
     if (!property) return;
     guardAction(async () => {
+      if (user && property.host && user.id === property.host.id) {
+        Alert.alert('تنبيه', 'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.');
+        return;
+      }
       try {
         const response = await chatService.createConversation(
           property.host.id,
           property.id,
         );
         router.push(`/chat/${response.id}`);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to start chat conversation:', error);
-        Alert.alert('خطأ', 'تعذر بدء المحادثة مع البائع');
+        const backendMsg = error?.response?.data?.message;
+        const msg = Array.isArray(backendMsg)
+          ? backendMsg.join('\n')
+          : backendMsg || 'تعذر بدء المحادثة مع البائع';
+        Alert.alert('تنبيه', msg);
       }
     });
   };
@@ -249,16 +259,26 @@ export default function PropertyDetailsScreen() {
             <PropertyDetailsBody
               type={property.type}
               description={property.description}
-              features={['شارع واحد', 'مصعد', 'جراج']} // fallback features
-              exchangeRequirement={undefined}
+              features={
+                property.features && property.features.length > 0
+                  ? property.features.map((f: any) =>
+                      typeof f === 'string' ? f : f.label || f.name || f.id,
+                    )
+                  : []
+              }
+              exchangeRequirement={
+                property.type === 'EXCHANGE'
+                  ? property.description
+                  : undefined
+              }
               additionalCosts={
                 property.type === 'RENT'
-                  ? 'الكهرباء والماء: على المستأجر (غير مشمولة في الإيجار).\nالإنترنت: متوفر اشتراك فايبر (يتحمله المستأجر).'
+                  ? property.additionalExpenses || undefined
                   : undefined
               }
               rentTerms={
                 property.type === 'RENT'
-                  ? 'الفئة المستهدفة: عائلات فقط.\nمدة العقد: سنة واحدة (تجدد تلقائياً).\nالتأمين: مطلوب تأمين نصف شهر (مسترد عند الإخلاء).'
+                  ? property.rentConditions || undefined
                   : undefined
               }
             />

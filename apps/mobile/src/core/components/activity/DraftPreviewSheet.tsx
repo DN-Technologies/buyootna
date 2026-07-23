@@ -152,7 +152,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
               {property.isPremium && (
                 <View className="absolute left-4 top-4 rounded-lg bg-[#FA9E1B] px-3 py-1.5 shadow-sm">
                   <Text className="font-cairo-bold text-[11px] text-[#111111]">
-                    التميز نشط حتى 25 مايو
+                    إعلان مميز
                   </Text>
                 </View>
               )}
@@ -186,7 +186,9 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Area size */}
             <View className="flex-1 flex-row items-center justify-center gap-1.5">
               <AreaIcon size={16} color="#6B6A6A" />
-              <Text className="font-cairo leading-[22px] text-sm text-[#111111]">200 م٢</Text>
+              <Text className="font-cairo leading-[22px] text-sm text-[#111111]">
+                {property.areaSize ? `${property.areaSize} م²` : '-'}
+              </Text>
             </View>
 
             <View className="h-4 w-[1px] bg-gray-200" />
@@ -194,7 +196,9 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Floor number */}
             <View className="flex-1 flex-row items-center justify-center gap-1.5">
               <FloorIcon size={16} color="#6B6A6A" />
-              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">4 دور</Text>
+              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+                {property.floors !== undefined && property.floors !== null ? `${property.floors} دور` : '-'}
+              </Text>
             </View>
 
             <View className="h-4 w-[1px] bg-gray-200" />
@@ -202,7 +206,9 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Bedrooms count */}
             <View className="flex-1 flex-row items-center justify-center gap-1.5">
               <BedIcon size={16} color="#6B6A6A" />
-              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">3 غرف</Text>
+              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+                {property.beds !== undefined && property.beds !== null ? `${property.beds} غرف` : '-'}
+              </Text>
             </View>
 
             <View className="h-4 w-[1px] bg-gray-200" />
@@ -210,7 +216,9 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Bathrooms count */}
             <View className="flex-1 flex-row items-center justify-center gap-1.5">
               <BathIcon size={16} color="#6B6A6A" />
-              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">2 حمام</Text>
+              <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+                {property.baths !== undefined && property.baths !== null ? `${property.baths} حمام` : '-'}
+              </Text>
             </View>
           </View>
 
@@ -224,37 +232,44 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             <View className="flex-row items-center gap-1.5">
               <LocationIcon size={18} color="#15304D" />
               <Text className="font-cairo leading-[22px] text-sm text-[#111111] text-right">
-                {property.location || 'السالمية، شارع 2، بناية 10، شقة 4'}
+                {property.location || '-'}
               </Text>
             </View>
           </View>
 
           {/* Features Row */}
-          <View className="px-6 mb-4">
-            <Text className="font-cairo-semibold text-xs text-[#6B6A6A] mb-2"
-            style={{writingDirection: "rtl"}}
-            >
-              مزايا العقار
-            </Text>
-            <View className="flex-row flex-wrap gap-2">
-              {['جراج', 'مصعد', 'شارع واحد'].map((tag) => (
-                <View
-                  key={tag}
-                  className="rounded-lg bg-[#F8FAFC] border border-gray-100 px-3 py-1"
-                >
-                  <Text className="font-cairo text-xs leading-[22px] text-[#111111]">{tag}</Text>
-                </View>
-              ))}
+          {property.features && property.features.length > 0 && (
+            <View className="px-6 mb-4">
+              <Text className="font-cairo-semibold text-xs text-[#6B6A6A] mb-2"
+              style={{writingDirection: "rtl"}}
+              >
+                مزايا العقار
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {property.features.map((feature: any, idx: number) => {
+                  const label = typeof feature === 'string' ? feature : feature.label || feature.name || feature.id;
+                  return (
+                    <View
+                      key={idx}
+                      className="rounded-lg bg-[#F8FAFC] border border-gray-100 px-3 py-1"
+                    >
+                      <Text className="font-cairo text-xs leading-[22px] text-[#111111]">{label}</Text>
+                    </View>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* License Badge Row */}
-          <View className="px-6 mb-4 flex-row items-center gap-1.5">
-            <LicenseIcon size={16} color="#6B6A6A" />
-            <Text className="font-cairo text-xs leading-[22px] text-[#6B6A6A]">
-              رقم الرخصة {property.automatedNumber || '2454685'}
-            </Text>
-          </View>
+          {property.automatedNumber && (
+            <View className="px-6 mb-4 flex-row items-center gap-1.5">
+              <LicenseIcon size={16} color="#6B6A6A" />
+              <Text className="font-cairo text-xs leading-[22px] text-[#6B6A6A]">
+                رقم الآلي للعقار {property.automatedNumber}
+              </Text>
+            </View>
+          )}
 
           {/* Description Block */}
           <View className="px-6 mb-6">
