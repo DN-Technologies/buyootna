@@ -28,27 +28,37 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
   web-landing:
-    build: ./apps/web/landing
+    build:
+      context: .
+      dockerfile: apps/web/landing/Dockerfile
     expose: ["3001"]
     restart: always
 
   web-companies:
-    build: ./apps/web/companies
+    build:
+      context: .
+      dockerfile: apps/web/companies/Dockerfile
     expose: ["3002"]
     restart: always
 
   web-offices:
-    build: ./apps/web/offices
+    build:
+      context: .
+      dockerfile: apps/web/offices/Dockerfile
     expose: ["3003"]
     restart: always
 
   web-management:
-    build: ./apps/web/management
+    build:
+      context: .
+      dockerfile: apps/web/management/Dockerfile
     expose: ["3004"]
     restart: always
 
   web-admin:
-    build: ./apps/web/admin
+    build:
+      context: .
+      dockerfile: apps/web/admin/Dockerfile
     expose: ["3005"]
     restart: always
 
