@@ -1,12 +1,122 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Download, Plus } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle, Button } from '@buyootna/ui'
 import PageHeader from '@/components/PageHeader'
 import StatCard from '@/components/StatCard'
+import UserTabs, { UserCategoryTab } from '@/components/users/UserTabs'
+import UserTableFilters from '@/components/users/UserTableFilters'
+import UserTable, { UserRow } from '@/components/users/UserTable'
+import UserPagination from '@/components/users/UserPagination'
+
+const INITIAL_USERS: UserRow[] = [
+  {
+    id: '1',
+    name: 'أحمد سعيد',
+    email: 'Ahmed@gmail.com',
+    accountType: 'فرد',
+    verificationStatus: '—',
+    subscriptionPlan: 'الفضية',
+    accountStatus: 'محظور',
+    registrationDate: '5 ابريل 2026',
+  },
+  {
+    id: '2',
+    name: 'دار العقار الحديث',
+    email: 'dar@gmail.com',
+    accountType: 'شركة',
+    verificationStatus: 'غير موثق',
+    subscriptionPlan: 'السنوية',
+    accountStatus: 'نشط',
+    registrationDate: 'منذ ساعتين',
+  },
+  {
+    id: '3',
+    name: 'دار العقار الحديث',
+    email: 'dar@gmail.com',
+    accountType: 'شركة',
+    verificationStatus: 'موثق',
+    subscriptionPlan: 'الفضية',
+    accountStatus: 'نشط',
+    registrationDate: 'منذ ساعتين',
+  },
+  {
+    id: '4',
+    name: 'دار العقار الحديث',
+    email: 'dar@gmail.com',
+    accountType: 'شركة',
+    verificationStatus: 'قيد الانتظار',
+    subscriptionPlan: 'الفضية',
+    accountStatus: 'نشط',
+    registrationDate: 'منذ ساعتين',
+  },
+  {
+    id: '5',
+    name: 'دار العقار الحديث',
+    email: 'dar@gmail.com',
+    accountType: 'شركة',
+    verificationStatus: 'غير موثق',
+    subscriptionPlan: 'الفضية',
+    accountStatus: 'نشط',
+    registrationDate: 'منذ ساعتين',
+  },
+  {
+    id: '6',
+    name: 'أحمد سعيد',
+    email: 'Ahmed@gmail.com',
+    accountType: 'فرد',
+    verificationStatus: '—',
+    subscriptionPlan: 'الفضية',
+    accountStatus: 'نشط',
+    registrationDate: '5 ابريل 2026',
+  },
+  {
+    id: '7',
+    name: 'أحمد سعيد',
+    email: 'Ahmed@gmail.com',
+    accountType: 'فرد',
+    verificationStatus: '—',
+    subscriptionPlan: 'العادية',
+    accountStatus: 'نشط',
+    registrationDate: 'منذ ساعتين',
+  },
+  {
+    id: '8',
+    name: 'المنار',
+    email: 'almanar@gmail.com',
+    accountType: 'مكتب عقاري',
+    verificationStatus: 'قيد الانتظار',
+    subscriptionPlan: 'العادية',
+    accountStatus: 'موقوف',
+    registrationDate: '5 ابريل 2026',
+  },
+  {
+    id: '9',
+    name: 'المنار',
+    email: 'almanar@gmail.com',
+    accountType: 'مكتب عقاري',
+    verificationStatus: 'موثق',
+    subscriptionPlan: 'الذهبية',
+    accountStatus: 'موقوف',
+    registrationDate: '5 ابريل 2026',
+  },
+  {
+    id: '10',
+    name: 'المنار',
+    email: 'almanar@gmail.com',
+    accountType: 'مكتب عقاري',
+    verificationStatus: 'موثق',
+    subscriptionPlan: 'الذهبية',
+    accountStatus: 'موقوف',
+    registrationDate: '5 ابريل 2026',
+  },
+]
 
 export default function UsersPage() {
+  const [activeTab, setActiveTab] = useState<UserCategoryTab>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+
   const handleAddUser = () => {
     alert('إضافة مستخدم جديد')
   }
@@ -15,8 +125,26 @@ export default function UsersPage() {
     alert('جاري تصدير بيانات إدارة المستخدمين...')
   }
 
+  // Filter logic based on active tab and search query
+  const filteredUsers = INITIAL_USERS.filter((user) => {
+    // Tab filter
+    if (activeTab === 'individual' && user.accountType !== 'فرد') return false
+    if (activeTab === 'office' && user.accountType !== 'مكتب عقاري') return false
+    if (activeTab === 'company' && user.accountType !== 'شركة') return false
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      const matchName = user.name.toLowerCase().includes(q)
+      const matchEmail = user.email.toLowerCase().includes(q)
+      return matchName || matchEmail
+    }
+
+    return true
+  })
+
   return (
-    <div className="space-y-6 text-right" dir="rtl">
+    <div className="space-y-6 text-right pb-10" dir="rtl">
       {/* Header matching Figma Node 2558-88544 */}
       <PageHeader
         breadcrumbs={['الرئيسية', 'إدارة الحسابات', 'المستخدمون']}
@@ -66,29 +194,34 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* Main Data Content Card */}
-      <Card className="bg-white border-[#ECECEC]">
-        <CardHeader className="border-b border-[#ECECEC] pb-4">
-          <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
-            قائمة البيانات
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-center py-12 text-[#6B6A6A]">
-            <p className="text-sm font-['Cairo'] mb-4">
-              لا توجد بيانات لعرضها حالياً. هذه الصفحة عبارة عن هيكل جاهز
-              للتطوير.
-            </p>
-            <Button
-              variant="outline"
-              onClick={handleAddUser}
-              className="font-['Cairo'] font-semibold text-xs border-[#ECECEC] hover:bg-[#F8F9FA]"
-            >
-              إضافة جديد
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Main Content Area matching Figma Node 2373-3533 */}
+      <div className="bg-white border border-[#ECECEC] rounded-[8px] flex flex-col gap-0 overflow-hidden">
+        {/* Category Tabs */}
+        <UserTabs activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {/* Filter and Search Bar */}
+        <UserTableFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+
+        {/* User Data Table */}
+        <UserTable
+          users={filteredUsers}
+          onViewUser={(user) => alert(`عرض بيانات المستخدم: ${user.name}`)}
+          onActionClick={(user) => alert(`خيارات المستخدم: ${user.name}`)}
+        />
+
+        {/* Pagination Footer */}
+        <UserPagination
+          currentPage={currentPage}
+          totalPages={3}
+          totalItems={100}
+          currentCount={filteredUsers.length}
+          onPageChange={setCurrentPage}
+        />
+      </div>
     </div>
   )
 }
+
