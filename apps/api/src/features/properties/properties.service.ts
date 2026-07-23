@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -30,7 +31,11 @@ export class PropertiesService {
         // 1. Latest 5 properties for SALE
         this.prisma.property.findMany({
           where: { type: 'SALE' },
-          orderBy: { createdAt: 'desc' },
+          orderBy: [
+            { isPriority: 'desc' },
+            { isFeatured: 'desc' },
+            { createdAt: 'desc' },
+          ],
           take: 5,
           include: {
             user: {
@@ -44,7 +49,11 @@ export class PropertiesService {
         // 2. Latest 5 properties for RENT
         this.prisma.property.findMany({
           where: { type: 'RENT' },
-          orderBy: { createdAt: 'desc' },
+          orderBy: [
+            { isPriority: 'desc' },
+            { isFeatured: 'desc' },
+            { createdAt: 'desc' },
+          ],
           take: 5,
           include: {
             user: {
@@ -58,7 +67,11 @@ export class PropertiesService {
         // 3. Latest 5 properties for EXCHANGE
         this.prisma.property.findMany({
           where: { type: 'EXCHANGE' },
-          orderBy: { createdAt: 'desc' },
+          orderBy: [
+            { isPriority: 'desc' },
+            { isFeatured: 'desc' },
+            { createdAt: 'desc' },
+          ],
           take: 5,
           include: {
             user: {
@@ -119,7 +132,11 @@ export class PropertiesService {
         where: whereClause,
         skip: skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [
+          { isPriority: 'desc' },
+          { isFeatured: 'desc' },
+          { createdAt: 'desc' },
+        ],
         include: {
           user: {
             select: {
@@ -152,6 +169,39 @@ export class PropertiesService {
     return Math.floor(1000000 + Math.random() * 9000000);
   }
 
+  private async getUserPlan(userId: string, tx?: Prisma.TransactionClient) {
+    const prismaClient = tx || this.prisma;
+    const user = await prismaClient.user.findUnique({
+      where: { id: userId },
+      include: { activePlan: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    if (user.activePlan) {
+      return { user, plan: user.activePlan };
+    }
+
+    const defaultPlan = await prismaClient.plan.findUnique({
+      where: { slug: 'regular' },
+    });
+
+    const fallbackPlan = defaultPlan || {
+      id: 'regular',
+      slug: 'regular',
+      name: 'العادية',
+      maxActiveAds: 1,
+      durationDays: 10,
+      maxImagesPerAd: 5,
+      featuredDays: 0,
+      prioritySearch: false,
+    };
+
+    return { user, plan: fallbackPlan };
+  }
+
   // --- CREATE ---
   async create(userId: string, dto: CreatePropertyDto) {
     // 1. Separate the meta flag from the actual database fields
@@ -164,25 +214,42 @@ export class PropertiesService {
     // PATH A: PUBLISHING A LIVE AD
     // ==========================================
     if (!isDraft) {
-      // We use a Prisma $transaction. If any part of this fails, the whole rolls back.
       return await this.prisma.$transaction(async (tx) => {
-        // Check the user's remaining free ads
-        const user = await tx.user.findUnique({
-          where: { id: userId },
-          select: { freeAdsRemaining: true },
+        const { user, plan } = await this.getUserPlan(userId, tx);
+
+        // A1: Check max active ads limit
+        const activeAdsCount = await tx.property.count({
+          where: { userId, status: ListingStatus.ACTIVE },
         });
 
-        if (!user) {
-          throw new NotFoundException('المستخدم غير موجود');
-        }
-
-        if (user.freeAdsRemaining <= 0) {
+        if (activeAdsCount >= plan.maxActiveAds && user.freeAdsRemaining <= 0) {
           throw new ForbiddenException(
-            'ليس لديك إعلانات مجانية متبقية. يرجى شراء باقة إعلانية لنشر هذا العقار.',
+            `لقد تجاوزت الحد الأقصى للإعلانات النشطة المسموح بها في باقتك الحالية (${plan.maxActiveAds}). يرجى ترقية باقتك لنشر المزيد من الإعلانات.`,
           );
         }
 
-        // Generate unique reference number inside transaction
+        // A2: Check max images limit
+        if (
+          propertyData.images &&
+          propertyData.images.length > plan.maxImagesPerAd
+        ) {
+          throw new BadRequestException(
+            `باقتك الحالية تسمح بـ ${plan.maxImagesPerAd} صور كحد أقصى لكل إعلان.`,
+          );
+        }
+
+        // A3: Compute publication duration & feature parameters
+        const endDate = new Date(
+          Date.now() + plan.durationDays * 24 * 60 * 60 * 1000,
+        );
+        const isFeatured = plan.featuredDays > 0;
+        const featuredUntil =
+          plan.featuredDays > 0
+            ? new Date(Date.now() + plan.featuredDays * 24 * 60 * 60 * 1000)
+            : null;
+        const isPriority = plan.prioritySearch;
+
+        // Generate unique reference number
         let referenceNumber = 0;
         let isUnique = false;
         while (!isUnique) {
@@ -195,21 +262,27 @@ export class PropertiesService {
           }
         }
 
-        // Create the property
+        // Create property with plan limits applied
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
             referenceNumber,
             status: targetStatus,
             userId: userId,
+            endDate,
+            isFeatured,
+            featuredUntil,
+            isPriority,
           },
         });
 
-        // Deduct 1 from their quota
-        await tx.user.update({
-          where: { id: userId },
-          data: { freeAdsRemaining: { decrement: 1 } },
-        });
+        // Deduct 1 from remaining ads quota if available
+        if (user.freeAdsRemaining > 0) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { freeAdsRemaining: { decrement: 1 } },
+          });
+        }
 
         return {
           message: 'تم إضافة الاعلان بنجاح!',
@@ -269,32 +342,57 @@ export class PropertiesService {
     // ==========================================
     if (isPublishingDraft) {
       return await this.prisma.$transaction(async (tx) => {
-        // Step A1: Check Quota
-        const user = await tx.user.findUnique({
-          where: { id: userId },
-          select: { freeAdsRemaining: true },
+        const { user, plan } = await this.getUserPlan(userId, tx);
+
+        // Step A1: Check max active ads limit
+        const activeAdsCount = await tx.property.count({
+          where: { userId, status: ListingStatus.ACTIVE },
         });
 
-        if (!user || user.freeAdsRemaining <= 0) {
+        if (activeAdsCount >= plan.maxActiveAds && user.freeAdsRemaining <= 0) {
           throw new ForbiddenException(
-            'ليس لديك إعلانات مجانية متبقية. يرجى شراء باقة إعلانية لنشر هذا العقار.',
+            `لقد تجاوزت الحد الأقصى للإعلانات النشطة المسموح بها في باقتك الحالية (${plan.maxActiveAds}). يرجى ترقية باقتك لنشر المزيد من الإعلانات.`,
           );
         }
 
-        // Step A2: Update the property to ACTIVE
+        // Step A2: Check max images limit
+        const imagesToCheck = updateData.images || existingProperty.images;
+        if (imagesToCheck && imagesToCheck.length > plan.maxImagesPerAd) {
+          throw new BadRequestException(
+            `باقتك الحالية تسمح بـ ${plan.maxImagesPerAd} صور كحد أقصى لكل إعلان.`,
+          );
+        }
+
+        // Step A3: Compute publication duration & feature parameters
+        const endDate = new Date(
+          Date.now() + plan.durationDays * 24 * 60 * 60 * 1000,
+        );
+        const isFeatured = plan.featuredDays > 0;
+        const featuredUntil =
+          plan.featuredDays > 0
+            ? new Date(Date.now() + plan.featuredDays * 24 * 60 * 60 * 1000)
+            : null;
+        const isPriority = plan.prioritySearch;
+
+        // Step A4: Update the property to ACTIVE
         const publishedProperty = await tx.property.update({
           where: { id: propertyId },
           data: {
             ...updateData,
             status: ListingStatus.ACTIVE,
+            endDate,
+            isFeatured,
+            featuredUntil,
+            isPriority,
           },
         });
 
-        // Step A3: Deduct Quota
-        await tx.user.update({
-          where: { id: userId },
-          data: { freeAdsRemaining: { decrement: 1 } },
-        });
+        if (user.freeAdsRemaining > 0) {
+          await tx.user.update({
+            where: { id: userId },
+            data: { freeAdsRemaining: { decrement: 1 } },
+          });
+        }
 
         return {
           message: 'تم نشر الإعلان بنجاح!',

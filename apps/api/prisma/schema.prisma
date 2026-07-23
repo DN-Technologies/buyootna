@@ -7,14 +7,14 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(uuid())
-  email             String?            @unique
-  phone             String?            @unique
+  id                String                    @id @default(uuid())
+  email             String?                   @unique
+  phone             String?                   @unique
   password          String
   role              Role
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  freeAdsRemaining  Int                @default(1)
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  freeAdsRemaining  Int                       @default(1)
   companyProfile    CompanyProfile?
   individualProfile IndividualProfile?
   officeProfile     OfficeProfile?
@@ -24,15 +24,17 @@ model User {
   favorites         Favorite[]
   conversations     ConversationParticipant[]
   messages          Message[]
-  
-  name              String?
-  whatsapp          String?
-  avatarUrl         String?
-  isDisabled        Boolean            @default(false)
-  settings          UserSettings?
-  notifPreferences  NotificationPreferences?
-  sessions          Session[]
-  invoices          Invoice[]
+
+  name             String?
+  whatsapp         String?
+  avatarUrl        String?
+  isDisabled       Boolean                  @default(false)
+  settings         UserSettings?
+  notifPreferences NotificationPreferences?
+  sessions         Session[]
+  invoices         Invoice[]
+  activePlanId     String?
+  activePlan       Plan?                    @relation(fields: [activePlanId], references: [id])
 }
 
 model IndividualProfile {
@@ -134,22 +136,22 @@ enum ApprovalStatus {
 }
 
 model UserSettings {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  showPhone     Boolean  @default(true)
-  showWhatsapp  Boolean  @default(true)
-  hideActivity  Boolean  @default(false)
-  hideOfficeAds Boolean  @default(false)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String  @id @default(uuid())
+  userId        String  @unique
+  showPhone     Boolean @default(true)
+  showWhatsapp  Boolean @default(true)
+  hideActivity  Boolean @default(false)
+  hideOfficeAds Boolean @default(false)
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model NotificationPreferences {
-  id           String   @id @default(uuid())
-  userId       String   @unique
-  appEnabled   Boolean  @default(true)
-  emailEnabled Boolean  @default(false)
-  phoneEnabled Boolean  @default(false)
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid())
+  userId       String  @unique
+  appEnabled   Boolean @default(true)
+  emailEnabled Boolean @default(false)
+  phoneEnabled Boolean @default(false)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Session {
@@ -168,19 +170,25 @@ model Session {
 }
 
 model Plan {
-  id            String   @id @default(uuid())
-  slug          String   @unique // 'regular', 'silver', 'gold'
-  name          String // 'العادية', 'الفضية', 'الذهبية'
-  price         Float    @default(0)
-  originalPrice Float?
-  discountText  String?
-  badge         String?
-  features      String[] // Postgres array
-  color         String   @default("#15304D")
-  sortOrder     Int      @default(0)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  slug           String   @unique // 'regular', 'silver', 'gold'
+  name           String // 'العادية', 'الفضية', 'الذهبية'
+  price          Float    @default(0)
+  originalPrice  Float?
+  discountText   String?
+  badge          String?
+  features       String[] // Postgres array
+  color          String   @default("#15304D")
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  maxActiveAds   Int      @default(1)
+  durationDays   Int      @default(10)
+  maxImagesPerAd Int      @default(5)
+  featuredDays   Int      @default(0)
+  prioritySearch Boolean  @default(false)
+  users          User[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model FAQ {
@@ -202,7 +210,7 @@ model Invoice {
   status      InvoiceStatus @default(PENDING)
   paidAt      DateTime?
   dueDate     DateTime?
-  delayDays   Int?          // e.g. 5 for notice
+  delayDays   Int? // e.g. 5 for notice
   userId      String
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now())

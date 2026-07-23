@@ -4,6 +4,8 @@ model Property {
   type               ListingType
   category           PropertyCategory
   isFeatured         Boolean          @default(false)
+  featuredUntil      DateTime?
+  isPriority         Boolean          @default(false)
   price              Float?
   beds               Int?             @default(1)
   baths              Int?             @default(1)

@@ -1,9 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -11,13 +14,17 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { paymentsService } from '@/core/api/payments.service';
 import { plansService } from '@/core/api/plans.service';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function PlansScreen() {
   const router = useRouter();
 
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchPlans = async () => {
     setIsLoading(true);
@@ -38,6 +45,60 @@ export default function PlansScreen() {
       console.error('Failed to load plans:', e);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const parseQueryParams = (url: string) => {
+    const params: Record<string, string> = {};
+    const queryString = url.split('?')[1];
+    if (queryString) {
+      const pairs = queryString.split('&');
+      for (const pair of pairs) {
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value);
+        }
+      }
+    }
+    return params;
+  };
+
+  const handleBuyPlan = async (planSlug: string) => {
+    if (planSlug === 'regular') {
+      Alert.alert('تنبيه', 'أنت بالفعل مشترك في الباقة العادية المجانية.');
+      return;
+    }
+
+    if (isProcessing) return;
+
+    setIsProcessing(true);
+    try {
+      const appRedirectUrl = Linking.createURL('payment-callback');
+      const charge = await paymentsService.createCharge(
+        planSlug,
+        appRedirectUrl,
+      );
+
+      if (charge.status === 'PAID') {
+        Alert.alert('نجاح', 'تم تفعيل الباقة بنجاح!');
+        return;
+      }
+
+      if (!charge.checkoutUrl) {
+        throw new Error('لم يتم استلام رابط الدفع من بوابة الدفع.');
+      }
+
+      await WebBrowser.openBrowserAsync(charge.checkoutUrl);
+    } catch (error: any) {
+      console.error('Payment Error:', error);
+      Alert.alert(
+        'خطأ',
+        error.response?.data?.message ||
+          error.message ||
+          'حدث خطأ أثناء معالجة الدفع.',
+      );
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -147,12 +208,16 @@ export default function PlansScreen() {
                   {/* Buy Button */}
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    onPress={() => console.log(`Buy ${plan.name}`)}
+                    onPress={() => handleBuyPlan(plan.id)}
+                    disabled={isProcessing}
                     className="h-12 w-full items-center justify-center rounded-[24px]"
-                    style={{ backgroundColor: '#15304D' }}
+                    style={{
+                      backgroundColor: '#15304D',
+                      opacity: isProcessing ? 0.6 : 1,
+                    }}
                   >
                     <Text className="font-cairo-semibold text-[14px] text-white">
-                      اشتر الآن
+                      {isProcessing ? 'جاري التحميل...' : 'اشتر الآن'}
                     </Text>
                   </TouchableOpacity>
                 </View>
