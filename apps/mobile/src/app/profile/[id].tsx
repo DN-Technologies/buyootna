@@ -34,12 +34,15 @@ import PropertyActionBar from '@/core/components/PropertyActionBar';
 import PropertyCard from '@/core/components/PropertyCard';
 import PropertyListItem from '@/core/components/PropertyListItem';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
+import { useAuthStore } from '@/store/useAuthStore';
 import { PropertyDto } from '@/types/feed';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const currentUser = useAuthStore((state) => state.user);
+  const isOwnProfile = currentUser?.id === id;
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [properties, setProperties] = useState<PropertyDto[]>([]);
@@ -52,12 +55,27 @@ export default function UserProfileScreen() {
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [propertySort, setPropertySort] = useState('all');
+  const [reviewSummary, setReviewSummary] = useState<{
+    averageRating: number;
+    totalRatingsCount: number;
+    ratingBreakdown: { star: number; pct: string }[];
+  }>({
+    averageRating: 4.5,
+    totalRatingsCount: 100,
+    ratingBreakdown: [
+      { star: 5, pct: '85%' },
+      { star: 4, pct: '50%' },
+      { star: 3, pct: '30%' },
+      { star: 2, pct: '18%' },
+      { star: 1, pct: '8%' },
+    ],
+  });
 
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
 
-  // Load User Info & Properties
+  // Load User Info, Properties & Reviews
   useEffect(() => {
     if (!id) return;
 
@@ -115,9 +133,35 @@ export default function UserProfileScreen() {
       }
     };
 
+    const fetchUserReviews = async () => {
+      try {
+        const res = await apiClient.get(`/users/${id}/reviews`, {
+          params: { sort: propertySort },
+        });
+        if (res.data?.data) {
+          setReviews(res.data.data);
+        }
+      } catch (error) {
+        console.error('Failed to load user reviews:', error);
+      }
+    };
+
+    const fetchReviewSummary = async () => {
+      try {
+        const res = await apiClient.get(`/users/${id}/reviews/summary`);
+        if (res.data) {
+          setReviewSummary(res.data);
+        }
+      } catch (error) {
+        console.error('Failed to load review summary:', error);
+      }
+    };
+
     fetchProfileData();
     fetchUserProperties();
-  }, [id]);
+    fetchUserReviews();
+    fetchReviewSummary();
+  }, [id, propertySort]);
 
   // Action Bar Handlers
   const handleWhatsapp = () => {
@@ -171,23 +215,33 @@ export default function UserProfileScreen() {
     addReviewSheetRef.current?.present();
   };
 
-  const handleReviewSubmit = (commentText: string) => {
-    const newRev: ReviewItem = {
-      id: `rev-${Date.now()}`,
-      userName: 'مستخدم بيوتنا',
-      avatarUrl:
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      timeAgo: 'الآن',
-      rating: 5,
-      comment: commentText,
-      likes: 0,
-      dislikes: 0,
-      userLiked: false,
-    };
-    setReviews((prev) => [newRev, ...prev]);
+  const handleReviewSubmit = async (commentText: string, rating: number) => {
+    try {
+      await apiClient.post(`/users/${id}/reviews`, {
+        comment: commentText,
+        rating,
+      });
+      Alert.alert('نجاح', 'تمت إضافة تقييمك بنجاح');
+
+      // Re-fetch reviews & summary
+      const [resReviews, resSummary] = await Promise.all([
+        apiClient.get(`/users/${id}/reviews`, {
+          params: { sort: propertySort },
+        }),
+        apiClient.get(`/users/${id}/reviews/summary`),
+      ]);
+      if (resReviews.data?.data) setReviews(resReviews.data.data);
+      if (resSummary.data) setReviewSummary(resSummary.data);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'فشل إضافة التقييم';
+      Alert.alert(
+        'خطأ',
+        typeof msg === 'string' ? msg : msg[0] || 'فشل إضافة التقييم',
+      );
+    }
   };
 
-  const handleToggleLike = (reviewId: string) => {
+  const handleToggleLike = async (reviewId: string) => {
     setReviews((prev) =>
       prev.map((r) => {
         if (r.id !== reviewId) return r;
@@ -205,9 +259,15 @@ export default function UserProfileScreen() {
         };
       }),
     );
+
+    try {
+      await apiClient.post(`/reviews/${reviewId}/like`);
+    } catch (error) {
+      console.error('Failed to toggle like:', error);
+    }
   };
 
-  const handleToggleDislike = (reviewId: string) => {
+  const handleToggleDislike = async (reviewId: string) => {
     setReviews((prev) =>
       prev.map((r) => {
         if (r.id !== reviewId) return r;
@@ -222,6 +282,12 @@ export default function UserProfileScreen() {
         };
       }),
     );
+
+    try {
+      await apiClient.post(`/reviews/${reviewId}/dislike`);
+    } catch (error) {
+      console.error('Failed to toggle dislike:', error);
+    }
   };
 
   const renderHeader = () => {
@@ -295,6 +361,10 @@ export default function UserProfileScreen() {
           <ReviewsSummarySection
             onAddReview={handleAddReview}
             onSortPress={() => sortSheetRef.current?.present()}
+            averageRating={reviewSummary.averageRating}
+            totalRatingsCount={reviewSummary.totalRatingsCount}
+            ratingBreakdown={reviewSummary.ratingBreakdown}
+            isOwnProfile={isOwnProfile}
           />
         )}
       </View>
@@ -425,7 +495,7 @@ export default function UserProfileScreen() {
         />
 
         {/* Fixed Bottom Action Bar */}
-        {userProfile && (
+        {userProfile && !isOwnProfile && (
           <ContentContainer className="absolute bottom-0 z-50 w-full bg-white">
             <PropertyActionBar
               insets={insets}

@@ -1,0 +1,298 @@
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from '../../core/prisma/prisma.service';
+import { CreateReviewDto } from './dto/create-review.dto';
+import { GetReviewsDto, ReviewSortOption } from './dto/get-reviews.dto';
+import { Prisma, ReactionType } from '@prisma/client';
+
+@Injectable()
+export class ReviewsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Create or update a review for a user.
+   */
+  async createOrUpdateReview(
+    reviewerId: string,
+    targetUserId: string,
+    dto: CreateReviewDto,
+  ) {
+    if (reviewerId === targetUserId) {
+      throw new BadRequestException('لا يمكنك تقييم حسابك الشخصي');
+    }
+
+    const targetUser = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    const review = await this.prisma.review.upsert({
+      where: {
+        reviewerId_targetUserId: {
+          reviewerId,
+          targetUserId,
+        },
+      },
+      create: {
+        reviewerId,
+        targetUserId,
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+      update: {
+        rating: dto.rating,
+        comment: dto.comment,
+      },
+    });
+
+    return {
+      message: 'تم إضافة التقييم بنجاح',
+      data: review,
+    };
+  }
+
+  /**
+   * Fetch paginated & sorted reviews for a target user.
+   */
+  async getReviews(
+    targetUserId: string,
+    currentUserId?: string,
+    query?: GetReviewsDto,
+  ) {
+    const page = query?.page ? parseInt(query.page, 10) : 1;
+    const limit = query?.limit ? parseInt(query.limit, 10) : 20;
+    const skip = (page - 1) * limit;
+
+    let orderBy: Prisma.ReviewOrderByWithRelationInput = { createdAt: 'desc' };
+    if (query?.sort === ReviewSortOption.OLDEST) {
+      orderBy = { createdAt: 'asc' };
+    } else if (query?.sort === ReviewSortOption.RATING_DESC) {
+      orderBy = { rating: 'desc' };
+    } else if (query?.sort === ReviewSortOption.RATING_ASC) {
+      orderBy = { rating: 'asc' };
+    }
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { targetUserId },
+        include: {
+          reviewer: {
+            select: {
+              id: true,
+              name: true,
+              avatarUrl: true,
+              companyProfile: {
+                select: { name: true, logoUrl: true },
+              },
+              officeProfile: {
+                select: { name: true, logoUrl: true },
+              },
+            },
+          },
+          reactions: true,
+        },
+        orderBy,
+        skip,
+        take: limit,
+      }),
+      this.prisma.review.count({ where: { targetUserId } }),
+    ]);
+
+    const formattedReviews = reviews.map((r) => {
+      const name =
+        r.reviewer.companyProfile?.name ||
+        r.reviewer.officeProfile?.name ||
+        r.reviewer.name ||
+        'مستخدم بيوتنا';
+
+      const avatarUrl =
+        r.reviewer.companyProfile?.logoUrl ||
+        r.reviewer.officeProfile?.logoUrl ||
+        r.reviewer.avatarUrl ||
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
+
+      const likesCount = r.reactions.filter(
+        (rx) => rx.type === ReactionType.LIKE,
+      ).length;
+      const dislikesCount = r.reactions.filter(
+        (rx) => rx.type === ReactionType.DISLIKE,
+      ).length;
+
+      const userReaction = currentUserId
+        ? r.reactions.find((rx) => rx.userId === currentUserId)
+        : null;
+
+      return {
+        id: r.id,
+        userName: name,
+        avatarUrl,
+        timeAgo: this.formatTimeAgo(r.createdAt),
+        createdAt: r.createdAt,
+        rating: r.rating,
+        comment: r.comment,
+        likes: likesCount,
+        dislikes: dislikesCount,
+        userLiked: userReaction?.type === ReactionType.LIKE,
+        userDisliked: userReaction?.type === ReactionType.DISLIKE,
+      };
+    });
+
+    return {
+      data: formattedReviews,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get review summary stats (average, total, rating breakdown).
+   */
+  async getSummary(targetUserId: string) {
+    const reviews = await this.prisma.review.findMany({
+      where: { targetUserId },
+      select: { rating: true },
+    });
+
+    const totalRatingsCount = reviews.length;
+    if (totalRatingsCount === 0) {
+      return {
+        averageRating: 0,
+        totalRatingsCount: 0,
+        ratingBreakdown: [
+          { star: 5, pct: '0%' },
+          { star: 4, pct: '0%' },
+          { star: 3, pct: '0%' },
+          { star: 2, pct: '0%' },
+          { star: 1, pct: '0%' },
+        ],
+      };
+    }
+
+    const totalSum = reviews.reduce((sum, r) => sum + r.rating, 0);
+    const averageRating = Number((totalSum / totalRatingsCount).toFixed(1));
+
+    const starCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    reviews.forEach((r) => {
+      if (starCounts[r.rating] !== undefined) {
+        starCounts[r.rating] += 1;
+      }
+    });
+
+    const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
+      star,
+      pct: `${Math.round((starCounts[star] / totalRatingsCount) * 100)}%`,
+    }));
+
+    return {
+      averageRating,
+      totalRatingsCount,
+      ratingBreakdown,
+    };
+  }
+
+  /**
+   * Toggle Like or Dislike on a review.
+   */
+  async toggleReaction(reviewId: string, userId: string, type: ReactionType) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException('التقييم غير موجود');
+    }
+
+    const existingReaction = await this.prisma.reviewReaction.findUnique({
+      where: {
+        reviewId_userId: {
+          reviewId,
+          userId,
+        },
+      },
+    });
+
+    if (existingReaction) {
+      if (existingReaction.type === type) {
+        // Toggle off
+        await this.prisma.reviewReaction.delete({
+          where: { id: existingReaction.id },
+        });
+        return { message: 'تم إلغاء التفاعل' };
+      } else {
+        // Switch type
+        await this.prisma.reviewReaction.update({
+          where: { id: existingReaction.id },
+          data: { type },
+        });
+        return { message: 'تم تحديث التفاعل' };
+      }
+    } else {
+      // Create new reaction
+      await this.prisma.reviewReaction.create({
+        data: {
+          reviewId,
+          userId,
+          type,
+        },
+      });
+      return { message: 'تم إضافة التفاعل' };
+    }
+  }
+
+  /**
+   * Delete a review.
+   */
+  async deleteReview(reviewId: string, userId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException('التقييم غير موجود');
+    }
+
+    if (review.reviewerId !== userId) {
+      throw new BadRequestException('لا يمكنك حذف تقييم مستخدم آخر');
+    }
+
+    await this.prisma.review.delete({
+      where: { id: reviewId },
+    });
+
+    return { message: 'تم حذف التقييم بنجاح' };
+  }
+
+  private formatTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - new Date(date).getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 60) {
+      return 'الآن';
+    }
+    if (diffHours < 24) {
+      return `منذ ${diffHours} ساعة`;
+    }
+    if (diffDays < 7) {
+      return `منذ ${diffDays} يوم`;
+    }
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `منذ ${weeks} أسبوع`;
+    }
+    const months = Math.floor(diffDays / 30);
+    return `منذ ${months} شهر`;
+  }
+}

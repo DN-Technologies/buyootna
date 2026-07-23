@@ -24,6 +24,7 @@ import { DevicesModule } from './features/devices/devices.module';
 import { PlansModule } from './features/plans/plans.module';
 import { InvoicesModule } from './features/invoices/invoices.module';
 import { PaymentsModule } from './features/payments/payments.module';
+import { ReviewsModule } from './features/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { PaymentsModule } from './features/payments/payments.module';
     PlansModule,
     InvoicesModule,
     PaymentsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [

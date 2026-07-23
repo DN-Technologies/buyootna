@@ -7,6 +7,8 @@ interface ReviewsSummarySectionProps {
   onSortPress?: () => void;
   totalRatingsCount?: number;
   averageRating?: number;
+  ratingBreakdown?: { star: number; pct: string }[];
+  isOwnProfile?: boolean;
 }
 
 export default function ReviewsSummarySection({
@@ -14,14 +16,15 @@ export default function ReviewsSummarySection({
   onSortPress,
   totalRatingsCount = 100,
   averageRating = 4.5,
-}: ReviewsSummarySectionProps) {
-  const ratingBreakdown = [
+  ratingBreakdown = [
     { star: 5, pct: '85%' },
     { star: 4, pct: '50%' },
     { star: 3, pct: '30%' },
     { star: 2, pct: '18%' },
     { star: 1, pct: '8%' },
-  ];
+  ],
+  isOwnProfile = false,
+}: ReviewsSummarySectionProps) {
 
   return (
     <View className="mt-4 px-5">
@@ -38,15 +41,17 @@ export default function ReviewsSummarySection({
       </TouchableOpacity>
 
       {/* Share your opinion / Add review button */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onAddReview}
-        className="mt-4 w-full items-center justify-center rounded-full border border-[#E2E8F0] bg-white py-3.5"
-      >
-        <Text className="font-cairo-medium text-[16px] leading-[24px] text-[#111111]">
-          شارك برأيك
-        </Text>
-      </TouchableOpacity>
+      {!isOwnProfile && (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onAddReview}
+          className="mt-4 w-full items-center justify-center rounded-full border border-[#E2E8F0] bg-white py-3.5"
+        >
+          <Text className="font-cairo-medium text-[16px] leading-[24px] text-[#111111]">
+            شارك برأيك
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Rating Summary Card */}
       <View className="mt-6">
