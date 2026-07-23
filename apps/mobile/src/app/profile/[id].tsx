@@ -1,4 +1,4 @@
-import { Feather, FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Linking,
   Text,
   TouchableOpacity,
@@ -16,21 +15,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient from '@/core/api/api';
 import ContentContainer from '@/core/components/ContentContainer';
+import ProfileHeaderCard from '@/core/components/profile/ProfileHeaderCard';
+import ProfileTabNavigation from '@/core/components/profile/ProfileTabNavigation';
+import ReviewCardItem from '@/core/components/profile/ReviewCardItem';
+import ReviewsSummarySection from '@/core/components/profile/ReviewsSummarySection';
+import {
+  ReviewItem,
+  SEEDED_REVIEWS,
+  UserProfile,
+} from '@/core/components/profile/types';
 import PropertyActionBar from '@/core/components/PropertyActionBar';
 import PropertyCard from '@/core/components/PropertyCard';
 import PropertyListItem from '@/core/components/PropertyListItem';
 import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
 import { PropertyDto } from '@/types/feed';
-
-interface UserProfile {
-  id: string;
-  name: string;
-  avatarUrl: string;
-  rating: number;
-  phone: string;
-  joinedDate: string;
-  role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
-}
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -39,6 +37,7 @@ export default function UserProfileScreen() {
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [properties, setProperties] = useState<PropertyDto[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>(SEEDED_REVIEWS);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>(
@@ -146,7 +145,6 @@ export default function UserProfileScreen() {
   const handleChat = async () => {
     if (!userProfile) return;
     try {
-      // Direct call to start chat with lister
       const response = await apiClient.post('/chat/conversation', {
         participantId: userProfile.id,
       });
@@ -157,8 +155,72 @@ export default function UserProfileScreen() {
     }
   };
 
-  // Header render helpers
-  const renderProfileHeader = () => {
+  const handleAddReview = () => {
+    Alert.alert(
+      'شارك برأيك',
+      'شكراً لمشاركتك! أضفنا تقييمك بنجاح للتقييمات المخزنة.',
+      [
+        {
+          text: 'إضافة تقييم تجريبي',
+          onPress: () => {
+            const newRev: ReviewItem = {
+              id: `rev-${Date.now()}`,
+              userName: 'مستخدم بيوتنا',
+              avatarUrl:
+                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+              timeAgo: 'الآن',
+              rating: 5,
+              comment: 'تجربة ممتازة وتواصل سريع للغاية عبر تطبيق بيوتنا.',
+              likes: 1,
+              dislikes: 0,
+              userLiked: true,
+            };
+            setReviews((prev) => [newRev, ...prev]);
+          },
+        },
+        { text: 'إلغاء', style: 'cancel' },
+      ],
+    );
+  };
+
+  const handleToggleLike = (reviewId: string) => {
+    setReviews((prev) =>
+      prev.map((r) => {
+        if (r.id !== reviewId) return r;
+        const wasLiked = r.userLiked;
+        return {
+          ...r,
+          userLiked: !wasLiked,
+          likes: wasLiked ? r.likes - 1 : r.likes + 1,
+          ...(wasLiked
+            ? {}
+            : {
+                userDisliked: false,
+                dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
+              }),
+        };
+      }),
+    );
+  };
+
+  const handleToggleDislike = (reviewId: string) => {
+    setReviews((prev) =>
+      prev.map((r) => {
+        if (r.id !== reviewId) return r;
+        const wasDisliked = r.userDisliked;
+        return {
+          ...r,
+          userDisliked: !wasDisliked,
+          dislikes: wasDisliked ? r.dislikes - 1 : r.dislikes + 1,
+          ...(wasDisliked
+            ? {}
+            : { userLiked: false, likes: r.userLiked ? r.likes - 1 : r.likes }),
+        };
+      }),
+    );
+  };
+
+  const renderHeader = () => {
     if (isLoadingProfile || !userProfile) {
       return (
         <View className="items-center py-10">
@@ -169,162 +231,21 @@ export default function UserProfileScreen() {
 
     return (
       <View className="mb-4">
-        {/* Cover Image Placeholder */}
-        <View className="mx-5 h-24 rounded-t-md bg-[#15304D]" />
-        {/* Profile Card Overlay */}
-        <View
-          className="mx-5 -mt-10 rounded-b-md border border-gray-100 bg-white p-5 shadow-sm"
-          style={{
-            elevation: 2,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-          }}
-        >
-          {/* Overlapping Avatar (Positioned absolutely on the right) */}
-          <View className="absolute -top-10 left-5 z-10 h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-sm">
-            <Image
-              source={{ uri: userProfile.avatarUrl }}
-              className="h-full w-full"
-              resizeMode="cover"
-            />
-          </View>
+        {/* Modular Header Card */}
+        <ProfileHeaderCard
+          userProfile={userProfile}
+          propertiesCount={properties.length}
+        />
 
-          {/* Spacer to push content below the absolute avatar */}
-          <View className="h-10" />
+        {/* Modular Navigation Tabs */}
+        <ProfileTabNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
-          {/* Name, Rating & Status Badge Row (Explicitly right-to-left flexDirection) */}
-          <View
-            style={{ flexDirection: 'row' }}
-            className="mt-3 items-start justify-between"
-          >
-            {/* Right side: Name & Rating (Explicitly right-aligned) */}
-            <View>
-              <View
-                style={{ flexDirection: 'row' }}
-                className="items-center gap-1"
-              >
-                <Text className="text-right font-cairo-bold text-lg text-[#111111]">
-                  {userProfile.name}
-                </Text>
-                {userProfile.role !== 'INDIVIDUAL' && (
-                  <MaterialIcons name="verified" size={16} color="#018B1B" />
-                )}
-              </View>
-
-              <View
-                style={{ flexDirection: 'row' }}
-                className="mt-0.5 items-center gap-1"
-              >
-                <FontAwesome
-                  name="star"
-                  size={14}
-                  color="#F59E0B"
-                  className="relative -top-1"
-                />
-                <Text className="font-sans text-sm text-[#111111]">
-                  {userProfile.rating}
-                </Text>
-                <Text className="mr-1 font-cairo text-xs text-[#6B6A6A]">
-                  (214 تقييم)
-                </Text>
-              </View>
-            </View>
-
-            {/* Left side: Active Status Badge (Explicitly left-aligned layout) */}
-            <View
-              style={{ flexDirection: 'row' }}
-              className="items-center gap-1 rounded-full px-3 py-1"
-            >
-              <View className="h-2 w-2 rounded-full bg-[#15A72B]" />
-              <Text className="font-cairo text-xs leading-[24px] text-[#15A72B]">
-                نشط الآن
-              </Text>
-            </View>
-          </View>
-
-          {/* Stats Bar Component (Explicitly right-to-left layout) */}
-          <View
-            style={{ flexDirection: 'row' }}
-            className="mt-4 items-center justify-between rounded-xl bg-[#F8F9FC] p-4"
-          >
-            <View className="flex-1 items-center">
-              <Text className="font-sans text-sm font-bold text-[#111111]">
-                {properties.length}
-              </Text>
-              <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-                الإعلانات
-              </Text>
-            </View>
-            <View className="h-6 w-[1px] bg-slate-200" />
-            <View className="flex-1 items-center">
-              <Text className="font-sans text-sm font-bold text-[#111111]">
-                2
-              </Text>
-              <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-                العقارات المباعة
-              </Text>
-            </View>
-            <View className="h-6 w-[1px] bg-slate-200" />
-            <View className="flex-1 items-center">
-              <Text className="font-cairo-bold text-[11px] text-[#111111]">
-                30 دقيقة
-              </Text>
-              <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-                سرعة الرد
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Dynamic Navigation Tabs */}
-        <View className="mt-6 flex-row items-center border-b border-gray-200 px-5">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setActiveTab('listings')}
-            className={`flex-1 items-center border-b-2 pb-3 ${
-              activeTab === 'listings'
-                ? 'border-[#15304D]'
-                : 'border-transparent'
-            }`}
-          >
-            <Text
-              className={`text-sm ${
-                activeTab === 'listings'
-                  ? 'font-cairo-bold text-[#15304D]'
-                  : 'font-cairo-medium text-[#6B6A6A]'
-              }`}
-            >
-              الإعلانات
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setActiveTab('reviews')}
-            className={`flex-1 items-center border-b-2 pb-3 ${
-              activeTab === 'reviews'
-                ? 'border-[#15304D]'
-                : 'border-transparent'
-            }`}
-          >
-            <Text
-              className={`text-sm ${
-                activeTab === 'reviews'
-                  ? 'font-cairo-bold text-[#15304D]'
-                  : 'font-cairo-medium text-[#6B6A6A]'
-              }`}
-            >
-              التقييمات
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Tab-specific Filters header */}
+        {/* Tab-specific Controls */}
         {activeTab === 'listings' && properties.length > 0 && (
           <View className="mt-4 flex-row items-center justify-between px-5">
-            {/* View Mode buttons */}
             <View className="flex-row items-center gap-1 rounded-xl bg-[#F5F7F9] p-1">
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -361,11 +282,15 @@ export default function UserProfileScreen() {
             </View>
           </View>
         )}
+
+        {activeTab === 'reviews' && (
+          <ReviewsSummarySection onAddReview={handleAddReview} />
+        )}
       </View>
     );
   };
 
-  const renderEmptyComponent = () => {
+  const renderEmpty = () => {
     if (isLoadingProperties) {
       return (
         <View className="mt-2 px-5">
@@ -406,6 +331,7 @@ export default function UserProfileScreen() {
   return (
     <View className="flex-1 bg-white">
       <ContentContainer className="flex-1">
+        {/* Header Bar */}
         <View
           style={{ flexDirection: 'row', paddingTop: insets.top + 4 }}
           className="w-full flex-row items-center justify-between bg-white px-5 pb-4"
@@ -426,46 +352,59 @@ export default function UserProfileScreen() {
             <Feather name="more-vertical" size={20} color="#111111" />
           </TouchableOpacity>
         </View>
+
         {/* Main Content Area */}
         <FlatList
-          data={activeTab === 'listings' ? properties : []}
+          data={
+            activeTab === 'listings'
+              ? (properties as any[])
+              : (reviews as any[])
+          }
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderProfileHeader}
-          ListEmptyComponent={renderEmptyComponent}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmpty}
           contentContainerStyle={{
             paddingBottom: insets.bottom + 85,
           }}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View className="mt-2 px-5">
-              {viewMode === 'list' ? (
-                <PropertyListItem
-                  id={item.id}
-                  price={item.price}
-                  companyName={item.companyName}
-                  isFeatured={item.isFeatured}
-                  category={item.type}
-                  area={item.area}
-                  location={item.location}
-                  propertyIncome={item.propertyIncome}
-                  onShowDetails={() => router.push(`/property/${item.id}`)}
-                />
-              ) : (
-                <PropertyCard
-                  id={item.id}
-                  images={item.images}
-                  price={item.price}
-                  companyName={item.companyName}
-                  isFeatured={item.isFeatured}
-                  type={item.type}
-                  area={item.area}
-                  beds={item.beds}
-                  baths={item.baths}
-                  location={item.location}
-                />
-              )}
-            </View>
-          )}
+          renderItem={({ item }) =>
+            activeTab === 'listings' ? (
+              <View className="mt-2 px-5">
+                {viewMode === 'list' ? (
+                  <PropertyListItem
+                    id={item.id}
+                    price={item.price}
+                    companyName={item.companyName}
+                    isFeatured={item.isFeatured}
+                    category={item.type}
+                    area={item.area}
+                    location={item.location}
+                    propertyIncome={item.propertyIncome}
+                    onShowDetails={() => router.push(`/property/${item.id}`)}
+                  />
+                ) : (
+                  <PropertyCard
+                    id={item.id}
+                    images={item.images}
+                    price={item.price}
+                    companyName={item.companyName}
+                    isFeatured={item.isFeatured}
+                    type={item.type}
+                    area={item.area}
+                    beds={item.beds}
+                    baths={item.baths}
+                    location={item.location}
+                  />
+                )}
+              </View>
+            ) : (
+              <ReviewCardItem
+                item={item as ReviewItem}
+                onToggleLike={handleToggleLike}
+                onToggleDislike={handleToggleDislike}
+              />
+            )
+          }
         />
 
         {/* Fixed Bottom Action Bar */}
