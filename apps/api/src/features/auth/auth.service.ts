@@ -53,7 +53,7 @@ export class AuthService {
   }
 
   // 2. Generate JWT token
-  async login(user: Omit<User, 'password'>) {
+  login(user: Omit<User, 'password'>) {
     // The payload we encode inside the JWT
     const payload = { sub: user.id, role: user.role };
 
