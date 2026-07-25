@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MediaController } from './media.controller';
+import { StorageService } from '../core/storage/storage.service';
 
 describe('MediaController', () => {
   let controller: MediaController;
@@ -7,6 +8,12 @@ describe('MediaController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MediaController],
+      providers: [
+        {
+          provide: StorageService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<MediaController>(MediaController);
