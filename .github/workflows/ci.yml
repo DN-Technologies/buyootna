@@ -70,6 +70,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create API env file for compose validation
+        run: touch apps/api/.env
+
       - name: Validate Docker Compose Config
         run: docker compose config
 
