@@ -22,6 +22,7 @@ export interface PropertyDetailsDto {
   automatedNumber?: string | null;
   propertyAge?: number | null;
   phoneNumber?: string | null;
+  phone?: string | null;
   referenceNumber?: number;
   features?: { id: string; label: string }[] | null;
   propertyIncome?: number | null;

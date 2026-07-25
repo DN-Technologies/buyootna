@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { TwilioService } from '../../core/twilio/twilio.service';
 import {
   RequestOtpDto,
   ResetPasswordDto,
@@ -23,6 +24,7 @@ export class RecoveryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly twilioService: TwilioService,
   ) {}
 
   // STEP 1: Generate and send OTP
@@ -46,30 +48,9 @@ export class RecoveryService {
       return { message: 'إذا كان الحساب موجوداً، فسيتم إرسال رمز التحقق' };
     }
 
-    // Generate a 6-digit random string
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
-
-    // Upsert ensures we overwrite any existing unused OTP for this user
-    await this.prisma.otpCode.upsert({
-      where: {
-        userId: user.id,
-      },
-      update: {
-        code: otp,
-        expiresAt,
-      },
-      create: {
-        userId: user.id,
-        code: otp,
-        expiresAt,
-      },
-    });
-
-    // TODO: Integrate real SMS (Twilio/MessageBird) or Email service here
-    console.log(
-      `\n🔑 [MOCK SMS/EMAIL] Your OTP for ${dto.identifier} is: ${otp}\n`,
-    );
+    if (user.phone) {
+      await this.twilioService.sendVerification(user.phone);
+    }
 
     return { message: 'تم إرسال رمز التحقق بنجاح' };
   }
@@ -86,22 +67,16 @@ export class RecoveryService {
       where: { OR: [{ email: email }, { phone: phone }] },
     });
 
-    if (!user) throw new BadRequestException('البيانات غير صحيحة');
+    if (!user || !user.phone)
+      throw new BadRequestException('البيانات غير صحيحة');
 
-    const otpRecord = await this.prisma.otpCode.findUnique({
-      where: { userId: user.id },
-    });
-
-    if (!otpRecord || otpRecord.code !== dto.otp) {
-      throw new BadRequestException('رمز التحقق غير صحيح');
+    const isValid = await this.twilioService.checkVerification(
+      user.phone,
+      dto.otp,
+    );
+    if (!isValid) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
-
-    if (new Date() > otpRecord.expiresAt) {
-      throw new BadRequestException('رمز التحقق منتهي الصلاحية');
-    }
-
-    // OTP is valid! Delete it so it can't be reused
-    await this.prisma.otpCode.delete({ where: { userId: user.id } });
 
     // Generate a temporary JWT just for resetting the password
     const resetToken = this.jwtService.sign({

@@ -40,6 +40,7 @@ export class PropertiesService {
           include: {
             user: {
               select: {
+                name: true,
                 companyProfile: { select: { name: true } },
               },
             },
@@ -58,6 +59,7 @@ export class PropertiesService {
           include: {
             user: {
               select: {
+                name: true,
                 companyProfile: { select: { name: true } },
               },
             },
@@ -76,6 +78,7 @@ export class PropertiesService {
           include: {
             user: {
               select: {
+                name: true,
                 companyProfile: { select: { name: true } },
               },
             },
@@ -140,6 +143,7 @@ export class PropertiesService {
         include: {
           user: {
             select: {
+              name: true,
               companyProfile: {
                 select: {
                   name: true,
@@ -589,10 +593,10 @@ export class PropertiesService {
       id: p.id,
       images: p.images,
       price: p.price,
-      // If it's a company, show their name. Otherwise, show "مستخدم" (User)
+      // If it's a company, show their name. Otherwise, show user name or "مستخدم" (User)
       companyName: p.user.companyProfile
         ? p.user.companyProfile.name
-        : 'مستخدم',
+        : p.user.name || 'مستخدم',
       isFeatured: p.isFeatured,
       type:
         p.category === 'RESIDENTIAL'
@@ -605,6 +609,7 @@ export class PropertiesService {
       baths: p.baths,
       location: p.location,
       createdAt: p.createdAt,
+      phoneNumber: p.phoneNumber,
     }));
   }
 

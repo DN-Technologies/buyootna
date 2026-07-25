@@ -205,6 +205,7 @@ export default function HomeProperties({
                   ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns
                   : '100%'
               }
+              phone={item.phoneNumber || item.phone}
               timeAgo={
                 item.createdAt ? formatTimeAgo(item.createdAt) : undefined
               }

@@ -14,6 +14,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import * as bcrypt from 'bcrypt';
 import { checkUserExists } from '../../core/utils/user.utils';
 import { StorageService } from 'src/core/storage/storage.service';
+import { TwilioService } from 'src/core/twilio/twilio.service';
 import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
 import { Prisma } from '@prisma/client';
 
@@ -22,6 +23,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    private readonly twilioService: TwilioService,
   ) {}
 
   // --- Register Individual ---
@@ -46,24 +48,13 @@ export class UsersService {
           data: { userId: user.id },
         });
 
-        // Generate a 6-digit random registration OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-        await tx.otpCode.create({
-          data: {
-            userId: user.id,
-            code: otp,
-            expiresAt,
-          },
-        });
-
-        console.log(
-          `\n🔑 [MOCK SMS] Your Registration OTP for user ${dto.phone} is: ${otp}\n`,
-        );
-
         return { user, profile };
       });
+
+      // Send Twilio Verify SMS OTP
+      if (dto.phone) {
+        await this.twilioService.sendVerification(dto.phone);
+      }
 
       // Remove password from response
       const userWithoutPassword = { ...result.user };

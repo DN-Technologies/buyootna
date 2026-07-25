@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { TwilioService } from 'src/core/twilio/twilio.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
@@ -13,6 +14,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly twilioService: TwilioService,
   ) {}
 
   // 1. Verify credentials (used by LocalStrategy)
@@ -28,7 +30,9 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('البيانات غير صحيحة');
+      throw new UnauthorizedException(
+        'البريد الإلكتروني أو رقم الهاتف غير صحيح',
+      );
     }
 
     if (user.isDisabled) {
@@ -38,7 +42,7 @@ export class AuthService {
     // Compare passwords
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('البيانات غير صحيحة');
+      throw new UnauthorizedException('كلمة المرور غير صحيحة');
     }
 
     // Never return the password!
@@ -49,9 +53,9 @@ export class AuthService {
   }
 
   // 2. Generate JWT token
-  login(user: Omit<User, 'password'>) {
+  async login(user: Omit<User, 'password'>) {
     // The payload we encode inside the JWT
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, role: user.role };
 
     return {
       access_token: this.jwtService.sign(payload),
@@ -69,20 +73,10 @@ export class AuthService {
       throw new BadRequestException('رقم الهاتف غير مسجل');
     }
 
-    const otpRecord = await this.prisma.otpCode.findUnique({
-      where: { userId: user.id },
-    });
-
-    if (!otpRecord || otpRecord.code !== otp) {
-      throw new BadRequestException('رمز التحقق غير صحيح');
+    const isValid = await this.twilioService.checkVerification(phone, otp);
+    if (!isValid) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
-
-    if (new Date() > otpRecord.expiresAt) {
-      throw new BadRequestException('رمز التحقق منتهي الصلاحية');
-    }
-
-    // OTP is valid! Delete it so it can't be reused
-    await this.prisma.otpCode.delete({ where: { userId: user.id } });
 
     // Return access token and user info
     const userWithoutPassword = { ...user };
@@ -97,18 +91,7 @@ export class AuthService {
       throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-    await this.prisma.otpCode.upsert({
-      where: { userId: user.id },
-      update: { code: otp, expiresAt },
-      create: { userId: user.id, code: otp, expiresAt },
-    });
-
-    console.log(
-      `\n🔑 [MOCK SMS/EMAIL] Password change OTP for user ${user.id} (${user.phone}) is: ${otp}\n`,
-    );
+    await this.twilioService.sendVerification(user.phone);
 
     return { message: 'تم إرسال رمز التحقق بنجاح' };
   }
@@ -127,16 +110,13 @@ export class AuthService {
       throw new BadRequestException('المستخدم غير موجود');
     }
 
-    const otpRecord = await this.prisma.otpCode.findUnique({
-      where: { userId },
-    });
-
-    if (!otpRecord || otpRecord.code !== otp) {
-      throw new BadRequestException('رمز التحقق غير صحيح');
+    if (!user.phone) {
+      throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
     }
 
-    if (new Date() > otpRecord.expiresAt) {
-      throw new BadRequestException('رمز التحقق منتهي الصلاحية');
+    const isValid = await this.twilioService.checkVerification(user.phone, otp);
+    if (!isValid) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
 
     const isMatch = await bcrypt.compare(oldPass, user.password);

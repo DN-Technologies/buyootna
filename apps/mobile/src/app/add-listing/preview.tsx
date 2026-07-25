@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -72,7 +71,9 @@ export default function AdPreviewScreen() {
    * 2. Build API payload
    * 3. Create property on backend
    */
-  const submitListing = async (isDraft: boolean): Promise<{ success: boolean; error?: string }> => {
+  const submitListing = async (
+    isDraft: boolean,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       setSubmitting(true);
       setSubmissionError(null);

@@ -481,6 +481,7 @@ export default function UserProfileScreen() {
                     beds={item.beds}
                     baths={item.baths}
                     location={item.location}
+                    phone={item.phoneNumber || item.phone}
                   />
                 )}
               </View>

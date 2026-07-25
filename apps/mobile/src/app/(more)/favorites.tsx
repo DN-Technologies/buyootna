@@ -132,6 +132,7 @@ export default function FavoritesScreen() {
               beds={item.beds}
               baths={item.baths}
               location={item.location}
+              phone={item.phoneNumber || item.phone}
               onPress={() => router.push(`/property/${item.id}`)}
               onFavorite={() => handleFavoriteToggle(item.id)}
             />

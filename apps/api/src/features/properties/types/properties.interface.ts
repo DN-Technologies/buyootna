@@ -9,7 +9,9 @@ export interface PropertyWithCompanyUser {
   baths: number | null;
   location: string;
   createdAt: Date;
+  phoneNumber?: string | null;
   user: {
+    name?: string | null;
     companyProfile: {
       name: string;
     } | null;

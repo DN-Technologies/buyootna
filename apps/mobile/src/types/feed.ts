@@ -11,6 +11,8 @@ export interface PropertyDto {
   baths: number;
   location: string;
   createdAt: string;
+  phoneNumber?: string | null;
+  phone?: string | null;
   propertyIncome?: number | null;
 }
 

@@ -10,6 +10,7 @@ import { UsersModule } from './features/users/users.module';
 import { AuthModule } from './features/auth/auth.module';
 import { RecoveryModule } from './features/recovery/recovery.module';
 import { StorageModule } from './core/storage/storage.module';
+import { TwilioModule } from './core/twilio/twilio.module';
 import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
 import { MediaModule } from './media/media.module';
@@ -40,6 +41,7 @@ import { ReviewsModule } from './features/reviews/reviews.module';
       ],
     }),
     PrismaModule,
+    TwilioModule,
     UsersModule,
     AuthModule,
     RecoveryModule,
