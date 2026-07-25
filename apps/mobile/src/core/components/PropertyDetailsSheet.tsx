@@ -147,8 +147,10 @@ const PropertyDetailsSheet = forwardRef<
               <Image
                 source={
                   property.images && property.images.length > 0
-                    ? property.images[0]
-                    : 'https://via.placeholder.com/600x400'
+                    ? typeof property.images[0] === 'string'
+                      ? { uri: property.images[0] }
+                      : property.images[0]
+                    : require('@/assets/images/no-image.png')
                 }
                 style={{ width: '100%', height: '100%' }}
                 contentFit="cover"

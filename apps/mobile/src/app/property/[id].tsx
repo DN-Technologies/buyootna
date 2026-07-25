@@ -215,7 +215,7 @@ export default function PropertyDetailsScreen() {
             images={
               property.images && property.images.length > 0
                 ? property.images
-                : ['https://via.placeholder.com/600x400']
+                : []
             }
             insets={insets}
             onBack={() => router.back()}

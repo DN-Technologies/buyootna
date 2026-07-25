@@ -18,9 +18,10 @@ export default function DraftAdCard({
   onPublishPress,
   onDeletePress,
 }: DraftAdCardProps) {
-  // Fallback placeholder image if none exists
-  const coverImage =
-    property.images?.[0] || 'https://via.placeholder.com/400x250?text=No+Image';
+  const coverImage = property.images?.[0];
+  const imageSource = coverImage
+    ? { uri: coverImage }
+    : require('@/assets/images/no-image.png');
 
   // Construct label like "شقة للبيع" or "عقار تجاري للبيع"
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
@@ -30,7 +31,7 @@ export default function DraftAdCard({
       {/* --- Image Header & Pagination Dots --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
-          source={{ uri: coverImage }}
+          source={imageSource}
           className="h-full w-full"
           resizeMode="cover"
         />

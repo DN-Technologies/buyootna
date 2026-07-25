@@ -65,9 +65,10 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
 
     if (!property) return null;
 
-    // Fallback cover image
-    const coverImage =
-      property.images?.[0] || 'https://via.placeholder.com/400x250?text=No+Image';
+    const coverImage = property.images?.[0];
+    const imageSource = coverImage
+      ? { uri: coverImage }
+      : require('@/assets/images/no-image.png');
 
     // Construct label like "شقة للبيع" or "عقار تجاري للبيع"
     const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
@@ -143,7 +144,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
           <View className="px-6 my-4">
             <View className="relative h-[210px] w-full overflow-hidden rounded-sm bg-gray-50">
               <Image
-                source={{ uri: coverImage }}
+                source={imageSource}
                 className="h-full w-full"
                 resizeMode="cover"
               />

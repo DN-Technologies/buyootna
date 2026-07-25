@@ -131,24 +131,12 @@ export default function PropertyMediaHeader({
           </View>
         </>
       ) : (
-        // --- Fallback State (Exchange / No Images) ---
-        <View
-          className="items-center justify-center bg-[#15304D]"
-          style={{
-            height: HEADER_HEIGHT,
-            width: '100%',
-            paddingTop: insets.top,
-          }}
-        >
-          {/* Simulating the BUYOOTN Logo block from Figma */}
-          <View className="items-center">
-            <Image
-              source={require('@/assets/icons/fallback-logo.svg')}
-              style={{ width: 155, height: 165 }}
-              resizeMode="contain"
-            />
-          </View>
-        </View>
+        // --- Fallback State (No Images provided) ---
+        <Image
+          source={require('@/assets/images/no-image.png')}
+          style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT }}
+          resizeMode="cover"
+        />
       )}
     </View>
   );

@@ -286,12 +286,11 @@ export default function AdPreviewScreen() {
                 resizeMode="cover"
               />
             ) : (
-              <View className="h-48 w-full items-center justify-center rounded-xl border border-gray-200 bg-gray-50">
-                <Feather name="image" size={32} color="#D1D5DB" />
-                <Text className="mt-2 font-cairo-medium text-gray-400">
-                  لا توجد صور
-                </Text>
-              </View>
+              <Image
+                source={require('@/assets/images/no-image.png')}
+                className="h-48 w-full rounded-xl"
+                resizeMode="cover"
+              />
             )}
 
             {/* Additional Image Thumbnails (if any) */}

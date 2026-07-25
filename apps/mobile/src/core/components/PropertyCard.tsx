@@ -103,26 +103,32 @@ export default function PropertyCard({
       }}
     >
       {/* --- 1. Image Carousel Section --- */}
-      <View className="relative h-48 w-full">
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {images.map((img, index) => (
-            <Image
-              key={index}
-              source={typeof img === 'string' ? { uri: img } : img}
-              style={{
-                width: imageWidth,
-                height: '100%',
-              }}
-              resizeMode="cover"
-            />
-          ))}
-        </ScrollView>
+      {(() => {
+        const displayImages =
+          images && images.length > 0
+            ? images
+            : [require('@/assets/images/no-image.png')];
+        return (
+          <View className="relative h-48 w-full">
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+            >
+              {displayImages.map((img, index) => (
+                <Image
+                  key={index}
+                  source={typeof img === 'string' ? { uri: img } : img}
+                  style={{
+                    width: imageWidth,
+                    height: '100%',
+                  }}
+                  resizeMode="cover"
+                />
+              ))}
+            </ScrollView>
 
         {/* Absolute Top Right: Badges */}
         <View className="absolute right-3 top-3 flex-row gap-2">
@@ -169,7 +175,7 @@ export default function PropertyCard({
 
         {/* Absolute Bottom: Pagination Dots */}
         <View className="absolute bottom-3 w-full flex-row items-center justify-center space-x-1.5 space-x-reverse">
-          {images.map((_, index) => (
+          {displayImages.map((_, index) => (
             <View
               key={index}
               className={`h-1.5 rounded-full ${activeIndex === index ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`}
@@ -178,6 +184,8 @@ export default function PropertyCard({
         </View>
         <View className="absolute bottom-0 left-0 right-0 h-2 w-full rounded-t-[40px] bg-white" />
       </View>
+        );
+      })()}
 
       {/* --- 2. Content Info Section --- */}
       <View className="px-4 py-2">

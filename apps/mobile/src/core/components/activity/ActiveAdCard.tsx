@@ -50,9 +50,10 @@ export default function ActiveAdCard({
 }: ActiveAdCardProps) {
   const [showMenu, setShowMenu] = useState(false);
 
-  // Use a fallback image if none exists
-  const coverImage =
-    property.images?.[0] || 'https://via.placeholder.com/400x250?text=No+Image';
+  const coverImage = property.images?.[0];
+  const imageSource = coverImage
+    ? { uri: coverImage }
+    : require('@/assets/images/no-image.png');
 
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
@@ -61,7 +62,7 @@ export default function ActiveAdCard({
       {/* --- Image Header & Badges --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
-          source={{ uri: coverImage }}
+          source={imageSource}
           className="h-full w-full"
           resizeMode="cover"
         />
