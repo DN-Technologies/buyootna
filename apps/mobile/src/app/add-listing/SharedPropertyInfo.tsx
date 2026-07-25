@@ -128,6 +128,7 @@ export default function SharedPropertyInfo() {
           <Text
             className={`flex-1 font-cairo ${mapLocationLabel || mapLocation ? 'text-[#111111]' : 'text-[#D1D5DB]'}`}
             style={{ writingDirection: 'rtl' }}
+            numberOfLines={1}
           >
             {mapLocationLabel
               ? mapLocationLabel
@@ -136,10 +137,16 @@ export default function SharedPropertyInfo() {
                 : 'حدد الموقع على الخريطة'}
           </Text>
 
-          {/* Map Icon (Left side in RTL) */}
-          <TouchableOpacity onPress={handleClearMap} className="p-1">
-            <Feather name="map" size={18} color="#94A3B8" />
-          </TouchableOpacity>
+          {/* Map Icon or Clear Button */}
+          {mapLocationLabel || mapLocation ? (
+            <TouchableOpacity onPress={handleClearMap} className="p-1">
+              <Feather name="x-circle" size={18} color="#94A3B8" />
+            </TouchableOpacity>
+          ) : (
+            <View className="p-1">
+              <Feather name="map-pin" size={18} color="#15304D" />
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -307,6 +314,7 @@ export default function SharedPropertyInfo() {
             }}
             initialLat={initialLat}
             initialLng={initialLng}
+            initialAddressLabel={mapLocationLabel || undefined}
           />
         );
       })()}

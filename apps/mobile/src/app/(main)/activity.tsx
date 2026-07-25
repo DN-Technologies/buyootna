@@ -237,8 +237,6 @@ export default function ActivityScreen() {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
-
-
   const handleEditAd = (propertyId: string) => {
     console.log('Edit ad:', propertyId);
     router.push({
@@ -332,7 +330,7 @@ export default function ActivityScreen() {
 
         {/* Plus Button */}
         <TouchableOpacity
-          onPress={() => router.push('/add-listing')}
+          onPress={() => router.push('/add-listing/index' as any)}
           className="h-10 w-10 items-center justify-end rounded-full"
         >
           <Feather name="plus" size={24} color="#111111" />

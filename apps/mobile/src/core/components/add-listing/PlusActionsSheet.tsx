@@ -71,7 +71,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
           } else {
             // User has free ads remaining. Close the actions sheet and navigate to create listing screen
             handleClose();
-            router.push('/add-listing');
+            router.push('/add-listing/index' as any);
           }
         } else {
           Alert.alert(

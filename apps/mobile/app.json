@@ -62,6 +62,12 @@
           "photosPermission": "يحتاج التطبيق للوصول إلى صورك لإضافتها إلى إعلانك"
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "يستخدم التطبيق موقعك الجغرافي لتحديد مكانك وعرض العقارات والخدمات القريبة منك على الخريطة."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
