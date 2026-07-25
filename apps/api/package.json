@@ -24,6 +24,8 @@
     "prisma:generate": "prisma generate --schema=prisma",
     "prisma:studio": "prisma studio --schema=prisma",
     "prisma:migrate": "prisma migrate dev --schema=prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=prisma",
+    "prisma:migrate:status": "prisma migrate status --schema=prisma",
     "prisma:reset": "prisma migrate reset --force --schema=prisma && prisma db push --schema=prisma && prisma generate --schema=prisma && pnpm run seed"
   },
   "dependencies": {
