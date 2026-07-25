@@ -49,16 +49,13 @@ jobs:
           node-version: 20
 
       - name: Install API dependencies
-        working-directory: apps/api
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
-        working-directory: apps/api
-        run: pnpm prisma:generate
+        run: pnpm --filter api prisma:generate
 
       - name: Build API
-        working-directory: apps/api
-        run: pnpm run build
+        run: pnpm --filter api build
 
   docker-build:
     name: Validate Docker Build
