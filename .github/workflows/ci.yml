@@ -65,6 +65,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create dummy env files
+        run: |
+          mkdir -p apps/api
+          touch apps/api/.env
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
