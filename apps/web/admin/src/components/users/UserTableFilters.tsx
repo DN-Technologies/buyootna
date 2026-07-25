@@ -1,24 +1,20 @@
 'use client'
 
 import React from 'react'
-import { Search, ChevronDown, Calendar } from 'lucide-react'
+import { Search, ChevronDown } from 'lucide-react'
 
 interface UserTableFiltersProps {
   searchQuery: string
   onSearchChange: (query: string) => void
-  selectedType?: string
-  onTypeChange?: (val: string) => void
   selectedStatus?: string
   onStatusChange?: (val: string) => void
-  selectedPlan?: string
-  onPlanChange?: (val: string) => void
-  selectedVerification?: string
-  onVerificationChange?: (val: string) => void
 }
 
 export default function UserTableFilters({
   searchQuery,
   onSearchChange,
+  selectedStatus = '',
+  onStatusChange,
 }: UserTableFiltersProps) {
   return (
     <div className="w-full flex items-center justify-between py-4 px-8 border-b border-[#ECECEC] text-right font-['Cairo']">
@@ -37,49 +33,23 @@ export default function UserTableFilters({
         </div>
       </div>
 
-      {/* Filter Dropdown Buttons (Left side in RTL) */}
+      {/* Filter Dropdown Buttons */}
       <div className="flex items-center gap-2">
-        {/* Type Dropdown */}
-        <button
-          type="button"
-          className="h-8.5 bg-white border border-[#E2E8F0] rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-[14px] font-medium text-[#111111] hover:bg-[#F8FAFC] cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-[#111111]" />
-          <span>النوع</span>
-        </button>
         {/* Status Dropdown */}
-        <button
-          type="button"
-          className="h-8.5 bg-white border border-[#E2E8F0] rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-[14px] font-medium text-[#A0A0A0] hover:bg-[#F8FAFC] cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-[#A0A0A0]" />
-          <span>الحالة</span>
-        </button>
-        {/* Plan Dropdown */}
-        <button
-          type="button"
-          className="h-8.5 bg-white border border-[#E2E8F0] rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-[14px] font-medium text-[#A0A0A0] hover:bg-[#F8FAFC] cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-[#A0A0A0]" />
-          <span>الاشتراك</span>
-        </button>
-        {/* Verification Dropdown */}
-        <button
-          type="button"
-          className="h-8.5 bg-white border border-[#E2E8F0] rounded-md px-2.5 py-1.5 flex items-center gap-1.5 text-[14px] font-medium text-[#A0A0A0] hover:bg-[#F8FAFC] cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-[#A0A0A0]" />
-          <span>التوثيق</span>
-        </button>
-        {/* Registration Date Dropdown */}
-        <button
-          type="button"
-          className="h-8.5 bg-white border border-[#E2E8F0] rounded-lg px-3 py-1.5 flex items-center gap-2 text-[14px] font-medium text-[#111111] hover:bg-[#F8FAFC] cursor-pointer"
-        >
-          <Calendar className="w-4 h-4 text-[#6B6A6A]" />
-          <span>تاريخ التسجيل</span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#6B6A6A]" />
-        </button>
+        <div className="relative">
+          <select
+            value={selectedStatus}
+            onChange={(e) => onStatusChange?.(e.target.value)}
+            className="appearance-none h-8.5 bg-white border border-[#E2E8F0] rounded-md pr-3 pl-8 py-1 flex items-center gap-1.5 text-[14px] font-medium text-[#111111] hover:bg-[#F8FAFC] cursor-pointer outline-none font-['Cairo']"
+            dir="rtl"
+          >
+            <option value="">جميع الحالات</option>
+            <option value="active">نشط</option>
+            <option value="blocked">محظور</option>
+            <option value="suspended">موقوف</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-[#111111] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
       </div>
     </div>
   )

@@ -45,7 +45,7 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
         {/* Figma compliant TopBar (node 2376:5360) */}
-        <header className="h-[70px] bg-white border-b border-[#ECECEC] flex items-center justify-between px-8 shrink-0 z-30">
+        <header className="h-17.5 bg-white border-b border-[#ECECEC] flex items-center justify-between px-8 shrink-0 z-30">
           {/* Right Side (RTL): Mobile toggle + Search Input */}
           <div className="flex items-center gap-4 flex-1">
             <button
@@ -60,14 +60,14 @@ export default function DashboardLayout({
             </button>
 
             {/* Pill Search box */}
-            <div className="hidden sm:flex items-center justify-end bg-white border border-[#ECECEC] rounded-[64px] px-3.5 py-1.5 w-full max-w-[428px] shrink-0">
+            <div className="hidden sm:flex items-center justify-end bg-white border border-[#ECECEC] rounded-[64px] px-3.5 py-1.5 w-full max-w-107 shrink-0">
               <div className="flex items-center justify-end gap-2 w-full">
                 <input
                   type="text"
                   placeholder="ابحث عن عقار أو خدمة..."
                   className="bg-transparent border-none text-right font-['Cairo'] font-medium text-[13px] text-[#111111] placeholder-[#989898] focus:outline-none w-full"
                 />
-                <Search className="w-[18px] h-[18px] text-[#989898]" />
+                <Search className="w-4.5 h-4.5 text-[#989898]" />
               </div>
             </div>
           </div>
@@ -77,11 +77,11 @@ export default function DashboardLayout({
             {/* Notification Bell with Red Dot */}
             <button className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#111111] hover:bg-[#F8F9FA] transition">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-[8px] left-[17px] w-1.5 h-1.5 rounded-full bg-[#BA0003]" />
+              <span className="absolute top-2 left-4.5 w-1.5 h-1.5 rounded-full bg-[#BA0003]" />
             </button>
 
             {/* Vertical Divider */}
-            <div className="w-px h-[32px] bg-[#ECECEC]" />
+            <div className="w-px h-8 bg-[#ECECEC]" />
 
             {/* Profile Dropdown Toggle */}
             <div className="relative">

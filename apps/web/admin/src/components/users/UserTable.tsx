@@ -1,15 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Eye, MoreVertical } from 'lucide-react'
+import { Eye, MoreVertical, ShieldAlert, ShieldCheck, Ban, Trash2 } from 'lucide-react'
 
 export interface UserRow {
   id: string
   name: string
   email: string
+  phone?: string
   accountType: 'فرد' | 'شركة' | 'مكتب عقاري'
   verificationStatus: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—'
-  subscriptionPlan: 'الفضية' | 'السنوية' | 'العادية' | 'الذهبية'
+  subscriptionPlan: string
   accountStatus: 'نشط' | 'محظور' | 'موقوف'
   registrationDate: string
 }
@@ -17,15 +18,20 @@ export interface UserRow {
 interface UserTableProps {
   users: UserRow[]
   onViewUser?: (user: UserRow) => void
-  onActionClick?: (user: UserRow) => void
+  onStatusChange?: (user: UserRow, newStatus: 'active' | 'blocked' | 'suspended') => void
+  onDeleteUser?: (user: UserRow) => void
+  loading?: boolean
 }
 
 export default function UserTable({
   users,
   onViewUser,
-  onActionClick,
+  onStatusChange,
+  onDeleteUser,
+  loading = false,
 }: UserTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
 
   const toggleSelectAll = () => {
     if (selectedIds.length === users.length) {
@@ -71,7 +77,7 @@ export default function UserTable({
   }
 
   const renderSubscriptionBadge = (plan: UserRow['subscriptionPlan']) => {
-    const styles = {
+    const styles: Record<string, string> = {
       الفضية: 'bg-[#F1F5F9] text-[#334155]',
       السنوية: 'bg-[#FEF9C3] text-[#854D0E]',
       العادية: 'bg-[#F8FAFC] text-[#64748B]',
@@ -114,7 +120,7 @@ export default function UserTable({
   }
 
   return (
-    <div className="w-full overflow-x-auto bg-white border border-[#ECECEC] rounded-lg font-['Cairo']">
+    <div className="w-full overflow-x-auto bg-white border border-[#ECECEC] rounded-lg font-['Cairo'] relative">
       <table className="w-full text-right border-collapse" dir="rtl">
         {/* Table Header */}
         <thead>
@@ -135,92 +141,180 @@ export default function UserTable({
             <th className="py-3 px-4">الاشتراك</th>
             <th className="py-3 px-4">الحالة</th>
             <th className="py-3 px-4">تاريخ التسجيل</th>
-            <th className="py-3 px-4 text-center">الاجراءات</th>
+            <th className="py-3 px-4 text-center">الإجراءات</th>
           </tr>
         </thead>
 
         {/* Table Body */}
         <tbody className="divide-y divide-[#ECECEC] text-[13px]">
-          {users.map((user) => {
-            const isSelected = selectedIds.includes(user.id)
-            return (
-              <tr
-                key={user.id}
-                className={`h-13.5 hover:bg-[#F8FAFC] transition-colors ${
-                  isSelected ? 'bg-[#F1F5F9]/50' : ''
-                }`}
-              >
-                {/* Selection Checkbox */}
-                <td className="py-3 px-4">
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => toggleSelectRow(user.id)}
-                    className="rounded border-[#CBD5E1] cursor-pointer"
-                  />
-                </td>
+          {loading ? (
+            <tr>
+              <td colSpan={8} className="py-8 text-center text-[#6B6A6A]">
+                جاري تحميل البيانات...
+              </td>
+            </tr>
+          ) : users.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="py-8 text-center text-[#6B6A6A]">
+                لا يوجد مستخدمون مطايقون للبحث
+              </td>
+            </tr>
+          ) : (
+            users.map((user) => {
+              const isSelected = selectedIds.includes(user.id)
+              const isMenuOpen = activeMenuId === user.id
 
-                {/* User Name & Email */}
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-[#111111] text-[14px]">
-                      {user.name}
-                    </span>
-                    <span className="text-[#6B6A6A] text-[12px] font-normal">
-                      {user.email}
-                    </span>
-                  </div>
-                </td>
+              return (
+                <tr
+                  key={user.id}
+                  className={`h-13.5 hover:bg-[#F8FAFC] transition-colors ${
+                    isSelected ? 'bg-[#F1F5F9]/50' : ''
+                  }`}
+                >
+                  {/* Selection Checkbox */}
+                  <td className="py-3 px-4">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleSelectRow(user.id)}
+                      className="rounded border-[#CBD5E1] cursor-pointer"
+                    />
+                  </td>
 
-                {/* Account Type */}
-                <td className="py-3 px-4 text-[#111111] font-medium">
-                  {user.accountType}
-                </td>
+                  {/* User Name & Email */}
+                  <td className="py-3 px-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-[#111111] text-[14px]">
+                        {user.name}
+                      </span>
+                      <span className="text-[#6B6A6A] text-[12px] font-normal">
+                        {user.email}
+                      </span>
+                    </div>
+                  </td>
 
-                {/* Verification Status */}
-                <td className="py-3 px-4">
-                  {renderVerificationBadge(user.verificationStatus)}
-                </td>
+                  {/* Account Type */}
+                  <td className="py-3 px-4 text-[#111111] font-medium">
+                    {user.accountType}
+                  </td>
 
-                {/* Subscription Plan */}
-                <td className="py-3 px-4">
-                  {renderSubscriptionBadge(user.subscriptionPlan)}
-                </td>
+                  {/* Verification Status */}
+                  <td className="py-3 px-4">
+                    {renderVerificationBadge(user.verificationStatus)}
+                  </td>
 
-                {/* Account Status */}
-                <td className="py-3 px-4">
-                  {renderStatusBadge(user.accountStatus)}
-                </td>
+                  {/* Subscription Plan */}
+                  <td className="py-3 px-4">
+                    {renderSubscriptionBadge(user.subscriptionPlan)}
+                  </td>
 
-                {/* Registration Date */}
-                <td className="py-3 px-4 text-[#6B6A6A]">
-                  {user.registrationDate}
-                </td>
+                  {/* Account Status */}
+                  <td className="py-3 px-4">
+                    {renderStatusBadge(user.accountStatus)}
+                  </td>
 
-                {/* Action Buttons */}
-                <td className="py-3 px-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onViewUser?.(user)}
-                      className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
-                      title="عرض التفاصيل"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onActionClick?.(user)}
-                      className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
-                      title="المزيد من الخيارات"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
+                  {/* Registration Date */}
+                  <td className="py-3 px-4 text-[#6B6A6A]">
+                    {user.registrationDate}
+                  </td>
+
+                  {/* Action Buttons */}
+                  <td className="py-3 px-4 relative">
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onViewUser?.(user)}
+                        className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
+                        title="عرض التفاصيل"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveMenuId(isMenuOpen ? null : user.id)
+                          }
+                          className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
+                          title="المزيد من الإجراءات"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {/* Action Dropdown Menu */}
+                        {isMenuOpen && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setActiveMenuId(null)}
+                            />
+                            <div className="absolute left-0 mt-1 w-44 bg-white border border-[#ECECEC] rounded-lg shadow-lg py-1 z-20 text-right font-['Cairo']">
+                              {user.accountStatus !== 'نشط' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuId(null)
+                                    onStatusChange?.(user, 'active')
+                                  }}
+                                  className="w-full px-3 py-2 text-[13px] text-green-700 hover:bg-green-50 flex items-center justify-end gap-2 font-medium"
+                                >
+                                  <span>تفعيل الحساب</span>
+                                  <ShieldCheck className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {user.accountStatus !== 'موقوف' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuId(null)
+                                    onStatusChange?.(user, 'suspended')
+                                  }}
+                                  className="w-full px-3 py-2 text-[13px] text-amber-700 hover:bg-amber-50 flex items-center justify-end gap-2 font-medium"
+                                >
+                                  <span>إيقاف الحساب</span>
+                                  <Ban className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {user.accountStatus !== 'محظور' && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuId(null)
+                                    onStatusChange?.(user, 'blocked')
+                                  }}
+                                  className="w-full px-3 py-2 text-[13px] text-red-700 hover:bg-red-50 flex items-center justify-end gap-2 font-medium"
+                                >
+                                  <span>حظر الحساب</span>
+                                  <ShieldAlert className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              <div className="my-1 border-t border-[#ECECEC]" />
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveMenuId(null)
+                                  onDeleteUser?.(user)
+                                }}
+                                className="w-full px-3 py-2 text-[13px] text-red-600 hover:bg-red-50 flex items-center justify-end gap-2 font-medium"
+                              >
+                                <span>حذف المستخدم</span>
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })
+          )}
         </tbody>
       </table>
     </div>
