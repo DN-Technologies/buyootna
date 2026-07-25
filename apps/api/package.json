@@ -24,6 +24,8 @@
     "prisma:generate": "prisma generate --schema=prisma",
     "prisma:studio": "prisma studio --schema=prisma",
     "prisma:migrate": "prisma migrate dev --schema=prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --schema=prisma",
+    "prisma:migrate:status": "prisma migrate status --schema=prisma",
     "prisma:reset": "prisma migrate reset --force --schema=prisma && prisma db push --schema=prisma && prisma generate --schema=prisma && pnpm run seed"
   },
   "dependencies": {
@@ -53,7 +55,7 @@
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
     "twilio": "^6.0.2",
-    "uuid": "^14.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -64,7 +66,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.0",
     "@types/heic-convert": "^2.1.1",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/multer": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
@@ -72,12 +74,12 @@
     "@types/pg": "^8.20.0",
     "@types/socket.io": "^3.0.2",
     "@types/supertest": "^6.0.2",
-    "@types/uuid": "^11.0.0",
+    "@types/uuid": "^9.0.8",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
-    "jest": "^30.0.0",
+    "jest": "^29.7.0",
     "prettier": "^3.4.2",
     "prisma": "^7.8.0",
     "source-map-support": "^0.5.21",
@@ -104,6 +106,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   }
 }
