@@ -13,12 +13,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%b' "${SSH_KEY}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          key_path: ~/.ssh/deploy_key
           script: |
             cd ${{ secrets.TARGET_DIR }}
             git pull origin main
