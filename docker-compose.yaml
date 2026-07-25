@@ -14,12 +14,6 @@ services:
       - ./apps/api/.env
     restart: always
 
-  buyootna-landing:
-    build: ./apps/buyootna-landing
-    expose: ["3000"]
-    restart: always
-
-
   certbot:
     image: certbot/certbot
     volumes:
@@ -60,9 +54,4 @@ services:
       context: .
       dockerfile: apps/web/admin/Dockerfile
     expose: ["3005"]
-    restart: always
-
-  marketing:
-    build: ./apps/marketing
-    expose: ["7000"]
     restart: always
