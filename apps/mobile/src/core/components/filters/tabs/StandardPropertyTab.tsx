@@ -1,44 +1,33 @@
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { useMemo, useRef } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
 import PillGroup from '@/core/components/filters/PillGroup';
-import RangeInputGroup from '@/core/components/filters/RangeInputGroup';
 import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
-import StepperInput from '@/core/components/filters/StepperInput';
 import { useFilterStore } from '@/core/store/useFilterStore';
-import { AREAS,GOVERNORATES } from '@/core/utils/data/locations';
+import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
 
-// --- Mock Data matching your Figma ---
+// --- Category options matching Figma design ---
 const CATEGORY_OPTIONS = [
   { id: 'investment', label: 'استثماري' },
-  { id: 'house', label: 'بيت' },
   { id: 'apartment', label: 'شقة' },
+  { id: 'house', label: 'بيت' },
+  { id: 'commercial', label: 'تجاري' },
   { id: 'building', label: 'عمارة' },
-  { id: 'land', label: 'أرض' },
   { id: 'office', label: 'مكتب' },
-  { id: 'residential', label: 'سكني' },
-  { id: 'villa', label: 'فيلا' },
   { id: 'chalet', label: 'شاليه' },
-];
-
-const FEATURE_OPTIONS = [
-  { id: 'garage', label: 'جراج' },
-  { id: 'ac', label: 'مكيف' },
-  { id: 'sea_view', label: 'إطلالة بحرية' },
-  { id: 'elevator', label: 'مصعد' },
-  { id: 'pool', label: 'حمام سباحة' },
+  { id: 'residential', label: 'سكني' },
 ];
 
 export interface StandardPropertyTabProps {
-  type: 'sell' | 'rent';
+  type: 'sell' | 'rent' | 'offices';
 }
 
 export default function StandardPropertyTab({
   type,
 }: StandardPropertyTabProps) {
-  // 1. Pull the state specifically for THIS tab ('sell' or 'rent')
+  // 1. Pull the state specifically for THIS tab ('sell', 'rent', or 'offices')
   const tabState = useFilterStore((state) => state[type]);
 
   // 2. Pull the update function
@@ -102,57 +91,40 @@ export default function StandardPropertyTab({
             onPress={() => areaDrawerRef.current?.present()}
           />
         </View>
-        {/* --- 2. Property Category --- */}
-        <PillGroup
-          title="فئة العقار"
-          options={CATEGORY_OPTIONS}
-          multiSelect={false}
-          value={tabState.category}
-          onChange={(value) => setField('category', value)}
-        />
-        {/* --- 3. Steppers Row (Rooms & Baths) --- */}
-        <View className="mb-6 w-full flex-row gap-3">
-          <StepperInput
-            title="عدد الغرف"
-            value={tabState.rooms}
-            onChange={(value) => setField('rooms', value)}
-            min={1}
-            max={10}
-          />
-          <StepperInput
-            title="عدد الحمامات"
-            value={tabState.baths}
-            onChange={(value) => setField('baths', value)}
-            min={1}
-            max={10}
-          />
-        </View>
-        {/* --- 4. Price Range --- */}
-        <RangeInputGroup
-          title="السعر"
-          placeholderSuffix="د.ك"
-          minValue={tabState.minPrice}
-          maxValue={tabState.maxPrice}
-          onMinChange={(value) => setField('minPrice', value)}
-          onMaxChange={(value) => setField('maxPrice', value)}
-        />
-        {/* --- 5. Area Range --- */}
-        <RangeInputGroup
-          title="المساحة"
-          placeholderSuffix="م²"
-          minValue={tabState.minArea}
-          maxValue={tabState.maxArea}
-          onMinChange={(value) => setField('minArea', value)}
-          onMaxChange={(value) => setField('maxArea', value)}
-        />
-        {/* --- 6. Features --- */}
-        <PillGroup
-          title="المزايا"
-          options={FEATURE_OPTIONS}
-          multiSelect={true}
-          value={tabState.features}
-          onChange={(value) => setField('features', value)}
-        />
+
+        {type !== 'offices' && (
+          <>
+            {/* --- 2. Property Category --- */}
+            <PillGroup
+              title="فئة العقار"
+              options={CATEGORY_OPTIONS}
+              multiSelect={false}
+              value={tabState.category}
+              onChange={(value) => setField('category', value)}
+            />
+
+            {/* --- 3. Price Input --- */}
+            <View className="mb-6 w-full">
+              <Text
+                className="mb-1 font-cairo text-sm text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                السعر
+              </Text>
+              <View className="h-[40px] justify-center rounded-md border border-[#ECECEC] bg-white px-4">
+                <BottomSheetTextInput
+                  className="h-10 text-right font-cairo text-[13px] text-[#111111]"
+                  placeholder="200,000 د.ك"
+                  placeholderTextColor="#D1D5DB"
+                  keyboardType="numeric"
+                  value={tabState.maxPrice}
+                  onChangeText={(value) => setField('maxPrice', value)}
+                  style={{ writingDirection: 'rtl' }}
+                />
+              </View>
+            </View>
+          </>
+        )}
       </BottomSheetScrollView>
 
       {/* --- Drawers (Rendered outside the scrollview but inside the tab) --- */}

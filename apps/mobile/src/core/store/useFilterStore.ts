@@ -62,6 +62,7 @@ export interface FilterTabsState {
   rent: StandardTabState;
   exchange: ExchangeTabState;
   companies: CompaniesTabState;
+  offices: StandardTabState;
   auctions: AuctionsTabState;
   deals: DealsTabState;
 }
@@ -78,6 +79,11 @@ export const initialStandardState: StandardTabState = {
   minArea: '',
   maxArea: '',
   features: [],
+};
+
+export const initialOfficeState: StandardTabState = {
+  ...initialStandardState,
+  category: 'office',
 };
 
 export const initialExchangeState: ExchangeTabState = {
@@ -123,6 +129,7 @@ const initialStates: Record<keyof FilterTabsState, any> = {
   rent: initialStandardState,
   exchange: initialExchangeState,
   companies: initialCompaniesState,
+  offices: initialOfficeState,
   auctions: initialAuctionsState,
   deals: initialDealsState,
 };
@@ -156,6 +163,7 @@ export const useFilterStore = create<FilterStore>((set) => ({
   rent: { ...initialStandardState },
   exchange: { ...initialExchangeState },
   companies: { ...initialCompaniesState },
+  offices: { ...initialOfficeState },
   auctions: { ...initialAuctionsState },
   deals: { ...initialDealsState },
 
@@ -178,6 +186,8 @@ export const useFilterStore = create<FilterStore>((set) => ({
           return { exchange: { ...initialExchangeState } };
         case 'companies':
           return { companies: { ...initialCompaniesState } };
+        case 'offices':
+          return { offices: { ...initialOfficeState } };
         case 'auctions':
           return { auctions: { ...initialAuctionsState } };
         case 'deals':

@@ -5,7 +5,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,7 +19,6 @@ import {
   AlarmIcon,
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
-import apiClient from '@/core/api/api';
 import { plansService } from '@/core/api/plans.service';
 
 export interface PlusActionsSheetProps {
@@ -32,8 +31,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
     const router = useRouter();
     const [isCheckingQuota, setIsCheckingQuota] = useState(false);
 
-    // Height just enough to fit the 3 buttons comfortably
-    const snapPoints = useMemo(() => ['40%'], []);
+
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -83,7 +81,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={snapPoints}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
         handleIndicatorStyle={{
@@ -93,8 +91,8 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView style={{ flex: 1 }}>
-          <View style={{ flex: 1 }} className="bg-white px-5 pt-2">
+        <BottomSheetView>
+          <View className="bg-white px-5 pt-2 pb-10">
             {/* --- 1. Header --- */}
             <View className="flex-row items-center justify-between pb-6">
               <Text className="font-cairo-bold text-base text-[#111111]">
