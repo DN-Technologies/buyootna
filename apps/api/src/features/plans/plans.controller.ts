@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { PlansService, type PublishOption } from './plans.service';
+import { PlansService, type PublishOptionsResponse } from './plans.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { User } from '@prisma/client';
@@ -21,7 +21,9 @@ export class PlansController {
 
   @Get('wallet/publish-options')
   @UseGuards(JwtAuthGuard)
-  async getPublishOptions(@CurrentUser() user: User): Promise<PublishOption[]> {
+  async getPublishOptions(
+    @CurrentUser() user: User,
+  ): Promise<PublishOptionsResponse> {
     return this.plansService.getPublishOptions(user.id);
   }
 }

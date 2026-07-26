@@ -15,6 +15,11 @@ export interface PublishOption {
   prioritySearch: boolean;
 }
 
+export interface PublishOptionsResponse {
+  canPublish: boolean;
+  options: PublishOption[];
+}
+
 @Injectable()
 export class PlansService {
   constructor(private readonly prisma: PrismaService) {}
@@ -60,7 +65,7 @@ export class PlansService {
     };
   }
 
-  async getPublishOptions(userId: string): Promise<PublishOption[]> {
+  async getPublishOptions(userId: string): Promise<PublishOptionsResponse> {
     const wallet = await this.getUserWallet(userId);
 
     const options: PublishOption[] = [];
