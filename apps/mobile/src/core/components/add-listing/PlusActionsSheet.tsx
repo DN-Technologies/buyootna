@@ -5,7 +5,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,7 +19,7 @@ import {
   AlarmIcon,
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
-import apiClient from '@/core/api/api';
+import { plansService } from '@/core/api/plans.service';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
@@ -31,8 +31,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
     const router = useRouter();
     const [isCheckingQuota, setIsCheckingQuota] = useState(false);
 
-    // Height just enough to fit the 3 buttons comfortably
-    const snapPoints = useMemo(() => ['40%'], []);
+
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -57,28 +56,15 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
 
       try {
         setIsCheckingQuota(true);
-        // Call /users/me endpoint to fetch current profile with latest remaining free ads count
-        const response = await apiClient.get('/users/me');
-        const user = response.data.user;
-
+        const publishOptions = await plansService.getPublishOptions();
         setIsCheckingQuota(false);
 
-        if (user && typeof user.freeAdsRemaining === 'number') {
-          if (user.freeAdsRemaining <= 0) {
-            // Quota is exhausted. Close the actions sheet and present QuotaExhaustedSheet
-            handleClose();
-            onQuotaExhausted();
-          } else {
-            // User has free ads remaining. Close the actions sheet and navigate to create listing screen
-            handleClose();
-            router.push('/add-listing/index' as any);
-          }
+        if (!publishOptions.canPublish) {
+          handleClose();
+          onQuotaExhausted();
         } else {
-          Alert.alert(
-            'خطأ',
-            'فشل في قراءة بيانات حسابك. يرجى المحاولة لاحقاً.',
-            [{ text: 'حسناً' }],
-          );
+          handleClose();
+          router.push('/add-listing');
         }
       } catch (error) {
         setIsCheckingQuota(false);
@@ -95,7 +81,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={snapPoints}
+        enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
         handleIndicatorStyle={{
@@ -105,8 +91,8 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView style={{ flex: 1 }}>
-          <View style={{ flex: 1 }} className="bg-white px-5 pt-2">
+        <BottomSheetView>
+          <View className="bg-white px-5 pt-2 pb-10">
             {/* --- 1. Header --- */}
             <View className="flex-row items-center justify-between pb-6">
               <Text className="font-cairo-bold text-base text-[#111111]">

@@ -112,7 +112,13 @@ export default function PropertyMessageBubble({
         >
           {/* Top Image - Redesigned to be taller and full bleed */}
           <Image
-            source={{ uri: property.imageUrl }}
+            source={
+              property.imageUrl &&
+              !property.imageUrl.includes('no-image') &&
+              !property.imageUrl.includes('placeholder')
+                ? { uri: property.imageUrl }
+                : require('@/assets/images/no-image.png')
+            }
             className="h-48 w-full bg-gray-100"
             resizeMode="cover"
           />

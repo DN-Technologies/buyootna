@@ -15,6 +15,9 @@ const STATUS_OPTIONS = [
 ];
 
 const EXCHANGE_FEATURE_OPTIONS = [
+  { id: 'pool', label: 'حمام سباحة' },
+  { id: 'garage', label: 'كراج' },
+  { id: 'elevator', label: 'مصعد' },
   { id: 'three_streets', label: 'ثلاث شوارع' },
   { id: 'front_back', label: 'بطن وظهر' },
   { id: 'corner', label: 'زاوية' },
@@ -96,27 +99,6 @@ export default function ExchangePropertyTab() {
               className="mb-1 font-cairo text-sm leading-[22px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
             >
-              السنة المطلوبة
-            </Text>
-            <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
-              <BottomSheetTextInput
-                className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
-                placeholder="2026"
-                placeholderTextColor="#D1D5DB"
-                keyboardType="numeric"
-                maxLength={4}
-                value={tabState.requiredYear}
-                onChangeText={(value) => setField('requiredYear', value)}
-                style={{ writingDirection: 'rtl' }}
-              />
-            </View>
-          </View>
-
-          <View className="flex-1">
-            <Text
-              className="mb-1 font-cairo text-sm leading-[22px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
               سنة الطلب
             </Text>
             <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
@@ -128,6 +110,27 @@ export default function ExchangePropertyTab() {
                 maxLength={4}
                 value={tabState.requestYear}
                 onChangeText={(value) => setField('requestYear', value)}
+                style={{ writingDirection: 'rtl' }}
+              />
+            </View>
+          </View>
+
+          <View className="flex-1">
+            <Text
+              className="mb-1 font-cairo text-sm leading-[22px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              السنة المطلوبة
+            </Text>
+            <View className="h-[40px] justify-center rounded-md border border-gray-200 bg-white px-4">
+              <BottomSheetTextInput
+                className="h-10 text-right font-cairo text-[13px] leading-[22px] text-[#111111]"
+                placeholder="2023"
+                placeholderTextColor="#D1D5DB"
+                keyboardType="numeric"
+                maxLength={4}
+                value={tabState.requiredYear}
+                onChangeText={(value) => setField('requiredYear', value)}
                 style={{ writingDirection: 'rtl' }}
               />
             </View>

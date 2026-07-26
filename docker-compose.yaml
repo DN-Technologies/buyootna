@@ -8,17 +8,13 @@ services:
       - ./certbot/conf:/etc/letsencrypt
 
   api:
-    build: ./apps/api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     expose: ["8000"]
     env_file:
       - ./apps/api/.env
     restart: always
-
-  buyootna-landing:
-    build: ./apps/buyootna-landing
-    expose: ["3000"]
-    restart: always
-
 
   certbot:
     image: certbot/certbot
@@ -60,9 +56,4 @@ services:
       context: .
       dockerfile: apps/web/admin/Dockerfile
     expose: ["3005"]
-    restart: always
-
-  marketing:
-    build: ./apps/marketing
-    expose: ["7000"]
     restart: always

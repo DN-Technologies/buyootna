@@ -23,14 +23,22 @@ export default function PlansScreen() {
   const router = useRouter();
 
   const [plans, setPlans] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<{ freeAdsRemaining: number; slots: any[] }>({
+    freeAdsRemaining: 0,
+    slots: [],
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const fetchPlans = async () => {
+  const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await plansService.getPlans();
-      const mapped = response.map((plan) => ({
+      const [plansRes, walletRes] = await Promise.all([
+        plansService.getPlans(),
+        plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
+      ]);
+
+      const mapped = plansRes.map((plan) => ({
         id: plan.slug,
         name: plan.name,
         price: `${plan.price} دينار كويتي`,
@@ -41,24 +49,18 @@ export default function PlansScreen() {
         badge: plan.badge || '',
       }));
       setPlans(mapped);
+      setWallet(walletRes);
     } catch (e) {
-      console.error('Failed to load plans:', e);
+      console.error('Failed to load plans or wallet:', e);
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
   const handleBuyPlan = async (planSlug: string) => {
-    if (planSlug === 'regular') {
-      Alert.alert('تنبيه', 'أنت بالفعل مشترك في الباقة العادية المجانية.');
-      return;
-    }
-
     if (isProcessing) return;
 
-    setIsProcessing(true);
+    setIsProcessing(planSlug);
     try {
       const appRedirectUrl = Linking.createURL('payment-callback');
       const charge = await paymentsService.createCharge(
@@ -68,6 +70,7 @@ export default function PlansScreen() {
 
       if (charge.status === 'PAID') {
         Alert.alert('نجاح', 'تم تفعيل الباقة بنجاح!');
+        fetchData();
         return;
       }
 
@@ -85,12 +88,12 @@ export default function PlansScreen() {
           'حدث خطأ أثناء معالجة الدفع.',
       );
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(null);
     }
   };
 
   useEffect(() => {
-    fetchPlans();
+    fetchData();
   }, []);
 
   return (
@@ -115,6 +118,53 @@ export default function PlansScreen() {
           <ActivityIndicator size="large" color="#15304D" className="py-20" />
         ) : (
           <View className="px-5 py-6">
+            {/* Wallet Section */}
+            {(wallet.freeAdsRemaining > 0 || wallet.slots.length > 0) && (
+              <View className="mb-6 rounded-2xl bg-[#F4F7FB] p-4 border border-[#DCE4EE]">
+                <View className="flex-row items-center justify-between mb-3">
+                  <View className="flex-row items-center gap-2">
+                    <Feather name="folder" size={20} color="#15304D" />
+                    <Text className="font-cairo-bold text-base text-[#15304D]">
+                      محفظتك الإعلانية
+                    </Text>
+                  </View>
+                  <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
+                    رصيد الإعلانات المتوفر
+                  </Text>
+                </View>
+
+                {wallet.freeAdsRemaining > 0 && (
+                  <View className="mb-2 flex-row items-center justify-between rounded-xl bg-white p-3 border border-gray-100">
+                    <Text className="font-cairo-semibold text-sm text-[#111111]">
+                      الإعلان المجاني الترحيبي
+                    </Text>
+                    <Text className="font-cairo-bold text-sm text-[#018B1B]">
+                      متبقي 1 إعلان
+                    </Text>
+                  </View>
+                )}
+
+                {wallet.slots.map((slot) => (
+                  <View
+                    key={slot.id}
+                    className="mb-2 flex-row items-center justify-between rounded-xl bg-white p-3 border border-gray-100"
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <View
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: slot.color || '#15304D' }}
+                      />
+                      <Text className="font-cairo-semibold text-sm text-[#111111]">
+                        باقة {slot.planName}
+                      </Text>
+                    </View>
+                    <Text className="font-cairo-bold text-sm text-[#15304D]">
+                      متبقي {slot.adsRemaining} من {slot.maxActiveAds} إعلانات
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
             {/* Plan Cards */}
             <View className="gap-6">
               {plans.map((plan) => (
@@ -196,15 +246,15 @@ export default function PlansScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => handleBuyPlan(plan.id)}
-                    disabled={isProcessing}
+                    disabled={isProcessing === plan.id}
                     className="h-12 w-full items-center justify-center rounded-[24px]"
                     style={{
                       backgroundColor: '#15304D',
-                      opacity: isProcessing ? 0.6 : 1,
+                      opacity: isProcessing === plan.id ? 0.6 : 1,
                     }}
                   >
                     <Text className="font-cairo-semibold text-[14px] text-white">
-                      {isProcessing ? 'جاري التحميل...' : 'اشتر الآن'}
+                      {isProcessing === plan.id ? 'جاري التحميل...' : 'اشتر الآن'}
                     </Text>
                   </TouchableOpacity>
                 </View>

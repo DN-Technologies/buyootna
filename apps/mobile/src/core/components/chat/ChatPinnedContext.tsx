@@ -31,10 +31,13 @@ export default function ChatPinnedContext({
     >
       {/* Right Side: Image/Icon and Text info */}
       <View className="flex-1 flex-row items-center gap-3 pr-2">
-        {/* Property Thumbnail Image or Fallback Building Icon */}
-        {imageUrl ? (
+        {imageUrl && !imageUrl.includes('no-image') ? (
           <Image
-            source={{ uri: imageUrl }}
+            source={
+              !imageUrl.includes('placeholder')
+                ? { uri: imageUrl }
+                : require('@/assets/images/no-image.png')
+            }
             className="h-11 w-11 rounded-lg bg-gray-100"
             resizeMode="cover"
           />

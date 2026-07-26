@@ -1,6 +1,7 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +16,10 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import { plansService, PublishOption } from '@/core/api/plans.service';
 import { propertiesService } from '@/core/api/properties.service';
+import PlanSlotPickerSheet from '@/core/components/add-listing/PlanSlotPickerSheet';
+import QuotaExhaustedSheet from '@/core/components/add-listing/QuotaExhaustedSheet';
 import SuccessModal from '@/core/components/add-listing/SuccessModal';
 import { useListingStore } from '@/core/store/useListingStore';
 
@@ -40,6 +44,10 @@ const PreviewItem = ({
 export default function AdPreviewScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const slotPickerRef = useRef<BottomSheetModal>(null);
+  const quotaSheetRef = useRef<BottomSheetModal>(null);
+  const [publishOptions, setPublishOptions] = useState<PublishOption[]>([]);
 
   // Pull all data from our global state
   const draftData = useListingStore();
@@ -67,12 +75,10 @@ export default function AdPreviewScreen() {
 
   /**
    * Core submission logic shared between publish and draft.
-   * 1. Upload images to S3
-   * 2. Build API payload
-   * 3. Create property on backend
    */
   const submitListing = async (
     isDraft: boolean,
+    planSlotId?: string,
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       setSubmitting(true);
@@ -85,7 +91,7 @@ export default function AdPreviewScreen() {
       }
 
       // Step 2: Build the API payload from the Zustand store
-      const payload = buildApiPayload(isDraft, uploadedUrls);
+      const payload = buildApiPayload(isDraft, uploadedUrls, planSlotId);
 
       // Step 3: Send to backend
       await propertiesService.createProperty(payload);
@@ -95,7 +101,6 @@ export default function AdPreviewScreen() {
       const errorMessage =
         error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
 
-      // Try to extract the backend validation message
       const axiosError = error as {
         response?: { data?: { message?: string | string[] } };
       };
@@ -112,13 +117,39 @@ export default function AdPreviewScreen() {
   };
 
   const handleSubmit = async () => {
-    const res = await submitListing(false);
+    try {
+      const optionsRes = await plansService.getPublishOptions();
+
+      if (!optionsRes.canPublish || optionsRes.options.length === 0) {
+        quotaSheetRef.current?.present();
+        return;
+      }
+
+      if (optionsRes.options.length === 1) {
+        const res = await submitListing(false, optionsRes.options[0].slotId);
+        if (res.success) {
+          setShowSuccess(true);
+        } else {
+          Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان');
+        }
+        return;
+      }
+
+      setPublishOptions(optionsRes.options);
+      slotPickerRef.current?.present();
+    } catch (e) {
+      console.error('Failed to check publish options:', e);
+      Alert.alert('خطأ', 'فشل في التحقق من رصيد الإعلانات');
+    }
+  };
+
+  const handleSlotSelected = async (slotId: string) => {
+    slotPickerRef.current?.dismiss();
+    const res = await submitListing(false, slotId);
     if (res.success) {
       setShowSuccess(true);
     } else {
-      Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان', [
-        { text: 'حسناً' },
-      ]);
+      Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان');
     }
   };
 
@@ -354,10 +385,21 @@ export default function AdPreviewScreen() {
         </View>
       </View>
 
-      {/* --- 5. Success Modal --- */}
+      {/* --- 5. Modals & Sheets --- */}
       <SuccessModal
         visible={showSuccess}
         onClose={() => setShowSuccess(false)}
+      />
+
+      <PlanSlotPickerSheet
+        ref={slotPickerRef}
+        options={publishOptions}
+        onSelectSlot={handleSlotSelected}
+      />
+
+      <QuotaExhaustedSheet
+        ref={quotaSheetRef}
+        onBrowsePackages={() => router.push('/plans')}
       />
     </SafeAreaView>
   );

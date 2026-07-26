@@ -46,3 +46,9 @@ enum ListingStatus {
   EXPIRED
   CLOSED
 }
+
+enum SlotStatus {
+  ACTIVE
+  EXHAUSTED
+}
+

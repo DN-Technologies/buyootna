@@ -9,28 +9,19 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 import FilterFooter from '@/core/components/filters/FilterFooter';
-import AuctionsTab from '@/core/components/filters/tabs/AuctionsTab';
 import CompanyServicesTab from '@/core/components/filters/tabs/CompanyServicesTab';
-import DealsTab from '@/core/components/filters/tabs/DealsTab';
 import ExchangePropertyTab from '@/core/components/filters/tabs/ExchangePropertyTab';
 import StandardPropertyTab from '@/core/components/filters/tabs/StandardPropertyTab';
 
 // Define the valid tabs
-export type FilterTab =
-  | 'sell'
-  | 'rent'
-  | 'exchange'
-  | 'companies'
-  | 'auctions'
-  | 'deals';
+export type FilterTab = 'sell' | 'rent' | 'exchange' | 'companies' | 'offices';
 
 const TABS: { id: FilterTab; label: string }[] = [
   { id: 'sell', label: 'بيع' },
   { id: 'rent', label: 'ايجار' },
   { id: 'exchange', label: 'بدل' },
   { id: 'companies', label: 'شركات' },
-  { id: 'auctions', label: 'مزادات' },
-  { id: 'deals', label: 'صفقات' },
+  { id: 'offices', label: 'مكاتب' },
 ];
 
 interface GlobalFilterSheetProps {
@@ -154,8 +145,7 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
             {activeTab === 'rent' && <StandardPropertyTab type="rent" />}
             {activeTab === 'exchange' && <ExchangePropertyTab />}
             {activeTab === 'companies' && <CompanyServicesTab />}
-            {activeTab === 'auctions' && <AuctionsTab />}
-            {activeTab === 'deals' && <DealsTab />}
+            {activeTab === 'offices' && <StandardPropertyTab type="offices" />}
           </View>
         </View>
       </BottomSheetModal>

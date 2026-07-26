@@ -7,7 +7,7 @@ interface RequestWithUser extends Request {
 }
 
 export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
+  (data: unknown, ctx: ExecutionContext): Omit<User, 'password'> => {
     const request = ctx.switchToHttp().getRequest<RequestWithUser>();
     // This 'user' object is populated by our JwtStrategy!
     return request.user;
