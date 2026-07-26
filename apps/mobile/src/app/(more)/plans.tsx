@@ -24,7 +24,7 @@ export default function PlansScreen() {
 
   const [plans, setPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
   const fetchPlans = async () => {
     setIsLoading(true);
@@ -58,7 +58,7 @@ export default function PlansScreen() {
 
     if (isProcessing) return;
 
-    setIsProcessing(true);
+    setIsProcessing(planSlug);
     try {
       const appRedirectUrl = Linking.createURL('payment-callback');
       const charge = await paymentsService.createCharge(
@@ -85,7 +85,7 @@ export default function PlansScreen() {
           'حدث خطأ أثناء معالجة الدفع.',
       );
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(null);
     }
   };
 
@@ -196,15 +196,15 @@ export default function PlansScreen() {
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => handleBuyPlan(plan.id)}
-                    disabled={isProcessing}
+                    disabled={isProcessing === plan.id}
                     className="h-12 w-full items-center justify-center rounded-[24px]"
                     style={{
                       backgroundColor: '#15304D',
-                      opacity: isProcessing ? 0.6 : 1,
+                      opacity: isProcessing === plan.id ? 0.6 : 1,
                     }}
                   >
                     <Text className="font-cairo-semibold text-[14px] text-white">
-                      {isProcessing ? 'جاري التحميل...' : 'اشتر الآن'}
+                      {isProcessing === plan.id ? 'جاري التحميل...' : 'اشتر الآن'}
                     </Text>
                   </TouchableOpacity>
                 </View>
