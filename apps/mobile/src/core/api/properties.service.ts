@@ -29,6 +29,7 @@ export interface CreatePropertyPayload {
   areaId?: string;
   additionalExpenses?: string;
   rentConditions?: string;
+  planSlotId?: string;
 }
 
 export interface CreatePropertyResponse {

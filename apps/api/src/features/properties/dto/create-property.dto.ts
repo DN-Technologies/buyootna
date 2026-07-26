@@ -15,6 +15,10 @@ export class CreatePropertyDto {
   @IsBoolean({ message: 'حالة المسودة يجب أن تكون قيمة منطقية' })
   isDraft: boolean;
 
+  @IsOptional()
+  @IsString()
+  planSlotId?: string;
+
   @IsEnum(ListingType, { message: 'نوع الإعلان غير صالح' })
   type: ListingType;
 

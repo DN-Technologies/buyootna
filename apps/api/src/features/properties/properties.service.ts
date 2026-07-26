@@ -206,54 +206,131 @@ export class PropertiesService {
     return { user, plan: fallbackPlan };
   }
 
+  private async resolvePublishQuota(
+    userId: string,
+    requestedSlotId: string | null | undefined,
+    imagesCount: number,
+    tx: Prisma.TransactionClient,
+  ) {
+    const user = await tx.user.findUnique({
+      where: { id: userId },
+      select: { id: true, freeAdsRemaining: true },
+    });
+
+    if (!user) throw new NotFoundException('المستخدم غير موجود');
+
+    // 1. If explicit FREE_QUOTA or no slot specified and freeAdsRemaining > 0
+    if (
+      requestedSlotId === 'FREE_QUOTA' ||
+      (!requestedSlotId && user.freeAdsRemaining > 0)
+    ) {
+      if (user.freeAdsRemaining <= 0) {
+        throw new ForbiddenException(
+          'لقد استنفذت الإعلان المجاني الترحيبي الخاص بك.',
+        );
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { freeAdsRemaining: { decrement: 1 } },
+      });
+
+      return {
+        planSlotId: null,
+        durationDays: 10,
+        maxImagesPerAd: 5,
+        featuredDays: 0,
+        prioritySearch: false,
+      };
+    }
+
+    // 2. Specific Plan Slot requested OR auto-select single available slot
+    let targetSlotId = requestedSlotId;
+
+    if (!targetSlotId) {
+      const activeSlots = await tx.userPlanSlot.findMany({
+        where: { userId, status: 'ACTIVE', adsRemaining: { gt: 0 } },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (activeSlots.length === 1) {
+        targetSlotId = activeSlots[0].id;
+      } else if (activeSlots.length === 0) {
+        throw new ForbiddenException(
+          'ليس لديك رصيد إعلانات نشط. يرجى شراء باقة إعلانات لنشر إعلان جديد.',
+        );
+      } else {
+        throw new BadRequestException(
+          'لديك أكثر من باقة في محفظتك. يرجى اختيار الباقة المراد النشر منها.',
+        );
+      }
+    }
+
+    const slot = await tx.userPlanSlot.findFirst({
+      where: {
+        id: targetSlotId,
+        userId,
+        status: 'ACTIVE',
+        adsRemaining: { gt: 0 },
+      },
+      include: { plan: true },
+    });
+
+    if (!slot) {
+      throw new ForbiddenException(
+        'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.',
+      );
+    }
+
+    if (imagesCount > slot.plan.maxImagesPerAd) {
+      throw new BadRequestException(
+        `الباقة المحددة (${slot.plan.name}) تسمح بـ ${slot.plan.maxImagesPerAd} صور كحد أقصى لكل إعلان.`,
+      );
+    }
+
+    const newAdsRemaining = slot.adsRemaining - 1;
+    await tx.userPlanSlot.update({
+      where: { id: slot.id },
+      data: {
+        adsRemaining: newAdsRemaining,
+        status: newAdsRemaining <= 0 ? 'EXHAUSTED' : 'ACTIVE',
+      },
+    });
+
+    return {
+      planSlotId: slot.id,
+      durationDays: slot.plan.durationDays,
+      maxImagesPerAd: slot.plan.maxImagesPerAd,
+      featuredDays: slot.plan.featuredDays,
+      prioritySearch: slot.plan.prioritySearch,
+    };
+  }
+
   // --- CREATE ---
   async create(userId: string, dto: CreatePropertyDto) {
-    // 1. Separate the meta flag from the actual database fields
-    const { isDraft, ...propertyData } = dto;
-
-    // 2. Determine target status
+    const { isDraft, planSlotId, ...propertyData } = dto;
     const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
-    // ==========================================
-    // PATH A: PUBLISHING A LIVE AD
-    // ==========================================
     if (!isDraft) {
       return await this.prisma.$transaction(async (tx) => {
-        const { user, plan } = await this.getUserPlan(userId, tx);
-
-        // A1: Check max active ads limit
-        const activeAdsCount = await tx.property.count({
-          where: { userId, status: ListingStatus.ACTIVE },
-        });
-
-        if (activeAdsCount >= plan.maxActiveAds && user.freeAdsRemaining <= 0) {
-          throw new ForbiddenException(
-            `لقد تجاوزت الحد الأقصى للإعلانات النشطة المسموح بها في باقتك الحالية (${plan.maxActiveAds}). يرجى ترقية باقتك لنشر المزيد من الإعلانات.`,
-          );
-        }
-
-        // A2: Check max images limit
-        if (
-          propertyData.images &&
-          propertyData.images.length > plan.maxImagesPerAd
-        ) {
-          throw new BadRequestException(
-            `باقتك الحالية تسمح بـ ${plan.maxImagesPerAd} صور كحد أقصى لكل إعلان.`,
-          );
-        }
-
-        // A3: Compute publication duration & feature parameters
-        const endDate = new Date(
-          Date.now() + plan.durationDays * 24 * 60 * 60 * 1000,
+        const imagesCount = propertyData.images?.length || 0;
+        const quota = await this.resolvePublishQuota(
+          userId,
+          planSlotId,
+          imagesCount,
+          tx,
         );
-        const isFeatured = plan.featuredDays > 0;
-        const featuredUntil =
-          plan.featuredDays > 0
-            ? new Date(Date.now() + plan.featuredDays * 24 * 60 * 60 * 1000)
-            : null;
-        const isPriority = plan.prioritySearch;
 
-        // Generate unique reference number
+        const endDate = new Date(
+          Date.now() + quota.durationDays * 24 * 60 * 60 * 1000,
+        );
+        const isFeatured = quota.featuredDays > 0;
+        const featuredUntil =
+          quota.featuredDays > 0
+            ? new Date(Date.now() + quota.featuredDays * 24 * 60 * 60 * 1000)
+            : null;
+        const isPriority = quota.prioritySearch;
+
         let referenceNumber = 0;
         let isUnique = false;
         while (!isUnique) {
@@ -261,18 +338,16 @@ export class PropertiesService {
           const existing = await tx.property.findUnique({
             where: { referenceNumber },
           });
-          if (!existing) {
-            isUnique = true;
-          }
+          if (!existing) isUnique = true;
         }
 
-        // Create property with plan limits applied
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
             referenceNumber,
             status: targetStatus,
-            userId: userId,
+            userId,
+            planSlotId: quota.planSlotId,
             endDate,
             isFeatured,
             featuredUntil,
@@ -280,26 +355,12 @@ export class PropertiesService {
           },
         });
 
-        // Deduct 1 from remaining ads quota if available
-        if (user.freeAdsRemaining > 0) {
-          await tx.user.update({
-            where: { id: userId },
-            data: { freeAdsRemaining: { decrement: 1 } },
-          });
-        }
-
         return {
           message: 'تم إضافة الاعلان بنجاح!',
           property: newProperty,
         };
       });
-    }
-
-    // ==========================================
-    // PATH B: SAVING AS A DRAFT
-    // ==========================================
-    else {
-      // Generate unique reference number
+    } else {
       let referenceNumber = 0;
       let isUnique = false;
       while (!isUnique) {
@@ -307,18 +368,17 @@ export class PropertiesService {
         const existing = await this.prisma.property.findUnique({
           where: { referenceNumber },
         });
-        if (!existing) {
-          isUnique = true;
-        }
+        if (!existing) isUnique = true;
       }
 
-      // Just save the data, no quota deduction required
       const draftProperty = await this.prisma.property.create({
         data: {
           ...propertyData,
           referenceNumber,
           status: targetStatus,
-          userId: userId,
+          userId,
+          planSlotId:
+            planSlotId && planSlotId !== 'FREE_QUOTA' ? planSlotId : null,
         },
       });
 
@@ -331,72 +391,46 @@ export class PropertiesService {
 
   // --- UPDATE ---
   async update(userId: string, propertyId: string, dto: UpdatePropertyDto) {
-    // 1. Verfiy the user owns this property
     const existingProperty = await this.verifyOwnership(userId, propertyId);
+    const { isDraft, planSlotId, ...updateData } = dto;
 
-    // 2. Extract isDraft to determine if this is a "Publish" action
-    const { isDraft, ...updateData } = dto;
-
-    // Check if the user is trying to publish a draft
     const isPublishingDraft =
       existingProperty.status === 'DRAFT' && isDraft === false;
 
-    // ==========================================
-    // PATH A: PUBLISHING A SAVED DRAFT
-    // ==========================================
     if (isPublishingDraft) {
       return await this.prisma.$transaction(async (tx) => {
-        const { user, plan } = await this.getUserPlan(userId, tx);
-
-        // Step A1: Check max active ads limit
-        const activeAdsCount = await tx.property.count({
-          where: { userId, status: ListingStatus.ACTIVE },
-        });
-
-        if (activeAdsCount >= plan.maxActiveAds && user.freeAdsRemaining <= 0) {
-          throw new ForbiddenException(
-            `لقد تجاوزت الحد الأقصى للإعلانات النشطة المسموح بها في باقتك الحالية (${plan.maxActiveAds}). يرجى ترقية باقتك لنشر المزيد من الإعلانات.`,
-          );
-        }
-
-        // Step A2: Check max images limit
         const imagesToCheck = updateData.images || existingProperty.images;
-        if (imagesToCheck && imagesToCheck.length > plan.maxImagesPerAd) {
-          throw new BadRequestException(
-            `باقتك الحالية تسمح بـ ${plan.maxImagesPerAd} صور كحد أقصى لكل إعلان.`,
-          );
-        }
+        const imagesCount = imagesToCheck?.length || 0;
 
-        // Step A3: Compute publication duration & feature parameters
-        const endDate = new Date(
-          Date.now() + plan.durationDays * 24 * 60 * 60 * 1000,
+        const quota = await this.resolvePublishQuota(
+          userId,
+          planSlotId || existingProperty.planSlotId,
+          imagesCount,
+          tx,
         );
-        const isFeatured = plan.featuredDays > 0;
-        const featuredUntil =
-          plan.featuredDays > 0
-            ? new Date(Date.now() + plan.featuredDays * 24 * 60 * 60 * 1000)
-            : null;
-        const isPriority = plan.prioritySearch;
 
-        // Step A4: Update the property to ACTIVE
+        const endDate = new Date(
+          Date.now() + quota.durationDays * 24 * 60 * 60 * 1000,
+        );
+        const isFeatured = quota.featuredDays > 0;
+        const featuredUntil =
+          quota.featuredDays > 0
+            ? new Date(Date.now() + quota.featuredDays * 24 * 60 * 60 * 1000)
+            : null;
+        const isPriority = quota.prioritySearch;
+
         const publishedProperty = await tx.property.update({
           where: { id: propertyId },
           data: {
             ...updateData,
             status: ListingStatus.ACTIVE,
+            planSlotId: quota.planSlotId,
             endDate,
             isFeatured,
             featuredUntil,
             isPriority,
           },
         });
-
-        if (user.freeAdsRemaining > 0) {
-          await tx.user.update({
-            where: { id: userId },
-            data: { freeAdsRemaining: { decrement: 1 } },
-          });
-        }
 
         return {
           message: 'تم نشر الإعلان بنجاح!',

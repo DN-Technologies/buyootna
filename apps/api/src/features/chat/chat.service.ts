@@ -192,7 +192,8 @@ export class ChatService {
                 id: conv.property.id,
                 type: conv.property.type,
                 category: conv.property.category,
-                imageUrl: conv.property.images[0] || '@/assets/images/no-image.png',
+                imageUrl:
+                  conv.property.images[0] || '@/assets/images/no-image.png',
                 price: conv.property.price,
                 area: conv.property.areaSize ?? undefined,
                 location: conv.property.location,

@@ -20,6 +20,7 @@ import {
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
 import apiClient from '@/core/api/api';
+import { plansService } from '@/core/api/plans.service';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
@@ -57,28 +58,15 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
 
       try {
         setIsCheckingQuota(true);
-        // Call /users/me endpoint to fetch current profile with latest remaining free ads count
-        const response = await apiClient.get('/users/me');
-        const user = response.data.user;
-
+        const publishOptions = await plansService.getPublishOptions();
         setIsCheckingQuota(false);
 
-        if (user && typeof user.freeAdsRemaining === 'number') {
-          if (user.freeAdsRemaining <= 0) {
-            // Quota is exhausted. Close the actions sheet and present QuotaExhaustedSheet
-            handleClose();
-            onQuotaExhausted();
-          } else {
-            // User has free ads remaining. Close the actions sheet and navigate to create listing screen
-            handleClose();
-            router.push('/add-listing');
-          }
+        if (!publishOptions.canPublish) {
+          handleClose();
+          onQuotaExhausted();
         } else {
-          Alert.alert(
-            'خطأ',
-            'فشل في قراءة بيانات حسابك. يرجى المحاولة لاحقاً.',
-            [{ text: 'حسناً' }],
-          );
+          handleClose();
+          router.push('/add-listing');
         }
       } catch (error) {
         setIsCheckingQuota(false);

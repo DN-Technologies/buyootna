@@ -38,6 +38,8 @@ model Property {
   automatedNumber    String?
   phoneNumber        String?
   rentConditions     String?
+  planSlotId         String?
+  planSlot           UserPlanSlot?    @relation(fields: [planSlotId], references: [id])
   area               Area?            @relation(fields: [areaId], references: [id])
   governorate        Governorate?     @relation(fields: [governorateId], references: [id])
   user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
