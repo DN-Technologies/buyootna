@@ -30,7 +30,7 @@ export interface TapChargeResponse {
 export class PaymentsService {
   private readonly tapSecretKey = process.env.TAP_SECRET_KEY;
   private readonly backendUrl =
-    process.env.BACKEND_URL || 'http://localhost:8000';
+    process.env.BACKEND_URL || 'https://api.buyootna.cloud';
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -83,11 +83,19 @@ export class PaymentsService {
           where: { id: invoice.id },
           data: { status: 'PAID', paidAt: new Date() },
         });
+        await tx.userPlanSlot.create({
+          data: {
+            userId,
+            planId: plan.id,
+            adsRemaining: plan.maxActiveAds,
+            status: 'ACTIVE',
+            invoiceId: invoice.id,
+          },
+        });
         await tx.user.update({
           where: { id: userId },
           data: {
             activePlanId: plan.id,
-            freeAdsRemaining: plan.maxActiveAds,
           },
         });
       });
@@ -322,14 +330,28 @@ export class PaymentsService {
         data: { status: 'PAID', paidAt: new Date() },
       });
 
-      // 2. Update User activePlanId and freeAdsRemaining
-      await tx.user.update({
-        where: { id: invoice.userId },
-        data: {
-          activePlanId: plan?.id || undefined,
-          freeAdsRemaining: adsToAdd,
-        },
-      });
+      // 2. Create UserPlanSlot in User's Wallet
+      if (plan) {
+        await tx.userPlanSlot.create({
+          data: {
+            userId: invoice.userId,
+            planId: plan.id,
+            adsRemaining: plan.maxActiveAds,
+            status: 'ACTIVE',
+            invoiceId: invoice.id,
+          },
+        });
+      }
+
+      // 3. Update User activePlanId
+      if (plan) {
+        await tx.user.update({
+          where: { id: invoice.userId },
+          data: {
+            activePlanId: plan.id,
+          },
+        });
+      }
     });
 
     console.log(

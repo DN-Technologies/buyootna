@@ -1,5 +1,8 @@
-import { Controller, Get } from '@nestjs/common';
-import { PlansService } from './plans.service';
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { PlansService, type PublishOptionsResponse } from './plans.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import type { User } from '@prisma/client';
 
 @Controller('plans')
 export class PlansController {
@@ -8,5 +11,19 @@ export class PlansController {
   @Get()
   async findAll() {
     return this.plansService.findAll();
+  }
+
+  @Get('wallet')
+  @UseGuards(JwtAuthGuard)
+  async getUserWallet(@CurrentUser() user: User) {
+    return this.plansService.getUserWallet(user.id);
+  }
+
+  @Get('wallet/publish-options')
+  @UseGuards(JwtAuthGuard)
+  async getPublishOptions(
+    @CurrentUser() user: User,
+  ): Promise<PublishOptionsResponse> {
+    return this.plansService.getPublishOptions(user.id);
   }
 }

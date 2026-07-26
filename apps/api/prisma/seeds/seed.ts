@@ -626,7 +626,7 @@ async function main() {
     {
       slug: 'regular',
       name: 'العادية',
-      price: 0,
+      price: 3,
       maxActiveAds: 1,
       durationDays: 10,
       maxImagesPerAd: 5,

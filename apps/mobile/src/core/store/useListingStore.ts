@@ -92,6 +92,7 @@ interface ListingStore extends ListingStateData {
   buildApiPayload: (
     isDraft: boolean,
     uploadedImageUrls: string[],
+    planSlotId?: string,
   ) => CreatePropertyPayload;
   populateFromProperty: (property: PropertyDetailsDto) => void;
 }
@@ -277,7 +278,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
    * Transforms the Zustand store state into the exact shape
    * the backend's CreatePropertyDto expects.
    */
-  buildApiPayload: (isDraft, uploadedImageUrls) => {
+  buildApiPayload: (isDraft, uploadedImageUrls, planSlotId) => {
     const state = get();
     const apiType = LISTING_TYPE_MAP[state.listingType];
 
@@ -295,6 +296,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       description: state.adDetails,
       images: uploadedImageUrls,
       isFeatured: state.adLevel === 'premium',
+      planSlotId,
     };
 
     // Optional shared fields
