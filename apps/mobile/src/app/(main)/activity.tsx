@@ -330,7 +330,7 @@ export default function ActivityScreen() {
 
         {/* Plus Button */}
         <TouchableOpacity
-          onPress={() => router.push('/add-listing/index' as any)}
+          onPress={() => router.push('/add-listing')}
           className="h-10 w-10 items-center justify-end rounded-full"
         >
           <Feather name="plus" size={24} color="#111111" />

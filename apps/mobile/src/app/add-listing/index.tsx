@@ -48,7 +48,7 @@ export default function CreateListingScreen() {
 
   const handlePreview = () => {
     // Navigate to the preview screen (Card 9)
-    router.push('/add-listing/preview' as any);
+    router.push('/add-listing/preview');
   };
 
   // Validate required fields based on the selected listing type
