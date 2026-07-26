@@ -160,7 +160,7 @@ export class ChatService {
         const otherUserAvatar =
           otherUser?.officeProfile?.logoUrl ||
           otherUser?.companyProfile?.logoUrl ||
-          'https://via.placeholder.com/150';
+          '@/assets/images/no-image.png';
 
         const lastMessage = conv.messages[0];
         const myParticipantRecord = conv.participants.find(
@@ -192,8 +192,7 @@ export class ChatService {
                 id: conv.property.id,
                 type: conv.property.type,
                 category: conv.property.category,
-                imageUrl:
-                  conv.property.images[0] || 'https://via.placeholder.com/150',
+                imageUrl: conv.property.images[0] || '@/assets/images/no-image.png',
                 price: conv.property.price,
                 area: conv.property.areaSize ?? undefined,
                 location: conv.property.location,
@@ -312,7 +311,7 @@ export class ChatService {
     const otherUserAvatar =
       otherUser?.officeProfile?.logoUrl ||
       otherUser?.companyProfile?.logoUrl ||
-      'https://via.placeholder.com/150';
+      '@/assets/images/no-image.png';
 
     return {
       data: messages.reverse().map((msg) => ({
@@ -325,7 +324,7 @@ export class ChatService {
           (msg.propertyId || msg.type === 'PROPERTY') && prop
             ? {
                 id: prop.id,
-                imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+                imageUrl: prop.images[0] || '@/assets/images/no-image.png',
                 price: prop.price,
                 title: `${prop.category} ${prop.type}`,
                 type: prop.type,
@@ -347,7 +346,7 @@ export class ChatService {
               id: prop.id,
               type: prop.type,
               category: prop.category,
-              imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+              imageUrl: prop.images[0] || '@/assets/images/no-image.png',
               price: prop.price,
               area: prop.areaSize ?? undefined,
               location: prop.location,
@@ -433,7 +432,7 @@ export class ChatService {
         property: prop
           ? {
               id: prop.id,
-              imageUrl: prop.images[0] || 'https://via.placeholder.com/150',
+              imageUrl: prop.images[0] || '@/assets/images/no-image.png',
               price: prop.price,
               title: `${prop.category} ${prop.type}`,
               type: prop.type,
@@ -452,12 +451,10 @@ export class ChatService {
 
   // Mark conversation messages as read
   async markAsRead(userId: string, conversationId: string) {
-    await this.prisma.conversationParticipant.update({
+    await this.prisma.conversationParticipant.updateMany({
       where: {
-        conversationId_userId: {
-          conversationId,
-          userId,
-        },
+        conversationId,
+        userId,
       },
       data: { lastReadAt: new Date() },
     });
