@@ -11,7 +11,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Find or create a 1:1 conversation between two users
+  // Find or create a 1:1 conversation between two users/identities
   async findOrCreateConversation(
     userId: string,
     recipientId: string,
@@ -21,10 +21,10 @@ export class ChatService {
       throw new ForbiddenException('لا يمكنك بدء محادثة مع نفسك');
     }
 
-    // Verify recipient exists
-    const recipient = await this.prisma.user.findUnique({
-      where: { id: recipientId },
-    });
+    // Verify recipient exists (User or Identity)
+    const recipient =
+      (await this.prisma.user.findUnique({ where: { id: recipientId } })) ||
+      (await this.prisma.identity.findUnique({ where: { id: recipientId } }));
     if (!recipient) {
       throw new NotFoundException('المستلم غير موجود');
     }
@@ -44,8 +44,18 @@ export class ChatService {
     const existingConversations = await this.prisma.conversation.findMany({
       where: {
         AND: [
-          { participants: { some: { userId } } },
-          { participants: { some: { userId: recipientId } } },
+          {
+            participants: {
+              some: { OR: [{ userId }, { identityId: userId }] },
+            },
+          },
+          {
+            participants: {
+              some: {
+                OR: [{ userId: recipientId }, { identityId: recipientId }],
+              },
+            },
+          },
         ],
       },
       include: {
@@ -53,13 +63,11 @@ export class ChatService {
       },
     });
 
-    // Check if there is one that has exactly 2 participants
     let conversation = existingConversations.find(
       (c) => c.participants.length === 2,
     );
 
     if (conversation) {
-      // If conversation already exists and a validPropertyId is passed, update propertyId context
       if (validPropertyId && conversation.propertyId !== validPropertyId) {
         conversation = await this.prisma.conversation.update({
           where: { id: conversation.id },
@@ -68,12 +76,14 @@ export class ChatService {
         });
       }
     } else {
-      // Otherwise, create a new conversation
       conversation = await this.prisma.conversation.create({
         data: {
           propertyId: validPropertyId,
           participants: {
-            create: [{ userId }, { userId: recipientId }],
+            create: [
+              { userId, identityId: userId },
+              { userId: recipientId, identityId: recipientId },
+            ],
           },
         },
         include: {
@@ -85,14 +95,14 @@ export class ChatService {
     return conversation;
   }
 
-  // List all conversations for the user
+  // List all conversations for the user/identity
   async getConversations(userId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const conversations = await this.prisma.conversation.findMany({
       where: {
         participants: {
-          some: { userId },
+          some: { OR: [{ userId }, { identityId: userId }] },
         },
         messages: {
           some: {},
@@ -112,23 +122,12 @@ export class ChatService {
         },
         participants: {
           include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                phone: true,
-                companyProfile: {
-                  select: {
-                    name: true,
-                    logoUrl: true,
-                  },
-                },
-                officeProfile: {
-                  select: {
-                    name: true,
-                    logoUrl: true,
-                  },
-                },
+            identity: {
+              include: {
+                individualData: true,
+                companyData: true,
+                officeData: true,
+                user: true,
               },
             },
           },
@@ -145,33 +144,36 @@ export class ChatService {
 
     const formattedConversations = await Promise.all(
       conversations.map(async (conv) => {
-        // Find the participant that is NOT the current user
-        const otherPart = conv.participants.find((p) => p.userId !== userId);
-        const otherUser = otherPart?.user;
+        const otherPart = conv.participants.find(
+          (p) => p.userId !== userId && p.identityId !== userId,
+        );
+        const ident = otherPart?.identity;
 
-        const otherUserName = otherUser?.officeProfile
-          ? otherUser.officeProfile.name
-          : otherUser?.companyProfile
-            ? otherUser.companyProfile.name
-            : otherUser?.email
-              ? otherUser.email.split('@')[0]
-              : 'مستخدم بيوتنا';
+        const otherUserName =
+          ident?.companyData?.name ||
+          ident?.officeData?.name ||
+          ident?.individualData?.name ||
+          ident?.user?.name ||
+          'مستخدم بيوتنا';
 
         const otherUserAvatar =
-          otherUser?.officeProfile?.logoUrl ||
-          otherUser?.companyProfile?.logoUrl ||
+          ident?.companyData?.logoUrl ||
+          ident?.officeData?.logoUrl ||
+          ident?.individualData?.avatarUrl ||
+          ident?.user?.avatarUrl ||
           '@/assets/images/no-image.png';
 
         const lastMessage = conv.messages[0];
         const myParticipantRecord = conv.participants.find(
-          (p) => p.userId === userId,
+          (p) => p.userId === userId || p.identityId === userId,
         );
 
-        // Calculate accurate unread count from db
         const unreadCount = await this.prisma.message.count({
           where: {
             conversationId: conv.id,
-            senderId: { not: userId },
+            NOT: {
+              OR: [{ senderId: userId }, { senderIdentityId: userId }],
+            },
             ...(myParticipantRecord?.lastReadAt
               ? { createdAt: { gt: myParticipantRecord.lastReadAt } }
               : {}),
@@ -183,7 +185,7 @@ export class ChatService {
           createdAt: conv.createdAt,
           updatedAt: conv.updatedAt,
           otherUser: {
-            id: otherUser?.id || '',
+            id: ident?.id || otherPart?.userId || '',
             name: otherUserName,
             avatarUrl: otherUserAvatar,
           },
@@ -205,7 +207,9 @@ export class ChatService {
                 content: lastMessage.content,
                 type: lastMessage.type,
                 createdAt: lastMessage.createdAt,
-                isMine: lastMessage.senderId === userId,
+                isMine:
+                  lastMessage.senderId === userId ||
+                  lastMessage.senderIdentityId === userId,
               }
             : null,
           unreadCount,
@@ -216,7 +220,7 @@ export class ChatService {
     const total = await this.prisma.conversation.count({
       where: {
         participants: {
-          some: { userId },
+          some: { OR: [{ userId }, { identityId: userId }] },
         },
         messages: {
           some: {},
@@ -235,20 +239,17 @@ export class ChatService {
     };
   }
 
-  // Get messages for a single conversation (cursor-based pagination for infinite scroll)
+  // Get messages for a single conversation
   async getMessages(
     conversationId: string,
     userId: string,
     cursor?: string,
     limit = 20,
   ) {
-    // Verify user is participant
-    const isParticipant = await this.prisma.conversationParticipant.findUnique({
+    const isParticipant = await this.prisma.conversationParticipant.findFirst({
       where: {
-        conversationId_userId: {
-          conversationId,
-          userId,
-        },
+        conversationId,
+        OR: [{ userId }, { identityId: userId }],
       },
     });
 
@@ -262,13 +263,12 @@ export class ChatService {
         property: true,
         participants: {
           include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                phone: true,
-                companyProfile: { select: { name: true, logoUrl: true } },
-                officeProfile: { select: { name: true, logoUrl: true } },
+            identity: {
+              include: {
+                individualData: true,
+                companyData: true,
+                officeData: true,
+                user: true,
               },
             },
           },
@@ -279,12 +279,12 @@ export class ChatService {
     const queryOptions: Prisma.MessageFindManyArgs = {
       where: { conversationId },
       orderBy: { createdAt: 'desc' },
-      take: limit + 1, // Take one extra to check if there is a next page
+      take: limit + 1,
     };
 
     if (cursor) {
       queryOptions.cursor = { id: cursor };
-      queryOptions.skip = 1; // Skip the cursor itself
+      queryOptions.skip = 1;
     }
 
     const messages = await this.prisma.message.findMany(queryOptions);
@@ -299,19 +299,22 @@ export class ChatService {
 
     const prop = conversation?.property;
     const otherPart = conversation?.participants.find(
-      (p) => p.userId !== userId,
+      (p) => p.userId !== userId && p.identityId !== userId,
     );
-    const otherUser = otherPart?.user;
-    const otherUserName = otherUser?.officeProfile
-      ? otherUser.officeProfile.name
-      : otherUser?.companyProfile
-        ? otherUser.companyProfile.name
-        : otherUser?.email
-          ? otherUser.email.split('@')[0]
-          : 'مستخدم بيوتنا';
+    const ident = otherPart?.identity;
+
+    const otherUserName =
+      ident?.companyData?.name ||
+      ident?.officeData?.name ||
+      ident?.individualData?.name ||
+      ident?.user?.name ||
+      'مستخدم بيوتنا';
+
     const otherUserAvatar =
-      otherUser?.officeProfile?.logoUrl ||
-      otherUser?.companyProfile?.logoUrl ||
+      ident?.companyData?.logoUrl ||
+      ident?.officeData?.logoUrl ||
+      ident?.individualData?.avatarUrl ||
+      ident?.user?.avatarUrl ||
       '@/assets/images/no-image.png';
 
     return {
@@ -335,7 +338,7 @@ export class ChatService {
                 location: prop.location,
               }
             : undefined,
-        isMine: msg.senderId === userId,
+        isMine: msg.senderId === userId || msg.senderIdentityId === userId,
         timestamp: this.formatTime(msg.createdAt),
         createdAt: msg.createdAt,
       })),
@@ -353,30 +356,28 @@ export class ChatService {
               location: prop.location,
             }
           : null,
-        otherUser: otherUser
-          ? {
-              id: otherUser.id,
-              name: otherUserName,
-              avatarUrl: otherUserAvatar,
-            }
-          : null,
+        otherUser:
+          ident || otherPart
+            ? {
+                id: ident?.id || otherPart?.userId || '',
+                name: otherUserName,
+                avatarUrl: otherUserAvatar,
+              }
+            : null,
       },
     };
   }
 
-  // Send a message (called via REST or WS)
+  // Send a message
   async sendMessage(
     senderId: string,
     conversationId: string,
     dto: SendMessageDto,
   ) {
-    // Verify sender is participant
-    const isParticipant = await this.prisma.conversationParticipant.findUnique({
+    const isParticipant = await this.prisma.conversationParticipant.findFirst({
       where: {
-        conversationId_userId: {
-          conversationId,
-          userId: senderId,
-        },
+        conversationId,
+        OR: [{ userId: senderId }, { identityId: senderId }],
       },
     });
 
@@ -385,11 +386,11 @@ export class ChatService {
     }
 
     return await this.prisma.$transaction(async (tx) => {
-      // 1. Create message
       const message = await tx.message.create({
         data: {
           conversationId,
           senderId,
+          senderIdentityId: senderId,
           type: dto.type || 'TEXT',
           content: dto.content || null,
           imageUrl: dto.imageUrl || null,
@@ -397,7 +398,6 @@ export class ChatService {
         },
       });
 
-      // 2. Fetch conversation property context if message relates to property
       let prop: Property | null = null;
       if (dto.propertyId || message.type === 'PROPERTY') {
         const conv = await tx.conversation.findUnique({
@@ -407,19 +407,15 @@ export class ChatService {
         prop = conv?.property ?? null;
       }
 
-      // 3. Update conversation updatedAt so it floats to top
       await tx.conversation.update({
         where: { id: conversationId },
         data: { updatedAt: new Date() },
       });
 
-      // 4. Auto mark as read for sender
-      await tx.conversationParticipant.update({
+      await tx.conversationParticipant.updateMany({
         where: {
-          conversationId_userId: {
-            conversationId,
-            userId: senderId,
-          },
+          conversationId,
+          OR: [{ userId: senderId }, { identityId: senderId }],
         },
         data: { lastReadAt: new Date() },
       });
@@ -455,14 +451,13 @@ export class ChatService {
     await this.prisma.conversationParticipant.updateMany({
       where: {
         conversationId,
-        userId,
+        OR: [{ userId }, { identityId: userId }],
       },
       data: { lastReadAt: new Date() },
     });
     return { success: true };
   }
 
-  // Helper: Format date/time
   private formatTime(date: Date): string {
     return date.toLocaleTimeString('ar-KW', {
       hour: '2-digit',

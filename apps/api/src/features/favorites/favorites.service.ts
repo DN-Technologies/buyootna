@@ -6,7 +6,7 @@ export class FavoritesService {
   constructor(private readonly prisma: PrismaService) {}
 
   // Toggle favorite: if exists, delete it. If not, create it.
-  async toggleFavorite(userId: string, propertyId: string) {
+  async toggleFavorite(identityId: string, propertyId: string) {
     // Verify property exists
     const property = await this.prisma.property.findUnique({
       where: { id: propertyId },
@@ -18,8 +18,8 @@ export class FavoritesService {
     // Check if already favorited
     const existing = await this.prisma.favorite.findUnique({
       where: {
-        userId_propertyId: {
-          userId,
+        identityId_propertyId: {
+          identityId,
           propertyId,
         },
       },
@@ -28,8 +28,8 @@ export class FavoritesService {
     if (existing) {
       await this.prisma.favorite.delete({
         where: {
-          userId_propertyId: {
-            userId,
+          identityId_propertyId: {
+            identityId,
             propertyId,
           },
         },
@@ -38,7 +38,7 @@ export class FavoritesService {
     } else {
       await this.prisma.favorite.create({
         data: {
-          userId,
+          identityId,
           propertyId,
         },
       });
@@ -47,29 +47,27 @@ export class FavoritesService {
   }
 
   // Get user's favorited properties
-  async getFavorites(userId: string, page = 1, limit = 10) {
+  async getFavorites(identityId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const [favorites, total] = await Promise.all([
       this.prisma.favorite.findMany({
-        where: { userId },
+        where: { identityId },
         include: {
           property: {
             include: {
-              user: {
+              identity: {
                 select: {
                   id: true,
-                  companyProfile: {
-                    select: {
-                      name: true,
-                      logoUrl: true,
-                    },
+                  type: true,
+                  individualData: {
+                    select: { name: true, avatarUrl: true },
                   },
-                  officeProfile: {
-                    select: {
-                      name: true,
-                      logoUrl: true,
-                    },
+                  companyData: {
+                    select: { name: true, logoUrl: true },
+                  },
+                  officeData: {
+                    select: { name: true, logoUrl: true },
                   },
                 },
               },
@@ -81,21 +79,23 @@ export class FavoritesService {
         take: limit,
       }),
       this.prisma.favorite.count({
-        where: { userId },
+        where: { identityId },
       }),
     ]);
 
     // Format properties similar to search results or feed
     const formattedProperties = favorites.map((fav) => {
       const prop = fav.property;
-      const hostName = prop.user.officeProfile
-        ? prop.user.officeProfile.name
-        : prop.user.companyProfile
-          ? prop.user.companyProfile.name
-          : 'مستخدم';
+      const identity = prop.identity;
+      const hostName =
+        identity?.officeData?.name ||
+        identity?.companyData?.name ||
+        identity?.individualData?.name ||
+        'مستخدم';
       const hostAvatar =
-        prop.user.officeProfile?.logoUrl ||
-        prop.user.companyProfile?.logoUrl ||
+        identity?.officeData?.logoUrl ||
+        identity?.companyData?.logoUrl ||
+        identity?.individualData?.avatarUrl ||
         'https://via.placeholder.com/150';
 
       return {
@@ -114,14 +114,10 @@ export class FavoritesService {
         baths: prop.baths || 0,
         floors: prop.floors,
         host: {
-          id: prop.user.id,
+          id: identity?.id,
           name: hostName,
           avatarUrl: hostAvatar,
-          role: prop.user.officeProfile
-            ? 'OFFICE'
-            : prop.user.companyProfile
-              ? 'COMPANY'
-              : 'INDIVIDUAL',
+          role: identity?.type || 'INDIVIDUAL',
         },
       };
     });
@@ -137,12 +133,12 @@ export class FavoritesService {
     };
   }
 
-  // Check if a single property is favorited by user
-  async checkFavorite(userId: string, propertyId: string) {
+  // Check if a single property is favorited by identity
+  async checkFavorite(identityId: string, propertyId: string) {
     const favorite = await this.prisma.favorite.findUnique({
       where: {
-        userId_propertyId: {
-          userId,
+        identityId_propertyId: {
+          identityId,
           propertyId,
         },
       },
@@ -150,10 +146,10 @@ export class FavoritesService {
     return { isFavorited: !!favorite };
   }
 
-  // Get all favorited property IDs of the user
-  async getFavoriteIds(userId: string) {
+  // Get all favorited property IDs of the identity
+  async getFavoriteIds(identityId: string) {
     const favorites = await this.prisma.favorite.findMany({
-      where: { userId },
+      where: { identityId },
       select: { propertyId: true },
     });
     return { ids: favorites.map((fav) => fav.propertyId) };

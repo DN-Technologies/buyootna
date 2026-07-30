@@ -21,38 +21,9 @@ import { CompanyAuthHeader } from '@/features/auth/components/company/CompanyAut
 import { CompanyAuthTabs } from '@/features/auth/components/company/CompanyAuthTabs';
 import { CompanyLoginForm } from '@/features/auth/components/company/CompanyLoginForm';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
-import ProfileBottomSheet, {
-  Profile,
-} from '@/features/auth/components/ProfileBottomSheet';
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AccountType } from '@/types';
-
-const MOCK_PROFILES: Profile[] = [
-  {
-    id: '1',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'individual',
-    typeName: 'فرد',
-    icon: require('@/assets/icons/individual-icon.svg'),
-  },
-  {
-    id: '2',
-    name: 'Kayan Company',
-    email: 'kayan@gmail.com',
-    type: 'company',
-    typeName: 'شركة',
-    icon: require('@/assets/icons/company-icon.svg'),
-  },
-  {
-    id: '3',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'owner',
-    typeName: 'مالك عقار',
-    icon: require('@/assets/icons/owner-icon.svg'),
-  },
-];
 
 type AuthMode = 'login' | 'signup';
 
@@ -104,7 +75,12 @@ export default function BusinessAuthScreen() {
         password: data.password,
       });
 
-      await setAuth(response.data.user, response.data.access_token);
+      await setAuth(
+        response.data.user,
+        response.data.activeIdentity,
+        response.data.identities,
+        response.data.access_token,
+      );
       router.replace('/(main)/home');
     } catch (error: any) {
       let errorMsg = 'حدث خطأ في الاتصال';
@@ -129,10 +105,6 @@ export default function BusinessAuthScreen() {
     } else if (newType === 'company') {
       router.setParams({ type: 'company' });
     }
-  };
-
-  const handleProfileSelect = (profile: Profile) => {
-    console.log('Selected Profile:', profile);
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
@@ -223,7 +195,7 @@ export default function BusinessAuthScreen() {
           />
 
           {/* Auth Tabs (Login/Signup) */}
-          <CompanyAuthTabs mode={mode} onModeChange={setMode} />
+          <CompanyAuthTabs mode={mode} onChangeMode={setMode} />
 
           {/* Render Active Form */}
           {mode === 'login' ? (
@@ -254,9 +226,6 @@ export default function BusinessAuthScreen() {
 
       <ProfileBottomSheet
         ref={profileSheetRef}
-        profiles={MOCK_PROFILES}
-        selectedId="2"
-        onSelect={handleProfileSelect}
         onAddAccount={() => setMode('signup')}
       />
     </SafeAreaView>

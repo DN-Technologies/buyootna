@@ -1,12 +1,18 @@
 model Favorite {
   id         String   @id @default(uuid())
-  userId     String
   propertyId String
   createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, propertyId])
-  @@index([userId])
+  // New identity-based relation
+  identityId String?
+  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // Legacy user-based relation - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  userId String?
+
+  @@unique([identityId, propertyId])
+  @@index([identityId])
   @@index([propertyId])
 }

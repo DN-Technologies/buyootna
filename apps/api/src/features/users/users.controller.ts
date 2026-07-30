@@ -66,6 +66,11 @@ export class UsersController {
     return this.usersService.findCompanies(filters);
   }
 
+  @Get('company/:id')
+  async findCompanyDetails(@Param('id') id: string) {
+    return this.usersService.findCompanyDetails(id);
+  }
+
   @Post('register/office')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -95,7 +100,8 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
     @UploadedFile() logo?: Express.Multer.File,
   ) {
-    return this.usersService.updateProfile(user.id, user.role, dto, logo);
+    const role = user.role || Role.INDIVIDUAL;
+    return this.usersService.updateProfile(user.id, role, dto, logo);
   }
 
   @UseGuards(AuthGuard('jwt'))

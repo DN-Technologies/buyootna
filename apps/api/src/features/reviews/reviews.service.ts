@@ -13,7 +13,7 @@ export class ReviewsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Create or update a review for a user.
+   * Create or update a review for a user/identity.
    */
   async createOrUpdateReview(
     reviewerId: string,
@@ -24,32 +24,58 @@ export class ReviewsService {
       throw new BadRequestException('لا يمكنك تقييم حسابك الشخصي');
     }
 
-    const targetUser = await this.prisma.user.findUnique({
-      where: { id: targetUserId },
+    const reviewerIdentity = await this.prisma.identity.findFirst({
+      where: {
+        OR: [{ id: reviewerId }, { userId: reviewerId, isActive: true }],
+      },
     });
 
-    if (!targetUser) {
-      throw new NotFoundException('المستخدم غير موجود');
-    }
-
-    const review = await this.prisma.review.upsert({
+    const targetIdentity = await this.prisma.identity.findFirst({
       where: {
-        reviewerId_targetUserId: {
+        OR: [{ id: targetUserId }, { userId: targetUserId, isActive: true }],
+      },
+    });
+
+    const revIdentityId = reviewerIdentity?.id;
+    const targIdentityId = targetIdentity?.id;
+
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        OR: [
+          ...(revIdentityId && targIdentityId
+            ? [
+                {
+                  reviewerIdentityId: revIdentityId,
+                  targetIdentityId: targIdentityId,
+                },
+              ]
+            : []),
+          { reviewerId, targetUserId },
+        ],
+      },
+    });
+
+    let review;
+    if (existingReview) {
+      review = await this.prisma.review.update({
+        where: { id: existingReview.id },
+        data: {
+          rating: dto.rating,
+          comment: dto.comment,
+        },
+      });
+    } else {
+      review = await this.prisma.review.create({
+        data: {
+          reviewerIdentityId: revIdentityId,
+          targetIdentityId: targIdentityId,
           reviewerId,
           targetUserId,
+          rating: dto.rating,
+          comment: dto.comment,
         },
-      },
-      create: {
-        reviewerId,
-        targetUserId,
-        rating: dto.rating,
-        comment: dto.comment,
-      },
-      update: {
-        rating: dto.rating,
-        comment: dto.comment,
-      },
-    });
+      });
+    }
 
     return {
       message: 'تم إضافة التقييم بنجاح',
@@ -58,7 +84,7 @@ export class ReviewsService {
   }
 
   /**
-   * Fetch paginated & sorted reviews for a target user.
+   * Fetch paginated & sorted reviews for a target user/identity.
    */
   async getReviews(
     targetUserId: string,
@@ -78,21 +104,20 @@ export class ReviewsService {
       orderBy = { rating: 'asc' };
     }
 
+    const whereClause: Prisma.ReviewWhereInput = {
+      OR: [{ targetUserId }, { targetIdentityId: targetUserId }],
+    };
+
     const [reviews, total] = await Promise.all([
       this.prisma.review.findMany({
-        where: { targetUserId },
+        where: whereClause,
         include: {
-          reviewer: {
-            select: {
-              id: true,
-              name: true,
-              avatarUrl: true,
-              companyProfile: {
-                select: { name: true, logoUrl: true },
-              },
-              officeProfile: {
-                select: { name: true, logoUrl: true },
-              },
+          reviewerIdentity: {
+            include: {
+              individualData: true,
+              companyData: true,
+              officeData: true,
+              user: true,
             },
           },
           reactions: true,
@@ -101,20 +126,23 @@ export class ReviewsService {
         skip,
         take: limit,
       }),
-      this.prisma.review.count({ where: { targetUserId } }),
+      this.prisma.review.count({ where: whereClause }),
     ]);
 
     const formattedReviews = reviews.map((r) => {
+      const ident = r.reviewerIdentity;
       const name =
-        r.reviewer.companyProfile?.name ||
-        r.reviewer.officeProfile?.name ||
-        r.reviewer.name ||
+        ident?.companyData?.name ||
+        ident?.officeData?.name ||
+        ident?.individualData?.name ||
+        ident?.user?.name ||
         'مستخدم بيوتنا';
 
       const avatarUrl =
-        r.reviewer.companyProfile?.logoUrl ||
-        r.reviewer.officeProfile?.logoUrl ||
-        r.reviewer.avatarUrl ||
+        ident?.companyData?.logoUrl ||
+        ident?.officeData?.logoUrl ||
+        ident?.individualData?.avatarUrl ||
+        ident?.user?.avatarUrl ||
         'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
 
       const likesCount = r.reactions.filter(
@@ -125,7 +153,10 @@ export class ReviewsService {
       ).length;
 
       const userReaction = currentUserId
-        ? r.reactions.find((rx) => rx.userId === currentUserId)
+        ? r.reactions.find(
+            (rx) =>
+              rx.userId === currentUserId || rx.identityId === currentUserId,
+          )
         : null;
 
       return {
@@ -159,7 +190,9 @@ export class ReviewsService {
    */
   async getSummary(targetUserId: string) {
     const reviews = await this.prisma.review.findMany({
-      where: { targetUserId },
+      where: {
+        OR: [{ targetUserId }, { targetIdentityId: targetUserId }],
+      },
       select: { rating: true },
     });
 
@@ -212,24 +245,20 @@ export class ReviewsService {
       throw new NotFoundException('التقييم غير موجود');
     }
 
-    const existingReaction = await this.prisma.reviewReaction.findUnique({
+    const existingReaction = await this.prisma.reviewReaction.findFirst({
       where: {
-        reviewId_userId: {
-          reviewId,
-          userId,
-        },
+        reviewId,
+        OR: [{ userId }, { identityId: userId }],
       },
     });
 
     if (existingReaction) {
       if (existingReaction.type === type) {
-        // Toggle off
         await this.prisma.reviewReaction.delete({
           where: { id: existingReaction.id },
         });
         return { message: 'تم إلغاء التفاعل' };
       } else {
-        // Switch type
         await this.prisma.reviewReaction.update({
           where: { id: existingReaction.id },
           data: { type },
@@ -237,7 +266,6 @@ export class ReviewsService {
         return { message: 'تم تحديث التفاعل' };
       }
     } else {
-      // Create new reaction
       await this.prisma.reviewReaction.create({
         data: {
           reviewId,
@@ -261,7 +289,7 @@ export class ReviewsService {
       throw new NotFoundException('التقييم غير موجود');
     }
 
-    if (review.reviewerId !== userId) {
+    if (review.reviewerId !== userId && review.reviewerIdentityId !== userId) {
       throw new BadRequestException('لا يمكنك حذف تقييم مستخدم آخر');
     }
 

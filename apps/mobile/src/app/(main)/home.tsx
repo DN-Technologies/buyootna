@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import  { useCallback, useEffect, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -17,6 +17,7 @@ import HomeAll from '@/components/home/sections/HomeAll';
 import HomeCompanies from '@/components/home/sections/HomeCompanies';
 import HomeProperties from '@/components/home/sections/HomeProperties';
 import { feedService } from '@/core/api/feed.service';
+import ConnectionErrorModal from '@/core/components/ConnectionErrorModal';
 import ContentContainer from '@/core/components/ContentContainer';
 import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
 import { HomeFeedResponse } from '@/types/feed';
@@ -60,14 +61,18 @@ export default function HomeScreen() {
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // --- Fetch Function ---
   const loadFeed = async () => {
     try {
+      setIsLoading(true);
       const data = await feedService.getHomeFeed();
       setFeedData(data);
+      setShowErrorModal(false);
     } catch (error) {
       console.error('Failed to fetch home feed:', error);
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -218,6 +223,12 @@ export default function HomeScreen() {
         <GlobalFilterSheet
           ref={filterSheetRef}
           onApplyFilters={handleAdvancedSearch}
+        />
+        <ConnectionErrorModal
+          visible={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          onRetry={loadFeed}
+          isLoading={isLoading}
         />
       </ContentContainer>
     </SafeAreaView>
