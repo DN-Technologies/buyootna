@@ -297,7 +297,7 @@ export default function PropertyDetailsScreen() {
                   property.host.role === 'COMPANY' ||
                   property.host.role === 'OFFICE'
                 ) {
-                  Alert.alert('تنبيه', 'تفاصيل الشركة/المكتب ستكون متاحة قريباً');
+                  router.push(`/company/${property.host.id}`);
                 } else {
                   router.push(`/profile/${property.host.id}`);
                 }

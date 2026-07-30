@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -38,6 +39,7 @@ export default function ServiceCompanies({
   initialData,
   activeFilter = 'all',
 }: ServiceCompaniesProps) {
+  const router = useRouter();
   const [data, setData] = useState<CompanyDto[]>(initialData);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -180,6 +182,7 @@ export default function ServiceCompanies({
                 isVerified={item.isVerified}
                 isFavorite={item.isFavorite}
                 cardWidth={HORIZONTAL_CARD_WIDTH}
+                onPress={() => router.push(`/company/${item.id}`)}
               />
             </View>
           )}
