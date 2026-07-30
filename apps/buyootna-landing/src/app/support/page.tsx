@@ -75,7 +75,7 @@ export default function SupportPage() {
           {/* Email Support Card */}
           <a
             href="mailto:buyootna@hotmail.com"
-            className="group flex flex-col items-center text-center gap-4 p-8 rounded-3xl bg-primary/30 border border-[#1B2936]/50 hover:border-[#4285F4]/40 hover:bg-[#0F1E2E]/60 transition-all duration-350 shadow-md"
+            className="group flex flex-col items-center text-center gap-4 p-8 rounded-3xl bg-primary/30 border border-[#1B2936]/50 hover:border-[#4285F4]/40 hover:bg-primary/60 transition-all duration-350 shadow-md"
           >
             <div className="p-4 rounded-2xl bg-[#4285F4]/10 text-[#4285F4] group-hover:bg-[#4285F4] group-hover:text-white transition-all duration-300">
               <Mail className="w-6 h-6" />
