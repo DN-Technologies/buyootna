@@ -74,21 +74,8 @@ export default function ActivityScreen() {
   };
 
   const handleTrashPress = () => {
-    Alert.alert(
-      'مسح النشاط',
-      'هل أنت متأكد من رغبتك في مسح السجل أو التنبيهات؟',
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        {
-          text: 'مسح الكل',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Bulk clear requested');
-          },
-        },
-      ],
-      { cancelable: true },
-    );
+    setPropertyToDelete(null);
+    deleteSheetRef.current?.present();
   };
 
   // Bottom sheet reference and current active draft preview property
