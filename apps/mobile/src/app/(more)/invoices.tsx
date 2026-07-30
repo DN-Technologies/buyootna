@@ -17,6 +17,7 @@ import {
   invoicesService,
   InvoiceStatus,
 } from '@/core/api/invoices.service';
+import { exportInvoicesToPdf } from '@/core/utils/invoiceExportHelper';
 
 const TABS = [
   { key: 'ALL', label: 'الكل' },
@@ -25,63 +26,21 @@ const TABS = [
   { key: 'CANCELLED', label: 'ملغية' },
 ];
 
-const DUMMY_INVOICES: InvoiceResponse[] = [
-  {
-    id: '1',
-    invoiceNo: 'INV-20365',
-    planName: 'الباقة الذهبية',
-    planDetails: 'باقة 5 اعلانات',
-    amount: 100,
-    status: 'PAID',
-    paidAt: '2026-05-05T10:00:00Z',
-    dueDate: null,
-    delayDays: null,
-    createdAt: '2026-05-05T09:00:00Z',
-  },
-  {
-    id: '2',
-    invoiceNo: 'INV-20365',
-    planName: 'الباقة الذهبية',
-    planDetails: 'باقة 5 اعلانات',
-    amount: 100,
-    status: 'OVERDUE',
-    paidAt: null,
-    dueDate: '2026-05-30T23:59:59Z',
-    delayDays: null,
-    createdAt: '2026-05-15T09:00:00Z',
-  },
-  {
-    id: '3',
-    invoiceNo: 'INV-20365',
-    planName: 'الباقة الذهبية',
-    planDetails: 'باقة 5 اعلانات',
-    amount: 100,
-    status: 'CANCELLED',
-    paidAt: null,
-    dueDate: null,
-    delayDays: 5,
-    createdAt: '2026-04-10T09:00:00Z',
-  },
-];
-
 export default function InvoicesScreen() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [activeTab, setActiveTab] = useState<'ALL' | InvoiceStatus>('ALL');
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   const fetchInvoices = async () => {
     try {
       setIsLoading(true);
       const data = await invoicesService.getInvoices();
-      if (data && data.length > 0) {
-        setInvoices(data);
-      } else {
-        setInvoices(DUMMY_INVOICES);
-      }
+      setInvoices(data || []);
     } catch {
-      console.log('API failed, falling back to dummy invoices for testing');
-      setInvoices(DUMMY_INVOICES);
+      console.log('API failed to fetch invoices');
+      setInvoices([]);
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +49,23 @@ export default function InvoicesScreen() {
   useEffect(() => {
     fetchInvoices();
   }, []);
+
+  const handleExport = async () => {
+    if (invoices.length === 0) {
+      Alert.alert('تنبيه', 'لا توجد فواتير لتصديرها حالياً');
+      return;
+    }
+    try {
+      setIsExporting(true);
+      const listToExport =
+        filteredInvoices.length > 0 ? filteredInvoices : invoices;
+      await exportInvoicesToPdf(listToExport);
+    } catch {
+      Alert.alert('خطأ', 'حدث خطأ أثناء تصدير الفواتير. يرجى المحاولة لاحقاً');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const formatDateArabic = (dateStr: string | null | undefined) => {
     if (!dateStr) return '';
@@ -169,10 +145,15 @@ export default function InvoicesScreen() {
         {/* Export / Download Icon */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => Alert.alert('تصدير', 'سيتم تصدير الفواتير قريباً')}
-          className="w-8 items-start"
+          disabled={isExporting}
+          onPress={handleExport}
+          className="w-8 items-start justify-center"
         >
-          <Feather name="download" size={20} color="#111111" />
+          {isExporting ? (
+            <ActivityIndicator size="small" color="#15304D" />
+          ) : (
+            <Feather name="download" size={20} color="#111111" />
+          )}
         </TouchableOpacity>
       </View>
 

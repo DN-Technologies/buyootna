@@ -1,8 +1,16 @@
 {
-	"dependencies": {
-		"@expo-google-fonts/cairo": "^0.4.2",
-		"@expo/metro-runtime": "^55.0.10",
-		"axios": "^1.16.0",
-		"zod": "^4.4.2"
-	}
+  "name": "buyootna-monorepo",
+  "private": true,
+  "dependencies": {
+    "@expo-google-fonts/cairo": "^0.4.2",
+    "@expo/metro-runtime": "^55.0.10",
+    "axios": "^1.16.0",
+    "zod": "^4.4.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
+  }
 }

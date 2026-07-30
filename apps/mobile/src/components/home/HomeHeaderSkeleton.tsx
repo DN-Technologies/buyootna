@@ -14,7 +14,7 @@ export default function HomeHeaderSkeleton({
   withHorizontalPadding = true,
 }: HomeHeaderSkeletonProps) {
   return (
-    <View className={`pt-4 ${withHorizontalPadding ? 'px-5' : ''}`}>
+    <View className={withHorizontalPadding ? 'pt-4 px-5' : 'pt-4'}>
       {/* ── 1. Header Row (Avatar + Greeting  |  Icons) ── */}
       <View className="mb-2 flex-row items-center justify-between">
         {/* Right: avatar + text */}
