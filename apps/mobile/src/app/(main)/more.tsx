@@ -441,12 +441,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={StarIcon}
                   title="التقييمات والمراجعات"
-                  onPress={() =>
-                    Alert.alert(
-                      'قريباً',
-                      'ميزة التقييمات والمراجعات ستكون متوفرة قريباً',
-                    )
-                  }
+                  onPress={() => router.push('/(more)/reviews')}
                 />
               </View>
             </View>
