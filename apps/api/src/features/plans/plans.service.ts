@@ -32,26 +32,71 @@ export class PlansService {
   }
 
   async getUserWallet(userId: string) {
-    const slots = await this.prisma.userPlanSlot.findMany({
-      where: {
-        userId,
-        status: 'ACTIVE',
-        adsRemaining: { gt: 0 },
-      },
-      include: {
-        plan: true,
-      },
+    const allSlots = await this.prisma.userPlanSlot.findMany({
+      where: { userId },
+      include: { plan: true },
       orderBy: { createdAt: 'desc' },
     });
+
+    const activeSlots = allSlots.filter(
+      (s) => s.status === 'ACTIVE' && s.adsRemaining > 0,
+    );
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { freeAdsRemaining: true },
     });
 
+    // Calculate balance counts by plan slug
+    let gold = 0;
+    let silver = 0;
+    let regular = 0;
+
+    activeSlots.forEach((s) => {
+      const slug = s.plan.slug.toLowerCase();
+      if (slug.includes('gold') || slug.includes('ذهبي')) {
+        gold += s.adsRemaining;
+      } else if (slug.includes('silver') || slug.includes('فضي')) {
+        silver += s.adsRemaining;
+      } else {
+        regular += s.adsRemaining;
+      }
+    });
+
+    const formattedHistory = allSlots.map((s) => {
+      const shortId = s.id.replace(/-/g, '').slice(0, 8).toUpperCase();
+      const isActive = s.status === 'ACTIVE' && s.adsRemaining > 0;
+
+      const expiryDate = new Date(s.createdAt);
+      expiryDate.setDate(expiryDate.getDate() + (s.plan.durationDays || 30));
+      const formattedExpiry = expiryDate.toLocaleDateString('ar-EG', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+
+      return {
+        id: s.id,
+        displayId: `ID:${shortId}`,
+        planName: `الباقة ${s.plan.name}`,
+        planSlug: s.plan.slug,
+        status: isActive ? 'ACTIVE' : 'EXPIRED',
+        dateText: isActive
+          ? `تاريخ الانتهاء: ${formattedExpiry}`
+          : `تاريخ الانتهاء: ${formattedExpiry}`,
+        createdAt: s.createdAt,
+        adsRemaining: s.adsRemaining,
+      };
+    });
+
     return {
       freeAdsRemaining: user?.freeAdsRemaining ?? 0,
-      slots: slots.map((s) => ({
+      balanceCounts: {
+        gold,
+        silver,
+        regular,
+      },
+      slots: activeSlots.map((s) => ({
         id: s.id,
         planId: s.planId,
         planName: s.plan.name,
@@ -62,7 +107,13 @@ export class PlansService {
         maxActiveAds: s.plan.maxActiveAds,
         createdAt: s.createdAt,
       })),
+      history: formattedHistory,
     };
+  }
+
+  async getPackageHistory(userId: string) {
+    const wallet = await this.getUserWallet(userId);
+    return wallet.history;
   }
 
   async getPublishOptions(userId: string): Promise<PublishOptionsResponse> {

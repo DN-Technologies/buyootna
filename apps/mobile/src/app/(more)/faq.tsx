@@ -79,23 +79,23 @@ export default function FAQScreen() {
                   onPress={() => toggleExpand(item.id)}
                   className="flex-row items-center justify-between"
                 >
+                  <Text
+                    className="ml-3 flex-1 font-cairo-bold text-[14px] text-[#15304D]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    {item.question}
+                  </Text>
                   <Feather
                     name={isExpanded ? 'chevron-up' : 'chevron-down'}
                     size={18}
                     color="#15304D"
                   />
-                  <Text
-                    className="ml-3 flex-1 text-right font-cairo-bold text-[14px] text-[#15304D]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    {item.question}
-                  </Text>
                 </TouchableOpacity>
 
                 {isExpanded && (
                   <View className="mt-3 border-t border-gray-100 pt-3">
                     <Text
-                      className="text-right font-cairo-medium text-[13px] leading-6 text-[#6B6A6A]"
+                      className="font-cairo-medium text-[13px] leading-6 text-[#6B6A6A]"
                       style={{ writingDirection: 'rtl' }}
                     >
                       {item.answer}

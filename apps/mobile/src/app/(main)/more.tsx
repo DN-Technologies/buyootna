@@ -441,12 +441,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={StarIcon}
                   title="التقييمات والمراجعات"
-                  onPress={() =>
-                    Alert.alert(
-                      'قريباً',
-                      'ميزة التقييمات والمراجعات ستكون متوفرة قريباً',
-                    )
-                  }
+                  onPress={() => router.push('/(more)/reviews')}
                 />
               </View>
             </View>
@@ -468,12 +463,7 @@ export default function ProfileDashboardScreen() {
                 <MenuItem
                   icon={MoneyIcon}
                   title="رصيد الحساب"
-                  onPress={() =>
-                    Alert.alert(
-                      'قريباً',
-                      'ميزة رصيد الحساب ستكون متوفرة قريباً',
-                    )
-                  }
+                  onPress={() => router.push('/(more)/account-balance')}
                 />
                 <MenuItem
                   icon={BillIcon}

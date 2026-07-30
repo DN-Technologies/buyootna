@@ -42,7 +42,7 @@ export default function ActivityScreen() {
 
   // Tab Bar height calculation matches CustomTabBar.tsx
   const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
-  const toastBottomOffset = tabBarHeight + 16;
+  const toastBottomOffset = tabBarHeight + 40;
 
   // Local UI state
   const [activeTab, setActiveTab] = useState('اعلاناتي');
@@ -74,21 +74,8 @@ export default function ActivityScreen() {
   };
 
   const handleTrashPress = () => {
-    Alert.alert(
-      'مسح النشاط',
-      'هل أنت متأكد من رغبتك في مسح السجل أو التنبيهات؟',
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        {
-          text: 'مسح الكل',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Bulk clear requested');
-          },
-        },
-      ],
-      { cancelable: true },
-    );
+    setPropertyToDelete(null);
+    deleteSheetRef.current?.present();
   };
 
   // Bottom sheet reference and current active draft preview property
@@ -503,19 +490,25 @@ export default function ActivityScreen() {
             transform: [{ translateY: slideAnim }],
             elevation: 5,
           }}
-          className="absolute left-[20px] right-[20px] z-[999] flex-row-reverse items-center justify-between rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
+          className="absolute left-[20px] right-[20px] z-[999] flex-row items-center justify-between rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
         >
-          <View className="flex-row-reverse items-center gap-2.5">
+          <View className="flex-row items-center gap-2.5">
             <Image
               source={require('@/assets/icons/success-icon.svg')}
               style={{ width: 24, height: 24 }}
             />
-            <View className="items-end">
-              <Text className="text-right font-cairo-semibold text-[14px] leading-[22px] text-[#111111]">
+            <View className="items-start">
+              <Text
+                className="font-cairo-semibold text-[14px] leading-[22px] text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
                 {toastMessage}
               </Text>
               {toastSubtitle && (
-                <Text className="mt-0.5 text-right font-cairo text-[12px] leading-[18px] text-[#6B6A6A]">
+                <Text
+                  className="mt-0.5 font-cairo text-[12px] leading-[18px] text-[#6B6A6A]"
+                  style={{ writingDirection: 'rtl' }}
+                >
                   {toastSubtitle}
                 </Text>
               )}
