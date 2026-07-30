@@ -183,17 +183,13 @@ export default function ServiceCompanies({
               />
             </View>
           )}
-          // Infinite Scroll Triggers:
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
-          ListFooterComponentClassName="items-center justify-center"
           ListFooterComponent={
             isLoadingMore ? (
-              <ActivityIndicator
-                size="small"
-                color="#15304D"
-                className="ml-4"
-              />
+              <View className="items-center justify-center px-4">
+                <ActivityIndicator size="small" color="#15304D" />
+              </View>
             ) : null
           }
         />
