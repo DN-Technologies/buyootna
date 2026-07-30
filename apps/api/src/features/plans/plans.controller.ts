@@ -19,6 +19,12 @@ export class PlansController {
     return this.plansService.getUserWallet(user.id);
   }
 
+  @Get('history')
+  @UseGuards(JwtAuthGuard)
+  async getPackageHistory(@CurrentUser() user: User) {
+    return this.plansService.getPackageHistory(user.id);
+  }
+
   @Get('wallet/publish-options')
   @UseGuards(JwtAuthGuard)
   async getPublishOptions(
