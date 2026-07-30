@@ -1,7 +1,7 @@
 import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import  { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,65 +13,52 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import CompanyGalleryTab from '@/core/components/company/CompanyGalleryTab';
+import { companyService } from '@/core/api/company.service';
+import { reviewsService } from '@/core/api/reviews.service';
+import CompanyGalleryTab, {
+  CompanyProjectItemData,
+} from '@/core/components/company/CompanyGalleryTab';
 import CompanyHeaderCard, {
   CompanyHeaderData,
 } from '@/core/components/company/CompanyHeaderCard';
-import CompanyServicesTab from '@/core/components/company/CompanyServicesTab';
+import CompanyServicesTab, {
+  CompanyServiceItemData,
+} from '@/core/components/company/CompanyServicesTab';
 import CompanyWorkingHours from '@/core/components/company/CompanyWorkingHours';
 import QuoteRequestModal from '@/core/components/company/QuoteRequestModal';
 import ContentContainer from '@/core/components/ContentContainer';
 import AddReviewSheet from '@/core/components/profile/AddReviewSheet';
-import {
-  FilterBottomSheet,
-  SortBottomSheet,
-} from '@/core/components/profile/ProfileFilterSheet';
+import { SortBottomSheet } from '@/core/components/profile/ProfileFilterSheet';
 import ReviewCardItem from '@/core/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/core/components/profile/ReviewsSummarySection';
-import { ReviewItem, SEEDED_REVIEWS } from '@/core/components/profile/types';
+import { ReviewItem } from '@/core/components/profile/types';
 
 type CompanyTab = 'about' | 'services' | 'gallery';
-
-const MOCK_COMPANY_DATA: CompanyHeaderData = {
-  id: 'company-1',
-  name: 'دار العقار الحديث',
-  logoUrl:
-    'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=400',
-  isVerified: true,
-  isActiveNow: true,
-  rating: 3.5,
-  reviewsCount: 214,
-  bio: 'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.',
-  location: 'السالماية • شمال غرب صليبخات',
-  servicesCount: 2,
-  projectsCount: 3,
-  responseTime: '30 دقيقة',
-  instagramUrl: 'https://instagram.com',
-  twitterUrl: 'https://x.com',
-};
 
 export default function CompanyProfileScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const [company, setCompany] = useState<CompanyHeaderData>(MOCK_COMPANY_DATA);
+  const [company, setCompany] = useState<CompanyHeaderData | null>(null);
+  const [services, setServices] = useState<CompanyServiceItemData[]>([]);
+  const [projects, setProjects] = useState<CompanyProjectItemData[]>([]);
   const [activeTab, setActiveTab] = useState<CompanyTab>('about');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Reviews state (reused from profile)
-  const [reviews, setReviews] = useState<ReviewItem[]>(SEEDED_REVIEWS);
+  // Reviews state
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [visibleReviewsCount, setVisibleReviewsCount] = useState(3);
   const [reviewSort, setReviewSort] = useState('all');
   const [reviewSummary, setReviewSummary] = useState({
-    averageRating: 4.5,
-    totalRatingsCount: 100,
+    averageRating: 0,
+    totalRatingsCount: 0,
     ratingBreakdown: [
-      { star: 5, pct: '85%' },
-      { star: 4, pct: '50%' },
-      { star: 3, pct: '30%' },
-      { star: 2, pct: '18%' },
-      { star: 1, pct: '8%' },
+      { star: 5, pct: '0%' },
+      { star: 4, pct: '0%' },
+      { star: 3, pct: '0%' },
+      { star: 2, pct: '0%' },
+      { star: 1, pct: '0%' },
     ],
   });
 
@@ -80,36 +67,59 @@ export default function CompanyProfileScreen() {
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
 
-  // Fetch company info
-  useEffect(() => {
+  // Fetch company data & reviews from NestJS API
+  const loadCompanyData = useCallback(async () => {
     if (!id) return;
     setIsLoading(true);
-    // Simulate API fetch
-    const timer = setTimeout(() => {
-      setCompany((prev) => ({
-        ...prev,
-        id: String(id),
-      }));
-      setIsLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [id]);
+    try {
+      const data = await companyService.getCompanyDetails(String(id));
+      setCompany(data);
+      setServices(data.services || []);
+      setProjects(data.projects || []);
 
-  const handleAddReview = (comment: string, rating: number) => {
-    const created: ReviewItem = {
-      id: Date.now().toString(),
-      userName: 'مستخدم بيوتنا',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      rating,
-      comment,
-      timeAgo: 'الآن',
-      likes: 0,
-      dislikes: 0,
-    };
-    setReviews((prev) => [created, ...prev]);
+      const targetUserId = data.userId || String(id);
+      try {
+        const [sumRes, revRes] = await Promise.all([
+          reviewsService.getSummary(targetUserId),
+          reviewsService.getReviews(targetUserId, reviewSort),
+        ]);
+        setReviewSummary(sumRes);
+        setReviews(revRes.data || []);
+      } catch (revErr) {
+        console.log('Error loading reviews:', revErr);
+      }
+    } catch (error) {
+      console.error('Failed to load company details:', error);
+      Alert.alert('خطأ', 'تعذر تحميل بيانات الشركة');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, reviewSort]);
+
+  useEffect(() => {
+    loadCompanyData();
+  }, [loadCompanyData]);
+
+  const handleAddReview = async (comment: string, rating: number) => {
+    const targetUserId = company?.userId || String(id);
+    try {
+      await reviewsService.addReview(targetUserId, rating, comment);
+      Alert.alert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
+
+      // Refresh reviews & summary
+      const [sumRes, revRes] = await Promise.all([
+        reviewsService.getSummary(targetUserId),
+        reviewsService.getReviews(targetUserId, reviewSort),
+      ]);
+      setReviewSummary(sumRes);
+      setReviews(revRes.data || []);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
+      Alert.alert('خطأ', msg);
+    }
   };
 
-  const handleToggleLike = (revId: string) => {
+  const handleToggleLike = async (revId: string) => {
     setReviews((prev) =>
       prev.map((r) =>
         r.id === revId
@@ -117,13 +127,20 @@ export default function CompanyProfileScreen() {
               ...r,
               likes: r.userLiked ? r.likes - 1 : r.likes + 1,
               userLiked: !r.userLiked,
+              dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
+              userDisliked: false,
             }
           : r,
       ),
     );
+    try {
+      await reviewsService.toggleLike(revId);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    }
   };
 
-  const handleToggleDislike = (revId: string) => {
+  const handleToggleDislike = async (revId: string) => {
     setReviews((prev) =>
       prev.map((r) =>
         r.id === revId
@@ -131,23 +148,41 @@ export default function CompanyProfileScreen() {
               ...r,
               dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes + 1,
               userDisliked: !r.userDisliked,
+              likes: r.userLiked ? r.likes - 1 : r.likes,
+              userLiked: false,
             }
           : r,
       ),
     );
+    try {
+      await reviewsService.toggleDislike(revId);
+    } catch (error) {
+      console.error('Error toggling dislike:', error);
+    }
   };
 
   const handleContactAction = (type: 'phone' | 'whatsapp' | 'chat') => {
+    const phoneNumber = company?.phone || company?.whatsapp;
     if (type === 'phone') {
-      Linking.openURL('tel:+96512345678').catch(() => {
-        Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
-      });
+      if (phoneNumber) {
+        Linking.openURL(`tel:${phoneNumber}`).catch(() => {
+          Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+        });
+      } else {
+        Alert.alert('تنبيه', 'رقم الهاتف غير متوفر');
+      }
     } else if (type === 'whatsapp') {
-      Linking.openURL('https://wa.me/96512345678').catch(() => {
-        Alert.alert('خطأ', 'تعذر فتح الواتساب');
-      });
+      if (phoneNumber) {
+        const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
+        Linking.openURL(`https://wa.me/${cleanNumber}`).catch(() => {
+          Alert.alert('خطأ', 'تعذر فتح الواتساب');
+        });
+      } else {
+        Alert.alert('تنبيه', 'رقم الواتساب غير متوفر');
+      }
     } else {
-      router.push(`/chat/company-${id || '1'}`);
+      const chatTarget = company?.userId || id;
+      router.push(`/chat/${chatTarget}`);
     }
   };
 
@@ -184,6 +219,12 @@ export default function CompanyProfileScreen() {
         {isLoading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#15304D" />
+          </View>
+        ) : !company ? (
+          <View className="flex-1 items-center justify-center p-5">
+            <Text className="font-cairo-bold text-base text-[#111111]">
+              لم يتم العثور على الشركة
+            </Text>
           </View>
         ) : (
           <ScrollView
@@ -269,8 +310,7 @@ export default function CompanyProfileScreen() {
 
                   {/* Reviews Section Header & Toolbar */}
                   <View className="mb-4 flex-row items-center justify-between">
-                    <Text className="font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                    >
+                    <Text className="font-cairo-semibold text-[14px] text-[#6B6A6A]">
                       التقييمات
                     </Text>
                     <TouchableOpacity
@@ -325,11 +365,14 @@ export default function CompanyProfileScreen() {
 
               {activeTab === 'services' && (
                 <CompanyServicesTab
+                  services={services}
                   onRequestQuote={() => quoteModalRef.current?.present()}
                 />
               )}
 
-              {activeTab === 'gallery' && <CompanyGalleryTab />}
+              {activeTab === 'gallery' && (
+                <CompanyGalleryTab projects={projects} />
+              )}
             </View>
           </ScrollView>
         )}
@@ -381,7 +424,7 @@ export default function CompanyProfileScreen() {
         />
         <QuoteRequestModal
           ref={quoteModalRef}
-          companyName={company.name}
+          companyName={company?.name || ''}
           onRequestSubmitted={() => {}}
         />
       </ContentContainer>

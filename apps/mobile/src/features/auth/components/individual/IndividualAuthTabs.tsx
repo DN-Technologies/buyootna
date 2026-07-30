@@ -3,18 +3,18 @@ import { Platform,Text, TouchableOpacity, View } from 'react-native';
 
 interface IndividualAuthTabsProps {
   mode: 'login' | 'signup';
-  onModeChange: (mode: 'login' | 'signup') => void;
+  onChangeMode: (mode: 'login' | 'signup') => void;
 }
 
 export const IndividualAuthTabs: React.FC<IndividualAuthTabsProps> = ({
   mode,
-  onModeChange,
+  onChangeMode,
 }) => {
   return (
     <View className="mb-10 w-[75%] flex-row self-center rounded-3xl bg-accent p-1">
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => onModeChange('signup')}
+        onPress={() => onChangeMode('signup')}
         className={`flex-1 items-center rounded-3xl py-2 ${
           mode === 'signup' ? 'bg-primary' : 'bg-transparent'
         }`}
@@ -31,7 +31,7 @@ export const IndividualAuthTabs: React.FC<IndividualAuthTabsProps> = ({
 
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => onModeChange('login')}
+        onPress={() => onChangeMode('login')}
         className={`flex-1 items-center rounded-3xl py-2 ${
           mode === 'login' ? 'bg-primary' : 'bg-transparent'
         }`}

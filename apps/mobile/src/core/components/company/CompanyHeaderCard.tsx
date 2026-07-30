@@ -6,6 +6,7 @@ import { LocationIcon } from '@/assets/icons/home/cards';
 
 export interface CompanyHeaderData {
   id: string;
+  userId?: string;
   name: string;
   logoUrl?: string;
   coverUrl?: string;
@@ -20,6 +21,8 @@ export interface CompanyHeaderData {
   responseTime: string;
   instagramUrl?: string;
   twitterUrl?: string;
+  phone?: string;
+  whatsapp?: string;
 }
 
 interface CompanyHeaderCardProps {
