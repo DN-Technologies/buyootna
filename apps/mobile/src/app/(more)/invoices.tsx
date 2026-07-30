@@ -17,6 +17,7 @@ import {
   invoicesService,
   InvoiceStatus,
 } from '@/core/api/invoices.service';
+import ConnectionErrorModal from '@/core/components/ConnectionErrorModal';
 import { exportInvoicesToPdf } from '@/core/utils/invoiceExportHelper';
 
 const TABS = [
@@ -32,15 +33,18 @@ export default function InvoicesScreen() {
   const [activeTab, setActiveTab] = useState<'ALL' | InvoiceStatus>('ALL');
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   const fetchInvoices = async () => {
     try {
       setIsLoading(true);
       const data = await invoicesService.getInvoices();
       setInvoices(data || []);
+      setShowErrorModal(false);
     } catch {
       console.log('API failed to fetch invoices');
       setInvoices([]);
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -325,6 +329,12 @@ export default function InvoicesScreen() {
           </TouchableOpacity>
         </View>
       )}
+      <ConnectionErrorModal
+        visible={showErrorModal}
+        onClose={() => setShowErrorModal(false)}
+        onRetry={fetchInvoices}
+        isLoading={isLoading}
+      />
     </SafeAreaView>
   );
 }
