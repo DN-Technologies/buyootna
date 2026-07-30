@@ -10,20 +10,26 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 export default function HomeHeader() {
   const router = useRouter();
-  const { user, token } = useAuthStore();
+  const { user, activeIdentity, token } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
 
   const getActiveProfileDetails = () => {
-    if (user?.role === 'COMPANY' && user.companyProfile) {
+    if (activeIdentity?.type === 'COMPANY' && activeIdentity.companyData) {
       return {
-        name: user.companyProfile.name,
-        avatarUrl: user.companyProfile.logoUrl,
+        name: activeIdentity.companyData.name,
+        avatarUrl: activeIdentity.companyData.logoUrl,
       };
     }
-    if (user?.role === 'OFFICE' && user.officeProfile) {
+    if (activeIdentity?.type === 'OFFICE' && activeIdentity.officeData) {
       return {
-        name: user.officeProfile.name,
-        avatarUrl: user.officeProfile.logoUrl,
+        name: activeIdentity.officeData.name,
+        avatarUrl: activeIdentity.officeData.logoUrl,
+      };
+    }
+    if (activeIdentity?.type === 'INDIVIDUAL' && activeIdentity.individualData) {
+      return {
+        name: activeIdentity.individualData.name || 'مستخدم',
+        avatarUrl: activeIdentity.individualData.avatarUrl,
       };
     }
     return {

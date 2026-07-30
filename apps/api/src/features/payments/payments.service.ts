@@ -344,7 +344,7 @@ export class PaymentsService {
       }
 
       // 3. Update User activePlanId
-      if (plan) {
+      if (plan && invoice.userId) {
         await tx.user.update({
           where: { id: invoice.userId },
           data: {

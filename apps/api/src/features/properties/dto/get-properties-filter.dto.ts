@@ -9,7 +9,7 @@ export class GetPropertiesFilterDto {
 
   @IsOptional()
   @IsString()
-  userId?: string;
+  identityId?: string;
 
   // The @Type decorator ensures the URL query string "?page=2" is converted to a number
   @IsOptional()

@@ -23,15 +23,13 @@ import {
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
-import apiClient from '@/core/api/api';
 import AuthGuardSheet from '@/core/components/AuthGuardSheet';
 import ContentContainer from '@/core/components/ContentContainer';
 import MenuItem from '@/core/components/more/MenuItem';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
-import ProfileBottomSheet, {
-  Profile,
-} from '@/features/auth/components/ProfileBottomSheet';
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { useIdentity } from '@/hooks/useIdentity';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useChatStore } from '@/store/useChatStore';
 
@@ -55,13 +53,14 @@ export default function ProfileDashboardScreen() {
   const router = useRouter();
   const { user, token, logout, refreshProfile } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
+  const { activeIdentity, displayName, avatarUrl, getTypeLabel } = useIdentity();
 
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
 
   const unreadChatCount = conversations.reduce(
     (acc, conv) => acc + (conv.unreadCount || 0),
-    0,
+    0
   );
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
@@ -74,7 +73,7 @@ export default function ProfileDashboardScreen() {
         refreshProfile();
         loadConversations(1);
       }
-    }, [refreshProfile, token, loadConversations]),
+    }, [refreshProfile, token, loadConversations])
   );
 
   if (!token) {
@@ -219,98 +218,9 @@ export default function ProfileDashboardScreen() {
     );
   }
 
-  const getSelectedProfileId = () => {
-    if (user?.role === 'COMPANY') return '2';
-    if (user?.role === 'OFFICE') return '3';
-    return '1';
-  };
-
-  const getProfilesList = (): Profile[] => {
-    const list: Profile[] = [];
-
-    list.push({
-      id: '1',
-      name:
-        user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف'),
-      email: user?.email || 'salinelshekh@gmail.com',
-      type: 'individual',
-      typeName: 'فرد',
-      icon: require('@/assets/icons/individual-icon.svg'),
-    });
-
-    if (user?.companyProfile) {
-      list.push({
-        id: '2',
-        name: user.companyProfile.name || 'شركة كيان العقارية',
-        email: user.email || 'kayan@gmail.com',
-        type: 'company',
-        typeName: 'شركة',
-        icon: require('@/assets/icons/company-icon.svg'),
-      });
-    }
-
-    if (user?.officeProfile) {
-      list.push({
-        id: '3',
-        name: user.officeProfile.name || 'مكتب سالم العقاري',
-        email: user.email || 'salinelshekh@gmail.com',
-        type: 'owner',
-        typeName: 'مالك عقار',
-        icon: require('@/assets/icons/owner-icon.svg'),
-      });
-    }
-
-    return list;
-  };
-
-  const getActiveProfileDetails = () => {
-    if (user?.role === 'COMPANY' && user.companyProfile) {
-      return {
-        name: user.companyProfile.name || 'شركة كيان العقارية',
-        avatarUrl:
-          user.companyProfile.logoUrl || 'https://via.placeholder.com/150',
-      };
-    }
-    if (user?.role === 'OFFICE' && user.officeProfile) {
-      return {
-        name: user.officeProfile.name || 'مكتب سالم العقاري',
-        avatarUrl:
-          user.officeProfile.logoUrl || 'https://via.placeholder.com/150',
-      };
-    }
-    return {
-      name:
-        user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف'),
-      avatarUrl: user?.avatarUrl || 'https://via.placeholder.com/150',
-    };
-  };
-
-  const { name: activeName, avatarUrl: activeAvatarUrl } =
-    getActiveProfileDetails();
-
-  const handleProfileSelect = async (profile: Profile) => {
-    const mappedRole =
-      profile.type === 'company'
-        ? 'COMPANY'
-        : profile.type === 'owner'
-          ? 'OFFICE'
-          : 'INDIVIDUAL';
-    try {
-      // 1. Call backend patch route to switch active role
-      await apiClient.patch('/users/role', { role: mappedRole });
-
-      // 2. Fetch fresh profile data to update Zustand store
-      await refreshProfile();
-
-      console.log('Successfully switched active role to:', mappedRole);
-    } catch (e) {
-      console.error('Failed to switch role:', e);
-    }
-  };
-
   const handleAddAccount = () => {
     profileSheetRef.current?.dismiss();
-    router.push('/(auth)/selection');
+    router.push('/(auth)/add-identity');
   };
 
   const handleLogout = () => {
@@ -322,6 +232,11 @@ export default function ProfileDashboardScreen() {
     logout();
     console.log('Logging out...');
   };
+
+  const activeAvatarUrl = avatarUrl || 'https://via.placeholder.com/150';
+  const activeTypeLabel = activeIdentity
+    ? getTypeLabel(activeIdentity.type)
+    : 'فرد';
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -341,9 +256,7 @@ export default function ProfileDashboardScreen() {
                 {/* Overlapping Avatar */}
                 <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
                   <Image
-                    source={{
-                      uri: activeAvatarUrl,
-                    }} // Replace with actual user avatar
+                    source={{ uri: activeAvatarUrl }}
                     className="h-full w-full"
                     resizeMode="cover"
                   />
@@ -355,11 +268,7 @@ export default function ProfileDashboardScreen() {
                   className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1"
                 >
                   <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
-                    {user?.role === 'COMPANY'
-                      ? 'شركة'
-                      : user?.role === 'OFFICE'
-                        ? 'مكتب'
-                        : 'فرد'}
+                    {activeTypeLabel}
                   </Text>
                   <Feather name="chevron-down" size={18} color="#64748B" />
                 </TouchableOpacity>
@@ -368,10 +277,10 @@ export default function ProfileDashboardScreen() {
               {/* User Info */}
               <View className="mb-5 items-start">
                 <Text className="font-cairo-bold text-lg text-[#111111]">
-                  {activeName}
+                  {displayName}
                 </Text>
                 <Text className="font-cairo-medium text-xs text-[#64748B]">
-                  {user?.email || 'mohamedelotby@gmail.com'}
+                  {user?.email || user?.phone || ''}
                 </Text>
               </View>
 
@@ -476,7 +385,7 @@ export default function ProfileDashboardScreen() {
                   onPress={() =>
                     Alert.alert(
                       'قريباً',
-                      'ميزة فواتير الخدمات ستكون متوفرة قريباً',
+                      'ميزة فواتير الخدمات ستكون متوفرة قريباً'
                     )
                   }
                 />
@@ -523,9 +432,6 @@ export default function ProfileDashboardScreen() {
 
       <ProfileBottomSheet
         ref={profileSheetRef}
-        profiles={getProfilesList()}
-        selectedId={getSelectedProfileId()}
-        onSelect={handleProfileSelect}
         onAddAccount={handleAddAccount}
       />
 

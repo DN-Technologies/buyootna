@@ -15,38 +15,9 @@ import { IndividualAuthTabs } from '@/features/auth/components/individual/Indivi
 import { IndividualLoginForm } from '@/features/auth/components/individual/IndividualLoginForm';
 import { IndividualSignupForm } from '@/features/auth/components/individual/IndividualSignupForm';
 import { IndividualSignupOtpStep } from '@/features/auth/components/individual/IndividualSignupOtpStep';
-import ProfileBottomSheet, {
-  Profile,
-} from '@/features/auth/components/ProfileBottomSheet';
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AccountType } from '@/types';
-
-const MOCK_PROFILES: Profile[] = [
-  {
-    id: '1',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'individual',
-    typeName: 'فرد',
-    icon: require('@/assets/icons/individual-icon.svg'),
-  },
-  {
-    id: '2',
-    name: 'Kayan Company',
-    email: 'kayan@gmail.com',
-    type: 'company',
-    typeName: 'شركة',
-    icon: require('@/assets/icons/company-icon.svg'),
-  },
-  {
-    id: '3',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'owner',
-    typeName: 'مالك عقار',
-    icon: require('@/assets/icons/owner-icon.svg'),
-  },
-];
 
 type AuthMode = 'login' | 'signup';
 
@@ -76,7 +47,12 @@ export default function IndividualAuthScreen() {
       });
 
       // Save token to Secure Store and update global state
-      await setAuth(response.data.user, response.data.access_token);
+      await setAuth(
+        response.data.user,
+        response.data.activeIdentity,
+        response.data.identities,
+        response.data.access_token,
+      );
 
       // The router guard in _layout.tsx will automatically push them to /(main)
       router.push('/(main)/home');
@@ -130,7 +106,12 @@ export default function IndividualAuthScreen() {
       });
 
       // Save token to Secure Store and update global state
-      await setAuth(response.data.user, response.data.access_token);
+      await setAuth(
+        response.data.user,
+        response.data.activeIdentity,
+        response.data.identities,
+        response.data.access_token,
+      );
 
       successSheetRef.current?.present();
     } catch (error: any) {
@@ -163,10 +144,6 @@ export default function IndividualAuthScreen() {
         params: { type },
       } as any);
     }
-  };
-
-  const handleProfileSelect = (profile: Profile) => {
-    console.log('Selected Profile:', profile);
   };
 
   const handleSuccessClose = () => {
@@ -224,9 +201,6 @@ export default function IndividualAuthScreen() {
 
       <ProfileBottomSheet
         ref={profileSheetRef}
-        profiles={MOCK_PROFILES}
-        selectedId="2" // Kayan Company selected as per Figma
-        onSelect={handleProfileSelect}
         onAddAccount={() => handleModeChange('signup')}
       />
 

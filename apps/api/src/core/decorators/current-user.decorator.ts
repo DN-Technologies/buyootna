@@ -1,15 +1,24 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
-import { User } from '@prisma/client';
+import { RequestUser } from '../../features/auth/strategies/jwt.strategy';
 
 interface RequestWithUser extends Request {
-  user: Omit<User, 'password'>;
+  user: RequestUser;
 }
 
 export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): Omit<User, 'password'> => {
+  (
+    data: keyof RequestUser | undefined,
+    ctx: ExecutionContext,
+  ): RequestUser | string => {
     const request = ctx.switchToHttp().getRequest<RequestWithUser>();
-    // This 'user' object is populated by our JwtStrategy!
-    return request.user;
+    const user = request.user;
+
+    // Support field extraction: @CurrentUser('identityId'), @CurrentUser('userId'), etc.
+    if (data) {
+      return user[data] as string;
+    }
+
+    return user;
   },
 );
