@@ -7,14 +7,14 @@ import { TouchableOpacity } from 'react-native';
 
 import { LockIcon } from '@/assets/icons/home/property';
 // Import our reusable UI components from the Filters epic
-import DrawerTrigger from '@/core/components/filters/DrawerTrigger';
-import SelectionDrawer from '@/core/components/filters/SelectionDrawer';
-import StepperInput from '@/core/components/filters/StepperInput';
-import MapPickerModal from '@/core/components/MapPickerModal';
+import DrawerTrigger from '@/shared/components/filters/DrawerTrigger';
+import SelectionDrawer from '@/shared/components/filters/SelectionDrawer';
+import StepperInput from '@/shared/components/filters/StepperInput';
+import MapPickerModal from '@/shared/components/MapPickerModal';
 // Import the Zustand store
-import { useListingStore } from '@/core/store/useListingStore';
+import { useListingStore } from '@/shared/store/useListingStore';
 // Import real location data
-import { AREAS, GOVERNORATES } from '@/core/utils/data/locations';
+import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 const CATEGORY_OPTIONS = [
   { id: 'residential', label: 'سكني' },

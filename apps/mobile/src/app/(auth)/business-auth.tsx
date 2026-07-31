@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/core/api/api';
-import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
+import apiClient from '@/shared/api/api';
+import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import {
   CompanyLoginFormValues,
   CompanySignupFormValues,
@@ -22,7 +22,8 @@ import { CompanyAuthTabs } from '@/features/auth/components/company/CompanyAuthT
 import { CompanyLoginForm } from '@/features/auth/components/company/CompanyLoginForm';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
-import { useAuthStore } from '@/store/useAuthStore';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
 
 type AuthMode = 'login' | 'signup';
@@ -81,7 +82,7 @@ export default function BusinessAuthScreen() {
         response.data.identities,
         response.data.access_token,
       );
-      router.replace('/(main)/home');
+      router.replace(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {
       let errorMsg = 'حدث خطأ في الاتصال';
       if (error.response?.data?.message) {

@@ -13,25 +13,25 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { companyService } from '@/core/api/company.service';
-import { reviewsService } from '@/core/api/reviews.service';
+import { companyService } from '@/shared/api/company.service';
+import { reviewsService } from '@/shared/api/reviews.service';
 import CompanyGalleryTab, {
   CompanyProjectItemData,
-} from '@/core/components/company/CompanyGalleryTab';
+} from '@/shared/components/company/CompanyGalleryTab';
 import CompanyHeaderCard, {
   CompanyHeaderData,
-} from '@/core/components/company/CompanyHeaderCard';
+} from '@/shared/components/company/CompanyHeaderCard';
 import CompanyServicesTab, {
   CompanyServiceItemData,
-} from '@/core/components/company/CompanyServicesTab';
-import CompanyWorkingHours from '@/core/components/company/CompanyWorkingHours';
-import QuoteRequestModal from '@/core/components/company/QuoteRequestModal';
-import ContentContainer from '@/core/components/ContentContainer';
-import AddReviewSheet from '@/core/components/profile/AddReviewSheet';
-import { SortBottomSheet } from '@/core/components/profile/ProfileFilterSheet';
-import ReviewCardItem from '@/core/components/profile/ReviewCardItem';
-import ReviewsSummarySection from '@/core/components/profile/ReviewsSummarySection';
-import { ReviewItem } from '@/core/components/profile/types';
+} from '@/shared/components/company/CompanyServicesTab';
+import CompanyWorkingHours from '@/shared/components/company/CompanyWorkingHours';
+import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
+import ContentContainer from '@/shared/components/ContentContainer';
+import AddReviewSheet from '@/shared/components/profile/AddReviewSheet';
+import { SortBottomSheet } from '@/shared/components/profile/ProfileFilterSheet';
+import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
+import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
+import { ReviewItem } from '@/shared/components/profile/types';
 
 type CompanyTab = 'about' | 'services' | 'gallery';
 

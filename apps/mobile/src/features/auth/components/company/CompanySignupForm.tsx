@@ -6,9 +6,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import MapPickerModal from '@/core/components/MapPickerModal';
-import SelectionBottomSheet from '@/core/components/SelectionBottomSheet';
-import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
+import MapPickerModal from '@/shared/components/MapPickerModal';
+import SelectionBottomSheet from '@/shared/components/SelectionBottomSheet';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import {
   CompanySignupFormValues,
   companySignupSchema,
@@ -102,7 +103,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   const closeSuccessModal = () => {
     successSheetRef.current?.dismiss();
-    router.replace('/(main)/home');
+    router.replace(getIdentityHomeRoute(null));
   };
 
   const successMessage =

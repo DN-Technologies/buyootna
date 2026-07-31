@@ -16,14 +16,14 @@ import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
 import ExchangePropertyTab from '@/app/add-listing/tabs/ExchangePropertyTab';
 import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
 import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
-import { propertiesService } from '@/core/api/properties.service';
-import DiscardChangesSheet from '@/core/components/add-listing/DiscardChangesSheet';
-import ImageUploadZone from '@/core/components/add-listing/ImageUploadZone';
-import EditListingFooter from '@/core/components/edit-listing/EditListingFooter';
-import EditListingHeader from '@/core/components/edit-listing/EditListingHeader';
-import LockedAdTypeSection from '@/core/components/edit-listing/LockedAdTypeSection';
-import SaveLoadingOverlay from '@/core/components/edit-listing/SaveLoadingOverlay';
-import { useListingStore } from '@/core/store/useListingStore';
+import { propertiesService } from '@/shared/api/properties.service';
+import DiscardChangesSheet from '@/shared/components/add-listing/DiscardChangesSheet';
+import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
+import EditListingFooter from '@/shared/components/edit-listing/EditListingFooter';
+import EditListingHeader from '@/shared/components/edit-listing/EditListingHeader';
+import LockedAdTypeSection from '@/shared/components/edit-listing/LockedAdTypeSection';
+import SaveLoadingOverlay from '@/shared/components/edit-listing/SaveLoadingOverlay';
+import { useListingStore } from '@/shared/store/useListingStore';
 import type { PropertyDetailsDto } from '@/types/property';
 
 export default function EditListingScreen() {
@@ -259,7 +259,7 @@ export default function EditListingScreen() {
       isSavedRef.current = true;
       resetForm();
       router.replace({
-        pathname: '/(main)/activity',
+        pathname: '/activity',
         params: { showUpdateSuccess: 'true' },
       });
     } catch (error) {

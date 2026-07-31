@@ -14,27 +14,27 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import apiClient from '@/core/api/api';
-import ContentContainer from '@/core/components/ContentContainer';
-import AddReviewSheet from '@/core/components/profile/AddReviewSheet';
+import apiClient from '@/shared/api/api';
+import ContentContainer from '@/shared/components/ContentContainer';
+import AddReviewSheet from '@/shared/components/profile/AddReviewSheet';
 import {
   FilterBottomSheet,
   SortBottomSheet,
-} from '@/core/components/profile/ProfileFilterSheet';
-import ProfileHeaderCard from '@/core/components/profile/ProfileHeaderCard';
-import ProfileTabNavigation from '@/core/components/profile/ProfileTabNavigation';
-import ReviewCardItem from '@/core/components/profile/ReviewCardItem';
-import ReviewsSummarySection from '@/core/components/profile/ReviewsSummarySection';
+} from '@/shared/components/profile/ProfileFilterSheet';
+import ProfileHeaderCard from '@/shared/components/profile/ProfileHeaderCard';
+import ProfileTabNavigation from '@/shared/components/profile/ProfileTabNavigation';
+import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
+import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import {
   ReviewItem,
   SEEDED_REVIEWS,
   UserProfile,
-} from '@/core/components/profile/types';
-import PropertyActionBar from '@/core/components/PropertyActionBar';
-import PropertyCard from '@/core/components/PropertyCard';
-import PropertyListItem from '@/core/components/PropertyListItem';
-import PropertySkeleton from '@/core/components/skeletons/PropertySkeleton';
-import { useAuthStore } from '@/store/useAuthStore';
+} from '@/shared/components/profile/types';
+import PropertyActionBar from '@/shared/components/PropertyActionBar';
+import PropertyCard from '@/shared/components/PropertyCard';
+import PropertyListItem from '@/shared/components/PropertyListItem';
+import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { PropertyDto } from '@/types/feed';
 
 export default function UserProfileScreen() {

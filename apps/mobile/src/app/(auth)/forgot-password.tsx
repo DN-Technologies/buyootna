@@ -5,8 +5,8 @@ import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/core/api/api';
-import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
+import apiClient from '@/shared/api/api';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 // Modular Components
 import { ForgotPasswordHeader } from '@/features/auth/components/recovery/ForgotPasswordHeader';
 import { ForgotPasswordStep1 } from '@/features/auth/components/recovery/ForgotPasswordStep1';

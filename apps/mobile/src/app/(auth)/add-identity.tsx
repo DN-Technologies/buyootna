@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useIdentity } from '@/hooks/useIdentity';
-import { IdentityType } from '@/store/useAuthStore';
+import { useIdentity } from '@/shared/hooks/useIdentity';
+import { IdentityType } from '@/shared/store/useAuthStore';
 
 interface IdentityOption {
   type: IdentityType;

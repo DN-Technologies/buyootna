@@ -2,7 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { useAuthStore } from '@/store/useAuthStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function AddListingLayout() {
   const token = useAuthStore((state) => state.token);
