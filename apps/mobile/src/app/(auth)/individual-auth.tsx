@@ -5,9 +5,9 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/core/api/api';
-import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
-import SuccessBottomSheet from '@/core/components/SuccessBottomSheet';
+import apiClient from '@/shared/api/api';
+import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { LoginFormValues, SignupFormValues } from '@/features/auth/authSchemas';
 // Modular Components
 import { IndividualAuthHeader } from '@/features/auth/components/individual/IndividualAuthHeader';
@@ -16,7 +16,8 @@ import { IndividualLoginForm } from '@/features/auth/components/individual/Indiv
 import { IndividualSignupForm } from '@/features/auth/components/individual/IndividualSignupForm';
 import { IndividualSignupOtpStep } from '@/features/auth/components/individual/IndividualSignupOtpStep';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
-import { useAuthStore } from '@/store/useAuthStore';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
 
 type AuthMode = 'login' | 'signup';
@@ -54,8 +55,7 @@ export default function IndividualAuthScreen() {
         response.data.access_token,
       );
 
-      // The router guard in _layout.tsx will automatically push them to /(main)
-      router.push('/(main)/home');
+      router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {
       let backendMessage = 'حدث خطأ في الاتصال';
       if (error.response?.data?.message) {
@@ -148,7 +148,7 @@ export default function IndividualAuthScreen() {
 
   const handleSuccessClose = () => {
     successSheetRef.current?.dismiss();
-    router.push('/(main)/home');
+    router.push(getIdentityHomeRoute('INDIVIDUAL'));
   };
 
   return (

@@ -18,8 +18,8 @@ import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
 import ExchangePropertyTab from '@/app/add-listing/tabs/ExchangePropertyTab';
 import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
 import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
-import ImageUploadZone from '@/core/components/add-listing/ImageUploadZone';
-import { useListingStore } from '@/core/store/useListingStore';
+import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
+import { useListingStore } from '@/shared/store/useListingStore';
 
 export default function CreateListingScreen() {
   const router = useRouter();

@@ -13,25 +13,25 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { chatService } from '@/core/api/chat.service';
-import { propertiesService } from '@/core/api/properties.service';
-import AuthGuardSheet from '@/core/components/AuthGuardSheet';
-import ContentContainer from '@/core/components/ContentContainer';
-import ListerProfileSnippet from '@/core/components/ListerProfileSnippet';
-import MapPreview from '@/core/components/MapPreview';
-import PropertyActionBar from '@/core/components/PropertyActionBar';
-import PropertyDetailsBody from '@/core/components/PropertyDetailsBody';
-import PropertyMediaHeader from '@/core/components/PropertyMediaHeader';
-import PropertyOverview from '@/core/components/PropertyOverview';
-import PropertyDetailSkeleton from '@/core/components/skeletons/PropertyDetailSkeleton';
+import { chatService } from '@/shared/api/chat.service';
+import { propertiesService } from '@/shared/api/properties.service';
+import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import ContentContainer from '@/shared/components/ContentContainer';
+import ListerProfileSnippet from '@/shared/components/ListerProfileSnippet';
+import MapPreview from '@/shared/components/MapPreview';
+import PropertyActionBar from '@/shared/components/PropertyActionBar';
+import PropertyDetailsBody from '@/shared/components/PropertyDetailsBody';
+import PropertyMediaHeader from '@/shared/components/PropertyMediaHeader';
+import PropertyOverview from '@/shared/components/PropertyOverview';
+import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
   getArabicTypeLabel,
-} from '@/core/utils/helpers/property';
-import { useAuthGuard } from '@/hooks/useAuthGuard';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useFavoritesStore } from '@/store/useFavoritesStore';
+} from '@/shared/utils/helpers/property';
+import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
 import { PropertyDetailsDto } from '@/types/property';
 
 export default function PropertyDetailsScreen() {

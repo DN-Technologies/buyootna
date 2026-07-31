@@ -12,7 +12,7 @@ import {
   SaleIcon,
   SwapIcon,
 } from '@/assets/icons/explore';
-import { CategoryItemProps } from '@/components/explore/CategoryItem';
+import { CategoryItemProps } from '@/features/individual/components/explore/CategoryItem';
 
 export const propertiesData: CategoryItemProps[] = [
   {

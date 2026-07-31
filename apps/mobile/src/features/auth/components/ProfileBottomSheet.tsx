@@ -5,6 +5,7 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,8 +17,9 @@ import {
   View,
 } from 'react-native';
 
-import { useIdentity } from '@/hooks/useIdentity';
-import { Identity, IdentityType } from '@/store/useAuthStore';
+import { useIdentity } from '@/shared/hooks/useIdentity';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { Identity, IdentityType } from '@/shared/store/useAuthStore';
 
 interface ProfileBottomSheetProps {
   onAddAccount: () => void;
@@ -66,6 +68,7 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
         setSwitchingId(identity.id);
         await switchIdentity(identity.id);
         handleClose();
+        router.replace(getIdentityHomeRoute(identity.type));
       } catch (error) {
         console.error('Failed to switch identity:', error);
         // TODO: Show error toast

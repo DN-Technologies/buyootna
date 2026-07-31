@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 
-import AppLogo from '@/core/components/AppLogo';
+import AppLogo from '@/shared/components/AppLogo';
 
 interface ForgotPasswordHeaderProps {
   onBack: () => void;

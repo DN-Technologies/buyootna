@@ -3,7 +3,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { useListingStore } from '@/core/store/useListingStore';
+import { useListingStore } from '@/shared/store/useListingStore';
 
 // Mock Data for Features
 const MOCK_FEATURES = [

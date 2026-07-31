@@ -16,14 +16,14 @@ export default function PaymentCallbackScreen() {
       Alert.alert('نجاح', 'تمت عملية الدفع وتفعيل الباقة بنجاح!', [
         {
           text: 'موافق',
-          onPress: () => router.replace('/(more)/plans'),
+          onPress: () => router.replace('/plans'),
         },
       ]);
     } else {
       Alert.alert('خطأ', 'فشلت عملية الدفع أو تم إلغاؤها.', [
         {
           text: 'موافق',
-          onPress: () => router.replace('/(more)/plans'),
+          onPress: () => router.replace('/plans'),
         },
       ]);
     }

@@ -9,21 +9,21 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ChatHeader from '@/core/components/chat/ChatHeader';
-import ChatInputBar from '@/core/components/chat/ChatInputBar';
-import ChatPinnedContext from '@/core/components/chat/ChatPinnedContext';
-import DateSeparator from '@/core/components/chat/DateSeparator';
-import ImageDownloadBottomSheet from '@/core/components/chat/ImageDownloadBottomSheet';
-import ImageMessageBubble from '@/core/components/chat/ImageMessageBubble';
-import MessageBubble from '@/core/components/chat/MessageBubble';
-import PropertyMessageBubble from '@/core/components/chat/PropertyMessageBubble';
-import ContentContainer from '@/core/components/ContentContainer';
-import { socketService } from '@/core/services/socket.service';
+import ChatHeader from '@/shared/components/chat/ChatHeader';
+import ChatInputBar from '@/shared/components/chat/ChatInputBar';
+import ChatPinnedContext from '@/shared/components/chat/ChatPinnedContext';
+import DateSeparator from '@/shared/components/chat/DateSeparator';
+import ImageDownloadBottomSheet from '@/shared/components/chat/ImageDownloadBottomSheet';
+import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
+import MessageBubble from '@/shared/components/chat/MessageBubble';
+import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubble';
+import ContentContainer from '@/shared/components/ContentContainer';
+import { socketService } from '@/shared/services/socket.service';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
-} from '@/core/utils/helpers/property';
-import { useChatStore } from '@/store/useChatStore';
+} from '@/shared/utils/helpers/property';
+import { useChatStore } from '@/shared/store/useChatStore';
 
 export default function ChatDetailsScreen() {
   const router = useRouter();

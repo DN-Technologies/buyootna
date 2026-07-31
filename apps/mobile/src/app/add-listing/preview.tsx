@@ -16,12 +16,12 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import { plansService, PublishOption } from '@/core/api/plans.service';
-import { propertiesService } from '@/core/api/properties.service';
-import PlanSlotPickerSheet from '@/core/components/add-listing/PlanSlotPickerSheet';
-import QuotaExhaustedSheet from '@/core/components/add-listing/QuotaExhaustedSheet';
-import SuccessModal from '@/core/components/add-listing/SuccessModal';
-import { useListingStore } from '@/core/store/useListingStore';
+import { plansService, PublishOption } from '@/shared/api/plans.service';
+import { propertiesService } from '@/shared/api/properties.service';
+import PlanSlotPickerSheet from '@/shared/components/add-listing/PlanSlotPickerSheet';
+import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
+import SuccessModal from '@/shared/components/add-listing/SuccessModal';
+import { useListingStore } from '@/shared/store/useListingStore';
 
 // Helper component for the two-column grid items
 const PreviewItem = ({
@@ -161,7 +161,7 @@ export default function AdPreviewScreen() {
           text: 'حسناً',
           onPress: () => {
             resetForm();
-            router.replace('/(main)/home');
+            router.replace('/home');
           },
         },
       ]);

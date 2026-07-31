@@ -12,15 +12,15 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ChatListItem from '@/core/components/chat/ChatListItem';
-import EmptyChatState from '@/core/components/chat/EmptyChatState';
-import ContentContainer from '@/core/components/ContentContainer';
-import GuestEmptyState from '@/core/components/GuestEmptyState';
-import ChatListSkeleton from '@/core/components/skeletons/ChatSkeleton';
-import { socketService } from '@/core/services/socket.service';
-import { getArabicCategoryLabel } from '@/core/utils/helpers/property';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useChatStore } from '@/store/useChatStore';
+import ChatListItem from '@/shared/components/chat/ChatListItem';
+import EmptyChatState from '@/shared/components/chat/EmptyChatState';
+import ContentContainer from '@/shared/components/ContentContainer';
+import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
+import { socketService } from '@/shared/services/socket.service';
+import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
+import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useChatStore } from '@/shared/store/useChatStore';
 
 export default function ChatsInboxScreen() {
   const router = useRouter();
