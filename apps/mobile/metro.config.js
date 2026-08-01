@@ -17,6 +17,7 @@ config.resolver.nodeModulesPaths = [
 
 // Ensure native singletons resolve to a single node_modules path
 config.resolver.extraNodeModules = {
+  'expo-router': path.resolve(projectRoot, 'node_modules/expo-router'),
   'expo-modules-core': path.resolve(projectRoot, 'node_modules/expo-modules-core'),
   'react-native-safe-area-context': path.resolve(projectRoot, 'node_modules/react-native-safe-area-context'),
   'react-native-reanimated': path.resolve(projectRoot, 'node_modules/react-native-reanimated'),
