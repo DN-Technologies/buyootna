@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import {
   Platform,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { IdentityType } from '@/shared/store/useAuthStore';
 
@@ -104,11 +104,9 @@ export default function AddIdentityScreen() {
             >
               {/* Icon */}
               <View className="h-14 w-14 items-center justify-center rounded-full bg-accent">
-                <Image
-                  source={option.icon}
-                  style={{ width: 28, height: 28 }}
-                  resizeMode="contain"
-                />
+                {option.type === 'INDIVIDUAL' && <IndividualIcon size={28} />}
+                {option.type === 'COMPANY' && <CompanyIcon size={28} />}
+                {option.type === 'OFFICE' && <OwnerIcon size={28} />}
               </View>
 
               {/* Info */}
