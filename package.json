@@ -3,12 +3,16 @@
   "private": true,
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.4.2",
-    "@expo/metro-runtime": "^55.0.10",
+    "@expo/metro-runtime": "6.1.2",
+    "expo-modules-core": "~3.0.29",
     "axios": "^1.16.0",
     "zod": "^4.4.2"
   },
   "pnpm": {
     "overrides": {
+      "expo": "54.0.36",
+      "expo-modules-core": "3.0.29",
+      "@expo/metro-runtime": "6.1.2",
       "react": "19.1.0",
       "react-dom": "19.1.0",
       "react-native": "0.81.5"

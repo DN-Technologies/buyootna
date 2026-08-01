@@ -83,15 +83,23 @@ export default function CustomTabBar({
 
       {/* 2. Standard Tab Icons */}
       <View
-        className="absolute h-full w-full flex-row items-center justify-between px-4"
         style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: barWidth,
+          height: BAR_HEIGHT,
+          flexDirection: 'row',
+          alignItems: 'center',
           paddingTop: 10,
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 16,
         }}
       >
         {state.routes.map((route: any, index: number) => {
+          const itemWidth = (barWidth - 70) / 4;
+
           if (route.name === 'add') {
-            return <View key={route.key} style={{ width: 70 }} />;
+            return <View key={route.key} style={{ width: 70, height: '100%' }} />;
           }
 
           const isFocused = state.index === index;
@@ -135,11 +143,22 @@ export default function CustomTabBar({
               key={route.key}
               activeOpacity={0.7}
               onPress={onPress}
-              className="flex-1 items-center justify-center space-y-1"
+              style={{
+                width: itemWidth,
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               <IconComponent size={22} color={iconColor} />
               <Text
-                className={`font-cairo-bold text-[10px] ${isFocused ? 'text-[#FFD084]' : 'text-white'}`}
+                style={{
+                  fontFamily: 'Cairo-Bold',
+                  fontSize: 10,
+                  color: isFocused ? '#FFD084' : '#FFFFFF',
+                  marginTop: 2,
+                  textAlign: 'center',
+                }}
               >
                 {label}
               </Text>

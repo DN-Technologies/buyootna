@@ -4,12 +4,10 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Image as RNImage,
   Platform,
   ScrollView,
   Text,
@@ -17,6 +15,8 @@ import {
   View,
 } from 'react-native';
 
+import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
+import { SafeImage as Image } from '@/shared/components/SafeImage';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { Identity, IdentityType } from '@/shared/store/useAuthStore';
@@ -157,11 +157,11 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
                         contentFit="cover"
                       />
                     ) : (
-                      <RNImage
-                        source={getIdentityIcon(identity.type)}
-                        style={{ width: 24, height: 24 }}
-                        resizeMode="contain"
-                      />
+                      <>
+                        {identity.type === 'INDIVIDUAL' && <IndividualIcon size={24} />}
+                        {identity.type === 'COMPANY' && <CompanyIcon size={24} />}
+                        {identity.type === 'OFFICE' && <OwnerIcon size={24} />}
+                      </>
                     )}
                   </View>
 

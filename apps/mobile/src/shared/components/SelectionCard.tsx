@@ -1,5 +1,6 @@
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
 
 interface SelectionCardProps {
   title: string;
@@ -36,33 +37,9 @@ export default function SelectionCard({
         style={{ width: 44, height: 44 }}
         className={`items-center justify-center rounded-full ${iconBg}`}
       >
-        {type === 'individual' && (
-          <Image
-            source={require('@/assets/icons/individual-icon.svg')}
-            style={{
-              width: 25,
-              height: 25,
-            }}
-          />
-        )}
-        {type === 'office' && (
-          <Image
-            source={require('@/assets/icons/owner-icon.svg')}
-            style={{
-              width: 25,
-              height: 25,
-            }}
-          />
-        )}
-        {type === 'company' && (
-          <Image
-            source={require('@/assets/icons/company-icon.svg')}
-            style={{
-              width: 25,
-              height: 25,
-            }}
-          />
-        )}
+        {type === 'individual' && <IndividualIcon size={25} />}
+        {type === 'office' && <OwnerIcon size={25} />}
+        {type === 'company' && <CompanyIcon size={25} />}
       </View>
 
       {/* Text Content - appears on the left in RTL, right-aligned text */}

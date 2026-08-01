@@ -1,5 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
 import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
@@ -9,6 +7,7 @@ import {
   LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
 
 export interface PropertyListItemProps {
   id: string;
@@ -70,7 +69,7 @@ export default function PropertyListItem({
       <View className="flex-row items-center justify-between">
         {formattedPrice}
         {isFeatured && (
-          <LinearGradient
+          <SafeLinearGradient
             colors={['#FF8D28', '#FACC15']}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
@@ -87,7 +86,7 @@ export default function PropertyListItem({
             <Text className="font-almarai text-[12px] leading-[120%] text-[#111111]">
               مميز
             </Text>
-          </LinearGradient>
+          </SafeLinearGradient>
         )}
       </View>
 
