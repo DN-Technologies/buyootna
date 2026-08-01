@@ -16,7 +16,7 @@ config.resolver.nodeModulesPaths = [
 ];
 
 // Ensure native singletons resolve to a single node_modules path
-const extraNodeModules = {
+config.resolver.extraNodeModules = {
   'expo-modules-core': path.resolve(projectRoot, 'node_modules/expo-modules-core'),
   'react-native-safe-area-context': path.resolve(projectRoot, 'node_modules/react-native-safe-area-context'),
   'react-native-reanimated': path.resolve(projectRoot, 'node_modules/react-native-reanimated'),
@@ -24,12 +24,6 @@ const extraNodeModules = {
   'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
   'react': path.resolve(projectRoot, 'node_modules/react'),
 };
-
-config.resolver.extraNodeModules = new Proxy(extraNodeModules, {
-  get: (target, name) => {
-    return target[name] || path.join(projectRoot, 'node_modules', name);
-  },
-});
 
 module.exports = withNativeWind(config, {
   input: './src/app/globals.css',
