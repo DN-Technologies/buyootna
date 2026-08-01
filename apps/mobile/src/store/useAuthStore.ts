@@ -4,8 +4,6 @@ import { create } from 'zustand';
 import apiClient, { setAuthToken, setOnUnauthorized } from '@/core/api/api';
 import { socketService } from '@/core/services/socket.service';
 
-import { useChatStore } from './useChatStore';
-import { useFavoritesStore } from './useFavoritesStore';
 
 export type UserRole = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
 
@@ -61,8 +59,8 @@ export const useAuthStore = create<AuthState>((set, get) => {
         await SecureStore.deleteItemAsync('auth_token');
         setAuthToken(null); // clear token in api interceptor
         socketService.disconnect();
-        useFavoritesStore.getState().clear();
-        useChatStore.getState().clear();
+        (await import('./useFavoritesStore')).useFavoritesStore.getState().clear();
+        (await import('./useChatStore')).useChatStore.getState().clear();
         set({ user: null, token: null, isLoading: false });
       } catch (e) {
         console.error('Failed to delete secure token:', e);
