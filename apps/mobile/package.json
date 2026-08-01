@@ -74,6 +74,7 @@
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "jest": "^29.7.0",
     "jest-expo": "^54.0.17",
+    "metro-runtime": "^0.87.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "react-test-renderer": "^19.2.8",
