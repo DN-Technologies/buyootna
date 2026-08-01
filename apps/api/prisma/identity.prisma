@@ -1,0 +1,96 @@
+enum IdentityType {
+  INDIVIDUAL
+  COMPANY
+  OFFICE
+}
+
+model Identity {
+  id        String       @id @default(uuid())
+  userId    String
+  type      IdentityType
+  isActive  Boolean      @default(false)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Profile data (polymorphic - one of these will be non-null)
+  individualData IndividualIdentityData?
+  companyData    CompanyIdentityData?
+  officeData     OfficeIdentityData?
+
+  // Identity-scoped data
+  properties      Property[]
+  deletionLogs    PropertyDeletionLog[]
+  favorites       Favorite[]
+  conversations   ConversationParticipant[]
+  messages        Message[]
+  givenReviews    Review[]                  @relation("IdentityGivenReviews")
+  receivedReviews Review[]                  @relation("IdentityReceivedReviews")
+  reviewReactions ReviewReaction[]
+  planSlots       UserPlanSlot[]
+  invoices        Invoice[]
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+model IndividualIdentityData {
+  id         String   @id @default(uuid())
+  identityId String   @unique
+  name       String?
+  whatsapp   String?
+  avatarUrl  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+}
+
+model CompanyIdentityData {
+  id              String         @id @default(uuid())
+  identityId      String         @unique
+  name            String
+  services        String?
+  hqLocation      String?
+  serviceAreas    String?
+  about           String?
+  licenseActivity String?
+  licenseNumber   String
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+  latitude        Float?
+  longitude       Float?
+  specialty       String?
+  isVerified      Boolean        @default(false)
+  status          ApprovalStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  identity       Identity        @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  reviewRequests ReviewRequest[] @relation("CompanyReviewRequests")
+
+  @@index([latitude, longitude])
+}
+
+model OfficeIdentityData {
+  id              String         @id @default(uuid())
+  identityId      String         @unique
+  name            String
+  services        String?
+  hqLocation      String?
+  about           String?
+  licenseActivity String?
+  licenseNumber   String
+  licenseExpiry   String?
+  logoUrl         String?
+  licenseFileUrl  String?
+  isVerified      Boolean        @default(false)
+  status          ApprovalStatus @default(PENDING)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  identity       Identity        @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  reviewRequests ReviewRequest[] @relation("OfficeReviewRequests")
+}

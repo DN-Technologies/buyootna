@@ -10,14 +10,14 @@ import {
   View,
 } from 'react-native';
 
-import { SearchResultItem, searchService } from '@/core/api/search.service';
-import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
-import AlertSuccessToast from '@/core/components/search/AlertSuccessToast';
-import EmptySearchResult from '@/core/components/search/EmptySearchResult';
-import SearchHeader from '@/core/components/search/SearchHeader';
-import SuggestionCard from '@/core/components/search/SuggestionCard';
-import SuggestionCardSkeleton from '@/core/components/skeletons/SuggestionCardSkeleton';
-import { useDebounce } from '@/core/hooks/useDebounce';
+import { SearchResultItem, searchService } from '@/shared/api/search.service';
+import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import AlertSuccessToast from '@/shared/components/search/AlertSuccessToast';
+import EmptySearchResult from '@/shared/components/search/EmptySearchResult';
+import SearchHeader from '@/shared/components/search/SearchHeader';
+import SuggestionCard from '@/shared/components/search/SuggestionCard';
+import SuggestionCardSkeleton from '@/shared/components/skeletons/SuggestionCardSkeleton';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 // Holds the active advanced filter context for pagination
 interface AdvancedFilterState {

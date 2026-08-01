@@ -39,8 +39,29 @@ export class AdminService {
         { name: { contains: query, mode: 'insensitive' } },
         { email: { contains: query, mode: 'insensitive' } },
         { phone: { contains: query, mode: 'insensitive' } },
-        { companyProfile: { name: { contains: query, mode: 'insensitive' } } },
-        { officeProfile: { name: { contains: query, mode: 'insensitive' } } },
+        {
+          identities: {
+            some: {
+              OR: [
+                {
+                  companyData: {
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+                {
+                  officeData: {
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+                {
+                  individualData: {
+                    name: { contains: query, mode: 'insensitive' },
+                  },
+                },
+              ],
+            },
+          },
+        },
       ];
     }
 
@@ -61,9 +82,13 @@ export class AdminService {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          companyProfile: true,
-          individualProfile: true,
-          officeProfile: true,
+          identities: {
+            include: {
+              individualData: true,
+              companyData: true,
+              officeData: true,
+            },
+          },
           activePlan: true,
         },
       }),
@@ -80,38 +105,41 @@ export class AdminService {
     ]);
 
     const formattedUsers = users.map((user) => {
-      // 1. Account type
       let accountType: 'فرد' | 'شركة' | 'مكتب عقاري' = 'فرد';
       if (user.role === Role.COMPANY) accountType = 'شركة';
       if (user.role === Role.OFFICE) accountType = 'مكتب عقاري';
 
-      // 2. Name
+      const companyIdent = user.identities.find((i) => i.type === 'COMPANY');
+      const officeIdent = user.identities.find((i) => i.type === 'OFFICE');
+      const indIdent = user.identities.find((i) => i.type === 'INDIVIDUAL');
+
       let displayName = user.name || 'بدون اسم';
-      if (user.role === Role.COMPANY && user.companyProfile?.name) {
-        displayName = user.companyProfile.name;
-      } else if (user.role === Role.OFFICE && user.officeProfile?.name) {
-        displayName = user.officeProfile.name;
+      if (user.role === Role.COMPANY && companyIdent?.companyData?.name) {
+        displayName = companyIdent.companyData.name;
+      } else if (user.role === Role.OFFICE && officeIdent?.officeData?.name) {
+        displayName = officeIdent.officeData.name;
+      } else if (indIdent?.individualData?.name) {
+        displayName = indIdent.individualData.name;
       }
 
-      // 3. Verification status
       let verificationStatus: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—' = '—';
-      if (user.role === Role.COMPANY && user.companyProfile) {
-        if (user.companyProfile.status === 'PENDING') {
+      if (user.role === Role.COMPANY && companyIdent?.companyData) {
+        if (companyIdent.companyData.status === 'PENDING') {
           verificationStatus = 'قيد الانتظار';
         } else if (
-          user.companyProfile.isVerified ||
-          user.companyProfile.status === 'APPROVED'
+          companyIdent.companyData.isVerified ||
+          companyIdent.companyData.status === 'APPROVED'
         ) {
           verificationStatus = 'موثق';
         } else {
           verificationStatus = 'غير موثق';
         }
-      } else if (user.role === Role.OFFICE && user.officeProfile) {
-        if (user.officeProfile.status === 'PENDING') {
+      } else if (user.role === Role.OFFICE && officeIdent?.officeData) {
+        if (officeIdent.officeData.status === 'PENDING') {
           verificationStatus = 'قيد الانتظار';
         } else if (
-          user.officeProfile.isVerified ||
-          user.officeProfile.status === 'APPROVED'
+          officeIdent.officeData.isVerified ||
+          officeIdent.officeData.status === 'APPROVED'
         ) {
           verificationStatus = 'موثق';
         } else {
@@ -119,10 +147,8 @@ export class AdminService {
         }
       }
 
-      // 4. Subscription Plan
       const subscriptionPlan = user.activePlan?.name || 'العادية';
 
-      // 5. Account Status
       let accountStatus: 'نشط' | 'محظور' | 'موقوف' = 'نشط';
       if (user.isBlocked) {
         accountStatus = 'محظور';
@@ -130,7 +156,6 @@ export class AdminService {
         accountStatus = 'موقوف';
       }
 
-      // 6. Registration Date
       const registrationDate = this.formatArabicDate(user.createdAt);
 
       return {
@@ -173,11 +198,15 @@ export class AdminService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        companyProfile: true,
-        individualProfile: true,
-        officeProfile: true,
+        identities: {
+          include: {
+            individualData: true,
+            companyData: true,
+            officeData: true,
+            properties: { take: 5, orderBy: { createdAt: 'desc' } },
+          },
+        },
         activePlan: true,
-        properties: { take: 5, orderBy: { createdAt: 'desc' } },
       },
     });
 
@@ -191,56 +220,57 @@ export class AdminService {
     return userWithoutPassword;
   }
 
+  async deleteUser(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+    await this.prisma.user.delete({ where: { id } });
+    return { message: 'تم حذف المستخدم بنجاح' };
+  }
+
   async updateUserStatus(id: string, dto: AdminUpdateStatusDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException('المستخدم غير موجود');
     }
 
-    let isBlocked = false;
-    let isDisabled = false;
+    const dataToUpdate: Prisma.UserUpdateInput = {};
 
-    if (dto.status === UserAccountStatusAction.BLOCKED) {
-      isBlocked = true;
-    } else if (dto.status === UserAccountStatusAction.SUSPENDED) {
-      isDisabled = true;
+    switch (dto.status) {
+      case UserAccountStatusAction.BLOCKED:
+        dataToUpdate.isBlocked = true;
+        break;
+      case UserAccountStatusAction.SUSPENDED:
+        dataToUpdate.isDisabled = true;
+        break;
+      case UserAccountStatusAction.ACTIVE:
+        dataToUpdate.isDisabled = false;
+        dataToUpdate.isBlocked = false;
+        break;
     }
 
-    const updated = await this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
-      data: { isBlocked, isDisabled },
+      data: dataToUpdate,
     });
 
+    const userWithoutPassword = { ...updatedUser };
+    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+      .password;
+
     return {
-      success: true,
-      message: 'تم تحديث حالة الحساب بنجاح',
-      user: {
-        id: updated.id,
-        isBlocked: updated.isBlocked,
-        isDisabled: updated.isDisabled,
-      },
+      message: 'تم تحديث حالة المستخدم بنجاح',
+      user: userWithoutPassword,
     };
   }
 
-  async deleteUser(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-    if (!user) {
-      throw new NotFoundException('المستخدم غير موجود');
-    }
-
-    await this.prisma.user.delete({ where: { id } });
-    return { success: true, message: 'تم حذف المستخدم بنجاح' };
-  }
-
   private formatArabicDate(date: Date): string {
-    try {
-      return new Intl.DateTimeFormat('ar-EG', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }).format(date);
-    } catch {
-      return date.toISOString().split('T')[0];
-    }
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+
+    return `${day}/${month}/${year}`;
   }
 }

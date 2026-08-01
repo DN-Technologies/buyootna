@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/components/FormInput';
+import FormInput from '@/shared/components/FormInput';
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 
 interface IndividualSignupFormProps {

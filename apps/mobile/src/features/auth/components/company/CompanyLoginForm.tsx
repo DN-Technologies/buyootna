@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/components/FormInput';
+import FormInput from '@/shared/components/FormInput';
 import {
   CompanyLoginFormValues,
   companyLoginSchema,

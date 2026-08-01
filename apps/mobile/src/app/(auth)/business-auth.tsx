@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/core/api/api';
-import AccountTypeBottomSheet from '@/core/components/AccountTypeBottomSheet';
+import apiClient from '@/shared/api/api';
+import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import {
   CompanyLoginFormValues,
   CompanySignupFormValues,
@@ -21,38 +21,10 @@ import { CompanyAuthHeader } from '@/features/auth/components/company/CompanyAut
 import { CompanyAuthTabs } from '@/features/auth/components/company/CompanyAuthTabs';
 import { CompanyLoginForm } from '@/features/auth/components/company/CompanyLoginForm';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
-import ProfileBottomSheet, {
-  Profile,
-} from '@/features/auth/components/ProfileBottomSheet';
-import { useAuthStore } from '@/store/useAuthStore';
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
-
-const MOCK_PROFILES: Profile[] = [
-  {
-    id: '1',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'individual',
-    typeName: 'فرد',
-    icon: require('@/assets/icons/individual-icon.svg'),
-  },
-  {
-    id: '2',
-    name: 'Kayan Company',
-    email: 'kayan@gmail.com',
-    type: 'company',
-    typeName: 'شركة',
-    icon: require('@/assets/icons/company-icon.svg'),
-  },
-  {
-    id: '3',
-    name: 'Salim Elshekh',
-    email: 'salinelshekh@gmail.com',
-    type: 'owner',
-    typeName: 'مالك عقار',
-    icon: require('@/assets/icons/owner-icon.svg'),
-  },
-];
 
 type AuthMode = 'login' | 'signup';
 
@@ -104,8 +76,13 @@ export default function BusinessAuthScreen() {
         password: data.password,
       });
 
-      await setAuth(response.data.user, response.data.access_token);
-      router.replace('/(main)/home');
+      await setAuth(
+        response.data.user,
+        response.data.activeIdentity,
+        response.data.identities,
+        response.data.access_token,
+      );
+      router.replace(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {
       let errorMsg = 'حدث خطأ في الاتصال';
       if (error.response?.data?.message) {
@@ -129,10 +106,6 @@ export default function BusinessAuthScreen() {
     } else if (newType === 'company') {
       router.setParams({ type: 'company' });
     }
-  };
-
-  const handleProfileSelect = (profile: Profile) => {
-    console.log('Selected Profile:', profile);
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
@@ -254,9 +227,6 @@ export default function BusinessAuthScreen() {
 
       <ProfileBottomSheet
         ref={profileSheetRef}
-        profiles={MOCK_PROFILES}
-        selectedId="2"
-        onSelect={handleProfileSelect}
         onAddAccount={() => setMode('signup')}
       />
     </SafeAreaView>

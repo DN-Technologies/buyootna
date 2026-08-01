@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SelectionCard from '@/components/SelectionCard';
-import AppLogo from '@/core/components/AppLogo';
+import SelectionCard from '@/shared/components/SelectionCard';
+import AppLogo from '@/shared/components/AppLogo';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { AccountType } from '@/types';
 
 export default function AccountTypeSelectionScreen() {
@@ -88,7 +89,7 @@ export default function AccountTypeSelectionScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.replace('/(main)/home')} // Sends them straight to the app!
+          onPress={() => router.replace(getIdentityHomeRoute(null))} // Sends them straight to the app!
           className="mt-2 w-full items-center justify-center py-4"
         >
           <Text className="font-cairo-bold text-base text-[#6B6A6A] underline">

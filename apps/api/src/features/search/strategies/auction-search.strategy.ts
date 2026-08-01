@@ -53,7 +53,17 @@ export class AuctionSearchStrategy implements SearchStrategy {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { user: true, governorate: true, area: true },
+        include: {
+          identity: {
+            include: {
+              individualData: true,
+              companyData: true,
+              officeData: true,
+            },
+          },
+          governorate: true,
+          area: true,
+        },
       }),
       this.prisma.property.count({ where }),
     ]);

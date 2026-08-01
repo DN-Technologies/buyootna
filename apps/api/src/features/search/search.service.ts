@@ -73,9 +73,8 @@ export class SearchService {
     const { query, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
-    const companyProfileFilter: Prisma.CompanyProfileWhereInput = {};
+    const companyProfileFilter: Prisma.CompanyIdentityDataWhereInput = {};
 
-    // If the user typed a text query, search both the company name AND their services
     if (query) {
       companyProfileFilter.OR = [
         { name: { contains: query, mode: 'insensitive' } },
@@ -83,37 +82,33 @@ export class SearchService {
       ];
     }
 
-    const whereClause: Prisma.UserWhereInput = {
-      role: 'COMPANY',
-      companyProfile: {
-        isNot: null,
-        is:
-          Object.keys(companyProfileFilter).length > 0
-            ? companyProfileFilter
-            : undefined,
-      },
-    };
-
-    const [companies, total] = await Promise.all([
-      this.prisma.user.findMany({
-        where: whereClause,
+    const [identities, total] = await Promise.all([
+      this.prisma.identity.findMany({
+        where: {
+          type: 'COMPANY',
+          companyData: { status: 'APPROVED' },
+        },
         skip,
         take: limit,
-        include: { companyProfile: true },
+        include: { companyData: true },
       }),
-      this.prisma.user.count({ where: whereClause }),
+      this.prisma.identity.count({
+        where: {
+          type: 'COMPANY',
+          companyData: { status: 'APPROVED' },
+        },
+      }),
     ]);
 
     // Map DB result to exactly match the frontend SuggestionCard props
-    const formattedData = companies.map((user) => ({
-      id: user.id, // Using user ID for routing
-      name: user.companyProfile?.name,
-      category: user.companyProfile?.services || '',
-      serviceArea: user.companyProfile?.serviceAreas || 'يخدم جميع المناطق',
-      projectsCount: '+85', // TODO: Make dynamic from real projects table later
-      logoUrl:
-        user.companyProfile?.logoUrl || 'https://via.placeholder.com/150',
-      isFavorite: false, // TODO: Hook up to user favorites later
+    const formattedData = identities.map((ident) => ({
+      id: ident.id,
+      name: ident.companyData?.name || 'شركة غير معروفة',
+      category: ident.companyData?.services || '',
+      serviceArea: ident.companyData?.serviceAreas || 'يخدم جميع المناطق',
+      projectsCount: '+85',
+      logoUrl: ident.companyData?.logoUrl || 'https://via.placeholder.com/150',
+      isFavorite: false,
     }));
 
     return this.paginateResponse(formattedData, total, page, limit);

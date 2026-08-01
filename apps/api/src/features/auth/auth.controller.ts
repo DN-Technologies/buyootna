@@ -6,6 +6,7 @@ import { Request } from 'express';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import type { RequestUser } from './strategies/jwt.strategy';
 
 interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
@@ -34,19 +35,28 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post('identity/switch')
+  async switchIdentity(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: { identityId: string },
+  ) {
+    return this.authService.switchIdentity(reqUser.userId, dto.identityId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('change-password/request-otp')
-  async requestChangePasswordOtp(@CurrentUser() user: User) {
-    return this.authService.requestChangePasswordOtp(user);
+  async requestChangePasswordOtp(@CurrentUser() reqUser: RequestUser) {
+    return this.authService.requestChangePasswordOtp(reqUser.user as User);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('change-password')
   async changePassword(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: ChangePasswordDto,
   ) {
     return this.authService.changePassword(
-      user.id,
+      reqUser.userId,
       dto.oldPassword,
       dto.newPassword,
       dto.otp,

@@ -3,13 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 
-import { SearchResultItem, searchService } from '@/core/api/search.service';
-import GlobalFilterSheet from '@/core/components/filters/GlobalFilterSheet';
-import LiveSearchSuggestions from '@/core/components/search/LiveSearchSuggestions';
-import SearchActiveOverlay from '@/core/components/search/SearchActiveOverlay';
-import SearchHeader from '@/core/components/search/SearchHeader';
-import { useDebounce } from '@/core/hooks/useDebounce';
-import { useAuthStore } from '@/store/useAuthStore';
+import { SearchResultItem, searchService } from '@/shared/api/search.service';
+import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import LiveSearchSuggestions from '@/shared/components/search/LiveSearchSuggestions';
+import SearchActiveOverlay from '@/shared/components/search/SearchActiveOverlay';
+import SearchHeader from '@/shared/components/search/SearchHeader';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function SearchScreen() {
   const router = useRouter();

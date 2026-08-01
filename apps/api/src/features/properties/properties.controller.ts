@@ -15,9 +15,10 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
-import type { ListingStatus, User } from '@prisma/client';
+import type { ListingStatus } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 
 @Controller('properties')
 export class PropertiesController {
@@ -59,10 +60,10 @@ export class PropertiesController {
   @Get('/me/activity')
   @UseGuards(AuthGuard('jwt'))
   async getMyActivity(
-    @CurrentUser() user: User,
-    @Query('status') status?: ListingStatus, // Optional query parameter: ?status=DRAFT
+    @CurrentUser() reqUser: RequestUser,
+    @Query('status') status?: ListingStatus,
   ) {
-    return this.propertiesService.getMyActivity(user.id, status);
+    return this.propertiesService.getMyActivity(reqUser.identityId, status);
   }
 
   // Public Paginated Endpoint
@@ -85,36 +86,31 @@ export class PropertiesController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  @UseInterceptors(FilesInterceptor('images', 10)) // Accept up to 10 files in 'images field
+  @UseInterceptors(FilesInterceptor('images', 10))
   async create(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() createPropertyDto: CreatePropertyDto,
   ) {
-    console.log(
-      'Incoming CreatePropertyDto:',
-      JSON.stringify(createPropertyDto, null, 2),
-    );
-    // Pass the user.userId (from our JWT payload) top the service
-    return this.propertiesService.create(user.id, createPropertyDto);
+    return this.propertiesService.create(reqUser.identityId, createPropertyDto);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
   async update(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto: UpdatePropertyDto,
   ) {
-    return this.propertiesService.update(user.id, id, dto);
+    return this.propertiesService.update(reqUser.identityId, id, dto);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   async remove(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto?: { reason?: string },
   ) {
-    return this.propertiesService.remove(user.id, id, dto?.reason);
+    return this.propertiesService.remove(reqUser.identityId, id, dto?.reason);
   }
 }

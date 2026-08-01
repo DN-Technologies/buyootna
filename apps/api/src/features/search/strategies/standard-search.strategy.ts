@@ -70,7 +70,17 @@ export class StandardSearchStrategy implements SearchStrategy {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { user: true, governorate: true, area: true }, // Include relations
+        include: {
+          identity: {
+            include: {
+              individualData: true,
+              companyData: true,
+              officeData: true,
+            },
+          },
+          governorate: true,
+          area: true,
+        }, // Include relations
       }),
       this.prisma.property.count({ where }),
     ]);

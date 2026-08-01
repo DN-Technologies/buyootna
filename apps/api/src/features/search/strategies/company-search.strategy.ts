@@ -18,7 +18,7 @@ export class CompanySearchStrategy implements SearchStrategy {
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
-    const companyProfileFilter: Prisma.CompanyProfileWhereInput = {
+    const companyProfileFilter: Prisma.CompanyIdentityDataWhereInput = {
       status: 'APPROVED',
     };
 
@@ -42,7 +42,7 @@ export class CompanySearchStrategy implements SearchStrategy {
       (filters.govs && filters.govs.length > 0) ||
       (filters.areas && filters.areas.length > 0)
     ) {
-      const locationConditions: Prisma.CompanyProfileWhereInput[] = [];
+      const locationConditions: Prisma.CompanyIdentityDataWhereInput[] = [];
 
       if (filters.govs && filters.govs.length > 0) {
         locationConditions.push({
@@ -90,27 +90,24 @@ export class CompanySearchStrategy implements SearchStrategy {
       }
     }
 
-    const whereClause: Prisma.UserWhereInput = {
-      role: 'COMPANY',
-      companyProfile: {
-        isNot: null,
-        is: companyProfileFilter,
-      },
+    const whereClause: Prisma.IdentityWhereInput = {
+      type: 'COMPANY',
+      companyData: companyProfileFilter,
     };
 
-    const [companies, total] = await Promise.all([
-      this.prisma.user.findMany({
+    const [identities, total] = await Promise.all([
+      this.prisma.identity.findMany({
         where: whereClause,
         skip,
         take: limit,
-        include: { companyProfile: true },
+        include: { companyData: true },
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.user.count({ where: whereClause }),
+      this.prisma.identity.count({ where: whereClause }),
     ]);
 
     return {
-      data: companies,
+      data: identities,
       meta: {
         total,
         current: page,

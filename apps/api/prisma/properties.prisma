@@ -12,7 +12,6 @@ model Property {
   location           String
   description        String
   images             String[]
-  userId             String
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
   views              Int              @default(0)
@@ -42,9 +41,16 @@ model Property {
   planSlot           UserPlanSlot?    @relation(fields: [planSlotId], references: [id])
   area               Area?            @relation(fields: [areaId], references: [id])
   governorate        Governorate?     @relation(fields: [governorateId], references: [id])
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   favorites          Favorite[]
   conversations      Conversation[]
+
+  // New identity-based relation
+  identityId String?
+  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // Legacy user-based relation - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  userId String?
 
   @@index([type])
   @@index([price])
@@ -54,13 +60,20 @@ model Property {
   @@index([category])
   @@index([status])
   @@index([latitude, longitude])
+  @@index([identityId])
 }
 
 model PropertyDeletionLog {
   id         String   @id @default(uuid())
   propertyId String
-  userId     String
   reason     String
   createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // New identity-based relation
+  identityId String?
+  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  // Legacy user-based relation - kept for backward compatibility during migration
+  // TODO: Remove after migration is complete
+  userId String?
 }

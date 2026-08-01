@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { verifyInstallation } from 'nativewind';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   runOnJS,
@@ -11,9 +11,14 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import AppLogo from '@/core/components/AppLogo';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import AppLogo from '@/shared/components/AppLogo';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function InitialSplashSequence() {
+  const [animationDone, setAnimationDone] = useState(false);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
   // Animation Values
   const dotOpacity = useSharedValue(1);
@@ -31,17 +36,26 @@ export default function InitialSplashSequence() {
     // 2. Change background to dark blue (matching the design)
     bgColor.value = withDelay(800, withTiming('#0B2239', { duration: 500 }));
 
-    // 3. Fade in logo, then route away
+    // 3. Fade in logo, then mark the animation done
     logoOpacity.value = withDelay(
       1300,
       withTiming(1, { duration: 600 }, (finished) => {
         if (finished) {
-          // trigger Expo Router navigation on JS thread
-          runOnJS(router.replace)('(main)/home' as any);
+          runOnJS(setAnimationDone)(true);
         }
       }),
     );
   }, [bgColor, dotOpacity, logoOpacity]);
+
+  // Route away only once the splash animation has finished AND persisted
+  // auth/identity has been hydrated, so we redirect to the correct
+  // experience (individual/company/office) instead of always landing on
+  // individual home.
+  useEffect(() => {
+    if (animationDone && !isLoading) {
+      router.replace(getIdentityHomeRoute(activeIdentity?.type));
+    }
+  }, [animationDone, isLoading, activeIdentity]);
 
   const animatedBackground = useAnimatedStyle(() => ({
     backgroundColor: bgColor.value,

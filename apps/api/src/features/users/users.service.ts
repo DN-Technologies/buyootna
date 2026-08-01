@@ -147,55 +147,45 @@ export class UsersService {
     const { category, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
-    // Build the query
-    const whereClause: Prisma.UserWhereInput = {
-      role: 'COMPANY',
-      companyProfile: {
-        isNot: null,
-        is: {
-          status: 'APPROVED',
-        },
-      },
+    const companyDataWhere: Prisma.CompanyIdentityDataWhereInput = {
+      status: 'APPROVED',
     };
 
-    // If the frontend sends a category filter (and it's not 'all'), filter by the services string
     if (category && category !== 'all') {
-      whereClause.companyProfile = {
-        isNot: null,
-        is: {
-          status: 'APPROVED',
-          services: {
-            contains: category, // Matches substrings like 'تشطيب'
-            mode: 'insensitive',
-          },
-        },
+      companyDataWhere.services = {
+        contains: category,
+        mode: 'insensitive',
       };
     }
 
-    // Run data and count queries concurrently
-    const [companies, totalCount] = await Promise.all([
-      this.prisma.user.findMany({
+    const whereClause: Prisma.IdentityWhereInput = {
+      type: 'COMPANY',
+      companyData: companyDataWhere,
+    };
+
+    const [identities, totalCount] = await Promise.all([
+      this.prisma.identity.findMany({
         where: whereClause,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: { companyProfile: true },
+        include: { companyData: true, user: true },
       }),
-      this.prisma.user.count({ where: whereClause }),
+      this.prisma.identity.count({ where: whereClause }),
     ]);
 
-    // Format for React Native
-    const formattedCompanies = companies
-      .filter((c) => c.companyProfile !== null)
-      .map((c) => ({
-        id: c.companyProfile!.id,
-        name: c.companyProfile!.name,
-        category: c.companyProfile!.services || '',
-        rating: 4.5, // Placeholder
-        projectsCount: '+50', // Placeholder
-        serviceArea: c.companyProfile!.serviceAreas,
-        logoUrl: c.companyProfile!.logoUrl,
-        isVerified: c.companyProfile!.isVerified,
+    const formattedCompanies = identities
+      .filter((i) => i.companyData !== null)
+      .map((i) => ({
+        id: i.id,
+        userId: i.userId,
+        name: i.companyData!.name,
+        category: i.companyData!.services || '',
+        rating: 4.5,
+        projectsCount: '+50',
+        serviceArea: i.companyData!.serviceAreas,
+        logoUrl: i.companyData!.logoUrl,
+        isVerified: i.companyData!.isVerified,
       }));
 
     return {
@@ -212,13 +202,14 @@ export class UsersService {
 
   // --- Find Company Details ---
   async findCompanyDetails(id: string) {
-    let user = await this.prisma.user.findFirst({
+    let identity = await this.prisma.identity.findFirst({
       where: {
-        OR: [{ id }, { companyProfile: { id } }],
-        role: Role.COMPANY,
+        OR: [{ id }, { userId: id, type: 'COMPANY' }],
+        type: 'COMPANY',
       },
       include: {
-        companyProfile: true,
+        companyData: true,
+        user: true,
         properties: {
           take: 10,
           select: {
@@ -233,14 +224,15 @@ export class UsersService {
       },
     });
 
-    if (!user || !user.companyProfile) {
-      user = await this.prisma.user.findFirst({
+    if (!identity || !identity.companyData) {
+      identity = await this.prisma.identity.findFirst({
         where: {
-          role: Role.COMPANY,
-          companyProfile: { status: 'APPROVED' },
+          type: 'COMPANY',
+          companyData: { status: 'APPROVED' },
         },
         include: {
-          companyProfile: true,
+          companyData: true,
+          user: true,
           properties: {
             take: 10,
             select: {
@@ -256,7 +248,7 @@ export class UsersService {
       });
     }
 
-    if (!user || !user.companyProfile) {
+    if (!identity || !identity.companyData) {
       return {
         id: id || 'company-1',
         userId: 'company-user-1',
@@ -309,10 +301,10 @@ export class UsersService {
       };
     }
 
-    const companyProfile = user.companyProfile;
+    const companyData = identity.companyData;
 
     const reviews = await this.prisma.review.findMany({
-      where: { targetUserId: user.id },
+      where: { targetUserId: identity.userId },
       select: { rating: true },
     });
 
@@ -326,8 +318,8 @@ export class UsersService {
           )
         : 0;
 
-    const rawServices = companyProfile.services
-      ? companyProfile.services
+    const rawServices = companyData.services
+      ? companyData.services
           .split(/[,،\n]/)
           .map((s) => s.trim())
           .filter(Boolean)
@@ -336,10 +328,10 @@ export class UsersService {
     const formattedServices = rawServices.map((svc, idx) => ({
       id: String(idx + 1),
       title: svc,
-      description: `خدمات ${svc} المقدمة من ${companyProfile.name}`,
+      description: `خدمات ${svc} المقدمة من ${companyData.name}`,
     }));
 
-    const formattedProjects = user.properties.map((p) => ({
+    const formattedProjects = (identity.properties || []).map((p) => ({
       id: p.id,
       title: `${p.category || 'مشروع'} - ${p.location || 'الكويت'}`,
       category: String(p.category || ''),
@@ -351,26 +343,25 @@ export class UsersService {
     }));
 
     return {
-      id: companyProfile.id,
-      userId: user.id,
-      name: companyProfile.name,
-      logoUrl: companyProfile.logoUrl,
-      isVerified: companyProfile.isVerified,
+      id: identity.id,
+      userId: identity.userId,
+      name: companyData.name,
+      logoUrl: companyData.logoUrl,
+      isVerified: companyData.isVerified,
       isActiveNow: true,
       rating,
       reviewsCount,
       bio:
-        companyProfile.about ||
+        companyData.about ||
         'مكتب متخصص في الخدمات العقارية والاستشارات المتكاملة.',
-      location:
-        companyProfile.hqLocation || companyProfile.serviceAreas || 'الكويت',
+      location: companyData.hqLocation || companyData.serviceAreas || 'الكويت',
       servicesCount: formattedServices.length,
       projectsCount: formattedProjects.length,
       responseTime: '30 دقيقة',
       instagramUrl: null,
       twitterUrl: null,
-      phone: user.phone,
-      whatsapp: user.whatsapp || user.phone,
+      phone: identity.user?.phone,
+      whatsapp: identity.user?.whatsapp || identity.user?.phone,
       services: formattedServices,
       projects: formattedProjects,
     };
@@ -490,51 +481,66 @@ export class UsersService {
     }
 
     if (role === Role.COMPANY) {
-      const profile = await this.prisma.companyProfile.findUnique({
-        where: { userId },
+      const identity = await this.prisma.identity.findFirst({
+        where: { userId, type: 'COMPANY' },
+        include: { companyData: true },
       });
-      if (!profile) throw new NotFoundException('الملف الشخصي غير موجود');
+      if (!identity || !identity.companyData)
+        throw new NotFoundException('الملف الشخصي غير موجود');
 
-      const updated = await this.prisma.companyProfile.update({
-        where: { userId },
+      const updated = await this.prisma.companyIdentityData.update({
+        where: { identityId: identity.id },
         data: {
-          name: dto.name ?? profile.name,
-          hqLocation: dto.hqLocation ?? profile.hqLocation,
-          about: dto.about ?? profile.about,
-          services: dto.services ?? profile.services,
-          serviceAreas: dto.serviceAreas ?? profile.serviceAreas,
-          specialty: dto.specialty ?? profile.specialty,
-          logoUrl: logoUrl ?? profile.logoUrl,
+          name: dto.name ?? identity.companyData.name,
+          hqLocation: dto.hqLocation ?? identity.companyData.hqLocation,
+          about: dto.about ?? identity.companyData.about,
+          services: dto.services ?? identity.companyData.services,
+          serviceAreas: dto.serviceAreas ?? identity.companyData.serviceAreas,
+          specialty: dto.specialty ?? identity.companyData.specialty,
+          logoUrl: logoUrl ?? identity.companyData.logoUrl,
         },
       });
       return { user: await this.findFullUser(userId), profile: updated };
     }
 
     if (role === Role.OFFICE) {
-      const profile = await this.prisma.officeProfile.findUnique({
-        where: { userId },
+      const identity = await this.prisma.identity.findFirst({
+        where: { userId, type: 'OFFICE' },
+        include: { officeData: true },
       });
-      if (!profile) throw new NotFoundException('الملف الشخصي غير موجود');
+      if (!identity || !identity.officeData)
+        throw new NotFoundException('الملف الشخصي غير موجود');
 
-      const updated = await this.prisma.officeProfile.update({
-        where: { userId },
+      const updated = await this.prisma.officeIdentityData.update({
+        where: { identityId: identity.id },
         data: {
-          name: dto.name ?? profile.name,
-          hqLocation: dto.hqLocation ?? profile.hqLocation,
-          about: dto.about ?? profile.about,
-          services: dto.services ?? profile.services,
-          logoUrl: logoUrl ?? profile.logoUrl,
+          name: dto.name ?? identity.officeData.name,
+          hqLocation: dto.hqLocation ?? identity.officeData.hqLocation,
+          about: dto.about ?? identity.officeData.about,
+          services: dto.services ?? identity.officeData.services,
+          logoUrl: logoUrl ?? identity.officeData.logoUrl,
         },
       });
       return { user: await this.findFullUser(userId), profile: updated };
     }
 
     if (role === Role.INDIVIDUAL) {
-      const profile = await this.prisma.individualProfile.findUnique({
-        where: { userId },
+      const identity = await this.prisma.identity.findFirst({
+        where: { userId, type: 'INDIVIDUAL' },
+        include: { individualData: true },
       });
-      if (!profile) throw new NotFoundException('الملف الشخصي غير موجود');
-      return { user: await this.findFullUser(userId), profile };
+      if (!identity || !identity.individualData)
+        throw new NotFoundException('الملف الشخصي غير موجود');
+
+      const updated = await this.prisma.individualIdentityData.update({
+        where: { identityId: identity.id },
+        data: {
+          name: dto.name ?? identity.individualData.name,
+          whatsapp: dto.whatsapp ?? identity.individualData.whatsapp,
+          avatarUrl: logoUrl ?? identity.individualData.avatarUrl,
+        },
+      });
+      return { user: await this.findFullUser(userId), profile: updated };
     }
 
     throw new InternalServerErrorException('نوع الحساب غير صالح');
@@ -575,9 +581,13 @@ export class UsersService {
         whatsapp: true,
         avatarUrl: true,
         isDisabled: true,
-        individualProfile: true,
-        companyProfile: true,
-        officeProfile: true,
+        identities: {
+          include: {
+            individualData: true,
+            companyData: true,
+            officeData: true,
+          },
+        },
       },
     });
 

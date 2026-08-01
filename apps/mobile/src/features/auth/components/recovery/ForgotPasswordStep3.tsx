@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/components/FormInput';
+import FormInput from '@/shared/components/FormInput';
 import {
   resetPasswordSchema,
   ResetPasswordValues,
