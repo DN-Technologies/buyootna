@@ -7,7 +7,8 @@ import type { MapFeatureProperties } from '@/features/individual/utils/mockGeoJS
 
 // Initialize Mapbox with PUBLIC token
 Mapbox.setAccessToken(
-  'pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ',
+  process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+    'pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ',
 );
 
 // Kuwait Coordinates (Longitude, Latitude)

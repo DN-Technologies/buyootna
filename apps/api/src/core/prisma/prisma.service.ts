@@ -8,6 +8,9 @@ import { PrismaClient } from '@prisma/client';
 
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 @Injectable()
 export class PrismaService
@@ -17,11 +20,16 @@ export class PrismaService
   private readonly pool: Pool;
 
   constructor() {
+    console.log('PRISMA_SERVICE_DATABASE_URL:', process.env.DATABASE_URL);
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 3, // Prevent connection pool exhaustion on Neon serverless DB
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 15000,
+      max: 10, // Higher pool limit for concurrent API requests
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 10000,
+      keepAlive: true,
+    });
+    pool.on('error', (err) => {
+      console.error('Unexpected error on idle pg client pool:', err.message);
     });
     const adapter = new PrismaPg(pool);
     super({ adapter });

@@ -7,6 +7,8 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
+// Support monorepo root node_modules and symlinks in pnpm
+config.projectRoot = projectRoot;
 config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
@@ -31,4 +33,5 @@ config.resolver.extraNodeModules = new Proxy(extraNodeModules, {
 module.exports = withNativeWind(config, {
   input: './src/app/globals.css',
 });
+
 

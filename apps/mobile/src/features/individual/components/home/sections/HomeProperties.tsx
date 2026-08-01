@@ -9,14 +9,14 @@ import {
   View,
 } from 'react-native';
 
+import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
-import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
-import { formatTimeAgo } from '@/shared/utils/helpers/property';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
+import { formatTimeAgo } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 import { PropertyDetailsDto } from '@/types/property';
 

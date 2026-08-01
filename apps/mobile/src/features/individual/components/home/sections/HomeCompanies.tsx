@@ -7,8 +7,8 @@ import {
   View,
 } from 'react-native';
 
-import { feedService } from '@/features/individual/services/feed.service';
 import CompanyCard from '@/features/individual/components/CompanyCard';
+import { feedService } from '@/features/individual/services/feed.service';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { CompanyDto } from '@/types/feed';
 
