@@ -10,10 +10,10 @@ import {
   View,
 } from 'react-native';
 
+import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
-import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import PropertyListItem from '@/shared/components/PropertyListItem';
 import { formatTimeAgo } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';

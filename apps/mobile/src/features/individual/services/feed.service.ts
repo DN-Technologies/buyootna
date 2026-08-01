@@ -1,10 +1,9 @@
+import apiClient from '@/shared/api/api';
 import {
   CompaniesResponse,
   HomeFeedResponse,
   PropertiesResponse,
 } from '@/types/feed';
-
-import apiClient from '@/shared/api/api';
 
 export const feedService = {
   /**
