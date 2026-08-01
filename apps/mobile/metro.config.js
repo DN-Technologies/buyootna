@@ -17,6 +17,7 @@ config.resolver.nodeModulesPaths = [
 
 // Ensure native singletons resolve to a single node_modules path
 const extraNodeModules = {
+  'expo-modules-core': path.resolve(projectRoot, 'node_modules/expo-modules-core'),
   'react-native-safe-area-context': path.resolve(projectRoot, 'node_modules/react-native-safe-area-context'),
   'react-native-reanimated': path.resolve(projectRoot, 'node_modules/react-native-reanimated'),
   'react-native-gesture-handler': path.resolve(projectRoot, 'node_modules/react-native-gesture-handler'),
