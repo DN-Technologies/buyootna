@@ -7,24 +7,14 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Support monorepo root node_modules and symlinks in pnpm
-config.projectRoot = projectRoot;
+// 1. Watch all files within the monorepo
 config.watchFolders = [workspaceRoot];
+
+// 2. Let Metro know where to resolve packages and in what order
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-
-// Ensure native singletons resolve to a single node_modules path
-config.resolver.extraNodeModules = {
-  'expo-router': path.resolve(projectRoot, 'node_modules/expo-router'),
-  'expo-modules-core': path.resolve(projectRoot, 'node_modules/expo-modules-core'),
-  'react-native-safe-area-context': path.resolve(projectRoot, 'node_modules/react-native-safe-area-context'),
-  'react-native-reanimated': path.resolve(projectRoot, 'node_modules/react-native-reanimated'),
-  'react-native-gesture-handler': path.resolve(projectRoot, 'node_modules/react-native-gesture-handler'),
-  'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
-  'react': path.resolve(projectRoot, 'node_modules/react'),
-};
 
 module.exports = withNativeWind(config, {
   input: './src/app/globals.css',

@@ -1,5 +1,6 @@
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import { SafeImage as Image } from '@/shared/components/SafeImage';
 
 interface SelectionCardProps {
   title: string;

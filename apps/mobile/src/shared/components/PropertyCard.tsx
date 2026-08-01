@@ -1,6 +1,5 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   DimensionValue,
@@ -24,6 +23,7 @@ import {
   LocationIcon,
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
 export interface PropertyCardProps {
   id: string;
   images: (string | number)[];
@@ -189,7 +189,7 @@ export default function PropertyCard({
         {/* Absolute Top Right: Badges */}
         <View className="absolute right-3 top-3 flex-row gap-2">
           {isFeatured && (
-            <LinearGradient
+            <SafeLinearGradient
               colors={['#FF8D28', '#FACC15']}
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
@@ -207,7 +207,7 @@ export default function PropertyCard({
               <Text className="font-almarai text-[12px] leading-[14.4px] text-[#111111]">
                 مميز
               </Text>
-            </LinearGradient>
+            </SafeLinearGradient>
           )}
         </View>
 
