@@ -318,7 +318,7 @@ importers:
         version: 5.2.14(@types/react@19.1.17)(react-native-gesture-handler@2.28.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.1.7(react-native-worklets@0.5.1(@babel/core@7.29.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@hookform/resolvers':
         specifier: ^5.2.2
-        version: 5.4.0(react-hook-form@7.82.0(react@19.1.0))
+        version: 5.5.7(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(class-transformer@0.5.1)(class-validator@0.15.1)(effect@3.20.0)(react-hook-form@7.83.0(react@19.1.0))(valibot@1.2.0(typescript@5.9.3))(zod@4.4.3)
       '@react-native-community/datetimepicker':
         specifier: ^9.1.0
         version: 9.1.0(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -336,7 +336,7 @@ importers:
         version: 10.3.5(expo@54.0.36)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       axios:
         specifier: ^1.16.1
-        version: 1.18.1
+        version: 1.19.0
       expo:
         specifier: ~54.0.33
         version: 54.0.36(@babel/core@7.29.0)(@expo/dom-webview@55.0.5)(@expo/metro-runtime@55.0.10)(expo-router@6.0.24)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
@@ -411,7 +411,7 @@ importers:
         version: 19.1.0(react@19.1.0)
       react-hook-form:
         specifier: ^7.75.0
-        version: 7.82.0(react@19.1.0)
+        version: 7.83.0(react@19.1.0)
       react-native:
         specifier: 0.81.5
         version: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
@@ -478,7 +478,7 @@ importers:
         version: 29.7.0(@types/node@22.20.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3))
       jest-expo:
         specifier: ^57.0.2
-        version: 57.0.2(@babel/core@7.29.0)(@react-native/jest-preset@0.86.1(@babel/core@7.29.0)(react@19.1.0))(expo@54.0.36)(jest@29.7.0(@types/node@22.20.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3)))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        version: 57.0.3(@babel/core@7.29.0)(@react-native/jest-preset@0.86.2(@babel/core@7.29.0)(react@19.1.0))(expo@54.0.36)(jest@29.7.0(@types/node@22.20.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3)))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       prettier:
         specifier: ^3.8.3
         version: 3.9.6
@@ -755,8 +755,8 @@ importers:
 
 packages:
 
-  '@0no-co/graphql.web@1.3.2':
-    resolution: {integrity: sha512-Q1+pRlLhE31GOY/2c9BAEnFTNxO7Awtc6fhhEDlxyCBQ2N0IhD32cPVvPChrK9mwBNSgRdW/sF1kd2e0ojHj1Q==}
+  '@0no-co/graphql.web@1.3.3':
+    resolution: {integrity: sha512-4gFGBdyaFmQ6n9euhp5JtIGS4ZeivwDr1tCPENUxTvy5wyv532yOtFCr9zzYAJh1s6uibgC+TRXUcay+mxzCoQ==}
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
     peerDependenciesMeta:
@@ -1870,9 +1870,6 @@ packages:
   '@expo/image-utils@0.8.13':
     resolution: {integrity: sha512-1I//yBQeTY6p0u1ihqGNDAr35EbSG8uFEupFrIF0jd++h9EWH33521yZJU1yE+mwGlzCb61g3ehu78siMhXBlA==}
 
-  '@expo/json-file@10.0.13':
-    resolution: {integrity: sha512-pX/XjQn7tgNw6zuuV2ikmegmwe/S7uiwhrs2wXrANMkq7ozrA+JcZwgW9Q/8WZgciBzfAhNp5hnackHcrmapQA==}
-
   '@expo/json-file@10.0.16':
     resolution: {integrity: sha512-fcVkWEj+hLuP2yt5W0aw6LmDRqSPWDLUSxOMcmFeV+algmIF59sQVKCwB9btjQLd4V6x9N0pISkQEkBubUHrCw==}
 
@@ -2051,10 +2048,83 @@ packages:
       react: 19.1.0
       react-native: 0.81.5
 
-  '@hookform/resolvers@5.4.0':
-    resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
+  '@hookform/resolvers@5.5.7':
+    resolution: {integrity: sha512-CyPCYV8/KlXfEXLWj8HHHhVsR/IZ6Ckm3b/a4fWtO/lRnRK1huqncb8LlAWrmpPRsse5glF5aVuDRMHEr3UGag==}
     peerDependencies:
+      '@sinclair/typebox': '>=0.25.24'
+      '@standard-schema/spec': ^1.0.0
+      '@typeschema/main': '>=0.13.7'
+      '@vinejs/vine': ^2.0.0 || ^3.0.0
+      ajv: ^8.12.0
+      ajv-errors: ^3.0.0
+      ajv-formats: ^2.1.1
+      arktype: ^2.0.0
+      ata-validator: ^0.7.0
+      class-transformer: '>=0.4.0'
+      class-validator: '>=0.12.0'
+      computed-types: ^1.0.0
+      effect: ^3.10.3
+      fluentvalidation-ts: ^3.0.0
+      fp-ts: ^2.7.0
+      io-ts: ^2.0.0
+      joi: ^17.0.0
+      nope-validator: '>=0.12.0'
       react-hook-form: ^7.55.0
+      superstruct: '>=0.12.0'
+      typanion: ^3.3.2
+      valibot: '>=0.31.0 || ^1.0.0-beta.4 || ^1.0.0-rc'
+      vest: '>=3.0.0'
+      yup: ^1.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@sinclair/typebox':
+        optional: true
+      '@standard-schema/spec':
+        optional: true
+      '@typeschema/main':
+        optional: true
+      '@vinejs/vine':
+        optional: true
+      ajv:
+        optional: true
+      ajv-errors:
+        optional: true
+      ajv-formats:
+        optional: true
+      arktype:
+        optional: true
+      ata-validator:
+        optional: true
+      class-transformer:
+        optional: true
+      class-validator:
+        optional: true
+      computed-types:
+        optional: true
+      effect:
+        optional: true
+      fluentvalidation-ts:
+        optional: true
+      fp-ts:
+        optional: true
+      io-ts:
+        optional: true
+      joi:
+        optional: true
+      nope-validator:
+        optional: true
+      superstruct:
+        optional: true
+      typanion:
+        optional: true
+      valibot:
+        optional: true
+      vest:
+        optional: true
+      yup:
+        optional: true
+      zod:
+        optional: true
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -3516,8 +3586,8 @@ packages:
     resolution: {integrity: sha512-hORRlNBj+ReNMLo9jme3yQ6JQf4GZpVEBLxmTXGGlIL78MAezDZr5/uq9dwElSbcGmLEgeiax6e174Fie6qPLg==}
     engines: {node: '>= 20.19.4'}
 
-  '@react-native/jest-preset@0.86.1':
-    resolution: {integrity: sha512-++hlo+JcZQqrhdQQn4TY41WlptxVEdvMcMXXi9mQBh1O7yXVs1eNTfYEKkq04wpXwjYMpAsyDA/Ev/DDFsT1/w==}
+  '@react-native/jest-preset@0.86.2':
+    resolution: {integrity: sha512-wneoqwKWdv6wIcWotVgp6NMlMWcJDjxDnp7fVYym2Pn6JLgAKgkbmuHGmxW0cLCGoa9wtcO680uciv+Kzx0G7w==}
     engines: {node: '>= 20.19.4'}
     peerDependencies:
       react: 19.1.0
@@ -3526,8 +3596,8 @@ packages:
     resolution: {integrity: sha512-fB7M1CMOCIUudTRuj7kzxIBTVw2KXnsgbQ6+4cbqSxo8NmRRhA0Ul4ZUzZj3rFd3VznTL4Brmocv1oiN0bWZ8w==}
     engines: {node: '>= 20.19.4'}
 
-  '@react-native/js-polyfills@0.86.1':
-    resolution: {integrity: sha512-mQJcMQu5/bLdwFljF/zDjKpKH6/wzQ33FiewoGfcLC/QU0ke0vdUcJ4kBAB98Du1sT1ddAHUvhjnDRo7PFzzrQ==}
+  '@react-native/js-polyfills@0.86.2':
+    resolution: {integrity: sha512-bIwNcGBaQ74shB5z1mRkxOpjikimuwsnOCEkZSzL67Z1FTyK1ObpENfyd2QvcvVW9Cjl+tHuw9ynpBnb2jPoJQ==}
     engines: {node: ^20.19.4 || ^22.13.0 || ^24.3.0 || >= 25.0.0}
 
   '@react-native/normalize-colors@0.74.89':
@@ -4836,8 +4906,8 @@ packages:
   axios@1.16.0:
     resolution: {integrity: sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==}
 
-  axios@1.18.1:
-    resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
+  axios@1.19.0:
+    resolution: {integrity: sha512-ht/iuYZXEjFxLH/Hkezgd7m6JKlHHXEUSneaDz8uZe1Gj5QZtCnpyDsckvAiEnT89OEbCLmnte4R4sn7P0EKFw==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -6461,6 +6531,10 @@ packages:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
     engines: {node: '>= 6'}
 
+  form-data@4.0.6:
+    resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
+    engines: {node: '>= 6'}
+
   formdata-polyfill@4.0.10:
     resolution: {integrity: sha512-buewHzMvYL29jdeQTVILecSaZKnt/RJWjoZCF5OW60Z67/GmSLBkOFM7qh1PI3zFNtJbaZL5eQu1vLfazOwj4g==}
     engines: {node: '>=12.20.0'}
@@ -7148,11 +7222,11 @@ packages:
     resolution: {integrity: sha512-4FZYVOk85hz2AyT6BbarKy9u37g6DbrDyCdFhsnDdXqyrueYQvB+0zO4f/kqLCRD0BsPRXPMNJeQwihKZV8naw==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  jest-expo@57.0.2:
-    resolution: {integrity: sha512-xoKiYyu8c0fdBsFMkeFnxoTZ/0g4rLldA9isVb7VJSGBGesmhkVor7YkftkHqQ5rWiZ99IY+/uIrzTgb1nC/UA==}
+  jest-expo@57.0.3:
+    resolution: {integrity: sha512-Z3tCNmxZwNppxv0fEkiIiLKcR5OlGSnjAY8yhxM6vluojBAnCIM8kwiNzFlI9B5MELEN6tYKDMVbBtoOPfjuBA==}
     hasBin: true
     peerDependencies:
-      '@react-native/jest-preset': ^0.86.0
+      '@react-native/jest-preset': ^0.86.2
       expo: '*'
       react-native: 0.81.5
       react-server-dom-webpack: ~19.0.4 || ~19.1.5 || ~19.2.4
@@ -8702,8 +8776,8 @@ packages:
     peerDependencies:
       react: 19.1.0
 
-  react-hook-form@7.82.0:
-    resolution: {integrity: sha512-Zw/uFZ2dO+02GHlBn7JFGn8kZJ7LdM33B/0BXOovzFay+CMhf94JMw5BVu+F1tVkUKjNvBuaE3fz5BJhga10Tg==}
+  react-hook-form@7.83.0:
+    resolution: {integrity: sha512-AXt8cMCmx5a7u4uvpb2uRFVrWQhllI4pV+LSykxIac/hjt44TnQkmX9BKuQi2i+LDC62esmiLpilkav+kjVf/A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: 19.1.0
@@ -10207,7 +10281,7 @@ packages:
 
 snapshots:
 
-  '@0no-co/graphql.web@1.3.2': {}
+  '@0no-co/graphql.web@1.3.3': {}
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -11299,7 +11373,7 @@ snapshots:
 
   '@expo/cli@54.0.26(expo-router@6.0.24)(expo@54.0.36)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(typescript@5.9.3)':
     dependencies:
-      '@0no-co/graphql.web': 1.3.2
+      '@0no-co/graphql.web': 1.3.3
       '@expo/code-signing-certificates': 0.0.6
       '@expo/config': 12.0.14
       '@expo/config-plugins': 54.0.5
@@ -11624,11 +11698,6 @@ snapshots:
       - supports-color
       - typescript
 
-  '@expo/json-file@10.0.13':
-    dependencies:
-      '@babel/code-frame': 7.29.0
-      json5: 2.2.3
-
   '@expo/json-file@10.0.16':
     dependencies:
       '@babel/code-frame': 7.10.4
@@ -11675,7 +11744,7 @@ snapshots:
       '@expo/json-file': 10.0.16
       '@expo/metro': 54.2.0
       '@expo/spawn-async': 1.7.2
-      browserslist: 4.28.2
+      browserslist: 4.28.7
       chalk: 4.1.2
       debug: 4.4.3
       dotenv: 16.4.7
@@ -11802,7 +11871,7 @@ snapshots:
 
   '@expo/package-manager@1.10.4':
     dependencies:
-      '@expo/json-file': 10.0.13
+      '@expo/json-file': 10.2.0
       '@expo/spawn-async': 1.7.2
       chalk: 4.1.2
       npm-package-arg: 11.0.3
@@ -11957,10 +12026,20 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.82.0(react@19.1.0))':
+  '@hookform/resolvers@5.5.7(@sinclair/typebox@0.34.52)(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(class-transformer@0.5.1)(class-validator@0.15.1)(effect@3.20.0)(react-hook-form@7.83.0(react@19.1.0))(valibot@1.2.0(typescript@5.9.3))(zod@4.4.3)':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.82.0(react@19.1.0)
+      react-hook-form: 7.83.0(react@19.1.0)
+    optionalDependencies:
+      '@sinclair/typebox': 0.34.52
+      '@standard-schema/spec': 1.1.0
+      ajv: 8.20.0
+      ajv-formats: 2.1.1(ajv@8.20.0)
+      class-transformer: 0.5.1
+      class-validator: 0.15.1
+      effect: 3.20.0
+      valibot: 1.2.0(typescript@5.9.3)
+      zod: 4.4.3
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -13964,10 +14043,10 @@ snapshots:
 
   '@react-native/gradle-plugin@0.81.5': {}
 
-  '@react-native/jest-preset@0.86.1(@babel/core@7.29.0)(react@19.1.0)':
+  '@react-native/jest-preset@0.86.2(@babel/core@7.29.0)(react@19.1.0)':
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
-      '@react-native/js-polyfills': 0.86.1
+      '@react-native/js-polyfills': 0.86.2
       babel-jest: 29.7.0(@babel/core@7.29.0)
       jest-environment-node: 29.7.0
       react: 19.1.0
@@ -13978,7 +14057,7 @@ snapshots:
 
   '@react-native/js-polyfills@0.81.5': {}
 
-  '@react-native/js-polyfills@0.86.1': {}
+  '@react-native/js-polyfills@0.86.2': {}
 
   '@react-native/normalize-colors@0.74.89': {}
 
@@ -15057,7 +15136,7 @@ snapshots:
 
   '@urql/core@5.2.0':
     dependencies:
-      '@0no-co/graphql.web': 1.3.2
+      '@0no-co/graphql.web': 1.3.3
       wonka: 6.3.6
     transitivePeerDependencies:
       - graphql
@@ -15073,12 +15152,12 @@ snapshots:
 
   '@visx/event@4.0.1-alpha.0':
     dependencies:
-      '@types/react': 19.2.17
+      '@types/react': 19.1.17
       '@visx/point': 4.0.1-alpha.0
 
   '@visx/grid@4.0.1-alpha.0(react@19.1.0)':
     dependencies:
-      '@types/react': 19.2.17
+      '@types/react': 19.1.17
       '@visx/curve': 4.0.1-alpha.0
       '@visx/group': 4.0.1-alpha.0(react@19.1.0)
       '@visx/point': 4.0.1-alpha.0
@@ -15089,7 +15168,7 @@ snapshots:
 
   '@visx/group@4.0.1-alpha.0(react@19.1.0)':
     dependencies:
-      '@types/react': 19.2.17
+      '@types/react': 19.1.17
       classnames: 2.5.1
       react: 19.1.0
 
@@ -15098,7 +15177,7 @@ snapshots:
   '@visx/responsive@4.0.1-alpha.0(react@19.1.0)':
     dependencies:
       '@types/lodash': 4.17.24
-      '@types/react': 19.2.17
+      '@types/react': 19.1.17
       lodash: 4.18.1
       react: 19.1.0
 
@@ -15109,7 +15188,7 @@ snapshots:
   '@visx/shape@4.0.1-alpha.0(react@19.1.0)':
     dependencies:
       '@types/lodash': 4.17.24
-      '@types/react': 19.2.17
+      '@types/react': 19.1.17
       '@visx/curve': 4.0.1-alpha.0
       '@visx/group': 4.0.1-alpha.0(react@19.1.0)
       '@visx/scale': 4.0.1-alpha.0
@@ -15413,7 +15492,7 @@ snapshots:
       define-properties: 1.2.1
       es-abstract: 1.24.2
       es-errors: 1.3.0
-      es-object-atoms: 1.1.1
+      es-object-atoms: 1.1.2
       es-shim-unscopables: 1.1.0
 
   array.prototype.flat@1.3.3:
@@ -15483,10 +15562,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.18.1:
+  axios@1.19.0:
     dependencies:
       follow-redirects: 1.16.0
-      form-data: 4.0.5
+      form-data: 4.0.6
       https-proxy-agent: 5.0.1
       proxy-from-env: 2.1.0
     transitivePeerDependencies:
@@ -16114,7 +16193,7 @@ snapshots:
 
   core-js-compat@3.49.0:
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.7
 
   cors@2.8.6:
     dependencies:
@@ -16379,7 +16458,7 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv@16.4.7: {}
 
@@ -16796,8 +16875,8 @@ snapshots:
       eslint: 9.39.5(jiti@1.21.7)
       eslint-import-resolver-node: 0.3.10
       eslint-module-utils: 2.14.0(@typescript-eslint/parser@8.65.0(eslint@9.39.5(jiti@1.21.7))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5(jiti@1.21.7))
-      hasown: 2.0.3
-      is-core-module: 2.16.1
+      hasown: 2.0.4
+      is-core-module: 2.16.2
       is-glob: 4.0.3
       minimatch: 3.1.5
       object.fromentries: 2.0.8
@@ -16825,8 +16904,8 @@ snapshots:
       eslint: 9.39.5(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
       eslint-module-utils: 2.14.0(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0)))(eslint@9.39.5(jiti@2.7.0))
-      hasown: 2.0.3
-      is-core-module: 2.16.1
+      hasown: 2.0.4
+      is-core-module: 2.16.2
       is-glob: 4.0.3
       minimatch: 3.1.5
       object.fromentries: 2.0.8
@@ -16879,8 +16958,8 @@ snapshots:
       '@babel/parser': 7.29.3
       eslint: 9.39.5(jiti@2.7.0)
       hermes-parser: 0.25.1
-      zod: 4.4.2
-      zod-validation-error: 4.0.2(zod@4.4.2)
+      zod: 4.4.3
+      zod-validation-error: 4.0.2(zod@4.4.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -17756,6 +17835,14 @@ snapshots:
       hasown: 2.0.3
       mime-types: 2.1.35
 
+  form-data@4.0.6:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.4
+      mime-types: 2.1.35
+
   formdata-polyfill@4.0.10:
     dependencies:
       fetch-blob: 3.2.0
@@ -18609,11 +18696,11 @@ snapshots:
       jest-validate: 30.4.1
     optional: true
 
-  jest-expo@57.0.2(@babel/core@7.29.0)(@react-native/jest-preset@0.86.1(@babel/core@7.29.0)(react@19.1.0))(expo@54.0.36)(jest@29.7.0(@types/node@22.20.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3)))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  jest-expo@57.0.3(@babel/core@7.29.0)(@react-native/jest-preset@0.86.2(@babel/core@7.29.0)(react@19.1.0))(expo@54.0.36)(jest@29.7.0(@types/node@22.20.1)(ts-node@10.9.2(@types/node@22.20.1)(typescript@5.9.3)))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
       '@jest/globals': 29.7.0
-      '@react-native/jest-preset': 0.86.1(@babel/core@7.29.0)(react@19.1.0)
+      '@react-native/jest-preset': 0.86.2(@babel/core@7.29.0)(react@19.1.0)
       babel-jest: 29.7.0(@babel/core@7.29.0)
       jest-environment-jsdom: 29.7.0
       jest-snapshot: 29.7.0
@@ -20550,7 +20637,7 @@ snapshots:
     dependencies:
       react: 19.1.0
 
-  react-hook-form@7.82.0(react@19.1.0):
+  react-hook-form@7.83.0(react@19.1.0):
     dependencies:
       react: 19.1.0
 
@@ -22352,9 +22439,9 @@ snapshots:
       grammex: 3.1.13
       graphmatch: 1.1.1
 
-  zod-validation-error@4.0.2(zod@4.4.2):
+  zod-validation-error@4.0.2(zod@4.4.3):
     dependencies:
-      zod: 4.4.2
+      zod: 4.4.3
 
   zod@3.25.76: {}
 
