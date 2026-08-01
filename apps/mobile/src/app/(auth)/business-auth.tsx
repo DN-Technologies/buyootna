@@ -223,7 +223,7 @@ export default function BusinessAuthScreen() {
           />
 
           {/* Auth Tabs (Login/Signup) */}
-          <CompanyAuthTabs mode={mode} onModeChange={setMode} />
+          <CompanyAuthTabs mode={mode} onChangeMode={setMode} />
 
           {/* Render Active Form */}
           {mode === 'login' ? (

@@ -66,6 +66,11 @@ export class UsersController {
     return this.usersService.findCompanies(filters);
   }
 
+  @Get('company/:id')
+  async findCompanyDetails(@Param('id') id: string) {
+    return this.usersService.findCompanyDetails(id);
+  }
+
   @Post('register/office')
   @UseInterceptors(
     FileFieldsInterceptor([

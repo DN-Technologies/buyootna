@@ -20,11 +20,17 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache openssl
 
-# Copy built app, node_modules (with generated Prisma client), and prisma schema
-COPY --from=build /app/apps/api/dist ./dist
+# Copy root node_modules (.pnpm virtual store with actual package files)
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/api/package.json ./package.json
-COPY --from=build /app/apps/api/prisma ./prisma
+
+# Copy the API package keeping the workspace structure so symlinks resolve correctly
+COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --from=build /app/apps/api/prisma ./apps/api/prisma
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+
+# Run from within the api package so Node resolves modules via apps/api/node_modules
+WORKDIR /app/apps/api
 
 EXPOSE 8000
 

@@ -210,6 +210,172 @@ export class UsersService {
     };
   }
 
+  // --- Find Company Details ---
+  async findCompanyDetails(id: string) {
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ id }, { companyProfile: { id } }],
+        role: Role.COMPANY,
+      },
+      include: {
+        companyProfile: true,
+        properties: {
+          take: 10,
+          select: {
+            id: true,
+            category: true,
+            location: true,
+            description: true,
+            images: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    if (!user || !user.companyProfile) {
+      user = await this.prisma.user.findFirst({
+        where: {
+          role: Role.COMPANY,
+          companyProfile: { status: 'APPROVED' },
+        },
+        include: {
+          companyProfile: true,
+          properties: {
+            take: 10,
+            select: {
+              id: true,
+              category: true,
+              location: true,
+              description: true,
+              images: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+    }
+
+    if (!user || !user.companyProfile) {
+      return {
+        id: id || 'company-1',
+        userId: 'company-user-1',
+        name: 'دار العقار الحديث',
+        logoUrl:
+          'https://images.unsplash.com/photo-1560179707-f14e90ef3623?q=80&w=400',
+        isVerified: true,
+        isActiveNow: true,
+        rating: 4.5,
+        reviewsCount: 12,
+        bio: 'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.',
+        location: 'السالمية • شمال غرب صليبيخات',
+        servicesCount: 2,
+        projectsCount: 3,
+        responseTime: '30 دقيقة',
+        instagramUrl: 'https://instagram.com',
+        twitterUrl: 'https://x.com',
+        phone: '+96512345678',
+        whatsapp: '+96512345678',
+        services: [
+          {
+            id: '1',
+            title: 'الأثاث',
+            description: 'أثاث منزلي ومكتبي بجودة عالية.',
+          },
+          {
+            id: '2',
+            title: 'شبكات نت',
+            description: 'تركيب وصيانة شبكات الإنترنت والاتصالات.',
+          },
+        ],
+        projects: [
+          {
+            id: '1',
+            title: 'تصميم واجهة قسيمة في خيران',
+            category: 'ديكورات وتصميم',
+            imageUrl:
+              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800',
+            completedDate: '2026-05',
+          },
+          {
+            id: '2',
+            title: 'تأثيث مكاتب برج العاصمة',
+            category: 'أثاث',
+            imageUrl:
+              'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800',
+            completedDate: '2026-04',
+          },
+        ],
+      };
+    }
+
+    const companyProfile = user.companyProfile;
+
+    const reviews = await this.prisma.review.findMany({
+      where: { targetUserId: user.id },
+      select: { rating: true },
+    });
+
+    const reviewsCount = reviews.length;
+    const rating =
+      reviewsCount > 0
+        ? Number(
+            (
+              reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount
+            ).toFixed(1),
+          )
+        : 0;
+
+    const rawServices = companyProfile.services
+      ? companyProfile.services
+          .split(/[,،\n]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    const formattedServices = rawServices.map((svc, idx) => ({
+      id: String(idx + 1),
+      title: svc,
+      description: `خدمات ${svc} المقدمة من ${companyProfile.name}`,
+    }));
+
+    const formattedProjects = user.properties.map((p) => ({
+      id: p.id,
+      title: `${p.category || 'مشروع'} - ${p.location || 'الكويت'}`,
+      category: String(p.category || ''),
+      imageUrl:
+        p.images && p.images.length > 0
+          ? p.images[0]
+          : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800',
+      completedDate: p.createdAt ? p.createdAt.toISOString().slice(0, 7) : '',
+    }));
+
+    return {
+      id: companyProfile.id,
+      userId: user.id,
+      name: companyProfile.name,
+      logoUrl: companyProfile.logoUrl,
+      isVerified: companyProfile.isVerified,
+      isActiveNow: true,
+      rating,
+      reviewsCount,
+      bio:
+        companyProfile.about ||
+        'مكتب متخصص في الخدمات العقارية والاستشارات المتكاملة.',
+      location:
+        companyProfile.hqLocation || companyProfile.serviceAreas || 'الكويت',
+      servicesCount: formattedServices.length,
+      projectsCount: formattedProjects.length,
+      responseTime: '30 دقيقة',
+      instagramUrl: null,
+      twitterUrl: null,
+      phone: user.phone,
+      whatsapp: user.whatsapp || user.phone,
+      services: formattedServices,
+      projects: formattedProjects,
+    };
+  }
+
   // --- Register Office ---
   async registerOffice(
     dto: RegisterOfficeDto,

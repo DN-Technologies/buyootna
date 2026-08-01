@@ -194,7 +194,7 @@ export default function IndividualAuthScreen() {
           />
 
           {/* Auth Tabs (Login/Signup) */}
-          <IndividualAuthTabs mode={mode} onModeChange={handleModeChange} />
+          <IndividualAuthTabs mode={mode} onChangeMode={handleModeChange} />
 
           {/* Render Active Form */}
           {mode === 'login' ? (

@@ -134,13 +134,13 @@ export default function RentProperties({
             )}
           </View>
         )}
-        // Infinite Scroll Triggers:
         onEndReached={fetchMoreData}
         onEndReachedThreshold={0.5} // Trigger fetch when halfway through the last card
-        ListFooterComponentClassName="items-center justify-center"
         ListFooterComponent={
           isLoadingMore || isFetchingDetails ? (
-            <ActivityIndicator size="small" color="#15304D" className="ml-4" />
+            <View className="items-center justify-center px-4">
+              <ActivityIndicator size="small" color="#15304D" />
+            </View>
           ) : null
         }
       />
