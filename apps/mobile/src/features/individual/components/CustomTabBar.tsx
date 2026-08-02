@@ -17,6 +17,7 @@ import {
   HomeIcon,
   MenuIcon,
   OrdersIcon,
+  PropertiesTabIcon,
   SearchIcon,
 } from '@/assets/icons/tab/index';
 
@@ -123,6 +124,7 @@ export default function CustomTabBar({
           switch (route.name) {
             case 'home':
             case 'company-home':
+            case 'office-home':
               IconComponent = HomeIcon;
               label = 'الرئيسية';
               break;
@@ -138,13 +140,19 @@ export default function CustomTabBar({
               IconComponent = OrdersIcon;
               label = 'الطلبات';
               break;
+            case 'office-properties':
+              IconComponent = PropertiesTabIcon;
+              label = 'العقارات';
+              break;
             case 'company-chats':
+            case 'office-chats':
               IconComponent = ChatTabIcon;
               label = 'المحادثات';
               badgeCount = 2; // Can be linked to useChatStore unread count
               break;
             case 'more':
             case 'company-more':
+            case 'office-more':
               IconComponent = MenuIcon;
               label = 'المزيد';
               break;

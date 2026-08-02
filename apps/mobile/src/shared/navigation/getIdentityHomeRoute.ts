@@ -11,7 +11,7 @@ export function getIdentityHomeRoute(type: IdentityType | null | undefined): Hre
     case 'COMPANY':
       return '/(company)/company-home';
     case 'OFFICE':
-      return '/(office)/office-dashboard';
+      return '/(office)/office-home';
     case 'INDIVIDUAL':
     default:
       return '/(individual)/home';

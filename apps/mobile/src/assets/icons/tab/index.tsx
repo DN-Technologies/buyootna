@@ -102,3 +102,28 @@ export const ChatTabIcon = ({ color = '#FFFFFF', size = 20 }: TabIconProps) => (
     />
   </Svg>
 );
+
+export const PropertiesTabIcon = ({
+  color = '#FFFFFF',
+  size = 20,
+}: TabIconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <Path
+      d="M3.33398 17.5V4.16667C3.33398 3.24619 4.08018 2.5 5.00065 2.5H14.9993C15.9198 2.5 16.666 3.24619 16.666 4.16667V17.5"
+      stroke={color}
+      strokeWidth={1.2}
+      strokeLinecap="round"
+    />
+    <Path
+      d="M7.5 17.5V11.6667C7.5 10.7462 8.24619 10 9.16667 10H10.8333C11.7538 10 12.5 10.7462 12.5 11.6667V17.5"
+      stroke={color}
+      strokeWidth={1.2}
+    />
+    <Path
+      d="M7.5 5.83325H12.5"
+      stroke={color}
+      strokeWidth={1.2}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
