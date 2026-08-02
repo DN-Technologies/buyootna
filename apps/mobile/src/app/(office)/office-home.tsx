@@ -15,12 +15,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { HomeSearchIcon, NotificationIcon } from '@/assets/icons/home/header';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function OfficeHomeScreen() {
   const router = useRouter();
   const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
+  const unreadCount = useUnreadNotificationsCount();
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
@@ -79,11 +81,13 @@ export default function OfficeHomeScreen() {
             {/* Left Actions: Search & Notifications */}
             <View className="flex-row items-center">
               <TouchableOpacity
-                onPress={() => router.push('/notifications')}
+                onPress={() => router.push('/notification-list')}
                 className="relative h-10 w-10 items-center justify-center rounded-full"
               >
                 <NotificationIcon size={24} color="#111111" />
-                <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
+                {unreadCount > 0 && (
+                  <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push('/search')}
@@ -98,63 +102,65 @@ export default function OfficeHomeScreen() {
           <View className="gap-3">
             {/* Row 1 */}
             <View className="flex-row gap-3">
-              {/* Properties Count (Right) */}
+              {/* Active Listings (Right) */}
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => router.push('/(office)/office-properties')}
                 style={{ flex: 1, flexBasis: 0 }}
                 className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
               >
-                <View>
+                <View className="items-start">
                   <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
                     <Ionicons
-                      name="business-outline"
-                      size={20}
+                      name="checkmark-circle-outline"
+                      size={22}
                       color="#15304D"
                     />
                   </View>
                 </View>
-                <View>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    العقارات النشطة
-                  </Text>
+                <View className="items-start">
                   <Text
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    0 عقار
+                    3
+                  </Text>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    الإعلانات النشطة
                   </Text>
                 </View>
               </TouchableOpacity>
 
-              {/* Active Agents (Left) */}
-              <View
+              {/* Active Services (Left) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => router.push('/(office)/office-properties')}
                 style={{ flex: 1, flexBasis: 0 }}
                 className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
               >
-                <View>
+                <View className="items-start">
                   <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-                    <Feather name="users" size={20} color="#15304D" />
+                    <Feather name="headphones" size={20} color="#15304D" />
                   </View>
                 </View>
-                <View>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    الوسطاء
-                  </Text>
+                <View className="items-start">
                   <Text
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    0
+                    3
+                  </Text>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    خدمات نشطة
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* Row 2 */}
@@ -164,23 +170,23 @@ export default function OfficeHomeScreen() {
                 style={{ flex: 1, flexBasis: 0 }}
                 className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
               >
-                <View>
+                <View className="items-start">
                   <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
                     <Ionicons name="eye-outline" size={20} color="#15304D" />
                   </View>
                 </View>
-                <View>
+                <View className="items-start">
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    700+
+                  </Text>
                   <Text
                     className="font-cairo-medium text-[14px] text-[#111111]"
                     style={{ writingDirection: 'rtl' }}
                   >
                     المشاهدات
-                  </Text>
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    +700
                   </Text>
                 </View>
               </View>
@@ -192,7 +198,7 @@ export default function OfficeHomeScreen() {
                 style={{ flex: 1, flexBasis: 0 }}
                 className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
               >
-                <View>
+                <View className="items-start">
                   <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
                     <Ionicons
                       name="chatbox-outline"
@@ -201,18 +207,18 @@ export default function OfficeHomeScreen() {
                     />
                   </View>
                 </View>
-                <View>
+                <View className="items-start">
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    5
+                  </Text>
                   <Text
                     className="font-cairo-medium text-[14px] text-[#111111]"
                     style={{ writingDirection: 'rtl' }}
                   >
                     الرسائل الجديدة
-                  </Text>
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    0 اليوم
                   </Text>
                 </View>
               </TouchableOpacity>
