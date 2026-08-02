@@ -15,7 +15,7 @@ import type { Response } from 'express';
 import { PaymentsService } from './payments.service';
 import type { TapChargeResponse } from './payments.service';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 
 @Controller('payments')
 export class PaymentsController {
@@ -24,13 +24,13 @@ export class PaymentsController {
   @Post('charge')
   @UseGuards(AuthGuard('jwt'))
   async createCharge(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body('planSlug') planSlug: string,
     @Body('appRedirectUrl') appRedirectUrl: string,
     @Body('sourceId') sourceId?: string,
   ) {
     return this.paymentsService.createCharge(
-      user.id,
+      reqUser.userId,
       planSlug,
       appRedirectUrl,
       sourceId,
@@ -61,9 +61,9 @@ export class PaymentsController {
   @Get('status/:invoiceId')
   @UseGuards(AuthGuard('jwt'))
   async getInvoiceStatus(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('invoiceId') invoiceId: string,
   ) {
-    return this.paymentsService.getInvoiceStatus(user.id, invoiceId);
+    return this.paymentsService.getInvoiceStatus(reqUser.userId, invoiceId);
   }
 }

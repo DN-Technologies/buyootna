@@ -23,11 +23,11 @@ import {
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
-import ContentContainer from '@/shared/components/ContentContainer';
-import MenuItem from '@/features/individual/components/more/MenuItem';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import MenuItem from '@/features/individual/components/more/MenuItem';
+import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import ContentContainer from '@/shared/components/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';

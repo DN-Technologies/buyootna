@@ -7,6 +7,10 @@ export default function AuthLayout() {
       <Stack.Screen name="individual-auth" />
       <Stack.Screen name="business-auth" />
       <Stack.Screen name="forgot-password" />
+      <Stack.Screen name="add-identity" />
+      <Stack.Screen name="add-identity-individual" />
+      <Stack.Screen name="add-identity-company" />
+      <Stack.Screen name="add-identity-office" />
     </Stack>
   );
 }

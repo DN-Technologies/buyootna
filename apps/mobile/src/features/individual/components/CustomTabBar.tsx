@@ -13,8 +13,11 @@ import Svg, { Path } from 'react-native-svg';
 import {
   ActivityIcon,
   AddIcon,
+  ChatTabIcon,
   HomeIcon,
   MenuIcon,
+  OrdersIcon,
+  PropertiesTabIcon,
   SearchIcon,
 } from '@/assets/icons/tab/index';
 
@@ -116,9 +119,12 @@ export default function CustomTabBar({
 
           let IconComponent = HomeIcon;
           let label = '';
+          let badgeCount = 0;
 
           switch (route.name) {
             case 'home':
+            case 'company-home':
+            case 'office-home':
               IconComponent = HomeIcon;
               label = 'الرئيسية';
               break;
@@ -130,7 +136,23 @@ export default function CustomTabBar({
               IconComponent = ActivityIcon;
               label = 'نشاطي';
               break;
+            case 'company-requests':
+              IconComponent = OrdersIcon;
+              label = 'الطلبات';
+              break;
+            case 'office-properties':
+              IconComponent = PropertiesTabIcon;
+              label = 'العقارات';
+              break;
+            case 'company-chats':
+            case 'office-chats':
+              IconComponent = ChatTabIcon;
+              label = 'المحادثات';
+              badgeCount = 2; // Can be linked to useChatStore unread count
+              break;
             case 'more':
+            case 'company-more':
+            case 'office-more':
               IconComponent = MenuIcon;
               label = 'المزيد';
               break;
@@ -150,7 +172,36 @@ export default function CustomTabBar({
                 justifyContent: 'center',
               }}
             >
-              <IconComponent size={22} color={iconColor} />
+              <View className="relative items-center justify-center">
+                <IconComponent size={22} color={iconColor} />
+                {badgeCount > 0 && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: -4,
+                      right: -8,
+                      backgroundColor: '#EF4444',
+                      borderRadius: 10,
+                      minWidth: 16,
+                      height: 16,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingHorizontal: 3,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#FFFFFF',
+                        fontSize: 9,
+                        fontFamily: 'Cairo-Bold',
+                        lineHeight: 12,
+                      }}
+                    >
+                      {badgeCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
               <Text
                 style={{
                   fontFamily: 'Cairo-Bold',

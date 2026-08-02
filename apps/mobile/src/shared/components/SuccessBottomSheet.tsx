@@ -5,9 +5,10 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
 
 interface SuccessBottomSheetProps {
   title: string;
@@ -62,7 +63,7 @@ const SuccessBottomSheet = forwardRef<
           <View className="mt-4 items-center">
             {/* Dynamic Success Icon */}
             {iconType === 'document-search' ? (
-              <LinearGradient
+              <SafeLinearGradient
                 colors={['#33D679', '#AADB53']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -99,7 +100,7 @@ const SuccessBottomSheet = forwardRef<
                     <Feather name="search" size={10} color="white" />
                   </View>
                 </View>
-              </LinearGradient>
+              </SafeLinearGradient>
             ) : (
               <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-green-100">
                 <Image

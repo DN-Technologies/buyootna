@@ -9,9 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ReactionType, type User } from '@prisma/client';
+import { ReactionType } from '@prisma/client';
 
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { GetReviewsDto } from './dto/get-reviews.dto';
 import { ReviewsService } from './reviews.service';
@@ -23,20 +24,24 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('users/:targetUserId/reviews')
   async createOrUpdateReview(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('targetUserId') targetUserId: string,
     @Body() dto: CreateReviewDto,
   ) {
-    return this.reviewsService.createOrUpdateReview(user.id, targetUserId, dto);
+    return this.reviewsService.createOrUpdateReview(
+      reqUser.userId,
+      targetUserId,
+      dto,
+    );
   }
 
   @Get('users/:targetUserId/reviews')
   async getReviews(
     @Param('targetUserId') targetUserId: string,
     @Query() query: GetReviewsDto,
-    @CurrentUser() user?: User,
+    @CurrentUser() reqUser?: RequestUser,
   ) {
-    return this.reviewsService.getReviews(targetUserId, user?.id, query);
+    return this.reviewsService.getReviews(targetUserId, reqUser?.userId, query);
   }
 
   @Get('users/:targetUserId/reviews/summary')
@@ -47,12 +52,12 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('reviews/:reviewId/like')
   async toggleLike(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('reviewId') reviewId: string,
   ) {
     return this.reviewsService.toggleReaction(
       reviewId,
-      user.id,
+      reqUser.userId,
       ReactionType.LIKE,
     );
   }
@@ -60,12 +65,12 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('reviews/:reviewId/dislike')
   async toggleDislike(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('reviewId') reviewId: string,
   ) {
     return this.reviewsService.toggleReaction(
       reviewId,
-      user.id,
+      reqUser.userId,
       ReactionType.DISLIKE,
     );
   }
@@ -73,9 +78,9 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Delete('reviews/:reviewId')
   async deleteReview(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('reviewId') reviewId: string,
   ) {
-    return this.reviewsService.deleteReview(reviewId, user.id);
+    return this.reviewsService.deleteReview(reviewId, reqUser.userId);
   }
 }

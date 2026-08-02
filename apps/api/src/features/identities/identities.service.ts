@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { IdentityType } from '@prisma/client';
+import { StorageService } from 'src/core/storage/storage.service';
 import {
   CreateIndividualIdentityDto,
   CreateCompanyIdentityDto,
@@ -63,7 +64,10 @@ const IDENTITY_INCLUDE = {
 
 @Injectable()
 export class IdentitiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   // List all identities for a user
   async findAll(userId: string) {
@@ -146,7 +150,26 @@ export class IdentitiesService {
   }
 
   // Create company identity
-  async createCompany(userId: string, dto: CreateCompanyIdentityDto) {
+  async createCompany(
+    userId: string,
+    dto: CreateCompanyIdentityDto,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
+  ) {
+    // Upload files to S3 if they exist
+    let logoUrl = dto.logoUrl || null;
+    let licenseFileUrl = dto.licenseFileUrl || null;
+
+    if (logoFile) {
+      logoUrl = await this.storageService.uploadFile(logoFile, 'company-logos');
+    }
+    if (licenseFile) {
+      licenseFileUrl = await this.storageService.uploadFile(
+        licenseFile,
+        'company-licenses',
+      );
+    }
+
     // Check if this is the first identity
     const identityCount = await this.prisma.identity.count({
       where: { userId },
@@ -168,10 +191,10 @@ export class IdentitiesService {
             about: dto.about,
             licenseActivity: dto.licenseActivity,
             licenseExpiry: dto.licenseExpiry,
-            logoUrl: dto.logoUrl,
-            licenseFileUrl: dto.licenseFileUrl,
-            latitude: dto.latitude,
-            longitude: dto.longitude,
+            logoUrl: logoUrl,
+            licenseFileUrl: licenseFileUrl,
+            latitude: dto.latitude ? Number(dto.latitude) : undefined,
+            longitude: dto.longitude ? Number(dto.longitude) : undefined,
             specialty: dto.specialty,
           },
         },
@@ -181,7 +204,26 @@ export class IdentitiesService {
   }
 
   // Create office identity
-  async createOffice(userId: string, dto: CreateOfficeIdentityDto) {
+  async createOffice(
+    userId: string,
+    dto: CreateOfficeIdentityDto,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
+  ) {
+    // Upload files to S3 if they exist
+    let logoUrl = dto.logoUrl || null;
+    let licenseFileUrl = dto.licenseFileUrl || null;
+
+    if (logoFile) {
+      logoUrl = await this.storageService.uploadFile(logoFile, 'office-logos');
+    }
+    if (licenseFile) {
+      licenseFileUrl = await this.storageService.uploadFile(
+        licenseFile,
+        'office-licenses',
+      );
+    }
+
     // Check if this is the first identity
     const identityCount = await this.prisma.identity.count({
       where: { userId },
@@ -202,8 +244,8 @@ export class IdentitiesService {
             about: dto.about,
             licenseActivity: dto.licenseActivity,
             licenseExpiry: dto.licenseExpiry,
-            logoUrl: dto.logoUrl,
-            licenseFileUrl: dto.licenseFileUrl,
+            logoUrl: logoUrl,
+            licenseFileUrl: licenseFileUrl,
           },
         },
       },

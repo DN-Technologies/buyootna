@@ -22,7 +22,7 @@ import {
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { Role } from '@prisma/client';
 import {
   FileFieldsInterceptor,
@@ -96,39 +96,53 @@ export class UsersController {
   @Patch('profile')
   @UseInterceptors(FileInterceptor('logo'))
   async updateProfile(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: UpdateProfileDto,
     @UploadedFile() logo?: Express.Multer.File,
   ) {
-    const role = user.role || Role.INDIVIDUAL;
-    return this.usersService.updateProfile(user.id, role, dto, logo);
+    const role = reqUser.identityType || Role.INDIVIDUAL;
+    return this.usersService.updateProfile(reqUser.userId, role, dto, logo);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('role')
-  async switchRole(@CurrentUser() user: User, @Body('role') role: Role) {
-    return this.usersService.updateRole(user.id, role);
+  async switchRole(
+    @CurrentUser() reqUser: RequestUser,
+    @Body('role') role: Role,
+  ) {
+    return this.usersService.updateRole(reqUser.userId, role);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('account')
-  async deleteAccount(@CurrentUser() user: User) {
-    return this.usersService.deleteAccount(user.id);
+  async deleteAccount(@CurrentUser() reqUser: RequestUser) {
+    return this.usersService.deleteAccount(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('account/disable')
-  async disableAccount(@CurrentUser() user: User) {
-    return this.usersService.disableAccount(user.id);
+  async disableAccount(@CurrentUser() reqUser: RequestUser) {
+    return this.usersService.disableAccount(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  async getProfile(@CurrentUser() user: User) {
-    const fullUser = await this.usersService.findFullUser(user.id);
+  async getProfile(@CurrentUser() reqUser: RequestUser) {
+    const fullUser = await this.usersService.findFullUser(reqUser.userId);
+    if (!fullUser) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    const { identities, ...userWithoutIdentities } = fullUser;
+    const activeIdentity =
+      identities?.find((identity) => identity.isActive) ??
+      identities?.[0] ??
+      null;
+
     return {
-      message: 'You have successfully accessed a protected route!',
-      user: fullUser,
+      user: userWithoutIdentities,
+      activeIdentity,
+      identities: identities ?? [],
     };
   }
 

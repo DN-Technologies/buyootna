@@ -73,3 +73,13 @@ export async function fetchUserDetails(id: string) {
   const res = await api.get(`/admin/users/${id}`);
   return res.data;
 }
+
+export async function updateIdentityStatus(
+  identityId: string,
+  status: 'APPROVED' | 'REJECTED',
+) {
+  const res = await api.patch(`/admin/identities/${identityId}/status`, {
+    status,
+  });
+  return res.data;
+}

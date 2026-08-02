@@ -2,7 +2,8 @@ import { Controller, Get, Delete, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { DevicesService } from './devices.service';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import type { User, Session } from '@prisma/client';
+import type { Session } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 
 @Controller('devices')
 @UseGuards(AuthGuard('jwt'))
@@ -10,22 +11,24 @@ export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
   @Get()
-  async getDevices(@CurrentUser() user: User): Promise<Session[]> {
-    return this.devicesService.getDevices(user.id);
+  async getDevices(
+    @CurrentUser() reqUser: RequestUser,
+  ): Promise<Session[]> {
+    return this.devicesService.getDevices(reqUser.userId);
   }
 
   @Delete(':id')
   async revokeDevice(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
   ): Promise<{ count: number }> {
-    return this.devicesService.revokeDevice(user.id, id);
+    return this.devicesService.revokeDevice(reqUser.userId, id);
   }
 
   @Delete()
   async revokeAllDevices(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
   ): Promise<{ count: number }> {
-    return this.devicesService.revokeAllExceptCurrent(user.id);
+    return this.devicesService.revokeAllExceptCurrent(reqUser.userId);
   }
 }

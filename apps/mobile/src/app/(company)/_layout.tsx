@@ -1,45 +1,58 @@
-import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Tabs } from 'expo-router';
+import { useRef } from 'react';
+
+import CustomTabBar from '@/features/individual/components/CustomTabBar';
+import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
+import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
+import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function CompanyLayout() {
+  const token = useAuthStore((state) => state.token);
+
+  const plusSheetRef = useRef<BottomSheetModal>(null);
+  const quotaSheetRef = useRef<BottomSheetModal>(null);
+  const authGuardSheetRef = useRef<BottomSheetModal>(null);
+
+  const handleOpenPlusSheet = () => {
+    if (!token) {
+      authGuardSheetRef.current?.present();
+    } else {
+      plusSheetRef.current?.present();
+    }
+  };
+
+  const handleOpenQuotaSheet = () => {
+    quotaSheetRef.current?.present();
+  };
+
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
-      <Tabs.Screen
-        name="company-dashboard"
-        options={{
-          title: 'لوحة التحكم',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="grid-outline" size={size} color={color} />
-          ),
+    <>
+      <Tabs
+        tabBar={(props) => (
+          <CustomTabBar {...props} onOpenPlusSheet={handleOpenPlusSheet} />
+        )}
+        screenOptions={{
+          headerShown: false,
         }}
+      >
+        <Tabs.Screen name="company-home" />
+        <Tabs.Screen name="company-requests" />
+
+        {/* The Center Add Button */}
+        <Tabs.Screen name="add" />
+
+        <Tabs.Screen name="company-chats" />
+        <Tabs.Screen name="company-more" />
+      </Tabs>
+      {/* Bottom sheets mounted outside Tabs so the backdrop covers the entire screen */}
+      <PlusActionsSheet
+        ref={plusSheetRef}
+        onQuotaExhausted={handleOpenQuotaSheet}
       />
-      <Tabs.Screen
-        name="company-analytics"
-        options={{
-          title: 'التحليلات',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="stats-chart-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="company-team"
-        options={{
-          title: 'الفريق',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="company-listings"
-        options={{
-          title: 'الإعلانات',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      <QuotaExhaustedSheet ref={quotaSheetRef} />
+      <AuthGuardSheet ref={authGuardSheetRef} />
+    </>
   );
 }
