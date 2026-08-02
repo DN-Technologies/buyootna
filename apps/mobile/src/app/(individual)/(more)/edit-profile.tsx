@@ -13,8 +13,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { settingsService } from '@/shared/api/settings.service';
 import AvatarPicker from '@/features/individual/components/more/AvatarPicker';
+import { settingsService } from '@/shared/api/settings.service';
+import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 interface ProfileFormData {
@@ -28,9 +29,12 @@ interface ProfileFormData {
 export default function EditProfileScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { activeIdentity, displayName, avatarUrl } = useIdentity();
 
   const derivedName =
-    user?.name || (user?.email ? user.email.split('@')[0] : 'غير معروف');
+    activeIdentity?.individualData?.name ||
+    displayName ||
+    (user?.email ? user.email.split('@')[0] : 'غير معروف');
 
   // Initialize React Hook Form
   const {
@@ -42,8 +46,8 @@ export default function EditProfileScreen() {
       name: derivedName,
       email: user?.email || '',
       phone: user?.phone || '',
-      whatsapp: user?.phone || '',
-      avatarUrl: user?.avatarUrl || 'https://via.placeholder.com/150',
+      whatsapp: activeIdentity?.individualData?.whatsapp || user?.phone || '',
+      avatarUrl: avatarUrl || 'https://via.placeholder.com/150',
     },
     mode: 'onChange', // Validates on every keystroke to update button state
   });

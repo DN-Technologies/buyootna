@@ -126,9 +126,20 @@ export class UsersController {
   @Get('me')
   async getProfile(@CurrentUser() user: User) {
     const fullUser = await this.usersService.findFullUser(user.id);
+    if (!fullUser) {
+      throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    const { identities, ...userWithoutIdentities } = fullUser;
+    const activeIdentity =
+      identities?.find((identity) => identity.isActive) ??
+      identities?.[0] ??
+      null;
+
     return {
-      message: 'You have successfully accessed a protected route!',
-      user: fullUser,
+      user: userWithoutIdentities,
+      activeIdentity,
+      identities: identities ?? [],
     };
   }
 

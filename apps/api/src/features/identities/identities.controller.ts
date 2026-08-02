@@ -7,8 +7,11 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { IdentitiesService } from './identities.service';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
@@ -35,7 +38,10 @@ export class IdentitiesController {
   // GET /identities/current - Get active identity details
   @Get('current')
   findCurrent(@CurrentUser() reqUser: RequestUser) {
-    return this.identitiesService.findCurrent(reqUser.userId, reqUser.identityId);
+    return this.identitiesService.findCurrent(
+      reqUser.userId,
+      reqUser.identityId,
+    );
   }
 
   // GET /identities/:id - Get specific identity
@@ -55,20 +61,56 @@ export class IdentitiesController {
 
   // POST /identities/company - Create company identity
   @Post('company')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'license', maxCount: 1 },
+    ]),
+  )
   createCompany(
     @CurrentUser() reqUser: RequestUser,
     @Body() dto: CreateCompanyIdentityDto,
+    @UploadedFiles()
+    files: {
+      logo?: Express.Multer.File[];
+      license?: Express.Multer.File[];
+    },
   ) {
-    return this.identitiesService.createCompany(reqUser.userId, dto);
+    const logoFile = files.logo ? files.logo[0] : undefined;
+    const licenseFile = files.license ? files.license[0] : undefined;
+    return this.identitiesService.createCompany(
+      reqUser.userId,
+      dto,
+      logoFile,
+      licenseFile,
+    );
   }
 
   // POST /identities/office - Create office identity
   @Post('office')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'license', maxCount: 1 },
+    ]),
+  )
   createOffice(
     @CurrentUser() reqUser: RequestUser,
     @Body() dto: CreateOfficeIdentityDto,
+    @UploadedFiles()
+    files: {
+      logo?: Express.Multer.File[];
+      license?: Express.Multer.File[];
+    },
   ) {
-    return this.identitiesService.createOffice(reqUser.userId, dto);
+    const logoFile = files.logo ? files.logo[0] : undefined;
+    const licenseFile = files.license ? files.license[0] : undefined;
+    return this.identitiesService.createOffice(
+      reqUser.userId,
+      dto,
+      logoFile,
+      licenseFile,
+    );
   }
 
   // PATCH /identities/:id - Update identity profile
@@ -76,7 +118,11 @@ export class IdentitiesController {
   update(
     @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
-    @Body() dto: UpdateIndividualIdentityDto | UpdateCompanyIdentityDto | UpdateOfficeIdentityDto,
+    @Body()
+    dto:
+      | UpdateIndividualIdentityDto
+      | UpdateCompanyIdentityDto
+      | UpdateOfficeIdentityDto,
   ) {
     return this.identitiesService.update(reqUser.userId, id, dto);
   }

@@ -12,7 +12,17 @@ interface StepProps {
   type: 'company' | 'office';
 }
 
-export const SignupStep1: React.FC<StepProps> = ({ control, type }) => {
+interface Step1Props extends StepProps {
+  // False when adding an identity to an already logged-in account — that
+  // account already has an email/phone/password, so hide those fields.
+  includeAccountFields?: boolean;
+}
+
+export const SignupStep1: React.FC<Step1Props> = ({
+  control,
+  type,
+  includeAccountFields = true,
+}) => {
   const nameLabel = type === 'office' ? 'اسم المكتب' : 'اسم الشركة';
   const namePlaceholder =
     type === 'office' ? 'البيان للمقاولة' : 'البنيان للمقاولات';
@@ -25,35 +35,39 @@ export const SignupStep1: React.FC<StepProps> = ({ control, type }) => {
         label={nameLabel}
         placeholder={namePlaceholder}
       />
-      <FormInput
-        control={control}
-        name="email"
-        label="البريد الإلكتروني"
-        placeholder="alisalem@gmail.com"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <FormInput
-        control={control}
-        name="phone"
-        label="رقم الهاتف"
-        placeholder="55123456"
-        keyboardType="phone-pad"
-      />
-      <FormInput
-        control={control}
-        name="password"
-        label="كلمة المرور"
-        placeholder="**************"
-        isPassword={true}
-      />
-      <FormInput
-        control={control}
-        name="confirmPassword"
-        label="تأكيد كلمة المرور"
-        placeholder="**************"
-        isPassword={true}
-      />
+      {includeAccountFields && (
+        <>
+          <FormInput
+            control={control}
+            name="email"
+            label="البريد الإلكتروني"
+            placeholder="alisalem@gmail.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <FormInput
+            control={control}
+            name="phone"
+            label="رقم الهاتف"
+            placeholder="55123456"
+            keyboardType="phone-pad"
+          />
+          <FormInput
+            control={control}
+            name="password"
+            label="كلمة المرور"
+            placeholder="**************"
+            isPassword={true}
+          />
+          <FormInput
+            control={control}
+            name="confirmPassword"
+            label="تأكيد كلمة المرور"
+            placeholder="**************"
+            isPassword={true}
+          />
+        </>
+      )}
     </View>
   );
 };

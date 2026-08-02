@@ -86,12 +86,12 @@ interface AuthState {
   removeIdentity: (identityId: string) => void;
 }
 
-interface LoginResponse {
-  access_token: string;
-  user: User;
-  activeIdentity: Identity;
-  identities: Identity[];
-}
+// interface LoginResponse {
+//   access_token: string;
+//   user: User;
+//   activeIdentity: Identity;
+//   identities: Identity[];
+// }
 
 interface SwitchIdentityResponse {
   access_token: string;
@@ -243,7 +243,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           });
         }
       } catch (e) {
-        console.error('Failed to refresh user profile:', e);
+        console.warn('Could not refresh user profile:', e);
       }
     },
 

@@ -12,8 +12,8 @@ import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import {
   CompanySignupFormValues,
-  companySignupSchema,
-  STEP_1_FIELDS,
+  createCompanySignupSchema,
+  getStep1Fields,
   STEP_2_FIELDS,
 } from '@/features/auth/companyAuthSchemas';
 
@@ -28,6 +28,9 @@ interface CompanySignupFormProps {
   licenseFile: DocumentPicker.DocumentPickerAsset | null;
   pickLicense: () => void;
   isLoading?: boolean;
+  // False when adding an identity to an already logged-in account — that
+  // account already has an email/phone/password, so skip collecting them.
+  includeAccountFields?: boolean;
 }
 
 export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
@@ -38,6 +41,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   licenseFile,
   pickLicense,
   isLoading = false,
+  includeAccountFields = true,
 }) => {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -51,7 +55,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   const { control, handleSubmit, trigger, setValue, watch } =
     useForm<CompanySignupFormValues>({
-      resolver: zodResolver(companySignupSchema),
+      resolver: zodResolver(createCompanySignupSchema(includeAccountFields)),
       defaultValues: {
         type: type,
       },
@@ -68,7 +72,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const handleNextStep = async () => {
     let isStepValid = false;
     if (step === 1) {
-      isStepValid = await trigger(STEP_1_FIELDS);
+      isStepValid = await trigger(getStep1Fields(includeAccountFields));
     } else if (step === 2) {
       isStepValid = await trigger(STEP_2_FIELDS);
     }
@@ -113,7 +117,13 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   return (
     <View className="flex-1">
-      {step === 1 && <SignupStep1 control={control} type={type} />}
+      {step === 1 && (
+        <SignupStep1
+          control={control}
+          type={type}
+          includeAccountFields={includeAccountFields}
+        />
+      )}
       {step === 2 && (
         <SignupStep2
           control={control}
@@ -169,7 +179,11 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
               <ActivityIndicator color="white" size="small" />
             ) : (
               <Text className="font-cairo-semibold text-[14px] leading-[24px] text-white">
-                {step < 3 ? 'التالي' : 'إنشاء حساب'}
+                {step < 3
+                  ? 'التالي'
+                  : includeAccountFields
+                    ? 'إنشاء حساب'
+                    : 'إضافة الهوية'}
               </Text>
             )}
           </TouchableOpacity>

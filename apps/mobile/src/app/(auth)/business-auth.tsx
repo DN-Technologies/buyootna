@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/shared/api/api';
-import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import {
   CompanyLoginFormValues,
   CompanySignupFormValues,
@@ -22,6 +20,8 @@ import { CompanyAuthTabs } from '@/features/auth/components/company/CompanyAuthT
 import { CompanyLoginForm } from '@/features/auth/components/company/CompanyLoginForm';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import apiClient from '@/shared/api/api';
+import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
@@ -116,9 +116,9 @@ export default function BusinessAuthScreen() {
 
       // 2. Append all text fields from React Hook Form
       formData.append('name', data.name);
-      formData.append('email', data.email);
-      formData.append('phone', data.phone);
-      formData.append('password', data.password);
+      formData.append('email', data.email || '');
+      formData.append('phone', data.phone || '');
+      formData.append('password', data.password || '');
       formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation || '');
       if (type === 'company' && data.serviceAreas) {
