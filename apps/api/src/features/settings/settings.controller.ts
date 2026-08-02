@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { SettingsService } from './settings.service';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 
 @Controller('settings')
@@ -11,15 +11,15 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get()
-  async getSettings(@CurrentUser() user: User) {
-    return this.settingsService.getSettings(user.id);
+  async getSettings(@CurrentUser() reqUser: RequestUser) {
+    return this.settingsService.getSettings(reqUser.userId);
   }
 
   @Patch()
   async updateSettings(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: UpdateSettingsDto,
   ) {
-    return this.settingsService.updateSettings(user.id, dto);
+    return this.settingsService.updateSettings(reqUser.userId, dto);
   }
 }

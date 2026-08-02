@@ -11,7 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
@@ -20,11 +20,11 @@ export class ChatController {
 
   @Post('conversations')
   async createConversation(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: CreateConversationDto,
   ) {
     return this.chatService.findOrCreateConversation(
-      user.id,
+      reqUser.userId,
       dto.recipientId,
       dto.propertyId,
     );
@@ -32,18 +32,22 @@ export class ChatController {
 
   @Get('conversations')
   async getConversations(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return this.chatService.getConversations(user.id, pageNum, limitNum);
+    return this.chatService.getConversations(
+      reqUser.userId,
+      pageNum,
+      limitNum,
+    );
   }
 
   @Get('conversations/:id/messages')
   async getMessages(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
@@ -51,7 +55,7 @@ export class ChatController {
     const limitNum = limit ? parseInt(limit, 10) : 20;
     return this.chatService.getMessages(
       conversationId,
-      user.id,
+      reqUser.userId,
       cursor,
       limitNum,
     );
@@ -59,9 +63,9 @@ export class ChatController {
 
   @Post('conversations/:id/read')
   async markAsRead(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
   ) {
-    return this.chatService.markAsRead(user.id, conversationId);
+    return this.chatService.markAsRead(reqUser.userId, conversationId);
   }
 }

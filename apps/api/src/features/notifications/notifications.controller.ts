@@ -1,15 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { UpdateNotificationPrefsDto } from './dto/update-notification-prefs.dto';
 
 @Controller('notifications')
@@ -18,35 +11,38 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  async findAll(@CurrentUser() user: User) {
-    return this.notificationsService.findAllForUser(user.id);
+  async findAll(@CurrentUser() reqUser: RequestUser) {
+    return this.notificationsService.findAllForUser(reqUser.userId);
   }
 
   @Get('unread-count')
-  async getUnreadCount(@CurrentUser() user: User) {
-    return this.notificationsService.getUnreadCount(user.id);
+  async getUnreadCount(@CurrentUser() reqUser: RequestUser) {
+    return this.notificationsService.getUnreadCount(reqUser.userId);
   }
 
   @Patch('read-all')
-  async markAllAsRead(@CurrentUser() user: User) {
-    return this.notificationsService.markAllAsRead(user.id);
+  async markAllAsRead(@CurrentUser() reqUser: RequestUser) {
+    return this.notificationsService.markAllAsRead(reqUser.userId);
   }
 
   @Patch(':id/read')
-  async markAsRead(@CurrentUser() user: User, @Param('id') id: string) {
-    return this.notificationsService.markAsRead(user.id, id);
+  async markAsRead(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.notificationsService.markAsRead(reqUser.userId, id);
   }
 
   @Get('preferences')
-  async getPreferences(@CurrentUser() user: User) {
-    return this.notificationsService.getPreferences(user.id);
+  async getPreferences(@CurrentUser() reqUser: RequestUser) {
+    return this.notificationsService.getPreferences(reqUser.userId);
   }
 
   @Patch('preferences')
   async updatePreferences(
-    @CurrentUser() user: User,
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: UpdateNotificationPrefsDto,
   ) {
-    return this.notificationsService.updatePreferences(user.id, dto);
+    return this.notificationsService.updatePreferences(reqUser.userId, dto);
   }
 }
