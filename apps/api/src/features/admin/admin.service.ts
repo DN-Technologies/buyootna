@@ -1,15 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import {
   AdminUpdateStatusDto,
   UserAccountStatusAction,
 } from './dto/admin-update-status.dto';
+import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
 import { Prisma, Role } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async getUsers(filters: AdminUsersFilterDto) {
     const { search, role, status, page = 1, limit = 10 } = filters;
@@ -263,6 +272,60 @@ export class AdminService {
       message: 'تم تحديث حالة المستخدم بنجاح',
       user: userWithoutPassword,
     };
+  }
+
+  async updateIdentityStatus(
+    identityId: string,
+    dto: AdminUpdateIdentityStatusDto,
+  ) {
+    const identity = await this.prisma.identity.findUnique({
+      where: { id: identityId },
+      include: { companyData: true, officeData: true },
+    });
+
+    if (!identity) {
+      throw new NotFoundException('الهوية غير موجودة');
+    }
+
+    const isVerified = dto.status === 'APPROVED';
+    let identityLabel: string;
+
+    if (identity.type === 'COMPANY' && identity.companyData) {
+      await this.prisma.companyIdentityData.update({
+        where: { identityId },
+        data: { status: dto.status, isVerified },
+      });
+      identityLabel = 'الشركة';
+    } else if (identity.type === 'OFFICE' && identity.officeData) {
+      await this.prisma.officeIdentityData.update({
+        where: { identityId },
+        data: { status: dto.status, isVerified },
+      });
+      identityLabel = 'المكتب';
+    } else {
+      throw new BadRequestException('هذا النوع من الهويات لا يخضع للمراجعة');
+    }
+
+    const title =
+      dto.status === 'APPROVED' ? 'تمت الموافقة على هويتك' : 'تم رفض هويتك';
+    const body =
+      dto.status === 'APPROVED'
+        ? `تمت الموافقة على طلب هوية ${identityLabel} الخاص بك، ويمكنك الآن استخدامه بالكامل.`
+        : `للأسف تم رفض طلب هوية ${identityLabel} الخاص بك. يرجى مراجعة بياناتك والمحاولة مرة أخرى أو التواصل مع الدعم.`;
+
+    await this.notificationsService.create({
+      userId: identity.userId,
+      type:
+        dto.status === 'APPROVED' ? 'IDENTITY_APPROVED' : 'IDENTITY_REJECTED',
+      title,
+      body,
+      identityId,
+    });
+
+    return this.prisma.identity.findUnique({
+      where: { id: identityId },
+      include: { companyData: true, officeData: true, individualData: true },
+    });
   }
 
   private formatArabicDate(date: Date): string {

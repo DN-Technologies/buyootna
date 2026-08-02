@@ -18,12 +18,14 @@ import {
 } from '@/assets/icons/home/header';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function CompanyHomeScreen() {
   const router = useRouter();
   const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
+  const unreadCount = useUnreadNotificationsCount();
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
@@ -82,12 +84,14 @@ export default function CompanyHomeScreen() {
             {/* Left Actions: Search & Notifications */}
             <View className="flex-row items-center">
               <TouchableOpacity
-                onPress={() => router.push('/notifications')}
+                onPress={() => router.push('/notification-list')}
                 className="relative h-10 w-10 items-center justify-center rounded-full"
               >
                 <NotificationIcon size={24} color="#111111" />
                 {/* Red dot badge */}
-                <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
+                {unreadCount > 0 && (
+                  <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push('/search')}

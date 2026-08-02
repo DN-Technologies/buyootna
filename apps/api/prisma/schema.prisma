@@ -23,6 +23,7 @@ model User {
   otpCode          OtpCode?
   settings         UserSettings?
   notifPreferences NotificationPreferences?
+  notifications    Notification[]
   sessions         Session[]
 
   // Legacy fields - kept for backward compatibility during migration
@@ -161,6 +162,26 @@ model NotificationPreferences {
   emailEnabled Boolean @default(false)
   phoneEnabled Boolean @default(false)
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  IDENTITY_APPROVED
+  IDENTITY_REJECTED
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String
+  type       NotificationType
+  title      String
+  body       String
+  identityId String?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
 
 model Session {

@@ -13,6 +13,7 @@ import {
   updateUserStatus,
   deleteUser,
   fetchUserDetails,
+  updateIdentityStatus,
   AdminUsersResponse,
 } from '@/lib/admin-users'
 
@@ -128,6 +129,22 @@ export default function UsersPage() {
       alert(`بيانات المستخدم: ${user.name}\nالبريد: ${user.email}`)
     } finally {
       setLoadingDetail(false)
+    }
+  }
+
+  // Handle Approve / Reject a pending Company or Office identity
+  const handleIdentityStatusChange = async (
+    identityId: string,
+    status: 'APPROVED' | 'REJECTED',
+  ) => {
+    try {
+      await updateIdentityStatus(identityId, status)
+      const detail = await fetchUserDetails(selectedUserDetail.id)
+      setSelectedUserDetail(detail)
+      await loadUsers()
+    } catch (err) {
+      console.error('Failed to update identity status:', err)
+      alert('حدث خطأ أثناء تحديث حالة الهوية')
     }
   }
 
@@ -279,30 +296,60 @@ export default function UsersPage() {
                 </span>
                 <span>{selectedUserDetail.activePlan?.name || 'العادية'}</span>
               </div>
-              {selectedUserDetail.companyProfile && (
-                <div className="border-t pt-2 space-y-1">
-                  <span className="font-bold block text-gray-700">
-                    بيانات الشركة:
-                  </span>
-                  <p>اسم الشركة: {selectedUserDetail.companyProfile.name}</p>
-                  <p>
-                    رقم الترخيص:{' '}
-                    {selectedUserDetail.companyProfile.licenseNumber}
-                  </p>
-                </div>
-              )}
-              {selectedUserDetail.officeProfile && (
-                <div className="border-t pt-2 space-y-1">
-                  <span className="font-bold block text-gray-700">
-                    بيانات المكتب:
-                  </span>
-                  <p>اسم المكتب: {selectedUserDetail.officeProfile.name}</p>
-                  <p>
-                    رقم الترخيص:{' '}
-                    {selectedUserDetail.officeProfile.licenseNumber}
-                  </p>
-                </div>
-              )}
+              {selectedUserDetail.identities
+                ?.filter((identity: any) => identity.companyData || identity.officeData)
+                .map((identity: any) => {
+                  const data = identity.companyData || identity.officeData
+                  const label = identity.companyData ? 'الشركة' : 'المكتب'
+                  const statusLabel =
+                    data.status === 'PENDING'
+                      ? 'قيد الانتظار'
+                      : data.status === 'APPROVED'
+                        ? 'موافق عليها'
+                        : 'مرفوضة'
+                  return (
+                    <div key={identity.id} className="border-t pt-2 space-y-1">
+                      <span className="font-bold block text-gray-700">
+                        بيانات {label}:
+                      </span>
+                      <p>الاسم: {data.name}</p>
+                      <p>رقم الترخيص: {data.licenseNumber}</p>
+                      <div className="flex items-center justify-between pt-1">
+                        <span
+                          className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                            data.status === 'PENDING'
+                              ? 'bg-yellow-50 text-yellow-700'
+                              : data.status === 'APPROVED'
+                                ? 'bg-green-50 text-green-700'
+                                : 'bg-red-50 text-red-700'
+                          }`}
+                        >
+                          {statusLabel}
+                        </span>
+                        {data.status === 'PENDING' && (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                handleIdentityStatusChange(identity.id, 'REJECTED')
+                              }
+                              className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-lg font-semibold cursor-pointer"
+                            >
+                              رفض
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleIdentityStatusChange(identity.id, 'APPROVED')
+                              }
+                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg font-semibold cursor-pointer"
+                            >
+                              موافقة
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
             </div>
 
             <div className="pt-4 flex justify-end">

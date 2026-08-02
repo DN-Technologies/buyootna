@@ -6,12 +6,14 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { MapIcon, NotificationIcon } from '@/assets/icons/home/header/index';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function HomeHeader() {
   const router = useRouter();
   const { user, activeIdentity, token } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
+  const unreadCount = useUnreadNotificationsCount();
 
   const getActiveProfileDetails = () => {
     if (activeIdentity?.type === 'COMPANY' && activeIdentity.companyData) {
@@ -82,12 +84,12 @@ export default function HomeHeader() {
           activeOpacity={0.7}
           className="relative"
           onPress={() =>
-            guardAction(() => router.push('/notifications'))
+            guardAction(() => router.push('/notification-list'))
           }
         >
           <NotificationIcon size={24} color="#111111" />
           {/* Red notification dot */}
-          {token && (
+          {token && unreadCount > 0 && (
             <View className="absolute left-0.5 top-0.5 h-2 w-2 rounded-full bg-[#BA0003]" />
           )}
         </TouchableOpacity>
