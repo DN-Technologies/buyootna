@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
@@ -12,34 +12,31 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  HomeSearchIcon,
+  NotificationIcon,
+} from '@/assets/icons/home/header';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { useChatStore } from '@/shared/store/useChatStore';
 
 export default function CompanyHomeScreen() {
   const router = useRouter();
-  const { activeIdentity, displayName, avatarUrl } = useIdentity();
+  const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
-  const conversations = useChatStore((state) => state.conversations);
-  const loadConversations = useChatStore((state) => state.loadConversations);
 
-  const companyData = activeIdentity?.companyData;
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
         refreshProfile();
-        loadConversations(1);
       }
-    }, [refreshProfile, token, loadConversations])
+    }, [refreshProfile, token])
   );
 
-  const recentConversations = conversations.slice(0, 3);
-
   return (
-    <SafeAreaView className="flex-1 bg-[#F5F6FA]">
+    <SafeAreaView className="flex-1 bg-[#F8FAFC]">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
@@ -48,150 +45,214 @@ export default function CompanyHomeScreen() {
             refreshing={false}
             onRefresh={() => {
               refreshProfile();
-              loadConversations(1);
             }}
           />
         }
       >
-        <ContentContainer>
-          {/* --- Company Profile Header --- */}
-          <View className="mx-4 mt-4 overflow-hidden rounded-2xl bg-[#15304D]">
-            <View className="px-5 py-6">
-              {/* Company Info Row */}
-              <View className="flex-row items-center gap-4">
-                <View className="h-16 w-16 overflow-hidden rounded-xl border-2 border-white/20 bg-white">
-                  <Image
-                    source={{ uri: logoUrl }}
-                    className="h-full w-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="font-cairo-bold text-lg text-white">
+        <ContentContainer className="px-5">
+          {/* --- 1. Top Header Bar --- */}
+          <View className="flex-row items-center justify-between pt-4 pb-6">
+            {/* Right Profile Info: Greeting, Name & Logo */}
+            <View className="flex-row items-center gap-3">
+              <View className="h-12 w-12 overflow-hidden rounded-full border border-gray-200 bg-white">
+                <Image
+                  source={{ uri: logoUrl }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+              </View>
+              <View>
+                <Text
+                  className="font-cairo text-[13px] text-[#64748B]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  مرحبا بك!
+                </Text>
+                <View className="flex-row items-center gap-1.5">
+                  {isVerified && (
+                    <MaterialIcons name="verified" size={16} color="#3B82F6" />
+                  )}
+                  <Text className="font-cairo-semibold text-[16px] leading-[22px] text-[#111111]">
                     {displayName}
                   </Text>
-                  <Text className="font-cairo-medium text-xs text-white/60">
-                    {companyData?.services || 'خدمات عقارية'}
-                  </Text>
                 </View>
               </View>
-
-              {/* Quick Action Buttons */}
-              <View className="mt-5 flex-row gap-3">
-                <TouchableOpacity
-                  onPress={() => router.push('/edit-profile')}
-                  className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-white/10 py-3"
-                >
-                  <Feather name="settings" size={14} color="#FFFFFF" />
-                  <Text className="font-cairo-bold text-sm text-white">
-                    إدارة الخدمة
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-white/10 py-3"
-                >
-                  <Feather name="settings" size={14} color="#FFFFFF" />
-                  <Text className="font-cairo-bold text-sm text-white">
-                    إدارة الخدمة
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
 
-          {/* --- Recent Conversations Section --- */}
-          <View className="mx-4 mt-6">
-            <View className="mb-3 flex-row items-center justify-between">
-              <TouchableOpacity onPress={() => router.push('/chat')}>
-                <Text className="font-cairo-medium text-sm text-[#2563EB]">
-                  عرض الكل
-                </Text>
+            {/* Left Actions: Search & Notifications */}
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                onPress={() => router.push('/notifications')}
+                className="relative h-10 w-10 items-center justify-center rounded-full"
+              >
+                <NotificationIcon size={24} color="#111111" />
+                {/* Red dot badge */}
+                <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
               </TouchableOpacity>
-              <Text className="font-cairo-bold text-base text-[#111111]">
-                أحدث المحادثات
-              </Text>
-            </View>
-
-            <View className="gap-2">
-              {recentConversations.length > 0 ? (
-                recentConversations.map((conv) => (
-                  <TouchableOpacity
-                    key={conv.id}
-                    onPress={() =>
-                      router.push({
-                        pathname: '/chat/[id]',
-                        params: { id: conv.id },
-                      })
-                    }
-                    className="flex-row items-center gap-3 rounded-xl bg-white p-4"
-                  >
-                    <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F0F4FF]">
-                      <Feather name="message-circle" size={18} color="#2563EB" />
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className="font-cairo-semibold text-sm text-[#111111]"
-                        style={{ writingDirection: 'rtl' }}
-                        numberOfLines={1}
-                      >
-                        {conv.otherUser?.name || 'محادثة'}
-                      </Text>
-                      <Text
-                        className="font-cairo-medium text-xs text-[#6B6A6A]"
-                        style={{ writingDirection: 'rtl' }}
-                        numberOfLines={1}
-                      >
-                        {conv.lastMessage?.content || 'لا توجد رسائل'}
-                      </Text>
-                    </View>
-                    {conv.unreadCount > 0 && (
-                      <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-[#EF4444] px-1.5">
-                        <Text className="font-cairo-bold text-[10px] text-white">
-                          {conv.unreadCount}
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <View className="items-center rounded-xl bg-white py-8">
-                  <Feather name="message-circle" size={32} color="#CBD5E1" />
-                  <Text className="mt-2 font-cairo-medium text-sm text-[#94A3B8]">
-                    لا توجد محادثات حديثة
-                  </Text>
-                </View>
-              )}
+              <TouchableOpacity
+                onPress={() => router.push('/search')}
+                className="h-10 w-10 items-center justify-center rounded-full"
+              >
+                <HomeSearchIcon size={20} color="#111111" />
+              </TouchableOpacity>
             </View>
           </View>
 
-          {/* --- Quick Stats Section --- */}
-          <View className="mx-4 mt-6">
-            <Text
-              className="mb-3 font-cairo-bold text-base text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              نظرة سريعة
-            </Text>
+          {/* --- 2. 2x2 Stats Grid --- */}
+          <View className="gap-3">
+            {/* Row 1 */}
             <View className="flex-row gap-3">
-              <View className="flex-1 items-center rounded-xl bg-white py-5">
-                <Text className="font-cairo-bold text-2xl text-[#15304D]">0</Text>
-                <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-                  إعلانات نشطة
-                </Text>
-              </View>
-              <View className="flex-1 items-center rounded-xl bg-white py-5">
-                <Text className="font-cairo-bold text-2xl text-[#15304D]">0</Text>
-                <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-                  طلبات جديدة
-                </Text>
-              </View>
-              <View className="flex-1 items-center rounded-xl bg-white py-5">
-                <Text className="font-cairo-bold text-2xl text-[#15304D]">0</Text>
-                <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-                  مشاهدات
-                </Text>
-              </View>
+              {/* Requests (Right) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => router.push('/(company)/company-requests')}
+                style={{ flex: 1, flexBasis: 0 }}
+                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
+              >
+                <View>
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={22}
+                      color="#15304D"
+                    />
+                  </View>
+                </View>
+                <View>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    طلبات
+                  </Text>
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    3 هذا الأسبوع
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Active Services (Left) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => router.push('/(company)/company-requests')}
+                style={{ flex: 1, flexBasis: 0 }}
+                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
+              >
+                <View>
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
+                    <Feather name="headphones" size={20} color="#15304D" />
+                  </View>
+                </View>
+                <View>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    خدمات نشطة
+                  </Text>
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    3
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
+
+            {/* Row 2 */}
+            <View className="flex-row gap-3">
+              {/* Views (Right) */}
+              <View
+                style={{ flex: 1, flexBasis: 0 }}
+                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
+              >
+                <View>
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
+                    <Ionicons name="eye-outline" size={20} color="#15304D" />
+                  </View>
+                </View>
+                <View>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    المشاهدات
+                  </Text>
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    +700
+                  </Text>
+                </View>
+              </View>
+
+              {/* New Messages (Left) */}
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => router.push('/(company)/company-chats')}
+                style={{ flex: 1, flexBasis: 0 }}
+                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
+              >
+                <View>
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
+                    <Ionicons
+                      name="chatbox-outline"
+                      size={20}
+                      color="#15304D"
+                    />
+                  </View>
+                </View>
+                <View>
+                  <Text
+                    className="font-cairo-medium text-[14px] text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    الرسائل الجديدة
+                  </Text>
+                  <Text
+                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    5 اليوم
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* --- 3. Trial Banner --- */}
+          <View className="mt-4 rounded-md border border-[#ECECEC] bg-[#F9FAFE] p-4">
+            <View className="flex-row items-start justify-between">
+              <View className="flex-1 items-start">
+                <Text
+                  className="font-cairo-bold text-[15px] leading-[22px] text-[#111111]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  أنت تستخدم النسخة التجريبية
+                </Text>
+                <Text
+                  className="mt-1 font-cairo-medium text-[12px] text-[#6B6A6A]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  يتبقى 14 يومًا للاستمتاع بجميع المميزات.
+                </Text>
+              </View>
+              <Text className="text-2xl">🎉</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/plans')}
+              className="mt-4 flex-row justify-end"
+            >
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">
+                استعرض الباقات
+              </Text>
+            </TouchableOpacity>
           </View>
         </ContentContainer>
       </ScrollView>
