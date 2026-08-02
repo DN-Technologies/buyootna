@@ -20,8 +20,8 @@ import { I18nManager } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Prevent auto-hide, we will hide it manually once our custom animated splash mounts
 SplashScreen.preventAutoHideAsync();

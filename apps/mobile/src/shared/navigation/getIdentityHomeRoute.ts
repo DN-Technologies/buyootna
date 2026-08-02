@@ -9,7 +9,7 @@ import type { IdentityType } from '@/shared/store/useAuthStore';
 export function getIdentityHomeRoute(type: IdentityType | null | undefined): Href {
   switch (type) {
     case 'COMPANY':
-      return '/(company)/company-dashboard';
+      return '/(company)/company-home';
     case 'OFFICE':
       return '/(office)/office-dashboard';
     case 'INDIVIDUAL':
