@@ -13,9 +13,10 @@ import { AdminService } from './admin.service';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
+import { AdminGuard } from './guards/admin.guard';
 
 @Controller('admin')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

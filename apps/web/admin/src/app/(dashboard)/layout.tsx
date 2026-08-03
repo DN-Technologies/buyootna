@@ -1,9 +1,11 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, ChevronDown, Search, Menu, X, LogOut } from 'lucide-react'
+import { Bell, ChevronDown, Search, Menu, X, LogOut, Loader2 } from 'lucide-react'
 import SideNav from '@/components/SideNav'
+import { api } from '@/lib/api'
+import { clearSession, getStoredUser, getToken, type StoredUser } from '@/lib/auth'
 
 export default function DashboardLayout({
   children,
@@ -13,11 +15,61 @@ export default function DashboardLayout({
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showProfileDropdown, setShowProfileDropdown] = useState(false)
+  const [authorized, setAuthorized] = useState(false)
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function checkAuth() {
+      const token = getToken()
+      if (!token) {
+        router.replace('/auth/login')
+        return
+      }
+
+      // Optimistically show cached user info while we verify the session.
+      setCurrentUser(getStoredUser())
+
+      try {
+        const res = await api.get('/users/me')
+        const user = res.data?.user
+
+        if (!user?.isAdmin) {
+          clearSession()
+          if (!cancelled) router.replace('/auth/login')
+          return
+        }
+
+        if (!cancelled) {
+          setCurrentUser(user)
+          setAuthorized(true)
+        }
+      } catch {
+        // A 401 is already handled by the response interceptor (clears
+        // session + redirects). Any other failure also blocks access.
+        if (!cancelled) router.replace('/auth/login')
+      }
+    }
+
+    checkAuth()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    clearSession()
     router.push('/auth/login')
+  }
+
+  if (!authorized) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (
@@ -92,14 +144,14 @@ export default function DashboardLayout({
                 <ChevronDown className="w-4 h-4 text-[#111111]" />
                 <div className="relative rounded-[200px] w-10 h-10 overflow-hidden bg-gray-100 border border-[#ECECEC]">
                   <img
-                    alt="نواف الجارحي"
+                    alt={currentUser?.name || 'المشرف'}
                     className="object-cover w-full h-full"
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
                   />
                 </div>
                 <div className="flex flex-col gap-0.5 text-right">
                   <p className="font-['Cairo'] font-semibold text-[16px] text-[#111111] leading-none">
-                    نواف الجارحي
+                    {currentUser?.name || currentUser?.email || currentUser?.phone || 'المشرف'}
                   </p>
                   <p className="font-['Cairo'] font-normal text-[13px] text-[#6B6A6A] leading-none">
                     مشرف
