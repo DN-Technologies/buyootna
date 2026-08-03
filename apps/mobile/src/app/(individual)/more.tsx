@@ -15,8 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ShareIcon } from '@/assets/icons/home/property';
 import {
+  AuctionsIcon,
   BillIcon,
   ChatIcon,
+  DealsIcon,
   MoneyIcon,
   QuotaIcon,
   SavedIcon,
@@ -30,6 +32,7 @@ import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -48,6 +51,9 @@ const ShieldIcon = ({ color, size }: { color?: string; size?: number }) => (
 const FileIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="file-text" color={color} size={size} />
 );
+const BellIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="bell" color={color} size={size} />
+);
 
 export default function ProfileDashboardScreen() {
   const router = useRouter();
@@ -62,6 +68,7 @@ export default function ProfileDashboardScreen() {
     (acc, conv) => acc + (conv.unreadCount || 0),
     0
   );
+  const unreadNotificationsCount = useUnreadNotificationsCount();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -139,6 +146,45 @@ export default function ProfileDashboardScreen() {
                     title="المحفوظات"
                     onPress={() =>
                       guardAction(() => router.push('/favorites'))
+                    }
+                  />
+                  <MenuItem
+                    icon={BellIcon}
+                    title="الاشعارات"
+                    onPress={() =>
+                      guardAction(() => router.push('/notification-list'))
+                    }
+                  />
+                </View>
+              </View>
+
+              {/* Services Section */}
+              <View>
+                <Text
+                  className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  الخدمات
+                </Text>
+                <View className="rounded-md bg-[#F9FAFE] px-4">
+                  <MenuItem
+                    icon={DealsIcon}
+                    title="الصفقات"
+                    onPress={() =>
+                      Alert.alert(
+                        'قريباً',
+                        'ميزة الصفقات ستكون متوفرة قريباً'
+                      )
+                    }
+                  />
+                  <MenuItem
+                    icon={AuctionsIcon}
+                    title="المزادات"
+                    onPress={() =>
+                      Alert.alert(
+                        'قريباً',
+                        'ميزة المزادات ستكون متوفرة قريباً'
+                      )
                     }
                   />
                 </View>
@@ -334,6 +380,38 @@ export default function ProfileDashboardScreen() {
                   icon={SavedIcon}
                   title="المحفوظات"
                   onPress={() => router.push('/favorites')}
+                />
+                <MenuItem
+                  icon={BellIcon}
+                  title="الاشعارات"
+                  badgeCount={unreadNotificationsCount}
+                  onPress={() => router.push('/notification-list')}
+                />
+              </View>
+            </View>
+
+            {/* Services Section */}
+            <View>
+              <Text
+                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                الخدمات
+              </Text>
+              <View className="rounded-md bg-[#F9FAFE] px-4">
+                <MenuItem
+                  icon={DealsIcon}
+                  title="الصفقات"
+                  onPress={() =>
+                    Alert.alert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
+                  }
+                />
+                <MenuItem
+                  icon={AuctionsIcon}
+                  title="المزادات"
+                  onPress={() =>
+                    Alert.alert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
+                  }
                 />
               </View>
             </View>

@@ -28,6 +28,7 @@ import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import MenuItem from '@/features/individual/components/more/MenuItem';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -52,6 +53,9 @@ const UsersIcon = ({ color, size }: { color?: string; size?: number }) => (
 const BarChartIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="bar-chart-2" color={color} size={size} />
 );
+const BellIcon = ({ color, size }: { color?: string; size?: number }) => (
+  <Feather name="bell" color={color} size={size} />
+);
 
 export default function CompanyMoreScreen() {
   const router = useRouter();
@@ -66,6 +70,7 @@ export default function CompanyMoreScreen() {
     (acc, conv) => acc + (conv.unreadCount || 0),
     0
   );
+  const unreadNotificationsCount = useUnreadNotificationsCount();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -194,6 +199,12 @@ export default function CompanyMoreScreen() {
                   icon={SavedIcon}
                   title="المحفوظات"
                   onPress={() => router.push('/favorites')}
+                />
+                <MenuItem
+                  icon={BellIcon}
+                  title="الاشعارات"
+                  badgeCount={unreadNotificationsCount}
+                  onPress={() => router.push('/notification-list')}
                 />
               </View>
             </View>
