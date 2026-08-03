@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
@@ -16,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { paymentsService } from '@/shared/api/payments.service';
 import { plansService } from '@/shared/api/plans.service';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 WebBrowser.maybeCompleteAuthSession();
 

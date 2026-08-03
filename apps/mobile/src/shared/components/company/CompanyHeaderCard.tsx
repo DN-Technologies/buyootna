@@ -18,7 +18,7 @@ export interface CompanyHeaderData {
   location?: string;
   servicesCount: number;
   projectsCount: number;
-  responseTime: string;
+  responseTime?: string;
   instagramUrl?: string;
   twitterUrl?: string;
   phone?: string;
@@ -143,17 +143,21 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
             </Text>
           </View>
 
-          <View className="h-8 w-[1px] bg-gray-200" />
+          {company.responseTime && (
+            <>
+              <View className="h-8 w-[1px] bg-gray-200" />
 
-          {/* Column 3: Response Time */}
-          <View className="flex-1 items-center">
-            <Text className="font-cairo-bold text-base text-[#111111]">
-              {company.responseTime}
-            </Text>
-            <Text className="font-cairo-medium text-[13px] text-[#A0A0A0]">
-              سرعة الرد
-            </Text>
-          </View>
+              {/* Column 3: Response Time */}
+              <View className="flex-1 items-center">
+                <Text className="font-cairo-bold text-base text-[#111111]">
+                  {company.responseTime}
+                </Text>
+                <Text className="font-cairo-medium text-[13px] text-[#A0A0A0]">
+                  سرعة الرد
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* ── 4. Social Media Links ── */}

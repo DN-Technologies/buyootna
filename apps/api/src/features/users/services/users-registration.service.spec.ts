@@ -1,16 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersService } from './users.service';
-import { PrismaService } from '../../core/prisma/prisma.service';
-import { StorageService } from '../../core/storage/storage.service';
-import { TwilioService } from '../../core/twilio/twilio.service';
+import { UsersRegistrationService } from './users-registration.service';
+import { PrismaService } from '../../../core/prisma/prisma.service';
+import { StorageService } from '../../../core/storage/storage.service';
+import { TwilioService } from '../../../core/twilio/twilio.service';
 
-describe('UsersService', () => {
-  let service: UsersService;
+describe('UsersRegistrationService', () => {
+  let service: UsersRegistrationService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        UsersService,
+        UsersRegistrationService,
         {
           provide: PrismaService,
           useValue: {},
@@ -26,7 +26,7 @@ describe('UsersService', () => {
       ],
     }).compile();
 
-    service = module.get<UsersService>(UsersService);
+    service = module.get<UsersRegistrationService>(UsersRegistrationService);
   });
 
   it('should be defined', () => {

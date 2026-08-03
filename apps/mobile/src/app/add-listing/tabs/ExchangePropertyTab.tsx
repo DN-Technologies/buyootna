@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 // Mock Data for Features

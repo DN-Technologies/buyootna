@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
@@ -8,6 +7,7 @@ import {
   HeartIcon,
   LocationIcon,
 } from '@/assets/icons/home/cards';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 // --- 1. Property Preview Card ---
 export function PropertyPreviewCard({

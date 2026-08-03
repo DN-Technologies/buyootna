@@ -17,6 +17,7 @@ model User {
   // Account-level flags
   isDisabled Boolean @default(false)
   isBlocked  Boolean @default(false)
+  isAdmin    Boolean @default(false)
 
   // Relations
   identities       Identity[]

@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Text, View } from 'react-native';
 
 import {
@@ -11,6 +10,7 @@ import {
   LocationIcon,
   RequestIcon,
 } from '@/assets/icons/home/property';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 export interface PropertyOverviewProps {
   type: 'SALE' | 'RENT' | 'EXCHANGE';

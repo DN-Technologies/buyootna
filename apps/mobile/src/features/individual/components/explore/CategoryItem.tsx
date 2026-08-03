@@ -1,6 +1,6 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 export interface CategoryItemProps {
   icon: React.ComponentType<{ color?: string; size?: number }>;

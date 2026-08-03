@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { UsersRegistrationService } from './services/users-registration.service';
+import { UsersProfileService } from './services/users-profile.service';
+import { UsersDirectoryService } from './services/users-directory.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -10,7 +12,15 @@ describe('UsersController', () => {
       controllers: [UsersController],
       providers: [
         {
-          provide: UsersService,
+          provide: UsersRegistrationService,
+          useValue: {},
+        },
+        {
+          provide: UsersProfileService,
+          useValue: {},
+        },
+        {
+          provide: UsersDirectoryService,
           useValue: {},
         },
       ],

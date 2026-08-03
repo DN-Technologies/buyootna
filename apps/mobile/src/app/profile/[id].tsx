@@ -42,7 +42,11 @@ export default function UserProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const currentUser = useAuthStore((state) => state.user);
-  const isOwnProfile = currentUser?.id === id;
+  const identities = useAuthStore((state) => state.identities);
+  // `id` here is actually the owning Identity's id (see property host.id),
+  // not the User id, so compare against the current user's identities.
+  const isOwnProfile =
+    currentUser?.id === id || identities.some((identity) => identity.id === id);
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [properties, setProperties] = useState<PropertyDto[]>([]);
@@ -123,7 +127,7 @@ export default function UserProfileScreen() {
     const fetchUserProperties = async () => {
       try {
         const response = await apiClient.get('/properties', {
-          params: { userId: id, limit: 100 },
+          params: { identityId: id, limit: 100 },
         });
         setProperties(response.data.data || []);
       } catch (error) {

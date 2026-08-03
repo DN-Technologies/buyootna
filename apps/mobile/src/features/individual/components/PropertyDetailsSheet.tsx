@@ -6,9 +6,8 @@ import {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -38,6 +37,7 @@ import {
   LicenseIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,

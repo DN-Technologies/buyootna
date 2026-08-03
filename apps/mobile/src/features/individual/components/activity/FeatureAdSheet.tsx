@@ -3,13 +3,13 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { LinearGradient } from 'expo-linear-gradient';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { FeatureIcon } from '@/assets/icons/activity';
 import { CloseIcon } from '@/assets/icons/home/property';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 interface FeatureAdSheetProps {
   propertyId?: string;
