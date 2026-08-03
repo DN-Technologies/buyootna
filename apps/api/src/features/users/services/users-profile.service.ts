@@ -142,28 +142,49 @@ export class UsersProfileService {
     });
   }
 
-  async findFullUser(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        phone: true,
-        role: true,
-        freeAdsRemaining: true,
-        name: true,
-        whatsapp: true,
-        avatarUrl: true,
-        isDisabled: true,
-        identities: {
-          include: {
-            individualData: true,
-            companyData: true,
-            officeData: true,
-          },
-        },
+  private readonly fullUserSelect = {
+    id: true,
+    email: true,
+    phone: true,
+    role: true,
+    freeAdsRemaining: true,
+    name: true,
+    whatsapp: true,
+    avatarUrl: true,
+    isDisabled: true,
+    isAdmin: true,
+    identities: {
+      include: {
+        individualData: true,
+        companyData: true,
+        officeData: true,
       },
+    },
+  } satisfies Prisma.UserSelect;
+
+  async findFullUser(userId: string) {
+    let user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: this.fullUserSelect,
     });
+
+    // `userId` is sometimes actually an Identity id — e.g. property listings
+    // expose `host.id` as the owning Identity's id, not the User's id.
+    // Fall back to resolving it via the Identity table, mirroring the same
+    // OR-based fallback already used for company/office identity lookups.
+    if (!user) {
+      const identity = await this.prisma.identity.findUnique({
+        where: { id: userId },
+        select: { userId: true },
+      });
+
+      if (identity) {
+        user = await this.prisma.user.findUnique({
+          where: { id: identity.userId },
+          select: this.fullUserSelect,
+        });
+      }
+    }
 
     if (!user) return null;
 
