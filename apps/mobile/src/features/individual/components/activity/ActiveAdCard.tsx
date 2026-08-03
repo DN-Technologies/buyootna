@@ -1,13 +1,13 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { MoreIcon } from '@/assets/icons/activity';
+import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
 
 interface ActiveAdCardProps {
   property: ActivityItem;

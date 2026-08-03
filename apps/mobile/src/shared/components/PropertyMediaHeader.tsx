@@ -1,5 +1,4 @@
-import { Image } from 'expo-image';
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import {
   Dimensions,
   NativeScrollEvent,
@@ -11,6 +10,8 @@ import {
 import { EdgeInsets } from 'react-native-safe-area-context';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
+import { ArrowBackIcon, ShareIcon } from '@/assets/icons/home/property';
+import { SafeImage } from '@/shared/components/SafeImage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HEADER_HEIGHT = 350;
@@ -67,10 +68,7 @@ export default function PropertyMediaHeader({
               alignItems: 'center',
             }}
           >
-            <Image
-              source={require('@/assets/icons/arrow-back.svg')}
-              style={{ width: 10, height: 14 }}
-            />
+            <ArrowBackIcon color="#15304D" size={14} />
           </View>
         </TouchableOpacity>
         {/* Left Actions: Share & Heart */}
@@ -91,10 +89,7 @@ export default function PropertyMediaHeader({
             onPress={onShare}
             className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
           >
-            <Image
-              source={require('@/assets/icons/home/property/share-icon.svg')}
-              style={{ width: 17, height: 14 }}
-            />
+            <ShareIcon color="#111111" size={17} />
           </TouchableOpacity>
         </View>
       </View>
@@ -110,7 +105,7 @@ export default function PropertyMediaHeader({
             scrollEventThrottle={16}
           >
             {images.map((img, index) => (
-              <Image
+              <SafeImage
                 key={index}
                 source={{ uri: img }}
                 style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT, backgroundColor: '#E2E8F0' }}
@@ -132,7 +127,7 @@ export default function PropertyMediaHeader({
         </>
       ) : (
         // --- Fallback State (No Images provided) ---
-        <Image
+        <SafeImage
           source={require('@/assets/images/no-image.png')}
           style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT }}
           resizeMode="cover"

@@ -1,6 +1,6 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 
 interface SubscriptionInfo {
   goldRemaining: number;
