@@ -119,3 +119,57 @@ export const InvoicesEmptyIcon = ({ color = '#111111', size = 80 }: IconProps) =
     </Svg>
   );
 };
+
+// 9. deals.svg -> Deals / صفقات (20x20)
+export const DealsIcon = ({ color = '#111111', size = 20 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <Path
+      d="M17.0833 7.08333L14.1667 4.16667L11.25 7.08333L14.1667 10L17.0833 7.08333Z"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M9.16667 9.16667L5.83333 5.83333L2.91667 8.75C2.33333 9.33333 2.33333 10.25 2.91667 10.8333L6.66667 14.5833C7.25 15.1667 8.16667 15.1667 8.75 14.5833L11.25 12.0833"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M11.25 7.08333L7.91667 10.4167"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M13.3333 9.16667L15 10.8333C15.5833 11.4167 15.5833 12.3333 15 12.9167L11.6667 16.25C11.0833 16.8333 10.1667 16.8333 9.58333 16.25L7.91667 14.5833"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+// 10. auctions.svg -> Auctions / مزادات (20x20)
+export const AuctionsIcon = ({ color = '#111111', size = 20 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <Path
+      d="M11.6667 10.8333L17.5 5L15 2.5L9.16667 8.33333M11.6667 10.8333L9.16667 8.33333M11.6667 10.8333L6.66667 15.8333H2.5V11.6667L7.5 6.66667M9.16667 8.33333L7.5 6.66667"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M13.3333 13.3333L17.5 17.5M10.8333 17.5H17.5"
+      stroke={color}
+      strokeWidth={1.25}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
