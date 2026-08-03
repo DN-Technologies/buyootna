@@ -13,7 +13,9 @@ import {
   NotFoundException,
   Delete,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UsersRegistrationService } from './services/users-registration.service';
+import { UsersProfileService } from './services/users-profile.service';
+import { UsersDirectoryService } from './services/users-directory.service';
 import {
   RegisterCompanyDto,
   RegisterIndividualDto,
@@ -32,11 +34,15 @@ import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly registrationService: UsersRegistrationService,
+    private readonly profileService: UsersProfileService,
+    private readonly directoryService: UsersDirectoryService,
+  ) {}
 
   @Post('register/individual')
   async registerIndividual(@Body() dto: RegisterIndividualDto) {
-    return this.usersService.registerIndividual(dto);
+    return this.registrationService.registerIndividual(dto);
   }
 
   @Post('register/company')
@@ -58,17 +64,22 @@ export class UsersController {
     const logoFile = files.logo ? files.logo[0] : undefined;
     const licenseFile = files.license ? files.license[0] : undefined;
 
-    return this.usersService.registerCompany(dto, logoFile, licenseFile);
+    return this.registrationService.registerCompany(dto, logoFile, licenseFile);
   }
 
   @Get('companies')
   async findAllCompanies(@Query() filters: GetCompaniesFilterDto) {
-    return this.usersService.findCompanies(filters);
+    return this.directoryService.findCompanies(filters);
   }
 
   @Get('company/:id')
   async findCompanyDetails(@Param('id') id: string) {
-    return this.usersService.findCompanyDetails(id);
+    return this.directoryService.findCompanyDetails(id);
+  }
+
+  @Get('office/:id')
+  async findOfficeDetails(@Param('id') id: string) {
+    return this.directoryService.findOfficeDetails(id);
   }
 
   @Post('register/office')
@@ -89,7 +100,7 @@ export class UsersController {
     const logoFile = files.logo ? files.logo[0] : undefined;
     const licenseFile = files.license ? files.license[0] : undefined;
 
-    return this.usersService.registerOffice(dto, logoFile, licenseFile);
+    return this.registrationService.registerOffice(dto, logoFile, licenseFile);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -101,7 +112,7 @@ export class UsersController {
     @UploadedFile() logo?: Express.Multer.File,
   ) {
     const role = reqUser.identityType || Role.INDIVIDUAL;
-    return this.usersService.updateProfile(reqUser.userId, role, dto, logo);
+    return this.profileService.updateProfile(reqUser.userId, role, dto, logo);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -110,25 +121,25 @@ export class UsersController {
     @CurrentUser() reqUser: RequestUser,
     @Body('role') role: Role,
   ) {
-    return this.usersService.updateRole(reqUser.userId, role);
+    return this.profileService.updateRole(reqUser.userId, role);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Delete('account')
   async deleteAccount(@CurrentUser() reqUser: RequestUser) {
-    return this.usersService.deleteAccount(reqUser.userId);
+    return this.profileService.deleteAccount(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('account/disable')
   async disableAccount(@CurrentUser() reqUser: RequestUser) {
-    return this.usersService.disableAccount(reqUser.userId);
+    return this.profileService.disableAccount(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async getProfile(@CurrentUser() reqUser: RequestUser) {
-    const fullUser = await this.usersService.findFullUser(reqUser.userId);
+    const fullUser = await this.profileService.findFullUser(reqUser.userId);
     if (!fullUser) {
       throw new NotFoundException('المستخدم غير موجود');
     }
@@ -148,7 +159,7 @@ export class UsersController {
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const fullUser = await this.usersService.findFullUser(id);
+    const fullUser = await this.profileService.findFullUser(id);
     if (!fullUser) {
       throw new NotFoundException('المستخدم غير موجود');
     }

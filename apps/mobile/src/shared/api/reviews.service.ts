@@ -4,7 +4,7 @@ import { ReviewItem } from '@/shared/components/profile/types';
 export interface ReviewsSummaryResponse {
   averageRating: number;
   totalRatingsCount: number;
-  ratingBreakdown: Array<{ star: number; pct: string }>;
+  ratingBreakdown: { star: number; pct: string }[];
 }
 
 export interface PaginatedReviewsResponse {
