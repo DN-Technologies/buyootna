@@ -8,6 +8,7 @@ import UserQuickStats from '@/components/users/UserQuickStats'
 import UserDetailTabs from '@/components/users/UserDetailTabs'
 import UserBasicInfoCard from '@/components/users/UserBasicInfoCard'
 import UserActivityInfoCard from '@/components/users/UserActivityInfoCard'
+import UserAdsTabContent from '@/components/users/UserAdsTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
 
 const roleLabels: Record<string, string> = {
@@ -32,6 +33,7 @@ export default function UserOverviewPage() {
   const [user, setUser] = useState<AdminUserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState('نظرة عامة')
 
   useEffect(() => {
     let cancelled = false
@@ -104,23 +106,27 @@ export default function UserOverviewPage() {
           avatarUrl={avatarUrl}
         />
         <UserQuickStats />
-        <UserDetailTabs activeTab="نظرة عامة" />
+        <UserDetailTabs activeTab={activeTab} onTabChange={setActiveTab} />
       </div>
 
-      <div className="flex flex-col gap-5 w-full">
-        <UserBasicInfoCard
-          email={user.email || '—'}
-          fullName={user.name || displayName}
-          whatsapp={user.whatsapp || '—'}
-          phone={user.phone || '—'}
-          accountType={accountType}
-        />
-        <UserActivityInfoCard
-          lastActivity="اليوم 09:30 صباحاً"
-          lastLogin="28 فبراير 2025"
-          joinedAt={formatArabicDate(user.createdAt)}
-        />
-      </div>
+      {activeTab === 'الاعلانات' ? (
+        <UserAdsTabContent properties={identity?.properties || []} />
+      ) : (
+        <div className="flex flex-col gap-5 w-full">
+          <UserBasicInfoCard
+            email={user.email || '—'}
+            fullName={user.name || displayName}
+            whatsapp={user.whatsapp || '—'}
+            phone={user.phone || '—'}
+            accountType={accountType}
+          />
+          <UserActivityInfoCard
+            lastActivity="اليوم 09:30 صباحاً"
+            lastLogin="28 فبراير 2025"
+            joinedAt={formatArabicDate(user.createdAt)}
+          />
+        </div>
+      )}
     </div>
   )
 }

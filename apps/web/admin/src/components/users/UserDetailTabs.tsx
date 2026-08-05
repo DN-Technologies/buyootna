@@ -2,22 +2,26 @@
 
 const tabs = [
   'نظرة عامة',
-  'ملاحظات',
-  'السجل',
-  'التقييمات',
-  'البلاغات',
-  'الفواتير والخصم',
-  'الباقة',
-  'الطلبات',
   'الاعلانات',
+  'الطلبات',
+  'الباقة',
+  'الفواتير والخصم',
+  'البلاغات',
+  'التقييمات',
+  'السجل',
+  'ملاحظات',
 ]
+
+const ENABLED_TABS = new Set(['نظرة عامة', 'الاعلانات'])
 
 interface UserDetailTabsProps {
   activeTab?: string
+  onTabChange?: (tab: string) => void
 }
 
 export default function UserDetailTabs({
   activeTab = 'نظرة عامة',
+  onTabChange,
 }: UserDetailTabsProps) {
   return (
     <div
@@ -26,19 +30,23 @@ export default function UserDetailTabs({
     >
       {tabs.map((tab) => {
         const isActive = tab === activeTab
+        const isEnabled = ENABLED_TABS.has(tab)
         return (
           <button
             key={tab}
             type="button"
-            disabled={!isActive}
-            title={isActive ? undefined : 'قريباً'}
+            disabled={!isEnabled}
+            onClick={() => isEnabled && onTabChange?.(tab)}
+            title={isEnabled ? undefined : 'قريباً'}
             className={`flex flex-col h-11 items-center justify-between pt-3.5 transition-colors shrink-0 ${
-              isActive ? 'cursor-default' : 'cursor-not-allowed opacity-60'
+              isEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
             }`}
           >
             <span
               className={`px-2.5 text-[16px] leading-[1.2] tracking-[-0.408px] whitespace-nowrap ${
-                isActive ? 'font-bold text-primary' : 'font-normal text-[#6B6A6A]'
+                isActive
+                  ? 'font-bold text-primary'
+                  : 'font-normal text-[#6B6A6A]'
               }`}
             >
               {tab}

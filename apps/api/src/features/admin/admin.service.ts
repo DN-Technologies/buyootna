@@ -212,7 +212,7 @@ export class AdminService {
             individualData: true,
             companyData: true,
             officeData: true,
-            properties: { take: 5, orderBy: { createdAt: 'desc' } },
+            properties: { orderBy: { createdAt: 'desc' } },
           },
         },
         activePlan: true,

@@ -75,12 +75,29 @@ export interface AdminIdentityData {
   logoUrl?: string | null;
 }
 
+export interface AdminUserProperty {
+  id: string;
+  referenceNumber: number;
+  type: 'SALE' | 'RENT' | 'EXCHANGE' | 'AUCTION' | 'DEAL';
+  category: string;
+  status: 'DRAFT' | 'ACTIVE' | 'REJECTED' | 'EXPIRED' | 'CLOSED';
+  isFeatured: boolean;
+  isHidden: boolean;
+  price: number | null;
+  areaSize: number | null;
+  location: string;
+  images: string[];
+  views: number;
+  createdAt: string;
+}
+
 export interface AdminUserIdentity {
   id: string;
   type: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
   individualData?: AdminIdentityData | null;
   companyData?: AdminIdentityData | null;
   officeData?: AdminIdentityData | null;
+  properties?: AdminUserProperty[];
 }
 
 export interface AdminUserDetail {
