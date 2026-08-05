@@ -1,5 +1,12 @@
-import { useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { useRef, useState } from 'react';
+import {
+  Image,
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { MoreIcon } from '@/assets/icons/activity';
 import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
@@ -49,6 +56,19 @@ export default function ActiveAdCard({
   onDeletePress,
 }: ActiveAdCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuTop, setMenuTop] = useState(0);
+  const menuAnchorRef = useRef<View>(null);
+
+  // FlatList content padding (20) + card content padding (16) — matches the
+  // "..." button's fixed horizontal position regardless of RTL measurement quirks.
+  const MENU_RIGHT_OFFSET = 40;
+
+  const openMenu = () => {
+    menuAnchorRef.current?.measureInWindow((_x, y, _width, height) => {
+      setMenuTop(y + height + 8);
+      setShowMenu(true);
+    });
+  };
 
   const coverImage = property.images?.[0];
   const imageSource = coverImage
@@ -130,65 +150,76 @@ export default function ActiveAdCard({
           </Text>
 
           {/* Left: 3-Dot Options Trigger */}
-          <View className="relative z-50">
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => setShowMenu(!showMenu)}
-              className="p-1"
-            >
+          <View ref={menuAnchorRef} className="relative z-50">
+            <TouchableOpacity activeOpacity={0.7} onPress={openMenu} className="p-1">
               <MoreIcon size={15} color="#64748B" />
             </TouchableOpacity>
-
-            {showMenu && (
-              <View className="absolute right-[-4px] top-4 z-50 mt-4 w-[196px] rounded-md bg-white shadow-md shadow-gray-200">
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowMenu(false);
-                    onEditPress(property.id);
-                  }}
-                  className="px-4 py-3"
-                >
-                  <Text
-                    className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    تعديل
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowMenu(false);
-                    onFeaturePress(property.id);
-                  }}
-                  className="px-4 py-3"
-                >
-                  <Text
-                    className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    تمييز الإعلان
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    setShowMenu(false);
-                    onDeletePress(property.id);
-                  }}
-                  className="px-4 py-3"
-                >
-                  <Text
-                    className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    حذف
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
           </View>
         </View>
+
+        <Modal
+          transparent
+          visible={showMenu}
+          animationType="fade"
+          onRequestClose={() => setShowMenu(false)}
+        >
+          <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
+            <View
+              style={{
+                position: 'absolute',
+                top: menuTop,
+                right: MENU_RIGHT_OFFSET,
+                width: 196,
+              }}
+              className="rounded-md bg-white shadow-md shadow-gray-200"
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setShowMenu(false);
+                  onEditPress(property.id);
+                }}
+                className="px-4 py-3"
+              >
+                <Text
+                  className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  تعديل
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowMenu(false);
+                  onFeaturePress(property.id);
+                }}
+                className="px-4 py-3"
+              >
+                <Text
+                  className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  تمييز الإعلان
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowMenu(false);
+                  onDeletePress(property.id);
+                }}
+                className="px-4 py-3"
+              >
+                <Text
+                  className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  حذف
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Modal>
 
         {/* Price & Publication Date Row */}
         <View className="mb-4 flex-row items-center justify-between">

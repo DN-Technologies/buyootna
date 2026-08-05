@@ -4,7 +4,7 @@ import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-n
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
-import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
+import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
 import { OfficeDto } from '@/types/feed';
 
 interface HomeOfficesProps {
@@ -76,7 +76,7 @@ export default function HomeOffices({
       return (
         <View style={{ paddingTop: 10 }}>
           {[1, 2, 3].map((key) => (
-            <CompanySkeleton key={key} cardWidth="100%" />
+            <OfficeListSkeleton key={key} />
           ))}
         </View>
       );

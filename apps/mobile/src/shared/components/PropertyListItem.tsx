@@ -3,8 +3,8 @@ import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 import { HeartIcon } from '@/assets/icons/home/cards';
 import {
   AreaIcon,
+  BedIcon,
   CompanyIcon,
-  LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
 import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
@@ -14,8 +14,8 @@ export interface PropertyListItemProps {
   price: number | string;
   companyName: string;
   isFeatured?: boolean;
-  type?: string; // e.g., 'سكني', 'تجاري'
-  category?: string; // e.g., 'عمارة', 'أرض'
+  categoryLabel?: string; // e.g., 'عمارة', 'شقة', 'فيلا'
+  beds?: number;
   area: number;
   location: string;
   propertyIncome?: number | null;
@@ -29,7 +29,8 @@ export interface PropertyListItemProps {
 export default function PropertyListItem({
   price,
   isFeatured = false,
-  category = 'عمارة',
+  categoryLabel = 'عقار',
+  beds,
   area,
   location,
   propertyIncome = 150_000,
@@ -41,12 +42,14 @@ export default function PropertyListItem({
 }: PropertyListItemProps) {
   const formattedPrice =
     typeof price === 'number' && price > 0 ? (
-      <Text className="font-cairo-semibold text-[22px] text-[#15304D]">
+      <Text className="font-cairo-bold text-sm text-[#15304D]">
         {price.toLocaleString()}{' '}
-        <Text className="font-cairo-bold text-[12px] text-[#15304D]">د.ك</Text>
+        <Text className="font-cairo-bold text-[11px] text-[#15304D]">
+          د.ك
+        </Text>
       </Text>
     ) : (
-      <Text className="font-cairo-semibold text-[18px] text-[#15304D]">
+      <Text className="font-cairo-semibold text-sm text-[#15304D]">
         السعر غير معلن
       </Text>
     );
@@ -65,9 +68,20 @@ export default function PropertyListItem({
         shadowRadius: 6,
       }}
     >
-      {/* Row 1: Price (right) + Featured Badge (left) — RTL */}
+      {/* Row 1: Type icon (right) + Title (right-aligned) + Featured badge (left) — RTL */}
       <View className="flex-row items-center justify-between">
-        {formattedPrice}
+        <View className="h-8 w-8 items-center justify-center rounded-md border border-[#ECECEC]">
+          <CompanyIcon color="#111111" size={16} />
+        </View>
+
+        <Text
+          className="mx-2 flex-1 font-cairo-semibold text-base text-[#111111]"
+          style={{ writingDirection: 'rtl' }}
+          numberOfLines={1}
+        >
+          {categoryLabel} {location}
+        </Text>
+
         {isFeatured && (
           <SafeLinearGradient
             colors={['#FF8D28', '#FACC15']}
@@ -76,9 +90,10 @@ export default function PropertyListItem({
             style={{
               width: 57,
               height: 20,
-              borderTopLeftRadius: 4,
-              borderTopRightRadius: 10,
-              borderBottomRightRadius: 10,
+              borderTopRightRadius: 4,
+              borderBottomRightRadius: 4,
+              borderTopLeftRadius: 10,
+              borderBottomLeftRadius: 10,
               justifyContent: 'center',
               alignItems: 'center',
             }}
@@ -90,35 +105,20 @@ export default function PropertyListItem({
         )}
       </View>
 
-      {/* Row 2: Category + Location + Area — horizontal RTL */}
-      <View className="mt-3 flex-row items-center gap-x-4 gap-y-1.5">
-        {/* Category */}
-        <View className="flex-row items-center gap-1.5 rounded-md bg-[#F5F7F9] px-2 py-1">
-          <CompanyIcon color="#000000" size={14} />
-          <Text className="font-cairo-semibold text-sm leading-[22px] text-[#111111]">
-            {category}
-          </Text>
-        </View>
+      {/* Row 2: Stats — price, beds, area — RTL */}
+      <View className="mt-3 flex-row items-center justify-between">
+        {formattedPrice}
 
-        {/* Location */}
-        <View
-          className="flex-row items-center gap-1.5"
-          style={{ maxWidth: '40%' }}
-        >
-          <LocationIcon color="#111111" size={14} />
-          <Text
-            className="flex-1 font-cairo-semibold text-sm leading-[22px] text-[#111111]"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {location}
-          </Text>
-        </View>
+        {beds !== undefined && (
+          <View className="flex-row items-center gap-1">
+            <BedIcon color="#111111" size={16} />
+            <Text className="font-cairo text-sm text-[#111111]">{beds}</Text>
+          </View>
+        )}
 
-        {/* Area */}
-        <View className="flex-row items-center gap-1.5">
+        <View className="flex-row items-center gap-1">
           <AreaIcon color="#111111" size={16} />
-          <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+          <Text className="font-cairo text-sm text-[#111111]">
             {area ?? 200} م²
           </Text>
         </View>

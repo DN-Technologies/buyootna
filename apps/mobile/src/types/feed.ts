@@ -6,6 +6,7 @@ export interface PropertyDto {
   companyName: string;
   isFeatured: boolean;
   type: string; // e.g., 'سكني', 'تجاري', 'استثماري'
+  categoryLabel?: string; // e.g., 'عمارة', 'شقة', 'فيلا'
   area: number;
   beds: number;
   baths: number;

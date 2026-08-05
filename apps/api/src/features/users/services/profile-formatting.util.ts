@@ -21,6 +21,27 @@ export function mapPropertyCategoryToType(category: PropertyCategory): string {
   return PROPERTY_CATEGORY_LABELS[category];
 }
 
+// --- Full-granularity Arabic label for a property's category (e.g. 'عمارة', 'شقة') ---
+const PROPERTY_CATEGORY_FULL_LABELS: Record<PropertyCategory, string> = {
+  COMMERCIAL: 'تجاري',
+  INVESTMENT: 'استثماري',
+  INDUSTRIAL: 'صناعي',
+  COASTAL: 'ساحلي',
+  OFFICE: 'مكتب',
+  PRIVATE: 'خاص',
+  HOUSE: 'بيت',
+  APARTMENT: 'شقة',
+  VILLA: 'فيلا',
+  BUILDING: 'عمارة',
+  LAND: 'أرض',
+  CHALET: 'شاليه',
+  RESIDENTIAL: 'سكني',
+};
+
+export function mapPropertyCategoryToLabel(category: PropertyCategory): string {
+  return PROPERTY_CATEGORY_FULL_LABELS[category] || category;
+}
+
 // --- Split a free-text services string into individual service cards ---
 export function formatServiceList(raw: string | null, ownerName: string) {
   const rawServices = raw
@@ -70,6 +91,7 @@ export function formatOfficeListings(
     companyName,
     isFeatured: p.isFeatured,
     type: mapPropertyCategoryToType(p.category),
+    categoryLabel: mapPropertyCategoryToLabel(p.category),
     area: p.areaSize,
     beds: p.beds,
     baths: p.baths,
