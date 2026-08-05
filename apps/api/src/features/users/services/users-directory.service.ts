@@ -14,7 +14,7 @@ export class UsersDirectoryService {
 
   // --- Find Companies ---
   async findCompanies(filters: GetCompaniesFilterDto) {
-    const { category, page = 1, limit = 10 } = filters;
+    const { category, search, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const companyDataWhere: Prisma.CompanyIdentityDataWhereInput = {
@@ -24,6 +24,13 @@ export class UsersDirectoryService {
     if (category && category !== 'all') {
       companyDataWhere.services = {
         contains: category,
+        mode: 'insensitive',
+      };
+    }
+
+    if (search) {
+      companyDataWhere.name = {
+        contains: search,
         mode: 'insensitive',
       };
     }
@@ -47,24 +54,32 @@ export class UsersDirectoryService {
     const identityIds = identities.map((i) => i.id);
     const userIds = identities.map((i) => i.userId);
 
-    const [propertyCounts, reviewStats] = await Promise.all([
+    const [propertyStats, reviewStats] = await Promise.all([
       this.prisma.property.groupBy({
         by: ['identityId'],
         where: { identityId: { in: identityIds } },
         _count: { _all: true },
+        _max: { createdAt: true },
       }),
       this.prisma.review.groupBy({
         by: ['targetUserId'],
         where: { targetUserId: { in: userIds } },
         _avg: { rating: true },
+        _count: { _all: true },
       }),
     ]);
 
     const projectsCountByIdentity = new Map(
-      propertyCounts.map((p) => [p.identityId, p._count._all]),
+      propertyStats.map((p) => [p.identityId, p._count._all]),
+    );
+    const lastActivityByIdentity = new Map(
+      propertyStats.map((p) => [p.identityId, p._max.createdAt]),
     );
     const avgRatingByUser = new Map(
       reviewStats.map((r) => [r.targetUserId, r._avg.rating]),
+    );
+    const reviewsCountByUser = new Map(
+      reviewStats.map((r) => [r.targetUserId, r._count._all]),
     );
 
     const formattedCompanies = identities
@@ -77,10 +92,14 @@ export class UsersDirectoryService {
           name: i.companyData!.name,
           category: i.companyData!.services || '',
           rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
+          reviewsCount: reviewsCountByUser.get(i.userId) ?? 0,
           projectsCount: String(projectsCountByIdentity.get(i.id) ?? 0),
           serviceArea: i.companyData!.serviceAreas,
           logoUrl: i.companyData!.logoUrl,
           isVerified: i.companyData!.isVerified,
+          lastActivityAt: (
+            lastActivityByIdentity.get(i.id) ?? i.companyData!.updatedAt
+          ).toISOString(),
         };
       });
 

@@ -22,7 +22,7 @@ export default function EmptyChatState() {
 
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => router.push('/explore')}
+        onPress={() => router.push('/home')}
         className="w-full items-center justify-center rounded-xl bg-[#15304D] py-4"
       >
         <Text className="font-cairo-bold text-[15px] text-white">

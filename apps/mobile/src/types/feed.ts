@@ -19,14 +19,17 @@ export interface PropertyDto {
 // --- Company Modal ---
 export interface CompanyDto {
   id: string;
+  userId: string;
   name: string;
   category: string; // e.g., 'تشطيب • تصميم داخلي • تنفيذ'
   rating: number;
+  reviewsCount: number;
   projectsCount: string; // e.g., '+50'
   serviceArea: string;
   logoUrl: string;
   isVerified: boolean;
   isFavorite?: boolean;
+  lastActivityAt: string;
 }
 
 // --- The Combined Feed Response ---

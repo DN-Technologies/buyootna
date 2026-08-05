@@ -7,6 +7,10 @@ export class GetCompaniesFilterDto {
   category?: string;
 
   @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
