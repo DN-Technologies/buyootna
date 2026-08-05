@@ -93,7 +93,10 @@ export default function SideNav() {
             {/* Group Items */}
             <div className="space-y-1">
               {group.items.map((item) => {
-                const isActive = pathname === item.href
+                const isActive =
+                  item.href === '/'
+                    ? pathname === item.href
+                    : pathname === item.href || pathname.startsWith(`${item.href}/`)
                 const Icon = item.icon
 
                 return (

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Download, Plus, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Download, Plus } from 'lucide-react'
 import PageHeader from '@/components/PageHeader'
 import StatCard from '@/components/StatCard'
 import UserTabs, { UserCategoryTab } from '@/components/users/UserTabs'
@@ -12,12 +13,11 @@ import {
   fetchAdminUsers,
   updateUserStatus,
   deleteUser,
-  fetchUserDetails,
-  updateIdentityStatus,
   AdminUsersResponse,
 } from '@/lib/admin-users'
 
 export default function UsersPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<UserCategoryTab>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -30,10 +30,6 @@ export default function UsersPage() {
     stats: { total: 0, active: 0, blocked: 0, suspended: 0 },
     counts: { all: 0, individual: 0, office: 0, company: 0 },
   })
-
-  // Selected user detail for modal
-  const [selectedUserDetail, setSelectedUserDetail] = useState<any | null>(null)
-  const [loadingDetail, setLoadingDetail] = useState(false)
 
   // Map category tab to Prisma Role enum string
   const getRoleFromTab = (tab: UserCategoryTab) => {
@@ -119,33 +115,8 @@ export default function UsersPage() {
   }
 
   // Handle View User Details
-  const handleViewUser = async (user: UserRow) => {
-    try {
-      setLoadingDetail(true)
-      const detail = await fetchUserDetails(user.id)
-      setSelectedUserDetail(detail)
-    } catch (err) {
-      console.error('Failed to fetch user details:', err)
-      alert(`بيانات المستخدم: ${user.name}\nالبريد: ${user.email}`)
-    } finally {
-      setLoadingDetail(false)
-    }
-  }
-
-  // Handle Approve / Reject a pending Company or Office identity
-  const handleIdentityStatusChange = async (
-    identityId: string,
-    status: 'APPROVED' | 'REJECTED',
-  ) => {
-    try {
-      await updateIdentityStatus(identityId, status)
-      const detail = await fetchUserDetails(selectedUserDetail.id)
-      setSelectedUserDetail(detail)
-      await loadUsers()
-    } catch (err) {
-      console.error('Failed to update identity status:', err)
-      alert('حدث خطأ أثناء تحديث حالة الهوية')
-    }
+  const handleViewUser = (user: UserRow) => {
+    router.push(`/users/${user.id}`)
   }
 
   const handleAddUser = () => {
@@ -255,114 +226,6 @@ export default function UsersPage() {
           onPageChange={setCurrentPage}
         />
       </div>
-
-      {/* User Details Modal */}
-      {selectedUserDetail && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 text-right space-y-4 font-['Cairo'] shadow-xl relative">
-            <button
-              onClick={() => setSelectedUserDetail(null)}
-              className="absolute left-4 top-4 text-gray-400 hover:text-gray-600 cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-lg font-bold text-[#111111] border-b pb-2">
-              تفاصيل المستخدم
-            </h3>
-
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-500">الاسم:</span>
-                <span>{selectedUserDetail.name || 'غير محدد'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-500">
-                  البريد الإلكتروني:
-                </span>
-                <span>{selectedUserDetail.email || '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-500">رقم الهاتف:</span>
-                <span>{selectedUserDetail.phone || '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-500">نوع الحساب:</span>
-                <span>{selectedUserDetail.role}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-semibold text-gray-500">
-                  الخطة الحالية:
-                </span>
-                <span>{selectedUserDetail.activePlan?.name || 'العادية'}</span>
-              </div>
-              {selectedUserDetail.identities
-                ?.filter((identity: any) => identity.companyData || identity.officeData)
-                .map((identity: any) => {
-                  const data = identity.companyData || identity.officeData
-                  const label = identity.companyData ? 'الشركة' : 'المكتب'
-                  const statusLabel =
-                    data.status === 'PENDING'
-                      ? 'قيد الانتظار'
-                      : data.status === 'APPROVED'
-                        ? 'موافق عليها'
-                        : 'مرفوضة'
-                  return (
-                    <div key={identity.id} className="border-t pt-2 space-y-1">
-                      <span className="font-bold block text-gray-700">
-                        بيانات {label}:
-                      </span>
-                      <p>الاسم: {data.name}</p>
-                      <p>رقم الترخيص: {data.licenseNumber}</p>
-                      <div className="flex items-center justify-between pt-1">
-                        <span
-                          className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                            data.status === 'PENDING'
-                              ? 'bg-yellow-50 text-yellow-700'
-                              : data.status === 'APPROVED'
-                                ? 'bg-green-50 text-green-700'
-                                : 'bg-red-50 text-red-700'
-                          }`}
-                        >
-                          {statusLabel}
-                        </span>
-                        {data.status === 'PENDING' && (
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                handleIdentityStatusChange(identity.id, 'REJECTED')
-                              }
-                              className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-700 text-xs rounded-lg font-semibold cursor-pointer"
-                            >
-                              رفض
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleIdentityStatusChange(identity.id, 'APPROVED')
-                              }
-                              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg font-semibold cursor-pointer"
-                            >
-                              موافقة
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-            </div>
-
-            <div className="pt-4 flex justify-end">
-              <button
-                onClick={() => setSelectedUserDetail(null)}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold cursor-pointer"
-              >
-                إغلاق
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

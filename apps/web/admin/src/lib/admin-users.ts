@@ -69,7 +69,36 @@ export async function deleteUser(id: string) {
   return res.data;
 }
 
-export async function fetchUserDetails(id: string) {
+export interface AdminIdentityData {
+  name: string;
+  avatarUrl?: string | null;
+  logoUrl?: string | null;
+}
+
+export interface AdminUserIdentity {
+  id: string;
+  type: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+  individualData?: AdminIdentityData | null;
+  companyData?: AdminIdentityData | null;
+  officeData?: AdminIdentityData | null;
+}
+
+export interface AdminUserDetail {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  name: string | null;
+  avatarUrl: string | null;
+  role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE' | null;
+  isBlocked: boolean;
+  isDisabled: boolean;
+  createdAt: string;
+  activePlan?: { name: string } | null;
+  identities: AdminUserIdentity[];
+}
+
+export async function fetchUserDetails(id: string): Promise<AdminUserDetail> {
   const res = await api.get(`/admin/users/${id}`);
   return res.data;
 }
