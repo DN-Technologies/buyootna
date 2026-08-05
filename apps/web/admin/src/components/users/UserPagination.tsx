@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 
 interface UserPaginationProps {
@@ -11,6 +10,47 @@ interface UserPaginationProps {
   onPageChange: (page: number) => void
 }
 
+const ELLIPSIS = '...' as const
+
+function getPaginationRange(
+  currentPage: number,
+  totalPages: number,
+  siblingCount = 1,
+): (number | typeof ELLIPSIS)[] {
+  const totalPageNumbers = siblingCount * 2 + 5
+
+  if (totalPageNumbers >= totalPages) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1)
+  }
+
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1)
+  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages)
+
+  const showLeftEllipsis = leftSiblingIndex > 2
+  const showRightEllipsis = rightSiblingIndex < totalPages - 1
+
+  if (!showLeftEllipsis && showRightEllipsis) {
+    const leftItemCount = 3 + siblingCount * 2
+    const leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1)
+    return [...leftRange, ELLIPSIS, totalPages]
+  }
+
+  if (showLeftEllipsis && !showRightEllipsis) {
+    const rightItemCount = 3 + siblingCount * 2
+    const rightRange = Array.from(
+      { length: rightItemCount },
+      (_, i) => totalPages - rightItemCount + i + 1,
+    )
+    return [1, ELLIPSIS, ...rightRange]
+  }
+
+  const middleRange = Array.from(
+    { length: rightSiblingIndex - leftSiblingIndex + 1 },
+    (_, i) => leftSiblingIndex + i,
+  )
+  return [1, ELLIPSIS, ...middleRange, ELLIPSIS, totalPages]
+}
+
 export default function UserPagination({
   currentPage,
   totalPages,
@@ -18,7 +58,7 @@ export default function UserPagination({
   currentCount,
   onPageChange,
 }: UserPaginationProps) {
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+  const pages = getPaginationRange(currentPage, totalPages)
 
   return (
     <div className="w-full flex items-center justify-between py-4 px-2 font-['Cairo'] text-right">
@@ -41,11 +81,23 @@ export default function UserPagination({
 
         {/* Page Numbers */}
         <div className="flex items-center gap-1">
-          {pages.map((page) => {
+          {pages.map((page, index) => {
+            if (page === ELLIPSIS) {
+              return (
+                <span
+                  key={`ellipsis-${index}`}
+                  className="w-8 h-8 flex items-center justify-center text-[14px] font-bold text-[#111111]"
+                >
+                  {ELLIPSIS}
+                </span>
+              )
+            }
+
             const isActive = page === currentPage
             return (
               <button
                 key={page}
+                type="button"
                 onClick={() => onPageChange(page)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[14px] cursor-pointer transition-colors ${
                   isActive

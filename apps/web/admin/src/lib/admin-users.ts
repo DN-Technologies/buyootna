@@ -69,7 +69,62 @@ export async function deleteUser(id: string) {
   return res.data;
 }
 
-export async function fetchUserDetails(id: string) {
+export interface AdminIdentityData {
+  name: string;
+  avatarUrl?: string | null;
+  logoUrl?: string | null;
+}
+
+export interface AdminUserProperty {
+  id: string;
+  referenceNumber: number;
+  type: 'SALE' | 'RENT' | 'EXCHANGE' | 'AUCTION' | 'DEAL';
+  category: string;
+  status: 'DRAFT' | 'ACTIVE' | 'REJECTED' | 'EXPIRED' | 'CLOSED';
+  isFeatured: boolean;
+  isHidden: boolean;
+  price: number | null;
+  areaSize: number | null;
+  location: string;
+  images: string[];
+  views: number;
+  createdAt: string;
+  description: string;
+  beds: number | null;
+  baths: number | null;
+  floors: number | null;
+  additionalExpenses: string | null;
+  rentConditions: string | null;
+  requiredYear: number | null;
+  requestYear: number | null;
+  features: unknown;
+}
+
+export interface AdminUserIdentity {
+  id: string;
+  type: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+  individualData?: AdminIdentityData | null;
+  companyData?: AdminIdentityData | null;
+  officeData?: AdminIdentityData | null;
+  properties?: AdminUserProperty[];
+}
+
+export interface AdminUserDetail {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  name: string | null;
+  avatarUrl: string | null;
+  role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE' | null;
+  isBlocked: boolean;
+  isDisabled: boolean;
+  createdAt: string;
+  activePlan?: { name: string } | null;
+  identities: AdminUserIdentity[];
+}
+
+export async function fetchUserDetails(id: string): Promise<AdminUserDetail> {
   const res = await api.get(`/admin/users/${id}`);
   return res.data;
 }
