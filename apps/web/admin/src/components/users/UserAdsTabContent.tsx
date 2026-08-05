@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import UserAdsCreditCard from './UserAdsCreditCard'
 import UserAdCard from './UserAdCard'
+import AdDetailSheet from './AdDetailSheet'
 import type { AdminUserProperty } from '@/lib/admin-users'
 
 type AdsFilter = 'all' | 'active' | 'featured' | 'deleted'
@@ -13,6 +14,8 @@ export default function UserAdsTabContent({
   properties: AdminUserProperty[]
 }) {
   const [filter, setFilter] = useState<AdsFilter>('all')
+  const [selectedProperty, setSelectedProperty] =
+    useState<AdminUserProperty | null>(null)
 
   const activeCount = properties.filter(
     (p) => p.status === 'ACTIVE' && !p.isHidden,
@@ -75,9 +78,20 @@ export default function UserAdsTabContent({
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
           {filtered.map((property) => (
-            <UserAdCard key={property.id} property={property} />
+            <UserAdCard
+              key={property.id}
+              property={property}
+              onViewDetails={setSelectedProperty}
+            />
           ))}
         </div>
+      )}
+
+      {selectedProperty && (
+        <AdDetailSheet
+          property={selectedProperty}
+          onClose={() => setSelectedProperty(null)}
+        />
       )}
     </div>
   )

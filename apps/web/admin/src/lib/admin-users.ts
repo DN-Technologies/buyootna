@@ -89,6 +89,15 @@ export interface AdminUserProperty {
   images: string[];
   views: number;
   createdAt: string;
+  description: string;
+  beds: number | null;
+  baths: number | null;
+  floors: number | null;
+  additionalExpenses: string | null;
+  rentConditions: string | null;
+  requiredYear: number | null;
+  requestYear: number | null;
+  features: unknown;
 }
 
 export interface AdminUserIdentity {

@@ -13,76 +13,14 @@ import {
   Trash2,
 } from 'lucide-react'
 import type { AdminUserProperty } from '@/lib/admin-users'
-
-const typeLabels: Record<string, string> = {
-  SALE: 'للبيع',
-  RENT: 'للإيجار',
-  EXCHANGE: 'للتبديل',
-  AUCTION: 'مزاد',
-  DEAL: 'صفقة',
-}
-
-const categoryLabels: Record<string, string> = {
-  APARTMENT: 'شقة',
-  VILLA: 'فيلا',
-  LAND: 'أرض',
-  COMMERCIAL: 'تجاري',
-  OFFICE: 'مكتب',
-  SHOP: 'محل',
-  BUILDING: 'عمارة',
-  FARM: 'مزرعة',
-  CHALET: 'شاليه',
-  WAREHOUSE: 'مستودع',
-  INVESTMENT: 'استثماري',
-}
-
-function formatPrice(price: number | null) {
-  if (price == null) return '—'
-  return `${new Intl.NumberFormat('en-US').format(price)} د.ك`
-}
-
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat('ar', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    calendar: 'gregory',
-    numberingSystem: 'latn',
-  }).format(new Date(date))
-}
-
-function getStatusBadge(property: AdminUserProperty) {
-  if (property.isHidden) {
-    return { label: 'مخفي', className: 'bg-[#F1F5F9] text-[#6B6A6A]' }
-  }
-  if (property.isFeatured) {
-    return {
-      label: 'مميز',
-      className: 'bg-gradient-to-l from-[#FF8D28] to-[#FACC15] text-[#111111]',
-    }
-  }
-  switch (property.status) {
-    case 'ACTIVE':
-      return {
-        label: 'نشط',
-        className:
-          'bg-gradient-to-l from-[#AADB53] to-[#33D679] text-[#111111]',
-      }
-    case 'DRAFT':
-      return { label: 'مسودة', className: 'bg-[#F1F5F9] text-[#334155]' }
-    case 'REJECTED':
-      return { label: 'مرفوض', className: 'bg-[#FEF3F2] text-[#9C1E28]' }
-    case 'EXPIRED':
-      return { label: 'منتهي', className: 'bg-[#FFFBEB] text-[#B45309]' }
-    case 'CLOSED':
-      return { label: 'مغلق', className: 'bg-[#F1F5F9] text-[#334155]' }
-    default:
-      return {
-        label: property.status,
-        className: 'bg-[#F1F5F9] text-[#334155]',
-      }
-  }
-}
+import {
+  categoryLabels,
+  formatArabicDate,
+  formatPrice,
+  getAdCode,
+  getStatusBadge,
+  typeLabels,
+} from '@/lib/property-labels'
 
 // حذف/عرض التفاصيل are the only actions with a plausible real backend
 // target; نسخ/اعادة النشر/تمييز/اخفاء(toggle) have no API today, so every
@@ -94,13 +32,15 @@ function notImplemented(action: string) {
 
 export default function UserAdCard({
   property,
+  onViewDetails,
 }: {
   property: AdminUserProperty
+  onViewDetails: (property: AdminUserProperty) => void
 }) {
   const badge = getStatusBadge(property)
   const typeLabel = typeLabels[property.type] || property.type
   const categoryLabel = categoryLabels[property.category] || property.category
-  const code = `AD${String(property.referenceNumber).slice(-3).padStart(3, '0')}`
+  const code = getAdCode(property.referenceNumber)
   const thumbnail = property.images?.[0]
 
   return (
@@ -109,52 +49,6 @@ export default function UserAdCard({
       dir="rtl"
     >
       <div className="flex gap-4 items-start p-3">
-        <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="flex items-start justify-between w-full gap-2">
-            <span
-              className={`h-5 flex items-center justify-center px-2 rounded-bl-[10px] rounded-tl-lg rounded-tr-[10px] text-[12px] shrink-0 ${badge.className}`}
-            >
-              {badge.label}
-            </span>
-            <p className="text-[14px] font-semibold text-[#111111] truncate">
-              {categoryLabel} {typeLabel} · {code}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#6B6A6A]">
-            <span className="flex items-center gap-1">
-              {property.location}
-              <MapPin className="w-3.5 h-3.5" />
-            </span>
-            {property.areaSize != null && (
-              <span className="flex items-center gap-1">
-                {property.areaSize}م²
-                <Ruler className="w-3.5 h-3.5" />
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              {property.images?.length || 0} صور
-              <ImageIcon className="w-3.5 h-3.5" />
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 flex-wrap">
-            <p className="text-[15px] font-black text-[#111111] shrink-0">
-              {formatPrice(property.price)}
-            </p>
-            <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#6B6A6A]">
-              <span className="flex items-center gap-1">
-                {property.views} مشاهدة
-                <Eye className="w-3.5 h-3.5" />
-              </span>
-              <span className="flex items-center gap-1">
-                نشر {formatDate(property.createdAt)}
-                <Calendar className="w-3.5 h-3.5" />
-              </span>
-            </div>
-          </div>
-        </div>
-
         <div className="rounded-md overflow-hidden shrink-0 size-18.75 bg-[#F1F5F9]">
           {thumbnail && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -165,44 +59,72 @@ export default function UserAdCard({
             />
           )}
         </div>
+        <div className="flex-1 flex flex-col gap-2 min-w-0">
+          <div className="flex items-start justify-between w-full gap-2">
+            <p className="text-[14px] font-semibold text-[#111111] truncate">
+              {categoryLabel} {typeLabel} · {code}
+            </p>
+            <span
+              className={`h-5 flex items-center justify-center px-2 rounded-bl-[10px] rounded-tl-lg rounded-tr-[10px] text-[12px] shrink-0 ${badge.className}`}
+            >
+              {badge.label}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#6B6A6A]">
+            <span className="flex items-center gap-1">
+              <ImageIcon className="w-3.5 h-3.5" />
+              {property.images?.length || 0} صور
+            </span>
+            {property.areaSize != null && (
+              <span className="flex items-center gap-1">
+                <Ruler className="w-3.5 h-3.5" />
+                {property.areaSize}م²
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5" />
+              {property.location}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap text-[12px] text-[#6B6A6A]">
+              <span className="flex items-center gap-1">
+                نشر {formatArabicDate(property.createdAt)}
+                <Calendar className="w-3.5 h-3.5" />
+              </span>
+              <span className="flex items-center gap-1">
+                {property.views} مشاهدة
+                <Eye className="w-3.5 h-3.5" />
+              </span>
+            </div>
+            <p className="text-[15px] font-black text-[#111111] shrink-0">
+              {formatPrice(property.price)}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-[rgba(241,245,249,0.3)] border-t border-[rgba(15,23,42,0.1)] flex items-center justify-end gap-2 px-3 pt-2.5 pb-2">
-        <div className="flex-1 flex items-center gap-1">
+      <div className="bg-[rgba(241,245,249,0.3)] border-t border-[rgba(15,23,42,0.1)] flex items-center gap-2 px-3 pt-2.5 pb-2">
+        {!property.isFeatured && (
           <button
             type="button"
-            onClick={() => notImplemented('حذف')}
-            className="p-1.5 rounded-full text-[#9C1E28] hover:bg-[#FEF3F2] cursor-pointer"
-            title="حذف"
+            onClick={() => notImplemented('تمييز')}
+            className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
           >
-            <Trash2 className="w-4 h-4" />
+            <Star className="w-3.5 h-3.5" />
+            تمييز
           </button>
-          <button
-            type="button"
-            onClick={() => notImplemented('نسخ')}
-            className="p-1.5 rounded-full text-[#111111] hover:bg-[#F1F5F9] cursor-pointer"
-            title="نسخ"
-          >
-            <Copy className="w-4 h-4" />
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => notImplemented('عرض التفاصيل')}
-          className="h-8 flex items-center justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
-        >
-          عرض التفاصيل
-        </button>
-
+        )}
         {property.status === 'EXPIRED' || property.status === 'CLOSED' ? (
           <button
             type="button"
             onClick={() => notImplemented('اعادة النشر')}
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
           >
-            اعادة النشر
             <RefreshCw className="w-3.5 h-3.5" />
+            اعادة النشر
           </button>
         ) : (
           <button
@@ -212,21 +134,36 @@ export default function UserAdCard({
             }
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
           >
-            {property.isHidden ? 'إظهار' : 'اخفاء'}
             <EyeOff className="w-3.5 h-3.5" />
+            {property.isHidden ? 'إظهار' : 'اخفاء'}
           </button>
         )}
 
-        {!property.isFeatured && (
+        <button
+          type="button"
+          onClick={() => onViewDetails(property)}
+          className="h-8 flex items-center justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
+        >
+          عرض التفاصيل
+        </button>
+        <div className="flex-1 flex justify-end items-center gap-1">
           <button
             type="button"
-            onClick={() => notImplemented('تمييز')}
-            className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
+            onClick={() => notImplemented('نسخ')}
+            className="p-1.5 rounded-full text-[#111111] hover:bg-[#F1F5F9] cursor-pointer"
+            title="نسخ"
           >
-            تمييز
-            <Star className="w-3.5 h-3.5" />
+            <Copy className="w-4 h-4" />
           </button>
-        )}
+          <button
+            type="button"
+            onClick={() => notImplemented('حذف')}
+            className="p-1.5 rounded-full text-[#9C1E28] hover:bg-[#FEF3F2] cursor-pointer"
+            title="حذف"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   )
