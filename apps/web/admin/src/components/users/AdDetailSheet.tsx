@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { EyeOff, Star } from 'lucide-react'
+import { EyeOff, RefreshCw, Star } from 'lucide-react'
 import AdDetailHeader, { AdDetailTab } from './AdDetailHeader'
 import AdDetailInfo from './AdDetailInfo'
 import {
@@ -12,7 +12,12 @@ import {
 } from './AdReportsTab'
 import AssignReportDialog, { MockAdmin } from './AssignReportDialog'
 import ReportActionToast, { ToastState } from './ReportActionToast'
+import ConfirmActionDialog, {
+  ConfirmActionType,
+} from './ConfirmActionDialog'
+import FeatureAdDialog from './FeatureAdDialog'
 import type { AdminUserProperty } from '@/lib/admin-users'
+import { getAdCode, getAdLabel } from '@/lib/property-labels'
 
 function notImplemented(action: string) {
   alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
@@ -32,6 +37,15 @@ export default function AdDetailSheet({
     null,
   )
   const [toast, setToast] = useState<ToastState | null>(null)
+  const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(
+    null,
+  )
+  const [showFeatureDialog, setShowFeatureDialog] = useState(false)
+
+  const adLabel = getAdLabel(property)
+  const code = getAdCode(property.referenceNumber)
+  const isExpiredOrClosed =
+    property.status === 'EXPIRED' || property.status === 'CLOSED'
 
   const selectedReport =
     reports.find((r) => r.id === selectedReportId) || null
@@ -107,7 +121,7 @@ export default function AdDetailSheet({
               {!property.isFeatured && (
                 <button
                   type="button"
-                  onClick={() => notImplemented('تمييز')}
+                  onClick={() => setShowFeatureDialog(true)}
                   className="flex-1 h-12 flex items-center justify-center gap-1.5 rounded-full bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
                 >
                   تمييز
@@ -115,19 +129,32 @@ export default function AdDetailSheet({
                 </button>
               )}
 
+              {isExpiredOrClosed ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction('republish')}
+                  className="flex-1 h-11.5 flex items-center justify-center gap-1.5 rounded-full border border-[#E2E8F0] text-[#111111] text-[14px] font-semibold cursor-pointer"
+                >
+                  اعادة النشر
+                  <RefreshCw className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    property.isHidden
+                      ? notImplemented('إظهار')
+                      : setConfirmAction('hide')
+                  }
+                  className="flex-1 h-11.5 flex items-center justify-center gap-1.5 rounded-full border border-[#E2E8F0] text-[#111111] text-[14px] font-semibold cursor-pointer"
+                >
+                  {property.isHidden ? 'إظهار' : 'اخفاء'}
+                  <EyeOff className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() =>
-                  notImplemented(property.isHidden ? 'إظهار' : 'اخفاء')
-                }
-                className="flex-1 h-11.5 flex items-center justify-center gap-1.5 rounded-full border border-[#E2E8F0] text-[#111111] text-[14px] font-semibold cursor-pointer"
-              >
-                {property.isHidden ? 'إظهار' : 'اخفاء'}
-                <EyeOff className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => notImplemented('حذف')}
+                onClick={() => setConfirmAction('delete')}
                 className="flex-1 h-11.5 flex items-center justify-center rounded-full border border-[#9C1E28] text-[#9C1E28] text-[14px] font-semibold cursor-pointer"
               >
                 حذف
@@ -141,6 +168,37 @@ export default function AdDetailSheet({
         <AssignReportDialog
           onClose={() => setAssigningReport(null)}
           onConfirm={handleConfirmAssign}
+        />
+      )}
+
+      {confirmAction && (
+        <ConfirmActionDialog
+          type={confirmAction}
+          adLabel={adLabel}
+          code={code}
+          onClose={() => setConfirmAction(null)}
+          onConfirm={() => {
+            setConfirmAction(null)
+            notImplemented(
+              confirmAction === 'delete'
+                ? 'حذف'
+                : confirmAction === 'hide'
+                  ? 'اخفاء'
+                  : 'اعادة النشر',
+            )
+          }}
+        />
+      )}
+
+      {showFeatureDialog && (
+        <FeatureAdDialog
+          adLabel={adLabel}
+          code={code}
+          onClose={() => setShowFeatureDialog(false)}
+          onConfirm={() => {
+            setShowFeatureDialog(false)
+            notImplemented('تمييز')
+          }}
         />
       )}
     </div>

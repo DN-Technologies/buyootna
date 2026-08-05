@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   Calendar,
   Copy,
@@ -18,14 +19,20 @@ import {
   formatArabicDate,
   formatPrice,
   getAdCode,
+  getAdLabel,
   getStatusBadge,
   typeLabels,
 } from '@/lib/property-labels'
+import ConfirmActionDialog, {
+  ConfirmActionType,
+} from './ConfirmActionDialog'
+import FeatureAdDialog from './FeatureAdDialog'
 
-// حذف/عرض التفاصيل are the only actions with a plausible real backend
-// target; نسخ/اعادة النشر/تمييز/اخفاء(toggle) have no API today, so every
-// action here is a placeholder until that's built — matching the pattern
-// already used elsewhere in this page (e.g. handleAddUser/handleExport).
+// نسخ/إظهار (un-hiding) have no confirmation design and no backend API —
+// left as lightweight placeholders. حذف/اخفاء/اعادة النشر/تمييز now go
+// through their confirmation dialogs; the dialogs' own confirm buttons
+// still end in the same "not implemented" notice since none of these
+// mutate real data yet.
 function notImplemented(action: string) {
   alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
 }
@@ -37,11 +44,17 @@ export default function UserAdCard({
   property: AdminUserProperty
   onViewDetails: (property: AdminUserProperty) => void
 }) {
+  const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(
+    null,
+  )
+  const [showFeatureDialog, setShowFeatureDialog] = useState(false)
+
   const badge = getStatusBadge(property)
   const typeLabel = typeLabels[property.type] || property.type
   const categoryLabel = categoryLabels[property.category] || property.category
   const code = getAdCode(property.referenceNumber)
   const thumbnail = property.images?.[0]
+  const adLabel = getAdLabel(property)
 
   return (
     <div
@@ -110,7 +123,7 @@ export default function UserAdCard({
         {!property.isFeatured && (
           <button
             type="button"
-            onClick={() => notImplemented('تمييز')}
+            onClick={() => setShowFeatureDialog(true)}
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
           >
             <Star className="w-3.5 h-3.5" />
@@ -120,7 +133,7 @@ export default function UserAdCard({
         {property.status === 'EXPIRED' || property.status === 'CLOSED' ? (
           <button
             type="button"
-            onClick={() => notImplemented('اعادة النشر')}
+            onClick={() => setConfirmAction('republish')}
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -130,7 +143,9 @@ export default function UserAdCard({
           <button
             type="button"
             onClick={() =>
-              notImplemented(property.isHidden ? 'إظهار' : 'اخفاء')
+              property.isHidden
+                ? notImplemented('إظهار')
+                : setConfirmAction('hide')
             }
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
           >
@@ -146,7 +161,7 @@ export default function UserAdCard({
         >
           عرض التفاصيل
         </button>
-        <div className="flex-1 flex justify-end items-center gap-1">
+        <div className="flex items-center gap-1 mr-auto">
           <button
             type="button"
             onClick={() => notImplemented('نسخ')}
@@ -157,7 +172,7 @@ export default function UserAdCard({
           </button>
           <button
             type="button"
-            onClick={() => notImplemented('حذف')}
+            onClick={() => setConfirmAction('delete')}
             className="p-1.5 rounded-full text-[#9C1E28] hover:bg-[#FEF3F2] cursor-pointer"
             title="حذف"
           >
@@ -165,6 +180,37 @@ export default function UserAdCard({
           </button>
         </div>
       </div>
+
+      {confirmAction && (
+        <ConfirmActionDialog
+          type={confirmAction}
+          adLabel={adLabel}
+          code={code}
+          onClose={() => setConfirmAction(null)}
+          onConfirm={() => {
+            setConfirmAction(null)
+            notImplemented(
+              confirmAction === 'delete'
+                ? 'حذف'
+                : confirmAction === 'hide'
+                  ? 'اخفاء'
+                  : 'اعادة النشر',
+            )
+          }}
+        />
+      )}
+
+      {showFeatureDialog && (
+        <FeatureAdDialog
+          adLabel={adLabel}
+          code={code}
+          onClose={() => setShowFeatureDialog(false)}
+          onConfirm={() => {
+            setShowFeatureDialog(false)
+            notImplemented('تمييز')
+          }}
+        />
+      )}
     </div>
   )
 }

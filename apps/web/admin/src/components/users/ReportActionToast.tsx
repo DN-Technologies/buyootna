@@ -22,7 +22,7 @@ export default function ReportActionToast({
 
   return (
     <div
-      className="absolute top-4 inset-x-4 z-30 bg-white border border-[#15A72B] rounded-lg px-4 py-2.5 flex items-center justify-end gap-2 shadow-lg font-['Cairo']"
+      className="absolute top-4 inset-x-4 z-30 bg-white border border-[#15A72B] rounded-lg px-4 py-2.5 flex items-center gap-2 shadow-lg font-['Cairo']"
       dir="rtl"
     >
       {toast.onUndo && (

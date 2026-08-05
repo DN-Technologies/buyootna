@@ -41,6 +41,12 @@ export function getAdCode(referenceNumber: number) {
   return `AD${String(referenceNumber).slice(-3).padStart(3, '0')}`
 }
 
+export function getAdLabel(property: AdminUserProperty) {
+  const typeLabel = typeLabels[property.type] || property.type
+  const categoryLabel = categoryLabels[property.category] || property.category
+  return `${categoryLabel} ${typeLabel} في ${property.location}`
+}
+
 export function getStatusBadge(property: AdminUserProperty) {
   if (property.isHidden) {
     return { label: 'مخفي', className: 'bg-[#F1F5F9] text-[#6B6A6A]' }
