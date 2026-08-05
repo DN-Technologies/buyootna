@@ -17,6 +17,14 @@ import { CompanyDto } from '@/types/feed';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HORIZONTAL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
 
+// Mock records don't carry backend-only fields (userId, reviewsCount, lastActivityAt); fill them with harmless defaults
+const toCompanyDto = (company: (typeof COMPANIES_DATA)[number]): CompanyDto => ({
+  ...company,
+  userId: company.id,
+  reviewsCount: 0,
+  lastActivityAt: new Date().toISOString(),
+});
+
 const SectionHeader = ({ title }: { title: string }) => (
   <View className="mb-3 mt-1 flex-row items-center justify-between px-5">
     <Text className="font-cairo-bold text-lg text-[#111111]">{title}</Text>
@@ -57,7 +65,7 @@ export default function ServiceCompanies({
               company.filterTags.includes(activeFilter),
             ).slice(0, 10);
 
-      setData(sourceData);
+      setData(sourceData.map(toCompanyDto));
       setPage(1);
       setHasNextPage(
         activeFilter === 'all'
@@ -120,7 +128,7 @@ export default function ServiceCompanies({
                 company.filterTags.includes(activeFilter),
               );
 
-        const newData = filteredMock.slice(start, end);
+        const newData = filteredMock.slice(start, end).map(toCompanyDto);
 
         if (newData.length > 0) {
           setData((prev) => {

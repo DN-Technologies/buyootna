@@ -41,7 +41,7 @@ export default function MainLayout() {
         }}
       >
         <Tabs.Screen name="home" />
-        <Tabs.Screen name="explore" />
+        <Tabs.Screen name="companies" />
 
         {/* The Center Add Button */}
         <Tabs.Screen

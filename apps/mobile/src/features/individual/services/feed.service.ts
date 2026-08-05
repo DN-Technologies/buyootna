@@ -44,12 +44,21 @@ export const feedService = {
     category?: string,
     page: number = 1,
     limit: number = 10,
+    search?: string,
   ): Promise<CompaniesResponse> => {
-    let url = `/users/companies?page=${page}&limit=${limit}`;
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
     if (category && category !== 'all') {
-      url = `/users/companies?category=${category}&page=${page}&limit=${limit}`;
+      params.set('category', category);
     }
-    const response = await apiClient.get<CompaniesResponse>(url);
+    if (search) {
+      params.set('search', search);
+    }
+    const response = await apiClient.get<CompaniesResponse>(
+      `/users/companies?${params.toString()}`,
+    );
     return response.data;
   },
 };

@@ -14,11 +14,11 @@ import {
   ActivityIcon,
   AddIcon,
   ChatTabIcon,
+  CompaniesTabIcon,
   HomeIcon,
   MenuIcon,
   OrdersIcon,
   PropertiesTabIcon,
-  SearchIcon,
 } from '@/assets/icons/tab/index';
 
 interface CustomTabBarProps extends BottomTabBarProps {
@@ -128,9 +128,9 @@ export default function CustomTabBar({
               IconComponent = HomeIcon;
               label = 'الرئيسية';
               break;
-            case 'explore':
-              IconComponent = SearchIcon;
-              label = 'استكشف';
+            case 'companies':
+              IconComponent = CompaniesTabIcon;
+              label = 'شركات';
               break;
             case 'activity':
               IconComponent = ActivityIcon;
