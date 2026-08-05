@@ -2,6 +2,7 @@ import apiClient from '@/shared/api/api';
 import {
   CompaniesResponse,
   HomeFeedResponse,
+  OfficesResponse,
   PropertiesResponse,
 } from '@/types/feed';
 
@@ -58,6 +59,28 @@ export const feedService = {
     }
     const response = await apiClient.get<CompaniesResponse>(
       `/users/companies?${params.toString()}`,
+    );
+    return response.data;
+  },
+
+  /**
+   * Fetches a paginated list of real estate offices.
+   * This endpoint is public and does not require a JWT token.
+   */
+  getOffices: async (
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+  ): Promise<OfficesResponse> => {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (search) {
+      params.set('search', search);
+    }
+    const response = await apiClient.get<OfficesResponse>(
+      `/users/offices?${params.toString()}`,
     );
     return response.data;
   },

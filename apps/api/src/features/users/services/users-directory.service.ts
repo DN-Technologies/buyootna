@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { GetCompaniesFilterDto } from '../dto/get-companies-filter.dto';
+import { GetOfficesFilterDto } from '../dto/get-offices-filter.dto';
 import {
   OFFICE_LISTING_PROPERTY_SELECT,
   formatOfficeListings,
@@ -116,6 +117,85 @@ export class UsersDirectoryService {
 
     return {
       data: formattedCompanies,
+      meta: {
+        total: totalCount,
+        current: page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+        hasNextPage: page < Math.ceil(totalCount / limit),
+      },
+    };
+  }
+
+  // --- Find Offices ---
+  async findOffices(filters: GetOfficesFilterDto) {
+    const { search, page = 1, limit = 10 } = filters;
+    const skip = (page - 1) * limit;
+
+    const officeDataWhere: Prisma.OfficeIdentityDataWhereInput = {
+      status: 'APPROVED',
+    };
+
+    if (search) {
+      officeDataWhere.name = {
+        contains: search,
+        mode: 'insensitive',
+      };
+    }
+
+    const whereClause: Prisma.IdentityWhereInput = {
+      type: 'OFFICE',
+      officeData: officeDataWhere,
+    };
+
+    const [identities, totalCount] = await Promise.all([
+      this.prisma.identity.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { officeData: true, user: true },
+      }),
+      this.prisma.identity.count({ where: whereClause }),
+    ]);
+
+    const userIds = identities.map((i) => i.userId);
+
+    const reviewStats = await this.prisma.review.groupBy({
+      by: ['targetUserId'],
+      where: { targetUserId: { in: userIds } },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+
+    const avgRatingByUser = new Map(
+      reviewStats.map((r) => [r.targetUserId, r._avg.rating]),
+    );
+    const reviewsCountByUser = new Map(
+      reviewStats.map((r) => [r.targetUserId, r._count._all]),
+    );
+
+    const formattedOffices = identities
+      .filter((i) => i.officeData !== null)
+      .map((i) => {
+        const avgRating = avgRatingByUser.get(i.userId);
+        return {
+          id: i.id,
+          userId: i.userId,
+          name: i.officeData!.name,
+          rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
+          reviewsCount: reviewsCountByUser.get(i.userId) ?? 0,
+          location: i.officeData!.hqLocation || '',
+          logoUrl: i.officeData!.logoUrl,
+          isVerified: i.officeData!.isVerified,
+          phone: i.user?.phone,
+          whatsapp: i.user?.whatsapp || i.user?.phone,
+          isFavorite: false,
+        };
+      });
+
+    return {
+      data: formattedOffices,
       meta: {
         total: totalCount,
         current: page,

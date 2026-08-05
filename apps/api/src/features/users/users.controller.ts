@@ -31,6 +31,7 @@ import {
   FileInterceptor,
 } from '@nestjs/platform-express';
 import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
+import { GetOfficesFilterDto } from './dto/get-offices-filter.dto';
 
 @Controller('users')
 export class UsersController {
@@ -75,6 +76,11 @@ export class UsersController {
   @Get('company/:id')
   async findCompanyDetails(@Param('id') id: string) {
     return this.directoryService.findCompanyDetails(id);
+  }
+
+  @Get('offices')
+  async findAllOffices(@Query() filters: GetOfficesFilterDto) {
+    return this.directoryService.findOffices(filters);
   }
 
   @Get('office/:id')

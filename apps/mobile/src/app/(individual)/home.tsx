@@ -14,7 +14,7 @@ import { FilterHorizontalIcon, MapIcon } from '@/assets/icons/home/header';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
 import HomeHeaderSkeleton from '@/features/individual/components/home/HomeHeaderSkeleton';
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
-import HomeCompanies from '@/features/individual/components/home/sections/HomeCompanies';
+import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
 import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
@@ -22,16 +22,8 @@ import ContentContainer from '@/shared/components/ContentContainer';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import { HomeFeedResponse } from '@/types/feed';
 
-type PrimaryTab = 'all' | 'properties' | 'companies';
+type PrimaryTab = 'all' | 'properties' | 'offices';
 type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
-type CompanyFilter =
-  | 'all'
-  | 'finishing'
-  | 'transport'
-  | 'building'
-  | 'decorations'
-  | 'interior_design'
-  | 'other';
 
 export default function HomeScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
@@ -54,8 +46,6 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
     useState<PropertyFilter>('all');
-  const [activeCompFilter, setActiveCompFilter] =
-    useState<CompanyFilter>('all');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
@@ -92,7 +82,7 @@ export default function HomeScreen() {
 
   const TABS = [
     { id: 'properties', label: 'عقارات' },
-    { id: 'companies', label: 'شركات' },
+    { id: 'offices', label: 'مكاتب عقارية' },
   ];
 
   const renderHeader = (withHorizontalPadding = true) => (
@@ -153,8 +143,6 @@ export default function HomeScreen() {
         activeTab={activeTab}
         activePropFilter={activePropFilter}
         onPropFilterChange={setActivePropFilter}
-        activeCompFilter={activeCompFilter}
-        onCompFilterChange={setActiveCompFilter}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
@@ -179,9 +167,8 @@ export default function HomeScreen() {
               )
             }
           />
-        ) : activeTab === 'companies' ? (
-          <HomeCompanies
-            activeFilter={activeCompFilter}
+        ) : activeTab === 'offices' ? (
+          <HomeOffices
             refreshing={refreshing}
             onRefresh={onRefresh}
             ListHeaderComponent={
