@@ -12,6 +12,22 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 
+const PROPERTY_CATEGORY_LABELS: Record<string, string> = {
+  COMMERCIAL: 'تجاري',
+  INVESTMENT: 'استثماري',
+  INDUSTRIAL: 'صناعي',
+  COASTAL: 'ساحلي',
+  OFFICE: 'مكتب',
+  PRIVATE: 'خاص',
+  HOUSE: 'بيت',
+  APARTMENT: 'شقة',
+  VILLA: 'فيلا',
+  BUILDING: 'عمارة',
+  LAND: 'أرض',
+  CHALET: 'شاليه',
+  RESIDENTIAL: 'سكني',
+};
+
 @Injectable()
 export class PropertiesService {
   constructor(
@@ -603,6 +619,7 @@ export class PropertiesService {
             : p.category === 'COMMERCIAL'
               ? 'تجاري'
               : 'استثماري',
+        categoryLabel: PROPERTY_CATEGORY_LABELS[p.category] || p.category,
         area: p.areaSize,
         beds: p.beds,
         baths: p.baths,

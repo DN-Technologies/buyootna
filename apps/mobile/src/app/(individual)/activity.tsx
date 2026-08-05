@@ -21,7 +21,6 @@ import {
 
 import { SortingIcon } from '@/assets/icons/activity';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
-import apiClient from '@/shared/api/api';
 import ActiveAdCard from '@/features/individual/components/activity/ActiveAdCard';
 import ActivityFilterPills from '@/features/individual/components/activity/ActivityFilterPills';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
@@ -30,9 +29,19 @@ import DraftPreviewSheet from '@/features/individual/components/activity/DraftPr
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
 import FreeQuotaBanner from '@/features/individual/components/activity/FreeQuotaBanner';
 import SubscriptionSlotsRow from '@/features/individual/components/activity/SubscriptionSlotsRow';
-import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
+import apiClient from '@/shared/api/api';
+import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import RadioSelectionSheet, {
+  RadioOption,
+} from '@/shared/components/profile/RadioSelectionSheet';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+
+const AD_SORT_OPTIONS: RadioOption[] = [
+  { label: 'الأحدث أولاً', value: 'NEWEST' },
+  { label: 'السعر: من الأعلى إلى الأقل', value: 'PRICE_DESC' },
+  { label: 'السعر: من الأقل إلى الأعلى', value: 'PRICE_ASC' },
+];
 
 const TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
@@ -53,24 +62,10 @@ export default function ActivityScreen() {
     'NEWEST',
   );
 
+  const sortSheetRef = useRef<BottomSheetModal>(null);
+
   const handleSortPress = () => {
-    Alert.alert(
-      'ترتيب الإعلانات',
-      'اختر طريقة ترتيب الإعلانات:',
-      [
-        { text: 'الأحدث أولاً', onPress: () => setSortBy('NEWEST') },
-        {
-          text: 'السعر: من الأعلى إلى الأقل',
-          onPress: () => setSortBy('PRICE_DESC'),
-        },
-        {
-          text: 'السعر: من الأقل إلى الأعلى',
-          onPress: () => setSortBy('PRICE_ASC'),
-        },
-        { text: 'إلغاء', style: 'cancel' },
-      ],
-      { cancelable: true },
-    );
+    sortSheetRef.current?.present();
   };
 
   const handleTrashPress = () => {
@@ -479,6 +474,16 @@ export default function ActivityScreen() {
         ref={featureAdSheetRef}
         propertyId={selectedPropertyId || undefined}
         onSuccess={handleFeatureSuccess}
+      />
+
+      {/* --- Sort Ads Bottom Sheet --- */}
+      <RadioSelectionSheet
+        ref={sortSheetRef}
+        title="الترتيب حسب"
+        options={AD_SORT_OPTIONS}
+        selectedValue={sortBy}
+        onSelect={(value) => setSortBy(value as typeof sortBy)}
+        snapPoints={['40%']}
       />
 
       {/* --- Success Toast Notification --- */}

@@ -14,6 +14,7 @@ import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
+import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
 import { formatTimeAgo } from '@/shared/utils/helpers/property';
@@ -133,13 +134,17 @@ export default function HomeProperties({
     }
   };
 
-  const renderEmptyComponent = () => {
+  const renderEmptyComponent = (mode: 'card' | 'list') => () => {
     if (isFilterLoading) {
       return (
         <View style={{ paddingTop: 10 }}>
-          {[1, 2, 3].map((key) => (
-            <PropertySkeleton key={key} cardWidth="100%" />
-          ))}
+          {[1, 2, 3].map((key) =>
+            mode === 'list' ? (
+              <PropertyListSkeleton key={key} cardWidth="100%" />
+            ) : (
+              <PropertySkeleton key={key} cardWidth="100%" />
+            ),
+          )}
         </View>
       );
     }
@@ -164,7 +169,7 @@ export default function HomeProperties({
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
           ListHeaderComponent={ListHeaderComponent}
-          ListEmptyComponent={renderEmptyComponent}
+          ListEmptyComponent={renderEmptyComponent('card')}
           columnWrapperStyle={
             isTablet
               ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 }
@@ -229,7 +234,7 @@ export default function HomeProperties({
           data={data}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={ListHeaderComponent}
-          ListEmptyComponent={renderEmptyComponent}
+          ListEmptyComponent={renderEmptyComponent('list')}
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingBottom: 120,
@@ -252,7 +257,8 @@ export default function HomeProperties({
               price={item.price}
               companyName={item.companyName}
               isFeatured={item.isFeatured}
-              category={item.type}
+              categoryLabel={item.categoryLabel}
+              beds={item.beds}
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}

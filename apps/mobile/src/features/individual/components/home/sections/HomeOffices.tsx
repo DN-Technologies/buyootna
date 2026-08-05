@@ -1,100 +1,59 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 
-import CompanyCard from '@/features/individual/components/CompanyCard';
+import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
-import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
-import { CompanyDto } from '@/types/feed';
+import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
+import { OfficeDto } from '@/types/feed';
 
-interface HomeCompaniesProps {
-  activeFilter?:
-    | 'all'
-    | 'finishing'
-    | 'transport'
-    | 'building'
-    | 'decorations'
-    | 'interior_design'
-    | 'other';
+interface HomeOfficesProps {
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export default function HomeCompanies({
-  activeFilter = 'all',
+export default function HomeOffices({
   refreshing = false,
   onRefresh,
   ListHeaderComponent,
-}: HomeCompaniesProps) {
-  const [data, setData] = useState<CompanyDto[]>([]);
+}: HomeOfficesProps) {
+  const router = useRouter();
+  const [data, setData] = useState<OfficeDto[]>([]);
   const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(true);
-  const [isFilterLoading, setIsFilterLoading] = useState(true);
+  const [favoriteOverrides, setFavoriteOverrides] = useState<
+    Record<string, boolean>
+  >({});
 
-  // Helper to map frontend filter strings to backend category names in Arabic
-  const getBackendCategory = (filter: string) => {
-    switch (filter) {
-      case 'finishing':
-        return 'تشطيب';
-      case 'transport':
-        return 'نقل';
-      case 'building':
-        return 'بناء';
-      case 'decorations':
-        return 'ديكورات';
-      case 'interior_design':
-        return 'تصميم داخلي';
-      case 'other':
-        return 'أخرى';
-      default:
-        return undefined; // 'all' means no filter
-    }
-  };
-
-  // --- 1. Fetch Fresh Data when Filter Changes ---
   useEffect(() => {
-    const fetchFilteredCompanies = async () => {
-      setIsFilterLoading(true);
+    const fetchOffices = async () => {
+      setIsLoading(true);
       try {
-        const categoryFilter = getBackendCategory(activeFilter);
-
-        // Call the paginated endpoint
-        const response = await feedService.getCompanies(categoryFilter, 1, 10);
-
+        const response = await feedService.getOffices(1, 10);
         setData(response.data);
         setPage(response.meta.current);
         setHasNextPage(response.meta.hasNextPage);
       } catch (error) {
-        console.error('Failed to fetch companies:', error);
+        console.error('Failed to fetch offices:', error);
+        setHasNextPage(false);
       } finally {
-        setIsFilterLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchFilteredCompanies();
-  }, [activeFilter]);
+    fetchOffices();
+  }, []);
 
-  // --- 2. Infinite Scroll Logic ---
   const fetchMoreData = async () => {
-    if (isLoadingMore || !hasNextPage) return;
+    if (isLoadingMore || !hasNextPage || isLoading) return;
 
     setIsLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const categoryFilter = getBackendCategory(activeFilter);
-
-      const response = await feedService.getCompanies(
-        categoryFilter,
-        nextPage,
-        10,
-      );
+      const response = await feedService.getOffices(nextPage, 10);
 
       setData((prev) => {
         const combined = [...prev, ...response.data];
@@ -105,18 +64,19 @@ export default function HomeCompanies({
       setPage(response.meta.current);
       setHasNextPage(response.meta.hasNextPage);
     } catch (error) {
-      console.error('Failed to load more companies:', error);
+      console.error('Failed to load more offices:', error);
+      setHasNextPage(false);
     } finally {
       setIsLoadingMore(false);
     }
   };
 
   const renderEmptyComponent = () => {
-    if (isFilterLoading) {
+    if (isLoading) {
       return (
         <View style={{ paddingTop: 10 }}>
           {[1, 2, 3].map((key) => (
-            <CompanySkeleton key={key} cardWidth="100%" />
+            <OfficeListSkeleton key={key} />
           ))}
         </View>
       );
@@ -124,11 +84,10 @@ export default function HomeCompanies({
     return (
       <View className="items-center justify-center py-20">
         <Text className="mb-2 font-cairo-bold text-lg text-[#111111]">
-          لا توجد شركات
+          لا توجد مكاتب عقارية
         </Text>
         <Text className="text-center font-cairo-medium text-sm text-[#6B6A6A]">
-          عذراً، لا توجد شركات مطابقة لهذا التصنيف حالياً. جرب تغيير عوامل
-          التصفية.
+          عذراً، لا توجد مكاتب عقارية متاحة حالياً.
         </Text>
       </View>
     );
@@ -157,20 +116,26 @@ export default function HomeCompanies({
         ) : undefined
       }
       renderItem={({ item }) => (
-        <CompanyCard
+        <OfficeListCard
           id={item.id}
           name={item.name}
-          category={item.category}
           rating={item.rating}
-          projectsCount={item.projectsCount}
-          serviceArea={item.serviceArea}
+          reviewsCount={item.reviewsCount}
+          location={item.location}
           logoUrl={item.logoUrl}
           isVerified={item.isVerified}
-          isFavorite={item.isFavorite}
-          cardWidth="100%"
+          phone={item.phone}
+          whatsapp={item.whatsapp}
+          isFavorite={favoriteOverrides[item.id] ?? item.isFavorite ?? false}
+          onPress={() => router.push(`/office/${item.id}` as any)}
+          onToggleFavorite={() =>
+            setFavoriteOverrides((prev) => ({
+              ...prev,
+              [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
+            }))
+          }
         />
       )}
-      // Infinite Scroll Props:
       onEndReached={fetchMoreData}
       onEndReachedThreshold={0.5}
       ListFooterComponent={

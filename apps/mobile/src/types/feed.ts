@@ -6,6 +6,7 @@ export interface PropertyDto {
   companyName: string;
   isFeatured: boolean;
   type: string; // e.g., 'سكني', 'تجاري', 'استثماري'
+  categoryLabel?: string; // e.g., 'عمارة', 'شقة', 'فيلا'
   area: number;
   beds: number;
   baths: number;
@@ -32,6 +33,21 @@ export interface CompanyDto {
   lastActivityAt: string;
 }
 
+// --- Office Modal ---
+export interface OfficeDto {
+  id: string;
+  userId: string;
+  name: string;
+  rating: number;
+  reviewsCount: number;
+  location: string;
+  logoUrl: string;
+  isVerified: boolean;
+  isFavorite?: boolean;
+  phone?: string | null;
+  whatsapp?: string | null;
+}
+
 // --- The Combined Feed Response ---
 export interface HomeFeedResponse {
   sale: PropertyDto[];
@@ -55,6 +71,18 @@ export interface PropertiesResponse {
 // --- Fetch Companies Response ---
 export interface CompaniesResponse {
   data: CompanyDto[];
+  meta: {
+    total: number;
+    current: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+  };
+}
+
+// --- Fetch Offices Response ---
+export interface OfficesResponse {
+  data: OfficeDto[];
   meta: {
     total: number;
     current: number;
