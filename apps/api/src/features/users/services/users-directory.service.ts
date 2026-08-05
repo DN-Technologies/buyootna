@@ -22,10 +22,21 @@ export class UsersDirectoryService {
     };
 
     if (category && category !== 'all') {
-      companyDataWhere.services = {
-        contains: category,
-        mode: 'insensitive',
-      };
+      const categories = category
+        .split(',')
+        .map((c) => c.trim())
+        .filter(Boolean);
+
+      if (categories.length === 1) {
+        companyDataWhere.services = {
+          contains: categories[0],
+          mode: 'insensitive',
+        };
+      } else if (categories.length > 1) {
+        companyDataWhere.OR = categories.map((c) => ({
+          services: { contains: c, mode: 'insensitive' as const },
+        }));
+      }
     }
 
     if (search) {
