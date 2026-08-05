@@ -98,12 +98,12 @@ const CategoryFilterSheet = forwardRef<
       <View className="flex-1">
         {/* --- Header --- */}
         <View className="flex-row items-center justify-between px-5 pb-4 pt-3">
-          <Text className="font-cairo-bold text-lg text-[#111111]">
+          <Text className="font-cairo-semibold text-[18px] text-[#111111]">
             تصفية البحث
           </Text>
           <TouchableOpacity
             onPress={handleClose}
-            className="h-8 w-8 items-center justify-center rounded-full bg-gray-50"
+            className="h-8 w-8 items-center justify-center rounded-full"
           >
             <Feather name="x" size={20} color="#111111" />
           </TouchableOpacity>

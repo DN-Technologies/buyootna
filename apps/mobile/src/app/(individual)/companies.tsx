@@ -147,7 +147,7 @@ export default function CompaniesScreen() {
 
       {/* Filter + Search Row */}
       <View className="mb-3 flex-row items-center gap-2">
-        <View className="h-11 flex-1 flex-row items-center rounded-full border border-gray-100 bg-[#F8FAFC] px-4">
+        <View className="h-[40px] flex-1 flex-row items-center rounded-full border border-[#ECECEC] bg-[#F9FAFE] px-4">
           <HomeSearchIcon size={18} color="#989898" />
           <TextInput
             className="h-full flex-1 text-right px-2 font-cairo-medium text-[13px] text-[#111111]"
@@ -166,7 +166,7 @@ export default function CompaniesScreen() {
               params: { openFilter: 'true' },
             })
           }
-          className="h-11 w-11 items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+          className="h-11 w-11 items-center justify-center rounded-full border border-[#ECECEC] bg-[#F8FAFC]"
         >
           <SortIcon size={18} color="#111111" />
         </TouchableOpacity>
@@ -179,7 +179,7 @@ export default function CompaniesScreen() {
         className="h-11 flex-row items-center justify-between rounded-2xl bg-[#F8FAFC] px-4"
       >
         <Text
-          className="font-cairo-semibold text-sm text-[#111111]"
+          className="font-cairo-medium text-[13px] text-[#111111]"
           numberOfLines={1}
         >
           {categoryLabel}
