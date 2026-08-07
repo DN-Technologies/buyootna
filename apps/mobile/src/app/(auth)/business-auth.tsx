@@ -22,9 +22,13 @@ import { CompanySignupForm } from '@/features/auth/components/company/CompanySig
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import apiClient from '@/shared/api/api';
 import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
+import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
+
+// Company/office accounts are temporarily disabled app-wide.
+const COMPANY_OFFICE_LOCKED = true;
 
 type AuthMode = 'login' | 'signup';
 
@@ -117,7 +121,9 @@ export default function BusinessAuthScreen() {
       // 2. Append all text fields from React Hook Form
       formData.append('name', data.name);
       formData.append('email', data.email || '');
-      formData.append('phone', data.phone || '');
+      if (data.phone) {
+        formData.append('phone', data.phone);
+      }
       formData.append('password', data.password || '');
       formData.append('services', data.services || '');
       formData.append('hqLocation', data.hqLocation || '');
@@ -174,6 +180,10 @@ export default function BusinessAuthScreen() {
       setIsLoading(false);
     }
   };
+
+  if (COMPANY_OFFICE_LOCKED) {
+    return <ComingSoonGate />;
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">

@@ -37,6 +37,7 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         label="رقم الهاتف"
         placeholder="55123456"
         keyboardType="phone-pad"
+        isRequired={false}
       />
 
       <FormInput

@@ -12,8 +12,8 @@ export class RegisterIndividualDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @IsString()
   @MinLength(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' })
@@ -30,8 +30,8 @@ export class RegisterCompanyDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @IsString()
   @MinLength(8)
@@ -76,8 +76,8 @@ export class RegisterOfficeDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'رقم الهاتف مطلوب' })
-  phone: string;
+  @IsOptional()
+  phone?: string;
 
   @IsString()
   @MinLength(8)
