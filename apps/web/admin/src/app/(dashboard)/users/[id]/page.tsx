@@ -9,6 +9,7 @@ import UserDetailTabs from '@/components/users/UserDetailTabs'
 import UserBasicInfoCard from '@/components/users/UserBasicInfoCard'
 import UserActivityInfoCard from '@/components/users/UserActivityInfoCard'
 import UserAdsTabContent from '@/components/users/UserAdsTabContent'
+import UserRequestsTabContent from '@/components/users/UserRequestsTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
 
 const roleLabels: Record<string, string> = {
@@ -111,6 +112,8 @@ export default function UserOverviewPage() {
 
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent properties={identity?.properties || []} />
+      ) : activeTab === 'الطلبات' ? (
+        <UserRequestsTabContent />
       ) : (
         <div className="flex flex-col gap-5 w-full">
           <UserBasicInfoCard
