@@ -1,7 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, MoreVertical, Paperclip, Smartphone, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Mail,
+  MoreVertical,
+  Paperclip,
+  Smartphone,
+  X,
+} from 'lucide-react'
 
 // Fully mock data: there is no Report model anywhere in the backend (for
 // ads or otherwise), so this tab is a static visual mockup, matching the
@@ -335,17 +342,26 @@ export function ReportsList({
         ))}
       </div>
 
-      <div className="flex flex-col gap-3 w-full">
-        {reports.map((report) => (
-          <ReportRow
-            key={report.id}
-            report={report}
-            onViewDetails={() => onSelect(report)}
-            onCloseReport={onCloseReport}
-            onAssignReport={onAssignReport}
-          />
-        ))}
-      </div>
+      {reports.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 px-6 text-center w-full min-h-75">
+          <AlertTriangle className="w-16 h-16 text-[#111111] stroke-[1.5] mb-4" />
+          <h3 className="text-[18px] font-bold text-[#111111]">
+            لا توجد أي بلاغات لهذا الاعلان
+          </h3>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 w-full">
+          {reports.map((report) => (
+            <ReportRow
+              key={report.id}
+              report={report}
+              onViewDetails={() => onSelect(report)}
+              onCloseReport={onCloseReport}
+              onAssignReport={onAssignReport}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

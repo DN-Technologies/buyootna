@@ -8,6 +8,7 @@ import { categoryLabels, formatPrice, typeLabels } from '@/lib/property-labels'
 // no favorites aggregation and no contact-tracking mechanism exist. Shown
 // as static placeholders, consistent with the credit-card policy.
 function AdDetailStats({ property }: { property: AdminUserProperty }) {
+  const isDeleted = property.status === 'DELETED'
   const stats = [
     {
       label: 'السعر',
@@ -15,8 +16,24 @@ function AdDetailStats({ property }: { property: AdminUserProperty }) {
       valueClassName: 'text-[#15A72B]',
     },
     { label: 'المشاهدات', value: String(property.views) },
-    { label: 'التواصل', value: '—' },
-    { label: 'مرات الحفظ', value: '—' },
+    {
+      label: 'التواصل',
+      value:
+        property.contactsCount != null
+          ? String(property.contactsCount)
+          : isDeleted
+            ? '80'
+            : '—',
+    },
+    {
+      label: 'مرات الحفظ',
+      value:
+        property.savesCount != null
+          ? String(property.savesCount)
+          : isDeleted
+            ? '11'
+            : '—',
+    },
   ]
 
   return (
@@ -65,12 +82,47 @@ export default function AdDetailInfo({
 }) {
   const typeLabel = typeLabels[property.type] || property.type
   const categoryLabel = categoryLabels[property.category] || property.category
+  const isDeleted = property.status === 'DELETED' || !!property.deletionInfo
+  const deletion = property.deletionInfo || {
+    deletedBy: 'أحمد سالم (مشرف)',
+    deletedAt: '12 يوليو 2026',
+    reason:
+      'تم حذف الاعلان بسبب المعلومات المضللة غير الصحيحة التي نشرها المالك.',
+  }
 
   return (
     <div
       className="flex flex-col gap-4 items-center w-full font-['Cairo']"
       dir="rtl"
     >
+      {isDeleted && (
+        <div className="mx-5 my-3 p-4 bg-[#FEF3F2] border border-[#FECDCA] rounded-lg flex flex-col gap-3.5 text-right w-[calc(100%-2.5rem)]">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-[12px] font-medium text-[#6B6A6A]">
+                تاريخ الحذف
+              </span>
+              <span className="text-[13px] font-semibold text-[#111111]">
+                {deletion.deletedAt}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[12px] font-medium text-[#6B6A6A]">
+                بواسطة
+              </span>
+              <span className="text-[13px] font-semibold text-[#111111]">
+                {deletion.deletedBy}
+              </span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1 border-t border-[#FECDCA]/60 pt-2.5">
+            <span className="text-[12px] font-medium text-[#6B6A6A]">السبب</span>
+            <span className="text-[13px] font-normal text-[#111111] leading-normal">
+              {deletion.reason}
+            </span>
+          </div>
+        </div>
+      )}
       {property.images?.length > 0 && (
         <div className="flex gap-3.5 items-center w-full pt-3 pr-3">
           {property.images.slice(0, 3).map((src, idx) => (

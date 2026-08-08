@@ -6,6 +6,7 @@ import {
   categoryLabels,
   formatArabicDate,
   getAdCode,
+  getStatusBadge,
   typeLabels,
 } from '@/lib/property-labels'
 
@@ -31,6 +32,8 @@ export default function AdDetailHeader({
   const categoryLabel = categoryLabels[property.category] || property.category
   const code = getAdCode(property.referenceNumber)
 
+  const badge = getStatusBadge(property)
+
   return (
     <div className="bg-white flex flex-col w-full font-['Cairo']" dir="rtl">
       <div className="border-b border-[#ECECEC] flex gap-4 items-start p-5 w-full">
@@ -42,10 +45,16 @@ export default function AdDetailHeader({
             <span className="text-[14px] text-[#6B6A6A]">
               نشر {formatArabicDate(property.createdAt)}
             </span>
-            <span className="h-5 flex items-center px-2 rounded-full text-[12px] font-medium bg-[#F4F8EE] text-[#111111]">
-              مجاني
-            </span>
-            {property.isFeatured && (
+            {property.status === 'DELETED' ? (
+              <span className="h-5 flex items-center px-2 rounded-full text-[12px] font-medium bg-[#FEF3F2] text-[#9C1E28]">
+                محذوف
+              </span>
+            ) : (
+              <span className="h-5 flex items-center px-2 rounded-full text-[12px] font-medium bg-[#F4F8EE] text-[#111111]">
+                مجاني
+              </span>
+            )}
+            {property.isFeatured && property.status !== 'DELETED' && (
               <span className="h-5 flex items-center px-2 rounded-full text-[12px] font-medium bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[#111111]">
                 مميز
               </span>

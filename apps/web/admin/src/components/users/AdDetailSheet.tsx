@@ -117,8 +117,8 @@ export default function AdDetailSheet({
               )}
             </div>
 
-            <div className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full font-['Cairo']">
-              {!property.isFeatured && (
+            <div className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full font-['Cairo']" dir="rtl">
+              {activeTab === 'details' && !property.isFeatured && property.status !== 'DELETED' && (
                 <button
                   type="button"
                   onClick={() => setShowFeatureDialog(true)}
@@ -138,7 +138,7 @@ export default function AdDetailSheet({
                   اعادة النشر
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
-              ) : (
+              ) : property.status !== 'DELETED' ? (
                 <button
                   type="button"
                   onClick={() =>
@@ -151,14 +151,17 @@ export default function AdDetailSheet({
                   {property.isHidden ? 'إظهار' : 'اخفاء'}
                   <EyeOff className="w-3.5 h-3.5" />
                 </button>
+              ) : null}
+
+              {property.status !== 'DELETED' && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmAction('delete')}
+                  className="flex-1 h-11.5 flex items-center justify-center rounded-full border border-[#9C1E28] text-[#9C1E28] text-[14px] font-semibold cursor-pointer"
+                >
+                  حذف
+                </button>
               )}
-              <button
-                type="button"
-                onClick={() => setConfirmAction('delete')}
-                className="flex-1 h-11.5 flex items-center justify-center rounded-full border border-[#9C1E28] text-[#9C1E28] text-[14px] font-semibold cursor-pointer"
-              >
-                حذف
-              </button>
             </div>
           </>
         )}

@@ -71,6 +71,8 @@ export function getStatusBadge(property: AdminUserProperty) {
       return { label: 'منتهي', className: 'bg-[#FFFBEB] text-[#B45309]' }
     case 'CLOSED':
       return { label: 'مغلق', className: 'bg-[#F1F5F9] text-[#334155]' }
+    case 'DELETED':
+      return { label: 'محذوف', className: 'bg-[#FEF3F2] text-[#9C1E28]' }
     default:
       return { label: property.status, className: 'bg-[#F1F5F9] text-[#334155]' }
   }
