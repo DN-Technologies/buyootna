@@ -11,6 +11,7 @@ import UserActivityInfoCard from '@/components/users/overview/UserActivityInfoCa
 import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
 import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
 import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
+import UserInvoicesDiscountsTabContent from '@/components/users/invoices/UserInvoicesDiscountsTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
 
 const roleLabels: Record<string, string> = {
@@ -117,6 +118,8 @@ export default function UserOverviewPage() {
         <UserRequestsTabContent />
       ) : activeTab === 'الباقة' ? (
         <UserPackagesTabContent />
+      ) : activeTab === 'الفواتير والخصم' ? (
+        <UserInvoicesDiscountsTabContent />
       ) : (
         <div className="flex flex-col gap-5 w-full">
           <UserBasicInfoCard
