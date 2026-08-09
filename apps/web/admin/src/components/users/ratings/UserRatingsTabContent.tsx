@@ -73,16 +73,14 @@ export default function UserRatingsTabContent() {
     /* Node 4043:133270: 0-State View */
     return (
       <div
-        className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']"
+        className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-20 px-6 text-center w-full min-h-80 font-['Cairo']"
         dir="rtl"
       >
-        <div className="size-16 rounded-full bg-[#F8FAFC] border border-[#ECECEC] flex items-center justify-center mb-4 text-[#111111]">
-          <Star className="w-7 h-7 text-[#111111]" />
-        </div>
-        <h3 className="text-[18px] font-bold text-[#111111] mb-2">
+        <Star className="w-14 h-14 text-[#111111] stroke-[1.25] mb-4" />
+        <h3 className="text-[18px] font-bold text-[#111111] mb-1">
           لا توجد أي اراء خاصة بالمستخدم
         </h3>
-        <p className="text-[14px] font-medium text-[#6B6A6A] max-w-md leading-relaxed">
+        <p className="text-[14px] font-medium text-[#6B6A6A] leading-relaxed">
           ستظهر الاراء هنا في حالة تواجدها.
         </p>
       </div>
