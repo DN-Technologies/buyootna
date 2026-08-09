@@ -21,6 +21,7 @@ const ENABLED_TABS = new Set([
   'البلاغات',
   'التقييمات',
   'السجل',
+  'ملاحظات',
 ])
 
 interface UserDetailTabsProps {
