@@ -18,6 +18,7 @@ const ENABLED_TABS = new Set([
   'الطلبات',
   'الباقة',
   'الفواتير والخصم',
+  'البلاغات',
 ])
 
 interface UserDetailTabsProps {
