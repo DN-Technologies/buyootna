@@ -12,7 +12,17 @@ const tabs = [
   'ملاحظات',
 ]
 
-const ENABLED_TABS = new Set(['نظرة عامة', 'الاعلانات'])
+const ENABLED_TABS = new Set([
+  'نظرة عامة',
+  'الاعلانات',
+  'الطلبات',
+  'الباقة',
+  'الفواتير والخصم',
+  'البلاغات',
+  'التقييمات',
+  'السجل',
+  'ملاحظات',
+])
 
 interface UserDetailTabsProps {
   activeTab?: string

@@ -81,30 +81,6 @@ const AccountTypeBottomSheet = forwardRef<
               handleClose();
             }}
           />
-
-          <SelectionCard
-            title="مكتب عقاري"
-            description="للمكاتب العقارية التي تقدم خدمات واستشارات عقارية."
-            type="office"
-            isSelected={selectedType === 'office'}
-            onPress={() => {
-              setSelectedType('office');
-              onContinue('office');
-              handleClose();
-            }}
-          />
-
-          <SelectionCard
-            title="شركة"
-            description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
-            type="company"
-            isSelected={selectedType === 'company'}
-            onPress={() => {
-              setSelectedType('company');
-              onContinue('company');
-              handleClose();
-            }}
-          />
         </View>
       </BottomSheetView>
     </BottomSheetModal>

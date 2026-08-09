@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SelectionCard from '@/shared/components/SelectionCard';
 import AppLogo from '@/shared/components/AppLogo';
+import SelectionCard from '@/shared/components/SelectionCard';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { AccountType } from '@/types';
 
@@ -14,16 +14,6 @@ export default function AccountTypeSelectionScreen() {
   const handleStartRegistration = () => {
     if (selectedType === 'individual') {
       router.push('/(auth)/individual-auth');
-    } else if (selectedType === 'office') {
-      router.push({
-        pathname: '/(auth)/business-auth',
-        params: { type: 'office' },
-      } as any);
-    } else if (selectedType === 'company') {
-      router.push({
-        pathname: '/(auth)/business-auth',
-        params: { type: 'company' },
-      } as any);
     }
   };
 
@@ -39,7 +29,7 @@ export default function AccountTypeSelectionScreen() {
           </Text>
           <Text className="leading-2 text-center font-cairo-medium text-base text-[#6B6A6A]">
             حدد الطريقة التي تناسبك لاستخدام التطبيق، سواء كنت فرد تبحث أو تنشر
-            إعلان، شركة تعرض مشاريعها وخدماتها، أو مالك عقار.
+            إعلان.
           </Text>
         </View>
 
@@ -51,22 +41,6 @@ export default function AccountTypeSelectionScreen() {
             type="individual"
             isSelected={selectedType === 'individual'}
             onPress={() => setSelectedType('individual')}
-          />
-
-          <SelectionCard
-            title="مكتب عقاري"
-            description="للمكاتب العقارية التي تقدم خدمات واستشارات عقارية."
-            type="office"
-            isSelected={selectedType === 'office'}
-            onPress={() => setSelectedType('office')}
-          />
-
-          <SelectionCard
-            title="شركة"
-            description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
-            type="company"
-            isSelected={selectedType === 'company'}
-            onPress={() => setSelectedType('company')}
           />
         </View>
 

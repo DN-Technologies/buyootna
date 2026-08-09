@@ -74,14 +74,33 @@ export default function IndividualAuthScreen() {
   const onSignup = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
+      const phone = data.phone || undefined;
       await apiClient.post('/users/register/individual', {
         email: data.email,
-        phone: data.phone,
+        phone,
         password: data.password,
       });
 
-      setSignupPhone(data.phone);
-      setSignupStep(2);
+      if (phone) {
+        // A phone was provided, so the backend sent an SMS OTP — verify it.
+        setSignupPhone(phone);
+        setSignupStep(2);
+      } else {
+        // No phone was provided, so no OTP was sent — log the user in directly.
+        const loginResponse = await apiClient.post('/auth/login', {
+          identifier: data.email,
+          password: data.password,
+        });
+
+        await setAuth(
+          loginResponse.data.user,
+          loginResponse.data.activeIdentity,
+          loginResponse.data.identities,
+          loginResponse.data.access_token,
+        );
+
+        successSheetRef.current?.present();
+      }
     } catch (error: any) {
       let backendMessage = 'حدث خطأ أثناء إنشاء الحساب';
       if (error.response?.data?.message) {

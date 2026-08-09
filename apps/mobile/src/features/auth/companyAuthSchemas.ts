@@ -30,14 +30,14 @@ export function createCompanySignupSchema(includeAccountFields: boolean) {
           .string({ message: 'البريد الإلكتروني مطلوب' })
           .email('البريد الإلكتروني غير صالح')
       : z.string().optional(),
-    phone: includeAccountFields
-      ? z
-          .string({ message: 'رقم الهاتف مطلوب' })
-          .regex(
-            /^(?:\+?965)?[569]\d{7}$/,
-            'رقم الهاتف يجب أن يكون رقم كويتي صالح',
-          )
-      : z.string().optional(),
+    phone: z
+      .string()
+      .regex(
+        /^(?:\+?965)?[569]\d{7}$/,
+        'رقم الهاتف يجب أن يكون رقم كويتي صالح',
+      )
+      .optional()
+      .or(z.literal('')),
     password: includeAccountFields
       ? z
           .string({ message: 'كلمة المرور مطلوبة' })

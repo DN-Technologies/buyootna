@@ -80,7 +80,7 @@ export interface AdminUserProperty {
   referenceNumber: number;
   type: 'SALE' | 'RENT' | 'EXCHANGE' | 'AUCTION' | 'DEAL';
   category: string;
-  status: 'DRAFT' | 'ACTIVE' | 'REJECTED' | 'EXPIRED' | 'CLOSED';
+  status: 'DRAFT' | 'ACTIVE' | 'REJECTED' | 'EXPIRED' | 'CLOSED' | 'DELETED';
   isFeatured: boolean;
   isHidden: boolean;
   price: number | null;
@@ -98,6 +98,13 @@ export interface AdminUserProperty {
   requiredYear: number | null;
   requestYear: number | null;
   features: unknown;
+  savesCount?: number;
+  contactsCount?: number;
+  deletionInfo?: {
+    deletedAt: string;
+    deletedBy: string;
+    reason: string;
+  };
 }
 
 export interface AdminUserIdentity {

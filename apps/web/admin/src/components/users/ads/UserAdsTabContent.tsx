@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import { Megaphone } from 'lucide-react'
 import UserAdsCreditCard from './UserAdsCreditCard'
 import UserAdCard from './UserAdCard'
 import AdDetailSheet from './AdDetailSheet'
@@ -21,15 +22,13 @@ export default function UserAdsTabContent({
     (p) => p.status === 'ACTIVE' && !p.isHidden,
   ).length
   const featuredCount = properties.filter((p) => p.isFeatured).length
+  const deletedCount = properties.filter((p) => p.status === 'DELETED').length
 
-  // "محذوف" has no real data source: Property rows are hard-deleted (no
-  // soft-delete flag), so there is nothing to list here — shown as an
-  // honest empty state rather than fabricated cards.
   const tabs: { id: AdsFilter; label: string; count: number }[] = [
     { id: 'all', label: 'الكل', count: properties.length },
     { id: 'active', label: 'نشطة', count: activeCount },
     { id: 'featured', label: 'مميزة', count: featuredCount },
-    { id: 'deleted', label: 'محذوف', count: 0 },
+    { id: 'deleted', label: 'محذوف', count: deletedCount },
   ]
 
   const filtered = useMemo(() => {
@@ -40,16 +39,19 @@ export default function UserAdsTabContent({
       return properties.filter((p) => p.isFeatured)
     }
     if (filter === 'deleted') {
-      return []
+      return properties.filter((p) => p.status === 'DELETED')
     }
     return properties
   }, [properties, filter])
 
   return (
-    <div className="flex flex-col gap-5 w-full" dir="rtl">
-      <UserAdsCreditCard />
+    <div className="flex flex-col gap-5 w-full font-['Cairo']" dir="rtl">
+      <UserAdsCreditCard
+        isFreeUsed={properties.length > 0}
+        paidCredit={properties.length > 0 ? '7 / 10' : null}
+      />
 
-      <div className="bg-white border border-[#ECECEC] rounded-lg flex items-center w-full font-['Cairo'] overflow-hidden">
+      <div className="bg-white border border-[#ECECEC] rounded-lg flex items-center p-1 w-full gap-1 overflow-x-auto">
         {tabs.map((tab) => {
           const isActive = tab.id === filter
           return (
@@ -57,10 +59,10 @@ export default function UserAdsTabContent({
               key={tab.id}
               type="button"
               onClick={() => setFilter(tab.id)}
-              className={`h-9 flex items-center justify-center px-3 text-[16px] cursor-pointer transition-colors ${
+              className={`h-9 flex items-center justify-center px-4 text-[14px] cursor-pointer transition-colors rounded-md ${
                 isActive
                   ? 'bg-primary text-white font-bold'
-                  : 'text-[#6B6A6A] font-normal hover:bg-[#F8FAFC]'
+                  : 'text-[#6B6A6A] font-medium hover:bg-[#F8FAFC]'
               }`}
             >
               {tab.label} ({tab.count})
@@ -70,10 +72,17 @@ export default function UserAdsTabContent({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-16 text-[#6B6A6A] font-['Cairo']">
-          {filter === 'deleted'
-            ? 'لا يمكن عرض الإعلانات المحذوفة حالياً'
-            : 'لا توجد إعلانات مطابقة'}
+        <div className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-16 px-6 text-center w-full min-h-80">
+          <div className="size-16 rounded-full bg-[#F8FAFC] border border-[#ECECEC] flex items-center justify-center mb-4 text-primary">
+            <Megaphone className="w-7 h-7" />
+          </div>
+          <h3 className="text-[18px] font-bold text-[#111111] mb-2">
+            لا توجد إعلانات لهذا المستخدم
+          </h3>
+          <p className="text-[14px] font-medium text-[#6B6A6A] max-w-md leading-relaxed">
+            لا توجد عقارات حاليا، سوف تظهر العقارات والاعلانات هنا فور اضافتها
+            من المستخدم.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">

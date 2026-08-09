@@ -620,6 +620,78 @@ async function main() {
   }
   console.log('✅ Seeded individual@buyootna.com with 5 listings.');
 
+  // 7. Seed Dedicated App Store Reviewer Office (مكتب عقاري) Account
+  console.log('🏢 Seeding App Store Reviewer Office Account...');
+  const officeUserId = randomUUID();
+  await prisma.user.create({
+    data: {
+      id: officeUserId,
+      email: 'office.reviewer@buyootna.com',
+      phone: '+96512345679',
+      password: hashedPassword,
+      role: Role.OFFICE,
+    },
+  });
+
+  const officeArea = allAreas[0];
+  await prisma.officeProfile.create({
+    data: {
+      id: randomUUID(),
+      userId: officeUserId,
+      name: 'مكتب بيوتنا العقاري - حساب المراجعة',
+      services: 'وساطة عقارية • تأجير • إدارة أملاك',
+      hqLocation: `${officeArea.areaName}، ${officeArea.govName}`,
+      about:
+        'مكتب عقاري تجريبي مخصص لمراجعة تطبيق آبل، يعرض كافة ميزات حسابات المكاتب العقارية.',
+      licenseActivity: 'وساطة عقارية',
+      licenseNumber: 'LIC-REVIEW-OFFICE-001',
+      licenseExpiry: '15 ابريل 2028',
+      logoUrl:
+        'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
+      licenseFileUrl: 'https://example.com/license.pdf',
+      isVerified: true,
+      status: ApprovalStatus.APPROVED,
+    },
+  });
+
+  // Give the office a few active listings so reviewers see full functionality
+  for (let i = 1; i <= 3; i++) {
+    const randomArea = allAreas[(i + 20) % allAreas.length];
+    const { latitude, longitude } = randomCoordinateForArea(randomArea.areaId);
+
+    await prisma.property.create({
+      data: {
+        id: randomUUID(),
+        referenceNumber: 2100000 + i,
+        userId: officeUserId,
+        type: i % 2 === 0 ? ListingType.RENT : ListingType.SALE,
+        category: PropertyCategory.APARTMENT,
+        isFeatured: i === 1,
+        price: i % 2 === 0 ? 500 + i * 50 : 95000 + i * 15000,
+        beds: 2 + i,
+        baths: 2,
+        location: `عقار تابع لمكتب المراجعة رقم ${i}`,
+        description: 'عقار تجريبي معروض من مكتب عقاري لأغراض مراجعة التطبيق.',
+        images: [
+          'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
+        ],
+        status: ListingStatus.ACTIVE,
+        isHidden: false,
+        governorateId: randomArea.govId,
+        areaId: randomArea.areaId,
+        areaSize: 120 + i * 20,
+        phoneNumber: '+96512345679',
+        views: 5 + i,
+        latitude,
+        longitude,
+      },
+    });
+  }
+
+  console.log(
+    '✅ Seeded App Store Reviewer office account (office.reviewer@buyootna.com / password123)',
+  );
+
   // --- Seed Plans ---
   console.log('🌱 Seeding subscription plans...');
   const plans = [

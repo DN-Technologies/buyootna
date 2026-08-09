@@ -28,20 +28,6 @@ const identityOptions: IdentityOption[] = [
     icon: require('@/assets/icons/individual-icon.svg'),
     route: '/(auth)/add-identity-individual',
   },
-  {
-    type: 'COMPANY',
-    title: 'حساب شركة',
-    description: 'للشركات العقارية والمطورين',
-    icon: require('@/assets/icons/company-icon.svg'),
-    route: '/(auth)/add-identity-company',
-  },
-  {
-    type: 'OFFICE',
-    title: 'حساب مكتب',
-    description: 'للمكاتب العقارية والوسطاء',
-    icon: require('@/assets/icons/owner-icon.svg'),
-    route: '/(auth)/add-identity-office',
-  },
 ];
 
 export default function AddIdentityScreen() {

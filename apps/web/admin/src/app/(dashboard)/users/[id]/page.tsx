@@ -6,9 +6,16 @@ import { Loader2 } from 'lucide-react'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
 import UserQuickStats from '@/components/users/UserQuickStats'
 import UserDetailTabs from '@/components/users/UserDetailTabs'
-import UserBasicInfoCard from '@/components/users/UserBasicInfoCard'
-import UserActivityInfoCard from '@/components/users/UserActivityInfoCard'
-import UserAdsTabContent from '@/components/users/UserAdsTabContent'
+import UserBasicInfoCard from '@/components/users/overview/UserBasicInfoCard'
+import UserActivityInfoCard from '@/components/users/overview/UserActivityInfoCard'
+import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
+import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
+import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
+import UserInvoicesDiscountsTabContent from '@/components/users/invoices/UserInvoicesDiscountsTabContent'
+import UserReportsTabContent from '@/components/users/reports/UserReportsTabContent'
+import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabContent'
+import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
+import UserNotesTabContent from '@/components/users/notes/UserNotesTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
 
 const roleLabels: Record<string, string> = {
@@ -111,6 +118,20 @@ export default function UserOverviewPage() {
 
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent properties={identity?.properties || []} />
+      ) : activeTab === 'الطلبات' ? (
+        <UserRequestsTabContent />
+      ) : activeTab === 'الباقة' ? (
+        <UserPackagesTabContent />
+      ) : activeTab === 'الفواتير والخصم' ? (
+        <UserInvoicesDiscountsTabContent />
+      ) : activeTab === 'البلاغات' ? (
+        <UserReportsTabContent />
+      ) : activeTab === 'التقييمات' ? (
+        <UserRatingsTabContent />
+      ) : activeTab === 'السجل' ? (
+        <UserLogsTabContent />
+      ) : activeTab === 'ملاحظات' ? (
+        <UserNotesTabContent />
       ) : (
         <div className="flex flex-col gap-5 w-full">
           <UserBasicInfoCard
