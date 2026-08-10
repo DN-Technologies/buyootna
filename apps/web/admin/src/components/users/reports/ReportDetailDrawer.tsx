@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ExternalLink, FileText, X } from 'lucide-react'
 import { UserReportItem } from './UserReportsTabContent'
+import AssignReportModal, { Moderator } from './AssignReportModal'
+import ReportSuccessToast from './ReportSuccessToast'
 
 export interface ReportDetailDrawerProps {
   open: boolean
@@ -34,6 +36,9 @@ export default function ReportDetailDrawer({
   onAssign,
   onCloseReport,
 }: ReportDetailDrawerProps) {
+  const [assignModalOpen, setAssignModalOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -47,6 +52,18 @@ export default function ReportDetailDrawer({
   if (!open || !report) return null
 
   const isClosed = report.status === 'مغلقة'
+
+  const handleAssignModerator = (moderator: Moderator) => {
+    onAssign?.(report)
+    setToastMessage(`تم إسناد البلاغ للمشرف ${moderator.name} بنجاح.`)
+    setTimeout(() => setToastMessage(null), 5000)
+  }
+
+  const handleCloseReportAction = () => {
+    onCloseReport?.(report)
+    setToastMessage('تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.')
+    setTimeout(() => setToastMessage(null), 5000)
+  }
 
   return (
     <div className="fixed inset-0 z-50 font-['Cairo'] flex">
@@ -186,20 +203,14 @@ export default function ReportDetailDrawer({
           <div className="p-6 border-t border-[#ECECEC] flex items-center gap-3 bg-white">
             <button
               type="button"
-              onClick={() => {
-                onAssign?.(report)
-                onClose()
-              }}
+              onClick={() => setAssignModalOpen(true)}
               className="h-11 w-full px-6 bg-primary hover:bg-[#0F2238] text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer"
             >
               اسناد لمسؤول
             </button>
             <button
               type="button"
-              onClick={() => {
-                onCloseReport?.(report)
-                onClose()
-              }}
+              onClick={handleCloseReportAction}
               className="h-11 w-full px-6 bg-white border border-[#ECECEC] hover:bg-[#F8FAFC] text-[#111111] font-bold text-[14px] rounded-xl transition-colors cursor-pointer"
             >
               اغلاق البلاغ
@@ -207,6 +218,24 @@ export default function ReportDetailDrawer({
           </div>
         )}
       </div>
+
+      {/* Assign Report Modal */}
+      {assignModalOpen && (
+        <AssignReportModal
+          isOpen={assignModalOpen}
+          onClose={() => setAssignModalOpen(false)}
+          onAssign={handleAssignModerator}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <ReportSuccessToast
+          message={toastMessage}
+          onUndo={() => alert('تم التراجع عن الإجراء بنجاح.')}
+          onDismiss={() => setToastMessage(null)}
+        />
+      )}
     </div>
   )
 }

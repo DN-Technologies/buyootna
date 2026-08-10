@@ -1,9 +1,34 @@
 'use client'
 
-const tabs = [
+const individualTabs = [
   'نظرة عامة',
   'الاعلانات',
   'الطلبات',
+  'الباقة',
+  'الفواتير والخصم',
+  'البلاغات',
+  'التقييمات',
+  'السجل',
+  'ملاحظات',
+]
+
+const officeTabs = [
+  'نظرة عامة',
+  'الاعلانات',
+  'الخدمات',
+  'الباقة',
+  'الفواتير والخصم',
+  'البلاغات',
+  'التقييمات',
+  'السجل',
+  'ملاحظات',
+]
+
+const companyTabs = [
+  'نظرة عامة',
+  'الخدمات',
+  'الطلبات',
+  'المعرض',
   'الباقة',
   'الفواتير والخصم',
   'البلاغات',
@@ -16,6 +41,8 @@ const ENABLED_TABS = new Set([
   'نظرة عامة',
   'الاعلانات',
   'الطلبات',
+  'الخدمات',
+  'المعرض',
   'الباقة',
   'الفواتير والخصم',
   'البلاغات',
@@ -27,12 +54,24 @@ const ENABLED_TABS = new Set([
 interface UserDetailTabsProps {
   activeTab?: string
   onTabChange?: (tab: string) => void
+  isOffice?: boolean
+  userRole?: 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
 }
 
 export default function UserDetailTabs({
   activeTab = 'نظرة عامة',
   onTabChange,
+  isOffice = false,
+  userRole,
 }: UserDetailTabsProps) {
+  const role = userRole || (isOffice ? 'OFFICE' : 'INDIVIDUAL')
+  const tabs =
+    role === 'COMPANY'
+      ? companyTabs
+      : role === 'OFFICE'
+        ? officeTabs
+        : individualTabs
+
   return (
     <div
       className="w-full border-b border-[#EBECEE] flex items-baseline gap-2.5 px-6 md:px-8 text-right font-['Cairo'] overflow-x-auto"
