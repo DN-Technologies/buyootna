@@ -167,7 +167,7 @@ export default function UserOverviewPage() {
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent properties={identity?.properties || []} />
       ) : activeTab === 'الطلبات' ? (
-        <UserRequestsTabContent />
+        <UserRequestsTabContent userRole={userRole} />
       ) : activeTab === 'الخدمات' ? (
         <UserServicesTabContent />
       ) : activeTab === 'المعرض' ? (
