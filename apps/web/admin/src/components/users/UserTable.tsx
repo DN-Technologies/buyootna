@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Eye, MoreVertical, ShieldAlert, ShieldCheck, Ban, Trash2 } from 'lucide-react'
+import Skeleton from '@/components/ui/Skeleton'
 
 export interface UserRow {
   id: string
@@ -148,11 +149,37 @@ export default function UserTable({
         {/* Table Body */}
         <tbody className="divide-y divide-[#ECECEC] text-[13px]">
           {loading ? (
-            <tr>
-              <td colSpan={8} className="py-8 text-center text-[#6B6A6A]">
-                جاري تحميل البيانات...
-              </td>
-            </tr>
+            Array.from({ length: 5 }).map((_, idx) => (
+              <tr key={idx} className="h-13.5">
+                <td className="py-3 px-4">
+                  <Skeleton className="h-4 w-4 rounded-xs" />
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-44" />
+                  </div>
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-4 w-16" />
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-4 w-20 rounded-full" />
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-5 w-14 rounded-full" />
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-4 w-24" />
+                </td>
+                <td className="py-3 px-4 text-center">
+                  <Skeleton className="h-6 w-12 rounded-md mx-auto" />
+                </td>
+              </tr>
+            ))
           ) : users.length === 0 ? (
             <tr>
               <td colSpan={8} className="py-8 text-center text-[#6B6A6A]">

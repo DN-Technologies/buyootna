@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
 import UserQuickStats from '@/components/users/UserQuickStats'
 import UserDetailTabs from '@/components/users/UserDetailTabs'
-import UserBasicInfoCard from '@/components/users/overview/UserBasicInfoCard'
-import UserActivityInfoCard from '@/components/users/overview/UserActivityInfoCard'
+import UserDetailPageSkeleton from '@/components/users/UserDetailPageSkeleton'
+import IndividualProfileOverview from '@/components/users/profiles/IndividualProfileOverview'
+import OfficeProfileOverview from '@/components/users/profiles/OfficeProfileOverview'
+import UserServicesTabContent from '@/components/users/services/UserServicesTabContent'
 import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
 import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
 import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
@@ -24,6 +25,32 @@ const roleLabels: Record<string, string> = {
   OFFICE: 'مكتب عقاري',
 }
 
+const TAB_SLUGS: Record<string, string> = {
+  'نظرة عامة': 'overview',
+  'الاعلانات': 'ads',
+  'الطلبات': 'requests',
+  'الخدمات': 'services',
+  'الباقة': 'packages',
+  'الفواتير والخصم': 'invoices',
+  'البلاغات': 'reports',
+  'التقييمات': 'ratings',
+  'السجل': 'logs',
+  'ملاحظات': 'notes',
+}
+
+const SLUG_TO_TAB: Record<string, string> = {
+  overview: 'نظرة عامة',
+  ads: 'الاعلانات',
+  requests: 'الطلبات',
+  services: 'الخدمات',
+  packages: 'الباقة',
+  invoices: 'الفواتير والخصم',
+  reports: 'البلاغات',
+  ratings: 'التقييمات',
+  logs: 'السجل',
+  notes: 'ملاحظات',
+}
+
 function formatArabicDate(date?: string | null) {
   if (!date) return '—'
   return new Intl.DateTimeFormat('ar', {
@@ -37,10 +64,23 @@ function formatArabicDate(date?: string | null) {
 
 export default function UserOverviewPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const [user, setUser] = useState<AdminUserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('نظرة عامة')
+
+  const currentTabSlug = searchParams.get('tab')
+  const activeTab = (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
+
+  const handleTabChange = (tabLabel: string) => {
+    const slug = TAB_SLUGS[tabLabel] || 'overview'
+    const newParams = new URLSearchParams(searchParams.toString())
+    newParams.set('tab', slug)
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -66,11 +106,7 @@ export default function UserOverviewPage() {
   }, [params.id])
 
   if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+    return <UserDetailPageSkeleton />
   }
 
   if (error || !user) {
@@ -82,6 +118,7 @@ export default function UserOverviewPage() {
   }
 
   const identity = user.identities?.[0]
+  const isOffice = user.role === 'OFFICE'
   const displayName =
     identity?.companyData?.name ||
     identity?.officeData?.name ||
@@ -111,15 +148,23 @@ export default function UserOverviewPage() {
           planLabel={user.activePlan?.name || 'الباقة العادية'}
           statusLabel={statusLabel}
           avatarUrl={avatarUrl}
+          isOffice={isOffice}
+          userId={user.id}
         />
-        <UserQuickStats />
-        <UserDetailTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <UserQuickStats isOffice={isOffice} />
+        <UserDetailTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          isOffice={isOffice}
+        />
       </div>
 
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent properties={identity?.properties || []} />
       ) : activeTab === 'الطلبات' ? (
         <UserRequestsTabContent />
+      ) : activeTab === 'الخدمات' ? (
+        <UserServicesTabContent />
       ) : activeTab === 'الباقة' ? (
         <UserPackagesTabContent />
       ) : activeTab === 'الفواتير والخصم' ? (
@@ -132,21 +177,29 @@ export default function UserOverviewPage() {
         <UserLogsTabContent />
       ) : activeTab === 'ملاحظات' ? (
         <UserNotesTabContent />
+      ) : isOffice ? (
+        <OfficeProfileOverview
+          email={user.email || '—'}
+          fullName={user.name || displayName}
+          whatsapp={user.whatsapp || '—'}
+          phone={user.phone || '—'}
+          userId={user.id}
+          isPendingVerification={true}
+          lastActivity="اليوم 09:30 صباحاً"
+          lastLogin="28 فبراير 2025"
+          joinedAt={formatArabicDate(user.createdAt)}
+        />
       ) : (
-        <div className="flex flex-col gap-5 w-full">
-          <UserBasicInfoCard
-            email={user.email || '—'}
-            fullName={user.name || displayName}
-            whatsapp={user.whatsapp || '—'}
-            phone={user.phone || '—'}
-            accountType={accountType}
-          />
-          <UserActivityInfoCard
-            lastActivity="اليوم 09:30 صباحاً"
-            lastLogin="28 فبراير 2025"
-            joinedAt={formatArabicDate(user.createdAt)}
-          />
-        </div>
+        <IndividualProfileOverview
+          email={user.email || '—'}
+          fullName={user.name || displayName}
+          whatsapp={user.whatsapp || '—'}
+          phone={user.phone || '—'}
+          accountType={accountType}
+          lastActivity="اليوم 09:30 صباحاً"
+          lastLogin="28 فبراير 2025"
+          joinedAt={formatArabicDate(user.createdAt)}
+        />
       )}
     </div>
   )

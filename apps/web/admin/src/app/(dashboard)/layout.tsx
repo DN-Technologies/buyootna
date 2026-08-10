@@ -28,8 +28,9 @@ export default function DashboardLayout({
         return
       }
 
-      // Optimistically show cached user info while we verify the session.
+      // Optimistically show cached user info & layout while we verify the session.
       setCurrentUser(getStoredUser())
+      setAuthorized(true)
 
       try {
         const res = await api.get('/users/me')
@@ -37,18 +38,21 @@ export default function DashboardLayout({
 
         if (!user?.isAdmin) {
           clearSession()
-          if (!cancelled) router.replace('/auth/login')
+          if (!cancelled) {
+            setAuthorized(false)
+            router.replace('/auth/login')
+          }
           return
         }
 
         if (!cancelled) {
           setCurrentUser(user)
-          setAuthorized(true)
         }
       } catch {
-        // A 401 is already handled by the response interceptor (clears
-        // session + redirects). Any other failure also blocks access.
-        if (!cancelled) router.replace('/auth/login')
+        if (!cancelled) {
+          setAuthorized(false)
+          router.replace('/auth/login')
+        }
       }
     }
 

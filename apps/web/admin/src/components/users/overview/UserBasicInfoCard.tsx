@@ -2,6 +2,7 @@
 
 import { Mail, MessageCircle, Phone, User } from 'lucide-react'
 import type { ComponentType } from 'react'
+import Skeleton from '@/components/ui/Skeleton'
 
 export interface UserBasicInfoCardProps {
   email: string
@@ -9,6 +10,7 @@ export interface UserBasicInfoCardProps {
   whatsapp: string
   phone: string
   accountType: string
+  loading?: boolean
 }
 
 function Field({
@@ -16,24 +18,30 @@ function Field({
   value,
   icon: Icon,
   iconClassName,
+  loading = false,
 }: {
   label: string
   value: string
   icon: ComponentType<{ className?: string }>
   iconClassName?: string
+  loading?: boolean
 }) {
   return (
     <div className="flex-1 flex items-center gap-2 py-6.5 min-w-0">
       <div className="bg-[#F5F7F9] rounded-md flex items-center justify-center shrink-0 size-7.5">
         <Icon className={`w-4 h-4 text-[#6B6A6A] ${iconClassName || ''}`} />
       </div>
-      <div className="flex flex-col gap-2 text-right min-w-0">
+      <div className="flex flex-col gap-2 text-right min-w-0 flex-1">
         <p className="text-[12px] font-normal text-[#6B6A6A] leading-3.75">
           {label}
         </p>
-        <p className="text-[14px] font-medium text-[#111111] tracking-[-0.408px] truncate max-w-full">
-          {value || '—'}
-        </p>
+        {loading ? (
+          <Skeleton className="h-5 w-32" />
+        ) : (
+          <p className="text-[14px] font-medium text-[#111111] tracking-[-0.408px] truncate max-w-full">
+            {value || '—'}
+          </p>
+        )}
       </div>
     </div>
   )
@@ -45,6 +53,7 @@ export default function UserBasicInfoCard({
   whatsapp,
   phone,
   accountType,
+  loading = false,
 }: UserBasicInfoCardProps) {
   return (
     <div
@@ -58,9 +67,9 @@ export default function UserBasicInfoCard({
       </div>
 
       <div className="flex items-stretch justify-between px-5 border-b border-[#ECECEC]">
-        <Field label="البريد الإلكتروني" value={email} icon={Mail} />
+        <Field label="البريد الإلكتروني" value={email} icon={Mail} loading={loading} />
         <div className="w-px bg-[#ECECEC] mx-4" />
-        <Field label="الاسم الكامل" value={fullName} icon={User} />
+        <Field label="الاسم الكامل" value={fullName} icon={User} loading={loading} />
       </div>
 
       <div className="flex items-stretch justify-between px-5 border-b border-[#ECECEC]">
@@ -69,14 +78,15 @@ export default function UserBasicInfoCard({
           value={whatsapp}
           icon={MessageCircle}
           iconClassName="text-[#25D366]"
+          loading={loading}
         />
         <div className="w-px bg-[#ECECEC] mx-4" />
-        <Field label="رقم الهاتف" value={phone} icon={Phone} />
+        <Field label="رقم الهاتف" value={phone} icon={Phone} loading={loading} />
       </div>
 
       <div className="flex px-5">
         <div className="w-full sm:w-1/2">
-          <Field label="نوع الحساب" value={accountType} icon={User} />
+          <Field label="نوع الحساب" value={accountType} icon={User} loading={loading} />
         </div>
       </div>
     </div>
