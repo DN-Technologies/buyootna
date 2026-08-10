@@ -8,7 +8,9 @@ import UserDetailTabs from '@/components/users/UserDetailTabs'
 import UserDetailPageSkeleton from '@/components/users/UserDetailPageSkeleton'
 import IndividualProfileOverview from '@/components/users/profiles/IndividualProfileOverview'
 import OfficeProfileOverview from '@/components/users/profiles/OfficeProfileOverview'
+import CompanyProfileOverview from '@/components/users/profiles/CompanyProfileOverview'
 import UserServicesTabContent from '@/components/users/services/UserServicesTabContent'
+import UserExhibitionTabContent from '@/components/users/exhibition/UserExhibitionTabContent'
 import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
 import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
 import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
@@ -30,6 +32,7 @@ const TAB_SLUGS: Record<string, string> = {
   'الاعلانات': 'ads',
   'الطلبات': 'requests',
   'الخدمات': 'services',
+  'المعرض': 'exhibition',
   'الباقة': 'packages',
   'الفواتير والخصم': 'invoices',
   'البلاغات': 'reports',
@@ -43,6 +46,7 @@ const SLUG_TO_TAB: Record<string, string> = {
   ads: 'الاعلانات',
   requests: 'الطلبات',
   services: 'الخدمات',
+  exhibition: 'المعرض',
   packages: 'الباقة',
   invoices: 'الفواتير والخصم',
   reports: 'البلاغات',
@@ -118,7 +122,8 @@ export default function UserOverviewPage() {
   }
 
   const identity = user.identities?.[0]
-  const isOffice = user.role === 'OFFICE'
+  const userRole = (user.role || 'INDIVIDUAL') as 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
+  const isOffice = userRole === 'OFFICE'
   const displayName =
     identity?.companyData?.name ||
     identity?.officeData?.name ||
@@ -130,7 +135,7 @@ export default function UserOverviewPage() {
     identity?.companyData?.logoUrl ||
     identity?.officeData?.logoUrl ||
     user.avatarUrl
-  const accountType = roleLabels[user.role || 'INDIVIDUAL'] || 'فرد'
+  const accountType = roleLabels[userRole] || 'فرد'
   const statusLabel: 'نشط' | 'محظور' | 'موقوف' = user.isBlocked
     ? 'محظور'
     : user.isDisabled
@@ -148,14 +153,14 @@ export default function UserOverviewPage() {
           planLabel={user.activePlan?.name || 'الباقة العادية'}
           statusLabel={statusLabel}
           avatarUrl={avatarUrl}
-          isOffice={isOffice}
+          isOffice={isOffice || userRole === 'COMPANY'}
           userId={user.id}
         />
-        <UserQuickStats isOffice={isOffice} />
+        <UserQuickStats userRole={userRole} />
         <UserDetailTabs
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          isOffice={isOffice}
+          userRole={userRole}
         />
       </div>
 
@@ -165,6 +170,8 @@ export default function UserOverviewPage() {
         <UserRequestsTabContent />
       ) : activeTab === 'الخدمات' ? (
         <UserServicesTabContent />
+      ) : activeTab === 'المعرض' ? (
+        <UserExhibitionTabContent />
       ) : activeTab === 'الباقة' ? (
         <UserPackagesTabContent />
       ) : activeTab === 'الفواتير والخصم' ? (
@@ -177,7 +184,19 @@ export default function UserOverviewPage() {
         <UserLogsTabContent />
       ) : activeTab === 'ملاحظات' ? (
         <UserNotesTabContent />
-      ) : isOffice ? (
+      ) : userRole === 'COMPANY' ? (
+        <CompanyProfileOverview
+          email={user.email || '—'}
+          fullName={user.name || displayName}
+          whatsapp={user.whatsapp || '—'}
+          phone={user.phone || '—'}
+          userId={user.id}
+          isPendingVerification={true}
+          lastActivity="اليوم 09:30 صباحاً"
+          lastLogin="28 فبراير 2025"
+          joinedAt={formatArabicDate(user.createdAt)}
+        />
+      ) : userRole === 'OFFICE' ? (
         <OfficeProfileOverview
           email={user.email || '—'}
           fullName={user.name || displayName}

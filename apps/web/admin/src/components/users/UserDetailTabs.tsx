@@ -24,11 +24,25 @@ const officeTabs = [
   'ملاحظات',
 ]
 
+const companyTabs = [
+  'نظرة عامة',
+  'الخدمات',
+  'الطلبات',
+  'المعرض',
+  'الباقة',
+  'الفواتير والخصم',
+  'البلاغات',
+  'التقييمات',
+  'السجل',
+  'ملاحظات',
+]
+
 const ENABLED_TABS = new Set([
   'نظرة عامة',
   'الاعلانات',
   'الطلبات',
   'الخدمات',
+  'المعرض',
   'الباقة',
   'الفواتير والخصم',
   'البلاغات',
@@ -41,14 +55,22 @@ interface UserDetailTabsProps {
   activeTab?: string
   onTabChange?: (tab: string) => void
   isOffice?: boolean
+  userRole?: 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
 }
 
 export default function UserDetailTabs({
   activeTab = 'نظرة عامة',
   onTabChange,
   isOffice = false,
+  userRole,
 }: UserDetailTabsProps) {
-  const tabs = isOffice ? officeTabs : individualTabs
+  const role = userRole || (isOffice ? 'OFFICE' : 'INDIVIDUAL')
+  const tabs =
+    role === 'COMPANY'
+      ? companyTabs
+      : role === 'OFFICE'
+        ? officeTabs
+        : individualTabs
 
   return (
     <div

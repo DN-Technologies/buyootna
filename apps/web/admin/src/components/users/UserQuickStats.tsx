@@ -5,13 +5,17 @@ import Skeleton from '@/components/ui/Skeleton'
 
 export interface UserQuickStatsProps {
   isOffice?: boolean
+  userRole?: 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
   loading?: boolean
 }
 
 export default function UserQuickStats({
   isOffice = false,
+  userRole,
   loading = false,
 }: UserQuickStatsProps) {
+  const role = userRole || (isOffice ? 'OFFICE' : 'INDIVIDUAL')
+
   const individualStats = [
     { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
     {
@@ -37,7 +41,24 @@ export default function UserQuickStats({
     { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
   ]
 
-  const stats = isOffice ? officeStats : individualStats
+  const companyStats = [
+    { label: 'الخدمات', value: '1' },
+    { label: 'الطلبات', value: '2' },
+    {
+      label: 'التقييم',
+      ratingCount: '(٢١٤ تقييم)',
+      value: '3.5',
+      showStar: true,
+    },
+    { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
+  ]
+
+  const stats =
+    role === 'COMPANY'
+      ? companyStats
+      : role === 'OFFICE'
+        ? officeStats
+        : individualStats
 
   return (
     <div
