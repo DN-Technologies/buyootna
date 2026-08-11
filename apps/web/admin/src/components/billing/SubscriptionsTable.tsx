@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, FileText } from 'lucide-react'
 import { SubscriptionRecord } from './billing.types'
 
 export interface SubscriptionsTableProps {
@@ -13,6 +13,8 @@ export interface SubscriptionsTableProps {
     action: 'view' | 'invoice' | 'rebuy',
     sub: SubscriptionRecord,
   ) => void
+  emptyTitle?: string
+  emptySubtitle?: string
 }
 
 export default function SubscriptionsTable({
@@ -21,6 +23,8 @@ export default function SubscriptionsTable({
   onToggleSelectAll,
   onToggleSelectOne,
   onActionClick,
+  emptyTitle = 'لا توجد فواتير حتى الآن',
+  emptySubtitle = 'ستظهر الفواتير والاشتراكات هنا عند إجلاء أي عملية شراء من المستخدمين.',
 }: SubscriptionsTableProps) {
   const [activeRowActionId, setActiveRowActionId] = useState<string | null>(
     null,
@@ -39,6 +43,22 @@ export default function SubscriptionsTable({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  if (subscriptions.length === 0) {
+    return (
+      <div className="bg-white border border-[#ECECEC] rounded-2xl shadow-xs py-24 px-6 flex flex-col items-center justify-center text-center font-['Cairo']">
+        <div className="size-16 rounded-2xl bg-[#F8FAFC] border border-[#ECECEC] flex items-center justify-center text-[#111111] mb-4">
+          <FileText className="w-8 h-8 stroke-[1.5]" />
+        </div>
+        <h3 className="text-[18px] font-bold text-[#111111] mb-1.5">
+          {emptyTitle}
+        </h3>
+        <p className="text-[13px] font-medium text-[#6B6A6A] max-w-sm leading-relaxed">
+          {emptySubtitle}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white border border-[#ECECEC] rounded-2xl shadow-xs overflow-hidden font-['Cairo'] text-right">

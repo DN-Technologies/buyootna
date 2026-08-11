@@ -15,16 +15,16 @@ export default function BillingMetrics() {
         <span className="text-[28px] font-bold text-[#137333]">100</span>
       </div>
 
-      {/* Box 3: Expired Subscriptions */}
+      {/* Box 3: Expiring Soon */}
       <div className="bg-[#F8FAFC] border border-[#ECECEC] rounded-2xl p-5 flex flex-col justify-between gap-3">
-        <span className="text-[13px] font-medium text-[#6B6A6A]">منتهية</span>
+        <span className="text-[13px] font-medium text-[#6B6A6A]">ستنتهي قريباً</span>
         <span className="text-[28px] font-bold text-[#111111]">10</span>
       </div>
 
-      {/* Box 4: Cancelled Subscriptions */}
+      {/* Box 4: Expired */}
       <div className="bg-[#F8FAFC] border border-[#ECECEC] rounded-2xl p-5 flex flex-col justify-between gap-3">
-        <span className="text-[13px] font-medium text-[#6B6A6A]">ملغاة</span>
-        <span className="text-[28px] font-bold text-[#9C1E28]">5</span>
+        <span className="text-[13px] font-medium text-[#6B6A6A]">منتهية</span>
+        <span className="text-[28px] font-bold text-[#111111]">—</span>
       </div>
     </div>
   )

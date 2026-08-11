@@ -35,32 +35,36 @@ export default function BillingPage() {
   }
 
   // Filter logic
-  const filteredSubscriptions = MOCK_SUBSCRIPTIONS.filter((sub) => {
-    const q = filters.searchQuery.toLowerCase().trim()
-    const matchesSearch =
-      !q ||
-      sub.userName.toLowerCase().includes(q) ||
-      sub.userEmail.toLowerCase().includes(q) ||
-      sub.packageName.toLowerCase().includes(q)
+  const filteredSubscriptions =
+    activeTab === 'invoices'
+      ? []
+      : MOCK_SUBSCRIPTIONS.filter((sub) => {
+          const q = filters.searchQuery.toLowerCase().trim()
+          const matchesSearch =
+            !q ||
+            sub.userName.toLowerCase().includes(q) ||
+            sub.userEmail.toLowerCase().includes(q) ||
+            sub.packageName.toLowerCase().includes(q)
 
-    const matchesUser =
-      filters.userRoleFilter === 'الكل' ||
-      (filters.userRoleFilter === 'الأفراد' && sub.userRole === 'INDIVIDUAL') ||
-      (filters.userRoleFilter === 'المكاتب العقارية' &&
-        sub.userRole === 'OFFICE') ||
-      (filters.userRoleFilter === 'الشركات' && sub.userRole === 'COMPANY')
+          const matchesUser =
+            filters.userRoleFilter === 'الكل' ||
+            (filters.userRoleFilter === 'الأفراد' &&
+              sub.userRole === 'INDIVIDUAL') ||
+            (filters.userRoleFilter === 'المكاتب العقارية' &&
+              sub.userRole === 'OFFICE') ||
+            (filters.userRoleFilter === 'الشركات' && sub.userRole === 'COMPANY')
 
-    const matchesPackage =
-      filters.packageFilter === 'الكل' ||
-      sub.packageName === filters.packageFilter
+          const matchesPackage =
+            filters.packageFilter === 'الكل' ||
+            sub.packageName === filters.packageFilter
 
-    const matchesStatus =
-      filters.statusFilter === 'الكل' ||
-      (filters.statusFilter === 'مدفوعة' && sub.status === 'نشط') ||
-      sub.status === filters.statusFilter
+          const matchesStatus =
+            filters.statusFilter === 'الكل' ||
+            (filters.statusFilter === 'مدفوعة' && sub.status === 'نشط') ||
+            sub.status === filters.statusFilter
 
-    return matchesSearch && matchesUser && matchesPackage && matchesStatus
-  })
+          return matchesSearch && matchesUser && matchesPackage && matchesStatus
+        })
 
   const handleToggleSelectAll = () => {
     if (selectedIds.length === filteredSubscriptions.length) {
@@ -121,7 +125,7 @@ export default function BillingPage() {
       <BillingMetrics />
 
       {/* Main Sub-nav Tabs */}
-      <div className="border-b border-[#ECECEC] flex items-center  gap-8 pt-2">
+      <div className="border-b border-[#ECECEC] flex items-center gap-8 pt-2">
         <button
           type="button"
           onClick={() => setActiveTab('subscriptions')}
@@ -156,20 +160,32 @@ export default function BillingPage() {
       <BillingFilters filters={filters} onChange={updateFilters} />
 
       {/* Subscriptions Table & Pagination Card */}
-      <div className="bg-white border border-[#ECECEC] rounded-2xl shadow-xs overflow-hidden">
+      {filteredSubscriptions.length === 0 ? (
         <SubscriptionsTable
-          subscriptions={filteredSubscriptions}
-          selectedIds={selectedIds}
-          onToggleSelectAll={handleToggleSelectAll}
-          onToggleSelectOne={handleToggleSelectOne}
-          onActionClick={handleActionClick}
+          subscriptions={[]}
+          selectedIds={[]}
+          onToggleSelectAll={() => {}}
+          onToggleSelectOne={() => {}}
+          onActionClick={() => {}}
+          emptyTitle="لا توجد فواتير حتى الآن"
+          emptySubtitle="ستظهر الفواتير والاشتراكات هنا عند إجلاء أي عملية شراء من المستخدمين."
         />
-        <BillingPagination
-          currentPage={currentPage}
-          totalUsersCount={100}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      ) : (
+        <div className="bg-white border border-[#ECECEC] rounded-2xl shadow-xs overflow-hidden">
+          <SubscriptionsTable
+            subscriptions={filteredSubscriptions}
+            selectedIds={selectedIds}
+            onToggleSelectAll={handleToggleSelectAll}
+            onToggleSelectOne={handleToggleSelectOne}
+            onActionClick={handleActionClick}
+          />
+          <BillingPagination
+            currentPage={currentPage}
+            totalUsersCount={100}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   )
 }
