@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Plus, CheckCircle2, ChevronLeft } from 'lucide-react'
 import PlanDetailDrawer, { PlanDetailDrawerItem } from './PlanDetailDrawer'
+import EditPlanDrawer, { EditPlanDrawerItem } from './EditPlanDrawer'
 
 export interface PlanItem {
   id: string
@@ -212,6 +213,9 @@ export default function PlansPage() {
   const [selectedPlanDetail, setSelectedPlanDetail] = useState<PlanDetailDrawerItem | null>(null)
   const [planDetailOpen, setPlanDetailOpen] = useState(false)
 
+  const [selectedEditPlan, setSelectedEditPlan] = useState<EditPlanDrawerItem | null>(null)
+  const [editPlanOpen, setEditPlanOpen] = useState(false)
+
   const currentPlans = PLANS_DATA[selectedCategory] || PLANS_DATA.INDIVIDUAL
 
   const handleOpenDetail = (plan: PlanItem) => {
@@ -220,6 +224,14 @@ export default function PlansPage() {
       categoryName: selectedCategory,
     })
     setPlanDetailOpen(true)
+  }
+
+  const handleOpenEdit = (plan: PlanItem | EditPlanDrawerItem) => {
+    setSelectedEditPlan({
+      ...plan,
+      categoryName: selectedCategory,
+    })
+    setEditPlanOpen(true)
   }
 
   return (
@@ -425,7 +437,7 @@ export default function PlansPage() {
 
               <button
                 type="button"
-                onClick={() => alert(`تعديل ${plan.name}`)}
+                onClick={() => handleOpenEdit(plan)}
                 className="border border-[#ECECEC] text-[#111111] font-bold text-[13px] hover:bg-slate-50 flex-1 h-10 rounded-xl transition-colors cursor-pointer"
               >
                 تعديل
@@ -440,7 +452,17 @@ export default function PlansPage() {
         open={planDetailOpen}
         onClose={() => setPlanDetailOpen(false)}
         plan={selectedPlanDetail}
-        onEdit={(plan) => alert(`تعديل ${plan.name}`)}
+        onEdit={(plan) => handleOpenEdit(plan)}
+      />
+
+      {/* Edit Plan Drawer */}
+      <EditPlanDrawer
+        open={editPlanOpen}
+        onClose={() => setEditPlanOpen(false)}
+        plan={selectedEditPlan}
+        onSave={(updated) => {
+          alert(`تم حفظ تعديلات ${updated.name} بنجاح.`)
+        }}
       />
     </div>
   )
