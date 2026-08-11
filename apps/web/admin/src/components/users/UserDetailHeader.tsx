@@ -12,6 +12,7 @@ import {
   Bell,
   BadgeCheck,
   Package,
+  Sparkles,
   Ban,
   UserX,
 } from 'lucide-react'
@@ -73,6 +74,11 @@ export default function UserDetailHeader({
     { label: 'ارسال اشعار', icon: Bell, action: 'send_notification' },
     { label: 'وضع علامة التوثيق', icon: BadgeCheck, action: 'mark_verified' },
     { label: 'تغيير الباقة', icon: Package, action: 'change_package' },
+    {
+      label: 'إضافة ميزة استثنائية',
+      icon: Sparkles,
+      action: 'add_exceptional_feature',
+    },
     {
       label: 'تعطيل الحساب',
       icon: UserX,
