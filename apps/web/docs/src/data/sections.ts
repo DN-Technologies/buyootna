@@ -1,4 +1,7 @@
-import { mobile } from "./mobile";
+import { mobileShared } from "./mobileShared";
+import { mobileIndividual } from "./mobileIndividual";
+import { mobileCompany } from "./mobileCompany";
+import { mobileOffice } from "./mobileOffice";
 import { admin } from "./admin";
 import { companies } from "./companies";
 import { offices } from "./offices";
@@ -8,7 +11,10 @@ import { api } from "./api";
 import { DocSection } from "./types";
 
 export const sections: DocSection[] = [
-  mobile,
+  mobileShared,
+  mobileIndividual,
+  mobileCompany,
+  mobileOffice,
   admin,
   companies,
   offices,

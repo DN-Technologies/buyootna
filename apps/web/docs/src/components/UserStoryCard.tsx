@@ -1,4 +1,4 @@
-import { CheckCircle2, ExternalLink, FlaskConical, Frame } from "lucide-react";
+import { CheckCircle2, ExternalLink, FlaskConical, Frame, User } from "lucide-react";
 import { UserStory } from "@/data/types";
 import { PriorityBadge } from "./PriorityBadge";
 import { FIGMA_FILE_URL } from "@/lib/figma";
@@ -13,6 +13,15 @@ export function UserStoryCard({ story }: { story: UserStory }) {
         <h3 className="text-lg font-semibold text-white">{story.title}</h3>
         <PriorityBadge priority={story.priority} />
       </div>
+
+      {story.endUserStory && (
+        <div className="mt-3 flex gap-2.5 rounded-xl border border-[#1B2936] bg-[#0F1E2E]/60 px-4 py-3">
+          <User className="mt-0.5 h-4 w-4 flex-none text-accent" />
+          <p className="text-sm italic leading-relaxed text-[#DCE1E6]">
+            {story.endUserStory}
+          </p>
+        </div>
+      )}
 
       <p className="mt-3 text-sm leading-relaxed text-[#B9C3CC]">{story.story}</p>
 

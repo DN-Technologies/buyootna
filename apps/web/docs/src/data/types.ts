@@ -7,6 +7,8 @@ export interface UserStory {
   testScenarios: string[];
   /** Deep link to the specific Figma frame for this story's flow. Omit until a real frame link is available. */
   figmaFrameUrl?: string;
+  /** Classic product/UX persona story ("As an individual user, I want X so that Y") this QA story verifies. Optional — most stories only need the QA-facing `story` field. */
+  endUserStory?: string;
 }
 
 export interface DocSection {

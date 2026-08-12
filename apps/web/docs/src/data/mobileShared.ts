@@ -1,11 +1,30 @@
 import { DocSection } from "./types";
 
-export const mobile: DocSection = {
-  slug: "mobile",
-  title: "Mobile App",
+export const mobileShared: DocSection = {
+  slug: "mobile-shared",
+  title: "Mobile — Shared",
   summary:
-    "Expo Router app (apps/mobile) covering guest browsing, individual/company/office roles, listings, chat, search, and the map. Several flows were rebuilt to satisfy Apple 4.2.2 rejection remediation (docs/plans/01-08) and guest-mode UX specs (docs/flows/*.md).",
+    "Cross-role mobile features (apps/mobile) that apply regardless of which identity is active — guest gating, chat, search, listings, identity switching, payments, layout, and the App Store demo account. Includes the confirmed reason Company/Office roles are currently unreachable.",
   stories: [
+    {
+      id: "mobile-company-office-gate",
+      title: "Company/Office accounts are entirely gated behind a 'Coming Soon' screen — confirmed intentional",
+      priority: "P0",
+      story:
+        "As a QA engineer, I want to confirm that Company and Office account types are deliberately locked app-wide — apps/mobile/src/app/(auth)/business-auth.tsx checks `const COMPANY_OFFICE_LOCKED = true;` and renders <ComingSoonGate /> instead of the real signup/login form, and both (company)/_layout.tsx and (office)/_layout.tsx short-circuit their entire tab navigators to that same gate — so that this documented, intentional kill-switch is treated as a release-readiness checkpoint to re-verify every release, not something QA needs to rediscover or escalate as a bug each pass.",
+      acceptanceCriteria: [
+        "COMPANY_OFFICE_LOCKED is true in the current build, and every entry point into company/office (the business-auth screen, the (company) tab group, the (office) tab group) shows the same 'قريباً' ComingSoonGate bottom sheet — non-dismissible, with only a 'العودة للرئيسية' way out.",
+        "'العودة للرئيسية' correctly returns the user to an individual identity if one exists on the account, or logs out to individual-auth if not — it never leaves the user stuck on a dead screen.",
+        "This flag's state is an explicit, called-out line item in every release QA sign-off — before shipping, confirm whether it's intentionally still true or whether product has asked for it to flip to false.",
+        "If/when this flips to false, every story in the Mobile — Company and Mobile — Office sections needs a full re-pass, since none of that functionality has been exercised by real users while the gate has been up.",
+      ],
+      testScenarios: [
+        "Attempt to reach Office or Company signup from every entry point you can find (the selection screen doesn't offer them at all — see the Mobile — Individual section; also try deep-linking directly to /(auth)/business-auth?type=office) and confirm ComingSoonGate always appears, with no path reaching a real form.",
+        "Log in as an existing company/office test account (if one exists in the DB from before the lock) and confirm the (company)/(office) tab navigator is also gated — not just the auth screens.",
+        "Tap 'العودة للرئيسية' from the gate as a user with an individual identity available, and confirm it switches to that identity correctly; repeat as a user with no individual identity and confirm it logs out cleanly to individual-auth.",
+        "Before each release, explicitly re-check this flag's value in the shipped build (not just in the repo) since a build/env mismatch here would silently ship two completely unqualified onboarding paths to real users.",
+      ],
+    },
     {
       id: "mobile-guest-guard",
       title: "Guest action-gating shows the auth sheet, never a dead end",
@@ -26,30 +45,11 @@ export const mobile: DocSection = {
       ],
     },
     {
-      id: "mobile-favorites",
-      title: "Favorites persist correctly across the property lifecycle",
-      priority: "P0",
-      story:
-        "As a QA engineer, I want to verify the Favorites system (POST /favorites/:propertyId toggle, GET /favorites, GET /favorites/ids, GET /favorites/check/:propertyId, useFavoritesStore) behaves correctly end to end, so that a saved property reliably shows as saved everywhere in the app and survives logout/login.",
-      acceptanceCriteria: [
-        "Toggling favorite on Property Detail updates the heart icon instantly (optimistic) and reflects the server state after refresh.",
-        "The Favorites tab (more)/favorites shows exactly the set of properties the user has favorited, in a stable order.",
-        "Un-favoriting from the Favorites list removes it from that list without requiring a manual refresh.",
-        "Favorite state is per-user: switching identities (see mobile-identity-switch) does not leak another identity's favorites.",
-      ],
-      testScenarios: [
-        "Favorite a property from Search results, then verify it appears favorited on Property Detail and in the Favorites tab.",
-        "Favorite 15+ properties and confirm the Favorites list paginates/scrolls without duplication or drops.",
-        "Favorite a property, then have it deleted/archived by its owner — confirm the Favorites tab handles the now-missing property gracefully (no crash, sensible empty/removed state).",
-        "Toggle favorite rapidly (double-tap) and confirm no duplicate POSTs desync the heart icon from server state.",
-      ],
-    },
-    {
       id: "mobile-chat-realtime",
       title: "Real-time chat delivers and syncs across devices",
       priority: "P0",
       story:
-        "As a QA engineer, I want to verify the Socket.IO-backed chat (join_conversation/leave_conversation/send_message events, new_message/conversation_updated broadcasts) delivers messages reliably, so that buyers and sellers can trust conversations aren't dropped or duplicated.",
+        "As a QA engineer, I want to verify the Socket.IO-backed chat (join_conversation/leave_conversation/send_message events, new_message/conversation_updated broadcasts) delivers messages reliably, so that buyers and sellers can trust conversations aren't dropped or duplicated. This applies identically to Individual chat and to company-chats/office-chats once the account-type gate lifts (mobile-company-office-gate) — all three screens share the same useChatStore.",
       acceptanceCriteria: [
         "Sending a message from device A appears on device B (same account, two sessions) within a few seconds without manual refresh.",
         "conversation_updated correctly reorders/updates the chat list's last-message preview and unread badge.",
@@ -102,58 +102,21 @@ export const mobile: DocSection = {
       ],
     },
     {
-      id: "mobile-company-office-empty-states",
-      title: "Company Requests and Office Properties tabs are permanently empty (known gap)",
-      priority: "P1",
-      story:
-        "As a QA engineer, I want to verify that the Company role's 'الطلبات' (Requests) tab and the Office role's 'العقارات' (Properties) tab currently show a permanent empty state regardless of real data, so that this known frontend/backend wiring gap is tracked explicitly rather than QA repeatedly re-reporting it as a fresh bug.",
-      acceptanceCriteria: [
-        "company-requests renders filter pills (all/pending/accepted/completed) but the list stays empty no matter which filter is selected — expected today.",
-        "office-properties renders filter pills (all/published/draft/archived) with the same permanent-empty behavior — expected today.",
-        "Neither screen crashes or shows a loading spinner indefinitely; both should settle into their empty state.",
-        "This story should be re-verified (and the acceptance criteria flipped) once the screens are wired to real backend data.",
-      ],
-      testScenarios: [
-        "As a Company identity, open Requests and tap through all 4 filter pills — confirm each renders the same empty state, not an error.",
-        "As an Office identity, open Properties and tap through all 4 filter pills — same check.",
-        "Regression check after any backend work lands on these endpoints: confirm real data now appears and filters actually filter it.",
-      ],
-    },
-    {
       id: "mobile-identity-switch",
       title: "Switching identities changes context everywhere, with no data bleed",
       priority: "P0",
       story:
-        "As a QA engineer, I want to verify that POST auth/identity/switch correctly changes the active identity (individual/company/office) across the whole app, so that a user managing multiple identities never sees another identity's listings, chats, or favorites mixed into the current one.",
+        "As a QA engineer, I want to verify that POST auth/identity/switch correctly changes the active identity across the whole app, so that a user managing multiple identities never sees another identity's listings, chats, or favorites mixed into the current one. Note: switching TO a company/office identity currently lands on the ComingSoonGate (see mobile-company-office-gate) rather than a real home screen — verify that transition is clean, not broken.",
       acceptanceCriteria: [
-        "After switching identity, Home/tabs immediately reflect the new role's UI (individual tabs vs. company-home/office-home).",
+        "After switching identity, Home/tabs immediately reflect the new role's UI (individual tabs, or the ComingSoonGate for company/office while the lock is active).",
         "Listings, chats, and favorites shown are scoped strictly to the active identity.",
         "Switching back to a previous identity restores its exact prior state (scroll position not required, but data must match).",
         "Push notifications/chat sockets reconnect under the new identity's context rather than continuing to stream the old identity's events.",
       ],
       testScenarios: [
-        "Create a company identity via add-identity-company under an individual account, switch to it, and confirm company-home loads with company-scoped data only.",
         "With an active chat open under identity A, switch to identity B and confirm identity A's conversation is no longer visible/reachable as B.",
         "Switch identities repeatedly (A→B→A) and confirm no duplicated tabs, stale cached screens, or crash.",
-      ],
-    },
-    {
-      id: "mobile-auth-validation",
-      title: "Signup/login validation matches the documented zod rules",
-      priority: "P1",
-      story:
-        "As a QA engineer, I want to verify mobile auth forms enforce the zod schemas exactly (login: identifier + 6-char min password; signup: email + Kuwaiti-phone regex ^(?:+?965)?[569]\\d{7}$ + 8-char min password + confirm match), so that account creation can't be bypassed with invalid phone numbers or weak passwords.",
-      acceptanceCriteria: [
-        "Signup rejects phone numbers that don't match the Kuwaiti mobile regex (wrong length, wrong leading digit, non-965 country code) with a clear inline error.",
-        "Signup rejects passwords under 8 characters and mismatched confirm-password.",
-        "Login accepts either an email or a phone number as the identifier, with a 6-char minimum password.",
-        "OTP verification (6-digit) correctly gates account activation before first login.",
-      ],
-      testScenarios: [
-        "Sign up with a phone number missing the 5/6/9 leading digit after the country code — confirm rejection.",
-        "Sign up with a valid Kuwaiti number in both +965XXXXXXXX and 965XXXXXXXX and bare XXXXXXXX forms — confirm all are accepted per the regex.",
-        "Attempt login with a 5-character password — confirm rejection; with exactly 6 — confirm acceptance (boundary test).",
-        "Request password recovery, enter an incorrect OTP 3 times, then the correct OTP — confirm lockout/retry behavior is sane and eventually succeeds.",
+        "If a test account has a pre-existing company/office identity, switch to it and confirm landing cleanly on ComingSoonGate rather than a half-rendered tab bar underneath it.",
       ],
     },
     {
@@ -209,6 +172,7 @@ export const mobile: DocSection = {
         "Fresh install → log in as demo account → walk every guarded action (Chat, Favorites, Add Ad, etc.) end to end with no auth-sheet interruptions.",
         "Confirm the seeded data survives a backend restart/reseed cycle (i.e. the seed script is idempotent and reviewer access doesn't silently break).",
         "Verify no seeded content contains placeholder/lorem text visible to a reviewer.",
+        "Confirm the demo account is an Individual identity (not company/office), since those are gated — see mobile-company-office-gate.",
       ],
     },
   ],
