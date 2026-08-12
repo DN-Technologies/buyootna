@@ -6,9 +6,11 @@ import {
   BookOpenCheck,
   Building2,
   LayoutDashboard,
+  Send,
   Server,
   Smartphone,
   Store,
+  Tag,
   Warehouse,
   Wrench,
 } from "lucide-react";
@@ -23,6 +25,11 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "web-landing": Wrench,
   api: Server,
 };
+
+const RESOURCES = [
+  { href: "/postman", label: "Postman Collection", icon: Send },
+  { href: "/versions", label: "App Versions", icon: Tag },
+];
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -54,6 +61,29 @@ export function Sidebar() {
             >
               <Icon className="h-4 w-4" />
               {section.title}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <p className="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-[#7C8894]">
+        Resources
+      </p>
+      <nav className="mt-1 flex flex-col gap-1">
+        {RESOURCES.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? "bg-primary text-white"
+                  : "text-[#B9C3CC] hover:bg-[#0F1E2E] hover:text-white"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
             </Link>
           );
         })}

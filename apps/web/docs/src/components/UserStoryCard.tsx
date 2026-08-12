@@ -1,6 +1,7 @@
-import { CheckCircle2, FlaskConical } from "lucide-react";
+import { CheckCircle2, ExternalLink, FlaskConical, Frame } from "lucide-react";
 import { UserStory } from "@/data/types";
 import { PriorityBadge } from "./PriorityBadge";
+import { FIGMA_FILE_URL } from "@/lib/figma";
 
 export function UserStoryCard({ story }: { story: UserStory }) {
   return (
@@ -14,6 +15,30 @@ export function UserStoryCard({ story }: { story: UserStory }) {
       </div>
 
       <p className="mt-3 text-sm leading-relaxed text-[#B9C3CC]">{story.story}</p>
+
+      {story.figmaFrameUrl ? (
+        <a
+          href={story.figmaFrameUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-light transition-colors hover:bg-accent/20"
+        >
+          <Frame className="h-3.5 w-3.5" />
+          View Figma frame
+          <ExternalLink className="h-3 w-3" />
+        </a>
+      ) : (
+        <a
+          href={FIGMA_FILE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-2 rounded-full border border-dashed border-[#2A3A47] px-3 py-1 text-xs font-medium text-[#7C8894] transition-colors hover:border-[#3A4E5E] hover:text-[#B9C3CC]"
+          title="No frame linked yet for this story — opens the general Figma file"
+        >
+          <Frame className="h-3.5 w-3.5" />
+          No frame linked yet
+        </a>
+      )}
 
       <div className="mt-5 grid gap-5 md:grid-cols-2">
         <div>

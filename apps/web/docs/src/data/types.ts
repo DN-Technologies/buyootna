@@ -5,6 +5,8 @@ export interface UserStory {
   priority: "P0" | "P1" | "P2";
   acceptanceCriteria: string[];
   testScenarios: string[];
+  /** Deep link to the specific Figma frame for this story's flow. Omit until a real frame link is available. */
+  figmaFrameUrl?: string;
 }
 
 export interface DocSection {

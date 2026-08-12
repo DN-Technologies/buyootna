@@ -1,6 +1,21 @@
 import Link from "next/link";
-import { ArrowRight, BookOpenCheck } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Send, Tag } from "lucide-react";
 import { sections } from "@/data/sections";
+
+const RESOURCES = [
+  {
+    href: "/postman",
+    icon: Send,
+    title: "Postman Collection",
+    summary: "84 requests generated from the real API controllers and DTOs — auth, properties, chat, payments, and more.",
+  },
+  {
+    href: "/versions",
+    icon: Tag,
+    title: "App Versions",
+    summary: "Current version per platform (mobile, each web app, API) — what QA should be testing against right now.",
+  },
+];
 
 export default function Home() {
   const totalStories = sections.reduce((sum, s) => sum + s.stories.length, 0);
@@ -47,6 +62,32 @@ export default function Home() {
             </p>
           </Link>
         ))}
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-[#7C8894]">
+          Resources
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          {RESOURCES.map(({ href, icon: Icon, title, summary }) => (
+            <Link
+              key={href}
+              href={href}
+              className="group rounded-2xl border border-[#1B2936] bg-[#0A1118]/80 p-5 transition-colors hover:border-accent"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-accent" />
+                  <h2 className="text-base font-semibold text-white">
+                    {title}
+                  </h2>
+                </div>
+                <ArrowRight className="h-4 w-4 text-[#7C8894] transition-transform group-hover:translate-x-1 group-hover:text-accent" />
+              </div>
+              <p className="mt-2 text-sm text-[#B9C3CC]">{summary}</p>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
