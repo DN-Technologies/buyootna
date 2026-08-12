@@ -10,6 +10,16 @@ export const mobileShared: DocSection = {
       id: "mobile-company-office-gate",
       title: "Company/Office accounts are entirely gated behind a 'Coming Soon' screen — confirmed intentional",
       priority: "P0",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-20996&m=dev",
+          label: "Initial account-type selection sheet",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=354-19799&m=dev",
+          label: "Mid-signup 'change account type' sheet",
+        },
+      ],
       story:
         "As a QA engineer, I want to confirm that Company and Office account types are deliberately locked app-wide — apps/mobile/src/app/(auth)/business-auth.tsx checks `const COMPANY_OFFICE_LOCKED = true;` and renders <ComingSoonGate /> instead of the real signup/login form, and both (company)/_layout.tsx and (office)/_layout.tsx short-circuit their entire tab navigators to that same gate — so that this documented, intentional kill-switch is treated as a release-readiness checkpoint to re-verify every release, not something QA needs to rediscover or escalate as a bug each pass.",
       acceptanceCriteria: [

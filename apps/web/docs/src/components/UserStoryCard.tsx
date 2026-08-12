@@ -10,7 +10,16 @@ export function UserStoryCard({ story }: { story: UserStory }) {
       className="rounded-2xl border border-[#1B2936] bg-[#0A1118]/80 p-6 shadow-lg shadow-black/20"
     >
       <div className="flex items-start justify-between gap-4">
-        <h3 className="text-lg font-semibold text-white">{story.title}</h3>
+        <div>
+          <a
+            href={`#${story.id}`}
+            className="font-mono text-[11px] tracking-tight text-[#7C8894] transition-colors hover:text-accent-light"
+            title="Stable story ID — cite this in bug reports and regression checklists"
+          >
+            {story.id}
+          </a>
+          <h3 className="mt-0.5 text-lg font-semibold text-white">{story.title}</h3>
+        </div>
         <PriorityBadge priority={story.priority} />
       </div>
 
@@ -25,17 +34,22 @@ export function UserStoryCard({ story }: { story: UserStory }) {
 
       <p className="mt-3 text-sm leading-relaxed text-[#B9C3CC]">{story.story}</p>
 
-      {story.figmaFrameUrl ? (
-        <a
-          href={story.figmaFrameUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-light transition-colors hover:bg-accent/20"
-        >
-          <Frame className="h-3.5 w-3.5" />
-          View Figma frame
-          <ExternalLink className="h-3 w-3" />
-        </a>
+      {story.figmaFrameUrls && story.figmaFrameUrls.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {story.figmaFrameUrls.map((frame, i) => (
+            <a
+              key={frame.url + i}
+              href={frame.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1 text-xs font-medium text-accent-light transition-colors hover:bg-accent/20"
+            >
+              <Frame className="h-3.5 w-3.5" />
+              {frame.label ?? "View Figma frame"}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          ))}
+        </div>
       ) : (
         <a
           href={FIGMA_FILE_URL}
@@ -57,10 +71,15 @@ export function UserStoryCard({ story }: { story: UserStory }) {
               Acceptance Criteria
             </h4>
           </div>
-          <ul className="mt-2 space-y-1.5 text-sm text-[#DCE1E6]">
+          <ul className="mt-2 space-y-2 text-sm text-[#DCE1E6]">
             {story.acceptanceCriteria.map((item, i) => (
               <li key={i} className="flex gap-2">
-                <span className="text-accent">–</span>
+                <span
+                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-[#0F1E2E] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
+                  title="Acceptance criterion ID — cite this when a criterion isn't met"
+                >
+                  AC-{String(i + 1).padStart(2, "0")}
+                </span>
                 <span>{item}</span>
               </li>
             ))}
@@ -74,10 +93,15 @@ export function UserStoryCard({ story }: { story: UserStory }) {
               Test Scenarios
             </h4>
           </div>
-          <ul className="mt-2 space-y-1.5 text-sm text-[#DCE1E6]">
+          <ul className="mt-2 space-y-2 text-sm text-[#DCE1E6]">
             {story.testScenarios.map((item, i) => (
               <li key={i} className="flex gap-2">
-                <span className="text-accent">{i + 1}.</span>
+                <span
+                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-[#0F1E2E] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
+                  title="Test case ID — cite this in bug reports and regression runs"
+                >
+                  TC-{String(i + 1).padStart(2, "0")}
+                </span>
                 <span>{item}</span>
               </li>
             ))}

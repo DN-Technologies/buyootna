@@ -31,6 +31,12 @@ export const mobileIndividual: DocSection = {
       id: "mobile-individual-login",
       title: "Individual login: remember-me checkbox currently has no effect (known gap)",
       priority: "P1",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-21298&m=dev",
+          label: "Login screen",
+        },
+      ],
       endUserStory:
         "As an individual user, I want to log in with either my email or phone, optionally stay signed in with 'remember me,' and quickly get back into an account I've already used on this device, so that returning to the app is fast and I never lose access to identities I've already set up.",
       story:
@@ -52,6 +58,12 @@ export const mobileIndividual: DocSection = {
       id: "mobile-individual-signup",
       title: "Individual signup: phone is optional in code but shown as required (*) in design",
       priority: "P1",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-21448&m=dev",
+          label: "Signup screen",
+        },
+      ],
       endUserStory:
         "As an individual user, I want to create an account with just an email and password, without being forced to hand over my phone number right away, so that I can start using the app immediately and decide later whether I trust it enough to add my phone.",
       story:
@@ -93,6 +105,28 @@ export const mobileIndividual: DocSection = {
       id: "mobile-otp-resend-countdown",
       title: "OTP verification: 45s resend countdown behaves correctly at the boundary",
       priority: "P1",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-22306&m=dev",
+          label: "Forgot-password OTP: countdown running (00:45)",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=324-16604&m=dev",
+          label: "Forgot-password OTP: resend link visible",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1850-76860&m=dev",
+          label: "Signup OTP: countdown running (00:45)",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1850-77001&m=dev",
+          label: "Signup OTP: resend link visible",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1857-118241&m=dev",
+          label: "Signup OTP: disabled state (no digits entered)",
+        },
+      ],
       endUserStory:
         "As an individual user verifying my phone number, I want to see clearly how long I have to wait before I can request a new code, and get an easy way to resend it once that time is up, so that I'm never left wondering whether my code is still valid or the app is just stuck.",
       story:
@@ -114,6 +148,20 @@ export const mobileIndividual: DocSection = {
       id: "mobile-forgot-password-inline-error",
       title: "Forgot-password 'account not found' error: design shows inline text, code shows a popup Alert (mismatch)",
       priority: "P2",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-22014&m=dev",
+          label: "Default state",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-21893&m=dev",
+          label: "Inline error state",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-22217&m=dev",
+          label: "Disabled (empty field) state",
+        },
+      ],
       endUserStory:
         "As an individual user who forgot my password, I want to be told clearly and right there on the screen if the email or phone I entered doesn't match any account, so that I immediately understand what went wrong instead of guessing why nothing happened.",
       story:
@@ -133,6 +181,12 @@ export const mobileIndividual: DocSection = {
       id: "mobile-reset-password-skip-button",
       title: "Create-new-password step: design has a 'تخطي' skip option, code does not (mismatch)",
       priority: "P2",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=271-22453&m=dev",
+          label: "Create new password screen",
+        },
+      ],
       endUserStory:
         "As an individual user resetting my password, I want the option to back out of the process without being forced to pick a new password right then, so that I'm not stuck finishing a flow I started by mistake or no longer want to complete.",
       story:
@@ -152,6 +206,20 @@ export const mobileIndividual: DocSection = {
       id: "mobile-auth-success-copy",
       title: "Success screens: account-created button copy differs between design and code (minor)",
       priority: "P2",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=301-29535&m=dev",
+          label: "Password-reset success (in context)",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=312-12837&m=dev",
+          label: "Password-reset success (isolated component)",
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=468-21712&m=dev",
+          label: "Account-created success — 'ابدأ الاستكشاف' per design",
+        },
+      ],
       endUserStory:
         "As an individual user who just created my account, I want a clear, encouraging confirmation that tells me what to do next, so that I feel confident the signup worked and know exactly where to go from there.",
       story:
@@ -171,6 +239,12 @@ export const mobileIndividual: DocSection = {
       id: "mobile-identity-switcher-sheet",
       title: "Profile/identity switcher bottom sheet matches design functionally, with a minor label difference",
       priority: "P2",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=466-13601&m=dev",
+          label: "Profile/identity switcher sheet",
+        },
+      ],
       endUserStory:
         "As an individual user who also manages a company or office account, I want to see all of my identities in one place and switch between them with a tap, so that I don't have to log out and back in every time I need to act under a different role.",
       story:
