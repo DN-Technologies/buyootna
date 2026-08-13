@@ -9,6 +9,7 @@ const STYLES: Record<UserStory["priority"], string> = {
 export function PriorityBadge({ priority }: { priority: UserStory["priority"] }) {
   return (
     <span
+      dir="ltr"
       className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tracking-wide ${STYLES[priority]}`}
     >
       {priority}

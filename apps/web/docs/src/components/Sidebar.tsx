@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpenCheck,
   Building2,
+  Languages,
   LayoutDashboard,
   Lock,
   Send,
@@ -17,7 +18,9 @@ import {
   Wrench,
 } from "lucide-react";
 import { sections } from "@/data/sections";
-import { DocSection } from "@/data/types";
+import { DocSection, t } from "@/data/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { chrome } from "@/lib/chrome";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   "mobile-shared": Smartphone,
@@ -39,19 +42,16 @@ const MOBILE_SLUGS = new Set([
   "mobile-office",
 ]);
 
-const RESOURCES = [
-  { href: "/postman", label: "Postman Collection", icon: Send },
-  { href: "/versions", label: "App Versions", icon: Tag },
-];
-
 function NavGroup({
   label,
   items,
   pathname,
+  lang,
 }: {
   label: string;
   items: DocSection[];
   pathname: string;
+  lang: "en" | "ar";
 }) {
   return (
     <div className="mt-6 first:mt-0">
@@ -73,8 +73,8 @@ function NavGroup({
                   : "text-[#B9C3CC] hover:bg-[#0F1E2E] hover:text-white"
               }`}
             >
-              <Icon className="h-4 w-4" />
-              {section.title}
+              <Icon className="h-4 w-4 flex-none" />
+              {t(section.title, lang)}
             </Link>
           );
         })}
@@ -85,28 +85,47 @@ function NavGroup({
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { lang, setLang } = useLanguage();
+  const c = chrome[lang];
   const mobileSections = sections.filter((s) => MOBILE_SLUGS.has(s.slug));
   const webSections = sections.filter((s) => !MOBILE_SLUGS.has(s.slug));
 
+  const resources = [
+    { href: "/postman", label: c.navPostman, icon: Send },
+    { href: "/versions", label: c.navVersions, icon: Tag },
+  ];
+
   return (
-    <aside className="flex h-full w-64 flex-none flex-col overflow-y-auto border-r border-[#1B2936] bg-[#070D14] px-4 py-6">
+    <aside className="flex h-full w-64 flex-none flex-col overflow-y-auto border-e border-[#1B2936] bg-[#070D14] px-4 py-6">
       <Link href="/" className="flex items-center gap-2 px-2 pb-6">
-        <BookOpenCheck className="h-5 w-5 text-accent" />
+        <BookOpenCheck className="h-5 w-5 flex-none text-accent" />
         <div>
-          <p className="text-sm font-semibold text-white">Buyootna QA Docs</p>
-          <p className="text-xs text-[#7C8894]">docs.buyootna.cloud</p>
+          <p className="text-sm font-semibold text-white">{c.appName}</p>
+          <p className="text-xs text-[#7C8894]" dir="ltr">
+            {c.appTagline}
+          </p>
         </div>
       </Link>
 
-      <NavGroup label="Mobile" items={mobileSections} pathname={pathname} />
-      <NavGroup label="Web & API" items={webSections} pathname={pathname} />
+      <NavGroup
+        label={c.navGroupMobile}
+        items={mobileSections}
+        pathname={pathname}
+        lang={lang}
+      />
+      <NavGroup
+        label={c.navGroupWeb}
+        items={webSections}
+        pathname={pathname}
+        lang={lang}
+      />
 
       <div className="mt-6">
         <p className="px-3 text-xs font-semibold uppercase tracking-wider text-[#7C8894]">
-          Resources
+          {c.navGroupResources}
         </p>
         <nav className="mt-1 flex flex-col gap-1">
-          {RESOURCES.map(({ href, label, icon: Icon }) => {
+          {resources.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
             return (
               <Link
@@ -118,12 +137,38 @@ export function Sidebar() {
                     : "text-[#B9C3CC] hover:bg-[#0F1E2E] hover:text-white"
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4 flex-none" />
                 {label}
               </Link>
             );
           })}
         </nav>
+      </div>
+
+      <div className="mt-6 flex items-center gap-2 rounded-lg border border-[#1B2936] p-1">
+        <Languages className="ms-1.5 h-4 w-4 flex-none text-[#7C8894]" />
+        <div className="flex flex-1 gap-1">
+          <button
+            onClick={() => setLang("en")}
+            className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+              lang === "en"
+                ? "bg-primary text-white"
+                : "text-[#7C8894] hover:text-white"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => setLang("ar")}
+            className={`flex-1 rounded-md py-1.5 text-xs font-semibold transition-colors ${
+              lang === "ar"
+                ? "bg-primary text-white"
+                : "text-[#7C8894] hover:text-white"
+            }`}
+          >
+            عربي
+          </button>
+        </div>
       </div>
     </aside>
   );

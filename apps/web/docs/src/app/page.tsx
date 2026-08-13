@@ -1,45 +1,47 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, Send, Tag } from "lucide-react";
 import { sections } from "@/data/sections";
-
-const RESOURCES = [
-  {
-    href: "/postman",
-    icon: Send,
-    title: "Postman Collection",
-    summary: "84 requests generated from the real API controllers and DTOs — auth, properties, chat, payments, and more.",
-  },
-  {
-    href: "/versions",
-    icon: Tag,
-    title: "App Versions",
-    summary: "Current version per platform (mobile, each web app, API) — what QA should be testing against right now.",
-  },
-];
+import { t } from "@/data/types";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { chrome } from "@/lib/chrome";
 
 export default function Home() {
+  const { lang } = useLanguage();
+  const c = chrome[lang];
   const totalStories = sections.reduce((sum, s) => sum + s.stories.length, 0);
+
+  const resources = [
+    {
+      href: "/postman",
+      icon: Send,
+      title: c.navPostman,
+      summary: c.homePostmanCardSummary,
+    },
+    {
+      href: "/versions",
+      icon: Tag,
+      title: c.navVersions,
+      summary: c.homeVersionsCardSummary,
+    },
+  ];
 
   return (
     <div className="space-y-10">
       <div className="flex items-center gap-3 text-accent">
         <BookOpenCheck className="h-6 w-6" />
         <span className="text-sm font-semibold uppercase tracking-wider">
-          QA User Stories
+          {c.homeEyebrow}
         </span>
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-white">Buyootna QA Docs</h1>
-        <p className="mt-3 max-w-2xl text-[#B9C3CC]">
-          User stories and test scenarios for QA engineers testing the
-          Buyootna platform — the mobile app, every web portal, and the API.
-          Each story is grounded in features that actually exist in the
-          codebase today, including known stubs and placeholders that should
-          be tracked as gaps rather than re-filed as new bugs.
-        </p>
+        <h1 className="text-3xl font-bold text-white">{c.homeTitle}</h1>
+        <p className="mt-3 max-w-2xl text-[#B9C3CC]">{c.homeDescription}</p>
         <p className="mt-2 text-sm text-[#7C8894]">
-          {sections.length} sections · {totalStories} user stories
+          {sections.length} {c.homeStatsSections} · {totalStories}{" "}
+          {c.homeStatsStories}
         </p>
       </div>
 
@@ -52,13 +54,15 @@ export default function Home() {
           >
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-white">
-                {section.title}
+                {t(section.title, lang)}
               </h2>
-              <ArrowRight className="h-4 w-4 text-[#7C8894] transition-transform group-hover:translate-x-1 group-hover:text-accent" />
+              <ArrowRight className="h-4 w-4 flex-none text-[#7C8894] transition-transform rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 group-hover:text-accent" />
             </div>
-            <p className="mt-2 text-sm text-[#B9C3CC]">{section.summary}</p>
+            <p className="mt-2 text-sm text-[#B9C3CC]">
+              {t(section.summary, lang)}
+            </p>
             <p className="mt-3 text-xs text-[#7C8894]">
-              {section.stories.length} user stories
+              {section.stories.length} {c.homeStatsStories}
             </p>
           </Link>
         ))}
@@ -66,10 +70,10 @@ export default function Home() {
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-[#7C8894]">
-          Resources
+          {c.homeResources}
         </p>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          {RESOURCES.map(({ href, icon: Icon, title, summary }) => (
+          {resources.map(({ href, icon: Icon, title, summary }) => (
             <Link
               key={href}
               href={href}
@@ -77,12 +81,12 @@ export default function Home() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Icon className="h-4 w-4 text-accent" />
+                  <Icon className="h-4 w-4 flex-none text-accent" />
                   <h2 className="text-base font-semibold text-white">
                     {title}
                   </h2>
                 </div>
-                <ArrowRight className="h-4 w-4 text-[#7C8894] transition-transform group-hover:translate-x-1 group-hover:text-accent" />
+                <ArrowRight className="h-4 w-4 flex-none text-[#7C8894] transition-transform rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 group-hover:text-accent" />
               </div>
               <p className="mt-2 text-sm text-[#B9C3CC]">{summary}</p>
             </Link>

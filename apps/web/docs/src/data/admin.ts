@@ -2,172 +2,355 @@ import { DocSection } from "./types";
 
 export const admin: DocSection = {
   slug: "web-admin",
-  title: "Web Admin",
-  summary:
-    "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, Plans & Pricing, Subscriptions & Billing, and several intentionally-unbuilt placeholder sections (Notifications, Content, Roles, Settings, Logs).",
+  title: { en: "Web Admin", ar: "لوحة تحكم المشرف (ويب)" },
+  summary: {
+    en: "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, Plans & Pricing, Subscriptions & Billing, and several intentionally-unbuilt placeholder sections (Notifications, Content, Roles, Settings, Logs).",
+    ar: "لوحة تحكم مشرف النظام المبنية على Next.js (apps/web/admin، المنفذ 3005). تغطي لوحة القيادة، إدارة المستخدمين، الباقات والأسعار، الاشتراكات والفوترة، وعدة أقسام هيكلية غير مبنية عمداً بعد (الإشعارات، إدارة المحتوى، الأدوار، الإعدادات، السجل).",
+  },
   stories: [
     {
       id: "admin-auth-guard",
-      title: "Only verified admins reach the dashboard",
+      title: {
+        en: "Only verified admins reach the dashboard",
+        ar: "المشرفون الموثَّقون فقط يصلون إلى لوحة التحكم",
+      },
       priority: "P0",
-      story:
-        "As a QA engineer, I want to verify that the admin dashboard layout guards every route via GET /users/me + isAdmin, redirecting unauthorized users to /auth/login, so that a non-admin account (or an expired session) can never view admin data even by deep-linking a URL.",
-      acceptanceCriteria: [
-        "Deep-linking any admin route (e.g. /users, /plans, /billing) while logged out redirects to /auth/login.",
-        "Deep-linking as a logged-in but non-admin user also redirects to /auth/login (not just a blank/error page).",
-        "A valid admin session loads the dashboard layout and SideNav without a flash of unauthorized content.",
-        "Session expiry mid-session (token expires while dashboard is open) redirects to login on the next guarded request, not a silent broken state.",
-      ],
-      testScenarios: [
-        "Log out, then directly navigate to /users/123 by URL — confirm redirect to login, no data flash.",
-        "Log in as a regular (non-admin) app user, then hit an admin URL directly — confirm redirect.",
-        "Log in as admin, let the session token expire (or revoke it server-side), then click a nav link — confirm graceful redirect rather than a broken fetch/500.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify that the admin dashboard layout guards every route via GET /users/me + isAdmin, redirecting unauthorized users to /auth/login, so that a non-admin account (or an expired session) can never view admin data even by deep-linking a URL.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تخطيط لوحة تحكم المشرف يحمي كل مسار عبر GET /users/me + isAdmin، ويعيد توجيه المستخدمين غير المخوَّلين إلى /auth/login، حتى لا يتمكن حساب غير مشرف (أو جلسة منتهية الصلاحية) من رؤية بيانات لوحة التحكم حتى عبر رابط مباشر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Deep-linking any admin route (e.g. /users, /plans, /billing) while logged out redirects to /auth/login.",
+          "Deep-linking as a logged-in but non-admin user also redirects to /auth/login (not just a blank/error page).",
+          "A valid admin session loads the dashboard layout and SideNav without a flash of unauthorized content.",
+          "Session expiry mid-session (token expires while dashboard is open) redirects to login on the next guarded request, not a silent broken state.",
+        ],
+        ar: [
+          "الدخول برابط مباشر إلى أي مسار في لوحة التحكم (مثل /users أو /plans أو /billing) وأنت غير مسجَّل الدخول يعيد التوجيه إلى /auth/login.",
+          "الدخول برابط مباشر كمستخدم مسجَّل دخول لكنه غير مشرف يعيد التوجيه أيضاً إلى /auth/login (لا مجرد صفحة فارغة أو خطأ).",
+          "جلسة مشرف صالحة تُحمّل تخطيط لوحة التحكم وSideNav دون ظهور خاطف لمحتوى غير مخوَّل.",
+          "انتهاء صلاحية الجلسة أثناء الاستخدام (انتهاء الرمز أثناء فتح لوحة التحكم) يعيد التوجيه لتسجيل الدخول عند أول طلب محمي تالٍ، لا حالة تعطّل صامتة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Log out, then directly navigate to /users/123 by URL — confirm redirect to login, no data flash.",
+          "Log in as a regular (non-admin) app user, then hit an admin URL directly — confirm redirect.",
+          "Log in as admin, let the session token expire (or revoke it server-side), then click a nav link — confirm graceful redirect rather than a broken fetch/500.",
+        ],
+        ar: [
+          "سجّل الخروج، ثم انتقل مباشرة إلى /users/123 عبر الرابط — تأكد من إعادة التوجيه لتسجيل الدخول دون أي ظهور خاطف للبيانات.",
+          "سجّل الدخول كمستخدم عادي (غير مشرف)، ثم افتح رابط لوحة تحكم مباشرة — تأكد من إعادة التوجيه.",
+          "سجّل الدخول كمشرف، اترك رمز الجلسة ينتهي (أو ألغِه من جهة الخادم)، ثم اضغط رابط تنقّل — تأكد من إعادة توجيه سلسة، لا طلب فاشل/خطأ 500.",
+        ],
+      },
     },
     {
       id: "admin-password-recovery",
-      title: "Admin password recovery (OTP) flow completes correctly",
+      title: {
+        en: "Admin password recovery (OTP) flow completes correctly",
+        ar: "تدفق استعادة كلمة مرور المشرف (عبر رمز OTP) يكتمل بشكل صحيح",
+      },
       priority: "P0",
-      story:
-        "As a QA engineer, I want to verify the 3-step admin recovery flow (POST auth/recovery/request-otp → /auth/verify-otp → POST auth/recovery/verify-otp → /auth/reset-password) works end to end, so that an admin who is locked out can regain access without support intervention, and so that OTPs can't be reused or guessed.",
-      acceptanceCriteria: [
-        "Requesting an OTP from /auth/forgot-password sends it to the correct channel (email/SMS) and navigates to /auth/verify-otp.",
-        "An incorrect OTP is rejected with a clear error and does not advance to reset-password.",
-        "A correct OTP advances to /auth/reset-password, and the new password takes effect immediately for the next login.",
-        "An OTP cannot be reused after a successful reset, and expires after its documented window.",
-      ],
-      testScenarios: [
-        "Full happy path: request OTP → enter correct code → set new password → log in with new password.",
-        "Enter an expired OTP (wait past the expiry window) and confirm rejection with a resend option.",
-        "Attempt to reuse an already-consumed OTP on a second reset attempt — confirm rejection.",
-        "Navigate directly to /auth/reset-password without completing OTP verification — confirm it's not reachable/usable without a valid verified session.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify the 3-step admin recovery flow (POST auth/recovery/request-otp → /auth/verify-otp → POST auth/recovery/verify-otp → /auth/reset-password) works end to end, so that an admin who is locked out can regain access without support intervention, and so that OTPs can't be reused or guessed.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تدفق استعادة الحساب للمشرف المكوَّن من 3 خطوات (POST auth/recovery/request-otp ← /auth/verify-otp ← POST auth/recovery/verify-otp ← /auth/reset-password) يعمل من البداية للنهاية، حتى يستطيع المشرف المحظور من الدخول استعادة وصوله دون تدخل الدعم الفني، وحتى لا يمكن إعادة استخدام أو تخمين رموز OTP.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Requesting an OTP from /auth/forgot-password sends it to the correct channel (email/SMS) and navigates to /auth/verify-otp.",
+          "An incorrect OTP is rejected with a clear error and does not advance to reset-password.",
+          "A correct OTP advances to /auth/reset-password, and the new password takes effect immediately for the next login.",
+          "An OTP cannot be reused after a successful reset, and expires after its documented window.",
+        ],
+        ar: [
+          "طلب رمز OTP من /auth/forgot-password يرسله عبر القناة الصحيحة (بريد إلكتروني/رسالة نصية) وينتقل إلى /auth/verify-otp.",
+          "رمز OTP خاطئ يُرفض مع رسالة خطأ واضحة ولا ينتقل إلى شاشة reset-password.",
+          "رمز OTP صحيح ينتقل إلى /auth/reset-password، وكلمة المرور الجديدة تصبح فعّالة فوراً لتسجيل الدخول التالي.",
+          "لا يمكن إعادة استخدام رمز OTP بعد استعادة ناجحة، وينتهي بعد المدة الموثَّقة له.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Full happy path: request OTP → enter correct code → set new password → log in with new password.",
+          "Enter an expired OTP (wait past the expiry window) and confirm rejection with a resend option.",
+          "Attempt to reuse an already-consumed OTP on a second reset attempt — confirm rejection.",
+          "Navigate directly to /auth/reset-password without completing OTP verification — confirm it's not reachable/usable without a valid verified session.",
+        ],
+        ar: [
+          "المسار الطبيعي الكامل: طلب رمز OTP ← إدخال الرمز الصحيح ← تعيين كلمة مرور جديدة ← تسجيل الدخول بكلمة المرور الجديدة.",
+          "أدخل رمز OTP منتهي الصلاحية (انتظر بعد مدة الانتهاء) وتأكد من الرفض مع خيار إعادة الإرسال.",
+          "حاول إعادة استخدام رمز OTP مستهلَك مسبقاً في محاولة استعادة ثانية — تأكد من الرفض.",
+          "انتقل مباشرة إلى /auth/reset-password دون إكمال التحقق عبر OTP — تأكد أنها غير قابلة للوصول/الاستخدام دون جلسة موثَّقة صالحة.",
+        ],
+      },
     },
     {
       id: "admin-dashboard-metrics",
-      title: "Dashboard metrics and charts reflect real data",
+      title: {
+        en: "Dashboard metrics and charts reflect real data",
+        ar: "مؤشرات ورسوم لوحة القيادة تعكس بيانات حقيقية",
+      },
       priority: "P1",
-      story:
-        "As a QA engineer, I want to verify the دashboard home (MetricsGrid, RevenueChart, UsersDonutChart, RecentRegistrationsTable, RecentActivitiesCard, ReportsCard, VerificationRequestsCard) renders numbers/charts consistent with the underlying user and revenue data, so that admins aren't making decisions off of stale or mismatched figures.",
-      acceptanceCriteria: [
-        "MetricsGrid totals (e.g. user counts) match what's independently visible in the /users table for the same period.",
-        "RevenueChart and UsersDonutChart update when the underlying data changes (new registration, new payment) within an expected refresh window.",
-        "RecentRegistrationsTable shows the most recent signups in correct order, matching /users sorted by creation date.",
-        "VerificationRequestsCard counts match the actual number of pending verification requests.",
-      ],
-      testScenarios: [
-        "Register a new test user, then confirm they appear in RecentRegistrationsTable and the relevant MetricsGrid count increments.",
-        "Cross-check a date range on RevenueChart against invoice data for the same range.",
-        "With zero data (fresh/empty environment), confirm every chart/card shows a sane empty/zero state rather than an error or NaN.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify the dashboard home (MetricsGrid, RevenueChart, UsersDonutChart, RecentRegistrationsTable, RecentActivitiesCard, ReportsCard, VerificationRequestsCard) renders numbers/charts consistent with the underlying user and revenue data, so that admins aren't making decisions off of stale or mismatched figures.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن الصفحة الرئيسية للوحة القيادة (MetricsGrid وRevenueChart وUsersDonutChart وRecentRegistrationsTable وRecentActivitiesCard وReportsCard وVerificationRequestsCard) تعرض أرقاماً/رسوماً متسقة مع بيانات المستخدمين والإيرادات الفعلية، حتى لا يتخذ المشرفون قرارات بناءً على أرقام قديمة أو غير متطابقة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "MetricsGrid totals (e.g. user counts) match what's independently visible in the /users table for the same period.",
+          "RevenueChart and UsersDonutChart update when the underlying data changes (new registration, new payment) within an expected refresh window.",
+          "RecentRegistrationsTable shows the most recent signups in correct order, matching /users sorted by creation date.",
+          "VerificationRequestsCard counts match the actual number of pending verification requests.",
+        ],
+        ar: [
+          "مجاميع MetricsGrid (مثل عدد المستخدمين) تطابق ما يظهر بشكل مستقل في جدول /users لنفس الفترة.",
+          "RevenueChart وUsersDonutChart يتحدثان عند تغيّر البيانات الأساسية (تسجيل جديد، دفعة جديدة) ضمن نافذة تحديث معقولة.",
+          "RecentRegistrationsTable يعرض أحدث التسجيلات بالترتيب الصحيح، مطابقاً لـ /users مرتبة حسب تاريخ الإنشاء.",
+          "أعداد VerificationRequestsCard تطابق العدد الفعلي لطلبات التوثيق المعلَّقة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Register a new test user, then confirm they appear in RecentRegistrationsTable and the relevant MetricsGrid count increments.",
+          "Cross-check a date range on RevenueChart against invoice data for the same range.",
+          "With zero data (fresh/empty environment), confirm every chart/card shows a sane empty/zero state rather than an error or NaN.",
+        ],
+        ar: [
+          "سجّل مستخدم اختبار جديداً، ثم تأكد من ظهوره في RecentRegistrationsTable وزيادة العدّاد المرتبط في MetricsGrid.",
+          "قارن نطاق تاريخ في RevenueChart ببيانات الفواتير لنفس النطاق.",
+          "في بيئة فارغة تماماً (بلا بيانات)، تأكد أن كل رسم/بطاقة تعرض حالة فارغة/صفرية منطقية، لا خطأ أو قيمة NaN.",
+        ],
+      },
     },
     {
       id: "admin-users-table",
-      title: "User management table: search, filter, status changes, and delete are all correct",
+      title: {
+        en: "User management table: search, filter, status changes, and delete are all correct",
+        ar: "جدول إدارة المستخدمين: البحث والفلترة وتغيير الحالة والحذف كلها تعمل بشكل صحيح",
+      },
       priority: "P0",
-      story:
-        "As a QA engineer, I want to verify /users (fetchAdminUsers, tabs all/individual/office/company, updateUserStatus, deleteUser) correctly searches, filters, paginates, and mutates user records, so that admins can safely manage accounts without affecting the wrong user or losing data silently.",
-      acceptanceCriteria: [
-        "Switching between all/individual/office/company tabs filters the table to only that role, with correct total counts.",
-        "Search narrows results by name/email/phone as expected, combined correctly with the active role tab.",
-        "Pagination controls move through the full result set without skipping or duplicating rows across pages.",
-        "updateUserStatus reflects immediately in the table (and ideally on that user's own next login/session), and deleteUser removes the user everywhere (their listings, chats, etc. handled per business rule, not left dangling).",
-      ],
-      testScenarios: [
-        "Search for a known user by partial name and by full email, confirm both find the same record.",
-        "Apply the 'company' tab filter, then search — confirm results are the intersection, not the search ignoring the tab.",
-        "Change a user's status (e.g. disable) and confirm that user is immediately blocked from logging in via mobile/web.",
-        "Delete a test user who has active listings/favorites/chats and verify the app doesn't crash for the other party in those relationships (e.g. a chat partner).",
-        "Page through a list of 50+ users and confirm no row appears twice or is skipped across page boundaries.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify /users (fetchAdminUsers, tabs all/individual/office/company, updateUserStatus, deleteUser) correctly searches, filters, paginates, and mutates user records, so that admins can safely manage accounts without affecting the wrong user or losing data silently.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن /users (fetchAdminUsers، تبويبات الكل/فرد/مكتب عقاري/شركة، updateUserStatus، deleteUser) يبحث ويفلتر ويقسّم الصفحات ويعدّل سجلات المستخدمين بشكل صحيح، حتى يستطيع المشرفون إدارة الحسابات بأمان دون التأثير على مستخدم خاطئ أو فقدان بيانات بصمت.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Switching between all/individual/office/company tabs filters the table to only that role, with correct total counts.",
+          "Search narrows results by name/email/phone as expected, combined correctly with the active role tab.",
+          "Pagination controls move through the full result set without skipping or duplicating rows across pages.",
+          "updateUserStatus reflects immediately in the table (and ideally on that user's own next login/session), and deleteUser removes the user everywhere (their listings, chats, etc. handled per business rule, not left dangling).",
+        ],
+        ar: [
+          "التبديل بين تبويبات الكل/فرد/مكتب عقاري/شركة يفلتر الجدول لعرض ذلك الدور فقط، مع مجاميع إجمالية صحيحة.",
+          "البحث يُضيّق النتائج بالاسم/البريد الإلكتروني/الهاتف كما هو متوقع، ويُدمج بشكل صحيح مع تبويب الدور النشط.",
+          "عناصر التحكم في ترقيم الصفحات تتنقل عبر كامل مجموعة النتائج دون تخطي أو تكرار صفوف بين الصفحات.",
+          "updateUserStatus ينعكس فوراً في الجدول (ومن الناحية المثالية في جلسة/دخول ذلك المستخدم التالي)، وdeleteUser يحذف المستخدم من كل مكان (إعلاناته، محادثاته، إلخ تُعالَج حسب قاعدة العمل المحددة، لا أن تُترك معلَّقة).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Search for a known user by partial name and by full email, confirm both find the same record.",
+          "Apply the 'company' tab filter, then search — confirm results are the intersection, not the search ignoring the tab.",
+          "Change a user's status (e.g. disable) and confirm that user is immediately blocked from logging in via mobile/web.",
+          "Delete a test user who has active listings/favorites/chats and verify the app doesn't crash for the other party in those relationships (e.g. a chat partner).",
+          "Page through a list of 50+ users and confirm no row appears twice or is skipped across page boundaries.",
+        ],
+        ar: [
+          "ابحث عن مستخدم معروف بجزء من الاسم وبالبريد الإلكتروني الكامل، وتأكد أن كلا البحثين يجد نفس السجل.",
+          "طبّق فلتر تبويب 'شركة'، ثم ابحث — تأكد أن النتائج هي تقاطع الفلترين معاً، لا أن البحث يتجاهل التبويب.",
+          "غيّر حالة مستخدم (مثل التعطيل) وتأكد أن ذلك المستخدم يُمنع فوراً من تسجيل الدخول عبر الجوال/الويب.",
+          "احذف مستخدم اختبار لديه إعلانات/مفضلة/محادثات نشطة وتحقق أن التطبيق لا يتعطل للطرف الآخر في تلك العلاقات (مثل شريك المحادثة).",
+          "تصفّح قائمة تضم أكثر من 50 مستخدماً وتأكد أن أي صف لا يظهر مرتين أو يُتخطى بين الصفحات.",
+        ],
+      },
     },
     {
       id: "admin-user-detail-tabs",
-      title: "User detail page's 11 tabs each show correct, role-appropriate data",
+      title: {
+        en: "User detail page's 11 tabs each show correct, role-appropriate data",
+        ar: "تبويبات صفحة تفاصيل المستخدم الـ11 تعرض كل منها بيانات صحيحة تناسب الدور",
+      },
       priority: "P1",
-      story:
-        "As a QA engineer, I want to verify /users/[id]'s tabs (overview, ads, requests, services, exhibition, packages, invoices, reports, ratings, logs, notes) each load correct data for the specific user, and that the Overview tab correctly switches between IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview based on that user's role, so that admins never see one user's data rendered under another user's ID, or the wrong overview component for a role.",
-      acceptanceCriteria: [
-        "Opening an individual, office, and company user's detail page each renders the correct overview component variant.",
-        "Every tab's data (ads, invoices, ratings, etc.) belongs strictly to the user in the URL — switching users updates every tab, not just Overview.",
-        "The Packages tab correctly opens ChangePackageDrawer and AddExceptionalFeatureDrawer, and changes made there are reflected in the Packages tab afterward.",
-        "Tabs with no data (e.g. a user with zero reports) show an empty state, not an error.",
-      ],
-      testScenarios: [
-        "Open three different users (one of each role) by ID and confirm each renders its role-specific Overview.",
-        "On a single user, click through all 11 tabs and confirm the URL/tab state updates correctly and back/forward browser navigation lands on the right tab.",
-        "From the Packages tab, use Change Package and Add Exceptional Feature, confirm the success toast appears, then reload the tab and confirm the change persisted.",
-        "Open two different user IDs in two browser tabs and confirm no cross-contamination of tab state (e.g. via shared client cache).",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify /users/[id]'s tabs (overview, ads, requests, services, exhibition, packages, invoices, reports, ratings, logs, notes) each load correct data for the specific user, and that the Overview tab correctly switches between IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview based on that user's role, so that admins never see one user's data rendered under another user's ID, or the wrong overview component for a role.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويبات /users/[id] (نظرة عامة، الإعلانات، الطلبات، الخدمات، المعرض، الباقة، الفواتير، البلاغات، التقييمات، السجل، ملاحظات) يحمّل كل منها بيانات صحيحة خاصة بذلك المستخدم تحديداً، وأن تبويب النظرة العامة يبدّل بشكل صحيح بين IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview حسب دور ذلك المستخدم، حتى لا يرى المشرفون بيانات مستخدم معروضة تحت معرّف مستخدم آخر، أو مكوّن نظرة عامة خاطئاً لدور معيّن.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Opening an individual, office, and company user's detail page each renders the correct overview component variant.",
+          "Every tab's data (ads, invoices, ratings, etc.) belongs strictly to the user in the URL — switching users updates every tab, not just Overview.",
+          "The Packages tab correctly opens ChangePackageDrawer and AddExceptionalFeatureDrawer, and changes made there are reflected in the Packages tab afterward.",
+          "Tabs with no data (e.g. a user with zero reports) show an empty state, not an error.",
+        ],
+        ar: [
+          "فتح صفحة تفاصيل مستخدم فردي، ومكتب عقاري، وشركة يعرض في كل حالة مكوّن النظرة العامة الصحيح المناسب.",
+          "بيانات كل تبويب (الإعلانات، الفواتير، التقييمات، إلخ) تخص حصرياً المستخدم الموجود في الرابط — تبديل المستخدم يحدّث كل تبويب، لا النظرة العامة فقط.",
+          "تبويب الباقة يفتح بشكل صحيح ChangePackageDrawer وAddExceptionalFeatureDrawer، والتغييرات التي تُجرى هناك تنعكس بعد ذلك في تبويب الباقة.",
+          "التبويبات بلا بيانات (مثل مستخدم بلا أي بلاغات) تعرض حالة فارغة، لا خطأ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open three different users (one of each role) by ID and confirm each renders its role-specific Overview.",
+          "On a single user, click through all 11 tabs and confirm the URL/tab state updates correctly and back/forward browser navigation lands on the right tab.",
+          "From the Packages tab, use Change Package and Add Exceptional Feature, confirm the success toast appears, then reload the tab and confirm the change persisted.",
+          "Open two different user IDs in two browser tabs and confirm no cross-contamination of tab state (e.g. via shared client cache).",
+        ],
+        ar: [
+          "افتح ثلاثة مستخدمين مختلفين (واحد من كل دور) عبر المعرّف وتأكد أن كلاً منهم يعرض النظرة العامة الخاصة بدوره.",
+          "على مستخدم واحد، اضغط عبر جميع التبويبات الـ11 وتأكد أن حالة الرابط/التبويب تتحدث بشكل صحيح وأن التنقل بالرجوع/التقدم في المتصفح يصل إلى التبويب الصحيح.",
+          "من تبويب الباقة، استخدم تغيير الباقة وإضافة ميزة استثنائية، تأكد من ظهور إشعار النجاح، ثم أعد تحميل التبويب وتأكد من بقاء التغيير محفوظاً.",
+          "افتح معرّفَي مستخدمين مختلفين في تبويبَي متصفح وتأكد من عدم تداخل حالة التبويبات بينهما (مثلاً عبر ذاكرة تخزين مؤقت مشتركة في العميل).",
+        ],
+      },
     },
     {
       id: "admin-plans-pricing",
-      title: "Plans & Pricing (Normal/Silver/Gold) edits apply correctly and can be safely discarded",
+      title: {
+        en: "Plans & Pricing (Normal/Silver/Gold) edits apply correctly and can be safely discarded",
+        ar: "تعديلات الباقات والأسعار (عادية/فضية/ذهبية) تُطبَّق بشكل صحيح ويمكن التراجع عنها بأمان",
+      },
       priority: "P0",
-      story:
-        "As a QA engineer, I want to verify the /plans page — PlanDetailDrawer for each tier and the 3-step EditPlanDrawer with DiscardEditsModal — saves edits correctly per tier and never silently loses or applies changes when a user backs out, so that pricing changes are intentional and accurately reflected to real users on their next billing cycle.",
-      acceptanceCriteria: [
-        "Opening PlanDetailDrawer for Normal, Silver, and Gold each shows that tier's correct current price/features, not a shared/stale state.",
-        "Editing a plan through all 3 EditPlanDrawer steps and confirming saves the new values, visible immediately on reopening PlanDetailDrawer.",
-        "Attempting to close the EditPlanDrawer mid-edit (with unsaved changes) triggers DiscardEditsModal; confirming discard reverts to the pre-edit values with nothing saved.",
-        "Navigating away (browser back, or closing the drawer via the X) with unsaved changes is also caught by the discard flow — it isn't only the Cancel button that's guarded.",
-      ],
-      testScenarios: [
-        "Edit the Gold plan's price on step 1, price a feature on step 2, review on step 3, save — reopen and confirm all three changes stuck.",
-        "Start editing Silver, change a value, click the browser back button or press Escape — confirm DiscardEditsModal appears rather than silently discarding or silently saving.",
-        "Start editing Normal, click Discard in the modal, reopen PlanDetailDrawer for Normal — confirm the original (pre-edit) values are shown, not a half-applied state.",
-        "Edit Normal and Silver in two separate sessions without saving either, confirm no cross-tier bleed (editing Normal doesn't touch Silver's draft state).",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify the /plans page — PlanDetailDrawer for each tier and the 3-step EditPlanDrawer with DiscardEditsModal — saves edits correctly per tier and never silently loses or applies changes when a user backs out, so that pricing changes are intentional and accurately reflected to real users on their next billing cycle.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن صفحة /plans — PlanDetailDrawer لكل باقة وEditPlanDrawer المكوَّن من 3 خطوات مع DiscardEditsModal — تحفظ التعديلات بشكل صحيح لكل باقة، ولا تفقد أو تطبّق تغييرات بصمت عندما يتراجع المستخدم، حتى تكون تغييرات الأسعار مقصودة وتنعكس بدقة على المستخدمين الحقيقيين في دورة الفوترة التالية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Opening PlanDetailDrawer for Normal, Silver, and Gold each shows that tier's correct current price/features, not a shared/stale state.",
+          "Editing a plan through all 3 EditPlanDrawer steps and confirming saves the new values, visible immediately on reopening PlanDetailDrawer.",
+          "Attempting to close the EditPlanDrawer mid-edit (with unsaved changes) triggers DiscardEditsModal; confirming discard reverts to the pre-edit values with nothing saved.",
+          "Navigating away (browser back, or closing the drawer via the X) with unsaved changes is also caught by the discard flow — it isn't only the Cancel button that's guarded.",
+        ],
+        ar: [
+          "فتح PlanDetailDrawer للباقة العادية والفضية والذهبية يعرض في كل حالة السعر/الميزات الحالية الصحيحة لتلك الباقة، لا حالة مشتركة أو قديمة.",
+          "تعديل باقة عبر جميع خطوات EditPlanDrawer الثلاث وتأكيد الحفظ يحفظ القيم الجديدة، وتظهر فوراً عند إعادة فتح PlanDetailDrawer.",
+          "محاولة إغلاق EditPlanDrawer أثناء التعديل (مع وجود تغييرات غير محفوظة) تُظهر DiscardEditsModal؛ تأكيد التجاهل يعيد القيم إلى ما قبل التعديل دون حفظ أي شيء.",
+          "الخروج من الشاشة (زر الرجوع في المتصفح، أو إغلاق الدرج عبر علامة X) مع وجود تغييرات غير محفوظة يُلتقط أيضاً عبر تدفق التجاهل — الحماية ليست مقتصرة على زر الإلغاء فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Edit the Gold plan's price on step 1, price a feature on step 2, review on step 3, save — reopen and confirm all three changes stuck.",
+          "Start editing Silver, change a value, click the browser back button or press Escape — confirm DiscardEditsModal appears rather than silently discarding or silently saving.",
+          "Start editing Normal, click Discard in the modal, reopen PlanDetailDrawer for Normal — confirm the original (pre-edit) values are shown, not a half-applied state.",
+          "Edit Normal and Silver in two separate sessions without saving either, confirm no cross-tier bleed (editing Normal doesn't touch Silver's draft state).",
+        ],
+        ar: [
+          "عدّل سعر الباقة الذهبية في الخطوة 1، وسعر ميزة في الخطوة 2، وراجع في الخطوة 3، ثم احفظ — أعد الفتح وتأكد من بقاء التغييرات الثلاثة جميعها.",
+          "ابدأ تعديل الباقة الفضية، غيّر قيمة، اضغط زر الرجوع في المتصفح أو مفتاح Escape — تأكد من ظهور DiscardEditsModal بدلاً من التجاهل الصامت أو الحفظ الصامت.",
+          "ابدأ تعديل الباقة العادية، اضغط تجاهل في النافذة، أعد فتح PlanDetailDrawer للباقة العادية — تأكد من عرض القيم الأصلية (قبل التعديل)، لا حالة مطبَّقة جزئياً.",
+          "عدّل الباقة العادية والفضية في جلستين منفصلتين دون حفظ أي منهما، تأكد من عدم تداخل التعديلات بين الباقتين (تعديل العادية لا يمسّ مسودة الفضية).",
+        ],
+      },
     },
     {
       id: "admin-billing-subscriptions",
-      title: "Subscriptions table currently renders from mock data (known gap)",
+      title: {
+        en: "Subscriptions table currently renders from mock data (known gap)",
+        ar: "جدول الاشتراكات يُعرض حالياً من بيانات وهمية (نقص معروف)",
+      },
       priority: "P1",
-      story:
-        "As a QA engineer, I want to verify the /billing Subscriptions tab (BillingMetrics, BillingFilters, SubscriptionsTable, BillingPagination) renders and paginates correctly against MOCK_SUBSCRIPTIONS, so that UI behavior (filtering, sorting, pagination) is validated now while flagging that a live-data regression pass is required once this is wired to the real billing/invoices API.",
-      acceptanceCriteria: [
-        "BillingFilters correctly narrow the mock dataset (status, date range, plan tier as applicable) and BillingMetrics recalculates to match the filtered set.",
-        "BillingPagination correctly pages through the full mock dataset with no duplicate/missing rows.",
-        "This story must be re-verified against live data once MOCK_SUBSCRIPTIONS is replaced — track as a follow-up rather than a one-time pass.",
-      ],
-      testScenarios: [
-        "Apply each available filter individually and in combination, confirming BillingMetrics totals always match the currently-filtered table rows.",
-        "Page through the mock dataset fully and count total rows shown vs. the known mock dataset size to confirm no rows are lost.",
-        "Flag explicitly in test reports that this is exercising mock data, so a future live-data pass isn't skipped once the backend is connected.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify the /billing Subscriptions tab (BillingMetrics, BillingFilters, SubscriptionsTable, BillingPagination) renders and paginates correctly against MOCK_SUBSCRIPTIONS, so that UI behavior (filtering, sorting, pagination) is validated now while flagging that a live-data regression pass is required once this is wired to the real billing/invoices API.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويب الاشتراكات في /billing (BillingMetrics وBillingFilters وSubscriptionsTable وBillingPagination) يُعرض ويُقسَّم على صفحات بشكل صحيح اعتماداً على MOCK_SUBSCRIPTIONS، حتى يُتحقق من سلوك الواجهة (الفلترة، الترتيب، ترقيم الصفحات) الآن، مع التنويه بأن جولة اختبار انحدار على بيانات حقيقية مطلوبة بمجرد ربط هذا التبويب بواجهة برمجة الفوترة/الفواتير الفعلية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "BillingFilters correctly narrow the mock dataset (status, date range, plan tier as applicable) and BillingMetrics recalculates to match the filtered set.",
+          "BillingPagination correctly pages through the full mock dataset with no duplicate/missing rows.",
+          "This story must be re-verified against live data once MOCK_SUBSCRIPTIONS is replaced — track as a follow-up rather than a one-time pass.",
+        ],
+        ar: [
+          "BillingFilters يُضيّق بشكل صحيح مجموعة البيانات الوهمية (الحالة، النطاق الزمني، فئة الباقة إن أمكن) وBillingMetrics يعيد الحساب ليطابق المجموعة المفلترة.",
+          "BillingPagination يتنقل بشكل صحيح عبر كامل مجموعة البيانات الوهمية دون صفوف مكررة أو مفقودة.",
+          "يجب إعادة اختبار هذه القصة على بيانات حقيقية بمجرد استبدال MOCK_SUBSCRIPTIONS — تابعها كمهمة لاحقة، لا كفحص لمرة واحدة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Apply each available filter individually and in combination, confirming BillingMetrics totals always match the currently-filtered table rows.",
+          "Page through the mock dataset fully and count total rows shown vs. the known mock dataset size to confirm no rows are lost.",
+          "Flag explicitly in test reports that this is exercising mock data, so a future live-data pass isn't skipped once the backend is connected.",
+        ],
+        ar: [
+          "طبّق كل فلتر متاح منفرداً ومجتمعاً مع غيره، وتأكد أن مجاميع BillingMetrics تطابق دائماً صفوف الجدول المفلترة حالياً.",
+          "تصفّح كامل مجموعة البيانات الوهمية واحسب إجمالي الصفوف المعروضة مقارنة بحجم المجموعة الوهمية المعروف للتأكد من عدم فقدان أي صف.",
+          "وثّق صراحةً في تقارير الاختبار أن هذا الفحص يعتمد على بيانات وهمية، حتى لا تُتخطى جولة اختبار البيانات الحقيقية لاحقاً بمجرد ربط الواجهة الخلفية.",
+        ],
+      },
     },
     {
       id: "admin-billing-invoices-empty",
-      title: "Invoices tab currently shows a fixed empty state (known gap)",
+      title: {
+        en: "Invoices tab currently shows a fixed empty state (known gap)",
+        ar: "تبويب الفواتير يعرض حالياً حالة فارغة ثابتة (نقص معروف)",
+      },
       priority: "P1",
-      story:
-        "As a QA engineer, I want to verify the /billing Invoices tab renders its documented empty state consistently, so that this intentionally-not-yet-built area doesn't get flagged as 'broken' rather than 'not yet implemented', and so regressions in that empty-state UI are still caught.",
-      acceptanceCriteria: [
-        "The Invoices tab always shows the empty state regardless of filters/search applied — expected today.",
-        "The empty state renders correctly (no layout break, no console errors) across all supported browsers/breakpoints.",
-        "This story's acceptance criteria must be replaced once real invoice data/listing is implemented.",
-      ],
-      testScenarios: [
-        "Open the Invoices tab and confirm the empty state matches the same visual language as other empty states in the app (see admin-placeholder-pages).",
-        "Resize the browser window / test on mobile-width viewport and confirm the empty state doesn't break layout.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify the /billing Invoices tab renders its documented empty state consistently, so that this intentionally-not-yet-built area doesn't get flagged as 'broken' rather than 'not yet implemented', and so regressions in that empty-state UI are still caught.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويب الفواتير في /billing يعرض حالته الفارغة الموثَّقة بثبات، حتى لا يُصنَّف هذا القسم غير المبني عمداً بعد كـ'معطوب' بدلاً من 'لم يُبنَ بعد'، ومع ذلك تُلتقط أي انحدارات في واجهة تلك الحالة الفارغة نفسها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The Invoices tab always shows the empty state regardless of filters/search applied — expected today.",
+          "The empty state renders correctly (no layout break, no console errors) across all supported browsers/breakpoints.",
+          "This story's acceptance criteria must be replaced once real invoice data/listing is implemented.",
+        ],
+        ar: [
+          "تبويب الفواتير يعرض دائماً الحالة الفارغة بغض النظر عن الفلاتر/البحث المطبَّق — وهذا متوقع حالياً.",
+          "الحالة الفارغة تُعرض بشكل صحيح (بلا كسر في التخطيط، وبلا أخطاء في وحدة التحكم) عبر كل المتصفحات/أحجام الشاشة المدعومة.",
+          "يجب استبدال معايير القبول لهذه القصة بمجرد تطبيق عرض بيانات فواتير حقيقية.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the Invoices tab and confirm the empty state matches the same visual language as other empty states in the app (see admin-placeholder-pages).",
+          "Resize the browser window / test on mobile-width viewport and confirm the empty state doesn't break layout.",
+        ],
+        ar: [
+          "افتح تبويب الفواتير وتأكد أن الحالة الفارغة تطابق نفس اللغة البصرية للحالات الفارغة الأخرى في التطبيق (راجع admin-placeholder-pages).",
+          "غيّر حجم نافذة المتصفح / اختبر بعرض شاشة جوال وتأكد أن الحالة الفارغة لا تكسر التخطيط.",
+        ],
+      },
     },
     {
       id: "admin-placeholder-pages",
-      title: "Notifications, Content, Roles, Settings, and Logs are intentionally unbuilt scaffolds",
+      title: {
+        en: "Notifications, Content, Roles, Settings, and Logs are intentionally unbuilt scaffolds",
+        ar: "الإشعارات وإدارة المحتوى والأدوار والإعدادات والسجل هياكل غير مبنية عمداً",
+      },
       priority: "P2",
-      story:
-        "As a QA engineer, I want to verify that /notifications, /content, /roles, /settings, and /logs consistently render the 'no data — ready-to-develop skeleton' placeholder with a working (if alert()-only) Export/Add button, so that these are tracked as known scaffold pages rather than 5 separate 'broken page' bug reports.",
-      acceptanceCriteria: [
-        "Each of the 5 pages loads without error and shows the Arabic placeholder copy ('لا توجد بيانات لعرضها حالياً...').",
-        "Each page's Export/Add button fires a browser alert() rather than throwing a JS error or doing nothing silently.",
-        "None of the 5 pages appear in the SideNav with a broken/missing icon or label.",
-      ],
-      testScenarios: [
-        "Visit each of the 5 pages once and confirm identical placeholder structure/copy pattern across all of them (catches accidental divergence during future partial builds).",
-        "Click the Export/Add button on each and confirm the alert() fires without a console error.",
-        "Re-run this check after any of these 5 pages gets real functionality shipped, since at that point this story should be split into a real per-page story.",
-      ],
+      story: {
+        en: "As a QA engineer, I want to verify that /notifications, /content, /roles, /settings, and /logs consistently render the 'no data — ready-to-develop skeleton' placeholder with a working (if alert()-only) Export/Add button, so that these are tracked as known scaffold pages rather than 5 separate 'broken page' bug reports.",
+        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن /notifications و/content و/roles و/settings و/logs تعرض جميعها بثبات نموذج العنصر النائب 'لا توجد بيانات — هيكل جاهز للتطوير' مع زر تصدير/إضافة فعّال (ولو أنه ينفذ alert() فقط)، حتى تُتابَع هذه الصفحات كصفحات هيكلية معروفة، لا كخمسة بلاغات أخطاء منفصلة عن 'صفحة معطوبة'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Each of the 5 pages loads without error and shows the Arabic placeholder copy ('لا توجد بيانات لعرضها حالياً...').",
+          "Each page's Export/Add button fires a browser alert() rather than throwing a JS error or doing nothing silently.",
+          "None of the 5 pages appear in the SideNav with a broken/missing icon or label.",
+        ],
+        ar: [
+          "كل صفحة من الصفحات الخمس تُحمَّل دون خطأ وتعرض النص العربي النائب ('لا توجد بيانات لعرضها حالياً...').",
+          "زر التصدير/الإضافة في كل صفحة ينفذ alert() في المتصفح بدلاً من رمي خطأ JavaScript أو عدم فعل أي شيء بصمت.",
+          "لا تظهر أي من الصفحات الخمس في SideNav بأيقونة أو تسمية معطوبة/مفقودة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Visit each of the 5 pages once and confirm identical placeholder structure/copy pattern across all of them (catches accidental divergence during future partial builds).",
+          "Click the Export/Add button on each and confirm the alert() fires without a console error.",
+          "Re-run this check after any of these 5 pages gets real functionality shipped, since at that point this story should be split into a real per-page story.",
+        ],
+        ar: [
+          "زر كل صفحة من الصفحات الخمس مرة واحدة وتأكد من تطابق هيكل/نمط النص النائب عبرها جميعاً (يلتقط أي تباين عرضي أثناء عمليات بناء جزئية مستقبلية).",
+          "اضغط زر التصدير/الإضافة في كل صفحة وتأكد من تنفيذ alert() دون أي خطأ في وحدة التحكم.",
+          "أعد تنفيذ هذا الفحص بعد أن تحصل أي من الصفحات الخمس على وظيفة حقيقية، لأنه عندها يجب تقسيم هذه القصة إلى قصة مستقلة حقيقية لكل صفحة.",
+        ],
+      },
     },
   ],
 };
