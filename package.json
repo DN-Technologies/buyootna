@@ -1,6 +1,9 @@
 {
   "name": "buyootna-monorepo",
   "private": true,
+  "scripts": {
+    "prepare": "husky"
+  },
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.4.2",
     "@expo/metro-runtime": "6.1.2",
@@ -16,5 +19,8 @@
       "react-dom": "19.1.0",
       "react-native": "0.81.5"
     }
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }

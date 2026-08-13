@@ -16,8 +16,8 @@ export const companies: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify that apps/web/companies currently only exposes the splash page and the three auth routes, so that this is tracked as the expected current scope rather than QA repeatedly filing 'missing dashboard' bugs against a portal that hasn't been built yet.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن apps/web/companies تعرض حالياً فقط الصفحة الترحيبية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقع بدلاً من أن يُبلّغ فريق الجودة مراراً عن أخطاء 'لوحة تحكم مفقودة' لبوابة لم تُبنَ بعد.",
+        en: "Verify that apps/web/companies currently only exposes the splash page and the three auth routes, so that this is tracked as the expected current scope rather than repeatedly filing 'missing dashboard' bugs against a portal that hasn't been built yet.",
+        ar: "تحقق من أن apps/web/companies تعرض حالياً فقط الصفحة الترحيبية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقع بدلاً من الإبلاغ مراراً عن أخطاء 'لوحة تحكم مفقودة' لبوابة لم تُبنَ بعد.",
       },
       acceptanceCriteria: {
         en: [
@@ -50,8 +50,8 @@ export const companies: DocSection = {
       },
       priority: "P0",
       story: {
-        en: 'As a QA engineer, I want to verify that SignupForm on this portal is configured with defaultRole="COMPANY" and actually submits COMPANY as the role to POST auth/register, so that a company signing up through this portal doesn\'t accidentally get provisioned as an individual account.',
-        ar: 'بصفتي مهندس ضمان جودة، أريد التحقق من أن SignupForm في هذه البوابة مُهيّأ بـ defaultRole="COMPANY" وأنه يرسل فعلياً COMPANY كدور إلى POST auth/register، حتى لا تُنشأ شركة تسجّل عبر هذه البوابة بالخطأ كحساب فردي.',
+        en: 'Verify that SignupForm on this portal is configured with defaultRole="COMPANY" and actually submits COMPANY as the role to POST auth/register, so that a company signing up through this portal doesn\'t accidentally get provisioned as an individual account.',
+        ar: 'تحقق من أن SignupForm في هذه البوابة مُهيّأ بـ defaultRole="COMPANY" وأنه يرسل فعلياً COMPANY كدور إلى POST auth/register، حتى لا تُنشأ شركة تسجّل عبر هذه البوابة بالخطأ كحساب فردي.',
       },
       acceptanceCriteria: {
         en: [
@@ -84,8 +84,8 @@ export const companies: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify that LoginForm/SignupForm/ForgotPasswordForm from @buyootna/ui only enforce plain non-empty/match checks (no zod, no length/regex rules) here, unlike mobile's zod schemas, so that this known validation gap between web and mobile is documented rather than assumed to match.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن LoginForm/SignupForm/ForgotPasswordForm من @buyootna/ui تفرض هنا فقط تحققاً بسيطاً من عدم الفراغ/التطابق (دون zod، ودون قواعد طول أو regex)، خلافاً لمخططات zod في تطبيق الجوال، حتى تُوثَّق هذه الفجوة المعروفة بين الويب والجوال بدلاً من افتراض تطابقهما.",
+        en: "Verify that LoginForm/SignupForm/ForgotPasswordForm from @buyootna/ui only enforce plain non-empty/match checks (no zod, no length/regex rules) here, unlike mobile's zod schemas, so that this known validation gap between web and mobile is documented rather than assumed to match.",
+        ar: "تحقق من أن LoginForm/SignupForm/ForgotPasswordForm من @buyootna/ui تفرض هنا فقط تحققاً بسيطاً من عدم الفراغ/التطابق (دون zod، ودون قواعد طول أو regex)، خلافاً لمخططات zod في تطبيق الجوال، حتى تُوثَّق هذه الفجوة المعروفة بين الويب والجوال بدلاً من افتراض تطابقهما.",
       },
       acceptanceCriteria: {
         en: [
@@ -120,8 +120,8 @@ export const companies: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify ForgotPasswordForm posts to auth/forgot-password and shows a clear 'check your email' success state, so that a company admin who forgets their password isn't left wondering whether the request went through.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن ForgotPasswordForm يرسل طلباً إلى auth/forgot-password ويعرض حالة نجاح واضحة ('تحقق من بريدك الإلكتروني')، حتى لا يبقى مسؤول الشركة الذي نسي كلمة مروره متسائلاً عمّا إذا كان الطلب قد نُفّذ أم لا.",
+        en: "Verify that ForgotPasswordForm posts to auth/forgot-password and shows a clear 'check your email' success state, so that a company admin who forgets their password isn't left wondering whether the request went through.",
+        ar: "تحقق من أن ForgotPasswordForm يرسل طلباً إلى auth/forgot-password ويعرض حالة نجاح واضحة ('تحقق من بريدك الإلكتروني')، حتى لا يبقى مسؤول الشركة الذي نسي كلمة مروره متسائلاً عمّا إذا كان الطلب قد نُفّذ أم لا.",
       },
       acceptanceCriteria: {
         en: [

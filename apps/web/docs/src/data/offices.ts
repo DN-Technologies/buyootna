@@ -16,8 +16,8 @@ export const offices: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify that apps/web/offices currently only exposes the splash page and the three auth routes, so that this is tracked as expected current scope, mirroring web-companies, rather than filed as a missing-dashboard bug.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن apps/web/offices لا يعرض حالياً سوى الصفحة التعريفية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقَّع، مطابق لـ web-companies، لا أن يُبلَّغ عنه كخطأ 'لوحة تحكم مفقودة'.",
+        en: "Verify that apps/web/offices currently only exposes the splash page and the three auth routes, so that this is tracked as expected current scope, mirroring web-companies, rather than filed as a missing-dashboard bug.",
+        ar: "تحقق من أن apps/web/offices لا يعرض حالياً سوى الصفحة التعريفية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقَّع، مطابق لـ web-companies، لا أن يُبلَّغ عنه كخطأ 'لوحة تحكم مفقودة'.",
       },
       acceptanceCriteria: {
         en: [
@@ -50,8 +50,8 @@ export const offices: DocSection = {
       },
       priority: "P0",
       story: {
-        en: 'As a QA engineer, I want to verify SignupForm here is configured with defaultRole="OFFICE" and actually submits OFFICE to POST auth/register, so that an agency signing up through this portal isn\'t misprovisioned as an individual or company account.',
-        ar: 'بصفتي مهندس ضمان جودة، أريد التحقق من أن SignupForm هنا مُهيّأ بـ defaultRole="OFFICE" وأنه يرسل فعلياً OFFICE إلى POST auth/register، حتى لا يُنشأ حساب وكالة تُسجّل عبر هذه البوابة بشكل خاطئ كحساب فردي أو شركة.',
+        en: 'Verify SignupForm here is configured with defaultRole="OFFICE" and actually submits OFFICE to POST auth/register, so that an agency signing up through this portal isn\'t misprovisioned as an individual or company account.',
+        ar: 'تحقق من أن SignupForm هنا مُهيّأ بـ defaultRole="OFFICE" وأنه يرسل فعلياً OFFICE إلى POST auth/register، حتى لا يُنشأ حساب وكالة تُسجّل عبر هذه البوابة بشكل خاطئ كحساب فردي أو شركة.',
       },
       acceptanceCriteria: {
         en: [
@@ -84,8 +84,8 @@ export const offices: DocSection = {
       },
       priority: "P2",
       story: {
-        en: "As a QA engineer, I want to verify that because web-offices and web-companies both consume the same @buyootna/ui LoginForm/SignupForm/ForgotPasswordForm, any bug fix or regression found in one portal's auth forms is checked against the other, so that a fix applied to one doesn't leave the shared-component bug live in its sibling portal.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أنه بما أن web-offices وweb-companies يستخدمان نفس مكوّنات @buyootna/ui وهي LoginForm/SignupForm/ForgotPasswordForm، فإن أي إصلاح خطأ أو تراجع يُكتشف في نماذج مصادقة إحدى البوابتين يُختبر أيضاً على الأخرى، حتى لا يترك إصلاح طُبِّق على إحداهما الخطأ المشترك حياً في البوابة الشقيقة.",
+        en: "Verify that because web-offices and web-companies both consume the same @buyootna/ui LoginForm/SignupForm/ForgotPasswordForm, any bug fix or regression found in one portal's auth forms is checked against the other, so that a fix applied to one doesn't leave the shared-component bug live in its sibling portal.",
+        ar: "تحقق من أنه بما أن web-offices وweb-companies يستخدمان نفس مكوّنات @buyootna/ui وهي LoginForm/SignupForm/ForgotPasswordForm، فإن أي إصلاح خطأ أو تراجع يُكتشف في نماذج مصادقة إحدى البوابتين يجب اختباره أيضاً على الأخرى، حتى لا يترك إصلاح طُبِّق على إحداهما الخطأ المشترك حياً في البوابة الشقيقة.",
       },
       acceptanceCriteria: {
         en: [

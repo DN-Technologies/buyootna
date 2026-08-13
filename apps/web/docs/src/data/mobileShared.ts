@@ -32,8 +32,8 @@ export const mobileShared: DocSection = {
         },
       ],
       story: {
-        en: "As a QA engineer, I want to confirm that Company and Office account types are deliberately locked app-wide — apps/mobile/src/app/(auth)/business-auth.tsx checks `const COMPANY_OFFICE_LOCKED = true;` and renders <ComingSoonGate /> instead of the real signup/login form, and both (company)/_layout.tsx and (office)/_layout.tsx short-circuit their entire tab navigators to that same gate — so that this documented, intentional kill-switch is treated as a release-readiness checkpoint to re-verify every release, not something QA needs to rediscover or escalate as a bug each pass.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التأكد من أن نوعَي حساب الشركة والمكتب العقاري مقفلان عمداً على مستوى التطبيق بأكمله — الملف apps/mobile/src/app/(auth)/business-auth.tsx يفحص `const COMPANY_OFFICE_LOCKED = true;` ويعرض <ComingSoonGate /> بدلاً من نموذج التسجيل/الدخول الحقيقي، وكل من (company)/_layout.tsx و(office)/_layout.tsx يحوّلان كامل شجرة التبويبات الخاصة بهما إلى نفس هذه البوابة — وذلك حتى يُعامَل هذا القفل الموثَّق والمقصود كنقطة تحقق أساسية قبل كل إصدار، لا كأمر يعيد فريق الجودة اكتشافه أو الإبلاغ عنه كخطأ في كل جولة اختبار.",
+        en: "Confirm that Company and Office account types are deliberately locked app-wide — apps/mobile/src/app/(auth)/business-auth.tsx checks `const COMPANY_OFFICE_LOCKED = true;` and renders <ComingSoonGate /> instead of the real signup/login form, and both (company)/_layout.tsx and (office)/_layout.tsx short-circuit their entire tab navigators to that same gate — so that this documented, intentional kill-switch is treated as a release-readiness checkpoint to re-verify every release, not something QA needs to rediscover or escalate as a bug each pass.",
+        ar: "تأكد من أن نوعَي حساب الشركة والمكتب العقاري مقفلان عمداً على مستوى التطبيق بأكمله — الملف apps/mobile/src/app/(auth)/business-auth.tsx يفحص `const COMPANY_OFFICE_LOCKED = true;` ويعرض <ComingSoonGate /> بدلاً من نموذج التسجيل/الدخول الحقيقي، وكل من (company)/_layout.tsx و(office)/_layout.tsx يحوّلان كامل شجرة التبويبات الخاصة بهما إلى نفس هذه البوابة — وذلك حتى يُعامَل هذا القفل الموثَّق والمقصود كنقطة تحقق أساسية قبل كل إصدار، لا كأمر يُكتشف من جديد أو يُبلَّغ عنه كخطأ في كل جولة اختبار.",
       },
       acceptanceCriteria: {
         en: [
@@ -72,8 +72,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify that every guarded action (Chat, Favorites, Notifications, Add Ad, Add Alert, Ask for Offer, Write Review) opens the Authentication Bottom Sheet for guest users, so that guests are always offered a clear path to sign up or log in instead of hitting a silent failure or crash.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن كل إجراء مقيَّد (المحادثة، المفضلة، الإشعارات، إضافة إعلان، إضافة تنبيه، طلب عرض سعر، كتابة تقييم) يفتح شاشة المصادقة السفلية للزوار، حتى يُعرض على الزائر دائماً مسار واضح لإنشاء حساب أو تسجيل الدخول بدلاً من فشل صامت أو تعطّل.",
+        en: "Verify that every guarded action (Chat, Favorites, Notifications, Add Ad, Add Alert, Ask for Offer, Write Review) opens the Authentication Bottom Sheet for guest users, so that guests are always offered a clear path to sign up or log in instead of hitting a silent failure or crash.",
+        ar: "تحقق من أن كل إجراء مقيَّد (المحادثة، المفضلة، الإشعارات، إضافة إعلان، إضافة تنبيه، طلب عرض سعر، كتابة تقييم) يفتح شاشة المصادقة السفلية للزوار، حتى يُعرض على الزائر دائماً مسار واضح لإنشاء حساب أو تسجيل الدخول بدلاً من فشل صامت أو تعطّل.",
       },
       acceptanceCriteria: {
         en: [
@@ -112,8 +112,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the Socket.IO-backed chat (join_conversation/leave_conversation/send_message events, new_message/conversation_updated broadcasts) delivers messages reliably, so that buyers and sellers can trust conversations aren't dropped or duplicated. This applies identically to Individual chat and to company-chats/office-chats once the account-type gate lifts (mobile-company-office-gate) — all three screens share the same useChatStore.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن المحادثة المبنية على Socket.IO (أحداث join_conversation وleave_conversation وsend_message، وبثّ new_message وconversation_updated) توصل الرسائل بشكل موثوق، حتى يثق المشتري والبائع بأن المحادثات لا تُفقد أو تتكرر. ينطبق هذا بنفس القدر على محادثة الفرد وعلى company-chats/office-chats بمجرد رفع قفل نوع الحساب (mobile-company-office-gate) — الشاشات الثلاث تشترك في نفس useChatStore.",
+        en: "Verify the Socket.IO-backed chat (join_conversation/leave_conversation/send_message events, new_message/conversation_updated broadcasts) delivers messages reliably, so that buyers and sellers can trust conversations aren't dropped or duplicated. This applies identically to Individual chat and to company-chats/office-chats once the account-type gate lifts (mobile-company-office-gate) — all three screens share the same useChatStore.",
+        ar: "تحقق من أن المحادثة المبنية على Socket.IO (أحداث join_conversation وleave_conversation وsend_message، وبثّ new_message وconversation_updated) توصل الرسائل بشكل موثوق، حتى يثق المشتري والبائع بأن المحادثات لا تُفقد أو تتكرر. ينطبق هذا بنفس القدر على محادثة الفرد وعلى company-chats/office-chats بمجرد رفع قفل نوع الحساب (mobile-company-office-gate) — الشاشات الثلاث تشترك في نفس useChatStore.",
       },
       acceptanceCriteria: {
         en: [
@@ -152,8 +152,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify that Search's live suggestions (real searchService calls) work correctly while confirming the 'recent searches' list is currently a mock/local array, so that we don't misreport the mock history as a persistence bug and instead track it as a known gap (no Zustand/AsyncStorage persistence yet).",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن اقتراحات البحث الحيّة (عبر طلبات searchService الحقيقية) تعمل بشكل صحيح، مع تأكيد أن قائمة 'عمليات البحث الأخيرة' حالياً مجرد مصفوفة وهمية/محلية، حتى لا نُبلّغ خطأً عن هذا السجل الوهمي كخطأ في الحفظ الدائم، بل نوثّقه كنقص معروف (لا يوجد حفظ عبر Zustand/AsyncStorage بعد).",
+        en: "Verify that Search's live suggestions (real searchService calls) work correctly while confirming the 'recent searches' list is currently a mock/local array — so the mock history doesn't get misreported as a persistence bug, and gets tracked instead as a known gap (no Zustand/AsyncStorage persistence yet).",
+        ar: "تحقق من أن اقتراحات البحث الحيّة (عبر طلبات searchService الحقيقية) تعمل بشكل صحيح، مع تأكيد أن قائمة 'عمليات البحث الأخيرة' حالياً مجرد مصفوفة وهمية/محلية — حتى لا يُبلَّغ خطأً عن هذا السجل الوهمي كخطأ في الحفظ الدائم، بل يُوثَّق كنقص معروف (لا يوجد حفظ عبر Zustand/AsyncStorage بعد).",
       },
       acceptanceCriteria: {
         en: [
@@ -192,8 +192,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the add-listing flow (SharedPropertyInfo + SellPropertyTab/RentPropertyTab/ExchangePropertyTab, driven by useListingStore, with a Preview step) produces a correctly-typed property regardless of which tab the user starts from, so that listings don't get created with the wrong type or missing required fields.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تدفق إضافة الإعلان (SharedPropertyInfo مع SellPropertyTab/RentPropertyTab/ExchangePropertyTab، المُدار عبر useListingStore، مع خطوة معاينة) ينتج عقاراً بنوع صحيح بغض النظر عن التبويب الذي بدأ منه المستخدم، حتى لا تُنشأ الإعلانات بنوع خاطئ أو بحقول مطلوبة ناقصة.",
+        en: "Verify the add-listing flow (SharedPropertyInfo + SellPropertyTab/RentPropertyTab/ExchangePropertyTab, driven by useListingStore, with a Preview step) produces a correctly-typed property regardless of which tab the user starts from, so that listings don't get created with the wrong type or missing required fields.",
+        ar: "تحقق من أن تدفق إضافة الإعلان (SharedPropertyInfo مع SellPropertyTab/RentPropertyTab/ExchangePropertyTab، المُدار عبر useListingStore، مع خطوة معاينة) ينتج عقاراً بنوع صحيح بغض النظر عن التبويب الذي بدأ منه المستخدم، حتى لا تُنشأ الإعلانات بنوع خاطئ أو بحقول مطلوبة ناقصة.",
       },
       acceptanceCriteria: {
         en: [
@@ -232,8 +232,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify that POST auth/identity/switch correctly changes the active identity across the whole app, so that a user managing multiple identities never sees another identity's listings, chats, or favorites mixed into the current one. Note: switching TO a company/office identity currently lands on the ComingSoonGate (see mobile-company-office-gate) rather than a real home screen — verify that transition is clean, not broken.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن الطلب POST auth/identity/switch يغيّر الهوية النشطة بشكل صحيح في كامل التطبيق، حتى لا يرى المستخدم الذي يدير هويات متعددة إعلانات أو محادثات أو مفضلة هوية أخرى مختلطة بالهوية الحالية. ملاحظة: التبديل إلى هوية شركة/مكتب عقاري يصل حالياً إلى ComingSoonGate (راجع mobile-company-office-gate) بدلاً من شاشة رئيسية حقيقية — تحقق أن هذا الانتقال نظيف وليس معطوباً.",
+        en: "Verify that POST auth/identity/switch correctly changes the active identity across the whole app, so that a user managing multiple identities never sees another identity's listings, chats, or favorites mixed into the current one. Note: switching TO a company/office identity currently lands on the ComingSoonGate (see mobile-company-office-gate) rather than a real home screen — verify that transition is clean, not broken.",
+        ar: "تحقق من أن الطلب POST auth/identity/switch يغيّر الهوية النشطة بشكل صحيح في كامل التطبيق، حتى لا يرى المستخدم الذي يدير هويات متعددة إعلانات أو محادثات أو مفضلة هوية أخرى مختلطة بالهوية الحالية. ملاحظة: التبديل إلى هوية شركة/مكتب عقاري يصل حالياً إلى ComingSoonGate (راجع mobile-company-office-gate) بدلاً من شاشة رئيسية حقيقية — تحقق أن هذا الانتقال نظيف وليس معطوباً.",
       },
       acceptanceCriteria: {
         en: [
@@ -270,8 +270,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the Tap payment gateway flow (POST payments/charge → redirect → /payment-callback → webhook → GET payments/status/:invoiceId) correctly reflects success and failure states, so that users are never charged without an invoice being marked paid, or shown 'success' when payment actually failed.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تدفق بوابة دفع Tap (POST payments/charge ← إعادة توجيه ← /payment-callback ← webhook ← GET payments/status/:invoiceId) يعكس حالتَي النجاح والفشل بشكل صحيح، حتى لا يُخصم من المستخدم دون تحديث حالة الفاتورة إلى مدفوعة، ولا تُعرض رسالة 'نجاح' بينما فشلت العملية فعلياً.",
+        en: "Verify the Tap payment gateway flow (POST payments/charge → redirect → /payment-callback → webhook → GET payments/status/:invoiceId) correctly reflects success and failure states, so that users are never charged without an invoice being marked paid, or shown 'success' when payment actually failed.",
+        ar: "تحقق من أن تدفق بوابة دفع Tap (POST payments/charge ← إعادة توجيه ← /payment-callback ← webhook ← GET payments/status/:invoiceId) يعكس حالتَي النجاح والفشل بشكل صحيح، حتى لا يُخصم من المستخدم دون تحديث حالة الفاتورة إلى مدفوعة، ولا تُعرض رسالة 'نجاح' بينما فشلت العملية فعلياً.",
       },
       acceptanceCriteria: {
         en: [
@@ -310,8 +310,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P2",
       story: {
-        en: "As a QA engineer, I want to verify the ContentContainer responsive breakpoints (md:/lg: Tailwind classes per docs/plans/07-ipad-layout.md) render correctly on iPad form factors, so that the App Store review team (and real iPad users) don't see a stretched/broken phone layout.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن نقاط الكسر المتجاوبة في ContentContainer (فئات Tailwind من نوع md:/lg: حسب docs/plans/07-ipad-layout.md) تُعرض بشكل صحيح على أحجام أجهزة iPad، حتى لا يرى فريق مراجعة App Store (والمستخدمون الفعليون لأجهزة iPad) تخطيطاً ممدوداً أو معطوباً مصمماً أصلاً للهاتف.",
+        en: "Verify the ContentContainer responsive breakpoints (md:/lg: Tailwind classes per docs/plans/07-ipad-layout.md) render correctly on iPad form factors, so that the App Store review team (and real iPad users) don't see a stretched/broken phone layout.",
+        ar: "تحقق من أن نقاط الكسر المتجاوبة في ContentContainer (فئات Tailwind من نوع md:/lg: حسب docs/plans/07-ipad-layout.md) تُعرض بشكل صحيح على أحجام أجهزة iPad، حتى لا يرى فريق مراجعة App Store (والمستخدمون الفعليون لأجهزة iPad) تخطيطاً ممدوداً أو معطوباً مصمماً أصلاً للهاتف.",
       },
       acceptanceCriteria: {
         en: [
@@ -346,8 +346,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the demo account (demo@buyootna.cloud, per docs/plans/08-demo-account.md) has working seeded properties, a draft listing, favorites, chats, and an active subscription, so that App Store reviewers logging in with this account see a fully functional app rather than empty screens that could trigger another 4.2.2-style rejection.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن الحساب التجريبي (demo@buyootna.cloud، حسب docs/plans/08-demo-account.md) يحتوي عقارات أولية فعّالة، وإعلان مسودة، ومفضلة، ومحادثات، واشتراكاً نشطاً، حتى يرى مراجعو App Store عند تسجيل الدخول بهذا الحساب تطبيقاً يعمل بشكل كامل بدلاً من شاشات فارغة قد تتسبب في رفض مشابه لرفض البند 4.2.2 السابق.",
+        en: "Verify the demo account (demo@buyootna.cloud, per docs/plans/08-demo-account.md) has working seeded properties, a draft listing, favorites, chats, and an active subscription, so that App Store reviewers logging in with this account see a fully functional app rather than empty screens that could trigger another 4.2.2-style rejection.",
+        ar: "تحقق من أن الحساب التجريبي (demo@buyootna.cloud، حسب docs/plans/08-demo-account.md) يحتوي عقارات أولية فعّالة، وإعلان مسودة، ومفضلة، ومحادثات، واشتراكاً نشطاً، حتى يرى مراجعو App Store عند تسجيل الدخول بهذا الحساب تطبيقاً يعمل بشكل كامل بدلاً من شاشات فارغة قد تتسبب في رفض مشابه لرفض البند 4.2.2 السابق.",
       },
       acceptanceCriteria: {
         en: [

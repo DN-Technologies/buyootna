@@ -16,8 +16,8 @@ export const admin: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify that the admin dashboard layout guards every route via GET /users/me + isAdmin, redirecting unauthorized users to /auth/login, so that a non-admin account (or an expired session) can never view admin data even by deep-linking a URL.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تخطيط لوحة تحكم المشرف يحمي كل مسار عبر GET /users/me + isAdmin، ويعيد توجيه المستخدمين غير المخوَّلين إلى /auth/login، حتى لا يتمكن حساب غير مشرف (أو جلسة منتهية الصلاحية) من رؤية بيانات لوحة التحكم حتى عبر رابط مباشر.",
+        en: "Verify that the admin dashboard layout guards every route via GET /users/me + isAdmin, redirecting unauthorized users to /auth/login, so that a non-admin account (or an expired session) can never view admin data even by deep-linking a URL.",
+        ar: "تحقق من أن تخطيط لوحة تحكم المشرف يحمي كل مسار عبر GET /users/me + isAdmin، ويعيد توجيه المستخدمين غير المخوَّلين إلى /auth/login، حتى لا يتمكن حساب غير مشرف (أو جلسة منتهية الصلاحية) من رؤية بيانات لوحة التحكم حتى عبر رابط مباشر.",
       },
       acceptanceCriteria: {
         en: [
@@ -54,8 +54,8 @@ export const admin: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the 3-step admin recovery flow (POST auth/recovery/request-otp → /auth/verify-otp → POST auth/recovery/verify-otp → /auth/reset-password) works end to end, so that an admin who is locked out can regain access without support intervention, and so that OTPs can't be reused or guessed.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تدفق استعادة الحساب للمشرف المكوَّن من 3 خطوات (POST auth/recovery/request-otp ← /auth/verify-otp ← POST auth/recovery/verify-otp ← /auth/reset-password) يعمل من البداية للنهاية، حتى يستطيع المشرف المحظور من الدخول استعادة وصوله دون تدخل الدعم الفني، وحتى لا يمكن إعادة استخدام أو تخمين رموز OTP.",
+        en: "Verify the 3-step admin recovery flow (POST auth/recovery/request-otp → /auth/verify-otp → POST auth/recovery/verify-otp → /auth/reset-password) works end to end, so that an admin who is locked out can regain access without support intervention, and so that OTPs can't be reused or guessed.",
+        ar: "تحقق من أن تدفق استعادة الحساب للمشرف المكوَّن من 3 خطوات (POST auth/recovery/request-otp ← /auth/verify-otp ← POST auth/recovery/verify-otp ← /auth/reset-password) يعمل من البداية للنهاية، حتى يستطيع المشرف المحظور من الدخول استعادة وصوله دون تدخل الدعم الفني، وحتى لا يمكن إعادة استخدام أو تخمين رموز OTP.",
       },
       acceptanceCriteria: {
         en: [
@@ -94,8 +94,8 @@ export const admin: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify the dashboard home (MetricsGrid, RevenueChart, UsersDonutChart, RecentRegistrationsTable, RecentActivitiesCard, ReportsCard, VerificationRequestsCard) renders numbers/charts consistent with the underlying user and revenue data, so that admins aren't making decisions off of stale or mismatched figures.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن الصفحة الرئيسية للوحة القيادة (MetricsGrid وRevenueChart وUsersDonutChart وRecentRegistrationsTable وRecentActivitiesCard وReportsCard وVerificationRequestsCard) تعرض أرقاماً/رسوماً متسقة مع بيانات المستخدمين والإيرادات الفعلية، حتى لا يتخذ المشرفون قرارات بناءً على أرقام قديمة أو غير متطابقة.",
+        en: "Verify the dashboard home (MetricsGrid, RevenueChart, UsersDonutChart, RecentRegistrationsTable, RecentActivitiesCard, ReportsCard, VerificationRequestsCard) renders numbers/charts consistent with the underlying user and revenue data, so that admins aren't making decisions off of stale or mismatched figures.",
+        ar: "تحقق من أن الصفحة الرئيسية للوحة القيادة (MetricsGrid وRevenueChart وUsersDonutChart وRecentRegistrationsTable وRecentActivitiesCard وReportsCard وVerificationRequestsCard) تعرض أرقاماً/رسوماً متسقة مع بيانات المستخدمين والإيرادات الفعلية، حتى لا يتخذ المشرفون قرارات بناءً على أرقام قديمة أو غير متطابقة.",
       },
       acceptanceCriteria: {
         en: [
@@ -132,8 +132,8 @@ export const admin: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify /users (fetchAdminUsers, tabs all/individual/office/company, updateUserStatus, deleteUser) correctly searches, filters, paginates, and mutates user records, so that admins can safely manage accounts without affecting the wrong user or losing data silently.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن /users (fetchAdminUsers، تبويبات الكل/فرد/مكتب عقاري/شركة، updateUserStatus، deleteUser) يبحث ويفلتر ويقسّم الصفحات ويعدّل سجلات المستخدمين بشكل صحيح، حتى يستطيع المشرفون إدارة الحسابات بأمان دون التأثير على مستخدم خاطئ أو فقدان بيانات بصمت.",
+        en: "Verify /users (fetchAdminUsers, tabs all/individual/office/company, updateUserStatus, deleteUser) correctly searches, filters, paginates, and mutates user records, so that admins can safely manage accounts without affecting the wrong user or losing data silently.",
+        ar: "تحقق من أن /users (fetchAdminUsers، تبويبات الكل/فرد/مكتب عقاري/شركة، updateUserStatus، deleteUser) يبحث ويفلتر ويقسّم الصفحات ويعدّل سجلات المستخدمين بشكل صحيح، حتى يستطيع المشرفون إدارة الحسابات بأمان دون التأثير على مستخدم خاطئ أو فقدان بيانات بصمت.",
       },
       acceptanceCriteria: {
         en: [
@@ -174,8 +174,8 @@ export const admin: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify /users/[id]'s tabs (overview, ads, requests, services, exhibition, packages, invoices, reports, ratings, logs, notes) each load correct data for the specific user, and that the Overview tab correctly switches between IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview based on that user's role, so that admins never see one user's data rendered under another user's ID, or the wrong overview component for a role.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويبات /users/[id] (نظرة عامة، الإعلانات، الطلبات، الخدمات، المعرض، الباقة، الفواتير، البلاغات، التقييمات، السجل، ملاحظات) يحمّل كل منها بيانات صحيحة خاصة بذلك المستخدم تحديداً، وأن تبويب النظرة العامة يبدّل بشكل صحيح بين IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview حسب دور ذلك المستخدم، حتى لا يرى المشرفون بيانات مستخدم معروضة تحت معرّف مستخدم آخر، أو مكوّن نظرة عامة خاطئاً لدور معيّن.",
+        en: "Verify /users/[id]'s tabs (overview, ads, requests, services, exhibition, packages, invoices, reports, ratings, logs, notes) each load correct data for the specific user, and that the Overview tab correctly switches between IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview based on that user's role, so that admins never see one user's data rendered under another user's ID, or the wrong overview component for a role.",
+        ar: "تحقق من أن تبويبات /users/[id] (نظرة عامة، الإعلانات، الطلبات، الخدمات، المعرض، الباقة، الفواتير، البلاغات، التقييمات، السجل، ملاحظات) يحمّل كل منها بيانات صحيحة خاصة بذلك المستخدم تحديداً، وأن تبويب النظرة العامة يبدّل بشكل صحيح بين IndividualProfileOverview / OfficeProfileOverview / CompanyProfileOverview حسب دور ذلك المستخدم، حتى لا يرى المشرفون بيانات مستخدم معروضة تحت معرّف مستخدم آخر، أو مكوّن نظرة عامة خاطئاً لدور معيّن.",
       },
       acceptanceCriteria: {
         en: [
@@ -214,8 +214,8 @@ export const admin: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the /plans page — PlanDetailDrawer for each tier and the 3-step EditPlanDrawer with DiscardEditsModal — saves edits correctly per tier and never silently loses or applies changes when a user backs out, so that pricing changes are intentional and accurately reflected to real users on their next billing cycle.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن صفحة /plans — PlanDetailDrawer لكل باقة وEditPlanDrawer المكوَّن من 3 خطوات مع DiscardEditsModal — تحفظ التعديلات بشكل صحيح لكل باقة، ولا تفقد أو تطبّق تغييرات بصمت عندما يتراجع المستخدم، حتى تكون تغييرات الأسعار مقصودة وتنعكس بدقة على المستخدمين الحقيقيين في دورة الفوترة التالية.",
+        en: "Verify the /plans page — PlanDetailDrawer for each tier and the 3-step EditPlanDrawer with DiscardEditsModal — saves edits correctly per tier and never silently loses or applies changes when a user backs out, so that pricing changes are intentional and accurately reflected to real users on their next billing cycle.",
+        ar: "تحقق من أن صفحة /plans — PlanDetailDrawer لكل باقة وEditPlanDrawer المكوَّن من 3 خطوات مع DiscardEditsModal — تحفظ التعديلات بشكل صحيح لكل باقة، ولا تفقد أو تطبّق تغييرات بصمت عندما يتراجع المستخدم، حتى تكون تغييرات الأسعار مقصودة وتنعكس بدقة على المستخدمين الحقيقيين في دورة الفوترة التالية.",
       },
       acceptanceCriteria: {
         en: [
@@ -254,8 +254,8 @@ export const admin: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify the /billing Subscriptions tab (BillingMetrics, BillingFilters, SubscriptionsTable, BillingPagination) renders and paginates correctly against MOCK_SUBSCRIPTIONS, so that UI behavior (filtering, sorting, pagination) is validated now while flagging that a live-data regression pass is required once this is wired to the real billing/invoices API.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويب الاشتراكات في /billing (BillingMetrics وBillingFilters وSubscriptionsTable وBillingPagination) يُعرض ويُقسَّم على صفحات بشكل صحيح اعتماداً على MOCK_SUBSCRIPTIONS، حتى يُتحقق من سلوك الواجهة (الفلترة، الترتيب، ترقيم الصفحات) الآن، مع التنويه بأن جولة اختبار انحدار على بيانات حقيقية مطلوبة بمجرد ربط هذا التبويب بواجهة برمجة الفوترة/الفواتير الفعلية.",
+        en: "Verify the /billing Subscriptions tab (BillingMetrics, BillingFilters, SubscriptionsTable, BillingPagination) renders and paginates correctly against MOCK_SUBSCRIPTIONS, so that UI behavior (filtering, sorting, pagination) is validated now while flagging that a live-data regression pass is required once this is wired to the real billing/invoices API.",
+        ar: "تحقق من أن تبويب الاشتراكات في /billing (BillingMetrics وBillingFilters وSubscriptionsTable وBillingPagination) يُعرض ويُقسَّم على صفحات بشكل صحيح اعتماداً على MOCK_SUBSCRIPTIONS، حتى يُتحقق من سلوك الواجهة (الفلترة، الترتيب، ترقيم الصفحات) الآن، مع التنويه بأن جولة اختبار انحدار على بيانات حقيقية مطلوبة بمجرد ربط هذا التبويب بواجهة برمجة الفوترة/الفواتير الفعلية.",
       },
       acceptanceCriteria: {
         en: [
@@ -290,8 +290,8 @@ export const admin: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify the /billing Invoices tab renders its documented empty state consistently, so that this intentionally-not-yet-built area doesn't get flagged as 'broken' rather than 'not yet implemented', and so regressions in that empty-state UI are still caught.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن تبويب الفواتير في /billing يعرض حالته الفارغة الموثَّقة بثبات، حتى لا يُصنَّف هذا القسم غير المبني عمداً بعد كـ'معطوب' بدلاً من 'لم يُبنَ بعد'، ومع ذلك تُلتقط أي انحدارات في واجهة تلك الحالة الفارغة نفسها.",
+        en: "Verify the /billing Invoices tab renders its documented empty state consistently, so that this intentionally-not-yet-built area doesn't get flagged as 'broken' rather than 'not yet implemented', and so regressions in that empty-state UI are still caught.",
+        ar: "تحقق من أن تبويب الفواتير في /billing يعرض حالته الفارغة الموثَّقة بثبات، حتى لا يُصنَّف هذا القسم غير المبني عمداً بعد كـ'معطوب' بدلاً من 'لم يُبنَ بعد'، ومع ذلك تُلتقط أي انحدارات في واجهة تلك الحالة الفارغة نفسها.",
       },
       acceptanceCriteria: {
         en: [
@@ -324,8 +324,8 @@ export const admin: DocSection = {
       },
       priority: "P2",
       story: {
-        en: "As a QA engineer, I want to verify that /notifications, /content, /roles, /settings, and /logs consistently render the 'no data — ready-to-develop skeleton' placeholder with a working (if alert()-only) Export/Add button, so that these are tracked as known scaffold pages rather than 5 separate 'broken page' bug reports.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن /notifications و/content و/roles و/settings و/logs تعرض جميعها بثبات نموذج العنصر النائب 'لا توجد بيانات — هيكل جاهز للتطوير' مع زر تصدير/إضافة فعّال (ولو أنه ينفذ alert() فقط)، حتى تُتابَع هذه الصفحات كصفحات هيكلية معروفة، لا كخمسة بلاغات أخطاء منفصلة عن 'صفحة معطوبة'.",
+        en: "Verify that /notifications, /content, /roles, /settings, and /logs consistently render the 'no data — ready-to-develop skeleton' placeholder with a working (if alert()-only) Export/Add button, so that these are tracked as known scaffold pages rather than 5 separate 'broken page' bug reports.",
+        ar: "تحقق من أن /notifications و/content و/roles و/settings و/logs تعرض جميعها بثبات نموذج العنصر النائب 'لا توجد بيانات — هيكل جاهز للتطوير' مع زر تصدير/إضافة فعّال (ولو أنه ينفذ alert() فقط)، حتى تُتابَع هذه الصفحات كصفحات هيكلية معروفة، لا كخمسة بلاغات أخطاء منفصلة عن 'صفحة معطوبة'.",
       },
       acceptanceCriteria: {
         en: [

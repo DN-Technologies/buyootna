@@ -20,8 +20,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد أن تعرض لوحتي الرئيسية أرقاماً حقيقية لطلباتي وخدماتي النشطة والمشاهدات والرسائل، حتى أتمكن فعلياً من قياس أداء عملي على المنصة بدلاً من النظر إلى أرقام لا تتغير أبداً.",
       },
       story: {
-        en: "As a QA engineer, I want to flag that company-home.tsx's entire 2x2 stats grid (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3 هذا الأسبوع', '3', '+700', '5 اليوم') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them, so this is tracked as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off, rather than being freshly discovered as 'the metrics are wrong' at that point.",
-        ar: "بصفتي مهندس ضمان جودة، أريد الإشارة إلى أن شبكة الإحصاءات 2×2 كاملة في company-home.tsx (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة، والتي تعرض النصوص الحرفية '3 هذا الأسبوع' و'3' و'+700' و'5 اليوم') وكذلك شريط العد التنازلي للفترة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي state أو hook أو استدعاء API يغذّيها، لذا يجب تتبّع هذا كنقص جاهزية معروف لما بعد إلغاء قفل COMPANY_OFFICE_LOCKED، بدلاً من اكتشافه من جديد حينها على أنه 'الأرقام خاطئة'.",
+        en: "Flag that company-home.tsx's entire 2x2 stats grid (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3 هذا الأسبوع', '3', '+700', '5 اليوم') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them. Track this as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off, rather than letting it be freshly discovered as 'the metrics are wrong' at that point.",
+        ar: "لاحظ أن شبكة الإحصاءات 2×2 كاملة في company-home.tsx (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة، والتي تعرض النصوص الحرفية '3 هذا الأسبوع' و'3' و'+700' و'5 اليوم') وكذلك شريط العد التنازلي للفترة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي state أو hook أو استدعاء API يغذّيها. تتبّع هذا كنقص جاهزية معروف لما بعد إلغاء قفل COMPANY_OFFICE_LOCKED، بدلاً من اكتشافه من جديد حينها على أنه 'الأرقام خاطئة'.",
       },
       acceptanceCriteria: {
         en: [
@@ -60,8 +60,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد معاينة شكل ملف شركتي أمام الجمهور ومشاركته بسهولة، حتى أتحقق من طريقة عرضي وأروّج لعملي دون مغادرة التطبيق.",
       },
       story: {
-        en: "As a QA engineer, I want to verify that on company-more.tsx's profile header card, the 'معاينة' (Preview) and 'مشاركة' (Share) buttons render with no onPress prop whatsoever — only 'تعديل' (Edit) actually navigates anywhere (to /edit-profile) — so this dead-button gap is documented ahead of the gate lifting, not discovered fresh as 'nothing happens when I tap Preview.'",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن زرّي 'معاينة' و'مشاركة' في بطاقة رأس الملف الشخصي في company-more.tsx يُعرضان دون أي خاصية onPress إطلاقاً — وأن 'تعديل' فقط هو من ينقل فعلياً إلى مكان ما (إلى /edit-profile) — حتى يُوثَّق نقص هذين الزرّين الميتين قبل إلغاء القفل، لا أن يُكتشف من جديد على أنه 'لا يحدث شيء عند الضغط على معاينة'.",
+        en: "Verify that on company-more.tsx's profile header card, the 'معاينة' (Preview) and 'مشاركة' (Share) buttons render with no onPress prop whatsoever — only 'تعديل' (Edit) actually navigates anywhere (to /edit-profile). Document this dead-button gap ahead of the gate lifting, rather than letting it be discovered fresh as 'nothing happens when I tap Preview.'",
+        ar: "تحقق من أن زرّي 'معاينة' و'مشاركة' في بطاقة رأس الملف الشخصي في company-more.tsx يُعرضان دون أي خاصية onPress إطلاقاً — وأن 'تعديل' فقط هو من ينقل فعلياً إلى مكان ما (إلى /edit-profile). وثّق نقص هذين الزرّين الميتين قبل إلغاء القفل، لا أن يُكتشف من جديد على أنه 'لا يحدث شيء عند الضغط على معاينة'.",
       },
       acceptanceCriteria: {
         en: [
@@ -100,8 +100,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد في النهاية إدارة أعضاء فريقي ورؤية تحليلات أداء إعلاناتي، حتى أتمكن من إدارة عمليات عملي من داخل التطبيق.",
       },
       story: {
-        en: "As a QA engineer, I want to confirm that company-more.tsx's 'إدارة الشركة' section deliberately shows an Alert.alert('قريباً', ...) for 'فريق العمل' (Team) and 'التحليلات' (Analytics) rather than navigating anywhere, so these are tracked as intentional not-yet-built placeholders and never mistaken for broken navigation.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التأكد من أن قسم 'إدارة الشركة' في company-more.tsx يعرض عمداً Alert.alert('قريباً', ...) لكل من 'فريق العمل' و'التحليلات' بدلاً من التنقّل إلى أي مكان، حتى تُتَتبَّع هذه العناصر كنماذج غير مبنية بعد ومقصودة، ولا تُخلط أبداً بتنقّل معطوب.",
+        en: "Confirm that company-more.tsx's 'إدارة الشركة' section deliberately shows an Alert.alert('قريباً', ...) for 'فريق العمل' (Team) and 'التحليلات' (Analytics) rather than navigating anywhere. Track these as intentional not-yet-built placeholders, never mistaken for broken navigation.",
+        ar: "تأكد من أن قسم 'إدارة الشركة' في company-more.tsx يعرض عمداً Alert.alert('قريباً', ...) لكل من 'فريق العمل' و'التحليلات' بدلاً من التنقّل إلى أي مكان. تتبّع هذين العنصرين كنموذجين غير مبنيين بعد ومقصودين، ولا تخلطهما أبداً بتنقّل معطوب.",
       },
       acceptanceCriteria: {
         en: [
@@ -140,8 +140,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد رؤية وإدارة طلبات الخدمة التي يرسلها لي العملاء، مصنّفة حسب حالتها، حتى أتمكن من الرد على العملاء المحتملين وتتبّع مسار أعمالي.",
       },
       story: {
-        en: "As a QA engineer, I want to verify that company-requests.tsx renders its all/pending/accepted/completed filter pills but the list stays empty no matter which is selected, so this known frontend/backend wiring gap is tracked explicitly and re-verified once real request data is wired in.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن company-requests.tsx يعرض شرائح الفلترة (الكل/قيد الانتظار/مقبول/مكتمل) لكن القائمة تبقى فارغة أياً كان الفلتر المختار، حتى يُتَتبَّع هذا النقص المعروف في الربط بين الواجهة الأمامية والخلفية صراحةً، ويُعاد التحقق منه بمجرد ربط بيانات طلبات حقيقية.",
+        en: "Verify that company-requests.tsx renders its all/pending/accepted/completed filter pills but the list stays empty no matter which is selected. Track this known frontend/backend wiring gap explicitly, and re-verify once real request data is wired in.",
+        ar: "تحقق من أن company-requests.tsx يعرض شرائح الفلترة (الكل/قيد الانتظار/مقبول/مكتمل) لكن القائمة تبقى فارغة أياً كان الفلتر المختار. تتبّع هذا النقص المعروف في الربط بين الواجهة الأمامية والخلفية صراحةً، وأعد التحقق منه بمجرد ربط بيانات طلبات حقيقية.",
       },
       acceptanceCriteria: {
         en: [
@@ -180,8 +180,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد إجراء '+' واضح لإنشاء إعلان أو خدمة أو عرض جديد، حتى تكون لدي طريقة واضحة لإضافة محتوى جديد إلى ملفي الشخصي.",
       },
       story: {
-        en: "As a QA engineer, I want to flag that (company)/add.tsx is a literal `return <View />;` — a blank screen with no content, no redirect, and no action sheet — unlike the individual role's '+' button, which opens a real action sheet (Add Ad / Add Alert / Request Quote per docs/flows/guest-flow.md), so that if a company user ever taps '+' once the gate lifts, QA doesn't mistake a genuinely blank screen for a rendering bug — it is the current implementation as written.",
-        ar: "بصفتي مهندس ضمان جودة، أريد الإشارة إلى أن (company)/add.tsx هو حرفياً `return <View />;` — شاشة فارغة بلا محتوى ولا إعادة توجيه ولا شاشة إجراءات — بخلاف زر '+' لدور الفرد الذي يفتح شاشة إجراءات حقيقية (إضافة إعلان / إضافة تنبيه / طلب عرض سعر حسب docs/flows/guest-flow.md)، حتى إذا ضغط مستخدم شركة على '+' بمجرد رفع القفل، لا يظن فريق الجودة أن الشاشة الفارغة تماماً خطأ في العرض — فهي التنفيذ الحالي كما هو مكتوب فعلياً.",
+        en: "Flag that (company)/add.tsx is a literal `return <View />;` — a blank screen with no content, no redirect, and no action sheet — unlike the individual role's '+' button, which opens a real action sheet (Add Ad / Add Alert / Request Quote per docs/flows/guest-flow.md). If a company user ever taps '+' once the gate lifts, don't mistake this genuinely blank screen for a rendering bug — it is the current implementation as written.",
+        ar: "لاحظ أن (company)/add.tsx هو حرفياً `return <View />;` — شاشة فارغة بلا محتوى ولا إعادة توجيه ولا شاشة إجراءات — بخلاف زر '+' لدور الفرد الذي يفتح شاشة إجراءات حقيقية (إضافة إعلان / إضافة تنبيه / طلب عرض سعر حسب docs/flows/guest-flow.md). إذا ضغط مستخدم شركة على '+' بمجرد رفع القفل، لا تفترض أن الشاشة الفارغة تماماً خطأ في العرض — فهي التنفيذ الحالي كما هو مكتوب فعلياً.",
       },
       acceptanceCriteria: {
         en: [

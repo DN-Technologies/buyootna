@@ -17,12 +17,16 @@ dist/
 # misc
 .ds_store
 .env
+.env.postgres
 .env*.local
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .expo/
 .turbo/
+
+# postgres backups (server-generated, not source)
+backups/
 
 # typescript
 *.tsbuildinfo
