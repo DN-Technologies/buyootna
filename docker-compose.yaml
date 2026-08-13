@@ -57,3 +57,10 @@ services:
       dockerfile: apps/web/admin/Dockerfile
     expose: ["3005"]
     restart: always
+
+  web-docs:
+    build:
+      context: .
+      dockerfile: apps/web/docs/Dockerfile
+    expose: ["3006"]
+    restart: always

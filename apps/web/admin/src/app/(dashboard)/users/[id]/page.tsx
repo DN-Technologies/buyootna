@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { CheckCircle2 } from 'lucide-react'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
 import UserQuickStats from '@/components/users/UserQuickStats'
 import UserDetailTabs from '@/components/users/UserDetailTabs'
@@ -14,6 +15,8 @@ import UserExhibitionTabContent from '@/components/users/exhibition/UserExhibiti
 import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
 import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
 import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
+import ChangePackageDrawer from '@/components/users/packages/ChangePackageDrawer'
+import AddExceptionalFeatureDrawer from '@/components/users/packages/AddExceptionalFeatureDrawer'
 import UserInvoicesDiscountsTabContent from '@/components/users/invoices/UserInvoicesDiscountsTabContent'
 import UserReportsTabContent from '@/components/users/reports/UserReportsTabContent'
 import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabContent'
@@ -76,6 +79,10 @@ export default function UserOverviewPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const [changePackageOpen, setChangePackageOpen] = useState(false)
+  const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
   const currentTabSlug = searchParams.get('tab')
   const activeTab = (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
 
@@ -108,6 +115,21 @@ export default function UserOverviewPage() {
       cancelled = true
     }
   }, [params.id])
+
+  const handleHeaderAction = (action: string) => {
+    if (action === 'change_package') {
+      setChangePackageOpen(true)
+    } else if (action === 'add_exceptional_feature') {
+      setAddExceptionalFeatureOpen(true)
+    }
+  }
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    setTimeout(() => {
+      setToastMessage(null)
+    }, 4000)
+  }
 
   if (loading) {
     return <UserDetailPageSkeleton />
@@ -143,7 +165,17 @@ export default function UserOverviewPage() {
       : 'نشط'
 
   return (
-    <div className="flex flex-col gap-5 pb-10" dir="rtl">
+    <div className="flex flex-col gap-5 pb-10 relative" dir="rtl">
+      {/* Floating Success Toast (Figma Nodes 4043:137427 & 4043:137453) */}
+      {toastMessage && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-[#15a72b] rounded-lg px-4 py-2.5 shadow-lg flex items-center gap-2 font-['Cairo'] text-right animate-in fade-in slide-in-from-top-2 duration-300">
+          <CheckCircle2 className="w-5 h-5 text-[#15a72b] shrink-0" />
+          <span className="text-[14px] font-medium text-[#111111]">
+            {toastMessage}
+          </span>
+        </div>
+      )}
+
       {/* Bleeds to cancel the dashboard shell's padding, matching PageHeader's pattern */}
       <div className="-mx-6 -mt-6 md:-mx-8 md:-mt-8 flex flex-col gap-4 bg-white">
         <UserDetailHeader
@@ -155,6 +187,7 @@ export default function UserOverviewPage() {
           avatarUrl={avatarUrl}
           isOffice={isOffice || userRole === 'COMPANY'}
           userId={user.id}
+          onActionSelect={handleHeaderAction}
         />
         <UserQuickStats userRole={userRole} />
         <UserDetailTabs
@@ -220,6 +253,26 @@ export default function UserOverviewPage() {
           joinedAt={formatArabicDate(user.createdAt)}
         />
       )}
+
+      {/* Change Package Drawer */}
+      <ChangePackageDrawer
+        open={changePackageOpen}
+        onClose={() => setChangePackageOpen(false)}
+        onSuccess={() => showToast('تم تغيير الباقة بنجاح.')}
+        userName={displayName}
+        userEmail={user.email || '—'}
+        accountType={accountType}
+        currentPlanLabel={user.activePlan?.name || 'العادية'}
+      />
+
+      {/* Add Exceptional Feature Drawer */}
+      <AddExceptionalFeatureDrawer
+        open={addExceptionalFeatureOpen}
+        onClose={() => setAddExceptionalFeatureOpen(false)}
+        onSuccess={() =>
+          showToast(`تم منح مميزات استثنائية للمستخدم “${displayName}” بنجاح.`)
+        }
+      />
     </div>
   )
 }
