@@ -10,6 +10,15 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,19 +28,45 @@ import type { ListingStatus } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
+import { ApiAuth } from '../../core/swagger/api-auth.decorator';
+import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
+import {
+  HomeFeedResponseDto,
+  IncrementViewsResponseDto,
+  MyActivityPropertyDto,
+  PropertyDto,
+  PropertyListResponseDto,
+  RemovePropertyResponseDto,
+} from './dto/property-response.dto';
 
+@ApiTags('Properties')
 @Controller('properties')
 export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
   // Public Feed Endpoint
   @Get('feed/home')
+  @ApiOperation({ summary: 'Get the home feed: top sale/rent/exchange listings and top companies' })
+  @ApiResponse({ status: 200, type: HomeFeedResponseDto })
+  @ApiCommonErrors()
   async getHomeFeed() {
     return this.propertiesService.getHomeFeed();
   }
 
   // Public Features Metadata Endpoint
   @Get('metadata/features')
+  @ApiOperation({ summary: 'Get the static list of selectable property features, grouped by listing type' })
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'object',
+      properties: {
+        sell: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
+        rent: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
+        exchange: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
+      },
+    },
+  })
   getFeatures() {
     return {
       sell: [
@@ -59,6 +94,11 @@ export class PropertiesController {
   // My Activity Route
   @Get('/me/activity')
   @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({ summary: "List the current identity's own properties, optionally filtered by status" })
+  @ApiQuery({ name: 'status', required: false, description: 'ListingStatus enum value' })
+  @ApiResponse({ status: 200, type: [MyActivityPropertyDto] })
+  @ApiCommonErrors()
   async getMyActivity(
     @CurrentUser() reqUser: RequestUser,
     @Query('status') status?: ListingStatus,
@@ -68,18 +108,30 @@ export class PropertiesController {
 
   // Public Paginated Endpoint
   @Get()
+  @ApiOperation({ summary: 'List active properties, paginated and filterable' })
+  @ApiQuery({ type: GetPropertiesFilterDto })
+  @ApiResponse({ status: 200, type: PropertyListResponseDto })
+  @ApiCommonErrors()
   async findAll(@Query() filters: GetPropertiesFilterDto) {
     return this.propertiesService.findAll(filters);
   }
 
   // Public Single Property Endpoint
   @Get(':id')
+  @ApiOperation({ summary: 'Get a single property by ID' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiResponse({ status: 200, type: PropertyDto })
+  @ApiCommonErrors()
   async findOne(@Param('id') id: string) {
     return this.propertiesService.findOne(id);
   }
 
   // Public View Tracking Endpoint
   @Patch(':id/view')
+  @ApiOperation({ summary: 'Increment the view counter for a property' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiResponse({ status: 200, type: IncrementViewsResponseDto })
+  @ApiCommonErrors()
   async incrementViews(@Param('id') id: string) {
     return this.propertiesService.incrementViews(id);
   }
@@ -87,6 +139,11 @@ export class PropertiesController {
   @UseGuards(AuthGuard('jwt'))
   @Post()
   @UseInterceptors(FilesInterceptor('images', 10))
+  @ApiAuth()
+  @ApiOperation({ summary: 'Create a new property listing for the current identity, with up to 10 images' })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, type: PropertyDto })
+  @ApiCommonErrors()
   async create(
     @CurrentUser() reqUser: RequestUser,
     @Body() createPropertyDto: CreatePropertyDto,
@@ -96,6 +153,11 @@ export class PropertiesController {
 
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({ summary: "Update one of the current identity's properties" })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiResponse({ status: 200, type: PropertyDto })
+  @ApiCommonErrors()
   async update(
     @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
@@ -106,6 +168,18 @@ export class PropertiesController {
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({ summary: "Delete one of the current identity's properties, with an optional reason" })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiBody({
+    required: false,
+    schema: {
+      type: 'object',
+      properties: { reason: { type: 'string' } },
+    },
+  })
+  @ApiResponse({ status: 200, type: RemovePropertyResponseDto })
+  @ApiCommonErrors()
   async remove(
     @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
