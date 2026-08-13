@@ -1,14 +1,13 @@
 name: CD Pipeline
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   deploy:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,8 +19,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            set -e
             cd ${{ secrets.TARGET_DIR }}
             git pull origin main
-            docker compose up -d --build
-            docker compose exec -T api pnpm prisma:migrate:deploy
+            docker compose build
+            docker compose up -d postgres postgres-backup
+            docker compose exec -T postgres-backup /backup.sh
+            docker compose run --rm api pnpm prisma:migrate:deploy
+            docker compose up -d
             docker system prune -f

@@ -20,8 +20,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد أن تعرض لوحة المعلومات الخاصة بي أرقاماً حقيقية عن إعلاناتي النشطة وخدماتي ومشاهداتي ورسائلي، حتى أتمكن فعلياً من تقييم أداء إعلانات مكتبي بدلاً من النظر إلى أرقام لا تتغير أبداً.",
       },
       story: {
-        en: "As a QA engineer, I want to flag that office-home.tsx's entire 2x2 stats grid (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3', '3', '700+', '5') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them — an identical pattern to company-home.tsx (mobile-company-dashboard-mock-data) — so this is tracked as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التنويه إلى أن شبكة الإحصاءات 2×2 بالكامل في office-home.tsx (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة، التي تعرض السلاسل النصية الحرفية '3' و'3' و'700+' و'5') وشريط العد التنازلي للنسخة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي حالة (state) أو hook أو طلب API يغذّيها — وهو نمط مطابق تماماً لـ company-home.tsx (mobile-company-dashboard-mock-data) — لذا يُوثَّق هذا كفجوة جاهزية معروفة لوقت إلغاء قفل COMPANY_OFFICE_LOCKED.",
+        en: "Flag that office-home.tsx's entire 2x2 stats grid (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3', '3', '700+', '5') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them — an identical pattern to company-home.tsx (mobile-company-dashboard-mock-data) — so this is tracked as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off.",
+        ar: "تنويه: شبكة الإحصاءات 2×2 بالكامل في office-home.tsx (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة، التي تعرض السلاسل النصية الحرفية '3' و'3' و'700+' و'5') وشريط العد التنازلي للنسخة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي حالة (state) أو hook أو طلب API يغذّيها — وهو نمط مطابق تماماً لـ company-home.tsx (mobile-company-dashboard-mock-data) — لذا يُوثَّق هذا كفجوة جاهزية معروفة لوقت إلغاء قفل COMPANY_OFFICE_LOCKED.",
       },
       acceptanceCriteria: {
         en: [
@@ -60,8 +60,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد معاينة شكل ملف مكتبي كما يظهر للعامة ومشاركته بسهولة، حتى أتمكن من مراجعة عرضي والترويج لمكتبي دون مغادرة التطبيق.",
       },
       story: {
-        en: "As a QA engineer, I want to verify that on office-more.tsx's profile header card, the 'معاينة' (Preview) and 'مشاركة' (Share) buttons render with no onPress prop whatsoever — only 'تعديل' (Edit) actually navigates anywhere (to /edit-profile) — an identical gap to company-more.tsx (mobile-company-more-dead-actions) — so this is documented ahead of the gate lifting rather than discovered fresh.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن زرَّي 'معاينة' و'مشاركة' في بطاقة رأس الملف الشخصي بملف office-more.tsx يُعرضان دون أي خاصية onPress إطلاقاً — وأن زر 'تعديل' فقط هو من يوجّه فعلياً إلى مكان ما (إلى /edit-profile) — وهي فجوة مطابقة تماماً لـ company-more.tsx (mobile-company-more-dead-actions) — لذا تُوثَّق هذه الفجوة مسبقاً قبل رفع القفل بدلاً من اكتشافها من جديد لاحقاً.",
+        en: "Verify that on office-more.tsx's profile header card, the 'معاينة' (Preview) and 'مشاركة' (Share) buttons render with no onPress prop whatsoever — only 'تعديل' (Edit) actually navigates anywhere (to /edit-profile) — an identical gap to company-more.tsx (mobile-company-more-dead-actions) — so this is documented ahead of the gate lifting rather than discovered fresh.",
+        ar: "تحقق من أن زرَّي 'معاينة' و'مشاركة' في بطاقة رأس الملف الشخصي بملف office-more.tsx يُعرضان دون أي خاصية onPress إطلاقاً — وأن زر 'تعديل' فقط هو من يوجّه فعلياً إلى مكان ما (إلى /edit-profile) — وهي فجوة مطابقة تماماً لـ company-more.tsx (mobile-company-more-dead-actions) — لذا تُوثَّق هذه الفجوة مسبقاً قبل رفع القفل بدلاً من اكتشافها من جديد لاحقاً.",
       },
       acceptanceCriteria: {
         en: [
@@ -100,8 +100,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد أن أتمكن مستقبلاً من إدارة الصفقات والمزادات وعلاقات الوسطاء، ورؤية تحليلات إعلاناتي، حتى أستطيع إدارة عمليات مكتبي من داخل التطبيق.",
       },
       story: {
-        en: "As a QA engineer, I want to confirm that office-more.tsx shows Alert.alert('قريباً', ...) for 4 items — 'الصفقات' (Deals), 'المزادات' (Auctions), 'إدارة الوسطاء' (Broker Management), and 'التحليلات' (Analytics) — twice as many placeholder stubs as company-more.tsx's 2, so QA tracks this asymmetry as an intentional difference in each role's roadmap, not an inconsistency to flag as a bug.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التأكد من أن office-more.tsx يعرض Alert.alert('قريباً', ...) لأربعة عناصر — 'الصفقات' و'المزادات' و'إدارة الوسطاء' و'التحليلات' — أي ضعف عدد العناصر النائبة الموجودة في company-more.tsx (2 فقط)، حتى يوثّق فريق الجودة هذا التفاوت كاختلاف مقصود في خارطة طريق كل دور، لا كتضارب يُبلَّغ عنه كخلل.",
+        en: "Confirm that office-more.tsx shows Alert.alert('قريباً', ...) for 4 items — 'الصفقات' (Deals), 'المزادات' (Auctions), 'إدارة الوسطاء' (Broker Management), and 'التحليلات' (Analytics) — twice as many placeholder stubs as company-more.tsx's 2, so this asymmetry is tracked as an intentional difference in each role's roadmap, not an inconsistency to flag as a bug.",
+        ar: "تأكد من أن office-more.tsx يعرض Alert.alert('قريباً', ...) لأربعة عناصر — 'الصفقات' و'المزادات' و'إدارة الوسطاء' و'التحليلات' — أي ضعف عدد العناصر النائبة الموجودة في company-more.tsx (2 فقط)، حتى يُوثَّق هذا التفاوت كاختلاف مقصود في خارطة طريق كل دور، لا كتضارب يُبلَّغ عنه كخلل.",
       },
       acceptanceCriteria: {
         en: [
@@ -140,8 +140,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد رؤية وإدارة عقاراتي المُدرجة، مفلترةً حسب حالة النشر، حتى أتمكن من تتبع ما هو منشور، وما هو في مسودة، وما هو مؤرشف.",
       },
       story: {
-        en: "As a QA engineer, I want to verify that office-properties.tsx renders its all/published/draft/archived filter pills but the list stays empty no matter which is selected, so this known frontend/backend wiring gap is tracked explicitly and re-verified once real property data is wired in.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن office-properties.tsx يعرض أزرار فلترة الكل/المنشور/المسودة/المؤرشف، لكن القائمة تبقى فارغة أياً كان الفلتر المختار، حتى تُوثَّق هذه الفجوة المعروفة في الربط بين الواجهة والخلفية صراحةً وتُعاد مراجعتها بمجرد ربط بيانات عقارات حقيقية.",
+        en: "Verify that office-properties.tsx renders its all/published/draft/archived filter pills but the list stays empty no matter which is selected. Track this known frontend/backend wiring gap explicitly and re-verify it once real property data is wired in.",
+        ar: "تحقق من أن office-properties.tsx يعرض أزرار فلترة الكل/المنشور/المسودة/المؤرشف، لكن القائمة تبقى فارغة أياً كان الفلتر المختار. وثّق هذه الفجوة المعروفة في الربط بين الواجهة والخلفية صراحةً وأعد مراجعتها بمجرد ربط بيانات عقارات حقيقية.",
       },
       acceptanceCriteria: {
         en: [
@@ -180,8 +180,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد إجراء '+' واضحاً لإدراج عقار جديد، حتى تكون لديّ طريقة واضحة لإضافة إعلانات جديدة إلى محفظتي.",
       },
       story: {
-        en: "As a QA engineer, I want to flag that (office)/add.tsx is a literal `return <View />;` — a blank screen with no content, no redirect, and no action sheet — the identical stub to (company)/add.tsx (mobile-company-add-tab-empty), unlike the individual role's real '+' action sheet, so QA doesn't mistake this genuinely blank screen for a rendering bug once the gate lifts — it is the current implementation as written.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التنويه إلى أن الملف (office)/add.tsx ما هو إلا `return <View />;` حرفياً — شاشة فارغة دون أي محتوى أو إعادة توجيه أو شاشة إجراءات — وهو نفس العنصر النائب الموجود في (company)/add.tsx (mobile-company-add-tab-empty) تماماً، على عكس شاشة الإجراءات الحقيقية لزر '+' الخاصة بدور الفرد، حتى لا يخلط فريق الجودة بين هذه الشاشة الفارغة فعلياً وخلل في العرض بمجرد رفع القفل — فهي التنفيذ الحالي كما هو مكتوب في الكود.",
+        en: "Flag that (office)/add.tsx is a literal `return <View />;` — a blank screen with no content, no redirect, and no action sheet — the identical stub to (company)/add.tsx (mobile-company-add-tab-empty), unlike the individual role's real '+' action sheet, so this genuinely blank screen doesn't get mistaken for a rendering bug once the gate lifts — it is the current implementation as written.",
+        ar: "تنويه: الملف (office)/add.tsx ما هو إلا `return <View />;` حرفياً — شاشة فارغة دون أي محتوى أو إعادة توجيه أو شاشة إجراءات — وهو نفس العنصر النائب الموجود في (company)/add.tsx (mobile-company-add-tab-empty) تماماً، على عكس شاشة الإجراءات الحقيقية لزر '+' الخاصة بدور الفرد، حتى لا تُخلَط هذه الشاشة الفارغة فعلياً بخلل في العرض بمجرد رفع القفل — فهي التنفيذ الحالي كما هو مكتوب في الكود.",
       },
       acceptanceCriteria: {
         en: [

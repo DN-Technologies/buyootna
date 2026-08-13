@@ -1,0 +1,10 @@
+# Code owners for buyootna
+#
+# Requires review from the listed owner(s) on any pull request touching
+# matched paths. This is enforced together with the "Require review from
+# Code Owners" branch protection setting on `main` in the GitHub UI.
+#
+# Replace the placeholder handle(s) below with the actual GitHub usernames
+# who should gate production merges.
+
+* @constyoussef

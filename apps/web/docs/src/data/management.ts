@@ -16,8 +16,8 @@ export const management: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify that apps/web/management currently only exposes the splash page and the three auth routes, so that this is tracked as expected current scope rather than filed as a missing property-manager-dashboard bug.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن apps/web/management تعرض حالياً فقط الصفحة الترحيبية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقع بدلاً من أن يُبلَّغ عنه كخطأ 'لوحة تحكم مدير أملاك مفقودة'.",
+        en: "Verify that apps/web/management currently only exposes the splash page and the three auth routes, so that this is tracked as expected current scope rather than filed as a missing property-manager-dashboard bug.",
+        ar: "تحقق من أن apps/web/management تعرض حالياً فقط الصفحة الترحيبية ومسارات المصادقة الثلاثة، حتى يُوثَّق هذا كنطاق حالي متوقع بدلاً من أن يُبلَّغ عنه كخطأ 'لوحة تحكم مدير أملاك مفقودة'.",
       },
       acceptanceCriteria: {
         en: [
@@ -50,8 +50,8 @@ export const management: DocSection = {
       },
       priority: "P0",
       story: {
-        en: 'As a QA engineer, I want to verify what role is actually submitted when a user signs up through apps/web/management, because SignupForm here is configured with defaultRole="INDIVIDUAL" — the same as no role selection at all — which looks like it may be an oversight left over from copying the web-companies/web-offices template rather than an intentional choice.',
-        ar: 'بصفتي مهندس ضمان جودة، أريد التحقق من الدور الذي يُرسَل فعلياً عند تسجيل مستخدم عبر apps/web/management، لأن SignupForm هنا مُهيّأ بـ defaultRole="INDIVIDUAL" — وهو ما يماثل عدم اختيار أي دور إطلاقاً — وهذا يبدو وكأنه سهو متبقٍّ من نسخ قالب web-companies/web-offices، لا خياراً مقصوداً.',
+        en: 'Verify what role is actually submitted when a user signs up through apps/web/management, because SignupForm here is configured with defaultRole="INDIVIDUAL" — the same as no role selection at all — which looks like it may be an oversight left over from copying the web-companies/web-offices template rather than an intentional choice.',
+        ar: 'تحقق من الدور الذي يُرسَل فعلياً عند تسجيل مستخدم عبر apps/web/management، لأن SignupForm هنا مُهيّأ بـ defaultRole="INDIVIDUAL" — وهو ما يماثل عدم اختيار أي دور إطلاقاً — وهذا يبدو وكأنه سهو متبقٍّ من نسخ قالب web-companies/web-offices، لا خياراً مقصوداً.',
       },
       acceptanceCriteria: {
         en: [
@@ -86,8 +86,8 @@ export const management: DocSection = {
       },
       priority: "P2",
       story: {
-        en: "As a QA engineer, I want to verify that, aside from the role question above, apps/web/management's auth forms behave identically to web-companies/web-offices since they share the same @buyootna/ui components, so that any shared-component fix or regression is checked across all three portals, not just the one where it was first found.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أنه بصرف النظر عن مسألة الدور أعلاه، تتصرف نماذج المصادقة في apps/web/management بشكل مطابق لـ web-companies/web-offices لأنها تشترك في نفس مكوّنات @buyootna/ui، حتى يُختبر أي إصلاح أو تراجع في مكوّن مشترك على البوابات الثلاث جميعها، لا على البوابة التي اكتُشف فيها أولاً فقط.",
+        en: "Verify that, aside from the role question above, apps/web/management's auth forms behave identically to web-companies/web-offices since they share the same @buyootna/ui components, so that any shared-component fix or regression is checked across all three portals, not just the one where it was first found.",
+        ar: "تحقق من أنه بصرف النظر عن مسألة الدور أعلاه، تتصرف نماذج المصادقة في apps/web/management بشكل مطابق لـ web-companies/web-offices لأنها تشترك في نفس مكوّنات @buyootna/ui، حتى يُختبر أي إصلاح أو تراجع في مكوّن مشترك على البوابات الثلاث جميعها، لا على البوابة التي اكتُشف فيها أولاً فقط.",
       },
       acceptanceCriteria: {
         en: [

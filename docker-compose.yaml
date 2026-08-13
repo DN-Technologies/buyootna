@@ -15,6 +15,33 @@ services:
     env_file:
       - ./apps/api/.env
     restart: always
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    env_file:
+      - ./.env.postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose: ["5432"]
+
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./.env.postgres
+    environment:
+      SCHEDULE: "@daily"
+      BACKUP_KEEP_DAYS: "7"
+      BACKUP_KEEP_WEEKS: "4"
+      BACKUP_KEEP_MONTHS: "6"
+      POSTGRES_HOST: postgres
+    volumes:
+      - ./backups/postgres:/backups
 
   certbot:
     image: certbot/certbot
@@ -64,3 +91,6 @@ services:
       dockerfile: apps/web/docs/Dockerfile
     expose: ["3006"]
     restart: always
+
+volumes:
+  postgres_data:

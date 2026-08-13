@@ -16,8 +16,8 @@ export const landing: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify the landing splash (Arabic RTL copy describing Buyootna, with 'تسجيل الدخول'/'حساب جديد' links) renders correctly and its links route to the right auth pages, so that this is a trustworthy first impression rather than a broken landing page for real prospective users and SEO crawlers.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن الصفحة الترحيبية (نص عربي بامتداد من اليمين لليسار يصف بيوتنا، مع رابطَي 'تسجيل الدخول'/'حساب جديد') تُعرض بشكل صحيح وأن روابطها تنقل إلى صفحات المصادقة الصحيحة، حتى تكون هذه انطباعاً أولياً موثوقاً لا صفحة هبوط معطوبة أمام المستخدمين المحتملين الحقيقيين وزواحف محركات البحث.",
+        en: "Verify the landing splash (Arabic RTL copy describing Buyootna, with 'تسجيل الدخول'/'حساب جديد' links) renders correctly and its links route to the right auth pages, so that this is a trustworthy first impression rather than a broken landing page for real prospective users and SEO crawlers.",
+        ar: "تحقق من أن الصفحة الترحيبية (نص عربي بامتداد من اليمين لليسار يصف بيوتنا، مع رابطَي 'تسجيل الدخول'/'حساب جديد') تُعرض بشكل صحيح وأن روابطها تنقل إلى صفحات المصادقة الصحيحة، حتى تكون هذه انطباعاً أولياً موثوقاً لا صفحة هبوط معطوبة أمام المستخدمين المحتملين الحقيقيين وزواحف محركات البحث.",
       },
       acceptanceCriteria: {
         en: [
@@ -56,8 +56,8 @@ export const landing: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify that, unlike the companies/offices/management portals (which hardcode a defaultRole), the landing site's SignupForm lets the user pick INDIVIDUAL/COMPANY/OFFICE and correctly submits whichever role was actually selected, so that a general public visitor signing up here ends up with the account type they intended.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أنه خلافاً لبوابات companies/offices/management (التي تحدد defaultRole ثابتاً في الكود)، فإن SignupForm في الموقع التسويقي يتيح للمستخدم اختيار INDIVIDUAL/COMPANY/OFFICE ويرسل فعلياً الدور المختار بشكل صحيح، حتى ينتهي الزائر العام الذي يسجّل هنا بنوع الحساب الذي قصده فعلاً.",
+        en: "Verify that, unlike the companies/offices/management portals (which hardcode a defaultRole), the landing site's SignupForm lets the user pick INDIVIDUAL/COMPANY/OFFICE and correctly submits whichever role was actually selected, so that a general public visitor signing up here ends up with the account type they intended.",
+        ar: "تحقق من أنه خلافاً لبوابات companies/offices/management (التي تحدد defaultRole ثابتاً في الكود)، فإن SignupForm في الموقع التسويقي يتيح للمستخدم اختيار INDIVIDUAL/COMPANY/OFFICE ويرسل فعلياً الدور المختار بشكل صحيح، حتى ينتهي الزائر العام الذي يسجّل هنا بنوع الحساب الذي قصده فعلاً.",
       },
       acceptanceCriteria: {
         en: [
@@ -92,8 +92,8 @@ export const landing: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify the landing signup form's required fields (name*, phone*, password*, confirmPassword*, with email and whatsapp optional) and the plain non-empty/match-only validation (no zod regex, unlike mobile) behave as documented, so that real users signing up on the public site aren't blocked by mismatched expectations between mobile and web validation.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن حقول نموذج التسجيل المطلوبة في الموقع التسويقي (الاسم*، الهاتف*، كلمة المرور*، تأكيد كلمة المرور*، مع كون البريد الإلكتروني والواتساب اختياريَّين) والتحقق البسيط من عدم الفراغ/التطابق فقط (دون regex عبر zod، خلافاً للجوال) يتصرفان كما هو موثَّق، حتى لا يُعاق المستخدمون الحقيقيون المسجَّلون على الموقع العام بتوقعات متضاربة بين تحقق الجوال والويب.",
+        en: "Verify the landing signup form's required fields (name*, phone*, password*, confirmPassword*, with email and whatsapp optional) and the plain non-empty/match-only validation (no zod regex, unlike mobile) behave as documented, so that real users signing up on the public site aren't blocked by mismatched expectations between mobile and web validation.",
+        ar: "تحقق من أن حقول نموذج التسجيل المطلوبة في الموقع التسويقي (الاسم*، الهاتف*، كلمة المرور*، تأكيد كلمة المرور*، مع كون البريد الإلكتروني والواتساب اختياريَّين) والتحقق البسيط من عدم الفراغ/التطابق فقط (دون regex عبر zod، خلافاً للجوال) يتصرفان كما هو موثَّق، حتى لا يُعاق المستخدمون الحقيقيون المسجَّلون على الموقع العام بتوقعات متضاربة بين تحقق الجوال والويب.",
       },
       acceptanceCriteria: {
         en: [

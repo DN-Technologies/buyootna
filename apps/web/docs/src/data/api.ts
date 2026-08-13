@@ -16,8 +16,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify that every non-public endpoint is actually protected by AuthGuard('jwt') (and admin/* endpoints additionally by AdminGuard), so that no authenticated-only or admin-only data (users, favorites, chat, admin/users) is reachable with a missing, expired, or non-admin token.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن كل نقطة نهاية غير عامة محمية فعلياً بواسطة AuthGuard('jwt') (ونقاط admin/* محمية إضافياً بواسطة AdminGuard)، حتى لا يمكن الوصول إلى أي بيانات مخصصة للمستخدمين المسجّلين أو للمشرفين فقط (users، favorites، chat، admin/users) برمز مصادقة مفقود أو منتهي الصلاحية أو غير خاص بمشرف.",
+        en: "Verify that every non-public endpoint is actually protected by AuthGuard('jwt') (and admin/* endpoints additionally by AdminGuard), so that no authenticated-only or admin-only data (users, favorites, chat, admin/users) is reachable with a missing, expired, or non-admin token.",
+        ar: "تحقق من أن كل نقطة نهاية غير عامة محمية فعلياً بواسطة AuthGuard('jwt') (ونقاط admin/* محمية إضافياً بواسطة AdminGuard)، حتى لا يمكن الوصول إلى أي بيانات مخصصة للمستخدمين المسجّلين أو للمشرفين فقط (users، favorites، chat، admin/users) برمز مصادقة مفقود أو منتهي الصلاحية أو غير خاص بمشرف.",
       },
       acceptanceCriteria: {
         en: [
@@ -56,8 +56,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the identity-type guard prevents a user's individual identity from calling company/office-scoped endpoints (and vice versa) even while authenticated with a valid JWT, so that identity-switching (mobile-identity-switch) is enforced server-side, not just hidden client-side.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن حارس identity-type يمنع هوية المستخدم الفردية من استدعاء نقاط نهاية مخصصة للشركة/المكتب العقاري (والعكس صحيح) حتى مع مصادقة برمز JWT صالح، حتى يُفرض تبديل الهوية (mobile-identity-switch) من جهة الخادم فعلياً، لا أن يُخفى من جهة العميل فقط.",
+        en: "Verify that the identity-type guard prevents a user's individual identity from calling company/office-scoped endpoints (and vice versa) even while authenticated with a valid JWT, so that identity-switching (mobile-identity-switch) is enforced server-side, not just hidden client-side.",
+        ar: "تحقق من أن حارس identity-type يمنع هوية المستخدم الفردية من استدعاء نقاط نهاية مخصصة للشركة/المكتب العقاري (والعكس صحيح) حتى مع مصادقة برمز JWT صالح، حتى يُفرض تبديل الهوية (mobile-identity-switch) من جهة الخادم فعلياً، لا أن يُخفى من جهة العميل فقط.",
       },
       acceptanceCriteria: {
         en: [
@@ -92,8 +92,8 @@ export const api: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify POST /favorites/:propertyId (toggle), GET /favorites, GET /favorites/ids, and GET /favorites/check/:propertyId always agree with each other for the same user/property, so that the mobile app (mobile-favorites) never renders a heart icon that contradicts the favorites list.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن POST /favorites/:propertyId (تبديل الحالة) وGET /favorites وGET /favorites/ids وGET /favorites/check/:propertyId تتفق دائماً فيما بينها لنفس المستخدم/العقار، حتى لا يعرض تطبيق الجوال (mobile-favorites) أيقونة قلب تتناقض مع قائمة المفضلة.",
+        en: "Verify that POST /favorites/:propertyId (toggle), GET /favorites, GET /favorites/ids, and GET /favorites/check/:propertyId always agree with each other for the same user/property, so that the mobile app (mobile-favorites) never renders a heart icon that contradicts the favorites list.",
+        ar: "تحقق من أن POST /favorites/:propertyId (تبديل الحالة) وGET /favorites وGET /favorites/ids وGET /favorites/check/:propertyId تتفق دائماً فيما بينها لنفس المستخدم/العقار، حتى لا يعرض تطبيق الجوال (mobile-favorites) أيقونة قلب تتناقض مع قائمة المفضلة.",
       },
       acceptanceCriteria: {
         en: [
@@ -130,8 +130,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify the WebSocket events (join_conversation, leave_conversation, send_message → new_message/conversation_updated/error) and the REST endpoints (POST conversations, GET conversations, GET conversations/:id/messages, POST conversations/:id/read) never disagree about a conversation's message history or read state, so mobile chat (mobile-chat-realtime) is provably correct at the transport layer, not just in manual UI testing.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن أحداث WebSocket (join_conversation وleave_conversation وsend_message ← new_message/conversation_updated/error) ونقاط نهاية REST (POST conversations وGET conversations وGET conversations/:id/messages وPOST conversations/:id/read) لا تتعارضان أبداً حول سجل رسائل محادثة أو حالة القراءة، حتى تكون محادثة الجوال (mobile-chat-realtime) صحيحة قابلة للإثبات على مستوى طبقة النقل، لا فقط عبر اختبار يدوي للواجهة.",
+        en: "Verify that the WebSocket events (join_conversation, leave_conversation, send_message → new_message/conversation_updated/error) and the REST endpoints (POST conversations, GET conversations, GET conversations/:id/messages, POST conversations/:id/read) never disagree about a conversation's message history or read state, so mobile chat (mobile-chat-realtime) is provably correct at the transport layer, not just in manual UI testing.",
+        ar: "تحقق من أن أحداث WebSocket (join_conversation وleave_conversation وsend_message ← new_message/conversation_updated/error) ونقاط نهاية REST (POST conversations وGET conversations وGET conversations/:id/messages وPOST conversations/:id/read) لا تتعارضان أبداً حول سجل رسائل محادثة أو حالة القراءة، حتى تكون محادثة الجوال (mobile-chat-realtime) صحيحة قابلة للإثبات على مستوى طبقة النقل، لا فقط عبر اختبار يدوي للواجهة.",
       },
       acceptanceCriteria: {
         en: [
@@ -170,8 +170,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify POST payments/webhook correctly validates the Tap webhook signature/source and is idempotent under retries, so that a replayed or forged webhook call can't mark an invoice paid without a real payment, and a legitimate retry (Tap's own retry behavior) doesn't double-credit an account.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن POST payments/webhook يتحقق بشكل صحيح من توقيع/مصدر webhook الخاص بـ Tap وأنه مُحصَّن ضد إعادة المحاولة (idempotent)، حتى لا يتمكن استدعاء webhook مُعاد تشغيله أو مزوَّر من وضع فاتورة كمدفوعة دون دفع حقيقي، ولا تؤدي إعادة محاولة شرعية (سلوك إعادة المحاولة الخاص بـ Tap نفسه) إلى إضافة رصيد مضاعف لحساب.",
+        en: "Verify that POST payments/webhook correctly validates the Tap webhook signature/source and is idempotent under retries, so that a replayed or forged webhook call can't mark an invoice paid without a real payment, and a legitimate retry (Tap's own retry behavior) doesn't double-credit an account.",
+        ar: "تحقق من أن POST payments/webhook يتحقق بشكل صحيح من توقيع/مصدر webhook الخاص بـ Tap وأنه مُحصَّن ضد إعادة المحاولة (idempotent)، حتى لا يتمكن استدعاء webhook مُعاد تشغيله أو مزوَّر من وضع فاتورة كمدفوعة دون دفع حقيقي، ولا تؤدي إعادة محاولة شرعية (سلوك إعادة المحاولة الخاص بـ Tap نفسه) إلى إضافة رصيد مضاعف لحساب.",
       },
       acceptanceCriteria: {
         en: [
@@ -206,8 +206,8 @@ export const api: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "As a QA engineer, I want to verify POST search/advanced correctly dispatches to the right strategy (standard/exchange/auction/deal/company) and that each strategy's results only include listings actually matching that category, so that, e.g., an exchange search never returns a plain sale listing just because it matched on keyword/location.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن POST search/advanced يوجّه بشكل صحيح إلى الاستراتيجية المناسبة (standard/exchange/auction/deal/company) وأن نتائج كل استراتيجية تقتصر فعلياً على إعلانات تطابق تلك الفئة، حتى لا يعيد بحث exchange مثلاً إعلان بيع عادي لمجرد تطابقه في الكلمة المفتاحية/الموقع.",
+        en: "Verify that POST search/advanced correctly dispatches to the right strategy (standard/exchange/auction/deal/company) and that each strategy's results only include listings actually matching that category, so that, e.g., an exchange search never returns a plain sale listing just because it matched on keyword/location.",
+        ar: "تحقق من أن POST search/advanced يوجّه بشكل صحيح إلى الاستراتيجية المناسبة (standard/exchange/auction/deal/company) وأن نتائج كل استراتيجية تقتصر فعلياً على إعلانات تطابق تلك الفئة، حتى لا يعيد بحث exchange مثلاً إعلان بيع عادي لمجرد تطابقه في الكلمة المفتاحية/الموقع.",
       },
       acceptanceCriteria: {
         en: [
@@ -242,8 +242,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to verify twilio.service.ts's mock-SMS fallback (used when Twilio credentials aren't configured) is only ever active in development/test environments and never silently active in production, so that production OTP delivery can never fall back to a logged-but-not-sent 'mock' code that would let anyone log the OTP and take over an account.",
-        ar: "بصفتي مهندس ضمان جودة، أريد التحقق من أن البديل الوهمي لإرسال الرسائل النصية في twilio.service.ts (المُستخدم عند عدم ضبط بيانات اعتماد Twilio) مفعّل فقط في بيئات التطوير/الاختبار، ولا يُفعَّل أبداً بصمت في الإنتاج، حتى لا يتحول تسليم رمز OTP في الإنتاج إلى رمز 'وهمي' يُسجَّل في السجلات دون إرسال فعلي، وهو ما قد يسمح لأي شخص برؤية الرمز والاستيلاء على حساب.",
+        en: "Verify that twilio.service.ts's mock-SMS fallback (used when Twilio credentials aren't configured) is only ever active in development/test environments and never silently active in production, so that production OTP delivery can never fall back to a logged-but-not-sent 'mock' code that would let anyone log the OTP and take over an account.",
+        ar: "تحقق من أن البديل الوهمي لإرسال الرسائل النصية في twilio.service.ts (المُستخدم عند عدم ضبط بيانات اعتماد Twilio) مفعّل فقط في بيئات التطوير/الاختبار، ولا يُفعَّل أبداً بصمت في الإنتاج، حتى لا يتحول تسليم رمز OTP في الإنتاج إلى رمز 'وهمي' يُسجَّل في السجلات دون إرسال فعلي، وهو ما قد يسمح لأي شخص برؤية الرمز والاستيلاء على حساب.",
       },
       acceptanceCriteria: {
         en: [
@@ -278,8 +278,8 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "As a QA engineer, I want to flag that POST media/upload/avatar and POST media/upload/listings (apps/api/src/media/media.controller.ts) currently have NO @UseGuards(AuthGuard('jwt')) at all — unlike almost every other feature controller in the API — so that this is either confirmed as an intentional public-upload design or escalated as a security bug before it's assumed to require a token like everything else tested in this section.",
-        ar: "بصفتي مهندس ضمان جودة، أريد الإشارة إلى أن POST media/upload/avatar وPOST media/upload/listings (في apps/api/src/media/media.controller.ts) لا يحملان حالياً أي @UseGuards(AuthGuard('jwt')) إطلاقاً — خلافاً لكل متحكم ميزة آخر تقريباً في الواجهة البرمجية — حتى يُؤكَّد إما أن هذا تصميم رفع عام مقصود، أو يُصعَّد كثغرة أمنية، قبل افتراض أنه يتطلب رمز مصادقة مثل كل ما تم اختباره في هذا القسم.",
+        en: "Flag that POST media/upload/avatar and POST media/upload/listings (apps/api/src/media/media.controller.ts) currently have NO @UseGuards(AuthGuard('jwt')) at all — unlike almost every other feature controller in the API — so that this is either confirmed as an intentional public-upload design or escalated as a security bug before it's assumed to require a token like everything else tested in this section.",
+        ar: "أشر إلى أن POST media/upload/avatar وPOST media/upload/listings (في apps/api/src/media/media.controller.ts) لا يحملان حالياً أي @UseGuards(AuthGuard('jwt')) إطلاقاً — خلافاً لكل متحكم ميزة آخر تقريباً في الواجهة البرمجية — حتى يُؤكَّد إما أن هذا تصميم رفع عام مقصود، أو يُصعَّد كثغرة أمنية، قبل افتراض أنه يتطلب رمز مصادقة مثل كل ما تم اختباره في هذا القسم.",
       },
       acceptanceCriteria: {
         en: [

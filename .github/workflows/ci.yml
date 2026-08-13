@@ -96,6 +96,7 @@ jobs:
         run: |
           mkdir -p apps/api
           touch apps/api/.env
+          touch .env.postgres
 
       - name: Validate Docker Compose Config
         run: docker compose config
