@@ -10,14 +10,39 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import heicConvert from 'heic-convert';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { StorageService } from 'src/core/storage/storage.service';
+import { ApiCommonErrors } from '../core/swagger/api-common-errors.decorator';
+import {
+  UploadAvatarResponseDto,
+  UploadListingImagesResponseDto,
+} from './dto/media-response.dto';
 
+// NOTE: no auth guard currently applied to these upload endpoints — pre-existing
+// gap, flagged separately, not part of this Swagger documentation task.
+@ApiTags('Media')
 @Controller('media')
 export class MediaController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post('upload/avatar')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload a single avatar/logo image (HEIC/HEIF auto-converted to JPEG)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { file: { type: 'string', format: 'binary' } },
+    },
+  })
+  @ApiResponse({ status: 201, type: UploadAvatarResponseDto })
+  @ApiCommonErrors()
   async uploadAvatar(
     @UploadedFile(
       new ParseFilePipe({
@@ -73,6 +98,21 @@ export class MediaController {
 
   @Post('upload/listings')
   @UseInterceptors(FilesInterceptor('images', 10)) // Accepts up to 10 files under the 'images' key
+  @ApiOperation({ summary: 'Upload up to 10 listing images (HEIC/HEIF auto-converted to JPEG)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        images: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, type: UploadListingImagesResponseDto })
+  @ApiCommonErrors()
   async uploadListingImages(
     @UploadedFiles(
       new ParseFilePipe({
