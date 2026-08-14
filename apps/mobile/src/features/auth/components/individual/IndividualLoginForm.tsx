@@ -5,18 +5,23 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
 import { LoginFormValues, loginSchema } from '@/features/auth/authSchemas';
+import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
+import FormInput from '@/shared/components/FormInput';
 
 interface IndividualLoginFormProps {
   onSubmit: (data: LoginFormValues & { rememberMe: boolean }) => void;
   onOpenProfiles: () => void;
+  onGooglePress: () => void;
+  onApplePress: () => void;
   isLoading?: boolean;
 }
 
 export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
   onSubmit,
   onOpenProfiles,
+  onGooglePress,
+  onApplePress,
   isLoading = false,
 }) => {
   const router = useRouter();
@@ -89,6 +94,12 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
           </Text>
         )}
       </TouchableOpacity>
+
+      <SocialAuthButtons
+        onGooglePress={onGooglePress}
+        onApplePress={onApplePress}
+        isLoading={isLoading}
+      />
 
       <TouchableOpacity
         activeOpacity={0.7}

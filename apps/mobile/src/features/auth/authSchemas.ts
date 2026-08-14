@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+// Shared identifier (email or Kuwait phone) shape checks.
+// Kept in one place so the signup schema's validation and the signup
+// screen's OTP-vs-immediate-login branching never drift out of sync.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const KUWAIT_PHONE_REGEX = /^(?:\+?965)?[569]\d{7}$/;
+
+export const isEmailIdentifier = (value: string) => EMAIL_REGEX.test(value);
+export const isPhoneIdentifier = (value: string) => KUWAIT_PHONE_REGEX.test(value);
+
 // Login Schema
 export const loginSchema = z.object({
   // Changed from "email" to "identifier" to handle both
@@ -7,7 +16,7 @@ export const loginSchema = z.object({
     .string({ message: 'هذا الحقل مطلوب' })
     .min(1, 'هذا الحقل مطلوب')
     .refine((val) => {
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+      const isEmail = EMAIL_REGEX.test(val);
       const isPhone = /^\+?\d+$/.test(val); // Accepts any numeric string with optional + for flexibility
       return isEmail || isPhone;
     }, 'أدخل بريد إلكتروني أو رقم هاتف صحيح'),
@@ -21,15 +30,13 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
 // Signup Schema
 export const signupSchema = z
   .object({
-    email: z
-      .string({ message: 'البريد الإلكتروني مطلوب' })
-      .min(1, 'البريد الإلكتروني مطلوب')
-      .email('البريد الإلكتروني غير صالح'),
-    phone: z
-      .string()
-      .regex(/^(?:\+?965)?[569]\d{7}$/, 'رقم الهاتف يجب أن يكون رقم كويتي صالح')
-      .optional()
-      .or(z.literal('')),
+    identifier: z
+      .string({ message: 'هذا الحقل مطلوب' })
+      .min(1, 'هذا الحقل مطلوب')
+      .refine(
+        (val) => isEmailIdentifier(val) || isPhoneIdentifier(val),
+        'أدخل بريد إلكتروني أو رقم هاتف كويتي صحيح',
+      ),
     password: z
       .string({ message: 'كلمة المرور مطلوبة' })
       .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),

@@ -28,6 +28,8 @@ async function bootstrap() {
       .setDescription('Buyootna backend REST API')
       .setVersion('1.0')
       .addBearerAuth()
+      .addServer(`http://localhost:${process.env.PORT ?? 8000}`, 'Local')
+      .addServer('https://api.buyootna.cloud', 'Production')
       .build();
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/docs', app, document);

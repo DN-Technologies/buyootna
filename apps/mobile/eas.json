@@ -12,14 +12,18 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.buyootna.cloud",
-        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcnZ5eDFwajAxZTQyeHFydjQ2bnN6eGMifQ.GPt8Mt8KoB4Zf27dcZZv9g"
+        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcnZ5eDFwajAxZTQyeHFydjQ2bnN6eGMifQ.GPt8Mt8KoB4Zf27dcZZv9g",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": ""
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.buyootna.cloud",
-        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcnZ5eDFwajAxZTQyeHFydjQ2bnN6eGMifQ.GPt8Mt8KoB4Zf27dcZZv9g"
+        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcnZ5eDFwajAxZTQyeHFydjQ2bnN6eGMifQ.GPt8Mt8KoB4Zf27dcZZv9g",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": ""
       }
     }
   },

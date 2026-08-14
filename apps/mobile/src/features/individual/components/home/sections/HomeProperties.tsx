@@ -11,6 +11,7 @@ import {
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
+import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
@@ -38,6 +39,8 @@ export default function HomeProperties({
 }: HomePropertiesProps) {
   const router = useRouter();
   const { isTablet, cardColumns } = useResponsiveLayout();
+  const favoritedIds = useFavoritesStore((state) => state.favoritedIds);
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
   const [data, setData] = useState<PropertyDto[]>([]);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -210,10 +213,11 @@ export default function HomeProperties({
                   ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns
                   : '100%'
               }
-              phone={item.phoneNumber || item.phone}
               timeAgo={
                 item.createdAt ? formatTimeAgo(item.createdAt) : undefined
               }
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
             />
           )}
           onEndReached={fetchMoreData}
@@ -262,6 +266,8 @@ export default function HomeProperties({
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
               onPress={() => handleShowDetails(item.id)}
               onShowDetails={() => handleShowDetails(item.id)}
             />
@@ -282,6 +288,12 @@ export default function HomeProperties({
       <PropertyDetailsSheet
         ref={detailsSheetRef}
         property={selectedProperty}
+        isFavorited={
+          selectedProperty ? favoritedIds.includes(selectedProperty.id) : false
+        }
+        onFavorite={() =>
+          selectedProperty && toggleFavorite(selectedProperty.id)
+        }
         onClose={() => detailsSheetRef.current?.dismiss()}
         onViewProperty={() => {
           if (selectedProperty) {

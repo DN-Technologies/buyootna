@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 /**
  * A skeleton placeholder that mirrors the home screen's actual header —
- * the tab pill toggle + filter/map buttons, and the filter pills row —
+ * the tab pill toggle + filter/sort buttons, and the filter pills row —
  * so the screen feels "alive" while real data loads.
  */
 interface HomeHeaderSkeletonProps {
@@ -35,12 +35,13 @@ export default function HomeHeaderSkeleton({
         <View className="h-9 flex-1 rounded-full bg-slate-100" />
       </View>
 
-      {/* ── 3. View Mode Toggle Row ── */}
+      {/* ── 3. View Mode Toggle Row (+ Map pill) ── */}
       <View className="mb-4 flex-row items-center justify-between">
         <View className="flex-row items-center gap-1 rounded-xl bg-slate-50 p-1">
           <View className="h-8 w-9 rounded-lg bg-slate-200" />
           <View className="h-8 w-9 rounded-lg bg-slate-100" />
         </View>
+        <View className="h-9 w-24 rounded-full bg-slate-100" />
       </View>
     </View>
   );

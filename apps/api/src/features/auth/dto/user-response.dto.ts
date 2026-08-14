@@ -72,18 +72,32 @@ export class IdentityResponseDto {
   @ApiProperty()
   updatedAt: Date;
 
-  @ApiProperty({ type: IndividualIdentityDataDto, required: false, nullable: true })
+  @ApiProperty({
+    type: IndividualIdentityDataDto,
+    required: false,
+    nullable: true,
+  })
   individualData?: IndividualIdentityDataDto | null;
 
-  @ApiProperty({ type: CompanyIdentitySlimDataDto, required: false, nullable: true })
+  @ApiProperty({
+    type: CompanyIdentitySlimDataDto,
+    required: false,
+    nullable: true,
+  })
   companyData?: CompanyIdentitySlimDataDto | null;
 
-  @ApiProperty({ type: OfficeIdentitySlimDataDto, required: false, nullable: true })
+  @ApiProperty({
+    type: OfficeIdentitySlimDataDto,
+    required: false,
+    nullable: true,
+  })
   officeData?: OfficeIdentitySlimDataDto | null;
 }
 
 export class LoginResponseDto {
-  @ApiProperty({ description: 'JWT bearer token to use as Authorization: Bearer <token>' })
+  @ApiProperty({
+    description: 'JWT bearer token to use as Authorization: Bearer <token>',
+  })
   access_token: string;
 
   @ApiProperty({ type: UserResponseDto })

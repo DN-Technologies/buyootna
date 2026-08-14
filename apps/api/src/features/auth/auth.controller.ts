@@ -4,15 +4,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
-import type { User } from '@prisma/client';
+import { SocialProvider, type User } from '@prisma/client';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyRegisterOtpDto } from './dto/verify-register-otp.dto';
 import { SwitchIdentityDto } from './dto/switch-identity.dto';
+import { AppleLoginDto, GoogleLoginDto } from './dto/social-login.dto';
 import type { RequestUser } from './strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import { LoginResponseDto, MessageResponseDto } from './dto/user-response.dto';
+import { GoogleAuthService } from './services/google-auth.service';
+import { AppleAuthService } from './services/apple-auth.service';
 
 interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
@@ -21,13 +24,20 @@ interface RequestWithUser extends Request {
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly googleAuthService: GoogleAuthService,
+    private readonly appleAuthService: AppleAuthService,
+  ) {}
 
   // The LocalGuard automatically uses the DTO fields (identifier, password)
   // to run the LocalStrategy.
   @UseGuards(AuthGuard('local'))
   @Post('login')
-  @ApiOperation({ summary: 'Log in with email/phone + password, returns a JWT and identity info' })
+  @ApiOperation({
+    summary:
+      'Log in with email/phone + password, returns a JWT and identity info',
+  })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
   login(
@@ -39,8 +49,40 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @Post('google')
+  @ApiOperation({
+    summary: 'Sign in or register via a verified Google ID token',
+  })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
+  @ApiCommonErrors()
+  async googleLogin(@Body() dto: GoogleLoginDto) {
+    const profile = await this.googleAuthService.verifyIdToken(dto.idToken);
+    return this.authService.loginOrRegisterWithSocial(
+      SocialProvider.GOOGLE,
+      profile,
+    );
+  }
+
+  @Post('apple')
+  @ApiOperation({
+    summary: 'Sign in or register via a verified Apple identity token',
+  })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
+  @ApiCommonErrors()
+  async appleLogin(@Body() dto: AppleLoginDto) {
+    const profile = await this.appleAuthService.verifyIdentityToken(
+      dto.identityToken,
+    );
+    return this.authService.loginOrRegisterWithSocial(
+      SocialProvider.APPLE,
+      profile,
+    );
+  }
+
   @Post('register/verify-otp')
-  @ApiOperation({ summary: 'Verify the OTP sent during registration and log the user in' })
+  @ApiOperation({
+    summary: 'Verify the OTP sent during registration and log the user in',
+  })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
   async verifyRegisterOtp(@Body() dto: VerifyRegisterOtpDto) {
@@ -50,7 +92,10 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Post('identity/switch')
   @ApiAuth()
-  @ApiOperation({ summary: "Switch the current user's active identity and issue a new JWT for it" })
+  @ApiOperation({
+    summary:
+      "Switch the current user's active identity and issue a new JWT for it",
+  })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
   async switchIdentity(
@@ -63,7 +108,10 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Post('change-password/request-otp')
   @ApiAuth()
-  @ApiOperation({ summary: 'Request an OTP to authorize a password change for the current user' })
+  @ApiOperation({
+    summary:
+      'Request an OTP to authorize a password change for the current user',
+  })
   @ApiResponse({ status: 201, type: MessageResponseDto })
   @ApiCommonErrors()
   async requestChangePasswordOtp(@CurrentUser() reqUser: RequestUser) {
@@ -73,7 +121,10 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Patch('change-password')
   @ApiAuth()
-  @ApiOperation({ summary: "Change the current user's password using an OTP, optionally logging out other devices" })
+  @ApiOperation({
+    summary:
+      "Change the current user's password using an OTP, optionally logging out other devices",
+  })
   @ApiResponse({ status: 200, type: MessageResponseDto })
   @ApiCommonErrors()
   async changePassword(

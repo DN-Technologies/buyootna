@@ -2,6 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import  { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   RefreshControl,
   ScrollView,
   Text,
@@ -10,7 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { FilterHorizontalIcon, MapIcon } from '@/assets/icons/home/header';
+import { SortIcon } from '@/assets/icons';
+import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
 import HomeHeaderSkeleton from '@/features/individual/components/home/HomeHeaderSkeleton';
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
@@ -128,13 +130,13 @@ export default function HomeScreen() {
           <FilterHorizontalIcon size={18} color="#111111" />
         </TouchableOpacity>
 
-        {/* Map Button */}
+        {/* Sort Button */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => router.push('/map')}
+          onPress={() => Alert.alert('قريباً', 'ميزة الترتيب ستكون متاحة قريباً')}
           className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
         >
-          <MapIcon size={18} color="#111111" />
+          <SortIcon size={18} color="#111111" />
         </TouchableOpacity>
       </View>
 

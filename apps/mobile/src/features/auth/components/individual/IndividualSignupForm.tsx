@@ -5,14 +5,19 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import FormInput from '@/shared/components/FormInput';
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
+import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
 
 interface IndividualSignupFormProps {
   onSubmit: (data: SignupFormValues) => void;
+  onGooglePress: () => void;
+  onApplePress: () => void;
   isLoading?: boolean;
 }
 
 export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
   onSubmit,
+  onGooglePress,
+  onApplePress,
   isLoading = false,
 }) => {
   const { control, handleSubmit } = useForm<SignupFormValues>({
@@ -24,20 +29,10 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
     <View className="flex-1">
       <FormInput
         control={control}
-        name="email"
-        label="البريد الإلكتروني"
+        name="identifier"
+        label="رقم الهاتف أو البريد الالكتروني"
         placeholder="alisalem@gmail.com"
-        keyboardType="email-address"
         autoCapitalize="none"
-      />
-
-      <FormInput
-        control={control}
-        name="phone"
-        label="رقم الهاتف"
-        placeholder="55123456"
-        keyboardType="phone-pad"
-        isRequired={false}
       />
 
       <FormInput
@@ -70,6 +65,12 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
           </Text>
         )}
       </TouchableOpacity>
+
+      <SocialAuthButtons
+        onGooglePress={onGooglePress}
+        onApplePress={onApplePress}
+        isLoading={isLoading}
+      />
     </View>
   );
 };

@@ -1,10 +1,14 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { IdentityType, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
-import { checkUserExists } from '../../../core/utils/user.utils';
+import {
+  checkUserExists,
+  isEmail,
+  isPhone,
+} from '../../../core/utils/user.utils';
 import {
   RegisterCompanyDto,
   RegisterIndividualDto,
@@ -21,7 +25,10 @@ export class UsersRegistrationService {
 
   // --- Register Individual ---
   async registerIndividual(dto: RegisterIndividualDto) {
-    await checkUserExists(this.prisma, dto.email, dto.phone);
+    const email = isEmail(dto.identifier) ? dto.identifier : undefined;
+    const phone = isPhone(dto.identifier) ? dto.identifier : undefined;
+
+    await checkUserExists(this.prisma, email, phone);
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -30,8 +37,8 @@ export class UsersRegistrationService {
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
-            email: dto.email,
-            phone: dto.phone,
+            email,
+            phone,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
           },
@@ -41,12 +48,22 @@ export class UsersRegistrationService {
           data: { userId: user.id },
         });
 
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.INDIVIDUAL,
+            isActive: true,
+            individualData: { create: {} },
+          },
+        });
+
         return { user, profile };
       });
 
       // Send Twilio Verify SMS OTP
-      if (dto.phone) {
-        await this.twilioService.sendVerification(dto.phone);
+      if (phone) {
+        await this.twilioService.sendVerification(phone);
       }
 
       // Remove password from response
@@ -121,6 +138,29 @@ export class UsersRegistrationService {
           },
         });
 
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.COMPANY,
+            isActive: true,
+            companyData: {
+              create: {
+                name: dto.name,
+                services: dto.services,
+                hqLocation: dto.hqLocation,
+                serviceAreas: dto.serviceAreas,
+                about: dto.about,
+                licenseActivity: dto.licenseActivity,
+                licenseNumber: dto.licenseNumber,
+                licenseExpiry: dto.licenseExpiry,
+                logoUrl: logoUrl,
+                licenseFileUrl: licenseFileUrl,
+              },
+            },
+          },
+        });
+
         return { user, profile };
       });
 
@@ -192,6 +232,28 @@ export class UsersRegistrationService {
             officeProfileId: profile.id,
             status: 'PENDING',
             notes: 'طلب تسجيل مكتب عقاري جديد',
+          },
+        });
+
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.OFFICE,
+            isActive: true,
+            officeData: {
+              create: {
+                name: dto.name,
+                services: dto.services,
+                hqLocation: dto.hqLocation,
+                about: dto.about,
+                licenseActivity: dto.licenseActivity,
+                licenseNumber: dto.licenseNumber,
+                licenseExpiry: dto.licenseExpiry,
+                logoUrl: logoUrl,
+                licenseFileUrl: licenseFileUrl,
+              },
+            },
           },
         });
 

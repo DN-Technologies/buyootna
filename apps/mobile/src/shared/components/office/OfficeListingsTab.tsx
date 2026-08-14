@@ -84,7 +84,6 @@ export default function OfficeListingsTab({
             <PropertyCard
               key={item.id}
               {...item}
-              phone={item.phoneNumber || item.phone}
               onPress={() => router.push(`/property/${item.id}`)}
             />
           ) : (
