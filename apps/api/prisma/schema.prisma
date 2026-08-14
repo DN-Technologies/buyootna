@@ -26,6 +26,7 @@ model User {
   notifPreferences NotificationPreferences?
   notifications    Notification[]
   sessions         Session[]
+  socialAccounts   SocialAccount[]
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete

@@ -8,8 +8,16 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User, Identity } from '@prisma/client';
+import * as crypto from 'crypto';
+import {
+  User,
+  Identity,
+  IdentityType,
+  Role,
+  SocialProvider,
+} from '@prisma/client';
 import { JwtPayload } from './strategies/jwt.strategy';
+import { VerifiedSocialProfile } from './services/google-auth.service';
 
 type IdentityWithData = Identity & {
   individualData?: {
@@ -170,6 +178,96 @@ export class AuthService {
       activeIdentity: identity,
       identities,
     };
+  }
+
+  // 2.5. Sign in (or register) via a verified Google/Apple profile
+  async loginOrRegisterWithSocial(
+    provider: SocialProvider,
+    profile: VerifiedSocialProfile,
+  ) {
+    const existingLink = await this.prisma.socialAccount.findUnique({
+      where: {
+        provider_providerId: {
+          provider,
+          providerId: profile.providerId,
+        },
+      },
+      include: { user: true },
+    });
+
+    if (existingLink) {
+      const userWithoutPassword = { ...existingLink.user };
+      delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+        .password;
+      return this.login(userWithoutPassword);
+    }
+
+    // Account linking: an existing user with a matching email adopts this social login.
+    if (profile.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: profile.email },
+      });
+
+      if (existingUser) {
+        await this.prisma.socialAccount.create({
+          data: {
+            userId: existingUser.id,
+            provider,
+            providerId: profile.providerId,
+            email: profile.email,
+          },
+        });
+
+        const userWithoutPassword = { ...existingUser };
+        delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+          .password;
+        return this.login(userWithoutPassword);
+      }
+    }
+
+    // Brand-new user: create User + IndividualProfile + Identity + SocialAccount together.
+    // Social-only accounts get an unusable random password (the column is non-nullable).
+    const randomPassword = crypto.randomBytes(32).toString('hex');
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    const newUser = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: profile.email,
+          password: hashedPassword,
+          role: Role.INDIVIDUAL,
+        },
+      });
+
+      await tx.individualProfile.create({
+        data: { userId: user.id },
+      });
+
+      await tx.identity.create({
+        data: {
+          userId: user.id,
+          type: IdentityType.INDIVIDUAL,
+          isActive: true,
+          individualData: { create: {} },
+        },
+      });
+
+      await tx.socialAccount.create({
+        data: {
+          userId: user.id,
+          provider,
+          providerId: profile.providerId,
+          email: profile.email,
+        },
+      });
+
+      return user;
+    });
+
+    const userWithoutPassword = { ...newUser };
+    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+      .password;
+    return this.login(userWithoutPassword);
   }
 
   // 3. Switch active identity

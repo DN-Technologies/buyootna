@@ -5,15 +5,13 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
 
 export class RegisterIndividualDto {
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  email: string;
-
   @IsString()
-  @IsOptional()
-  phone?: string;
+  @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
+  @IsEmailOrPhone({ message: 'أدخل بريد إلكتروني أو رقم هاتف صحيح' })
+  identifier: string;
 
   @IsString()
   @MinLength(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' })

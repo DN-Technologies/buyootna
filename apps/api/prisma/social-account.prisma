@@ -1,0 +1,13 @@
+model SocialAccount {
+  id         String         @id @default(uuid())
+  userId     String
+  provider   SocialProvider
+  providerId String
+  email      String?
+  createdAt  DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerId])
+  @@index([userId])
+}

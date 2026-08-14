@@ -1,4 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
@@ -8,7 +10,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import apiClient from '@/shared/api/api';
 import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
-import { LoginFormValues, SignupFormValues } from '@/features/auth/authSchemas';
+import {
+  LoginFormValues,
+  SignupFormValues,
+  isPhoneIdentifier,
+} from '@/features/auth/authSchemas';
 // Modular Components
 import { IndividualAuthHeader } from '@/features/auth/components/individual/IndividualAuthHeader';
 import { IndividualAuthTabs } from '@/features/auth/components/individual/IndividualAuthTabs';
@@ -21,6 +27,21 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
 
 type AuthMode = 'login' | 'signup';
+
+// Google Sign-In requires either a GoogleService-Info.plist or an iosClientId —
+// calling configure() without one throws synchronously and crashes the screen,
+// so only configure (and only allow the button to do anything) once real
+// credentials are provided.
+const GOOGLE_SIGNIN_CONFIGURED = Boolean(
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+);
+
+if (GOOGLE_SIGNIN_CONFIGURED) {
+  GoogleSignin.configure({
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+}
 
 export default function IndividualAuthScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -74,21 +95,19 @@ export default function IndividualAuthScreen() {
   const onSignup = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      const phone = data.phone || undefined;
       await apiClient.post('/users/register/individual', {
-        email: data.email,
-        phone,
+        identifier: data.identifier,
         password: data.password,
       });
 
-      if (phone) {
-        // A phone was provided, so the backend sent an SMS OTP — verify it.
-        setSignupPhone(phone);
+      if (isPhoneIdentifier(data.identifier)) {
+        // The identifier was a phone number, so the backend sent an SMS OTP — verify it.
+        setSignupPhone(data.identifier);
         setSignupStep(2);
       } else {
-        // No phone was provided, so no OTP was sent — log the user in directly.
+        // The identifier was an email, so no OTP was sent — log the user in directly.
         const loginResponse = await apiClient.post('/auth/login', {
-          identifier: data.email,
+          identifier: data.identifier,
           password: data.password,
         });
 
@@ -111,6 +130,85 @@ export default function IndividualAuthScreen() {
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
       Alert.alert('فشل التسجيل', backendMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSocialAuthResponse = async (response: any) => {
+    await setAuth(
+      response.data.user,
+      response.data.activeIdentity,
+      response.data.identities,
+      response.data.access_token,
+    );
+
+    router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
+  };
+
+  const handleSocialAuthError = (error: any, title: string) => {
+    let backendMessage = 'حدث خطأ في الاتصال';
+    if (error?.response?.data?.message) {
+      const message = error.response.data.message;
+      backendMessage = Array.isArray(message) ? message.join('\n') : message;
+    } else if (error?.message === 'Network Error' || !error?.response) {
+      backendMessage = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+    }
+    Alert.alert(title, backendMessage);
+  };
+
+  const onGoogleSignIn = async () => {
+    if (!GOOGLE_SIGNIN_CONFIGURED) {
+      Alert.alert('تسجيل الدخول عبر Google غير مُفعّل حالياً');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await GoogleSignin.hasPlayServices();
+      const result = await GoogleSignin.signIn();
+
+      if (result.type !== 'success' || !result.data.idToken) {
+        return;
+      }
+
+      const response = await apiClient.post('/auth/google', {
+        idToken: result.data.idToken,
+      });
+      await handleSocialAuthResponse(response);
+    } catch (error: any) {
+      if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
+        return;
+      }
+      handleSocialAuthError(error, 'فشل تسجيل الدخول عبر Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onAppleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        return;
+      }
+
+      const response = await apiClient.post('/auth/apple', {
+        identityToken: credential.identityToken,
+      });
+      await handleSocialAuthResponse(response);
+    } catch (error: any) {
+      if (error?.code === 'ERR_REQUEST_CANCELED') {
+        return;
+      }
+      handleSocialAuthError(error, 'فشل تسجيل الدخول عبر Apple');
     } finally {
       setIsLoading(false);
     }
@@ -197,10 +295,17 @@ export default function IndividualAuthScreen() {
             <IndividualLoginForm
               onSubmit={onLogin}
               onOpenProfiles={() => profileSheetRef.current?.present()}
+              onGooglePress={onGoogleSignIn}
+              onApplePress={onAppleSignIn}
               isLoading={isLoading}
             />
           ) : signupStep === 1 ? (
-            <IndividualSignupForm onSubmit={onSignup} isLoading={isLoading} />
+            <IndividualSignupForm
+              onSubmit={onSignup}
+              onGooglePress={onGoogleSignIn}
+              onApplePress={onAppleSignIn}
+              isLoading={isLoading}
+            />
           ) : (
             <IndividualSignupOtpStep
               phone={signupPhone}

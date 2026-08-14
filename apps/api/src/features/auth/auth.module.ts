@@ -5,6 +5,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { GoogleAuthService } from './services/google-auth.service';
+import { AppleAuthService } from './services/apple-auth.service';
 
 @Module({
   imports: [
@@ -14,7 +16,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       signOptions: { expiresIn: '7d' }, // Token valid for 7 days
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    GoogleAuthService,
+    AppleAuthService,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

@@ -4,7 +4,11 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
-import { checkUserExists } from '../../../core/utils/user.utils';
+import {
+  checkUserExists,
+  isEmail,
+  isPhone,
+} from '../../../core/utils/user.utils';
 import {
   RegisterCompanyDto,
   RegisterIndividualDto,
@@ -21,7 +25,10 @@ export class UsersRegistrationService {
 
   // --- Register Individual ---
   async registerIndividual(dto: RegisterIndividualDto) {
-    await checkUserExists(this.prisma, dto.email, dto.phone);
+    const email = isEmail(dto.identifier) ? dto.identifier : undefined;
+    const phone = isPhone(dto.identifier) ? dto.identifier : undefined;
+
+    await checkUserExists(this.prisma, email, phone);
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
@@ -30,8 +37,8 @@ export class UsersRegistrationService {
       const result = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: {
-            email: dto.email,
-            phone: dto.phone,
+            email,
+            phone,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
           },
@@ -55,8 +62,8 @@ export class UsersRegistrationService {
       });
 
       // Send Twilio Verify SMS OTP
-      if (dto.phone) {
-        await this.twilioService.sendVerification(dto.phone);
+      if (phone) {
+        await this.twilioService.sendVerification(phone);
       }
 
       // Remove password from response

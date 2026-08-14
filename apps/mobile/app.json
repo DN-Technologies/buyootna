@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.youssefusfdev.buyootna",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "يستخدم التطبيق موقعك الجغرافي لتحديد مكانك وعرض العقارات والخدمات القريبة منك على الخريطة."
@@ -66,6 +67,12 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "يستخدم التطبيق موقعك الجغرافي لتحديد مكانك وعرض العقارات والخدمات القريبة منك على الخريطة."
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.REPLACE_WITH_GOOGLE_IOS_CLIENT_ID"
         }
       ]
     ],
