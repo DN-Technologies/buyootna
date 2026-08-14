@@ -5,9 +5,9 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
 import { LoginFormValues, loginSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
+import FormInput from '@/shared/components/FormInput';
 
 interface IndividualLoginFormProps {
   onSubmit: (data: LoginFormValues & { rememberMe: boolean }) => void;

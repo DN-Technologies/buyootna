@@ -7,13 +7,10 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/shared/api/api';
-import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import {
+  isPhoneIdentifier,
   LoginFormValues,
   SignupFormValues,
-  isPhoneIdentifier,
 } from '@/features/auth/authSchemas';
 // Modular Components
 import { IndividualAuthHeader } from '@/features/auth/components/individual/IndividualAuthHeader';
@@ -22,6 +19,9 @@ import { IndividualLoginForm } from '@/features/auth/components/individual/Indiv
 import { IndividualSignupForm } from '@/features/auth/components/individual/IndividualSignupForm';
 import { IndividualSignupOtpStep } from '@/features/auth/components/individual/IndividualSignupOtpStep';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import apiClient from '@/shared/api/api';
+import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { AccountType } from '@/types';
@@ -147,14 +147,24 @@ export default function IndividualAuthScreen() {
   };
 
   const handleSocialAuthError = (error: any, title: string) => {
-    let backendMessage = 'حدث خطأ في الاتصال';
-    if (error?.response?.data?.message) {
-      const message = error.response.data.message;
-      backendMessage = Array.isArray(message) ? message.join('\n') : message;
-    } else if (error?.message === 'Network Error' || !error?.response) {
-      backendMessage = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+    // Only axios errors (i.e. the call to our own API) can meaningfully be
+    // "check the API is running and connected" — a failure in the native
+    // Google/Apple SDK itself (no .isAxiosError, no .response) has nothing to
+    // do with our backend and showing that message there is misleading.
+    if (error?.isAxiosError) {
+      let backendMessage = 'حدث خطأ في الاتصال';
+      if (error.response?.data?.message) {
+        const message = error.response.data.message;
+        backendMessage = Array.isArray(message) ? message.join('\n') : message;
+      } else {
+        backendMessage =
+          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      }
+      Alert.alert(title, backendMessage);
+      return;
     }
-    Alert.alert(title, backendMessage);
+
+    Alert.alert(title, error?.message || 'حدث خطأ غير متوقع');
   };
 
   const onGoogleSignIn = async () => {
