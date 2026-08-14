@@ -22,6 +22,11 @@ export default function PropertySkeleton({ cardWidth }: PropertySkeletonProps) {
     >
       {/* Image Placeholder with Curved Cutout at the bottom */}
       <View className="relative h-48 w-full bg-slate-200">
+        {/* Share & Heart icon placeholders */}
+        <View className="absolute left-3 top-3 flex-row gap-2">
+          <View className="h-[25px] w-[25px] rounded-lg bg-white/40" />
+          <View className="h-[25px] w-[25px] rounded-lg bg-white/40" />
+        </View>
         <View className="absolute bottom-0 left-0 right-0 h-2 w-full rounded-t-[40px] bg-white" />
       </View>
 
@@ -63,13 +68,6 @@ export default function PropertySkeleton({ cardWidth }: PropertySkeletonProps) {
           <View className="h-4 w-4 rounded-full bg-slate-100" />
           {/* Location text placeholder */}
           <View className="h-4 w-48 rounded-md bg-slate-100" />
-        </View>
-
-        {/* Action Buttons Footer */}
-        <View className="flex-row items-center justify-between gap-2 pt-2">
-          <View className="h-10 flex-1 rounded-[24px] border border-slate-100 bg-slate-50" />
-          <View className="h-10 flex-1 rounded-[24px] border border-slate-100 bg-slate-50" />
-          <View className="h-10 flex-1 rounded-[24px] border border-slate-100 bg-slate-50" />
         </View>
       </View>
     </View>

@@ -130,7 +130,6 @@ export default function ExchangeProperties({
             ) : (
               <PropertyCard
                 {...item}
-                phone={item.phoneNumber || item.phone}
                 timeAgo={
                   item.createdAt ? formatTimeAgo(item.createdAt) : undefined
                 }

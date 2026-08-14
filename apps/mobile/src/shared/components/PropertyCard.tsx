@@ -1,10 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   DimensionValue,
   Image,
-  Linking,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -14,15 +12,8 @@ import {
   View,
 } from 'react-native';
 
-import {
-  BathIcon,
-  BedIcon,
-  CallIcon,
-  ChatIcon,
-  HeartIcon,
-  LocationIcon,
-  WhatsappIcon,
-} from '@/assets/icons/home/cards';
+import { BathIcon, BedIcon, HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
+import { ShareIcon } from '@/assets/icons/home/property';
 import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
 export interface PropertyCardProps {
   id: string;
@@ -37,13 +28,10 @@ export interface PropertyCardProps {
   location: string;
   timeAgo?: string;
   cardWidth?: DimensionValue; // Allow custom width for horizontal scrolling
-  phone?: string | null;
+  isFavorited?: boolean;
   onPress?: () => void;
   onFavorite?: () => void;
   onShare?: () => void;
-  onWhatsAppPress?: () => void;
-  onCallPress?: () => void;
-  onChatPress?: () => void;
 }
 
 export default function PropertyCard({
@@ -59,13 +47,10 @@ export default function PropertyCard({
   location,
   timeAgo = 'منذ ساعتين',
   cardWidth = '100%',
-  phone,
+  isFavorited = false,
   onPress,
   onFavorite,
   onShare,
-  onWhatsAppPress,
-  onCallPress,
-  onChatPress,
 }: PropertyCardProps) {
   const { width: windowWidth } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -90,52 +75,6 @@ export default function PropertyCard({
     } else {
       router.push(`/property/${id}`);
     }
-  };
-
-  const handleWhatsApp = () => {
-    if (onWhatsAppPress) {
-      onWhatsAppPress();
-      return;
-    }
-    const targetPhone = phone || '96512345678';
-    const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
-    const waUrl = `whatsapp://send?phone=${cleanPhone}`;
-    const webUrl = `https://wa.me/${cleanPhone}`;
-    Linking.canOpenURL(waUrl)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(waUrl);
-        } else {
-          Linking.openURL(webUrl);
-        }
-      })
-      .catch(() => {
-        Linking.openURL(webUrl);
-      });
-  };
-
-  const handleCall = () => {
-    if (onCallPress) {
-      onCallPress();
-      return;
-    }
-    const targetPhone = phone;
-    if (!targetPhone) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
-      return;
-    }
-    const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
-    Linking.openURL(`tel:${cleanPhone}`).catch(() => {
-      Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
-    });
-  };
-
-  const handleChat = () => {
-    if (onChatPress) {
-      onChatPress();
-      return;
-    }
-    router.push(`/chat/${id}`);
   };
 
   return (
@@ -225,7 +164,25 @@ export default function PropertyCard({
               borderRadius: 8,
             }}
           >
-            <HeartIcon color="#111111" size={16} />
+            <HeartIcon
+              color={isFavorited ? '#BA0003' : '#111111'}
+              size={16}
+              filled={isFavorited}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={onShare}
+            style={{
+              height: 25,
+              minWidth: 25,
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 8,
+            }}
+          >
+            <ShareIcon color="#111111" size={16} />
           </TouchableOpacity>
         </View>
 
@@ -304,36 +261,6 @@ export default function PropertyCard({
           >
             {location}
           </Text>
-        </View>
-
-        {/* --- 3. Action Buttons Footer --- */}
-        <View className="flex-row items-center justify-between gap-2 pt-2">
-          {/* WhatsApp Button (Green Outline) */}
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
-            activeOpacity={0.7}
-            onPress={handleWhatsApp}
-          >
-            <WhatsappIcon size={20} />
-          </TouchableOpacity>
-
-          {/* Phone Button (Gray Outline) */}
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
-            activeOpacity={0.7}
-            onPress={handleCall}
-          >
-            <CallIcon color="#15304D" size={16} />
-          </TouchableOpacity>
-
-          {/* Message/Chat Button (Gold Outline) */}
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#B28648]"
-            activeOpacity={0.7}
-            onPress={handleChat}
-          >
-            <ChatIcon color="#B28648" size={18} />
-          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>

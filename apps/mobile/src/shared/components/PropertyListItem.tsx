@@ -19,6 +19,7 @@ export interface PropertyListItemProps {
   area: number;
   location: string;
   propertyIncome?: number | null;
+  isFavorited?: boolean;
   onPress?: () => void;
   onFavorite?: () => void;
   onShare?: () => void;
@@ -34,6 +35,7 @@ export default function PropertyListItem({
   area,
   location,
   propertyIncome = 150_000,
+  isFavorited = false,
   onPress,
   onFavorite,
   onShare,
@@ -168,7 +170,11 @@ export default function PropertyListItem({
             onPress={onFavorite}
             className="h-9 w-9 items-center justify-center"
           >
-            <HeartIcon color="#BA0003" size={18} filled />
+            <HeartIcon
+              color={isFavorited ? '#BA0003' : '#111111'}
+              size={18}
+              filled={isFavorited}
+            />
           </TouchableOpacity>
         </View>
       </View>

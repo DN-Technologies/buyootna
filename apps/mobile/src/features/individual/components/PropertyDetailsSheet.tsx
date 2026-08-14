@@ -47,6 +47,7 @@ import { PropertyDetailsDto } from '@/types/property';
 
 interface PropertyDetailsSheetProps {
   property: PropertyDetailsDto | null;
+  isFavorited?: boolean;
   onViewProperty?: () => void;
   onFavorite?: () => void;
   onShare?: () => void;
@@ -63,6 +64,7 @@ const PropertyDetailsSheet = forwardRef<
   (
     {
       property,
+      isFavorited = false,
       onViewProperty,
       onFavorite,
       onShare,
@@ -200,7 +202,11 @@ const PropertyDetailsSheet = forwardRef<
                     onPress={onFavorite}
                     className="h-8 w-8 items-center justify-center rounded-full"
                   >
-                    <HeartIcon color="#111111" size={16} />
+                    <HeartIcon
+                      color={isFavorited ? '#BA0003' : '#111111'}
+                      size={16}
+                      filled={isFavorited}
+                    />
                   </TouchableOpacity>
                   {/* Share */}
                   <TouchableOpacity

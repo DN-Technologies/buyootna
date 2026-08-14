@@ -1,6 +1,11 @@
+import { router } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { CardsViewIcon, ListViewIcon } from '@/assets/icons/home/header';
+import {
+  CardsViewIcon,
+  ListViewIcon,
+  MapIcon,
+} from '@/assets/icons/home/header';
 
 type PrimaryTab = 'all' | 'properties' | 'offices';
 type PropertyFilter = 'all' | 'exchange' | 'rent' | 'sale';
@@ -11,6 +16,21 @@ interface HomeFilterPillsProps {
   onPropFilterChange: (filter: PropertyFilter) => void;
   viewMode?: 'card' | 'list';
   onViewModeChange?: (mode: 'card' | 'list') => void;
+}
+
+function MapPillButton() {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => router.push('/map')}
+      className="flex-row gap-2 px-4 rounded-full border border-[#ECECEC] bg-[#F9FAFE] h-[32px] justify-center items-center"
+    >
+      <MapIcon size={18} color="#111111" />
+      <Text className="font-cairo-medium text-[14px] leading-[24px] text-[#111111]">
+        الخريطة
+      </Text>
+    </TouchableOpacity>
+  );
 }
 
 export default function HomeFilterPills({
@@ -53,6 +73,7 @@ export default function HomeFilterPills({
             />
           </TouchableOpacity>
         </View>
+        <MapPillButton />
       </View>
     ) : null;
   }
@@ -122,6 +143,7 @@ export default function HomeFilterPills({
               />
             </TouchableOpacity>
           </View>
+          <MapPillButton />
         </View>
       )}
     </View>

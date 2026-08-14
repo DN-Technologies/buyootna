@@ -126,7 +126,6 @@ export default function RentProperties({
             ) : (
               <PropertyCard
                 {...item}
-                phone={item.phoneNumber || item.phone}
                 timeAgo={
                   item.createdAt ? formatTimeAgo(item.createdAt) : undefined
                 }
