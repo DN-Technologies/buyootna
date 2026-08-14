@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { IdentityType, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
@@ -39,6 +39,16 @@ export class UsersRegistrationService {
 
         const profile = await tx.individualProfile.create({
           data: { userId: user.id },
+        });
+
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.INDIVIDUAL,
+            isActive: true,
+            individualData: { create: {} },
+          },
         });
 
         return { user, profile };
@@ -121,6 +131,29 @@ export class UsersRegistrationService {
           },
         });
 
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.COMPANY,
+            isActive: true,
+            companyData: {
+              create: {
+                name: dto.name,
+                services: dto.services,
+                hqLocation: dto.hqLocation,
+                serviceAreas: dto.serviceAreas,
+                about: dto.about,
+                licenseActivity: dto.licenseActivity,
+                licenseNumber: dto.licenseNumber,
+                licenseExpiry: dto.licenseExpiry,
+                logoUrl: logoUrl,
+                licenseFileUrl: licenseFileUrl,
+              },
+            },
+          },
+        });
+
         return { user, profile };
       });
 
@@ -192,6 +225,28 @@ export class UsersRegistrationService {
             officeProfileId: profile.id,
             status: 'PENDING',
             notes: 'طلب تسجيل مكتب عقاري جديد',
+          },
+        });
+
+        // Create the Identity record auth/login relies on.
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.OFFICE,
+            isActive: true,
+            officeData: {
+              create: {
+                name: dto.name,
+                services: dto.services,
+                hqLocation: dto.hqLocation,
+                about: dto.about,
+                licenseActivity: dto.licenseActivity,
+                licenseNumber: dto.licenseNumber,
+                licenseExpiry: dto.licenseExpiry,
+                logoUrl: logoUrl,
+                licenseFileUrl: licenseFileUrl,
+              },
+            },
           },
         });
 
