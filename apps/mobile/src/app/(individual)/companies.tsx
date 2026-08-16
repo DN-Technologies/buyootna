@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Text,
   TextInput,
@@ -20,14 +21,18 @@ import CategoryFilterSheet, {
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
+import { chatService } from '@/shared/api/chat.service';
+import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
+import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { CompanyDto } from '@/types/feed';
 
 export default function CompaniesScreen() {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
+  const { guardAction, authSheetRef } = useAuthGuard();
   const quoteModalRef = useRef<BottomSheetModal>(null);
   const categorySheetRef = useRef<BottomSheetModal>(null);
 
@@ -123,6 +128,22 @@ export default function CompaniesScreen() {
   const handleQuotePress = (companyName: string) => {
     setSelectedCompanyName(companyName);
     quoteModalRef.current?.present();
+  };
+
+  const handleChatPress = (companyUserId: string) => {
+    guardAction(async () => {
+      try {
+        const response = await chatService.createConversation(companyUserId);
+        router.push(`/chat/${response.id}` as any);
+      } catch (error: any) {
+        console.error('Failed to start chat conversation:', error);
+        const backendMsg = error?.response?.data?.message;
+        const msg = Array.isArray(backendMsg)
+          ? backendMsg.join('\n')
+          : backendMsg || 'تعذر بدء المحادثة مع الشركة';
+        Alert.alert('تنبيه', msg);
+      }
+    });
   };
 
   const renderHeader = () => (
@@ -245,7 +266,7 @@ export default function CompaniesScreen() {
                 [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
               }))
             }
-            onChatPress={() => router.push(`/chat/${item.userId}` as any)}
+            onChatPress={() => handleChatPress(item.userId)}
             onQuotePress={() => handleQuotePress(item.name)}
           />
         )}
@@ -269,6 +290,7 @@ export default function CompaniesScreen() {
         selected={selectedCategories}
         onChange={setSelectedCategories}
       />
+      <AuthGuardSheet ref={authSheetRef} />
     </SafeAreaView>
   );
 }
