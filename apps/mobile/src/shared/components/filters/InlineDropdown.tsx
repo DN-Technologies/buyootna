@@ -35,7 +35,7 @@ export default function InlineDropdown({
     <View className="mb-6 w-full">
       {/* Title */}
       <Text
-        className="mb-1 font-cairo text-sm leading-[22px] text-[#111111]"
+        className="mb-1 font-cairo text-[14px] leading-[22px] text-[#111111]"
         style={{ writingDirection: 'rtl' }}
       >
         {title}
@@ -45,7 +45,7 @@ export default function InlineDropdown({
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={() => setIsOpen(!isOpen)}
-        className={`h-[40px] flex-row items-center justify-between rounded-md border bg-white px-4 ${
+        className={`h-[46px] flex-row items-center justify-between rounded-md border bg-white px-4 ${
           isOpen ? 'border-[#15304D]' : 'border-gray-200'
         }`}
       >

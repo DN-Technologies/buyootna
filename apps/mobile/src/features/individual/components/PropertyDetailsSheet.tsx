@@ -37,7 +37,9 @@ import {
   LicenseIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import { chatService } from '@/shared/api/chat.service';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -76,6 +78,7 @@ const PropertyDetailsSheet = forwardRef<
     ref,
   ) => {
     const router = useRouter();
+    const token = useAuthStore((state) => state.token);
     const snapPoints = useMemo(() => ['85%'], []);
     const [activeIndex, setActiveIndex] = useState(0);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -139,14 +142,32 @@ const PropertyDetailsSheet = forwardRef<
       });
     };
 
-    const handleChat = () => {
+    const handleChat = async () => {
       if (onChatPress) {
         onChatPress();
         return;
       }
-      if (property?.id) {
+      if (!property?.id || !property?.host?.id) return;
+
+      if (!token) {
+        Alert.alert('تنبيه', 'يجب تسجيل الدخول لبدء محادثة');
+        return;
+      }
+
+      try {
+        const response = await chatService.createConversation(
+          property.host.id,
+          property.id,
+        );
         onClose?.();
-        router.push(`/chat/${property.id}`);
+        router.push(`/chat/${response.id}`);
+      } catch (error: any) {
+        console.error('Failed to start chat conversation:', error);
+        const backendMsg = error?.response?.data?.message;
+        const msg = Array.isArray(backendMsg)
+          ? backendMsg.join('\n')
+          : backendMsg || 'تعذر بدء المحادثة مع البائع';
+        Alert.alert('تنبيه', msg);
       }
     };
 

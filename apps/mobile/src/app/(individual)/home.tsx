@@ -18,6 +18,7 @@ import HomeHeaderSkeleton from '@/features/individual/components/home/HomeHeader
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ContentContainer from '@/shared/components/ContentContainer';
@@ -29,6 +30,7 @@ type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
 
 export default function HomeScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
+  const { scrollContentBottomPadding } = useTabBarHeight();
 
   // Navigate to results screen with advanced filter payload
   const handleAdvancedSearch = useCallback(
@@ -185,7 +187,7 @@ export default function HomeScreen() {
           <ScrollView
             className="flex-1 pt-4"
             contentContainerStyle={{
-              paddingBottom: 130,
+              paddingBottom: scrollContentBottomPadding,
             }} // Extra padding for the custom bottom bar
             showsVerticalScrollIndicator={false}
             refreshControl={

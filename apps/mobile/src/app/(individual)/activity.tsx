@@ -8,16 +8,12 @@ import {
   Alert,
   Animated,
   FlatList,
-  Platform,
   RefreshControl,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SortingIcon } from '@/assets/icons/activity';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
@@ -30,6 +26,7 @@ import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdS
 import FreeQuotaBanner from '@/features/individual/components/activity/FreeQuotaBanner';
 import SubscriptionSlotsRow from '@/features/individual/components/activity/SubscriptionSlotsRow';
 import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import apiClient from '@/shared/api/api';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
@@ -47,10 +44,7 @@ const TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
 export default function ActivityScreen() {
   const { token } = useAuthStore();
-  const insets = useSafeAreaInsets();
-
-  // Tab Bar height calculation matches CustomTabBar.tsx
-  const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
+  const { tabBarHeight, scrollContentBottomPadding } = useTabBarHeight();
   const toastBottomOffset = tabBarHeight + 40;
 
   // Local UI state
@@ -378,7 +372,7 @@ export default function ActivityScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 100,
+          paddingBottom: scrollContentBottomPadding,
           paddingTop: 16,
         }}
         showsVerticalScrollIndicator={false}

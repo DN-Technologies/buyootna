@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
 import { propertiesService } from '@/shared/api/properties.service';
@@ -38,6 +39,7 @@ export default function HomeProperties({
   ListHeaderComponent,
 }: HomePropertiesProps) {
   const router = useRouter();
+  const { scrollContentBottomPadding } = useTabBarHeight();
   const { isTablet, cardColumns } = useResponsiveLayout();
   const favoritedIds = useFavoritesStore((state) => state.favoritedIds);
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
@@ -137,7 +139,7 @@ export default function HomeProperties({
     }
   };
 
-  const renderEmptyComponent = (mode: 'card' | 'list') => () => {
+  const renderEmptyComponent = (mode: 'card' | 'list') => {
     if (isFilterLoading) {
       return (
         <View style={{ paddingTop: 10 }}>
@@ -182,7 +184,7 @@ export default function HomeProperties({
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
             paddingHorizontal: 20,
-            paddingBottom: 120,
+            paddingBottom: scrollContentBottomPadding,
             paddingTop: 10,
           }}
           showsVerticalScrollIndicator={false}
@@ -241,7 +243,7 @@ export default function HomeProperties({
           ListEmptyComponent={renderEmptyComponent('list')}
           contentContainerStyle={{
             paddingHorizontal: 20,
-            paddingBottom: 120,
+            paddingBottom: scrollContentBottomPadding,
             paddingTop: 10,
           }}
           showsVerticalScrollIndicator={false}
