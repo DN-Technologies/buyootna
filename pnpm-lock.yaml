@@ -525,6 +525,12 @@ importers:
       '@buyootna/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       axios:
         specifier: ^1.7.9
         version: 1.16.0
@@ -568,6 +574,12 @@ importers:
       '@buyootna/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       axios:
         specifier: ^1.7.9
         version: 1.16.0
@@ -608,6 +620,12 @@ importers:
 
   apps/web/docs:
     dependencies:
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       lucide-react:
         specifier: ^0.475.0
         version: 0.475.0(react@19.1.0)
@@ -651,6 +669,12 @@ importers:
       '@buyootna/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       axios:
         specifier: ^1.7.9
         version: 1.16.0
@@ -694,6 +718,12 @@ importers:
       '@buyootna/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       axios:
         specifier: ^1.7.9
         version: 1.16.0
@@ -737,6 +767,12 @@ importers:
       '@buyootna/ui':
         specifier: workspace:*
         version: link:../../../packages/ui
+      '@fontsource/cairo':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/inter':
+        specifier: ^5.3.0
+        version: 5.3.0
       axios:
         specifier: ^1.7.9
         version: 1.16.0
@@ -2003,6 +2039,12 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource/cairo@5.3.0':
+    resolution: {integrity: sha512-MdY6+gee1DVz4eUvx1Dd8Y1f50WcRELRKwKBarYZA3zT8dMhkuTWbcoE1LzezAy97h/9rob87s02NI6L8MaDgA==}
+
+  '@fontsource/inter@5.3.0':
+    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
 
   '@google/genai@2.13.0':
     resolution: {integrity: sha512-GM7C8Kaomvjz05x5JEO6+l3d/pciL9LxAG9dUjJLD7nTPZ9X0Cfsf2Z7eET6UjgWyUmxXCHtYnQoQ77F9+ZIOQ==}
@@ -11920,6 +11962,10 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource/cairo@5.3.0': {}
+
+  '@fontsource/inter@5.3.0': {}
 
   '@google/genai@2.13.0':
     dependencies:
