@@ -12,7 +12,6 @@ import {
 
 import { SearchResultItem, searchService } from '@/shared/api/search.service';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
-import AlertSuccessToast from '@/shared/components/search/AlertSuccessToast';
 import EmptySearchResult from '@/shared/components/search/EmptySearchResult';
 import SearchHeader from '@/shared/components/search/SearchHeader';
 import SuggestionCard from '@/shared/components/search/SuggestionCard';
@@ -175,12 +174,8 @@ export default function SearchResultsScreen() {
     }
   };
 
-  // --- Toast State ---
-  const [showToast, setShowToast] = useState(false);
-
   const handleActivateAlert = () => {
-    console.log(`Alert activated for query: ${searchText}`);
-    setShowToast(true);
+    router.push('/add-alert');
   };
 
   const handleExploreNow = () => {
@@ -273,13 +268,6 @@ export default function SearchResultsScreen() {
         onEndReachedThreshold={0.5}
       />
 
-      {/* --- Floating Success Toast --- */}
-      <AlertSuccessToast
-        visible={showToast}
-        message={`تم تفعيل تنبيهات لـ ${searchText || 'هذا البحث'}`}
-        onHide={() => setShowToast(false)}
-        onUndo={() => console.log('Alert cancelled by user')}
-      />
       <GlobalFilterSheet
         ref={filterSheetRef}
         onApplyFilters={handleAdvancedSearch}
