@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   Text,
@@ -16,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { paymentsService } from '@/shared/api/payments.service';
 import { plansService } from '@/shared/api/plans.service';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import PlanCardSkeleton from '@/shared/components/skeletons/PlanCardSkeleton';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -115,7 +115,11 @@ export default function PlansScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#15304D" className="py-20" />
+          <View className="gap-6 px-5 py-6">
+            {[1, 2, 3].map((key) => (
+              <PlanCardSkeleton key={key} />
+            ))}
+          </View>
         ) : (
           <View className="px-5 py-6">
             {/* Wallet Section */}

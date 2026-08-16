@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   Text,
@@ -12,8 +11,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { favoritesService } from '@/features/individual/services/favorites.service';
-import PropertyCard from '@/shared/components/PropertyCard';
 import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
+import PropertyCard from '@/shared/components/PropertyCard';
+import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { PropertyDetailsDto } from '@/types/property';
 
 export default function FavoritesScreen() {
@@ -103,8 +103,12 @@ export default function FavoritesScreen() {
         onEndReachedThreshold={0.5}
         ListEmptyComponent={
           isLoading ? (
-            <View className="items-center justify-center py-20">
-              <ActivityIndicator size="large" color="#15304D" />
+            <View>
+              {[1, 2, 3].map((key) => (
+                <View key={key} className="mb-4">
+                  <PropertySkeleton />
+                </View>
+              ))}
             </View>
           ) : (
             <View className="items-center justify-center px-5 py-20">

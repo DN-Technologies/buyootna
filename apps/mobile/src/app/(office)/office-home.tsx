@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HomeSearchIcon, NotificationIcon } from '@/assets/icons/home/header';
 import ContentContainer from '@/shared/components/ContentContainer';
+import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -33,6 +34,14 @@ export default function OfficeHomeScreen() {
       }
     }, [refreshProfile, token])
   );
+
+  if (!activeIdentity) {
+    return (
+      <SafeAreaView className="flex-1 bg-[#F8FAFC]">
+        <ProfileHomeSkeleton />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F8FAFC]">

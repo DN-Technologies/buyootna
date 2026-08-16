@@ -18,6 +18,7 @@ import {
   InvoiceStatus,
 } from '@/shared/api/invoices.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';
 
 const TABS = [
@@ -198,8 +199,10 @@ export default function InvoicesScreen() {
 
       {/* --- 3. Body Content --- */}
       {isLoading ? (
-        <View className="flex-1 items-center justify-center py-20">
-          <ActivityIndicator size="large" color="#15304D" />
+        <View className="px-5 pt-4">
+          {[1, 2, 3, 4].map((key) => (
+            <ListRowSkeleton key={key} showIcon={false} />
+          ))}
         </View>
       ) : filteredInvoices.length > 0 ? (
         <ScrollView

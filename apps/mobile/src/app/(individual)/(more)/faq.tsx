@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -11,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { faqService } from '@/shared/api/faq.service';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 
 interface FAQItem {
   id: string;
@@ -65,7 +65,11 @@ export default function FAQScreen() {
         showsVerticalScrollIndicator={false}
       >
         {isLoading ? (
-          <ActivityIndicator size="large" color="#15304D" className="py-20" />
+          <View>
+            {[1, 2, 3, 4].map((key) => (
+              <ListRowSkeleton key={key} showIcon={false} />
+            ))}
+          </View>
         ) : (
           faqs.map((item) => {
             const isExpanded = expandedId === item.id;

@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -12,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import apiClient from '@/shared/api/api';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 interface HistoryItem {
@@ -114,8 +114,10 @@ export default function PackageHistoryScreen() {
 
       {/* 3. History Items List */}
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#15304D" />
+        <View className="p-5">
+          {[1, 2, 3, 4].map((key) => (
+            <ListRowSkeleton key={key} showIcon={false} showTrailing />
+          ))}
         </View>
       ) : (
         <ScrollView

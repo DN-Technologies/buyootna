@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   Switch,
@@ -24,8 +23,8 @@ import {
   ShowIcon,
   TermsIcon,
 } from '@/assets/icons/settings';
-import { settingsService } from '@/shared/api/settings.service';
 import MenuItem from '@/features/individual/components/more/MenuItem';
+import { settingsService } from '@/shared/api/settings.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function SettingsScreen() {
@@ -193,7 +192,17 @@ export default function SettingsScreen() {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 20 }}
       >
         {isLoading ? (
-          <ActivityIndicator size="large" color="#15304D" className="py-20" />
+          <View className="gap-6 px-5">
+            {[24, 44, 60, 44, 32].map((height, index) => (
+              <View key={index}>
+                <View className="mb-2 h-3.5 w-20 rounded bg-slate-200" />
+                <View
+                  className="rounded-xl bg-slate-100"
+                  style={{ height }}
+                />
+              </View>
+            ))}
+          </View>
         ) : (
           <View className="gap-6 px-5">
             {/* --- Section: Notifications --- */}

@@ -6,6 +6,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ContentContainer from '@/shared/components/ContentContainer';
+import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -14,6 +15,9 @@ export default function OfficeChatsScreen() {
   const { token } = useAuthStore();
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
+  const isLoadingConversations = useChatStore(
+    (state) => state.isLoadingConversations,
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -41,7 +45,9 @@ export default function OfficeChatsScreen() {
       >
         <ContentContainer>
           <View className="mx-4 mt-4 gap-2">
-            {conversations.length > 0 ? (
+            {isLoadingConversations && conversations.length === 0 ? (
+              <ChatListSkeleton />
+            ) : conversations.length > 0 ? (
               conversations.map((conv) => (
                 <TouchableOpacity
                   key={conv.id}

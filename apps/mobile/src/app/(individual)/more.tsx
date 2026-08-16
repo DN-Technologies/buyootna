@@ -31,6 +31,7 @@ import MenuItem from '@/features/individual/components/more/MenuItem';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ContentContainer from '@/shared/components/ContentContainer';
+import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
@@ -294,72 +295,76 @@ export default function ProfileDashboardScreen() {
       >
         <ContentContainer>
           {/* --- 1. Profile Header Card --- */}
-          <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
-            {/* Top Navy Blue Banner */}
-            <View className="h-20 w-full bg-[#15304D]" />
+          {activeIdentity ? (
+            <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
+              {/* Top Navy Blue Banner */}
+              <View className="h-20 w-full bg-[#15304D]" />
 
-            <View className="px-5 pb-5">
-              {/* Avatar & Account Type Row */}
-              <View className="-mt-10 mb-2 flex-row items-start justify-between">
-                {/* Overlapping Avatar */}
-                <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
-                  <Image
-                    source={{ uri: activeAvatarUrl }}
-                    className="h-full w-full"
-                    resizeMode="cover"
-                  />
+              <View className="px-5 pb-5">
+                {/* Avatar & Account Type Row */}
+                <View className="-mt-10 mb-2 flex-row items-start justify-between">
+                  {/* Overlapping Avatar */}
+                  <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
+                    <Image
+                      source={{ uri: activeAvatarUrl }}
+                      className="h-full w-full"
+                      resizeMode="cover"
+                    />
+                  </View>
+
+                  {/* Account Type Selector */}
+                  <TouchableOpacity
+                    onPress={() => profileSheetRef.current?.present()}
+                    className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1"
+                  >
+                    <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
+                      {activeTypeLabel}
+                    </Text>
+                    <Feather name="chevron-down" size={18} color="#64748B" />
+                  </TouchableOpacity>
                 </View>
 
-                {/* Account Type Selector */}
-                <TouchableOpacity
-                  onPress={() => profileSheetRef.current?.present()}
-                  className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1"
-                >
-                  <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
-                    {activeTypeLabel}
+                {/* User Info */}
+                <View className="mb-5 items-start">
+                  <Text className="font-cairo-bold text-lg text-[#111111]">
+                    {displayName}
                   </Text>
-                  <Feather name="chevron-down" size={18} color="#64748B" />
-                </TouchableOpacity>
-              </View>
-
-              {/* User Info */}
-              <View className="mb-5 items-start">
-                <Text className="font-cairo-bold text-lg text-[#111111]">
-                  {displayName}
-                </Text>
-                <Text className="font-cairo-medium text-xs text-[#64748B]">
-                  {user?.email || user?.phone || ''}
-                </Text>
-              </View>
-
-              {/* Action Buttons Row */}
-              <View className="flex-row justify-between gap-2">
-                <TouchableOpacity
-                  onPress={() => router.push('/edit-profile')}
-                  className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-2.5"
-                >
-                  <Feather name="edit-2" size={14} color="#FFFFFF" />
-                  <Text className="font-cairo-bold text-sm leading-[22px] text-white">
-                    تعديل
+                  <Text className="font-cairo-medium text-xs text-[#64748B]">
+                    {user?.email || user?.phone || ''}
                   </Text>
-                </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
-                  <Feather name="eye" size={14} color="#111111" />
-                  <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
-                    معاينة
-                  </Text>
-                </TouchableOpacity>
+                {/* Action Buttons Row */}
+                <View className="flex-row justify-between gap-2">
+                  <TouchableOpacity
+                    onPress={() => router.push('/edit-profile')}
+                    className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-2.5"
+                  >
+                    <Feather name="edit-2" size={14} color="#FFFFFF" />
+                    <Text className="font-cairo-bold text-sm leading-[22px] text-white">
+                      تعديل
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
-                  <ShareIcon color="#111111" size={14} />
-                  <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
-                    مشاركة
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
+                    <Feather name="eye" size={14} color="#111111" />
+                    <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
+                      معاينة
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
+                    <ShareIcon color="#111111" size={14} />
+                    <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
+                      مشاركة
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
+          ) : (
+            <ProfileHeaderCardSkeleton />
+          )}
 
           {/* --- 2. Menu Sections --- */}
           <View className="gap-6 px-5">

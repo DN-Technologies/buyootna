@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -17,6 +16,7 @@ import {
   notificationsService,
 } from '@/shared/api/notifications.service';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 function formatDate(dateString: string) {
@@ -128,7 +128,11 @@ export default function NotificationListScreen() {
       </View>
 
       {isLoading ? (
-        <ActivityIndicator size="large" color="#15304D" className="py-20" />
+        <View className="px-5 pt-4">
+          {[1, 2, 3, 4].map((key) => (
+            <ListRowSkeleton key={key} showIcon={false} />
+          ))}
+        </View>
       ) : notifications.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
           <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-[#15304D]/5">

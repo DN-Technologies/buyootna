@@ -4,7 +4,6 @@ import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   Linking,
@@ -34,6 +33,7 @@ import PropertyActionBar from '@/shared/components/PropertyActionBar';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import PublicProfileHeaderSkeleton from '@/shared/components/skeletons/PublicProfileHeaderSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { PropertyDto } from '@/types/feed';
 
@@ -296,11 +296,7 @@ export default function UserProfileScreen() {
 
   const renderHeader = () => {
     if (isLoadingProfile || !userProfile) {
-      return (
-        <View className="items-center py-10">
-          <ActivityIndicator size="large" color="#15304D" />
-        </View>
-      );
+      return <PublicProfileHeaderSkeleton />;
     }
 
     return (

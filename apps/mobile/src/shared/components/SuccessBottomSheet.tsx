@@ -17,6 +17,8 @@ interface SuccessBottomSheetProps {
   onPress: () => void;
   iconType?: 'check' | 'document-search';
   footerText?: string;
+  secondaryButtonText?: string;
+  onSecondaryPress?: () => void;
 }
 
 const SuccessBottomSheet = forwardRef<
@@ -24,15 +26,27 @@ const SuccessBottomSheet = forwardRef<
   SuccessBottomSheetProps
 >(
   (
-    { title, description, buttonText, onPress, iconType = 'check', footerText },
+    {
+      title,
+      description,
+      buttonText,
+      onPress,
+      iconType = 'check',
+      footerText,
+      secondaryButtonText,
+      onSecondaryPress,
+    },
     ref,
   ) => {
     const snapPoints = useMemo(() => {
+      if (secondaryButtonText) {
+        return footerText ? ['55%'] : ['50%'];
+      }
       if (footerText) {
         return ['45%'];
       }
       return ['40%'];
-    }, [footerText]);
+    }, [footerText, secondaryButtonText]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -129,6 +143,19 @@ const SuccessBottomSheet = forwardRef<
               {buttonText}
             </Text>
           </TouchableOpacity>
+
+          {/* Optional Secondary (Outlined) Button */}
+          {secondaryButtonText && onSecondaryPress && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={onSecondaryPress}
+              className="mb-4 h-[48px] w-full items-center justify-center rounded-3xl border border-[#D4AF37] bg-white"
+            >
+              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#D4AF37]">
+                {secondaryButtonText}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* Optional Footer Text */}
           {footerText && (
