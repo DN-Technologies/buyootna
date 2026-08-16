@@ -152,12 +152,7 @@ export default function CompaniesScreen() {
       <View className="flex-row items-center justify-between py-5">
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() =>
-            router.push({
-              pathname: '/search',
-              params: { openFilter: 'true' },
-            })
-          }
+          onPress={() => router.back()}
           className="w-10"
         >
           <Feather name="chevron-right" size={22} color="#111111" />
