@@ -413,6 +413,9 @@ export default function OfficeProfileScreen() {
         <QuoteRequestModal
           ref={quoteModalRef}
           companyName={office?.name || 'المكتب'}
+          companySubtitle={office?.bio}
+          companyLogoUrl={office?.logoUrl}
+          services={services.length ? services : undefined}
           onRequestSubmitted={() => {}}
         />
       </ContentContainer>

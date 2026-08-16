@@ -377,6 +377,9 @@ export default function CompanyProfileScreen() {
         <QuoteRequestModal
           ref={quoteModalRef}
           companyName={company?.name || ''}
+          companySubtitle={company?.bio}
+          companyLogoUrl={company?.logoUrl}
+          services={services.length ? services : undefined}
           onRequestSubmitted={() => {}}
         />
       </ContentContainer>
