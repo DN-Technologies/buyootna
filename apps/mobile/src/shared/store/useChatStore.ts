@@ -70,9 +70,23 @@ export const useChatStore = create<ChatState>((set, get) => {
       cursor?: string,
       shouldRefresh = false,
     ) => {
-      set({ isLoadingMessages: true });
+      // Clear stale messages from whatever conversation was previously active
+      // immediately, so switching chats never shows the wrong room's history
+      // while the new fetch is in flight (or if it fails).
+      if (shouldRefresh) {
+        set({ isLoadingMessages: true, activeMessages: [] });
+      } else {
+        set({ isLoadingMessages: true });
+      }
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
+
+        // The user may have already navigated to a different conversation
+        // before this request resolved — ignore the now-stale response.
+        if (get().activeConversationId !== conversationId) {
+          return;
+        }
+
         set((state) => {
           let updatedConversations = state.conversations;
 
@@ -120,7 +134,9 @@ export const useChatStore = create<ChatState>((set, get) => {
         });
       } catch (error) {
         console.error('Failed to load messages:', error);
-        set({ isLoadingMessages: false });
+        if (get().activeConversationId === conversationId) {
+          set({ isLoadingMessages: false });
+        }
       }
     },
 
