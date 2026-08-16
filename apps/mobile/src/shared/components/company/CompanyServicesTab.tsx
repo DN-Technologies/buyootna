@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export interface CompanyServiceItemData {
   id: string;
@@ -8,7 +8,6 @@ export interface CompanyServiceItemData {
 
 interface CompanyServicesTabProps {
   services?: CompanyServiceItemData[];
-  onRequestQuote: () => void;
 }
 
 const DEFAULT_SERVICES: CompanyServiceItemData[] = [
@@ -26,7 +25,6 @@ const DEFAULT_SERVICES: CompanyServiceItemData[] = [
 
 export default function CompanyServicesTab({
   services = DEFAULT_SERVICES,
-  onRequestQuote,
 }: CompanyServicesTabProps) {
   return (
     <View className="flex-1 pb-24">
@@ -49,17 +47,6 @@ export default function CompanyServicesTab({
           </View>
         ))}
       </View>
-
-      {/* Quote Request Button */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onRequestQuote}
-        className="w-full items-center justify-center rounded-full bg-[#15304D] py-3.5 shadow-md"
-      >
-        <Text className="font-cairo-bold text-base leading-[24px] text-white">
-          طلب عرض سعر
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }

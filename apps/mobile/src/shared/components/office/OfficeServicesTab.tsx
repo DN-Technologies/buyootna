@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 export interface OfficeServiceItemData {
   id: string;
@@ -8,7 +8,6 @@ export interface OfficeServiceItemData {
 
 interface OfficeServicesTabProps {
   services?: OfficeServiceItemData[];
-  onRequestQuote: () => void;
 }
 
 const DEFAULT_SERVICES: OfficeServiceItemData[] = [
@@ -26,7 +25,6 @@ const DEFAULT_SERVICES: OfficeServiceItemData[] = [
 
 export default function OfficeServicesTab({
   services = DEFAULT_SERVICES,
-  onRequestQuote,
 }: OfficeServicesTabProps) {
   return (
     <View className="flex-1 pb-24">
@@ -51,17 +49,6 @@ export default function OfficeServicesTab({
           </View>
         ))}
       </View>
-
-      {/* Quote Request Button */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onRequestQuote}
-        className="w-full items-center justify-center rounded-full bg-[#15304D] py-3.5 shadow-md"
-      >
-        <Text className="font-cairo-bold text-base leading-[24px] text-white">
-          طلب عرض سعر
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }

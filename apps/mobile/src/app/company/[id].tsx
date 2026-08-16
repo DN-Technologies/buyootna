@@ -1,11 +1,10 @@
-import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -158,31 +157,6 @@ export default function CompanyProfileScreen() {
       await reviewsService.toggleDislike(revId);
     } catch (error) {
       console.error('Error toggling dislike:', error);
-    }
-  };
-
-  const handleContactAction = (type: 'phone' | 'whatsapp' | 'chat') => {
-    const phoneNumber = company?.phone || company?.whatsapp;
-    if (type === 'phone') {
-      if (phoneNumber) {
-        Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-          Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
-        });
-      } else {
-        Alert.alert('تنبيه', 'رقم الهاتف غير متوفر');
-      }
-    } else if (type === 'whatsapp') {
-      if (phoneNumber) {
-        const cleanNumber = phoneNumber.replace(/[^0-9]/g, '');
-        Linking.openURL(`https://wa.me/${cleanNumber}`).catch(() => {
-          Alert.alert('خطأ', 'تعذر فتح الواتساب');
-        });
-      } else {
-        Alert.alert('تنبيه', 'رقم الواتساب غير متوفر');
-      }
-    } else {
-      const chatTarget = company?.userId || id;
-      router.push(`/chat/${chatTarget}`);
     }
   };
 
@@ -364,10 +338,7 @@ export default function CompanyProfileScreen() {
               )}
 
               {activeTab === 'services' && (
-                <CompanyServicesTab
-                  services={services}
-                  onRequestQuote={() => quoteModalRef.current?.present()}
-                />
+                <CompanyServicesTab services={services} />
               )}
 
               {activeTab === 'gallery' && (
@@ -377,39 +348,20 @@ export default function CompanyProfileScreen() {
           </ScrollView>
         )}
 
-        {/* ── 4. Fixed Bottom Contact Bar ── */}
+        {/* ── 4. Fixed Bottom Quote Request Bar ── */}
         <View
           style={{ paddingBottom: Math.max(insets.bottom, 12) }}
           className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 pt-3"
         >
-          <View className="flex-row items-center justify-between gap-3">
-            {/* Phone Call */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => handleContactAction('phone')}
-              className="h-12 flex-1 items-center justify-center rounded-full border border-[#15304D] bg-white"
-            >
-              <Ionicons name="call-outline" size={20} color="#15304D" />
-            </TouchableOpacity>
-
-            {/* WhatsApp */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => handleContactAction('whatsapp')}
-              className="h-12 flex-1 items-center justify-center rounded-full border border-[#22C55E] bg-white"
-            >
-              <FontAwesome name="whatsapp" size={22} color="#22C55E" />
-            </TouchableOpacity>
-
-            {/* Chat / Message */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => handleContactAction('chat')}
-              className="h-12 flex-1 items-center justify-center rounded-full border border-[#B28648] bg-white"
-            >
-              <Ionicons name="chatbubble-outline" size={20} color="#B28648" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => quoteModalRef.current?.present()}
+            className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
+          >
+            <Text className="font-cairo-bold text-base leading-[24px] text-white">
+              طلب عرض سعر
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* ── 5. Modals & Sheets ── */}
