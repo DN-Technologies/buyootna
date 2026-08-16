@@ -144,7 +144,10 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
               {/* Action 3: Request Price (Outlined) */}
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => console.log('Request Price Pressed')}
+                onPress={() => {
+                  handleClose();
+                  router.push('/request-quote');
+                }}
                 className="w-full flex-row items-center gap-3 rounded-md border border-gray-200 bg-white px-5 py-4"
               >
                 <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F1F5F9]">
