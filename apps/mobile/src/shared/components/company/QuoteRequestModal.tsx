@@ -6,11 +6,20 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Image as ExpoImage } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useId,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
+  InputAccessoryView,
+  Keyboard,
+  Platform,
   Text,
   TextStyle,
   TouchableOpacity,
@@ -66,6 +75,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
     ref,
   ) => {
     const internalRef = useRef<BottomSheetModal>(null);
+    const keyboardAccessoryId = useId();
 
     useImperativeHandle(ref, () => internalRef.current as BottomSheetModal);
 
@@ -154,7 +164,6 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
           `تم إرسال طلب عرض السعر إلى ${companyName} بنجاح!`,
         );
         internalRef.current?.dismiss();
-        resetForm();
         if (onRequestSubmitted) {
           onRequestSubmitted();
         }
@@ -171,6 +180,10 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         snapPoints={['94%']}
         enablePanDownToClose
         backgroundStyle={{ borderRadius: 24 }}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        onDismiss={resetForm}
       >
         {/* Header Row */}
         <View className="flex-row items-center justify-between border-b border-gray-100 px-6 pb-3 pt-2">
@@ -192,6 +205,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             paddingBottom: 24,
           }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           {/* Company Info Card */}
@@ -254,6 +268,11 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
                   placeholder="الى"
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
+                  returnKeyType="done"
+                  onSubmitEditing={() => Keyboard.dismiss()}
+                  inputAccessoryViewID={
+                    Platform.OS === 'ios' ? keyboardAccessoryId : undefined
+                  }
                   style={inputStyle}
                 />
               </View>
@@ -264,6 +283,11 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
                   placeholder="من"
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
+                  returnKeyType="done"
+                  onSubmitEditing={() => Keyboard.dismiss()}
+                  inputAccessoryViewID={
+                    Platform.OS === 'ios' ? keyboardAccessoryId : undefined
+                  }
                   style={inputStyle}
                 />
               </View>
@@ -312,6 +336,9 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
               multiline
               numberOfLines={4}
               textAlignVertical="top"
+              inputAccessoryViewID={
+                Platform.OS === 'ios' ? keyboardAccessoryId : undefined
+              }
               style={[inputStyle, { height: 100, paddingTop: 12 }]}
             />
           </View>
@@ -387,6 +414,21 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             )}
           </TouchableOpacity>
         </View>
+
+        {Platform.OS === 'ios' && (
+          <InputAccessoryView nativeID={keyboardAccessoryId}>
+            <View className="flex-row items-center justify-end border-t border-gray-200 bg-[#F8FAFC] px-4 py-2">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Keyboard.dismiss()}
+              >
+                <Text className="font-cairo-bold text-[15px] text-[#15304D]">
+                  تم
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </InputAccessoryView>
+        )}
 
         <MapPickerModal
           visible={showMapPicker}
