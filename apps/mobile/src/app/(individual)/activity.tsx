@@ -4,7 +4,6 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   FlatList,
@@ -32,6 +31,7 @@ import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
   RadioOption,
 } from '@/shared/components/profile/RadioSelectionSheet';
+import ActivityCardSkeleton from '@/shared/components/skeletons/ActivityCardSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const AD_SORT_OPTIONS: RadioOption[] = [
@@ -409,8 +409,10 @@ export default function ActivityScreen() {
         // Render Empty State
         ListEmptyComponent={
           isLoading ? (
-            <View className="items-center py-10">
-              <ActivityIndicator size="large" color="#15304D" />
+            <View>
+              {[1, 2, 3].map((key) => (
+                <ActivityCardSkeleton key={key} />
+              ))}
             </View>
           ) : error ? (
             <View className="items-center py-10">

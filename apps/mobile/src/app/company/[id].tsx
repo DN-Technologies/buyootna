@@ -3,7 +3,6 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   Text,
@@ -31,6 +30,7 @@ import { SortBottomSheet } from '@/shared/components/profile/ProfileFilterSheet'
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem } from '@/shared/components/profile/types';
+import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 
 type CompanyTab = 'about' | 'services' | 'gallery';
 
@@ -191,9 +191,7 @@ export default function CompanyProfileScreen() {
         </View>
 
         {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#15304D" />
-          </View>
+          <CompanyDetailSkeleton />
         ) : !company ? (
           <View className="flex-1 items-center justify-center p-5">
             <Text className="font-cairo-bold text-base text-[#111111]">

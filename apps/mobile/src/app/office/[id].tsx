@@ -3,7 +3,6 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   ScrollView,
   Text,
@@ -30,6 +29,7 @@ import {
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem, SEEDED_REVIEWS } from '@/shared/components/profile/types';
+import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import { PropertyDto } from '@/types/feed';
 
 type OfficeTab = 'about' | 'services' | 'listings';
@@ -216,9 +216,7 @@ export default function OfficeProfileScreen() {
         </View>
 
         {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#15304D" />
-          </View>
+          <CompanyDetailSkeleton />
         ) : !office ? (
           <View className="flex-1 items-center justify-center p-5">
             <Text className="font-cairo-bold text-base text-[#111111]">

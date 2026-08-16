@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { notificationsService } from '@/shared/api/notifications.service';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function NotificationsScreen() {
@@ -152,7 +153,12 @@ export default function NotificationsScreen() {
       >
         <View className="px-5">
           {isLoading ? (
-            <ActivityIndicator size="large" color="#15304D" className="py-20" />
+            <View>
+              <View className="mb-8 h-[48px] w-full rounded-full bg-slate-100" />
+              {[1, 2, 3].map((key) => (
+                <ListRowSkeleton key={key} showIcon={false} showTrailing />
+              ))}
+            </View>
           ) : (
             <>
               {/* --- Master Toggle Button --- */}

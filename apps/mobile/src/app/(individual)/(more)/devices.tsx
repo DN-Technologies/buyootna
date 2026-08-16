@@ -1,8 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -10,9 +9,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { devicesService } from '@/shared/api/devices.service';
 import DeviceCard from '@/features/individual/components/more/DeviceCard';
 import LogoutConfirmationModal from '@/features/individual/components/more/LogoutConfirmationModal';
+import { devicesService } from '@/shared/api/devices.service';
+import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 
 interface DeviceItem {
   id: string;
@@ -105,7 +105,11 @@ export default function RegisteredDevicesScreen() {
 
           {/* --- Devices List --- */}
           {isLoading ? (
-            <ActivityIndicator size="large" color="#15304D" className="py-20" />
+            <View>
+              {[1, 2, 3].map((key) => (
+                <ListRowSkeleton key={key} showTrailing />
+              ))}
+            </View>
           ) : (
             <View>
               {devices.map((device) => (
