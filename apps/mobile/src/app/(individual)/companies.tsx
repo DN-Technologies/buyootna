@@ -18,6 +18,7 @@ import CategoryFilterSheet, {
   COMPANY_CATEGORY_OPTIONS,
 } from '@/features/individual/components/companies/CategoryFilterSheet';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
@@ -26,6 +27,7 @@ import { CompanyDto } from '@/types/feed';
 
 export default function CompaniesScreen() {
   const router = useRouter();
+  const { scrollContentBottomPadding } = useTabBarHeight();
   const quoteModalRef = useRef<BottomSheetModal>(null);
   const categorySheetRef = useRef<BottomSheetModal>(null);
 
@@ -221,7 +223,7 @@ export default function CompaniesScreen() {
         ListEmptyComponent={renderEmptyComponent}
         contentContainerStyle={{
           paddingHorizontal: 20,
-          paddingBottom: 100,
+          paddingBottom: scrollContentBottomPadding,
         }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (

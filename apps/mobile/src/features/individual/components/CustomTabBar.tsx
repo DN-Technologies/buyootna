@@ -1,5 +1,4 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import React from 'react';
 import {
   Platform,
   Text,
@@ -20,6 +19,7 @@ import {
   OrdersIcon,
   PropertiesTabIcon,
 } from '@/assets/icons/tab/index';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 
 interface CustomTabBarProps extends BottomTabBarProps {
   onOpenPlusSheet: () => void;
@@ -33,14 +33,12 @@ export default function CustomTabBar({
 }: CustomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
+  const { tabBarHeight: BAR_HEIGHT } = useTabBarHeight();
 
   // iPad constraint: floating centered tab bar
   const isTablet = windowWidth >= 768;
   const barWidth = isTablet ? 500 : windowWidth;
   const leftOffset = isTablet ? (windowWidth - barWidth) / 2 : 0;
-
-  // Base height + safe area for iPhone
-  const BAR_HEIGHT = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
 
   // SVG Math
   const center = barWidth / 2;

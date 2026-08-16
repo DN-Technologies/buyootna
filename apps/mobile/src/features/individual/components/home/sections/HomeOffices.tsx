@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
 import { OfficeDto } from '@/types/feed';
@@ -19,6 +20,7 @@ export default function HomeOffices({
   ListHeaderComponent,
 }: HomeOfficesProps) {
   const router = useRouter();
+  const { scrollContentBottomPadding } = useTabBarHeight();
   const [data, setData] = useState<OfficeDto[]>([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
@@ -101,7 +103,7 @@ export default function HomeOffices({
       ListEmptyComponent={renderEmptyComponent}
       contentContainerStyle={{
         paddingHorizontal: 20,
-        paddingBottom: 120,
+        paddingBottom: scrollContentBottomPadding,
         paddingTop: 10,
       }}
       showsVerticalScrollIndicator={false}

@@ -28,6 +28,7 @@ import {
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import MenuItem from '@/features/individual/components/more/MenuItem';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
@@ -60,6 +61,7 @@ export default function ProfileDashboardScreen() {
   const { user, token, logout, refreshProfile } = useAuthStore();
   const { guardAction, authSheetRef } = useAuthGuard();
   const { activeIdentity, displayName, avatarUrl, getTypeLabel } = useIdentity();
+  const { scrollContentBottomPadding } = useTabBarHeight();
 
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
@@ -88,7 +90,7 @@ export default function ProfileDashboardScreen() {
       <SafeAreaView className="flex-1 bg-white">
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: scrollContentBottomPadding }}
         >
           <ContentContainer>
             {/* --- 1. Profile Greeting Card --- */}
