@@ -26,6 +26,7 @@ COPY --from=build /app/node_modules ./node_modules
 # Copy the API package keeping the workspace structure so symlinks resolve correctly
 COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/package.json ./apps/api/package.json
+COPY --from=build /app/apps/api/prisma.config.ts ./apps/api/prisma.config.ts
 COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 
