@@ -1,11 +1,12 @@
-import { Image, ImageStyle, StyleProp } from 'react-native';
+import { Image } from 'expo-image';
+import { ImageStyle, StyleProp } from 'react-native';
 
 export interface AppLogoProps {
   width?: number;
   height?: number;
   variant?: 'icon' | 'horizontal' | 'stacked';
   style?: StyleProp<ImageStyle>;
-  resizeMode?: 'contain' | 'cover' | 'stretch' | 'center';
+  resizeMode?: 'contain' | 'cover' | 'fill';
   dark?: boolean;
   fill?: string;
 }
@@ -28,7 +29,7 @@ export default function AppLogo({
     <Image
       source={source}
       style={[{ width, height }, style]}
-      resizeMode={resizeMode}
+      contentFit={resizeMode}
     />
   );
 }

@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import React from 'react';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 
 import { useListingStore } from '@/shared/store/useListingStore';
 
@@ -61,7 +62,7 @@ export default function ImageUploadZone() {
               <Image
                 source={{ uri }}
                 className="h-full w-full"
-                resizeMode="cover"
+                contentFit="cover"
               />
 
               {/* Delete Button */}

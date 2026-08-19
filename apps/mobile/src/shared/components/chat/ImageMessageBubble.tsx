@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ImageMessageProps {
   imageUrl: string;
@@ -29,7 +30,7 @@ export default function ImageMessageBubble({
           <Image
             source={{ uri: imageUrl }}
             className="h-40 w-56"
-            resizeMode="cover"
+            contentFit="cover"
           />
         </TouchableOpacity>
 

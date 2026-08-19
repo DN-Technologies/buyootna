@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import AppLogo from '@/shared/components/AppLogo';
 

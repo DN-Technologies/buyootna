@@ -1,11 +1,12 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, TouchableOpacity, View } from 'react-native';
 
+import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
 
 interface DraftAdCardProps {
   property: ActivityItem;
@@ -33,7 +34,7 @@ export default function DraftAdCard({
         <Image
           source={imageSource}
           className="h-full w-full"
-          resizeMode="cover"
+          contentFit="cover"
         />
 
         {/* Pagination Dots */}
