@@ -4,6 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "بيوتنا لوحة التحكم — الإدارة العامة للنظام",
   description: "لوحة التحكم الإدارية العليا للتحكم الشامل بالمستخدمين، الصلاحيات، الإعدادات، والتقارير المالية.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

@@ -23,6 +23,11 @@ export const metadata: Metadata = {
     description: "تطبيق بيوتنا يتيح لك البحث عن عقارات للبيع أو الإيجار أو البدل في الكويت، بالإضافة إلى تصفح وطلب خدمات الصيانة والمقاولات من شركات معتمدة.",
     images: ["/logo.png"],
   },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

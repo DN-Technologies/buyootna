@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -71,9 +70,15 @@ export default function SideNav() {
       dir="rtl"
     >
       {/* Brand Header */}
-      <div className="h-[70px] border-b border-[#ECECEC] flex items-center justify-between px-6 shrink-0">
+      <div className="h-17.5 border-b border-[#ECECEC] flex items-center justify-between px-6 shrink-0">
         <div className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="Logo" width={50} height={50} />
+          <Image
+            src="/logo-icon.png"
+            alt="Buyootna Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
           <span className="font-['Cairo'] font-bold text-[20px] text-primary">
             بيوتنا
           </span>
@@ -96,7 +101,8 @@ export default function SideNav() {
                 const isActive =
                   item.href === '/'
                     ? pathname === item.href
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`)
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`)
                 const Icon = item.icon
 
                 return (
@@ -104,7 +110,7 @@ export default function SideNav() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center justify-start gap-3 h-[42px] px-3 rounded-xl transition duration-150 text-right w-full',
+                      'flex items-center justify-start gap-3 h-10.5 px-3 rounded-xl transition duration-150 text-right w-full',
                       isActive
                         ? 'bg-primary text-white font-bold'
                         : 'bg-white text-[#111111] hover:bg-[#F8F9FA] hover:text-primary font-medium',
@@ -112,7 +118,7 @@ export default function SideNav() {
                   >
                     <Icon
                       className={cn(
-                        'w-[18px] h-[18px]',
+                        'w-4.5 h-4.5',
                         isActive ? 'text-white' : 'text-[#6B6A6A]',
                       )}
                     />

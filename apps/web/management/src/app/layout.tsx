@@ -4,6 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "بيوتنا للإدارة — نظام إدارة العمليات والطلبات",
   description: "النظام الداخلي لإدارة عمليات بيوتنا، مراجعة طلبات الشركات والمكاتب، وتدقيق الإعلانات والفوترة.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

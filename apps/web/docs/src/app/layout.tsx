@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "Buyootna QA Docs",
   description:
     "QA engineer user stories and test scenarios for the Buyootna platform — mobile app, web portals, and API.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

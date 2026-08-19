@@ -6,4 +6,5 @@ module.exports = {
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
+  testTimeout: 15000,
 };
