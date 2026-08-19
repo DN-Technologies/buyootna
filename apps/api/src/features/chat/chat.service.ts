@@ -14,18 +14,25 @@ export class ChatService {
   // Find or create a 1:1 conversation between two users/identities
   async findOrCreateConversation(
     userId: string,
+    identityId: string,
     recipientId: string,
     propertyId?: string,
   ) {
-    if (userId === recipientId) {
+    if (userId === recipientId || identityId === recipientId) {
       throw new ForbiddenException('لا يمكنك بدء محادثة مع نفسك');
     }
 
-    // Verify recipient exists (User or Identity)
-    const recipient =
-      (await this.prisma.user.findUnique({ where: { id: recipientId } })) ||
-      (await this.prisma.identity.findUnique({ where: { id: recipientId } }));
-    if (!recipient) {
+    // Verify recipient exists (User or Identity), and remember which FK
+    // column their id actually belongs to — recipientId may be either a
+    // User.id or an Identity.id depending on the caller, but never both.
+    const recipientUser = await this.prisma.user.findUnique({
+      where: { id: recipientId },
+    });
+    const recipientIdentity = recipientUser
+      ? null
+      : await this.prisma.identity.findUnique({ where: { id: recipientId } });
+
+    if (!recipientUser && !recipientIdentity) {
       throw new NotFoundException('المستلم غير موجود');
     }
 
@@ -81,8 +88,10 @@ export class ChatService {
           propertyId: validPropertyId,
           participants: {
             create: [
-              { userId, identityId: userId },
-              { userId: recipientId, identityId: recipientId },
+              { userId, identityId },
+              recipientUser
+                ? { userId: recipientId, identityId: null }
+                : { userId: null, identityId: recipientId },
             ],
           },
         },

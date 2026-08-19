@@ -7,6 +7,7 @@ interface ChatHeaderProps {
   userName: string;
   isOnline: boolean;
   avatarUrl: string;
+  isLoading?: boolean;
   onReportUser: () => void;
   showMoreMenu: boolean;
   setShowMoreMenu: (show: boolean) => void;
@@ -16,6 +17,7 @@ export default function ChatHeader({
   userName,
   isOnline,
   avatarUrl,
+  isLoading = false,
   onReportUser,
   showMoreMenu,
   setShowMoreMenu,
@@ -29,23 +31,36 @@ export default function ChatHeader({
         <TouchableOpacity onPress={() => router.back()}>
           <Feather name="chevron-right" size={24} color="#111111" />
         </TouchableOpacity>
-        <Image
-          source={{ uri: avatarUrl }}
-          className="h-[44px] w-[44px] rounded-full bg-gray-100"
-        />
+        {isLoading ? (
+          <View className="h-[44px] w-[44px] rounded-full bg-slate-200" />
+        ) : (
+          <Image
+            source={{ uri: avatarUrl }}
+            className="h-[44px] w-[44px] rounded-full bg-gray-100"
+          />
+        )}
       </View>
 
       {/* Center User Info */}
       <View className="flex-1 items-start pl-3">
-        <Text className="font-cairo-medium text-[16px] text-[#0F1828]">
-          {userName}
-        </Text>
-        <View className="flex-row items-center">
-          <View className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-[#22C55E]' : 'bg-gray-400'}`} />
-          <Text className={`ml-1 font-cairo-medium text-[11px] ${isOnline ? 'text-[#22C55E]' : 'text-gray-400'}`}>
-            {isOnline ? 'نشط الان' : 'غير متصل'}
-          </Text>
-        </View>
+        {isLoading ? (
+          <View className="gap-1.5">
+            <View className="h-4 w-24 rounded bg-slate-200" />
+            <View className="h-3 w-14 rounded bg-slate-100" />
+          </View>
+        ) : (
+          <>
+            <Text className="font-cairo-medium text-[16px] text-[#0F1828]">
+              {userName}
+            </Text>
+            <View className="flex-row items-center">
+              <View className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-[#22C55E]' : 'bg-gray-400'}`} />
+              <Text className={`ml-1 font-cairo-medium text-[11px] ${isOnline ? 'text-[#22C55E]' : 'text-gray-400'}`}>
+                {isOnline ? 'نشط الان' : 'غير متصل'}
+              </Text>
+            </View>
+          </>
+        )}
       </View>
 
       {/* Left Actions */}

@@ -53,6 +53,7 @@ export default function ChatDetailsScreen() {
     state.conversations.find((c) => c.id === conversationId),
   );
 
+  const isHeaderLoading = !conversation;
   const otherUserName = conversation?.otherUser.name || 'مستخدم بيوتنا';
   const otherUserAvatar =
     conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
@@ -183,6 +184,7 @@ export default function ChatDetailsScreen() {
             userName={otherUserName}
             isOnline={false}
             avatarUrl={otherUserAvatar}
+            isLoading={isHeaderLoading}
             onReportUser={handleReportUser}
             showMoreMenu={showMoreMenu}
             setShowMoreMenu={setShowMoreMenu}
