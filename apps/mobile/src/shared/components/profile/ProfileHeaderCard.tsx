@@ -1,6 +1,7 @@
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { UserProfile } from './types';
 
@@ -34,7 +35,7 @@ export default function ProfileHeaderCard({
           <Image
             source={{ uri: userProfile.avatarUrl }}
             className="h-full w-full"
-            resizeMode="cover"
+            contentFit="cover"
           />
         </View>
 

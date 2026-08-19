@@ -1,5 +1,6 @@
 import { Feather, FontAwesome } from '@expo/vector-icons';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { VerifiedIcon } from '@/assets/icons/home/property';
 

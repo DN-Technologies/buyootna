@@ -1,5 +1,6 @@
 import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
 import { formatTimeAgo } from '@/shared/utils/helpers/time';
@@ -55,7 +56,7 @@ export default function CompanyListCard({
           <Image
             source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
             style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
+            contentFit="cover"
           />
         </View>
 

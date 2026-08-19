@@ -1,5 +1,6 @@
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
   BathIcon,
@@ -39,7 +40,7 @@ export function PropertyPreviewCard({
             uri: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=300',
           }}
           className="h-full w-full"
-          resizeMode="cover"
+          contentFit="cover"
         />
         {/* Featured Badge */}
         <LinearGradient

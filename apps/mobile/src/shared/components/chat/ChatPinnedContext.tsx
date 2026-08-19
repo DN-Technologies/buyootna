@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { CompanyIcon } from '@/assets/icons/home/property';
 
@@ -39,7 +40,7 @@ export default function ChatPinnedContext({
                 : require('@/assets/images/no-image.png')
             }
             className="h-11 w-11 rounded-lg bg-gray-100"
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F0F4F8]">

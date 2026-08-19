@@ -3,9 +3,10 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
   AreaIcon,
@@ -17,11 +18,11 @@ import {
   LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
 
 interface DraftPreviewSheetProps {
   property?: ActivityItem;
@@ -146,7 +147,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
               <Image
                 source={imageSource}
                 className="h-full w-full"
-                resizeMode="cover"
+                contentFit="cover"
               />
 
               {/* Mock premium tag */}

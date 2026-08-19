@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
 import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
@@ -120,7 +121,7 @@ export default function PropertyMessageBubble({
                 : require('@/assets/images/no-image.png')
             }
             className="h-48 w-full bg-gray-100"
-            resizeMode="cover"
+            contentFit="cover"
           />
 
           {/* Bottom Content - Right-aligned styling to match target design */}

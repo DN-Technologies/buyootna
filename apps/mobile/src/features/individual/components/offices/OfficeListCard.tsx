@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Alert, Image, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   CallIcon,
@@ -97,7 +98,7 @@ export default function OfficeListCard({
           <Image
             source={{ uri: logoUrl }}
             style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
+            contentFit="cover"
           />
         ) : (
           <MaterialCommunityIcons name="home-city-outline" size={56} color="#B28648" />

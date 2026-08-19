@@ -1,12 +1,13 @@
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, ImageStyle, StyleProp } from 'react-native';
+import { ImageStyle, StyleProp } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 export interface LogoProps {
   width?: number;
   height?: number;
   style?: StyleProp<ImageStyle>;
-  resizeMode?: 'contain' | 'cover' | 'stretch' | 'center';
+  resizeMode?: 'contain' | 'cover' | 'fill';
 }
 
 export interface IconProps {
@@ -23,7 +24,7 @@ export const BuyootnaLogo = ({
   <Image
     source={require('@/assets/images/buyootna-logo.png')}
     style={[{ width, height }, style]}
-    resizeMode={resizeMode}
+    contentFit={resizeMode}
   />
 );
 
@@ -36,7 +37,7 @@ export const BuyootnaLogoDark = ({
   <Image
     source={require('@/assets/images/buyootna-logo.png')}
     style={[{ width, height }, style]}
-    resizeMode={resizeMode}
+    contentFit={resizeMode}
   />
 );
 
@@ -49,7 +50,7 @@ export const CompanyLogo = ({
   <Image
     source={require('@/assets/images/buyootna-logo-stacked.png')}
     style={[{ width, height }, style]}
-    resizeMode={resizeMode}
+    contentFit={resizeMode}
   />
 );
 

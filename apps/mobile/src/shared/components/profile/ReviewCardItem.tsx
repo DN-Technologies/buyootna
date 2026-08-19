@@ -1,6 +1,7 @@
 import { Feather, FontAwesome } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ReviewItem } from './types';
 
@@ -23,7 +24,7 @@ export default function ReviewCardItem({
           <Image
             source={{ uri: item.avatarUrl }}
             className="h-[48px] w-[48px] rounded-full"
-            resizeMode="cover"
+            contentFit="cover"
           />
           <View>
             <Text className="text-right font-cairo-semibold text-[14px] text-[#111111]">
