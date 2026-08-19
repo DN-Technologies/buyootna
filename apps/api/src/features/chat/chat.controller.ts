@@ -38,6 +38,7 @@ export class ChatController {
   ) {
     return this.chatService.findOrCreateConversation(
       reqUser.userId,
+      reqUser.identityId,
       dto.recipientId,
       dto.propertyId,
     );

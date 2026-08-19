@@ -15,7 +15,8 @@ build/
 dist/
 
 # misc
-.ds_store
+.DS_Store
+**/.DS_Store
 .env
 .env.postgres
 .env*.local

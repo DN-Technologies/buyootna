@@ -22,7 +22,7 @@ export default function AccountTypeSelectionScreen() {
       <View className="flex-1 px-6 pb-6 pt-12">
         {/* Header Section */}
         <View className="mb-10 items-center">
-          <AppLogo width={75} height={100} dark={true} />
+          <AppLogo width={80} height={80} />
 
           <Text className="mb-2 mt-3 text-center font-cairo-bold text-2xl text-[#111]">
             اختر نوع حسابك للبدء

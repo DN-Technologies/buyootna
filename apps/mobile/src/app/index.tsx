@@ -11,8 +11,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import AppLogo from '@/shared/components/AppLogo';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function InitialSplashSequence() {

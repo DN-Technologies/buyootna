@@ -4,6 +4,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "بيوتنا للشركات — لوحة تحكم الشركات العقارية والمقاولات",
   description: "لوحة التحكم المخصصة للشركات لعرض وتحديث عقاراتهم، وإدارة طلبات الصيانة والمقاولات والتواصل مع العملاء.",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
