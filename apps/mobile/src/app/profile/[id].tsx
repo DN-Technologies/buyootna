@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -24,11 +25,7 @@ import ProfileHeaderCard from '@/shared/components/profile/ProfileHeaderCard';
 import ProfileTabNavigation from '@/shared/components/profile/ProfileTabNavigation';
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
-import {
-  ReviewItem,
-  SEEDED_REVIEWS,
-  UserProfile,
-} from '@/shared/components/profile/types';
+import { ReviewItem, UserProfile } from '@/shared/components/profile/types';
 import PropertyActionBar from '@/shared/components/PropertyActionBar';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
@@ -37,10 +34,91 @@ import PublicProfileHeaderSkeleton from '@/shared/components/skeletons/PublicPro
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { PropertyDto } from '@/types/feed';
 
+interface ReviewSummary {
+  averageRating: number;
+  totalRatingsCount: number;
+  ratingBreakdown: { star: number; pct: string }[];
+}
+
+const DEFAULT_REVIEW_SUMMARY: ReviewSummary = {
+  averageRating: 0,
+  totalRatingsCount: 0,
+  ratingBreakdown: [
+    { star: 5, pct: '0%' },
+    { star: 4, pct: '0%' },
+    { star: 3, pct: '0%' },
+    { star: 2, pct: '0%' },
+    { star: 1, pct: '0%' },
+  ],
+};
+
+async function fetchUserProfile(id: string): Promise<UserProfile> {
+  const response = await apiClient.get(`/users/${id}`);
+  const user = response.data;
+
+  let name = 'مستخدم بيوتنا';
+  let avatarUrl = 'https://via.placeholder.com/150';
+
+  if (user.role === 'COMPANY' && user.companyProfile) {
+    name = user.companyProfile.name || name;
+    avatarUrl = user.companyProfile.logoUrl || avatarUrl;
+  } else if (user.role === 'OFFICE' && user.officeProfile) {
+    name = user.officeProfile.name || name;
+    avatarUrl = user.officeProfile.logoUrl || avatarUrl;
+  } else if (user.name) {
+    name = user.name;
+    avatarUrl = user.avatarUrl || avatarUrl;
+  } else {
+    name = user.email ? user.email.split('@')[0] : 'مستخدم';
+  }
+
+  const date = new Date(user.createdAt);
+  const joinedDate = `${date.getMonth() + 1}/${date.getFullYear()}`;
+
+  return {
+    id: user.id,
+    name,
+    avatarUrl,
+    rating: 4.5,
+    phone: user.phone,
+    joinedDate,
+    role: user.role,
+  };
+}
+
+async function fetchUserProperties(id: string): Promise<PropertyDto[]> {
+  const response = await apiClient.get('/properties', {
+    params: { identityId: id, limit: 100 },
+  });
+  return response.data.data || [];
+}
+
+async function fetchUserReviews(id: string, sort: string) {
+  const [reviews, summary] = await Promise.all([
+    apiClient
+      .get(`/users/${id}/reviews`, { params: { sort } })
+      .then((res) => (res.data?.data ?? []) as ReviewItem[])
+      .catch((error) => {
+        console.error('Failed to load user reviews:', error);
+        return [] as ReviewItem[];
+      }),
+    apiClient
+      .get(`/users/${id}/reviews/summary`)
+      .then((res) => res.data ?? DEFAULT_REVIEW_SUMMARY)
+      .catch((error) => {
+        console.error('Failed to load review summary:', error);
+        return DEFAULT_REVIEW_SUMMARY;
+      }),
+  ]);
+  return { reviews, summary };
+}
+
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
+  const idStr = String(id);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
   const identities = useAuthStore((state) => state.identities);
   // `id` here is actually the owning Identity's id (see property host.id),
@@ -48,124 +126,47 @@ export default function UserProfileScreen() {
   const isOwnProfile =
     currentUser?.id === id || identities.some((identity) => identity.id === id);
 
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [properties, setProperties] = useState<PropertyDto[]>([]);
-  const [reviews, setReviews] = useState<ReviewItem[]>(SEEDED_REVIEWS);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
-  const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const [activeTab, setActiveTab] = useState<'listings' | 'reviews'>(
     'listings',
   );
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
   const [propertyFilter, setPropertyFilter] = useState('all');
   const [propertySort, setPropertySort] = useState('all');
-  const [reviewSummary, setReviewSummary] = useState<{
-    averageRating: number;
-    totalRatingsCount: number;
-    ratingBreakdown: { star: number; pct: string }[];
-  }>({
-    averageRating: 4.5,
-    totalRatingsCount: 100,
-    ratingBreakdown: [
-      { star: 5, pct: '85%' },
-      { star: 4, pct: '50%' },
-      { star: 3, pct: '30%' },
-      { star: 2, pct: '18%' },
-      { star: 1, pct: '8%' },
-    ],
-  });
 
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
 
-  // Load User Info, Properties & Reviews
+  const {
+    data: userProfile,
+    isLoading: isLoadingProfile,
+    isError: profileError,
+  } = useQuery({
+    queryKey: ['userProfile', idStr],
+    queryFn: () => fetchUserProfile(idStr),
+    enabled: !!id,
+  });
+
   useEffect(() => {
-    if (!id) return;
+    if (profileError) {
+      Alert.alert('خطأ', 'فشل تحميل بيانات المستخدم');
+    }
+  }, [profileError]);
 
-    const fetchProfileData = async () => {
-      try {
-        const response = await apiClient.get(`/users/${id}`);
-        const user = response.data;
+  const { data: properties = [], isLoading: isLoadingProperties } = useQuery({
+    queryKey: ['userProperties', idStr],
+    queryFn: () => fetchUserProperties(idStr),
+    enabled: !!id,
+  });
 
-        let name = 'مستخدم بيوتنا';
-        let avatarUrl = 'https://via.placeholder.com/150';
-
-        if (user.role === 'COMPANY' && user.companyProfile) {
-          name = user.companyProfile.name || name;
-          avatarUrl = user.companyProfile.logoUrl || avatarUrl;
-        } else if (user.role === 'OFFICE' && user.officeProfile) {
-          name = user.officeProfile.name || name;
-          avatarUrl = user.officeProfile.logoUrl || avatarUrl;
-        } else if (user.name) {
-          name = user.name;
-          avatarUrl = user.avatarUrl || avatarUrl;
-        } else {
-          name = user.email ? user.email.split('@')[0] : 'مستخدم';
-        }
-
-        const date = new Date(user.createdAt);
-        const joinedDate = `${date.getMonth() + 1}/${date.getFullYear()}`;
-
-        setUserProfile({
-          id: user.id,
-          name,
-          avatarUrl,
-          rating: 4.5,
-          phone: user.phone,
-          joinedDate,
-          role: user.role,
-        });
-      } catch (error) {
-        console.error('Failed to load user profile:', error);
-        Alert.alert('خطأ', 'فشل تحميل بيانات المستخدم');
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    };
-
-    const fetchUserProperties = async () => {
-      try {
-        const response = await apiClient.get('/properties', {
-          params: { identityId: id, limit: 100 },
-        });
-        setProperties(response.data.data || []);
-      } catch (error) {
-        console.error('Failed to load user properties:', error);
-      } finally {
-        setIsLoadingProperties(false);
-      }
-    };
-
-    const fetchUserReviews = async () => {
-      try {
-        const res = await apiClient.get(`/users/${id}/reviews`, {
-          params: { sort: propertySort },
-        });
-        if (res.data?.data) {
-          setReviews(res.data.data);
-        }
-      } catch (error) {
-        console.error('Failed to load user reviews:', error);
-      }
-    };
-
-    const fetchReviewSummary = async () => {
-      try {
-        const res = await apiClient.get(`/users/${id}/reviews/summary`);
-        if (res.data) {
-          setReviewSummary(res.data);
-        }
-      } catch (error) {
-        console.error('Failed to load review summary:', error);
-      }
-    };
-
-    fetchProfileData();
-    fetchUserProperties();
-    fetchUserReviews();
-    fetchReviewSummary();
-  }, [id, propertySort]);
+  const reviewsQueryKey = ['userReviews', idStr, propertySort];
+  const { data: reviewsResult, refetch: refetchReviews } = useQuery({
+    queryKey: reviewsQueryKey,
+    queryFn: () => fetchUserReviews(idStr, propertySort),
+    enabled: !!id,
+  });
+  const reviews = reviewsResult?.reviews ?? [];
+  const reviewSummary = reviewsResult?.summary ?? DEFAULT_REVIEW_SUMMARY;
 
   // Action Bar Handlers
   const handleWhatsapp = () => {
@@ -226,16 +227,7 @@ export default function UserProfileScreen() {
         rating,
       });
       Alert.alert('نجاح', 'تمت إضافة تقييمك بنجاح');
-
-      // Re-fetch reviews & summary
-      const [resReviews, resSummary] = await Promise.all([
-        apiClient.get(`/users/${id}/reviews`, {
-          params: { sort: propertySort },
-        }),
-        apiClient.get(`/users/${id}/reviews/summary`),
-      ]);
-      if (resReviews.data?.data) setReviews(resReviews.data.data);
-      if (resSummary.data) setReviewSummary(resSummary.data);
+      refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'فشل إضافة التقييم';
       Alert.alert(
@@ -246,22 +238,27 @@ export default function UserProfileScreen() {
   };
 
   const handleToggleLike = async (reviewId: string) => {
-    setReviews((prev) =>
-      prev.map((r) => {
-        if (r.id !== reviewId) return r;
-        const wasLiked = r.userLiked;
-        return {
-          ...r,
-          userLiked: !wasLiked,
-          likes: wasLiked ? r.likes - 1 : r.likes + 1,
-          ...(wasLiked
-            ? {}
-            : {
-                userDisliked: false,
-                dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
-              }),
-        };
-      }),
+    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsResult) =>
+      prev
+        ? {
+            ...prev,
+            reviews: prev.reviews.map((r: ReviewItem) => {
+              if (r.id !== reviewId) return r;
+              const wasLiked = r.userLiked;
+              return {
+                ...r,
+                userLiked: !wasLiked,
+                likes: wasLiked ? r.likes - 1 : r.likes + 1,
+                ...(wasLiked
+                  ? {}
+                  : {
+                      userDisliked: false,
+                      dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
+                    }),
+              };
+            }),
+          }
+        : prev,
     );
 
     try {
@@ -272,19 +269,27 @@ export default function UserProfileScreen() {
   };
 
   const handleToggleDislike = async (reviewId: string) => {
-    setReviews((prev) =>
-      prev.map((r) => {
-        if (r.id !== reviewId) return r;
-        const wasDisliked = r.userDisliked;
-        return {
-          ...r,
-          userDisliked: !wasDisliked,
-          dislikes: wasDisliked ? r.dislikes - 1 : r.dislikes + 1,
-          ...(wasDisliked
-            ? {}
-            : { userLiked: false, likes: r.userLiked ? r.likes - 1 : r.likes }),
-        };
-      }),
+    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsResult) =>
+      prev
+        ? {
+            ...prev,
+            reviews: prev.reviews.map((r: ReviewItem) => {
+              if (r.id !== reviewId) return r;
+              const wasDisliked = r.userDisliked;
+              return {
+                ...r,
+                userDisliked: !wasDisliked,
+                dislikes: wasDisliked ? r.dislikes - 1 : r.dislikes + 1,
+                ...(wasDisliked
+                  ? {}
+                  : {
+                      userLiked: false,
+                      likes: r.userLiked ? r.likes - 1 : r.likes,
+                    }),
+              };
+            }),
+          }
+        : prev,
     );
 
     try {

@@ -1,5 +1,5 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 
 import { COMPANIES_DATA } from '@/assets/mock/companiesData';
-import { feedService } from '@/features/individual/services/feed.service';
 import CompanyCard from '@/features/individual/components/CompanyCard';
+import { feedService } from '@/features/individual/services/feed.service';
 import { CompanyDto } from '@/types/feed';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -48,77 +48,27 @@ export default function ServiceCompanies({
   activeFilter = 'all',
 }: ServiceCompaniesProps) {
   const router = useRouter();
-  const [data, setData] = useState<CompanyDto[]>(initialData);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
 
-  // Sync state when filter changes, falling back to local mock data if needed
-  useEffect(() => {
-    const isMockFallback = initialData.length === 0;
+  // No companies came from the parent's home feed — fall back to local mock
+  // data (e.g. cold-start / empty backend) instead of showing nothing.
+  const isMockFallback = initialData.length === 0;
 
-    if (isMockFallback) {
-      const sourceData =
-        activeFilter === 'all'
-          ? COMPANIES_DATA.slice(0, 10)
-          : COMPANIES_DATA.filter((company) =>
-              company.filterTags.includes(activeFilter),
-            ).slice(0, 10);
-
-      setData(sourceData.map(toCompanyDto));
-      setPage(1);
-      setHasNextPage(
-        activeFilter === 'all'
-          ? COMPANIES_DATA.length > 10
-          : COMPANIES_DATA.filter((company) =>
-              company.filterTags.includes(activeFilter),
-            ).length > 10,
-      );
-    } else {
-      if (activeFilter === 'all') {
-        setData(initialData);
-        setPage(1);
-        setHasNextPage(true);
-      } else {
-        // Fetch first page from API
-        const fetchFiltered = async () => {
-          setIsLoadingMore(true);
-          try {
-            const response = await feedService.getCompanies(
-              activeFilter,
-              1,
-              10,
-            );
-            setData(response.data);
-            setPage(response.meta.current);
-            setHasNextPage(response.meta.hasNextPage);
-          } catch (error) {
-            console.error('Failed to fetch filtered companies:', error);
-          } finally {
-            setIsLoadingMore(false);
-          }
-        };
-        fetchFiltered();
-      }
-    }
-  }, [activeFilter, initialData]);
-
-  // Load more local or API companies
-  const fetchMoreData = async () => {
-    if (isLoadingMore || !hasNextPage) return;
-
-    setIsLoadingMore(true);
-
-    try {
-      const nextPage = page + 1;
-      const isMockFallback = initialData.length === 0;
-
+  const {
+    data: infiniteData,
+    isFetchingNextPage: isLoadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['serviceCompanies', activeFilter, isMockFallback],
+    queryFn: async ({ pageParam }) => {
       if (isMockFallback) {
-        // Simulate API call delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        // Simulate API call delay for subsequent pages, matching the real fetch's latency.
+        if (pageParam > 1) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        }
 
         const limit = 10;
-        const start = (nextPage - 1) * limit;
+        const start = (pageParam - 1) * limit;
         const end = start + limit;
 
         const filteredMock =
@@ -128,42 +78,60 @@ export default function ServiceCompanies({
                 company.filterTags.includes(activeFilter),
               );
 
-        const newData = filteredMock.slice(start, end).map(toCompanyDto);
-
-        if (newData.length > 0) {
-          setData((prev) => {
-            const combined = [...prev, ...newData];
-            return combined.filter(
-              (item, idx) =>
-                combined.findIndex((i) => i.id === item.id) === idx,
-            );
-          });
-          setPage(nextPage);
-          setHasNextPage(end < filteredMock.length);
-        } else {
-          setHasNextPage(false);
-        }
-      } else {
-        // Fetch from API
-        const response = await feedService.getCompanies(
-          activeFilter === 'all' ? undefined : activeFilter,
-          nextPage,
-          10,
-        );
-        setData((prev) => {
-          const combined = [...prev, ...response.data];
-          return combined.filter(
-            (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-          );
-        });
-        setPage(response.meta.current);
-        setHasNextPage(response.meta.hasNextPage);
+        return {
+          data: filteredMock.slice(start, end).map(toCompanyDto),
+          meta: {
+            total: filteredMock.length,
+            current: pageParam,
+            limit,
+            totalPages: Math.ceil(filteredMock.length / limit),
+            hasNextPage: end < filteredMock.length,
+          },
+        };
       }
-    } catch (error) {
-      console.error('Failed to load more companies:', error);
-      setHasNextPage(false);
-    } finally {
-      setIsLoadingMore(false);
+
+      return feedService.getCompanies(
+        activeFilter === 'all' ? undefined : activeFilter,
+        pageParam,
+        10,
+      );
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+    // The 'all' filter's first page is already available from the parent's
+    // home feed — seed it so there's no redundant refetch.
+    initialData:
+      !isMockFallback && activeFilter === 'all'
+        ? {
+            pages: [
+              {
+                data: initialData,
+                meta: {
+                  total: initialData.length,
+                  current: 1,
+                  limit: 10,
+                  totalPages: 1,
+                  hasNextPage: true,
+                },
+              },
+            ],
+            pageParams: [1],
+          }
+        : undefined,
+  });
+
+  const data = (() => {
+    const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
+    return combined.filter(
+      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+    );
+  })();
+
+  // Load more local or API companies
+  const fetchMoreData = () => {
+    if (hasNextPage && !isLoadingMore) {
+      fetchNextPage();
     }
   };
 

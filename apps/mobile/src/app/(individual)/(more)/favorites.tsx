@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   FlatList,
   RefreshControl,
@@ -10,60 +11,77 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { favoritesService } from '@/features/individual/services/favorites.service';
-import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
+import { useFavorites } from '@/features/individual/hooks/useFavorites';
+import {
+  FavoritesResponse,
+  favoritesService,
+} from '@/features/individual/services/favorites.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
-import { PropertyDetailsDto } from '@/types/property';
+
+const FAVORITES_QUERY_KEY = ['favorites'];
 
 export default function FavoritesScreen() {
   const router = useRouter();
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const { toggleFavorite } = useFavorites();
+  const queryClient = useQueryClient();
 
-  const [properties, setProperties] = useState<PropertyDetailsDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
 
-  const loadFavorites = async (pageNum = 1, shouldRefresh = false) => {
-    try {
-      if (pageNum === 1 && !shouldRefresh) setIsLoading(true);
-      const res = await favoritesService.getFavorites(pageNum, 10);
-      if (pageNum === 1) {
-        setProperties(res.data);
-      } else {
-        setProperties((prev) => [...prev, ...res.data]);
-      }
-      setHasNextPage(res.meta.hasNextPage);
-      setPage(pageNum);
-    } catch (e) {
-      console.error('Failed to load favorites list:', e);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: FAVORITES_QUERY_KEY,
+    queryFn: ({ pageParam }) => favoritesService.getFavorites(pageParam, 10),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  });
 
-  useEffect(() => {
-    loadFavorites(1);
-  }, []);
+  const properties = data?.pages.flatMap((page) => page.data) ?? [];
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setIsRefreshing(true);
-    loadFavorites(1, true);
+    // Discard any pages loaded beyond the first before refetching, so a
+    // pull-to-refresh resets the list back to a fresh page 1.
+    queryClient.setQueryData(
+      FAVORITES_QUERY_KEY,
+      (old: { pages: FavoritesResponse[]; pageParams: number[] } | undefined) =>
+        old
+          ? { pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) }
+          : old,
+    );
+    await refetch();
+    setIsRefreshing(false);
   };
 
   const handleLoadMore = () => {
-    if (hasNextPage && !isLoading) {
-      loadFavorites(page + 1);
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
 
   const handleFavoriteToggle = async (propertyId: string) => {
     await toggleFavorite(propertyId);
     // Optimistically remove from list
-    setProperties((prev) => prev.filter((p) => p.id !== propertyId));
+    queryClient.setQueryData(
+      FAVORITES_QUERY_KEY,
+      (old: { pages: FavoritesResponse[]; pageParams: number[] } | undefined) =>
+        old
+          ? {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.filter((p) => p.id !== propertyId),
+              })),
+            }
+          : old,
+    );
   };
 
   return (

@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -37,57 +37,44 @@ interface WalletData {
   history: HistoryItem[];
 }
 
+const FALLBACK_WALLET: WalletData = {
+  freeAdsRemaining: 0,
+  balanceCounts: { gold: 0, silver: 0, regular: 0 },
+  history: [],
+};
+
+async function fetchWallet(): Promise<WalletData> {
+  try {
+    const res = await apiClient.get('/plans/wallet');
+    return {
+      freeAdsRemaining: res.data?.freeAdsRemaining ?? 0,
+      balanceCounts: res.data?.balanceCounts ?? {
+        gold: 0,
+        silver: 0,
+        regular: 0,
+      },
+      history: res.data?.history ?? [],
+    };
+  } catch (e) {
+    console.log('Error fetching wallet:', e);
+    return FALLBACK_WALLET;
+  }
+}
+
 export default function AccountBalanceScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [wallet, setWallet] = useState<WalletData>({
-    freeAdsRemaining: 1,
-    balanceCounts: { gold: 0, silver: 0, regular: 0 },
-    history: [],
+  const {
+    data: wallet = FALLBACK_WALLET,
+    isLoading,
+    isRefetching: refreshing,
+    refetch: onRefresh,
+  } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: fetchWallet,
+    enabled: !!user?.id,
   });
-
-  const fetchWallet = useCallback(async () => {
-    if (!user?.id) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const res = await apiClient.get('/plans/wallet');
-      if (res.data) {
-        setWallet({
-          freeAdsRemaining: res.data.freeAdsRemaining ?? 0,
-          balanceCounts: res.data.balanceCounts ?? {
-            gold: 0,
-            silver: 0,
-            regular: 0,
-          },
-          history: res.data.history ?? [],
-        });
-      }
-    } catch (e) {
-      console.log('Error fetching wallet:', e);
-      setWallet({
-        freeAdsRemaining: 1,
-        balanceCounts: { gold: 0, silver: 0, regular: 0 },
-        history: [],
-      });
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    fetchWallet();
-  }, [fetchWallet]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchWallet();
-  }, [fetchWallet]);
 
   const historyList = wallet?.history ?? [];
   const hasHistory = historyList.length > 0;

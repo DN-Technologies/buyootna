@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -10,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { SearchResultItem, searchService } from '@/shared/api/search.service';
+import { searchService } from '@/shared/api/search.service';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import EmptySearchResult from '@/shared/components/search/EmptySearchResult';
 import SearchHeader from '@/shared/components/search/SearchHeader';
@@ -40,13 +41,6 @@ export default function SearchResultsScreen() {
   const [isFocused, setIsFocused] = useState(false);
   const debouncedSearchText = useDebounce(searchText, 500);
 
-  // API Data States
-  const [results, setResults] = useState<SearchResultItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
-
   // Parse route params on initialization to prevent dual fetching race conditions on mount
   const initialAdvancedFilters = useMemo(() => {
     if (routeTab && routeFilters) {
@@ -67,69 +61,44 @@ export default function SearchResultsScreen() {
   const [advancedFilters, setAdvancedFilters] =
     useState<AdvancedFilterState | null>(initialAdvancedFilters);
 
-  // --- Text Search ---
-  const fetchResults = useCallback(
-    async (pageNumber = 1) => {
-      try {
-        if (pageNumber === 1) setIsLoading(true);
+  // Unified search runner: keyed on search text OR advanced filters, so
+  // switching between the two starts a brand-new paginated query.
+  const {
+    data: infiniteData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: [
+      'searchResults',
+      debouncedSearchText.trim(),
+      advancedFilters,
+    ],
+    queryFn: ({ pageParam }) =>
+      advancedFilters
+        ? searchService.advancedSearch({
+            tab: advancedFilters.tab,
+            filters: advancedFilters.filters,
+            page: pageParam,
+          })
+        : searchService.globalSearch({
+            query: debouncedSearchText.trim() || undefined,
+            page: pageParam,
+            limit: 10,
+          }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+  });
 
-        const response = await searchService.globalSearch({
-          query: debouncedSearchText.trim() || undefined,
-          page: pageNumber,
-          limit: 10,
-        });
-
-        if (pageNumber === 1) {
-          setResults(response.data);
-        } else {
-          setResults((prev) => [...prev, ...response.data]);
-        }
-
-        setHasNextPage(response.meta.hasNextPage);
-        setTotalCount(response.meta.total);
-      } catch (error) {
-        console.error('Failed to fetch results', error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [debouncedSearchText],
-  );
-
-  // --- Advanced Filter Search ---
-  const fetchAdvancedResults = useCallback(
-    async (filterState: AdvancedFilterState, pageNumber = 1) => {
-      try {
-        if (pageNumber === 1) setIsLoading(true);
-
-        const response = await searchService.advancedSearch({
-          tab: filterState.tab,
-          filters: filterState.filters,
-          page: pageNumber,
-        });
-
-        if (pageNumber === 1) {
-          setResults(response.data);
-        } else {
-          setResults((prev) => [...prev, ...response.data]);
-        }
-
-        setHasNextPage(response.meta.hasNextPage);
-        setTotalCount(response.meta.total);
-      } catch (error) {
-        console.error('Failed to fetch advanced results', error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+  const results = infiniteData?.pages.flatMap((page) => page.data) ?? [];
+  const totalCount = infiniteData?.pages[0]?.meta.total ?? 0;
 
   // Handle "عرض النتائج" from the filter sheet
   const handleAdvancedSearch = useCallback(
     (data: { tab: string; filters: any }) => {
       setSearchText(''); // Clear text search
-      setPage(1);
       setAdvancedFilters(data);
     },
     [],
@@ -149,28 +118,10 @@ export default function SearchResultsScreen() {
     }
   }, [debouncedSearchText]);
 
-  // Unified search runner: triggers when search text OR advanced filters change.
-  // This guarantees we only run ONE search fetch at a time (preventing race conditions).
-  useEffect(() => {
-    setPage(1);
-    if (advancedFilters) {
-      fetchAdvancedResults(advancedFilters, 1);
-    } else {
-      fetchResults(1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchText, advancedFilters]);
-
   // Handle Load More (Pagination) — works in both modes
   const handleLoadMore = () => {
     if (hasNextPage && !isLoading) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      if (advancedFilters) {
-        fetchAdvancedResults(advancedFilters, nextPage);
-      } else {
-        fetchResults(nextPage);
-      }
+      fetchNextPage();
     }
   };
 
@@ -258,7 +209,7 @@ export default function SearchResultsScreen() {
           )
         }
         ListFooterComponent={
-          isLoading && results.length > 0 ? (
+          isFetchingNextPage && results.length > 0 ? (
             <View className="items-center py-4">
               <ActivityIndicator size="small" color="#15304D" />
             </View>

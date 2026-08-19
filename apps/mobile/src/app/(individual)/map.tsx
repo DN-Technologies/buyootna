@@ -1,13 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback, useRef, useState } from 'react';
 import { Animated, View } from 'react-native';
 
-import {
-  boundsToParams,
-  categoryToMapType,
-  mapService,
-} from '@/features/individual/services/map.service';
-import type { SelectionItem } from '@/shared/components/filters/SelectionDrawer';
-import { useDebounce } from '@/shared/hooks/useDebounce';
 import AddPropertyFAB from '@/features/individual/components/map/AddPropertyFAB';
 import DiscoveryMap, {
   MapBounds,
@@ -15,7 +9,15 @@ import DiscoveryMap, {
 import { EmptySearchSheet } from '@/features/individual/components/map/EmptySearchSheet';
 import { PropertyPreviewCard } from '@/features/individual/components/map/FloatingPreviewCards';
 import MapOverlayUI from '@/features/individual/components/map/MapOverlayUI';
+import {
+  boundsToParams,
+  categoryToMapType,
+  MapDiscoverResponse,
+  mapService,
+} from '@/features/individual/services/map.service';
 import type { MapFeatureProperties } from '@/features/individual/utils/mockGeoJSON';
+import type { SelectionItem } from '@/shared/components/filters/SelectionDrawer';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 const EMPTY_GEOJSON: GeoJSON.FeatureCollection<
   GeoJSON.Point,
@@ -27,12 +29,6 @@ const EMPTY_GEOJSON: GeoJSON.FeatureCollection<
 
 export default function MapDashboardScreen() {
   const [currentBounds, setCurrentBounds] = useState<MapBounds | null>(null);
-  const [geoJSON, setGeoJSON] =
-    useState<GeoJSON.FeatureCollection<GeoJSON.Point, MapFeatureProperties>>(
-      EMPTY_GEOJSON,
-    );
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
 
   const [activeCategory, setActiveCategory] = useState('بيع');
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,16 +70,23 @@ export default function MapDashboardScreen() {
     setSelectedFeature(null);
   };
 
-  useEffect(() => {
-    if (!debouncedBounds) return;
-
-    let cancelled = false;
-
-    const fetchMapData = async () => {
-      setIsLoading(true);
+  const {
+    data: geoJSON = EMPTY_GEOJSON,
+    isFetching: isLoading,
+    isFetched: hasFetched,
+  } = useQuery<MapDiscoverResponse>({
+    queryKey: [
+      'mapDiscover',
+      debouncedBounds,
+      activeCategory,
+      selectedGovernorate?.id,
+      selectedArea?.id,
+      debouncedSearchQuery,
+    ],
+    queryFn: async () => {
       try {
-        const response = await mapService.discover({
-          ...boundsToParams(debouncedBounds),
+        return await mapService.discover({
+          ...boundsToParams(debouncedBounds!),
           type: categoryToMapType(activeCategory),
           ...(selectedGovernorate?.id
             ? { governorateId: selectedGovernorate.id }
@@ -93,36 +96,13 @@ export default function MapDashboardScreen() {
             ? { searchQuery: debouncedSearchQuery.trim() }
             : {}),
         });
-
-        if (!cancelled) {
-          setGeoJSON(response);
-          setHasFetched(true);
-        }
       } catch (error) {
         console.warn('Failed to fetch map data:', error);
-        if (!cancelled) {
-          setGeoJSON(EMPTY_GEOJSON);
-          setHasFetched(true);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        return EMPTY_GEOJSON;
       }
-    };
-
-    fetchMapData();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    debouncedBounds,
-    activeCategory,
-    selectedGovernorate?.id,
-    selectedArea?.id,
-    debouncedSearchQuery,
-  ]);
+    },
+    enabled: !!debouncedBounds,
+  });
 
   const handleMarkerPress = useCallback(
     (feature: any) => {

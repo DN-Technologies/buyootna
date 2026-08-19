@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -27,7 +28,6 @@ import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { CompanyDto } from '@/types/feed';
 
 export default function CompaniesScreen() {
   const router = useRouter();
@@ -56,74 +56,44 @@ export default function CompaniesScreen() {
             selectedCategories.length - 1
           }`;
 
-  const [data, setData] = useState<CompanyDto[]>([]);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
-
   const [favoriteOverrides, setFavoriteOverrides] = useState<
     Record<string, boolean>
   >({});
   const [selectedCompanyName, setSelectedCompanyName] = useState('الشركة');
 
   // --- Fetch companies whenever the category or search text changes ---
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      setIsLoading(true);
-      try {
-        const response = await feedService.getCompanies(
-          categoryParam,
-          1,
-          10,
-          debouncedSearchText.trim() || undefined,
-        );
-        setData(response.data);
-        setPage(response.meta.current);
-        setHasNextPage(response.meta.hasNextPage);
-      } catch (error) {
-        console.error('Failed to fetch companies:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCompanies();
-  }, [categoryParam, debouncedSearchText]);
-
-  const fetchMoreData = useCallback(async () => {
-    if (isLoadingMore || !hasNextPage || isLoading) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const response = await feedService.getCompanies(
+  const {
+    data: infiniteData,
+    isLoading,
+    isFetchingNextPage: isLoadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['companies', categoryParam, debouncedSearchText.trim()],
+    queryFn: ({ pageParam }) =>
+      feedService.getCompanies(
         categoryParam,
-        nextPage,
+        pageParam,
         10,
         debouncedSearchText.trim() || undefined,
-      );
-      setData((prev) => {
-        const combined = [...prev, ...response.data];
-        return combined.filter(
-          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-        );
-      });
-      setPage(response.meta.current);
-      setHasNextPage(response.meta.hasNextPage);
-    } catch (error) {
-      console.error('Failed to load more companies:', error);
-    } finally {
-      setIsLoadingMore(false);
+      ),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+  });
+
+  const data = (() => {
+    const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
+    return combined.filter(
+      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+    );
+  })();
+
+  const fetchMoreData = () => {
+    if (hasNextPage && !isLoadingMore && !isLoading) {
+      fetchNextPage();
     }
-  }, [
-    categoryParam,
-    debouncedSearchText,
-    hasNextPage,
-    isLoading,
-    isLoadingMore,
-    page,
-  ]);
+  };
 
   const handleQuotePress = (companyName: string) => {
     setSelectedCompanyName(companyName);

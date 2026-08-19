@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -12,11 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InvoicesEmptyIcon } from '@/assets/icons/more';
-import {
-  InvoiceResponse,
-  invoicesService,
-  InvoiceStatus,
-} from '@/shared/api/invoices.service';
+import { invoicesService, InvoiceStatus } from '@/shared/api/invoices.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';
@@ -30,30 +27,27 @@ const TABS = [
 
 export default function InvoicesScreen() {
   const router = useRouter();
-  const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [activeTab, setActiveTab] = useState<'ALL' | InvoiceStatus>('ALL');
-  const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
 
-  const fetchInvoices = async () => {
-    try {
-      setIsLoading(true);
-      const data = await invoicesService.getInvoices();
-      setInvoices(data || []);
-      setShowErrorModal(false);
-    } catch {
-      console.log('API failed to fetch invoices');
-      setInvoices([]);
-      setShowErrorModal(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data: invoices = [],
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: () => invoicesService.getInvoices(),
+  });
 
+  // Let the user dismiss the error modal without forcing a retry — the
+  // query itself stays in an error state until the next successful fetch.
+  const [errorDismissed, setErrorDismissed] = useState(false);
   useEffect(() => {
-    fetchInvoices();
-  }, []);
+    if (isError) setErrorDismissed(false);
+  }, [isError]);
+  const showErrorModal = isError && !errorDismissed;
 
   const handleExport = async () => {
     if (invoices.length === 0) {
@@ -334,9 +328,9 @@ export default function InvoicesScreen() {
       )}
       <ConnectionErrorModal
         visible={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        onRetry={fetchInvoices}
-        isLoading={isLoading}
+        onClose={() => setErrorDismissed(true)}
+        onRetry={refetch}
+        isLoading={isFetching}
       />
     </SafeAreaView>
   );

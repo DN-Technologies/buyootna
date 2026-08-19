@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import apiClient from '@/shared/api/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -32,58 +32,51 @@ export interface SubscriptionInfo {
   normalRemaining: number;
 }
 
-export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
-  const { token } = useAuthStore();
-  const [data, setData] = useState<ActivityItem[]>([]);
-  const [freeAdsRemaining, setFreeAdsRemaining] = useState<number>(0);
-  const [hasSubscription, setHasSubscription] = useState<boolean>(false);
-  const [subscription, setSubscription] = useState<SubscriptionInfo | undefined>(
-    undefined,
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface MyActivityData {
+  activity: ActivityItem[];
+  freeAdsRemaining: number;
+  hasSubscription: boolean;
+  subscription?: SubscriptionInfo;
+}
 
-  const fetchData = useCallback(async () => {
-    if (!token) {
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const [activityResponse, userResponse] = await Promise.all([
-        apiClient.get<ActivityItem[]>('/properties/me/activity', {
-          params: status ? { status } : undefined,
-        }),
-        apiClient.get('/users/me'),
-      ]);
-
-      setData(activityResponse.data);
-      if (userResponse.data?.user) {
-        setFreeAdsRemaining(userResponse.data.user.freeAdsRemaining ?? 0);
-        setHasSubscription(userResponse.data.user.hasSubscription ?? false);
-        setSubscription(userResponse.data.user.subscription);
-      }
-    } catch (err: any) {
-      console.error('Error fetching my activity:', err);
-      const msg = err.response?.data?.message || 'فشل في تحميل البيانات';
-      setError(msg);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [status, token]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+async function fetchMyActivity(
+  status?: 'ACTIVE' | 'DRAFT',
+): Promise<MyActivityData> {
+  const [activityResponse, userResponse] = await Promise.all([
+    apiClient.get<ActivityItem[]>('/properties/me/activity', {
+      params: status ? { status } : undefined,
+    }),
+    apiClient.get('/users/me'),
+  ]);
 
   return {
-    data,
-    freeAdsRemaining,
-    hasSubscription,
-    subscription,
-    isLoading,
+    activity: activityResponse.data,
+    freeAdsRemaining: userResponse.data?.user?.freeAdsRemaining ?? 0,
+    hasSubscription: userResponse.data?.user?.hasSubscription ?? false,
+    subscription: userResponse.data?.user?.subscription,
+  };
+}
+
+export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
+  const { token } = useAuthStore();
+
+  const query = useQuery({
+    queryKey: ['myActivity', status],
+    queryFn: () => fetchMyActivity(status),
+    enabled: !!token,
+  });
+
+  const error = query.error
+    ? (query.error as any)?.response?.data?.message || 'فشل في تحميل البيانات'
+    : null;
+
+  return {
+    data: query.data?.activity ?? [],
+    freeAdsRemaining: query.data?.freeAdsRemaining ?? 0,
+    hasSubscription: query.data?.hasSubscription ?? false,
+    subscription: query.data?.subscription,
+    isLoading: query.isLoading,
     error,
-    refetch: fetchData,
+    refetch: query.refetch,
   };
 }

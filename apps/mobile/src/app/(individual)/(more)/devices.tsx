@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -25,41 +26,29 @@ interface DeviceItem {
 export default function RegisteredDevicesScreen() {
   const router = useRouter();
 
-  const [devices, setDevices] = useState<DeviceItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
   // Modal Visibility States
   const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
   const [showLogoutAll, setShowLogoutAll] = useState(false);
 
-  const fetchDevices = async () => {
-    setIsLoading(true);
-    try {
+  const { data: devices = [], isLoading, refetch } = useQuery({
+    queryKey: ['devices'],
+    queryFn: async () => {
       const response = await devicesService.getDevices();
-      const mapped = response.map((session) => ({
+      return response.map((session) => ({
         id: session.id,
         name: session.deviceName,
         isActive: session.isActive,
         status: session.isActive ? 'نشط الان' : 'نشط مؤخراً',
         location: session.location || 'الكويت',
       }));
-      setDevices(mapped);
-    } catch (e) {
-      console.error('Failed to load registered devices:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDevices();
-  }, []);
+    },
+  });
 
   const handleLogoutDevice = async (id: string) => {
     try {
       await devicesService.revokeDevice(id);
-      setDevices(devices.filter((device) => device.id !== id));
       setSelectedDevice(null);
+      refetch();
     } catch (e) {
       console.error('Failed to logout device:', e);
     }
@@ -68,8 +57,8 @@ export default function RegisteredDevicesScreen() {
   const handleLogoutAllDevices = async () => {
     try {
       await devicesService.revokeAllDevices();
-      setDevices(devices.filter((device) => device.isActive));
       setShowLogoutAll(false);
+      refetch();
     } catch (e) {
       console.error('Failed to logout all devices:', e);
     }

@@ -1,4 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -43,10 +44,6 @@ export default function ExchangeProperties({
   viewMode = 'card',
 }: ExchangePropertiesProps) {
   const router = useRouter();
-  const [data, setData] = useState<PropertyDto[]>(initialData);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
 
   // Bottom Sheet Ref & Selected Property State
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -54,34 +51,48 @@ export default function ExchangeProperties({
     useState<PropertyDetailsDto | null>(null);
   const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
+  // Page 1 comes from the parent's home-feed prop; this query only fetches
+  // subsequent pages as the user scrolls the horizontal list.
+  const {
+    data: infiniteData,
+    isFetchingNextPage: isLoadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['exchangeProperties'],
+    queryFn: ({ pageParam }) =>
+      feedService.getProperties('EXCHANGE', pageParam, 10),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+    initialData: {
+      pages: [
+        {
+          data: initialData,
+          meta: {
+            total: initialData.length,
+            current: 1,
+            limit: 10,
+            totalPages: 1,
+            hasNextPage: true,
+          },
+        },
+      ],
+      pageParams: [1],
+    },
+  });
+
+  const data = (() => {
+    const combined = infiniteData.pages.flatMap((page) => page.data);
+    return combined.filter(
+      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+    );
+  })();
+
   // Triggered when user scrolls to the end of the horizontal list
-  const fetchMoreData = async () => {
-    // Stop fetching if we are already loading or if there are no more pages
-    if (isLoadingMore || !hasNextPage) return;
-
-    setIsLoadingMore(true);
-
-    try {
-      const nextPage = page + 1;
-      const response = await feedService.getProperties(
-        'EXCHANGE',
-        nextPage,
-        10,
-      );
-
-      setData((prev) => {
-        const combined = [...prev, ...response.data];
-        return combined.filter(
-          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-        );
-      });
-      setPage(response.meta.current);
-      setHasNextPage(response.meta.hasNextPage);
-    } catch (error) {
-      console.error('Failed to load more exchange properties:', error);
-      setHasNextPage(false);
-    } finally {
-      setIsLoadingMore(false);
+  const fetchMoreData = () => {
+    if (hasNextPage && !isLoadingMore) {
+      fetchNextPage();
     }
   };
 

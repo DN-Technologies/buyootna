@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -13,15 +14,9 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { companyService } from '@/shared/api/company.service';
 import { reviewsService } from '@/shared/api/reviews.service';
-import CompanyGalleryTab, {
-  CompanyProjectItemData,
-} from '@/shared/components/company/CompanyGalleryTab';
-import CompanyHeaderCard, {
-  CompanyHeaderData,
-} from '@/shared/components/company/CompanyHeaderCard';
-import CompanyServicesTab, {
-  CompanyServiceItemData,
-} from '@/shared/components/company/CompanyServicesTab';
+import CompanyGalleryTab from '@/shared/components/company/CompanyGalleryTab';
+import CompanyHeaderCard from '@/shared/components/company/CompanyHeaderCard';
+import CompanyServicesTab from '@/shared/components/company/CompanyServicesTab';
 import CompanyWorkingHours from '@/shared/components/company/CompanyWorkingHours';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import ContentContainer from '@/shared/components/ContentContainer';
@@ -34,84 +29,74 @@ import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSk
 
 type CompanyTab = 'about' | 'services' | 'gallery';
 
+const DEFAULT_REVIEW_SUMMARY = {
+  averageRating: 0,
+  totalRatingsCount: 0,
+  ratingBreakdown: [
+    { star: 5, pct: '0%' },
+    { star: 4, pct: '0%' },
+    { star: 3, pct: '0%' },
+    { star: 2, pct: '0%' },
+    { star: 1, pct: '0%' },
+  ],
+};
+
 export default function CompanyProfileScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
 
-  const [company, setCompany] = useState<CompanyHeaderData | null>(null);
-  const [services, setServices] = useState<CompanyServiceItemData[]>([]);
-  const [projects, setProjects] = useState<CompanyProjectItemData[]>([]);
   const [activeTab, setActiveTab] = useState<CompanyTab>('about');
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Reviews state
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [visibleReviewsCount, setVisibleReviewsCount] = useState(3);
   const [reviewSort, setReviewSort] = useState('all');
-  const [reviewSummary, setReviewSummary] = useState({
-    averageRating: 0,
-    totalRatingsCount: 0,
-    ratingBreakdown: [
-      { star: 5, pct: '0%' },
-      { star: 4, pct: '0%' },
-      { star: 3, pct: '0%' },
-      { star: 2, pct: '0%' },
-      { star: 1, pct: '0%' },
-    ],
-  });
 
   // Modal references
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
 
-  // Fetch company data & reviews from NestJS API
-  const loadCompanyData = useCallback(async () => {
-    if (!id) return;
-    setIsLoading(true);
-    try {
-      const data = await companyService.getCompanyDetails(String(id));
-      setCompany(data);
-      setServices(data.services || []);
-      setProjects(data.projects || []);
-
-      const targetUserId = data.userId || String(id);
-      try {
-        const [sumRes, revRes] = await Promise.all([
-          reviewsService.getSummary(targetUserId),
-          reviewsService.getReviews(targetUserId, reviewSort),
-        ]);
-        setReviewSummary(sumRes);
-        setReviews(revRes.data || []);
-      } catch (revErr) {
-        console.log('Error loading reviews:', revErr);
-      }
-    } catch (error) {
-      console.error('Failed to load company details:', error);
-      Alert.alert('خطأ', 'تعذر تحميل بيانات الشركة');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, reviewSort]);
+  const {
+    data: company,
+    isLoading,
+    isError: companyError,
+  } = useQuery({
+    queryKey: ['company', id],
+    queryFn: () => companyService.getCompanyDetails(String(id)),
+    enabled: !!id,
+  });
 
   useEffect(() => {
-    loadCompanyData();
-  }, [loadCompanyData]);
+    if (companyError) {
+      Alert.alert('خطأ', 'تعذر تحميل بيانات الشركة');
+    }
+  }, [companyError]);
 
-  const handleAddReview = async (comment: string, rating: number) => {
-    const targetUserId = company?.userId || String(id);
-    try {
-      await reviewsService.addReview(targetUserId, rating, comment);
-      Alert.alert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
+  const services = company?.services ?? [];
+  const projects = company?.projects ?? [];
+  const targetUserId = company?.userId || String(id);
+  const reviewsQueryKey = ['companyReviews', targetUserId, reviewSort];
 
-      // Refresh reviews & summary
+  const { data: reviewsData, refetch: refetchReviews } = useQuery({
+    queryKey: reviewsQueryKey,
+    queryFn: async () => {
       const [sumRes, revRes] = await Promise.all([
         reviewsService.getSummary(targetUserId),
         reviewsService.getReviews(targetUserId, reviewSort),
       ]);
-      setReviewSummary(sumRes);
-      setReviews(revRes.data || []);
+      return { summary: sumRes, reviews: revRes.data || [] };
+    },
+    enabled: !!company,
+  });
+
+  const reviewSummary = reviewsData?.summary ?? DEFAULT_REVIEW_SUMMARY;
+  const reviews = reviewsData?.reviews ?? [];
+
+  const handleAddReview = async (comment: string, rating: number) => {
+    try {
+      await reviewsService.addReview(targetUserId, rating, comment);
+      Alert.alert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
+      refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
       Alert.alert('خطأ', msg);
@@ -119,18 +104,23 @@ export default function CompanyProfileScreen() {
   };
 
   const handleToggleLike = async (revId: string) => {
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === revId
-          ? {
-              ...r,
-              likes: r.userLiked ? r.likes - 1 : r.likes + 1,
-              userLiked: !r.userLiked,
-              dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
-              userDisliked: false,
-            }
-          : r,
-      ),
+    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsData) =>
+      prev
+        ? {
+            ...prev,
+            reviews: prev.reviews.map((r: ReviewItem) =>
+              r.id === revId
+                ? {
+                    ...r,
+                    likes: r.userLiked ? r.likes - 1 : r.likes + 1,
+                    userLiked: !r.userLiked,
+                    dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
+                    userDisliked: false,
+                  }
+                : r,
+            ),
+          }
+        : prev,
     );
     try {
       await reviewsService.toggleLike(revId);
@@ -140,18 +130,23 @@ export default function CompanyProfileScreen() {
   };
 
   const handleToggleDislike = async (revId: string) => {
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === revId
-          ? {
-              ...r,
-              dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes + 1,
-              userDisliked: !r.userDisliked,
-              likes: r.userLiked ? r.likes - 1 : r.likes,
-              userLiked: false,
-            }
-          : r,
-      ),
+    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsData) =>
+      prev
+        ? {
+            ...prev,
+            reviews: prev.reviews.map((r: ReviewItem) =>
+              r.id === revId
+                ? {
+                    ...r,
+                    dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes + 1,
+                    userDisliked: !r.userDisliked,
+                    likes: r.userLiked ? r.likes - 1 : r.likes,
+                    userLiked: false,
+                  }
+                : r,
+            ),
+          }
+        : prev,
     );
     try {
       await reviewsService.toggleDislike(revId);
