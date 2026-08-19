@@ -1,89 +1,64 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { notificationsService } from '@/shared/api/notifications.service';
+import {
+  NotificationPrefsResponse,
+  notificationsService,
+} from '@/shared/api/notifications.service';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+const PREFS_QUERY_KEY = ['notificationPreferences'];
+
 export default function NotificationsScreen() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
 
-  // Notification Toggle States
-  const [appNotifications, setAppNotifications] = useState(true);
-  const [emailNotifications, setEmailNotifications] = useState(false);
-  const [phoneNotifications, setPhoneNotifications] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: prefs, isLoading } = useQuery({
+    queryKey: PREFS_QUERY_KEY,
+    queryFn: () => notificationsService.getPreferences(),
+    enabled: !!token,
+  });
 
-  useEffect(() => {
-    if (token) {
-      loadPreferences();
-    }
-  }, [token]);
-
-  const loadPreferences = async () => {
-    setIsLoading(true);
-    try {
-      const prefs = await notificationsService.getPreferences();
-      setAppNotifications(prefs.appEnabled);
-      setEmailNotifications(prefs.emailEnabled);
-      setPhoneNotifications(prefs.phoneEnabled);
-    } catch (e) {
-      console.error('Failed to load notification preferences:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const appNotifications = prefs?.appEnabled ?? true;
+  const emailNotifications = prefs?.emailEnabled ?? false;
+  const phoneNotifications = prefs?.phoneEnabled ?? false;
   const isAnyActive =
     appNotifications || emailNotifications || phoneNotifications;
 
-  const handleMasterToggle = async () => {
+  const updatePrefs = async (
+    patch: Partial<Omit<NotificationPrefsResponse, 'id' | 'userId'>>,
+  ) => {
+    queryClient.setQueryData<NotificationPrefsResponse>(
+      PREFS_QUERY_KEY,
+      (prev) => (prev ? { ...prev, ...patch } : prev),
+    );
+    try {
+      await notificationsService.updatePreferences(patch);
+    } catch (e) {
+      console.error('Failed to update notification preferences:', e);
+    }
+  };
+
+  const handleMasterToggle = () => {
     const targetState = !isAnyActive;
-    setAppNotifications(targetState);
-    setEmailNotifications(targetState);
-    setPhoneNotifications(targetState);
-    try {
-      await notificationsService.updatePreferences({
-        appEnabled: targetState,
-        emailEnabled: targetState,
-        phoneEnabled: targetState,
-      });
-    } catch (e) {
-      console.error('Failed to update master notification preferences:', e);
-    }
+    updatePrefs({
+      appEnabled: targetState,
+      emailEnabled: targetState,
+      phoneEnabled: targetState,
+    });
   };
 
-  const handleToggleApp = async (val: boolean) => {
-    setAppNotifications(val);
-    try {
-      await notificationsService.updatePreferences({ appEnabled: val });
-    } catch (e) {
-      console.error('Failed to update app notifications:', e);
-    }
-  };
-
-  const handleToggleEmail = async (val: boolean) => {
-    setEmailNotifications(val);
-    try {
-      await notificationsService.updatePreferences({ emailEnabled: val });
-    } catch (e) {
-      console.error('Failed to update email notifications:', e);
-    }
-  };
-
-  const handleTogglePhone = async (val: boolean) => {
-    setPhoneNotifications(val);
-    try {
-      await notificationsService.updatePreferences({ phoneEnabled: val });
-    } catch (e) {
-      console.error('Failed to update phone notifications:', e);
-    }
-  };
+  const handleToggleApp = (val: boolean) => updatePrefs({ appEnabled: val });
+  const handleToggleEmail = (val: boolean) =>
+    updatePrefs({ emailEnabled: val });
+  const handleTogglePhone = (val: boolean) =>
+    updatePrefs({ phoneEnabled: val });
 
   // Helper row component for simple switch items
   const NotificationSwitchRow = ({

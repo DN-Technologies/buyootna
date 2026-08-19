@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -24,76 +24,52 @@ import {
   TermsIcon,
 } from '@/assets/icons/settings';
 import MenuItem from '@/features/individual/components/more/MenuItem';
-import { settingsService } from '@/shared/api/settings.service';
+import {
+  settingsService,
+  UserSettingsResponse,
+} from '@/shared/api/settings.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+
+const SETTINGS_QUERY_KEY = ['userSettings'];
 
 export default function SettingsScreen() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const queryClient = useQueryClient();
 
-  // Privacy Toggle States
-  const [showPhone, setShowPhone] = useState(true);
-  const [showWhatsapp, setShowWhatsapp] = useState(true);
-  const [hideActivity, setHideActivity] = useState(false);
-  const [hideOfficeAds, setHideOfficeAds] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { data: settings, isLoading } = useQuery({
+    queryKey: SETTINGS_QUERY_KEY,
+    queryFn: () => settingsService.getSettings(),
+    enabled: !!token,
+  });
 
-  useEffect(() => {
-    if (token) {
-      loadSettings();
-    }
-  }, [token]);
+  const showPhone = settings?.showPhone ?? true;
+  const showWhatsapp = settings?.showWhatsapp ?? true;
+  const hideActivity = settings?.hideActivity ?? false;
+  const hideOfficeAds = settings?.hideOfficeAds ?? false;
 
-  const loadSettings = async () => {
-    setIsLoading(true);
+  const updateSettings = async (
+    patch: Partial<Omit<UserSettingsResponse, 'id' | 'userId'>>,
+  ) => {
+    queryClient.setQueryData<UserSettingsResponse>(
+      SETTINGS_QUERY_KEY,
+      (prev) => (prev ? { ...prev, ...patch } : prev),
+    );
     try {
-      const settings = await settingsService.getSettings();
-      setShowPhone(settings.showPhone);
-      setShowWhatsapp(settings.showWhatsapp);
-      setHideActivity(settings.hideActivity);
-      setHideOfficeAds(settings.hideOfficeAds);
+      await settingsService.updateSettings(patch);
     } catch (e) {
-      console.error('Failed to load settings:', e);
-    } finally {
-      setIsLoading(false);
+      console.error('Failed to update settings:', e);
     }
   };
 
-  const handleToggleShowPhone = async (val: boolean) => {
-    setShowPhone(val);
-    try {
-      await settingsService.updateSettings({ showPhone: val });
-    } catch (e) {
-      console.error('Failed to update showPhone:', e);
-    }
-  };
-
-  const handleToggleShowWhatsapp = async (val: boolean) => {
-    setShowWhatsapp(val);
-    try {
-      await settingsService.updateSettings({ showWhatsapp: val });
-    } catch (e) {
-      console.error('Failed to update showWhatsapp:', e);
-    }
-  };
-
-  const handleToggleHideActivity = async (val: boolean) => {
-    setHideActivity(val);
-    try {
-      await settingsService.updateSettings({ hideActivity: val });
-    } catch (e) {
-      console.error('Failed to update hideActivity:', e);
-    }
-  };
-
-  const handleToggleHideOfficeAds = async (val: boolean) => {
-    setHideOfficeAds(val);
-    try {
-      await settingsService.updateSettings({ hideOfficeAds: val });
-    } catch (e) {
-      console.error('Failed to update hideOfficeAds:', e);
-    }
-  };
+  const handleToggleShowPhone = (val: boolean) =>
+    updateSettings({ showPhone: val });
+  const handleToggleShowWhatsapp = (val: boolean) =>
+    updateSettings({ showWhatsapp: val });
+  const handleToggleHideActivity = (val: boolean) =>
+    updateSettings({ hideActivity: val });
+  const handleToggleHideOfficeAds = (val: boolean) =>
+    updateSettings({ hideOfficeAds: val });
 
   const handleDeleteAccount = () => {
     Alert.alert(

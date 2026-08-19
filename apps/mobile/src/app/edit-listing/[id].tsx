@@ -1,6 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -24,17 +25,13 @@ import EditListingHeader from '@/shared/components/edit-listing/EditListingHeade
 import LockedAdTypeSection from '@/shared/components/edit-listing/LockedAdTypeSection';
 import SaveLoadingOverlay from '@/shared/components/edit-listing/SaveLoadingOverlay';
 import { useListingStore } from '@/shared/store/useListingStore';
-import type { PropertyDetailsDto } from '@/types/property';
 
 export default function EditListingScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  
-  const [isLoading, setIsLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [initialProperty, setInitialProperty] = useState<PropertyDetailsDto | null>(null);
 
   const discardSheetRef = useRef<BottomSheetModal>(null);
   const [pendingNavigation, setPendingNavigation] = useState<any>(null);
@@ -67,36 +64,37 @@ export default function EditListingScreen() {
   } = store;
 
   // 1. Fetch property details on mount and populate store
+  const {
+    data: initialProperty = null,
+    isLoading,
+    isError: loadError,
+  } = useQuery({
+    queryKey: ['editListingProperty', id],
+    queryFn: () => propertiesService.getPropertyById(id!),
+    enabled: !!id,
+  });
+
   useEffect(() => {
-    let active = true;
-    const fetchProperty = async () => {
-      if (!id) return;
-      try {
-        setIsLoading(true);
-        const property = await propertiesService.getPropertyById(id);
-        if (active) {
-          setInitialProperty(property);
-          populateFromProperty(property);
-        }
-      } catch (error) {
-        console.error('Failed to load property for editing:', error);
-        Alert.alert('خطأ', 'فشل في تحميل بيانات الإعلان.', [
-          { text: 'حسناً', onPress: () => router.back() },
-        ]);
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
+    if (initialProperty) {
+      populateFromProperty(initialProperty);
+    }
+  }, [initialProperty, populateFromProperty]);
 
-    fetchProperty();
+  useEffect(() => {
+    if (loadError) {
+      console.error('Failed to load property for editing');
+      Alert.alert('خطأ', 'فشل في تحميل بيانات الإعلان.', [
+        { text: 'حسناً', onPress: () => router.back() },
+      ]);
+    }
+  }, [loadError, router]);
 
+  // Reset store on unmount
+  useEffect(() => {
     return () => {
-      active = false;
-      resetForm(); // Reset store on unmount
+      resetForm();
     };
-  }, [id, populateFromProperty, resetForm, router]);
+  }, [resetForm]);
 
   // check if current store has unsaved edits
   const checkIsDirty = useCallback((): boolean => {

@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import {
   Alert,
   Linking,
@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useFavorites } from '@/features/individual/hooks/useFavorites';
 import { chatService } from '@/shared/api/chat.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
@@ -24,15 +25,31 @@ import PropertyDetailsBody from '@/shared/components/PropertyDetailsBody';
 import PropertyMediaHeader from '@/shared/components/PropertyMediaHeader';
 import PropertyOverview from '@/shared/components/PropertyOverview';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
+import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
-import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useAuthStore } from '@/shared/store/useAuthStore';
-import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
 import { PropertyDetailsDto } from '@/types/property';
+
+async function fetchPropertyDetails(id: string): Promise<PropertyDetailsDto> {
+  const data = await propertiesService.getPropertyById(id);
+
+  if (data.images && data.images.length > 0) {
+    try {
+      await Image.prefetch(data.images[0]);
+    } catch (e) {
+      console.warn('Prefetch failed:', e);
+    }
+  }
+
+  // Silently ping the view counter in the background.
+  propertiesService.incrementViews(id).catch(() => {});
+
+  return data;
+}
 
 export default function PropertyDetailsScreen() {
   // 1. Hook to get the dynamic ID from the URL
@@ -42,16 +59,18 @@ export default function PropertyDetailsScreen() {
   const { guardAction, authSheetRef } = useAuthGuard();
   const { user } = useAuthStore();
 
-  // --- Real State Management ---
-  const [property, setProperty] = useState<PropertyDetailsDto | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: property,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['property', id],
+    queryFn: () => fetchPropertyDetails(String(id)),
+    enabled: !!id,
+  });
 
-  // Zustand Favorites Store
-  const isFavorite = useFavoritesStore((state) =>
-    state.isFavorited(id as string),
-  );
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const isFavorite = isFavorited(id as string);
 
   const handleWhatsapp = () => {
     if (!property?.phoneNumber) {
@@ -133,47 +152,13 @@ export default function PropertyDetailsScreen() {
     });
   };
 
-  useEffect(() => {
-    const fetchPropertyData = async () => {
-      if (!id) return;
-
-      try {
-        // 1. Fetch the data to display the UI
-        const data = await propertiesService.getPropertyById(id as string);
-
-        // 2. Preload the first image in the background before showing the UI
-        if (data.images && data.images.length > 0) {
-          try {
-            await Image.prefetch(data.images[0]);
-          } catch (e) {
-            console.warn('Prefetch failed:', e);
-          }
-        }
-
-        setProperty(data);
-
-        // 3. Silently ping the view counter in the background!
-        propertiesService.incrementViews(id as string).catch(() => {
-          // Ignore errors gracefully. If the ping fails, the app shouldn't crash.
-        });
-      } catch (error) {
-        console.error('Failed to load property details:', error);
-        setError('عذراً، هذا العقار غير موجود أو تم حذفه');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPropertyData();
-  }, [id]);
-
   // --- Loading State ---
   if (isLoading) {
     return <PropertyDetailSkeleton />;
   }
 
   // --- Error State ---
-  if (error || !property) {
+  if (isError || !property) {
     return (
       <View className="flex-1 items-center justify-center bg-[#F8FAFC] px-6">
         <View className="mb-6 h-20 w-20 items-center justify-center rounded-full bg-red-50">
@@ -183,7 +168,7 @@ export default function PropertyDetailsScreen() {
           عذراً، حدث خطأ ما
         </Text>
         <Text className="mb-8 px-4 text-center font-cairo-semibold text-base leading-6 text-[#6B6A6A]">
-          {error || 'لم نتمكن من العثور على العقار المطلوب'}
+          عذراً، هذا العقار غير موجود أو تم حذفه
         </Text>
         <TouchableOpacity
           activeOpacity={0.8}

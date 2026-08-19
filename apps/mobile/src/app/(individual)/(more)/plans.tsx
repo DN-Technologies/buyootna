@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -19,43 +20,39 @@ import PlanCardSkeleton from '@/shared/components/skeletons/PlanCardSkeleton';
 
 WebBrowser.maybeCompleteAuthSession();
 
+async function fetchPlansData() {
+  const [plansRes, walletRes] = await Promise.all([
+    plansService.getPlans(),
+    plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
+  ]);
+
+  const plans = plansRes.map((plan) => ({
+    id: plan.slug,
+    name: plan.name,
+    price: `${plan.price} دينار كويتي`,
+    originalPrice: plan.originalPrice ? `${plan.originalPrice}` : undefined,
+    discountText: plan.discountText || undefined,
+    features: plan.features,
+    color: plan.color || '#15304D',
+    badge: plan.badge || '',
+  }));
+
+  return { plans, wallet: walletRes };
+}
+
 export default function PlansScreen() {
   const router = useRouter();
-
-  const [plans, setPlans] = useState<any[]>([]);
-  const [wallet, setWallet] = useState<{ freeAdsRemaining: number; slots: any[] }>({
-    freeAdsRemaining: 0,
-    slots: [],
-  });
-  const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [plansRes, walletRes] = await Promise.all([
-        plansService.getPlans(),
-        plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
-      ]);
-
-      const mapped = plansRes.map((plan) => ({
-        id: plan.slug,
-        name: plan.name,
-        price: `${plan.price} دينار كويتي`,
-        originalPrice: plan.originalPrice ? `${plan.originalPrice}` : undefined,
-        discountText: plan.discountText || undefined,
-        features: plan.features,
-        color: plan.color || '#15304D',
-        badge: plan.badge || '',
-      }));
-      setPlans(mapped);
-      setWallet(walletRes);
-    } catch (e) {
-      console.error('Failed to load plans or wallet:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    data = { plans: [], wallet: { freeAdsRemaining: 0, slots: [] } },
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['plans'],
+    queryFn: fetchPlansData,
+  });
+  const { plans, wallet } = data;
 
   const handleBuyPlan = async (planSlug: string) => {
     if (isProcessing) return;
@@ -70,7 +67,7 @@ export default function PlansScreen() {
 
       if (charge.status === 'PAID') {
         Alert.alert('نجاح', 'تم تفعيل الباقة بنجاح!');
-        fetchData();
+        refetch();
         return;
       }
 
@@ -91,10 +88,6 @@ export default function PlansScreen() {
       setIsProcessing(null);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>

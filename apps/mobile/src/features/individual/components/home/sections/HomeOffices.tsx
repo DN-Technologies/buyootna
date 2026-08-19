@@ -1,12 +1,12 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
-import { OfficeDto } from '@/types/feed';
 
 interface HomeOfficesProps {
   refreshing?: boolean;
@@ -21,55 +21,34 @@ export default function HomeOffices({
 }: HomeOfficesProps) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
-  const [data, setData] = useState<OfficeDto[]>([]);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
   const [favoriteOverrides, setFavoriteOverrides] = useState<
     Record<string, boolean>
   >({});
 
-  useEffect(() => {
-    const fetchOffices = async () => {
-      setIsLoading(true);
-      try {
-        const response = await feedService.getOffices(1, 10);
-        setData(response.data);
-        setPage(response.meta.current);
-        setHasNextPage(response.meta.hasNextPage);
-      } catch (error) {
-        console.error('Failed to fetch offices:', error);
-        setHasNextPage(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const {
+    data: infiniteData,
+    isLoading,
+    isFetchingNextPage: isLoadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['offices'],
+    queryFn: ({ pageParam }) => feedService.getOffices(pageParam, 10),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+  });
 
-    fetchOffices();
-  }, []);
+  const data = (() => {
+    const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
+    return combined.filter(
+      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+    );
+  })();
 
-  const fetchMoreData = async () => {
-    if (isLoadingMore || !hasNextPage || isLoading) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const response = await feedService.getOffices(nextPage, 10);
-
-      setData((prev) => {
-        const combined = [...prev, ...response.data];
-        return combined.filter(
-          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-        );
-      });
-      setPage(response.meta.current);
-      setHasNextPage(response.meta.hasNextPage);
-    } catch (error) {
-      console.error('Failed to load more offices:', error);
-      setHasNextPage(false);
-    } finally {
-      setIsLoadingMore(false);
+  const fetchMoreData = () => {
+    if (hasNextPage && !isLoadingMore && !isLoading) {
+      fetchNextPage();
     }
   };
 

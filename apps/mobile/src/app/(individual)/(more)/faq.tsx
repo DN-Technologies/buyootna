@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -12,33 +13,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { faqService } from '@/shared/api/faq.service';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
 export default function FAQScreen() {
   const router = useRouter();
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const fetchFAQs = async () => {
-    setIsLoading(true);
-    try {
-      const data = await faqService.getFAQs();
-      setFaqs(data);
-    } catch (e) {
-      console.error('Failed to load FAQs:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFAQs();
-  }, []);
+  const { data: faqs = [], isLoading } = useQuery({
+    queryKey: ['faqs'],
+    queryFn: () => faqService.getFAQs(),
+  });
 
   const toggleExpand = (id: string) => {
     setExpandedId(expandedId === id ? null : id);

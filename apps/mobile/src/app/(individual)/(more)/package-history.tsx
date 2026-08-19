@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -27,38 +28,21 @@ interface HistoryItem {
 export default function PackageHistoryScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
   const [filterActive, setFilterActive] = useState<boolean | null>(null);
 
-  const fetchHistory = useCallback(async () => {
-    if (!user?.id) {
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const res = await apiClient.get('/plans/history');
-      if (res.data) {
-        setHistory(res.data);
-      }
-    } catch (e) {
-      console.log('Error fetching package history:', e);
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchHistory();
-  }, [fetchHistory]);
+  const {
+    data: history = [],
+    isLoading,
+    isRefetching: refreshing,
+    refetch: onRefresh,
+  } = useQuery({
+    queryKey: ['packageHistory'],
+    queryFn: async () => {
+      const res = await apiClient.get<HistoryItem[]>('/plans/history');
+      return res.data ?? [];
+    },
+    enabled: !!user?.id,
+  });
 
   const filteredHistory = history.filter((item) => {
     if (filterActive === true) return item.status === 'ACTIVE';

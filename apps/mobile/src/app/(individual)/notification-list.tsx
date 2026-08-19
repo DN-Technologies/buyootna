@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -28,44 +27,32 @@ function formatDate(dateString: string) {
   });
 }
 
+const NOTIFICATIONS_QUERY_KEY = ['notifications'];
+
 export default function NotificationListScreen() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
-  const load = useCallback(async () => {
-    try {
-      const data = await notificationsService.list();
-      setNotifications(data);
-    } catch (e) {
-      console.error('Failed to load notifications:', e);
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (token) {
-        load();
-      }
-    }, [token, load]),
-  );
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    load();
-  };
+  const {
+    data: notifications = [],
+    isLoading,
+    isRefetching: isRefreshing,
+    refetch: handleRefresh,
+  } = useQuery({
+    queryKey: NOTIFICATIONS_QUERY_KEY,
+    queryFn: () => notificationsService.list(),
+    enabled: !!token,
+  });
 
   const handlePress = async (notification: AppNotification) => {
     if (!notification.isRead) {
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === notification.id ? { ...n, isRead: true } : n,
-        ),
+      queryClient.setQueryData<AppNotification[]>(
+        NOTIFICATIONS_QUERY_KEY,
+        (prev) =>
+          prev?.map((n) =>
+            n.id === notification.id ? { ...n, isRead: true } : n,
+          ),
       );
       try {
         await notificationsService.markAsRead(notification.id);
@@ -78,7 +65,10 @@ export default function NotificationListScreen() {
   const hasUnread = notifications.some((n) => !n.isRead);
 
   const handleMarkAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    queryClient.setQueryData<AppNotification[]>(
+      NOTIFICATIONS_QUERY_KEY,
+      (prev) => prev?.map((n) => ({ ...n, isRead: true })),
+    );
     try {
       await notificationsService.markAllAsRead();
     } catch (e) {

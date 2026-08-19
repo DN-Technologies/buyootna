@@ -1,6 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -10,9 +11,9 @@ import {
 } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
+import { useFavorites } from '@/features/individual/hooks/useFavorites';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
-import { useFavoritesStore } from '@/features/individual/store/useFavoritesStore';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
@@ -20,7 +21,6 @@ import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkel
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
 import { formatTimeAgo } from '@/shared/utils/helpers/property';
-import { PropertyDto } from '@/types/feed';
 import { PropertyDetailsDto } from '@/types/property';
 
 interface HomePropertiesProps {
@@ -41,13 +41,7 @@ export default function HomeProperties({
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
   const { isTablet, cardColumns } = useResponsiveLayout();
-  const favoritedIds = useFavoritesStore((state) => state.favoritedIds);
-  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
-  const [data, setData] = useState<PropertyDto[]>([]);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [isFilterLoading, setIsFilterLoading] = useState(true);
+  const { favoritedIds, toggleFavorite } = useFavorites();
 
   // Bottom Sheet Ref & Selected Property State
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -69,56 +63,31 @@ export default function HomeProperties({
     }
   };
 
-  // --- 1. Fetch Fresh Data when Filter Changes ---
-  useEffect(() => {
-    const fetchFilteredProperties = async () => {
-      setIsFilterLoading(true);
-      try {
-        const typeFilter = getBackendType(activeFilter);
+  const {
+    data: infiniteData,
+    isLoading: isFilterLoading,
+    isFetchingNextPage: isLoadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['homeProperties', activeFilter],
+    queryFn: ({ pageParam }) =>
+      feedService.getProperties(getBackendType(activeFilter), pageParam, 10),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
+  });
 
-        // Call the paginated endpoint
-        const response = await feedService.getProperties(typeFilter, 1, 10);
+  const data = (() => {
+    const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
+    return combined.filter(
+      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
+    );
+  })();
 
-        setData(response.data);
-        setPage(response.meta.current);
-        setHasNextPage(response.meta.hasNextPage);
-      } catch (error) {
-        console.error('Failed to fetch properties:', error);
-      } finally {
-        setIsFilterLoading(false);
-      }
-    };
-
-    fetchFilteredProperties();
-  }, [activeFilter]);
-
-  // --- 2. Infinite Scroll Logic ---
-  const fetchMoreData = async () => {
-    if (isLoadingMore || !hasNextPage) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const typeFilter = getBackendType(activeFilter);
-
-      const response = await feedService.getProperties(
-        typeFilter,
-        nextPage,
-        10,
-      );
-
-      setData((prev) => {
-        const combined = [...prev, ...response.data];
-        return combined.filter(
-          (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-        );
-      });
-      setPage(response.meta.current);
-      setHasNextPage(response.meta.hasNextPage);
-    } catch (error) {
-      console.error('Failed to load more properties:', error);
-    } finally {
-      setIsLoadingMore(false);
+  const fetchMoreData = () => {
+    if (hasNextPage && !isLoadingMore) {
+      fetchNextPage();
     }
   };
 
