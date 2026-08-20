@@ -31,15 +31,15 @@ export default function InitialSplashSequence() {
     SplashScreen.hideAsync();
 
     // 1 Fade out dot
-    dotOpacity.value = withDelay(500, withTiming(0, { duration: 300 }));
+    dotOpacity.value = withDelay(350, withTiming(0, { duration: 210 }));
 
     // 2. Change background to dark blue (matching the design)
-    bgColor.value = withDelay(800, withTiming('#0B2239', { duration: 500 }));
+    bgColor.value = withDelay(560, withTiming('#0B2239', { duration: 350 }));
 
     // 3. Fade in logo, then mark the animation done
     logoOpacity.value = withDelay(
-      1300,
-      withTiming(1, { duration: 600 }, (finished) => {
+      910,
+      withTiming(1, { duration: 420 }, (finished) => {
         if (finished) {
           runOnJS(setAnimationDone)(true);
         }
