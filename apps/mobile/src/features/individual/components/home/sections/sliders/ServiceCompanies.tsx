@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
+import { useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -121,17 +122,24 @@ export default function ServiceCompanies({
         : undefined,
   });
 
-  const data = (() => {
+  const data = useMemo(() => {
     const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
-    return combined.filter(
-      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-    );
-  })();
+    const seen = new Set<string>();
+    return combined.filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [infiniteData]);
 
   // Load more local or API companies
+  const isFetchingRef = useRef(false);
   const fetchMoreData = () => {
-    if (hasNextPage && !isLoadingMore) {
-      fetchNextPage();
+    if (hasNextPage && !isLoadingMore && !isFetchingRef.current) {
+      isFetchingRef.current = true;
+      fetchNextPage().finally(() => {
+        isFetchingRef.current = false;
+      });
     }
   };
 

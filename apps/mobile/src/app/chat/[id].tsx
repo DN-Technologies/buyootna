@@ -1,8 +1,8 @@
+import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
-  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -19,11 +19,11 @@ import MessageBubble from '@/shared/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubble';
 import ContentContainer from '@/shared/components/ContentContainer';
 import { socketService } from '@/shared/services/socket.service';
+import { useChatStore } from '@/shared/store/useChatStore';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
-import { useChatStore } from '@/shared/store/useChatStore';
 
 export default function ChatDetailsScreen() {
   const router = useRouter();
@@ -159,9 +159,6 @@ export default function ChatDetailsScreen() {
     }
   };
 
-  // Sort messages so newest are at bottom for inverted FlatList
-  const sortedMessages = [...activeMessages].reverse();
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Invisible Overlay to Close Dropdowns */}
@@ -216,17 +213,33 @@ export default function ChatDetailsScreen() {
             />
           )}
 
-          <FlatList
-            inverted
-            data={sortedMessages}
+          {/*
+            FlashList v2 has no `inverted` prop, so this no longer reverses
+            `activeMessages` (already oldest→newest from the store) and
+            renders top-to-bottom like a normal list.
+            `maintainVisibleContentPosition` replaces the old inverted-list
+            trick: `startRenderingFromBottom` opens the chat scrolled to the
+            newest message, `autoscrollToBottomThreshold` keeps it pinned to
+            the bottom as new messages arrive (as long as the user is
+            already near the bottom), and older-message pagination — now
+            prepended at the top instead of appended to an inverted list —
+            triggers via `onStartReached` instead of `onEndReached`.
+          */}
+          <FlashList
+            data={activeMessages}
             keyExtractor={(item) => item.id}
+            getItemType={(item) => item.type}
             contentContainerStyle={{
               paddingHorizontal: 20,
               paddingVertical: 20,
             }}
             showsVerticalScrollIndicator={false}
-            onEndReached={handleLoadMore}
-            onEndReachedThreshold={0.5}
+            maintainVisibleContentPosition={{
+              startRenderingFromBottom: true,
+              autoscrollToBottomThreshold: 0.2,
+            }}
+            onStartReached={handleLoadMore}
+            onStartReachedThreshold={0.5}
             renderItem={renderMessage}
           />
 

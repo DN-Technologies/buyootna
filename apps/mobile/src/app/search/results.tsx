@@ -1,15 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { searchService } from '@/shared/api/search.service';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
@@ -171,7 +166,7 @@ export default function SearchResultsScreen() {
       </View>
 
       {/* --- RESULTS LIST --- */}
-      <FlatList
+      <FlashList
         data={results}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{

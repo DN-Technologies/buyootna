@@ -1,17 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Linking, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient from '@/shared/api/api';
@@ -440,27 +434,19 @@ export default function UserProfileScreen() {
         </View>
 
         {/* Main Content Area */}
-        <FlatList
-          data={
-            activeTab === 'listings'
-              ? (properties as any[])
-              : (reviews
-                  .slice()
-                  .sort((a, b) => {
-                    if (propertySort === 'rating_desc') return b.rating - a.rating;
-                    if (propertySort === 'rating_asc') return a.rating - b.rating;
-                    return 0;
-                  }) as any[])
-          }
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
-          ListEmptyComponent={renderEmpty}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 85,
-          }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) =>
-            activeTab === 'listings' ? (
+        {activeTab === 'listings' ? (
+          <FlashList
+            key="listings-list"
+            data={properties}
+            keyExtractor={(item) => item.id}
+            extraData={viewMode}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={renderEmpty}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 85,
+            }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
               <View className="mt-2 px-5">
                 {viewMode === 'list' ? (
                   <PropertyListItem
@@ -490,15 +476,32 @@ export default function UserProfileScreen() {
                   />
                 )}
               </View>
-            ) : (
+            )}
+          />
+        ) : (
+          <FlashList
+            key="reviews-list"
+            data={reviews.slice().sort((a, b) => {
+              if (propertySort === 'rating_desc') return b.rating - a.rating;
+              if (propertySort === 'rating_asc') return a.rating - b.rating;
+              return 0;
+            })}
+            keyExtractor={(item) => item.id}
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={renderEmpty}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 85,
+            }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
               <ReviewCardItem
-                item={item as ReviewItem}
+                item={item}
                 onToggleLike={handleToggleLike}
                 onToggleDislike={handleToggleDislike}
               />
-            )
-          }
-        />
+            )}
+          />
+        )}
 
         {/* Fixed Bottom Action Bar */}
         {userProfile && !isOwnProfile && (

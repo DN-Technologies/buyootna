@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Text,
   TextInput,
   TouchableOpacity,
@@ -82,16 +82,23 @@ export default function CompaniesScreen() {
       lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
   });
 
-  const data = (() => {
+  const data = useMemo(() => {
     const combined = infiniteData?.pages.flatMap((page) => page.data) ?? [];
-    return combined.filter(
-      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-    );
-  })();
+    const seen = new Set<string>();
+    return combined.filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [infiniteData]);
 
+  const isFetchingRef = useRef(false);
   const fetchMoreData = () => {
-    if (hasNextPage && !isLoadingMore && !isLoading) {
-      fetchNextPage();
+    if (hasNextPage && !isLoadingMore && !isLoading && !isFetchingRef.current) {
+      isFetchingRef.current = true;
+      fetchNextPage().finally(() => {
+        isFetchingRef.current = false;
+      });
     }
   };
 
@@ -202,7 +209,7 @@ export default function CompaniesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <FlatList
+      <FlashList
         data={data}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}

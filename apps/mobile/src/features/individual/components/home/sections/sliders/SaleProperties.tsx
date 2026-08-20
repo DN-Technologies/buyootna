@@ -1,7 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -82,17 +82,24 @@ export default function SaleProperties({
     },
   });
 
-  const data = (() => {
+  const data = useMemo(() => {
     const combined = infiniteData.pages.flatMap((page) => page.data);
-    return combined.filter(
-      (item, idx) => combined.findIndex((i) => i.id === item.id) === idx,
-    );
-  })();
+    const seen = new Set<string>();
+    return combined.filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+  }, [infiniteData]);
 
   // Triggered when user scrolls to the end of the horizontal list
+  const isFetchingRef = useRef(false);
   const fetchMoreData = () => {
-    if (hasNextPage && !isLoadingMore) {
-      fetchNextPage();
+    if (hasNextPage && !isLoadingMore && !isFetchingRef.current) {
+      isFetchingRef.current = true;
+      fetchNextPage().finally(() => {
+        isFetchingRef.current = false;
+      });
     }
   };
 

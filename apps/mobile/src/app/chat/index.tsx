@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -18,9 +19,9 @@ import ContentContainer from '@/shared/components/ContentContainer';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
 import { socketService } from '@/shared/services/socket.service';
-import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
 
 export default function ChatsInboxScreen() {
   const router = useRouter();
@@ -197,7 +198,7 @@ export default function ChatsInboxScreen() {
             {isLoading && conversations.length === 0 ? (
               <ChatListSkeleton count={6} />
             ) : (
-              <FlatList
+              <FlashList
                 data={displayedChats}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
