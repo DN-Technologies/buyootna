@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Text,
   TextInput,
   TouchableOpacity,
@@ -202,7 +202,7 @@ export default function CompaniesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <FlatList
+      <FlashList
         data={data}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}

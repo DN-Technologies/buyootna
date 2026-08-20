@@ -1,7 +1,8 @@
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
@@ -75,7 +76,7 @@ export default function HomeOffices({
   };
 
   return (
-    <FlatList
+    <FlashList
       data={data}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={ListHeaderComponent}

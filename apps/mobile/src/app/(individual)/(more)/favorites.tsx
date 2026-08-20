@@ -1,14 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import {
-  FlatList,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useFavorites } from '@/features/individual/hooks/useFavorites';
@@ -101,7 +96,7 @@ export default function FavoritesScreen() {
       </View>
 
       {/* List */}
-      <FlatList
+      <FlashList
         data={properties}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{

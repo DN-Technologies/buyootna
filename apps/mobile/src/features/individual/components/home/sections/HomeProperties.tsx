@@ -1,14 +1,9 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { useFavorites } from '@/features/individual/hooks/useFavorites';
@@ -139,16 +134,11 @@ export default function HomeProperties({
     <View className="flex-1">
       {/* 1. Card View FlatList */}
       <View style={viewMode === 'card' ? { flex: 1 } : { display: 'none' }}>
-        <FlatList
+        <FlashList
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
           ListHeaderComponent={ListHeaderComponent}
           ListEmptyComponent={renderEmptyComponent('card')}
-          columnWrapperStyle={
-            isTablet
-              ? { gap: 16, justifyContent: 'flex-start', marginBottom: 16 }
-              : undefined
-          }
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
@@ -167,30 +157,42 @@ export default function HomeProperties({
               />
             ) : undefined
           }
-          renderItem={({ item }) => (
-            <PropertyCard
-              id={item.id}
-              images={item.images}
-              price={item.price}
-              companyName={item.companyName}
-              isFeatured={item.isFeatured}
-              type={item.type}
-              area={item.area}
-              beds={item.beds}
-              baths={item.baths}
-              location={item.location}
-              cardWidth={
-                isTablet
-                  ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns
-                  : '100%'
-              }
-              timeAgo={
-                item.createdAt ? formatTimeAgo(item.createdAt) : undefined
-              }
-              isFavorited={favoritedIds.includes(item.id)}
-              onFavorite={() => toggleFavorite(item.id)}
-            />
-          )}
+          renderItem={({ item }) => {
+            const card = (
+              <PropertyCard
+                id={item.id}
+                images={item.images}
+                price={item.price}
+                companyName={item.companyName}
+                isFeatured={item.isFeatured}
+                type={item.type}
+                area={item.area}
+                beds={item.beds}
+                baths={item.baths}
+                location={item.location}
+                cardWidth={
+                  isTablet
+                    ? (680 - 40 - (cardColumns - 1) * 16) / cardColumns
+                    : '100%'
+                }
+                timeAgo={
+                  item.createdAt ? formatTimeAgo(item.createdAt) : undefined
+                }
+                isFavorited={favoritedIds.includes(item.id)}
+                onFavorite={() => toggleFavorite(item.id)}
+              />
+            );
+            // FlashList v2 dropped columnWrapperStyle, so the tablet grid's
+            // inter-card gap (previously `{ gap: 16, marginBottom: 16 }`)
+            // is replicated as padding baked into each cell instead.
+            return isTablet ? (
+              <View style={{ paddingHorizontal: 8, paddingBottom: 16 }}>
+                {card}
+              </View>
+            ) : (
+              card
+            );
+          }}
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
@@ -205,7 +207,7 @@ export default function HomeProperties({
 
       {/* 2. List View FlatList */}
       <View style={viewMode === 'list' ? { flex: 1 } : { display: 'none' }}>
-        <FlatList
+        <FlashList
           data={data}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={ListHeaderComponent}
