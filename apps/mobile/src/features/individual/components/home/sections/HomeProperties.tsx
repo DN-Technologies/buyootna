@@ -139,8 +139,12 @@ export default function HomeProperties({
 
   return (
     <View className="flex-1">
-      {/* 1. Card View FlatList */}
-      <View style={viewMode === 'card' ? { flex: 1 } : { display: 'none' }}>
+      {/* Only the active view's list is mounted — a display:none list
+          collapses to zero size, which forces FlashList into an expensive
+          full relayout the moment it's shown again. Switching views now
+          costs a fresh mount instead, and loses scroll position on switch,
+          which is the right trade for actually being fast. */}
+      {viewMode === 'card' ? (
         <FlashList
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
@@ -200,7 +204,7 @@ export default function HomeProperties({
               card
             );
           }}
-          onEndReached={viewMode === 'card' ? fetchMoreData : undefined}
+          onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isLoadingMore || isFetchingDetails ? (
@@ -210,10 +214,7 @@ export default function HomeProperties({
             ) : null
           }
         />
-      </View>
-
-      {/* 2. List View FlatList */}
-      <View style={viewMode === 'list' ? { flex: 1 } : { display: 'none' }}>
+      ) : (
         <FlashList
           data={data}
           keyExtractor={(item) => item.id}
@@ -252,7 +253,7 @@ export default function HomeProperties({
               onShowDetails={() => handleShowDetails(item.id)}
             />
           )}
-          onEndReached={viewMode === 'list' ? fetchMoreData : undefined}
+          onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             isLoadingMore || isFetchingDetails ? (
@@ -262,7 +263,7 @@ export default function HomeProperties({
             ) : null
           }
         />
-      </View>
+      )}
 
       {/* Expanded details bottom sheet */}
       <PropertyDetailsSheet
