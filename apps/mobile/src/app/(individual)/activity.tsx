@@ -1,12 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
-  FlatList,
   RefreshControl,
   Text,
   TouchableOpacity,
@@ -367,9 +367,10 @@ export default function ActivityScreen() {
       </View>
 
       {/* Scrolling list */}
-      <FlatList
+      <FlashList
         data={activeTab === 'اعلاناتي' ? sortedAndFilteredData : []}
         keyExtractor={(item) => item.id}
+        getItemType={(item) => (item.status === 'DRAFT' ? 'draft' : 'active')}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingBottom: scrollContentBottomPadding,
