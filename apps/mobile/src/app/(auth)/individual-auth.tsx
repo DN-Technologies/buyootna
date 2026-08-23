@@ -47,7 +47,11 @@ export default function IndividualAuthScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [signupPhone, setSignupPhone] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  // Kept independent so each button only spins for its own action: the form
+  // submit, a Google sign-in, and an Apple sign-in never bleed into each other.
+  const [isFormLoading, setIsFormLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAppleLoading, setIsAppleLoading] = useState(false);
   const setAuth = useAuthStore((state) => state.setAuth);
 
   // Refs for the Bottom Sheets
@@ -61,7 +65,7 @@ export default function IndividualAuthScreen() {
   };
 
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
-    setIsLoading(true);
+    setIsFormLoading(true);
     try {
       const response = await apiClient.post('/auth/login', {
         identifier: data.identifier,
@@ -88,12 +92,12 @@ export default function IndividualAuthScreen() {
       }
       Alert.alert('فشل تسجيل الدخول', backendMessage);
     } finally {
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
 
   const onSignup = async (data: SignupFormValues) => {
-    setIsLoading(true);
+    setIsFormLoading(true);
     try {
       await apiClient.post('/users/register/individual', {
         identifier: data.identifier,
@@ -131,7 +135,7 @@ export default function IndividualAuthScreen() {
       }
       Alert.alert('فشل التسجيل', backendMessage);
     } finally {
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
 
@@ -173,7 +177,7 @@ export default function IndividualAuthScreen() {
       return;
     }
 
-    setIsLoading(true);
+    setIsGoogleLoading(true);
     try {
       await GoogleSignin.hasPlayServices();
       const result = await GoogleSignin.signIn();
@@ -192,12 +196,12 @@ export default function IndividualAuthScreen() {
       }
       handleSocialAuthError(error, 'فشل تسجيل الدخول عبر Google');
     } finally {
-      setIsLoading(false);
+      setIsGoogleLoading(false);
     }
   };
 
   const onAppleSignIn = async () => {
-    setIsLoading(true);
+    setIsAppleLoading(true);
     try {
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -220,12 +224,12 @@ export default function IndividualAuthScreen() {
       }
       handleSocialAuthError(error, 'فشل تسجيل الدخول عبر Apple');
     } finally {
-      setIsLoading(false);
+      setIsAppleLoading(false);
     }
   };
 
   const onVerifyOtp = async (otp: string) => {
-    setIsLoading(true);
+    setIsFormLoading(true);
     try {
       const response = await apiClient.post('/auth/register/verify-otp', {
         phone: signupPhone,
@@ -249,7 +253,7 @@ export default function IndividualAuthScreen() {
       }
       Alert.alert('خطأ في التحقق', backendMessage);
     } finally {
-      setIsLoading(false);
+      setIsFormLoading(false);
     }
   };
 
@@ -307,21 +311,25 @@ export default function IndividualAuthScreen() {
               onOpenProfiles={() => profileSheetRef.current?.present()}
               onGooglePress={onGoogleSignIn}
               onApplePress={onAppleSignIn}
-              isLoading={isLoading}
+              isLoading={isFormLoading}
+              isGoogleLoading={isGoogleLoading}
+              isAppleLoading={isAppleLoading}
             />
           ) : signupStep === 1 ? (
             <IndividualSignupForm
               onSubmit={onSignup}
               onGooglePress={onGoogleSignIn}
               onApplePress={onAppleSignIn}
-              isLoading={isLoading}
+              isLoading={isFormLoading}
+              isGoogleLoading={isGoogleLoading}
+              isAppleLoading={isAppleLoading}
             />
           ) : (
             <IndividualSignupOtpStep
               phone={signupPhone}
               onSubmit={onVerifyOtp}
               onResendOtp={onResendOtp}
-              isLoading={isLoading}
+              isLoading={isFormLoading}
             />
           )}
         </ScrollView>

@@ -5,14 +5,24 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 interface SocialAuthButtonsProps {
   onGooglePress: () => void;
   onApplePress: () => void;
-  isLoading?: boolean;
+  // Each button spins independently for its own sign-in, and only its own.
+  isGoogleLoading?: boolean;
+  isAppleLoading?: boolean;
+  // Some other action (e.g. the regular submit button) is in flight: disables
+  // both buttons without showing a spinner on either.
+  disabled?: boolean;
 }
 
 export const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
   onGooglePress,
   onApplePress,
-  isLoading = false,
+  isGoogleLoading = false,
+  isAppleLoading = false,
+  disabled = false,
 }) => {
+  // Both buttons are disabled while either is loading, to prevent tapping a
+  // second provider mid-flight — but only the one actually loading spins.
+  const isDisabled = isGoogleLoading || isAppleLoading || disabled;
   return (
     <View className="mb-4">
       <View className="mb-4 flex-row items-center">
@@ -28,10 +38,10 @@ export const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           testID="social-auth-apple-button"
           activeOpacity={0.7}
           onPress={onApplePress}
-          disabled={isLoading}
+          disabled={isDisabled}
           className="h-[48px] w-[48px] items-center justify-center rounded-full border border-[#3D3D3D40] bg-white"
         >
-          {isLoading ? (
+          {isAppleLoading ? (
             <ActivityIndicator color="#0B2239" size="small" />
           ) : (
             <Image
@@ -46,10 +56,10 @@ export const SocialAuthButtons: React.FC<SocialAuthButtonsProps> = ({
           testID="social-auth-google-button"
           activeOpacity={0.7}
           onPress={onGooglePress}
-          disabled={isLoading}
+          disabled={isDisabled}
           className="h-[48px] w-[48px] items-center justify-center rounded-full border border-[#3D3D3D40] bg-white"
         >
-          {isLoading ? (
+          {isGoogleLoading ? (
             <ActivityIndicator color="#0B2239" size="small" />
           ) : (
             <Image
