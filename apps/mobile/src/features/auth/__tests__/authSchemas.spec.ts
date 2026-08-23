@@ -25,6 +25,21 @@ describe('Auth Schemas Validation Unit Tests', () => {
       });
       expect(result.success).toBe(false);
     });
+
+    it('documents a current asymmetry: a non-Kuwaiti numeric identifier passes login (loose numeric check) but fails signup (strict Kuwait check)', () => {
+      const loginResult = loginSchema.safeParse({
+        identifier: '12345678901',
+        password: 'password123',
+      });
+      expect(loginResult.success).toBe(true);
+
+      const signupResult = signupSchema.safeParse({
+        identifier: '12345678901',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(signupResult.success).toBe(false);
+    });
   });
 
   describe('signupSchema', () => {

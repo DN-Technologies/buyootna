@@ -1,0 +1,167 @@
+import * as axios from 'axios';
+import { Platform } from 'react-native';
+
+// Imported once: api.ts registers its interceptors at module-load time, and
+// validateApiUrl (the function under test in the block below) has no
+// module-load-time state of its own, so re-importing per test isn't needed.
+import apiClient, {
+  setAuthToken,
+  setOnUnauthorized,
+  validateApiUrl,
+} from '../api';
+
+jest.mock('axios', () => {
+  const mockRequestUse = jest.fn();
+  const mockResponseUse = jest.fn();
+  const mockAxiosInstance = {
+    interceptors: {
+      request: { use: mockRequestUse },
+      response: { use: mockResponseUse },
+    },
+  };
+  const mockCreate = jest.fn(() => mockAxiosInstance);
+  return {
+    __esModule: true,
+    create: mockCreate,
+    __mock: { mockRequestUse, mockResponseUse, mockAxiosInstance, mockCreate },
+  };
+});
+
+const { mockRequestUse, mockResponseUse, mockAxiosInstance, mockCreate } = (
+  axios as unknown as {
+    __mock: {
+      mockRequestUse: jest.Mock;
+      mockResponseUse: jest.Mock;
+      mockAxiosInstance: unknown;
+      mockCreate: jest.Mock;
+    };
+  }
+).__mock;
+
+describe('validateApiUrl', () => {
+  const originalEnv = process.env.EXPO_PUBLIC_API_URL;
+  const originalDev = (global as any).__DEV__;
+  const originalPlatformOS = Platform.OS;
+
+  afterEach(() => {
+    process.env.EXPO_PUBLIC_API_URL = originalEnv;
+    (global as any).__DEV__ = originalDev;
+    (Platform as any).OS = originalPlatformOS;
+  });
+
+  it('returns the Android emulator host in dev with no env var set', () => {
+    delete process.env.EXPO_PUBLIC_API_URL;
+    (global as any).__DEV__ = true;
+    (Platform as any).OS = 'android';
+
+    expect(validateApiUrl()).toBe('http://10.0.2.2:8000');
+  });
+
+  it('returns the iOS localhost host in dev with no env var set', () => {
+    delete process.env.EXPO_PUBLIC_API_URL;
+    (global as any).__DEV__ = true;
+    (Platform as any).OS = 'ios';
+
+    expect(validateApiUrl()).toBe('http://localhost:8000');
+  });
+
+  it('throws in production when no env var is set', () => {
+    delete process.env.EXPO_PUBLIC_API_URL;
+    (global as any).__DEV__ = false;
+
+    expect(() => validateApiUrl()).toThrow(
+      /EXPO_PUBLIC_API_URL is not defined/,
+    );
+  });
+
+  it('rewrites a localhost env var to the Android emulator host in dev on Android', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://localhost:3000';
+    (global as any).__DEV__ = true;
+    (Platform as any).OS = 'android';
+
+    expect(validateApiUrl()).toBe('http://10.0.2.2:3000');
+  });
+
+  it('rewrites a 127.0.0.1 env var to the Android emulator host in dev on Android', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://127.0.0.1:3000';
+    (global as any).__DEV__ = true;
+    (Platform as any).OS = 'android';
+
+    expect(validateApiUrl()).toBe('http://10.0.2.2:3000');
+  });
+
+  it('leaves a non-localhost env var untouched', () => {
+    process.env.EXPO_PUBLIC_API_URL = 'https://api.buyootna.com';
+    (global as any).__DEV__ = true;
+    (Platform as any).OS = 'android';
+
+    expect(validateApiUrl()).toBe('https://api.buyootna.com');
+  });
+});
+
+describe('apiClient interceptors', () => {
+  const requestSuccessHandler = mockRequestUse.mock.calls[0][0] as (
+    config: any,
+  ) => any;
+  const responseErrorHandler = mockResponseUse.mock.calls[0][1] as (
+    error: any,
+  ) => Promise<any>;
+
+  beforeEach(() => {
+    setAuthToken(null);
+    setOnUnauthorized(() => {});
+  });
+
+  it('created the shared axios instance via axios.create', () => {
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ timeout: 30000 }),
+    );
+    expect(apiClient).toBe(mockAxiosInstance);
+  });
+
+  describe('request interceptor', () => {
+    it('adds an Authorization header once a token is set', async () => {
+      setAuthToken('tok-1');
+      const config = await requestSuccessHandler({ headers: {} });
+      expect(config.headers.Authorization).toBe('Bearer tok-1');
+    });
+
+    it('omits the Authorization header when there is no token', async () => {
+      setAuthToken(null);
+      const config = await requestSuccessHandler({ headers: {} });
+      expect(config.headers.Authorization).toBeUndefined();
+    });
+  });
+
+  describe('response interceptor', () => {
+    it('invokes the unauthorized callback on a 401 when a token is set', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken('tok-1');
+      const error = { response: { status: 401 } };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not invoke the unauthorized callback on a 401 when there is no token', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken(null);
+      const error = { response: { status: 401 } };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).not.toHaveBeenCalled();
+    });
+
+    it('does not invoke the unauthorized callback on a non-401 error', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken('tok-1');
+      const error = { response: { status: 500 } };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).not.toHaveBeenCalled();
+    });
+  });
+});
