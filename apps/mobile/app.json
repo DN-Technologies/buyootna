@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.youssefusfdev.buyootna",
+      "bundleIdentifier": "com.constyoussef.buyootna",
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
@@ -26,13 +26,19 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.youssefusfdev.buyootnamobile"
+      "package": "com.constyoussef.buyootna.login"
     },
     "web": {
       "output": "static",
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.104779825495-f3h8u785nsrrodidi3k61ndknbs76i9l"
+        }
+      ],
       [
         "@rnmapbox/maps",
         {
