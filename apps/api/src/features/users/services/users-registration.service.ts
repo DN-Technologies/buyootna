@@ -32,6 +32,22 @@ export class UsersRegistrationService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    // Send the OTP before creating any account records. Sending used to
+    // happen after the DB transaction committed, so a Twilio failure left
+    // an orphaned account in place — checkUserExists would then reject the
+    // same phone/email on every retry with no way to actually finish
+    // signing up.
+    if (phone) {
+      try {
+        await this.twilioService.sendVerification(phone);
+      } catch (error) {
+        console.log(error);
+        throw new InternalServerErrorException(
+          'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
+        );
+      }
+    }
+
     try {
       // Transaction ensures both records are created, or neither are.
       const result = await this.prisma.$transaction(async (tx) => {
@@ -60,11 +76,6 @@ export class UsersRegistrationService {
 
         return { user, profile };
       });
-
-      // Send Twilio Verify SMS OTP
-      if (phone) {
-        await this.twilioService.sendVerification(phone);
-      }
 
       // Remove password from response
       const userWithoutPassword = { ...result.user };
