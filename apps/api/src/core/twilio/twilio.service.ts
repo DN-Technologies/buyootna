@@ -6,6 +6,9 @@ export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
   private twilioClient: Twilio.Twilio | null = null;
   private serviceSid: string | null = null;
+  // Dev-only: codes generated in mock SMS mode (Twilio unconfigured), keyed
+  // by formatted phone number, so checkVerification can validate them.
+  private readonly mockCodes = new Map<string, string>();
 
   constructor() {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -53,8 +56,10 @@ export class TwilioService {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      this.mockCodes.set(formattedPhone, code);
       this.logger.warn(
-        `[MOCK SMS] Twilio is disabled or unconfigured. Verification request skipped for ${formattedPhone}.`,
+        `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
       );
       return { success: true };
     }
@@ -88,10 +93,15 @@ export class TwilioService {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
+      const expectedCode = this.mockCodes.get(formattedPhone);
+      const isValid = !!expectedCode && expectedCode === code;
       this.logger.warn(
-        `[MOCK SMS] Twilio is unconfigured. Verification check returns true for code ${code} on ${formattedPhone}.`,
+        `[MOCK SMS] Twilio is unconfigured. Verification check for ${formattedPhone} with code ${code}: ${isValid ? 'valid' : 'invalid'}.`,
       );
-      return true;
+      if (isValid) {
+        this.mockCodes.delete(formattedPhone);
+      }
+      return isValid;
     }
 
     try {
