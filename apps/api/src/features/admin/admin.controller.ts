@@ -43,7 +43,9 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('users')
-  @ApiOperation({ summary: 'List users, paginated/filterable, with account stats and counts' })
+  @ApiOperation({
+    summary: 'List users, paginated/filterable, with account stats and counts',
+  })
   @ApiResponse({ status: 200, type: AdminUsersListResponseDto })
   @ApiCommonErrors()
   async getUsers(@Query() filters: AdminUsersFilterDto) {
@@ -51,16 +53,23 @@ export class AdminController {
   }
 
   @Get('users/:id')
-  @ApiOperation({ summary: 'Get full details for a single user, including identities' })
+  @ApiOperation({
+    summary: 'Get full details for a single user, including identities',
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, schema: { type: 'object', additionalProperties: true } })
+  @ApiResponse({
+    status: 200,
+    schema: { type: 'object', additionalProperties: true },
+  })
   @ApiCommonErrors()
   async getUserById(@Param('id') id: string) {
     return this.adminService.getUserById(id);
   }
 
   @Patch('users/:id/status')
-  @ApiOperation({ summary: "Update a user's account status (active/blocked/suspended)" })
+  @ApiOperation({
+    summary: "Update a user's account status (active/blocked/suspended)",
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, type: AdminUpdateUserStatusResponseDto })
   @ApiCommonErrors()
@@ -81,7 +90,10 @@ export class AdminController {
   }
 
   @Patch('identities/:id/status')
-  @ApiOperation({ summary: "Update an identity's approval status (e.g. company/office verification)" })
+  @ApiOperation({
+    summary:
+      "Update an identity's approval status (e.g. company/office verification)",
+  })
   @ApiParam({ name: 'id', description: 'Identity ID' })
   @ApiResponse({ status: 200, type: AdminUpdateIdentityStatusResponseDto })
   @ApiCommonErrors()

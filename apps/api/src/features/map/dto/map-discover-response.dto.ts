@@ -12,13 +12,19 @@ class MapPinPropertiesDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty({ nullable: true, description: 'Listing type for property pins, absent for company pins' })
+  @ApiProperty({
+    nullable: true,
+    description: 'Listing type for property pins, absent for company pins',
+  })
   type?: string;
 
   @ApiProperty({ nullable: true })
   price?: number | null;
 
-  @ApiProperty({ nullable: true, description: 'Company logo URL, present only for company pins' })
+  @ApiProperty({
+    nullable: true,
+    description: 'Company logo URL, present only for company pins',
+  })
   logoUrl?: string | null;
 }
 

@@ -20,12 +20,12 @@ export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
   @Get()
-  @ApiOperation({ summary: "List the current user's active login sessions/devices" })
+  @ApiOperation({
+    summary: "List the current user's active login sessions/devices",
+  })
   @ApiResponse({ status: 200, type: [SessionResponseDto] })
   @ApiCommonErrors()
-  async getDevices(
-    @CurrentUser() reqUser: RequestUser,
-  ): Promise<Session[]> {
+  async getDevices(@CurrentUser() reqUser: RequestUser): Promise<Session[]> {
     return this.devicesService.getDevices(reqUser.userId);
   }
 
@@ -42,7 +42,10 @@ export class DevicesController {
   }
 
   @Delete()
-  @ApiOperation({ summary: "Revoke all of the current user's other active sessions, keeping the most recent" })
+  @ApiOperation({
+    summary:
+      "Revoke all of the current user's other active sessions, keeping the most recent",
+  })
   @ApiResponse({ status: 200, type: RevokeDeviceResponseDto })
   @ApiCommonErrors()
   async revokeAllDevices(

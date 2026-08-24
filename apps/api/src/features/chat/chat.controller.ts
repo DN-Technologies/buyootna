@@ -8,7 +8,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
@@ -29,8 +35,14 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('conversations')
-  @ApiOperation({ summary: 'Find or create a conversation with a recipient, optionally scoped to a property' })
-  @ApiResponse({ status: 201, schema: { type: 'object', additionalProperties: true } })
+  @ApiOperation({
+    summary:
+      'Find or create a conversation with a recipient, optionally scoped to a property',
+  })
+  @ApiResponse({
+    status: 201,
+    schema: { type: 'object', additionalProperties: true },
+  })
   @ApiCommonErrors()
   async createConversation(
     @CurrentUser() reqUser: RequestUser,
@@ -57,15 +69,13 @@ export class ChatController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return this.chatService.getConversations(
-      reqUser.userId,
-      pageNum,
-      limitNum,
-    );
+    return this.chatService.getConversations(reqUser.userId, pageNum, limitNum);
   }
 
   @Get('conversations/:id/messages')
-  @ApiOperation({ summary: 'Get messages for a single conversation, cursor-paginated' })
+  @ApiOperation({
+    summary: 'Get messages for a single conversation, cursor-paginated',
+  })
   @ApiParam({ name: 'id', description: 'Conversation ID' })
   @ApiQuery({ name: 'cursor', required: false })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })

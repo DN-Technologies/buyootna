@@ -58,6 +58,9 @@ jobs:
       - name: Run API Unit Tests
         run: pnpm --filter api test
 
+      - name: Run API Integration Tests
+        run: pnpm --filter api test:e2e
+
       - name: Build API
         run: pnpm --filter api build
 

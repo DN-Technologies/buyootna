@@ -1,0 +1,49 @@
+appId: com.constyoussef.buyootna
+---
+# Guest -> account-type selection -> individual auth (signup tab) -> email
+# signup (no OTP needed) -> success sheet -> lands on individual home.
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "لا توجد عقارات"
+    timeout: 15000
+- tapOn:
+    text: "Open debugger to view warnings.*"
+    optional: true
+- tapOn:
+    point: "10%, 93%" # "المزيد" tab (bottom-left in this RTL layout)
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "10%, 93%"
+- extendedWaitUntil:
+    visible: "إنشاء حساب"
+    timeout: 10000
+- tapOn: "إنشاء حساب"
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn:
+    point: "50%, 40%" # the "فرد" account-type card
+- tapOn: "بدء التسجيل"
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn: "تسجيل جديد"
+- tapOn:
+    point: "50%, 34%" # identifier field
+- inputText: "maestro-signup@buyootna.test"
+- tapOn:
+    point: "50%, 43%" # password field
+- inputText: "MaestroE2E123!"
+- tapOn:
+    point: "50%, 52%" # confirm password field
+- inputText: "MaestroE2E123!"
+- tapOn: "تأكيد كلمة المرور" # tap the label (not a field) to dismiss the keyboard
+- tapOn: "إنشاء حساب"
+- extendedWaitUntil:
+    visible: "تم بنجاح"
+    timeout: 15000
+- tapOn: "ابدأ الآن"
+- extendedWaitUntil:
+    visible: "الرئيسية"
+    timeout: 10000

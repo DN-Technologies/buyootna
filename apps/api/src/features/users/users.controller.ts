@@ -91,7 +91,10 @@ export class UsersController {
       { name: 'license', maxCount: 1 },
     ]),
   )
-  @ApiOperation({ summary: 'Register a new company account, with optional logo/license file upload' })
+  @ApiOperation({
+    summary:
+      'Register a new company account, with optional logo/license file upload',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
   @ApiResponse({ status: 201, type: RegisterCompanyResponseDto })
@@ -112,7 +115,9 @@ export class UsersController {
   }
 
   @Get('companies')
-  @ApiOperation({ summary: 'List approved companies, paginated and filterable' })
+  @ApiOperation({
+    summary: 'List approved companies, paginated and filterable',
+  })
   @ApiResponse({ status: 200, type: CompanyListResponseDto })
   @ApiCommonErrors()
   async findAllCompanies(@Query() filters: GetCompaniesFilterDto) {
@@ -120,7 +125,9 @@ export class UsersController {
   }
 
   @Get('company/:id')
-  @ApiOperation({ summary: 'Get public details for a company by identity or user ID' })
+  @ApiOperation({
+    summary: 'Get public details for a company by identity or user ID',
+  })
   @ApiParam({ name: 'id', description: 'Company identity ID or user ID' })
   @ApiResponse({ status: 200, type: CompanyDetailsResponseDto })
   @ApiCommonErrors()
@@ -129,7 +136,9 @@ export class UsersController {
   }
 
   @Get('offices')
-  @ApiOperation({ summary: 'List approved real-estate offices, paginated and filterable' })
+  @ApiOperation({
+    summary: 'List approved real-estate offices, paginated and filterable',
+  })
   @ApiResponse({ status: 200, type: OfficeListResponseDto })
   @ApiCommonErrors()
   async findAllOffices(@Query() filters: GetOfficesFilterDto) {
@@ -137,7 +146,9 @@ export class UsersController {
   }
 
   @Get('office/:id')
-  @ApiOperation({ summary: 'Get public details for an office by identity or user ID' })
+  @ApiOperation({
+    summary: 'Get public details for an office by identity or user ID',
+  })
   @ApiParam({ name: 'id', description: 'Office identity ID or user ID' })
   @ApiResponse({ status: 200, type: OfficeDetailsResponseDto })
   @ApiCommonErrors()
@@ -152,7 +163,10 @@ export class UsersController {
       { name: 'license', maxCount: 1 },
     ]),
   )
-  @ApiOperation({ summary: 'Register a new office account, with optional logo/license file upload' })
+  @ApiOperation({
+    summary:
+      'Register a new office account, with optional logo/license file upload',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
   @ApiResponse({ status: 201, type: RegisterOfficeResponseDto })
@@ -175,7 +189,10 @@ export class UsersController {
   @Patch('profile')
   @UseInterceptors(FileInterceptor('logo'))
   @ApiAuth()
-  @ApiOperation({ summary: "Update the current user's profile fields, with optional logo upload" })
+  @ApiOperation({
+    summary:
+      "Update the current user's profile fields, with optional logo upload",
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -239,7 +256,10 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   @ApiAuth()
-  @ApiOperation({ summary: "Get the current user's full profile, active identity, and all identities" })
+  @ApiOperation({
+    summary:
+      "Get the current user's full profile, active identity, and all identities",
+  })
   @ApiResponse({ status: 200, type: MeResponseDto })
   @ApiCommonErrors()
   async getProfile(@CurrentUser() reqUser: RequestUser) {
@@ -262,7 +282,9 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a user (and their identities) by user ID or identity ID' })
+  @ApiOperation({
+    summary: 'Get a user (and their identities) by user ID or identity ID',
+  })
   @ApiParam({ name: 'id', description: 'User ID or identity ID' })
   @ApiResponse({ status: 200, type: FindUserResponseDto })
   @ApiCommonErrors()

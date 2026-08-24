@@ -38,7 +38,9 @@ export class NotificationsController {
   }
 
   @Patch('read-all')
-  @ApiOperation({ summary: "Mark all of the current user's notifications as read" })
+  @ApiOperation({
+    summary: "Mark all of the current user's notifications as read",
+  })
   @ApiResponse({ status: 200, type: SuccessResponseDto })
   @ApiCommonErrors()
   async markAllAsRead(@CurrentUser() reqUser: RequestUser) {
@@ -66,7 +68,9 @@ export class NotificationsController {
   }
 
   @Patch('preferences')
-  @ApiOperation({ summary: "Update the current user's notification preferences" })
+  @ApiOperation({
+    summary: "Update the current user's notification preferences",
+  })
   @ApiResponse({ status: 200, type: NotificationPreferencesResponseDto })
   @ApiCommonErrors()
   async updatePreferences(

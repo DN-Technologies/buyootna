@@ -29,7 +29,10 @@ export class PlansController {
   @Get('wallet')
   @UseGuards(JwtAuthGuard)
   @ApiAuth()
-  @ApiOperation({ summary: "Get the current user's ad-credit wallet: balances, active slots, and history" })
+  @ApiOperation({
+    summary:
+      "Get the current user's ad-credit wallet: balances, active slots, and history",
+  })
   @ApiResponse({ status: 200, type: UserWalletResponseDto })
   @ApiCommonErrors()
   async getUserWallet(@CurrentUser() reqUser: RequestUser) {
@@ -49,7 +52,10 @@ export class PlansController {
   @Get('wallet/publish-options')
   @UseGuards(JwtAuthGuard)
   @ApiAuth()
-  @ApiOperation({ summary: "Get the current user's available options for publishing a new listing" })
+  @ApiOperation({
+    summary:
+      "Get the current user's available options for publishing a new listing",
+  })
   @ApiResponse({ status: 200, type: PublishOptionsResponseDto })
   @ApiCommonErrors()
   async getPublishOptions(
