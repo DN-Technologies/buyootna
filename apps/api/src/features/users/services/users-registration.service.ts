@@ -46,7 +46,11 @@ export class UsersRegistrationService {
 
     if (email) {
       try {
-        await this.emailOtpService.sendRegistrationOtp(email, hashedPassword);
+        await this.emailOtpService.sendRegistrationOtp(
+          email,
+          dto.name,
+          hashedPassword,
+        );
       } catch (error) {
         console.log(error);
         throw new InternalServerErrorException(
@@ -79,6 +83,7 @@ export class UsersRegistrationService {
     const { user, profile } = await this.createIndividualAccount(
       undefined,
       phone,
+      dto.name,
       hashedPassword,
     );
     return { user, profile };
@@ -100,12 +105,18 @@ export class UsersRegistrationService {
     // pending.
     await checkUserExists(this.prisma, email, undefined);
 
-    return this.createIndividualAccount(email, undefined, pending.hashedPassword);
+    return this.createIndividualAccount(
+      email,
+      undefined,
+      pending.name,
+      pending.hashedPassword,
+    );
   }
 
   private async createIndividualAccount(
     email: string | undefined,
     phone: string | undefined,
+    name: string,
     hashedPassword: string,
   ) {
     try {
@@ -118,6 +129,9 @@ export class UsersRegistrationService {
               phone,
               password: hashedPassword,
               role: Role.INDIVIDUAL,
+              // Legacy field kept in sync with individualData.name below —
+              // UsersProfileService.updateProfile does the same on updates.
+              name,
             },
           });
 
@@ -131,7 +145,7 @@ export class UsersRegistrationService {
               userId: user.id,
               type: IdentityType.INDIVIDUAL,
               isActive: true,
-              individualData: { create: {} },
+              individualData: { create: { name } },
             },
           });
 

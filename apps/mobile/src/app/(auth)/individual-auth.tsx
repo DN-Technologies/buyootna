@@ -49,7 +49,8 @@ export default function IndividualAuthScreen() {
   const [signupIdentifier, setSignupIdentifier] = useState('');
   // Only needed to resend an email OTP: unlike phone, no account exists yet
   // to re-request a code for, so resending re-runs the same registration
-  // call, which needs the password again.
+  // call, which needs the name and password again.
+  const [signupName, setSignupName] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   // Kept independent so each button only spins for its own action: the form
   // submit, a Google sign-in, and an Apple sign-in never bleed into each other.
@@ -104,6 +105,7 @@ export default function IndividualAuthScreen() {
     setIsFormLoading(true);
     try {
       await apiClient.post('/users/register/individual', {
+        name: data.name,
         identifier: data.identifier,
         password: data.password,
       });
@@ -113,6 +115,7 @@ export default function IndividualAuthScreen() {
       // account synchronously, to guarantee no account without a verified
       // address.
       setSignupIdentifier(data.identifier);
+      setSignupName(data.name);
       setSignupPassword(data.password);
       setSignupStep(2);
     } catch (error: any) {
@@ -264,6 +267,7 @@ export default function IndividualAuthScreen() {
         // nothing to request a fresh OTP "for" — re-running registration
         // itself re-sends one.
         await apiClient.post('/users/register/individual', {
+          name: signupName,
           identifier: signupIdentifier,
           password: signupPassword,
         });

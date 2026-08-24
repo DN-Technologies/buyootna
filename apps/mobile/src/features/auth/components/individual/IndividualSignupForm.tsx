@@ -35,10 +35,19 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
     <View className="flex-1">
       <FormInput
         control={control}
+        name="name"
+        label="الاسم"
+        placeholder="علي سالم"
+        testID="individual-signup-name-input"
+      />
+
+      <FormInput
+        control={control}
         name="identifier"
         label="رقم الهاتف أو البريد الالكتروني"
         placeholder="alisalem@gmail.com"
         autoCapitalize="none"
+        testID="individual-signup-identifier-input"
       />
 
       <FormInput

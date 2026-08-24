@@ -5,6 +5,7 @@ import type { App } from 'supertest/types';
 import {
   randomEmail,
   randomKuwaitPhone,
+  TEST_NAME,
   TEST_PASSWORD,
 } from '../utils/fixtures';
 import { getMockEmailOtpCode, getMockOtpCode } from '../utils/otp';
@@ -30,7 +31,7 @@ describe('Individual auth flow (e2e)', () => {
 
       const registerRes = await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
         .expect(201);
       const registerBody = registerRes.body as {
         otpRequired: boolean;
@@ -72,7 +73,7 @@ describe('Individual auth flow (e2e)', () => {
       const email = randomEmail();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
         .expect(201);
 
       await request(app.getHttpServer())
@@ -90,7 +91,7 @@ describe('Individual auth flow (e2e)', () => {
       const email = randomEmail();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
         .expect(201);
       const otp = getMockEmailOtpCode(app, email);
       await request(app.getHttpServer())
@@ -100,7 +101,7 @@ describe('Individual auth flow (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
         .expect(409);
     });
   });
@@ -111,7 +112,7 @@ describe('Individual auth flow (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: phone, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
         .expect(201);
 
       const otp = getMockOtpCode(app, phone);
@@ -130,7 +131,7 @@ describe('Individual auth flow (e2e)', () => {
       const phone = randomKuwaitPhone();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: phone, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
         .expect(201);
 
       await request(app.getHttpServer())
@@ -145,7 +146,7 @@ describe('Individual auth flow (e2e)', () => {
       const email = randomEmail();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
         .expect(201);
       const otp = getMockEmailOtpCode(app, email);
       const verifyRes = await request(app.getHttpServer())
@@ -172,7 +173,7 @@ describe('Individual auth flow (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: emailA, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: emailA, password: TEST_PASSWORD })
         .expect(201);
       const otpA = getMockEmailOtpCode(app, emailA);
       const verifyA = await request(app.getHttpServer())
@@ -183,7 +184,7 @@ describe('Individual auth flow (e2e)', () => {
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: emailB, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: emailB, password: TEST_PASSWORD })
         .expect(201);
       const otpB = getMockEmailOtpCode(app, emailB);
       const verifyB = await request(app.getHttpServer())
@@ -212,7 +213,7 @@ describe('Individual auth flow (e2e)', () => {
       const phone = randomKuwaitPhone();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: phone, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
         .expect(201);
       const registerOtp = getMockOtpCode(app, phone);
       const verifyRes = await request(app.getHttpServer())
@@ -247,7 +248,7 @@ describe('Individual auth flow (e2e)', () => {
       const phone = randomKuwaitPhone();
       await request(app.getHttpServer())
         .post('/users/register/individual')
-        .send({ identifier: phone, password: TEST_PASSWORD })
+        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
         .expect(201);
       const registerOtp = getMockOtpCode(app, phone);
       const verifyRes = await request(app.getHttpServer())

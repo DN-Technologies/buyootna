@@ -53,7 +53,11 @@ async function seedLoginUser(): Promise<void> {
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier: SEED_EMAIL, password: SEED_PASSWORD }),
+      body: JSON.stringify({
+        name: 'Maestro Seed User',
+        identifier: SEED_EMAIL,
+        password: SEED_PASSWORD,
+      }),
     },
   );
   if (res.status !== 201) {

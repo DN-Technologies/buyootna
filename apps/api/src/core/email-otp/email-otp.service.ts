@@ -5,6 +5,7 @@ import { otpVerificationTemplate } from '../mail/templates/otp-verification.temp
 const OTP_TTL_MS = 10 * 60 * 1000;
 
 interface PendingEmailRegistration {
+  name: string;
   hashedPassword: string;
   otp: string;
   expiresAt: Date;
@@ -26,10 +27,12 @@ export class EmailOtpService {
 
   async sendRegistrationOtp(
     email: string,
+    name: string,
     hashedPassword: string,
   ): Promise<void> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     this.pending.set(email, {
+      name,
       hashedPassword,
       otp,
       expiresAt: new Date(Date.now() + OTP_TTL_MS),
@@ -44,7 +47,7 @@ export class EmailOtpService {
     await this.mailService.sendMail({
       to: email,
       subject: 'رمز التحقق من بريدك الإلكتروني - Buyootna',
-      html: otpVerificationTemplate({ userName: email, otp }),
+      html: otpVerificationTemplate({ userName: name, otp }),
     });
   }
 
@@ -65,17 +68,17 @@ export class EmailOtpService {
       : null;
   }
 
-  /** Validates the OTP and, if correct, consumes the pending entry and returns its stored password hash. */
+  /** Validates the OTP and, if correct, consumes the pending entry and returns its stored name + password hash. */
   verifyAndConsume(
     email: string,
     otp: string,
-  ): { hashedPassword: string } | null {
+  ): { name: string; hashedPassword: string } | null {
     const record = this.pending.get(email);
     if (!record || record.expiresAt < new Date() || record.otp !== otp) {
       return null;
     }
 
     this.pending.delete(email);
-    return { hashedPassword: record.hashedPassword };
+    return { name: record.name, hashedPassword: record.hashedPassword };
   }
 }
