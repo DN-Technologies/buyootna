@@ -157,11 +157,11 @@ describe('IndividualAuthScreen', () => {
       await fireEvent.press(getByText('تسجيل جديد'));
     };
 
-    it('with an email identifier: registers then immediately logs in, no OTP step shown', async () => {
-      mockApiClient.post
-        .mockResolvedValueOnce({ data: { message: 'registered' } }) // /users/register/individual
-        .mockResolvedValueOnce({ data: loginResponseData }); // /auth/login
-      const { getByPlaceholderText, getAllByPlaceholderText, getByText, queryByText } =
+    it('with an email identifier: only registers, then shows the OTP step', async () => {
+      mockApiClient.post.mockResolvedValueOnce({
+        data: { otpRequired: true, identifier: 'ali@example.com' },
+      });
+      const { getByPlaceholderText, getAllByPlaceholderText, getByText } =
         await render(<IndividualAuthScreen />);
 
       await switchToSignup(getByText);
@@ -175,21 +175,16 @@ describe('IndividualAuthScreen', () => {
       await fireEvent.press(getByText('إنشاء حساب'));
 
       await waitFor(() => {
-        expect(mockApiClient.post).toHaveBeenNthCalledWith(
-          1,
+        expect(mockApiClient.post).toHaveBeenCalledWith(
           '/users/register/individual',
           { identifier: 'ali@example.com', password: 'Password123!' },
         );
       });
+      expect(mockApiClient.post).toHaveBeenCalledTimes(1);
       await waitFor(() => {
-        expect(mockApiClient.post).toHaveBeenNthCalledWith(2, '/auth/login', {
-          identifier: 'ali@example.com',
-          password: 'Password123!',
-        });
+        expect(getByText('التحقق من الرمز')).toBeTruthy();
       });
-      await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
-      // No OTP step rendered for an email identifier.
-      expect(queryByText('التحقق من الرمز')).toBeNull();
+      expect(mockSetAuth).not.toHaveBeenCalled();
     });
 
     it('with a phone identifier: only registers, then shows the OTP step', async () => {
@@ -280,6 +275,71 @@ describe('IndividualAuthScreen', () => {
           expect(mockApiClient.post).toHaveBeenCalledWith(
             '/auth/recovery/request-otp',
             { identifier: '51234567' },
+          );
+        });
+      });
+    });
+
+    describe('OTP step (email)', () => {
+      const advanceToEmailOtpStep = async (
+        getByPlaceholderText: any,
+        getAllByPlaceholderText: any,
+        getByText: any,
+      ) => {
+        mockApiClient.post.mockResolvedValueOnce({
+          data: { otpRequired: true, identifier: 'ali@example.com' },
+        });
+        await switchToSignup(getByText);
+        await fireEvent.changeText(
+          getByPlaceholderText('alisalem@gmail.com'),
+          'ali@example.com',
+        );
+        const passwordInputs = getAllByPlaceholderText('**************');
+        await fireEvent.changeText(passwordInputs[0], 'Password123!');
+        await fireEvent.changeText(passwordInputs[1], 'Password123!');
+        await fireEvent.press(getByText('إنشاء حساب'));
+        await waitFor(() => getByText('التحقق من الرمز'));
+        mockApiClient.post.mockClear();
+      };
+
+      it('verifying the OTP calls verify-email-otp then setAuth', async () => {
+        mockApiClient.post.mockResolvedValueOnce({ data: loginResponseData });
+        const { getByPlaceholderText, getAllByPlaceholderText, getByText, getByDisplayValue } =
+          await render(<IndividualAuthScreen />);
+        await advanceToEmailOtpStep(getByPlaceholderText, getAllByPlaceholderText, getByText);
+
+        const hiddenOtpInput = getByDisplayValue('');
+        await fireEvent.changeText(hiddenOtpInput, '123456');
+        await fireEvent.press(getByText('التحقق من الرمز'));
+
+        await waitFor(() => {
+          expect(mockApiClient.post).toHaveBeenCalledWith(
+            '/auth/register/verify-email-otp',
+            { email: 'ali@example.com', otp: '123456' },
+          );
+        });
+        await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
+      });
+
+      it('resend re-posts to register/individual with the same identifier and password (no account exists yet)', async () => {
+        jest.useFakeTimers();
+        const { getByPlaceholderText, getAllByPlaceholderText, getByText } =
+          await render(<IndividualAuthScreen />);
+        await advanceToEmailOtpStep(getByPlaceholderText, getAllByPlaceholderText, getByText);
+        mockApiClient.post.mockResolvedValueOnce({
+          data: { otpRequired: true, identifier: 'ali@example.com' },
+        });
+
+        await act(async () => {
+          jest.advanceTimersByTime(45000);
+        });
+        await fireEvent.press(getByText('إعادة إرسال الرمز'));
+        jest.useRealTimers();
+
+        await waitFor(() => {
+          expect(mockApiClient.post).toHaveBeenCalledWith(
+            '/users/register/individual',
+            { identifier: 'ali@example.com', password: 'Password123!' },
           );
         });
       });

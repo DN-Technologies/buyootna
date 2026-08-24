@@ -76,6 +76,9 @@ function startApi(databaseUrl: string): ChildProcess {
       TWILIO_ACCOUNT_SID: '',
       TWILIO_AUTH_TOKEN: '',
       TWILIO_VERIFY_SERVICE_SID: '',
+      // Same reasoning, for MailService — force mock-mail mode so signup
+      // emails never hit the real Resend API.
+      RESEND_API_KEY: '',
     },
     stdio: 'inherit',
   });

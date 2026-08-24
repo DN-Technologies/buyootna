@@ -1,4 +1,14 @@
-import { Body, Controller, Post, Req, UseGuards, Patch } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -8,6 +18,7 @@ import { SocialProvider, type User } from '@prisma/client';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyRegisterOtpDto } from './dto/verify-register-otp.dto';
+import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import { SwitchIdentityDto } from './dto/switch-identity.dto';
 import { AppleLoginDto, GoogleLoginDto } from './dto/social-login.dto';
 import type { RequestUser } from './strategies/jwt.strategy';
@@ -87,6 +98,34 @@ export class AuthController {
   @ApiCommonErrors()
   async verifyRegisterOtp(@Body() dto: VerifyRegisterOtpDto) {
     return this.authService.verifyRegistrationOtp(dto.phone, dto.otp);
+  }
+
+  @Post('register/verify-email-otp')
+  @ApiOperation({
+    summary:
+      'Verify the OTP sent to an email during registration, creating the account and logging the user in',
+  })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
+  @ApiCommonErrors()
+  async verifyEmailRegisterOtp(@Body() dto: VerifyEmailOtpDto) {
+    return this.authService.verifyEmailRegistrationOtp(dto.email, dto.otp);
+  }
+
+  // Dev/CI only — 404s unless MailService is in mock mode (RESEND_API_KEY
+  // unset), which is never true in production. Lets black-box e2e tools
+  // (Maestro) read an OTP a mock "email" was sent, since they drive the app
+  // from a separate process with no way to inspect server memory directly.
+  @Get('register/debug-email-otp')
+  @ApiOperation({
+    summary:
+      "Dev/CI only: read a pending email signup's mock OTP. 404s unless mail is in mock mode.",
+  })
+  debugEmailOtp(@Query('email') email: string) {
+    const otp = this.authService.getMockEmailOtp(email);
+    if (!otp) {
+      throw new NotFoundException();
+    }
+    return { otp };
   }
 
   @UseGuards(AuthGuard('jwt'))

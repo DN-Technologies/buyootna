@@ -28,6 +28,11 @@ export class MailService {
     }
   }
 
+  /** True when RESEND_API_KEY is unset and sendMail only logs instead of sending. */
+  get isMockMode(): boolean {
+    return this.resendClient === null;
+  }
+
   async sendMail(options: SendMailOptions): Promise<{ success: boolean }> {
     if (!this.resendClient) {
       this.logger.warn(

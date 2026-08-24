@@ -3,6 +3,8 @@ import { AuthService } from './auth.service';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from 'src/core/twilio/twilio.service';
+import { UsersRegistrationService } from '../users/services/users-registration.service';
+import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { SocialProvider, IdentityType, type User } from '@prisma/client';
 import {
   UnauthorizedException,
@@ -95,6 +97,14 @@ describe('AuthService Unit Tests', () => {
     sign: jest.fn().mockReturnValue('mocked_token'),
   };
 
+  const mockUsersRegistrationService = {
+    completeEmailRegistration: jest.fn(),
+  };
+
+  const mockEmailOtpService = {
+    getMockOtp: jest.fn(),
+  };
+
   const mockTwilioService = {
     sendVerification: jest.fn(),
     checkVerification: jest.fn(),
@@ -114,6 +124,11 @@ describe('AuthService Unit Tests', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: TwilioService, useValue: mockTwilioService },
+        {
+          provide: UsersRegistrationService,
+          useValue: mockUsersRegistrationService,
+        },
+        { provide: EmailOtpService, useValue: mockEmailOtpService },
       ],
     }).compile();
 
@@ -499,6 +514,54 @@ describe('AuthService Unit Tests', () => {
       );
       const loginArg = loginSpy.mock.calls[0][0];
       expect(loginArg).not.toHaveProperty('password');
+    });
+  });
+
+  describe('verifyEmailRegistrationOtp', () => {
+    it('creates the account via UsersRegistrationService then logs the user in', async () => {
+      const createdUser = { id: 'user-2', email: 'ali@example.com' };
+      mockUsersRegistrationService.completeEmailRegistration.mockResolvedValue(
+        { user: createdUser, profile: { id: 'profile-1' } },
+      );
+      const loginSpy = jest
+        .spyOn(service, 'login')
+        .mockResolvedValue(MOCK_LOGIN_RESULT);
+
+      const result = await service.verifyEmailRegistrationOtp(
+        'ali@example.com',
+        '123456',
+      );
+
+      expect(
+        mockUsersRegistrationService.completeEmailRegistration,
+      ).toHaveBeenCalledWith('ali@example.com', '123456');
+      expect(loginSpy).toHaveBeenCalledWith(createdUser);
+      expect(result).toBe(MOCK_LOGIN_RESULT);
+    });
+
+    it('propagates BadRequestException from an invalid OTP without logging in', async () => {
+      mockUsersRegistrationService.completeEmailRegistration.mockRejectedValue(
+        new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية'),
+      );
+      const loginSpy = jest.spyOn(service, 'login');
+
+      await expect(
+        service.verifyEmailRegistrationOtp('ali@example.com', '000000'),
+      ).rejects.toThrow(BadRequestException);
+      expect(loginSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getMockEmailOtp', () => {
+    it('delegates to EmailOtpService.getMockOtp', () => {
+      mockEmailOtpService.getMockOtp.mockReturnValue('123456');
+
+      const result = service.getMockEmailOtp('ali@example.com');
+
+      expect(result).toBe('123456');
+      expect(mockEmailOtpService.getMockOtp).toHaveBeenCalledWith(
+        'ali@example.com',
+      );
     });
   });
 

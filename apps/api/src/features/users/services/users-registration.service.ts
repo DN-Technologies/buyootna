@@ -1,9 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { IdentityType, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
+import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import {
   checkUserExists,
   isEmail,
@@ -21,9 +26,16 @@ export class UsersRegistrationService {
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
     private readonly twilioService: TwilioService,
+    private readonly emailOtpService: EmailOtpService,
   ) {}
 
   // --- Register Individual ---
+  // Email identifiers are verified BEFORE any account exists: the hashed
+  // password sits in EmailOtpService's pending store until verify-otp
+  // succeeds (see completeEmailRegistration), so an abandoned/never-verified
+  // email signup leaves zero DB rows. Phone identifiers keep the existing
+  // behavior — the account is created immediately and the OTP just gates
+  // login — since only email verification was asked for.
   async registerIndividual(dto: RegisterIndividualDto) {
     const email = isEmail(dto.identifier) ? dto.identifier : undefined;
     const phone = isPhone(dto.identifier) ? dto.identifier : undefined;
@@ -31,6 +43,22 @@ export class UsersRegistrationService {
     await checkUserExists(this.prisma, email, phone);
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    if (email) {
+      try {
+        await this.emailOtpService.sendRegistrationOtp(email, hashedPassword);
+      } catch (error) {
+        console.log(error);
+        throw new InternalServerErrorException(
+          'تعذر إرسال رمز التحقق إلى بريدك الإلكتروني. يرجى المحاولة مرة أخرى لاحقاً.',
+        );
+      }
+      return {
+        otpRequired: true,
+        identifier: email,
+        message: 'تم إرسال رمز التحقق إلى بريدك الإلكتروني',
+      };
+    }
 
     // Send the OTP before creating any account records. Sending used to
     // happen after the DB transaction committed, so a Twilio failure left
@@ -48,6 +76,38 @@ export class UsersRegistrationService {
       }
     }
 
+    const { user, profile } = await this.createIndividualAccount(
+      undefined,
+      phone,
+      hashedPassword,
+    );
+    return { user, profile };
+  }
+
+  /**
+   * Verifies a pending email registration's OTP and, only on success,
+   * actually creates the account. Called after registerIndividual sent the
+   * OTP for an email identifier.
+   */
+  async completeEmailRegistration(email: string, otp: string) {
+    const pending = this.emailOtpService.verifyAndConsume(email, otp);
+    if (!pending) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+    }
+
+    // Re-check for a race: another registration (e.g. via a different
+    // identifier path) could have taken this email while the OTP was
+    // pending.
+    await checkUserExists(this.prisma, email, undefined);
+
+    return this.createIndividualAccount(email, undefined, pending.hashedPassword);
+  }
+
+  private async createIndividualAccount(
+    email: string | undefined,
+    phone: string | undefined,
+    hashedPassword: string,
+  ) {
     try {
       // Transaction ensures both records are created, or neither are.
       const result = await this.prisma.$transaction(

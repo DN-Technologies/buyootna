@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
+import { UsersRegistrationService } from '../users/services/users-registration.service';
+import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -35,6 +37,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly twilioService: TwilioService,
+    private readonly usersRegistrationService: UsersRegistrationService,
+    private readonly emailOtpService: EmailOtpService,
   ) {}
 
   // 1. Verify credentials (used by LocalStrategy)
@@ -381,6 +385,29 @@ export class AuthService {
       .password;
 
     return this.login(userWithoutPassword);
+  }
+
+  // Unlike verifyRegistrationOtp (phone), no user exists yet here —
+  // UsersRegistrationService creates the account only once this OTP checks
+  // out against the pending signup it stored.
+  async verifyEmailRegistrationOtp(email: string, otp: string) {
+    const { user } =
+      await this.usersRegistrationService.completeEmailRegistration(
+        email,
+        otp,
+      );
+
+    return this.login(user);
+  }
+
+  /**
+   * Dev/CI-only: exposes a pending email signup's OTP, for black-box e2e
+   * tools (Maestro) that drive the app from a separate process and have no
+   * way to read it the way in-process Jest specs can. Returns null (and the
+   * controller 404s) whenever mail isn't in mock mode.
+   */
+  getMockEmailOtp(email: string): string | null {
+    return this.emailOtpService.getMockOtp(email);
   }
 
   async requestChangePasswordOtp(user: User) {
