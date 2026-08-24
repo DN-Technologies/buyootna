@@ -46,7 +46,11 @@ if (GOOGLE_SIGNIN_CONFIGURED) {
 export default function IndividualAuthScreen() {
   const [mode, setMode] = useState<AuthMode>('login');
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
-  const [signupPhone, setSignupPhone] = useState('');
+  const [signupIdentifier, setSignupIdentifier] = useState('');
+  // Only needed to resend an email OTP: unlike phone, no account exists yet
+  // to re-request a code for, so resending re-runs the same registration
+  // call, which needs the password again.
+  const [signupPassword, setSignupPassword] = useState('');
   // Kept independent so each button only spins for its own action: the form
   // submit, a Google sign-in, and an Apple sign-in never bleed into each other.
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -104,26 +108,13 @@ export default function IndividualAuthScreen() {
         password: data.password,
       });
 
-      if (isPhoneIdentifier(data.identifier)) {
-        // The identifier was a phone number, so the backend sent an SMS OTP — verify it.
-        setSignupPhone(data.identifier);
-        setSignupStep(2);
-      } else {
-        // The identifier was an email, so no OTP was sent — log the user in directly.
-        const loginResponse = await apiClient.post('/auth/login', {
-          identifier: data.identifier,
-          password: data.password,
-        });
-
-        await setAuth(
-          loginResponse.data.user,
-          loginResponse.data.activeIdentity,
-          loginResponse.data.identities,
-          loginResponse.data.access_token,
-        );
-
-        successSheetRef.current?.present();
-      }
+      // Both phone (SMS) and email now send an OTP that must be verified
+      // before the account exists — the backend never creates an email
+      // account synchronously, to guarantee no account without a verified
+      // address.
+      setSignupIdentifier(data.identifier);
+      setSignupPassword(data.password);
+      setSignupStep(2);
     } catch (error: any) {
       let backendMessage = 'حدث خطأ أثناء إنشاء الحساب';
       if (error.response?.data?.message) {
@@ -231,10 +222,15 @@ export default function IndividualAuthScreen() {
   const onVerifyOtp = async (otp: string) => {
     setIsFormLoading(true);
     try {
-      const response = await apiClient.post('/auth/register/verify-otp', {
-        phone: signupPhone,
-        otp,
-      });
+      const response = isPhoneIdentifier(signupIdentifier)
+        ? await apiClient.post('/auth/register/verify-otp', {
+            phone: signupIdentifier,
+            otp,
+          })
+        : await apiClient.post('/auth/register/verify-email-otp', {
+            email: signupIdentifier,
+            otp,
+          });
 
       // Save token to Secure Store and update global state
       await setAuth(
@@ -259,9 +255,19 @@ export default function IndividualAuthScreen() {
 
   const onResendOtp = async () => {
     try {
-      await apiClient.post('/auth/recovery/request-otp', {
-        identifier: signupPhone,
-      });
+      if (isPhoneIdentifier(signupIdentifier)) {
+        await apiClient.post('/auth/recovery/request-otp', {
+          identifier: signupIdentifier,
+        });
+      } else {
+        // No account exists yet for a pending email signup, so there's
+        // nothing to request a fresh OTP "for" — re-running registration
+        // itself re-sends one.
+        await apiClient.post('/users/register/individual', {
+          identifier: signupIdentifier,
+          password: signupPassword,
+        });
+      }
       Alert.alert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
     } catch {
       Alert.alert('خطأ', 'تعذر إعادة إرسال رمز التحقق');
@@ -326,7 +332,7 @@ export default function IndividualAuthScreen() {
             />
           ) : (
             <IndividualSignupOtpStep
-              phone={signupPhone}
+              identifier={signupIdentifier}
               onSubmit={onVerifyOtp}
               onResendOtp={onResendOtp}
               isLoading={isFormLoading}

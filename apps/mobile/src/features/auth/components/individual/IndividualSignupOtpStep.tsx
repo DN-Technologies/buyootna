@@ -1,15 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import {
   verifyOtpSchema,
   VerifyOtpValues,
 } from '@/features/auth/recoverySchemas';
+import { isEmailIdentifier } from '@/features/auth/authSchemas';
 
 interface IndividualSignupOtpStepProps {
-  phone: string;
+  identifier: string;
   onSubmit: (otp: string) => void;
   onResendOtp: () => void;
   isLoading?: boolean;
@@ -34,8 +35,20 @@ const maskPhoneNumber = (phone: string) => {
   return `${prefix}•••• ${last4}`;
 };
 
+const maskEmail = (email: string) => {
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return email;
+  const visible = local.slice(0, Math.min(2, local.length));
+  return `${visible}•••@${domain}`;
+};
+
+const maskIdentifier = (identifier: string) =>
+  isEmailIdentifier(identifier)
+    ? maskEmail(identifier)
+    : maskPhoneNumber(identifier);
+
 export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = ({
-  phone,
+  identifier,
   onSubmit,
   onResendOtp,
   isLoading = false,
@@ -77,7 +90,7 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
             تحقق من الرمز
           </Text>
           <Text className="px-4 text-center font-cairo-semibold text-sm text-gray-medium">
-            أرسلنا رمز التحقق المكون من 6 أرقام إلى {maskPhoneNumber(phone)}
+            أرسلنا رمز التحقق المكون من 6 أرقام إلى {maskIdentifier(identifier)}
           </Text>
         </View>
 
@@ -92,6 +105,7 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
             <View className="mb-6 items-center w-full">
               {/* Pressable area to focus hidden TextInput */}
               <TouchableOpacity
+                testID="individual-signup-otp-boxes"
                 activeOpacity={1}
                 onPress={() => otpInputRef.current?.focus()}
                 className="w-full flex-row justify-between"
@@ -118,10 +132,16 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
               {/* The Hidden Actual Input */}
               <TextInput
                 ref={otpInputRef}
+                testID="individual-signup-otp-input"
                 value={value}
                 onChangeText={(text) => {
                   const clean = text.replace(/[^0-9]/g, '');
                   if (clean.length <= 6) onChange(clean);
+                  // Dismiss once all 6 digits are in — otherwise the
+                  // keyboard stays up with no "done" key on a number pad,
+                  // leaving the submit button permanently covered/pushed up
+                  // by KeyboardAvoidingView until the user taps elsewhere.
+                  if (clean.length === 6) Keyboard.dismiss();
                 }}
                 keyboardType="number-pad"
                 maxLength={6}

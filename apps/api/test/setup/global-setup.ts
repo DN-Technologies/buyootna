@@ -21,5 +21,11 @@ export default async function globalSetup(): Promise<void> {
   process.env.TWILIO_AUTH_TOKEN = '';
   process.env.TWILIO_VERIFY_SERVICE_SID = '';
 
+  // Same reasoning, for MailService — force mock-mail mode so registration
+  // OTP emails never hit the real Resend API (which rejects @example.com
+  // test addresses outright) and the OTP is readable from the in-memory
+  // pending store instead.
+  process.env.RESEND_API_KEY = '';
+
   globalThis.__TEST_DB__ = db;
 }

@@ -7,6 +7,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleAuthService } from './services/google-auth.service';
 import { AppleAuthService } from './services/apple-auth.service';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppleAuthService } from './services/apple-auth.service';
       secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
       signOptions: { expiresIn: '7d' }, // Token valid for 7 days
     }),
+    UsersModule,
   ],
   providers: [
     AuthService,

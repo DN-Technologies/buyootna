@@ -22,7 +22,7 @@ describe('IndividualSignupOtpStep', () => {
     it('masks a +-prefixed phone number', async () => {
       const { getByText } = await render(
         <IndividualSignupOtpStep
-          phone="+96555123456"
+          identifier="+96555123456"
           onSubmit={jest.fn()}
           onResendOtp={jest.fn()}
         />,
@@ -37,7 +37,7 @@ describe('IndividualSignupOtpStep', () => {
     it('masks a bare 965-prefixed phone number', async () => {
       const { getByText } = await render(
         <IndividualSignupOtpStep
-          phone="96555123456"
+          identifier="96555123456"
           onSubmit={jest.fn()}
           onResendOtp={jest.fn()}
         />,
@@ -49,7 +49,7 @@ describe('IndividualSignupOtpStep', () => {
     it('masks a short phone number', async () => {
       const { getByText } = await render(
         <IndividualSignupOtpStep
-          phone="123"
+          identifier="123"
           onSubmit={jest.fn()}
           onResendOtp={jest.fn()}
         />,
@@ -59,12 +59,29 @@ describe('IndividualSignupOtpStep', () => {
     });
   });
 
+  describe('masked email rendering', () => {
+    it('masks an email identifier, keeping the domain visible', async () => {
+      const { getByText } = await render(
+        <IndividualSignupOtpStep
+          identifier="ali@example.com"
+          onSubmit={jest.fn()}
+          onResendOtp={jest.fn()}
+        />,
+      );
+
+      expect(
+        getByText(/أرسلنا رمز التحقق المكون من 6 أرقام إلى/),
+      ).toBeTruthy();
+      expect(getByText(/al•••@example\.com/)).toBeTruthy();
+    });
+  });
+
   describe('submit gating', () => {
     it('disables submit until 6 digits are entered, then calls onSubmit(otp)', async () => {
       const onSubmit = jest.fn();
       const { getByDisplayValue, getByText } = await render(
         <IndividualSignupOtpStep
-          phone="+96555123456"
+          identifier="+96555123456"
           onSubmit={onSubmit}
           onResendOtp={jest.fn()}
         />,
@@ -84,7 +101,7 @@ describe('IndividualSignupOtpStep', () => {
       const onSubmit = jest.fn();
       const { getByDisplayValue, getByText } = await render(
         <IndividualSignupOtpStep
-          phone="+96555123456"
+          identifier="+96555123456"
           onSubmit={onSubmit}
           onResendOtp={jest.fn()}
           isLoading
@@ -104,7 +121,7 @@ describe('IndividualSignupOtpStep', () => {
       const onResendOtp = jest.fn();
       const { getByText, queryByText } = await render(
         <IndividualSignupOtpStep
-          phone="+96555123456"
+          identifier="+96555123456"
           onSubmit={jest.fn()}
           onResendOtp={onResendOtp}
         />,

@@ -11,5 +11,6 @@ import { UsersDirectoryService } from './services/users-directory.service';
     UsersProfileService,
     UsersDirectoryService,
   ],
+  exports: [UsersRegistrationService],
 })
 export class UsersModule {}

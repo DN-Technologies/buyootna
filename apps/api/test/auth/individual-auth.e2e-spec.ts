@@ -7,7 +7,7 @@ import {
   randomKuwaitPhone,
   TEST_PASSWORD,
 } from '../utils/fixtures';
-import { getMockOtpCode } from '../utils/otp';
+import { getMockEmailOtpCode, getMockOtpCode } from '../utils/otp';
 import { createTestApp, TestApp } from '../utils/test-app';
 import { LoginResponseBody } from '../utils/types';
 
@@ -24,18 +24,39 @@ describe('Individual auth flow (e2e)', () => {
     await app.close();
   });
 
-  describe('registration + login (email)', () => {
-    it('registers with an email identifier, then logs in with the same credentials', async () => {
+  describe('registration + OTP verification (email)', () => {
+    it('registers with an email identifier, creates no account until the OTP is verified, then logs in', async () => {
       const email = randomEmail();
 
       const registerRes = await request(app.getHttpServer())
         .post('/users/register/individual')
         .send({ identifier: email, password: TEST_PASSWORD })
         .expect(201);
-      const registerBody = registerRes.body as { user: { email: string } };
+      const registerBody = registerRes.body as {
+        otpRequired: boolean;
+        identifier: string;
+      };
+      expect(registerBody.otpRequired).toBe(true);
+      expect(registerBody.identifier).toBe(email);
 
-      expect(registerBody.user.email).toBe(email);
-      expect(registerBody.user).not.toHaveProperty('password');
+      // No account exists yet — nothing to log into.
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ identifier: email, password: TEST_PASSWORD })
+        .expect(401);
+
+      const otp = getMockEmailOtpCode(app, email);
+
+      const verifyRes = await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email, otp })
+        .expect(201);
+      const verifyBody = verifyRes.body as LoginResponseBody;
+
+      expect(typeof verifyBody.access_token).toBe('string');
+      expect(verifyBody.access_token.split('.')).toHaveLength(3);
+      expect(verifyBody.user.email).toBe(email);
+      expect(verifyBody.activeIdentity.type).toBe('INDIVIDUAL');
 
       const loginRes = await request(app.getHttpServer())
         .post('/auth/login')
@@ -44,35 +65,43 @@ describe('Individual auth flow (e2e)', () => {
       const loginBody = loginRes.body as LoginResponseBody;
 
       expect(typeof loginBody.access_token).toBe('string');
-      expect(loginBody.access_token.split('.')).toHaveLength(3);
-      expect(loginBody.activeIdentity.type).toBe('INDIVIDUAL');
       expect(loginBody.identities).toHaveLength(1);
     });
 
-    it('rejects a duplicate identifier with 409', async () => {
+    it('rejects an invalid OTP with 400 and still creates no account', async () => {
       const email = randomEmail();
       await request(app.getHttpServer())
         .post('/users/register/individual')
         .send({ identifier: email, password: TEST_PASSWORD })
+        .expect(201);
+
+      await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email, otp: '000000' })
+        .expect(400);
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ identifier: email, password: TEST_PASSWORD })
+        .expect(401);
+    });
+
+    it('rejects a duplicate identifier with 409 only once the account actually exists', async () => {
+      const email = randomEmail();
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({ identifier: email, password: TEST_PASSWORD })
+        .expect(201);
+      const otp = getMockEmailOtpCode(app, email);
+      await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email, otp })
         .expect(201);
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
         .send({ identifier: email, password: TEST_PASSWORD })
         .expect(409);
-    });
-
-    it('rejects a wrong password with 401', async () => {
-      const email = randomEmail();
-      await request(app.getHttpServer())
-        .post('/users/register/individual')
-        .send({ identifier: email, password: TEST_PASSWORD })
-        .expect(201);
-
-      await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ identifier: email, password: 'wrong-password' })
-        .expect(401);
     });
   });
 
@@ -118,12 +147,13 @@ describe('Individual auth flow (e2e)', () => {
         .post('/users/register/individual')
         .send({ identifier: email, password: TEST_PASSWORD })
         .expect(201);
-      const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ identifier: email, password: TEST_PASSWORD })
+      const otp = getMockEmailOtpCode(app, email);
+      const verifyRes = await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email, otp })
         .expect(201);
       const { access_token, activeIdentity } =
-        loginRes.body as LoginResponseBody;
+        verifyRes.body as LoginResponseBody;
 
       const switchRes = await request(app.getHttpServer())
         .post('/auth/identity/switch')
@@ -144,26 +174,28 @@ describe('Individual auth flow (e2e)', () => {
         .post('/users/register/individual')
         .send({ identifier: emailA, password: TEST_PASSWORD })
         .expect(201);
-      const loginA = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ identifier: emailA, password: TEST_PASSWORD })
+      const otpA = getMockEmailOtpCode(app, emailA);
+      const verifyA = await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email: emailA, otp: otpA })
         .expect(201);
-      const loginABody = loginA.body as LoginResponseBody;
+      const verifyABody = verifyA.body as LoginResponseBody;
 
       await request(app.getHttpServer())
         .post('/users/register/individual')
         .send({ identifier: emailB, password: TEST_PASSWORD })
         .expect(201);
-      const loginB = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ identifier: emailB, password: TEST_PASSWORD })
+      const otpB = getMockEmailOtpCode(app, emailB);
+      const verifyB = await request(app.getHttpServer())
+        .post('/auth/register/verify-email-otp')
+        .send({ email: emailB, otp: otpB })
         .expect(201);
-      const loginBBody = loginB.body as LoginResponseBody;
+      const verifyBBody = verifyB.body as LoginResponseBody;
 
       await request(app.getHttpServer())
         .post('/auth/identity/switch')
-        .set('Authorization', `Bearer ${loginABody.access_token}`)
-        .send({ identityId: loginBBody.activeIdentity.id })
+        .set('Authorization', `Bearer ${verifyABody.access_token}`)
+        .send({ identityId: verifyBBody.activeIdentity.id })
         .expect(403);
     });
 

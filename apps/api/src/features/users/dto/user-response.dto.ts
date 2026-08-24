@@ -104,11 +104,28 @@ class OfficeProfileDto {
 }
 
 export class RegisterIndividualResponseDto {
-  @ApiProperty({ type: UserSafeDto })
-  user: UserSafeDto;
+  @ApiProperty({
+    type: UserSafeDto,
+    required: false,
+    description: 'Absent when identifier was an email — see otpRequired',
+  })
+  user?: UserSafeDto;
 
-  @ApiProperty({ type: IndividualProfileDto })
-  profile: IndividualProfileDto;
+  @ApiProperty({ type: IndividualProfileDto, required: false })
+  profile?: IndividualProfileDto;
+
+  @ApiProperty({
+    required: false,
+    description:
+      'True when identifier was an email: an OTP was sent and the account has not been created yet. Complete signup via POST /auth/register/verify-email-otp.',
+  })
+  otpRequired?: boolean;
+
+  @ApiProperty({ required: false })
+  identifier?: string;
+
+  @ApiProperty({ required: false })
+  message?: string;
 }
 
 export class RegisterCompanyResponseDto {

@@ -1,7 +1,8 @@
 appId: com.constyoussef.buyootna
 ---
 # Guest -> account-type selection -> individual auth (signup tab) -> email
-# signup (no OTP needed) -> success sheet -> lands on individual home.
+# signup -> OTP verification (no account exists until this succeeds) ->
+# success sheet -> lands on individual home.
 - launchApp
 - waitForAnimationToEnd:
     timeout: 15000
@@ -40,17 +41,33 @@ appId: com.constyoussef.buyootna
 - inputText: "MaestroE2E123!"
 - tapOn: "تأكيد كلمة المرور" # tap the label (not a field) to dismiss the keyboard
 - tapOn: "إنشاء حساب"
+- waitForAnimationToEnd:
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "تحقق من الرمز"
+    timeout: 15000
+- runScript: scripts/fetch-email-otp.js
+- tapOn:
+    id: "individual-signup-otp-boxes"
+- inputText: ${output.otp}
+# The 6th digit auto-dismisses the keyboard (IndividualSignupOtpStep calls
+# Keyboard.dismiss() once the value hits length 6), which lets this
+# KeyboardAvoidingView-wrapped button settle back to its rest position
+# before we tap it.
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "التحقق من الرمز"
 # The success sheet's own content isn't exposed to iOS's accessibility tree
 # (a @gorhom/bottom-sheet + Fabric quirk: the sheet's backdrop correctly
 # hides the screen behind it, but the sheet's own text/buttons never surface
 # either — see SuccessBottomSheet.tsx), so `visible`/`tapOn` by text never
 # resolves once it's open even though it's plainly on screen. Use the
-# backdrop hiding the submit button as the "sheet is open" signal instead,
+# backdrop hiding the verify button as the "sheet is open" signal instead,
 # then tap its button by position.
 - waitForAnimationToEnd:
     timeout: 10000
 - extendedWaitUntil:
-    notVisible: "إنشاء حساب"
+    notVisible: "التحقق من الرمز"
     timeout: 15000
 - tapOn:
     point: "50%, 93%" # "ابدأ الآن" button inside the success sheet
