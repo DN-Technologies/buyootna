@@ -6,7 +6,6 @@ import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Text,
   TextInput,
   TouchableOpacity,
@@ -28,6 +27,7 @@ import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function CompaniesScreen() {
   const router = useRouter();
@@ -118,7 +118,7 @@ export default function CompaniesScreen() {
         const msg = Array.isArray(backendMsg)
           ? backendMsg.join('\n')
           : backendMsg || 'تعذر بدء المحادثة مع الشركة';
-        Alert.alert('تنبيه', msg);
+        showAlert('تنبيه', msg);
       }
     });
   };

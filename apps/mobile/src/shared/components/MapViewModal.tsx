@@ -1,6 +1,5 @@
 import { Feather } from '@expo/vector-icons';
 import {
-  Alert,
   Linking,
   Modal,
   Platform,
@@ -10,6 +9,8 @@ import {
 } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { showAlert } from '@/shared/utils/alert';
 
 interface MapViewModalProps {
   visible: boolean;
@@ -36,7 +37,7 @@ export default function MapViewModal({
     });
     if (url) {
       Linking.openURL(url).catch(() => {
-        Alert.alert('خطأ', 'تعذر فتح تطبيق الخرائط');
+        showAlert('خطأ', 'تعذر فتح تطبيق الخرائط');
       });
     }
   };

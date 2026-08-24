@@ -2,11 +2,11 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import { useRef,useState } from 'react';
 import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
-import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import apiClient from '@/shared/api/api';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { showAlert } from '@/shared/utils/alert';
 // Modular Components
 import { ForgotPasswordHeader } from '@/features/auth/components/recovery/ForgotPasswordHeader';
 import { ForgotPasswordStep1 } from '@/features/auth/components/recovery/ForgotPasswordStep1';
@@ -40,7 +40,7 @@ export default function ForgotPasswordScreen() {
       } else if (error.message === 'Network Error' || !error.response) {
         errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('خطأ', errorMsg);
+      showAlert('خطأ', errorMsg);
     }
   };
 
@@ -62,7 +62,7 @@ export default function ForgotPasswordScreen() {
       } else if (error.message === 'Network Error' || !error.response) {
         errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('خطأ', errorMsg);
+      showAlert('خطأ', errorMsg);
     }
   };
 
@@ -83,7 +83,7 @@ export default function ForgotPasswordScreen() {
       } else if (error.message === 'Network Error' || !error.response) {
         errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('خطأ', errorMsg);
+      showAlert('خطأ', errorMsg);
     }
   };
 

@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import Mapbox, { Camera, MapView, PointAnnotation } from '@rnmapbox/maps';
 import {
-  Alert,
   ImageBackground,
   Linking,
   Platform,
@@ -10,6 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+import { showAlert } from '@/shared/utils/alert';
 
 // Initialize Mapbox with public access token
 Mapbox.setAccessToken(
@@ -49,7 +50,7 @@ export default function MapPreview({
 
       if (url) {
         Linking.openURL(url).catch(() => {
-          Alert.alert('خطأ', 'تعذر فتح تطبيق الخرائط');
+          showAlert('خطأ', 'تعذر فتح تطبيق الخرائط');
         });
       }
     }

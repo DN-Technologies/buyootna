@@ -25,6 +25,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { FAVORITE_IDS_QUERY_KEY } from '@/features/individual/hooks/useFavorites';
 import { favoritesService } from '@/features/individual/services/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
+import AppAlertModal from '@/shared/components/AppAlertModal';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Screen-transition performance + breadcrumbs. The nav container ref gets
@@ -169,6 +170,7 @@ function RootLayout() {
                   <Stack.Screen name="(office)" />
                   <Stack.Screen name="property/[id]" />
                 </Stack>
+                <AppAlertModal />
               </SafeAreaProvider>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>

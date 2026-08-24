@@ -3,7 +3,6 @@ import * as DocumentPicker from 'expo-document-picker';
 import { router,useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -25,6 +24,7 @@ import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 import { AccountType } from '@/types';
 
 // Company/office accounts are temporarily disabled app-wide.
@@ -96,7 +96,7 @@ export default function BusinessAuthScreen() {
         errorMsg =
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('فشل تسجيل الدخول', errorMsg);
+      showAlert('فشل تسجيل الدخول', errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +174,7 @@ export default function BusinessAuthScreen() {
         errorMsg =
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('فشل التسجيل', errorMsg);
+      showAlert('فشل التسجيل', errorMsg);
       return false;
     } finally {
       setIsLoading(false);

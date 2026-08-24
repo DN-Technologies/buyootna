@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import { InvoicesEmptyIcon } from '@/assets/icons/more';
 import { invoicesService, InvoiceStatus } from '@/shared/api/invoices.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
+import { showAlert } from '@/shared/utils/alert';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';
 
 const TABS = [
@@ -51,7 +51,7 @@ export default function InvoicesScreen() {
 
   const handleExport = async () => {
     if (invoices.length === 0) {
-      Alert.alert('تنبيه', 'لا توجد فواتير لتصديرها حالياً');
+      showAlert('تنبيه', 'لا توجد فواتير لتصديرها حالياً');
       return;
     }
     try {
@@ -60,7 +60,7 @@ export default function InvoicesScreen() {
         filteredInvoices.length > 0 ? filteredInvoices : invoices;
       await exportInvoicesToPdf(listToExport);
     } catch {
-      Alert.alert('خطأ', 'حدث خطأ أثناء تصدير الفواتير. يرجى المحاولة لاحقاً');
+      showAlert('خطأ', 'حدث خطأ أثناء تصدير الفواتير. يرجى المحاولة لاحقاً');
     } finally {
       setIsExporting(false);
     }
@@ -266,7 +266,7 @@ export default function InvoicesScreen() {
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() =>
-                          Alert.alert('الدفع', 'سيتم تحويلك إلى صفحة الدفع')
+                          showAlert('الدفع', 'سيتم تحويلك إلى صفحة الدفع')
                         }
                       >
                         <Text className="font-cairo-semibold text-[14px] text-[#15304D]">
@@ -282,7 +282,7 @@ export default function InvoicesScreen() {
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() =>
-                          Alert.alert('تحميل', 'سيتم تحميل الفاتورة قريباً')
+                          showAlert('تحميل', 'سيتم تحميل الفاتورة قريباً')
                         }
                         className="flex-row items-center gap-1.5"
                       >

@@ -4,7 +4,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
 import {
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -32,6 +31,7 @@ import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="info" color={color} size={size} />
@@ -227,14 +227,14 @@ export default function CompanyMoreScreen() {
                   icon={UsersIcon}
                   title="فريق العمل"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة فريق العمل ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة فريق العمل ستكون متوفرة قريباً')
                   }
                 />
                 <MenuItem
                   icon={BarChartIcon}
                   title="التحليلات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة التحليلات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة التحليلات ستكون متوفرة قريباً')
                   }
                 />
               </View>

@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import React from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { useListingStore } from '@/shared/store/useListingStore';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function ImageUploadZone() {
   const { images, addImages, removeImage } = useListingStore();
@@ -15,7 +15,7 @@ export default function ImageUploadZone() {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(
           'إذن مطلوب',
           'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!',
           [{ text: 'حسناً' }],
@@ -36,7 +36,7 @@ export default function ImageUploadZone() {
       }
     } catch (error) {
       console.error('Image picker error:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
+      showAlert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
         { text: 'حسناً' },
       ]);
     }

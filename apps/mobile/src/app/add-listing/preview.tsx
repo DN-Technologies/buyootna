@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -22,6 +21,7 @@ import PlanSlotPickerSheet from '@/shared/components/add-listing/PlanSlotPickerS
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import SuccessModal from '@/shared/components/add-listing/SuccessModal';
 import { useListingStore } from '@/shared/store/useListingStore';
+import { showAlert } from '@/shared/utils/alert';
 
 // Helper component for the two-column grid items
 const PreviewItem = ({
@@ -130,7 +130,7 @@ export default function AdPreviewScreen() {
         if (res.success) {
           setShowSuccess(true);
         } else {
-          Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان');
+          showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
         }
         return;
       }
@@ -139,7 +139,7 @@ export default function AdPreviewScreen() {
       slotPickerRef.current?.present();
     } catch (e) {
       console.error('Failed to check publish options:', e);
-      Alert.alert('خطأ', 'فشل في التحقق من رصيد الإعلانات');
+      showAlert('خطأ', 'فشل في التحقق من رصيد الإعلانات');
     }
   };
 
@@ -149,14 +149,14 @@ export default function AdPreviewScreen() {
     if (res.success) {
       setShowSuccess(true);
     } else {
-      Alert.alert('خطأ', res.error || 'فشل في إضافة الإعلان');
+      showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
     }
   };
 
   const handleSaveDraft = async () => {
     const res = await submitListing(true);
     if (res.success) {
-      Alert.alert('تم الحفظ', 'تم حفظ الإعلان كمسودة بنجاح', [
+      showAlert('تم الحفظ', 'تم حفظ الإعلان كمسودة بنجاح', [
         {
           text: 'حسناً',
           onPress: () => {
@@ -166,7 +166,7 @@ export default function AdPreviewScreen() {
         },
       ]);
     } else {
-      Alert.alert('خطأ', res.error || 'فشل في حفظ المسودة', [
+      showAlert('خطأ', res.error || 'فشل في حفظ المسودة', [
         { text: 'حسناً' },
       ]);
     }

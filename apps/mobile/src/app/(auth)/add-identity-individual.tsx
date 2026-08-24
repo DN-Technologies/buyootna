@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +18,7 @@ import { z } from 'zod';
 import apiClient from '@/shared/api/api';
 import FormInput from '@/shared/components/FormInput';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const individualIdentitySchema = z.object({
   name: z.string().min(2, 'الاسم يجب أن يكون أكثر من حرفين'),
@@ -51,7 +51,7 @@ export default function AddIdentityIndividualScreen() {
       // Refresh store to include the new identity
       await refreshProfile();
 
-      Alert.alert('تم بنجاح', 'تم إضافة الهوية الفردية بنجاح', [
+      showAlert('تم بنجاح', 'تم إضافة الهوية الفردية بنجاح', [
         {
           text: 'حسناً',
           onPress: () => router.replace('/(individual)/more'),
@@ -63,7 +63,7 @@ export default function AddIdentityIndividualScreen() {
         const message = error.response.data.message;
         errorMsg = Array.isArray(message) ? message.join('\n') : message;
       }
-      Alert.alert('خطأ', errorMsg);
+      showAlert('خطأ', errorMsg);
     } finally {
       setIsLoading(false);
     }

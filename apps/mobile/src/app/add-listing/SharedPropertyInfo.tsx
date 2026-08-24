@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
-import { Alert, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 
 import { LockIcon } from '@/assets/icons/home/property';
@@ -13,6 +13,7 @@ import StepperInput from '@/shared/components/filters/StepperInput';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 // Import the Zustand store
 import { useListingStore } from '@/shared/store/useListingStore';
+import { showAlert } from '@/shared/utils/alert';
 // Import real location data
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
@@ -98,7 +99,7 @@ export default function SharedPropertyInfo() {
           value={area?.label}
           onPress={() => {
             if (!governorate) {
-              Alert.alert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
+              showAlert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
                 { text: 'حسناً' },
               ]);
               return;

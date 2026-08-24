@@ -1,8 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -20,6 +19,7 @@ import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubbl
 import ContentContainer from '@/shared/components/ContentContainer';
 import { socketService } from '@/shared/services/socket.service';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { showAlert } from '@/shared/utils/alert';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -97,7 +97,7 @@ export default function ChatDetailsScreen() {
   };
 
   const handleReportUser = () => {
-    Alert.alert(
+    showAlert(
       'إبلاغ عن مستخدم',
       'هل تريد تقديم بلاغ ضد هذا المستخدم لمخالفته شروط الاستخدام؟',
       [
@@ -106,7 +106,7 @@ export default function ChatDetailsScreen() {
           text: 'إبلاغ',
           style: 'destructive',
           onPress: () => {
-            Alert.alert(
+            showAlert(
               'تم الإرسال',
               'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
             );

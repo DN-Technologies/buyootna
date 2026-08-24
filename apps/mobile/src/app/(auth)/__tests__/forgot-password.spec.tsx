@@ -1,8 +1,8 @@
 import { cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
 
 import apiClient from '@/shared/api/api';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 
 import ForgotPasswordScreen from '../forgot-password';
 
@@ -16,7 +16,7 @@ const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 describe('ForgotPasswordScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    jest.spyOn(useAlertStore.getState(), 'showAlert').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -62,7 +62,7 @@ describe('ForgotPasswordScreen', () => {
     await fireEvent.press(getByText('إرسال رمز التحقق'));
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('خطأ', 'تعذر الإرسال');
+      expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith('خطأ', 'تعذر الإرسال');
     });
     expect(queryByText('إنشاء كلمة مرور جديدة')).toBeNull();
   });
@@ -115,7 +115,7 @@ describe('ForgotPasswordScreen', () => {
       await fireEvent.press(getByText('التحقق من الرمز'));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith('خطأ', 'رمز خاطئ');
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith('خطأ', 'رمز خاطئ');
       });
     });
 
@@ -187,7 +187,7 @@ describe('ForgotPasswordScreen', () => {
         await fireEvent.press(getByText('تحديث كلمة المرور'));
 
         await waitFor(() => {
-          expect(Alert.alert).toHaveBeenCalledWith(
+          expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
             'خطأ',
             'تعذر تحديث كلمة المرور',
           );

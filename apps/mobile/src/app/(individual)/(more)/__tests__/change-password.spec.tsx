@@ -1,8 +1,8 @@
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import ChangePasswordScreen from '../change-password';
@@ -27,7 +27,7 @@ describe('ChangePasswordScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseAuthStore.mockReturnValue({ user: { phone: '+96555123456' } });
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    jest.spyOn(useAlertStore.getState(), 'showAlert').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -118,7 +118,7 @@ describe('ChangePasswordScreen', () => {
     await fillAndSubmitForm(getByPlaceholderText, getByText);
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('خطأ', 'تعذر الإرسال');
+      expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith('خطأ', 'تعذر الإرسال');
     });
   });
 
@@ -165,9 +165,9 @@ describe('ChangePasswordScreen', () => {
         );
       });
 
-      const alertCall = (Alert.alert as jest.Mock).mock.calls.find(
-        (call) => call[0] === 'نجاح',
-      );
+      const alertCall = (
+        useAlertStore.getState().showAlert as jest.Mock
+      ).mock.calls.find((call) => call[0] === 'نجاح');
       expect(alertCall).toBeDefined();
       const okButton = alertCall![2].find((b: any) => b.text === 'موافق');
       await act(async () => okButton.onPress());
@@ -182,7 +182,9 @@ describe('ChangePasswordScreen', () => {
         await render(<ChangePasswordScreen />);
       await openOtpSheet(getByPlaceholderText, getByText);
 
-      const alertCallsBefore = (Alert.alert as jest.Mock).mock.calls.length;
+      const alertCallsBefore = (
+        useAlertStore.getState().showAlert as jest.Mock
+      ).mock.calls.length;
       const hiddenOtpInput = getByDisplayValue('');
       await fireEvent.changeText(hiddenOtpInput, '123456');
       await fireEvent.press(getByText('التحقق من الرمز'));
@@ -190,9 +192,9 @@ describe('ChangePasswordScreen', () => {
       await waitFor(() => {
         expect(getByText('رمز خاطئ')).toBeTruthy();
       });
-      expect((Alert.alert as jest.Mock).mock.calls.length).toBe(
-        alertCallsBefore,
-      );
+      expect(
+        (useAlertStore.getState().showAlert as jest.Mock).mock.calls.length,
+      ).toBe(alertCallsBefore);
     });
 
     it('resend calls requestChangePasswordOtp again after the timer elapses', async () => {

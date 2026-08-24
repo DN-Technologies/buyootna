@@ -3,13 +3,13 @@ import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   TouchableOpacity,
   View,
 } from 'react-native';
 
 import apiClient from '@/shared/api/api';
+import { showAlert } from '@/shared/utils/alert';
 
 interface AvatarPickerProps {
   currentAvatarUrl?: string;
@@ -31,7 +31,7 @@ export default function AvatarPicker({
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert(
+      showAlert(
         'صلاحية مطلوبة',
         'عذراً، نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك.',
       );
@@ -95,7 +95,7 @@ export default function AvatarPicker({
       console.log('Upload successful:', response.data.url);
     } catch (error) {
       console.error('Upload failed:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء رفع الصورة، يرجى المحاولة مرة أخرى.');
+      showAlert('خطأ', 'حدث خطأ أثناء رفع الصورة، يرجى المحاولة مرة أخرى.');
       // Revert to original image on failure
       setImageUri(currentAvatarUrl || 'https://via.placeholder.com/150');
     } finally {

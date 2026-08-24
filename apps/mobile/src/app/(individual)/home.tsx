@@ -2,7 +2,6 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import  { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   RefreshControl,
   ScrollView,
   Text,
@@ -23,6 +22,7 @@ import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ContentContainer from '@/shared/components/ContentContainer';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import { showAlert } from '@/shared/utils/alert';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'offices';
@@ -135,7 +135,7 @@ export default function HomeScreen() {
         {/* Sort Button */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => Alert.alert('قريباً', 'ميزة الترتيب ستكون متاحة قريباً')}
+          onPress={() => showAlert('قريباً', 'ميزة الترتيب ستكون متاحة قريباً')}
           className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
         >
           <SortIcon size={18} color="#111111" />

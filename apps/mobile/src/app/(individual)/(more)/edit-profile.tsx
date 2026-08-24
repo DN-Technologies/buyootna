@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +16,7 @@ import AvatarPicker from '@/features/individual/components/more/AvatarPicker';
 import { settingsService } from '@/shared/api/settings.service';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 interface ProfileFormData {
   name: string;
@@ -62,12 +62,12 @@ export default function EditProfileScreen() {
         avatarUrl: data.avatarUrl,
       });
       await useAuthStore.getState().refreshProfile();
-      Alert.alert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [
+      showAlert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [
         { text: 'موافق', onPress: () => router.back() },
       ]);
     } catch (error: any) {
       console.error('Update profile error:', error);
-      Alert.alert(
+      showAlert(
         'خطأ',
         error.response?.data?.message || 'حدث خطأ أثناء تحديث البيانات',
       );

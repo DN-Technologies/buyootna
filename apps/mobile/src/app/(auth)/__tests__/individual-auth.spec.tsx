@@ -2,9 +2,9 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
 
 import apiClient from '@/shared/api/api';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import IndividualAuthScreen from '../individual-auth';
@@ -71,7 +71,7 @@ describe('IndividualAuthScreen', () => {
     mockUseAuthStore.mockImplementation((selector?: (s: typeof authState) => unknown) =>
       selector ? selector(authState) : authState,
     );
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    jest.spyOn(useAlertStore.getState(), 'showAlert').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -130,7 +130,7 @@ describe('IndividualAuthScreen', () => {
       await fireEvent.press(getByText('تسجيل الدخول'));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith('فشل تسجيل الدخول', 'a\nb');
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith('فشل تسجيل الدخول', 'a\nb');
       });
     });
 
@@ -144,7 +144,7 @@ describe('IndividualAuthScreen', () => {
       await fireEvent.press(getByText('تسجيل الدخول'));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
           'فشل تسجيل الدخول',
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
         );
@@ -368,7 +368,7 @@ describe('IndividualAuthScreen', () => {
 
       await fireEvent.press(getByTestId('social-auth-google-button'));
 
-      expect(Alert.alert).toHaveBeenCalledWith(
+      expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
         'تسجيل الدخول عبر Google غير مُفعّل حالياً',
       );
       expect(GoogleSignin.signIn).not.toHaveBeenCalled();
@@ -420,7 +420,7 @@ describe('IndividualAuthScreen', () => {
         expect(AppleAuthentication.signInAsync).toHaveBeenCalled();
       });
 
-      expect(Alert.alert).not.toHaveBeenCalled();
+      expect(useAlertStore.getState().showAlert).not.toHaveBeenCalled();
     });
 
     it('shows the raw error message (not the API-connection message) for a native, non-axios failure', async () => {
@@ -432,7 +432,7 @@ describe('IndividualAuthScreen', () => {
       await fireEvent.press(getByTestId('social-auth-apple-button'));
 
       await waitFor(() => {
-        expect(Alert.alert).toHaveBeenCalledWith(
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
           'فشل تسجيل الدخول عبر Apple',
           'device not supported',
         );

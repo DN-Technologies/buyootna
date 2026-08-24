@@ -1,7 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
-import { ActivityIndicator, Alert, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
+
+import { showAlert } from '@/shared/utils/alert';
 
 export default function PaymentCallbackScreen() {
   const router = useRouter();
@@ -13,14 +15,14 @@ export default function PaymentCallbackScreen() {
     if (!status) return;
 
     if (status === 'success') {
-      Alert.alert('نجاح', 'تمت عملية الدفع وتفعيل الباقة بنجاح!', [
+      showAlert('نجاح', 'تمت عملية الدفع وتفعيل الباقة بنجاح!', [
         {
           text: 'موافق',
           onPress: () => router.replace('/plans'),
         },
       ]);
     } else {
-      Alert.alert('خطأ', 'فشلت عملية الدفع أو تم إلغاؤها.', [
+      showAlert('خطأ', 'فشلت عملية الدفع أو تم إلغاؤها.', [
         {
           text: 'موافق',
           onPress: () => router.replace('/plans'),

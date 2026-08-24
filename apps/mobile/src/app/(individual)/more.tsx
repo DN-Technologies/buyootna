@@ -4,7 +4,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
 import {
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -37,6 +36,7 @@ import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="info" color={color} size={size} />
@@ -174,7 +174,7 @@ export default function ProfileDashboardScreen() {
                     icon={DealsIcon}
                     title="الصفقات"
                     onPress={() =>
-                      Alert.alert(
+                      showAlert(
                         'قريباً',
                         'ميزة الصفقات ستكون متوفرة قريباً'
                       )
@@ -184,7 +184,7 @@ export default function ProfileDashboardScreen() {
                     icon={AuctionsIcon}
                     title="المزادات"
                     onPress={() =>
-                      Alert.alert(
+                      showAlert(
                         'قريباً',
                         'ميزة المزادات ستكون متوفرة قريباً'
                       )
@@ -410,14 +410,14 @@ export default function ProfileDashboardScreen() {
                   icon={DealsIcon}
                   title="الصفقات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
                   }
                 />
                 <MenuItem
                   icon={AuctionsIcon}
                   title="المزادات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
                   }
                 />
               </View>
@@ -468,7 +468,7 @@ export default function ProfileDashboardScreen() {
                   icon={BillIcon}
                   title="فواتير الخدمات"
                   onPress={() =>
-                    Alert.alert(
+                    showAlert(
                       'قريباً',
                       'ميزة فواتير الخدمات ستكون متوفرة قريباً'
                     )
