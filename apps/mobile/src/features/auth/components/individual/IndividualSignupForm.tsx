@@ -47,6 +47,9 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         label="كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="individual-signup-password-input"
+        textContentType="newPassword"
+        autoComplete="new-password"
       />
 
       <FormInput
@@ -55,6 +58,9 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         label="تأكيد كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="individual-signup-confirm-password-input"
+        textContentType="newPassword"
+        autoComplete="new-password"
       />
 
       <TouchableOpacity
