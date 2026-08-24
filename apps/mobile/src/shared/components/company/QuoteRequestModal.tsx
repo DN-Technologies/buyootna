@@ -15,7 +15,6 @@ import {
 } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   InputAccessoryView,
   Keyboard,
@@ -28,6 +27,7 @@ import {
 
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/MapPickerModal';
+import { showAlert } from '@/shared/utils/alert';
 
 interface ServiceItem {
   id: string;
@@ -112,7 +112,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         const { status } =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert(
+          showAlert(
             'إذن مطلوب',
             'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!',
             [{ text: 'حسناً' }],
@@ -135,7 +135,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         }
       } catch (error) {
         console.error('Attachment picker error:', error);
-        Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
+        showAlert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
           { text: 'حسناً' },
         ]);
       }
@@ -147,11 +147,11 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
 
     const handleSubmit = async () => {
       if (!serviceId) {
-        Alert.alert('تنبيه', 'يرجى اختيار نوع الطلب');
+        showAlert('تنبيه', 'يرجى اختيار نوع الطلب');
         return;
       }
       if (!addressLabel) {
-        Alert.alert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+        showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
         return;
       }
 
@@ -159,7 +159,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         setIsSubmitting(true);
         // Simulate request submission
         await new Promise((resolve) => setTimeout(resolve, 800));
-        Alert.alert(
+        showAlert(
           'تم بنجاح',
           `تم إرسال طلب عرض السعر إلى ${companyName} بنجاح!`,
         );
@@ -168,7 +168,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
           onRequestSubmitted();
         }
       } catch {
-        Alert.alert('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً');
+        showAlert('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً');
       } finally {
         setIsSubmitting(false);
       }

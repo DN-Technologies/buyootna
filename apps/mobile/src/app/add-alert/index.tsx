@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,6 +20,7 @@ import AlertPropertiesTab, {
   DEFAULT_ALERT_PROPERTIES_STATE,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import AlertSuccessModal from '@/shared/components/add-alert/AlertSuccessModal';
+import { showAlert } from '@/shared/utils/alert';
 
 type AlertTab = 'properties' | 'auctions';
 
@@ -58,7 +58,7 @@ export default function AddAlertScreen() {
         : auctionsState.governorate;
 
     if (!governorate) {
-      Alert.alert('تنبيه', 'يرجى اختيار المحافظة أولاً');
+      showAlert('تنبيه', 'يرجى اختيار المحافظة أولاً');
       return;
     }
 

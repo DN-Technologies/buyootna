@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import {
-  Alert,
   Image,
   InputAccessoryView,
   Keyboard,
@@ -27,6 +26,7 @@ import { COMPANY_CATEGORY_OPTIONS } from '@/features/individual/components/compa
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { showAlert } from '@/shared/utils/alert';
 
 const SPECIALTY_OPTIONS = COMPANY_CATEGORY_OPTIONS.filter(
   (option) => option.id !== 'all',
@@ -78,7 +78,7 @@ export default function RequestQuoteScreen() {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(
           'إذن مطلوب',
           'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!',
           [{ text: 'حسناً' }],
@@ -101,7 +101,7 @@ export default function RequestQuoteScreen() {
       }
     } catch (error) {
       console.error('Attachment picker error:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
+      showAlert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
         { text: 'حسناً' },
       ]);
     }
@@ -113,11 +113,11 @@ export default function RequestQuoteScreen() {
 
   const handleSubmit = async () => {
     if (!specialtyId) {
-      Alert.alert('تنبيه', 'يرجى اختيار مجال التخصص');
+      showAlert('تنبيه', 'يرجى اختيار مجال التخصص');
       return;
     }
     if (!addressLabel) {
-      Alert.alert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+      showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
       return;
     }
 
@@ -127,7 +127,7 @@ export default function RequestQuoteScreen() {
       await new Promise((resolve) => setTimeout(resolve, 800));
       successSheetRef.current?.present();
     } catch {
-      Alert.alert('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً');
+      showAlert('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً');
     } finally {
       setIsSubmitting(false);
     }

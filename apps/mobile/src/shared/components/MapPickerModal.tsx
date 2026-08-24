@@ -1,7 +1,9 @@
 import { Camera, MapView, StyleURL } from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Keyboard, Modal, StyleSheet, View } from 'react-native';
+import { Keyboard, Modal, StyleSheet, View } from 'react-native';
+
+import { showAlert } from '@/shared/utils/alert';
 
 import { LocationConfirmCard } from './map-picker/LocationConfirmCard';
 import { MapCenterPin } from './map-picker/MapCenterPin';
@@ -116,7 +118,7 @@ export default function MapPickerModal({
       setIsLocatingGps(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert(
+        showAlert(
           'الإذن مطلوب',
           'يرجى تفعيل صلاحية الوصول للموقع الجغرافي لاستخدام هذه الميزة.',
           [{ text: 'حسناً' }],
@@ -143,7 +145,7 @@ export default function MapPickerModal({
       reverseGeocode(latitude, longitude);
     } catch (err) {
       console.warn('GPS location error:', err);
-      Alert.alert('خطأ', 'تعذر الحصول على موقعك الحالي، يرجى المحاولة لاحقاً');
+      showAlert('خطأ', 'تعذر الحصول على موقعك الحالي، يرجى المحاولة لاحقاً');
     } finally {
       setIsLocatingGps(false);
     }

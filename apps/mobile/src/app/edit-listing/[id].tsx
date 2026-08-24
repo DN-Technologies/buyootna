@@ -4,7 +4,6 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -25,6 +24,7 @@ import EditListingHeader from '@/shared/components/edit-listing/EditListingHeade
 import LockedAdTypeSection from '@/shared/components/edit-listing/LockedAdTypeSection';
 import SaveLoadingOverlay from '@/shared/components/edit-listing/SaveLoadingOverlay';
 import { useListingStore } from '@/shared/store/useListingStore';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function EditListingScreen() {
   const router = useRouter();
@@ -83,7 +83,7 @@ export default function EditListingScreen() {
   useEffect(() => {
     if (loadError) {
       console.error('Failed to load property for editing');
-      Alert.alert('خطأ', 'فشل في تحميل بيانات الإعلان.', [
+      showAlert('خطأ', 'فشل في تحميل بيانات الإعلان.', [
         { text: 'حسناً', onPress: () => router.back() },
       ]);
     }
@@ -262,7 +262,7 @@ export default function EditListingScreen() {
       });
     } catch (error) {
       console.error('Failed to update property listing:', error);
-      Alert.alert('خطأ', 'حدث خطأ أثناء تعديل الإعلان. حاول مرة أخرى.', [
+      showAlert('خطأ', 'حدث خطأ أثناء تعديل الإعلان. حاول مرة أخرى.', [
         { text: 'حسناً' },
       ]);
     } finally {

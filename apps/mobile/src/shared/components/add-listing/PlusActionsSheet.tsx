@@ -8,7 +8,6 @@ import { useRouter } from 'expo-router';
 import { forwardRef, useCallback, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Text,
   TouchableOpacity,
   View,
@@ -20,6 +19,7 @@ import {
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
 import { plansService } from '@/shared/api/plans.service';
+import { showAlert } from '@/shared/utils/alert';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
@@ -69,7 +69,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
       } catch (error) {
         setIsCheckingQuota(false);
         console.error('Error checking quota:', error);
-        Alert.alert(
+        showAlert(
           'خطأ في الاتصال',
           'فشل في التحقق من الإعلانات المتاحة. تأكد من اتصالك بالشبكة.',
           [{ text: 'حسناً' }],

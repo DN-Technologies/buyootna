@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef } from 'react';
-import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import DrawerTrigger from '@/shared/components/filters/DrawerTrigger';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
@@ -9,6 +9,7 @@ import SelectionDrawer, {
   SelectionItem,
 } from '@/shared/components/filters/SelectionDrawer';
 import StepperInput from '@/shared/components/filters/StepperInput';
+import { showAlert } from '@/shared/utils/alert';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 export type OperationType = 'sale' | 'rent' | 'exchange';
@@ -150,7 +151,7 @@ export default function AlertPropertiesTab({
           value={value.area?.label}
           onPress={() => {
             if (!value.governorate) {
-              Alert.alert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
+              showAlert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
                 { text: 'حسناً' },
               ]);
               return;

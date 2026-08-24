@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Alert, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   CallIcon,
@@ -10,6 +10,7 @@ import {
   LocationIcon,
   WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import { showAlert } from '@/shared/utils/alert';
 
 export interface OfficeListCardProps {
   id: string;
@@ -45,7 +46,7 @@ export default function OfficeListCard({
   const handleWhatsApp = () => {
     const targetPhone = whatsapp || phone;
     if (!targetPhone) {
-      Alert.alert('تنبيه', 'لا يوجد رقم واتساب متاح لهذا المكتب');
+      showAlert('تنبيه', 'لا يوجد رقم واتساب متاح لهذا المكتب');
       return;
     }
     const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
@@ -62,12 +63,12 @@ export default function OfficeListCard({
 
   const handleCall = () => {
     if (!phone) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا المكتب');
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا المكتب');
       return;
     }
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
     Linking.openURL(`tel:${cleanPhone}`).catch(() => {
-      Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+      showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
     });
   };
 

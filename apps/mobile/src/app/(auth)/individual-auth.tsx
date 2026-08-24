@@ -4,7 +4,6 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -24,6 +23,7 @@ import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 import { AccountType } from '@/types';
 
 type AuthMode = 'login' | 'signup';
@@ -95,7 +95,7 @@ export default function IndividualAuthScreen() {
         backendMessage =
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('فشل تسجيل الدخول', backendMessage);
+      showAlert('فشل تسجيل الدخول', backendMessage);
     } finally {
       setIsFormLoading(false);
     }
@@ -127,7 +127,7 @@ export default function IndividualAuthScreen() {
         backendMessage =
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert('فشل التسجيل', backendMessage);
+      showAlert('فشل التسجيل', backendMessage);
     } finally {
       setIsFormLoading(false);
     }
@@ -158,16 +158,16 @@ export default function IndividualAuthScreen() {
         backendMessage =
           'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
       }
-      Alert.alert(title, backendMessage);
+      showAlert(title, backendMessage);
       return;
     }
 
-    Alert.alert(title, error?.message || 'حدث خطأ غير متوقع');
+    showAlert(title, error?.message || 'حدث خطأ غير متوقع');
   };
 
   const onGoogleSignIn = async () => {
     if (!GOOGLE_SIGNIN_CONFIGURED) {
-      Alert.alert('تسجيل الدخول عبر Google غير مُفعّل حالياً');
+      showAlert('تسجيل الدخول عبر Google غير مُفعّل حالياً');
       return;
     }
 
@@ -250,7 +250,7 @@ export default function IndividualAuthScreen() {
         const message = error.response.data.message;
         backendMessage = Array.isArray(message) ? message.join('\n') : message;
       }
-      Alert.alert('خطأ في التحقق', backendMessage);
+      showAlert('خطأ في التحقق', backendMessage);
     } finally {
       setIsFormLoading(false);
     }
@@ -272,9 +272,9 @@ export default function IndividualAuthScreen() {
           password: signupPassword,
         });
       }
-      Alert.alert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
+      showAlert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
     } catch {
-      Alert.alert('خطأ', 'تعذر إعادة إرسال رمز التحقق');
+      showAlert('خطأ', 'تعذر إعادة إرسال رمز التحقق');
     }
   };
 

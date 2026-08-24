@@ -5,7 +5,6 @@ import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Alert,
   Animated,
   RefreshControl,
   Text,
@@ -33,6 +32,7 @@ import RadioSelectionSheet, {
 } from '@/shared/components/profile/RadioSelectionSheet';
 import ActivityCardSkeleton from '@/shared/components/skeletons/ActivityCardSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const AD_SORT_OPTIONS: RadioOption[] = [
   { label: 'الأحدث أولاً', value: 'NEWEST' },
@@ -260,7 +260,7 @@ export default function ActivityScreen() {
     } catch (err: any) {
       console.error('Error deleting property:', err);
       const msg = err.response?.data?.message || 'فشل في حذف الإعلان';
-      Alert.alert('خطأ', msg);
+      showAlert('خطأ', msg);
     } finally {
       setPropertyToDelete(null);
     }
@@ -278,7 +278,7 @@ export default function ActivityScreen() {
     } catch (err: any) {
       console.error('Error publishing draft:', err);
       const msg = err.response?.data?.message || 'فشل في نشر الإعلان';
-      Alert.alert('خطأ', msg);
+      showAlert('خطأ', msg);
     }
   };
 

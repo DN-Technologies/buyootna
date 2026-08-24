@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
 import {
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -17,6 +16,7 @@ import { paymentsService } from '@/shared/api/payments.service';
 import { plansService } from '@/shared/api/plans.service';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 import PlanCardSkeleton from '@/shared/components/skeletons/PlanCardSkeleton';
+import { showAlert } from '@/shared/utils/alert';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -66,7 +66,7 @@ export default function PlansScreen() {
       );
 
       if (charge.status === 'PAID') {
-        Alert.alert('نجاح', 'تم تفعيل الباقة بنجاح!');
+        showAlert('نجاح', 'تم تفعيل الباقة بنجاح!');
         refetch();
         return;
       }
@@ -78,7 +78,7 @@ export default function PlansScreen() {
       await WebBrowser.openBrowserAsync(charge.checkoutUrl);
     } catch (error: any) {
       console.error('Payment Error:', error);
-      Alert.alert(
+      showAlert(
         'خطأ',
         error.response?.data?.message ||
           error.message ||

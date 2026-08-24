@@ -1,8 +1,8 @@
 import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
 
 import apiClient from '@/shared/api/api';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import AddIdentityIndividualScreen from '../add-identity-individual';
@@ -32,7 +32,7 @@ describe('AddIdentityIndividualScreen', () => {
         return selector ? selector(state) : state;
       },
     );
-    jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+    jest.spyOn(useAlertStore.getState(), 'showAlert').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -88,9 +88,9 @@ describe('AddIdentityIndividualScreen', () => {
     });
     expect(mockRefreshProfile).toHaveBeenCalled();
 
-    const alertCall = (Alert.alert as jest.Mock).mock.calls.find(
-      (call) => call[0] === 'تم بنجاح',
-    );
+    const alertCall = (
+      useAlertStore.getState().showAlert as jest.Mock
+    ).mock.calls.find((call) => call[0] === 'تم بنجاح');
     expect(alertCall).toBeDefined();
     const okButton = alertCall![2].find((b: any) => b.text === 'حسناً');
     await act(async () => okButton.onPress());
@@ -108,7 +108,7 @@ describe('AddIdentityIndividualScreen', () => {
     await fillAndSubmit(getByPlaceholderText, getByText, { name: 'محمد أحمد' });
 
     await waitFor(() => {
-      expect(Alert.alert).toHaveBeenCalledWith('خطأ', 'حدث خطأ ما');
+      expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith('خطأ', 'حدث خطأ ما');
     });
     expect(mockRefreshProfile).not.toHaveBeenCalled();
     expect(router.replace).not.toHaveBeenCalled();

@@ -33,6 +33,7 @@ module.exports = {
         accent: '#F1F5F9',
         charcoal: '#111111',
         'gray-medium': '#6B6A6A',
+        danger: '#DC2626',
       },
     },
   },

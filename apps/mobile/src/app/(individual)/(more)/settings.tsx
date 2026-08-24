@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import {
-  Alert,
   ScrollView,
   Switch,
   Text,
@@ -29,6 +28,7 @@ import {
   UserSettingsResponse,
 } from '@/shared/api/settings.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const SETTINGS_QUERY_KEY = ['userSettings'];
 
@@ -72,7 +72,7 @@ export default function SettingsScreen() {
     updateSettings({ hideOfficeAds: val });
 
   const handleDeleteAccount = () => {
-    Alert.alert(
+    showAlert(
       'حذف الحساب نهائياً',
       'هل أنت متأكد من رغبتك في حذف الحساب نهائياً؟ هذا الإجراء لا يمكن التراجع عنه وسيتم مسح جميع بياناتك.',
       [
@@ -87,7 +87,7 @@ export default function SettingsScreen() {
               router.replace('/(auth)/individual-auth');
             } catch (error) {
               console.error(error);
-              Alert.alert('خطأ', 'حدث خطأ أثناء حذف الحساب');
+              showAlert('خطأ', 'حدث خطأ أثناء حذف الحساب');
             }
           },
         },
@@ -96,7 +96,7 @@ export default function SettingsScreen() {
   };
 
   const handleDisableAccount = () => {
-    Alert.alert(
+    showAlert(
       'تعطيل الحساب مؤقتاً',
       'هل تريد تعطيل حسابك مؤقتاً؟ يمكنك تسجيل الدخول مرة أخرى في أي وقت لتنشيطه.',
       [
@@ -110,7 +110,7 @@ export default function SettingsScreen() {
               router.replace('/(auth)/individual-auth');
             } catch (error) {
               console.error(error);
-              Alert.alert('خطأ', 'حدث خطأ أثناء تعطيل الحساب');
+              showAlert('خطأ', 'حدث خطأ أثناء تعطيل الحساب');
             }
           },
         },

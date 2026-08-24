@@ -3,7 +3,6 @@ import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,6 +16,7 @@ import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import apiClient from '@/shared/api/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function AddIdentityCompanyScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -90,7 +90,7 @@ export default function AddIdentityCompanyScreen() {
         const message = error.response.data.message;
         errorMsg = Array.isArray(message) ? message.join('\n') : message;
       }
-      Alert.alert('خطأ', errorMsg);
+      showAlert('خطأ', errorMsg);
       return false;
     } finally {
       setIsLoading(false);

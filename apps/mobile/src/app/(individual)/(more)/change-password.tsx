@@ -16,7 +16,6 @@ import React, {
 import { Controller, useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -32,6 +31,7 @@ import { z } from 'zod';
 import FormInput from '@/shared/components/FormInput';
 import { settingsService } from '@/shared/api/settings.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 // Validation Schema
 const changePasswordSchema = z
@@ -95,7 +95,7 @@ export default function ChangePasswordScreen() {
       setOtpError('');
       bottomSheetRef.current?.present();
     } catch (e: any) {
-      Alert.alert(
+      showAlert(
         'خطأ',
         e.response?.data?.message ||
           'فشل إرسال رمز التحقق. يرجى المحاولة لاحقاً.',
@@ -112,9 +112,9 @@ export default function ChangePasswordScreen() {
       setTimer(45);
       setOtp('');
       setOtpError('');
-      Alert.alert('نجاح', 'تم إعادة إرسال رمز التحقق بنجاح');
+      showAlert('نجاح', 'تم إعادة إرسال رمز التحقق بنجاح');
     } catch (e: any) {
-      Alert.alert('خطأ', e.response?.data?.message || 'فشل إعادة إرسال الرمز.');
+      showAlert('خطأ', e.response?.data?.message || 'فشل إعادة إرسال الرمز.');
     }
   };
 
@@ -135,7 +135,7 @@ export default function ChangePasswordScreen() {
         logoutAllDevices,
       );
       bottomSheetRef.current?.dismiss();
-      Alert.alert('نجاح', 'تم تغيير كلمة المرور بنجاح', [
+      showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح', [
         {
           text: 'موافق',
           onPress: () => router.back(),

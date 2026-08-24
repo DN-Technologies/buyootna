@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -29,6 +28,7 @@ import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem } from '@/shared/components/profile/types';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
+import { showAlert } from '@/shared/utils/alert';
 
 type OfficeTab = 'about' | 'services' | 'listings';
 
@@ -99,11 +99,11 @@ export default function OfficeProfileScreen() {
   const handleAddReview = async (comment: string, rating: number) => {
     try {
       await reviewsService.addReview(targetUserId, rating, comment);
-      Alert.alert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
+      showAlert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
       refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
-      Alert.alert('خطأ', msg);
+      showAlert('خطأ', msg);
     }
   };
 
@@ -177,7 +177,7 @@ export default function OfficeProfileScreen() {
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
-              Alert.alert('خيارات', '', [
+              showAlert('خيارات', '', [
                 { text: 'مشاركة الملف الشخصي', onPress: () => {} },
                 { text: 'إبلاغ عن المكتب', style: 'destructive' },
                 { text: 'إلغاء', style: 'cancel' },

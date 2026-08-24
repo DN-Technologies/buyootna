@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Image as ExpoImage } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import apiClient from '@/shared/api/api';
@@ -26,6 +26,7 @@ import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import PublicProfileHeaderSkeleton from '@/shared/components/skeletons/PublicProfileHeaderSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 import { PropertyDto } from '@/types/feed';
 
 interface ReviewSummary {
@@ -143,7 +144,7 @@ export default function UserProfileScreen() {
 
   useEffect(() => {
     if (profileError) {
-      Alert.alert('خطأ', 'فشل تحميل بيانات المستخدم');
+      showAlert('خطأ', 'فشل تحميل بيانات المستخدم');
     }
   }, [profileError]);
 
@@ -165,7 +166,7 @@ export default function UserProfileScreen() {
   // Action Bar Handlers
   const handleWhatsapp = () => {
     if (!userProfile?.phone) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح');
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح');
       return;
     }
     let cleaned = userProfile.phone.replace(/[^0-9+]/g, '');
@@ -181,19 +182,19 @@ export default function UserProfileScreen() {
     const url = `whatsapp://send?phone=${cleaned}`;
     Linking.openURL(url).catch(() => {
       Linking.openURL(`https://wa.me/${cleaned}`).catch(() => {
-        Alert.alert('خطأ', 'تعذر فتح تطبيق الواتساب');
+        showAlert('خطأ', 'تعذر فتح تطبيق الواتساب');
       });
     });
   };
 
   const handleCall = () => {
     if (!userProfile?.phone) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح');
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح');
       return;
     }
     let cleaned = userProfile.phone.replace(/[^0-9+]/g, '');
     Linking.openURL(`tel:${cleaned}`).catch(() => {
-      Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+      showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
     });
   };
 
@@ -206,7 +207,7 @@ export default function UserProfileScreen() {
       router.push(`/chat/${response.data.id}`);
     } catch (error) {
       console.error('Failed to start chat conversation:', error);
-      Alert.alert('خطأ', 'فشل بدء المحادثة');
+      showAlert('خطأ', 'فشل بدء المحادثة');
     }
   };
 
@@ -220,11 +221,11 @@ export default function UserProfileScreen() {
         comment: commentText,
         rating,
       });
-      Alert.alert('نجاح', 'تمت إضافة تقييمك بنجاح');
+      showAlert('نجاح', 'تمت إضافة تقييمك بنجاح');
       refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'فشل إضافة التقييم';
-      Alert.alert(
+      showAlert(
         'خطأ',
         typeof msg === 'string' ? msg : msg[0] || 'فشل إضافة التقييم',
       );

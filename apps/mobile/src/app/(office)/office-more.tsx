@@ -4,7 +4,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
 import {
-  Alert,
   Image,
   ScrollView,
   Text,
@@ -34,6 +33,7 @@ import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { showAlert } from '@/shared/utils/alert';
 
 const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
   <Feather name="info" color={color} size={size} />
@@ -229,14 +229,14 @@ export default function OfficeMoreScreen() {
                   icon={DealsIcon}
                   title="الصفقات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
                   }
                 />
                 <MenuItem
                   icon={AuctionsIcon}
                   title="المزادات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
                   }
                 />
               </View>
@@ -255,14 +255,14 @@ export default function OfficeMoreScreen() {
                   icon={UsersIcon}
                   title="الوسطاء العقاريون"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة إدارة الوسطاء ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة إدارة الوسطاء ستكون متوفرة قريباً')
                   }
                 />
                 <MenuItem
                   icon={BarChartIcon}
                   title="التحليلات والإحصائيات"
                   onPress={() =>
-                    Alert.alert('قريباً', 'ميزة التحليلات ستكون متوفرة قريباً')
+                    showAlert('قريباً', 'ميزة التحليلات ستكون متوفرة قريباً')
                   }
                 />
               </View>

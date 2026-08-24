@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  Alert,
   Linking,
   ScrollView,
   Share,
@@ -27,6 +26,7 @@ import PropertyOverview from '@/shared/components/PropertyOverview';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -74,7 +74,7 @@ export default function PropertyDetailsScreen() {
 
   const handleWhatsapp = () => {
     if (!property?.phoneNumber) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
     }
     let cleaned = property.phoneNumber.replace(/[^0-9+]/g, '');
@@ -91,20 +91,20 @@ export default function PropertyDetailsScreen() {
     Linking.openURL(url).catch(() => {
       const webUrl = `https://wa.me/${cleaned}`;
       Linking.openURL(webUrl).catch(() => {
-        Alert.alert('خطأ', 'تعذر فتح تطبيق الواتساب');
+        showAlert('خطأ', 'تعذر فتح تطبيق الواتساب');
       });
     });
   };
 
   const handleCall = () => {
     if (!property?.phoneNumber) {
-      Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
     }
     let cleaned = property.phoneNumber.replace(/[^0-9+]/g, '');
     const url = `tel:${cleaned}`;
     Linking.openURL(url).catch(() => {
-      Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+      showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
     });
   };
 
@@ -112,7 +112,7 @@ export default function PropertyDetailsScreen() {
     if (!property) return;
     guardAction(async () => {
       if (user && property.host && user.id === property.host.id) {
-        Alert.alert('تنبيه', 'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.');
+        showAlert('تنبيه', 'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.');
         return;
       }
       try {
@@ -127,7 +127,7 @@ export default function PropertyDetailsScreen() {
         const msg = Array.isArray(backendMsg)
           ? backendMsg.join('\n')
           : backendMsg || 'تعذر بدء المحادثة مع البائع';
-        Alert.alert('تنبيه', msg);
+        showAlert('تنبيه', msg);
       }
     });
   };

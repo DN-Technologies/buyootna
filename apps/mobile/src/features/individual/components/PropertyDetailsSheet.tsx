@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -40,6 +39,7 @@ import {
 import { chatService } from '@/shared/api/chat.service';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -133,12 +133,12 @@ const PropertyDetailsSheet = forwardRef<
       }
       const targetPhone = property?.phoneNumber || property?.phone;
       if (!targetPhone) {
-        Alert.alert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+        showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
         return;
       }
       const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
       Linking.openURL(`tel:${cleanPhone}`).catch(() => {
-        Alert.alert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
+        showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
       });
     };
 
@@ -150,7 +150,7 @@ const PropertyDetailsSheet = forwardRef<
       if (!property?.id || !property?.host?.id) return;
 
       if (!token) {
-        Alert.alert('تنبيه', 'يجب تسجيل الدخول لبدء محادثة');
+        showAlert('تنبيه', 'يجب تسجيل الدخول لبدء محادثة');
         return;
       }
 
@@ -167,7 +167,7 @@ const PropertyDetailsSheet = forwardRef<
         const msg = Array.isArray(backendMsg)
           ? backendMsg.join('\n')
           : backendMsg || 'تعذر بدء المحادثة مع البائع';
-        Alert.alert('تنبيه', msg);
+        showAlert('تنبيه', msg);
       }
     };
 
