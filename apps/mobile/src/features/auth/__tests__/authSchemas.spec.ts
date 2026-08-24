@@ -34,6 +34,7 @@ describe('Auth Schemas Validation Unit Tests', () => {
       expect(loginResult.success).toBe(true);
 
       const signupResult = signupSchema.safeParse({
+        name: 'Ali Salem',
         identifier: '12345678901',
         password: 'Password123!',
         confirmPassword: 'Password123!',
@@ -45,6 +46,7 @@ describe('Auth Schemas Validation Unit Tests', () => {
   describe('signupSchema', () => {
     it('should fail when passwords do not match', () => {
       const result = signupSchema.safeParse({
+        name: 'Ali Salem',
         identifier: 'test@example.com',
         password: 'Password123!',
         confirmPassword: 'DifferentPassword123!',
@@ -54,6 +56,7 @@ describe('Auth Schemas Validation Unit Tests', () => {
 
     it('should validate a valid email identifier', () => {
       const result = signupSchema.safeParse({
+        name: 'Ali Salem',
         identifier: 'test@example.com',
         password: 'Password123!',
         confirmPassword: 'Password123!',
@@ -63,6 +66,7 @@ describe('Auth Schemas Validation Unit Tests', () => {
 
     it('should validate a valid Kuwaiti phone identifier', () => {
       const result = signupSchema.safeParse({
+        name: 'Ali Salem',
         identifier: '51234567',
         password: 'Password123!',
         confirmPassword: 'Password123!',
@@ -72,7 +76,28 @@ describe('Auth Schemas Validation Unit Tests', () => {
 
     it('should fail on an identifier that is neither a valid email nor a valid Kuwaiti phone', () => {
       const result = signupSchema.safeParse({
+        name: 'Ali Salem',
         identifier: 'not-a-valid-identifier',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail when name is empty', () => {
+      const result = signupSchema.safeParse({
+        name: '',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail when name is a single character', () => {
+      const result = signupSchema.safeParse({
+        name: 'A',
+        identifier: 'test@example.com',
         password: 'Password123!',
         confirmPassword: 'Password123!',
       });

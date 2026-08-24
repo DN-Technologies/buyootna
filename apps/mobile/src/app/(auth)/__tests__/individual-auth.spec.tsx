@@ -166,6 +166,10 @@ describe('IndividualAuthScreen', () => {
 
       await switchToSignup(getByText);
       await fireEvent.changeText(
+        getByPlaceholderText('علي سالم'),
+        'Ali Salem',
+      );
+      await fireEvent.changeText(
         getByPlaceholderText('alisalem@gmail.com'),
         'ali@example.com',
       );
@@ -177,7 +181,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(mockApiClient.post).toHaveBeenCalledWith(
           '/users/register/individual',
-          { identifier: 'ali@example.com', password: 'Password123!' },
+          { name: 'Ali Salem', identifier: 'ali@example.com', password: 'Password123!' },
         );
       });
       expect(mockApiClient.post).toHaveBeenCalledTimes(1);
@@ -194,6 +198,10 @@ describe('IndividualAuthScreen', () => {
 
       await switchToSignup(getByText);
       await fireEvent.changeText(
+        getByPlaceholderText('علي سالم'),
+        'Ali Salem',
+      );
+      await fireEvent.changeText(
         getByPlaceholderText('alisalem@gmail.com'),
         '51234567',
       );
@@ -205,7 +213,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(mockApiClient.post).toHaveBeenCalledWith(
           '/users/register/individual',
-          { identifier: '51234567', password: 'Password123!' },
+          { name: 'Ali Salem', identifier: '51234567', password: 'Password123!' },
         );
       });
       expect(mockApiClient.post).toHaveBeenCalledTimes(1);
@@ -224,6 +232,10 @@ describe('IndividualAuthScreen', () => {
           data: { message: 'registered' },
         });
         await switchToSignup(getByText);
+        await fireEvent.changeText(
+          getByPlaceholderText('علي سالم'),
+          'Ali Salem',
+        );
         await fireEvent.changeText(
           getByPlaceholderText('alisalem@gmail.com'),
           '51234567',
@@ -291,6 +303,10 @@ describe('IndividualAuthScreen', () => {
         });
         await switchToSignup(getByText);
         await fireEvent.changeText(
+          getByPlaceholderText('علي سالم'),
+          'Ali Salem',
+        );
+        await fireEvent.changeText(
           getByPlaceholderText('alisalem@gmail.com'),
           'ali@example.com',
         );
@@ -339,7 +355,7 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => {
           expect(mockApiClient.post).toHaveBeenCalledWith(
             '/users/register/individual',
-            { identifier: 'ali@example.com', password: 'Password123!' },
+            { name: 'Ali Salem', identifier: 'ali@example.com', password: 'Password123!' },
           );
         });
       });

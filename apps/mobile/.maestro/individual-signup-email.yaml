@@ -31,15 +31,36 @@ appId: com.constyoussef.buyootna
     timeout: 10000
 - tapOn: "تسجيل جديد"
 - tapOn:
-    point: "50%, 34%" # identifier field
+    id: "individual-signup-name-input"
+- inputText: "Maestro Test"
+- tapOn:
+    id: "individual-signup-identifier-input"
 - inputText: "maestro-signup@buyootna.test"
 - tapOn:
     id: "individual-signup-password-input"
+# Two adjacent secureTextEntry fields with textContentType="newPassword"
+# make iOS Simulator's strong-password autofill suggestion insert a
+# generated value into a password field before we ever type into it (this
+# is what previously broke tapping these fields entirely — see
+# IndividualSignupForm.tsx) — it's non-deterministic (tied to the
+# simulator's iCloud/Keychain state), so erase first rather than typing on
+# top of whatever autofill may have inserted.
+- eraseText
 - inputText: "MaestroE2E123!"
 - tapOn:
     id: "individual-signup-confirm-password-input"
+- eraseText
 - inputText: "MaestroE2E123!"
-- tapOn: "تأكيد كلمة المرور" # tap the label (not a field) to dismiss the keyboard
+# Tapping the confirm-password label to dismiss the keyboard (as the
+# password fields' fix did) stopped being reliable once the form grew a
+# 4th field: with the keyboard still up there isn't enough room to show
+# both the label and the submit button, so neither is reliably reachable
+# by a position-based tap. hideKeyboard's iOS scroll-based dismiss works
+# here (unlike on the OTP screen's custom hidden input) since this is a
+# standard, visible TextInput.
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 3000
 - tapOn: "إنشاء حساب"
 - waitForAnimationToEnd:
     timeout: 10000

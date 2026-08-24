@@ -9,6 +9,10 @@ import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.valid
 
 export class RegisterIndividualDto {
   @IsString()
+  @IsNotEmpty({ message: 'الاسم مطلوب' })
+  name: string;
+
+  @IsString()
   @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
   @IsEmailOrPhone({ message: 'أدخل بريد إلكتروني أو رقم هاتف صحيح' })
   identifier: string;

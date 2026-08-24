@@ -13,6 +13,7 @@ describe('IndividualSignupForm', () => {
       />,
     );
 
+    expect(getByText('الاسم')).toBeTruthy();
     expect(getByText('رقم الهاتف أو البريد الالكتروني')).toBeTruthy();
     expect(queryByText('البريد الإلكتروني')).toBeNull();
     expect(queryByText('رقم الهاتف')).toBeNull();
@@ -28,6 +29,7 @@ describe('IndividualSignupForm', () => {
       />,
     );
 
+    fireEvent.changeText(getByPlaceholderText('علي سالم'), 'Ali Salem');
     fireEvent.changeText(getByPlaceholderText('alisalem@gmail.com'), 'ali@example.com');
     const passwordInputs = getAllByPlaceholderText('**************');
     fireEvent.changeText(passwordInputs[0], 'Password123!');
@@ -39,7 +41,7 @@ describe('IndividualSignupForm', () => {
       expect(onSubmit).toHaveBeenCalled();
     });
     expect(onSubmit.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ identifier: 'ali@example.com' }),
+      expect.objectContaining({ name: 'Ali Salem', identifier: 'ali@example.com' }),
     );
   });
 });

@@ -9,3 +9,4 @@ export function randomEmail(): string {
 }
 
 export const TEST_PASSWORD = 'Password123!';
+export const TEST_NAME = 'Test User';

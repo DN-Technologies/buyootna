@@ -30,6 +30,10 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
 // Signup Schema
 export const signupSchema = z
   .object({
+    name: z
+      .string({ message: 'الاسم مطلوب' })
+      .min(1, 'الاسم مطلوب')
+      .min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
     identifier: z
       .string({ message: 'هذا الحقل مطلوب' })
       .min(1, 'هذا الحقل مطلوب')

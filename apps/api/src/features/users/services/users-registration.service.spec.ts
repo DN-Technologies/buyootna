@@ -17,6 +17,7 @@ interface MockUserCreateArgs {
     phone?: string;
     password: string;
     role: string;
+    name: string;
   };
 }
 
@@ -29,6 +30,7 @@ const buildTx = () => ({
         phone: args.data.phone ?? null,
         password: args.data.password,
         role: args.data.role,
+        name: args.data.name,
       }),
     ),
   },
@@ -86,6 +88,7 @@ describe('UsersRegistrationService', () => {
   describe('registerIndividual', () => {
     it('sends an email OTP and creates no account yet when the identifier is email-shaped', async () => {
       const result = await service.registerIndividual({
+        name: 'Ali',
         identifier: 'ali@example.com',
         password: 'password123',
       });
@@ -97,6 +100,7 @@ describe('UsersRegistrationService', () => {
       });
       expect(emailOtpService.sendRegistrationOtp).toHaveBeenCalledWith(
         'ali@example.com',
+        'Ali',
         expect.any(String),
       );
       expect(twilioService.sendVerification).not.toHaveBeenCalled();
@@ -105,18 +109,20 @@ describe('UsersRegistrationService', () => {
 
     it('hashes the password before handing it to EmailOtpService', async () => {
       await service.registerIndividual({
+        name: 'Ali',
         identifier: 'ali@example.com',
         password: 'password123',
       });
 
-      const [, hashedPassword] = emailOtpService.sendRegistrationOtp.mock
-        .calls[0] as [string, string];
+      const [, , hashedPassword] = emailOtpService.sendRegistrationOtp.mock
+        .calls[0] as [string, string, string];
       expect(hashedPassword).not.toBe('password123');
       expect(bcrypt.compareSync('password123', hashedPassword)).toBe(true);
     });
 
     it('creates a user with only phone set and sends an SMS OTP when the identifier is phone-shaped', async () => {
       const result = await service.registerIndividual({
+        name: 'Ali',
         identifier: '55123456',
         password: 'password123',
       });
@@ -138,6 +144,7 @@ describe('UsersRegistrationService', () => {
 
       await expect(
         service.registerIndividual({
+          name: 'Ali',
           identifier: 'ali@example.com',
           password: 'password123',
         }),
@@ -155,6 +162,7 @@ describe('UsersRegistrationService', () => {
 
       await expect(
         service.registerIndividual({
+          name: 'Ali',
           identifier: '55123456',
           password: 'password123',
         }),
@@ -170,6 +178,7 @@ describe('UsersRegistrationService', () => {
 
       await expect(
         service.registerIndividual({
+          name: 'Ali',
           identifier: 'ali@example.com',
           password: 'password123',
         }),
@@ -183,13 +192,14 @@ describe('UsersRegistrationService', () => {
 
       await expect(
         service.registerIndividual({
+          name: 'Ali',
           identifier: '55123456',
           password: 'password123',
         }),
       ).rejects.toThrow(InternalServerErrorException);
     });
 
-    it('creates an associated IndividualProfile and an active INDIVIDUAL Identity record for a phone identifier', async () => {
+    it('creates an associated IndividualProfile and an active INDIVIDUAL Identity record carrying the given name for a phone identifier', async () => {
       let tx: Tx | undefined;
       prisma.$transaction.mockImplementation((cb: (tx: Tx) => unknown) => {
         tx = buildTx();
@@ -197,6 +207,7 @@ describe('UsersRegistrationService', () => {
       });
 
       await service.registerIndividual({
+        name: 'Ali',
         identifier: '55123456',
         password: 'password123',
       });
@@ -209,7 +220,7 @@ describe('UsersRegistrationService', () => {
           userId: 'user-1',
           type: 'INDIVIDUAL',
           isActive: true,
-          individualData: { create: {} },
+          individualData: { create: { name: 'Ali' } },
         },
       });
     });
@@ -226,8 +237,9 @@ describe('UsersRegistrationService', () => {
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
-    it('creates the account only after a correct OTP, using the hashed password stashed at request-otp time', async () => {
+    it('creates the account only after a correct OTP, using the name and hashed password stashed at request-otp time', async () => {
       emailOtpService.verifyAndConsume.mockReturnValue({
+        name: 'Ali',
         hashedPassword: 'hashed-value',
       });
       let tx: Tx | undefined;
@@ -244,13 +256,23 @@ describe('UsersRegistrationService', () => {
       expect(result.user.email).toBe('ali@example.com');
       expect(result.user).not.toHaveProperty('password');
       const createCalls = tx!.user.create.mock.calls as Array<
-        [{ data: { password: string } }]
+        [{ data: { password: string; name: string } }]
       >;
       expect(createCalls[0][0].data.password).toBe('hashed-value');
+      expect(createCalls[0][0].data.name).toBe('Ali');
+      expect(tx!.identity.create).toHaveBeenCalledWith({
+        data: {
+          userId: 'user-1',
+          type: 'INDIVIDUAL',
+          isActive: true,
+          individualData: { create: { name: 'Ali' } },
+        },
+      });
     });
 
     it('re-checks for a conflicting user before creating the account', async () => {
       emailOtpService.verifyAndConsume.mockReturnValue({
+        name: 'Ali',
         hashedPassword: 'hashed-value',
       });
       prisma.user.findFirst.mockResolvedValue({

@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 
-import { randomKuwaitPhone, TEST_PASSWORD } from '../utils/fixtures';
+import { randomKuwaitPhone, TEST_NAME, TEST_PASSWORD } from '../utils/fixtures';
 import { getMockOtpCode } from '../utils/otp';
 import { createTestApp } from '../utils/test-app';
 import {
@@ -25,7 +25,7 @@ describe('Password recovery flow (e2e)', () => {
     const phone = randomKuwaitPhone();
     await request(app.getHttpServer())
       .post('/users/register/individual')
-      .send({ identifier: phone, password: TEST_PASSWORD })
+      .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
       .expect(201);
 
     await request(app.getHttpServer())
@@ -74,7 +74,7 @@ describe('Password recovery flow (e2e)', () => {
     const phone = randomKuwaitPhone();
     await request(app.getHttpServer())
       .post('/users/register/individual')
-      .send({ identifier: phone, password: TEST_PASSWORD })
+      .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
       .expect(201);
 
     await request(app.getHttpServer())
