@@ -14,7 +14,11 @@ interface IndividualLoginFormProps {
   onOpenProfiles: () => void;
   onGooglePress: () => void;
   onApplePress: () => void;
+  // The regular login submit is in flight.
   isLoading?: boolean;
+  // Independent per-provider loading, so tapping one doesn't spin the other.
+  isGoogleLoading?: boolean;
+  isAppleLoading?: boolean;
 }
 
 export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
@@ -23,6 +27,8 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
   onGooglePress,
   onApplePress,
   isLoading = false,
+  isGoogleLoading = false,
+  isAppleLoading = false,
 }) => {
   const router = useRouter();
   const [rememberMe, setRememberMe] = useState(false);
@@ -98,7 +104,9 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
       <SocialAuthButtons
         onGooglePress={onGooglePress}
         onApplePress={onApplePress}
-        isLoading={isLoading}
+        isGoogleLoading={isGoogleLoading}
+        isAppleLoading={isAppleLoading}
+        disabled={isLoading}
       />
 
       <TouchableOpacity

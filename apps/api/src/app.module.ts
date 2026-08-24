@@ -11,6 +11,7 @@ import { AuthModule } from './features/auth/auth.module';
 import { RecoveryModule } from './features/recovery/recovery.module';
 import { StorageModule } from './core/storage/storage.module';
 import { TwilioModule } from './core/twilio/twilio.module';
+import { MailModule } from './core/mail/mail.module';
 import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
 import { MediaModule } from './media/media.module';
@@ -44,6 +45,7 @@ import { IdentitiesModule } from './features/identities/identities.module';
     }),
     PrismaModule,
     TwilioModule,
+    MailModule,
     UsersModule,
     AuthModule,
     RecoveryModule,

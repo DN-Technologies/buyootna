@@ -11,7 +11,10 @@ export class MapController {
   constructor(private readonly mapService: MapService) {}
 
   @Get('discover')
-  @ApiOperation({ summary: 'Discover properties or companies as map pins within a bounding box, as GeoJSON' })
+  @ApiOperation({
+    summary:
+      'Discover properties or companies as map pins within a bounding box, as GeoJSON',
+  })
   @ApiQuery({ type: GetMapBoundsDto })
   @ApiResponse({ status: 200, type: MapDiscoverResponseDto })
   @ApiCommonErrors()

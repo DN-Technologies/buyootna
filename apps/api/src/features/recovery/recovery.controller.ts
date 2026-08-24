@@ -18,7 +18,9 @@ export class RecoveryController {
   constructor(private readonly recoveryService: RecoveryService) {}
 
   @Post('request-otp')
-  @ApiOperation({ summary: 'Request a password-reset OTP for an email or phone identifier' })
+  @ApiOperation({
+    summary: 'Request a password-reset OTP for an email or phone identifier',
+  })
   @ApiResponse({ status: 201, type: RecoveryMessageResponseDto })
   @ApiCommonErrors()
   async requestOtp(@Body() dto: RequestOtpDto) {
@@ -26,7 +28,10 @@ export class RecoveryController {
   }
 
   @Post('verify-otp')
-  @ApiOperation({ summary: 'Verify the password-reset OTP and receive a temporary reset token' })
+  @ApiOperation({
+    summary:
+      'Verify the password-reset OTP and receive a temporary reset token',
+  })
   @ApiResponse({ status: 201, type: VerifyOtpResponseDto })
   @ApiCommonErrors()
   async verifyOtp(@Body() dto: VerifyOtpDto) {
@@ -34,7 +39,9 @@ export class RecoveryController {
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Set a new password using the temporary reset token' })
+  @ApiOperation({
+    summary: 'Set a new password using the temporary reset token',
+  })
   @ApiResponse({ status: 201, type: RecoveryMessageResponseDto })
   @ApiCommonErrors()
   async resetPassword(@Body() dto: ResetPasswordDto) {

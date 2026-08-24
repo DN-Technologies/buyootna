@@ -230,39 +230,42 @@ export class AuthService {
     const randomPassword = crypto.randomBytes(32).toString('hex');
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-    const newUser = await this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: {
-          email: profile.email,
-          password: hashedPassword,
-          role: Role.INDIVIDUAL,
-        },
-      });
+    const newUser = await this.prisma.$transaction(
+      async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email: profile.email,
+            password: hashedPassword,
+            role: Role.INDIVIDUAL,
+          },
+        });
 
-      await tx.individualProfile.create({
-        data: { userId: user.id },
-      });
+        await tx.individualProfile.create({
+          data: { userId: user.id },
+        });
 
-      await tx.identity.create({
-        data: {
-          userId: user.id,
-          type: IdentityType.INDIVIDUAL,
-          isActive: true,
-          individualData: { create: {} },
-        },
-      });
+        await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.INDIVIDUAL,
+            isActive: true,
+            individualData: { create: {} },
+          },
+        });
 
-      await tx.socialAccount.create({
-        data: {
-          userId: user.id,
-          provider,
-          providerId: profile.providerId,
-          email: profile.email,
-        },
-      });
+        await tx.socialAccount.create({
+          data: {
+            userId: user.id,
+            provider,
+            providerId: profile.providerId,
+            email: profile.email,
+          },
+        });
 
-      return user;
-    });
+        return user;
+      },
+      { timeout: 15000 },
+    );
 
     const userWithoutPassword = { ...newUser };
     delete (userWithoutPassword as Partial<typeof userWithoutPassword>)

@@ -53,9 +53,7 @@ export class IdentityTypeGuard implements CanActivate {
         })
         .join(' أو ');
 
-      throw new ForbiddenException(
-        `هذه الميزة متاحة فقط لـ: ${typeNames}`,
-      );
+      throw new ForbiddenException(`هذه الميزة متاحة فقط لـ: ${typeNames}`);
     }
 
     return true;

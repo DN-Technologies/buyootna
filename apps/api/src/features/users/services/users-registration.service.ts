@@ -50,32 +50,35 @@ export class UsersRegistrationService {
 
     try {
       // Transaction ensures both records are created, or neither are.
-      const result = await this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            email,
-            phone,
-            password: hashedPassword,
-            role: Role.INDIVIDUAL,
-          },
-        });
+      const result = await this.prisma.$transaction(
+        async (tx) => {
+          const user = await tx.user.create({
+            data: {
+              email,
+              phone,
+              password: hashedPassword,
+              role: Role.INDIVIDUAL,
+            },
+          });
 
-        const profile = await tx.individualProfile.create({
-          data: { userId: user.id },
-        });
+          const profile = await tx.individualProfile.create({
+            data: { userId: user.id },
+          });
 
-        // Create the Identity record auth/login relies on.
-        await tx.identity.create({
-          data: {
-            userId: user.id,
-            type: IdentityType.INDIVIDUAL,
-            isActive: true,
-            individualData: { create: {} },
-          },
-        });
+          // Create the Identity record auth/login relies on.
+          await tx.identity.create({
+            data: {
+              userId: user.id,
+              type: IdentityType.INDIVIDUAL,
+              isActive: true,
+              individualData: { create: {} },
+            },
+          });
 
-        return { user, profile };
-      });
+          return { user, profile };
+        },
+        { timeout: 15000 },
+      );
 
       // Remove password from response
       const userWithoutPassword = { ...result.user };

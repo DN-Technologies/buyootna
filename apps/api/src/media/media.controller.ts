@@ -33,7 +33,10 @@ export class MediaController {
 
   @Post('upload/avatar')
   @UseInterceptors(FileInterceptor('file'))
-  @ApiOperation({ summary: 'Upload a single avatar/logo image (HEIC/HEIF auto-converted to JPEG)' })
+  @ApiOperation({
+    summary:
+      'Upload a single avatar/logo image (HEIC/HEIF auto-converted to JPEG)',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -98,7 +101,10 @@ export class MediaController {
 
   @Post('upload/listings')
   @UseInterceptors(FilesInterceptor('images', 10)) // Accepts up to 10 files under the 'images' key
-  @ApiOperation({ summary: 'Upload up to 10 listing images (HEIC/HEIF auto-converted to JPEG)' })
+  @ApiOperation({
+    summary:
+      'Upload up to 10 listing images (HEIC/HEIF auto-converted to JPEG)',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

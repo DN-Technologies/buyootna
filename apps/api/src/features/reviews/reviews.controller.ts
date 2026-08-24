@@ -34,7 +34,9 @@ export class ReviewsController {
   @UseGuards(AuthGuard('jwt'))
   @Post('users/:targetUserId/reviews')
   @ApiAuth()
-  @ApiOperation({ summary: 'Create or update the current user\'s review of a target user' })
+  @ApiOperation({
+    summary: "Create or update the current user's review of a target user",
+  })
   @ApiParam({ name: 'targetUserId', description: 'Target user ID' })
   @ApiResponse({ status: 201, type: CreateReviewResponseDto })
   @ApiCommonErrors()
@@ -64,7 +66,10 @@ export class ReviewsController {
   }
 
   @Get('users/:targetUserId/reviews/summary')
-  @ApiOperation({ summary: 'Get review summary stats (average rating, count, breakdown) for a target user' })
+  @ApiOperation({
+    summary:
+      'Get review summary stats (average rating, count, breakdown) for a target user',
+  })
   @ApiParam({ name: 'targetUserId', description: 'Target user ID' })
   @ApiResponse({ status: 200, type: ReviewSummaryResponseDto })
   @ApiCommonErrors()

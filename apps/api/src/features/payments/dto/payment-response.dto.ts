@@ -3,7 +3,8 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateChargeResponseDto {
   @ApiProperty({
     nullable: true,
-    description: 'Tap Payments checkout URL to redirect the client to, null if the invoice was already paid',
+    description:
+      'Tap Payments checkout URL to redirect the client to, null if the invoice was already paid',
   })
   checkoutUrl: string | null;
 

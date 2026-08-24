@@ -73,7 +73,10 @@ const SuccessBottomSheet = forwardRef<
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4">
+        <BottomSheetView
+          accessible={false}
+          className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4"
+        >
           <View className="mt-4 items-center">
             {/* Dynamic Success Icon */}
             {iconType === 'document-search' ? (

@@ -3,15 +3,19 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
+import FormInput from '@/shared/components/FormInput';
 
 interface IndividualSignupFormProps {
   onSubmit: (data: SignupFormValues) => void;
   onGooglePress: () => void;
   onApplePress: () => void;
+  // The regular signup submit is in flight.
   isLoading?: boolean;
+  // Independent per-provider loading, so tapping one doesn't spin the other.
+  isGoogleLoading?: boolean;
+  isAppleLoading?: boolean;
 }
 
 export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
@@ -19,6 +23,8 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
   onGooglePress,
   onApplePress,
   isLoading = false,
+  isGoogleLoading = false,
+  isAppleLoading = false,
 }) => {
   const { control, handleSubmit } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -41,6 +47,9 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         label="كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="individual-signup-password-input"
+        textContentType="newPassword"
+        autoComplete="new-password"
       />
 
       <FormInput
@@ -49,6 +58,9 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         label="تأكيد كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="individual-signup-confirm-password-input"
+        textContentType="newPassword"
+        autoComplete="new-password"
       />
 
       <TouchableOpacity
@@ -69,7 +81,9 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
       <SocialAuthButtons
         onGooglePress={onGooglePress}
         onApplePress={onApplePress}
-        isLoading={isLoading}
+        isGoogleLoading={isGoogleLoading}
+        isAppleLoading={isAppleLoading}
+        disabled={isLoading}
       />
     </View>
   );

@@ -76,7 +76,7 @@ export class IdentitiesController {
 
   // GET /identities/:id - Get specific identity
   @Get(':id')
-  @ApiOperation({ summary: 'Get one of the current user\'s identities by ID' })
+  @ApiOperation({ summary: "Get one of the current user's identities by ID" })
   @ApiParam({ name: 'id', description: 'Identity ID' })
   @ApiResponse({ status: 200, type: IdentityResponseDto })
   @ApiCommonErrors()
@@ -86,7 +86,9 @@ export class IdentitiesController {
 
   // POST /identities/individual - Create individual identity
   @Post('individual')
-  @ApiOperation({ summary: 'Create an individual identity for the current user' })
+  @ApiOperation({
+    summary: 'Create an individual identity for the current user',
+  })
   @ApiResponse({ status: 201, type: IdentityResponseDto })
   @ApiCommonErrors()
   createIndividual(
@@ -104,7 +106,10 @@ export class IdentitiesController {
       { name: 'license', maxCount: 1 },
     ]),
   )
-  @ApiOperation({ summary: 'Create a company identity for the current user, with optional logo/license file upload' })
+  @ApiOperation({
+    summary:
+      'Create a company identity for the current user, with optional logo/license file upload',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -144,7 +149,10 @@ export class IdentitiesController {
       { name: 'license', maxCount: 1 },
     ]),
   )
-  @ApiOperation({ summary: 'Create an office identity for the current user, with optional logo/license file upload' })
+  @ApiOperation({
+    summary:
+      'Create an office identity for the current user, with optional logo/license file upload',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -178,7 +186,10 @@ export class IdentitiesController {
 
   // PATCH /identities/:id - Update identity profile
   @Patch(':id')
-  @ApiOperation({ summary: "Update one of the current user's identities (shape depends on identity type)" })
+  @ApiOperation({
+    summary:
+      "Update one of the current user's identities (shape depends on identity type)",
+  })
   @ApiParam({ name: 'id', description: 'Identity ID' })
   @ApiBody({
     schema: {
@@ -205,7 +216,10 @@ export class IdentitiesController {
 
   // DELETE /identities/:id - Delete identity
   @Delete(':id')
-  @ApiOperation({ summary: "Delete one of the current user's identities (must not be the last one or own properties)" })
+  @ApiOperation({
+    summary:
+      "Delete one of the current user's identities (must not be the last one or own properties)",
+  })
   @ApiParam({ name: 'id', description: 'Identity ID' })
   @ApiResponse({ status: 200, type: DeleteIdentityResponseDto })
   @ApiCommonErrors()

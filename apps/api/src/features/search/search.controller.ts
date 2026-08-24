@@ -16,7 +16,10 @@ import {
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { AdvancedSearchDto, FilterTab } from 'src/features/search/dto/advanced-search.dto';
+import {
+  AdvancedSearchDto,
+  FilterTab,
+} from 'src/features/search/dto/advanced-search.dto';
 import {
   StandardFilterDto,
   ExchangeFilterDto,
@@ -99,7 +102,9 @@ export class SearchController {
    * Publicly accessible.
    */
   @Get()
-  @ApiOperation({ summary: 'Unified search across properties, companies, auctions, and deals' })
+  @ApiOperation({
+    summary: 'Unified search across properties, companies, auctions, and deals',
+  })
   @ApiQuery({ type: GetSearchFilterDto })
   @ApiResponse({ status: 200, type: GlobalSearchResponseDto })
   @ApiCommonErrors()

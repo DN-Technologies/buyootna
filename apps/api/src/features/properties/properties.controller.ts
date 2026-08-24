@@ -46,7 +46,10 @@ export class PropertiesController {
 
   // Public Feed Endpoint
   @Get('feed/home')
-  @ApiOperation({ summary: 'Get the home feed: top sale/rent/exchange listings and top companies' })
+  @ApiOperation({
+    summary:
+      'Get the home feed: top sale/rent/exchange listings and top companies',
+  })
   @ApiResponse({ status: 200, type: HomeFeedResponseDto })
   @ApiCommonErrors()
   async getHomeFeed() {
@@ -55,15 +58,36 @@ export class PropertiesController {
 
   // Public Features Metadata Endpoint
   @Get('metadata/features')
-  @ApiOperation({ summary: 'Get the static list of selectable property features, grouped by listing type' })
+  @ApiOperation({
+    summary:
+      'Get the static list of selectable property features, grouped by listing type',
+  })
   @ApiResponse({
     status: 200,
     schema: {
       type: 'object',
       properties: {
-        sell: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
-        rent: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
-        exchange: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, label: { type: 'string' } } } },
+        sell: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { id: { type: 'string' }, label: { type: 'string' } },
+          },
+        },
+        rent: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { id: { type: 'string' }, label: { type: 'string' } },
+          },
+        },
+        exchange: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { id: { type: 'string' }, label: { type: 'string' } },
+          },
+        },
       },
     },
   })
@@ -95,8 +119,15 @@ export class PropertiesController {
   @Get('/me/activity')
   @UseGuards(AuthGuard('jwt'))
   @ApiAuth()
-  @ApiOperation({ summary: "List the current identity's own properties, optionally filtered by status" })
-  @ApiQuery({ name: 'status', required: false, description: 'ListingStatus enum value' })
+  @ApiOperation({
+    summary:
+      "List the current identity's own properties, optionally filtered by status",
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'ListingStatus enum value',
+  })
   @ApiResponse({ status: 200, type: [MyActivityPropertyDto] })
   @ApiCommonErrors()
   async getMyActivity(
@@ -140,7 +171,10 @@ export class PropertiesController {
   @Post()
   @UseInterceptors(FilesInterceptor('images', 10))
   @ApiAuth()
-  @ApiOperation({ summary: 'Create a new property listing for the current identity, with up to 10 images' })
+  @ApiOperation({
+    summary:
+      'Create a new property listing for the current identity, with up to 10 images',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, type: PropertyDto })
   @ApiCommonErrors()
@@ -169,7 +203,10 @@ export class PropertiesController {
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @ApiAuth()
-  @ApiOperation({ summary: "Delete one of the current identity's properties, with an optional reason" })
+  @ApiOperation({
+    summary:
+      "Delete one of the current identity's properties, with an optional reason",
+  })
   @ApiParam({ name: 'id', description: 'Property ID' })
   @ApiBody({
     required: false,

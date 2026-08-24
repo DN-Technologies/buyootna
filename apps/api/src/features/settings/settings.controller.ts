@@ -17,7 +17,10 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get()
-  @ApiOperation({ summary: "Get the current user's privacy settings (creates defaults if none exist)" })
+  @ApiOperation({
+    summary:
+      "Get the current user's privacy settings (creates defaults if none exist)",
+  })
   @ApiResponse({ status: 200, type: SettingsResponseDto })
   @ApiCommonErrors()
   async getSettings(@CurrentUser() reqUser: RequestUser) {

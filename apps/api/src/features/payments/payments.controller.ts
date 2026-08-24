@@ -39,7 +39,10 @@ export class PaymentsController {
   @Post('charge')
   @UseGuards(AuthGuard('jwt'))
   @ApiAuth()
-  @ApiOperation({ summary: 'Create a Tap Payments charge for a plan purchase and get a checkout URL' })
+  @ApiOperation({
+    summary:
+      'Create a Tap Payments charge for a plan purchase and get a checkout URL',
+  })
   @ApiBody({
     schema: {
       type: 'object',
@@ -68,7 +71,10 @@ export class PaymentsController {
   }
 
   @Get('redirect')
-  @ApiOperation({ summary: "Verify a Tap Payments charge and redirect to the app's return URL (public, called by Tap's checkout flow)" })
+  @ApiOperation({
+    summary:
+      "Verify a Tap Payments charge and redirect to the app's return URL (public, called by Tap's checkout flow)",
+  })
   @ApiQuery({ name: 'tap_id', required: true })
   @ApiQuery({ name: 'invoiceId', required: true })
   @ApiQuery({ name: 'appRedirectUrl', required: true })
@@ -89,7 +95,10 @@ export class PaymentsController {
 
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Tap Payments webhook callback (public, called by the Tap payment gateway server-to-server, not by app users)' })
+  @ApiOperation({
+    summary:
+      'Tap Payments webhook callback (public, called by the Tap payment gateway server-to-server, not by app users)',
+  })
   @ApiResponse({ status: 200, description: 'Acknowledged' })
   async handleWebhook(@Body() chargeBody: TapChargeResponse) {
     return this.paymentsService.handleWebhook(chargeBody);
@@ -98,7 +107,9 @@ export class PaymentsController {
   @Get('status/:invoiceId')
   @UseGuards(AuthGuard('jwt'))
   @ApiAuth()
-  @ApiOperation({ summary: "Get the payment status of one of the current user's invoices" })
+  @ApiOperation({
+    summary: "Get the payment status of one of the current user's invoices",
+  })
   @ApiParam({ name: 'invoiceId', description: 'Invoice ID' })
   @ApiResponse({ status: 200, type: InvoiceStatusResponseDto })
   @ApiCommonErrors()
