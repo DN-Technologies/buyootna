@@ -98,7 +98,10 @@ async function main(): Promise<void> {
     console.log('[orchestrate] Starting API on port', PORT, '...');
     api = startApi(db.connectionUri);
 
-    await waitForApi(`http://localhost:${PORT}/api/docs`, 60_000);
+    // A cold `nest start` build (no ts-node/webpack cache) has been observed
+    // taking well over 60s locally — give it real headroom rather than
+    // failing the whole run on a slow first compile.
+    await waitForApi(`http://localhost:${PORT}/api/docs`, 120_000);
     console.log('[orchestrate] API is ready.');
 
     await seedLoginUser();
