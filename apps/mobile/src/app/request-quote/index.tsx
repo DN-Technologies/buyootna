@@ -137,7 +137,7 @@ export default function RequestQuoteScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* --- Header --- */}
         <View className="flex-row items-center justify-between px-5 py-4">

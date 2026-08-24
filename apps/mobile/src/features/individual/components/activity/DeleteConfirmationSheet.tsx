@@ -111,6 +111,9 @@ const DeleteConfirmationSheet = forwardRef<
       onDismiss={handleDismiss}
       handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
     >
       <BottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
         {step === 'confirm' ? (
