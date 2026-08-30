@@ -1,5 +1,8 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
-import { OTP_RATE_LIMIT } from './otp-rate-limiter.config';
+import {
+  getOtpRateLimitConfig,
+  OTP_RATE_LIMIT,
+} from './otp-rate-limiter.config';
 
 interface RateLimitEntry {
   /** Timestamps (ms) of OTP-request calls within the current rolling hour. */
@@ -47,6 +50,8 @@ export class OtpRateLimiterService {
     const entry = this.getOrCreate(key);
     const now = Date.now();
 
+    const config = getOtpRateLimitConfig();
+
     // Prune timestamps older than 1 hour
     entry.requestTimestamps = entry.requestTimestamps.filter(
       (ts) => now - ts < ONE_HOUR_MS,
@@ -55,11 +60,12 @@ export class OtpRateLimiterService {
     // Cooldown check: last request must be >= COOLDOWN seconds ago
     const last = entry.requestTimestamps.at(-1);
     if (
+      config.REQUEST_COOLDOWN_SECONDS > 0 &&
       last !== undefined &&
-      now - last < OTP_RATE_LIMIT.REQUEST_COOLDOWN_SECONDS * 1000
+      now - last < config.REQUEST_COOLDOWN_SECONDS * 1000
     ) {
       const waitSeconds = Math.ceil(
-        (OTP_RATE_LIMIT.REQUEST_COOLDOWN_SECONDS * 1000 - (now - last)) / 1000,
+        (config.REQUEST_COOLDOWN_SECONDS * 1000 - (now - last)) / 1000,
       );
       this.logger.warn(
         `OTP request cooldown hit for key="${key}". Must wait ${waitSeconds}s.`,
@@ -74,11 +80,9 @@ export class OtpRateLimiterService {
     }
 
     // Hourly cap check
-    if (
-      entry.requestTimestamps.length >= OTP_RATE_LIMIT.MAX_REQUESTS_PER_HOUR
-    ) {
+    if (entry.requestTimestamps.length >= config.MAX_REQUESTS_PER_HOUR) {
       this.logger.warn(
-        `OTP hourly request cap reached for key="${key}" (${entry.requestTimestamps.length}/${OTP_RATE_LIMIT.MAX_REQUESTS_PER_HOUR}).`,
+        `OTP hourly request cap reached for key="${key}" (${entry.requestTimestamps.length}/${config.MAX_REQUESTS_PER_HOUR}).`,
       );
       throw new HttpException(
         {
@@ -128,10 +132,11 @@ export class OtpRateLimiterService {
       );
     }
 
-    if (entry.verifyAttempts >= OTP_RATE_LIMIT.MAX_VERIFY_ATTEMPTS) {
+    const config = getOtpRateLimitConfig();
+    if (entry.verifyAttempts >= config.MAX_VERIFY_ATTEMPTS) {
       entry.blocked = true;
       this.logger.warn(
-        `OTP verification attempt cap reached for key="${key}" (${entry.verifyAttempts}/${OTP_RATE_LIMIT.MAX_VERIFY_ATTEMPTS}). OTP invalidated.`,
+        `OTP verification attempt cap reached for key="${key}" (${entry.verifyAttempts}/${config.MAX_VERIFY_ATTEMPTS}). OTP invalidated.`,
       );
       throw new HttpException(
         {

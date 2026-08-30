@@ -29,6 +29,9 @@ export interface TestApp {
  * can't be exercised in an automated test run.
  */
 export async function createTestApp(): Promise<TestApp> {
+  process.env.OTP_REQUEST_COOLDOWN_SECONDS = '0';
+  process.env.OTP_MAX_REQUESTS_PER_HOUR = '1000';
+
   const mockGoogleAuthService: MockGoogleAuthService = {
     verifyIdToken: jest.fn(),
   };
