@@ -69,6 +69,14 @@ export default function IndividualAuthScreen() {
     setSignupStep(1);
   };
 
+  const handleBack = () => {
+    if (signupStep === 2) {
+      setSignupStep(1);
+    } else {
+      router.back();
+    }
+  };
+
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
     setIsFormLoading(true);
     try {
@@ -309,6 +317,7 @@ export default function IndividualAuthScreen() {
           {/* Header & Account Type Selector */}
           <IndividualAuthHeader
             onSelectAccountType={() => accountTypeSheetRef.current?.present()}
+            onBack={handleBack}
           />
 
           {/* Auth Tabs (Login/Signup) */}

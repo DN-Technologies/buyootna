@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -19,7 +20,22 @@ export default function AccountTypeSelectionScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 px-6 pb-6 pt-12">
+      {/* Header Back Button */}
+      <View className="px-6 pt-2">
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          className="mr-auto p-2 -ml-2"
+          testID="selection-back-button"
+        >
+          <Image
+            source={require('@/assets/icons/arrow-back.svg')}
+            style={{ width: 12, height: 16 }}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-1 px-6 pb-6 pt-4">
         {/* Header Section */}
         <View className="mb-10 items-center">
           <AppLogo width={80} height={80} />

@@ -203,6 +203,7 @@ export default function BusinessAuthScreen() {
           <CompanyAuthHeader
             type={type}
             onSelectAccountType={() => accountTypeSheetRef.current?.present()}
+            onBack={() => router.back()}
           />
 
           {/* Auth Tabs (Login/Signup) */}

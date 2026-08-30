@@ -440,4 +440,59 @@ describe('IndividualAuthScreen', () => {
       expect(mockApiClient.post).not.toHaveBeenCalled();
     });
   });
+
+  describe('Back button navigation', () => {
+    it('calls router.back() when back button is pressed on login/step 1', async () => {
+      const { getByTestId } = await render(<IndividualAuthScreen />);
+      const backButton = getByTestId('auth-back-button');
+      await fireEvent.press(backButton);
+      expect(router.back).toHaveBeenCalled();
+    });
+
+    it('returns to step 1 when back button is pressed during signup OTP step', async () => {
+      mockApiClient.post.mockResolvedValueOnce({
+        data: { otpRequired: true, identifier: 'user@example.com' },
+      });
+
+      const { getByTestId, getByText, queryByText } = await render(
+        <IndividualAuthScreen />,
+      );
+
+      // Switch to signup tab
+      await fireEvent.press(getByText('تسجيل جديد'));
+
+      // Fill signup form
+      await fireEvent.changeText(
+        getByTestId('individual-signup-name-input'),
+        'Test User',
+      );
+      await fireEvent.changeText(
+        getByTestId('individual-signup-identifier-input'),
+        'user@example.com',
+      );
+      await fireEvent.changeText(
+        getByTestId('individual-signup-password-input'),
+        'Password123!',
+      );
+      await fireEvent.changeText(
+        getByTestId('individual-signup-confirm-password-input'),
+        'Password123!',
+      );
+
+      await fireEvent.press(getByText('إنشاء حساب'));
+
+      await waitFor(() => {
+        expect(getByText('تحقق من الرمز')).toBeTruthy();
+      });
+
+      // Press back button on OTP screen
+      await fireEvent.press(getByTestId('auth-back-button'));
+
+      // Should return to signup step 1 (form visible, OTP hidden)
+      await waitFor(() => {
+        expect(getByTestId('individual-signup-name-input')).toBeTruthy();
+        expect(queryByText('تحقق من الرمز')).toBeNull();
+      });
+    });
+  });
 });
