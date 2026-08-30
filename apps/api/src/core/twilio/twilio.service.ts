@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Twilio from 'twilio';
 
+const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5', 10);
+const OTP_TTL_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
+
 @Injectable()
 export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
@@ -8,7 +11,10 @@ export class TwilioService {
   private serviceSid: string | null = null;
   // Dev-only: codes generated in mock SMS mode (Twilio unconfigured), keyed
   // by formatted phone number, so checkVerification can validate them.
-  private readonly mockCodes = new Map<string, string>();
+  private readonly mockCodes = new Map<
+    string,
+    { code: string; expiresAt: Date }
+  >();
 
   constructor() {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -57,7 +63,10 @@ export class TwilioService {
 
     if (!this.twilioClient || !this.serviceSid) {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
-      this.mockCodes.set(formattedPhone, code);
+      this.mockCodes.set(formattedPhone, {
+        code,
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      });
       this.logger.warn(
         `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
       );
@@ -93,8 +102,9 @@ export class TwilioService {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
-      const expectedCode = this.mockCodes.get(formattedPhone);
-      const isValid = !!expectedCode && expectedCode === code;
+      const record = this.mockCodes.get(formattedPhone);
+      const isValid =
+        !!record && record.code === code && record.expiresAt > new Date();
       this.logger.warn(
         `[MOCK SMS] Twilio is unconfigured. Verification check for ${formattedPhone} with code ${code}: ${isValid ? 'valid' : 'invalid'}.`,
       );
