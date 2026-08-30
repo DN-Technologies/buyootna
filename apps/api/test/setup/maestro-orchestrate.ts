@@ -83,6 +83,9 @@ function startApi(databaseUrl: string): ChildProcess {
       // Same reasoning, for MailService — force mock-mail mode so signup
       // emails never hit the real Resend API.
       RESEND_API_KEY: '',
+      // Disable OTP cooldown for end-to-end Maestro automated flows.
+      OTP_REQUEST_COOLDOWN_SECONDS: '0',
+      OTP_MAX_REQUESTS_PER_HOUR: '1000',
     },
     stdio: 'inherit',
   });
