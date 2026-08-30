@@ -8,6 +8,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -39,6 +40,7 @@ export class AuthService {
     private readonly twilioService: TwilioService,
     private readonly usersRegistrationService: UsersRegistrationService,
     private readonly emailOtpService: EmailOtpService,
+    private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
   // 1. Verify credentials (used by LocalStrategy)
@@ -371,13 +373,17 @@ export class AuthService {
     });
 
     if (!user) {
+      this.rateLimiter?.recordVerifyAttempt(phone, false);
       throw new BadRequestException('رقم الهاتف غير مسجل');
     }
 
     const isValid = await this.twilioService.checkVerification(phone, otp);
     if (!isValid) {
+      this.rateLimiter?.recordVerifyAttempt(phone, false);
       throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
+
+    this.rateLimiter?.recordVerifyAttempt(phone, true);
 
     // Return access token and user info
     const userWithoutPassword = { ...user };
@@ -391,13 +397,19 @@ export class AuthService {
   // UsersRegistrationService creates the account only once this OTP checks
   // out against the pending signup it stored.
   async verifyEmailRegistrationOtp(email: string, otp: string) {
-    const { user } =
-      await this.usersRegistrationService.completeEmailRegistration(
-        email,
-        otp,
-      );
+    try {
+      const { user } =
+        await this.usersRegistrationService.completeEmailRegistration(
+          email,
+          otp,
+        );
 
-    return this.login(user);
+      this.rateLimiter?.recordVerifyAttempt(email, true);
+      return this.login(user);
+    } catch (error) {
+      this.rateLimiter?.recordVerifyAttempt(email, false);
+      throw error;
+    }
   }
 
   /**
@@ -416,6 +428,7 @@ export class AuthService {
     }
 
     await this.twilioService.sendVerification(user.phone);
+    this.rateLimiter?.recordRequest(user.id);
 
     return { message: 'تم إرسال رمز التحقق بنجاح' };
   }
@@ -431,22 +444,28 @@ export class AuthService {
       where: { id: userId },
     });
     if (!user) {
+      this.rateLimiter?.recordVerifyAttempt(userId, false);
       throw new BadRequestException('المستخدم غير موجود');
     }
 
     if (!user.phone) {
+      this.rateLimiter?.recordVerifyAttempt(userId, false);
       throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
     }
 
     const isValid = await this.twilioService.checkVerification(user.phone, otp);
     if (!isValid) {
+      this.rateLimiter?.recordVerifyAttempt(userId, false);
       throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
 
     const isMatch = await bcrypt.compare(oldPass, user.password);
     if (!isMatch) {
+      this.rateLimiter?.recordVerifyAttempt(userId, false);
       throw new BadRequestException('كلمة المرور القديمة غير صحيحة');
     }
+
+    this.rateLimiter?.recordVerifyAttempt(userId, true);
 
     await this.prisma.otpCode.delete({ where: { userId } });
 

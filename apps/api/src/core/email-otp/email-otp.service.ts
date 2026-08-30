@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
+import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 
 const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5', 10);
 const OTP_TTL_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
@@ -24,7 +25,10 @@ export class EmailOtpService {
   private readonly logger = new Logger(EmailOtpService.name);
   private readonly pending = new Map<string, PendingEmailRegistration>();
 
-  constructor(private readonly mailService: MailService) {}
+  constructor(
+    private readonly mailService: MailService,
+    private readonly rateLimiter?: OtpRateLimiterService,
+  ) {}
 
   async sendRegistrationOtp(
     email: string,
@@ -50,6 +54,8 @@ export class EmailOtpService {
       subject: 'رمز التحقق من بريدك الإلكتروني - Buyootna',
       html: otpVerificationTemplate({ userName: name, otp }),
     });
+
+    this.rateLimiter?.recordRequest(email);
   }
 
   hasPending(email: string): boolean {

@@ -3,6 +3,7 @@ import { RecoveryService } from './recovery.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from '../../core/twilio/twilio.service';
+import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 
 describe('RecoveryService', () => {
   let service: RecoveryService;
@@ -22,6 +23,15 @@ describe('RecoveryService', () => {
         {
           provide: TwilioService,
           useValue: {},
+        },
+        {
+          provide: OtpRateLimiterService,
+          useValue: {
+            checkRequestLimit: jest.fn(),
+            checkVerifyLimit: jest.fn(),
+            recordRequest: jest.fn(),
+            recordVerifyAttempt: jest.fn(),
+          },
         },
       ],
     }).compile();

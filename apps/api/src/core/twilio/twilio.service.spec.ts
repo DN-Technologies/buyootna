@@ -87,12 +87,8 @@ describe('TwilioService (mock mode)', () => {
       const oldResult = await service.checkVerification('99998888', firstOtp);
       expect(oldResult).toBe(false);
 
-      // Need to re-send since the check above didn't consume (returned false)
-      // but the Map was overwritten by the second sendVerification.
-      // The second OTP should still work — re-send to get a fresh one
-      await service.sendVerification('99998888');
-      const freshOtp = extractMockOtp(service);
-      const newResult = await service.checkVerification('99998888', freshOtp);
+      // The new OTP should still work (was not consumed by the failed check above)
+      const newResult = await service.checkVerification('99998888', secondOtp);
       expect(newResult).toBe(true);
     });
 

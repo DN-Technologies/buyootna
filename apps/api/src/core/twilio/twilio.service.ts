@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Twilio from 'twilio';
+import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 
 const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5', 10);
 const OTP_TTL_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
@@ -16,7 +17,7 @@ export class TwilioService {
     { code: string; expiresAt: Date }
   >();
 
-  constructor() {
+  constructor(private readonly rateLimiter?: OtpRateLimiterService) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
@@ -70,6 +71,8 @@ export class TwilioService {
       this.logger.warn(
         `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
       );
+      this.rateLimiter?.recordRequest(phone);
+      this.rateLimiter?.recordRequest(formattedPhone);
       return { success: true };
     }
 
@@ -84,6 +87,8 @@ export class TwilioService {
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
+      this.rateLimiter?.recordRequest(phone);
+      this.rateLimiter?.recordRequest(formattedPhone);
       return { success: true };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
