@@ -90,6 +90,9 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
           height: 4,
         }}
         footerComponent={renderFooter}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
         <View style={{ flex: 1 }} className="bg-white">
           {/* --- 1. Static Header --- */}

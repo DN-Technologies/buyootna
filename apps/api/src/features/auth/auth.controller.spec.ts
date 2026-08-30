@@ -3,6 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { GoogleAuthService } from './services/google-auth.service';
 import { AppleAuthService } from './services/apple-auth.service';
+import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 import { SocialProvider } from '@prisma/client';
 import type { RequestUser } from './strategies/jwt.strategy';
 
@@ -26,6 +27,13 @@ describe('AuthController', () => {
     verifyIdentityToken: jest.fn(),
   };
 
+  const mockOtpRateLimiterService = {
+    checkRequestLimit: jest.fn(),
+    checkVerifyLimit: jest.fn(),
+    recordRequest: jest.fn(),
+    recordVerifyAttempt: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -35,6 +43,7 @@ describe('AuthController', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: GoogleAuthService, useValue: mockGoogleAuthService },
         { provide: AppleAuthService, useValue: mockAppleAuthService },
+        { provide: OtpRateLimiterService, useValue: mockOtpRateLimiterService },
       ],
     }).compile();
 

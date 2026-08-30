@@ -27,5 +27,10 @@ export default async function globalSetup(): Promise<void> {
   // pending store instead.
   process.env.RESEND_API_KEY = '';
 
+  // Disable OTP cooldown and expand hourly rate limits in e2e tests so rapid assertions
+  // against the test endpoints don't get throttled with 429
+  process.env.OTP_REQUEST_COOLDOWN_SECONDS = '0';
+  process.env.OTP_MAX_REQUESTS_PER_HOUR = '1000';
+
   globalThis.__TEST_DB__ = db;
 }

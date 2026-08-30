@@ -4,7 +4,14 @@ import { FlashList } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { searchService } from '@/shared/api/search.service';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
@@ -130,94 +137,99 @@ export default function SearchResultsScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* --- HEADER --- */}
-      <SearchHeader
-        searchText={searchText}
-        setSearchText={setSearchText}
-        isFocused={isFocused}
-        setIsFocused={setIsFocused}
-        onBack={() => router.back()}
-        onFilterPress={() => filterSheetRef.current?.present()}
-      />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        {/* --- HEADER --- */}
+        <SearchHeader
+          searchText={searchText}
+          setSearchText={setSearchText}
+          isFocused={isFocused}
+          setIsFocused={setIsFocused}
+          onBack={() => router.back()}
+          onFilterPress={() => filterSheetRef.current?.present()}
+        />
 
-      {/* --- RESULTS META --- */}
-      <View className="flex-row items-center justify-between px-5 py-5">
-        {/* Left: Sorting */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-row items-center gap-1"
-        >
-          <Feather name="align-left" size={14} color="#6B6A6A" />
-          <Text className="font-cairo-semibold text-xs leading-[22px] text-[#6B6A6A]">
-            الترتيب حسب
-          </Text>
-          <Feather
-            name="chevron-down"
-            size={14}
-            color="#6B6A6A"
-            className="relative top-0.5"
-          />
-        </TouchableOpacity>
-
-        {/* Right: Count */}
-        <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-          {totalCount} نتيجة لبحثك
-        </Text>
-      </View>
-
-      {/* --- RESULTS LIST --- */}
-      <FlashList
-        data={results}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 10,
-          paddingBottom: 50,
-        }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <SuggestionCard
-            id={item.id}
-            name={item.name}
-            category={item.category}
-            serviceArea={item.serviceArea}
-            projectsCount={item.projectsCount}
-            logoUrl={item.logoUrl}
-            isFavorite={item.isFavorite}
-            onPress={() => {
-              router.push(`/company/${item.id}` as any);
-            }}
-          />
-        )}
-        ListEmptyComponent={
-          isLoading ? (
-            <View>
-              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <SuggestionCardSkeleton key={i} />
-              ))}
-            </View>
-          ) : (
-            <EmptySearchResult
-              onActivateAlert={handleActivateAlert}
-              onExploreNow={handleExploreNow}
+        {/* --- RESULTS META --- */}
+        <View className="flex-row items-center justify-between px-5 py-5">
+          {/* Left: Sorting */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            className="flex-row items-center gap-1"
+          >
+            <Feather name="align-left" size={14} color="#6B6A6A" />
+            <Text className="font-cairo-semibold text-xs leading-[22px] text-[#6B6A6A]">
+              الترتيب حسب
+            </Text>
+            <Feather
+              name="chevron-down"
+              size={14}
+              color="#6B6A6A"
+              className="relative top-0.5"
             />
-          )
-        }
-        ListFooterComponent={
-          isFetchingNextPage && results.length > 0 ? (
-            <View className="items-center py-4">
-              <ActivityIndicator size="small" color="#15304D" />
-            </View>
-          ) : null
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-      />
+          </TouchableOpacity>
 
-      <GlobalFilterSheet
-        ref={filterSheetRef}
-        onApplyFilters={handleAdvancedSearch}
-      />
+          {/* Right: Count */}
+          <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
+            {totalCount} نتيجة لبحثك
+          </Text>
+        </View>
+
+        {/* --- RESULTS LIST --- */}
+        <FlashList
+          data={results}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingTop: 10,
+            paddingBottom: 50,
+          }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <SuggestionCard
+              id={item.id}
+              name={item.name}
+              category={item.category}
+              serviceArea={item.serviceArea}
+              projectsCount={item.projectsCount}
+              logoUrl={item.logoUrl}
+              isFavorite={item.isFavorite}
+              onPress={() => {
+                router.push(`/company/${item.id}` as any);
+              }}
+            />
+          )}
+          ListEmptyComponent={
+            isLoading ? (
+              <View>
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <SuggestionCardSkeleton key={i} />
+                ))}
+              </View>
+            ) : (
+              <EmptySearchResult
+                onActivateAlert={handleActivateAlert}
+                onExploreNow={handleExploreNow}
+              />
+            )
+          }
+          ListFooterComponent={
+            isFetchingNextPage && results.length > 0 ? (
+              <View className="items-center py-4">
+                <ActivityIndicator size="small" color="#15304D" />
+              </View>
+            ) : null
+          }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+        />
+
+        <GlobalFilterSheet
+          ref={filterSheetRef}
+          onApplyFilters={handleAdvancedSearch}
+        />
+      </KeyboardAvoidingView>
     </View>
   );
 }

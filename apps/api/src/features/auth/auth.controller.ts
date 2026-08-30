@@ -27,6 +27,11 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import { LoginResponseDto, MessageResponseDto } from './dto/user-response.dto';
 import { GoogleAuthService } from './services/google-auth.service';
 import { AppleAuthService } from './services/apple-auth.service';
+import {
+  OtpVerifyRateLimit,
+  OtpRequestRateLimitFromUser,
+  OtpVerifyRateLimitFromUser,
+} from '../../core/decorators/otp-rate-limit.decorator';
 
 interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
@@ -91,6 +96,7 @@ export class AuthController {
   }
 
   @Post('register/verify-otp')
+  @OtpVerifyRateLimit('phone')
   @ApiOperation({
     summary: 'Verify the OTP sent during registration and log the user in',
   })
@@ -101,6 +107,7 @@ export class AuthController {
   }
 
   @Post('register/verify-email-otp')
+  @OtpVerifyRateLimit('email')
   @ApiOperation({
     summary:
       'Verify the OTP sent to an email during registration, creating the account and logging the user in',
@@ -146,6 +153,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('change-password/request-otp')
+  @OtpRequestRateLimitFromUser('userId')
   @ApiAuth()
   @ApiOperation({
     summary:
@@ -159,6 +167,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('change-password')
+  @OtpVerifyRateLimitFromUser('userId')
   @ApiAuth()
   @ApiOperation({
     summary:

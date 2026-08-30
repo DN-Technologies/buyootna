@@ -3,7 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Enable pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 
 # Copy workspace configuration and dependency lockfiles
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./

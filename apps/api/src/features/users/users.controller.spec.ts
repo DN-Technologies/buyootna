@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersRegistrationService } from './services/users-registration.service';
 import { UsersProfileService } from './services/users-profile.service';
 import { UsersDirectoryService } from './services/users-directory.service';
+import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -22,6 +23,15 @@ describe('UsersController', () => {
         {
           provide: UsersDirectoryService,
           useValue: {},
+        },
+        {
+          provide: OtpRateLimiterService,
+          useValue: {
+            checkRequestLimit: jest.fn(),
+            checkVerifyLimit: jest.fn(),
+            recordRequest: jest.fn(),
+            recordVerifyAttempt: jest.fn(),
+          },
         },
       ],
     }).compile();

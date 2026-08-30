@@ -56,6 +56,7 @@ import {
   UpdateProfileResponseDto,
   UserSafeDto,
 } from './dto/user-response.dto';
+import { OtpRequestRateLimit } from '../../core/decorators/otp-rate-limit.decorator';
 
 const LOGO_LICENSE_UPLOAD_BODY = {
   schema: {
@@ -77,6 +78,7 @@ export class UsersController {
   ) {}
 
   @Post('register/individual')
+  @OtpRequestRateLimit('identifier')
   @ApiOperation({ summary: 'Register a new individual user account' })
   @ApiResponse({ status: 201, type: RegisterIndividualResponseDto })
   @ApiCommonErrors()

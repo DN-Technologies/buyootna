@@ -1,12 +1,17 @@
 import { Feather } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BuyootnaLogo, CompanyLogo } from '@/assets/icons';
+import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
+
+const appVersion = Constants.expoConfig?.version;
 
 export default function AboutScreen() {
   const router = useRouter();
+  const { scrollContentBottomPadding } = useTabBarHeight();
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -26,7 +31,7 @@ export default function AboutScreen() {
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 24,
-          paddingBottom: 40,
+          paddingBottom: scrollContentBottomPadding,
         }}
       >
         {/* --- Buyootna Section --- */}
@@ -105,6 +110,15 @@ export default function AboutScreen() {
             بمرونة واحترافية.
           </Text>
         </View>
+
+        {/* --- App Version --- */}
+        {!!appVersion && (
+          <View className="mt-8 items-center">
+            <Text className="font-cairo-medium text-xs text-[#A0A0A0]">
+              الإصدار {appVersion}
+            </Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

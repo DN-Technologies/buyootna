@@ -11,6 +11,10 @@ import {
   RecoveryMessageResponseDto,
   VerifyOtpResponseDto,
 } from './dto/recovery-response.dto';
+import {
+  OtpRequestRateLimit,
+  OtpVerifyRateLimit,
+} from '../../core/decorators/otp-rate-limit.decorator';
 
 @ApiTags('Recovery')
 @Controller('auth/recovery')
@@ -18,6 +22,7 @@ export class RecoveryController {
   constructor(private readonly recoveryService: RecoveryService) {}
 
   @Post('request-otp')
+  @OtpRequestRateLimit('identifier')
   @ApiOperation({
     summary: 'Request a password-reset OTP for an email or phone identifier',
   })
@@ -28,6 +33,7 @@ export class RecoveryController {
   }
 
   @Post('verify-otp')
+  @OtpVerifyRateLimit('identifier')
   @ApiOperation({
     summary:
       'Verify the password-reset OTP and receive a temporary reset token',

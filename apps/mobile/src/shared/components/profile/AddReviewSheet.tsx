@@ -60,6 +60,9 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
           borderRadius: 2,
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
         <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
           {/* Header Row */}

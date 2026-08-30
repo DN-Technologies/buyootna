@@ -13,17 +13,19 @@ export function getMockOtpCode(app: INestApplication, phone: string): string {
   const twilioService = app.get(TwilioService);
   const formattedPhone = twilioService.formatPhoneNumber(phone);
   const mockCodes = (
-    twilioService as unknown as { mockCodes: Map<string, string> }
+    twilioService as unknown as {
+      mockCodes: Map<string, { code: string; expiresAt: Date } | string>;
+    }
   ).mockCodes;
-  const code = mockCodes.get(formattedPhone);
+  const record = mockCodes.get(formattedPhone);
 
-  if (!code) {
+  if (!record) {
     throw new Error(
       `No mock OTP code found for ${formattedPhone}. Was sendVerification/requestOtp called for this phone first?`,
     );
   }
 
-  return code;
+  return typeof record === 'string' ? record : record.code;
 }
 
 /**

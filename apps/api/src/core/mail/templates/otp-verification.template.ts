@@ -109,7 +109,7 @@ export function otpVerificationTemplate({
       <h2>Hello, ${userName}</h2>
       <p>Your One-Time Password (OTP) for verification is:</p>
       <div class="otp-code">${otp}</div>
-      <p class="mt-4">Please use this OTP to complete your verification. The OTP is valid for the next 10 minutes.</p>
+      <p class="mt-4">Please use this OTP to complete your verification. The OTP is valid for the next 5 minutes.</p>
       <a href="${verifyUrl}" class="btn-verify">Verify Now</a>
       <div class="footer-text">
         <p>If you did not request this OTP, please <a href="mailto:no-reply@buyootna.com">contact us</a> immediately.</p>

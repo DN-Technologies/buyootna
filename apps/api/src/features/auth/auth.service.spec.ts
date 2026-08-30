@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { SocialProvider, IdentityType, type User } from '@prisma/client';
 import {
   UnauthorizedException,
@@ -110,6 +111,13 @@ describe('AuthService Unit Tests', () => {
     checkVerification: jest.fn(),
   };
 
+  const mockOtpRateLimiterService = {
+    checkRequestLimit: jest.fn(),
+    checkVerifyLimit: jest.fn(),
+    recordRequest: jest.fn(),
+    recordVerifyAttempt: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     mockPrismaService.$transaction.mockImplementation(
@@ -129,6 +137,7 @@ describe('AuthService Unit Tests', () => {
           useValue: mockUsersRegistrationService,
         },
         { provide: EmailOtpService, useValue: mockEmailOtpService },
+        { provide: OtpRateLimiterService, useValue: mockOtpRateLimiterService },
       ],
     }).compile();
 
@@ -520,9 +529,10 @@ describe('AuthService Unit Tests', () => {
   describe('verifyEmailRegistrationOtp', () => {
     it('creates the account via UsersRegistrationService then logs the user in', async () => {
       const createdUser = { id: 'user-2', email: 'ali@example.com' };
-      mockUsersRegistrationService.completeEmailRegistration.mockResolvedValue(
-        { user: createdUser, profile: { id: 'profile-1' } },
-      );
+      mockUsersRegistrationService.completeEmailRegistration.mockResolvedValue({
+        user: createdUser,
+        profile: { id: 'profile-1' },
+      });
       const loginSpy = jest
         .spyOn(service, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);

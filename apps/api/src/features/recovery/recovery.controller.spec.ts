@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RecoveryController } from './recovery.controller';
 import { RecoveryService } from './recovery.service';
+import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 
 describe('RecoveryController', () => {
   let controller: RecoveryController;
@@ -12,6 +13,15 @@ describe('RecoveryController', () => {
         {
           provide: RecoveryService,
           useValue: {},
+        },
+        {
+          provide: OtpRateLimiterService,
+          useValue: {
+            checkRequestLimit: jest.fn(),
+            checkVerifyLimit: jest.fn(),
+            recordRequest: jest.fn(),
+            recordVerifyAttempt: jest.fn(),
+          },
         },
       ],
     }).compile();

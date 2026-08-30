@@ -6,6 +6,8 @@ import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
@@ -209,49 +211,54 @@ export default function CompaniesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <FlashList
-        data={data}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyComponent}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: scrollContentBottomPadding,
-        }}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <CompanyListCard
-            id={item.id}
-            name={item.name}
-            category={item.category}
-            rating={item.rating}
-            reviewsCount={item.reviewsCount}
-            projectsCount={item.projectsCount}
-            lastActivityAt={item.lastActivityAt}
-            logoUrl={item.logoUrl}
-            isVerified={item.isVerified}
-            isFavorite={favoriteOverrides[item.id] ?? item.isFavorite ?? false}
-            onPress={() => router.push(`/company/${item.id}` as any)}
-            onToggleFavorite={() =>
-              setFavoriteOverrides((prev) => ({
-                ...prev,
-                [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
-              }))
-            }
-            onChatPress={() => handleChatPress(item.userId)}
-            onQuotePress={() => handleQuotePress(item.name)}
-          />
-        )}
-        onEndReached={fetchMoreData}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          isLoadingMore ? (
-            <View className="items-center py-4">
-              <ActivityIndicator size="small" color="#15304D" />
-            </View>
-          ) : null
-        }
-      />
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <FlashList
+          data={data}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          ListEmptyComponent={renderEmptyComponent}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingBottom: scrollContentBottomPadding,
+          }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <CompanyListCard
+              id={item.id}
+              name={item.name}
+              category={item.category}
+              rating={item.rating}
+              reviewsCount={item.reviewsCount}
+              projectsCount={item.projectsCount}
+              lastActivityAt={item.lastActivityAt}
+              logoUrl={item.logoUrl}
+              isVerified={item.isVerified}
+              isFavorite={favoriteOverrides[item.id] ?? item.isFavorite ?? false}
+              onPress={() => router.push(`/company/${item.id}` as any)}
+              onToggleFavorite={() =>
+                setFavoriteOverrides((prev) => ({
+                  ...prev,
+                  [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
+                }))
+              }
+              onChatPress={() => handleChatPress(item.userId)}
+              onQuotePress={() => handleQuotePress(item.name)}
+            />
+          )}
+          onEndReached={fetchMoreData}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View className="items-center py-4">
+                <ActivityIndicator size="small" color="#15304D" />
+              </View>
+            ) : null
+          }
+        />
+      </KeyboardAvoidingView>
 
       <QuoteRequestModal
         ref={quoteModalRef}

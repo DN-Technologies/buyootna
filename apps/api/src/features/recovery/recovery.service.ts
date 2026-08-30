@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { TwilioService } from '../../core/twilio/twilio.service';
+import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   RequestOtpDto,
   ResetPasswordDto,
@@ -25,6 +26,7 @@ export class RecoveryService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly twilioService: TwilioService,
+    private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
   // STEP 1: Generate and send OTP
@@ -42,6 +44,8 @@ export class RecoveryService {
     const user = await this.prisma.user.findFirst({
       where: { OR: [{ email: email }, { phone: phone }] },
     });
+
+    this.rateLimiter?.recordRequest(dto.identifier);
 
     if (!user) {
       // Security best practice: Don't reveal if the user exists or not
@@ -67,16 +71,21 @@ export class RecoveryService {
       where: { OR: [{ email: email }, { phone: phone }] },
     });
 
-    if (!user || !user.phone)
+    if (!user || !user.phone) {
+      this.rateLimiter?.recordVerifyAttempt(dto.identifier, false);
       throw new BadRequestException('البيانات غير صحيحة');
+    }
 
     const isValid = await this.twilioService.checkVerification(
       user.phone,
       dto.otp,
     );
     if (!isValid) {
+      this.rateLimiter?.recordVerifyAttempt(dto.identifier, false);
       throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
     }
+
+    this.rateLimiter?.recordVerifyAttempt(dto.identifier, true);
 
     // Generate a temporary JWT just for resetting the password
     const resetToken = this.jwtService.sign({
