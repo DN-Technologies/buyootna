@@ -49,13 +49,13 @@ describe('TwilioService (mock mode)', () => {
       expect(result).toBe(false);
     });
 
-    it('returns false when the OTP has expired', async () => {
+    it('returns false when the OTP has expired (after 3 minutes)', async () => {
       await service.sendVerification('99998888');
       const otp = extractMockOtp(service);
 
-      // Advance time past the 5-minute TTL
+      // Advance time past the 3-minute TTL
       jest.useFakeTimers();
-      jest.setSystemTime(Date.now() + 6 * 60 * 1000);
+      jest.setSystemTime(Date.now() + 4 * 60 * 1000);
 
       const result = await service.checkVerification('99998888', otp);
       expect(result).toBe(false);
@@ -92,13 +92,13 @@ describe('TwilioService (mock mode)', () => {
       expect(newResult).toBe(true);
     });
 
-    it('OTP is still valid just before the 5-minute expiry', async () => {
+    it('OTP is still valid just before the 3-minute expiry', async () => {
       await service.sendVerification('99998888');
       const otp = extractMockOtp(service);
 
       jest.useFakeTimers();
-      // 4 minutes 59 seconds — just under the 5-min default
-      jest.setSystemTime(Date.now() + 4 * 60 * 1000 + 59 * 1000);
+      // 2 minutes 59 seconds — just under the 3-min default
+      jest.setSystemTime(Date.now() + 2 * 60 * 1000 + 59 * 1000);
 
       const result = await service.checkVerification('99998888', otp);
       expect(result).toBe(true);

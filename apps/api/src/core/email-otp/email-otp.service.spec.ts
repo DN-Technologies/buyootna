@@ -47,13 +47,13 @@ describe('EmailOtpService', () => {
       expect(result).toBeNull();
     });
 
-    it('returns null when the OTP has expired', async () => {
+    it('returns null when the OTP has expired (after 3 minutes)', async () => {
       await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');
       const otp = getOtpFor('ali@example.com');
 
-      // Advance time past the 5-minute TTL
+      // Advance time past the 3-minute TTL
       jest.useFakeTimers();
-      jest.setSystemTime(Date.now() + 6 * 60 * 1000);
+      jest.setSystemTime(Date.now() + 4 * 60 * 1000);
 
       const result = service.verifyAndConsume('ali@example.com', otp);
 
@@ -115,7 +115,7 @@ describe('EmailOtpService', () => {
       await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');
 
       jest.useFakeTimers();
-      jest.setSystemTime(Date.now() + 6 * 60 * 1000);
+      jest.setSystemTime(Date.now() + 4 * 60 * 1000);
 
       expect(service.hasPending('ali@example.com')).toBe(false);
       jest.useRealTimers();
@@ -140,20 +140,20 @@ describe('EmailOtpService', () => {
   });
 
   describe('configurable TTL', () => {
-    it('OTP is still valid just before the 5-minute default expiry', async () => {
+    it('OTP is still valid just before the 3-minute default expiry', async () => {
       await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');
       const otp = getOtpFor('ali@example.com');
 
       jest.useFakeTimers();
-      // 4 minutes 59 seconds — just under the 5-min default
-      jest.setSystemTime(Date.now() + 4 * 60 * 1000 + 59 * 1000);
+      // 2 minutes 59 seconds — just under the 3-min default
+      jest.setSystemTime(Date.now() + 2 * 60 * 1000 + 59 * 1000);
 
       const result = service.verifyAndConsume('ali@example.com', otp);
       expect(result).not.toBeNull();
       jest.useRealTimers();
     });
 
-    it('OTP expires just past the 5-minute boundary', async () => {
+    it('OTP expires just past the 3-minute boundary', async () => {
       const now = Date.now();
       jest.useFakeTimers();
       jest.setSystemTime(now);
@@ -162,7 +162,7 @@ describe('EmailOtpService', () => {
       const otp = getOtpFor('ali@example.com');
 
       // Advance 1ms past the TTL — expiresAt is now strictly in the past
-      jest.setSystemTime(now + 5 * 60 * 1000 + 1);
+      jest.setSystemTime(now + 3 * 60 * 1000 + 1);
 
       const result = service.verifyAndConsume('ali@example.com', otp);
       expect(result).toBeNull();

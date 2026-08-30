@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
+import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 
-const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5', 10);
-const OTP_TTL_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
+const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 
 interface PendingEmailRegistration {
   name: string;
@@ -40,7 +40,7 @@ export class EmailOtpService {
       name,
       hashedPassword,
       otp,
-      expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      expiresAt: new Date(Date.now() + OTP_TTL_MS()),
     });
 
     if (this.mailService.isMockMode) {
