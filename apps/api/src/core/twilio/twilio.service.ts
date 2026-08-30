@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Twilio from 'twilio';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
+import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 
-const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES ?? '5', 10);
-const OTP_TTL_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
+const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 
 @Injectable()
 export class TwilioService {
@@ -66,7 +66,7 @@ export class TwilioService {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       this.mockCodes.set(formattedPhone, {
         code,
-        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS()),
       });
       this.logger.warn(
         `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
