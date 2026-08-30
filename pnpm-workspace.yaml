@@ -11,3 +11,11 @@ allowBuilds:
   protobufjs: true
   sharp: true
   unrs-resolver: true
+overrides:
+  expo: 54.0.36
+  expo-modules-core: ~3.0.30
+  '@expo/metro-runtime': 6.1.2
+  react: 19.1.0
+  react-dom: 19.1.0
+  react-native: 0.81.5
+

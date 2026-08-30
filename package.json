@@ -10,16 +10,6 @@
     "axios": "^1.16.0",
     "zod": "^4.4.2"
   },
-  "pnpm": {
-    "overrides": {
-      "expo": "54.0.36",
-      "expo-modules-core": "~3.0.30",
-      "@expo/metro-runtime": "6.1.2",
-      "react": "19.1.0",
-      "react-dom": "19.1.0",
-      "react-native": "0.81.5"
-    }
-  },
   "devDependencies": {
     "husky": "^9.1.7"
   }
