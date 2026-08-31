@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PropertiesService } from './properties.service';
-import { PrismaService } from '../../core/prisma/prisma.service';
-import { StorageService } from '../../core/storage/storage.service';
+import { PropertiesFeedService } from './services/properties-feed.service';
+import { PropertiesMutationsService } from './services/properties-mutations.service';
+import { PropertiesActivityService } from './services/properties-activity.service';
+import { PropertiesQuotaService } from './services/properties-quota.service';
 
 describe('PropertiesService', () => {
   let service: PropertiesService;
@@ -11,12 +13,36 @@ describe('PropertiesService', () => {
       providers: [
         PropertiesService,
         {
-          provide: PrismaService,
-          useValue: {},
+          provide: PropertiesFeedService,
+          useValue: {
+            getHomeFeed: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            incrementViews: jest.fn(),
+          },
         },
         {
-          provide: StorageService,
-          useValue: {},
+          provide: PropertiesMutationsService,
+          useValue: {
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            archive: jest.fn(),
+            renew: jest.fn(),
+            verifyOwnership: jest.fn(),
+          },
+        },
+        {
+          provide: PropertiesActivityService,
+          useValue: {
+            getMyActivity: jest.fn(),
+          },
+        },
+        {
+          provide: PropertiesQuotaService,
+          useValue: {
+            resolvePublishQuota: jest.fn(),
+          },
         },
       ],
     }).compile();

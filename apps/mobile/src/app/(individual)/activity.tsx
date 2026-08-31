@@ -16,7 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SortingIcon } from '@/assets/icons/activity';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import ActiveAdCard from '@/features/individual/components/activity/ActiveAdCard';
-import ActivityFilterPills from '@/features/individual/components/activity/ActivityFilterPills';
+import ActivityFilterPills, {
+  ActivityFilterType,
+  FilterPill,
+} from '@/features/individual/components/activity/ActivityFilterPills';
+import ArchivedAdCard from '@/features/individual/components/activity/ArchivedAdCard';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
 import DraftAdCard from '@/features/individual/components/activity/DraftAdCard';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
@@ -49,9 +53,8 @@ export default function ActivityScreen() {
 
   // Local UI state
   const [activeTab, setActiveTab] = useState('اعلاناتي');
-  const [activeFilterId, setActiveFilterId] = useState<
-    'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM'
-  >('ALL');
+  const [activeFilterId, setActiveFilterId] =
+    useState<ActivityFilterType>('ALL');
   const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC'>(
     'NEWEST',
   );
@@ -187,11 +190,12 @@ export default function ActivityScreen() {
   const activeCount = data.filter((item) => item.status === 'ACTIVE').length;
   const draftCount = data.filter((item) => item.status === 'DRAFT').length;
   const premiumCount = data.filter((item) => item.isPremium).length;
+  const archivedCount = data.filter(
+    (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
+  ).length;
 
-  const filterPills: {
-    id: 'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM';
-    label: string;
-  }[] = [
+  const filterPills: FilterPill[] = [
+    { id: 'ARCHIVED', label: `مؤرشفة (${archivedCount})` },
     { id: 'DRAFT', label: `مسودة (${draftCount})` },
     { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
     { id: 'ACTIVE', label: `نشطة (${activeCount})` },
@@ -204,7 +208,11 @@ export default function ActivityScreen() {
       ? data
       : activeFilterId === 'PREMIUM'
         ? data.filter((item) => item.isPremium)
-        : data.filter((item) => item.status === activeFilterId);
+        : activeFilterId === 'ARCHIVED'
+          ? data.filter(
+              (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
+            )
+          : data.filter((item) => item.status === activeFilterId);
 
   // Apply sorting
   const sortedAndFilteredData = [...filteredData].sort((a: any, b: any) => {
@@ -370,7 +378,13 @@ export default function ActivityScreen() {
       <FlashList
         data={activeTab === 'اعلاناتي' ? sortedAndFilteredData : []}
         keyExtractor={(item) => item.id}
-        getItemType={(item) => (item.status === 'DRAFT' ? 'draft' : 'active')}
+        getItemType={(item) =>
+          item.status === 'DRAFT'
+            ? 'draft'
+            : item.status === 'EXPIRED' || item.status === 'CLOSED'
+              ? 'archived'
+              : 'active'
+        }
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingBottom: scrollContentBottomPadding,
@@ -395,15 +409,28 @@ export default function ActivityScreen() {
                 onFilterChange={setActiveFilterId}
               />
 
-              {/* --- 5. Dynamic Quota Banner or Subscription Slots --- */}
-              {hasSubscription ? (
-                <SubscriptionSlotsRow subscription={subscription} />
-              ) : (
-                <FreeQuotaBanner
-                  freeAdsRemaining={freeAdsRemaining}
-                  onPressAction={handlePromoAction}
-                />
+              {/* --- 5. Header Notice when Archived is active --- */}
+              {activeFilterId === 'ARCHIVED' && (
+                <View className="mb-3 mt-1 w-full">
+                  <Text
+                    className="font-cairo-bold text-sm text-[#111111]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    اعلانات منتهية بعد مدة النشر (30 يوم)
+                  </Text>
+                </View>
               )}
+
+              {/* --- 6. Dynamic Quota Banner or Subscription Slots --- */}
+              {activeFilterId !== 'ARCHIVED' &&
+                (hasSubscription ? (
+                  <SubscriptionSlotsRow subscription={subscription} />
+                ) : (
+                  <FreeQuotaBanner
+                    freeAdsRemaining={freeAdsRemaining}
+                    onPressAction={handlePromoAction}
+                  />
+                ))}
             </View>
           ) : null
         }
@@ -422,7 +449,9 @@ export default function ActivityScreen() {
           ) : (
             <View className="items-center py-10">
               <Text className="font-cairo-medium text-gray-400">
-                لا توجد إعلانات حالياً
+                {activeFilterId === 'ARCHIVED'
+                  ? 'لا توجد إعلانات مؤرشفة حالياً'
+                  : 'لا توجد إعلانات حالياً'}
               </Text>
             </View>
           )
@@ -435,6 +464,19 @@ export default function ActivityScreen() {
                 property={item}
                 onPublishPress={() => handlePublishDraft(item)}
                 onDeletePress={() => handleDeleteDraft(item.id)}
+              />
+            );
+          }
+
+          if (
+            item.status === 'EXPIRED' ||
+            item.status === 'CLOSED' ||
+            activeFilterId === 'ARCHIVED'
+          ) {
+            return (
+              <ArchivedAdCard
+                property={item}
+                onPress={() => router.push(`/property/${item.id}` as any)}
               />
             );
           }

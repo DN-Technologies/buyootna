@@ -224,4 +224,41 @@ export class PropertiesController {
   ) {
     return this.propertiesService.remove(reqUser.identityId, id, dto?.reason);
   }
+
+  @Post(':id/archive')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({ summary: 'Archive a property (set status to EXPIRED)' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiResponse({ status: 200, description: 'Property archived successfully' })
+  @ApiCommonErrors()
+  async archive(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
+    return this.propertiesService.archive(reqUser.identityId, id);
+  }
+
+  @Post(':id/renew')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({ summary: 'Renew/re-publish an expired or archived property' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiBody({
+    required: false,
+    schema: {
+      type: 'object',
+      properties: { planSlotId: { type: 'string' } },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Property renewed successfully' })
+  @ApiCommonErrors()
+  async renew(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto?: { planSlotId?: string },
+  ) {
+    return this.propertiesService.renew(
+      reqUser.identityId,
+      id,
+      dto?.planSlotId,
+    );
+  }
 }

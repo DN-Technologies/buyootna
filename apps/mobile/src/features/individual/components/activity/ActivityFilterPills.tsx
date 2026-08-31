@@ -1,15 +1,21 @@
-import React from 'react';
 import { ScrollView, Text, TouchableOpacity } from 'react-native';
 
-interface FilterPill {
-  id: 'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM';
+export type ActivityFilterType =
+  | 'ALL'
+  | 'ACTIVE'
+  | 'DRAFT'
+  | 'PREMIUM'
+  | 'ARCHIVED';
+
+export interface FilterPill {
+  id: ActivityFilterType;
   label: string;
 }
 
 interface ActivityFilterPillsProps {
   filterPills: FilterPill[];
-  activeFilterId: 'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM';
-  onFilterChange: (id: 'ALL' | 'ACTIVE' | 'DRAFT' | 'PREMIUM') => void;
+  activeFilterId: ActivityFilterType;
+  onFilterChange: (id: ActivityFilterType) => void;
 }
 
 export default function ActivityFilterPills({
@@ -21,24 +27,34 @@ export default function ActivityFilterPills({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      className="mb-6"
+      className="mb-4"
       contentContainerStyle={{ flexDirection: 'row-reverse' }}
     >
-      {filterPills.map((pill) => (
-        <TouchableOpacity
-          key={pill.id}
-          onPress={() => onFilterChange(pill.id)}
-          className={`mr-2 rounded-full border px-4 py-1 ${
-            activeFilterId === pill.id
-              ? 'border-[#B28648] bg-[#F5F7F9]'
-              : 'border-transparent bg-[#F5F7F9]'
-          }`}
-        >
-          <Text className="font-cairo text-[14px] text-[#111111]">
-            {pill.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+      {filterPills.map((pill) => {
+        const isActive = activeFilterId === pill.id;
+
+        return (
+          <TouchableOpacity
+            key={pill.id}
+            onPress={() => onFilterChange(pill.id)}
+            className={`mr-2 rounded-full border px-4 py-1.5 ${
+              isActive
+                ? 'border-[#B28648] bg-white'
+                : 'border-gray-100 bg-[#F8FAFC]'
+            }`}
+          >
+            <Text
+              className={`text-[14px] ${
+                isActive
+                  ? 'font-cairo-bold text-[#111111]'
+                  : 'font-cairo text-[#6B6A6A]'
+              }`}
+            >
+              {pill.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 }

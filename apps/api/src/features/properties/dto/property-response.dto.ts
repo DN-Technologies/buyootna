@@ -285,6 +285,12 @@ export class MyActivityPropertyDto {
   updatedAt: Date;
 
   @ApiProperty()
+  createdAt: Date;
+
+  @ApiProperty({ nullable: true })
+  endDate: Date | null;
+
+  @ApiProperty()
   isPremium: boolean;
 
   @ApiProperty()
