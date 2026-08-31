@@ -9,7 +9,7 @@ export interface SelectionItem {
 export interface StandardTabState {
   govs: SelectionItem[];
   areas: SelectionItem[];
-  category: string;
+  category: string | string[];
   rooms: number;
   baths: number;
   minPrice: string;
@@ -71,7 +71,7 @@ export interface FilterTabsState {
 export const initialStandardState: StandardTabState = {
   govs: [],
   areas: [],
-  category: 'apartment',
+  category: [],
   rooms: 1,
   baths: 1,
   minPrice: '',
@@ -83,7 +83,7 @@ export const initialStandardState: StandardTabState = {
 
 export const initialOfficeState: StandardTabState = {
   ...initialStandardState,
-  category: 'office',
+  category: ['office'],
 };
 
 export const initialExchangeState: ExchangeTabState = {

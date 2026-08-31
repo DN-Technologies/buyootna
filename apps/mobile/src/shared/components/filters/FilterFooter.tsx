@@ -41,21 +41,10 @@ export default function FilterFooter({
   return (
     <View
       className="w-full border-t border-gray-100 bg-white px-5 pt-4"
-      style={{ paddingBottom: Math.max(0, insets.bottom - 20) }}
+      style={{ paddingBottom: Math.max(28, insets.bottom) }}
     >
       <View className="flex-row items-center justify-between gap-4">
-        {/* --- Reset Button (إعادة التعيين) --- */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={handleReset}
-          className="items-center justify-center px-4 py-3"
-        >
-          <Text className="font-cairo-semibold text-sm leading-[20px] text-[#15304D]">
-            إعادة التعيين
-          </Text>
-        </TouchableOpacity>
-
-        {/* --- Submit Button (عرض النتائج) --- */}
+        {/* --- Submit Button (عرض النتائج) - On Right in RTL --- */}
         <TouchableOpacity
           activeOpacity={hasFilters ? 0.7 : 1}
           onPress={handleSubmit}
@@ -65,6 +54,17 @@ export default function FilterFooter({
         >
           <Text className="font-cairo-semibold text-sm leading-[20px] text-white">
             عرض النتائج
+          </Text>
+        </TouchableOpacity>
+
+        {/* --- Reset Button (إعادة التعيين) - On Left in RTL --- */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={handleReset}
+          className="items-center justify-center px-4 py-3"
+        >
+          <Text className="font-cairo-semibold text-sm leading-[20px] text-[#15304D]">
+            إعادة التعيين
           </Text>
         </TouchableOpacity>
       </View>

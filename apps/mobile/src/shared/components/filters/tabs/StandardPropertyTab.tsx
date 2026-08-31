@@ -98,8 +98,14 @@ export default function StandardPropertyTab({
             <PillGroup
               title="فئة العقار"
               options={CATEGORY_OPTIONS}
-              multiSelect={false}
-              value={tabState.category}
+              multiSelect={true}
+              value={
+                Array.isArray(tabState.category)
+                  ? tabState.category
+                  : tabState.category
+                    ? [tabState.category]
+                    : []
+              }
               onChange={(value) => setField('category', value)}
             />
 
