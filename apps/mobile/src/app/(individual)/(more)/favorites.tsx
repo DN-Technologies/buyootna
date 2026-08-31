@@ -145,10 +145,13 @@ export default function FavoritesScreen() {
               images={item.images}
               price={item.price}
               companyName={item.host.name}
+              categoryLabel={item.category}
+              propertyIncome={item.propertyIncome}
               area={item.area}
               beds={item.beds}
               baths={item.baths}
               location={item.location}
+              isFavorited={true}
               onPress={() => router.push(`/property/${item.id}`)}
               onFavorite={() => handleFavoriteToggle(item.id)}
             />

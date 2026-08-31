@@ -12,22 +12,26 @@ import {
   View,
 } from 'react-native';
 
-import { BathIcon, BedIcon, HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
-import { ShareIcon } from '@/assets/icons/home/property';
-import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
+import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
+import { AreaIcon, ShareIcon } from '@/assets/icons/home/property';
+import { HomeIcon, PropertiesTabIcon } from '@/assets/icons/tab';
+
 export interface PropertyCardProps {
   id: string;
   images: (string | number)[];
   price: number | string;
-  companyName: string;
+  companyName?: string;
   isFeatured?: boolean;
-  type?: string; // e.g., 'سكني'
+  type?: string; // e.g., 'سكني', 'تجاري', 'استثماري'
+  categoryLabel?: string; // e.g., 'عمارة', 'شقة', 'فيلا', 'بيت', 'أرض'
+  category?: string;
   area: number;
-  beds: number;
-  baths: number;
+  beds?: number;
+  baths?: number;
   location: string;
   timeAgo?: string;
-  cardWidth?: DimensionValue; // Allow custom width for horizontal scrolling
+  propertyIncome?: number | null;
+  cardWidth?: DimensionValue;
   isFavorited?: boolean;
   onPress?: () => void;
   onFavorite?: () => void;
@@ -41,11 +45,14 @@ export default function PropertyCard({
   companyName,
   isFeatured = false,
   type = 'سكني',
+  categoryLabel,
+  category,
   area,
   beds,
   baths,
   location,
   timeAgo = 'منذ ساعتين',
+  propertyIncome,
   cardWidth = '100%',
   isFavorited = false,
   onPress,
@@ -60,11 +67,12 @@ export default function PropertyCard({
   const imageWidth =
     typeof cardWidth === 'number' ? cardWidth : measuredWidth || fallbackWidth;
 
-  // Update pagination dots when scrolling images
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
-    const index = event.nativeEvent.contentOffset.x / slideSize;
-    setActiveIndex(Math.round(index));
+    if (slideSize > 0) {
+      const index = event.nativeEvent.contentOffset.x / slideSize;
+      setActiveIndex(Math.round(index));
+    }
   };
 
   const router = useRouter();
@@ -77,11 +85,27 @@ export default function PropertyCard({
     }
   };
 
+  const displayCategory = categoryLabel || category || type || 'عقار';
+  const isHouseOrVilla =
+    displayCategory.includes('بيت') || displayCategory.includes('فيلا');
+
+  const formattedPrice =
+    typeof price === 'number'
+      ? price.toLocaleString()
+      : typeof price === 'string' && !isNaN(Number(price))
+        ? Number(price).toLocaleString()
+        : price;
+
+  const displayImages =
+    images && images.length > 0
+      ? images
+      : [require('@/assets/images/no-image.png')];
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={handlePress}
-      className="mb-5 w-full overflow-hidden rounded-md border border-gray-200 bg-white"
+      className="mb-5 w-full overflow-hidden rounded-md border border-gray-200/80 bg-white"
       onLayout={(e) => {
         const { width } = e.nativeEvent.layout;
         if (width > 0 && width !== measuredWidth) {
@@ -89,179 +113,156 @@ export default function PropertyCard({
         }
       }}
       style={{
-        width: cardWidth, // Applies the 75% width when inside a horizontal list
+        width: cardWidth,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: 0.06,
         shadowRadius: 8,
       }}
     >
       {/* --- 1. Image Carousel Section --- */}
-      {(() => {
-        const displayImages =
-          images && images.length > 0
-            ? images
-            : [require('@/assets/images/no-image.png')];
-        return (
-          <View className="relative h-48 w-full">
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            >
-              {displayImages.map((img, index) => (
-                <Image
-                  key={index}
-                  source={typeof img === 'string' ? { uri: img } : img}
-                  style={{
-                    width: imageWidth,
-                    height: '100%',
-                  }}
-                  resizeMode="cover"
-                />
-              ))}
-            </ScrollView>
-
-        {/* Absolute Top Right: Badges */}
-        <View className="absolute right-3 top-3 flex-row gap-2">
-          {isFeatured && (
-            <SafeLinearGradient
-              colors={['#FF8D28', '#FACC15']}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
+      <View className="relative h-48 w-full overflow-hidden bg-gray-100">
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          {displayImages.map((img, index) => (
+            <Image
+              key={index}
+              source={typeof img === 'string' ? { uri: img } : img}
               style={{
-                width: 55,
-                height: 25,
-                borderTopLeftRadius: 8,
-                borderTopRightRadius: 10,
-                borderBottomRightRadius: 10,
-                borderBottomLeftRadius: 0,
-                justifyContent: 'center',
-                alignItems: 'center',
+                width: imageWidth,
+                height: '100%',
               }}
-            >
-              <Text className="font-almarai text-[12px] leading-[14.4px] text-[#111111]">
+              resizeMode="cover"
+            />
+          ))}
+        </ScrollView>
+
+        {/* Absolute Top Left: "مميز" Badge */}
+        {isFeatured && (
+          <View className="absolute right-3 top-3">
+            <View className="items-center justify-center w-16 rounded-r-lg rounded-tl-lg bg-[#FFA800] px-3 py-1 shadow-sm">
+              <Text className="font-cairo-bold text-xs leading-[18px] text-[#111111]">
                 مميز
               </Text>
-            </SafeLinearGradient>
-          )}
-        </View>
+            </View>
+          </View>
+        )}
 
-        {/* Absolute Top Left: Actions (Heart & Share) */}
-        <View className="absolute left-3 top-3 flex-row gap-2">
+        {/* Absolute Top Right: Action Buttons (Share & Heart) */}
+        <View className="absolute left-3 top-3 flex-row items-center gap-2">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={onFavorite}
-            style={{
-              height: 25,
-              minWidth: 25,
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 8,
-            }}
+            className="h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm"
           >
             <HeartIcon
-              color={isFavorited ? '#BA0003' : '#111111'}
-              size={16}
+              color={isFavorited ? '#DC2626' : '#111111'}
+              size={15}
               filled={isFavorited}
             />
           </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={onShare}
-            style={{
-              height: 25,
-              minWidth: 25,
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 8,
-            }}
+            className="h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-sm"
           >
-            <ShareIcon color="#111111" size={16} />
+            <ShareIcon color="#111111" size={15} />
           </TouchableOpacity>
         </View>
 
-        {/* Absolute Bottom: Pagination Dots */}
-        <View className="absolute bottom-3 w-full flex-row items-center justify-center space-x-1.5 space-x-reverse">
-          {displayImages.map((_, index) => (
-            <View
-              key={index}
-              className={`h-1.5 rounded-full ${activeIndex === index ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`}
-            />
-          ))}
-        </View>
-        <View className="absolute bottom-0 left-0 right-0 h-2 w-full rounded-t-[40px] bg-white" />
+        {/* Absolute Bottom Center: Pagination Dots */}
+        {displayImages.length > 1 && (
+          <View className="absolute bottom-3 w-full flex-row items-center justify-center space-x-1.5 space-x-reverse">
+            {displayImages.map((_, index) => (
+              <View
+                key={index}
+                className={`h-1.5 rounded-full ${
+                  activeIndex === index ? 'w-5 bg-white' : 'w-1.5 bg-white/70'
+                }`}
+              />
+            ))}
+          </View>
+        )}
       </View>
-        );
-      })()}
 
       {/* --- 2. Content Info Section --- */}
-      <View className="px-4 py-2">
-        {/* Price & Company Row */}
-        <View className="mb-3 flex-row justify-between">
-          <View className="items-start">
-            <Text className="font-cairo-bold text-xl text-[#111111]">
-              {typeof price === 'number' ? (
-                <>
-                  {price.toLocaleString()}{' '}
-                  <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
-                    د.ك
-                  </Text>
-                </>
-              ) : (
-                price
-              )}
+      <View className="px-4 py-3">
+        {/* Row 1: Price & Relative Time */}
+        <View
+          className="mb-2 flex-row items-baseline justify-between"
+        >
+          {/* Price (Right in RTL) */}
+          <View className="flex-row items-baseline gap-1">
+            <Text className="font-cairo-bold text-2xl text-[#15304D]">
+              {formattedPrice}
             </Text>
-            <Text className="mt-1 font-cairo-semibold text-xs text-[#6B6A6A]">
-              {companyName}
+            <Text className="font-cairo-medium text-sm text-[#6B6A6A]">
+              د.ك
             </Text>
           </View>
-          <Text className="mt-1.5 font-cairo-semibold text-xs text-[#6B6A6A]">
+
+          {/* Time Ago (Left in RTL) */}
+          <Text className="font-cairo text-xs text-[#8E8E93]">
             {timeAgo}
           </Text>
         </View>
 
-        {/* Specs Row (Area, Beds, Baths) */}
-        <View className="mb-2 flex-row items-center gap-3">
-          <View className="flex-row items-center gap-1">
-            <Text className="font-cairo-semibold text-sm text-[#111111]">
-              شقة{type ? ` ${type}` : ''} •
+        {/* Row 2: Category Badge, Location, Area */}
+        <View
+          className="flex-row items-center justify-between gap-2"
+        >
+          {/* Right: Category Tag */}
+          <View className="flex-row items-center gap-1.5 rounded-lg border border-gray-100/60 bg-[#F1F5F9] px-2.5 py-1">
+            {isHouseOrVilla ? (
+              <HomeIcon color="#15304D" size={13} />
+            ) : (
+              <PropertiesTabIcon color="#15304D" size={13} />
+            )}
+            <Text className="font-cairo-semibold text-xs leading-[16px] text-[#15304D]">
+              {displayCategory}
             </Text>
-            <Text className="font-cairo-semibold text-sm text-[#111111]">
+          </View>
+
+          {/* Middle: Location */}
+          <View className="flex-1 flex-row items-center justify-center gap-1 px-1">
+            <LocationIcon color="#6B6A6A" size={14} />
+            <Text
+              className="font-cairo-medium text-xs leading-[18px] text-[#111111]"
+              numberOfLines={1}
+            >
+              {location}
+            </Text>
+          </View>
+
+          {/* Left: Area & Beds */}
+          <View className="flex-row items-center gap-1">
+            <AreaIcon color="#6B6A6A" size={14} />
+            <Text className="font-cairo-medium text-xs leading-[18px] text-[#111111]">
               {area} م²
             </Text>
           </View>
-
-          <View className="h-3 w-[1px] bg-[#111111]" />
-
-          <View className="flex-row items-center gap-1.5">
-            <BedIcon color="#111111" size={16} />
-            <Text className="text-sm font-normal text-[#111111]">{beds}</Text>
-          </View>
-
-          <View className="h-3 w-[1px] bg-[#111111]" />
-
-          <View className="flex-row items-center gap-1.5">
-            <BathIcon color="#111111" size={16} />
-            <Text className="text-sm font-normal text-[#111111]">{baths}</Text>
-          </View>
         </View>
 
-        {/* Location Row */}
-        <View className="mb-1 flex-row items-center gap-1.5">
-          <LocationIcon color="#6B6A6A" size={16} />
-          <Text
-            className="font-cairo-medium text-sm leading-[23px] text-[#6B6A6A]"
-            numberOfLines={1}
+        {/* Row 3: Property Income (مدخول العقار) */}
+        {typeof propertyIncome === 'number' && propertyIncome > 0 && (
+          <View
+            className="mt-2.5 flex-row items-center justify-between border-t border-gray-100 pt-2"
+            style={{ flexDirection: 'row-reverse' }}
           >
-            {location}
-          </Text>
-        </View>
+            <Text className="font-cairo-bold text-sm text-[#111111]">
+              مدخول العقار
+            </Text>
+            <Text className="font-cairo-bold text-base text-[#10B981]">
+              {propertyIncome.toLocaleString()} د.ك
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );

@@ -23,7 +23,7 @@ function MapPillButton() {
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={() => router.push('/map')}
-      className="flex-row gap-2 px-4 rounded-full border border-[#ECECEC] bg-[#F9FAFE] h-[32px] justify-center items-center"
+      className="flex-row gap-2 px-4 rounded-full border border-gray-100 bg-[#F8FAFC] h-[32px] justify-center items-center"
     >
       <MapIcon size={18} color="#111111" />
       <Text className="font-cairo-medium text-[14px] leading-[24px] text-[#111111]">
@@ -47,7 +47,7 @@ export default function HomeFilterPills({
   if (activeTab === 'all') {
     return onViewModeChange ? (
       <View className="mb-4 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-1 rounded-xl bg-[#F5F7F9] p-1">
+        <View className="flex-row items-center gap-1 rounded-xl border border-gray-100 bg-[#F8FAFC] p-1">
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => onViewModeChange('list')}
@@ -102,10 +102,16 @@ export default function HomeFilterPills({
               className={`flex-1 items-center justify-center rounded-full border py-2 ${
                 isActive
                   ? 'border-[#B28648] bg-white'
-                  : 'border-[#F5F6F8] bg-[#F5F6F8]'
+                  : 'border-gray-100 bg-[#F8FAFC]'
               }`}
             >
-              <Text className="font-cairo-bold text-sm leading-[18px] text-[#111111]">
+              <Text
+                className={`${
+                  isActive
+                    ? 'font-cairo-bold text-[#111111]'
+                    : 'font-cairo-medium text-[#6B6A6A]'
+                } text-sm leading-[18px]`}
+              >
                 {filter.label}
               </Text>
             </TouchableOpacity>
@@ -117,7 +123,7 @@ export default function HomeFilterPills({
       {onViewModeChange && (
         <View className="mt-3 flex-row items-center justify-between">
           {/* Right: View Mode Toggle */}
-          <View className="flex-row items-center gap-1 rounded-xl bg-[#F5F7F9] p-1">
+          <View className="flex-row items-center gap-1 rounded-xl border border-gray-100 bg-[#F8FAFC] p-1">
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => onViewModeChange('list')}

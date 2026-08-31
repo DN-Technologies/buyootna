@@ -49,7 +49,7 @@ export default function HomeScreen() {
   // --- State ---
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
-    useState<PropertyFilter>('all');
+    useState<PropertyFilter>('sale');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
