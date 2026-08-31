@@ -19,9 +19,9 @@ export default function PropertyActionBar({
 }: PropertyActionBarProps) {
   return (
     <View
-      className="absolute bottom-0 w-full flex-row items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 pt-3 shadow-lg"
+      className="absolute bottom-0 w-full flex-row items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 pt-3.5 shadow-lg"
       style={{
-        paddingBottom: insets.bottom > 0 ? insets.bottom : 20, // Adapts to iPhone Home Bar
+        paddingBottom: Math.max(insets.bottom, 16), // Provides proper breathing room above Android navigation bar and iOS Home Indicator
         elevation: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -4 },
@@ -29,9 +29,9 @@ export default function PropertyActionBar({
         shadowRadius: 10,
       }}
     >
-      {/* Phone Button (Gray Outline) */}
+      {/* Phone Button (Navy Outline) */}
       <TouchableOpacity
-        className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
+        className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
         activeOpacity={0.7}
         onPress={onCall}
       >
@@ -40,7 +40,7 @@ export default function PropertyActionBar({
 
       {/* WhatsApp Button (Green Outline) */}
       <TouchableOpacity
-        className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
+        className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
         activeOpacity={0.7}
         onPress={onWhatsapp}
       >
@@ -49,7 +49,7 @@ export default function PropertyActionBar({
 
       {/* Message/Chat Button (Gold Outline) */}
       <TouchableOpacity
-        className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#B28648]"
+        className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#B28648]"
         activeOpacity={0.7}
         onPress={onChat}
       >
@@ -58,3 +58,4 @@ export default function PropertyActionBar({
     </View>
   );
 }
+

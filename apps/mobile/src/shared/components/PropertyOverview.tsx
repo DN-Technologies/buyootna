@@ -29,7 +29,6 @@ export interface PropertyOverviewProps {
   requestYear?: string;
   requiredYear?: string;
   licenseNumber?: string;
-  exchangeRequirement?: string;
 }
 
 export default function PropertyOverview({
@@ -47,14 +46,13 @@ export default function PropertyOverview({
   requestYear,
   requiredYear,
   licenseNumber,
-  exchangeRequirement,
 }: PropertyOverviewProps) {
   return (
-    <View className="bg-white px-5 pt-5">
+    <View className="bg-white px-5 pt-5 pb-2">
       {/* -- Badges & Meta (Time/Views) --- */}
-      <View className="flex-row items-center justify-between">
+      <View className="flex-row items-start justify-between">
         {/* -- Price & Title --- */}
-        <View className="items-start gap-1">
+        <View className="flex-1 items-start gap-1">
           {/*  Title */}
           <Text className="font-cairo-semibold text-base text-[#111111]">
             {title}
@@ -69,7 +67,7 @@ export default function PropertyOverview({
           )}
           {/*  Price (Hidden for Exchange usually, but handles 0 gracefully) */}
           {type !== 'EXCHANGE' ? (
-            <View className="items-start">
+            <View className="mt-1 items-start">
               <Text className="text-2xl font-semibold text-[#111111]">
                 {price.toLocaleString()}{' '}
                 <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
@@ -78,7 +76,7 @@ export default function PropertyOverview({
               </Text>
             </View>
           ) : (
-            <View /> // Empty view to push Title to the right
+            <View />
           )}
         </View>
 
@@ -126,7 +124,7 @@ export default function PropertyOverview({
       </View>
 
       {/* ---  DYNAMIC Specs Row --- */}
-      <View className="mb-6 flex-row items-center">
+      <View className="mb-5 mt-2 flex-row items-center">
         {type === 'EXCHANGE' ? (
           // EXCHANGE SPECS (سنة الطلب / السنة المطلوبة)
           <>
@@ -149,68 +147,63 @@ export default function PropertyOverview({
         ) : (
           // SALE/RENT SPECS (حمام / غرف / دور)
           <>
-            <View className="flex-row items-center gap-1.5">
-              <FloorIcon color="#15304D" size={16} />
-              <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
-                {floor} دور
-              </Text>
-            </View>
+            {floor !== undefined && floor !== null && (
+              <>
+                <View className="flex-row items-center gap-1.5">
+                  <FloorIcon color="#15304D" size={16} />
+                  <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
+                    {floor} دور
+                  </Text>
+                </View>
+                <View className="mx-4 h-4 w-[1px] bg-gray-300" />
+              </>
+            )}
 
-            <View className="mx-4 h-4 w-[1px] bg-gray-300" />
+            {beds !== undefined && beds !== null && (
+              <>
+                <View className="flex-row items-center gap-1.5">
+                  <BedIcon color="#15304D" size={18} />
+                  <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
+                    {beds} غرف
+                  </Text>
+                </View>
+                <View className="mx-4 h-4 w-[1px] bg-gray-300" />
+              </>
+            )}
 
-            <View className="flex-row items-center gap-1.5">
-              <BedIcon color="#15304D" size={18} />
-              <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
-                {beds} غرف
-              </Text>
-            </View>
-
-            <View className="mx-4 h-4 w-[1px] bg-gray-300" />
-
-            <View className="flex-row items-center gap-1.5">
-              <BathIcon color="#15304D" size={16} />
-              <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
-                {baths} حمام
-              </Text>
-            </View>
+            {baths !== undefined && baths !== null && (
+              <View className="flex-row items-center gap-1.5">
+                <BathIcon color="#15304D" size={16} />
+                <Text className="font-cairo-semibold text-sm leading-[20px] text-[#111111]">
+                  {baths} حمام
+                </Text>
+              </View>
+            )}
           </>
         )}
       </View>
 
-      {/* --- EXCHANGE REQUIREMENT --- */}
-      {type === 'EXCHANGE' && exchangeRequirement && (
-        <View className="mb-6 items-start">
-          <Text
-            className="mb-2 font-cairo-semibold text-sm text-[#6B6A6A]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            المطلوب
-          </Text>
-          <Text
-            className="font-cairo-semibold text-sm leading-6 text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            {exchangeRequirement}
-          </Text>
-        </View>
-      )}
-
       {/* --- Area & Location --- */}
-      <View className="space-y-2">
-        <View className="mb-2 flex-row items-center gap-1.5">
-          <AreaIcon color="#15304D" size={16} />
-          <Text className="font-cairo-semibold text-sm text-[#111111]">
-            مساحة {area} م²
-          </Text>
-        </View>
+      <View className="gap-2.5">
+        {area ? (
+          <View className="flex-row items-center gap-1.5">
+            <AreaIcon color="#15304D" size={16} />
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
+              مساحة {area} م²
+            </Text>
+          </View>
+        ) : null}
 
-        <View className="flex-row items-center gap-1.5">
-          <LocationIcon color="#15304D" size={14} />
-          <Text className="font-cairo-semibold text-sm text-[#111111]">
-            {location}
-          </Text>
-        </View>
+        {location ? (
+          <View className="flex-row items-center gap-1.5">
+            <LocationIcon color="#15304D" size={14} />
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
+              {location}
+            </Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
 }
+

@@ -20,7 +20,7 @@ const Section = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <View className="mb-6">
+  <View className="mb-5">
     <Text
       className="mb-2 font-cairo-semibold text-sm text-[#6B6A6A]"
       style={{ writingDirection: 'rtl' }}
@@ -60,7 +60,7 @@ export default function PropertyDetailsBody({
             type === 'EXCHANGE' ? 'مزايا العقار / التخصيص' : 'مزايا العقار'
           }
         >
-          <View className="flex-row flex-wrap">
+          <View className="flex-row flex-wrap items-center">
             {features.map((feature, index) => (
               <Fragment key={index}>
                 <Text
@@ -71,12 +71,7 @@ export default function PropertyDetailsBody({
                 </Text>
                 {/* Add a bullet separator between items, but not after the last one */}
                 {index < features.length - 1 && (
-                  <Text
-                    className="mx-3 font-cairo-bold text-sm text-[#94A3B8]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    <View className="mx-4 h-4 w-[0.5px] bg-[#D7D7D7]" />
-                  </Text>
+                  <View className="mx-3 h-3.5 w-[1px] bg-[#D7D7D7]" />
                 )}
               </Fragment>
             ))}

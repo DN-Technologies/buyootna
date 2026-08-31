@@ -51,7 +51,9 @@ export default function PropertyDetailSkeleton() {
       {/* 2. Scrollable Content Placeholders */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingBottom: Math.max(insets.bottom, 16) + 90,
+        }}
         showsVerticalScrollIndicator={false}
       >
         {/* Card 1: Property Overview Placeholder */}
@@ -71,7 +73,7 @@ export default function PropertyDetailSkeleton() {
           </View>
 
           {/* Specs Row */}
-          <View className="my-6 flex-row items-center justify-between">
+          <View className="my-5 flex-row items-center justify-between">
             <View className="flex-row items-center gap-1.5">
               <View className="h-4 w-4 rounded bg-slate-200" />
               <View className="h-4 w-12 rounded bg-slate-200" />
@@ -89,8 +91,8 @@ export default function PropertyDetailSkeleton() {
           </View>
 
           {/* Area & Location */}
-          <View className="space-y-2">
-            <View className="mb-2 flex-row items-center gap-1.5">
+          <View className="gap-2.5">
+            <View className="flex-row items-center gap-1.5">
               <View className="h-4 w-4 rounded bg-slate-200" />
               <View className="h-4 w-24 rounded bg-slate-200" />
             </View>
@@ -101,17 +103,10 @@ export default function PropertyDetailSkeleton() {
           </View>
         </View>
 
-        {/* Card 2: Map Preview Placeholder */}
-        <View className="mt-4 px-5">
-          <View className="h-32 w-full items-center justify-center rounded-xl bg-slate-100">
-            <View className="h-10 w-36 rounded-full bg-white" />
-          </View>
-        </View>
-
-        {/* Card 3: Property Details Body Placeholder */}
+        {/* Card 2: Property Details Body Placeholder */}
         <View className="mt-4 px-5">
           {/* Features Section */}
-          <View className="mb-6">
+          <View className="mb-5">
             <View className="mb-3 h-4 w-20 rounded bg-slate-200" />
             <View className="flex-row items-center gap-2">
               <View className="h-5 w-16 rounded bg-slate-100" />
@@ -123,9 +118,9 @@ export default function PropertyDetailSkeleton() {
           </View>
 
           {/* Description Section */}
-          <View className="mb-6">
+          <View className="mb-5">
             <View className="mb-3 h-4 w-16 rounded bg-slate-200" />
-            <View className="space-y-2">
+            <View className="gap-2">
               <View className="h-4 w-full rounded bg-slate-100" />
               <View className="h-4 w-full rounded bg-slate-100" />
               <View className="h-4 w-5/6 rounded bg-slate-100" />
@@ -133,9 +128,16 @@ export default function PropertyDetailSkeleton() {
           </View>
         </View>
 
+        {/* Card 3: Map Preview Placeholder */}
+        <View className="mt-1 px-5">
+          <View className="h-32 w-full items-center justify-center rounded-xl bg-slate-100">
+            <View className="h-10 w-36 rounded-full bg-white" />
+          </View>
+        </View>
+
         {/* Card 4: Lister Profile Snippet Placeholder */}
-        <View className="mt-4 px-5">
-          <View className="mb-6 flex-row items-center justify-between rounded-md bg-[#F9FAFE] p-4">
+        <View className="mt-5 px-5">
+          <View className="flex-row items-center justify-between rounded-md bg-[#F9FAFE] p-4">
             <View className="flex-1 flex-row items-center gap-3">
               <View className="h-14 w-14 rounded-full bg-slate-200" />
               <View className="items-start gap-1.5">
@@ -153,14 +155,14 @@ export default function PropertyDetailSkeleton() {
 
       {/* 3. Bottom Action Bar Placeholder */}
       <View
-        className="absolute bottom-0 w-full flex-row items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 pt-3 shadow-lg"
+        className="absolute bottom-0 w-full flex-row items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 pt-3.5 shadow-lg"
         style={{
-          paddingBottom: Math.max(insets.bottom, 20),
+          paddingBottom: Math.max(insets.bottom, 16) + 12,
         }}
       >
-        <View className="h-10 flex-1 rounded-[24px] border border-[#15304D]/20 bg-slate-50" />
-        <View className="h-10 flex-1 rounded-[24px] border border-[#60D669]/20 bg-slate-50" />
-        <View className="h-10 flex-1 rounded-[24px] border border-[#B28648]/20 bg-slate-50" />
+        <View className="h-11 flex-1 rounded-[24px] border border-[#15304D]/20 bg-slate-50" />
+        <View className="h-11 flex-1 rounded-[24px] border border-[#60D669]/20 bg-slate-50" />
+        <View className="h-11 flex-1 rounded-[24px] border border-[#B28648]/20 bg-slate-50" />
       </View>
     </View>
   );

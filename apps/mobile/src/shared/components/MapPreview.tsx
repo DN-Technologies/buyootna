@@ -57,7 +57,7 @@ export default function MapPreview({
   };
 
   return (
-    <View className="mb-6 px-5">
+    <View className="px-5">
       <TouchableOpacity
         activeOpacity={0.9}
         onPress={handlePress}

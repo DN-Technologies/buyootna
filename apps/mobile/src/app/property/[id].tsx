@@ -190,7 +190,9 @@ export default function PropertyDetailsScreen() {
       {/* --- 1. Main Scrollable Content --- */}
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }} // Space for the bottom bar
+        contentContainerStyle={{
+          paddingBottom: Math.max(insets.bottom, 16) + 90,
+        }} // Space for the fixed bottom action bar
         showsVerticalScrollIndicator={false}
         bounces={false} // Prevents pulling the image down from the top on iOS
       >
@@ -209,7 +211,7 @@ export default function PropertyDetailsScreen() {
             onShare={handleShare}
           />
 
-          {/* --- Card 3: Property Specs --- */}
+          {/* --- Card 1: Property Specs & Overview --- */}
           <PropertyOverview
             type={property.type}
             title={displayTitle}
@@ -225,22 +227,10 @@ export default function PropertyDetailsScreen() {
             requestYear={property.requestYear?.toString()}
             requiredYear={property.requiredYear?.toString()}
             licenseNumber={property.licenseNumber}
-            exchangeRequirement={
-              property.type === 'EXCHANGE' ? property.description : undefined
-            }
           />
 
-          {/* --- Card 4: Map Preview --- */}
+          {/* --- Card 2: Dynamic Details Sections (Description, Requirements, Features, Rental Terms) --- */}
           <View className="mt-4">
-            <MapPreview
-              location={property.location}
-              latitude={property.latitude}
-              longitude={property.longitude}
-            />
-          </View>
-
-          {/* --- Card 5: Dynamic Details Sections --- */}
-          <View className="mt-2">
             <PropertyDetailsBody
               type={property.type}
               description={property.description}
@@ -269,8 +259,17 @@ export default function PropertyDetailsScreen() {
             />
           </View>
 
-          {/* --- Card 6: Lister/Host Profile Snippet --- */}
-          <View className="mt-4 px-5">
+          {/* --- Card 3: Map Preview --- */}
+          <View className="mt-1">
+            <MapPreview
+              location={property.location}
+              latitude={property.latitude}
+              longitude={property.longitude}
+            />
+          </View>
+
+          {/* --- Card 4: Lister/Host Profile Snippet --- */}
+          <View className="mt-5 px-5">
             <ListerProfileSnippet
               name={property.host.name}
               joinedDate={property.host.joinedDate}
