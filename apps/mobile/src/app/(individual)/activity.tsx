@@ -299,12 +299,13 @@ export default function ActivityScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* --- 1. Top Header --- */}
       <View className="flex-row items-center justify-between px-5 py-4">
-        {/* Trash Button */}
+        {/* Plus Button (Right side in RTL) */}
         <TouchableOpacity
-          onPress={handleTrashPress}
-          className="h-10 w-10 items-center justify-start rounded-full"
+          onPress={() => router.push('/add-listing')}
+          className="h-10 w-10 items-center justify-center rounded-full"
+          activeOpacity={0.7}
         >
-          <Feather name="trash-2" size={24} color="#B91C1C" />
+          <Feather name="plus" size={24} color="#111111" />
         </TouchableOpacity>
 
         {/* Centered Title */}
@@ -312,12 +313,13 @@ export default function ActivityScreen() {
           نشاطي
         </Text>
 
-        {/* Plus Button */}
+        {/* More Options Button (Left side in RTL) */}
         <TouchableOpacity
-          onPress={() => router.push('/add-listing')}
-          className="h-10 w-10 items-center justify-end rounded-full"
+          onPress={handleTrashPress}
+          className="h-10 w-10 items-center justify-center rounded-full"
+          activeOpacity={0.7}
         >
-          <Feather name="plus" size={24} color="#111111" />
+          <Feather name="more-vertical" size={20} color="#111111" />
         </TouchableOpacity>
       </View>
 
@@ -345,7 +347,7 @@ export default function ActivityScreen() {
                     {tab}
                   </Text>
                   {isActive && (
-                    <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                    <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />
                   )}
                 </View>
               </TouchableOpacity>

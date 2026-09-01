@@ -115,7 +115,7 @@ export default function HomeScreen() {
                     {tab.label}
                   </Text>
                   {isActive && (
-                    <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                    <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />
                   )}
                 </View>
               </TouchableOpacity>
