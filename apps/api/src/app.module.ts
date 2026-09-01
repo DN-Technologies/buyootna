@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
 
@@ -34,6 +35,7 @@ import { IdentitiesModule } from './features/identities/identities.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     I18nModule.forRoot({
       fallbackLanguage: 'ar',
       loaderOptions: {

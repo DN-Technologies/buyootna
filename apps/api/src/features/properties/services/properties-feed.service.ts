@@ -7,6 +7,7 @@ import {
   formatDateToMonthYear,
   formatProperties,
 } from './property-formatting.util';
+import { notExpiredWhere } from './property-expiry.util';
 
 @Injectable()
 export class PropertiesFeedService {
@@ -17,7 +18,7 @@ export class PropertiesFeedService {
     const [saleProperties, rentProperties, exchangeProperties, topCompanies] =
       await Promise.all([
         this.prisma.property.findMany({
-          where: { type: 'SALE', status: 'ACTIVE' },
+          where: { type: 'SALE', status: 'ACTIVE', ...notExpiredWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -38,7 +39,7 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'RENT', status: 'ACTIVE' },
+          where: { type: 'RENT', status: 'ACTIVE', ...notExpiredWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -59,7 +60,7 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'EXCHANGE', status: 'ACTIVE' },
+          where: { type: 'EXCHANGE', status: 'ACTIVE', ...notExpiredWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -110,7 +111,10 @@ export class PropertiesFeedService {
 
     const skip = (page - 1) * limit;
 
-    const whereClause: Prisma.PropertyWhereInput = { status: 'ACTIVE' };
+    const whereClause: Prisma.PropertyWhereInput = {
+      status: 'ACTIVE',
+      ...notExpiredWhere(),
+    };
     if (type) {
       whereClause.type = type;
     }
