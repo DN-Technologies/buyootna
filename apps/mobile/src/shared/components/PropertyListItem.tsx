@@ -1,20 +1,18 @@
 import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 
-import { HeartIcon } from '@/assets/icons/home/cards';
-import {
-  AreaIcon,
-  BedIcon,
-  CompanyIcon,
-  ShareIcon,
-} from '@/assets/icons/home/property';
+import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
+import { AreaIcon, ShareIcon } from '@/assets/icons/home/property';
+import { HomeIcon, PropertiesTabIcon } from '@/assets/icons/tab';
 import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
 
 export interface PropertyListItemProps {
-  id: string;
+  id?: string;
   price: number | string;
-  companyName: string;
+  companyName?: string;
   isFeatured?: boolean;
   categoryLabel?: string; // e.g., 'عمارة', 'شقة', 'فيلا'
+  category?: string;
+  type?: string;
   beds?: number;
   area: number;
   location: string;
@@ -30,11 +28,13 @@ export interface PropertyListItemProps {
 export default function PropertyListItem({
   price,
   isFeatured = false,
-  categoryLabel = 'عقار',
+  categoryLabel,
+  category,
+  type,
   beds,
   area,
   location,
-  propertyIncome = 150_000,
+  propertyIncome,
   isFavorited = false,
   onPress,
   onFavorite,
@@ -42,19 +42,18 @@ export default function PropertyListItem({
   onShowDetails,
   cardWidth,
 }: PropertyListItemProps) {
+  const displayCategory = categoryLabel || category || type || 'عمارة';
+  const isHouseOrVilla =
+    displayCategory.includes('بيت') || displayCategory.includes('فيلا');
+
   const formattedPrice =
-    typeof price === 'number' && price > 0 ? (
-      <Text className="font-cairo-bold text-sm text-[#15304D]">
-        {price.toLocaleString()}{' '}
-        <Text className="font-cairo-bold text-[11px] text-[#15304D]">
-          د.ك
-        </Text>
-      </Text>
-    ) : (
-      <Text className="font-cairo-semibold text-sm text-[#15304D]">
-        السعر غير معلن
-      </Text>
-    );
+    typeof price === 'number' && price > 0
+      ? price.toLocaleString()
+      : typeof price === 'string' && !isNaN(Number(price))
+        ? Number(price).toLocaleString()
+        : price;
+
+  const handleDetailsPress = onShowDetails || onPress;
 
   return (
     <TouchableOpacity
@@ -66,24 +65,23 @@ export default function PropertyListItem({
         elevation: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
+        shadowOpacity: 0.04,
         shadowRadius: 6,
       }}
     >
-      {/* Row 1: Type icon (right) + Title (right-aligned) + Featured badge (left) — RTL */}
+      {/* Row 1: Price (Right) & "مميز" Badge (Left) */}
       <View className="flex-row items-center justify-between">
-        <View className="h-8 w-8 items-center justify-center rounded-md border border-[#ECECEC]">
-          <CompanyIcon color="#111111" size={16} />
+        {/* Right in RTL: Price */}
+        <View className="flex-row items-baseline gap-1">
+          <Text className="font-cairo-bold text-2xl text-[#15304D]">
+            {formattedPrice}
+          </Text>
+          <Text className="font-cairo-medium text-sm text-[#15304D]">
+            د.ك
+          </Text>
         </View>
 
-        <Text
-          className="mx-2 flex-1 font-cairo-semibold text-base text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-          numberOfLines={1}
-        >
-          {categoryLabel} {location}
-        </Text>
-
+        {/* Left in RTL: "مميز" Badge */}
         {isFeatured && (
           <SafeLinearGradient
             colors={['#FF8D28', '#FACC15']}
@@ -107,46 +105,58 @@ export default function PropertyListItem({
         )}
       </View>
 
-      {/* Row 2: Stats — price, beds, area — RTL */}
-      <View className="mt-3 flex-row items-center justify-between">
-        {formattedPrice}
+      {/* Row 2: Category Badge, Location, Area & Beds */}
+      <View className="mt-3 flex-row items-center justify-between gap-2">
+        {/* Right: Category Tag */}
+        <View className="flex-row items-center gap-1.5 rounded-lg border border-gray-100/60 bg-[#F1F5F9] px-2.5 py-1">
+          {isHouseOrVilla ? (
+            <HomeIcon color="#15304D" size={13} />
+          ) : (
+            <PropertiesTabIcon color="#15304D" size={13} />
+          )}
+          <Text className="font-cairo-semibold text-xs leading-[16px] text-[#15304D]">
+            {displayCategory}
+          </Text>
+        </View>
 
-        {beds !== undefined && (
-          <View className="flex-row items-center gap-1">
-            <BedIcon color="#111111" size={16} />
-            <Text className="font-cairo text-sm text-[#111111]">{beds}</Text>
-          </View>
-        )}
+        {/* Middle: Location */}
+        <View className="flex-1 flex-row items-center justify-center gap-1 px-1">
+          <LocationIcon color="#6B6A6A" size={14} />
+          <Text
+            className="font-cairo-medium text-xs leading-[18px] text-[#111111]"
+            numberOfLines={1}
+          >
+            {location}
+          </Text>
+        </View>
 
+        {/* Left: Area & Beds */}
         <View className="flex-row items-center gap-1">
-          <AreaIcon color="#111111" size={16} />
-          <Text className="font-cairo text-sm text-[#111111]">
+          <AreaIcon color="#6B6A6A" size={14} />
+          <Text className="font-cairo-medium text-xs leading-[18px] text-[#111111]">
             {area ?? 200} م²
           </Text>
         </View>
       </View>
 
-      {/* Row 3: Property Income */}
-      {propertyIncome !== undefined && propertyIncome !== null && (
-        <View className="mt-3 flex-row items-center gap-1">
-          <Text className="font-cairo text-sm text-[#111111]">
+      {/* Row 3: Property Income (مدخول العقار) */}
+      {propertyIncome !== undefined && propertyIncome !== null && propertyIncome > 0 && (
+        <View className="mt-2.5 flex-row items-center justify-end gap-1.5">
+          <Text className="font-cairo-bold text-sm text-[#111111]">
             مدخول العقار
           </Text>
-          <Text className="font-cairo-bold text-base text-[#018B1B]">
-            {propertyIncome.toLocaleString()}
-          </Text>
-          <Text className="font-cairo-semibold text-[12px] text-[#018B1B]">
-            د.ك
+          <Text className="font-cairo-bold text-base text-[#10B981]">
+            {propertyIncome.toLocaleString()} د.ك
           </Text>
         </View>
       )}
 
-      {/* Row 4: Actions — "عرض تفاصيل" button (right) + icons (left) */}
-      <View className="mt-4 flex-row items-center justify-between">
-        {/* View Details Button */}
+      {/* Row 4: Actions ("عرض تفاصيل" Button & Share/Heart Icons) */}
+      <View className="mt-3.5 flex-row items-center justify-between gap-3">
+        {/* Right in RTL: View Details Button */}
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={onShowDetails}
+          onPress={handleDetailsPress}
           className="flex-1 items-center justify-center rounded-[14px] bg-[#F9FAFE] px-4 py-2"
           style={{ marginLeft: 12 }}
         >
@@ -155,14 +165,14 @@ export default function PropertyListItem({
           </Text>
         </TouchableOpacity>
 
-        {/* Heart & Share Icons */}
+        {/* Left in RTL: Share & Heart Icons */}
         <View className="flex-row items-center gap-3">
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={onShare}
             className="h-9 w-9 items-center justify-center"
           >
-            <ShareIcon color="#000000" size={16} />
+            <ShareIcon color="#111111" size={18} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -171,7 +181,7 @@ export default function PropertyListItem({
             className="h-9 w-9 items-center justify-center"
           >
             <HeartIcon
-              color={isFavorited ? '#BA0003' : '#111111'}
+              color={isFavorited ? '#DC2626' : '#111111'}
               size={18}
               filled={isFavorited}
             />

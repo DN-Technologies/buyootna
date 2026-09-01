@@ -470,6 +470,8 @@ export default function UserProfileScreen() {
                     companyName={item.companyName}
                     isFeatured={item.isFeatured}
                     type={item.type}
+                    categoryLabel={item.categoryLabel}
+                    propertyIncome={item.propertyIncome}
                     area={item.area}
                     beds={item.beds}
                     baths={item.baths}

@@ -3,14 +3,23 @@ import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/shared/api/api';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+export type ActivityListingStatus =
+  | 'ACTIVE'
+  | 'DRAFT'
+  | 'EXPIRED'
+  | 'REJECTED'
+  | 'CLOSED';
+
 export interface ActivityItem {
   id: string;
   images: string[];
   price: number | null;
   type: string;
   category: string;
-  status: 'ACTIVE' | 'DRAFT';
+  status: ActivityListingStatus;
   updatedAt: string;
+  createdAt?: string;
+  endDate?: string | null;
   isPremium?: boolean;
   isHidden?: boolean;
 
@@ -40,7 +49,7 @@ interface MyActivityData {
 }
 
 async function fetchMyActivity(
-  status?: 'ACTIVE' | 'DRAFT',
+  status?: ActivityListingStatus,
 ): Promise<MyActivityData> {
   const [activityResponse, userResponse] = await Promise.all([
     apiClient.get<ActivityItem[]>('/properties/me/activity', {
@@ -57,7 +66,7 @@ async function fetchMyActivity(
   };
 }
 
-export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
+export function useMyActivity(status?: ActivityListingStatus) {
   const { token } = useAuthStore();
 
   const query = useQuery({
@@ -79,4 +88,16 @@ export function useMyActivity(status?: 'ACTIVE' | 'DRAFT') {
     error,
     refetch: query.refetch,
   };
+}
+
+export async function archiveProperty(propertyId: string) {
+  const response = await apiClient.post(`/properties/${propertyId}/archive`);
+  return response.data;
+}
+
+export async function renewProperty(propertyId: string, planSlotId?: string) {
+  const response = await apiClient.post(`/properties/${propertyId}/renew`, {
+    planSlotId,
+  });
+  return response.data;
 }

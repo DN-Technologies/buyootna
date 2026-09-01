@@ -8,19 +8,21 @@ import {
   ChatIcon,
   HeartIcon,
   LocationIcon,
-  WhatsappIcon,
 } from '@/assets/icons/home/cards';
+import { PropertiesTabIcon } from '@/assets/icons/tab';
 import { showAlert } from '@/shared/utils/alert';
 
 export interface OfficeListCardProps {
   id: string;
   name: string;
-  rating: number;
-  reviewsCount: number;
-  location: string;
+  rating?: number;
+  reviewsCount?: number;
+  location?: string;
   logoUrl?: string;
   isVerified?: boolean;
   isFavorite?: boolean;
+  propertiesCount?: number;
+  services?: string[];
   phone?: string | null;
   whatsapp?: string | null;
   onPress?: () => void;
@@ -31,10 +33,14 @@ export interface OfficeListCardProps {
 export default function OfficeListCard({
   id,
   name,
-  rating,
+  rating = 3.5,
+  reviewsCount = 40,
   location,
   logoUrl,
+  isVerified = true,
   isFavorite = false,
+  propertiesCount = 37,
+  services,
   phone,
   whatsapp,
   onPress,
@@ -42,24 +48,6 @@ export default function OfficeListCard({
   onChatPress,
 }: OfficeListCardProps) {
   const router = useRouter();
-
-  const handleWhatsApp = () => {
-    const targetPhone = whatsapp || phone;
-    if (!targetPhone) {
-      showAlert('تنبيه', 'لا يوجد رقم واتساب متاح لهذا المكتب');
-      return;
-    }
-    const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
-    const waUrl = `whatsapp://send?phone=${cleanPhone}`;
-    const webUrl = `https://wa.me/${cleanPhone}`;
-    Linking.canOpenURL(waUrl)
-      .then((supported) => {
-        Linking.openURL(supported ? waUrl : webUrl);
-      })
-      .catch(() => {
-        Linking.openURL(webUrl);
-      });
-  };
 
   const handleCall = () => {
     if (!phone) {
@@ -80,104 +68,141 @@ export default function OfficeListCard({
     router.push(`/office/${id}` as any);
   };
 
+  const displayTags =
+    services && services.length > 0 ? services : ['إيجار', 'بيع', '2 خدمة'];
+
   return (
     <TouchableOpacity
-      activeOpacity={0.9}
+      activeOpacity={0.95}
       onPress={onPress}
-      className="mb-4 w-full flex-row overflow-hidden rounded-lg border border-[#ECECEC] bg-white"
+      className="mb-4 w-full rounded-2xl border border-gray-100/90 bg-white p-4"
       style={{
-        elevation: 2,
+        elevation: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
       }}
     >
-      {/* --- Logo Panel (full-bleed, right edge) --- */}
-      <View className="w-[130px] items-center justify-center bg-[#15304D]">
-        {logoUrl ? (
-          <Image
-            source={{ uri: logoUrl }}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
-          />
-        ) : (
-          <MaterialCommunityIcons name="home-city-outline" size={56} color="#B28648" />
-        )}
-      </View>
-      {/* --- Content Column --- */}
-      <View className="flex-1 p-4">
-        {/* Header: Name & Heart */}
-        <View className="mb-2 flex-row items-start justify-between">
-          <Text
-            className="flex-1 font-cairo-semibold text-base text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-            numberOfLines={1}
-          >
-            {name}
-          </Text>
+      {/* Row 1: Logo & Name/Location (Right in RTL) + Heart (Left in RTL) */}
+      <View className="flex-row items-start justify-between gap-3">
+        {/* Right in RTL: Logo & Information */}
+        <View className="flex-1 flex-row items-center gap-3">
+          {/* Logo Squircle */}
+          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-gray-100 bg-[#1D2B4F]">
+            {logoUrl ? (
+              <Image
+                source={{ uri: logoUrl }}
+                style={{ width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="home-city-outline"
+                size={30}
+                color="#B28648"
+              />
+            )}
+          </View>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onToggleFavorite}
-            className="-mt-1 h-8 w-8 items-center justify-center"
-          >
-            <HeartIcon
-              size={20}
-              color={isFavorite ? '#BA0003' : '#111111'}
-              filled={isFavorite}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Stats: Location & Rating */}
-        <View className="mb-3 flex-row items-center justify-between">
-          {!!location && (
-            <View className="flex-shrink flex-row items-center gap-1">
-              <LocationIcon color="#6B6A6A" size={13} />
+          {/* Name & Location */}
+          <View className="flex-1">
+            <View className="flex-row items-center gap-1.5">
               <Text
-                className="font-cairo-medium text-[12px] text-[#6B6A6A]"
+                className="font-cairo-bold text-base text-[#111111]"
                 numberOfLines={1}
               >
-                {location}
+                {name}
+              </Text>
+              {isVerified && (
+                <MaterialIcons name="verified" size={16} color="#0284C7" />
+              )}
+            </View>
+
+            <View className="mt-1 flex-row items-center gap-1">
+              <LocationIcon color="#6B6A6A" size={13} />
+              <Text
+                className="font-cairo-medium text-xs leading-[18px] text-[#6B6A6A]"
+                numberOfLines={1}
+              >
+                {location || 'الكويت'}
               </Text>
             </View>
-          )}
-
-          <View className="flex-row items-center gap-1">
-            <MaterialIcons name="star" size={14} color="#F59E0B" />
-            <Text className="font-cairo-medium text-[12px] text-[#111111]">
-              {rating}
-            </Text>
           </View>
         </View>
 
-        {/* Actions */}
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#15304D]"
-            activeOpacity={0.7}
-            onPress={handleCall}
-          >
-            <CallIcon color="#15304D" size={16} />
-          </TouchableOpacity>
+        {/* Left in RTL: Favorite Heart Button */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={onToggleFavorite}
+          className="h-8 w-8 items-center justify-center"
+        >
+          <HeartIcon
+            size={20}
+            color={isFavorite ? '#DC2626' : '#111111'}
+            filled={isFavorite}
+          />
+        </TouchableOpacity>
+      </View>
 
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
-            activeOpacity={0.7}
-            onPress={handleWhatsApp}
+      {/* Row 2: Service / Transaction Tags */}
+      <View className="mt-2.5 flex-row flex-wrap items-center gap-1.5">
+        {displayTags.map((tag, index) => (
+          <View
+            key={index}
+            className="rounded-lg border border-gray-100/60 bg-[#F1F5F9] px-2.5 py-1"
           >
-            <WhatsappIcon size={18} />
-          </TouchableOpacity>
+            <Text className="font-cairo-medium text-xs leading-[16px] text-[#111111]">
+              {tag}
+            </Text>
+          </View>
+        ))}
+      </View>
 
-          <TouchableOpacity
-            className="h-10 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#B28648]"
-            activeOpacity={0.7}
-            onPress={handleChat}
-          >
-            <ChatIcon color="#B28648" size={16} />
-          </TouchableOpacity>
+      {/* Divider */}
+      <View className="my-3 h-[1px] w-full bg-gray-100" />
+
+      {/* Row 3: Stats (Properties Count on Right & Rating on Left in RTL) */}
+      <View className="flex-row items-center justify-between">
+        {/* Right in RTL: Properties Count */}
+        <View className="flex-row items-center gap-1.5">
+          <PropertiesTabIcon color="#6B6A6A" size={14} />
+          <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
+            {propertiesCount} عقار
+          </Text>
         </View>
+
+        {/* Left in RTL: Rating & Reviews */}
+        <View className="flex-row items-center gap-1">
+          <Text className="font-cairo text-xs text-[#8E8E93]">
+            ( {reviewsCount > 0 ? `+${reviewsCount}` : '+40'} تقييم )
+          </Text>
+          <Text className="font-cairo-bold text-xs text-[#111111]">
+            {rating}
+          </Text>
+          <MaterialIcons name="star" size={14} color="#F59E0B" />
+        </View>
+      </View>
+
+      {/* Row 4: Actions (Call & Chat Buttons) */}
+      <View className="mt-3 flex-row items-center justify-between gap-3">
+        {/* Right in RTL: Call Button */}
+        <TouchableOpacity
+          className="h-11 flex-1 flex-row items-center justify-center rounded-full border border-[#15304D] bg-transparent"
+          activeOpacity={0.7}
+          onPress={handleCall}
+        >
+          <CallIcon color="#15304D" size={18} />
+        </TouchableOpacity>
+
+        {/* Left in RTL: Chat Button */}
+        <TouchableOpacity
+          className="h-11 flex-1 flex-row items-center justify-center rounded-full border border-[#B28648] bg-transparent"
+          activeOpacity={0.7}
+          onPress={handleChat}
+        >
+          <ChatIcon color="#B28648" size={18} />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

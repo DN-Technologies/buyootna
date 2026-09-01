@@ -81,6 +81,7 @@ const GlobalFilterSheet = forwardRef<BottomSheetModal, GlobalFilterSheetProps>(
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
         // Customize the drag handle pill to match the design

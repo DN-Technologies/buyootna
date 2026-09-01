@@ -25,7 +25,7 @@ export default function ListerProfileSnippet({
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      className="mb-6 flex-row items-center justify-between rounded-md bg-[#F9FAFE] p-4"
+      className="flex-row items-center justify-between rounded-md bg-[#F9FAFE] p-4"
     >
       {/* ---  Info & Avatar --- */}
       <View className="flex-1 flex-row items-center gap-3">

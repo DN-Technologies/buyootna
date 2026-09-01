@@ -191,7 +191,7 @@ export default function CustomTabBar({
                       style={{
                         color: '#FFFFFF',
                         fontSize: 9,
-                        fontFamily: 'Cairo-Bold',
+                        fontFamily: 'Cairo_700Bold',
                         lineHeight: 12,
                       }}
                     >
@@ -202,7 +202,7 @@ export default function CustomTabBar({
               </View>
               <Text
                 style={{
-                  fontFamily: 'Cairo-Bold',
+                  fontFamily: 'Cairo_700Bold',
                   fontSize: 10,
                   color: isFocused ? '#FFD084' : '#FFFFFF',
                   marginTop: 2,

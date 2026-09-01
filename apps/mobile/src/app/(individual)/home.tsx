@@ -49,7 +49,7 @@ export default function HomeScreen() {
   // --- State ---
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
-    useState<PropertyFilter>('all');
+    useState<PropertyFilter>('sale');
   const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
@@ -115,7 +115,7 @@ export default function HomeScreen() {
                     {tab.label}
                   </Text>
                   {isActive && (
-                    <View className="absolute bottom-[-10px] h-[2px] w-12 rounded-full bg-[#15304D]" />
+                    <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />
                   )}
                 </View>
               </TouchableOpacity>
