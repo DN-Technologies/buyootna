@@ -16,7 +16,7 @@ import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
-import { formatTimeAgo } from '@/shared/utils/helpers/property';
+import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -144,6 +144,7 @@ export default function SaleProperties({
                 cardWidth={HORIZONTAL_CARD_WIDTH}
                 onPress={() => handleShowDetails(item.id)}
                 onShowDetails={() => handleShowDetails(item.id)}
+                onShare={() => shareProperty(item)}
               />
             ) : (
               <PropertyCard
@@ -152,6 +153,7 @@ export default function SaleProperties({
                   item.createdAt ? formatTimeAgo(item.createdAt) : undefined
                 }
                 cardWidth={HORIZONTAL_CARD_WIDTH}
+                onShare={() => shareProperty(item)}
               />
             )}
           </View>

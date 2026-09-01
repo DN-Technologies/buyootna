@@ -2,11 +2,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
 import {
   resetPasswordSchema,
   ResetPasswordValues,
 } from '@/features/auth/recoverySchemas';
+import FormInput from '@/shared/components/FormInput';
 
 interface ForgotPasswordStep3Props {
   onSubmit: (data: ResetPasswordValues) => void;
@@ -37,6 +37,7 @@ export const ForgotPasswordStep3: React.FC<ForgotPasswordStep3Props> = ({
         label="كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="forgot-password-new-password-input"
       />
       <FormInput
         control={control}
@@ -44,6 +45,7 @@ export const ForgotPasswordStep3: React.FC<ForgotPasswordStep3Props> = ({
         label="تأكيد كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="forgot-password-confirm-password-input"
       />
 
       <TouchableOpacity

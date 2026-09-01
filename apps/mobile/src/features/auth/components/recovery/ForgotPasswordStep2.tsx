@@ -62,6 +62,7 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
             <View className="mb-6 items-center w-full">
               {/* Pressable area to focus hidden TextInput */}
               <TouchableOpacity
+                testID="forgot-password-otp-boxes"
                 activeOpacity={1}
                 onPress={() => otpInputRef.current?.focus()}
                 className="w-full flex-row justify-between"
@@ -88,6 +89,7 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
               {/* The Hidden Actual Input */}
               <TextInput
                 ref={otpInputRef}
+                testID="forgot-password-otp-input"
                 value={value}
                 onChangeText={(text) => {
                   const clean = text.replace(/[^0-9]/g, '');

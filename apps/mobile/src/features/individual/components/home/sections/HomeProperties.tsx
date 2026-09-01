@@ -15,7 +15,7 @@ import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
-import { formatTimeAgo } from '@/shared/utils/helpers/property';
+import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
 interface HomePropertiesProps {
@@ -193,6 +193,7 @@ export default function HomeProperties({
                 }
                 isFavorited={favoritedIds.includes(item.id)}
                 onFavorite={() => toggleFavorite(item.id)}
+                onShare={() => shareProperty(item)}
               />
             );
             // FlashList v2 dropped columnWrapperStyle, so the tablet grid's
@@ -253,6 +254,7 @@ export default function HomeProperties({
               onFavorite={() => toggleFavorite(item.id)}
               onPress={() => handleShowDetails(item.id)}
               onShowDetails={() => handleShowDetails(item.id)}
+              onShare={() => shareProperty(item)}
             />
           )}
           onEndReached={fetchMoreData}

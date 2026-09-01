@@ -27,6 +27,7 @@ import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import PublicProfileHeaderSkeleton from '@/shared/components/skeletons/PublicProfileHeaderSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
 interface ReviewSummary {
@@ -461,6 +462,7 @@ export default function UserProfileScreen() {
                     location={item.location}
                     propertyIncome={item.propertyIncome}
                     onShowDetails={() => router.push(`/property/${item.id}`)}
+                    onShare={() => shareProperty(item)}
                   />
                 ) : (
                   <PropertyCard
@@ -476,6 +478,7 @@ export default function UserProfileScreen() {
                     beds={item.beds}
                     baths={item.baths}
                     location={item.location}
+                    onShare={() => shareProperty(item)}
                   />
                 )}
               </View>

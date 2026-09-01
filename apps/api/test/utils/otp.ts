@@ -53,3 +53,25 @@ export function getMockEmailOtpCode(
 
   return record.otp;
 }
+
+/**
+ * Reads a pending password-reset OTP for an email-only account via
+ * EmailOtpService's public getMockPasswordResetOtp accessor (mirrors the
+ * dev/CI-only /auth/recovery/debug-email-otp endpoint, but reads it
+ * in-process instead of over HTTP).
+ */
+export function getMockPasswordResetOtpCode(
+  app: INestApplication,
+  email: string,
+): string {
+  const emailOtpService = app.get(EmailOtpService);
+  const otp = emailOtpService.getMockPasswordResetOtp(email);
+
+  if (!otp) {
+    throw new Error(
+      `No pending password-reset OTP found for ${email}. Was recovery/request-otp called for this email first?`,
+    );
+  }
+
+  return otp;
+}

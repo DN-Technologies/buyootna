@@ -2,10 +2,7 @@ import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { OtpRateLimitGuard } from './otp-rate-limit.guard';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
-import {
-  OTP_RATE_LIMIT_META,
-  type OtpRateLimitMeta,
-} from '../decorators/otp-rate-limit.decorator';
+import type { OtpRateLimitMeta } from '../decorators/otp-rate-limit.decorator';
 
 describe('OtpRateLimitGuard', () => {
   let guard: OtpRateLimitGuard;

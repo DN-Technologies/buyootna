@@ -3,11 +3,11 @@ import { useRouter } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
 import {
   requestOtpSchema,
   RequestOtpValues,
 } from '@/features/auth/recoverySchemas';
+import FormInput from '@/shared/components/FormInput';
 
 interface ForgotPasswordStep1Props {
   onSubmit: (data: RequestOtpValues) => void;
@@ -43,6 +43,7 @@ export const ForgotPasswordStep1: React.FC<ForgotPasswordStep1Props> = ({
           label="رقم الهاتف أو البريد الالكتروني"
           placeholder="alisalem@gmail.com"
           autoCapitalize="none"
+          testID="forgot-password-identifier-input"
         />
       </View>
 

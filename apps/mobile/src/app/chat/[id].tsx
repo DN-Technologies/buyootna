@@ -195,7 +195,7 @@ export default function ChatDetailsScreen() {
       <ContentContainer className="flex-1">
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
+          style={{ flex: 1 }}
         >
           <ChatHeader
             userName={otherUserName}
@@ -247,6 +247,7 @@ export default function ChatDetailsScreen() {
           */}
           <FlashList
             data={activeMessages}
+            style={{ flex: 1 }}
             keyExtractor={(item) => item.id}
             getItemType={(item) => item.type}
             contentContainerStyle={{

@@ -139,6 +139,79 @@ describe('EmailOtpService', () => {
     });
   });
 
+  describe('sendPasswordResetOtp + verifyPasswordResetOtp', () => {
+    it('verifies a valid reset OTP within the TTL window', async () => {
+      await service.sendPasswordResetOtp('ali@example.com', 'Ali');
+      const otp = service.getMockPasswordResetOtp('ali@example.com');
+      expect(otp).toMatch(/^\d{6}$/);
+
+      const result = service.verifyPasswordResetOtp('ali@example.com', otp!);
+
+      expect(result).toBe(true);
+    });
+
+    it('returns false for an incorrect reset OTP code', async () => {
+      await service.sendPasswordResetOtp('ali@example.com', 'Ali');
+
+      const result = service.verifyPasswordResetOtp(
+        'ali@example.com',
+        '000000',
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false for an email with no pending reset', () => {
+      const result = service.verifyPasswordResetOtp(
+        'nobody@example.com',
+        '123456',
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('cannot reuse an already-verified reset OTP', async () => {
+      await service.sendPasswordResetOtp('ali@example.com', 'Ali');
+      const otp = service.getMockPasswordResetOtp('ali@example.com')!;
+
+      expect(service.verifyPasswordResetOtp('ali@example.com', otp)).toBe(true);
+      expect(service.verifyPasswordResetOtp('ali@example.com', otp)).toBe(
+        false,
+      );
+    });
+
+    it('is independent from a pending registration OTP for the same email', async () => {
+      // Force distinct 6-digit codes so this isn't flaky-by-construction.
+      const randomSpy = jest
+        .spyOn(Math, 'random')
+        .mockReturnValueOnce(0.1) // -> registration OTP "190000"
+        .mockReturnValueOnce(0.9); // -> reset OTP "910000"
+
+      await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');
+      await service.sendPasswordResetOtp('ali@example.com', 'Ali');
+      randomSpy.mockRestore();
+
+      const registrationOtp = service.getMockOtp('ali@example.com')!;
+      const resetOtp = service.getMockPasswordResetOtp('ali@example.com')!;
+      expect(registrationOtp).not.toEqual(resetOtp);
+
+      // The registration OTP must not verify as a password-reset OTP, and
+      // sending a reset OTP must not have disturbed the pending signup.
+      expect(
+        service.verifyPasswordResetOtp('ali@example.com', registrationOtp),
+      ).toBe(false);
+      expect(service.hasPending('ali@example.com')).toBe(true);
+    });
+
+    it('getMockPasswordResetOtp returns null when mail is NOT in mock mode', async () => {
+      mockMailService.isMockMode = false;
+
+      await service.sendPasswordResetOtp('ali@example.com', 'Ali');
+
+      expect(service.getMockPasswordResetOtp('ali@example.com')).toBeNull();
+    });
+  });
+
   describe('configurable TTL', () => {
     it('OTP is still valid just before the 3-minute default expiry', async () => {
       await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');

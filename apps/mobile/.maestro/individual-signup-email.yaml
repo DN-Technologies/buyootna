@@ -29,7 +29,9 @@ appId: com.constyoussef.buyootna
 - tapOn: "بدء التسجيل"
 - waitForAnimationToEnd:
     timeout: 10000
-- tapOn: "تسجيل جديد"
+# individual-auth.tsx now honors the "signup" mode param that selection.tsx
+# passes here, so the signup form is already showing — no need to tap the
+# "تسجيل جديد" tab manually.
 - tapOn:
     id: "individual-signup-name-input"
 - inputText: "Maestro Test"
