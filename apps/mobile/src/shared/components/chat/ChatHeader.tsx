@@ -29,7 +29,7 @@ export default function ChatHeader({
     <View className="relative z-50 flex-row items-center justify-between px-5 py-3 shadow-sm shadow-gray-100">
       {/* Right Avatar & Back */}
       <View className="flex-row items-center gap-2">
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity testID="chat-back-button" onPress={() => router.back()}>
           <Feather name="chevron-right" size={24} color="#111111" />
         </TouchableOpacity>
         {isLoading ? (

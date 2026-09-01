@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ChatMessage } from '@/shared/api/chat.service';
 import ChatHeader from '@/shared/components/chat/ChatHeader';
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatPinnedContext from '@/shared/components/chat/ChatPinnedContext';
@@ -25,6 +26,11 @@ import {
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
 
+// Stable reference so the "no messages cached yet" fallback doesn't create
+// a new array on every store update (which would make Zustand think this
+// selector's value changed on every unrelated state change too).
+const EMPTY_MESSAGES: ChatMessage[] = [];
+
 export default function ChatDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
@@ -36,17 +42,31 @@ export default function ChatDetailsScreen() {
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [showPinnedContext, setShowPinnedContext] = useState(true);
 
-  // Zustand Chat Store selectors
-  const activeMessages = useChatStore((state) => state.activeMessages);
+  // Zustand Chat Store selectors — every one of these reads this specific
+  // screen's own conversationId out of a conversationId-keyed map, never a
+  // shared "currently active" field. React Navigation keeps blurred stack
+  // screens mounted rather than destroying them, so more than one of this
+  // very screen can be alive at once (e.g. Company A's chat still mounted
+  // underneath a property screen, itself underneath Company B's chat) —
+  // deriving strictly from this instance's own conversationId is what
+  // guarantees one chat screen can never render another's messages.
+  const activeMessages = useChatStore(
+    (state) => state.messagesByConversation[conversationId] ?? EMPTY_MESSAGES,
+  );
   const loadMessages = useChatStore((state) => state.loadMessages);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const receiveMessage = useChatStore((state) => state.receiveMessage);
   const setActiveConversation = useChatStore(
     (state) => state.setActiveConversation,
   );
-  const hasNextPage = useChatStore((state) => state.hasNextMessagesPage);
-  const nextCursor = useChatStore((state) => state.nextMessagesCursor);
-  const isLoading = useChatStore((state) => state.isLoadingMessages);
+  const pagination = useChatStore(
+    (state) => state.paginationByConversation[conversationId],
+  );
+  const hasNextPage = pagination?.hasNextPage ?? false;
+  const nextCursor = pagination?.nextCursor;
+  const isLoading = useChatStore(
+    (state) => state.loadingConversationIds[conversationId] ?? false,
+  );
 
   // Find conversation summary details for header display
   const conversation = useChatStore((state) =>
