@@ -6,6 +6,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { TwilioService } from '../../core/twilio/twilio.service';
+import { EmailOtpService } from '../../core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   RequestOtpDto,
@@ -26,6 +27,7 @@ export class RecoveryService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly twilioService: TwilioService,
+    private readonly emailOtpService: EmailOtpService,
     private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
@@ -52,8 +54,16 @@ export class RecoveryService {
       return { message: 'إذا كان الحساب موجوداً، فسيتم إرسال رمز التحقق' };
     }
 
-    if (user.phone) {
+    // Deliver the OTP over whichever channel the entered identifier
+    // actually is — an email-only account (no phone on file) previously
+    // fell through this check silently, so no OTP was ever sent for it.
+    if (validPhone && user.phone) {
       await this.twilioService.sendVerification(user.phone);
+    } else if (validEmail && user.email) {
+      await this.emailOtpService.sendPasswordResetOtp(
+        user.email,
+        user.name ?? 'مستخدم',
+      );
     }
 
     return { message: 'تم إرسال رمز التحقق بنجاح' };
@@ -71,15 +81,21 @@ export class RecoveryService {
       where: { OR: [{ email: email }, { phone: phone }] },
     });
 
-    if (!user || !user.phone) {
+    if (!user) {
       this.rateLimiter?.recordVerifyAttempt(dto.identifier, false);
       throw new BadRequestException('البيانات غير صحيحة');
     }
 
-    const isValid = await this.twilioService.checkVerification(
-      user.phone,
-      dto.otp,
-    );
+    let isValid = false;
+    if (validPhone && user.phone) {
+      isValid = await this.twilioService.checkVerification(user.phone, dto.otp);
+    } else if (validEmail && user.email) {
+      isValid = this.emailOtpService.verifyPasswordResetOtp(
+        user.email,
+        dto.otp,
+      );
+    }
+
     if (!isValid) {
       this.rateLimiter?.recordVerifyAttempt(dto.identifier, false);
       throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');

@@ -1,6 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RecoveryService } from './recovery.service';
+import { EmailOtpService } from '../../core/email-otp/email-otp.service';
 import {
   RequestOtpDto,
   ResetPasswordDto,
@@ -19,7 +27,10 @@ import {
 @ApiTags('Recovery')
 @Controller('auth/recovery')
 export class RecoveryController {
-  constructor(private readonly recoveryService: RecoveryService) {}
+  constructor(
+    private readonly recoveryService: RecoveryService,
+    private readonly emailOtpService: EmailOtpService,
+  ) {}
 
   @Post('request-otp')
   @OtpRequestRateLimit('identifier')
@@ -52,5 +63,23 @@ export class RecoveryController {
   @ApiCommonErrors()
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.recoveryService.resetPassword(dto);
+  }
+
+  // Dev/CI only — 404s unless MailService is in mock mode (RESEND_API_KEY
+  // unset), which is never true in production. Lets black-box e2e tools
+  // (Maestro) read the OTP a mock "email" was sent for a password-reset
+  // request, since they drive the app from a separate process with no way
+  // to inspect server memory directly.
+  @Get('debug-email-otp')
+  @ApiOperation({
+    summary:
+      'Dev/CI only: read a pending password-reset email OTP. 404s unless mail is in mock mode.',
+  })
+  debugEmailOtp(@Query('email') email: string) {
+    const otp = this.emailOtpService.getMockPasswordResetOtp(email);
+    if (!otp) {
+      throw new NotFoundException();
+    }
+    return { otp };
   }
 }

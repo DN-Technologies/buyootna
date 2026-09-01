@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
+import { passwordResetOtpTemplate } from '../mail/templates/password-reset-otp.template';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 
@@ -9,6 +10,11 @@ const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 interface PendingEmailRegistration {
   name: string;
   hashedPassword: string;
+  otp: string;
+  expiresAt: Date;
+}
+
+interface PendingPasswordReset {
   otp: string;
   expiresAt: Date;
 }
@@ -24,6 +30,10 @@ interface PendingEmailRegistration {
 export class EmailOtpService {
   private readonly logger = new Logger(EmailOtpService.name);
   private readonly pending = new Map<string, PendingEmailRegistration>();
+  // Separate from `pending` (registration) so a password-reset request never
+  // collides with, or gets consumed by, an unrelated pending signup for the
+  // same address.
+  private readonly pendingResets = new Map<string, PendingPasswordReset>();
 
   constructor(
     private readonly mailService: MailService,
@@ -87,5 +97,46 @@ export class EmailOtpService {
 
     this.pending.delete(email);
     return { name: record.name, hashedPassword: record.hashedPassword };
+  }
+
+  /** Sends a password-reset OTP to an existing account's email address. */
+  async sendPasswordResetOtp(email: string, userName: string): Promise<void> {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.pendingResets.set(email, {
+      otp,
+      expiresAt: new Date(Date.now() + OTP_TTL_MS()),
+    });
+
+    if (this.mailService.isMockMode) {
+      this.logger.warn(
+        `[MOCK MAIL] Resend is disabled or unconfigured. Password-reset OTP for ${email}: ${otp}`,
+      );
+    }
+
+    await this.mailService.sendMail({
+      to: email,
+      subject: 'رمز إعادة تعيين كلمة المرور - Buyootna',
+      html: passwordResetOtpTemplate({ userName, otp }),
+    });
+
+    this.rateLimiter?.recordRequest(email);
+  }
+
+  /** Dev/CI-only accessor for a pending password-reset OTP, mirroring getMockOtp. */
+  getMockPasswordResetOtp(email: string): string | null {
+    return this.mailService.isMockMode
+      ? (this.pendingResets.get(email)?.otp ?? null)
+      : null;
+  }
+
+  /** Validates a password-reset OTP and, if correct, consumes it. */
+  verifyPasswordResetOtp(email: string, otp: string): boolean {
+    const record = this.pendingResets.get(email);
+    if (!record || record.expiresAt < new Date() || record.otp !== otp) {
+      return false;
+    }
+
+    this.pendingResets.delete(email);
+    return true;
   }
 }
