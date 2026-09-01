@@ -85,7 +85,10 @@ async function seedLoginUser(): Promise<string> {
  * UsersRegistrationService.registerCompany), so this alone is enough to
  * seed an "other party" identity for a conversation. Returns its User.id.
  */
-async function seedCompany(name: string, licenseNumber: string): Promise<string> {
+async function seedCompany(
+  name: string,
+  licenseNumber: string,
+): Promise<string> {
   const form = new FormData();
   form.set('name', name);
   form.set('email', `${licenseNumber.toLowerCase()}@buyootna.test`);

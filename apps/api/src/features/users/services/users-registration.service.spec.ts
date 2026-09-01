@@ -129,9 +129,7 @@ describe('UsersRegistrationService', () => {
 
       expect(result.user?.phone).toBe('55123456');
       expect(result.user?.email).toBeNull();
-      expect(twilioService.sendVerification).toHaveBeenCalledWith(
-        '55123456',
-      );
+      expect(twilioService.sendVerification).toHaveBeenCalledWith('55123456');
       expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
     });
 
