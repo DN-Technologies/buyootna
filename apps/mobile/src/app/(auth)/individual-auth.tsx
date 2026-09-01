@@ -1,7 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -44,7 +44,10 @@ if (GOOGLE_SIGNIN_CONFIGURED) {
 }
 
 export default function IndividualAuthScreen() {
-  const [mode, setMode] = useState<AuthMode>('login');
+  const { mode: initialMode } = useLocalSearchParams<{ mode?: string }>();
+  const [mode, setMode] = useState<AuthMode>(
+    initialMode === 'signup' ? 'signup' : 'login',
+  );
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [signupIdentifier, setSignupIdentifier] = useState('');
   // Only needed to resend an email OTP: unlike phone, no account exists yet

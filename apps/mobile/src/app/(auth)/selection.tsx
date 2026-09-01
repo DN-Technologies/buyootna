@@ -14,7 +14,10 @@ export default function AccountTypeSelectionScreen() {
 
   const handleStartRegistration = () => {
     if (selectedType === 'individual') {
-      router.push('/(auth)/individual-auth');
+      router.push({
+        pathname: '/(auth)/individual-auth',
+        params: { mode: 'signup' },
+      } as any);
     }
   };
 
