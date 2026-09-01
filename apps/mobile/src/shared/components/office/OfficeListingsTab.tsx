@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
+import { shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
 interface OfficeListingsTabProps {
@@ -85,6 +86,7 @@ export default function OfficeListingsTab({
               key={item.id}
               {...item}
               onPress={() => router.push(`/property/${item.id}`)}
+              onShare={() => shareProperty(item)}
             />
           ) : (
             <PropertyListItem
@@ -100,6 +102,7 @@ export default function OfficeListingsTab({
               propertyIncome={item.propertyIncome}
               onPress={() => router.push(`/property/${item.id}`)}
               onShowDetails={() => router.push(`/property/${item.id}`)}
+              onShare={() => shareProperty(item)}
             />
           ),
         )}

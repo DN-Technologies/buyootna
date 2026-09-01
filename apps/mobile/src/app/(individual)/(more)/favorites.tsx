@@ -13,6 +13,7 @@ import {
 } from '@/features/individual/services/favorites.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import { shareProperty } from '@/shared/utils/helpers/property';
 
 const FAVORITES_QUERY_KEY = ['favorites'];
 
@@ -154,6 +155,7 @@ export default function FavoritesScreen() {
               isFavorited={true}
               onPress={() => router.push(`/property/${item.id}`)}
               onFavorite={() => handleFavoriteToggle(item.id)}
+              onShare={() => shareProperty(item)}
             />
           </View>
         )}

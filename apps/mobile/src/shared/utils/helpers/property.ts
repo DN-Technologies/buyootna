@@ -1,3 +1,5 @@
+import { Share } from 'react-native';
+
 export const formatTimeAgo = (dateStr: string): string => {
   try {
     const date = new Date(dateStr);
@@ -63,6 +65,29 @@ export const getArabicCategoryLabel = (cat?: string | null): string => {
       return 'عقار استثماري';
     default:
       return cat;
+  }
+};
+
+interface ShareablePropertyInfo {
+  id: string;
+  price: number | string;
+  location: string;
+  categoryLabel?: string | null;
+  category?: string | null;
+}
+
+export const shareProperty = async (
+  property: ShareablePropertyInfo,
+): Promise<void> => {
+  const title =
+    property.categoryLabel || getArabicCategoryLabel(property.category) || 'عقار';
+  try {
+    await Share.share({
+      title,
+      message: `شاهد هذا العقار على بيوتنا:\n${title}\nالسعر: ${property.price} د.ك\nالموقع: ${property.location}\nالرابط: https://buyootna.cloud/property/${property.id}`,
+    });
+  } catch (error) {
+    console.error('Error sharing property:', error);
   }
 };
 
