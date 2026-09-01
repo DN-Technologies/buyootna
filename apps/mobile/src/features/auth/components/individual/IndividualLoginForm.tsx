@@ -50,6 +50,7 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
         label="رقم الهاتف أو البريد الالكتروني"
         placeholder="alisalem@gmail.com"
         autoCapitalize="none"
+        testID="individual-login-identifier-input"
       />
 
       <FormInput
@@ -58,6 +59,7 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
         label="كلمة المرور"
         placeholder="**************"
         isPassword={true}
+        testID="individual-login-password-input"
       />
 
       <View className="mb-8 w-full flex-row items-center justify-between">

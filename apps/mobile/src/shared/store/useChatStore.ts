@@ -9,14 +9,35 @@ import { socketService } from '@/shared/services/socket.service';
 
 import { useAuthStore } from './useAuthStore';
 
+interface ConversationPagination {
+  hasNextPage: boolean;
+  nextCursor: string | undefined;
+}
+
 interface ChatState {
   conversations: ConversationSummary[];
-  activeMessages: ChatMessage[];
+  // Chat message state is keyed by conversationId everywhere below — there
+  // is deliberately no single "active conversation's messages" field. A
+  // shared/singleton field for the "current" room's messages was the root
+  // cause of a critical bug where a message sent in one company's chat
+  // could render inside a different company's chat room: React Navigation
+  // keeps blurred stack screens mounted (not unmounted) rather than
+  // destroying them, so two ChatDetailScreen instances (e.g. a chat opened,
+  // then a different chat reached via a property/profile screen pushed on
+  // top of it) can legitimately be mounted at the same time, both reading
+  // from this store — if they shared one "active" slice, whichever screen
+  // last became active would silently overwrite what the other was
+  // showing. Keying every field by conversationId makes that class of bug
+  // structurally impossible: each screen only ever reads its own
+  // conversation's slice, however many chat screens happen to be mounted.
+  messagesByConversation: Record<string, ChatMessage[]>;
+  paginationByConversation: Record<string, ConversationPagination>;
+  loadingConversationIds: Record<string, boolean>;
+  // Which conversation is currently focused on screen. Only used for
+  // notification bookkeeping (skip incrementing unread count, mark as
+  // read) — it never gates which messages a screen is allowed to render.
   activeConversationId: string | null;
   isLoadingConversations: boolean;
-  isLoadingMessages: boolean;
-  hasNextMessagesPage: boolean;
-  nextMessagesCursor: string | undefined;
 
   // Actions
   loadConversations: (page?: number, shouldRefresh?: boolean) => Promise<void>;
@@ -43,12 +64,11 @@ interface ChatState {
 export const useChatStore = create<ChatState>((set, get) => {
   return {
     conversations: [],
-    activeMessages: [],
+    messagesByConversation: {},
+    paginationByConversation: {},
+    loadingConversationIds: {},
     activeConversationId: null,
     isLoadingConversations: false,
-    isLoadingMessages: false,
-    hasNextMessagesPage: false,
-    nextMessagesCursor: undefined,
 
     loadConversations: async (page = 1, shouldRefresh = false) => {
       set({ isLoadingConversations: true });
@@ -70,22 +90,30 @@ export const useChatStore = create<ChatState>((set, get) => {
       cursor?: string,
       shouldRefresh = false,
     ) => {
-      // Clear stale messages from whatever conversation was previously active
-      // immediately, so switching chats never shows the wrong room's history
-      // while the new fetch is in flight (or if it fails).
+      // Reset only this conversation's own slice — never touches any other
+      // conversation's cached messages, so a refresh here can't affect (or
+      // be affected by) whatever any other mounted chat screen shows.
       if (shouldRefresh) {
-        set({ isLoadingMessages: true, activeMessages: [] });
+        set((state) => ({
+          loadingConversationIds: {
+            ...state.loadingConversationIds,
+            [conversationId]: true,
+          },
+          messagesByConversation: {
+            ...state.messagesByConversation,
+            [conversationId]: [],
+          },
+        }));
       } else {
-        set({ isLoadingMessages: true });
+        set((state) => ({
+          loadingConversationIds: {
+            ...state.loadingConversationIds,
+            [conversationId]: true,
+          },
+        }));
       }
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
-
-        // The user may have already navigated to a different conversation
-        // before this request resolved — ignore the now-stale response.
-        if (get().activeConversationId !== conversationId) {
-          return;
-        }
 
         set((state) => {
           let updatedConversations = state.conversations;
@@ -121,22 +149,39 @@ export const useChatStore = create<ChatState>((set, get) => {
             }
           }
 
+          const existingCached = state.messagesByConversation[conversationId] || [];
+          const mergedMessages =
+            cursor && !shouldRefresh
+              ? [...res.data, ...existingCached]
+              : res.data;
+
           return {
             conversations: updatedConversations,
-            activeMessages:
-              cursor && !shouldRefresh
-                ? [...res.data, ...state.activeMessages]
-                : res.data,
-            hasNextMessagesPage: res.meta.hasNextPage,
-            nextMessagesCursor: res.meta.nextCursor,
-            isLoadingMessages: false,
+            messagesByConversation: {
+              ...state.messagesByConversation,
+              [conversationId]: mergedMessages,
+            },
+            paginationByConversation: {
+              ...state.paginationByConversation,
+              [conversationId]: {
+                hasNextPage: res.meta.hasNextPage,
+                nextCursor: res.meta.nextCursor,
+              },
+            },
+            loadingConversationIds: {
+              ...state.loadingConversationIds,
+              [conversationId]: false,
+            },
           };
         });
       } catch (error) {
         console.error('Failed to load messages:', error);
-        if (get().activeConversationId === conversationId) {
-          set({ isLoadingMessages: false });
-        }
+        set((state) => ({
+          loadingConversationIds: {
+            ...state.loadingConversationIds,
+            [conversationId]: false,
+          },
+        }));
       }
     },
 
@@ -144,7 +189,8 @@ export const useChatStore = create<ChatState>((set, get) => {
       // 1. Emit via socket
       socketService.sendMessage(conversationId, payload);
 
-      // 2. Add optimistic message to UI instantly
+      // 2. Add optimistic message to UI instantly, scoped to this
+      // conversation's own slice only.
       const optimisticMsg: ChatMessage = {
         id: `temp-${Date.now()}`,
         type: payload.type || 'TEXT',
@@ -162,7 +208,13 @@ export const useChatStore = create<ChatState>((set, get) => {
       };
 
       set((state) => ({
-        activeMessages: [...state.activeMessages, optimisticMsg],
+        messagesByConversation: {
+          ...state.messagesByConversation,
+          [conversationId]: [
+            ...(state.messagesByConversation[conversationId] || []),
+            optimisticMsg,
+          ],
+        },
       }));
     },
 
@@ -177,21 +229,28 @@ export const useChatStore = create<ChatState>((set, get) => {
         isMine,
       };
 
-      // If this message belongs to the active conversation, add it to activeMessages
-      if (get().activeConversationId === conversationId) {
-        set((state) => {
-          // Remove optimistic message if exists
-          const filtered = state.activeMessages.filter(
-            (msg) => msg.content !== messageWithIsMine.content || !msg.sending,
-          );
+      // Always scoped to this message's own conversation — whichever chat
+      // screens are mounted, each independently re-derives from this same
+      // map, so there's nothing further to gate here.
+      set((state) => {
+        const existingCached = state.messagesByConversation[conversationId] || [];
 
-          // Check if message is already added
-          const exists = filtered.some((m) => m.id === messageWithIsMine.id);
-          if (exists) return { activeMessages: filtered };
+        // Remove optimistic message if exists
+        const filtered = existingCached.filter(
+          (msg) => msg.content !== messageWithIsMine.content || !msg.sending,
+        );
 
-          return { activeMessages: [...filtered, messageWithIsMine] };
-        });
-      }
+        // Check if message is already added
+        const exists = filtered.some((m) => m.id === messageWithIsMine.id);
+        const updatedCached = exists ? filtered : [...filtered, messageWithIsMine];
+
+        return {
+          messagesByConversation: {
+            ...state.messagesByConversation,
+            [conversationId]: updatedCached,
+          },
+        };
+      });
 
       // Update conversations list (move to top, set last message, increment unread count if not active)
       set((state) => {
@@ -251,12 +310,11 @@ export const useChatStore = create<ChatState>((set, get) => {
     clear: () => {
       set({
         conversations: [],
-        activeMessages: [],
+        messagesByConversation: {},
+        paginationByConversation: {},
+        loadingConversationIds: {},
         activeConversationId: null,
         isLoadingConversations: false,
-        isLoadingMessages: false,
-        hasNextMessagesPage: false,
-        nextMessagesCursor: undefined,
       });
     },
   };

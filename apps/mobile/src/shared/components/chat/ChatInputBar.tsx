@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 interface ChatInputBarProps {
@@ -68,6 +67,7 @@ export default function ChatInputBar({
 
       {/* Send Button */}
       <TouchableOpacity
+        testID="chat-send-button"
         onPress={onSend}
         className={`h-[40px] w-[40px] items-center justify-center rounded-full ${inputText.trim() ? 'bg-[#15304D]' : 'bg-gray-100'}`}
       >

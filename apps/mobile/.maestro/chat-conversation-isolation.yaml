@@ -1,0 +1,126 @@
+appId: com.constyoussef.buyootna
+---
+# Regression flow for the critical QA-reported bug: a message sent in one
+# company's chat rendered inside a different company's chat room. Assumes
+# maestro-orchestrate.ts has already seeded (via seedLoginUser/seedCompany/
+# seedConversations): an individual account (${SEED_PHONE} / ${SEED_PASSWORD})
+# that already has an existing conversation with each of ${COMPANY_A_NAME}
+# and ${COMPANY_B_NAME} (each conversation has one message already sent by
+# the company, satisfying getConversations()'s "at least one message" filter
+# so both show up in the inbox from the very first launch).
+#
+# Steps mirror the reported repro exactly:
+#   1/2. Log in, open the inbox, open Company A's conversation.
+#   3. Send a distinct message.
+#   4. Navigate back to the inbox.
+#   5. Open Company B's conversation.
+#   6. Assert Company A's message is nowhere in Company B's history.
+- launchApp
+- waitForAnimationToEnd:
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "لا توجد عقارات"
+    timeout: 15000
+- tapOn:
+    text: "Open debugger to view warnings.*"
+    optional: true
+
+# --- Log in (not sign up) as the seeded individual ---
+- tapOn:
+    point: "10%, 93%" # "المزيد" tab (bottom-left in this RTL layout)
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "10%, 93%"
+- waitForAnimationToEnd:
+    timeout: 3000
+# The guest "more" screen's login button sits below the "Policies" section,
+# off the initial viewport — extendedWaitUntil only checks what's currently
+# on screen, so this has to actually scroll to it first.
+- scrollUntilVisible:
+    element:
+      text: "تسجيل الدخول"
+    direction: DOWN
+    timeout: 10000
+- tapOn: "تسجيل الدخول"
+- waitForAnimationToEnd:
+    timeout: 10000
+- tapOn:
+    id: "individual-login-identifier-input"
+- inputText: ${SEED_PHONE}
+- tapOn:
+    id: "individual-login-password-input"
+- inputText: ${SEED_PASSWORD}
+- hideKeyboard
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "تسجيل الدخول"
+- waitForAnimationToEnd:
+    timeout: 5000
+# iOS Simulator's native Keychain prompt after a password-field submit —
+# unrelated to app UI, just needs dismissing before continuing.
+- tapOn:
+    text: "Not Now"
+    optional: true
+- extendedWaitUntil:
+    visible: "الرئيسية"
+    timeout: 15000
+
+# --- 1/2. Open the chat inbox, then Company A's conversation ---
+- tapOn:
+    point: "10%, 93%"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    point: "10%, 93%"
+- waitForAnimationToEnd:
+    timeout: 3000
+# MenuItem rows combine an icon (rendered as a Text-like glyph) with their
+# label into ONE accessibility element on iOS — e.g. this row's actual
+# accessibility text is "المحادثات, <icon-glyph>", not just "المحادثات".
+# Maestro's text matching does a FULL (anchored) regex match, so the exact
+# label alone never matches a combined label — same reasoning as the
+# pre-existing "Open debugger to view warnings.*" pattern above. A trailing
+# `.*` handles it. Same applies to the chat list rows below, which combine
+# the company name with their last-message/timestamp/read-icon into one
+# label too.
+- extendedWaitUntil:
+    visible: "المحادثات.*"
+    timeout: 15000
+- tapOn: "المحادثات.*"
+- extendedWaitUntil:
+    visible: "${COMPANY_A_NAME}.*"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "${COMPANY_B_NAME}.*"
+    timeout: 15000
+- tapOn: "${COMPANY_A_NAME}.*"
+- extendedWaitUntil:
+    visible: "اكتب رسالتك.."
+    timeout: 15000
+
+# --- 3. Type and send a distinct message ---
+- tapOn: "اكتب رسالتك.."
+- inputText: "Test message for Company A"
+- hideKeyboard
+- tapOn:
+    id: "chat-send-button"
+- extendedWaitUntil:
+    visible: "Test message for Company A"
+    timeout: 15000
+
+# --- 4. Navigate back to the main chat list ---
+- tapOn:
+    id: "chat-back-button"
+- extendedWaitUntil:
+    visible: "${COMPANY_B_NAME}.*"
+    timeout: 15000
+
+# --- 5. Open Company B's conversation ---
+- tapOn: "${COMPANY_B_NAME}.*"
+- extendedWaitUntil:
+    visible: "اكتب رسالتك.."
+    timeout: 15000
+
+# --- 6. Company A's message must never appear in Company B's chat ---
+- assertNotVisible: "Test message for Company A"
