@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SortIcon } from '@/assets/icons';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
-import HomeHeaderSkeleton from '@/features/individual/components/home/HomeHeaderSkeleton';
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
@@ -163,25 +162,13 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             viewMode={viewMode}
-            ListHeaderComponent={
-              isLoading ? (
-                <HomeHeaderSkeleton withHorizontalPadding={false} />
-              ) : (
-                renderHeader(false)
-              )
-            }
+            ListHeaderComponent={renderHeader(false)}
           />
         ) : activeTab === 'offices' ? (
           <HomeOffices
             refreshing={refreshing}
             onRefresh={onRefresh}
-            ListHeaderComponent={
-              isLoading ? (
-                <HomeHeaderSkeleton withHorizontalPadding={false} />
-              ) : (
-                renderHeader(false)
-              )
-            }
+            ListHeaderComponent={renderHeader(false)}
           />
         ) : (
           <ScrollView
@@ -199,11 +186,7 @@ export default function HomeScreen() {
               />
             }
           >
-            {isLoading ? (
-              <HomeHeaderSkeleton withHorizontalPadding={true} />
-            ) : (
-              renderHeader(true)
-            )}
+            {renderHeader(true)}
             <HomeAll
               feedData={feedData}
               isLoading={isLoading}
