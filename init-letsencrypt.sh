@@ -19,11 +19,30 @@ if [ -n "$email" ]; then email_arg="--email $email --no-eff-email"; fi
 staging_arg=""
 if [ $staging -ne 0 ]; then staging_arg="--staging"; fi
 
-if [ ! -e "$data_path/conf/options-ssl-nginx.conf" ] || [ ! -e "$data_path/conf/ssl-dhparams.pem" ]; then
+if [ ! -s "$data_path/conf/options-ssl-nginx.conf" ]; then
   echo "### Downloading recommended TLS parameters ..."
   mkdir -p "$data_path/conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf > "$data_path/conf/options-ssl-nginx.conf"
-  curl -s https://raw.githubusercontent.com/certbot/certbot/master/certbot/certbot/ssl-dhparams.pem > "$data_path/conf/ssl-dhparams.pem"
+  # certbot's repo layout has moved before (the old master/certbot-nginx
+  # path now 404s) and silently overwrote a good file with an empty/404
+  # response, since `curl -s` alone doesn't fail on HTTP errors -- `-f`
+  # makes curl fail loudly (and this whole command fail) instead of
+  # writing bad content, and `-s` guards against ever running on an
+  # existing, non-empty file that just wasn't caught by the check above.
+  if ! curl -fsSL https://raw.githubusercontent.com/certbot/certbot/main/certbot/src/certbot/_internal/plugins/nginx/tls_configs/options-ssl-nginx.conf -o "$data_path/conf/options-ssl-nginx.conf"; then
+    echo "ERROR: failed to download options-ssl-nginx.conf -- aborting rather than risk writing a broken file nginx can't parse." >&2
+    exit 1
+  fi
+  echo
+fi
+
+if [ ! -s "$data_path/conf/ssl-dhparams.pem" ]; then
+  echo "### Generating ssl-dhparams.pem locally ..."
+  # certbot no longer ships/publishes this file for download (both its old
+  # and current repo locations 404) -- DH params aren't secret, but rather
+  # than hardcode PEM content here, generate it locally via the certbot
+  # container's openssl, which is already part of this stack.
+  mkdir -p "$data_path/conf"
+  docker compose run --rm --entrypoint "openssl dhparam -out /etc/letsencrypt/ssl-dhparams.pem 2048" certbot
   echo
 fi
 
@@ -67,10 +86,15 @@ echo
 for domain in "${domains_to_request[@]}"; do
   dir_name=$(echo "$domain" | cut -d',' -f1)
   echo "### Deleting dummy certificate for $dir_name ..."
-  docker compose run --rm --entrypoint "\
-    rm -Rf /etc/letsencrypt/live/$dir_name && \
-    rm -Rf /etc/letsencrypt/archive/$dir_name && \
-    rm -Rf /etc/letsencrypt/renewal/$dir_name.conf" certbot
+  # `docker compose run --entrypoint "cmd1 && cmd2 && cmd3"` does NOT invoke
+  # a shell -- it whitespace-splits the whole string into a single exec's
+  # argv, so `&&` and everything after the first command become literal,
+  # ignored arguments. That silently no-op'd this cleanup on every run,
+  # which is why stale renewal configs kept forcing certbot into
+  # ever-incrementing -0001/-0002 lineages instead of reusing the
+  # canonical name nginx's config actually points at. `rm` takes multiple
+  # paths in one call, so no chaining is needed at all.
+  docker compose run --rm --entrypoint "rm -Rf /etc/letsencrypt/live/$dir_name /etc/letsencrypt/archive/$dir_name /etc/letsencrypt/renewal/$dir_name.conf" certbot
   echo
 
   echo "### Requesting Let's Encrypt certificate for $domain ..."
