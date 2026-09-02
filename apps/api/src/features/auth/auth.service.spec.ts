@@ -379,13 +379,43 @@ describe('AuthService Unit Tests', () => {
       expect(result.activeIdentity.isActive).toBe(true);
     });
 
-    it('throws BadRequestException when the user has no identities at all', async () => {
+    it('self-heals by provisioning a default individual identity when the user has none at all', async () => {
+      // Registration always creates the User + its first Identity together
+      // in one transaction, so this state should never happen -- but the
+      // reported bug is exactly this: a User row with zero Identity rows,
+      // permanently locking login out with "no identity associated" even
+      // though signup correctly reports the phone/email as taken. Login
+      // must recover instead of dead-ending.
+      const healedIdentity = buildIdentity({
+        id: 'identity-healed',
+        isActive: true,
+      });
       mockPrismaService.identity.findFirst
         .mockResolvedValueOnce(null) // no active identity
         .mockResolvedValueOnce(null); // no identities at all
+      mockPrismaService.identity.create.mockResolvedValue(healedIdentity);
 
-      await expect(service.login(user)).rejects.toThrow(BadRequestException);
+      const result = await service.login(user);
+
+      const identityCreateCalls = mockPrismaService.identity.create.mock
+        .calls as IdentityCreateArgs[][];
+      const identityArgs = identityCreateCalls[0][0];
+      expect(identityArgs.data).toMatchObject({
+        userId: 'user-1',
+        type: IdentityType.INDIVIDUAL,
+        isActive: true,
+      });
       expect(mockPrismaService.identity.update).not.toHaveBeenCalled();
+      expect(result.activeIdentity).toBe(healedIdentity);
+    });
+
+    it('never self-heals for an explicit identityId that does not exist -- that is a real not-found error', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(null);
+
+      await expect(service.login(user, 'missing-identity')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(mockPrismaService.identity.create).not.toHaveBeenCalled();
     });
 
     it('returns the signed access_token, user, activeIdentity, and full identities list', async () => {

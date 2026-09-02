@@ -148,6 +148,18 @@ export class AuthService {
           identity.isActive = true;
         }
       }
+
+      // Self-heal: registration always creates the User row and its first
+      // Identity together in one transaction, so a User with zero
+      // identities should never exist. If one somehow does (legacy data,
+      // a manual DB edit, a bug we haven't found), don't lock the account
+      // out forever with no way back in -- provision a default individual
+      // identity instead of throwing. Never done for an explicit
+      // identityId switch below, since that's a real "not found" error,
+      // not an orphaned-account recovery.
+      if (!identity) {
+        identity = await this.createDefaultIdentityForOrphanedUser(user.id);
+      }
     }
 
     if (!identity) {
@@ -184,6 +196,38 @@ export class AuthService {
       activeIdentity: identity,
       identities,
     };
+  }
+
+  /**
+   * Recovers a User row that somehow has zero Identity rows (see login()'s
+   * comment) by provisioning a default individual identity. Always
+   * INDIVIDUAL regardless of the user's legacy `role` field: it's the only
+   * identity type with no required fields (company/office data requires a
+   * licenseNumber and name we don't have for an account in this state), so
+   * it's the only type safe to auto-create.
+   */
+  private async createDefaultIdentityForOrphanedUser(
+    userId: string,
+  ): Promise<IdentityWithData> {
+    return this.prisma.identity.create({
+      data: {
+        userId,
+        type: IdentityType.INDIVIDUAL,
+        isActive: true,
+        individualData: { create: {} },
+      },
+      include: {
+        individualData: {
+          select: { name: true, whatsapp: true, avatarUrl: true },
+        },
+        companyData: {
+          select: { name: true, logoUrl: true },
+        },
+        officeData: {
+          select: { name: true, logoUrl: true },
+        },
+      },
+    });
   }
 
   // 2.5. Sign in (or register) via a verified Google/Apple profile
