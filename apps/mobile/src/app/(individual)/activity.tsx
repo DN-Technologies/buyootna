@@ -1,41 +1,30 @@
-import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useScrollToTop } from '@react-navigation/native';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
-import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  RefreshControl,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SortingIcon } from '@/assets/icons/activity';
-import { FilterHorizontalIcon } from '@/assets/icons/home/header';
-import ActiveAdCard from '@/features/individual/components/activity/ActiveAdCard';
-import ActivityFilterPills, {
-  ActivityFilterType,
-  FilterPill,
-} from '@/features/individual/components/activity/ActivityFilterPills';
-import ArchivedAdCard from '@/features/individual/components/activity/ArchivedAdCard';
+import ActivityEmptyState from '@/features/individual/components/activity/ActivityEmptyState';
+import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
+import ActivityHeader from '@/features/individual/components/activity/ActivityHeader';
+import ActivityListHeader from '@/features/individual/components/activity/ActivityListHeader';
+import ActivityListItem from '@/features/individual/components/activity/ActivityListItem';
+import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
+import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
-import DraftAdCard from '@/features/individual/components/activity/DraftAdCard';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
-import FreeQuotaBanner from '@/features/individual/components/activity/FreeQuotaBanner';
-import SubscriptionSlotsRow from '@/features/individual/components/activity/SubscriptionSlotsRow';
-import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
+import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
+import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
+import { ActivityItem, useMyActivity } from '@/features/individual/hooks/useMyActivity';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import apiClient from '@/shared/api/api';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
   RadioOption,
 } from '@/shared/components/profile/RadioSelectionSheet';
-import ActivityCardSkeleton from '@/shared/components/skeletons/ActivityCardSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -61,90 +50,30 @@ export default function ActivityScreen() {
   );
 
   const sortSheetRef = useRef<BottomSheetModal>(null);
-
-  const handleSortPress = () => {
-    sortSheetRef.current?.present();
-  };
-
-  const handleTrashPress = () => {
-    setPropertyToDelete(null);
-    deleteSheetRef.current?.present();
-  };
-
-  // Bottom sheet reference and current active draft preview property
   const draftSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedDraft, setSelectedDraft] = useState<any>(null);
+  const [selectedDraft, setSelectedDraft] = useState<ActivityItem | undefined>(
+    undefined,
+  );
 
-  // References and states for delete confirmation
   const deleteSheetRef = useRef<BottomSheetModal>(null);
-  const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
+  const [propertyToDelete, setPropertyToDelete] = useState<string | null>(
+    null,
+  );
 
-  // References and states for featuring ads
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     null,
   );
 
-  // Toast notification state and animation
-  const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState(
-    'تم تحديث بيانات الإعلان بنجاح.',
-  );
-  const [toastSubtitle, setToastSubtitle] = useState<string | null>(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(40)).current;
   const listRef = useRef<FlashListRef<any>>(null);
   useScrollToTop(listRef);
 
-  const triggerToast = useCallback(
-    (message: string, subtitle?: string | null) => {
-      setToastMessage(message);
-      setToastSubtitle(subtitle || null);
-      setShowToast(true);
+  const { showToast, toastMessage, toastSubtitle, fadeAnim, slideAnim, triggerToast } =
+    useActivityToast();
 
-      // Reset animations
-      fadeAnim.setValue(0);
-      slideAnim.setValue(40);
-
-      // Animate In
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 350,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // Hide after 3.5 seconds
-      const timer = setTimeout(() => {
-        // Animate Out
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 350,
-            useNativeDriver: true,
-          }),
-          Animated.timing(slideAnim, {
-            toValue: 20,
-            duration: 350,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setShowToast(false);
-        });
-      }, 3500);
-
-      return timer;
-    },
-    [fadeAnim, slideAnim],
-  );
-
+  // Toast notification triggered by a query param set on redirect back here
+  // (e.g. after saving a listing edit).
+  const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
   useEffect(() => {
     if (params.showUpdateSuccess === 'true') {
       const timer = triggerToast('تم تحديث بيانات الإعلان بنجاح.');
@@ -164,6 +93,12 @@ export default function ActivityScreen() {
     subscription,
   } = useMyActivity();
 
+  const { filterPills, sortedAndFilteredData } = useActivityFilters(
+    data,
+    activeFilterId,
+    sortBy,
+  );
+
   // Handle redirect to login if unauthenticated
   if (!token) {
     return (
@@ -171,14 +106,13 @@ export default function ActivityScreen() {
         className="flex-1 bg-white"
         edges={['top', 'left', 'right']}
       >
-        {/* --- 1. Top Header --- */}
-        <View className="flex-row items-center justify-between px-5 py-4">
-          <View className="w-10" />
-          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
-            نشاطي
-          </Text>
-          <View className="w-10" />
-        </View>
+        <ActivityHeader
+          onAddPress={() => router.push('/add-listing')}
+          onMenuPress={() => {
+            setPropertyToDelete(null);
+            deleteSheetRef.current?.present();
+          }}
+        />
         <GuestEmptyState
           icon="send"
           title="ابدأ رحلتك العقارية"
@@ -188,44 +122,7 @@ export default function ActivityScreen() {
     );
   }
 
-  // Dynamic counts for filter pills
-  const allCount = data.length;
-  const activeCount = data.filter((item) => item.status === 'ACTIVE').length;
-  const draftCount = data.filter((item) => item.status === 'DRAFT').length;
-  const premiumCount = data.filter((item) => item.isPremium).length;
-  const archivedCount = data.filter(
-    (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
-  ).length;
-
-  const filterPills: FilterPill[] = [
-    { id: 'ARCHIVED', label: `مؤرشفة (${archivedCount})` },
-    { id: 'DRAFT', label: `مسودة (${draftCount})` },
-    { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
-    { id: 'ACTIVE', label: `نشطة (${activeCount})` },
-    { id: 'ALL', label: `الكل (${allCount})` },
-  ];
-
-  // Client-side filtering of properties
-  const filteredData =
-    activeFilterId === 'ALL'
-      ? data
-      : activeFilterId === 'PREMIUM'
-        ? data.filter((item) => item.isPremium)
-        : activeFilterId === 'ARCHIVED'
-          ? data.filter(
-              (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
-            )
-          : data.filter((item) => item.status === activeFilterId);
-
-  // Apply sorting
-  const sortedAndFilteredData = [...filteredData].sort((a: any, b: any) => {
-    if (sortBy === 'PRICE_ASC') return a.price - b.price;
-    if (sortBy === 'PRICE_DESC') return b.price - a.price;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
-
   const handleEditAd = (propertyId: string) => {
-    console.log('Edit ad:', propertyId);
     router.push({
       pathname: '/add-listing',
       params: { editId: propertyId },
@@ -247,22 +144,14 @@ export default function ActivityScreen() {
     refetch();
   };
 
-  const handlePublishDraft = (property: any) => {
+  const handlePublishDraft = (property: ActivityItem) => {
     setSelectedDraft(property);
     draftSheetRef.current?.present();
-  };
-
-  const handleDeleteDraft = (propertyId: string) => {
-    setPropertyToDelete(propertyId);
-    deleteSheetRef.current?.present();
   };
 
   const handleConfirmDelete = async (reason?: string) => {
     if (!propertyToDelete) return;
     try {
-      console.log(
-        `Deleting listing ${propertyToDelete} with reason: ${reason}`,
-      );
       await apiClient.delete(`/properties/${propertyToDelete}`, {
         data: reason ? { reason } : undefined,
       });
@@ -300,84 +189,23 @@ export default function ActivityScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* --- 1. Top Header --- */}
-      <View className="flex-row items-center justify-between px-5 py-4">
-        {/* Plus Button (Right side in RTL) */}
-        <TouchableOpacity
-          onPress={() => router.push('/add-listing')}
-          className="h-10 w-10 items-center justify-center rounded-full"
-          activeOpacity={0.7}
-        >
-          <Feather name="plus" size={24} color="#111111" />
-        </TouchableOpacity>
+      <ActivityHeader
+        onAddPress={() => router.push('/add-listing')}
+        onMenuPress={() => {
+          setPropertyToDelete(null);
+          deleteSheetRef.current?.present();
+        }}
+      />
 
-        {/* Centered Title */}
-        <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
-          نشاطي
-        </Text>
-
-        {/* More Options Button (Left side in RTL) */}
-        <TouchableOpacity
-          onPress={handleTrashPress}
-          className="h-10 w-10 items-center justify-center rounded-full"
-          activeOpacity={0.7}
-        >
-          <Feather name="more-vertical" size={20} color="#111111" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Tabs & Controls Row */}
-      <View className="mb-4 flex-row items-center gap-2 px-5">
-        {/* Tab Pill Container */}
-        <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab;
-            return (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setActiveTab(tab)}
-                className="h-full flex-1 items-center justify-center rounded-full"
-                activeOpacity={0.7}
-              >
-                <View className="items-center justify-center">
-                  <Text
-                    className={`${
-                      isActive
-                        ? 'font-cairo-bold text-[#15304D]'
-                        : 'font-cairo text-[#6B6A6A]'
-                    } text-sm leading-[22px]`}
-                  >
-                    {tab}
-                  </Text>
-                  {isActive && (
-                    <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />
-                  )}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Filter Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'));
-          }}
-          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
-        >
-          <FilterHorizontalIcon size={18} color="#111111" />
-        </TouchableOpacity>
-
-        {/* Sort Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={handleSortPress}
-          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
-        >
-          <SortingIcon size={18} color="#111111" />
-        </TouchableOpacity>
-      </View>
+      <ActivityTabsRow
+        tabs={TABS}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onFilterPress={() =>
+          setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'))
+        }
+        onSortPress={() => sortSheetRef.current?.present()}
+      />
 
       {/* Scrolling list */}
       <FlashList
@@ -404,107 +232,48 @@ export default function ActivityScreen() {
             tintColor="#15304D"
           />
         }
-        // Render List Header (Filters & Quota Banner)
         ListHeaderComponent={
           activeTab === 'اعلاناتي' ? (
-            <View style={{ width: '100%' }}>
-              {/* --- 4. Filter Pills --- */}
-              <ActivityFilterPills
-                filterPills={filterPills}
-                activeFilterId={activeFilterId}
-                onFilterChange={setActiveFilterId}
-              />
-
-              {/* --- 5. Header Notice when Archived is active --- */}
-              {activeFilterId === 'ARCHIVED' && (
-                <View className="mb-3 mt-1 w-full">
-                  <Text
-                    className="font-cairo-bold text-sm text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    اعلانات منتهية بعد مدة النشر (30 يوم)
-                  </Text>
-                </View>
-              )}
-
-              {/* --- 6. Dynamic Quota Banner or Subscription Slots --- */}
-              {activeFilterId !== 'ARCHIVED' &&
-                (hasSubscription ? (
-                  <SubscriptionSlotsRow subscription={subscription} />
-                ) : (
-                  <FreeQuotaBanner
-                    freeAdsRemaining={freeAdsRemaining}
-                    onPressAction={handlePromoAction}
-                  />
-                ))}
-            </View>
+            <ActivityListHeader
+              filterPills={filterPills}
+              activeFilterId={activeFilterId}
+              onFilterChange={setActiveFilterId}
+              hasSubscription={hasSubscription}
+              subscription={subscription}
+              freeAdsRemaining={freeAdsRemaining}
+              onPromoPress={handlePromoAction}
+            />
           ) : null
         }
-        // Render Empty State
         ListEmptyComponent={
-          isLoading ? (
-            <View>
-              {[1, 2, 3].map((key) => (
-                <ActivityCardSkeleton key={key} />
-              ))}
-            </View>
-          ) : error ? (
-            <View className="items-center py-10">
-              <Text className="font-cairo-medium text-red-500">{error}</Text>
-            </View>
-          ) : (
-            <View className="items-center py-10">
-              <Text className="font-cairo-medium text-gray-400">
-                {activeFilterId === 'ARCHIVED'
-                  ? 'لا توجد إعلانات مؤرشفة حالياً'
-                  : 'لا توجد إعلانات حالياً'}
-              </Text>
-            </View>
-          )
+          <ActivityEmptyState
+            isLoading={isLoading}
+            error={error}
+            activeFilterId={activeFilterId}
+          />
         }
-        // --- Render the Cards based on Status ---
-        renderItem={({ item }) => {
-          if (item.status === 'DRAFT') {
-            return (
-              <DraftAdCard
-                property={item}
-                onPublishPress={() => handlePublishDraft(item)}
-                onDeletePress={() => handleDeleteDraft(item.id)}
-              />
-            );
-          }
-
-          if (
-            item.status === 'EXPIRED' ||
-            item.status === 'CLOSED' ||
-            activeFilterId === 'ARCHIVED'
-          ) {
-            return (
-              <ArchivedAdCard
-                property={item}
-                onPress={() => router.push(`/property/${item.id}` as any)}
-              />
-            );
-          }
-
-          return (
-            <ActiveAdCard
-              property={item}
-              onEditPress={handleEditAd}
-              onFeaturePress={handleFeatureAd}
-              onDeletePress={handleDeleteAd}
-            />
-          );
-        }}
+        renderItem={({ item }) => (
+          <ActivityListItem
+            property={item}
+            activeFilterId={activeFilterId}
+            onEditPress={handleEditAd}
+            onFeaturePress={handleFeatureAd}
+            onDeletePress={handleDeleteAd}
+            onPublishDraftPress={handlePublishDraft}
+            onArchivedPress={(id) => router.push(`/property/${id}` as any)}
+          />
+        )}
       />
 
       {/* --- Property Preview Bottom Sheet --- */}
       <DraftPreviewSheet
         ref={draftSheetRef}
         property={selectedDraft}
-        onDeletePress={() => handleDeleteDraft(selectedDraft?.id)}
+        onDeletePress={() =>
+          selectedDraft && handleDeleteAd(selectedDraft.id)
+        }
         onPublishPress={handlePublishDraftAction}
-        onEditPress={() => console.log('Edit draft:', selectedDraft?.id)}
+        onEditPress={() => {}}
       />
 
       {/* --- Delete Confirmation Bottom Sheet --- */}
@@ -532,40 +301,14 @@ export default function ActivityScreen() {
       />
 
       {/* --- Success Toast Notification --- */}
-      {showToast && (
-        <Animated.View
-          style={{
-            bottom: toastBottomOffset,
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-            elevation: 5,
-          }}
-          className="absolute left-[20px] right-[20px] z-[999] flex-row items-center justify-between rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
-        >
-          <View className="flex-row items-center gap-2.5">
-            <Image
-              source={require('@/assets/icons/success-icon.svg')}
-              style={{ width: 24, height: 24 }}
-            />
-            <View className="items-start">
-              <Text
-                className="font-cairo-semibold text-[14px] leading-[22px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                {toastMessage}
-              </Text>
-              {toastSubtitle && (
-                <Text
-                  className="mt-0.5 font-cairo text-[12px] leading-[18px] text-[#6B6A6A]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  {toastSubtitle}
-                </Text>
-              )}
-            </View>
-          </View>
-        </Animated.View>
-      )}
+      <ActivitySuccessToast
+        visible={showToast}
+        message={toastMessage}
+        subtitle={toastSubtitle}
+        bottomOffset={toastBottomOffset}
+        fadeAnim={fadeAnim}
+        slideAnim={slideAnim}
+      />
     </SafeAreaView>
   );
 }
