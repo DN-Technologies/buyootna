@@ -7,4 +7,17 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     echo ""
     exit 1
   fi
+
+  # Advisory mobile OTA release analysis. Never blocks the push: any failure
+  # (node missing, script missing, non-interactive shell, etc.) is swallowed.
+  # See apps/mobile/scripts/release-analysis.js and docs/OTA_RELEASE_WORKFLOW.md.
+  repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+  analyzer="$repo_root/apps/mobile/scripts/release-analysis.js"
+  if [ -n "$repo_root" ] && [ -f "$analyzer" ] && command -v node >/dev/null 2>&1; then
+    if ( : < /dev/tty ) 2>/dev/null; then
+      node "$analyzer" "$local_sha" "$remote_sha" "$branch" < /dev/tty || true
+    else
+      node "$analyzer" "$local_sha" "$remote_sha" "$branch" < /dev/null || true
+    fi
+  fi
 done
