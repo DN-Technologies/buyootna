@@ -481,7 +481,7 @@ export class AuthService {
     userId: string,
     oldPass: string,
     newPass: string,
-    otp: string,
+    otp?: string,
     logoutAllDevices?: boolean,
   ) {
     const user = await this.prisma.user.findUnique({
@@ -492,15 +492,22 @@ export class AuthService {
       throw new BadRequestException('المستخدم غير موجود');
     }
 
-    if (!user.phone) {
-      this.rateLimiter?.recordVerifyAttempt(userId, false);
-      throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
-    }
-
-    const isValid = await this.twilioService.checkVerification(user.phone, otp);
-    if (!isValid) {
-      this.rateLimiter?.recordVerifyAttempt(userId, false);
-      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+    // Only accounts with a phone on file can be OTP-verified -- for
+    // everyone else (email/social-only accounts), the already-required
+    // old-password check below is the sole re-authentication factor.
+    if (user.phone) {
+      if (!otp) {
+        this.rateLimiter?.recordVerifyAttempt(userId, false);
+        throw new BadRequestException('رمز التحقق مطلوب');
+      }
+      const isValid = await this.twilioService.checkVerification(
+        user.phone,
+        otp,
+      );
+      if (!isValid) {
+        this.rateLimiter?.recordVerifyAttempt(userId, false);
+        throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+      }
     }
 
     const isMatch = await bcrypt.compare(oldPass, user.password);
@@ -510,8 +517,6 @@ export class AuthService {
     }
 
     this.rateLimiter?.recordVerifyAttempt(userId, true);
-
-    await this.prisma.otpCode.delete({ where: { userId } });
 
     const hashedNewPassword = await bcrypt.hash(newPass, 10);
     await this.prisma.user.update({

@@ -51,7 +51,7 @@ export const settingsService = {
   changePassword: async (
     oldPassword: string,
     newPassword: string,
-    otp: string,
+    otp?: string,
     logoutAllDevices?: boolean,
   ): Promise<{ message: string }> => {
     const response = await apiClient.patch<{ message: string }>(

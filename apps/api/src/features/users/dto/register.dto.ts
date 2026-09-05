@@ -1,15 +1,21 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
+import { trim } from '../../../core/validators/trim.transform';
 
 export class RegisterIndividualDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @MinLength(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' })
+  @MaxLength(32, { message: 'الاسم يجب ألا يتجاوز 32 حرفاً' })
   name: string;
 
   @IsString()
@@ -23,6 +29,7 @@ export class RegisterIndividualDto {
 }
 
 export class RegisterCompanyDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -69,6 +76,7 @@ export class RegisterCompanyDto {
 }
 
 export class RegisterOfficeDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   name: string;

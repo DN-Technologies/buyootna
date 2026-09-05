@@ -267,6 +267,29 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
       });
 
+      // Regression coverage for the reported bug: a dropped connection
+      // (no `response` on the thrown error) must not be reported as
+      // "invalid verification code" -- the user typed nothing wrong, their
+      // network just failed.
+      it('shows a network-error message, not "invalid code", when verify-otp fails with no response', async () => {
+        const { getByPlaceholderText, getAllByPlaceholderText, getByText, getByDisplayValue } =
+          await render(<IndividualAuthScreen />);
+        await advanceToOtpStep(getByPlaceholderText, getAllByPlaceholderText, getByText);
+        mockApiClient.post.mockRejectedValueOnce({ message: 'Network Error' });
+
+        const hiddenOtpInput = getByDisplayValue('');
+        await fireEvent.changeText(hiddenOtpInput, '123456');
+        await fireEvent.press(getByText('التحقق من الرمز'));
+
+        await waitFor(() => {
+          expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+            'خطأ في التحقق',
+            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          );
+        });
+        expect(mockSetAuth).not.toHaveBeenCalled();
+      });
+
       it('resend posts to the recovery request-otp endpoint with the signup phone', async () => {
         // Fake timers must be active BEFORE the OTP step mounts its 45s
         // countdown interval — switching mid-test can't retroactively

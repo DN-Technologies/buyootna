@@ -32,8 +32,10 @@ export const signupSchema = z
   .object({
     name: z
       .string({ message: 'الاسم مطلوب' })
+      .trim()
       .min(1, 'الاسم مطلوب')
-      .min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
+      .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
+      .max(32, 'الاسم يجب ألا يتجاوز 32 حرفاً'),
     identifier: z
       .string({ message: 'هذا الحقل مطلوب' })
       .min(1, 'هذا الحقل مطلوب')

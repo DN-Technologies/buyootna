@@ -24,6 +24,7 @@ import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
 type AuthMode = 'login' | 'signup';
@@ -256,12 +257,7 @@ export default function IndividualAuthScreen() {
 
       successSheetRef.current?.present();
     } catch (error: any) {
-      let backendMessage = 'رمز التحقق غير صحيح';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        backendMessage = Array.isArray(message) ? message.join('\n') : message;
-      }
-      showAlert('خطأ في التحقق', backendMessage);
+      showAlert('خطأ في التحقق', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
     } finally {
       setIsFormLoading(false);
     }
@@ -284,8 +280,8 @@ export default function IndividualAuthScreen() {
         });
       }
       showAlert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
-    } catch {
-      showAlert('خطأ', 'تعذر إعادة إرسال رمز التحقق');
+    } catch (error: any) {
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إعادة إرسال رمز التحقق'));
     }
   };
 

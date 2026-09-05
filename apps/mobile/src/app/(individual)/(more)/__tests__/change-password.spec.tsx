@@ -122,6 +122,57 @@ describe('ChangePasswordScreen', () => {
     });
   });
 
+  describe('accounts with no phone on file', () => {
+    beforeEach(() => {
+      mockUseAuthStore.mockReturnValue({ user: { phone: null } });
+    });
+
+    it('changes the password directly, without requesting an OTP or opening the verification sheet', async () => {
+      mockSettingsService.changePassword.mockResolvedValue({ message: 'ok' });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(mockSettingsService.changePassword).toHaveBeenCalledWith(
+          'old-password',
+          'new-password',
+          undefined,
+          false,
+        );
+      });
+      expect(mockSettingsService.requestChangePasswordOtp).not.toHaveBeenCalled();
+
+      const alertCall = (
+        useAlertStore.getState().showAlert as jest.Mock
+      ).mock.calls.find((call) => call[0] === 'نجاح');
+      expect(alertCall).toBeDefined();
+      const okButton = alertCall![2].find((b: any) => b.text === 'موافق');
+      await act(async () => okButton.onPress());
+      expect(router.back).toHaveBeenCalled();
+    });
+
+    it('shows an alert with the backend message when changePassword fails', async () => {
+      mockSettingsService.changePassword.mockRejectedValue({
+        response: { data: { message: 'كلمة المرور القديمة غير صحيحة' } },
+      });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'خطأ',
+          'كلمة المرور القديمة غير صحيحة',
+        );
+      });
+    });
+  });
+
   describe('OTP verification', () => {
     const openOtpSheet = async (getByPlaceholderText: any, getByText: any) => {
       mockSettingsService.requestChangePasswordOtp.mockResolvedValue({
@@ -195,6 +246,31 @@ describe('ChangePasswordScreen', () => {
       expect(
         (useAlertStore.getState().showAlert as jest.Mock).mock.calls.length,
       ).toBe(alertCallsBefore);
+    });
+
+    // Regression coverage for the reported bug: a dropped connection (no
+    // `response` on the thrown error) must not be reported as "invalid
+    // verification code" -- the user typed nothing wrong, their network
+    // just failed.
+    it('sets a network-error otpError, not "invalid code", when changePassword fails with no response', async () => {
+      mockSettingsService.changePassword.mockRejectedValue({
+        message: 'Network Error',
+      });
+      const { getByPlaceholderText, getByText, getByDisplayValue } =
+        await render(<ChangePasswordScreen />);
+      await openOtpSheet(getByPlaceholderText, getByText);
+
+      const hiddenOtpInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenOtpInput, '123456');
+      await fireEvent.press(getByText('التحقق من الرمز'));
+
+      await waitFor(() => {
+        expect(
+          getByText(
+            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          ),
+        ).toBeTruthy();
+      });
     });
 
     it('resend calls requestChangePasswordOtp again after the timer elapses', async () => {

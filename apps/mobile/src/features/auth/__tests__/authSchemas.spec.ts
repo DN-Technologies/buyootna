@@ -103,5 +103,48 @@ describe('Auth Schemas Validation Unit Tests', () => {
       });
       expect(result.success).toBe(false);
     });
+
+    it('should fail when name is only whitespace', () => {
+      const result = signupSchema.safeParse({
+        name: '    ',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should trim leading/trailing whitespace from a valid name', () => {
+      const result = signupSchema.safeParse({
+        name: '  Ali Salem  ',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.name).toBe('Ali Salem');
+      }
+    });
+
+    it('should fail when name is longer than 32 characters', () => {
+      const result = signupSchema.safeParse({
+        name: 'a'.repeat(33),
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept a name that is exactly 32 characters', () => {
+      const result = signupSchema.safeParse({
+        name: 'a'.repeat(32),
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(true);
+    });
   });
 });
