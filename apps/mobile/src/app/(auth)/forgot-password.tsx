@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import apiClient from '@/shared/api/api';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 // Modular Components
 import { ForgotPasswordHeader } from '@/features/auth/components/recovery/ForgotPasswordHeader';
 import { ForgotPasswordStep1 } from '@/features/auth/components/recovery/ForgotPasswordStep1';
@@ -33,14 +34,7 @@ export default function ForgotPasswordScreen() {
       setIdentifier(data.identifier);
       setStep(2);
     } catch (error: any) {
-      let errorMsg = 'تعذر إرسال رمز التحقق';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('خطأ', errorMsg);
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إرسال رمز التحقق'));
     }
   };
 
@@ -55,14 +49,7 @@ export default function ForgotPasswordScreen() {
       setResetToken(response.data.resetToken);
       setStep(3);
     } catch (error: any) {
-      let errorMsg = 'رمز التحقق غير صحيح';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('خطأ', errorMsg);
+      showAlert('خطأ', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
     }
   };
 
@@ -76,14 +63,7 @@ export default function ForgotPasswordScreen() {
       // Trigger the Success Bottom Sheet!
       successSheetRef.current?.present();
     } catch (error: any) {
-      let errorMsg = 'تعذر تحديث كلمة المرور';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('خطأ', errorMsg);
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر تحديث كلمة المرور'));
     }
   };
 

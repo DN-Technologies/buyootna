@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
@@ -41,6 +41,8 @@ export default function ProfileDashboardScreen() {
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
 
   // Sync user profile state from NestJS backend when screen gains focus
   useFocusEffect(
@@ -56,6 +58,7 @@ export default function ProfileDashboardScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <ScrollView
+          ref={scrollRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: scrollContentBottomPadding }}
         >
@@ -109,6 +112,7 @@ export default function ProfileDashboardScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >

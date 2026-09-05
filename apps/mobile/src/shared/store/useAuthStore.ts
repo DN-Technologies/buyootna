@@ -68,6 +68,7 @@ interface AuthState {
   activeIdentity: Identity | null;
   identities: Identity[];
   token: string | null;
+  sessionId: string | null;
   isLoading: boolean;
 
   // Actions
@@ -75,7 +76,8 @@ interface AuthState {
     user: User,
     activeIdentity: Identity,
     identities: Identity[],
-    token: string
+    token: string,
+    sessionId: string
   ) => Promise<void>;
   switchIdentity: (identityId: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -95,6 +97,7 @@ interface AuthState {
 
 interface SwitchIdentityResponse {
   access_token: string;
+  sessionId: string;
   user: User;
   activeIdentity: Identity;
   identities: Identity[];
@@ -111,12 +114,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
     activeIdentity: null,
     identities: [],
     token: null,
+    sessionId: null,
     isLoading: true,
 
     // Called immediately on login or successful registration
-    setAuth: async (user, activeIdentity, identities, token) => {
+    setAuth: async (user, activeIdentity, identities, token, sessionId) => {
       try {
         await SecureStore.setItemAsync('auth_token', token);
+        await SecureStore.setItemAsync('session_id', sessionId);
         setAuthToken(token);
         socketService.connect(token);
         set({
@@ -124,6 +129,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           activeIdentity,
           identities,
           token,
+          sessionId,
           isLoading: false,
         });
       } catch (e) {
@@ -139,7 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           { identityId }
         );
 
-        const { access_token, user, activeIdentity, identities } =
+        const { access_token, sessionId, user, activeIdentity, identities } =
           response.data;
 
         // Update token in secure storage
@@ -159,6 +165,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           activeIdentity,
           identities,
           token: access_token,
+          sessionId,
         });
       } catch (e) {
         console.error('Failed to switch identity:', e);
@@ -168,8 +175,16 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
     // Completely clears auth context on logout or session expiration
     logout: async () => {
+      const { sessionId } = get();
+      if (sessionId) {
+        // Best-effort — local logout must always succeed even if this fails
+        // (offline, expired token, etc).
+        apiClient.delete(`/devices/${sessionId}`).catch(() => undefined);
+      }
+
       try {
         await SecureStore.deleteItemAsync('auth_token');
+        await SecureStore.deleteItemAsync('session_id');
         setAuthToken(null);
         socketService.disconnect();
         clearIdentityScopedStores();
@@ -179,6 +194,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
           activeIdentity: null,
           identities: [],
           token: null,
+          sessionId: null,
           isLoading: false,
         });
       } catch (e) {
@@ -191,9 +207,10 @@ export const useAuthStore = create<AuthState>((set, get) => {
       try {
         const token = await SecureStore.getItemAsync('auth_token');
         if (token) {
+          const sessionId = await SecureStore.getItemAsync('session_id');
           setAuthToken(token);
           socketService.connect(token);
-          set({ token });
+          set({ token, sessionId });
           try {
             const response = await apiClient.get<{
               user: User;

@@ -1,3 +1,4 @@
+import { useScrollToTop } from '@react-navigation/native';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
@@ -30,9 +31,12 @@ jest.mock('react-native-safe-area-context', () => ({
 // just run the effect once, matching what "screen is focused" means here.
 // (No requireActual spread: more.tsx only imports useFocusEffect from this
 // package, and pulling in the rest of the real module here was loading
-// real navigation internals that broke expo-router's own mock.)
+// real navigation internals that broke expo-router's own mock.) Same reason
+// useScrollToTop is stubbed as a no-op: it also needs a real navigation tree
+// to find the parent tab navigator, which this test doesn't render.
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (effect: () => void) => effect(),
+  useScrollToTop: jest.fn(),
 }));
 
 jest.mock('@/shared/store/useChatStore', () => ({
@@ -89,6 +93,18 @@ describe('ProfileDashboardScreen (More tab)', () => {
       expect(getByText('مرحبا بك !')).toBeTruthy();
       expect(getByText('تسجيل الدخول')).toBeTruthy();
       expect(queryByText('تسجيل الخروج')).toBeNull();
+    });
+
+    // Regression coverage for the reported bug: tapping the already-active
+    // bottom tab did nothing because no screen ever wired up
+    // useScrollToTop, so the tabPress event the tab bar already emits had
+    // no listener to scroll the content back to the top.
+    it('wires the scroll view up to useScrollToTop so tapping the active tab scrolls to top', async () => {
+      await render(<ProfileDashboardScreen />);
+
+      expect(useScrollToTop).toHaveBeenCalledWith(
+        expect.objectContaining({ current: expect.anything() }),
+      );
     });
   });
 

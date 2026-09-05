@@ -1,7 +1,7 @@
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
@@ -15,11 +15,11 @@ interface HomeOfficesProps {
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export default function HomeOffices({
-  refreshing = false,
-  onRefresh,
-  ListHeaderComponent,
-}: HomeOfficesProps) {
+export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
+  function HomeOffices(
+    { refreshing = false, onRefresh, ListHeaderComponent }: HomeOfficesProps,
+    ref,
+  ) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
   const [favoriteOverrides, setFavoriteOverrides] = useState<
@@ -84,6 +84,7 @@ export default function HomeOffices({
 
   return (
     <FlashList
+      ref={ref}
       data={data}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={ListHeaderComponent}
@@ -136,4 +137,5 @@ export default function HomeOffices({
       }
     />
   );
-}
+  },
+);

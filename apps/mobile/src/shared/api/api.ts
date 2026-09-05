@@ -1,5 +1,8 @@
 import { create } from 'axios';
+import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+
+import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
 
 export function validateApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -42,11 +45,31 @@ export function setOnUnauthorized(cb: () => void) {
   _onUnauthorized = cb;
 }
 
+// Resolved once at module init. Read is async (SecureStore), so the very
+// first request or two fired before this resolves goes out without the
+// header — acceptable, since login endpoints aren't typically the first
+// call made on cold boot.
+let _deviceId: string | null = null;
+getOrCreateDeviceId()
+  .then((id) => {
+    _deviceId = id;
+  })
+  .catch(() => undefined);
+
 // --- Request Interceptor ---
 apiClient.interceptors.request.use(
   async (config) => {
     if (_authToken && config.headers) {
       config.headers.Authorization = `Bearer ${_authToken}`;
+    }
+    if (config.headers) {
+      config.headers['X-Device-Platform'] = Platform.OS;
+      if (_deviceId) {
+        config.headers['X-Device-Id'] = _deviceId;
+      }
+      if (Device.modelName) {
+        config.headers['X-Device-Model'] = Device.modelName;
+      }
     }
     return config;
   },

@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
+import { useScrollToTop } from '@react-navigation/native';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
@@ -37,6 +38,8 @@ export default function CompaniesScreen() {
   const { guardAction, authSheetRef } = useAuthGuard();
   const quoteModalRef = useRef<BottomSheetModal>(null);
   const categorySheetRef = useRef<BottomSheetModal>(null);
+  const listRef = useRef<FlashListRef<any>>(null);
+  useScrollToTop(listRef);
 
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebounce(searchText, 400);
@@ -216,6 +219,7 @@ export default function CompaniesScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <FlashList
+          ref={listRef}
           data={data}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={renderHeader}

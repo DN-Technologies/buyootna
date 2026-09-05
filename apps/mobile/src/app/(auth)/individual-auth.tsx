@@ -95,19 +95,15 @@ export default function IndividualAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
 
       router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {
-      let backendMessage = 'حدث خطأ في الاتصال';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        backendMessage = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        backendMessage =
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('فشل تسجيل الدخول', backendMessage);
+      showAlert(
+        'فشل تسجيل الدخول',
+        getApiErrorMessage(error, 'حدث خطأ في الاتصال'),
+      );
     } finally {
       setIsFormLoading(false);
     }
@@ -131,15 +127,10 @@ export default function IndividualAuthScreen() {
       setSignupPassword(data.password);
       setSignupStep(2);
     } catch (error: any) {
-      let backendMessage = 'حدث خطأ أثناء إنشاء الحساب';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        backendMessage = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        backendMessage =
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('فشل التسجيل', backendMessage);
+      showAlert(
+        'فشل التسجيل',
+        getApiErrorMessage(error, 'حدث خطأ أثناء إنشاء الحساب'),
+      );
     } finally {
       setIsFormLoading(false);
     }
@@ -151,6 +142,7 @@ export default function IndividualAuthScreen() {
       response.data.activeIdentity,
       response.data.identities,
       response.data.access_token,
+      response.data.sessionId,
     );
 
     router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
@@ -162,15 +154,7 @@ export default function IndividualAuthScreen() {
     // Google/Apple SDK itself (no .isAxiosError, no .response) has nothing to
     // do with our backend and showing that message there is misleading.
     if (error?.isAxiosError) {
-      let backendMessage = 'حدث خطأ في الاتصال';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        backendMessage = Array.isArray(message) ? message.join('\n') : message;
-      } else {
-        backendMessage =
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert(title, backendMessage);
+      showAlert(title, getApiErrorMessage(error, 'حدث خطأ في الاتصال'));
       return;
     }
 
@@ -253,6 +237,7 @@ export default function IndividualAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
 
       successSheetRef.current?.present();

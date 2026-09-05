@@ -10,34 +10,32 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import DeviceCard from '@/features/individual/components/more/DeviceCard';
+import DeviceCard, {
+  DeviceItem,
+} from '@/features/individual/components/more/DeviceCard';
 import LogoutConfirmationModal from '@/features/individual/components/more/LogoutConfirmationModal';
 import { devicesService } from '@/shared/api/devices.service';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
-
-interface DeviceItem {
-  id: string;
-  name: string;
-  isActive: boolean;
-  status: string;
-  location: string;
-}
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function RegisteredDevicesScreen() {
   const router = useRouter();
+  const currentSessionId = useAuthStore((s) => s.sessionId);
 
   // Modal Visibility States
   const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
   const [showLogoutAll, setShowLogoutAll] = useState(false);
 
   const { data: devices = [], isLoading, refetch } = useQuery({
-    queryKey: ['devices'],
+    queryKey: ['devices', currentSessionId],
     queryFn: async () => {
       const response = await devicesService.getDevices();
       return response.map((session) => ({
         id: session.id,
         name: session.deviceName,
+        platform: session.platform,
         isActive: session.isActive,
+        isCurrent: session.id === currentSessionId,
         status: session.isActive ? 'نشط الان' : 'نشط مؤخراً',
         location: session.location || 'الكويت',
       }));

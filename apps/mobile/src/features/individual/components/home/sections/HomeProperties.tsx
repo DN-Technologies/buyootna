@@ -1,8 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
@@ -26,13 +26,17 @@ interface HomePropertiesProps {
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export default function HomeProperties({
-  activeFilter = 'all',
-  refreshing = false,
-  onRefresh,
-  viewMode = 'card',
-  ListHeaderComponent,
-}: HomePropertiesProps) {
+export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
+  function HomeProperties(
+    {
+      activeFilter = 'all',
+      refreshing = false,
+      onRefresh,
+      viewMode = 'card',
+      ListHeaderComponent,
+    },
+    ref,
+  ) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
   const { isTablet, cardColumns } = useResponsiveLayout();
@@ -146,6 +150,7 @@ export default function HomeProperties({
           which is the right trade for actually being fast. */}
       {viewMode === 'card' ? (
         <FlashList
+          ref={ref}
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
           ListHeaderComponent={ListHeaderComponent}
@@ -219,6 +224,7 @@ export default function HomeProperties({
         />
       ) : (
         <FlashList
+          ref={ref}
           data={data}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={ListHeaderComponent}
@@ -289,4 +295,5 @@ export default function HomeProperties({
       />
     </View>
   );
-}
+  },
+);

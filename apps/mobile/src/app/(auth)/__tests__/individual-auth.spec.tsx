@@ -50,6 +50,7 @@ const loginResponseData = {
   activeIdentity,
   identities: [activeIdentity],
   access_token: 'tok-1',
+  sessionId: 'session-1',
 };
 
 describe('IndividualAuthScreen', () => {
@@ -113,6 +114,7 @@ describe('IndividualAuthScreen', () => {
           loginResponseData.activeIdentity,
           loginResponseData.identities,
           loginResponseData.access_token,
+          loginResponseData.sessionId,
         ),
       );
       expect(router.push).toHaveBeenCalledWith('/(individual)/home');
@@ -146,7 +148,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
           'فشل تسجيل الدخول',
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
         );
       });
     });
@@ -284,7 +286,7 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => {
           expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
             'خطأ في التحقق',
-            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+            'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
           );
         });
         expect(mockSetAuth).not.toHaveBeenCalled();

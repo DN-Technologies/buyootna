@@ -1,5 +1,5 @@
 const NETWORK_ERROR_MESSAGE =
-  'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+  'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.';
 
 /**
  * Extracts a user-facing message from a failed API call, distinguishing a

@@ -7,7 +7,9 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleAuthService } from './services/google-auth.service';
 import { AppleAuthService } from './services/apple-auth.service';
+import { AuthIdentitiesService } from './services/auth-identities.service';
 import { UsersModule } from '../users/users.module';
+import { DevicesModule } from '../devices/devices.module';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { UsersModule } from '../users/users.module';
       signOptions: { expiresIn: '7d' }, // Token valid for 7 days
     }),
     UsersModule,
+    DevicesModule,
   ],
   providers: [
     AuthService,
@@ -24,6 +27,7 @@ import { UsersModule } from '../users/users.module';
     JwtStrategy,
     GoogleAuthService,
     AppleAuthService,
+    AuthIdentitiesService,
   ],
   controllers: [AuthController],
 })

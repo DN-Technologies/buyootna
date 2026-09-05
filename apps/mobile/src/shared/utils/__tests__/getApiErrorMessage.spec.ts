@@ -22,23 +22,23 @@ describe('getApiErrorMessage', () => {
   it('returns the network-error message when there is no response at all', () => {
     const error = { message: 'Network Error', request: {} };
     expect(getApiErrorMessage(error, 'رمز التحقق غير صحيح')).toBe(
-      'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
     );
   });
 
   it('treats a missing response as a network error even without the "Network Error" message (e.g. a timeout)', () => {
     const error = { code: 'ECONNABORTED', message: 'timeout of 30000ms exceeded' };
     expect(getApiErrorMessage(error, 'رمز التحقق غير صحيح')).toBe(
-      'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
     );
   });
 
   it('handles a nullish/malformed error without throwing', () => {
     expect(getApiErrorMessage(null, 'fallback')).toBe(
-      'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
     );
     expect(getApiErrorMessage(undefined, 'fallback')).toBe(
-      'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+      'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
     );
   });
 });

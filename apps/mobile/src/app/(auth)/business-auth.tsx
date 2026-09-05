@@ -25,6 +25,7 @@ import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
 // Company/office accounts are temporarily disabled app-wide.
@@ -85,18 +86,14 @@ export default function BusinessAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
       router.replace(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {
-      let errorMsg = 'حدث خطأ في الاتصال';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg =
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('فشل تسجيل الدخول', errorMsg);
+      showAlert(
+        'فشل تسجيل الدخول',
+        getApiErrorMessage(error, 'حدث خطأ في الاتصال'),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -166,15 +163,10 @@ export default function BusinessAuthScreen() {
       // Return a flag or trigger parent state to show custom success modal
       return true;
     } catch (error: any) {
-      let errorMsg = 'حدث خطأ أثناء إنشاء الحساب';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg =
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('فشل التسجيل', errorMsg);
+      showAlert(
+        'فشل التسجيل',
+        getApiErrorMessage(error, 'حدث خطأ أثناء إنشاء الحساب'),
+      );
       return false;
     } finally {
       setIsLoading(false);

@@ -267,7 +267,7 @@ describe('ChangePasswordScreen', () => {
       await waitFor(() => {
         expect(
           getByText(
-            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+            'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
           ),
         ).toBeTruthy();
       });
