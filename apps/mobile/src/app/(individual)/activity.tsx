@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
+import { useScrollToTop } from '@react-navigation/native';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -93,6 +94,8 @@ export default function ActivityScreen() {
   const [toastSubtitle, setToastSubtitle] = useState<string | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
+  const listRef = useRef<FlashListRef<any>>(null);
+  useScrollToTop(listRef);
 
   const triggerToast = useCallback(
     (message: string, subtitle?: string | null) => {
@@ -378,6 +381,7 @@ export default function ActivityScreen() {
 
       {/* Scrolling list */}
       <FlashList
+        ref={listRef}
         data={activeTab === 'اعلاناتي' ? sortedAndFilteredData : []}
         keyExtractor={(item) => item.id}
         getItemType={(item) =>
