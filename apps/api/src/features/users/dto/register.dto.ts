@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -7,9 +8,16 @@ import {
 } from 'class-validator';
 import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
 
+// Whitespace-only input (e.g. "   ") passes @IsNotEmpty as-is -- trim
+// before validation so it's rejected as empty instead of stored verbatim.
+const trim = ({ value }: { value: unknown }) =>
+  typeof value === 'string' ? value.trim() : value;
+
 export class RegisterIndividualDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @MinLength(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' })
   name: string;
 
   @IsString()
@@ -23,6 +31,7 @@ export class RegisterIndividualDto {
 }
 
 export class RegisterCompanyDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   name: string;
@@ -69,6 +78,7 @@ export class RegisterCompanyDto {
 }
 
 export class RegisterOfficeDto {
+  @Transform(trim)
   @IsString()
   @IsNotEmpty()
   name: string;

@@ -139,6 +139,49 @@ describe('Individual auth flow (e2e)', () => {
         .send({ phone, otp: '000000' })
         .expect(400);
     });
+
+    // Regression coverage for the reported bug: a whitespace-only name
+    // (e.g. "   ") passed @IsNotEmpty as-is, since that check only rejects
+    // an exact empty string -- the account got created with a blank,
+    // invisible name that broke any UI showing it (headers, chat, etc).
+    it('rejects a whitespace-only name with 400', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: '    ',
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(400);
+    });
+
+    it('trims leading/trailing whitespace from the name before storing it', async () => {
+      const phone = randomKuwaitPhone();
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: '  Ali Salem  ',
+          identifier: phone,
+          password: TEST_PASSWORD,
+        })
+        .expect(201);
+
+      const otp = getMockOtpCode(app, phone);
+      const verifyRes = await request(app.getHttpServer())
+        .post('/auth/register/verify-otp')
+        .send({ phone, otp })
+        .expect(201);
+      const { access_token } = verifyRes.body as LoginResponseBody;
+
+      const meRes = await request(app.getHttpServer())
+        .get('/users/me')
+        .set('Authorization', `Bearer ${access_token}`)
+        .expect(200);
+
+      expect((meRes.body as { user: { name: string } }).user.name).toBe(
+        'Ali Salem',
+      );
+    });
   });
 
   describe('identity switching', () => {
