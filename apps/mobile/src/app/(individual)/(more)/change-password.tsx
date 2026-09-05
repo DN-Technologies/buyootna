@@ -32,6 +32,7 @@ import { settingsService } from '@/shared/api/settings.service';
 import FormInput from '@/shared/components/FormInput';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 // Validation Schema
 const changePasswordSchema = z
@@ -105,8 +106,7 @@ export default function ChangePasswordScreen() {
       } catch (e: any) {
         showAlert(
           'خطأ',
-          e.response?.data?.message ||
-            'فشل تغيير كلمة المرور. يرجى المحاولة لاحقاً.',
+          getApiErrorMessage(e, 'فشل تغيير كلمة المرور. يرجى المحاولة لاحقاً.'),
         );
       } finally {
         setIsSubmitting(false);
@@ -124,8 +124,7 @@ export default function ChangePasswordScreen() {
     } catch (e: any) {
       showAlert(
         'خطأ',
-        e.response?.data?.message ||
-          'فشل إرسال رمز التحقق. يرجى المحاولة لاحقاً.',
+        getApiErrorMessage(e, 'فشل إرسال رمز التحقق. يرجى المحاولة لاحقاً.'),
       );
     } finally {
       setIsRequestingOtp(false);
@@ -141,7 +140,7 @@ export default function ChangePasswordScreen() {
       setOtpError('');
       showAlert('نجاح', 'تم إعادة إرسال رمز التحقق بنجاح');
     } catch (e: any) {
-      showAlert('خطأ', e.response?.data?.message || 'فشل إعادة إرسال الرمز.');
+      showAlert('خطأ', getApiErrorMessage(e, 'فشل إعادة إرسال الرمز.'));
     }
   };
 
@@ -170,7 +169,7 @@ export default function ChangePasswordScreen() {
       ]);
     } catch (e: any) {
       setOtpError(
-        e.response?.data?.message || 'رمز التحقق غير صحيح أو منتهي الصلاحية',
+        getApiErrorMessage(e, 'رمز التحقق غير صحيح أو منتهي الصلاحية'),
       );
     } finally {
       setIsSubmitting(false);

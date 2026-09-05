@@ -248,6 +248,31 @@ describe('ChangePasswordScreen', () => {
       ).toBe(alertCallsBefore);
     });
 
+    // Regression coverage for the reported bug: a dropped connection (no
+    // `response` on the thrown error) must not be reported as "invalid
+    // verification code" -- the user typed nothing wrong, their network
+    // just failed.
+    it('sets a network-error otpError, not "invalid code", when changePassword fails with no response', async () => {
+      mockSettingsService.changePassword.mockRejectedValue({
+        message: 'Network Error',
+      });
+      const { getByPlaceholderText, getByText, getByDisplayValue } =
+        await render(<ChangePasswordScreen />);
+      await openOtpSheet(getByPlaceholderText, getByText);
+
+      const hiddenOtpInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenOtpInput, '123456');
+      await fireEvent.press(getByText('التحقق من الرمز'));
+
+      await waitFor(() => {
+        expect(
+          getByText(
+            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          ),
+        ).toBeTruthy();
+      });
+    });
+
     it('resend calls requestChangePasswordOtp again after the timer elapses', async () => {
       jest.useFakeTimers();
       mockSettingsService.requestChangePasswordOtp.mockResolvedValue({
