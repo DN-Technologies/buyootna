@@ -9,7 +9,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService, DeviceCtx } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
@@ -37,6 +37,16 @@ interface RequestWithUser extends Request {
   user: Omit<User, 'password'>;
 }
 
+function extractDeviceCtx(req: RequestWithUser | Request): DeviceCtx {
+  return {
+    deviceId: req.headers['x-device-id'] as string | undefined,
+    platform: req.headers['x-device-platform'] as string | undefined,
+    deviceModel: req.headers['x-device-model'] as string | undefined,
+    ip: req.ip,
+    userAgent: req.headers['user-agent'],
+  };
+}
+
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
@@ -62,7 +72,7 @@ export class AuthController {
     @Body() loginDto: LoginDto,
   ) {
     // req.user is populated by the LocalStrategy if successful
-    return this.authService.login(req.user);
+    return this.authService.login(req.user, undefined, extractDeviceCtx(req));
   }
 
   @Post('google')
@@ -71,11 +81,12 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
-  async googleLogin(@Body() dto: GoogleLoginDto) {
+  async googleLogin(@Req() req: RequestWithUser, @Body() dto: GoogleLoginDto) {
     const profile = await this.googleAuthService.verifyIdToken(dto.idToken);
     return this.authService.loginOrRegisterWithSocial(
       SocialProvider.GOOGLE,
       profile,
+      extractDeviceCtx(req),
     );
   }
 
@@ -85,13 +96,14 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
-  async appleLogin(@Body() dto: AppleLoginDto) {
+  async appleLogin(@Req() req: RequestWithUser, @Body() dto: AppleLoginDto) {
     const profile = await this.appleAuthService.verifyIdentityToken(
       dto.identityToken,
     );
     return this.authService.loginOrRegisterWithSocial(
       SocialProvider.APPLE,
       profile,
+      extractDeviceCtx(req),
     );
   }
 
@@ -102,8 +114,15 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
-  async verifyRegisterOtp(@Body() dto: VerifyRegisterOtpDto) {
-    return this.authService.verifyRegistrationOtp(dto.phone, dto.otp);
+  async verifyRegisterOtp(
+    @Req() req: RequestWithUser,
+    @Body() dto: VerifyRegisterOtpDto,
+  ) {
+    return this.authService.verifyRegistrationOtp(
+      dto.phone,
+      dto.otp,
+      extractDeviceCtx(req),
+    );
   }
 
   @Post('register/verify-email-otp')
@@ -114,8 +133,15 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
-  async verifyEmailRegisterOtp(@Body() dto: VerifyEmailOtpDto) {
-    return this.authService.verifyEmailRegistrationOtp(dto.email, dto.otp);
+  async verifyEmailRegisterOtp(
+    @Req() req: RequestWithUser,
+    @Body() dto: VerifyEmailOtpDto,
+  ) {
+    return this.authService.verifyEmailRegistrationOtp(
+      dto.email,
+      dto.otp,
+      extractDeviceCtx(req),
+    );
   }
 
   // Dev/CI only — 404s unless MailService is in mock mode (RESEND_API_KEY
@@ -148,7 +174,11 @@ export class AuthController {
     @CurrentUser() reqUser: RequestUser,
     @Body() dto: SwitchIdentityDto,
   ) {
-    return this.authService.switchIdentity(reqUser.userId, dto.identityId);
+    return this.authService.switchIdentity(
+      reqUser.userId,
+      dto.identityId,
+      reqUser.sessionId,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -185,6 +215,7 @@ export class AuthController {
       dto.newPassword,
       dto.otp,
       dto.logoutAllDevices,
+      reqUser.sessionId,
     );
   }
 }

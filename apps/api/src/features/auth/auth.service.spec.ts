@@ -85,6 +85,9 @@ describe('AuthService Unit Tests', () => {
     session: {
       findFirst: jest.fn(),
       deleteMany: jest.fn(),
+      create: jest.fn().mockResolvedValue({ id: 'session-1' }),
+      upsert: jest.fn().mockResolvedValue({ id: 'session-1' }),
+      update: jest.fn().mockResolvedValue({ id: 'session-1' }),
     },
     $transaction: jest.fn((arg: ((tx: Tx) => unknown) | Promise<unknown>[]) =>
       Array.isArray(arg) ? Promise.all(arg) : arg(buildTx()),
@@ -171,6 +174,8 @@ describe('AuthService Unit Tests', () => {
       expect(result).toBe(MOCK_LOGIN_RESULT);
       expect(loginSpy).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'user-1' }),
+        undefined,
+        {},
       );
       expect(mockPrismaService.socialAccount.create).not.toHaveBeenCalled();
       expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
@@ -208,6 +213,8 @@ describe('AuthService Unit Tests', () => {
       });
       expect(loginSpy).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'user-2' }),
+        undefined,
+        {},
       );
     });
 
@@ -237,6 +244,8 @@ describe('AuthService Unit Tests', () => {
       expect(result).toBe(MOCK_LOGIN_RESULT);
       expect(loginSpy).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'new-user-1' }),
+        undefined,
+        {},
       );
       // Regression guard for the earlier bug class: registration must create an Identity row,
       // not just a User, or /auth/login breaks immediately after signup.
@@ -339,6 +348,7 @@ describe('AuthService Unit Tests', () => {
         sub: 'user-1',
         ident: 'identity-2',
         type: IdentityType.INDIVIDUAL,
+        sid: 'session-1',
       });
     });
 
@@ -425,6 +435,7 @@ describe('AuthService Unit Tests', () => {
 
       expect(result).toEqual({
         access_token: 'mocked_token',
+        sessionId: 'session-1',
         user,
         activeIdentity: identity,
         identities: allIdentities,
@@ -547,6 +558,8 @@ describe('AuthService Unit Tests', () => {
       expect(result).toBe(MOCK_LOGIN_RESULT);
       expect(loginSpy).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'user-1' }),
+        undefined,
+        {},
       );
       const loginArg = loginSpy.mock.calls[0][0];
       expect(loginArg).not.toHaveProperty('password');
@@ -572,7 +585,7 @@ describe('AuthService Unit Tests', () => {
       expect(
         mockUsersRegistrationService.completeEmailRegistration,
       ).toHaveBeenCalledWith('ali@example.com', '123456');
-      expect(loginSpy).toHaveBeenCalledWith(createdUser);
+      expect(loginSpy).toHaveBeenCalledWith(createdUser, undefined, {});
       expect(result).toBe(MOCK_LOGIN_RESULT);
     });
 
@@ -750,6 +763,26 @@ describe('AuthService Unit Tests', () => {
 
       expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
         where: { userId: 'user-1', id: { not: 'session-latest' } },
+      });
+    });
+
+    it('deletes all other sessions except currentSessionId when provided, without the "most recent" fallback query', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
+      mockTwilioService.checkVerification.mockResolvedValue(true);
+      mockPrismaService.user.update.mockResolvedValue(dbUser);
+
+      await service.changePassword(
+        'user-1',
+        'old-password',
+        'new-password',
+        '123456',
+        true,
+        'session-current',
+      );
+
+      expect(mockPrismaService.session.findFirst).not.toHaveBeenCalled();
+      expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', id: { not: 'session-current' } },
       });
     });
 

@@ -7,24 +7,10 @@ export class DevicesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getDevices(userId: string): Promise<Session[]> {
-    let sessions = await this.prisma.session.findMany({
+    return this.prisma.session.findMany({
       where: { userId, isActive: true },
       orderBy: { lastActive: 'desc' },
     });
-
-    if (sessions.length === 0) {
-      // Create a default session representing the current device
-      const defaultSession = await this.prisma.session.create({
-        data: {
-          userId,
-          deviceName: 'جهاز الهاتف الحالي',
-          isActive: true,
-          location: 'الكويت',
-        },
-      });
-      sessions = [defaultSession];
-    }
-    return sessions;
   }
 
   async revokeDevice(userId: string, id: string): Promise<{ count: number }> {
@@ -33,8 +19,18 @@ export class DevicesService {
     });
   }
 
-  async revokeAllExceptCurrent(userId: string): Promise<{ count: number }> {
-    // Find the latest active session to keep
+  async revokeAllExceptCurrent(
+    userId: string,
+    currentSessionId?: string,
+  ): Promise<{ count: number }> {
+    if (currentSessionId) {
+      return this.prisma.session.deleteMany({
+        where: { userId, id: { not: currentSessionId } },
+      });
+    }
+
+    // Old token issued before the sid claim existed — fall back to the
+    // previous "most recently active" heuristic.
     const latest = await this.prisma.session.findFirst({
       where: { userId, isActive: true },
       orderBy: { lastActive: 'desc' },

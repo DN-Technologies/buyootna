@@ -51,6 +51,9 @@ export class DevicesController {
   async revokeAllDevices(
     @CurrentUser() reqUser: RequestUser,
   ): Promise<{ count: number }> {
-    return this.devicesService.revokeAllExceptCurrent(reqUser.userId);
+    return this.devicesService.revokeAllExceptCurrent(
+      reqUser.userId,
+      reqUser.sessionId,
+    );
   }
 }

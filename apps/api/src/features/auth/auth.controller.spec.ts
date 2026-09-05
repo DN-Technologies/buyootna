@@ -54,10 +54,29 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('login() delegates to authService.login with req.user, ignoring the DTO body', () => {
-    const req = { user: { id: 'user-1' } } as unknown as Parameters<
-      AuthController['login']
-    >[0];
+  // Shared fake request for the endpoints that now extract device context
+  // (X-Device-Id / X-Device-Platform headers, ip, user-agent) via @Req().
+  function makeReq(overrides: Record<string, unknown> = {}) {
+    return {
+      headers: {
+        'x-device-id': 'device-1',
+        'x-device-platform': 'ios',
+        'user-agent': 'test-agent',
+      },
+      ip: '127.0.0.1',
+      ...overrides,
+    } as unknown as Parameters<AuthController['login']>[0];
+  }
+
+  const expectedDeviceCtx = {
+    deviceId: 'device-1',
+    platform: 'ios',
+    ip: '127.0.0.1',
+    userAgent: 'test-agent',
+  };
+
+  it('login() delegates to authService.login with req.user and the extracted device context, ignoring the DTO body', () => {
+    const req = makeReq({ user: { id: 'user-1' } });
     mockAuthService.login.mockReturnValue('login-result');
 
     const result = controller.login(req, {
@@ -65,18 +84,24 @@ describe('AuthController', () => {
       password: 'secret1',
     });
 
-    expect(mockAuthService.login).toHaveBeenCalledWith(req.user);
+    expect(mockAuthService.login).toHaveBeenCalledWith(
+      req.user,
+      undefined,
+      expectedDeviceCtx,
+    );
     expect(result).toBe('login-result');
   });
 
-  it('googleLogin() verifies the ID token then delegates to loginOrRegisterWithSocial with GOOGLE', async () => {
+  it('googleLogin() verifies the ID token then delegates to loginOrRegisterWithSocial with GOOGLE and the device context', async () => {
     const profile = { providerId: 'g-sub-1', email: 'a@example.com' };
     mockGoogleAuthService.verifyIdToken.mockResolvedValue(profile);
     mockAuthService.loginOrRegisterWithSocial.mockResolvedValue(
       'social-result',
     );
 
-    const result = await controller.googleLogin({ idToken: 'raw-token' });
+    const result = await controller.googleLogin(makeReq(), {
+      idToken: 'raw-token',
+    });
 
     expect(mockGoogleAuthService.verifyIdToken).toHaveBeenCalledWith(
       'raw-token',
@@ -84,18 +109,19 @@ describe('AuthController', () => {
     expect(mockAuthService.loginOrRegisterWithSocial).toHaveBeenCalledWith(
       SocialProvider.GOOGLE,
       profile,
+      expectedDeviceCtx,
     );
     expect(result).toBe('social-result');
   });
 
-  it('appleLogin() verifies the identity token then delegates to loginOrRegisterWithSocial with APPLE', async () => {
+  it('appleLogin() verifies the identity token then delegates to loginOrRegisterWithSocial with APPLE and the device context', async () => {
     const profile = { providerId: 'apple-sub-1', email: 'a@example.com' };
     mockAppleAuthService.verifyIdentityToken.mockResolvedValue(profile);
     mockAuthService.loginOrRegisterWithSocial.mockResolvedValue(
       'social-result',
     );
 
-    const result = await controller.appleLogin({
+    const result = await controller.appleLogin(makeReq(), {
       identityToken: 'raw-identity-token',
     });
 
@@ -105,14 +131,15 @@ describe('AuthController', () => {
     expect(mockAuthService.loginOrRegisterWithSocial).toHaveBeenCalledWith(
       SocialProvider.APPLE,
       profile,
+      expectedDeviceCtx,
     );
     expect(result).toBe('social-result');
   });
 
-  it('verifyRegisterOtp() delegates to authService.verifyRegistrationOtp with dto.phone and dto.otp', async () => {
+  it('verifyRegisterOtp() delegates to authService.verifyRegistrationOtp with dto.phone, dto.otp and the device context', async () => {
     mockAuthService.verifyRegistrationOtp.mockResolvedValue('otp-result');
 
-    const result = await controller.verifyRegisterOtp({
+    const result = await controller.verifyRegisterOtp(makeReq(), {
       phone: '+96555123456',
       otp: '123456',
     });
@@ -120,12 +147,13 @@ describe('AuthController', () => {
     expect(mockAuthService.verifyRegistrationOtp).toHaveBeenCalledWith(
       '+96555123456',
       '123456',
+      expectedDeviceCtx,
     );
     expect(result).toBe('otp-result');
   });
 
-  it('switchIdentity() delegates to authService.switchIdentity with reqUser.userId and dto.identityId', async () => {
-    const reqUser = { userId: 'user-1' } as RequestUser;
+  it('switchIdentity() delegates to authService.switchIdentity with reqUser.userId, dto.identityId and reqUser.sessionId', async () => {
+    const reqUser = { userId: 'user-1', sessionId: 'session-1' } as RequestUser;
     mockAuthService.switchIdentity.mockResolvedValue('switch-result');
 
     const result = await controller.switchIdentity(reqUser, {
@@ -135,6 +163,7 @@ describe('AuthController', () => {
     expect(mockAuthService.switchIdentity).toHaveBeenCalledWith(
       'user-1',
       'identity-2',
+      'session-1',
     );
     expect(result).toBe('switch-result');
   });
@@ -153,8 +182,8 @@ describe('AuthController', () => {
     expect(result).toBe('otp-result');
   });
 
-  it('changePassword() delegates to authService.changePassword with all args in the correct order', async () => {
-    const reqUser = { userId: 'user-1' } as RequestUser;
+  it('changePassword() delegates to authService.changePassword with all args in the correct order, including reqUser.sessionId', async () => {
+    const reqUser = { userId: 'user-1', sessionId: 'session-1' } as RequestUser;
     mockAuthService.changePassword.mockResolvedValue('change-result');
 
     const result = await controller.changePassword(reqUser, {
@@ -170,6 +199,7 @@ describe('AuthController', () => {
       'new-pass',
       '123456',
       true,
+      'session-1',
     );
     expect(result).toBe('change-result');
   });

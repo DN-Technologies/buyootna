@@ -85,6 +85,7 @@ export default function BusinessAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
       router.replace(getIdentityHomeRoute(response.data.activeIdentity?.type));
     } catch (error: any) {

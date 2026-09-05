@@ -50,6 +50,7 @@ const loginResponseData = {
   activeIdentity,
   identities: [activeIdentity],
   access_token: 'tok-1',
+  sessionId: 'session-1',
 };
 
 describe('IndividualAuthScreen', () => {
@@ -113,6 +114,7 @@ describe('IndividualAuthScreen', () => {
           loginResponseData.activeIdentity,
           loginResponseData.identities,
           loginResponseData.access_token,
+          loginResponseData.sessionId,
         ),
       );
       expect(router.push).toHaveBeenCalledWith('/(individual)/home');

@@ -77,6 +77,7 @@ describe('useAuthStore', () => {
         activeIdentity: null,
         identities: [],
         token: null,
+        sessionId: null,
         isLoading: true,
       },
       false,
@@ -193,11 +194,17 @@ describe('useAuthStore', () => {
       const user = buildUser();
       const identity = buildIdentity();
 
-      await useAuthStore.getState().setAuth(user, identity, [identity], 'tok-1');
+      await useAuthStore
+        .getState()
+        .setAuth(user, identity, [identity], 'tok-1', 'session-1');
 
       expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
         'auth_token',
         'tok-1',
+      );
+      expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+        'session_id',
+        'session-1',
       );
       expect(setAuthToken).toHaveBeenCalledWith('tok-1');
       expect(socketService.connect).toHaveBeenCalledWith('tok-1');
@@ -207,6 +214,7 @@ describe('useAuthStore', () => {
       expect(state.activeIdentity).toBe(identity);
       expect(state.identities).toEqual([identity]);
       expect(state.token).toBe('tok-1');
+      expect(state.sessionId).toBe('session-1');
       expect(state.isLoading).toBe(false);
     });
 
@@ -218,7 +226,9 @@ describe('useAuthStore', () => {
       const identity = buildIdentity();
 
       await expect(
-        useAuthStore.getState().setAuth(user, identity, [identity], 'tok-1'),
+        useAuthStore
+          .getState()
+          .setAuth(user, identity, [identity], 'tok-1', 'session-1'),
       ).resolves.toBeUndefined();
 
       expect(useAuthStore.getState().user).toBeNull();
@@ -240,6 +250,7 @@ describe('useAuthStore', () => {
       mockApiClient.post.mockResolvedValueOnce({
         data: {
           access_token: 'tok-2',
+          sessionId: 'session-1',
           user: newUser,
           activeIdentity: newIdentity,
           identities: [newIdentity],
@@ -266,6 +277,7 @@ describe('useAuthStore', () => {
       expect(state.user).toBe(newUser);
       expect(state.activeIdentity).toBe(newIdentity);
       expect(state.token).toBe('tok-2');
+      expect(state.sessionId).toBe('session-1');
 
       clearChatSpy.mockRestore();
       clearScopedSpy.mockRestore();
@@ -285,23 +297,27 @@ describe('useAuthStore', () => {
   });
 
   describe('logout', () => {
-    it('clears the token, disconnects the socket, clears scoped stores, and resets state', async () => {
+    it('revokes the current session, clears the token, disconnects the socket, clears scoped stores, and resets state', async () => {
       jest.spyOn(useChatStore.getState(), 'clear').mockImplementation(() => {});
       const clearScopedSpy = jest.spyOn(
         identityScopedStoresModule,
         'clearIdentityScopedStores',
       );
+      mockApiClient.delete.mockResolvedValueOnce({ data: { count: 1 } });
       useAuthStore.setState({
         user: buildUser(),
         activeIdentity: buildIdentity(),
         identities: [buildIdentity()],
         token: 'tok-1',
+        sessionId: 'session-1',
         isLoading: false,
       });
 
       await useAuthStore.getState().logout();
 
+      expect(mockApiClient.delete).toHaveBeenCalledWith('/devices/session-1');
       expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_token');
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('session_id');
       expect(setAuthToken).toHaveBeenCalledWith(null);
       expect(socketService.disconnect).toHaveBeenCalled();
       expect(clearScopedSpy).toHaveBeenCalled();
@@ -311,7 +327,41 @@ describe('useAuthStore', () => {
       expect(state.activeIdentity).toBeNull();
       expect(state.identities).toEqual([]);
       expect(state.token).toBeNull();
+      expect(state.sessionId).toBeNull();
       expect(state.isLoading).toBe(false);
+
+      jest.restoreAllMocks();
+    });
+
+    it('still fully clears local state even when revoking the session fails (offline logout)', async () => {
+      jest.spyOn(useChatStore.getState(), 'clear').mockImplementation(() => {});
+      mockApiClient.delete.mockRejectedValueOnce(new Error('network down'));
+      useAuthStore.setState({
+        user: buildUser(),
+        token: 'tok-1',
+        sessionId: 'session-1',
+        isLoading: false,
+      });
+
+      await useAuthStore.getState().logout();
+      // Flush the best-effort delete's rejection handler.
+      await Promise.resolve();
+
+      const state = useAuthStore.getState();
+      expect(state.user).toBeNull();
+      expect(state.token).toBeNull();
+      expect(state.sessionId).toBeNull();
+
+      jest.restoreAllMocks();
+    });
+
+    it('skips the revoke call when there is no sessionId to revoke', async () => {
+      jest.spyOn(useChatStore.getState(), 'clear').mockImplementation(() => {});
+      useAuthStore.setState({ token: 'tok-1', sessionId: null });
+
+      await useAuthStore.getState().logout();
+
+      expect(mockApiClient.delete).not.toHaveBeenCalled();
 
       jest.restoreAllMocks();
     });
@@ -327,8 +377,10 @@ describe('useAuthStore', () => {
       expect(useAuthStore.getState().isLoading).toBe(false);
     });
 
-    it('hydrates state from /users/me when a token is present', async () => {
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce('tok-1');
+    it('hydrates state from /users/me when a token is present, restoring the persisted sessionId', async () => {
+      (SecureStore.getItemAsync as jest.Mock)
+        .mockResolvedValueOnce('tok-1')
+        .mockResolvedValueOnce('session-1');
       const user = buildUser();
       const identity = buildIdentity();
       mockApiClient.get.mockResolvedValueOnce({
@@ -341,6 +393,7 @@ describe('useAuthStore', () => {
       expect(socketService.connect).toHaveBeenCalledWith('tok-1');
       const state = useAuthStore.getState();
       expect(state.user).toEqual(user);
+      expect(state.sessionId).toBe('session-1');
       expect(state.isLoading).toBe(false);
     });
 

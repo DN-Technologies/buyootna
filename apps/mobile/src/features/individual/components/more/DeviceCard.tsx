@@ -1,12 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { DeviceIcon } from '@/assets/icons/settings';
 
-interface DeviceItem {
+export interface DeviceItem {
   id: string;
   name: string;
+  platform: 'ios' | 'android' | null;
   isActive: boolean;
+  isCurrent: boolean;
   status: string;
   location: string;
 }
@@ -23,7 +26,13 @@ export default function DeviceCard({ device, onLogoutPress }: DeviceCardProps) {
       <View className="flex-row items-center gap-3">
         {/* Circular Phone Icon Badge */}
         <View className="h-[44px] w-[44px] items-center justify-center rounded-full bg-[#F0F4F8]">
-          <DeviceIcon size={20} color="#15304D" />
+          {device.platform === 'ios' ? (
+            <Ionicons name="logo-apple" size={20} color="#15304D" />
+          ) : device.platform === 'android' ? (
+            <Ionicons name="logo-android" size={20} color="#15304D" />
+          ) : (
+            <DeviceIcon size={20} color="#15304D" />
+          )}
         </View>
 
         {/* Info Details */}
@@ -46,8 +55,8 @@ export default function DeviceCard({ device, onLogoutPress }: DeviceCardProps) {
         </View>
       </View>
 
-      {/* Left Side: Log Out Button */}
-      {!device.isActive && (
+      {/* Left Side: Log Out Button (hidden for the device you're using right now) */}
+      {!device.isCurrent && (
         <TouchableOpacity onPress={onLogoutPress}>
           <Text className="font-cairo-medium text-[12px] leading-[20px] text-[#9C1E28]">
             تسجيل الخروج

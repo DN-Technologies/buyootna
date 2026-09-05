@@ -95,6 +95,7 @@ export default function IndividualAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
 
       router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
@@ -151,6 +152,7 @@ export default function IndividualAuthScreen() {
       response.data.activeIdentity,
       response.data.identities,
       response.data.access_token,
+      response.data.sessionId,
     );
 
     router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
@@ -253,6 +255,7 @@ export default function IndividualAuthScreen() {
         response.data.activeIdentity,
         response.data.identities,
         response.data.access_token,
+        response.data.sessionId,
       );
 
       successSheetRef.current?.present();

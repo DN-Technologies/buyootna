@@ -3,6 +3,7 @@ import apiClient from '@/shared/api/api';
 export interface DeviceItem {
   id: string;
   deviceName: string;
+  platform: 'ios' | 'android' | null;
   isActive: boolean;
   lastActive: string;
   location: string | null;

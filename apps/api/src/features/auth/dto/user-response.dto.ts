@@ -100,6 +100,12 @@ export class LoginResponseDto {
   })
   access_token: string;
 
+  @ApiProperty({
+    description:
+      'The Session row id for this login — store it to later identify/revoke this specific device',
+  })
+  sessionId: string;
+
   @ApiProperty({ type: UserResponseDto })
   user: UserResponseDto;
 

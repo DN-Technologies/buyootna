@@ -187,17 +187,21 @@ model Notification {
 }
 
 model Session {
-  id         String   @id @default(uuid())
-  userId     String
-  deviceName String
-  isActive   Boolean  @default(true)
-  lastActive DateTime @default(now())
-  location   String?
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  userId      String
+  deviceId    String?
+  platform    String?
+  deviceModel String?
+  deviceName  String
+  isActive    Boolean  @default(true)
+  lastActive  DateTime @default(now())
+  location    String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, deviceId])
   @@index([userId])
 }
 
