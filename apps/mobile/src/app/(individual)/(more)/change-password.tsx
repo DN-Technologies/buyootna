@@ -6,7 +6,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
@@ -28,8 +28,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
-import FormInput from '@/shared/components/FormInput';
 import { settingsService } from '@/shared/api/settings.service';
+import FormInput from '@/shared/components/FormInput';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -85,8 +85,35 @@ export default function ChangePasswordScreen() {
     return '••••';
   }, [user?.phone]);
 
-  // Handle Form Submission - Requests OTP
+  // Handle Form Submission - accounts without a phone on file have no way
+  // to receive an OTP, so the old password is their sole re-auth factor and
+  // we change it directly. Accounts with a phone go through the OTP sheet.
   const onSubmitForm = async () => {
+    if (!user?.phone) {
+      setIsSubmitting(true);
+      const { oldPassword, newPassword, logoutAllDevices } = getValues();
+      try {
+        await settingsService.changePassword(
+          oldPassword,
+          newPassword,
+          undefined,
+          logoutAllDevices,
+        );
+        showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح', [
+          { text: 'موافق', onPress: () => router.back() },
+        ]);
+      } catch (e: any) {
+        showAlert(
+          'خطأ',
+          e.response?.data?.message ||
+            'فشل تغيير كلمة المرور. يرجى المحاولة لاحقاً.',
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
+
     setIsRequestingOtp(true);
     try {
       await settingsService.requestChangePasswordOtp();
@@ -207,6 +234,7 @@ export default function ChangePasswordScreen() {
               isPassword
               placeholder="أدخل كلمة المرور الحالية"
               isRequired
+              testID="change-password-old-input"
             />
 
             <FormInput
@@ -216,6 +244,7 @@ export default function ChangePasswordScreen() {
               isPassword
               placeholder="أدخل كلمة المرور الجديدة"
               isRequired
+              testID="change-password-new-input"
             />
 
             <FormInput
@@ -225,6 +254,7 @@ export default function ChangePasswordScreen() {
               isPassword
               placeholder="أعد إدخال كلمة المرور الجديدة"
               isRequired
+              testID="change-password-confirm-input"
             />
 
             {/* Logout all devices option */}
@@ -254,10 +284,10 @@ export default function ChangePasswordScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit(onSubmitForm)}
-            disabled={isRequestingOtp}
+            disabled={isRequestingOtp || isSubmitting}
             className="mt-6 h-14 w-full items-center justify-center rounded-full bg-[#15304D] shadow-sm"
           >
-            {isRequestingOtp ? (
+            {isRequestingOtp || isSubmitting ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text className="font-cairo-bold text-base text-white">

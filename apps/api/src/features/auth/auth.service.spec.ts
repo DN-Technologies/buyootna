@@ -82,9 +82,6 @@ describe('AuthService Unit Tests', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
     },
-    otpCode: {
-      delete: jest.fn(),
-    },
     session: {
       findFirst: jest.fn(),
       deleteMany: jest.fn(),
@@ -649,20 +646,35 @@ describe('AuthService Unit Tests', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('throws BadRequestException when the user has no phone on file', async () => {
+    it('changes the password without an OTP when the user has no phone on file', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({
         ...dbUser,
         phone: null,
       });
+      mockPrismaService.user.update.mockResolvedValue({
+        ...dbUser,
+        phone: null,
+        password: 'new-hash',
+      });
+
+      const result = await service.changePassword(
+        'user-1',
+        'old-password',
+        'new-password',
+      );
+
+      expect(mockTwilioService.checkVerification).not.toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ message: 'تم تغيير كلمة المرور بنجاح' });
+    });
+
+    it('throws BadRequestException when the user has a phone but no OTP is provided', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
 
       await expect(
-        service.changePassword(
-          'user-1',
-          'old-password',
-          'new-password',
-          '123456',
-        ),
+        service.changePassword('user-1', 'old-password', 'new-password'),
       ).rejects.toThrow(BadRequestException);
+      expect(mockTwilioService.checkVerification).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when the OTP is invalid', async () => {
@@ -693,32 +705,9 @@ describe('AuthService Unit Tests', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    // Documents current (likely buggy) behavior: nothing in the individual
-    // registration/verify-otp flow ever creates an OtpCode row, so a typical
-    // individual user hits this unconditional delete with no matching row.
-    // This is not asserted as "correct" — it's a pinned regression guard
-    // flagging a real gap worth a follow-up fix.
-    it('propagates the error when no OtpCode row exists for the user (documents current behavior)', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
-      mockTwilioService.checkVerification.mockResolvedValue(true);
-      const notFoundError = new Error('Record to delete does not exist.');
-      mockPrismaService.otpCode.delete.mockRejectedValue(notFoundError);
-
-      await expect(
-        service.changePassword(
-          'user-1',
-          'old-password',
-          'new-password',
-          '123456',
-        ),
-      ).rejects.toThrow(notFoundError);
-      expect(mockPrismaService.user.update).not.toHaveBeenCalled();
-    });
-
     it('hashes and persists the new password on success', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.otpCode.delete.mockResolvedValue({ id: 'otp-1' });
       mockPrismaService.user.update.mockResolvedValue({
         ...dbUser,
         password: 'new-hash',
@@ -746,7 +735,6 @@ describe('AuthService Unit Tests', () => {
     it('deletes all other sessions except the most recently active one when logoutAllDevices is true', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.otpCode.delete.mockResolvedValue({ id: 'otp-1' });
       mockPrismaService.user.update.mockResolvedValue(dbUser);
       mockPrismaService.session.findFirst.mockResolvedValue({
         id: 'session-latest',
@@ -768,7 +756,6 @@ describe('AuthService Unit Tests', () => {
     it('skips session deletion when logoutAllDevices is true but no active session exists', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.otpCode.delete.mockResolvedValue({ id: 'otp-1' });
       mockPrismaService.user.update.mockResolvedValue(dbUser);
       mockPrismaService.session.findFirst.mockResolvedValue(null);
 
@@ -786,7 +773,6 @@ describe('AuthService Unit Tests', () => {
     it('never queries sessions when logoutAllDevices is falsy or omitted', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.otpCode.delete.mockResolvedValue({ id: 'otp-1' });
       mockPrismaService.user.update.mockResolvedValue(dbUser);
 
       await service.changePassword(

@@ -18,9 +18,11 @@ export class ChangePasswordDto {
   })
   newPassword: string;
 
+  // Only required for accounts that have a phone on file -- see
+  // AuthService.changePassword.
   @IsString()
-  @IsNotEmpty()
-  otp: string;
+  @IsOptional()
+  otp?: string;
 
   @IsBoolean()
   @IsOptional()

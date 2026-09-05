@@ -122,6 +122,57 @@ describe('ChangePasswordScreen', () => {
     });
   });
 
+  describe('accounts with no phone on file', () => {
+    beforeEach(() => {
+      mockUseAuthStore.mockReturnValue({ user: { phone: null } });
+    });
+
+    it('changes the password directly, without requesting an OTP or opening the verification sheet', async () => {
+      mockSettingsService.changePassword.mockResolvedValue({ message: 'ok' });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(mockSettingsService.changePassword).toHaveBeenCalledWith(
+          'old-password',
+          'new-password',
+          undefined,
+          false,
+        );
+      });
+      expect(mockSettingsService.requestChangePasswordOtp).not.toHaveBeenCalled();
+
+      const alertCall = (
+        useAlertStore.getState().showAlert as jest.Mock
+      ).mock.calls.find((call) => call[0] === 'نجاح');
+      expect(alertCall).toBeDefined();
+      const okButton = alertCall![2].find((b: any) => b.text === 'موافق');
+      await act(async () => okButton.onPress());
+      expect(router.back).toHaveBeenCalled();
+    });
+
+    it('shows an alert with the backend message when changePassword fails', async () => {
+      mockSettingsService.changePassword.mockRejectedValue({
+        response: { data: { message: 'كلمة المرور القديمة غير صحيحة' } },
+      });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'خطأ',
+          'كلمة المرور القديمة غير صحيحة',
+        );
+      });
+    });
+  });
+
   describe('OTP verification', () => {
     const openOtpSheet = async (getByPlaceholderText: any, getByText: any) => {
       mockSettingsService.requestChangePasswordOtp.mockResolvedValue({
