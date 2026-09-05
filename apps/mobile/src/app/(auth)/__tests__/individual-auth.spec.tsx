@@ -148,7 +148,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
           'فشل تسجيل الدخول',
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
         );
       });
     });
@@ -286,7 +286,7 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => {
           expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
             'خطأ في التحقق',
-            'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+            'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
           );
         });
         expect(mockSetAuth).not.toHaveBeenCalled();
