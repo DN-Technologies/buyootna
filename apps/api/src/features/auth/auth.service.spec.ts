@@ -6,6 +6,8 @@ import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
+import { AuthIdentitiesService } from './services/auth-identities.service';
+import { SessionsService } from '../devices/sessions.service';
 import { SocialProvider, IdentityType, type User } from '@prisma/client';
 import {
   UnauthorizedException,
@@ -71,23 +73,17 @@ describe('AuthService Unit Tests', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
+    // switchIdentity's deactivate/activate pair runs as a $transaction
+    // array against these directly (a genuinely transactional operation,
+    // not worth abstracting into AuthIdentitiesService) -- everything else
+    // identity/session-related goes through the two services below now.
     identity: {
-      findFirst: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
-      update: jest.fn(),
       updateMany: jest.fn(),
-      create: jest.fn(),
+      update: jest.fn(),
     },
     socialAccount: {
       findUnique: jest.fn(),
       create: jest.fn(),
-    },
-    session: {
-      findFirst: jest.fn(),
-      deleteMany: jest.fn(),
-      create: jest.fn().mockResolvedValue({ id: 'session-1' }),
-      upsert: jest.fn().mockResolvedValue({ id: 'session-1' }),
-      update: jest.fn().mockResolvedValue({ id: 'session-1' }),
     },
     $transaction: jest.fn((arg: ((tx: Tx) => unknown) | Promise<unknown>[]) =>
       Array.isArray(arg) ? Promise.all(arg) : arg(buildTx()),
@@ -118,13 +114,29 @@ describe('AuthService Unit Tests', () => {
     recordVerifyAttempt: jest.fn(),
   };
 
+  const mockIdentitiesService = {
+    findById: jest.fn(),
+    findActive: jest.fn(),
+    findEarliest: jest.fn(),
+    activate: jest.fn(),
+    listAll: jest.fn().mockResolvedValue([]),
+    createDefaultForOrphanedUser: jest.fn(),
+  };
+
+  const mockSessionsService = {
+    upsertSession: jest.fn().mockResolvedValue({ id: 'session-1' }),
+    deleteAllExceptCurrent: jest.fn(),
+    touchLastActive: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
     mockPrismaService.$transaction.mockImplementation(
       (arg: ((tx: Tx) => unknown) | Promise<unknown>[]) =>
         Array.isArray(arg) ? Promise.all(arg) : arg(buildTx()),
     );
-    mockPrismaService.identity.findMany.mockResolvedValue([]);
+    mockIdentitiesService.listAll.mockResolvedValue([]);
+    mockSessionsService.upsertSession.mockResolvedValue({ id: 'session-1' });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -138,6 +150,8 @@ describe('AuthService Unit Tests', () => {
         },
         { provide: EmailOtpService, useValue: mockEmailOtpService },
         { provide: OtpRateLimiterService, useValue: mockOtpRateLimiterService },
+        { provide: AuthIdentitiesService, useValue: mockIdentitiesService },
+        { provide: SessionsService, useValue: mockSessionsService },
       ],
     }).compile();
 
@@ -334,14 +348,13 @@ describe('AuthService Unit Tests', () => {
 
     it('uses the specified identityId, scoped to id + userId', async () => {
       const identity = buildIdentity({ id: 'identity-2' });
-      mockPrismaService.identity.findFirst.mockResolvedValue(identity);
+      mockIdentitiesService.findById.mockResolvedValue(identity);
 
       const result = await service.login(user, 'identity-2');
 
-      expect(mockPrismaService.identity.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { id: 'identity-2', userId: 'user-1' },
-        }),
+      expect(mockIdentitiesService.findById).toHaveBeenCalledWith(
+        'identity-2',
+        'user-1',
       );
       expect(result.activeIdentity).toBe(identity);
       expect(mockJwtService.sign).toHaveBeenCalledWith({
@@ -354,17 +367,11 @@ describe('AuthService Unit Tests', () => {
 
     it('falls back to the currently active identity when no identityId is provided', async () => {
       const activeIdentity = buildIdentity({ isActive: true });
-      mockPrismaService.identity.findFirst.mockResolvedValueOnce(
-        activeIdentity,
-      );
+      mockIdentitiesService.findActive.mockResolvedValueOnce(activeIdentity);
 
       const result = await service.login(user);
 
-      expect(mockPrismaService.identity.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { userId: 'user-1', isActive: true },
-        }),
-      );
+      expect(mockIdentitiesService.findActive).toHaveBeenCalledWith('user-1');
       expect(result.activeIdentity).toBe(activeIdentity);
     });
 
@@ -373,16 +380,16 @@ describe('AuthService Unit Tests', () => {
         id: 'identity-3',
         isActive: false,
       });
-      mockPrismaService.identity.findFirst
-        .mockResolvedValueOnce(null) // no active identity
-        .mockResolvedValueOnce(fallbackIdentity); // earliest-created fallback
+      mockIdentitiesService.findActive.mockResolvedValueOnce(null);
+      mockIdentitiesService.findEarliest.mockResolvedValueOnce(
+        fallbackIdentity,
+      );
 
       const result = await service.login(user);
 
-      expect(mockPrismaService.identity.update).toHaveBeenCalledWith({
-        where: { id: 'identity-3' },
-        data: { isActive: true },
-      });
+      expect(mockIdentitiesService.activate).toHaveBeenCalledWith(
+        'identity-3',
+      );
       expect(result.activeIdentity.isActive).toBe(true);
     });
 
@@ -397,39 +404,37 @@ describe('AuthService Unit Tests', () => {
         id: 'identity-healed',
         isActive: true,
       });
-      mockPrismaService.identity.findFirst
-        .mockResolvedValueOnce(null) // no active identity
-        .mockResolvedValueOnce(null); // no identities at all
-      mockPrismaService.identity.create.mockResolvedValue(healedIdentity);
+      mockIdentitiesService.findActive.mockResolvedValueOnce(null);
+      mockIdentitiesService.findEarliest.mockResolvedValueOnce(null);
+      mockIdentitiesService.createDefaultForOrphanedUser.mockResolvedValue(
+        healedIdentity,
+      );
 
       const result = await service.login(user);
 
-      const identityCreateCalls = mockPrismaService.identity.create.mock
-        .calls as IdentityCreateArgs[][];
-      const identityArgs = identityCreateCalls[0][0];
-      expect(identityArgs.data).toMatchObject({
-        userId: 'user-1',
-        type: IdentityType.INDIVIDUAL,
-        isActive: true,
-      });
-      expect(mockPrismaService.identity.update).not.toHaveBeenCalled();
+      expect(
+        mockIdentitiesService.createDefaultForOrphanedUser,
+      ).toHaveBeenCalledWith('user-1');
+      expect(mockIdentitiesService.activate).not.toHaveBeenCalled();
       expect(result.activeIdentity).toBe(healedIdentity);
     });
 
     it('never self-heals for an explicit identityId that does not exist -- that is a real not-found error', async () => {
-      mockPrismaService.identity.findFirst.mockResolvedValue(null);
+      mockIdentitiesService.findById.mockResolvedValue(null);
 
       await expect(service.login(user, 'missing-identity')).rejects.toThrow(
         BadRequestException,
       );
-      expect(mockPrismaService.identity.create).not.toHaveBeenCalled();
+      expect(
+        mockIdentitiesService.createDefaultForOrphanedUser,
+      ).not.toHaveBeenCalled();
     });
 
     it('returns the signed access_token, user, activeIdentity, and full identities list', async () => {
       const identity = buildIdentity();
       const allIdentities = [identity];
-      mockPrismaService.identity.findFirst.mockResolvedValue(identity);
-      mockPrismaService.identity.findMany.mockResolvedValue(allIdentities);
+      mockIdentitiesService.findById.mockResolvedValue(identity);
+      mockIdentitiesService.listAll.mockResolvedValue(allIdentities);
 
       const result = await service.login(user, 'identity-1');
 
@@ -453,7 +458,7 @@ describe('AuthService Unit Tests', () => {
     };
 
     it('throws ForbiddenException when the identity does not belong to the user', async () => {
-      mockPrismaService.identity.findFirst.mockResolvedValue(null);
+      mockIdentitiesService.findById.mockResolvedValue(null);
 
       await expect(
         service.switchIdentity('user-1', 'identity-2'),
@@ -462,7 +467,7 @@ describe('AuthService Unit Tests', () => {
     });
 
     it('deactivates all identities then activates the selected one, and returns a fresh JWT', async () => {
-      mockPrismaService.identity.findFirst.mockResolvedValue(identity);
+      mockIdentitiesService.findById.mockResolvedValue(identity);
       mockPrismaService.user.findUnique.mockResolvedValue({
         id: 'user-1',
         email: 'a@example.com',
@@ -473,7 +478,7 @@ describe('AuthService Unit Tests', () => {
         ...identity,
         isActive: true,
       });
-      mockPrismaService.identity.findMany.mockResolvedValue([
+      mockIdentitiesService.listAll.mockResolvedValue([
         { id: 'identity-1', isActive: false },
         { id: 'identity-2', isActive: true },
       ]);
@@ -502,7 +507,7 @@ describe('AuthService Unit Tests', () => {
     });
 
     it('throws UnauthorizedException if the user disappears before the post-switch refetch', async () => {
-      mockPrismaService.identity.findFirst.mockResolvedValue(identity);
+      mockIdentitiesService.findById.mockResolvedValue(identity);
       mockPrismaService.identity.updateMany.mockResolvedValue({ count: 2 });
       mockPrismaService.identity.update.mockResolvedValue({
         ...identity,
@@ -745,28 +750,10 @@ describe('AuthService Unit Tests', () => {
       expect(result).toEqual({ message: 'تم تغيير كلمة المرور بنجاح' });
     });
 
-    it('deletes all other sessions except the most recently active one when logoutAllDevices is true', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
-      mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.user.update.mockResolvedValue(dbUser);
-      mockPrismaService.session.findFirst.mockResolvedValue({
-        id: 'session-latest',
-      });
-
-      await service.changePassword(
-        'user-1',
-        'old-password',
-        'new-password',
-        '123456',
-        true,
-      );
-
-      expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1', id: { not: 'session-latest' } },
-      });
-    });
-
-    it('deletes all other sessions except currentSessionId when provided, without the "most recent" fallback query', async () => {
+    // The "most recent" vs. "exact currentSessionId" heuristic itself now
+    // lives in SessionsService and is covered by sessions.service.spec.ts --
+    // these just check AuthService delegates to it correctly.
+    it('delegates to SessionsService.deleteAllExceptCurrent when logoutAllDevices is true', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
       mockPrismaService.user.update.mockResolvedValue(dbUser);
@@ -780,30 +767,13 @@ describe('AuthService Unit Tests', () => {
         'session-current',
       );
 
-      expect(mockPrismaService.session.findFirst).not.toHaveBeenCalled();
-      expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1', id: { not: 'session-current' } },
-      });
-    });
-
-    it('skips session deletion when logoutAllDevices is true but no active session exists', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
-      mockTwilioService.checkVerification.mockResolvedValue(true);
-      mockPrismaService.user.update.mockResolvedValue(dbUser);
-      mockPrismaService.session.findFirst.mockResolvedValue(null);
-
-      await service.changePassword(
+      expect(mockSessionsService.deleteAllExceptCurrent).toHaveBeenCalledWith(
         'user-1',
-        'old-password',
-        'new-password',
-        '123456',
-        true,
+        'session-current',
       );
-
-      expect(mockPrismaService.session.deleteMany).not.toHaveBeenCalled();
     });
 
-    it('never queries sessions when logoutAllDevices is falsy or omitted', async () => {
+    it('never touches sessions when logoutAllDevices is falsy or omitted', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
       mockTwilioService.checkVerification.mockResolvedValue(true);
       mockPrismaService.user.update.mockResolvedValue(dbUser);
@@ -815,8 +785,7 @@ describe('AuthService Unit Tests', () => {
         '123456',
       );
 
-      expect(mockPrismaService.session.findFirst).not.toHaveBeenCalled();
-      expect(mockPrismaService.session.deleteMany).not.toHaveBeenCalled();
+      expect(mockSessionsService.deleteAllExceptCurrent).not.toHaveBeenCalled();
     });
   });
 });

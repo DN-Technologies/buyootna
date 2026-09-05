@@ -9,7 +9,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService, DeviceCtx } from './auth.service';
+import { AuthService } from './auth.service';
+import { DeviceCtx } from '../devices/sessions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';

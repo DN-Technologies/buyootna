@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import type { Session } from '@prisma/client';
+import { SessionsService } from './sessions.service';
 
 @Injectable()
 export class DevicesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly sessions: SessionsService,
+  ) {}
 
   async getDevices(userId: string): Promise<Session[]> {
     return this.prisma.session.findMany({
@@ -23,28 +27,6 @@ export class DevicesService {
     userId: string,
     currentSessionId?: string,
   ): Promise<{ count: number }> {
-    if (currentSessionId) {
-      return this.prisma.session.deleteMany({
-        where: { userId, id: { not: currentSessionId } },
-      });
-    }
-
-    // Old token issued before the sid claim existed — fall back to the
-    // previous "most recently active" heuristic.
-    const latest = await this.prisma.session.findFirst({
-      where: { userId, isActive: true },
-      orderBy: { lastActive: 'desc' },
-    });
-
-    if (latest) {
-      return this.prisma.session.deleteMany({
-        where: {
-          userId,
-          id: { not: latest.id },
-        },
-      });
-    }
-
-    return { count: 0 };
+    return this.sessions.deleteAllExceptCurrent(userId, currentSessionId);
   }
 }

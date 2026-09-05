@@ -9,46 +9,17 @@ import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
+import { DeviceCtx, SessionsService } from '../devices/sessions.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import {
-  User,
-  Identity,
-  IdentityType,
-  Role,
-  SocialProvider,
-} from '@prisma/client';
+import { User, IdentityType, Role, SocialProvider } from '@prisma/client';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { VerifiedSocialProfile } from './services/google-auth.service';
-
-type IdentityWithData = Identity & {
-  individualData?: {
-    name: string | null;
-    whatsapp: string | null;
-    avatarUrl: string | null;
-  } | null;
-  companyData?: { name: string; logoUrl: string | null } | null;
-  officeData?: { name: string; logoUrl: string | null } | null;
-};
-
-// Per-request device info, extracted by AuthController from headers/req.ip
-// and threaded through to whichever AuthService method issues the JWT.
-export interface DeviceCtx {
-  deviceId?: string;
-  platform?: string;
-  // Human-readable model name (e.g. "iPhone 13 Pro Max", "Pixel 7", "SM-G991B"),
-  // read client-side via expo-device. Falls back to a generic per-platform
-  // label below when the client doesn't send one.
-  deviceModel?: string;
-  ip?: string;
-  userAgent?: string;
-}
-
-const PLATFORM_DEVICE_NAMES: Record<string, string> = {
-  ios: 'آيفون',
-  android: 'جهاز أندرويد',
-};
+import {
+  AuthIdentitiesService,
+  IdentityWithData,
+} from './services/auth-identities.service';
 
 @Injectable()
 export class AuthService {
@@ -58,6 +29,8 @@ export class AuthService {
     private readonly twilioService: TwilioService,
     private readonly usersRegistrationService: UsersRegistrationService,
     private readonly emailOtpService: EmailOtpService,
+    private readonly identities: AuthIdentitiesService,
+    private readonly sessions: SessionsService,
     private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
@@ -96,56 +69,6 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  /**
-   * Creates or refreshes the Session row representing this login. Keyed by
-   * (userId, deviceId) when the client sends a stable per-install deviceId,
-   * so re-logging in on the same device refreshes one row instead of piling
-   * up duplicates; falls back to a plain create (no upsert key) for clients
-   * that haven't started sending the device headers yet.
-   */
-  private async upsertSession(userId: string, deviceCtx: DeviceCtx) {
-    const deviceName =
-      deviceCtx.deviceModel ||
-      (deviceCtx.platform && PLATFORM_DEVICE_NAMES[deviceCtx.platform]) ||
-      'جهاز الهاتف الحالي';
-
-    if (deviceCtx.deviceId) {
-      return this.prisma.session.upsert({
-        where: {
-          userId_deviceId: { userId, deviceId: deviceCtx.deviceId },
-        },
-        create: {
-          userId,
-          deviceId: deviceCtx.deviceId,
-          platform: deviceCtx.platform,
-          deviceModel: deviceCtx.deviceModel,
-          deviceName,
-          ipAddress: deviceCtx.ip,
-          userAgent: deviceCtx.userAgent,
-        },
-        update: {
-          platform: deviceCtx.platform,
-          deviceModel: deviceCtx.deviceModel,
-          deviceName,
-          ipAddress: deviceCtx.ip,
-          userAgent: deviceCtx.userAgent,
-          isActive: true,
-          lastActive: new Date(),
-        },
-      });
-    }
-
-    return this.prisma.session.create({
-      data: {
-        userId,
-        deviceModel: deviceCtx.deviceModel,
-        deviceName,
-        ipAddress: deviceCtx.ip,
-        userAgent: deviceCtx.userAgent,
-      },
-    });
-  }
-
   // 2. Generate JWT token with identity information
   async login(
     user: Omit<User, 'password'>,
@@ -156,67 +79,16 @@ export class AuthService {
     let identity: IdentityWithData | null;
 
     if (identityId) {
-      // Use specified identity
-      identity = await this.prisma.identity.findFirst({
-        where: {
-          id: identityId,
-          userId: user.id,
-        },
-        include: {
-          individualData: {
-            select: { name: true, whatsapp: true, avatarUrl: true },
-          },
-          companyData: {
-            select: { name: true, logoUrl: true },
-          },
-          officeData: {
-            select: { name: true, logoUrl: true },
-          },
-        },
-      });
+      identity = await this.identities.findById(identityId, user.id);
     } else {
-      // Get the currently active identity
-      identity = await this.prisma.identity.findFirst({
-        where: {
-          userId: user.id,
-          isActive: true,
-        },
-        include: {
-          individualData: {
-            select: { name: true, whatsapp: true, avatarUrl: true },
-          },
-          companyData: {
-            select: { name: true, logoUrl: true },
-          },
-          officeData: {
-            select: { name: true, logoUrl: true },
-          },
-        },
-      });
+      identity = await this.identities.findActive(user.id);
 
       // If no active identity, get the first one (and set it as active)
       if (!identity) {
-        identity = await this.prisma.identity.findFirst({
-          where: { userId: user.id },
-          orderBy: { createdAt: 'asc' },
-          include: {
-            individualData: {
-              select: { name: true, whatsapp: true, avatarUrl: true },
-            },
-            companyData: {
-              select: { name: true, logoUrl: true },
-            },
-            officeData: {
-              select: { name: true, logoUrl: true },
-            },
-          },
-        });
+        identity = await this.identities.findEarliest(user.id);
 
         if (identity) {
-          await this.prisma.identity.update({
-            where: { id: identity.id },
-            data: { isActive: true },
-          });
+          await this.identities.activate(identity.id);
           identity.isActive = true;
         }
       }
@@ -230,7 +102,7 @@ export class AuthService {
       // identityId switch below, since that's a real "not found" error,
       // not an orphaned-account recovery.
       if (!identity) {
-        identity = await this.createDefaultIdentityForOrphanedUser(user.id);
+        identity = await this.identities.createDefaultForOrphanedUser(user.id);
       }
     }
 
@@ -238,7 +110,7 @@ export class AuthService {
       throw new BadRequestException('لا توجد هوية مرتبطة بهذا الحساب');
     }
 
-    const session = await this.upsertSession(user.id, deviceCtx);
+    const session = await this.sessions.upsertSession(user.id, deviceCtx);
 
     // Build JWT payload
     const payload: JwtPayload = {
@@ -248,22 +120,7 @@ export class AuthService {
       sid: session.id,
     };
 
-    // Get all identities for the user
-    const identities = await this.prisma.identity.findMany({
-      where: { userId: user.id },
-      include: {
-        individualData: {
-          select: { name: true, whatsapp: true, avatarUrl: true },
-        },
-        companyData: {
-          select: { name: true, logoUrl: true },
-        },
-        officeData: {
-          select: { name: true, logoUrl: true },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const identities = await this.identities.listAll(user.id);
 
     return {
       access_token: this.jwtService.sign(payload),
@@ -272,38 +129,6 @@ export class AuthService {
       activeIdentity: identity,
       identities,
     };
-  }
-
-  /**
-   * Recovers a User row that somehow has zero Identity rows (see login()'s
-   * comment) by provisioning a default individual identity. Always
-   * INDIVIDUAL regardless of the user's legacy `role` field: it's the only
-   * identity type with no required fields (company/office data requires a
-   * licenseNumber and name we don't have for an account in this state), so
-   * it's the only type safe to auto-create.
-   */
-  private async createDefaultIdentityForOrphanedUser(
-    userId: string,
-  ): Promise<IdentityWithData> {
-    return this.prisma.identity.create({
-      data: {
-        userId,
-        type: IdentityType.INDIVIDUAL,
-        isActive: true,
-        individualData: { create: {} },
-      },
-      include: {
-        individualData: {
-          select: { name: true, whatsapp: true, avatarUrl: true },
-        },
-        companyData: {
-          select: { name: true, logoUrl: true },
-        },
-        officeData: {
-          select: { name: true, logoUrl: true },
-        },
-      },
-    });
   }
 
   // 2.5. Sign in (or register) via a verified Google/Apple profile
@@ -401,29 +226,9 @@ export class AuthService {
   }
 
   // 3. Switch active identity
-  async switchIdentity(
-    userId: string,
-    identityId: string,
-    sessionId?: string,
-  ) {
+  async switchIdentity(userId: string, identityId: string, sessionId?: string) {
     // Verify identity belongs to user
-    const identity = await this.prisma.identity.findFirst({
-      where: {
-        id: identityId,
-        userId,
-      },
-      include: {
-        individualData: {
-          select: { name: true, whatsapp: true, avatarUrl: true },
-        },
-        companyData: {
-          select: { name: true, logoUrl: true },
-        },
-        officeData: {
-          select: { name: true, logoUrl: true },
-        },
-      },
-    });
+    const identity = await this.identities.findById(identityId, userId);
 
     if (!identity) {
       throw new ForbiddenException('الهوية غير موجودة أو لا تنتمي لهذا الحساب');
@@ -457,16 +262,9 @@ export class AuthService {
       .password;
 
     // Switching identity stays on the same device/session — reuse the
-    // existing sid rather than creating a new Session row. A stale/missing
-    // sessionId (e.g. from a token issued before this claim existed)
-    // shouldn't block the switch, so this touch is best-effort.
+    // existing sid rather than creating a new Session row.
     if (sessionId) {
-      await this.prisma.session
-        .update({
-          where: { id: sessionId },
-          data: { lastActive: new Date() },
-        })
-        .catch(() => undefined);
+      await this.sessions.touchLastActive(sessionId);
     }
 
     // Generate new JWT token with updated identity
@@ -478,21 +276,7 @@ export class AuthService {
     };
 
     // Get all identities
-    const identities = await this.prisma.identity.findMany({
-      where: { userId },
-      include: {
-        individualData: {
-          select: { name: true, whatsapp: true, avatarUrl: true },
-        },
-        companyData: {
-          select: { name: true, logoUrl: true },
-        },
-        officeData: {
-          select: { name: true, logoUrl: true },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const identities = await this.identities.listAll(userId);
 
     return {
       access_token: this.jwtService.sign(payload),
@@ -630,26 +414,7 @@ export class AuthService {
     });
 
     if (logoutAllDevices) {
-      if (currentSessionId) {
-        await this.prisma.session.deleteMany({
-          where: { userId, id: { not: currentSessionId } },
-        });
-      } else {
-        // Old token issued before the sid claim existed — fall back to the
-        // previous "most recently active" heuristic.
-        const latest = await this.prisma.session.findFirst({
-          where: { userId, isActive: true },
-          orderBy: { lastActive: 'desc' },
-        });
-        if (latest) {
-          await this.prisma.session.deleteMany({
-            where: {
-              userId,
-              id: { not: latest.id },
-            },
-          });
-        }
-      }
+      await this.sessions.deleteAllExceptCurrent(userId, currentSessionId);
     }
 
     return { message: 'تم تغيير كلمة المرور بنجاح' };

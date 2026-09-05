@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DevicesService } from './devices.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { SessionsService } from './sessions.service';
 
 describe('DevicesService Unit Tests', () => {
   let service: DevicesService;
@@ -13,6 +14,10 @@ describe('DevicesService Unit Tests', () => {
     },
   };
 
+  const mockSessionsService = {
+    deleteAllExceptCurrent: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -20,6 +25,7 @@ describe('DevicesService Unit Tests', () => {
       providers: [
         DevicesService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: SessionsService, useValue: mockSessionsService },
       ],
     }).compile();
 
@@ -54,46 +60,25 @@ describe('DevicesService Unit Tests', () => {
   });
 
   describe('revokeAllExceptCurrent', () => {
-    it('excludes exactly the given currentSessionId, without querying for the most-recent session', async () => {
-      mockPrismaService.session.deleteMany.mockResolvedValue({ count: 1 });
+    // The actual "keep only the current device" heuristic (with/without a
+    // currentSessionId) now lives in SessionsService and is covered by
+    // sessions.service.spec.ts -- this just checks DevicesService delegates
+    // to it correctly.
+    it('delegates to SessionsService.deleteAllExceptCurrent', async () => {
+      mockSessionsService.deleteAllExceptCurrent.mockResolvedValue({
+        count: 1,
+      });
 
       const result = await service.revokeAllExceptCurrent(
         'user-1',
         'session-current',
       );
 
-      expect(mockPrismaService.session.findFirst).not.toHaveBeenCalled();
-      expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1', id: { not: 'session-current' } },
-      });
+      expect(mockSessionsService.deleteAllExceptCurrent).toHaveBeenCalledWith(
+        'user-1',
+        'session-current',
+      );
       expect(result).toEqual({ count: 1 });
-    });
-
-    it('falls back to the most-recently-active session when no currentSessionId is given', async () => {
-      mockPrismaService.session.findFirst.mockResolvedValue({
-        id: 'session-latest',
-      });
-      mockPrismaService.session.deleteMany.mockResolvedValue({ count: 2 });
-
-      const result = await service.revokeAllExceptCurrent('user-1');
-
-      expect(mockPrismaService.session.findFirst).toHaveBeenCalledWith({
-        where: { userId: 'user-1', isActive: true },
-        orderBy: { lastActive: 'desc' },
-      });
-      expect(mockPrismaService.session.deleteMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1', id: { not: 'session-latest' } },
-      });
-      expect(result).toEqual({ count: 2 });
-    });
-
-    it('does nothing when no currentSessionId is given and no session exists at all', async () => {
-      mockPrismaService.session.findFirst.mockResolvedValue(null);
-
-      const result = await service.revokeAllExceptCurrent('user-1');
-
-      expect(mockPrismaService.session.deleteMany).not.toHaveBeenCalled();
-      expect(result).toEqual({ count: 0 });
     });
   });
 });
