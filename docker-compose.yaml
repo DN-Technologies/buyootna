@@ -93,5 +93,11 @@ services:
     expose: ["3006"]
     restart: always
 
+  marketing:
+    build:
+      context: ./apps/marketing
+    expose: ["7000"]
+    restart: always
+
 volumes:
   postgres_data:
