@@ -4,20 +4,18 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
-
-// Whitespace-only input (e.g. "   ") passes @IsNotEmpty as-is -- trim
-// before validation so it's rejected as empty instead of stored verbatim.
-const trim = ({ value }: { value: unknown }) =>
-  typeof value === 'string' ? value.trim() : value;
+import { trim } from '../../../core/validators/trim.transform';
 
 export class RegisterIndividualDto {
   @Transform(trim)
   @IsString()
   @IsNotEmpty({ message: 'الاسم مطلوب' })
   @MinLength(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' })
+  @MaxLength(32, { message: 'الاسم يجب ألا يتجاوز 32 حرفاً' })
   name: string;
 
   @IsString()

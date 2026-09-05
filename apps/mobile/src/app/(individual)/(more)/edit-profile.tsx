@@ -120,7 +120,13 @@ export default function EditProfileScreen() {
               <Controller
                 control={control}
                 name="name"
-                rules={{ required: 'الاسم مطلوب' }}
+                rules={{
+                  required: 'الاسم مطلوب',
+                  maxLength: {
+                    value: 32,
+                    message: 'الاسم يجب ألا يتجاوز 32 حرفاً',
+                  },
+                }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     className={`border ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
@@ -129,6 +135,7 @@ export default function EditProfileScreen() {
                     value={value}
                     placeholder="أدخل اسمك"
                     textAlign="right"
+                    maxLength={32}
                   />
                 )}
               />

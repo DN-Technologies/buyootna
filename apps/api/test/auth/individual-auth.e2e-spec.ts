@@ -182,6 +182,31 @@ describe('Individual auth flow (e2e)', () => {
         'Ali Salem',
       );
     });
+
+    // Regression coverage for the reported bug: nothing capped the name's
+    // length, so an arbitrarily long string got saved and overflowed the
+    // profile header/side menu/chat UI wherever the name is displayed.
+    it('rejects a name longer than 32 characters with 400', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: 'a'.repeat(33),
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(400);
+    });
+
+    it('accepts a name that is exactly 32 characters', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: 'a'.repeat(32),
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(201);
+    });
   });
 
   describe('identity switching', () => {
