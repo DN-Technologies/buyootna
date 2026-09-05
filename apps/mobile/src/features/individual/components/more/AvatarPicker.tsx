@@ -1,14 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 
 import apiClient from '@/shared/api/api';
+import Avatar from '@/shared/components/Avatar';
 import { showAlert } from '@/shared/utils/alert';
 
 interface AvatarPickerProps {
@@ -20,10 +16,7 @@ export default function AvatarPicker({
   currentAvatarUrl,
   onUploadSuccess,
 }: AvatarPickerProps) {
-  // Use the provided avatar or a default placeholder
-  const [imageUri, setImageUri] = useState<string>(
-    currentAvatarUrl || 'https://via.placeholder.com/150',
-  );
+  const [imageUri, setImageUri] = useState<string | undefined>(currentAvatarUrl);
   const [isUploading, setIsUploading] = useState(false);
 
   const pickImage = async () => {
@@ -97,7 +90,7 @@ export default function AvatarPicker({
       console.error('Upload failed:', error);
       showAlert('خطأ', 'حدث خطأ أثناء رفع الصورة، يرجى المحاولة مرة أخرى.');
       // Revert to original image on failure
-      setImageUri(currentAvatarUrl || 'https://via.placeholder.com/150');
+      setImageUri(currentAvatarUrl);
     } finally {
       setIsUploading(false);
     }
@@ -107,12 +100,8 @@ export default function AvatarPicker({
     <View className="mb-8 mt-8 items-center">
       <View className="relative">
         {/* Avatar Image Container */}
-        <View className="h-24 w-24 overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
-          <Image
-            source={{ uri: imageUri }}
-            className="h-full w-full"
-            resizeMode="cover"
-          />
+        <View className="h-24 w-24 overflow-hidden rounded-2xl border border-gray-200">
+          <Avatar uri={imageUri} />
 
           {/* Uploading Overlay */}
           {isUploading && (
