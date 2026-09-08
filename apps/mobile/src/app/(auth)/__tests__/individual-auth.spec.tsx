@@ -117,7 +117,7 @@ describe('IndividualAuthScreen', () => {
           loginResponseData.sessionId,
         ),
       );
-      expect(router.push).toHaveBeenCalledWith('/(individual)/home');
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home');
     });
 
     it('joins an array-shaped backend error message with newlines', async () => {
@@ -431,7 +431,7 @@ describe('IndividualAuthScreen', () => {
         });
       });
       await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
-      expect(router.push).toHaveBeenCalledWith('/(individual)/home');
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home');
     });
 
     it('silently ignores a user-cancelled sign-in', async () => {

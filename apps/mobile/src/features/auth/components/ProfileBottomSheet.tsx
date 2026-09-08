@@ -4,7 +4,6 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { router } from 'expo-router';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -18,7 +17,7 @@ import {
 import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
 import { SafeImage as Image } from '@/shared/components/SafeImage';
 import { useIdentity } from '@/shared/hooks/useIdentity';
-import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { Identity, IdentityType } from '@/shared/store/useAuthStore';
 
 interface ProfileBottomSheetProps {
@@ -68,7 +67,7 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
         setSwitchingId(identity.id);
         await switchIdentity(identity.id);
         handleClose();
-        router.replace(getIdentityHomeRoute(identity.type));
+        resetToIdentityHome(identity.type);
       } catch (error) {
         console.error('Failed to switch identity:', error);
         // TODO: Show error toast
