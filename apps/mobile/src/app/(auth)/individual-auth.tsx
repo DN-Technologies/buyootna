@@ -21,7 +21,7 @@ import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import apiClient from '@/shared/api/api';
 import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
-import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
@@ -98,7 +98,7 @@ export default function IndividualAuthScreen() {
         response.data.sessionId,
       );
 
-      router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
+      resetToIdentityHome(response.data.activeIdentity?.type);
     } catch (error: any) {
       showAlert(
         'فشل تسجيل الدخول',
@@ -145,7 +145,7 @@ export default function IndividualAuthScreen() {
       response.data.sessionId,
     );
 
-    router.push(getIdentityHomeRoute(response.data.activeIdentity?.type));
+    resetToIdentityHome(response.data.activeIdentity?.type);
   };
 
   const handleSocialAuthError = (error: any, title: string) => {
@@ -281,7 +281,7 @@ export default function IndividualAuthScreen() {
 
   const handleSuccessClose = () => {
     successSheetRef.current?.dismiss();
-    router.push(getIdentityHomeRoute('INDIVIDUAL'));
+    resetToIdentityHome('INDIVIDUAL');
   };
 
   return (
