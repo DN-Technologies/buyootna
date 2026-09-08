@@ -22,14 +22,17 @@ import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import apiClient from '@/shared/api/api';
 import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import ComingSoonGate from '@/shared/components/ComingSoonGate';
-import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
-// Company/office accounts are temporarily disabled app-wide.
-const COMPANY_OFFICE_LOCKED = true;
+// Company/office accounts stay behind the ComingSoonGate unless explicitly
+// enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
+// feat/companies branch. Unset elsewhere keeps production locked.
+const COMPANY_OFFICE_LOCKED =
+  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS !== 'true';
 
 type AuthMode = 'login' | 'signup';
 
@@ -88,7 +91,7 @@ export default function BusinessAuthScreen() {
         response.data.access_token,
         response.data.sessionId,
       );
-      router.replace(getIdentityHomeRoute(response.data.activeIdentity?.type));
+      resetToIdentityHome(response.data.activeIdentity?.type);
     } catch (error: any) {
       showAlert(
         'فشل تسجيل الدخول',
