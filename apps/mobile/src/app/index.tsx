@@ -32,9 +32,17 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 
 /**
  * Holds the user on the splash background until a pending OTA update (if
- * any) is downloaded and applied, so they never land in a half-updated
- * app. Silently gives up and lets launch continue on any error, timeout,
- * or when there's simply nothing to update (dev builds, no update found).
+ * any) has finished *downloading*, so they never sit on a screen that
+ * silently updates itself mid-session. Deliberately does NOT call
+ * Updates.reloadAsync() -- forcing a full JS-context reload this early in
+ * the launch lifecycle (before the app has finished initializing) is a
+ * known crash risk on expo-updates. The fetched update is left cached and
+ * expo-updates applies it automatically on the next cold start, exactly
+ * like its default background-update behavior -- this just adds visible
+ * feedback while the fetch happens instead of doing it silently.
+ *
+ * Silently gives up and lets launch continue on any error, timeout, or
+ * when there's simply nothing to update (dev builds, no update found).
  */
 function UpdateGate({ onDone }: { onDone: () => void }) {
   useEffect(() => {
@@ -55,17 +63,12 @@ function UpdateGate({ onDone }: { onDone: () => void }) {
           Updates.checkForUpdateAsync(),
           CHECK_TIMEOUT_MS,
         );
-        if (cancelled || !result.isAvailable) {
-          onDone();
-          return;
+        if (!cancelled && result.isAvailable) {
+          await withTimeout(Updates.fetchUpdateAsync(), FETCH_TIMEOUT_MS);
         }
-
-        await withTimeout(Updates.fetchUpdateAsync(), FETCH_TIMEOUT_MS);
-        if (cancelled) return;
-
-        await Updates.reloadAsync();
-        // reloadAsync() restarts the JS runtime -- nothing below this runs.
       } catch {
+        // No network, no update, check/download timed out, etc.
+      } finally {
         if (!cancelled) onDone();
       }
     }
@@ -84,7 +87,7 @@ function UpdateGate({ onDone }: { onDone: () => void }) {
         color="#15304D"
         style={styles.updateSpinner}
       />
-      <Text style={styles.updateText}>جاري تحديث التطبيق...</Text>
+      <Text style={styles.updateText}>جاري التحقق من وجود تحديث...</Text>
     </View>
   );
 }
