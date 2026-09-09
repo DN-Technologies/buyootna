@@ -92,7 +92,7 @@ const CompanyActionsSheet = forwardRef<
               activeOpacity={0.7}
               onPress={() => {
                 handleClose();
-                router.push('/invoices');
+                router.push('/(company)/create-invoice');
               }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
             >

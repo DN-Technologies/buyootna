@@ -31,6 +31,7 @@ model Identity {
   planSlots       UserPlanSlot[]
   invoices        Invoice[]
   projects        CompanyProject[]
+  companyInvoices CompanyInvoice[]
 
   @@index([userId])
   @@index([userId, isActive])
@@ -104,6 +105,27 @@ model CompanyProject {
   images      String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+}
+
+model CompanyInvoice {
+  id             String   @id @default(uuid())
+  identityId     String
+  invoiceNo      String   @unique
+  clientName     String
+  title          String
+  warrantyMonths String?
+  issueDate      DateTime
+  items          Json
+  subtotal       Float
+  discount       Float    @default(0)
+  total          Float
+  status         String   @default("SENT")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 

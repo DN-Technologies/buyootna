@@ -31,6 +31,7 @@ import {
 } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { CreateCompanyInvoiceDto } from './dto/create-company-invoice.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
@@ -230,6 +231,32 @@ export class UsersController {
     @Body() dto: CreateProjectDto,
   ) {
     return this.profileService.createProject(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('profile/invoices')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Create a customer invoice for the current user's company profile",
+  })
+  @ApiBody({ type: CreateCompanyInvoiceDto })
+  @ApiCommonErrors()
+  async createInvoice(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: CreateCompanyInvoiceDto,
+  ) {
+    return this.profileService.createInvoice(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile/invoices')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "List the current user's company customer invoices",
+  })
+  @ApiCommonErrors()
+  async listInvoices(@CurrentUser() reqUser: RequestUser) {
+    return this.profileService.listInvoices(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
