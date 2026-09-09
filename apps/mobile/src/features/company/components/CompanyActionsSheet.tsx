@@ -8,8 +8,6 @@ import { useRouter } from 'expo-router';
 import { forwardRef, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { showAlert } from '@/shared/utils/alert';
-
 export interface CompanyActionsSheetProps {
   onClose?: () => void;
 }
@@ -36,13 +34,6 @@ const CompanyActionsSheet = forwardRef<
     // @ts-ignore
     ref.current?.dismiss();
     if (onClose) onClose();
-  };
-
-  const handleComingSoon = (feature: string) => {
-    handleClose();
-    showAlert('قريباً', `ميزة "${feature}" ستتوفر قريباً.`, [
-      { text: 'حسناً' },
-    ]);
   };
 
   return (
@@ -79,7 +70,10 @@ const CompanyActionsSheet = forwardRef<
             {/* Action 1: Add Service (Solid Navy) */}
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => handleComingSoon('اضافة خدمة')}
+              onPress={() => {
+                handleClose();
+                router.push('/(company)/add-service');
+              }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#15304D] bg-[#15304D] px-4 py-3"
             >
               <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
@@ -98,7 +92,7 @@ const CompanyActionsSheet = forwardRef<
               activeOpacity={0.7}
               onPress={() => {
                 handleClose();
-                router.push('/invoices');
+                router.push('/(company)/create-invoice');
               }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
             >
@@ -116,7 +110,10 @@ const CompanyActionsSheet = forwardRef<
             {/* Action 3: Add Portfolio Project (Outlined) */}
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => handleComingSoon('اضافة مشروع لمعرض الأعمال')}
+              onPress={() => {
+                handleClose();
+                router.push('/(company)/add-project');
+              }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
             >
               <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">

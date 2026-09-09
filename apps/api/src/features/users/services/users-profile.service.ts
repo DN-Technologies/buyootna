@@ -6,6 +6,8 @@ import {
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
+import { CreateCompanyInvoiceDto } from '../dto/create-company-invoice.dto';
+import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 @Injectable()
@@ -118,6 +120,101 @@ export class UsersProfileService {
     }
 
     throw new InternalServerErrorException('نوع الحساب غير صالح');
+  }
+
+  // --- Create Portfolio Project (company accounts only) ---
+  async createProject(userId: string, dto: CreateProjectDto) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+      include: { companyData: true },
+    });
+    if (!identity || !identity.companyData) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    const project = await this.prisma.companyProject.create({
+      data: {
+        identityId: identity.id,
+        title: dto.title,
+        description: dto.description,
+        images: dto.images,
+      },
+    });
+
+    return { success: true, project };
+  }
+
+  // --- Customer invoices (company accounts only) ---
+  async createInvoice(userId: string, dto: CreateCompanyInvoiceDto) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+      include: { companyData: true },
+    });
+    if (!identity || !identity.companyData) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    // Server-side totals — the client's numbers are never trusted.
+    const subtotal = dto.items.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0,
+    );
+    const discount = Math.min(dto.discount ?? 0, subtotal);
+    const total = subtotal - discount;
+
+    const invoiceNo = await this.generateInvoiceNo();
+
+    const invoice = await this.prisma.companyInvoice.create({
+      data: {
+        identityId: identity.id,
+        invoiceNo,
+        clientName: dto.clientName,
+        title: dto.title,
+        warrantyMonths: dto.warrantyMonths,
+        issueDate: new Date(dto.issueDate),
+        items: dto.items as unknown as Prisma.InputJsonValue,
+        subtotal,
+        discount,
+        total,
+      },
+    });
+
+    return { success: true, invoice };
+  }
+
+  async listInvoices(userId: string) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+    });
+    if (!identity) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    return this.prisma.companyInvoice.findMany({
+      where: { identityId: identity.id },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Generates a unique INV-YYYY-NNNNNN number based on the count of the
+   * company's existing invoices, retrying on the (unlikely) unique-constraint
+   * collision with concurrent invoices.
+   */
+  private async generateInvoiceNo(): Promise<string> {
+    const year = new Date().getFullYear();
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const count = await this.prisma.companyInvoice.count({
+        where: { invoiceNo: { startsWith: `INV-${year}-` } },
+      });
+      const candidate = `INV-${year}-${String(count + 1).padStart(6, '0')}`;
+      const exists = await this.prisma.companyInvoice.findUnique({
+        where: { invoiceNo: candidate },
+      });
+      if (!exists) return candidate;
+    }
+    // Fall back to a random suffix after repeated collisions.
+    return `INV-${year}-${String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')}`;
   }
 
   async deleteAccount(userId: string) {
