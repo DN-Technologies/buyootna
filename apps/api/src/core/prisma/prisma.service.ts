@@ -20,7 +20,6 @@ export class PrismaService
   private readonly pool: Pool;
 
   constructor() {
-    console.log('PRISMA_SERVICE_DATABASE_URL:', process.env.DATABASE_URL);
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
       max: 10, // Higher pool limit for concurrent API requests
