@@ -1,8 +1,8 @@
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import Avatar from '@/shared/components/Avatar';
 import type { ConversationSummary } from '@/shared/api/chat.service';
+import Avatar from '@/shared/components/Avatar';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,

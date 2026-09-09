@@ -42,7 +42,7 @@ export default function CompanyLayout() {
           headerShown: false,
         }}
       >
-        <Tabs.Screen name="company-home" />
+        <Tabs.Screen name="home" />
         <Tabs.Screen name="company-requests" />
 
         {/* The Center Add Button */}

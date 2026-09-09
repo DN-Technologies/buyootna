@@ -10,7 +10,7 @@ import type { IdentityType } from '@/shared/store/useAuthStore';
 export function getIdentityHomeRoute(type: IdentityType | null | undefined): Href {
   switch (type) {
     case 'COMPANY':
-      return '/(company)/company-home';
+      return '/(company)/home';
     case 'OFFICE':
       return '/(office)/office-home';
     case 'INDIVIDUAL':
@@ -28,7 +28,7 @@ export function getIdentityHomeRoute(type: IdentityType | null | undefined): Hre
  * mounted underneath.
  */
 export function resetToIdentityHome(type: IdentityType | null | undefined) {
-  if (router.canDismiss()) {
+  if (typeof router.canDismiss === 'function' && router.canDismiss()) {
     router.dismissAll();
   }
   router.replace(getIdentityHomeRoute(type));

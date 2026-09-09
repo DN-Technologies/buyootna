@@ -33,7 +33,7 @@ export default function CompanyRequestCard({
       <View className="gap-1 px-3.5 pb-1.5 pt-3.5">
         {/* Title (right) + status badge (left) */}
         <View className="min-h-[39px] flex-row items-start justify-between gap-2">
-          <View className="flex-1 items-end gap-1.5">
+          <View className="flex-1 items-start gap-1.5">
             <Text
               className="font-cairo-semibold text-[15px] leading-[22px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
@@ -66,7 +66,7 @@ export default function CompanyRequestCard({
         </View>
 
         {/* Meta row: price + location */}
-        <View className="flex-row items-center justify-end gap-5 py-0.5">
+        <View className="flex-row items-center gap-5 py-0.5">
           <View className="flex-row items-center gap-1">
             <Text
               className="font-cairo-medium text-[12px] leading-[18px] text-[#6B6A6A]"
@@ -101,7 +101,7 @@ export default function CompanyRequestCard({
         </Text>
 
         {/* Attachments */}
-        <View className="flex-row items-center justify-end gap-1 py-0.5">
+        <View className="flex-row items-center gap-1 py-0.5">
           <Text
             className="font-cairo-medium text-[12px] leading-[18px] text-[#6B6A6A]"
             style={{ writingDirection: 'rtl' }}

@@ -10,7 +10,7 @@ export default function SectionHeader({
   onPressViewAll,
 }: SectionHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-5">
+    <View className="flex-row items-center justify-between">
       <Text
         className="font-almarai-bold text-[18px] text-black"
         style={{ writingDirection: 'rtl' }}
