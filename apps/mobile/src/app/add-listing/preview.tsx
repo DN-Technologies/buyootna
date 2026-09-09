@@ -48,6 +48,9 @@ export default function AdPreviewScreen() {
   const slotPickerRef = useRef<BottomSheetModal>(null);
   const quotaSheetRef = useRef<BottomSheetModal>(null);
   const [publishOptions, setPublishOptions] = useState<PublishOption[]>([]);
+  const [quotaSheetMode, setQuotaSheetMode] = useState<
+    'exhausted' | 'featuredUnavailable'
+  >('exhausted');
 
   // Pull all data from our global state
   const draftData = useListingStore();
@@ -121,12 +124,29 @@ export default function AdPreviewScreen() {
       const optionsRes = await plansService.getPublishOptions();
 
       if (!optionsRes.canPublish || optionsRes.options.length === 0) {
+        setQuotaSheetMode('exhausted');
         quotaSheetRef.current?.present();
         return;
       }
 
-      if (optionsRes.options.length === 1) {
-        const res = await submitListing(false, optionsRes.options[0].slotId);
+      // Featured status is granted by the plan slot a property publishes
+      // from (slot.featuredDays), not by this screen's "نوع الاعلان"
+      // choice on its own -- so when the user picked Featured, only offer
+      // slots that actually carry featured days, instead of silently
+      // publishing on a slot that would make it a regular ad.
+      const wantsFeatured = draftData.adLevel === 'premium';
+      const eligibleOptions = wantsFeatured
+        ? optionsRes.options.filter((option) => option.featuredDays > 0)
+        : optionsRes.options;
+
+      if (eligibleOptions.length === 0) {
+        setQuotaSheetMode('featuredUnavailable');
+        quotaSheetRef.current?.present();
+        return;
+      }
+
+      if (eligibleOptions.length === 1) {
+        const res = await submitListing(false, eligibleOptions[0].slotId);
         if (res.success) {
           setShowSuccess(true);
         } else {
@@ -135,7 +155,7 @@ export default function AdPreviewScreen() {
         return;
       }
 
-      setPublishOptions(optionsRes.options);
+      setPublishOptions(eligibleOptions);
       slotPickerRef.current?.present();
     } catch (e) {
       console.error('Failed to check publish options:', e);
@@ -400,6 +420,16 @@ export default function AdPreviewScreen() {
       <QuotaExhaustedSheet
         ref={quotaSheetRef}
         onBrowsePackages={() => router.push('/plans')}
+        title={
+          quotaSheetMode === 'featuredUnavailable'
+            ? 'ليس لديك باقة تشمل إعلانات مميزة'
+            : undefined
+        }
+        description={
+          quotaSheetMode === 'featuredUnavailable'
+            ? 'لتتمكن من نشر هذا الإعلان كإعلان مميز والحصول على أولوية الظهور، يرجى شراء باقة تشمل أيام إعلان مميز.'
+            : undefined
+        }
       />
     </SafeAreaView>
   );
