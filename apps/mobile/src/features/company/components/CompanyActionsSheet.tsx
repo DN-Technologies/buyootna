@@ -79,7 +79,10 @@ const CompanyActionsSheet = forwardRef<
             {/* Action 1: Add Service (Solid Navy) */}
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={() => handleComingSoon('اضافة خدمة')}
+              onPress={() => {
+                handleClose();
+                router.push('/(company)/add-service');
+              }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#15304D] bg-[#15304D] px-4 py-3"
             >
               <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
