@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 
 /** Mirrors the backend's OTP_RATE_LIMIT.PROGRESSIVE_COOLDOWNS schedule. */
 const PROGRESSIVE_COOLDOWNS_SECONDS = [30, 60, 120, 240, 300];
@@ -18,21 +19,44 @@ export type ResendOtpResult =
  * once the daily request cap is hit -- instead of a component-local timer
  * that resets to the same fixed duration regardless of what the server
  * allows or rejects.
+ *
+ * Counts down from an absolute end timestamp rather than decrementing a
+ * plain counter on every setInterval tick -- iOS throttles/pauses JS
+ * timers while the app is backgrounded, so a pure counter freezes and
+ * silently drifts from real elapsed time. Deriving the displayed value
+ * from `Date.now()` vs. the target timestamp self-corrects on the next
+ * tick, and an AppState listener forces that recompute immediately on
+ * foreground instead of waiting up to a second for it.
  */
 export function useOtpResendTimer(initialSeconds: number) {
-  const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
-  const [limitReachedMessage, setLimitReachedMessage] = useState<string | null>(
-    null,
+  const [targetAt, setTargetAt] = useState(
+    () => Date.now() + initialSeconds * 1000,
   );
+  const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+  const [limitReachedMessage, setLimitReachedMessage] = useState<
+    string | null
+  >(null);
   const resendCountRef = useRef(0);
 
+  const recompute = useCallback(() => {
+    setSecondsLeft(Math.max(0, Math.ceil((targetAt - Date.now()) / 1000)));
+  }, [targetAt]);
+
   useEffect(() => {
-    if (limitReachedMessage || secondsLeft <= 0) return;
-    const interval = setInterval(() => {
-      setSecondsLeft((prev) => Math.max(0, prev - 1));
-    }, 1000);
+    if (limitReachedMessage) return;
+    recompute();
+    const interval = setInterval(recompute, 1000);
     return () => clearInterval(interval);
-  }, [secondsLeft, limitReachedMessage]);
+  }, [targetAt, limitReachedMessage, recompute]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        recompute();
+      }
+    });
+    return () => subscription.remove();
+  }, [recompute]);
 
   /** Feed the result of an onResendOtp() call into the timer/lock state. */
   const handleResendResult = (result: ResendOtpResult) => {
@@ -42,7 +66,8 @@ export function useOtpResendTimer(initialSeconds: number) {
         resendCountRef.current - 1,
         PROGRESSIVE_COOLDOWNS_SECONDS.length - 1,
       );
-      setSecondsLeft(PROGRESSIVE_COOLDOWNS_SECONDS[index]);
+      setLimitReachedMessage(null);
+      setTargetAt(Date.now() + PROGRESSIVE_COOLDOWNS_SECONDS[index] * 1000);
       return;
     }
 
@@ -55,7 +80,7 @@ export function useOtpResendTimer(initialSeconds: number) {
       // The client's local resend count drifted from the server's (e.g. a
       // previous request never reached the server) -- resync to the real
       // remaining cooldown instead of leaving the resend button active.
-      setSecondsLeft(result.retryAfter);
+      setTargetAt(Date.now() + result.retryAfter * 1000);
       return;
     }
 
@@ -71,7 +96,7 @@ export function useOtpResendTimer(initialSeconds: number) {
   const reset = (seconds: number) => {
     resendCountRef.current = 0;
     setLimitReachedMessage(null);
-    setSecondsLeft(seconds);
+    setTargetAt(Date.now() + seconds * 1000);
   };
 
   return {
