@@ -20,6 +20,18 @@ const otaStatusLabel = Updates.isEmbeddedLaunch
     }`;
 const otaUpdateId = !Updates.isEmbeddedLaunch ? Updates.updateId : null;
 
+// Baked in by scripts/release-ota.js from its required --message at publish
+// time, so QA can read what an OTA update actually changed on-device
+// instead of needing EAS dashboard/git access. Absent on the embedded
+// build (never published via that script) and on any OTA build published
+// before this was added.
+const otaReleaseNote = !Updates.isEmbeddedLaunch
+  ? process.env.EXPO_PUBLIC_OTA_RELEASE_NOTE
+  : null;
+const otaCommit = !Updates.isEmbeddedLaunch
+  ? process.env.EXPO_PUBLIC_OTA_COMMIT
+  : null;
+
 export default function AboutScreen() {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
@@ -134,6 +146,12 @@ export default function AboutScreen() {
             {!!otaUpdateId && (
               <Text className="font-cairo text-[10px] text-[#A0A0A0]">
                 معرف التحديث: {otaUpdateId.slice(0, 8)}
+                {otaCommit ? ` (${otaCommit})` : ''}
+              </Text>
+            )}
+            {!!otaReleaseNote && (
+              <Text className="mt-1 px-8 text-center font-cairo-medium text-[11px] text-[#15304D]">
+                {otaReleaseNote}
               </Text>
             )}
           </View>
