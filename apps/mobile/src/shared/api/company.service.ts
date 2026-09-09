@@ -21,4 +21,16 @@ export const companyService = {
     );
     return response.data;
   },
+
+  /**
+   * Creates a portfolio project for the current company profile.
+   */
+  createProject: async (data: {
+    title: string;
+    description: string;
+    images: string[];
+  }): Promise<{ success: boolean }> => {
+    const response = await apiClient.post('/users/profile/projects', data);
+    return response.data;
+  },
 };

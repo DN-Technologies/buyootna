@@ -6,6 +6,7 @@ import {
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
+import { CreateProjectDto } from '../dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 @Injectable()
@@ -118,6 +119,28 @@ export class UsersProfileService {
     }
 
     throw new InternalServerErrorException('نوع الحساب غير صالح');
+  }
+
+  // --- Create Portfolio Project (company accounts only) ---
+  async createProject(userId: string, dto: CreateProjectDto) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+      include: { companyData: true },
+    });
+    if (!identity || !identity.companyData) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    const project = await this.prisma.companyProject.create({
+      data: {
+        identityId: identity.id,
+        title: dto.title,
+        description: dto.description,
+        images: dto.images,
+      },
+    });
+
+    return { success: true, project };
   }
 
   async deleteAccount(userId: string) {

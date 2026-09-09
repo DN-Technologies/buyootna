@@ -227,6 +227,9 @@ export class UsersDirectoryService {
             createdAt: true,
           },
         },
+        projects: {
+          orderBy: { createdAt: 'desc' as const },
+        },
       },
     });
 
@@ -256,13 +259,27 @@ export class UsersDirectoryService {
       companyData.name,
     );
 
-    const formattedProjects = (identity.properties || []).map((p) => ({
-      id: p.id,
-      title: `${p.category || 'مشروع'} - ${p.location || 'الكويت'}`,
-      category: String(p.category || ''),
-      imageUrl: p.images && p.images.length > 0 ? p.images[0] : undefined,
-      completedDate: p.createdAt ? p.createdAt.toISOString().slice(0, 7) : '',
-    }));
+    // Real portfolio projects created via "اضافة مشروع لمعرض الأعمال" come
+    // first; property-derived items (the legacy gallery source) follow.
+    const formattedProjects = [
+      ...(identity.projects || []).map((project) => ({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        category: '',
+        imageUrl: project.images.length > 0 ? project.images[0] : undefined,
+        completedDate: project.createdAt
+          ? project.createdAt.toISOString().slice(0, 7)
+          : '',
+      })),
+      ...(identity.properties || []).map((p) => ({
+        id: p.id,
+        title: `${p.category || 'مشروع'} - ${p.location || 'الكويت'}`,
+        category: String(p.category || ''),
+        imageUrl: p.images && p.images.length > 0 ? p.images[0] : undefined,
+        completedDate: p.createdAt ? p.createdAt.toISOString().slice(0, 7) : '',
+      })),
+    ];
 
     return {
       id: identity.id,

@@ -30,6 +30,7 @@ model Identity {
   reviewReactions ReviewReaction[]
   planSlots       UserPlanSlot[]
   invoices        Invoice[]
+  projects        CompanyProject[]
 
   @@index([userId])
   @@index([userId, isActive])
@@ -93,4 +94,18 @@ model OfficeIdentityData {
 
   identity       Identity        @relation(fields: [identityId], references: [id], onDelete: Cascade)
   reviewRequests ReviewRequest[] @relation("OfficeReviewRequests")
+}
+
+model CompanyProject {
+  id          String   @id @default(uuid())
+  identityId  String
+  title       String
+  description String
+  images      String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
 }
