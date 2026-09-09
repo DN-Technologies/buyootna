@@ -21,6 +21,7 @@ import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import apiClient from '@/shared/api/api';
 import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { ResendOtpResult } from '@/shared/hooks/useOtpResendTimer';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -248,7 +249,7 @@ export default function IndividualAuthScreen() {
     }
   };
 
-  const onResendOtp = async () => {
+  const onResendOtp = async (): Promise<ResendOtpResult> => {
     try {
       if (isPhoneIdentifier(signupIdentifier)) {
         await apiClient.post('/auth/recovery/request-otp', {
@@ -265,8 +266,17 @@ export default function IndividualAuthScreen() {
         });
       }
       showAlert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
+      return { success: true };
     } catch (error: any) {
-      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إعادة إرسال رمز التحقق'));
+      const code = error?.response?.data?.code;
+      const retryAfter = error?.response?.data?.retryAfter;
+      const message = getApiErrorMessage(error, 'تعذر إعادة إرسال رمز التحقق');
+      // Cooldown/daily-limit state is rendered inline by the OTP step
+      // itself — an alert on top of that would just be redundant.
+      if (code !== 'OTP_COOLDOWN' && code !== 'OTP_DAILY_LIMIT') {
+        showAlert('خطأ', message);
+      }
+      return { success: false, code, retryAfter, message };
     }
   };
 
