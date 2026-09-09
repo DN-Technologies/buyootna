@@ -16,37 +16,42 @@ export default function MessageBubble({
 }: MessageProps) {
   return (
     <View
-      className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
+      className={`mb-4 w-full flex-row ${isMine ? 'justify-end' : 'justify-start'}`}
     >
-      <View className={`max-w-[80%] ${isMine ? 'items-start' : 'items-end'}`}>
-        {/* Bubble */}
+      <View className={`max-w-[80%] ${isMine ? 'items-end' : 'items-start'}`}>
+        {/* Bubble — theirs: dark on the right, mine: light on the left */}
         <View
-          className={`rounded-2xl px-4 py-3 ${
-            isMine
-              ? 'rounded-tl-sm bg-[#15304D]'
-              : 'rounded-tr-sm border border-gray-100 bg-white shadow-sm shadow-gray-200/50'
+          className={`rounded-md px-5 py-3 ${
+            isMine ? 'rounded-bl-none bg-[#F9FAFE]' : 'rounded-br-none bg-[#15304D]'
           }`}
+          style={{
+            shadowColor: '#15304D',
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 2,
+          }}
         >
           <Text
             className={`text-right font-cairo-medium text-[14px] leading-6 ${
-              isMine ? 'text-white' : 'text-[#111111]'
+              isMine ? 'text-[#111111]' : 'text-white'
             }`}
+            style={{ writingDirection: 'rtl' }}
           >
             {text}
           </Text>
         </View>
 
-        {/* Meta row (Timestamp & Read Receipt) */}
-        <View className="mt-1.5 flex-row items-center space-x-1 space-x-reverse">
+        {/* Meta row (outside, below the bubble) */}
+        <View className="mt-1 flex-row items-center gap-1">
           {isMine && (
-            // Double checkmark for read, single for sent (mocked logic)
             <Feather
               name="check"
-              size={12}
+              size={14}
               color={isRead ? '#15304D' : '#94A3B8'}
             />
           )}
-          <Text className="font-cairo-medium text-[10px] text-[#94A3B8]">
+          <Text className="font-cairo text-[13px] text-[#6B6A6A]">
             {timestamp}
           </Text>
         </View>

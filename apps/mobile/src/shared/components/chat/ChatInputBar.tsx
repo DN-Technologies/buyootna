@@ -19,7 +19,16 @@ export default function ChatInputBar({
   onAttachImage,
 }: ChatInputBarProps) {
   return (
-    <View className="relative z-50 flex-row items-end border-t border-gray-100 bg-white px-5 py-3">
+    <View
+      className="relative z-50 flex-row items-end bg-white px-4 pb-3 pt-2.5"
+      style={{
+        shadowColor: '#ABACBC',
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: -2 },
+        elevation: 6,
+      }}
+    >
       {/* Attachment Button & Menu */}
       <View className="relative">
         {showAttachmentMenu && (
@@ -45,19 +54,19 @@ export default function ChatInputBar({
         )}
 
         <TouchableOpacity
-          className="h-[44px] w-[44px] items-center justify-center"
+          className="h-8 w-8 items-center justify-center"
           onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
         >
-          <Feather name="plus" size={24} color="#64748B" />
+          <Feather name="plus" size={24} color="#111111" />
         </TouchableOpacity>
       </View>
 
-      {/* Text Input */}
-      <View className="mx-3 max-h-[100px] min-h-[44px] flex-1 flex-row items-center rounded-2xl border border-gray-100 bg-gray-50 px-4 py-2">
+      {/* Text Input pill */}
+      <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
         <TextInput
-          className="flex-1 text-right font-cairo-medium text-[14px] leading-[22px] text-[#111111]"
+          className="flex-1 py-2 text-right font-cairo text-[14px] text-[#111111]"
           placeholder="اكتب رسالتك.."
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor="#979797"
           multiline
           value={inputText}
           onChangeText={onInputChange}
@@ -69,12 +78,12 @@ export default function ChatInputBar({
       <TouchableOpacity
         testID="chat-send-button"
         onPress={onSend}
-        className={`h-[40px] w-[40px] items-center justify-center rounded-full ${inputText.trim() ? 'bg-[#15304D]' : 'bg-gray-100'}`}
+        className="h-8 w-8 items-center justify-center"
       >
         <Feather
           name="send"
-          size={18}
-          color={inputText.trim() ? 'white' : '#94A3B8'}
+          size={24}
+          color={inputText.trim() ? '#15304D' : '#94A3B8'}
         />
       </TouchableOpacity>
     </View>

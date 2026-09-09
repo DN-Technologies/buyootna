@@ -19,13 +19,22 @@ export default function ImageMessageBubble({
 }: ImageMessageProps) {
   return (
     <View
-      className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
+      className={`mb-4 w-full flex-row ${isMine ? 'justify-end' : 'justify-start'}`}
     >
-      <View className={`max-w-[75%] ${isMine ? 'items-start' : 'items-end'}`}>
+      <View className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'}`}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={onPressImage}
-          className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-100 shadow-sm shadow-gray-200/50"
+          className={`overflow-hidden rounded-lg ${
+            isMine ? 'rounded-bl-none bg-[#F9FAFE]' : 'rounded-br-none bg-[#15304D]'
+          }`}
+          style={{
+            shadowColor: '#15304D',
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 2,
+          }}
         >
           <Image
             source={{ uri: imageUrl }}
@@ -34,16 +43,16 @@ export default function ImageMessageBubble({
           />
         </TouchableOpacity>
 
-        {/* Meta row (Timestamp & Read Receipt) */}
-        <View className="mt-1.5 flex-row items-center space-x-1 space-x-reverse">
+        {/* Meta row (outside, below the bubble) */}
+        <View className="mt-1 flex-row items-center gap-1">
           {isMine && (
             <Feather
               name="check"
-              size={12}
+              size={14}
               color={isRead ? '#15304D' : '#94A3B8'}
             />
           )}
-          <Text className="font-cairo-medium text-[10px] text-[#94A3B8]">
+          <Text className="font-cairo text-[13px] text-[#6B6A6A]">
             {timestamp}
           </Text>
         </View>
