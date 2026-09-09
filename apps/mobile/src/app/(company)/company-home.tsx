@@ -3,6 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 import {
+  FlatList,
   Image,
   RefreshControl,
   ScrollView,
@@ -16,17 +17,29 @@ import {
   HomeSearchIcon,
   NotificationIcon,
 } from '@/assets/icons/home/header';
+import CompanyRequestCard from '@/features/company/components/home/CompanyRequestCard';
+import HomeConversationCard from '@/features/company/components/home/HomeConversationCard';
+import {
+  COMPANY_REQUESTS_MOCK,
+  HOME_SERVICES_MOCK,
+  PUBLIC_REQUESTS_MOCK,
+} from '@/features/company/components/home/mockData';
+import SectionHeader from '@/features/company/components/home/SectionHeader';
+import ServiceCard from '@/features/company/components/home/ServiceCard';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useChatStore } from '@/shared/store/useChatStore';
 
 export default function CompanyHomeScreen() {
   const router = useRouter();
   const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
   const unreadCount = useUnreadNotificationsCount();
+  const conversations = useChatStore((state) => state.conversations);
+  const loadConversations = useChatStore((state) => state.loadConversations);
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
@@ -34,8 +47,9 @@ export default function CompanyHomeScreen() {
     useCallback(() => {
       if (token) {
         refreshProfile();
+        loadConversations(1);
       }
-    }, [refreshProfile, token])
+    }, [refreshProfile, loadConversations, token])
   );
 
   if (!activeIdentity) {
@@ -267,6 +281,85 @@ export default function CompanyHomeScreen() {
               </Text>
             </TouchableOpacity>
           </View>
+
+          {/* --- 4. Company Requests Section --- */}
+          <View className="mt-6 gap-3">
+            <SectionHeader
+              title="طلبات خاصة بالشركة"
+              onPressViewAll={() => router.push('/(company)/company-requests')}
+            />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+              data={COMPANY_REQUESTS_MOCK}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View className="mr-4">
+                  <CompanyRequestCard request={item} variant="company" />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* --- 5. Public Requests Section --- */}
+          <View className="mt-6 gap-3">
+            <SectionHeader
+              title="طلبات عامة"
+              onPressViewAll={() => router.push('/(company)/company-requests')}
+            />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+              data={PUBLIC_REQUESTS_MOCK}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View className="mr-4">
+                  <CompanyRequestCard request={item} variant="public" />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* --- 6. Services Section --- */}
+          <View className="mt-6 gap-3">
+            <SectionHeader title="الخدمات" />
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 20 }}
+              data={HOME_SERVICES_MOCK}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <View className="mr-4">
+                  <ServiceCard service={item} />
+                </View>
+              )}
+            />
+          </View>
+
+          {/* --- 7. Latest Conversations Section --- */}
+          {conversations.length > 0 && (
+            <View className="mt-6 gap-3">
+              <SectionHeader
+                title="أحدث المحادثات"
+                onPressViewAll={() => router.push('/(company)/company-chats')}
+              />
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
+                data={conversations.slice(0, 5)}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View className="mr-4">
+                    <HomeConversationCard conversation={item} />
+                  </View>
+                )}
+              />
+            </View>
+          )}
         </ContentContainer>
       </ScrollView>
     </SafeAreaView>
