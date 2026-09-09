@@ -2,11 +2,10 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
-import ComingSoonGate from '@/shared/components/ComingSoonGate';
+import CompanyActionsSheet from '@/features/company/components/CompanyActionsSheet';
 import CustomTabBar from '@/features/individual/components/CustomTabBar';
-import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
-import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Company tabs stay behind the ComingSoonGate unless explicitly enabled via
@@ -18,20 +17,15 @@ const COMPANIES_ENABLED =
 export default function CompanyLayout() {
   const token = useAuthStore((state) => state.token);
 
-  const plusSheetRef = useRef<BottomSheetModal>(null);
-  const quotaSheetRef = useRef<BottomSheetModal>(null);
+  const actionsSheetRef = useRef<BottomSheetModal>(null);
   const authGuardSheetRef = useRef<BottomSheetModal>(null);
 
   const handleOpenPlusSheet = () => {
     if (!token) {
       authGuardSheetRef.current?.present();
     } else {
-      plusSheetRef.current?.present();
+      actionsSheetRef.current?.present();
     }
-  };
-
-  const handleOpenQuotaSheet = () => {
-    quotaSheetRef.current?.present();
   };
 
   if (!COMPANIES_ENABLED) {
@@ -58,11 +52,7 @@ export default function CompanyLayout() {
         <Tabs.Screen name="company-more" />
       </Tabs>
       {/* Bottom sheets mounted outside Tabs so the backdrop covers the entire screen */}
-      <PlusActionsSheet
-        ref={plusSheetRef}
-        onQuotaExhausted={handleOpenQuotaSheet}
-      />
-      <QuotaExhaustedSheet ref={quotaSheetRef} />
+      <CompanyActionsSheet ref={actionsSheetRef} />
       <AuthGuardSheet ref={authGuardSheetRef} />
     </>
   );

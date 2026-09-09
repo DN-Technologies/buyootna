@@ -1,4 +1,4 @@
-import type { CompanyServiceItemData } from '@/shared/components/company/CompanyServicesTab';
+import { Ionicons } from '@expo/vector-icons';
 
 export interface CompanyRequest {
   id: string;
@@ -66,20 +66,36 @@ export const PUBLIC_REQUESTS_MOCK: CompanyRequest[] = [
   },
 ];
 
-export const HOME_SERVICES_MOCK: CompanyServiceItemData[] = [
+export interface HomeServiceChip {
+  id: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}
+
+export const HOME_SERVICE_CHIPS_MOCK: HomeServiceChip[] = [
   {
     id: '1',
-    title: 'الأثاث',
-    description: 'أثاث منزلي ومكتبي بجودة عالية.',
+    label: 'مكاتب هندسية',
+    icon: 'business-outline',
   },
   {
     id: '2',
-    title: 'شبكات نت',
-    description: 'تركيب وصيانة شبكات الإنترنت والاتصالات.',
+    label: 'الأثاث',
+    icon: 'bed-outline',
   },
   {
     id: '3',
-    title: 'التكييف',
-    description: 'تركيب وصيانة أنظمة التكييف بأنواعها.',
+    label: 'شبكات نت',
+    icon: 'wifi-outline',
+  },
+  {
+    id: '4',
+    label: 'التكييف',
+    icon: 'snow-outline',
+  },
+  {
+    id: '5',
+    label: 'مقاولات',
+    icon: 'construct-outline',
   },
 ];

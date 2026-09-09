@@ -17,15 +17,17 @@ import {
   HomeSearchIcon,
   NotificationIcon,
 } from '@/assets/icons/home/header';
+import CompanyAdCard from '@/features/company/components/home/CompanyAdCard';
 import CompanyRequestCard from '@/features/company/components/home/CompanyRequestCard';
 import HomeConversationCard from '@/features/company/components/home/HomeConversationCard';
 import {
   COMPANY_REQUESTS_MOCK,
-  HOME_SERVICES_MOCK,
+  HOME_SERVICE_CHIPS_MOCK,
   PUBLIC_REQUESTS_MOCK,
 } from '@/features/company/components/home/mockData';
 import SectionHeader from '@/features/company/components/home/SectionHeader';
-import ServiceCard from '@/features/company/components/home/ServiceCard';
+import ServiceChip from '@/features/company/components/home/ServiceChip';
+import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
@@ -40,6 +42,7 @@ export default function CompanyHomeScreen() {
   const unreadCount = useUnreadNotificationsCount();
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
+  const { data: myAds, refetch: refetchMyAds } = useMyActivity();
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
@@ -48,8 +51,9 @@ export default function CompanyHomeScreen() {
       if (token) {
         refreshProfile();
         loadConversations(1);
+        refetchMyAds();
       }
-    }, [refreshProfile, loadConversations, token])
+    }, [refreshProfile, loadConversations, refetchMyAds, token])
   );
 
   if (!activeIdentity) {
@@ -329,17 +333,36 @@ export default function CompanyHomeScreen() {
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 20 }}
-              data={HOME_SERVICES_MOCK}
+              data={HOME_SERVICE_CHIPS_MOCK}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <View className="mr-4">
-                  <ServiceCard service={item} />
+                <View className="mr-3">
+                  <ServiceChip service={item} />
                 </View>
               )}
             />
           </View>
 
-          {/* --- 7. Latest Conversations Section --- */}
+          {/* --- 7. Advertisements Section --- */}
+          {(myAds?.length ?? 0) > 0 && (
+            <View className="mt-6 gap-3">
+              <SectionHeader title="الاعلانات" />
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 20 }}
+                data={myAds?.slice(0, 5)}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View className="mr-3">
+                    <CompanyAdCard ad={item} />
+                  </View>
+                )}
+              />
+            </View>
+          )}
+
+          {/* --- 8. Latest Conversations Section --- */}
           {conversations.length > 0 && (
             <View className="mt-6 gap-3">
               <SectionHeader
