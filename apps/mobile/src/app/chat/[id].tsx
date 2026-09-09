@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -30,6 +30,45 @@ import {
 // a new array on every store update (which would make Zustand think this
 // selector's value changed on every unrelated state change too).
 const EMPTY_MESSAGES: ChatMessage[] = [];
+
+type DisplayMessage = ChatMessage | { id: string; type: 'DATE'; content: string };
+
+/** أمس / اليوم / full date label for the day a message was sent on. */
+function formatDayLabel(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return 'اليوم';
+  if (date.toDateString() === yesterday.toDateString()) return 'أمس';
+  return date.toLocaleDateString('ar-KW', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Inserts a DATE separator item whenever the calendar day changes between
+ * consecutive messages (pure client-side — the API returns a flat list).
+ */
+function withDateSeparators(messages: ChatMessage[]): DisplayMessage[] {
+  const result: DisplayMessage[] = [];
+  let lastDayKey: string | null = null;
+  for (const msg of messages) {
+    const date = new Date(msg.createdAt);
+    const dayKey = isNaN(date.getTime()) ? null : date.toDateString();
+    if (dayKey && dayKey !== lastDayKey) {
+      lastDayKey = dayKey;
+      result.push({
+        id: `date-${dayKey}`,
+        type: 'DATE',
+        content: formatDayLabel(date),
+      });
+    }
+    result.push(msg);
+  }
+  return result;
+}
 
 export default function ChatDetailsScreen() {
   const router = useRouter();
@@ -71,6 +110,11 @@ export default function ChatDetailsScreen() {
   // Find conversation summary details for header display
   const conversation = useChatStore((state) =>
     state.conversations.find((c) => c.id === conversationId),
+  );
+
+  const displayMessages = useMemo(
+    () => withDateSeparators(activeMessages),
+    [activeMessages],
   );
 
   const isHeaderLoading = !conversation;
@@ -246,7 +290,7 @@ export default function ChatDetailsScreen() {
             triggers via `onStartReached` instead of `onEndReached`.
           */}
           <FlashList
-            data={activeMessages}
+            data={displayMessages}
             style={{ flex: 1 }}
             keyExtractor={(item) => item.id}
             getItemType={(item) => item.type}
