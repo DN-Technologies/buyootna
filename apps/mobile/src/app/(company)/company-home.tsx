@@ -27,6 +27,7 @@ import {
 } from '@/features/company/components/home/mockData';
 import SectionHeader from '@/features/company/components/home/SectionHeader';
 import ServiceChip from '@/features/company/components/home/ServiceChip';
+import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
@@ -43,8 +44,20 @@ export default function CompanyHomeScreen() {
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
   const { data: myAds, refetch: refetchMyAds } = useMyActivity();
+  const { data: dashboard, refetch: refetchDashboard } = useCompanyHome();
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
+
+  // "•"-delimited list, e.g. "إدارة أملاك • وساطة عقارية • تقييم عقاري" --
+  // no dedicated services endpoint exists, this is already on the identity.
+  const activeServicesCount = (activeIdentity?.companyData?.services ?? '')
+    .split('•')
+    .map((s) => s.trim())
+    .filter(Boolean).length;
+  const unreadMessagesCount = conversations.reduce(
+    (sum, c) => sum + (c.unreadCount || 0),
+    0,
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -52,8 +65,9 @@ export default function CompanyHomeScreen() {
         refreshProfile();
         loadConversations(1);
         refetchMyAds();
+        refetchDashboard();
       }
-    }, [refreshProfile, loadConversations, refetchMyAds, token])
+    }, [refreshProfile, loadConversations, refetchMyAds, refetchDashboard, token])
   );
 
   if (!activeIdentity) {
@@ -160,7 +174,9 @@ export default function CompanyHomeScreen() {
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    3 هذا الأسبوع
+                    {/* TODO(leads-marketplace): no Requests backend exists
+                        yet -- still mock, see mockData.ts */}
+                    {COMPANY_REQUESTS_MOCK.length} هذا الأسبوع
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -188,7 +204,7 @@ export default function CompanyHomeScreen() {
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    3
+                    {activeServicesCount}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -217,7 +233,7 @@ export default function CompanyHomeScreen() {
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    +700
+                    +{dashboard?.listings.totalViews ?? 0}
                   </Text>
                 </View>
               </View>
@@ -243,37 +259,53 @@ export default function CompanyHomeScreen() {
                     className="font-cairo-medium text-[14px] text-[#111111]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    الرسائل الجديدة
+                    الرسائل غير المقروءة
                   </Text>
                   <Text
                     className="font-cairo-semibold text-[14px] text-[#15A72B]"
                     style={{ writingDirection: 'rtl' }}
                   >
-                    5 اليوم
+                    {unreadMessagesCount}
                   </Text>
                 </View>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* --- 3. Trial Banner --- */}
-          <View className="mt-4 rounded-md border border-[#ECECEC] bg-[#F9FAFE] p-4">
+          {/* --- 3. Billing/Subscription Banner --- */}
+          <View
+            className={`mt-4 rounded-md border p-4 ${
+              dashboard?.billing.hasOverdueInvoice
+                ? 'border-[#F1B8B8] bg-[#FDF3F3]'
+                : 'border-[#ECECEC] bg-[#F9FAFE]'
+            }`}
+          >
             <View className="flex-row items-start justify-between">
               <View className="flex-1 items-start">
                 <Text
                   className="font-cairo-bold text-[15px] leading-[22px] text-[#111111]"
                   style={{ writingDirection: 'rtl' }}
                 >
-                  أنت تستخدم النسخة التجريبية
+                  {dashboard?.billing.hasOverdueInvoice
+                    ? 'لديك فاتورة متأخرة السداد'
+                    : dashboard?.billing.hasActivePlan
+                      ? `باقتك النشطة: ${dashboard.billing.activePlanName}`
+                      : 'لم يتم تفعيل أي باقة اشتراك بعد'}
                 </Text>
                 <Text
                   className="mt-1 font-cairo-medium text-[12px] text-[#6B6A6A]"
                   style={{ writingDirection: 'rtl' }}
                 >
-                  يتبقى 14 يومًا للاستمتاع بجميع المميزات.
+                  {dashboard?.billing.hasOverdueInvoice
+                    ? 'يرجى سداد الفاتورة لتجنب إيقاف الخدمة.'
+                    : dashboard?.billing.hasActivePlan
+                      ? `متبقي ${dashboard.billing.adsRemaining} إعلان في هذه الباقة.`
+                      : 'استعرض باقاتنا لنشر المزيد من الإعلانات والاستفادة من كافة المميزات.'}
                 </Text>
               </View>
-              <Text className="text-2xl">🎉</Text>
+              <Text className="text-2xl">
+                {dashboard?.billing.hasOverdueInvoice ? '⚠️' : '🎉'}
+              </Text>
             </View>
 
             <TouchableOpacity

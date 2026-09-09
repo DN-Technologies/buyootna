@@ -32,6 +32,7 @@ import { PaymentsModule } from './features/payments/payments.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
 import { AdminModule } from './features/admin/admin.module';
 import { IdentitiesModule } from './features/identities/identities.module';
+import { CompaniesModule } from './features/companies/companies.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { IdentitiesModule } from './features/identities/identities.module';
     ReviewsModule,
     AdminModule,
     IdentitiesModule,
+    CompaniesModule,
   ],
   controllers: [AppController],
   providers: [
