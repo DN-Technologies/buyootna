@@ -87,7 +87,7 @@ describe('ProfileBottomSheet', () => {
     await Promise.resolve();
 
     expect(switchIdentity).toHaveBeenCalledWith('identity-2');
-    expect(router.replace).toHaveBeenCalledWith('/(company)/company-home');
+    expect(router.replace).toHaveBeenCalledWith('/(company)/home');
   });
 
   it('swallows a switchIdentity failure silently (no crash, no navigation)', async () => {
