@@ -10,7 +10,7 @@ import UserTableFilters from '@/components/users/UserTableFilters'
 import UserTable, { UserRow } from '@/components/users/UserTable'
 import UserPagination from '@/components/users/UserPagination'
 import AddUserDrawer from '@/components/users/AddUserDrawer'
-import ChangePlanModal from '@/components/users/ChangePlanModal'
+import ChangePlanDrawer from '@/components/users/ChangePlanDrawer'
 import SendNotificationModal from '@/components/users/SendNotificationModal'
 import AddCouponModal from '@/components/users/AddCouponModal'
 import SuccessToast from '@/components/users/SuccessToast'
@@ -262,7 +262,7 @@ function UsersPageContent() {
         u.id === userId ? { ...u, subscriptionPlan: planName } : u,
       ),
     }))
-    showToast(`تم تغيير باقة المشترك إلى "${planName}" بنجاح`)
+    showToast('تم تغيير الباقة بنجاح.')
   }
 
   const handleNotificationSuccess = (_userId: string, title: string) => {
@@ -469,10 +469,10 @@ function UsersPageContent() {
         }}
       />
 
-      {/* Change Subscription Plan Modal */}
-      <ChangePlanModal
+      {/* Change Subscription Plan Drawer (Figma Nodes 5634:71036, 5634:70967, 5634:70898) */}
+      <ChangePlanDrawer
         user={planModalUser}
-        isOpen={!!planModalUser}
+        open={!!planModalUser}
         onClose={() => setPlanModalUser(null)}
         onSuccess={handlePlanSuccess}
       />

@@ -47,7 +47,7 @@ export default function MetricsGrid() {
       {metrics.map((metric) => (
         <div
           key={metric.id}
-          className="bg-white border border-[#ECECEC] rounded-[8px] p-4 flex flex-col gap-2 relative overflow-hidden select-none"
+          className="bg-white border border-[#ECECEC] rounded-lg p-4 flex flex-col gap-2 relative overflow-hidden select-none"
           data-node-id={`card-${metric.id}`}
         >
           <div className="flex items-start justify-between relative">

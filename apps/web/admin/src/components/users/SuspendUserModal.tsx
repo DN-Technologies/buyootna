@@ -88,7 +88,11 @@ export default function SuspendUserModal({
   const handleConfirm = async () => {
     try {
       setLoading(true)
-      await onConfirm(user, Number(duration) || undefined, reason.trim() || undefined)
+      await onConfirm(
+        user,
+        Number(duration) || undefined,
+        reason.trim() || undefined,
+      )
       onClose()
     } catch (err) {
       console.error('Failed to suspend user:', err)
@@ -109,7 +113,7 @@ export default function SuspendUserModal({
 
       {/* Modal Container matching Figma Node 5634:70346 */}
       <div
-        className="relative bg-white rounded-[12px] p-6 w-full max-w-[500px] shadow-2xl z-10 flex flex-col gap-8 items-center text-right animate-in fade-in zoom-in-95 duration-150"
+        className="relative bg-white rounded-xl p-6 w-full max-w-125 shadow-2xl z-10 flex flex-col gap-8 items-center text-right animate-in fade-in zoom-in-95 duration-150"
         dir="rtl"
         data-node-id="5634:70346"
         data-name="deactivate popup"
@@ -140,10 +144,11 @@ export default function SuspendUserModal({
                 هل تريد تعطيل هذا الحساب؟
               </h3>
               <p
-                className="text-[14px] font-normal text-[#6B6A6A] leading-[1.5] tracking-[-0.408px] max-w-[448px]"
+                className="text-[14px] font-normal text-[#6B6A6A] leading-normal tracking-[-0.408px] max-w-md"
                 data-node-id="5634:70353"
               >
-                هل أنت متأكد من إيقاف حساب “{displayName}” ؟ لن يتمكن المستخدم من تسجيل الدخول أو استخدام المنصة حتى يتم إعادة تفعيل الحساب.
+                هل أنت متأكد من إيقاف حساب “{displayName}” ؟ لن يتمكن المستخدم
+                من تسجيل الدخول أو استخدام المنصة حتى يتم إعادة تفعيل الحساب.
               </p>
             </div>
           </div>
@@ -165,7 +170,7 @@ export default function SuspendUserModal({
                 <select
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
-                  className="w-full h-[46px] px-3 bg-white border border-[#ECECEC] rounded-[8px] text-[14px] text-right text-[#111111] appearance-none focus:outline-none focus:border-[#B97500] cursor-pointer transition-colors"
+                  className="w-full h-11.5 px-3 bg-white border border-[#ECECEC] rounded-lg text-[14px] text-right text-[#111111] appearance-none focus:outline-none focus:border-[#B97500] cursor-pointer transition-colors"
                 >
                   <option value="3">3 أيام</option>
                   <option value="7">7 أيام</option>
@@ -194,16 +199,17 @@ export default function SuspendUserModal({
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="...سبب التعطيل"
                 rows={3}
-                className="w-full h-[119px] p-3 bg-white border border-[#ECECEC] rounded-[8px] text-[14px] text-right text-[#111111] placeholder:text-[#979797] resize-none focus:outline-none focus:border-[#B97500] transition-colors"
+                className="w-full h-29.75 p-3 bg-white border border-[#ECECEC] rounded-lg text-[14px] text-right text-[#111111] placeholder:text-[#979797] resize-none focus:outline-none focus:border-[#B97500] transition-colors"
               />
             </div>
 
             {/* Warning Note */}
             <p
-              className="text-[13px] font-normal text-[#B97500] leading-[1.5] tracking-[-0.408px] w-full"
+              className="text-[13px] font-normal text-[#B97500] leading-normal tracking-[-0.408px] w-full"
               data-node-id="5634:70373"
             >
-              سيؤدي هذا الإجراء إلى حجب وصول المستخدم الى حسابه مع الاحتفاظ بكامل بياناته واعلاناته وإمكانية إعادة تفعيل الحساب لاحقاً.
+              سيؤدي هذا الإجراء إلى حجب وصول المستخدم الى حسابه مع الاحتفاظ
+              بكامل بياناته واعلاناته وإمكانية إعادة تفعيل الحساب لاحقاً.
             </p>
           </div>
         </div>
@@ -218,7 +224,7 @@ export default function SuspendUserModal({
             type="button"
             onClick={handleConfirm}
             disabled={loading}
-            className="flex-1 h-[48px] bg-[#B97500] hover:bg-[#A06200] text-white font-semibold text-[14px] tracking-[0.28px] rounded-[24px] transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+            className="flex-1 h-12 bg-[#B97500] hover:bg-[#A06200] text-white font-semibold text-[14px] tracking-[0.28px] rounded-3xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
             data-node-id="5634:70376"
           >
             {loading ? (
@@ -236,7 +242,7 @@ export default function SuspendUserModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 h-[46px] bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#111111] font-semibold text-[14px] tracking-[0.28px] rounded-[24px] transition-colors cursor-pointer flex items-center justify-center"
+            className="flex-1 h-11.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#111111] font-semibold text-[14px] tracking-[0.28px] rounded-3xl transition-colors cursor-pointer flex items-center justify-center"
             data-node-id="5634:70375"
           >
             إلغاء
