@@ -24,7 +24,10 @@ import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
-import { AdminGrantCouponDto } from './dto/admin-grant-coupon.dto';
+import {
+  AdminGrantCouponDto,
+  AdminGrantBulkCouponDto,
+} from './dto/admin-grant-coupon.dto';
 import { AdminGuard } from './guards/admin.guard';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
@@ -157,6 +160,19 @@ export class AdminController {
   @ApiCommonErrors()
   async getAvailableCoupons() {
     return this.adminService.getAvailableCoupons();
+  }
+
+  @Post('users/bulk/coupon')
+  @ApiOperation({
+    summary: 'Grant a promotional discount coupon code to multiple user accounts',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Discount coupon granted to multiple users successfully',
+  })
+  @ApiCommonErrors()
+  async grantBulkCoupon(@Body() dto: AdminGrantBulkCouponDto) {
+    return this.adminService.grantBulkCoupon(dto);
   }
 
   @Post('users/:id/coupon')

@@ -16,6 +16,7 @@ interface MockAdminService {
   sendUserPasswordResetLink: jest.Mock;
   getAvailableCoupons: jest.Mock;
   grantCoupon: jest.Mock;
+  grantBulkCoupon: jest.Mock;
 }
 
 describe('AdminController', () => {
@@ -34,6 +35,7 @@ describe('AdminController', () => {
       sendUserPasswordResetLink: jest.fn(),
       getAvailableCoupons: jest.fn(),
       grantCoupon: jest.fn(),
+      grantBulkCoupon: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -138,5 +140,21 @@ describe('AdminController', () => {
     expect(adminService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
     expect(result.message).toContain('تم اضافة كوبون خصم للمستخدم');
   });
+
+  it('grantBulkCoupon should forward dto to service', async () => {
+    adminService.grantBulkCoupon.mockResolvedValue({
+      message: 'تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.',
+      grantedCount: 2,
+    });
+    const dto = {
+      userIds: ['u-1', 'u-2'],
+      couponCode: 'LAUNCHPROMO26',
+      couponName: 'Byoutna10',
+    };
+    const result = await controller.grantBulkCoupon(dto);
+    expect(adminService.grantBulkCoupon).toHaveBeenCalledWith(dto);
+    expect(result.grantedCount).toBe(2);
+  });
 });
+
 

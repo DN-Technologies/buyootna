@@ -15,6 +15,7 @@ export interface UserModalsState {
   planModalUser: UserRow | null
   notificationModalUser: UserRow | null
   couponModalUser: UserRow | null
+  couponModalUsers?: UserRow[] | null
   suspendModalUser: UserRow | null
   reactivateModalUser: UserRow | null
   blockModalUser: UserRow | null
@@ -27,6 +28,7 @@ export interface UserModalsHandlers {
   setPlanModalUser: (user: UserRow | null) => void
   setNotificationModalUser: (user: UserRow | null) => void
   setCouponModalUser: (user: UserRow | null) => void
+  setCouponModalUsers?: (users: UserRow[] | null) => void
   setSuspendModalUser: (user: UserRow | null) => void
   setReactivateModalUser: (user: UserRow | null) => void
   setBlockModalUser: (user: UserRow | null) => void
@@ -35,7 +37,7 @@ export interface UserModalsHandlers {
   onAddUserSuccess: () => void
   onPlanSuccess: (userId: string, planName: string) => void
   onNotificationSuccess: (userId: string, title: string) => void
-  onCouponSuccess: (userId: string) => void
+  onCouponSuccess: (targetIds: string[]) => void
   onResetPasswordSuccess: () => void
   onSuspendConfirm: (
     user: UserRow,
@@ -63,6 +65,10 @@ export const UserModalsContainer: React.FC<UserModalsContainerProps> = ({
   state,
   handlers,
 }) => {
+  const isCouponOpen =
+    !!state.couponModalUser ||
+    !!(state.couponModalUsers && state.couponModalUsers.length > 0)
+
   return (
     <>
       <SuccessToast
@@ -93,8 +99,12 @@ export const UserModalsContainer: React.FC<UserModalsContainerProps> = ({
 
       <AddCouponModal
         user={state.couponModalUser}
-        isOpen={!!state.couponModalUser}
-        onClose={() => handlers.setCouponModalUser(null)}
+        users={state.couponModalUsers}
+        isOpen={isCouponOpen}
+        onClose={() => {
+          handlers.setCouponModalUser(null)
+          handlers.setCouponModalUsers?.(null)
+        }}
         onSuccess={handlers.onCouponSuccess}
       />
 

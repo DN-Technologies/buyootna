@@ -424,6 +424,25 @@ describe('AdminService', () => {
       expect(res.coupon.code).toBe('LAUNCHPROMO26');
       expect(res.userId).toBe('user-coupon-1');
     });
+
+    it('should grant coupon to multiple users and return summary', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 'u1', name: 'محمد الجارح', email: 'm1@example.com' },
+        { id: 'u2', name: 'أحمد علي', email: 'm2@example.com' },
+      ]);
+
+      const res = await service.grantBulkCoupon({
+        userIds: ['u1', 'u2'],
+        couponCode: 'LAUNCHPROMO26',
+        couponName: 'Byoutna10',
+        notifyEmail: true,
+      });
+
+      expect(res.grantedCount).toBe(2);
+      expect(res.message).toBe('تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.');
+      expect(res.grantedUserIds).toEqual(['u1', 'u2']);
+    });
   });
 });
+
 

@@ -213,4 +213,25 @@ export async function grantUserCoupon(
   return res.data;
 }
 
+export interface GrantBulkCouponInput {
+  userIds: string[];
+  couponCode: string;
+  couponName?: string;
+  notifyEmail?: boolean;
+  notifyApp?: boolean;
+}
+
+export async function grantBulkCoupons(
+  data: GrantBulkCouponInput,
+): Promise<{
+  message: string;
+  coupon: { code: string; name: string };
+  grantedCount: number;
+  grantedUserIds: string[];
+}> {
+  const res = await api.post('/admin/users/bulk/coupon', data);
+  return res.data;
+}
+
+
 

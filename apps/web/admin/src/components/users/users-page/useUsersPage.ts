@@ -43,12 +43,18 @@ export function useUsersPage() {
   const [error, setError] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
 
+  // Selection state for batch actions
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
   // Modals state for row actions
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [planModalUser, setPlanModalUser] = useState<UserRow | null>(null)
   const [notificationModalUser, setNotificationModalUser] =
     useState<UserRow | null>(null)
   const [couponModalUser, setCouponModalUser] = useState<UserRow | null>(null)
+  const [couponModalUsers, setCouponModalUsers] = useState<UserRow[] | null>(
+    null,
+  )
   const [suspendModalUser, setSuspendModalUser] = useState<UserRow | null>(null)
   const [reactivateModalUser, setReactivateModalUser] =
     useState<UserRow | null>(null)
@@ -151,6 +157,32 @@ export function useUsersPage() {
     setDateSort((prev) => (prev === 'asc' ? 'desc' : 'asc'))
   }
 
+  // Row selection handlers
+  const handleToggleSelectRow = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
+    )
+  }
+
+  const handleToggleSelectAll = () => {
+    if (selectedIds.length === data.data.length && data.data.length > 0) {
+      setSelectedIds([])
+    } else {
+      setSelectedIds(data.data.map((u) => u.id))
+    }
+  }
+
+  const handleClearSelection = () => {
+    setSelectedIds([])
+  }
+
+  const handleOpenBulkCoupon = () => {
+    const selectedUsers = data.data.filter((u) => selectedIds.includes(u.id))
+    if (selectedUsers.length > 0) {
+      setCouponModalUsers(selectedUsers)
+    }
+  }
+
   // Row and page action handlers
   const handleStatusChange = async (
     user: UserRow,
@@ -222,11 +254,16 @@ export function useUsersPage() {
     showToast(`تم إرسال إشعار "${title}" للمستخدم بنجاح`)
   }
 
-  const handleCouponSuccess = (userId: string) => {
-    const targetUser =
-      data.data.find((u) => u.id === userId) || couponModalUser
-    const userName = targetUser?.name || 'المستخدم'
-    showToast(`تم اضافة كوبون خصم للمستخدم “${userName}” بنجاح.`)
+  const handleCouponSuccess = (targetIds: string[]) => {
+    if (targetIds.length > 1) {
+      showToast(`تم اضافة كوبون خصم لـ ${targetIds.length} مستخدمين بنجاح.`)
+    } else if (targetIds.length === 1) {
+      const targetUser =
+        data.data.find((u) => u.id === targetIds[0]) || couponModalUser
+      const userName = targetUser?.name || 'المستخدم'
+      showToast(`تم اضافة كوبون خصم للمستخدم “${userName}” بنجاح.`)
+    }
+    setSelectedIds([])
   }
 
   const handleResetPasswordSuccess = () => {
@@ -311,6 +348,7 @@ export function useUsersPage() {
     planModalUser,
     notificationModalUser,
     couponModalUser,
+    couponModalUsers,
     suspendModalUser,
     reactivateModalUser,
     blockModalUser,
@@ -323,6 +361,7 @@ export function useUsersPage() {
     setPlanModalUser,
     setNotificationModalUser,
     setCouponModalUser,
+    setCouponModalUsers,
     setSuspendModalUser,
     setReactivateModalUser,
     setBlockModalUser,
@@ -356,6 +395,13 @@ export function useUsersPage() {
       handleStatusFilterChange,
       handleSubscriptionFilterChange,
       handleDateSortToggle,
+    },
+    selection: {
+      selectedIds,
+      handleToggleSelectRow,
+      handleToggleSelectAll,
+      handleClearSelection,
+      handleOpenBulkCoupon,
     },
     pagination: {
       currentPage,
