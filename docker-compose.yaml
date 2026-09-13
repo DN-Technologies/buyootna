@@ -3,6 +3,7 @@ services:
     image: nginx:alpine
     restart: always
     ports: ["80:80", "443:443"]
+    networks: [default, edge]
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/www:/var/www/certbot
@@ -101,3 +102,6 @@ services:
 
 volumes:
   postgres_data:
+networks:
+  edge:
+    external: true
