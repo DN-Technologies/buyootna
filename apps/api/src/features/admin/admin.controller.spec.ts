@@ -14,6 +14,8 @@ interface MockAdminService {
   deleteUser: jest.Mock;
   updateIdentityStatus: jest.Mock;
   sendUserPasswordResetLink: jest.Mock;
+  getAvailableCoupons: jest.Mock;
+  grantCoupon: jest.Mock;
 }
 
 describe('AdminController', () => {
@@ -30,6 +32,8 @@ describe('AdminController', () => {
       deleteUser: jest.fn(),
       updateIdentityStatus: jest.fn(),
       sendUserPasswordResetLink: jest.fn(),
+      getAvailableCoupons: jest.fn(),
+      grantCoupon: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -115,4 +119,24 @@ describe('AdminController', () => {
     expect(adminService.sendUserPasswordResetLink).toHaveBeenCalledWith('u-1');
     expect(result.email).toBe('user@example.com');
   });
+
+  it('getAvailableCoupons should delegate to service', async () => {
+    adminService.getAvailableCoupons.mockReturnValue([
+      { id: 'c1', name: 'Byoutna10', code: 'LAUNCHPROMO26', discount: '10%' },
+    ]);
+    const result = await controller.getAvailableCoupons();
+    expect(adminService.getAvailableCoupons).toHaveBeenCalled();
+    expect(result[0].code).toBe('LAUNCHPROMO26');
+  });
+
+  it('grantCoupon should forward params and dto to service', async () => {
+    adminService.grantCoupon.mockResolvedValue({
+      message: 'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
+    });
+    const dto = { couponCode: 'LAUNCHPROMO26', couponName: 'Byoutna10' };
+    const result = await controller.grantCoupon('u-1', dto);
+    expect(adminService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
+    expect(result.message).toContain('تم اضافة كوبون خصم للمستخدم');
+  });
 });
+

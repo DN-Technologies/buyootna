@@ -15,6 +15,7 @@ import {
   Sparkles,
   Ban,
   UserX,
+  Tag,
 } from 'lucide-react'
 import Skeleton from '@/components/ui/Skeleton'
 
@@ -78,6 +79,11 @@ export default function UserDetailHeader({
       label: 'إضافة ميزة استثنائية',
       icon: Sparkles,
       action: 'add_exceptional_feature',
+    },
+    {
+      label: 'منح كوبون خصم',
+      icon: Tag,
+      action: 'add_coupon',
     },
     {
       label: 'تعطيل الحساب',

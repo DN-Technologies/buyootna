@@ -5,6 +5,7 @@ import { AdminUsersService } from './services/admin-users.service';
 import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
+import { AdminCouponService } from './services/admin-coupon.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Role, IdentityType } from '@prisma/client';
@@ -102,6 +103,7 @@ describe('AdminService', () => {
         AdminIdentityService,
         AdminExportService,
         AdminPasswordService,
+        AdminCouponService,
         {
           provide: PrismaService,
           useValue: prisma,
@@ -383,4 +385,45 @@ describe('AdminService', () => {
       expect(res.email).toBe('mohamedelgareh@gmail.com');
     });
   });
+
+  describe('coupons', () => {
+    it('should return available promotional coupons', () => {
+      const coupons = service.getAvailableCoupons();
+      expect(coupons).toBeDefined();
+      expect(coupons.length).toBeGreaterThan(0);
+      expect(coupons[0].name).toBe('Byoutna10');
+    });
+
+    it('should throw NotFoundException when granting coupon to non-existent user', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.grantCoupon('non-existent', {
+          couponCode: 'LAUNCHPROMO26',
+          couponName: 'Byoutna10',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should grant coupon and return success message matching Figma 5634:72196', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-coupon-1',
+        name: 'على البالي',
+        email: 'ali@example.com',
+      });
+
+      const res = await service.grantCoupon('user-coupon-1', {
+        couponCode: 'LAUNCHPROMO26',
+        couponName: 'Byoutna10',
+        notifyEmail: true,
+      });
+
+      expect(res.message).toBe(
+        'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
+      );
+      expect(res.coupon.code).toBe('LAUNCHPROMO26');
+      expect(res.userId).toBe('user-coupon-1');
+    });
+  });
 });
+

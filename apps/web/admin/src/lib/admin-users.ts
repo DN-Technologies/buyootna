@@ -186,3 +186,31 @@ export async function sendUserPasswordResetLink(
   return res.data;
 }
 
+export interface AvailableCoupon {
+  id: string;
+  name: string;
+  code: string;
+  discount: string;
+}
+
+export interface GrantUserCouponInput {
+  couponCode: string;
+  couponName?: string;
+  notifyEmail?: boolean;
+  notifyApp?: boolean;
+}
+
+export async function fetchAvailableCoupons(): Promise<AvailableCoupon[]> {
+  const res = await api.get('/admin/coupons');
+  return res.data;
+}
+
+export async function grantUserCoupon(
+  userId: string,
+  data: GrantUserCouponInput,
+): Promise<{ message: string; coupon: { code: string; name: string }; userId: string }> {
+  const res = await api.post(`/admin/users/${userId}/coupon`, data);
+  return res.data;
+}
+
+
