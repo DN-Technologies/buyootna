@@ -438,13 +438,18 @@ export class AdminService {
 
     const result = await this.prisma.$transaction(
       async (tx) => {
+        const derivedName =
+          dto.name?.trim() ||
+          (email ? email.split('@')[0] : phone) ||
+          'مستخدم جديد';
+
         const user = await tx.user.create({
           data: {
             email,
             phone,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
-            name: dto.name.trim(),
+            name: derivedName,
             activePlanId,
           },
         });
@@ -460,7 +465,7 @@ export class AdminService {
             isActive: true,
             individualData: {
               create: {
-                name: dto.name.trim(),
+                name: derivedName,
               },
             },
           },

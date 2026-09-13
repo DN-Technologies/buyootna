@@ -197,6 +197,25 @@ describe('AdminService', () => {
       expect(res.user.id).toBe('new-user-1');
       expect((res.user as { password?: string }).password).toBeUndefined();
     });
+
+    it('should derive name from email or phone when name is omitted', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockImplementation(({ data }: any) =>
+        Promise.resolve({ id: 'user-derived', ...data }),
+      );
+      prisma.individualProfile.create.mockResolvedValue({ id: 'prof-2' });
+      prisma.identity.create.mockResolvedValue({
+        id: 'ident-2',
+        type: IdentityType.INDIVIDUAL,
+      });
+
+      const res = await service.createIndividual({
+        email: 'alisalem@example.com',
+        password: 'Password123!',
+      });
+
+      expect(res.user.name).toBe('alisalem');
+    });
   });
 
   describe('updateUserStatus', () => {

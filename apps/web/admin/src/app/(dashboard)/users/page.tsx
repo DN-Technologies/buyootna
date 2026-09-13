@@ -9,7 +9,7 @@ import { UserCategoryTab } from '@/components/users/UserTabs'
 import UserTableFilters from '@/components/users/UserTableFilters'
 import UserTable, { UserRow } from '@/components/users/UserTable'
 import UserPagination from '@/components/users/UserPagination'
-import AddIndividualDialog from '@/components/users/AddIndividualDialog'
+import AddUserDrawer from '@/components/users/AddUserDrawer'
 import ChangePlanModal from '@/components/users/ChangePlanModal'
 import SendNotificationModal from '@/components/users/SendNotificationModal'
 import AddCouponModal from '@/components/users/AddCouponModal'
@@ -36,13 +36,16 @@ function UsersPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [subscriptionFilter, setSubscriptionFilter] = useState('')
-  const [dateSort, setDateSort] = useState<'asc' | 'desc' | undefined>(undefined)
+  const [dateSort, setDateSort] = useState<'asc' | 'desc' | undefined>(
+    undefined,
+  )
   const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
   // Modals state for row actions
   const [planModalUser, setPlanModalUser] = useState<UserRow | null>(null)
-  const [notificationModalUser, setNotificationModalUser] = useState<UserRow | null>(null)
+  const [notificationModalUser, setNotificationModalUser] =
+    useState<UserRow | null>(null)
   const [couponModalUser, setCouponModalUser] = useState<UserRow | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
@@ -64,7 +67,8 @@ function UsersPageContent() {
       case 'company':
         return {
           title: 'الشركات',
-          subtitle: 'إدارة جميع حسابات الشركات والمطورين العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات الشركات والمطورين العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'الشركات'],
           addLabel: 'إضافة شركة',
           totalStatTitle: 'إجمالي الشركات',
@@ -75,7 +79,8 @@ function UsersPageContent() {
       case 'office':
         return {
           title: 'المكاتب العقارية',
-          subtitle: 'إدارة جميع حسابات المكاتب والوسطاء العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات المكاتب والوسطاء العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'المكاتب العقارية'],
           addLabel: 'إضافة مكتب عقاري',
           totalStatTitle: 'إجمالي المكاتب',
@@ -87,7 +92,8 @@ function UsersPageContent() {
       default:
         return {
           title: 'الأفراد',
-          subtitle: 'إدارة جميع حسابات الأفراد، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات الأفراد، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'الأفراد'],
           addLabel: 'إضافة فرد',
           totalStatTitle: 'إجمالي الأفراد',
@@ -136,14 +142,23 @@ function UsersPageContent() {
     } catch (err: any) {
       console.error('Failed to load users:', err)
       if (err?.response?.status === 404) {
-        setError('مسار نقطة النهاية غير موجود (404). يرجى التأكد من تشغيل خادم الخلفية.')
+        setError(
+          'مسار نقطة النهاية غير موجود (404). يرجى التأكد من تشغيل خادم الخلفية.',
+        )
       } else {
         setError('تعذر الاتصال بالخادم. يرجى التأكد من تشغيل خادم الخلفية.')
       }
     } finally {
       setLoading(false)
     }
-  }, [searchQuery, activeTab, statusFilter, subscriptionFilter, dateSort, currentPage])
+  }, [
+    searchQuery,
+    activeTab,
+    statusFilter,
+    subscriptionFilter,
+    dateSort,
+    currentPage,
+  ])
 
   useEffect(() => {
     loadUsers()
@@ -194,7 +209,11 @@ function UsersPageContent() {
 
   // Handle Delete User
   const handleDeleteUser = async (user: UserRow) => {
-    if (confirm(`هل أنت متأكد من رغبتك في حذف حساب الـ${config.entitySingle} "${user.name}"؟`)) {
+    if (
+      confirm(
+        `هل أنت متأكد من رغبتك في حذف حساب الـ${config.entitySingle} "${user.name}"؟`,
+      )
+    ) {
       try {
         await deleteUser(user.id)
         await loadUsers()
@@ -295,7 +314,7 @@ function UsersPageContent() {
 
       {/* Floating Feedback Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 left-6 z-50 bg-[#15304D] text-white px-5 py-3 rounded-xl shadow-xl font-['Cairo'] text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 left-6 z-50 bg-primary text-white px-5 py-3 rounded-xl shadow-xl font-['Cairo'] text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
           <span>{toastMessage}</span>
         </div>
       )}
@@ -384,11 +403,14 @@ function UsersPageContent() {
         />
       </div>
 
-      {/* Add Individual Modal Dialog */}
-      <AddIndividualDialog
+      {/* Add User Slide-over Drawer (Figma Node 5634:69872) */}
+      <AddUserDrawer
         open={addDialogOpen}
         onClose={() => setAddDialogOpen(false)}
-        onSuccess={() => loadUsers()}
+        onSuccess={() => {
+          loadUsers()
+          showToast('تم إضافة المستخدم بنجاح')
+        }}
       />
 
       {/* Change Subscription Plan Modal */}
