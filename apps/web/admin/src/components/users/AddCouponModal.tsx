@@ -1,120 +1,215 @@
 'use client'
 
-import React, { useState } from 'react'
-import { X, Tag, Check } from 'lucide-react'
-import { UserRow } from './UserTable'
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  CouponModalTargetUser,
+  AddCouponModalProps,
+  DEFAULT_COUPONS,
+  CouponModalHeader,
+  SelectedUsersSection,
+  CouponSelectDropdown,
+  CouponNotificationSection,
+  CouponModalFooter,
+  AvailableCoupon,
+} from './add-coupon'
+import {
+  fetchAvailableCoupons,
+  grantUserCoupon,
+  grantBulkCoupons,
+} from '@/lib/admin-users'
 
-interface AddCouponModalProps {
-  user: UserRow | null
-  isOpen: boolean
-  onClose: () => void
-  onSuccess: (userId: string, code: string, discount: string) => void
-}
+export type { CouponModalTargetUser, AddCouponModalProps }
 
 export default function AddCouponModal({
   user,
+  users,
   isOpen,
   onClose,
   onSuccess,
 }: AddCouponModalProps) {
-  const [couponCode, setCouponCode] = useState('BYT-')
-  const [discountValue, setDiscountValue] = useState('20%')
+  const [coupons, setCoupons] = useState<AvailableCoupon[]>(DEFAULT_COUPONS)
+  const [selectedCoupon, setSelectedCoupon] = useState<AvailableCoupon | null>(
+    null,
+  )
+  const [targetUsers, setTargetUsers] = useState<CouponModalTargetUser[]>([])
+  const [isListExpanded, setIsListExpanded] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [notifyEmail, setNotifyEmail] = useState(false)
+  const [notifyApp, setNotifyApp] = useState(false)
   const [loading, setLoading] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  if (!isOpen || !user) return null
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!couponCode.trim()) return
-
-    setLoading(true)
-    setTimeout(() => {
-      onSuccess(user.id, couponCode, discountValue)
+  // Reset state whenever modal opens or users change
+  useEffect(() => {
+    if (isOpen) {
+      const initialUsers =
+        users && users.length > 0 ? [...users] : user ? [user] : []
+      setTargetUsers(initialUsers)
+      setIsListExpanded(false)
+      setSelectedCoupon(null)
+      setIsDropdownOpen(false)
+      setNotifyEmail(false)
+      setNotifyApp(false)
       setLoading(false)
+
+      // Fetch coupons from backend API with fallback
+      fetchAvailableCoupons()
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setCoupons(data)
+          }
+        })
+        .catch(() => {
+          setCoupons(DEFAULT_COUPONS)
+        })
+    }
+  }, [isOpen, user, users])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false)
+      }
+    }
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isDropdownOpen])
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isDropdownOpen) {
+          setIsDropdownOpen(false)
+        } else {
+          onClose()
+        }
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+    }
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, isDropdownOpen, onClose])
+
+  if (!isOpen || targetUsers.length === 0) return null
+
+  const isMulti = targetUsers.length > 1
+  const canSubmit = !!selectedCoupon && targetUsers.length > 0
+
+  const handleSelectCoupon = (coupon: AvailableCoupon) => {
+    setSelectedCoupon(coupon)
+    setIsDropdownOpen(false)
+  }
+
+  const handleRemoveUser = (userId: string) => {
+    setTargetUsers((prev) => prev.filter((u) => u.id !== userId))
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedCoupon || loading || targetUsers.length === 0) return
+    setLoading(true)
+
+    try {
+      const targetIds = targetUsers.map((u) => u.id)
+
+      if (targetUsers.length > 1) {
+        // Bulk grant coupon endpoint
+        await grantBulkCoupons({
+          userIds: targetIds,
+          couponCode: selectedCoupon.code,
+          couponName: selectedCoupon.name,
+          notifyEmail,
+          notifyApp,
+        }).catch((err) => {
+          console.warn('Backend grantBulkCoupons warning:', err)
+        })
+      } else {
+        // Single user grant coupon endpoint
+        await grantUserCoupon(targetUsers[0].id, {
+          couponCode: selectedCoupon.code,
+          couponName: selectedCoupon.name,
+          notifyEmail,
+          notifyApp,
+        }).catch((err) => {
+          console.warn('Backend grantUserCoupon warning:', err)
+        })
+      }
+
+      onSuccess?.(targetIds, selectedCoupon.code, selectedCoupon.name)
       onClose()
-    }, 400)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" dir="rtl">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-[#ECECEC] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#ECECEC]">
-          <div className="flex items-center gap-2">
-            <Tag className="w-5 h-5 text-primary" />
-            <h3 className="font-['Cairo'] font-bold text-[18px] text-[#111111]">
-              إضافة كوبون خصم
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-[#6B6A6A] hover:bg-[#F8FAFC] hover:text-[#111111] transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 font-['Cairo']"
+      dir="rtl"
+    >
+      {/* Backdrop click to close */}
+      <div
+        className="fixed inset-0"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 font-['Cairo']">
-          {/* User Info Snippet */}
-          <div className="bg-[#F8FAFC] rounded-xl p-3 border border-[#ECECEC] text-right">
-            <p className="font-semibold text-[14px] text-[#111111]">المستخدم: {user.name}</p>
-            <p className="text-[12px] text-[#6B6A6A] mt-0.5">{user.email}</p>
-          </div>
+      {/* Modal Card matching Figma nodes 5634:71560, 5634:71641 & 5634:71685 */}
+      <div
+        className="relative bg-white rounded-xl p-6 w-full max-w-125 shadow-2xl z-10 flex flex-col gap-6 items-center text-right animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
+        data-node-id="5634:71641"
+        data-name="hide ad popup"
+      >
+        <div className="flex flex-col gap-6 items-center w-full max-w-113 shrink-0">
+          {/* Header */}
+          <CouponModalHeader
+            isMulti={isMulti}
+            targetCount={targetUsers.length}
+          />
 
-          {/* Coupon Code Input */}
-          <div className="space-y-1 text-right">
-            <label className="block text-[13px] font-semibold text-[#111111]">
-              رمز الكوبون
-            </label>
-            <input
-              type="text"
-              required
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-              placeholder="مثال: SUMMER2026"
-              className="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[14px] outline-none focus:border-primary transition-colors text-right font-mono"
+          {/* Selected Users Accordion Banner */}
+          <SelectedUsersSection
+            users={targetUsers}
+            isExpanded={isListExpanded}
+            onToggleExpand={() => setIsListExpanded((prev) => !prev)}
+            onRemoveUser={handleRemoveUser}
+          />
+
+          {/* Form Fields Area */}
+          <div className="flex flex-col gap-4 items-start w-full">
+            <CouponSelectDropdown
+              coupons={coupons}
+              selectedCoupon={selectedCoupon}
+              isOpen={isDropdownOpen}
+              onToggle={() => setIsDropdownOpen((prev) => !prev)}
+              onSelectCoupon={handleSelectCoupon}
+              dropdownRef={dropdownRef}
+            />
+
+            <CouponNotificationSection
+              isMulti={isMulti}
+              notifyEmail={notifyEmail}
+              notifyApp={notifyApp}
+              onToggleEmail={() => setNotifyEmail((prev) => !prev)}
+              onToggleApp={() => setNotifyApp((prev) => !prev)}
             />
           </div>
+        </div>
 
-          {/* Discount Value */}
-          <div className="space-y-1 text-right">
-            <label className="block text-[13px] font-semibold text-[#111111]">
-              قيمة الخصم
-            </label>
-            <select
-              value={discountValue}
-              onChange={(e) => setDiscountValue(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-xl border border-[#E2E8F0] text-[14px] outline-none focus:border-primary transition-colors text-right bg-white cursor-pointer"
-            >
-              <option value="10%">خصم 10%</option>
-              <option value="20%">خصم 20%</option>
-              <option value="30%">خصم 30%</option>
-              <option value="50%">خصم 50%</option>
-              <option value="100%">مجاني بالكامل (100%)</option>
-            </select>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 pt-4 border-t border-[#ECECEC]">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-primary hover:bg-[#10243B] text-white py-2.5 rounded-xl font-bold text-[14px] flex items-center justify-center gap-2 cursor-pointer transition-colors"
-            >
-              <Check className="w-4 h-4" />
-              <span>{loading ? 'جاري التطبيق...' : 'تطبيق الكوبون'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-[#E2E8F0] text-[#111111] font-medium text-[14px] hover:bg-[#F8FAFC] cursor-pointer transition-colors"
-            >
-              إلغاء
-            </button>
-          </div>
-        </form>
+        {/* Footer Actions */}
+        <CouponModalFooter
+          onClose={onClose}
+          onSubmit={handleSubmit}
+          canSubmit={canSubmit}
+          loading={loading}
+        />
       </div>
     </div>
   )

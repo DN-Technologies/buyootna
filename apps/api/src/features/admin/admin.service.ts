@@ -3,10 +3,15 @@ import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
+import {
+  AdminGrantCouponDto,
+  AdminGrantBulkCouponDto,
+} from './dto/admin-grant-coupon.dto';
 import { AdminUsersService } from './services/admin-users.service';
 import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
+import { AdminCouponService } from './services/admin-coupon.service';
 
 @Injectable()
 export class AdminService {
@@ -15,6 +20,7 @@ export class AdminService {
     private readonly adminIdentityService: AdminIdentityService,
     private readonly adminExportService: AdminExportService,
     private readonly adminPasswordService: AdminPasswordService,
+    private readonly adminCouponService: AdminCouponService,
   ) {}
 
   async getUsers(filters: AdminUsersFilterDto) {
@@ -52,5 +58,17 @@ export class AdminService {
 
   async sendUserPasswordResetLink(userId: string) {
     return this.adminPasswordService.sendUserPasswordResetLink(userId);
+  }
+
+  getAvailableCoupons() {
+    return this.adminCouponService.getAvailableCoupons();
+  }
+
+  async grantCoupon(userId: string, dto: AdminGrantCouponDto) {
+    return this.adminCouponService.grantCoupon(userId, dto);
+  }
+
+  async grantBulkCoupon(dto: AdminGrantBulkCouponDto) {
+    return this.adminCouponService.grantBulkCoupon(dto);
   }
 }
