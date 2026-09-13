@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Download, Plus } from 'lucide-react'
 import PageHeader from '@/components/PageHeader'
 import StatCard from '@/components/StatCard'
@@ -16,9 +16,26 @@ import {
   AdminUsersResponse,
 } from '@/lib/admin-users'
 
-export default function UsersPage() {
+function UsersPageContent() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<UserCategoryTab>('all')
+  const searchParams = useSearchParams()
+  const typeParam = searchParams.get('type') as UserCategoryTab | null
+
+  const [activeTab, setActiveTab] = useState<UserCategoryTab>(() => {
+    if (typeParam && ['individual', 'office', 'company', 'all'].includes(typeParam)) {
+      return typeParam
+    }
+    return 'all'
+  })
+
+  // Synchronize activeTab when query parameter in URL changes
+  useEffect(() => {
+    if (typeParam && ['individual', 'office', 'company', 'all'].includes(typeParam)) {
+      setActiveTab(typeParam)
+    } else if (!typeParam) {
+      setActiveTab('all')
+    }
+  }, [typeParam])
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -73,6 +90,11 @@ export default function UsersPage() {
   const handleTabChange = (tab: UserCategoryTab) => {
     setActiveTab(tab)
     setCurrentPage(1)
+    if (tab === 'all') {
+      router.push('/users')
+    } else {
+      router.push(`/users?type=${tab}`)
+    }
   }
 
   // Handle Search Change
@@ -227,5 +249,23 @@ export default function UsersPage() {
         />
       </div>
     </div>
+  )
+}
+
+export default function UsersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6 text-right" dir="rtl">
+          <PageHeader
+            breadcrumbs={['الرئيسية', 'إدارة الحسابات', 'المستخدمون']}
+            title="إدارة الحسابات والمستخدمين"
+            subtitle="عرض وتحليل وإدارة حسابات الأفراد، الشركات، والمكاتب العقارية المسجلة."
+          />
+        </div>
+      }
+    >
+      <UsersPageContent />
+    </Suspense>
   )
 }

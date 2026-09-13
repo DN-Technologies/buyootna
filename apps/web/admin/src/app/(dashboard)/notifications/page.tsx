@@ -1,37 +1,45 @@
-"use client";
+'use client'
 
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, Button } from "@buyootna/ui";
-import PageHeader from "@/components/PageHeader";
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@buyootna/ui'
+import PageHeader from '@/components/PageHeader'
 
 export default function NotificationsPage() {
   const handleExport = () => {
-    alert("جاري تصدير بيانات إدارة الإشعارات...");
-  };
+    alert('جاري تصدير بيانات إدارة الإشعارات...')
+  }
 
   return (
     <div className="space-y-6 text-right" dir="rtl">
-      <PageHeader 
-        breadcrumbs={["الرئيسية","إدارة الإشعارات"]} 
-        title="إدارة الإشعارات" 
-        subtitle="إرسال وتوجيه الإشعارات المباشرة للمستخدمين عبر التطبيق أو الرسائل النصية." 
+      <PageHeader
+        breadcrumbs={['الرئيسية', 'إدارة الإشعارات']}
+        title="إدارة الإشعارات"
+        subtitle="إرسال وتوجيه الإشعارات المباشرة للمستخدمين عبر التطبيق أو الرسائل النصية."
         onExport={handleExport}
       />
 
       {/* Main Content card */}
       <Card className="bg-white border-[#ECECEC]">
         <CardHeader className="border-b border-[#ECECEC] pb-4">
-          <CardTitle className="text-base font-['Cairo'] font-bold text-[#15304D]">قائمة البيانات</CardTitle>
+          <CardTitle className="text-base font-['Cairo'] font-bold text-primary">
+            قائمة البيانات
+          </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex flex-col items-center justify-center py-12 text-[#6B6A6A]">
-            <p className="text-sm font-['Cairo'] mb-4">لا توجد بيانات لعرضها حالياً. هذه الصفحة عبارة عن هيكل جاهز للتطوير.</p>
-            <Button variant="outline" className="font-['Cairo'] font-semibold text-xs border-[#ECECEC] hover:bg-[#F8F9FA]">
+            <p className="text-sm font-['Cairo'] mb-4">
+              لا توجد بيانات لعرضها حالياً. هذه الصفحة عبارة عن هيكل جاهز
+              للتطوير.
+            </p>
+            <Button
+              variant="outline"
+              className="font-['Cairo'] font-semibold text-xs border-[#ECECEC] hover:bg-[#F8F9FA]"
+            >
               إضافة جديد
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
