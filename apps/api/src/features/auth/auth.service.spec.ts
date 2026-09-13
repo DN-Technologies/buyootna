@@ -387,9 +387,7 @@ describe('AuthService Unit Tests', () => {
 
       const result = await service.login(user);
 
-      expect(mockIdentitiesService.activate).toHaveBeenCalledWith(
-        'identity-3',
-      );
+      expect(mockIdentitiesService.activate).toHaveBeenCalledWith('identity-3');
       expect(result.activeIdentity.isActive).toBe(true);
     });
 

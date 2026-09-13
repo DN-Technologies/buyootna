@@ -9,9 +9,10 @@ export interface UserRow {
   name: string
   email: string
   phone?: string
-  accountType: 'فرد' | 'شركة' | 'مكتب عقاري'
-  verificationStatus: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—'
+  accountType?: 'فرد' | 'شركة' | 'مكتب عقاري'
+  verificationStatus?: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—'
   subscriptionPlan: string
+  adsCount?: number | string
   accountStatus: 'نشط' | 'محظور' | 'موقوف'
   registrationDate: string
 }
@@ -22,6 +23,8 @@ interface UserTableProps {
   onStatusChange?: (user: UserRow, newStatus: 'active' | 'blocked' | 'suspended') => void
   onDeleteUser?: (user: UserRow) => void
   loading?: boolean
+  userLabel?: string
+  entityName?: string
 }
 
 export default function UserTable({
@@ -30,6 +33,8 @@ export default function UserTable({
   onStatusChange,
   onDeleteUser,
   loading = false,
+  userLabel = 'اسم الفرد',
+  entityName = 'أفراد',
 }: UserTableProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
@@ -48,47 +53,22 @@ export default function UserTable({
     )
   }
 
-  const renderVerificationBadge = (status: UserRow['verificationStatus']) => {
-    if (status === '—') return <span className="text-[#A0A0A0]">—</span>
-
-    if (status === 'موثق') {
-      return (
-        <span className="flex items-center justify-end gap-1.5 text-[#007AFF] font-medium text-[12px]">
-          <span>موثق</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#007AFF]" />
-        </span>
-      )
-    }
-
-    if (status === 'قيد الانتظار') {
-      return (
-        <span className="flex items-center justify-end gap-1.5 text-[#D97706] font-medium text-[12px]">
-          <span>قيد الانتظار</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
-        </span>
-      )
-    }
-
-    return (
-      <span className="flex items-center justify-end gap-1.5 text-[#6B6A6A] font-medium text-[12px]">
-        <span>غير موثق</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-[#94A3B8]" />
-      </span>
-    )
-  }
-
   const renderSubscriptionBadge = (plan: UserRow['subscriptionPlan']) => {
+    if (!plan || plan === '—' || plan === 'ـــــــ') {
+      return <span className="text-[#6B6A6A]">ـــــــ</span>
+    }
+
     const styles: Record<string, string> = {
-      الفضية: 'bg-[#F1F5F9] text-[#334155]',
-      السنوية: 'bg-[#FEF9C3] text-[#854D0E]',
+      الفضية: 'bg-[#F2F4F7] text-[#344054]',
+      السنوية: 'bg-[rgba(255,228,21,0.1)] text-[#C27912]',
+      الذهبية: 'bg-[rgba(255,228,21,0.1)] text-[#C27912]',
       العادية: 'bg-[#F8FAFC] text-[#64748B]',
-      الذهبية: 'bg-[#FEF3C7] text-[#B45309]',
     }
 
     return (
       <span
         className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium ${
-          styles[plan] || 'bg-[#F1F5F9] text-[#334155]'
+          styles[plan] || 'bg-[#F2F4F7] text-[#344054]'
         }`}
       >
         {plan}
@@ -99,7 +79,7 @@ export default function UserTable({
   const renderStatusBadge = (status: UserRow['accountStatus']) => {
     if (status === 'نشط') {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-[#ECFDF5] text-[#047857] text-[12px] font-medium">
+        <span className="px-2.5 py-0.5 rounded-full bg-[rgba(18,194,129,0.1)] text-[#018B1B] text-[12px] font-medium">
           نشط
         </span>
       )
@@ -114,7 +94,7 @@ export default function UserTable({
     }
 
     return (
-      <span className="px-2.5 py-0.5 rounded-full bg-[#FFFBEB] text-[#B45309] text-[12px] font-medium">
+      <span className="px-2.5 py-0.5 rounded-full bg-[rgba(255,228,21,0.1)] text-[#C27912] text-[12px] font-medium">
         موقوف
       </span>
     )
@@ -136,13 +116,12 @@ export default function UserTable({
                 className="rounded border-[#CBD5E1] cursor-pointer"
               />
             </th>
-            <th className="py-3 px-4">اسم المستخدم</th>
-            <th className="py-3 px-4">نوع الحساب</th>
-            <th className="py-3 px-4">التوثيق</th>
+            <th className="py-3 px-4">{userLabel}</th>
             <th className="py-3 px-4">الاشتراك</th>
+            <th className="py-3 px-4">الاعلانات</th>
             <th className="py-3 px-4">الحالة</th>
             <th className="py-3 px-4">تاريخ التسجيل</th>
-            <th className="py-3 px-4 text-center">الإجراءات</th>
+            <th className="py-3 px-4 text-center">الاجراءات</th>
           </tr>
         </thead>
 
@@ -161,13 +140,10 @@ export default function UserTable({
                   </div>
                 </td>
                 <td className="py-3 px-4">
-                  <Skeleton className="h-4 w-16" />
-                </td>
-                <td className="py-3 px-4">
-                  <Skeleton className="h-4 w-20 rounded-full" />
-                </td>
-                <td className="py-3 px-4">
                   <Skeleton className="h-5 w-16 rounded-full" />
+                </td>
+                <td className="py-3 px-4">
+                  <Skeleton className="h-4 w-10" />
                 </td>
                 <td className="py-3 px-4">
                   <Skeleton className="h-5 w-14 rounded-full" />
@@ -182,8 +158,8 @@ export default function UserTable({
             ))
           ) : users.length === 0 ? (
             <tr>
-              <td colSpan={8} className="py-8 text-center text-[#6B6A6A]">
-                لا يوجد مستخدمون مطايقون للبحث
+              <td colSpan={7} className="py-8 text-center text-[#6B6A6A]">
+                لا يوجد {entityName} مطابقون للبحث
               </td>
             </tr>
           ) : (
@@ -211,7 +187,7 @@ export default function UserTable({
                   {/* User Name & Email */}
                   <td className="py-3 px-4">
                     <div className="flex flex-col">
-                      <span className="font-bold text-[#111111] text-[14px]">
+                      <span className="font-semibold text-[#111111] text-[13px]">
                         {user.name}
                       </span>
                       <span className="text-[#6B6A6A] text-[12px] font-normal">
@@ -220,19 +196,14 @@ export default function UserTable({
                     </div>
                   </td>
 
-                  {/* Account Type */}
-                  <td className="py-3 px-4 text-[#111111] font-medium">
-                    {user.accountType}
-                  </td>
-
-                  {/* Verification Status */}
-                  <td className="py-3 px-4">
-                    {renderVerificationBadge(user.verificationStatus)}
-                  </td>
-
                   {/* Subscription Plan */}
                   <td className="py-3 px-4">
                     {renderSubscriptionBadge(user.subscriptionPlan)}
+                  </td>
+
+                  {/* Ads Count */}
+                  <td className="py-3 px-4 text-[#111111] font-normal text-[13px]">
+                    {user.adsCount !== undefined ? user.adsCount : 'ـــــــ'}
                   </td>
 
                   {/* Account Status */}
@@ -241,7 +212,7 @@ export default function UserTable({
                   </td>
 
                   {/* Registration Date */}
-                  <td className="py-3 px-4 text-[#6B6A6A]">
+                  <td className="py-3 px-4 text-[#6B6A6A] text-[12px]">
                     {user.registrationDate}
                   </td>
 
@@ -251,7 +222,7 @@ export default function UserTable({
                       <button
                         type="button"
                         onClick={() => onViewUser?.(user)}
-                        className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
+                        className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
                         title="عرض التفاصيل"
                       >
                         <Eye className="w-4 h-4" />
@@ -263,7 +234,7 @@ export default function UserTable({
                           onClick={() =>
                             setActiveMenuId(isMenuOpen ? null : user.id)
                           }
-                          className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer"
+                          className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
                           title="المزيد من الإجراءات"
                         >
                           <MoreVertical className="w-4 h-4" />

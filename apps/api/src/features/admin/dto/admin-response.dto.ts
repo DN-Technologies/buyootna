@@ -22,6 +22,13 @@ export class AdminUserListItemDto {
   @ApiProperty()
   subscriptionPlan: string;
 
+  @ApiProperty({
+    required: false,
+    description: 'Number of ads/properties posted',
+    example: 3,
+  })
+  adsCount?: number;
+
   @ApiProperty({ enum: ['نشط', 'محظور', 'موقوف'] })
   accountStatus: string;
 

@@ -5,10 +5,13 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { Response } from 'express';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -20,6 +23,7 @@ import { AdminService } from './admin.service';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
+import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
 import { AdminGuard } from './guards/admin.guard';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
@@ -50,6 +54,33 @@ export class AdminController {
   @ApiCommonErrors()
   async getUsers(@Query() filters: AdminUsersFilterDto) {
     return this.adminService.getUsers(filters);
+  }
+
+  @Post('users/individual')
+  @ApiOperation({ summary: 'Create a new individual user account by admin' })
+  @ApiResponse({
+    status: 201,
+    description: 'Individual user created successfully',
+  })
+  @ApiCommonErrors()
+  async createIndividual(@Body() dto: AdminCreateIndividualDto) {
+    return this.adminService.createIndividual(dto);
+  }
+
+  @Get('users/export')
+  @ApiOperation({ summary: 'Export filtered users list to CSV' })
+  @ApiCommonErrors()
+  async exportUsers(
+    @Query() filters: AdminUsersFilterDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const csv = await this.adminService.exportUsersCsv(filters);
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="buyootna-users.csv"',
+    );
+    return csv;
   }
 
   @Get('users/:id')

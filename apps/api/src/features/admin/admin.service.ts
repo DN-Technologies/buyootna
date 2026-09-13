@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import {
@@ -10,8 +11,10 @@ import {
   UserAccountStatusAction,
 } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
-import { Prisma, Role } from '@prisma/client';
+import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
+import { IdentityType, Prisma, Role } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
+import { checkUserExists } from '../../core/utils/user.utils';
 
 @Injectable()
 export class AdminService {
@@ -21,10 +24,23 @@ export class AdminService {
   ) {}
 
   async getUsers(filters: AdminUsersFilterDto) {
-    const { search, role, status, page = 1, limit = 10 } = filters;
+    const {
+      search,
+      role,
+      status,
+      plan,
+      subscriptionPlan,
+      sortOrder = 'desc',
+      sortBy = 'createdAt',
+      page = 1,
+      limit = 10,
+    } = filters;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.UserWhereInput = {};
+    const where: Prisma.UserWhereInput = {
+      isAdmin: false,
+    };
+    const andConditions: Prisma.UserWhereInput[] = [];
 
     // Role filter
     if (role) {
@@ -41,38 +57,80 @@ export class AdminService {
       where.isDisabled = true;
     }
 
-    // Search query filter (name, email, phone, company name, office name)
+    // Subscription plan filter
+    const activePlanFilter = subscriptionPlan || plan;
+    if (activePlanFilter && activePlanFilter !== 'all') {
+      if (activePlanFilter === 'regular' || activePlanFilter === 'العادية') {
+        andConditions.push({
+          OR: [
+            { activePlanId: null },
+            { activePlan: { slug: 'regular' } },
+            { activePlan: { name: 'العادية' } },
+          ],
+        });
+      } else {
+        andConditions.push({
+          activePlan: {
+            OR: [
+              { name: { contains: activePlanFilter, mode: 'insensitive' } },
+              { slug: { contains: activePlanFilter, mode: 'insensitive' } },
+            ],
+          },
+        });
+      }
+    }
+
+    // Search query filter (name, email, phone, company name, office name, individual name)
     if (search && search.trim() !== '') {
       const query = search.trim();
-      where.OR = [
-        { name: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } },
-        { phone: { contains: query, mode: 'insensitive' } },
-        {
-          identities: {
-            some: {
-              OR: [
-                {
-                  companyData: {
-                    name: { contains: query, mode: 'insensitive' },
+      andConditions.push({
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+          { phone: { contains: query, mode: 'insensitive' } },
+          {
+            identities: {
+              some: {
+                OR: [
+                  {
+                    companyData: {
+                      name: { contains: query, mode: 'insensitive' },
+                    },
                   },
-                },
-                {
-                  officeData: {
-                    name: { contains: query, mode: 'insensitive' },
+                  {
+                    officeData: {
+                      name: { contains: query, mode: 'insensitive' },
+                    },
                   },
-                },
-                {
-                  individualData: {
-                    name: { contains: query, mode: 'insensitive' },
+                  {
+                    individualData: {
+                      name: { contains: query, mode: 'insensitive' },
+                    },
                   },
-                },
-              ],
+                ],
+              },
             },
           },
-        },
-      ];
+        ],
+      });
     }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
+    const sortDirection: Prisma.SortOrder =
+      sortOrder === 'asc' ? 'asc' : 'desc';
+    const sortField = sortBy === 'name' ? 'name' : 'createdAt';
+    const orderBy: Prisma.UserOrderByWithRelationInput = {
+      [sortField]: sortDirection,
+    };
+
+    // Role-scoped filter for statistics (excluding admin accounts)
+    const roleStatsWhere: Prisma.UserWhereInput = {
+      isAdmin: false,
+      ...(role ? { role } : {}),
+    };
 
     const [
       users,
@@ -89,28 +147,35 @@ export class AdminService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: {
           identities: {
             include: {
               individualData: true,
               companyData: true,
               officeData: true,
+              _count: {
+                select: { properties: true },
+              },
             },
           },
           activePlan: true,
         },
       }),
       this.prisma.user.count({ where }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where: roleStatsWhere }),
       this.prisma.user.count({
-        where: { isDisabled: false, isBlocked: false },
+        where: { ...roleStatsWhere, isDisabled: false, isBlocked: false },
       }),
-      this.prisma.user.count({ where: { isBlocked: true } }),
-      this.prisma.user.count({ where: { isDisabled: true } }),
-      this.prisma.user.count({ where: { role: Role.INDIVIDUAL } }),
-      this.prisma.user.count({ where: { role: Role.OFFICE } }),
-      this.prisma.user.count({ where: { role: Role.COMPANY } }),
+      this.prisma.user.count({ where: { ...roleStatsWhere, isBlocked: true } }),
+      this.prisma.user.count({
+        where: { ...roleStatsWhere, isDisabled: true },
+      }),
+      this.prisma.user.count({
+        where: { role: Role.INDIVIDUAL, isAdmin: false },
+      }),
+      this.prisma.user.count({ where: { role: Role.OFFICE, isAdmin: false } }),
+      this.prisma.user.count({ where: { role: Role.COMPANY, isAdmin: false } }),
     ]);
 
     const formattedUsers = users.map((user) => {
@@ -158,6 +223,11 @@ export class AdminService {
 
       const subscriptionPlan = user.activePlan?.name || 'العادية';
 
+      const adsCount = user.identities.reduce(
+        (sum, i) => sum + (i._count?.properties ?? 0),
+        0,
+      );
+
       let accountStatus: 'نشط' | 'محظور' | 'موقوف' = 'نشط';
       if (user.isBlocked) {
         accountStatus = 'محظور';
@@ -175,6 +245,7 @@ export class AdminService {
         accountType,
         verificationStatus,
         subscriptionPlan,
+        adsCount,
         accountStatus,
         registrationDate,
       };
@@ -234,6 +305,9 @@ export class AdminService {
     if (!user) {
       throw new NotFoundException('المستخدم غير موجود');
     }
+    if (user.isAdmin) {
+      throw new BadRequestException('لا يمكن حذف حساب المشرف');
+    }
     await this.prisma.user.delete({ where: { id } });
     return { message: 'تم حذف المستخدم بنجاح' };
   }
@@ -242,6 +316,10 @@ export class AdminService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException('المستخدم غير موجود');
+    }
+
+    if (user.isAdmin) {
+      throw new BadRequestException('لا يمكن تعديل أو تعطيل حساب المشرف');
     }
 
     const dataToUpdate: Prisma.UserUpdateInput = {};
@@ -326,6 +404,130 @@ export class AdminService {
       where: { id: identityId },
       include: { companyData: true, officeData: true, individualData: true },
     });
+  }
+
+  async createIndividual(dto: AdminCreateIndividualDto) {
+    if (!dto.email && !dto.phone) {
+      throw new BadRequestException(
+        'يجب توفير البريد الإلكتروني أو رقم الهاتف على الأقل',
+      );
+    }
+
+    const email = dto.email ? dto.email.trim().toLowerCase() : undefined;
+    const phone = dto.phone ? dto.phone.trim() : undefined;
+
+    await checkUserExists(this.prisma, email, phone);
+
+    // Password generation or hashing
+    const plainPassword =
+      dto.password || Math.random().toString(36).slice(-8) + 'Aa1!';
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
+    // Resolve plan if provided
+    let activePlanId: string | undefined;
+    if (dto.planId) {
+      const plan = await this.prisma.plan.findFirst({
+        where: {
+          OR: [{ id: dto.planId }, { slug: dto.planId }, { name: dto.planId }],
+        },
+      });
+      if (plan) {
+        activePlanId = plan.id;
+      }
+    }
+
+    const result = await this.prisma.$transaction(
+      async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            email,
+            phone,
+            password: hashedPassword,
+            role: Role.INDIVIDUAL,
+            name: dto.name.trim(),
+            activePlanId,
+          },
+        });
+
+        const profile = await tx.individualProfile.create({
+          data: { userId: user.id },
+        });
+
+        const identity = await tx.identity.create({
+          data: {
+            userId: user.id,
+            type: IdentityType.INDIVIDUAL,
+            isActive: true,
+            individualData: {
+              create: {
+                name: dto.name.trim(),
+              },
+            },
+          },
+        });
+
+        return { user, profile, identity };
+      },
+      { timeout: 15000 },
+    );
+
+    const userWithoutPassword = { ...result.user };
+    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
+      .password;
+
+    return {
+      message: 'تم إضافة الفرد بنجاح',
+      user: userWithoutPassword,
+      profile: result.profile,
+      identity: result.identity,
+    };
+  }
+
+  async exportUsersCsv(filters: AdminUsersFilterDto): Promise<string> {
+    const res = await this.getUsers({
+      ...filters,
+      page: 1,
+      limit: 10000,
+    });
+
+    const headers = [
+      'معرف الفرد',
+      'الاسم',
+      'البريد الإلكتروني',
+      'رقم الهاتف',
+      'نوع الحساب',
+      'الاشتراك',
+      'عدد الإعلانات',
+      'الحالة',
+      'تاريخ التسجيل',
+    ];
+
+    const escapeCsv = (val: any) => {
+      if (val === null || val === undefined) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = res.data.map((user) => [
+      escapeCsv(user.id),
+      escapeCsv(user.name),
+      escapeCsv(user.email),
+      escapeCsv(user.phone),
+      escapeCsv(user.accountType),
+      escapeCsv(user.subscriptionPlan),
+      escapeCsv(user.adsCount ?? 0),
+      escapeCsv(user.accountStatus),
+      escapeCsv(user.registrationDate),
+    ]);
+
+    // UTF-8 BOM (\uFEFF) ensures Arabic text renders properly in Excel
+    const csvContent =
+      '\uFEFF' +
+      [headers.map(escapeCsv).join(','), ...rows.map((r) => r.join(','))].join(
+        '\r\n',
+      );
+
+    return csvContent;
   }
 
   private formatArabicDate(date: Date): string {

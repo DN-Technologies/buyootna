@@ -52,8 +52,12 @@ export class AuthService {
       );
     }
 
-    if (user.isDisabled) {
+    if (user.isDisabled && !user.isAdmin) {
       throw new UnauthorizedException('الحساب معطل مؤقتاً');
+    }
+
+    if (user.isBlocked && !user.isAdmin) {
+      throw new UnauthorizedException('الحساب محظور');
     }
 
     // Compare passwords

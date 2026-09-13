@@ -7,6 +7,7 @@ interface UserPaginationProps {
   totalPages: number
   totalItems: number
   currentCount: number
+  itemLabel?: string
   onPageChange: (page: number) => void
 }
 
@@ -56,6 +57,7 @@ export default function UserPagination({
   totalPages,
   totalItems,
   currentCount,
+  itemLabel = 'فرد',
   onPageChange,
 }: UserPaginationProps) {
   const pages = getPaginationRange(currentPage, totalPages)
@@ -99,7 +101,7 @@ export default function UserPagination({
                 key={page}
                 type="button"
                 onClick={() => onPageChange(page)}
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[14px] cursor-pointer transition-colors ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[14px] cursor-pointer transition-colors ${
                   isActive
                     ? 'bg-primary text-white'
                     : 'bg-white text-[#111111] hover:bg-[#F1F5F9]'
@@ -129,7 +131,7 @@ export default function UserPagination({
 
       {/* Info Count Text (Right side in RTL) */}
       <p className="text-[14px] font-medium text-[#6B6A6A]">
-        {currentCount} من {totalItems} مستخدم
+        {currentCount} من {totalItems} {itemLabel}
       </p>
     </div>
   )

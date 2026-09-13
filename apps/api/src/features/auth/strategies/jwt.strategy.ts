@@ -50,11 +50,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    if (user.isDisabled) {
+    if (user.isDisabled && !user.isAdmin) {
       throw new UnauthorizedException('الحساب معطل مؤقتاً');
     }
 
-    if (user.isBlocked) {
+    if (user.isBlocked && !user.isAdmin) {
       throw new UnauthorizedException('الحساب محظور');
     }
 
