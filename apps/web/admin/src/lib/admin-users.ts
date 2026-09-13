@@ -8,6 +8,7 @@ export interface AdminUserRow {
   accountType: 'فرد' | 'شركة' | 'مكتب عقاري';
   verificationStatus: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—';
   subscriptionPlan: string;
+  adsCount?: number | string;
   accountStatus: 'نشط' | 'محظور' | 'موقوف';
   registrationDate: string;
 }
@@ -16,6 +17,8 @@ export interface AdminUsersFilters {
   search?: string;
   role?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
   status?: 'active' | 'blocked' | 'suspended';
+  subscriptionPlan?: string;
+  sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
 }
@@ -49,10 +52,40 @@ export async function fetchAdminUsers(
   if (filters.search) params.search = filters.search;
   if (filters.role) params.role = filters.role;
   if (filters.status) params.status = filters.status;
+  if (filters.subscriptionPlan) params.subscriptionPlan = filters.subscriptionPlan;
+  if (filters.sortOrder) params.sortOrder = filters.sortOrder;
   if (filters.page) params.page = filters.page;
   if (filters.limit) params.limit = filters.limit;
 
   const res = await api.get('/admin/users', { params });
+  return res.data;
+}
+
+export interface CreateAdminIndividualInput {
+  name: string;
+  email?: string;
+  phone?: string;
+  password?: string;
+  planId?: string;
+}
+
+export async function createAdminIndividual(data: CreateAdminIndividualInput) {
+  const res = await api.post('/admin/users/individual', data);
+  return res.data;
+}
+
+export async function exportUsersCsv(filters: AdminUsersFilters = {}) {
+  const params: Record<string, any> = {};
+  if (filters.search) params.search = filters.search;
+  if (filters.role) params.role = filters.role;
+  if (filters.status) params.status = filters.status;
+  if (filters.subscriptionPlan) params.subscriptionPlan = filters.subscriptionPlan;
+  if (filters.sortOrder) params.sortOrder = filters.sortOrder;
+
+  const res = await api.get('/admin/users/export', {
+    params,
+    responseType: 'blob',
+  });
   return res.data;
 }
 

@@ -988,6 +988,41 @@ async function main() {
   }
   console.log('✅ Seeded Invoices.');
 
+  // 7. Seed Dedicated Admin Test Account
+  console.log('🛡️ Seeding Dedicated Admin Test Account...');
+  const adminUserId = randomUUID();
+  await prisma.user.create({
+    data: {
+      id: adminUserId,
+      email: 'admin@buyootna.com',
+      phone: '+96512345680',
+      password: hashedPassword,
+      role: Role.INDIVIDUAL,
+      isAdmin: true,
+    },
+  });
+
+  await prisma.individualProfile.create({
+    data: {
+      id: randomUUID(),
+      userId: adminUserId,
+    },
+  });
+
+  // Legacy individualProfile above isn't what login/the app resolve an
+  // active identity from anymore -- see the COMPANY identity comment above.
+  await prisma.identity.create({
+    data: {
+      id: randomUUID(),
+      userId: adminUserId,
+      type: IdentityType.INDIVIDUAL,
+      isActive: true,
+      individualData: { create: { name: 'Admin' } },
+    },
+  });
+
+  console.log('✅ Seeded Admin account (admin@buyootna.com / password123)');
+
   console.log('🎉 Seeding process completed successfully!');
 }
 
