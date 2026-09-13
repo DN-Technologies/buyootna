@@ -17,6 +17,7 @@ import SuccessToast from '@/components/users/SuccessToast'
 import SuspendUserModal from '@/components/users/SuspendUserModal'
 import ReactivateUserModal from '@/components/users/ReactivateUserModal'
 import BlockUserModal from '@/components/users/BlockUserModal'
+import ResetPasswordModal from '@/components/users/ResetPasswordModal'
 import {
   fetchAdminUsers,
   updateUserStatus,
@@ -55,6 +56,8 @@ function UsersPageContent() {
   const [reactivateModalUser, setReactivateModalUser] =
     useState<UserRow | null>(null)
   const [blockModalUser, setBlockModalUser] = useState<UserRow | null>(null)
+  const [resetPasswordModalUser, setResetPasswordModalUser] =
+    useState<UserRow | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -273,6 +276,10 @@ function UsersPageContent() {
     showToast(`تم تطبيق كود الخصم "${code}" بنجاح`)
   }
 
+  const handleResetPasswordSuccess = () => {
+    showToast('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريد المستخدم بنجاح.')
+  }
+
   const handleSuspendConfirm = async (
     user: UserRow,
     _durationDays?: number,
@@ -444,6 +451,7 @@ function UsersPageContent() {
           onSuspendUser={setSuspendModalUser}
           onReactivateUser={setReactivateModalUser}
           onBlockUser={setBlockModalUser}
+          onResetPassword={setResetPasswordModalUser}
           userLabel={config.userLabel}
           entityName={config.entityName}
         />
@@ -515,6 +523,14 @@ function UsersPageContent() {
         isOpen={!!blockModalUser}
         onClose={() => setBlockModalUser(null)}
         onConfirm={handleBlockConfirm}
+      />
+
+      {/* Reset Password Modal (Figma Nodes 5634:71538 & 5634:71120) */}
+      <ResetPasswordModal
+        user={resetPasswordModalUser}
+        isOpen={!!resetPasswordModalUser}
+        onClose={() => setResetPasswordModalUser(null)}
+        onSuccess={handleResetPasswordSuccess}
       />
     </div>
   )

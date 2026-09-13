@@ -35,6 +35,7 @@ interface UserTableProps {
   onSuspendUser?: (user: UserRow) => void
   onReactivateUser?: (user: UserRow) => void
   onBlockUser?: (user: UserRow) => void
+  onResetPassword?: (user: UserRow) => void
   loading?: boolean
   userLabel?: string
   entityName?: string
@@ -54,6 +55,7 @@ export default function UserTable({
   onSuspendUser,
   onReactivateUser,
   onBlockUser,
+  onResetPassword,
   loading = false,
   userLabel = 'اسم المستخدم',
   entityName = 'مستخدمين',
@@ -309,6 +311,7 @@ export default function UserTable({
                           onSendNotification={() => onSendNotification?.(user)}
                           onChangePlan={() => onChangePlan?.(user)}
                           onAddCoupon={() => onAddCoupon?.(user)}
+                          onResetPassword={() => onResetPassword?.(user)}
                           onToggleSuspend={() => {
                             if (user.accountStatus === 'موقوف') {
                               onReactivateUser?.(user)

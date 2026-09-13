@@ -30,6 +30,7 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import { ApiErrorResponseDto } from '../../core/swagger/api-error-response.dto';
 import {
   AdminDeleteUserResponseDto,
+  AdminResetPasswordResponseDto,
   AdminUpdateIdentityStatusResponseDto,
   AdminUpdateUserStatusResponseDto,
   AdminUsersListResponseDto,
@@ -133,5 +134,17 @@ export class AdminController {
     @Body() dto: AdminUpdateIdentityStatusDto,
   ) {
     return this.adminService.updateIdentityStatus(id, dto);
+  }
+
+  @Post('users/:id/reset-password')
+  @ApiOperation({
+    summary:
+      'Send a password reset link to a user via email (valid for 60 minutes)',
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiResponse({ status: 201, type: AdminResetPasswordResponseDto })
+  @ApiCommonErrors()
+  async sendUserPasswordResetLink(@Param('id') id: string) {
+    return this.adminService.sendUserPasswordResetLink(id);
   }
 }

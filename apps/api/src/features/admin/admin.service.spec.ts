@@ -4,6 +4,8 @@ import { AdminService } from './admin.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Role, IdentityType } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../../core/mail/mail.service';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
 interface MockPrismaService {
@@ -81,6 +83,14 @@ describe('AdminService', () => {
       create: jest.fn().mockResolvedValue({ id: 'notif-1' }),
     };
 
+    const jwtService = {
+      sign: jest.fn().mockReturnValue('mock-reset-token-123'),
+    };
+
+    const mailService = {
+      sendMail: jest.fn().mockResolvedValue({ success: true }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
@@ -91,6 +101,14 @@ describe('AdminService', () => {
         {
           provide: NotificationsService,
           useValue: notifications,
+        },
+        {
+          provide: JwtService,
+          useValue: jwtService,
+        },
+        {
+          provide: MailService,
+          useValue: mailService,
         },
       ],
     }).compile();
@@ -318,6 +336,43 @@ describe('AdminService', () => {
       expect(csv).toContain('فهد العتيبي');
       expect(csv).toContain('fahad@example.com');
       expect(csv).toContain('"2"');
+    });
+  });
+
+  describe('sendUserPasswordResetLink', () => {
+    it('should throw NotFoundException if user is not found', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.sendUserPasswordResetLink('non-existent-user'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if user has no email', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-no-email',
+        name: 'User Without Email',
+        email: null,
+      });
+
+      await expect(
+        service.sendUserPasswordResetLink('user-no-email'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should send a 60-minute reset link to user email and return success message', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-valid',
+        name: 'Mohamed Elgareh',
+        email: 'mohamedelgareh@gmail.com',
+      });
+
+      const res = await service.sendUserPasswordResetLink('user-valid');
+
+      expect(res.message).toContain(
+        'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح',
+      );
+      expect(res.email).toBe('mohamedelgareh@gmail.com');
     });
   });
 });

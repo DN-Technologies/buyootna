@@ -109,3 +109,11 @@ export class AdminUpdateIdentityStatusResponseDto {
   @ApiProperty()
   message: string;
 }
+
+export class AdminResetPasswordResponseDto {
+  @ApiProperty({ example: 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح' })
+  message: string;
+
+  @ApiProperty({ example: 'user@example.com' })
+  email: string;
+}

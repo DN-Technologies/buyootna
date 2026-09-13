@@ -11,6 +11,7 @@ export interface UserActivityDropdownProps {
   onAddCoupon: () => void
   onToggleSuspend: () => void
   onToggleBlock: () => void
+  onResetPassword?: () => void
 }
 
 export default function UserActivityDropdown({
@@ -22,6 +23,7 @@ export default function UserActivityDropdown({
   onAddCoupon,
   onToggleSuspend,
   onToggleBlock,
+  onResetPassword,
 }: UserActivityDropdownProps) {
   if (!isOpen) return null
 
@@ -84,6 +86,23 @@ export default function UserActivityDropdown({
             اضافة كوبون خصم
           </span>
         </button>
+
+        {/* 4. إعادة تعيين كلمة المرور */}
+        {onResetPassword && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              onResetPassword()
+            }}
+            className="h-8 w-full flex items-center justify-start px-1.5 rounded-sm hover:bg-[#F8FAFC] cursor-pointer transition-colors text-right"
+            data-name="reset-password"
+          >
+            <span className="font-['Cairo'] font-normal text-[14px] leading-normal text-[#111111] tracking-[-0.408px]">
+              إعادة تعيين كلمة المرور
+            </span>
+          </button>
+        )}
 
         {/* 4. تعطيل الحساب / تفعيل الحساب */}
         <button
