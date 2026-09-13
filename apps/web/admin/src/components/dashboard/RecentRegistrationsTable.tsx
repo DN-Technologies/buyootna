@@ -69,7 +69,7 @@ const recentRegistrations = [
 export default function RecentRegistrationsTable() {
   return (
     <Card
-      className="bg-white lg:col-span-2 border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+      className="bg-white lg:col-span-2 border-[#ECECEC] py-5 select-none relative overflow-hidden"
       data-node-id="2376:5586"
     >
       <div className="flex items-start justify-between w-full px-6 pb-4">
@@ -83,7 +83,7 @@ export default function RecentRegistrationsTable() {
         </div>
         <Button
           variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
         >
           عرض الكل
         </Button>
@@ -114,7 +114,7 @@ export default function RecentRegistrationsTable() {
             {recentRegistrations.map((reg) => (
               <tr
                 key={reg.id}
-                className="hover:bg-[#F9FAFB]/50 transition duration-150 h-[48px]"
+                className="hover:bg-[#F9FAFB]/50 transition duration-150 h-12"
               >
                 <td className="px-6 py-2">
                   <div className="flex flex-col gap-0.5 text-right leading-none">

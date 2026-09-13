@@ -55,7 +55,7 @@ export default function MetricsGrid() {
               {metric.title}
             </p>
             <div
-              className={`flex gap-[2px] items-center px-1.5 py-0.5 rounded-[6px] ${
+              className={`flex gap-0.5 items-center px-1.5 py-0.5 rounded-md ${
                 metric.isPositive
                   ? 'bg-[#12c281]/10 text-[#12C281]'
                   : 'bg-[#f54651]/10 text-[#F54651]'
@@ -103,7 +103,7 @@ export default function MetricsGrid() {
           </div>
 
           {/* Sparkline */}
-          <div className="h-[40px] w-full mt-2 relative -mb-4 overflow-hidden">
+          <div className="h-10 w-full mt-2 relative -mb-4 overflow-hidden">
             <svg
               className="w-[calc(100%+32px)] h-full"
               viewBox="0 0 100 40"

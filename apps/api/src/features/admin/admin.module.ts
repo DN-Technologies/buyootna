@@ -3,6 +3,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AdminUsersService } from './services/admin-users.service';
+import { AdminIdentityService } from './services/admin-identity.service';
+import { AdminExportService } from './services/admin-export.service';
+import { AdminPasswordService } from './services/admin-password.service';
 
 @Module({
   imports: [
@@ -12,7 +16,19 @@ import { NotificationsModule } from '../notifications/notifications.module';
     }),
   ],
   controllers: [AdminController],
-  providers: [AdminService],
-  exports: [AdminService],
+  providers: [
+    AdminService,
+    AdminUsersService,
+    AdminIdentityService,
+    AdminExportService,
+    AdminPasswordService,
+  ],
+  exports: [
+    AdminService,
+    AdminUsersService,
+    AdminIdentityService,
+    AdminExportService,
+    AdminPasswordService,
+  ],
 })
 export class AdminModule {}

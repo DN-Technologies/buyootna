@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { AdminUsersService } from './services/admin-users.service';
+import { AdminIdentityService } from './services/admin-identity.service';
+import { AdminExportService } from './services/admin-export.service';
+import { AdminPasswordService } from './services/admin-password.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Role, IdentityType } from '@prisma/client';
@@ -94,6 +98,10 @@ describe('AdminService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
+        AdminUsersService,
+        AdminIdentityService,
+        AdminExportService,
+        AdminPasswordService,
         {
           provide: PrismaService,
           useValue: prisma,

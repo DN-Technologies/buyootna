@@ -57,7 +57,7 @@ export default function ReactivateUserModal({
 
       {/* Modal Container matching Figma Node 5634:70397 */}
       <div
-        className="relative bg-white rounded-[12px] px-8 py-6 w-full max-w-[500px] shadow-2xl z-10 flex flex-col gap-8 items-center text-right animate-in fade-in zoom-in-95 duration-150"
+        className="relative bg-white rounded-xl px-8 py-6 w-full max-w-125 shadow-2xl z-10 flex flex-col gap-8 items-center text-right animate-in fade-in zoom-in-95 duration-150"
         dir="rtl"
         data-node-id="5634:70397"
         data-name="account activation popup"
@@ -88,10 +88,11 @@ export default function ReactivateUserModal({
                 إعادة تفعيل الحساب
               </h3>
               <p
-                className="text-[14px] font-normal text-[#6B6A6A] leading-[1.5] tracking-[-0.408px] max-w-[448px]"
+                className="text-[14px] font-normal text-[#6B6A6A] leading-normal tracking-[-0.408px] max-w-md"
                 data-node-id="5634:70404"
               >
-                هل تريد إعادة تفعيل “{displayName}” ؟ سيتمكن المستخدم من تسجيل الدخول واستخدام جميع الخدمات مرة أخرى.
+                هل تريد إعادة تفعيل “{displayName}” ؟ سيتمكن المستخدم من تسجيل
+                الدخول واستخدام جميع الخدمات مرة أخرى.
               </p>
             </div>
           </div>
@@ -114,11 +115,11 @@ export default function ReactivateUserModal({
               <div
                 className={`size-4 rounded-xs border flex items-center justify-center transition-colors shrink-0 ${
                   sendNotification
-                    ? 'bg-[#15304D] border-[#15304D] text-white'
+                    ? 'bg-primary border-primary text-white'
                     : 'border-[#D7D7D7] bg-white group-hover:border-[#94A3B8]'
                 }`}
               >
-                {sendNotification && <Check className="w-3 h-3 stroke-[3]" />}
+                {sendNotification && <Check className="w-3 h-3 stroke-3" />}
               </div>
               <span
                 className="text-[14px] font-medium text-[#111111] tracking-[-0.408px]"
@@ -140,7 +141,7 @@ export default function ReactivateUserModal({
             type="button"
             onClick={handleConfirm}
             disabled={loading}
-            className="flex-1 h-[48px] bg-[#15304D] hover:bg-[#1E4268] text-white font-semibold text-[14px] tracking-[0.28px] rounded-[24px] transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+            className="flex-1 h-12 bg-primary hover:bg-[#1E4268] text-white font-semibold text-[14px] tracking-[0.28px] rounded-3xl transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
             data-node-id="5634:70411"
           >
             {loading ? (
@@ -158,7 +159,7 @@ export default function ReactivateUserModal({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 h-[46px] bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#111111] font-semibold text-[14px] tracking-[0.28px] rounded-[24px] transition-colors cursor-pointer flex items-center justify-center"
+            className="flex-1 h-11.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFC] text-[#111111] font-semibold text-[14px] tracking-[0.28px] rounded-3xl transition-colors cursor-pointer flex items-center justify-center"
             data-node-id="5634:70410"
           >
             إلغاء

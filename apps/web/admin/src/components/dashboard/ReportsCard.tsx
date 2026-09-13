@@ -48,7 +48,7 @@ const reports = [
 export default function ReportsCard() {
   return (
     <Card
-      className="bg-white lg:col-span-1 border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+      className="bg-white lg:col-span-1 border-[#ECECEC] p-4.25 flex flex-col gap-4 relative select-none"
       data-node-id="2376:5216"
     >
       <div className="flex items-start justify-between w-full pb-2">
@@ -62,7 +62,7 @@ export default function ReportsCard() {
         </div>
         <Button
           variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
         >
           عرض الكل
         </Button>
@@ -77,7 +77,7 @@ export default function ReportsCard() {
             }`}
           >
             <div className="flex flex-col gap-1.5 items-start text-right">
-              <div className="flex items-center gap-1  h-[20px] rounded-[99px]">
+              <div className="flex items-center gap-1  h-5 rounded-[99px]">
                 <span
                   className={`font-['Cairo'] font-medium text-[12px] ${rep.priorityColor}`}
                 >

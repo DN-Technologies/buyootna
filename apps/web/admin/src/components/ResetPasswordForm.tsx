@@ -155,7 +155,7 @@ export function ResetPasswordForm({
       {/* ── Success Modal ── */}
       {success && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-[495px] flex flex-col items-center gap-8 rounded-2xl bg-white p-8 shadow-[0px_2px_1px_rgba(33,37,41,0.06),0px_0px_0.5px_rgba(33,37,41,0.08)]">
+          <div className="w-full max-w-123.75 flex flex-col items-center gap-8 rounded-2xl bg-white p-8 shadow-[0px_2px_1px_rgba(33,37,41,0.06),0px_0px_0.5px_rgba(33,37,41,0.08)]">
             <div className="w-full flex flex-col items-center gap-6">
               <CheckCircle2 className="w-16 h-16 text-[#018B1B]" />
               <div className="w-full flex flex-col gap-4 text-center">
