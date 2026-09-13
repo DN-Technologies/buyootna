@@ -1,18 +1,19 @@
 'use client'
 
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
   LayoutGrid,
-  Users,
+  User,
+  Building2,
+  Store,
   CreditCard,
   Tag,
   Bell,
-  FileText,
-  ShieldAlert,
+  Scale,
+  Shield,
   Settings,
-  History,
-  Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -35,7 +36,11 @@ const navGroups: NavGroup[] = [
   },
   {
     label: 'إدارة الحسابات',
-    items: [{ title: 'المستخدمون', href: '/users', icon: Users }],
+    items: [
+      { title: 'الأفراد', href: '/users?type=individual', icon: User },
+      { title: 'الشركات', href: '/users?type=company', icon: Building2 },
+      { title: 'المكاتب العقارية', href: '/users?type=office', icon: Store },
+    ],
   },
   {
     label: 'المالية',
@@ -45,33 +50,52 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: 'إدارة المنصة',
+    label: 'ادارة المنصة',
     items: [
-      { title: 'الإشعارات', href: '/notifications', icon: Bell },
-      { title: 'إدارة المحتوى', href: '/content', icon: FileText },
-      { title: 'الأدوار والصلاحيات', href: '/roles', icon: ShieldAlert },
+      { title: 'الاشعارات', href: '/notifications', icon: Bell },
+      { title: 'الصفقات والمزادات', href: '/deals', icon: Scale },
+      { title: 'الأدوار والصلاحيات', href: '/roles', icon: Shield },
     ],
   },
   {
     label: 'النظام',
-    items: [
-      { title: 'الإعدادات', href: '/settings', icon: Settings },
-      { title: 'السجل', href: '/logs', icon: History },
-    ],
+    items: [{ title: 'الإعدادت', href: '/settings', icon: Settings }],
   },
 ]
 
-export default function SideNav() {
+function SideNavContent() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const currentType = searchParams?.get('type')
+
+  const isItemActive = (href: string) => {
+    const [targetPath, queryString] = href.split('?')
+    const targetParams = new URLSearchParams(queryString || '')
+    const targetType = targetParams.get('type')
+
+    if (targetPath === '/') {
+      return pathname === '/'
+    }
+
+    if (targetType) {
+      return (
+        pathname.startsWith(targetPath) &&
+        (currentType === targetType ||
+          (!currentType && targetType === 'individual'))
+      )
+    }
+
+    return pathname === targetPath || pathname.startsWith(`${targetPath}/`)
+  }
 
   return (
     <div
-      className="w-64 bg-white border-l border-[#ECECEC] flex flex-col h-full relative"
+      className="w-64 bg-white border-l border-[#ECECEC] flex flex-col h-full relative select-none"
       dir="rtl"
     >
       {/* Brand Header */}
       <div className="h-17.5 border-b border-[#ECECEC] flex items-center justify-between px-6 shrink-0">
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <Image
             src="/logo-icon.png"
             alt="Buyootna Logo"
@@ -82,27 +106,24 @@ export default function SideNav() {
           <span className="font-['Cairo'] font-bold text-[20px] text-primary">
             بيوتنا
           </span>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-6 space-y-4">
         {navGroups.map((group) => (
-          <div key={group.label} className="space-y-2">
+          <div key={group.label} className="space-y-1.5">
             {/* Group Label */}
-            <div className="px-3 text-right">
+            <div className="px-3 py-1 text-right">
               <span className="font-['Cairo'] font-medium text-[12px] text-[#6B6A6A]">
                 {group.label}
               </span>
             </div>
+
             {/* Group Items */}
             <div className="space-y-1">
               {group.items.map((item) => {
-                const isActive =
-                  item.href === '/'
-                    ? pathname === item.href
-                    : pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`)
+                const isActive = isItemActive(item.href)
                 const Icon = item.icon
 
                 return (
@@ -110,19 +131,26 @@ export default function SideNav() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      'flex items-center justify-start gap-3 h-10.5 px-3 rounded-xl transition duration-150 text-right w-full',
+                      'flex items-center justify-start gap-2.5 h-10.5 px-3 rounded-xl transition-colors duration-150 text-right w-full',
                       isActive
                         ? 'bg-primary text-white font-bold'
-                        : 'bg-white text-[#111111] hover:bg-[#F8F9FA] hover:text-primary font-medium',
+                        : 'bg-white text-[#111111] hover:bg-[#F8F9FA] font-medium',
                     )}
                   >
                     <Icon
                       className={cn(
-                        'w-4.5 h-4.5',
-                        isActive ? 'text-white' : 'text-[#6B6A6A]',
+                        'w-4.5 h-4.5 shrink-0',
+                        isActive ? 'text-white' : 'text-[#111111]',
                       )}
                     />
-                    <span className="font-['Cairo'] text-[14px] leading-normal tracking-[-0.408px]">
+                    <span
+                      className={cn(
+                        "font-['Cairo'] text-[14px] leading-normal tracking-[-0.408px]",
+                        isActive
+                          ? 'font-bold text-white'
+                          : 'font-medium text-[#111111]',
+                      )}
+                    >
                       {item.title}
                     </span>
                   </Link>
@@ -134,9 +162,24 @@ export default function SideNav() {
       </div>
 
       {/* Empty Spacer */}
-      <div className="p-4 border-t border-[#ECECEC] text-center text-xs text-[#6B6A6A]/50">
-        لوحة التحكم الإدارية v1.0
-      </div>
+      <div className="flex-1 min-h-2" />
     </div>
+  )
+}
+
+export default function SideNav() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="w-64 bg-white border-l border-[#ECECEC] flex flex-col h-full"
+          dir="rtl"
+        >
+          <div className="h-17.5 border-b border-[#ECECEC] flex items-center justify-center px-6 shrink-0" />
+        </div>
+      }
+    >
+      <SideNavContent />
+    </Suspense>
   )
 }

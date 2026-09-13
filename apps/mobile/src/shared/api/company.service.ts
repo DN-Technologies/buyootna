@@ -21,4 +21,34 @@ export const companyService = {
     );
     return response.data;
   },
+
+  /**
+   * Creates a portfolio project for the current company profile.
+   */
+  createProject: async (data: {
+    title: string;
+    description: string;
+    images: string[];
+  }): Promise<{ success: boolean }> => {
+    const response = await apiClient.post('/users/profile/projects', data);
+    return response.data;
+  },
+
+  /**
+   * Creates a customer invoice for the current company profile.
+   */
+  createInvoice: async (data: {
+    clientName: string;
+    title: string;
+    warrantyMonths?: string;
+    issueDate: string;
+    items: { name: string; price: number; qty: number }[];
+    discount?: number;
+  }): Promise<{
+    success: boolean;
+    invoice: { invoiceNo: string; total: number };
+  }> => {
+    const response = await apiClient.post('/users/profile/invoices', data);
+    return response.data;
+  },
 };

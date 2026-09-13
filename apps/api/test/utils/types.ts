@@ -15,9 +15,20 @@ export interface IdentityResponseBody {
 
 export interface LoginResponseBody {
   access_token: string;
+  sessionId: string;
   user: UserResponseBody;
   activeIdentity: IdentityResponseBody;
   identities: IdentityResponseBody[];
+}
+
+export interface SessionResponseBody {
+  id: string;
+  deviceName: string;
+  platform: string | null;
+  deviceModel: string | null;
+  isActive: boolean;
+  lastActive: string;
+  location: string | null;
 }
 
 export interface MessageResponseBody {

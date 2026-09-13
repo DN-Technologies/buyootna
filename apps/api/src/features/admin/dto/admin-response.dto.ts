@@ -22,6 +22,13 @@ export class AdminUserListItemDto {
   @ApiProperty()
   subscriptionPlan: string;
 
+  @ApiProperty({
+    required: false,
+    description: 'Number of ads/properties posted',
+    example: 3,
+  })
+  adsCount?: number;
+
   @ApiProperty({ enum: ['نشط', 'محظور', 'موقوف'] })
   accountStatus: string;
 
@@ -101,4 +108,12 @@ export class AdminUpdateUserStatusResponseDto {
 export class AdminUpdateIdentityStatusResponseDto {
   @ApiProperty()
   message: string;
+}
+
+export class AdminResetPasswordResponseDto {
+  @ApiProperty({ example: 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح' })
+  message: string;
+
+  @ApiProperty({ example: 'user@example.com' })
+  email: string;
 }

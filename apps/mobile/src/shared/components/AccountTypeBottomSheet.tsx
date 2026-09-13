@@ -10,6 +10,12 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import SelectionCard from '@/shared/components/SelectionCard';
 import { AccountType } from '@/types';
 
+// Company option stays hidden unless explicitly enabled via env
+// (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the feat/companies
+// branch. Unset elsewhere (dev/main/production) keeps it hidden.
+const COMPANIES_ENABLED =
+  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
+
 interface AccountTypeBottomSheetProps {
   onContinue: (type: AccountType) => void;
   initialType?: AccountType;
@@ -81,6 +87,20 @@ const AccountTypeBottomSheet = forwardRef<
               handleClose();
             }}
           />
+
+          {COMPANIES_ENABLED && (
+            <SelectionCard
+              title="شركة"
+              description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
+              type="company"
+              isSelected={selectedType === 'company'}
+              onPress={() => {
+                setSelectedType('company');
+                onContinue('company');
+                handleClose();
+              }}
+            />
+          )}
         </View>
       </BottomSheetView>
     </BottomSheetModal>

@@ -139,6 +139,74 @@ describe('Individual auth flow (e2e)', () => {
         .send({ phone, otp: '000000' })
         .expect(400);
     });
+
+    // Regression coverage for the reported bug: a whitespace-only name
+    // (e.g. "   ") passed @IsNotEmpty as-is, since that check only rejects
+    // an exact empty string -- the account got created with a blank,
+    // invisible name that broke any UI showing it (headers, chat, etc).
+    it('rejects a whitespace-only name with 400', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: '    ',
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(400);
+    });
+
+    it('trims leading/trailing whitespace from the name before storing it', async () => {
+      const phone = randomKuwaitPhone();
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: '  Ali Salem  ',
+          identifier: phone,
+          password: TEST_PASSWORD,
+        })
+        .expect(201);
+
+      const otp = getMockOtpCode(app, phone);
+      const verifyRes = await request(app.getHttpServer())
+        .post('/auth/register/verify-otp')
+        .send({ phone, otp })
+        .expect(201);
+      const { access_token } = verifyRes.body as LoginResponseBody;
+
+      const meRes = await request(app.getHttpServer())
+        .get('/users/me')
+        .set('Authorization', `Bearer ${access_token}`)
+        .expect(200);
+
+      expect((meRes.body as { user: { name: string } }).user.name).toBe(
+        'Ali Salem',
+      );
+    });
+
+    // Regression coverage for the reported bug: nothing capped the name's
+    // length, so an arbitrarily long string got saved and overflowed the
+    // profile header/side menu/chat UI wherever the name is displayed.
+    it('rejects a name longer than 32 characters with 400', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: 'a'.repeat(33),
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(400);
+    });
+
+    it('accepts a name that is exactly 32 characters', async () => {
+      await request(app.getHttpServer())
+        .post('/users/register/individual')
+        .send({
+          name: 'a'.repeat(32),
+          identifier: randomKuwaitPhone(),
+          password: TEST_PASSWORD,
+        })
+        .expect(201);
+    });
   });
 
   describe('identity switching', () => {
@@ -209,69 +277,181 @@ describe('Individual auth flow (e2e)', () => {
   });
 
   describe('change password', () => {
-    it('rejects an invalid OTP with 400', async () => {
-      const phone = randomKuwaitPhone();
-      await request(app.getHttpServer())
-        .post('/users/register/individual')
-        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
-        .expect(201);
-      const registerOtp = getMockOtpCode(app, phone);
-      const verifyRes = await request(app.getHttpServer())
-        .post('/auth/register/verify-otp')
-        .send({ phone, otp: registerOtp })
-        .expect(201);
-      const { access_token } = verifyRes.body as LoginResponseBody;
+    describe('account with a phone on file', () => {
+      it('rejects an invalid OTP with 400', async () => {
+        const phone = randomKuwaitPhone();
+        await request(app.getHttpServer())
+          .post('/users/register/individual')
+          .send({
+            name: TEST_NAME,
+            identifier: phone,
+            password: TEST_PASSWORD,
+          })
+          .expect(201);
+        const registerOtp = getMockOtpCode(app, phone);
+        const verifyRes = await request(app.getHttpServer())
+          .post('/auth/register/verify-otp')
+          .send({ phone, otp: registerOtp })
+          .expect(201);
+        const { access_token } = verifyRes.body as LoginResponseBody;
 
-      await request(app.getHttpServer())
-        .post('/auth/change-password/request-otp')
-        .set('Authorization', `Bearer ${access_token}`)
-        .expect(201);
+        await request(app.getHttpServer())
+          .post('/auth/change-password/request-otp')
+          .set('Authorization', `Bearer ${access_token}`)
+          .expect(201);
 
-      await request(app.getHttpServer())
-        .patch('/auth/change-password')
-        .set('Authorization', `Bearer ${access_token}`)
-        .send({
-          oldPassword: TEST_PASSWORD,
-          newPassword: 'NewPassword456!',
-          otp: '000000',
-        })
-        .expect(400);
+        await request(app.getHttpServer())
+          .patch('/auth/change-password')
+          .set('Authorization', `Bearer ${access_token}`)
+          .send({
+            oldPassword: TEST_PASSWORD,
+            newPassword: 'NewPassword456!',
+            otp: '000000',
+          })
+          .expect(400);
+      });
+
+      it('rejects a missing OTP with 400', async () => {
+        const phone = randomKuwaitPhone();
+        await request(app.getHttpServer())
+          .post('/users/register/individual')
+          .send({
+            name: TEST_NAME,
+            identifier: phone,
+            password: TEST_PASSWORD,
+          })
+          .expect(201);
+        const registerOtp = getMockOtpCode(app, phone);
+        const verifyRes = await request(app.getHttpServer())
+          .post('/auth/register/verify-otp')
+          .send({ phone, otp: registerOtp })
+          .expect(201);
+        const { access_token } = verifyRes.body as LoginResponseBody;
+
+        await request(app.getHttpServer())
+          .patch('/auth/change-password')
+          .set('Authorization', `Bearer ${access_token}`)
+          .send({ oldPassword: TEST_PASSWORD, newPassword: 'NewPassword456!' })
+          .expect(400);
+      });
+
+      // Regression coverage: changePassword() used to unconditionally delete
+      // an OtpCode row that nothing in this app's registration/verify-otp
+      // flow ever creates, so even a fully valid attempt 500'd for every
+      // real user. Also pinned by a unit test in auth.service.spec.ts.
+      it('changes the password end-to-end: request-otp -> change-password -> login', async () => {
+        const phone = randomKuwaitPhone();
+        await request(app.getHttpServer())
+          .post('/users/register/individual')
+          .send({
+            name: TEST_NAME,
+            identifier: phone,
+            password: TEST_PASSWORD,
+          })
+          .expect(201);
+        const registerOtp = getMockOtpCode(app, phone);
+        const verifyRes = await request(app.getHttpServer())
+          .post('/auth/register/verify-otp')
+          .send({ phone, otp: registerOtp })
+          .expect(201);
+        const { access_token } = verifyRes.body as LoginResponseBody;
+
+        await request(app.getHttpServer())
+          .post('/auth/change-password/request-otp')
+          .set('Authorization', `Bearer ${access_token}`)
+          .expect(201);
+
+        const changeOtp = getMockOtpCode(app, phone);
+        const newPassword = 'NewPassword456!';
+        await request(app.getHttpServer())
+          .patch('/auth/change-password')
+          .set('Authorization', `Bearer ${access_token}`)
+          .send({
+            oldPassword: TEST_PASSWORD,
+            newPassword,
+            otp: changeOtp,
+          })
+          .expect(200);
+
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({ identifier: phone, password: TEST_PASSWORD })
+          .expect(401);
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({ identifier: phone, password: newPassword })
+          .expect(201);
+      });
     });
 
-    // Documents a known, pre-existing bug (also pinned by a unit test in
-    // auth.service.spec.ts): changePassword() unconditionally deletes an
-    // OtpCode row, but nothing in the registration/verify-otp flow ever
-    // creates one — so a real, valid OTP + correct old password still
-    // 500s for a typical individual user. Pinned here rather than fixed,
-    // since fixing it is outside the scope of this integration-test task.
-    it('currently 500s on a valid change-password attempt (missing OtpCode row)', async () => {
-      const phone = randomKuwaitPhone();
-      await request(app.getHttpServer())
-        .post('/users/register/individual')
-        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
-        .expect(201);
-      const registerOtp = getMockOtpCode(app, phone);
-      const verifyRes = await request(app.getHttpServer())
-        .post('/auth/register/verify-otp')
-        .send({ phone, otp: registerOtp })
-        .expect(201);
-      const { access_token } = verifyRes.body as LoginResponseBody;
+    // Regression coverage for the reported bug: an account registered via
+    // email (no phone on file) could never change its password, because the
+    // client always requested a phone OTP first and the backend always
+    // required one — a request that can never succeed with no phone to send
+    // it to. Now the old password alone re-authenticates when there's no
+    // phone, and the request-otp step is skipped entirely.
+    describe('account with no phone on file', () => {
+      async function registerAndVerifyEmailAccount(): Promise<{
+        email: string;
+        access_token: string;
+      }> {
+        const email = randomEmail();
+        await request(app.getHttpServer())
+          .post('/users/register/individual')
+          .send({ name: TEST_NAME, identifier: email, password: TEST_PASSWORD })
+          .expect(201);
+        const otp = getMockEmailOtpCode(app, email);
+        const verifyRes = await request(app.getHttpServer())
+          .post('/auth/register/verify-email-otp')
+          .send({ email, otp })
+          .expect(201);
+        const { access_token } = verifyRes.body as LoginResponseBody;
+        return { email, access_token };
+      }
 
-      await request(app.getHttpServer())
-        .post('/auth/change-password/request-otp')
-        .set('Authorization', `Bearer ${access_token}`)
-        .expect(201);
+      it('changes the password end-to-end with no OTP at all: change-password -> login', async () => {
+        const { email, access_token } = await registerAndVerifyEmailAccount();
+        const newPassword = 'NewPassword456!';
 
-      const changeOtp = getMockOtpCode(app, phone);
-      await request(app.getHttpServer())
-        .patch('/auth/change-password')
-        .set('Authorization', `Bearer ${access_token}`)
-        .send({
-          oldPassword: TEST_PASSWORD,
-          newPassword: 'NewPassword456!',
-          otp: changeOtp,
-        })
-        .expect(500);
+        await request(app.getHttpServer())
+          .patch('/auth/change-password')
+          .set('Authorization', `Bearer ${access_token}`)
+          .send({ oldPassword: TEST_PASSWORD, newPassword })
+          .expect(200);
+
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({ identifier: email, password: TEST_PASSWORD })
+          .expect(401);
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({ identifier: email, password: newPassword })
+          .expect(201);
+      });
+
+      it('rejects an incorrect old password with 400', async () => {
+        const { access_token } = await registerAndVerifyEmailAccount();
+
+        await request(app.getHttpServer())
+          .patch('/auth/change-password')
+          .set('Authorization', `Bearer ${access_token}`)
+          .send({
+            oldPassword: 'WrongPassword999!',
+            newPassword: 'NewPassword456!',
+          })
+          .expect(400);
+      });
+
+      it('rejects an unauthenticated request-otp call for a phone-less account with 400, without ever leaking that as a 500', async () => {
+        const { access_token } = await registerAndVerifyEmailAccount();
+
+        // The client no longer calls this for phone-less accounts, but the
+        // endpoint itself must still fail cleanly if ever hit directly.
+        await request(app.getHttpServer())
+          .post('/auth/change-password/request-otp')
+          .set('Authorization', `Bearer ${access_token}`)
+          .expect(400);
+      });
     });
   });
 

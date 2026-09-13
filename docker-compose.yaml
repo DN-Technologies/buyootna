@@ -3,11 +3,11 @@ services:
     image: nginx:alpine
     restart: always
     ports: ["80:80", "443:443"]
-    networks: [default, edge]
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
+    networks: [default, edge]
 
   api:
     build:
@@ -102,6 +102,10 @@ services:
 
 volumes:
   postgres_data:
+
 networks:
+  # Shared with the dar-alnokhba stack on this host so nginx can reach its
+  # containers by name (dar-alnokhba's docker-compose.yaml joins the same
+  # network). One-time host setup: docker network create edge
   edge:
     external: true

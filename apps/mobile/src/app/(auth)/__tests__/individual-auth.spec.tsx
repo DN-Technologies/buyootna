@@ -50,6 +50,7 @@ const loginResponseData = {
   activeIdentity,
   identities: [activeIdentity],
   access_token: 'tok-1',
+  sessionId: 'session-1',
 };
 
 describe('IndividualAuthScreen', () => {
@@ -113,9 +114,10 @@ describe('IndividualAuthScreen', () => {
           loginResponseData.activeIdentity,
           loginResponseData.identities,
           loginResponseData.access_token,
+          loginResponseData.sessionId,
         ),
       );
-      expect(router.push).toHaveBeenCalledWith('/(individual)/home');
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home');
     });
 
     it('joins an array-shaped backend error message with newlines', async () => {
@@ -146,7 +148,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
           'فشل تسجيل الدخول',
-          'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.',
+          'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
         );
       });
     });
@@ -265,6 +267,29 @@ describe('IndividualAuthScreen', () => {
           );
         });
         await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
+      });
+
+      // Regression coverage for the reported bug: a dropped connection
+      // (no `response` on the thrown error) must not be reported as
+      // "invalid verification code" -- the user typed nothing wrong, their
+      // network just failed.
+      it('shows a network-error message, not "invalid code", when verify-otp fails with no response', async () => {
+        const { getByPlaceholderText, getAllByPlaceholderText, getByText, getByDisplayValue } =
+          await render(<IndividualAuthScreen />);
+        await advanceToOtpStep(getByPlaceholderText, getAllByPlaceholderText, getByText);
+        mockApiClient.post.mockRejectedValueOnce({ message: 'Network Error' });
+
+        const hiddenOtpInput = getByDisplayValue('');
+        await fireEvent.changeText(hiddenOtpInput, '123456');
+        await fireEvent.press(getByText('التحقق من الرمز'));
+
+        await waitFor(() => {
+          expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+            'خطأ في التحقق',
+            'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
+          );
+        });
+        expect(mockSetAuth).not.toHaveBeenCalled();
       });
 
       it('resend posts to the recovery request-otp endpoint with the signup phone', async () => {
@@ -406,7 +431,7 @@ describe('IndividualAuthScreen', () => {
         });
       });
       await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
-      expect(router.push).toHaveBeenCalledWith('/(individual)/home');
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home');
     });
 
     it('silently ignores a user-cancelled sign-in', async () => {

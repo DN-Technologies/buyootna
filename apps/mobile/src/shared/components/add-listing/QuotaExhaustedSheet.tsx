@@ -12,12 +12,14 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 interface QuotaExhaustedSheetProps {
   onBrowsePackages?: () => void;
   onClose?: () => void;
+  title?: string;
+  description?: string;
 }
 
 const QuotaExhaustedSheet = forwardRef<
   BottomSheetModal,
   QuotaExhaustedSheetProps
->(({ onBrowsePackages, onClose }, ref) => {
+>(({ onBrowsePackages, onClose, title, description: descriptionProp }, ref) => {
   const userRole = useAuthStore((state) => state.user?.role);
 
   // Height snap points (45% fits the double buttons and text perfectly)
@@ -47,9 +49,10 @@ const QuotaExhaustedSheet = forwardRef<
   };
 
   const description =
-    userRole === 'COMPANY' || userRole === 'OFFICE'
+    descriptionProp ??
+    (userRole === 'COMPANY' || userRole === 'OFFICE'
       ? 'تم إرسال طلبك إلى الشركات المناسبة، وستتلقى عروض الأسعار قريباً.'
-      : 'لتتمكن من نشر عقار جديد والوصول إلى آلاف المشترين يومياً، يرجى ترقية حسابك وشراء باقات إعلانية مميزة.';
+      : 'لتتمكن من نشر عقار جديد والوصول إلى آلاف المشترين يومياً، يرجى ترقية حسابك وشراء باقات إعلانية مميزة.');
 
   return (
     <BottomSheetModal
@@ -73,7 +76,7 @@ const QuotaExhaustedSheet = forwardRef<
 
           {/* Title */}
           <Text className="text-center font-cairo-bold text-xl text-[#111111] mb-2">
-            لقد استهلكت جميع إعلاناتك المجانية
+            {title || 'لقد استهلكت جميع إعلاناتك المجانية'}
           </Text>
 
           {/* Description */}

@@ -9,6 +9,12 @@ import SelectionCard from '@/shared/components/SelectionCard';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { AccountType } from '@/types';
 
+// Company signup stays hidden unless explicitly enabled via env
+// (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the feat/companies
+// branch. Unset elsewhere (dev/main/production) keeps it hidden.
+const COMPANIES_ENABLED =
+  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
+
 export default function AccountTypeSelectionScreen() {
   const [selectedType, setSelectedType] = useState<AccountType>(null);
 
@@ -17,6 +23,11 @@ export default function AccountTypeSelectionScreen() {
       router.push({
         pathname: '/(auth)/individual-auth',
         params: { mode: 'signup' },
+      } as any);
+    } else if (selectedType === 'company' && COMPANIES_ENABLED) {
+      router.push({
+        pathname: '/(auth)/business-auth',
+        params: { type: 'company' },
       } as any);
     }
   };
@@ -61,6 +72,16 @@ export default function AccountTypeSelectionScreen() {
             isSelected={selectedType === 'individual'}
             onPress={() => setSelectedType('individual')}
           />
+
+          {COMPANIES_ENABLED && (
+            <SelectionCard
+              title="شركة"
+              description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
+              type="company"
+              isSelected={selectedType === 'company'}
+              onPress={() => setSelectedType('company')}
+            />
+          )}
         </View>
 
         {/* Action Button */}

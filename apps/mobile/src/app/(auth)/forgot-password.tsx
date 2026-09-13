@@ -1,12 +1,9 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
-import { useRef,useState } from 'react';
-import { KeyboardAvoidingView, Platform,ScrollView } from 'react-native';
+import { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import apiClient from '@/shared/api/api';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
-import { showAlert } from '@/shared/utils/alert';
 // Modular Components
 import { ForgotPasswordHeader } from '@/features/auth/components/recovery/ForgotPasswordHeader';
 import { ForgotPasswordStep1 } from '@/features/auth/components/recovery/ForgotPasswordStep1';
@@ -17,6 +14,11 @@ import {
   ResetPasswordValues,
   VerifyOtpValues,
 } from '@/features/auth/recoverySchemas';
+import apiClient from '@/shared/api/api';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { ResendOtpResult } from '@/shared/hooks/useOtpResendTimer';
+import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 export default function ForgotPasswordScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -33,14 +35,24 @@ export default function ForgotPasswordScreen() {
       setIdentifier(data.identifier);
       setStep(2);
     } catch (error: any) {
-      let errorMsg = 'تعذر إرسال رمز التحقق';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إرسال رمز التحقق'));
+    }
+  };
+
+  const onResendOtp = async (): Promise<ResendOtpResult> => {
+    try {
+      await apiClient.post('/auth/recovery/request-otp', { identifier });
+      return { success: true };
+    } catch (error: any) {
+      const code = error?.response?.data?.code;
+      const retryAfter = error?.response?.data?.retryAfter;
+      const message = getApiErrorMessage(error, 'تعذر إعادة إرسال رمز التحقق');
+      // Cooldown/daily-limit state is rendered inline by the OTP step
+      // itself — an alert on top of that would just be redundant.
+      if (code !== 'OTP_COOLDOWN' && code !== 'OTP_DAILY_LIMIT') {
+        showAlert('خطأ', message);
       }
-      showAlert('خطأ', errorMsg);
+      return { success: false, code, retryAfter, message };
     }
   };
 
@@ -55,14 +67,7 @@ export default function ForgotPasswordScreen() {
       setResetToken(response.data.resetToken);
       setStep(3);
     } catch (error: any) {
-      let errorMsg = 'رمز التحقق غير صحيح';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('خطأ', errorMsg);
+      showAlert('خطأ', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
     }
   };
 
@@ -76,14 +81,7 @@ export default function ForgotPasswordScreen() {
       // Trigger the Success Bottom Sheet!
       successSheetRef.current?.present();
     } catch (error: any) {
-      let errorMsg = 'تعذر تحديث كلمة المرور';
-      if (error.response?.data?.message) {
-        const message = error.response.data.message;
-        errorMsg = Array.isArray(message) ? message.join('\n') : message;
-      } else if (error.message === 'Network Error' || !error.response) {
-        errorMsg = 'فشل الاتصال بالخادم. يرجى التأكد من تشغيل الـ API والاتصال بالشبكة.';
-      }
-      showAlert('خطأ', errorMsg);
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر تحديث كلمة المرور'));
     }
   };
 
@@ -120,6 +118,7 @@ export default function ForgotPasswordScreen() {
             <ForgotPasswordStep2
               identifier={identifier}
               onSubmit={onStep2Submit}
+              onResendOtp={onResendOtp}
             />
           )}
           {step === 3 && <ForgotPasswordStep3 onSubmit={onStep3Submit} />}

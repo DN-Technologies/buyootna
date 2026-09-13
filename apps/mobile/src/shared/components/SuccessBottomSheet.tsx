@@ -19,6 +19,8 @@ interface SuccessBottomSheetProps {
   footerText?: string;
   secondaryButtonText?: string;
   onSecondaryPress?: () => void;
+  /** Visual style of the optional secondary button. Defaults to 'gold'. */
+  secondaryButtonVariant?: 'gold' | 'neutral';
 }
 
 const SuccessBottomSheet = forwardRef<
@@ -35,6 +37,7 @@ const SuccessBottomSheet = forwardRef<
       footerText,
       secondaryButtonText,
       onSecondaryPress,
+      secondaryButtonVariant = 'gold',
     },
     ref,
   ) => {
@@ -152,9 +155,19 @@ const SuccessBottomSheet = forwardRef<
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={onSecondaryPress}
-              className="mb-4 h-[48px] w-full items-center justify-center rounded-3xl border border-[#D4AF37] bg-white"
+              className={`mb-4 h-[48px] w-full items-center justify-center rounded-3xl border bg-white ${
+                secondaryButtonVariant === 'neutral'
+                  ? 'border-[#E2E8F0]'
+                  : 'border-[#D4AF37]'
+              }`}
             >
-              <Text className="font-cairo-semibold text-[14px] leading-[24px] text-[#D4AF37]">
+              <Text
+                className={`font-cairo-semibold text-[14px] leading-[24px] ${
+                  secondaryButtonVariant === 'neutral'
+                    ? 'text-[#111111]'
+                    : 'text-[#D4AF37]'
+                }`}
+              >
                 {secondaryButtonText}
               </Text>
             </TouchableOpacity>

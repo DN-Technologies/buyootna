@@ -1,8 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
@@ -15,6 +15,7 @@ import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -26,17 +27,22 @@ interface HomePropertiesProps {
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export default function HomeProperties({
-  activeFilter = 'all',
-  refreshing = false,
-  onRefresh,
-  viewMode = 'card',
-  ListHeaderComponent,
-}: HomePropertiesProps) {
+export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
+  function HomeProperties(
+    {
+      activeFilter = 'all',
+      refreshing = false,
+      onRefresh,
+      viewMode = 'card',
+      ListHeaderComponent,
+    },
+    ref,
+  ) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
   const { isTablet, cardColumns } = useResponsiveLayout();
   const { favoritedIds, toggleFavorite } = useFavorites();
+  const token = useAuthStore((state) => state.token);
 
   // Bottom Sheet Ref & Selected Property State
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -65,7 +71,12 @@ export default function HomeProperties({
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['homeProperties', activeFilter],
+    // Includes `token` so a login/logout while this screen stays mounted
+    // (the (individual) tab group is reused across the auth flow -- see
+    // resetToIdentityHome) triggers a real refetch of user-specific
+    // results (e.g. per-user pricing/eligibility) instead of continuing to
+    // show whatever was cached from before the auth state changed.
+    queryKey: ['homeProperties', activeFilter, token],
     queryFn: ({ pageParam }) =>
       feedService.getProperties(getBackendType(activeFilter), pageParam, 10),
     initialPageParam: 1,
@@ -146,6 +157,7 @@ export default function HomeProperties({
           which is the right trade for actually being fast. */}
       {viewMode === 'card' ? (
         <FlashList
+          ref={ref}
           key={isTablet ? `tablet-grid-${cardColumns}` : 'phone-list'}
           numColumns={isTablet ? cardColumns : 1}
           ListHeaderComponent={ListHeaderComponent}
@@ -219,6 +231,7 @@ export default function HomeProperties({
         />
       ) : (
         <FlashList
+          ref={ref}
           data={data}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={ListHeaderComponent}
@@ -289,4 +302,5 @@ export default function HomeProperties({
       />
     </View>
   );
-}
+  },
+);

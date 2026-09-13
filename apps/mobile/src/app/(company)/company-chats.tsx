@@ -1,36 +1,45 @@
-import { Feather } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect } from 'react';
+import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
+import ChatListItem from '@/shared/components/chat/ChatListItem';
+import EmptyChatState from '@/shared/components/chat/EmptyChatState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
+import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import {
+  formatTimeAgo,
+  getArabicCategoryLabel,
+} from '@/shared/utils/helpers/property';
 
 export default function CompanyChatsScreen() {
   const router = useRouter();
-  const { token } = useAuthStore();
+  const token = useAuthStore((state) => state.token);
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
-  const isLoadingConversations = useChatStore(
-    (state) => state.isLoadingConversations,
-  );
+  const receiveMessage = useChatStore((state) => state.receiveMessage);
+  const isLoading = useChatStore((state) => state.isLoadingConversations);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (token) {
-        loadConversations(1);
-      }
-    }, [token, loadConversations])
-  );
+  useEffect(() => {
+    if (token) {
+      loadConversations(1);
+
+      // Keep unread counts / last message fresh while the tab is open
+      const unsubscribe = socketService.onConversationUpdated((data) => {
+        receiveMessage(data.conversationId, data.lastMessage);
+      });
+
+      return unsubscribe;
+    }
+  }, [token, loadConversations, receiveMessage]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F5F6FA]">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       {/* Header */}
-      <View className="bg-white px-5 py-4">
+      <View className="border-b border-gray-100 bg-white px-5 py-4">
         <Text
           className="font-cairo-bold text-lg text-[#111111]"
           style={{ writingDirection: 'rtl' }}
@@ -39,77 +48,57 @@ export default function CompanyChatsScreen() {
         </Text>
       </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        <ContentContainer>
-          <View className="mx-4 mt-4 gap-2">
-            {isLoadingConversations && conversations.length === 0 ? (
-              <ChatListSkeleton />
-            ) : conversations.length > 0 ? (
-              conversations.map((conv) => (
-                <TouchableOpacity
-                  key={conv.id}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/chat/[id]',
-                      params: { id: conv.id },
-                    })
-                  }
-                  className="flex-row items-center gap-3 rounded-xl bg-white p-4"
-                >
-                  <View className="h-12 w-12 items-center justify-center rounded-full bg-[#F0F4FF]">
-                    <Feather name="user" size={20} color="#2563EB" />
-                  </View>
-                  <View className="flex-1">
-                    <View className="flex-row items-center justify-between">
-                      <Text className="font-cairo-medium text-xs text-[#94A3B8]">
-                        {conv.lastMessage?.createdAt
-                          ? new Date(conv.lastMessage.createdAt).toLocaleDateString(
-                              'ar-KW'
-                            )
-                          : ''}
-                      </Text>
-                      <Text
-                        className="font-cairo-semibold text-sm text-[#111111]"
-                        numberOfLines={1}
-                      >
-                        {conv.otherUser?.name || 'محادثة'}
-                      </Text>
-                    </View>
-                    <Text
-                      className="mt-0.5 text-right font-cairo-medium text-xs text-[#6B6A6A]"
-                      numberOfLines={1}
-                    >
-                      {conv.lastMessage?.content || 'لا توجد رسائل'}
-                    </Text>
-                  </View>
-                  {conv.unreadCount > 0 && (
-                    <View className="h-5 min-w-[20px] items-center justify-center rounded-full bg-[#EF4444] px-1.5">
-                      <Text className="font-cairo-bold text-[10px] text-white">
-                        {conv.unreadCount}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))
-            ) : (
-              <View className="mt-8 items-center rounded-2xl bg-white py-16">
-                <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-[#F0F4FF]">
-                  <Feather name="message-circle" size={36} color="#94A3B8" />
-                </View>
-                <Text className="font-cairo-bold text-base text-[#111111]">
-                  لا توجد محادثات
-                </Text>
-                <Text className="mt-1 font-cairo-medium text-sm text-[#6B6A6A]">
-                  ستظهر محادثات العملاء هنا
-                </Text>
-              </View>
-            )}
-          </View>
-        </ContentContainer>
-      </ScrollView>
+      {isLoading && conversations.length === 0 ? (
+        <ChatListSkeleton count={6} />
+      ) : (
+        <FlashList
+          data={conversations}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          ListEmptyComponent={EmptyChatState}
+          refreshing={isLoading}
+          onRefresh={() => loadConversations(1, true)}
+          renderItem={({ item }) => {
+            const displayLastMessage = item.lastMessage
+              ? item.lastMessage.type === 'IMAGE'
+                ? '📷 صورة'
+                : item.lastMessage.type === 'PROPERTY'
+                  ? '🏠 مشاركة عقار'
+                  : item.lastMessage.content || ''
+              : 'بدء المحادثة';
+
+            return (
+              <ChatListItem
+                id={item.id}
+                user={{
+                  name: item.otherUser?.name || 'محادثة',
+                  avatarUrl: item.otherUser?.avatarUrl,
+                  isOnline: false,
+                }}
+                propertyContext={
+                  item.propertyContext
+                    ? getArabicCategoryLabel(item.propertyContext.category)
+                    : undefined
+                }
+                lastMessage={displayLastMessage}
+                timestamp={
+                  item.lastMessage
+                    ? formatTimeAgo(item.lastMessage.createdAt)
+                    : ''
+                }
+                unreadCount={item.unreadCount}
+                onPress={() =>
+                  router.push({
+                    pathname: '/chat/[id]',
+                    params: { id: item.id },
+                  })
+                }
+              />
+            );
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

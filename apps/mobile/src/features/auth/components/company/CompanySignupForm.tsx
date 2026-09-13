@@ -1,21 +1,20 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as DocumentPicker from 'expo-document-picker';
-import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import MapPickerModal from '@/shared/components/MapPickerModal';
-import SelectionBottomSheet from '@/shared/components/SelectionBottomSheet';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
-import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import {
   CompanySignupFormValues,
   createCompanySignupSchema,
   getStep1Fields,
   STEP_2_FIELDS,
 } from '@/features/auth/companyAuthSchemas';
+import MapPickerModal from '@/shared/components/MapPickerModal';
+import SelectionBottomSheet from '@/shared/components/SelectionBottomSheet';
+import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 
 import { CompanySignupProgress } from './CompanySignupProgress';
 import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
@@ -43,7 +42,6 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   isLoading = false,
   includeAccountFields = true,
 }) => {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [hqAddressLabel, setHqAddressLabel] = useState<string>('');
@@ -107,7 +105,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   const closeSuccessModal = () => {
     successSheetRef.current?.dismiss();
-    router.replace(getIdentityHomeRoute(null));
+    resetToIdentityHome(null);
   };
 
   const successMessage =

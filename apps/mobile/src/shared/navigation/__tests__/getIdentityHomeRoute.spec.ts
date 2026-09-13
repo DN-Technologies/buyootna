@@ -2,7 +2,7 @@ import { getIdentityHomeRoute } from '../getIdentityHomeRoute';
 
 describe('getIdentityHomeRoute', () => {
   it('routes COMPANY to the company home', () => {
-    expect(getIdentityHomeRoute('COMPANY')).toBe('/(company)/company-home');
+    expect(getIdentityHomeRoute('COMPANY')).toBe('/(company)/home');
   });
 
   it('routes OFFICE to the office home', () => {

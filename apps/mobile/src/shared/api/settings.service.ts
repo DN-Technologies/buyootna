@@ -51,7 +51,7 @@ export const settingsService = {
   changePassword: async (
     oldPassword: string,
     newPassword: string,
-    otp: string,
+    otp?: string,
     logoutAllDevices?: boolean,
   ): Promise<{ message: string }> => {
     const response = await apiClient.patch<{ message: string }>(
@@ -72,6 +72,7 @@ export const settingsService = {
     email?: string;
     whatsapp?: string;
     avatarUrl?: string;
+    services?: string;
   }): Promise<any> => {
     const response = await apiClient.patch('/users/profile', data);
     return response.data;

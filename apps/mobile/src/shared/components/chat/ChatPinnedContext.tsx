@@ -1,6 +1,5 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { CompanyIcon } from '@/assets/icons/home/property';
@@ -67,14 +66,14 @@ export default function ChatPinnedContext({
             ) : null}
           </View>
 
-          {/* Price & Area Details */}
+          {/* Area & Price Details */}
           <Text
             className="mt-0.5 font-cairo-medium text-[11px] text-[#7E8A97]"
             style={{ writingDirection: 'rtl' }}
             numberOfLines={1}
           >
+            {area ? `${area} • ` : ''}
             {price}
-            {area ? ` • ${area}` : ''}
           </Text>
         </View>
       </View>

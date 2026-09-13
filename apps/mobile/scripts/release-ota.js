@@ -103,9 +103,23 @@ async function main() {
     process.exit(1);
   }
 
+  // Bake the release message (and the commit it shipped from) into the
+  // published JS bundle itself, via the same EXPO_PUBLIC_* mechanism this
+  // project already uses for build-time config. eas update re-bundles JS
+  // using the current environment, so these become readable at runtime by
+  // app code (see the About screen) -- giving QA a human-readable "what
+  // changed" without needing EAS dashboard/git access, while the native
+  // app `version` stays untouched so this OTA push keeps reaching the
+  // current runtime.
+  const shortSha = git(['rev-parse', '--short', 'HEAD']);
   const result = spawnSync('eas', ['update', '--channel', channel, '--message', message], {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
+    env: {
+      ...process.env,
+      EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
+      EXPO_PUBLIC_OTA_COMMIT: shortSha,
+    },
   });
   process.exit(result.status ?? 1);
 }

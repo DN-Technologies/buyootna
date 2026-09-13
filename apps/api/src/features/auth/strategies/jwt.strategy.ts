@@ -8,12 +8,14 @@ export interface JwtPayload {
   sub: string; // userId (auth principal)
   ident: string; // identityId (active identity)
   type: IdentityType; // INDIVIDUAL | COMPANY | OFFICE
+  sid?: string; // sessionId — optional so tokens issued before this claim existed keep validating
 }
 
 export interface RequestUser {
   userId: string;
   identityId: string;
   identityType: IdentityType;
+  sessionId?: string;
   user: Omit<User, 'password'>;
   identity: Identity & {
     individualData?: {
@@ -48,11 +50,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    if (user.isDisabled) {
+    if (user.isDisabled && !user.isAdmin) {
       throw new UnauthorizedException('الحساب معطل مؤقتاً');
     }
 
-    if (user.isBlocked) {
+    if (user.isBlocked && !user.isAdmin) {
       throw new UnauthorizedException('الحساب محظور');
     }
 
@@ -90,6 +92,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       userId: user.id,
       identityId: identity.id,
       identityType: identity.type,
+      sessionId: payload.sid,
       user: userWithoutPassword,
       identity,
     };

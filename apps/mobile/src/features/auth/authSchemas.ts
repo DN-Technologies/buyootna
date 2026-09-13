@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { NAME_REGEX, NAME_REGEX_MESSAGE } from '@/shared/utils/nameValidation';
+
 // Shared identifier (email or Kuwait phone) shape checks.
 // Kept in one place so the signup schema's validation and the signup
 // screen's OTP-vs-immediate-login branching never drift out of sync.
@@ -32,8 +34,11 @@ export const signupSchema = z
   .object({
     name: z
       .string({ message: 'الاسم مطلوب' })
+      .trim()
       .min(1, 'الاسم مطلوب')
-      .min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
+      .min(2, 'الاسم يجب أن يكون حرفين على الأقل')
+      .max(32, 'الاسم يجب ألا يتجاوز 32 حرفاً')
+      .regex(NAME_REGEX, NAME_REGEX_MESSAGE),
     identifier: z
       .string({ message: 'هذا الحقل مطلوب' })
       .min(1, 'هذا الحقل مطلوب')

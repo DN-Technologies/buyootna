@@ -3,13 +3,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import {
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ShareIcon } from '@/assets/icons/home/property';
@@ -27,6 +21,7 @@ import {
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import MenuItem from '@/features/individual/components/more/MenuItem';
+import Avatar from '@/shared/components/Avatar';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
@@ -101,7 +96,6 @@ export default function OfficeMoreScreen() {
     logout();
   };
 
-  const activeLogoUrl = avatarUrl || 'https://via.placeholder.com/150';
   const activeTypeLabel = activeIdentity
     ? getTypeLabel(activeIdentity.type)
     : 'مكتب';
@@ -123,12 +117,8 @@ export default function OfficeMoreScreen() {
                 {/* Logo & Account Type Row */}
                 <View className="-mt-10 mb-2 flex-row items-start justify-between">
                   {/* Overlapping Logo */}
-                  <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white bg-gray-200 shadow-sm">
-                    <Image
-                      source={{ uri: activeLogoUrl }}
-                      className="h-full w-full"
-                      resizeMode="cover"
-                    />
+                  <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white shadow-sm">
+                    <Avatar uri={avatarUrl} />
                   </View>
 
                   {/* Account Type Selector */}

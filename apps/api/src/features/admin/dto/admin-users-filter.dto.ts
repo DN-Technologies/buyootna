@@ -21,6 +21,18 @@ export class AdminUsersFilterDto {
 
   @IsOptional()
   @IsString()
+  subscriptionPlan?: string;
+
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsString()
+  sortBy?: 'createdAt' | 'name';
+
+  @IsOptional()
+  @IsString()
   verification?: 'verified' | 'unverified' | 'pending';
 
   @IsOptional()

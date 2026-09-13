@@ -5,6 +5,7 @@ import {
   ListingStatus,
   Role,
   ApprovalStatus,
+  IdentityType,
 } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -374,6 +375,56 @@ async function main() {
   await prisma.companyProfile.createMany({ data: companyProfilesData });
   console.log(`✅ Seeded ${usersData.length} company users and profiles.`);
 
+  // companyProfile above is the legacy, pre-multi-identity model -- login and
+  // property ownership now resolve through Identity/CompanyIdentityData
+  // instead (see prisma/identity.prisma), so without this a seeded company
+  // user has zero Identity rows and silently self-heals into a blank
+  // INDIVIDUAL identity on first login. Derive one Identity + CompanyIdentityData
+  // per seeded company from the profile data already computed above.
+  const identitiesData: {
+    id: string;
+    userId: string;
+    type: IdentityType;
+    isActive: boolean;
+  }[] = [];
+  const companyIdentityDataRows: any[] = [];
+  const userIdToIdentityId = new Map<string, string>();
+
+  for (const profile of companyProfilesData) {
+    const identityId = randomUUID();
+    identitiesData.push({
+      id: identityId,
+      userId: profile.userId,
+      type: IdentityType.COMPANY,
+      isActive: true,
+    });
+    companyIdentityDataRows.push({
+      id: randomUUID(),
+      identityId,
+      name: profile.name,
+      services: profile.services,
+      hqLocation: profile.hqLocation,
+      serviceAreas: profile.serviceAreas,
+      about: profile.about,
+      licenseActivity: profile.licenseActivity,
+      licenseNumber: profile.licenseNumber,
+      licenseExpiry: profile.licenseExpiry,
+      logoUrl: profile.logoUrl,
+      licenseFileUrl: profile.licenseFileUrl,
+      isVerified: profile.isVerified,
+      status: profile.status,
+      latitude: profile.latitude,
+      longitude: profile.longitude,
+    });
+    userIdToIdentityId.set(profile.userId, identityId);
+  }
+
+  await prisma.identity.createMany({ data: identitiesData });
+  await prisma.companyIdentityData.createMany({ data: companyIdentityDataRows });
+  console.log(
+    `✅ Seeded ${identitiesData.length} COMPANY identities for login/ownership resolution.`,
+  );
+
   // 4. Generate 4500 Properties
   console.log('🏠 Seeding 4500 Properties...');
   const propertiesData: any[] = [];
@@ -437,6 +488,7 @@ async function main() {
       id: randomUUID(),
       referenceNumber: 1000000 + i,
       userId: randomUser.id,
+      identityId: userIdToIdentityId.get(randomUser.id),
       type,
       category,
       isFeatured: i % 12 === 0, // ~8% featured
@@ -487,6 +539,18 @@ async function main() {
     data: {
       id: randomUUID(),
       userId: reviewerUserId,
+    },
+  });
+
+  // Legacy individualProfile above isn't what login/the app resolve an
+  // active identity from anymore -- see the COMPANY identity comment above.
+  await prisma.identity.create({
+    data: {
+      id: randomUUID(),
+      userId: reviewerUserId,
+      type: IdentityType.INDIVIDUAL,
+      isActive: true,
+      individualData: { create: { name: 'App Store Reviewer' } },
     },
   });
 
@@ -577,6 +641,17 @@ async function main() {
     },
   });
 
+  const individualIdentityId = randomUUID();
+  await prisma.identity.create({
+    data: {
+      id: individualIdentityId,
+      userId: individualUserId,
+      type: IdentityType.INDIVIDUAL,
+      isActive: true,
+      individualData: { create: { name: 'مستخدم تجريبي' } },
+    },
+  });
+
   // Create 5 listings for this individual user
   for (let i = 1; i <= 5; i++) {
     const randomArea = allAreas[(i + 50) % allAreas.length];
@@ -594,6 +669,7 @@ async function main() {
         id: randomUUID(),
         referenceNumber: 2000000 + i,
         userId: individualUserId,
+        identityId: individualIdentityId,
         type,
         category,
         isFeatured: i === 2,
@@ -654,6 +730,33 @@ async function main() {
     },
   });
 
+  const officeIdentityId = randomUUID();
+  await prisma.identity.create({
+    data: {
+      id: officeIdentityId,
+      userId: officeUserId,
+      type: IdentityType.OFFICE,
+      isActive: true,
+      officeData: {
+        create: {
+          name: 'مكتب بيوتنا العقاري - حساب المراجعة',
+          services: 'وساطة عقارية • تأجير • إدارة أملاك',
+          hqLocation: `${officeArea.areaName}، ${officeArea.govName}`,
+          about:
+            'مكتب عقاري تجريبي مخصص لمراجعة تطبيق آبل، يعرض كافة ميزات حسابات المكاتب العقارية.',
+          licenseActivity: 'وساطة عقارية',
+          licenseNumber: 'LIC-REVIEW-OFFICE-001',
+          licenseExpiry: '15 ابريل 2028',
+          logoUrl:
+            'https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=300&q=80',
+          licenseFileUrl: 'https://example.com/license.pdf',
+          isVerified: true,
+          status: ApprovalStatus.APPROVED,
+        },
+      },
+    },
+  });
+
   // Give the office a few active listings so reviewers see full functionality
   for (let i = 1; i <= 3; i++) {
     const randomArea = allAreas[(i + 20) % allAreas.length];
@@ -664,6 +767,7 @@ async function main() {
         id: randomUUID(),
         referenceNumber: 2100000 + i,
         userId: officeUserId,
+        identityId: officeIdentityId,
         type: i % 2 === 0 ? ListingType.RENT : ListingType.SALE,
         category: PropertyCategory.APARTMENT,
         isFeatured: i === 1,
@@ -883,6 +987,41 @@ async function main() {
     });
   }
   console.log('✅ Seeded Invoices.');
+
+  // 7. Seed Dedicated Admin Test Account
+  console.log('🛡️ Seeding Dedicated Admin Test Account...');
+  const adminUserId = randomUUID();
+  await prisma.user.create({
+    data: {
+      id: adminUserId,
+      email: 'admin@buyootna.com',
+      phone: '+96512345680',
+      password: hashedPassword,
+      role: Role.INDIVIDUAL,
+      isAdmin: true,
+    },
+  });
+
+  await prisma.individualProfile.create({
+    data: {
+      id: randomUUID(),
+      userId: adminUserId,
+    },
+  });
+
+  // Legacy individualProfile above isn't what login/the app resolve an
+  // active identity from anymore -- see the COMPANY identity comment above.
+  await prisma.identity.create({
+    data: {
+      id: randomUUID(),
+      userId: adminUserId,
+      type: IdentityType.INDIVIDUAL,
+      isActive: true,
+      individualData: { create: { name: 'Admin' } },
+    },
+  });
+
+  console.log('✅ Seeded Admin account (admin@buyootna.com / password123)');
 
   console.log('🎉 Seeding process completed successfully!');
 }

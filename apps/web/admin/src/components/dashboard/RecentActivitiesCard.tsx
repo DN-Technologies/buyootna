@@ -34,7 +34,7 @@ const recentActivities = [
 export default function RecentActivitiesCard() {
   return (
     <Card
-      className="bg-white lg:col-span-2  border-[#ECECEC] py-[20px] select-none relative overflow-hidden"
+      className="bg-white lg:col-span-2  border-[#ECECEC] py-5 select-none relative overflow-hidden"
       data-node-id="2376:5896"
     >
       <div className="flex items-start justify-between w-full px-6 pb-4">
@@ -48,7 +48,7 @@ export default function RecentActivitiesCard() {
         </div>
         <Button
           variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-[30px] px-3 rounded-[12px]"
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
         >
           عرض سجل الأنشطة
         </Button>
@@ -58,7 +58,7 @@ export default function RecentActivitiesCard() {
         {recentActivities.map((act) => (
           <div
             key={act.id}
-            className="flex items-center justify-between px-6 h-[48px] w-full hover:bg-[#F9FAFB]/50 transition duration-150"
+            className="flex items-center justify-between px-6 h-12 w-full hover:bg-[#F9FAFB]/50 transition duration-150"
           >
             <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right truncate pl-4 flex-1">
               {act.text}

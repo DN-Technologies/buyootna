@@ -1,13 +1,14 @@
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 interface HomeOfficesProps {
   refreshing?: boolean;
@@ -15,13 +16,14 @@ interface HomeOfficesProps {
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
-export default function HomeOffices({
-  refreshing = false,
-  onRefresh,
-  ListHeaderComponent,
-}: HomeOfficesProps) {
+export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
+  function HomeOffices(
+    { refreshing = false, onRefresh, ListHeaderComponent }: HomeOfficesProps,
+    ref,
+  ) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
+  const token = useAuthStore((state) => state.token);
   const [favoriteOverrides, setFavoriteOverrides] = useState<
     Record<string, boolean>
   >({});
@@ -33,7 +35,8 @@ export default function HomeOffices({
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['offices'],
+    // See HomeProperties.tsx for why `token` is part of this key.
+    queryKey: ['offices', token],
     queryFn: ({ pageParam }) => feedService.getOffices(pageParam, 10),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -84,6 +87,7 @@ export default function HomeOffices({
 
   return (
     <FlashList
+      ref={ref}
       data={data}
       keyExtractor={(item) => item.id}
       ListHeaderComponent={ListHeaderComponent}
@@ -136,4 +140,5 @@ export default function HomeOffices({
       }
     />
   );
-}
+  },
+);

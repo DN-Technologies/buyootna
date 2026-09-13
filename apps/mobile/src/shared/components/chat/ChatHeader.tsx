@@ -1,12 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ChatHeaderProps {
   userName: string;
-  isOnline: boolean;
+  isOnline?: boolean;
   avatarUrl: string;
   isLoading?: boolean;
   onReportUser: () => void;
@@ -16,7 +15,6 @@ interface ChatHeaderProps {
 
 export default function ChatHeader({
   userName,
-  isOnline,
   avatarUrl,
   isLoading = false,
   onReportUser,
@@ -26,7 +24,7 @@ export default function ChatHeader({
   const router = useRouter();
 
   return (
-    <View className="relative z-50 flex-row items-center justify-between px-5 py-3 shadow-sm shadow-gray-100">
+    <View className="relative z-50 flex-row items-center justify-between border-b border-[#ECECEC] bg-white px-5 py-3">
       {/* Right Avatar & Back */}
       <View className="flex-row items-center gap-2">
         <TouchableOpacity testID="chat-back-button" onPress={() => router.back()}>
@@ -45,22 +43,11 @@ export default function ChatHeader({
       {/* Center User Info */}
       <View className="flex-1 items-start pl-3">
         {isLoading ? (
-          <View className="gap-1.5">
-            <View className="h-4 w-24 rounded bg-slate-200" />
-            <View className="h-3 w-14 rounded bg-slate-100" />
-          </View>
+          <View className="h-4 w-24 rounded bg-slate-200" />
         ) : (
-          <>
-            <Text className="font-cairo-medium text-[16px] text-[#0F1828]">
-              {userName}
-            </Text>
-            <View className="flex-row items-center">
-              <View className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-[#22C55E]' : 'bg-gray-400'}`} />
-              <Text className={`ml-1 font-cairo-medium text-[11px] ${isOnline ? 'text-[#22C55E]' : 'text-gray-400'}`}>
-                {isOnline ? 'نشط الان' : 'غير متصل'}
-              </Text>
-            </View>
-          </>
+          <Text className="font-cairo-medium text-[16px] text-[#0F1828]">
+            {userName}
+          </Text>
         )}
       </View>
 

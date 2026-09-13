@@ -38,6 +38,7 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         name="name"
         label="الاسم"
         placeholder="علي سالم"
+        maxLength={32}
         testID="individual-signup-name-input"
       />
 

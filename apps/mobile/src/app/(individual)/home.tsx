@@ -1,4 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useScrollToTop } from '@react-navigation/native';
 import { router } from 'expo-router';
 import  { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -21,6 +22,7 @@ import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ContentContainer from '@/shared/components/ContentContainer';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { HomeFeedResponse } from '@/types/feed';
 
@@ -28,8 +30,14 @@ type PrimaryTab = 'all' | 'properties' | 'offices';
 type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
 
 export default function HomeScreen() {
+  const token = useAuthStore((state) => state.token);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const { scrollContentBottomPadding } = useTabBarHeight();
+  // Shared across all three possible active scrollables below (only one is
+  // ever mounted at a time), so tapping the already-active Home tab scrolls
+  // to top regardless of which sub-tab/view is currently showing.
+  const scrollRef = useRef<any>(null);
+  useScrollToTop(scrollRef);
 
   // Navigate to results screen with advanced filter payload
   const handleAdvancedSearch = useCallback(
@@ -71,10 +79,15 @@ export default function HomeScreen() {
     }
   };
 
-  // --- Initial Load ---
+  // --- Initial Load, and again on every login/logout ---
+  // The (individual) tab group stays mounted underneath the (auth) flow
+  // (see resetToIdentityHome in shared/navigation/getIdentityHomeRoute.ts),
+  // so a successful login reuses this exact screen instance instead of
+  // remounting it -- a mount-only effect here would keep showing whatever
+  // was fetched before login until the app is force-restarted.
   useEffect(() => {
     loadFeed();
-  }, []);
+  }, [token]);
 
   // --- Pull to Refresh Handle ---
   const onRefresh = async () => {
@@ -158,6 +171,7 @@ export default function HomeScreen() {
         {/* 5. Scrolling Content Area (The Feed) */}
         {activeTab === 'properties' ? (
           <HomeProperties
+            ref={scrollRef}
             activeFilter={activePropFilter}
             refreshing={refreshing}
             onRefresh={onRefresh}
@@ -166,12 +180,14 @@ export default function HomeScreen() {
           />
         ) : activeTab === 'offices' ? (
           <HomeOffices
+            ref={scrollRef}
             refreshing={refreshing}
             onRefresh={onRefresh}
             ListHeaderComponent={renderHeader(false)}
           />
         ) : (
           <ScrollView
+            ref={scrollRef}
             className="flex-1 pt-4"
             contentContainerStyle={{
               paddingBottom: scrollContentBottomPadding,
