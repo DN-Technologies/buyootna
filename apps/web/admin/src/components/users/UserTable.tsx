@@ -24,11 +24,16 @@ interface UserTableProps {
   onSelectRow?: (id: string) => void
   onSelectAll?: () => void
   onViewUser?: (user: UserRow) => void
-  onStatusChange?: (user: UserRow, newStatus: 'active' | 'blocked' | 'suspended') => void
+  onStatusChange?: (
+    user: UserRow,
+    newStatus: 'active' | 'blocked' | 'suspended',
+  ) => void
   onDeleteUser?: (user: UserRow) => void
   onSendNotification?: (user: UserRow) => void
   onChangePlan?: (user: UserRow) => void
   onAddCoupon?: (user: UserRow) => void
+  onSuspendUser?: (user: UserRow) => void
+  onReactivateUser?: (user: UserRow) => void
   loading?: boolean
   userLabel?: string
   entityName?: string
@@ -45,6 +50,8 @@ export default function UserTable({
   onSendNotification,
   onChangePlan,
   onAddCoupon,
+  onSuspendUser,
+  onReactivateUser,
   loading = false,
   userLabel = 'اسم المستخدم',
   entityName = 'مستخدمين',
@@ -136,14 +143,14 @@ export default function UserTable({
                 <button
                   type="button"
                   onClick={handleToggleSelectAll}
-                  className={`w-4.5 h-4.5 rounded-[4px] border flex items-center justify-center cursor-pointer transition-colors ${
+                  className={`w-4.5 h-4.5 rounded-sm border flex items-center justify-center cursor-pointer transition-colors ${
                     allSelected
                       ? 'bg-primary border-primary text-white'
                       : 'border-[#CBD5E1] bg-white hover:border-gray-400'
                   }`}
                   aria-label="تحديد الكل"
                 >
-                  {allSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                  {allSelected && <Check className="w-3 h-3 stroke-3" />}
                 </button>
                 <span className="font-semibold text-[12px] text-[#6B6A6A]">
                   {userLabel}
@@ -223,14 +230,14 @@ export default function UserTable({
                       <button
                         type="button"
                         onClick={() => handleToggleSelectRow(user.id)}
-                        className={`w-4.5 h-4.5 rounded-[4px] border flex items-center justify-center cursor-pointer shrink-0 transition-colors ${
+                        className={`w-4.5 h-4.5 rounded-sm border flex items-center justify-center cursor-pointer shrink-0 transition-colors ${
                           isSelected
                             ? 'bg-primary border-primary text-white'
                             : 'border-[#CBD5E1] bg-white hover:border-gray-400'
                         }`}
                         aria-label={`تحديد ${user.name}`}
                       >
-                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                        {isSelected && <Check className="w-3 h-3 stroke-3" />}
                       </button>
 
                       <div className="flex flex-col text-right">
@@ -301,11 +308,11 @@ export default function UserTable({
                           onChangePlan={() => onChangePlan?.(user)}
                           onAddCoupon={() => onAddCoupon?.(user)}
                           onToggleSuspend={() => {
-                            const newStatus =
-                              user.accountStatus === 'موقوف'
-                                ? 'active'
-                                : 'suspended'
-                            onStatusChange?.(user, newStatus)
+                            if (user.accountStatus === 'موقوف') {
+                              onReactivateUser?.(user)
+                            } else {
+                              onSuspendUser?.(user)
+                            }
                           }}
                           onToggleBlock={() => {
                             const newStatus =

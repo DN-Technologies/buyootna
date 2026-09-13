@@ -13,6 +13,9 @@ import AddUserDrawer from '@/components/users/AddUserDrawer'
 import ChangePlanModal from '@/components/users/ChangePlanModal'
 import SendNotificationModal from '@/components/users/SendNotificationModal'
 import AddCouponModal from '@/components/users/AddCouponModal'
+import SuccessToast from '@/components/users/SuccessToast'
+import SuspendUserModal from '@/components/users/SuspendUserModal'
+import ReactivateUserModal from '@/components/users/ReactivateUserModal'
 import {
   fetchAdminUsers,
   updateUserStatus,
@@ -47,6 +50,9 @@ function UsersPageContent() {
   const [notificationModalUser, setNotificationModalUser] =
     useState<UserRow | null>(null)
   const [couponModalUser, setCouponModalUser] = useState<UserRow | null>(null)
+  const [suspendModalUser, setSuspendModalUser] = useState<UserRow | null>(null)
+  const [reactivateModalUser, setReactivateModalUser] =
+    useState<UserRow | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -265,6 +271,35 @@ function UsersPageContent() {
     showToast(`تم تطبيق كود الخصم "${code}" بنجاح`)
   }
 
+  const handleSuspendConfirm = async (
+    user: UserRow,
+    _durationDays?: number,
+    _reason?: string,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'suspended')
+      await loadUsers()
+      showToast(`تم إيقاف حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to suspend user:', err)
+      showToast('حدث خطأ أثناء إيقاف الحساب')
+    }
+  }
+
+  const handleReactivateConfirm = async (
+    user: UserRow,
+    _sendNotification: boolean,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'active')
+      await loadUsers()
+      showToast(`تم إعادة تفعيل حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to reactivate user:', err)
+      showToast('حدث خطأ أثناء إعادة تفعيل الحساب')
+    }
+  }
+
   const handleExport = async () => {
     try {
       setExporting(true)
@@ -312,12 +347,12 @@ function UsersPageContent() {
         }}
       />
 
-      {/* Floating Feedback Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 left-6 z-50 bg-primary text-white px-5 py-3 rounded-xl shadow-xl font-['Cairo'] text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      {/* Floating Success Toast (Figma Node 5634:69914) */}
+      <SuccessToast
+        isOpen={!!toastMessage}
+        message={toastMessage || undefined}
+        onClose={() => setToastMessage(null)}
+      />
 
       {/* Error Alert Banner */}
       {error && (
@@ -388,6 +423,8 @@ function UsersPageContent() {
           onSendNotification={handleSendNotification}
           onChangePlan={handleChangePlan}
           onAddCoupon={handleAddCoupon}
+          onSuspendUser={setSuspendModalUser}
+          onReactivateUser={setReactivateModalUser}
           userLabel={config.userLabel}
           entityName={config.entityName}
         />
@@ -409,7 +446,7 @@ function UsersPageContent() {
         onClose={() => setAddDialogOpen(false)}
         onSuccess={() => {
           loadUsers()
-          showToast('تم إضافة المستخدم بنجاح')
+          showToast('تم إنشاء الحساب وارسال البيانات للمستخدم بنجاح.')
         }}
       />
 
@@ -435,6 +472,22 @@ function UsersPageContent() {
         isOpen={!!couponModalUser}
         onClose={() => setCouponModalUser(null)}
         onSuccess={handleCouponSuccess}
+      />
+
+      {/* Suspend User Modal (Figma Node 5634:70346) */}
+      <SuspendUserModal
+        user={suspendModalUser}
+        isOpen={!!suspendModalUser}
+        onClose={() => setSuspendModalUser(null)}
+        onConfirm={handleSuspendConfirm}
+      />
+
+      {/* Reactivate User Modal (Figma Node 5634:70397) */}
+      <ReactivateUserModal
+        user={reactivateModalUser}
+        isOpen={!!reactivateModalUser}
+        onClose={() => setReactivateModalUser(null)}
+        onConfirm={handleReactivateConfirm}
       />
     </div>
   )
