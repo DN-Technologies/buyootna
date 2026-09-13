@@ -8,13 +8,13 @@ import {
 } from 'class-validator';
 
 export class AdminCreateIndividualDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Full name of the individual',
     example: 'أحمد محمد العازمي',
   })
-  @IsNotEmpty({ message: 'الاسم مطلوب' })
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
   @ApiPropertyOptional({
     description: 'Email address',

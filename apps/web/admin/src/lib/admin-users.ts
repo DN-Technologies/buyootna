@@ -178,3 +178,11 @@ export async function updateIdentityStatus(
   });
   return res.data;
 }
+
+export async function sendUserPasswordResetLink(
+  userId: string,
+): Promise<{ message: string; email: string }> {
+  const res = await api.post(`/admin/users/${userId}/reset-password`);
+  return res.data;
+}
+

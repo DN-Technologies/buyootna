@@ -13,6 +13,7 @@ interface MockAdminService {
   updateUserStatus: jest.Mock;
   deleteUser: jest.Mock;
   updateIdentityStatus: jest.Mock;
+  sendUserPasswordResetLink: jest.Mock;
 }
 
 describe('AdminController', () => {
@@ -28,6 +29,7 @@ describe('AdminController', () => {
       updateUserStatus: jest.fn(),
       deleteUser: jest.fn(),
       updateIdentityStatus: jest.fn(),
+      sendUserPasswordResetLink: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -102,5 +104,15 @@ describe('AdminController', () => {
     adminService.deleteUser.mockResolvedValue({ message: 'Deleted' });
     await controller.deleteUser('u-1');
     expect(adminService.deleteUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('sendUserPasswordResetLink should forward id to service', async () => {
+    adminService.sendUserPasswordResetLink.mockResolvedValue({
+      message: 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح',
+      email: 'user@example.com',
+    });
+    const result = await controller.sendUserPasswordResetLink('u-1');
+    expect(adminService.sendUserPasswordResetLink).toHaveBeenCalledWith('u-1');
+    expect(result.email).toBe('user@example.com');
   });
 });

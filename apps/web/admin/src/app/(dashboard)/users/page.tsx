@@ -9,7 +9,15 @@ import { UserCategoryTab } from '@/components/users/UserTabs'
 import UserTableFilters from '@/components/users/UserTableFilters'
 import UserTable, { UserRow } from '@/components/users/UserTable'
 import UserPagination from '@/components/users/UserPagination'
-import AddIndividualDialog from '@/components/users/AddIndividualDialog'
+import AddUserDrawer from '@/components/users/AddUserDrawer'
+import ChangePlanDrawer from '@/components/users/ChangePlanDrawer'
+import SendNotificationModal from '@/components/users/SendNotificationModal'
+import AddCouponModal from '@/components/users/AddCouponModal'
+import SuccessToast from '@/components/users/SuccessToast'
+import SuspendUserModal from '@/components/users/SuspendUserModal'
+import ReactivateUserModal from '@/components/users/ReactivateUserModal'
+import BlockUserModal from '@/components/users/BlockUserModal'
+import ResetPasswordModal from '@/components/users/ResetPasswordModal'
 import {
   fetchAdminUsers,
   updateUserStatus,
@@ -33,9 +41,29 @@ function UsersPageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [subscriptionFilter, setSubscriptionFilter] = useState('')
-  const [dateSort, setDateSort] = useState<'asc' | 'desc' | undefined>(undefined)
+  const [dateSort, setDateSort] = useState<'asc' | 'desc' | undefined>(
+    undefined,
+  )
   const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
+
+  // Modals state for row actions
+  const [planModalUser, setPlanModalUser] = useState<UserRow | null>(null)
+  const [notificationModalUser, setNotificationModalUser] =
+    useState<UserRow | null>(null)
+  const [couponModalUser, setCouponModalUser] = useState<UserRow | null>(null)
+  const [suspendModalUser, setSuspendModalUser] = useState<UserRow | null>(null)
+  const [reactivateModalUser, setReactivateModalUser] =
+    useState<UserRow | null>(null)
+  const [blockModalUser, setBlockModalUser] = useState<UserRow | null>(null)
+  const [resetPasswordModalUser, setResetPasswordModalUser] =
+    useState<UserRow | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg)
+    setTimeout(() => setToastMessage(null), 3500)
+  }
 
   const [data, setData] = useState<AdminUsersResponse>({
     data: [],
@@ -50,7 +78,8 @@ function UsersPageContent() {
       case 'company':
         return {
           title: 'الشركات',
-          subtitle: 'إدارة جميع حسابات الشركات والمطورين العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات الشركات والمطورين العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'الشركات'],
           addLabel: 'إضافة شركة',
           totalStatTitle: 'إجمالي الشركات',
@@ -61,7 +90,8 @@ function UsersPageContent() {
       case 'office':
         return {
           title: 'المكاتب العقارية',
-          subtitle: 'إدارة جميع حسابات المكاتب والوسطاء العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات المكاتب والوسطاء العقاريين، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'المكاتب العقارية'],
           addLabel: 'إضافة مكتب عقاري',
           totalStatTitle: 'إجمالي المكاتب',
@@ -73,7 +103,8 @@ function UsersPageContent() {
       default:
         return {
           title: 'الأفراد',
-          subtitle: 'إدارة جميع حسابات الأفراد، ومتابعة الاشتراكات والحالة والنشاط.',
+          subtitle:
+            'إدارة جميع حسابات الأفراد، ومتابعة الاشتراكات والحالة والنشاط.',
           breadcrumbs: ['الرئيسية', 'إدارة الحسابات', 'الأفراد'],
           addLabel: 'إضافة فرد',
           totalStatTitle: 'إجمالي الأفراد',
@@ -110,7 +141,6 @@ function UsersPageContent() {
         limit: 10,
       })
 
-      // Backend now provides accurate adsCount per user
       const enrichedData = res.data.map((u) => ({
         ...u,
         adsCount: u.adsCount !== undefined ? u.adsCount : 0,
@@ -123,14 +153,23 @@ function UsersPageContent() {
     } catch (err: any) {
       console.error('Failed to load users:', err)
       if (err?.response?.status === 404) {
-        setError('مسار نقطة النهاية غير موجود (404). يرجى التأكد من تشغيل خادم الخلفية (http://localhost:8000).')
+        setError(
+          'مسار نقطة النهاية غير موجود (404). يرجى التأكد من تشغيل خادم الخلفية.',
+        )
       } else {
         setError('تعذر الاتصال بالخادم. يرجى التأكد من تشغيل خادم الخلفية.')
       }
     } finally {
       setLoading(false)
     }
-  }, [searchQuery, activeTab, statusFilter, subscriptionFilter, dateSort, currentPage])
+  }, [
+    searchQuery,
+    activeTab,
+    statusFilter,
+    subscriptionFilter,
+    dateSort,
+    currentPage,
+  ])
 
   useEffect(() => {
     loadUsers()
@@ -167,6 +206,12 @@ function UsersPageContent() {
     try {
       await updateUserStatus(user.id, newStatus)
       await loadUsers()
+      const statusNames = {
+        active: 'تفعيل',
+        suspended: 'تعطيل',
+        blocked: 'حظر',
+      }
+      showToast(`تم ${statusNames[newStatus]} الحساب بنجاح`)
     } catch (err) {
       console.error('Failed to update status:', err)
       alert(`حدث خطأ أثناء تحديث حالة حساب الـ${config.entitySingle}`)
@@ -175,10 +220,15 @@ function UsersPageContent() {
 
   // Handle Delete User
   const handleDeleteUser = async (user: UserRow) => {
-    if (confirm(`هل أنت متأكد من رغبتك في حذف حساب الـ${config.entitySingle} "${user.name}"؟`)) {
+    if (
+      confirm(
+        `هل أنت متأكد من رغبتك في حذف حساب الـ${config.entitySingle} "${user.name}"؟`,
+      )
+    ) {
       try {
         await deleteUser(user.id)
         await loadUsers()
+        showToast('تم حذف المستخدم بنجاح')
       } catch (err) {
         console.error('Failed to delete user:', err)
         alert(`حدث خطأ أثناء حذف حساب الـ${config.entitySingle}`)
@@ -193,6 +243,86 @@ function UsersPageContent() {
 
   const handleAddUser = () => {
     setAddDialogOpen(true)
+  }
+
+  // Handlers for Figma activity dropdown actions
+  const handleSendNotification = (user: UserRow) => {
+    setNotificationModalUser(user)
+  }
+
+  const handleChangePlan = (user: UserRow) => {
+    setPlanModalUser(user)
+  }
+
+  const handleAddCoupon = (user: UserRow) => {
+    setCouponModalUser(user)
+  }
+
+  const handlePlanSuccess = (userId: string, planName: string) => {
+    setData((prev) => ({
+      ...prev,
+      data: prev.data.map((u) =>
+        u.id === userId ? { ...u, subscriptionPlan: planName } : u,
+      ),
+    }))
+    showToast('تم تغيير الباقة بنجاح.')
+  }
+
+  const handleNotificationSuccess = (_userId: string, title: string) => {
+    showToast(`تم إرسال إشعار "${title}" للمستخدم بنجاح`)
+  }
+
+  const handleCouponSuccess = (_userId: string, code: string) => {
+    showToast(`تم تطبيق كود الخصم "${code}" بنجاح`)
+  }
+
+  const handleResetPasswordSuccess = () => {
+    showToast('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريد المستخدم بنجاح.')
+  }
+
+  const handleSuspendConfirm = async (
+    user: UserRow,
+    _durationDays?: number,
+    _reason?: string,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'suspended')
+      await loadUsers()
+      showToast(`تم إيقاف حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to suspend user:', err)
+      showToast('حدث خطأ أثناء إيقاف الحساب')
+    }
+  }
+
+  const handleReactivateConfirm = async (
+    user: UserRow,
+    _sendNotification: boolean,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'active')
+      await loadUsers()
+      showToast(`تم إعادة تفعيل حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to reactivate user:', err)
+      showToast('حدث خطأ أثناء إعادة تفعيل الحساب')
+    }
+  }
+
+  const handleBlockConfirm = async (
+    user: UserRow,
+    _reason?: string,
+    _sendEmail?: boolean,
+    _preventNewAccount?: boolean,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'blocked')
+      await loadUsers()
+      showToast(`تم حظر حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to block user:', err)
+      showToast('حدث خطأ أثناء حظر الحساب')
+    }
   }
 
   const handleExport = async () => {
@@ -214,6 +344,7 @@ function UsersPageContent() {
       document.body.appendChild(link)
       link.click()
       link.remove()
+      showToast('تم تصدير ملف البيانات بنجاح')
     } catch (err) {
       console.error('Export failed:', err)
       alert('حدث خطأ أثناء تصدير البيانات')
@@ -224,7 +355,7 @@ function UsersPageContent() {
 
   return (
     <div className="space-y-6 text-right pb-10" dir="rtl">
-      {/* Header matching Figma Node 5634:68341 */}
+      {/* Header */}
       <PageHeader
         breadcrumbs={config.breadcrumbs}
         title={config.title}
@@ -241,6 +372,13 @@ function UsersPageContent() {
         }}
       />
 
+      {/* Floating Success Toast (Figma Node 5634:69914) */}
+      <SuccessToast
+        isOpen={!!toastMessage}
+        message={toastMessage || undefined}
+        onClose={() => setToastMessage(null)}
+      />
+
       {/* Error Alert Banner */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg font-['Cairo'] text-sm flex items-center justify-between">
@@ -254,7 +392,7 @@ function UsersPageContent() {
         </div>
       )}
 
-      {/* Statistics Cards Grid matching Figma Node 5634:68353 */}
+      {/* Statistics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title={config.totalStatTitle}
@@ -286,7 +424,7 @@ function UsersPageContent() {
         />
       </div>
 
-      {/* Main Content Area matching Figma Node 5634:68425 */}
+      {/* Main Content Area */}
       <div className="bg-white border border-[#ECECEC] rounded-lg flex flex-col gap-0 overflow-hidden shadow-xs">
         {/* Filter and Search Bar */}
         <UserTableFilters
@@ -300,13 +438,20 @@ function UsersPageContent() {
           onDateSortToggle={handleDateSortToggle}
         />
 
-        {/* User Data Table */}
+        {/* User Data Table with Figma Activity Dropdown */}
         <UserTable
           users={data.data}
           loading={loading}
           onViewUser={handleViewUser}
           onStatusChange={handleStatusChange}
           onDeleteUser={handleDeleteUser}
+          onSendNotification={handleSendNotification}
+          onChangePlan={handleChangePlan}
+          onAddCoupon={handleAddCoupon}
+          onSuspendUser={setSuspendModalUser}
+          onReactivateUser={setReactivateModalUser}
+          onBlockUser={setBlockModalUser}
+          onResetPassword={setResetPasswordModalUser}
           userLabel={config.userLabel}
           entityName={config.entityName}
         />
@@ -322,11 +467,70 @@ function UsersPageContent() {
         />
       </div>
 
-      {/* Add Individual Modal Dialog */}
-      <AddIndividualDialog
+      {/* Add User Slide-over Drawer (Figma Node 5634:69872) */}
+      <AddUserDrawer
         open={addDialogOpen}
         onClose={() => setAddDialogOpen(false)}
-        onSuccess={() => loadUsers()}
+        onSuccess={() => {
+          loadUsers()
+          showToast('تم إنشاء الحساب وارسال البيانات للمستخدم بنجاح.')
+        }}
+      />
+
+      {/* Change Subscription Plan Drawer (Figma Nodes 5634:71036, 5634:70967, 5634:70898) */}
+      <ChangePlanDrawer
+        user={planModalUser}
+        open={!!planModalUser}
+        onClose={() => setPlanModalUser(null)}
+        onSuccess={handlePlanSuccess}
+      />
+
+      {/* Send Direct Notification Modal */}
+      <SendNotificationModal
+        user={notificationModalUser}
+        isOpen={!!notificationModalUser}
+        onClose={() => setNotificationModalUser(null)}
+        onSuccess={handleNotificationSuccess}
+      />
+
+      {/* Add Discount Coupon Modal */}
+      <AddCouponModal
+        user={couponModalUser}
+        isOpen={!!couponModalUser}
+        onClose={() => setCouponModalUser(null)}
+        onSuccess={handleCouponSuccess}
+      />
+
+      {/* Suspend User Modal (Figma Node 5634:70346) */}
+      <SuspendUserModal
+        user={suspendModalUser}
+        isOpen={!!suspendModalUser}
+        onClose={() => setSuspendModalUser(null)}
+        onConfirm={handleSuspendConfirm}
+      />
+
+      {/* Reactivate User Modal (Figma Node 5634:70397) */}
+      <ReactivateUserModal
+        user={reactivateModalUser}
+        isOpen={!!reactivateModalUser}
+        onClose={() => setReactivateModalUser(null)}
+        onConfirm={handleReactivateConfirm}
+      />
+
+      {/* Block User Modal (Figma Node 5634:70377) */}
+      <BlockUserModal
+        user={blockModalUser}
+        isOpen={!!blockModalUser}
+        onClose={() => setBlockModalUser(null)}
+        onConfirm={handleBlockConfirm}
+      />
+
+      {/* Reset Password Modal (Figma Nodes 5634:71538 & 5634:71120) */}
+      <ResetPasswordModal
+        user={resetPasswordModalUser}
+        isOpen={!!resetPasswordModalUser}
+        onClose={() => setResetPasswordModalUser(null)}
+        onSuccess={handleResetPasswordSuccess}
       />
     </div>
   )
@@ -349,4 +553,3 @@ export default function UsersPage() {
     </Suspense>
   )
 }
-
