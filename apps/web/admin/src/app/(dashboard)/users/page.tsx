@@ -16,6 +16,7 @@ import AddCouponModal from '@/components/users/AddCouponModal'
 import SuccessToast from '@/components/users/SuccessToast'
 import SuspendUserModal from '@/components/users/SuspendUserModal'
 import ReactivateUserModal from '@/components/users/ReactivateUserModal'
+import BlockUserModal from '@/components/users/BlockUserModal'
 import {
   fetchAdminUsers,
   updateUserStatus,
@@ -53,6 +54,7 @@ function UsersPageContent() {
   const [suspendModalUser, setSuspendModalUser] = useState<UserRow | null>(null)
   const [reactivateModalUser, setReactivateModalUser] =
     useState<UserRow | null>(null)
+  const [blockModalUser, setBlockModalUser] = useState<UserRow | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -300,6 +302,22 @@ function UsersPageContent() {
     }
   }
 
+  const handleBlockConfirm = async (
+    user: UserRow,
+    _reason?: string,
+    _sendEmail?: boolean,
+    _preventNewAccount?: boolean,
+  ) => {
+    try {
+      await updateUserStatus(user.id, 'blocked')
+      await loadUsers()
+      showToast(`تم حظر حساب “${user.name || user.email}” بنجاح`)
+    } catch (err) {
+      console.error('Failed to block user:', err)
+      showToast('حدث خطأ أثناء حظر الحساب')
+    }
+  }
+
   const handleExport = async () => {
     try {
       setExporting(true)
@@ -425,6 +443,7 @@ function UsersPageContent() {
           onAddCoupon={handleAddCoupon}
           onSuspendUser={setSuspendModalUser}
           onReactivateUser={setReactivateModalUser}
+          onBlockUser={setBlockModalUser}
           userLabel={config.userLabel}
           entityName={config.entityName}
         />
@@ -488,6 +507,14 @@ function UsersPageContent() {
         isOpen={!!reactivateModalUser}
         onClose={() => setReactivateModalUser(null)}
         onConfirm={handleReactivateConfirm}
+      />
+
+      {/* Block User Modal (Figma Node 5634:70377) */}
+      <BlockUserModal
+        user={blockModalUser}
+        isOpen={!!blockModalUser}
+        onClose={() => setBlockModalUser(null)}
+        onConfirm={handleBlockConfirm}
       />
     </div>
   )

@@ -34,6 +34,7 @@ interface UserTableProps {
   onAddCoupon?: (user: UserRow) => void
   onSuspendUser?: (user: UserRow) => void
   onReactivateUser?: (user: UserRow) => void
+  onBlockUser?: (user: UserRow) => void
   loading?: boolean
   userLabel?: string
   entityName?: string
@@ -52,6 +53,7 @@ export default function UserTable({
   onAddCoupon,
   onSuspendUser,
   onReactivateUser,
+  onBlockUser,
   loading = false,
   userLabel = 'اسم المستخدم',
   entityName = 'مستخدمين',
@@ -315,11 +317,15 @@ export default function UserTable({
                             }
                           }}
                           onToggleBlock={() => {
-                            const newStatus =
-                              user.accountStatus === 'محظور'
-                                ? 'active'
-                                : 'blocked'
-                            onStatusChange?.(user, newStatus)
+                            if (user.accountStatus === 'محظور') {
+                              onStatusChange?.(user, 'active')
+                            } else {
+                              if (onBlockUser) {
+                                onBlockUser(user)
+                              } else {
+                                onStatusChange?.(user, 'blocked')
+                              }
+                            }
                           }}
                         />
                       </div>
