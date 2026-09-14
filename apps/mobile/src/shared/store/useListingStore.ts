@@ -149,7 +149,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   rentConditions: '',
   adDetails: '',
   phoneNumber: '',
-  adLevel: 'normal',
+  adLevel: 'premium',
   images: [],
   isSubmitting: false,
   submissionError: null,
