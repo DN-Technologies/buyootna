@@ -39,6 +39,12 @@ export default function MainLayout() {
         screenOptions={{
           headerShown: false,
         }}
+        // The default 'firstRoute' rebuilds this navigator's back-history to
+        // just [home, currentRoute] on every navigation, so "Back" from any
+        // (more)/* sub-screen (which lives inside this Tabs group) always
+        // landed on Home instead of the More tab it was actually pushed
+        // from. 'history' preserves the real navigation path instead.
+        backBehavior="history"
       >
         <Tabs.Screen name="home" />
         <Tabs.Screen name="companies" />
