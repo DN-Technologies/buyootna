@@ -1,18 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { isEmailIdentifier } from '@/features/auth/authSchemas';
 import {
   verifyOtpSchema,
   VerifyOtpValues,
 } from '@/features/auth/recoverySchemas';
-import { isEmailIdentifier } from '@/features/auth/authSchemas';
+import {
+  ResendOtpResult,
+  useOtpResendTimer,
+} from '@/shared/hooks/useOtpResendTimer';
 
 interface IndividualSignupOtpStepProps {
   identifier: string;
   onSubmit: (otp: string) => void;
-  onResendOtp: () => void;
+  onResendOtp: () => Promise<ResendOtpResult>;
   isLoading?: boolean;
 }
 
@@ -53,7 +57,8 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
   onResendOtp,
   isLoading = false,
 }) => {
-  const [timer, setTimer] = useState(45);
+  const { secondsLeft, isReady, limitReachedMessage, handleResendResult } =
+    useOtpResendTimer(45);
   const otpInputRef = useRef<TextInput>(null);
 
   const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
@@ -64,22 +69,13 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
   const otpValue = watch('otp');
   const isOtpDisabled = !otpValue || otpValue.trim().length < 6 || isLoading;
 
-  // Timer Logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout | number;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timer]);
-
   const handleVerify = (data: VerifyOtpValues) => {
     onSubmit(data.otp);
   };
 
-  const handleResend = () => {
-    setTimer(45);
-    onResendOtp();
+  const handleResend = async () => {
+    const result = await onResendOtp();
+    handleResendResult(result);
   };
 
   return (
@@ -161,16 +157,24 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
 
         {/* Resend Timer */}
         <View className="mb-8 items-center">
-          {timer > 0 ? (
-            <Text className="font-cairo-semibold text-sm text-[#A6A6A6]">
-              إعادة إرسال الرمز خلال 00:{timer.toString().padStart(2, '0')}
+          {limitReachedMessage ? (
+            <Text className="px-4 text-center font-cairo-semibold text-sm text-red-500">
+              {limitReachedMessage}
             </Text>
-          ) : (
+          ) : isReady ? (
             <TouchableOpacity activeOpacity={0.7} onPress={handleResend}>
               <Text className="font-cairo-bold text-sm text-[#15304D] underline">
                 إعادة إرسال الرمز
               </Text>
             </TouchableOpacity>
+          ) : (
+            <Text className="font-cairo-semibold text-sm text-[#A6A6A6]">
+              إعادة إرسال الرمز خلال{' '}
+              {Math.floor(secondsLeft / 60)
+                .toString()
+                .padStart(2, '0')}
+              :{(secondsLeft % 60).toString().padStart(2, '0')}
+            </Text>
           )}
         </View>
       </View>

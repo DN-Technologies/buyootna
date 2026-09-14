@@ -146,5 +146,35 @@ describe('Auth Schemas Validation Unit Tests', () => {
       });
       expect(result.success).toBe(true);
     });
+
+    it('should fail when name contains an emoji', () => {
+      const result = signupSchema.safeParse({
+        name: 'Ahmed 🚀😂',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail when name contains digits or symbols', () => {
+      const result = signupSchema.safeParse({
+        name: 'Ahmed123',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept an Arabic name', () => {
+      const result = signupSchema.safeParse({
+        name: 'أحمد سالم',
+        identifier: 'test@example.com',
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+      });
+      expect(result.success).toBe(true);
+    });
   });
 });

@@ -7,7 +7,11 @@ describe('ForgotPasswordStep2', () => {
 
   it('strips non-digit characters from the OTP input', async () => {
     const { getByDisplayValue } = await render(
-      <ForgotPasswordStep2 identifier="ali@example.com" onSubmit={jest.fn()} />,
+      <ForgotPasswordStep2
+        identifier="ali@example.com"
+        onSubmit={jest.fn()}
+        onResendOtp={jest.fn()}
+      />,
     );
 
     const hiddenInput = getByDisplayValue('');

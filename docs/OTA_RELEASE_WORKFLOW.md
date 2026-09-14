@@ -112,6 +112,16 @@ pnpm --filter buyootna release:ota -- --channel production --message "Fix login 
 `--channel` defaults to `production`. `--message` is required and becomes
 the update's description in the EAS dashboard.
 
+Since a version bump isn't safe for a routine OTA push (see §11), the app
+`version` never changes across these publishes, so it can't tell QA "this
+build has the fix." Instead, `release-ota.js` bakes `--message` and the
+publishing commit's short SHA into the published bundle itself (via
+`EXPO_PUBLIC_OTA_RELEASE_NOTE` / `EXPO_PUBLIC_OTA_COMMIT`), and the About
+screen (Settings → About) displays them alongside whether the running
+bundle is embedded or an OTA update and its EAS update ID — so anyone
+(QA included) can open About and read exactly what shipped, without EAS
+dashboard or git access.
+
 ## 8. How the Git pre-push release analysis works
 
 `.husky/pre-push` runs `apps/mobile/scripts/release-analysis.js` once per

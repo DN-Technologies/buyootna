@@ -18,6 +18,9 @@ export function useSubmitListing() {
   const slotPickerRef = useRef<BottomSheetModal>(null);
   const quotaSheetRef = useRef<BottomSheetModal>(null);
   const [publishOptions, setPublishOptions] = useState<PublishOption[]>([]);
+  const [quotaSheetMode, setQuotaSheetMode] = useState<
+    'exhausted' | 'featuredUnavailable'
+  >('exhausted');
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [createdPropertyId, setCreatedPropertyId] = useState<string | null>(
@@ -74,12 +77,24 @@ export function useSubmitListing() {
       const optionsRes = await plansService.getPublishOptions();
 
       if (!optionsRes.canPublish || optionsRes.options.length === 0) {
+        setQuotaSheetMode('exhausted');
         quotaSheetRef.current?.present();
         return;
       }
 
-      if (optionsRes.options.length === 1) {
-        const res = await submitListing(false, optionsRes.options[0].slotId);
+      const wantsFeatured = draftData.adLevel === 'premium';
+      const eligibleOptions = wantsFeatured
+        ? optionsRes.options.filter((option) => option.featuredDays > 0)
+        : optionsRes.options;
+
+      if (eligibleOptions.length === 0) {
+        setQuotaSheetMode('featuredUnavailable');
+        quotaSheetRef.current?.present();
+        return;
+      }
+
+      if (eligibleOptions.length === 1) {
+        const res = await submitListing(false, eligibleOptions[0].slotId);
         if (res.success) {
           setCreatedPropertyId(res.propertyId ?? null);
           setShowSuccess(true);
@@ -89,7 +104,7 @@ export function useSubmitListing() {
         return;
       }
 
-      setPublishOptions(optionsRes.options);
+      setPublishOptions(eligibleOptions);
       slotPickerRef.current?.present();
     } catch (e) {
       console.error('Failed to check publish options:', e);
@@ -133,6 +148,7 @@ export function useSubmitListing() {
     slotPickerRef,
     quotaSheetRef,
     publishOptions,
+    quotaSheetMode,
     showSuccess,
     setShowSuccess,
     createdPropertyId,

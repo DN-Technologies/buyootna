@@ -17,6 +17,7 @@ import { settingsService } from '@/shared/api/settings.service';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { NAME_REGEX, NAME_REGEX_MESSAGE } from '@/shared/utils/nameValidation';
 
 interface ProfileFormData {
   name: string;
@@ -126,6 +127,10 @@ export default function EditProfileScreen() {
                     value: 32,
                     message: 'الاسم يجب ألا يتجاوز 32 حرفاً',
                   },
+                  pattern: {
+                    value: NAME_REGEX,
+                    message: NAME_REGEX_MESSAGE,
+                  },
                 }}
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
@@ -139,6 +144,14 @@ export default function EditProfileScreen() {
                   />
                 )}
               />
+              {errors.name && (
+                <Text
+                  className="mt-1 font-cairo-medium text-xs text-red-500"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  {errors.name.message}
+                </Text>
+              )}
             </View>
 
             {/* Email Input */}
