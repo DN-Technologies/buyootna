@@ -75,6 +75,7 @@ export default function SearchResultsScreen() {
   const {
     data: infiniteData,
     isLoading,
+    isError,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -216,6 +217,13 @@ export default function SearchResultsScreen() {
                   <SuggestionCardSkeleton key={i} />
                 ))}
               </View>
+            ) : isError ? (
+              <EmptySearchResult
+                title="تعذر تحميل النتائج"
+                subtitle="حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى."
+                onActivateAlert={handleActivateAlert}
+                onExploreNow={handleExploreNow}
+              />
             ) : (
               <EmptySearchResult
                 onActivateAlert={handleActivateAlert}
