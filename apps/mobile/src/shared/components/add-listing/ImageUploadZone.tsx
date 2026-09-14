@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { SafeImage } from '@/shared/components/SafeImage';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -58,9 +58,9 @@ export default function ImageUploadZone() {
               key={index}
               className="relative h-[90px] w-[90px] overflow-hidden rounded-xl border border-gray-200"
             >
-              <Image
+              <SafeImage
                 source={{ uri }}
-                className="h-full w-full"
+                style={{ width: 90, height: 90 }}
                 contentFit="cover"
               />
 
