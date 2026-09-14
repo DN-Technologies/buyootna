@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChatInputBarProps {
   inputText: string;
@@ -18,10 +19,19 @@ export default function ChatInputBar({
   setShowAttachmentMenu,
   onAttachImage,
 }: ChatInputBarProps) {
+  const insets = useSafeAreaInsets();
+
   return (
     <View
-      className="relative z-50 flex-row items-end bg-white px-4 pb-3 pt-2.5"
+      className="relative z-50 flex-row items-end bg-white px-4 pt-2.5"
       style={{
+        // The parent screen excludes 'bottom' from its SafeAreaView so
+        // KeyboardAvoidingView is the sole owner of bottom spacing when the
+        // keyboard is open (avoids double-counting the inset and leaving
+        // this bar hidden behind the keyboard). When the keyboard is
+        // closed, this is the only thing keeping the bar clear of the
+        // home indicator, so it needs the real inset, not a fixed value.
+        paddingBottom: Math.max(insets.bottom, 12),
         shadowColor: '#ABACBC',
         shadowOpacity: 0.25,
         shadowRadius: 8,

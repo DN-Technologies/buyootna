@@ -1,8 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useScrollToTop } from '@react-navigation/native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -92,6 +92,19 @@ export default function ActivityScreen() {
     hasSubscription,
     subscription,
   } = useMyActivity();
+
+  // Refetch on every focus -- the global 30s React Query staleTime means a
+  // simple remount alone doesn't guarantee fresh data, so freeAdsRemaining
+  // (and the ad list) could still show a value that's already out of date
+  // by the time the user checks here vs. the Add Ad flow, which always
+  // reads the live value directly (bypasses the query cache entirely).
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        refetch();
+      }
+    }, [token, refetch]),
+  );
 
   const { filterPills, sortedAndFilteredData } = useActivityFilters(
     data,

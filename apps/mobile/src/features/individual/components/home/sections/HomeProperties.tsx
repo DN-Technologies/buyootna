@@ -292,6 +292,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
         onFavorite={() =>
           selectedProperty && toggleFavorite(selectedProperty.id)
         }
+        onShare={() => selectedProperty && shareProperty(selectedProperty)}
         onClose={() => detailsSheetRef.current?.dismiss()}
         onViewProperty={() => {
           if (selectedProperty) {

@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { TextInput } from 'react-native';
+import { Keyboard, TextInput } from 'react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
 import { useOtpResendTimer } from '@/shared/hooks/useOtpResendTimer';
@@ -104,6 +104,12 @@ export function useChangePassword() {
 
   // Resend OTP Action
   const handleResendOtp = async () => {
+    // The success alert is a native Modal, which iOS can visibly delay
+    // presenting while a keyboard is still open/animating -- dismiss it
+    // up front so the alert isn't competing with that by the time the
+    // request resolves (the countdown timer, a plain text re-render, has
+    // no such delay, which is what made the two look out of sync).
+    Keyboard.dismiss();
     try {
       await settingsService.requestChangePasswordOtp();
       setOtp('');
@@ -150,6 +156,10 @@ export function useChangePassword() {
       setOtpError(
         getApiErrorMessage(e, 'رمز التحقق غير صحيح أو منتهي الصلاحية'),
       );
+      // Let the user retype immediately instead of having to clear the
+      // stale wrong/expired code themselves first.
+      setOtp('');
+      otpInputRef.current?.focus();
     } finally {
       setIsSubmitting(false);
     }
