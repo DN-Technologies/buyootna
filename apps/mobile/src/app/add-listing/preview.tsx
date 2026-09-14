@@ -23,6 +23,7 @@ export default function AdPreviewScreen() {
     slotPickerRef,
     quotaSheetRef,
     publishOptions,
+    quotaSheetMode,
     showSuccess,
     setShowSuccess,
     createdPropertyId,
@@ -139,6 +140,16 @@ export default function AdPreviewScreen() {
       <QuotaExhaustedSheet
         ref={quotaSheetRef}
         onBrowsePackages={() => router.push('/plans')}
+        title={
+          quotaSheetMode === 'featuredUnavailable'
+            ? 'ليس لديك باقة تشمل إعلانات مميزة'
+            : undefined
+        }
+        description={
+          quotaSheetMode === 'featuredUnavailable'
+            ? 'لتتمكن من نشر هذا الإعلان كإعلان مميز والحصول على أولوية الظهور، يرجى شراء باقة تشمل أيام إعلان مميز.'
+            : undefined
+        }
       />
     </SafeAreaView>
   );

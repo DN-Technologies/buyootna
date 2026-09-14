@@ -97,6 +97,7 @@ export class OtpRateLimiterService {
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
           message: `يرجى الانتظار ${retryAfter} ثانية قبل طلب رمز تحقق جديد`,
+          code: 'OTP_COOLDOWN',
           retryAfter,
         },
         HttpStatus.TOO_MANY_REQUESTS,
@@ -116,8 +117,8 @@ export class OtpRateLimiterService {
       throw new HttpException(
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message:
-            'تم تجاوز الحد الأقصى لطلبات رمز التحقق (10 طلبات خلال 24 ساعة). يرجى المحاولة لاحقاً',
+          message: `تم تجاوز الحد الأقصى لطلبات رمز التحقق (${config.MAX_REQUESTS_PER_DAY} طلبات خلال 24 ساعة). يرجى المحاولة لاحقاً`,
+          code: 'OTP_DAILY_LIMIT',
           retryAfter,
         },
         HttpStatus.TOO_MANY_REQUESTS,
