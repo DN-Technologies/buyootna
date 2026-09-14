@@ -31,8 +31,10 @@ jest.mock('react-native-safe-area-context', () => ({
 
 // useScrollToTop needs a real navigation tree to find the parent tab
 // navigator, which this test doesn't render -- stub it as a no-op.
+// useFocusEffect just needs to run its callback once like a plain effect.
 jest.mock('@react-navigation/native', () => ({
   useScrollToTop: jest.fn(),
+  useFocusEffect: (callback: () => void) => callback(),
 }));
 
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
