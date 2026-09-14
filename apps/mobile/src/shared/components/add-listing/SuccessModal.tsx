@@ -8,6 +8,7 @@ import { useListingStore } from '@/shared/store/useListingStore';
 export interface SuccessModalProps {
   visible: boolean;
   onClose: () => void;
+  propertyId?: string | null;
 }
 
 // Scalloped green verified rosette badge matching Figma 622:21031
@@ -29,7 +30,11 @@ const RosetteCheckBadge = () => (
   </Svg>
 );
 
-export default function SuccessModal({ visible, onClose }: SuccessModalProps) {
+export default function SuccessModal({
+  visible,
+  onClose,
+  propertyId,
+}: SuccessModalProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const resetForm = useListingStore((state) => state.resetForm);
@@ -43,7 +48,11 @@ export default function SuccessModal({ visible, onClose }: SuccessModalProps) {
   const handleViewAd = () => {
     onClose();
     resetForm();
-    router.replace('/home');
+    if (propertyId) {
+      router.replace(`/property/${propertyId}`);
+    } else {
+      router.replace('/home');
+    }
   };
 
   if (!visible) return null;

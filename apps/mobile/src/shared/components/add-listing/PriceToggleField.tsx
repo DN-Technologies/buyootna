@@ -1,5 +1,7 @@
 import { Switch, Text, TextInput, View } from 'react-native';
 
+import { toWesternDigits } from '@/shared/utils/arabicNumerals';
+
 interface PriceToggleFieldProps {
   label?: string;
   showPrice: boolean;
@@ -49,7 +51,7 @@ export default function PriceToggleField({
             placeholderTextColor="#979797"
             keyboardType="numeric"
             value={price}
-            onChangeText={onChangePrice}
+            onChangeText={(text) => onChangePrice(toWesternDigits(text))}
           />
         </View>
       )}

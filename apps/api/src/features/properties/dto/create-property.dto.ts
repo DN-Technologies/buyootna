@@ -66,12 +66,10 @@ export class CreatePropertyDto {
 
   // --- 4. Polymorphic Validation (Conditional) ---
 
-  // Price is ONLY required if it's SALE or RENT.
-  // If the user selects EXCHANGE, class-validator will completely ignore this field.
-  @ValidateIf(
-    (o: CreatePropertyDto) =>
-      o.type === ListingType.SALE || o.type === ListingType.RENT,
-  )
+  // Price is optional -- omitted when the "Add Price" toggle is off
+  // (price upon request / negotiable / hidden). When provided, it must
+  // be numeric.
+  @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'السعر يجب أن يكون رقماً' })
   price?: number;
