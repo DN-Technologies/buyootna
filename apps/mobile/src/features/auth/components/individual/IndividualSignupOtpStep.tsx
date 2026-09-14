@@ -74,6 +74,12 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
   };
 
   const handleResend = async () => {
+    // The success alert is a native Modal, which iOS can visibly delay
+    // presenting while a keyboard is still open/animating -- dismiss it
+    // up front so the alert isn't competing with that by the time the
+    // request resolves (the countdown timer, a plain text re-render, has
+    // no such delay, which is what made the two look out of sync).
+    Keyboard.dismiss();
     const result = await onResendOtp();
     handleResendResult(result);
   };
