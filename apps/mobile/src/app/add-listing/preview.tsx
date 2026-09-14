@@ -61,6 +61,9 @@ export default function AdPreviewScreen() {
 
   // State for success sheet
   const [showSuccess, setShowSuccess] = useState(false);
+  const [createdPropertyId, setCreatedPropertyId] = useState<string | null>(
+    null,
+  );
 
   // Mapping helpers
   const listingTypeLabel =
@@ -76,7 +79,7 @@ export default function AdPreviewScreen() {
   const submitListing = async (
     isDraft: boolean,
     planSlotId?: string,
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; error?: string; propertyId?: string }> => {
     try {
       setSubmitting(true);
       setSubmissionError(null);
@@ -87,9 +90,9 @@ export default function AdPreviewScreen() {
       }
 
       const payload = buildApiPayload(isDraft, uploadedUrls, planSlotId);
-      await propertiesService.createProperty(payload);
+      const res = await propertiesService.createProperty(payload);
 
-      return { success: true };
+      return { success: true, propertyId: res.property.id };
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
@@ -121,6 +124,7 @@ export default function AdPreviewScreen() {
       if (optionsRes.options.length === 1) {
         const res = await submitListing(false, optionsRes.options[0].slotId);
         if (res.success) {
+          setCreatedPropertyId(res.propertyId ?? null);
           setShowSuccess(true);
         } else {
           showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
@@ -140,6 +144,7 @@ export default function AdPreviewScreen() {
     slotPickerRef.current?.dismiss();
     const res = await submitListing(false, slotId);
     if (res.success) {
+      setCreatedPropertyId(res.propertyId ?? null);
       setShowSuccess(true);
     } else {
       showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
@@ -421,6 +426,7 @@ export default function AdPreviewScreen() {
       <SuccessModal
         visible={showSuccess}
         onClose={() => setShowSuccess(false)}
+        propertyId={createdPropertyId}
       />
 
       <PlanSlotPickerSheet
