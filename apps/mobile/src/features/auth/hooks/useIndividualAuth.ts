@@ -113,7 +113,7 @@ export function useIndividualAuth() {
     }
   };
 
-  const onVerifyOtp = async (otp: string) => {
+  const onVerifyOtp = async (otp: string): Promise<boolean> => {
     setIsFormLoading(true);
     try {
       const response = isPhoneIdentifier(signupIdentifier)
@@ -136,8 +136,10 @@ export function useIndividualAuth() {
       );
 
       successSheetRef.current?.present();
+      return true;
     } catch (error: any) {
       showAlert('خطأ في التحقق', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
+      return false;
     } finally {
       setIsFormLoading(false);
     }

@@ -15,7 +15,7 @@ import {
 
 interface ForgotPasswordStep2Props {
   identifier: string;
-  onSubmit: (data: VerifyOtpValues) => void;
+  onSubmit: (data: VerifyOtpValues) => Promise<boolean>;
   onResendOtp: () => Promise<ResendOtpResult>;
 }
 
@@ -29,13 +29,23 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
     useOtpResendTimer(45);
   const otpInputRef = useRef<TextInput>(null);
 
-  const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
+  const { control, handleSubmit, watch, setValue } = useForm<VerifyOtpValues>({
     resolver: zodResolver(verifyOtpSchema),
     mode: 'onChange',
   });
 
   const otpValue = watch('otp');
   const isStep2Disabled = !otpValue || otpValue.trim() === '';
+
+  const handleVerify = async (data: VerifyOtpValues) => {
+    const success = await onSubmit(data);
+    if (!success) {
+      // Let the user retype immediately instead of having to clear the
+      // stale wrong/expired code themselves first.
+      setValue('otp', '');
+      otpInputRef.current?.focus();
+    }
+  };
 
   const handleResend = async () => {
     // The success alert is a native Modal, which iOS can visibly delay
@@ -147,7 +157,7 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
       <View className="mt-auto w-full">
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(handleVerify)}
           disabled={isStep2Disabled}
           className={`h-[48px] w-full items-center justify-center rounded-3xl ${
             isStep2Disabled ? 'bg-[#A6A6A6]' : 'bg-[#15304D]'

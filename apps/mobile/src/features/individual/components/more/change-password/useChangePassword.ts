@@ -156,6 +156,10 @@ export function useChangePassword() {
       setOtpError(
         getApiErrorMessage(e, 'رمز التحقق غير صحيح أو منتهي الصلاحية'),
       );
+      // Let the user retype immediately instead of having to clear the
+      // stale wrong/expired code themselves first.
+      setOtp('');
+      otpInputRef.current?.focus();
     } finally {
       setIsSubmitting(false);
     }

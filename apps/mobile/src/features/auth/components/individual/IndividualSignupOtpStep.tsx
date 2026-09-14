@@ -15,7 +15,7 @@ import {
 
 interface IndividualSignupOtpStepProps {
   identifier: string;
-  onSubmit: (otp: string) => void;
+  onSubmit: (otp: string) => Promise<boolean>;
   onResendOtp: () => Promise<ResendOtpResult>;
   isLoading?: boolean;
 }
@@ -61,7 +61,7 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
     useOtpResendTimer(45);
   const otpInputRef = useRef<TextInput>(null);
 
-  const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
+  const { control, handleSubmit, watch, setValue } = useForm<VerifyOtpValues>({
     resolver: zodResolver(verifyOtpSchema),
     mode: 'onChange',
   });
@@ -69,8 +69,14 @@ export const IndividualSignupOtpStep: React.FC<IndividualSignupOtpStepProps> = (
   const otpValue = watch('otp');
   const isOtpDisabled = !otpValue || otpValue.trim().length < 6 || isLoading;
 
-  const handleVerify = (data: VerifyOtpValues) => {
-    onSubmit(data.otp);
+  const handleVerify = async (data: VerifyOtpValues) => {
+    const success = await onSubmit(data.otp);
+    if (!success) {
+      // Let the user retype immediately instead of having to clear the
+      // stale wrong/expired code themselves first.
+      setValue('otp', '');
+      otpInputRef.current?.focus();
+    }
   };
 
   const handleResend = async () => {

@@ -56,7 +56,7 @@ export default function ForgotPasswordScreen() {
     }
   };
 
-  const onStep2Submit = async (data: VerifyOtpValues) => {
+  const onStep2Submit = async (data: VerifyOtpValues): Promise<boolean> => {
     try {
       const response = await apiClient.post('/auth/recovery/verify-otp', {
         identifier: identifier, // Use the idenfiter saved from Step 1
@@ -66,8 +66,10 @@ export default function ForgotPasswordScreen() {
       // Save the temporary token for Step 3
       setResetToken(response.data.resetToken);
       setStep(3);
+      return true;
     } catch (error: any) {
       showAlert('خطأ', getApiErrorMessage(error, 'رمز التحقق غير صحيح'));
+      return false;
     }
   };
 

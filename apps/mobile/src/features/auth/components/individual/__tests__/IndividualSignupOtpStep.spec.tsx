@@ -114,6 +114,47 @@ describe('IndividualSignupOtpStep', () => {
 
       expect(onSubmit).not.toHaveBeenCalled();
     });
+
+    it('clears the otp input when onSubmit resolves false (wrong/expired code)', async () => {
+      const onSubmit = jest.fn().mockResolvedValue(false);
+      const { getByDisplayValue, getByText } = await render(
+        <IndividualSignupOtpStep
+          identifier="+96555123456"
+          onSubmit={onSubmit}
+          onResendOtp={jest.fn()}
+        />,
+      );
+
+      const hiddenInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenInput, '123456');
+      await act(async () => {
+        await fireEvent.press(getByText('التحقق من الرمز'));
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith('123456');
+      expect(getByDisplayValue('')).toBeTruthy();
+    });
+
+    it('leaves the otp input alone when onSubmit resolves true', async () => {
+      const onSubmit = jest.fn().mockResolvedValue(true);
+      const { getByDisplayValue, getByText, queryByDisplayValue } =
+        await render(
+          <IndividualSignupOtpStep
+            identifier="+96555123456"
+            onSubmit={onSubmit}
+            onResendOtp={jest.fn()}
+          />,
+        );
+
+      const hiddenInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenInput, '123456');
+      await act(async () => {
+        await fireEvent.press(getByText('التحقق من الرمز'));
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith('123456');
+      expect(queryByDisplayValue('123456')).toBeTruthy();
+    });
   });
 
   describe('resend countdown', () => {
