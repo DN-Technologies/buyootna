@@ -11,6 +11,7 @@ import StepperInput from '@/shared/components/filters/StepperInput';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
+import { toWesternDigits } from '@/shared/utils/arabicNumerals';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 const CATEGORY_OPTIONS = [
@@ -198,7 +199,7 @@ export default function SharedPropertyInfo() {
               placeholderTextColor="#94A3B8"
               keyboardType="numeric"
               value={areaSize}
-              onChangeText={(text) => updateField('areaSize', text)}
+              onChangeText={(text) => updateField('areaSize', toWesternDigits(text))}
               editable={!isEdit || !areaSize}
             />
             <View className="flex-row items-center gap-1.5">
@@ -231,7 +232,7 @@ export default function SharedPropertyInfo() {
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={requestYear}
-                onChangeText={(text) => updateField('requestYear', text)}
+                onChangeText={(text) => updateField('requestYear', toWesternDigits(text))}
               />
             </View>
           </View>
@@ -255,7 +256,7 @@ export default function SharedPropertyInfo() {
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={requiredYear}
-                onChangeText={(text) => updateField('requiredYear', text)}
+                onChangeText={(text) => updateField('requiredYear', toWesternDigits(text))}
               />
             </View>
           </View>
@@ -281,7 +282,7 @@ export default function SharedPropertyInfo() {
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={propertyAge}
-                onChangeText={(text) => updateField('propertyAge', text)}
+                onChangeText={(text) => updateField('propertyAge', toWesternDigits(text))}
               />
             </View>
           </View>
@@ -305,7 +306,7 @@ export default function SharedPropertyInfo() {
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 value={automatedNumber}
-                onChangeText={(text) => updateField('automatedNumber', text)}
+                onChangeText={(text) => updateField('automatedNumber', toWesternDigits(text))}
               />
               <Image
                 source={require('@/assets/icons/add-listing/automated-number.png')}
