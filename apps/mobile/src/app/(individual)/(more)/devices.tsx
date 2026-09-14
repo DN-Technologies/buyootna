@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   ScrollView,
   Text,
@@ -41,6 +42,15 @@ export default function RegisteredDevicesScreen() {
       }));
     },
   });
+
+  // Refetch on every focus -- other devices logging in/out after this
+  // screen was first loaded (or cached within the app-wide 30s staleTime)
+  // wouldn't otherwise show up here until some unrelated remount happened.
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
   const handleLogoutDevice = async (id: string) => {
     try {
