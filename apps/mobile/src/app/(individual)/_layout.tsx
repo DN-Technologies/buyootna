@@ -1,5 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import CustomTabBar from '@/features/individual/components/CustomTabBar';
@@ -63,7 +63,10 @@ export default function MainLayout() {
         ref={plusSheetRef}
         onQuotaExhausted={handleOpenQuotaSheet}
       />
-      <QuotaExhaustedSheet ref={quotaSheetRef} />
+      <QuotaExhaustedSheet
+        ref={quotaSheetRef}
+        onBrowsePackages={() => router.push('/plans')}
+      />
       <AuthGuardSheet ref={authGuardSheetRef} />
     </>
   );
