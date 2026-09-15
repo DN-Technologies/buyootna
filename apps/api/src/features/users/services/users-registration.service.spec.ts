@@ -4,6 +4,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from '../../../core/storage/storage.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
 import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
+import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   BadRequestException,
   ConflictException,
@@ -57,6 +58,7 @@ describe('UsersRegistrationService', () => {
     sendRegistrationOtp: jest.Mock;
     verifyAndConsume: jest.Mock;
   };
+  let rateLimiter: { recordRequest: jest.Mock };
 
   beforeEach(async () => {
     prisma = buildPrismaMock();
@@ -67,6 +69,7 @@ describe('UsersRegistrationService', () => {
       sendRegistrationOtp: jest.fn().mockResolvedValue(undefined),
       verifyAndConsume: jest.fn(),
     };
+    rateLimiter = { recordRequest: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -75,6 +78,7 @@ describe('UsersRegistrationService', () => {
         { provide: StorageService, useValue: {} },
         { provide: TwilioService, useValue: twilioService },
         { provide: EmailOtpService, useValue: emailOtpService },
+        { provide: OtpRateLimiterService, useValue: rateLimiter },
       ],
     }).compile();
 
@@ -131,6 +135,23 @@ describe('UsersRegistrationService', () => {
       expect(result.user?.email).toBeNull();
       expect(twilioService.sendVerification).toHaveBeenCalledWith('55123456');
       expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
+    });
+
+    it('records exactly one OTP request against the rate limiter per phone send, keyed by the raw identifier', async () => {
+      await service.registerIndividual({
+        name: 'Ali',
+        identifier: '55123456',
+        password: 'password123',
+      });
+
+      // Regression guard: TwilioService.sendVerification used to also
+      // record its own (differently-keyed) request internally, so a single
+      // send silently counted 2-3x against the progressive cooldown/daily
+      // cap -- this service must be the only thing recording it, and only
+      // once, using the same raw identifier the @OtpRequestRateLimit guard
+      // checks.
+      expect(rateLimiter.recordRequest).toHaveBeenCalledTimes(1);
+      expect(rateLimiter.recordRequest).toHaveBeenCalledWith('55123456');
     });
 
     it('throws ConflictException when the identifier is already registered, without sending an OTP or touching the transaction', async () => {
