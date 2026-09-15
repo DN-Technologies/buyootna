@@ -1,0 +1,32 @@
+model Alert {
+  id         String   @id @default(uuid())
+  identityId String
+  identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  type          AlertType
+  operationType ListingType? // only SALE/RENT/EXCHANGE are meaningful here; enforced by CreateAlertDto, not the schema
+
+  // Opaque local ids (matches how CreatePropertyDto.governorateId/areaId already
+  // work -- mobile's location/category pickers use hardcoded local ids, not the
+  // real Governorate/Area/PropertyCategory FKs, so no relation is enforced here).
+  governorateId String
+  areaId        String?
+  categoryId    String?
+
+  price        Float?
+  rentValue    Float?
+  areaSize     Float?
+  rooms        Int?
+  baths        Int?
+  floors       Int?
+  requestYear  Int?
+  requiredYear Int?
+  amenities    String[] @default([])
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([identityId])
+}
