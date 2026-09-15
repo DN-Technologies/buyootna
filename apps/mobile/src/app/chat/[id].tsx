@@ -1,6 +1,6 @@
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -74,6 +74,7 @@ export default function ChatDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const conversationId = typeof id === 'string' ? id : id[0];
+  const listRef = useRef<FlashListRef<any>>(null);
 
   const [inputText, setInputText] = useState('');
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -152,6 +153,15 @@ export default function ChatDetailsScreen() {
       type: 'TEXT',
     });
     setInputText('');
+    // The new message is appended to state synchronously, but FlashList
+    // needs a frame to actually lay out the new item before scrollToEnd
+    // has anything to scroll to -- relying solely on
+    // maintainVisibleContentPosition's autoscrollToBottomThreshold wasn't
+    // reliably catching this specific case (a message the user just sent
+    // themselves should always be visible, no threshold judgment needed).
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    });
   };
 
   const handleLoadMore = () => {
@@ -290,6 +300,7 @@ export default function ChatDetailsScreen() {
             triggers via `onStartReached` instead of `onEndReached`.
           */}
           <FlashList
+            ref={listRef}
             data={displayMessages}
             style={{ flex: 1 }}
             keyExtractor={(item) => item.id}
