@@ -78,6 +78,20 @@ apiClient.interceptors.request.use(
   },
 );
 
+// A cold app launch can fire its very first network request before the
+// OS's WiFi/DNS stack has fully warmed up -- axios reports this as a
+// network error with no `response` at all, distinct from a real 4xx/5xx
+// the server actually sent back (which must never be silently retried).
+// A couple of quick automatic retries turns that into an invisible blip
+// instead of a user-facing "connection error" that only a manual retry
+// actually fixes (observed live: retrying always succeeded immediately).
+const MAX_NETWORK_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // --- Response Interceptor ---
 apiClient.interceptors.response.use(
   (response) => response,
@@ -87,6 +101,19 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401 && _authToken) {
       _onUnauthorized?.();
     }
+
+    const config = error.config as
+      | (typeof error.config & { __retryCount?: number })
+      | undefined;
+    if (!error.response && config) {
+      const retryCount = (config.__retryCount ?? 0) + 1;
+      if (retryCount <= MAX_NETWORK_RETRIES) {
+        config.__retryCount = retryCount;
+        await wait(RETRY_DELAY_MS * retryCount);
+        return apiClient(config);
+      }
+    }
+
     return Promise.reject(error);
   },
 );
