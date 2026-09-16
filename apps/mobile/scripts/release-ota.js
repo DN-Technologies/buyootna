@@ -146,16 +146,26 @@ async function main() {
   // app `version` stays untouched so this OTA push keeps reaching the
   // current runtime.
   const shortSha = git(['rev-parse', '--short', 'HEAD']);
-  const result = spawnSync('eas', ['update', '--channel', channel, '--message', message], {
-    stdio: 'inherit',
-    cwd: path.join(__dirname, '..'),
-    env: {
-      ...process.env,
-      ...buildProfileEnv,
-      EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
-      EXPO_PUBLIC_OTA_COMMIT: shortSha,
+  // --clear-cache: Metro's bundler cache doesn't key on *values* of inlined
+  // EXPO_PUBLIC_* env vars, only on source file content + transform config
+  // -- so a plain re-run can silently reuse a bundle output built under a
+  // previous env (exactly how localhost:8000 kept shipping even after the
+  // env override above was added and confirmed correct). Without this flag
+  // that override is necessary but not sufficient.
+  const result = spawnSync(
+    'eas',
+    ['update', '--channel', channel, '--message', message, '--clear-cache'],
+    {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+      env: {
+        ...process.env,
+        ...buildProfileEnv,
+        EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
+        EXPO_PUBLIC_OTA_COMMIT: shortSha,
+      },
     },
-  });
+  );
   process.exit(result.status ?? 1);
 }
 
