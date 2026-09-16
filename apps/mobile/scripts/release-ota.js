@@ -94,6 +94,40 @@ async function main() {
   console.log(`✓ Target channel: ${channel}`);
   console.log(`✓ Message: "${message}"`);
 
+  // 6. Force the same runtime env eas.json's matching build profile uses,
+  // overriding whatever is in the local shell/.env.
+  //
+  // Unlike `eas build`, `eas update` does NOT read eas.json's build-profile
+  // `env` block at all -- it just re-bundles JS using whatever the invoking
+  // shell/.env already has. Locally that's deliberately EXPO_PUBLIC_API_URL
+  // pointed at localhost for day-to-day dev work, which means a plain `eas
+  // update` run silently ships a bundle wired to talk to the developer's
+  // own laptop instead of the real API -- indistinguishable from a real
+  // update to every device that installs it (the app never crashes, it just
+  // can never successfully reach the server, forever, until reinstalled).
+  // This shipped to production undetected multiple times before this check
+  // existed. Force-matching the build profile's env here is the fix.
+  const easJsonPath = path.join(__dirname, '..', 'eas.json');
+  const easJson = JSON.parse(fs.readFileSync(easJsonPath, 'utf8'));
+  const buildProfileEnv = easJson.build?.[channel]?.env ?? {};
+  const LOCAL_API_URL_PATTERN = /localhost|127\.0\.0\.1|10\.0\.2\.2/;
+  const resolvedApiUrl =
+    buildProfileEnv.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_API_URL;
+
+  if (!resolvedApiUrl || LOCAL_API_URL_PATTERN.test(resolvedApiUrl)) {
+    console.log(
+      `✗ EXPO_PUBLIC_API_URL resolves to "${resolvedApiUrl}" -- a local/missing address.`,
+    );
+    console.log(
+      `  eas.json's build.${channel}.env has no safe EXPO_PUBLIC_API_URL to fall back to either.`,
+    );
+    console.log('  Refusing to publish an OTA update that would break every device that installs it.');
+    process.exit(1);
+  }
+  console.log(
+    `✓ Runtime env forced to match eas.json's build.${channel} profile (EXPO_PUBLIC_API_URL: ${resolvedApiUrl})`,
+  );
+
   console.log('━'.repeat(38));
   console.log('');
   console.log(`About to run: eas update --channel ${channel} --message "${message}"`);
@@ -117,6 +151,7 @@ async function main() {
     cwd: path.join(__dirname, '..'),
     env: {
       ...process.env,
+      ...buildProfileEnv,
       EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
       EXPO_PUBLIC_OTA_COMMIT: shortSha,
     },
