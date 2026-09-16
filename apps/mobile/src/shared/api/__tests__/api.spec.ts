@@ -182,7 +182,7 @@ describe('apiClient interceptors', () => {
         mockAxiosInstance.mockResolvedValueOnce({ data: 'ok' });
 
         const promise = responseErrorHandler(networkError);
-        await jest.advanceTimersByTimeAsync(1000);
+        await jest.advanceTimersByTimeAsync(1200);
 
         await expect(promise).resolves.toEqual({ data: 'ok' });
         expect(mockAxiosInstance).toHaveBeenCalledTimes(1);
@@ -194,7 +194,7 @@ describe('apiClient interceptors', () => {
       it('gives up and rejects with the original error once the retry budget is already spent', async () => {
         const config: any = {
           url: '/properties/feed/home',
-          __retryCount: 2,
+          __retryCount: 4,
         };
         const networkError = { config };
 

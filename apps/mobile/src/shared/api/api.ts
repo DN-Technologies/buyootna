@@ -84,9 +84,16 @@ apiClient.interceptors.request.use(
 // the server actually sent back (which must never be silently retried).
 // A couple of quick automatic retries turns that into an invisible blip
 // instead of a user-facing "connection error" that only a manual retry
-// actually fixes (observed live: retrying always succeeded immediately).
-const MAX_NETWORK_RETRIES = 2;
-const RETRY_DELAY_MS = 1000;
+// actually fixes.
+//
+// 2 retries at 1s/2s (~3s total) wasn't enough in practice -- confirmed
+// live, repeatedly, that the connection error still appeared even with
+// that in place, while a *manual* retry tap (done several seconds later,
+// after the user reads the error) always eventually succeeded. That gap
+// is the tell: the underlying blip outlasts a few seconds. Widened to
+// better match how long a real manual retry ends up waiting.
+const MAX_NETWORK_RETRIES = 4;
+const RETRY_DELAY_MS = 1200;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
