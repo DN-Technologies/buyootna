@@ -3,7 +3,13 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { forwardRef, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { useFavorites } from '@/features/individual/hooks/useFavorites';
@@ -68,6 +74,8 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
     data: infiniteData,
     isLoading: isFilterLoading,
     isFetchingNextPage: isLoadingMore,
+    isError,
+    refetch,
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
@@ -132,6 +140,27 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
               <PropertySkeleton key={key} cardWidth="100%" />
             ),
           )}
+        </View>
+      );
+    }
+    if (isError) {
+      return (
+        <View className="items-center justify-center py-20">
+          <Text className="mb-2 font-cairo-bold text-lg text-[#111111]">
+            تعذر تحميل العقارات
+          </Text>
+          <Text className="mb-4 text-center font-cairo-medium text-sm text-[#6B6A6A]">
+            حدث خطأ أثناء تحميل العقارات. تأكد من اتصالك بالشبكة.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => refetch()}
+            className="rounded-full bg-[#15304D] px-6 py-3"
+          >
+            <Text className="font-cairo-semibold text-sm text-white">
+              إعادة المحاولة
+            </Text>
+          </TouchableOpacity>
         </View>
       );
     }
