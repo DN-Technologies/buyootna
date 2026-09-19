@@ -110,16 +110,34 @@ async function main() {
   const easJsonPath = path.join(__dirname, '..', 'eas.json');
   const easJson = JSON.parse(fs.readFileSync(easJsonPath, 'utf8'));
   const buildProfileEnv = easJson.build?.[channel]?.env ?? {};
+
+  // Strip EVERY EXPO_PUBLIC_* value the local shell/.env carries, not just
+  // the ones this script happens to know are risky. Overriding individual
+  // known keys (as an earlier version of this script did for
+  // EXPO_PUBLIC_API_URL alone) is a whack-a-mole fix -- it caught the
+  // localhost API URL leak, but not EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS,
+  // which is =true in .env for local feat/companies dev work and would
+  // otherwise leak into a real publish and unlock company accounts for
+  // every production user. The build profile's own `env` block in
+  // eas.json is the one authoritative source for what a real build (and
+  // now an OTA update) should ship with -- anything local not in there
+  // gets dropped entirely rather than silently inherited.
+  const cleanEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.startsWith('EXPO_PUBLIC_')),
+  );
+  const droppedKeys = Object.keys(process.env).filter(
+    (key) => key.startsWith('EXPO_PUBLIC_') && !(key in buildProfileEnv),
+  );
+  if (droppedKeys.length > 0) {
+    console.log(`✓ Dropped local-only env vars not in build.${channel}.env: ${droppedKeys.join(', ')}`);
+  }
+
   const LOCAL_API_URL_PATTERN = /localhost|127\.0\.0\.1|10\.0\.2\.2/;
-  const resolvedApiUrl =
-    buildProfileEnv.EXPO_PUBLIC_API_URL ?? process.env.EXPO_PUBLIC_API_URL;
+  const resolvedApiUrl = buildProfileEnv.EXPO_PUBLIC_API_URL;
 
   if (!resolvedApiUrl || LOCAL_API_URL_PATTERN.test(resolvedApiUrl)) {
     console.log(
-      `✗ EXPO_PUBLIC_API_URL resolves to "${resolvedApiUrl}" -- a local/missing address.`,
-    );
-    console.log(
-      `  eas.json's build.${channel}.env has no safe EXPO_PUBLIC_API_URL to fall back to either.`,
+      `✗ eas.json's build.${channel}.env has no safe EXPO_PUBLIC_API_URL (got "${resolvedApiUrl}").`,
     );
     console.log('  Refusing to publish an OTA update that would break every device that installs it.');
     process.exit(1);
@@ -159,7 +177,7 @@ async function main() {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
       env: {
-        ...process.env,
+        ...cleanEnv,
         ...buildProfileEnv,
         EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
         EXPO_PUBLIC_OTA_COMMIT: shortSha,
