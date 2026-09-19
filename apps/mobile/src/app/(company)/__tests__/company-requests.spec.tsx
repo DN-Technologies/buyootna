@@ -3,6 +3,14 @@ import { Alert } from 'react-native';
 
 import CompanyRequestsScreen from '../company-requests';
 
+const mockPush = jest.fn();
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    push: mockPush,
+  }),
+}));
+
 jest.spyOn(Alert, 'alert');
 
 describe('CompanyRequestsScreen (Figma Design Implementation 4410:164470)', () => {
@@ -120,13 +128,10 @@ describe('CompanyRequestsScreen (Figma Design Implementation 4410:164470)', () =
       expect.stringContaining('تقديم عرض سعر لطلب:'),
     );
 
-    // Press details on first card
+    // Press details on first card -> navigates to details screen
     const detailsBtn = getByTestId('company-request-details-btn-req-1');
     await fireEvent.press(detailsBtn);
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'تفاصيل الطلب',
-      expect.stringContaining('عرض تفاصيل طلب:'),
-    );
+    expect(mockPush).toHaveBeenCalledWith('/(company)/(requests)/req-1');
   });
 
   it('triggers alert on filter button press', async () => {

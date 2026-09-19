@@ -6,6 +6,7 @@ export type { CompanyRequestsHeaderProps } from './CompanyRequestsHeader';
 export { default as CompanyRequestsHeader } from './CompanyRequestsHeader';
 export type { CompanyRequestsScopeTabsProps } from './CompanyRequestsScopeTabs';
 export { default as CompanyRequestsScopeTabs } from './CompanyRequestsScopeTabs';
+export * from './details';
 export * from './icons';
 export * from './mockRequests';
 export * from './types';

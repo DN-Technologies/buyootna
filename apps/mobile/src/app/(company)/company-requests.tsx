@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -21,6 +22,7 @@ import {
 } from '@/features/company/components/requests';
 
 export default function CompanyRequestsScreen() {
+  const router = useRouter();
   const [activeScope, setActiveScope] = useState<RequestScope>('company');
   const [activeStatusFilter, setActiveStatusFilter] =
     useState<RequestStatusFilter>('all');
@@ -72,8 +74,9 @@ export default function CompanyRequestsScreen() {
   };
 
   const handleDetailsPress = (request: CompanyRequestItem) => {
-    Alert.alert('تفاصيل الطلب', `عرض تفاصيل طلب: "${request.title}"`);
+    router.push(`/(company)/(requests)/${request.id}`);
   };
+
 
   const handleFilterToggle = () => {
     Alert.alert('تصفية متقدمة', 'خيارات تصفية إضافية حسب الموقع ونطاق السعر');
