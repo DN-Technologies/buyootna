@@ -33,9 +33,18 @@ This file provides rules, architectural directives, and constraints for all AI a
 - **Styling**: Use NativeWind Tailwind classes (`className="..."`). Avoid hardcoded pixel calculations for dynamic layouts.
 - **RTL-First Layouts (Arabic)**: The app runs with forced RTL (`I18nManager.isRTL = true`).
   - **Child Ordering in `flex-row`**: In `flex-row`, Child 0 renders on the visual **RIGHT** (start) and subsequent children flow to the visual **LEFT** (end). Always order children in `flex-row` starting from visual RIGHT to visual LEFT.
+  - **Absolute Positioning in RTL**: React Native's Yoga layout engine swaps `left` and `right` in RTL (`left` maps to `start` / visual RIGHT, and `right` maps to `end` / visual LEFT).
+    - To position an absolute badge/element on the visual **RIGHT**, use logical `start` (e.g., `style={{ start: -4 }}` or `start-[-4px]`), NEVER `right-[-4px]` which inverts to the visual LEFT.
+    - To position an absolute element on the visual **LEFT**, use logical `end` (e.g., `style={{ end: -4 }}` or `end-[-4px]`).
+  - **Input Writing Direction (`writingDirection`)**:
+    - **Arabic Text Inputs**: Use `style={{ writingDirection: 'rtl', textAlign: 'right' }}`.
+    - **Phone Numbers, Emails, Numeric & Latin Inputs**: MUST ALWAYS use `style={{ writingDirection: 'ltr', textAlign: 'right' }}`. Applying `writingDirection: 'rtl'` to phone numbers swaps the leading `+` sign and punctuation to the wrong side (e.g. `+965` flips to `965+`).
+  - **Compound Phone Number Fields**:
+    - When a phone field has a country code pill (`+965`), strip any existing `+965` / `965` prefix from initial state values so users never see a duplicated `+965` prefix inside the text box.
+    - On submit, ensure the phone number is formatted with `+965` before sending to the backend API.
   - **Co-linear Header Elements**: When a design specifies controls on the same horizontal level (e.g., Account Title on the visual right and Account Type selector pill on the visual left), place them in the same `flex-row items-center justify-between` container. Never displace one of them into a different row (like next to the top avatar).
+  - **Centered Screen Titles**: In header rows with `[Back Button] [Title] [Spacer]`, give the title `flex-1 text-center` so it remains perfectly centered between symmetric side controls.
   - **Action Button Rows**: In 3-button rows (`تعديل`, `معاينة`, `مشاركة`), Child 0 is visual RIGHT (`تعديل` - primary), Child 1 is middle (`معاينة`), Child 2 is visual LEFT (`مشاركة`).
-  - **Avoid Hardcoded Absolute Inversions**: Avoid hardcoded absolute `left`/`right` positions that flip unexpectedly across iOS/Android. Use standard flex flows (`justify-start` for visual right, `justify-between` for split headers).
 
 ### Monorepo Workflows & CI/CD
 - **Root Lockfile**: Maintain a single root `pnpm-lock.yaml`. Sub-directory lockfiles must be removed.

@@ -14,12 +14,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { COMPANY_CATEGORY_OPTIONS } from '@/features/individual/components/companies/CategoryFilterSheet';
-import { useIdentity } from '@/shared/hooks/useIdentity';
-import { useAuthStore } from '@/shared/store/useAuthStore';
 import { settingsService } from '@/shared/api/settings.service';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
-import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 const DESCRIPTION_MAX_LENGTH = 100;
 

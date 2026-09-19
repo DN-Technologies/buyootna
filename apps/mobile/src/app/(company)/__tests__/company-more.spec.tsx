@@ -1,6 +1,5 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
-import React from 'react';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
@@ -117,13 +116,13 @@ describe('CompanyMoreScreen (Figma Design Implementation)', () => {
     const { getByText } = await render(<CompanyMoreScreen />);
 
     fireEvent.press(getByText('الخدمات'));
-    expect(router.push).toHaveBeenCalledWith('/(company)/add-service');
+    expect(router.push).toHaveBeenCalledWith('/add-service');
 
     fireEvent.press(getByText('معرض الأعمال'));
-    expect(router.push).toHaveBeenCalledWith('/(company)/add-project');
+    expect(router.push).toHaveBeenCalledWith('/add-project');
 
     fireEvent.press(getByText('فواتير الخدمات'));
-    expect(router.push).toHaveBeenCalledWith('/(company)/create-invoice');
+    expect(router.push).toHaveBeenCalledWith('/create-invoice');
 
     fireEvent.press(getByText('المحادثات'));
     expect(router.push).toHaveBeenCalledWith('/(company)/company-chats');

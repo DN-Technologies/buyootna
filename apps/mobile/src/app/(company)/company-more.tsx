@@ -70,7 +70,7 @@ export default function CompanyMoreScreen() {
   };
 
   const handleEditProfile = () => {
-    router.push('/edit-profile');
+    router.push('/company-edit-profile');
   };
 
   const handlePreviewProfile = () => {
@@ -148,21 +148,21 @@ export default function CompanyMoreScreen() {
                   title="الخدمات"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/(company)/add-service')}
+                  onPress={() => router.push('/add-service')}
                 />
                 <MenuItem
                   icon={PortfolioIcon}
                   title="معرض الأعمال"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/(company)/add-project')}
+                  onPress={() => router.push('/add-project')}
                 />
                 <MenuItem
                   icon={ServiceInvoicesIcon}
                   title="فواتير الخدمات"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/(company)/create-invoice')}
+                  onPress={() => router.push('/create-invoice')}
                 />
               </View>
             </View>
