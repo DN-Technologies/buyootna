@@ -1,87 +1,153 @@
-import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
+import {
+  Alert,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
-
-type RequestFilter = 'all' | 'pending' | 'accepted' | 'completed';
+import {
+  CompanyRequestItem,
+  CompanyRequestListItem,
+  CompanyRequestsFilterPills,
+  CompanyRequestsHeader,
+  CompanyRequestsScopeTabs,
+  MOCK_COMPANY_REQUESTS,
+  RequestScope,
+  RequestStatusFilter,
+  SearchIcon,
+} from '@/features/company/components/requests';
 
 export default function CompanyRequestsScreen() {
-  const [activeFilter, setActiveFilter] = useState<RequestFilter>('all');
+  const router = useRouter();
+  const [activeScope, setActiveScope] = useState<RequestScope>('company');
+  const [activeStatusFilter, setActiveStatusFilter] =
+    useState<RequestStatusFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const filters: { key: RequestFilter; label: string }[] = [
-    { key: 'all', label: 'الكل' },
-    { key: 'pending', label: 'قيد الانتظار' },
-    { key: 'accepted', label: 'مقبولة' },
-    { key: 'completed', label: 'مكتملة' },
-  ];
+  const filteredRequests = useMemo(() => {
+    return MOCK_COMPANY_REQUESTS.filter((req) => {
+      // 1. Filter by scope ('company' vs 'public')
+      if (req.scope !== activeScope) {
+        return false;
+      }
+
+      // 2. Filter by status pill ('all' | 'pending' | 'accepted' | 'responded')
+      if (activeStatusFilter !== 'all' && req.status !== activeStatusFilter) {
+        return false;
+      }
+
+      // 3. Filter by search query
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        const matchesTitle = req.title.toLowerCase().includes(query);
+        const matchesClient = req.clientName.toLowerCase().includes(query);
+        const matchesLocation = req.location.toLowerCase().includes(query);
+        const matchesDesc = req.description.toLowerCase().includes(query);
+        if (
+          !matchesTitle &&
+          !matchesClient &&
+          !matchesLocation &&
+          !matchesDesc
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [activeScope, activeStatusFilter, searchQuery]);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 600);
+  };
+
+  const handleReplyPress = (request: CompanyRequestItem) => {
+    Alert.alert('الرد على الطلب', `تقديم عرض سعر لطلب: "${request.title}"`);
+  };
+
+  const handleDetailsPress = (request: CompanyRequestItem) => {
+    router.push(`/(company)/(requests)/${request.id}`);
+  };
+
+
+  const handleFilterToggle = () => {
+    Alert.alert('تصفية متقدمة', 'خيارات تصفية إضافية حسب الموقع ونطاق السعر');
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F5F6FA]">
-      {/* Header */}
-      <View className="bg-white px-5 py-4">
-        <Text
-          className="font-cairo-bold text-lg text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          الطلبات
-        </Text>
-      </View>
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+      {/* 1. Header with centered title, search input & filter button */}
+      <CompanyRequestsHeader
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onFilterPress={handleFilterToggle}
+      />
 
-      {/* Filter Pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingVertical: 12,
-          gap: 8,
-          flexDirection: 'row-reverse',
-        }}
-      >
-        {filters.map((filter) => (
-          <TouchableOpacity
-            key={filter.key}
-            onPress={() => setActiveFilter(filter.key)}
-            className={`rounded-full px-5 py-2 ${
-              activeFilter === filter.key
-                ? 'bg-[#15304D]'
-                : 'border border-gray-200 bg-white'
-            }`}
-          >
-            <Text
-              className={`font-cairo-semibold text-sm ${
-                activeFilter === filter.key
-                  ? 'text-white'
-                  : 'text-[#6B6A6A]'
-              }`}
-            >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+      {/* 2. Dual-Scope Segmented Tabs ("خاصة بالشركة" vs "عامة") */}
+      <CompanyRequestsScopeTabs
+        activeScope={activeScope}
+        onScopeChange={setActiveScope}
+      />
 
-      {/* Content */}
+      {/* 3. Status Filter Pills ("الكل", "قيد الانتظار", "مقبولة", "تم الرد") */}
+      <CompanyRequestsFilterPills
+        activeFilter={activeStatusFilter}
+        onFilterChange={setActiveStatusFilter}
+      />
+
+      {/* 4. Requests List / Empty State */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 14,
+          paddingBottom: 120, // ensure content clears floating tab bar
+        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#15304D"
+          />
+        }
       >
-        <ContentContainer>
-          {/* Empty State */}
-          <View className="mx-4 mt-8 items-center rounded-2xl bg-white py-16">
-            <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-[#F0F4FF]">
-              <Feather name="inbox" size={36} color="#94A3B8" />
+        {filteredRequests.length > 0 ? (
+          filteredRequests.map((request) => (
+            <CompanyRequestListItem
+              key={request.id}
+              request={request}
+              onReply={handleReplyPress}
+              onDetails={handleDetailsPress}
+              onPress={handleDetailsPress}
+            />
+          ))
+        ) : (
+          <View className="items-center justify-center py-16">
+            <View className="mb-4 size-16 items-center justify-center rounded-full bg-[#F5F7F9]">
+              <SearchIcon size={32} color="#989898" />
             </View>
-            <Text className="font-cairo-bold text-base text-[#111111]">
-              لا توجد طلبات
+            <Text
+              className="font-cairo-bold text-[16px] text-[#111111]"
+              style={{ writingDirection: 'rtl', textAlign: 'center' }}
+            >
+              لا توجد طلبات مطابقة
             </Text>
-            <Text className="mt-1 font-cairo-medium text-sm text-[#6B6A6A]">
-              ستظهر طلبات العملاء الواردة هنا
+            <Text
+              className="mt-1 font-cairo-medium text-[13px] text-[#6B6A6A]"
+              style={{ writingDirection: 'rtl', textAlign: 'center' }}
+            >
+              جرب تغيير كلمات البحث أو تغيير حالة التصفية
             </Text>
           </View>
-        </ContentContainer>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
