@@ -111,25 +111,53 @@ async function main() {
   const easJson = JSON.parse(fs.readFileSync(easJsonPath, 'utf8'));
   const buildProfileEnv = easJson.build?.[channel]?.env ?? {};
 
-  // Strip EVERY EXPO_PUBLIC_* value the local shell/.env carries, not just
-  // the ones this script happens to know are risky. Overriding individual
-  // known keys (as an earlier version of this script did for
-  // EXPO_PUBLIC_API_URL alone) is a whack-a-mole fix -- it caught the
-  // localhost API URL leak, but not EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS,
-  // which is =true in .env for local feat/companies dev work and would
-  // otherwise leak into a real publish and unlock company accounts for
-  // every production user. The build profile's own `env` block in
-  // eas.json is the one authoritative source for what a real build (and
-  // now an OTA update) should ship with -- anything local not in there
-  // gets dropped entirely rather than silently inherited.
-  const cleanEnv = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => !key.startsWith('EXPO_PUBLIC_')),
-  );
-  const droppedKeys = Object.keys(process.env).filter(
-    (key) => key.startsWith('EXPO_PUBLIC_') && !(key in buildProfileEnv),
-  );
-  if (droppedKeys.length > 0) {
-    console.log(`✓ Dropped local-only env vars not in build.${channel}.env: ${droppedKeys.join(', ')}`);
+  // Neutralize EVERY EXPO_PUBLIC_*/config key the local .env FILE defines,
+  // not just the ones this script happens to know are risky, and not just
+  // whatever this process's own process.env carries.
+  //
+  // Overriding individual known keys via process.env (as an earlier version
+  // of this script did for EXPO_PUBLIC_API_URL alone) is insufficient for
+  // two reasons, both confirmed live:
+  //   1. It's whack-a-mole -- it caught the localhost API URL leak, but not
+  //      EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS, which is =true in .env for
+  //      local feat/companies dev work and leaked into a real publish,
+  //      unlocking company accounts for every production user.
+  //   2. `eas update` internally re-invokes `expo export`, which loads
+  //      apps/mobile/.env itself from disk via @expo/env, independent of
+  //      whatever this script already put in process.env for the child.
+  //      Standard dotenv semantics only skip loading a key from the file if
+  //      it's already SET in the environment -- merely deleting/omitting a
+  //      key (this script's first attempt) leaves it unset, so the child's
+  //      own .env load fills it right back in from the file regardless.
+  // The fix: read .env directly, and for every key it defines that isn't
+  // part of the target build profile's env, explicitly set it to '' (not
+  // omit it) so the child sees it as already-set and never loads the
+  // file's real value. eas.json's build.<channel>.env remains the one
+  // authoritative source for what should actually ship.
+  const dotenvPath = path.join(__dirname, '..', '.env');
+  const dotenvKeys = fs
+    .readFileSync(dotenvPath, 'utf8')
+    .split('\n')
+    .map((line) => line.match(/^([A-Za-z_][A-Za-z0-9_]*)=/))
+    .filter(Boolean)
+    .map((match) => match[1]);
+
+  const neutralizedEnv = {};
+  const neutralizedKeys = [];
+  for (const key of dotenvKeys) {
+    if (!(key in buildProfileEnv)) {
+      neutralizedEnv[key] = '';
+      neutralizedKeys.push(key);
+    }
+  }
+  const cleanEnv = {
+    ...Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => !(key in neutralizedEnv)),
+    ),
+    ...neutralizedEnv,
+  };
+  if (neutralizedKeys.length > 0) {
+    console.log(`✓ Neutralized local-only .env keys not in build.${channel}.env: ${neutralizedKeys.join(', ')}`);
   }
 
   const LOCAL_API_URL_PATTERN = /localhost|127\.0\.0\.1|10\.0\.2\.2/;
