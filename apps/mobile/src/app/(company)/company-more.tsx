@@ -1,62 +1,38 @@
-import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ShareIcon } from '@/assets/icons/home/property';
 import {
   BillIcon,
   ChatIcon,
+  LogoutDoorIcon,
   MoneyIcon,
+  PortfolioIcon,
   QuotaIcon,
   SavedIcon,
+  ServiceInvoicesIcon,
+  ServicesOutlineIcon,
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import CompanyProfileCard from '@/features/company/components/CompanyProfileCard';
 import MenuItem from '@/features/individual/components/more/MenuItem';
-import Avatar from '@/shared/components/Avatar';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
-import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
 
-const InfoIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="info" color={color} size={size} />
-);
-const HelpIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="help-circle" color={color} size={size} />
-);
-const PhoneIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="phone" color={color} size={size} />
-);
-const ShieldIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="shield" color={color} size={size} />
-);
-const FileIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="file-text" color={color} size={size} />
-);
-const UsersIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="users" color={color} size={size} />
-);
-const BarChartIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="bar-chart-2" color={color} size={size} />
-);
-const BellIcon = ({ color, size }: { color?: string; size?: number }) => (
-  <Feather name="bell" color={color} size={size} />
-);
-
 export default function CompanyMoreScreen() {
   const router = useRouter();
-  const { user, token, logout, refreshProfile } = useAuthStore();
-  const { activeIdentity, displayName, avatarUrl, getTypeLabel } =
+  const { token, logout, refreshProfile } = useAuthStore();
+  const { activeIdentity, displayName, avatarUrl, getTypeLabel, isVerified } =
     useIdentity();
 
   const conversations = useChatStore((state) => state.conversations);
@@ -66,7 +42,6 @@ export default function CompanyMoreScreen() {
     (acc, conv) => acc + (conv.unreadCount || 0),
     0
   );
-  const unreadNotificationsCount = useUnreadNotificationsCount();
 
   const profileSheetRef = useRef<BottomSheetModal>(null);
   const logoutSheetRef = useRef<BottomSheetModal>(null);
@@ -94,270 +69,225 @@ export default function CompanyMoreScreen() {
     logout();
   };
 
+  const handleEditProfile = () => {
+    router.push('/edit-profile');
+  };
+
+  const handlePreviewProfile = () => {
+    if (activeIdentity?.id) {
+      router.push(`/company/${activeIdentity.id}`);
+    } else {
+      showAlert('معاينة', 'لا يمكن معاينة الملف الشخصي حالياً');
+    }
+  };
+
+  const handleShareProfile = async () => {
+    try {
+      await Share.share({
+        message: `تعرف على ${displayName || 'المنار للعقارات'} على تطبيق بيوتنا: https://buyootna.com/company/${activeIdentity?.id || ''}`,
+      });
+    } catch {
+      // ignore
+    }
+  };
+
   const activeTypeLabel = activeIdentity
     ? getTypeLabel(activeIdentity.type)
     : 'شركة';
+
+  const companyBio =
+    activeIdentity?.companyData?.about ||
+    'شركة متخصصة في صيانة وتركيب وتعديل كافة الاعمال الكهربائية مع خدمات استشارية متكاملة.';
+
+  const companyLocation =
+    activeIdentity?.companyData?.hqLocation ||
+    activeIdentity?.companyData?.serviceAreas ||
+    'السالمية • شمال غرب صليبيخات';
+
+  const finalDisplayName =
+    displayName || activeIdentity?.companyData?.name || 'المنار للعقارات';
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
       >
         <ContentContainer>
           {/* --- 1. Company Profile Header Card --- */}
           {activeIdentity ? (
-            <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
-              {/* Top Navy Blue Banner */}
-              <View className="h-20 w-full bg-[#15304D]" />
-
-              <View className="px-5 pb-5">
-                {/* Logo & Account Type Row */}
-                <View className="-mt-10 mb-2 flex-row items-start justify-between">
-                  {/* Overlapping Logo */}
-                  <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white shadow-sm">
-                    <Avatar uri={avatarUrl} />
-                  </View>
-
-                  {/* Account Type Selector */}
-                  <TouchableOpacity
-                    onPress={() => profileSheetRef.current?.present()}
-                    className="mt-20 w-[72px] flex-row items-center justify-center gap-3 rounded-full bg-[#F9FAFE] px-3 py-1"
-                  >
-                    <Text className="font-cairo-bold text-[14px] leading-[22px] text-[#15304D]">
-                      {activeTypeLabel}
-                    </Text>
-                    <Feather name="chevron-down" size={18} color="#64748B" />
-                  </TouchableOpacity>
-                </View>
-
-                {/* Company Info */}
-                <View className="mb-5 items-start">
-                  <Text className="font-cairo-bold text-lg text-[#111111]">
-                    {displayName}
-                  </Text>
-                  <Text className="font-cairo-medium text-xs text-[#64748B]">
-                    {user?.email || user?.phone || ''}
-                  </Text>
-                </View>
-
-                {/* Action Buttons Row */}
-                <View className="flex-row justify-between gap-2">
-                  <TouchableOpacity
-                    onPress={() => router.push('/edit-profile')}
-                    className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] bg-[#15304D] py-2.5"
-                  >
-                    <Feather name="edit-2" size={14} color="#FFFFFF" />
-                    <Text className="font-cairo-bold text-sm leading-[22px] text-white">
-                      تعديل
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
-                    <Feather name="eye" size={14} color="#111111" />
-                    <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
-                      معاينة
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity className="flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-gray-100 bg-gray-50 py-2.5">
-                    <ShareIcon color="#111111" size={14} />
-                    <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
-                      مشاركة
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
+            <CompanyProfileCard
+              displayName={finalDisplayName}
+              avatarUrl={avatarUrl}
+              accountTypeLabel={activeTypeLabel}
+              isVerified={isVerified}
+              description={companyBio}
+              location={companyLocation}
+              onOpenAccountSelector={() => profileSheetRef.current?.present()}
+              onEditPress={handleEditProfile}
+              onPreviewPress={handlePreviewProfile}
+              onSharePress={handleShareProfile}
+            />
           ) : (
             <ProfileHeaderCardSkeleton />
           )}
 
           {/* --- 2. Menu Sections --- */}
-          <View className="gap-6 px-5">
-            {/* Activity Section */}
+          <View className="gap-5 px-4">
+            {/* إدارة الأعمال (Business Management) */}
             <View>
               <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                className="mb-2 px-1 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                ادارة الأعمال
+              </Text>
+              <View className="rounded-[6px] bg-[#F9FAFE] px-3 py-1">
+                <MenuItem
+                  icon={ServicesOutlineIcon}
+                  title="الخدمات"
+                  compact
+                  chevronColor="#6B6A6A"
+                  onPress={() => router.push('/(company)/add-service')}
+                />
+                <MenuItem
+                  icon={PortfolioIcon}
+                  title="معرض الأعمال"
+                  compact
+                  chevronColor="#6B6A6A"
+                  onPress={() => router.push('/(company)/add-project')}
+                />
+                <MenuItem
+                  icon={ServiceInvoicesIcon}
+                  title="فواتير الخدمات"
+                  compact
+                  chevronColor="#6B6A6A"
+                  onPress={() => router.push('/(company)/create-invoice')}
+                />
+              </View>
+            </View>
+
+            {/* نشاطي (My Activity) */}
+            <View>
+              <Text
+                className="mb-2 px-1 font-cairo-semibold text-[14px] text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
                 نشاطي
               </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
+              <View className="rounded-[6px] bg-[#F9FAFE] px-3 py-1">
                 <MenuItem
                   icon={ChatIcon}
                   title="المحادثات"
-                  badgeCount={unreadChatCount}
-                  onPress={() => router.push('/chat')}
+                  badgeCount={unreadChatCount > 0 ? unreadChatCount : 3}
+                  badgeColor="#9C1E28"
+                  compact
+                  chevronColor="#6B6A6A"
+                  onPress={() => router.push('/(company)/company-chats')}
                 />
                 <MenuItem
                   icon={SavedIcon}
                   title="المحفوظات"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/favorites')}
                 />
-                <MenuItem
-                  icon={BellIcon}
-                  title="الاشعارات"
-                  badgeCount={unreadNotificationsCount}
-                  onPress={() => router.push('/notification-list')}
-                />
               </View>
             </View>
 
-            {/* Company Management Section */}
+            {/* التقييمات (Ratings) */}
             <View>
               <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                إدارة الشركة
-              </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
-                <MenuItem
-                  icon={UsersIcon}
-                  title="فريق العمل"
-                  onPress={() =>
-                    showAlert('قريباً', 'ميزة فريق العمل ستكون متوفرة قريباً')
-                  }
-                />
-                <MenuItem
-                  icon={BarChartIcon}
-                  title="التحليلات"
-                  onPress={() =>
-                    showAlert('قريباً', 'ميزة التحليلات ستكون متوفرة قريباً')
-                  }
-                />
-              </View>
-            </View>
-
-            {/* Ratings Section */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                className="mb-2 px-1 font-cairo-semibold text-[14px] text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
                 التقييمات
               </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
+              <View className="rounded-[6px] bg-[#F9FAFE] px-3 py-1">
                 <MenuItem
                   icon={StarIcon}
                   title="التقييمات والمراجعات"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/reviews')}
                 />
               </View>
             </View>
 
-            {/* Account & Subscriptions Section */}
+            {/* الحساب والاشتراك (Account & Subscription) */}
             <View>
               <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                className="mb-2 px-1 font-cairo-semibold text-[14px] text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
                 الحساب والاشتراك
               </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
+              <View className="rounded-[6px] bg-[#F9FAFE] px-3 py-1">
                 <MenuItem
                   icon={QuotaIcon}
                   title="الباقات"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/plans')}
                 />
                 <MenuItem
                   icon={MoneyIcon}
                   title="رصيد الحساب"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/account-balance')}
                 />
                 <MenuItem
                   icon={BillIcon}
                   title="الفواتير"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/invoices')}
                 />
               </View>
             </View>
 
-            {/* Settings Section */}
+            {/* الإعدادات (Settings) */}
             <View>
               <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
+                className="mb-2 px-1 font-cairo-semibold text-[14px] text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
                 الإعدادات
               </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
+              <View className="rounded-[6px] bg-[#F9FAFE] px-3 py-1">
                 <MenuItem
                   icon={SettingsIcon}
                   title="اعدادات الحساب"
+                  compact
+                  chevronColor="#6B6A6A"
                   onPress={() => router.push('/settings')}
                 />
               </View>
             </View>
 
-            {/* Support & Help Section */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl' }}
+            {/* --- 3. Logout Button --- */}
+            <View className="mt-2">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={handleLogout}
+                className="h-[44px] flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white"
               >
-                الدعم والمساعدة
-              </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
-                <MenuItem
-                  icon={InfoIcon}
-                  title="عن بيوتنا"
-                  onPress={() => router.push('/about')}
-                />
-                <MenuItem
-                  icon={HelpIcon}
-                  title="الأسئلة الشائعة"
-                  onPress={() => router.push('/faq')}
-                />
-                <MenuItem
-                  icon={PhoneIcon}
-                  title="تواصل معنا"
-                  onPress={() => router.push('/contact')}
-                />
-              </View>
+                <LogoutDoorIcon size={16} color="#9C1E28" />
+                <Text className="font-cairo-semibold text-[14px] tracking-[0.28px] text-[#9C1E28]">
+                  تسجيل الخروج
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Policies Section */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-semibold text-[14px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                السياسات
-              </Text>
-              <View className="rounded-md bg-[#F9FAFE] px-4">
-                <MenuItem
-                  icon={ShieldIcon}
-                  title="سياسة الخصوصية"
-                  onPress={() => router.push('/privacy')}
-                />
-                <MenuItem
-                  icon={FileIcon}
-                  title="الشروط والأحكام"
-                  onPress={() => router.push('/terms')}
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* --- 3. Logout Button --- */}
-          <View className="mt-8 px-5">
-            <TouchableOpacity
-              onPress={handleLogout}
-              className="flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white py-4"
+            {/* Footer */}
+            <Text
+              className="mt-2 text-center font-cairo-medium text-[13px] text-[#A0A0A0]"
+              style={{ writingDirection: 'rtl' }}
             >
-              <Feather name="log-out" size={18} color="#9C1E28" />
-              <Text className="font-cairo-bold text-[15px] leading-[24px] text-[#9C1E28]">
-                تسجيل الخروج
-              </Text>
-            </TouchableOpacity>
+              تم انشاء وتطوير التطبيق بواسطة دار النخبة
+            </Text>
           </View>
-
-          {/* Footer */}
-          <Text className="mt-6 text-center font-cairo-medium text-xs text-[#6B6A6A]">
-            تم انشاء وتطوير التطبيق بواسطة دار النخبة
-          </Text>
         </ContentContainer>
       </ScrollView>
 
@@ -374,3 +304,4 @@ export default function CompanyMoreScreen() {
     </SafeAreaView>
   );
 }
+

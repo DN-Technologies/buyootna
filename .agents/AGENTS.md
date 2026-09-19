@@ -31,6 +31,11 @@ This file provides rules, architectural directives, and constraints for all AI a
 - **Component Architecture**: Keep components small, functional, and reusable.
 - **Type Safety**: Enforce strict Zod schemas for all form inputs (`authSchemas.ts`).
 - **Styling**: Use NativeWind Tailwind classes (`className="..."`). Avoid hardcoded pixel calculations for dynamic layouts.
+- **RTL-First Layouts (Arabic)**: The app runs with forced RTL (`I18nManager.isRTL = true`).
+  - **Child Ordering in `flex-row`**: In `flex-row`, Child 0 renders on the visual **RIGHT** (start) and subsequent children flow to the visual **LEFT** (end). Always order children in `flex-row` starting from visual RIGHT to visual LEFT.
+  - **Co-linear Header Elements**: When a design specifies controls on the same horizontal level (e.g., Account Title on the visual right and Account Type selector pill on the visual left), place them in the same `flex-row items-center justify-between` container. Never displace one of them into a different row (like next to the top avatar).
+  - **Action Button Rows**: In 3-button rows (`تعديل`, `معاينة`, `مشاركة`), Child 0 is visual RIGHT (`تعديل` - primary), Child 1 is middle (`معاينة`), Child 2 is visual LEFT (`مشاركة`).
+  - **Avoid Hardcoded Absolute Inversions**: Avoid hardcoded absolute `left`/`right` positions that flip unexpectedly across iOS/Android. Use standard flex flows (`justify-start` for visual right, `justify-between` for split headers).
 
 ### Monorepo Workflows & CI/CD
 - **Root Lockfile**: Maintain a single root `pnpm-lock.yaml`. Sub-directory lockfiles must be removed.
