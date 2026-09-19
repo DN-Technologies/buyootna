@@ -1,5 +1,14 @@
 import { Feather } from '@expo/vector-icons';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Keyboard,
+  LayoutAnimation,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ChatInputBarProps {
@@ -21,17 +30,75 @@ export default function ChatInputBar({
 }: ChatInputBarProps) {
   const insets = useSafeAreaInsets();
 
+  // iOS-only: track the keyboard's real, final rendered height ourselves
+  // instead of relying on the parent screen's KeyboardAvoidingView
+  // ('padding' behavior) to compute it. Confirmed live (screenshot) that
+  // that calculation under-counts the keyboard's predictive-text/QuickType
+  // suggestion bar -- an accessory view that can settle its own size
+  // slightly after the main keyboard frame animates in -- leaving this
+  // bar's bottom edge rendered behind it. keyboardDidShow fires only once
+  // the keyboard (accessory bar included) has fully settled, so its
+  // endCoordinates.height is the true final figure. keyboardWillShow is
+  // used only to kick off a synced LayoutAnimation so the resize still
+  // tracks the keyboard's own slide-up instead of jump-cutting at the end.
+  // Android is untouched: AndroidManifest's windowSoftInputMode
+  // "adjustResize" already resizes the window natively, no JS tracking
+  // needed there.
+  const [iosKeyboardHeight, setIosKeyboardHeight] = useState(0);
+  const animationConfiguredRef = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+
+    const configureAnimation = (durationMs?: number) => {
+      LayoutAnimation.configureNext(
+        durationMs
+          ? {
+              duration: durationMs,
+              update: { type: LayoutAnimation.Types.keyboard },
+            }
+          : LayoutAnimation.Presets.easeInEaseOut,
+      );
+      animationConfiguredRef.current = true;
+    };
+
+    const willShowSub = Keyboard.addListener('keyboardWillShow', (e) => {
+      configureAnimation(e.duration);
+      setIosKeyboardHeight(e.endCoordinates.height);
+    });
+    const didShowSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      // Corrective snap in case the settled height differs from the
+      // "will" estimate (the predictive bar case) -- only animate this
+      // one if keyboardWillShow didn't already fire first.
+      if (!animationConfiguredRef.current) configureAnimation();
+      setIosKeyboardHeight(e.endCoordinates.height);
+      animationConfiguredRef.current = false;
+    });
+    const willHideSub = Keyboard.addListener('keyboardWillHide', (e) => {
+      configureAnimation(e.duration);
+      setIosKeyboardHeight(0);
+    });
+
+    return () => {
+      willShowSub.remove();
+      didShowSub.remove();
+      willHideSub.remove();
+    };
+  }, []);
+
   return (
     <View
       className="relative z-50 flex-row items-end bg-white px-4 pt-2.5"
       style={{
-        // The parent screen excludes 'bottom' from its SafeAreaView so
-        // KeyboardAvoidingView is the sole owner of bottom spacing when the
-        // keyboard is open (avoids double-counting the inset and leaving
-        // this bar hidden behind the keyboard). When the keyboard is
-        // closed, this is the only thing keeping the bar clear of the
-        // home indicator, so it needs the real inset, not a fixed value.
-        paddingBottom: Math.max(insets.bottom, 12),
+        // The parent screen no longer applies KeyboardAvoidingView's
+        // 'padding' behavior on iOS (see chat/[id].tsx) -- this bar's own
+        // directly-measured keyboard height is the sole source of bottom
+        // spacing there now. Android still relies on adjustResize, so it
+        // keeps using the static home-indicator inset unconditionally.
+        paddingBottom:
+          Platform.OS === 'ios' && iosKeyboardHeight > 0
+            ? iosKeyboardHeight
+            : Math.max(insets.bottom, 12),
         shadowColor: '#ABACBC',
         shadowOpacity: 0.25,
         shadowRadius: 8,

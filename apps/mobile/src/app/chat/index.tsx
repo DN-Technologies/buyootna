@@ -104,7 +104,7 @@ export default function ChatsInboxScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ContentContainer className="flex-1">
           {/* --- 1. Header --- */}
