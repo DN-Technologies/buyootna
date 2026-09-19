@@ -114,11 +114,52 @@ describe('IndividualSignupOtpStep', () => {
 
       expect(onSubmit).not.toHaveBeenCalled();
     });
+
+    it('clears the otp input when onSubmit resolves false (wrong/expired code)', async () => {
+      const onSubmit = jest.fn().mockResolvedValue(false);
+      const { getByDisplayValue, getByText } = await render(
+        <IndividualSignupOtpStep
+          identifier="+96555123456"
+          onSubmit={onSubmit}
+          onResendOtp={jest.fn()}
+        />,
+      );
+
+      const hiddenInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenInput, '123456');
+      await act(async () => {
+        await fireEvent.press(getByText('التحقق من الرمز'));
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith('123456');
+      expect(getByDisplayValue('')).toBeTruthy();
+    });
+
+    it('leaves the otp input alone when onSubmit resolves true', async () => {
+      const onSubmit = jest.fn().mockResolvedValue(true);
+      const { getByDisplayValue, getByText, queryByDisplayValue } =
+        await render(
+          <IndividualSignupOtpStep
+            identifier="+96555123456"
+            onSubmit={onSubmit}
+            onResendOtp={jest.fn()}
+          />,
+        );
+
+      const hiddenInput = getByDisplayValue('');
+      await fireEvent.changeText(hiddenInput, '123456');
+      await act(async () => {
+        await fireEvent.press(getByText('التحقق من الرمز'));
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith('123456');
+      expect(queryByDisplayValue('123456')).toBeTruthy();
+    });
   });
 
   describe('resend countdown', () => {
-    it('hides the resend button while the timer is running, then shows it and resets after firing', async () => {
-      const onResendOtp = jest.fn();
+    it('hides the resend button while the timer is running, then shows it and starts the next progressive cooldown after a successful resend', async () => {
+      const onResendOtp = jest.fn().mockResolvedValue({ success: true });
       const { getByText, queryByText } = await render(
         <IndividualSignupOtpStep
           identifier="+96555123456"
@@ -134,9 +175,40 @@ describe('IndividualSignupOtpStep', () => {
         jest.advanceTimersByTime(45000);
       });
 
-      await fireEvent.press(getByText('إعادة إرسال الرمز'));
+      await act(async () => {
+        await fireEvent.press(getByText('إعادة إرسال الرمز'));
+      });
       expect(onResendOtp).toHaveBeenCalledTimes(1);
-      expect(getByText(/إعادة إرسال الرمز خلال/)).toBeTruthy();
+      // Backend's first progressive cooldown (30s), not another static 45s.
+      expect(getByText('إعادة إرسال الرمز خلال 00:30')).toBeTruthy();
+    });
+
+    it('locks the resend button and shows the server message when the daily limit is reached', async () => {
+      const onResendOtp = jest.fn().mockResolvedValue({
+        success: false,
+        code: 'OTP_DAILY_LIMIT',
+        message: 'تم تجاوز الحد الأقصى لطلبات رمز التحقق (10 طلبات خلال 24 ساعة). يرجى المحاولة لاحقاً',
+      });
+      const { getByText, queryByText } = await render(
+        <IndividualSignupOtpStep
+          identifier="+96555123456"
+          onSubmit={jest.fn()}
+          onResendOtp={onResendOtp}
+        />,
+      );
+
+      await act(async () => {
+        jest.advanceTimersByTime(45000);
+      });
+
+      await act(async () => {
+        await fireEvent.press(getByText('إعادة إرسال الرمز'));
+      });
+
+      expect(
+        getByText(/تم تجاوز الحد الأقصى لطلبات رمز التحقق/),
+      ).toBeTruthy();
+      expect(queryByText('إعادة إرسال الرمز')).toBeNull();
     });
   });
 });

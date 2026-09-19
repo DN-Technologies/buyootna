@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersProfileService } from './users-profile.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
@@ -5,14 +7,26 @@ import { StorageService } from '../../../core/storage/storage.service';
 
 describe('UsersProfileService', () => {
   let service: UsersProfileService;
+  let prisma: any;
 
   beforeEach(async () => {
+    prisma = {
+      user: { update: jest.fn().mockResolvedValue({}) },
+      identity: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ id: 'identity-1', companyData: {}, officeData: {} }),
+      },
+      companyIdentityData: { update: jest.fn().mockResolvedValue({}) },
+      officeIdentityData: { update: jest.fn().mockResolvedValue({}) },
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersProfileService,
         {
           provide: PrismaService,
-          useValue: {},
+          useValue: prisma,
         },
         {
           provide: StorageService,
@@ -22,9 +36,40 @@ describe('UsersProfileService', () => {
     }).compile();
 
     service = module.get<UsersProfileService>(UsersProfileService);
+    jest.spyOn(service, 'findFullUser').mockResolvedValue({} as any);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('name validation (individual profiles only)', () => {
+    it('rejects an individual name containing an emoji', async () => {
+      await expect(
+        service.updateProfile('user-1', Role.INDIVIDUAL, {
+          name: 'Ahmed 🚀',
+        } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('rejects an individual name containing digits/symbols', async () => {
+      await expect(
+        service.updateProfile('user-1', Role.INDIVIDUAL, {
+          name: 'Ahmed123',
+        } as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('does not restrict a company name to letters-only', async () => {
+      await service.updateProfile('user-1', Role.COMPANY, {
+        name: '24/7 Real Estate Co.',
+      } as any);
+
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ name: '24/7 Real Estate Co.' }),
+        }),
+      );
+    });
   });
 });

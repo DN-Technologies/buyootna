@@ -32,6 +32,7 @@ model Identity {
   invoices        Invoice[]
   projects        CompanyProject[]
   companyInvoices CompanyInvoice[]
+  alerts          Alert[]
 
   // Company-requests (leads marketplace)
   requestsAsClient CompanyRequest[] @relation("ClientRequests")

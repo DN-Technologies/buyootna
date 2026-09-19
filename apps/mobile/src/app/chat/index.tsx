@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -37,18 +38,28 @@ export default function ChatsInboxScreen() {
   const receiveMessage = useChatStore((state) => state.receiveMessage);
   const isLoading = useChatStore((state) => state.isLoadingConversations);
 
+  // Refetch on every focus (not just first mount) so a conversation started
+  // elsewhere (e.g. contacting a company/office from a property page) shows
+  // up here immediately when the user navigates back to this screen, even
+  // if it's still mounted from an earlier visit in the stack.
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        loadConversations(1);
+      }
+    }, [token, loadConversations]),
+  );
+
   useEffect(() => {
-    if (token) {
-      loadConversations(1);
+    if (!token) return;
 
-      // Listen for socket events to update unread count / last message dynamically
-      const unsubscribe = socketService.onConversationUpdated((data) => {
-        receiveMessage(data.conversationId, data.lastMessage);
-      });
+    // Listen for socket events to update unread count / last message dynamically
+    const unsubscribe = socketService.onConversationUpdated((data) => {
+      receiveMessage(data.conversationId, data.lastMessage);
+    });
 
-      return unsubscribe;
-    }
-  }, [token, loadConversations, receiveMessage]);
+    return unsubscribe;
+  }, [token, receiveMessage]);
 
   if (!token) {
     return (
@@ -93,7 +104,7 @@ export default function ChatsInboxScreen() {
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ContentContainer className="flex-1">
           {/* --- 1. Header --- */}

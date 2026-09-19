@@ -53,7 +53,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna-mobile',
-  version: '1.2.0',
+  version: '1.3.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
@@ -149,6 +149,11 @@ const config: ExpoConfig = {
   },
   updates: {
     url: 'https://u.expo.dev/71d0c9e9-aa9f-4abc-a04e-c8b0733ad738',
+    // The app already drives its own update check/fetch in src/app/index.tsx
+    // (with tight timeouts and visible-only-when-a-real-update-exists UI) --
+    // disabling the native module's own automatic check here avoids a
+    // second, uncontrolled network round-trip racing it on every cold launch.
+    checkAutomatically: 'NEVER',
   },
   extra: {
     router: {},

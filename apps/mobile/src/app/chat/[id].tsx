@@ -1,11 +1,7 @@
-import { FlashList } from '@shopify/flash-list';
+import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-} from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { KeyboardAvoidingView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChatMessage } from '@/shared/api/chat.service';
@@ -74,6 +70,7 @@ export default function ChatDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const conversationId = typeof id === 'string' ? id : id[0];
+  const listRef = useRef<FlashListRef<any>>(null);
 
   const [inputText, setInputText] = useState('');
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -152,6 +149,15 @@ export default function ChatDetailsScreen() {
       type: 'TEXT',
     });
     setInputText('');
+    // The new message is appended to state synchronously, but FlashList
+    // needs a frame to actually lay out the new item before scrollToEnd
+    // has anything to scroll to -- relying solely on
+    // maintainVisibleContentPosition's autoscrollToBottomThreshold wasn't
+    // reliably catching this specific case (a message the user just sent
+    // themselves should always be visible, no threshold judgment needed).
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    });
   };
 
   const handleLoadMore = () => {
@@ -224,7 +230,7 @@ export default function ChatDetailsScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* Invisible Overlay to Close Dropdowns */}
       {(showAttachmentMenu || showMoreMenu) && (
         <Pressable
@@ -237,10 +243,24 @@ export default function ChatDetailsScreen() {
       )}
 
       <ContentContainer className="flex-1">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
+        {/* No `behavior` on either platform:
+            - Android: AndroidManifest already sets windowSoftInputMode
+              "adjustResize", so the OS resizes the window itself.
+              KeyboardAvoidingView's own "height" adjustment on top of
+              that double-compensates (worse with edgeToEdgeEnabled),
+              which is what let the keyboard overlap the input bar.
+              Matches the fix already applied in search/index.tsx and
+              add-alert/index.tsx.
+            - iOS: KeyboardAvoidingView's 'padding' behavior was confirmed
+              live to under-count the keyboard's predictive-text bar,
+              leaving the input bar's bottom edge rendered behind it.
+              ChatInputBar now tracks the keyboard's real height itself
+              and sizes its own bottom padding directly -- applying
+              KeyboardAvoidingView's padding on top of that here would
+              double it. FlashList (flex: 1, sibling of ChatInputBar
+              below) naturally gives up space as ChatInputBar grows, same
+              net effect without KeyboardAvoidingView's involvement. */}
+        <KeyboardAvoidingView style={{ flex: 1 }}>
           <ChatHeader
             userName={otherUserName}
             isOnline={false}
@@ -290,6 +310,7 @@ export default function ChatDetailsScreen() {
             triggers via `onStartReached` instead of `onEndReached`.
           */}
           <FlashList
+            ref={listRef}
             data={displayMessages}
             style={{ flex: 1 }}
             keyExtractor={(item) => item.id}

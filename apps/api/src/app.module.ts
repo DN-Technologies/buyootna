@@ -34,6 +34,7 @@ import { AdminModule } from './features/admin/admin.module';
 import { IdentitiesModule } from './features/identities/identities.module';
 import { CompaniesModule } from './features/companies/companies.module';
 import { CompanyRequestsModule } from './features/company-requests/company-requests.module';
+import { AlertsModule } from './features/alerts/alerts.module';
 
 @Module({
   imports: [
@@ -76,6 +77,7 @@ import { CompanyRequestsModule } from './features/company-requests/company-reque
     IdentitiesModule,
     CompaniesModule,
     CompanyRequestsModule,
+    AlertsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -11,6 +11,11 @@ import Svg, { Path } from 'react-native-svg';
 interface DeleteConfirmationSheetProps {
   onConfirm: (reason?: string) => void;
   onCancel?: () => void;
+  title?: string;
+  description?: string;
+  confirmLabel?: string;
+  /** Skip the SOLD/OTHER reason step and delete immediately after the first confirmation (used for entities with no delete-reason concept, e.g. alerts). */
+  skipReasonStep?: boolean;
 }
 
 const TrashIcon = ({
@@ -52,7 +57,14 @@ const ChevronRightIcon = ({
 const DeleteConfirmationSheet = forwardRef<
   BottomSheetModal,
   DeleteConfirmationSheetProps
->(({ onConfirm, onCancel }, ref) => {
+>(({
+  onConfirm,
+  onCancel,
+  title = 'هل أنت متأكد من حذف الإعلان؟',
+  description = 'سيتم حذف الإعلان ولن يظهر للمستخدمين بعد الآن، وسيتم فقدان مدة التميز المتبقية',
+  confirmLabel = 'حذف الإعلان',
+  skipReasonStep = false,
+}, ref) => {
   // Flow step state: 'confirm' (Step 1) or 'reason' (Step 2)
   const [step, setStep] = useState<'confirm' | 'reason'>('confirm');
 
@@ -97,6 +109,16 @@ const DeleteConfirmationSheet = forwardRef<
     if (onCancel) onCancel();
   };
 
+  const handleStep1Confirm = () => {
+    if (skipReasonStep) {
+      // @ts-ignore
+      ref.current?.dismiss();
+      onConfirm();
+      return;
+    }
+    setStep('reason');
+  };
+
   // Determine if the submit button is active in Step 2
   const isSubmitActive =
     selectedReason === 'SOLD' ||
@@ -129,14 +151,13 @@ const DeleteConfirmationSheet = forwardRef<
             {/* Warning Texts */}
             <View className="mt-3 items-center">
               <Text className="text-center font-cairo-bold text-[18px] text-[#111111]">
-                هل أنت متأكد من حذف الإعلان؟
+                {title}
               </Text>
               <Text
                 className="mt-2.5 px-4 text-center font-cairo text-[13px] leading-5 text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
-                سيتم حذف الإعلان ولن يظهر للمستخدمين بعد الآن، وسيتم فقدان مدة
-                التميز المتبقية
+                {description}
               </Text>
             </View>
 
@@ -144,11 +165,11 @@ const DeleteConfirmationSheet = forwardRef<
             <View className="mt-6 w-full gap-3">
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => setStep('reason')}
+                onPress={handleStep1Confirm}
                 className="h-[48px] w-full items-center justify-center rounded-full bg-[#9C1E28]"
               >
                 <Text className="font-cairo-semibold text-sm leading-[22px] text-white">
-                  حذف الإعلان
+                  {confirmLabel}
                 </Text>
               </TouchableOpacity>
 

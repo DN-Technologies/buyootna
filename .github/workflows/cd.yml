@@ -26,6 +26,21 @@ jobs:
             docker compose build
             docker compose up -d postgres postgres-backup
             docker compose exec -T postgres-backup /backup.sh
-            docker compose run --rm api npx prisma migrate deploy --schema=prisma
+            BASELINE_MIGRATION="20260819132243_sync_schema_baseline"
+            set +e
+            MIGRATE_OUTPUT=$(docker compose run --rm api npx prisma migrate deploy --schema=prisma 2>&1)
+            MIGRATE_EXIT_CODE=$?
+            set -e
+            if [ $MIGRATE_EXIT_CODE -ne 0 ]; then
+              if echo "$MIGRATE_OUTPUT" | grep -q "Error: P3009" && echo "$MIGRATE_OUTPUT" | grep -q "$BASELINE_MIGRATION"; then
+                echo "$MIGRATE_OUTPUT"
+                echo "Detected failed baseline migration history. Marking baseline as applied and retrying deploy migration."
+                docker compose run --rm api npx prisma migrate resolve --applied "$BASELINE_MIGRATION" --schema=prisma
+                docker compose run --rm api npx prisma migrate deploy --schema=prisma
+              else
+                echo "$MIGRATE_OUTPUT"
+                exit $MIGRATE_EXIT_CODE
+              fi
+            fi
             docker compose up -d
             docker system prune -f

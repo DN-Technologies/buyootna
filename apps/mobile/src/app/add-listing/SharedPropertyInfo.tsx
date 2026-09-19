@@ -1,20 +1,16 @@
-import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Image } from 'expo-image';
 import { useRef, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { TouchableOpacity } from 'react-native';
+import { Text, View } from 'react-native';
 
-import { LockIcon } from '@/assets/icons/home/property';
-// Import our reusable UI components from the Filters epic
-import DrawerTrigger from '@/shared/components/filters/DrawerTrigger';
+import PropertyAgeYearsRow from '@/shared/components/add-listing/PropertyAgeYearsRow';
+import PropertyAmenitiesChips from '@/shared/components/add-listing/PropertyAmenitiesChips';
+import PropertyCategorySizeRow from '@/shared/components/add-listing/PropertyCategorySizeRow';
+import PropertyLocationRow from '@/shared/components/add-listing/PropertyLocationRow';
+import PropertyMapField from '@/shared/components/add-listing/PropertyMapField';
+import PropertyStepperRow from '@/shared/components/add-listing/PropertyStepperRow';
 import SelectionDrawer from '@/shared/components/filters/SelectionDrawer';
-import StepperInput from '@/shared/components/filters/StepperInput';
 import MapPickerModal from '@/shared/components/MapPickerModal';
-// Import the Zustand store
 import { useListingStore } from '@/shared/store/useListingStore';
-import { showAlert } from '@/shared/utils/alert';
-// Import real location data
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 const CATEGORY_OPTIONS = [
@@ -29,9 +25,18 @@ const CATEGORY_OPTIONS = [
   { id: 'chalet', label: 'شاليه' },
 ];
 
+const DEFAULT_MOCK_FEATURES = [
+  { id: '1', label: 'حمام سباحة' },
+  { id: '2', label: 'كراج' },
+  { id: '3', label: 'مصعد' },
+  { id: '4', label: 'بطن وظهر' },
+  { id: '5', label: 'زاوية' },
+  { id: '6', label: 'شارع واحد' },
+];
+
 export default function SharedPropertyInfo() {
-  // 1. Pull data and actions from the Zustand Store
   const {
+    listingType,
     governorate,
     area,
     propertyCategory,
@@ -43,34 +48,54 @@ export default function SharedPropertyInfo() {
     mapLocation,
     mapLocationLabel,
     propertyAge,
+    requestYear,
+    requiredYear,
+    features,
+    backendFeatures,
     isEdit,
     updateField,
   } = useListingStore();
 
   const [showMapPicker, setShowMapPicker] = useState(false);
 
-  // 2. Refs for the Bottom Sheet Drawers
+  // Refs for bottom sheet drawers
   const govDrawerRef = useRef<BottomSheetModal>(null);
   const areaDrawerRef = useRef<BottomSheetModal>(null);
   const categoryDrawerRef = useRef<BottomSheetModal>(null);
 
-  // 3. Dynamic area list based on the selected governorate
+  // Dynamic area list based on selected governorate
   const filteredAreas = governorate ? AREAS[governorate.id] || [] : [];
 
-  const handleMapPress = () => {
-    setShowMapPicker(true);
-  };
-
-  const handleClearMap = () => {
-    updateField('mapLocation', null);
-    updateField('mapLocationLabel', null);
-  };
+  // Active feature list
+  const activeFeatures =
+    (listingType === 'sell'
+      ? backendFeatures?.sell
+      : listingType === 'rent'
+        ? backendFeatures?.rent
+        : backendFeatures?.exchange) || DEFAULT_MOCK_FEATURES;
 
   const handleGovernorateSelect = (item: { id: string; label: string }) => {
     updateField('governorate', item);
-    // Reset the area when governorate changes since areas are dependent
     updateField('area', null);
   };
+
+  const handleToggleFeature = (label: string) => {
+    const currentFeatures = features || [];
+    updateField(
+      'features',
+      currentFeatures.includes(label)
+        ? currentFeatures.filter((f) => f !== label)
+        : [...currentFeatures, label],
+    );
+  };
+
+  let initialLat: number | undefined;
+  let initialLng: number | undefined;
+  if (mapLocation && mapLocation.includes(',')) {
+    const [latStr, lngStr] = mapLocation.split(',');
+    initialLat = parseFloat(latStr);
+    initialLng = parseFloat(lngStr);
+  }
 
   return (
     <View className="mb-6">
@@ -82,202 +107,61 @@ export default function SharedPropertyInfo() {
         معلومات العقار
       </Text>
 
-      {/* --- 1. Location Row (Governorate & Area) --- */}
-      <View className="mb-2 w-full flex-row gap-3" style={{ gap: 12 }}>
-        <DrawerTrigger
-          label="المحافظة"
-          placeholder="اختر المحافظة"
-          value={governorate?.label}
-          onPress={() => govDrawerRef.current?.present()}
-          required={true}
-          disabled={isEdit && !!governorate}
-          locked={isEdit && !!governorate}
-        />
-        <DrawerTrigger
-          label="المنطقة"
-          placeholder="اختر المنطقة"
-          value={area?.label}
-          onPress={() => {
-            if (!governorate) {
-              showAlert('تنبيه', 'يرجى اختيار المحافظة أولاً', [
-                { text: 'حسناً' },
-              ]);
-              return;
-            }
-            areaDrawerRef.current?.present();
-          }}
-          required={true}
-          disabled={isEdit && !!area}
-          locked={isEdit && !!area}
-        />
-      </View>
+      <PropertyLocationRow
+        governorate={governorate}
+        area={area}
+        isEdit={isEdit}
+        onPressGovernorate={() => govDrawerRef.current?.present()}
+        onPressArea={() => areaDrawerRef.current?.present()}
+      />
 
-      {/* --- 2. Map Location Row --- */}
-      <View className="mb-6 w-full">
-        <Text
-          className="mb-2 font-cairo-semibold text-sm text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          الموقع على الخريطة
-        </Text>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleMapPress}
-          className="h-12 flex-row items-center justify-between rounded-xl border border-[#ECECEC] bg-white px-4"
-        >
-          {/* Location Text (Right side in RTL) */}
-          <Text
-            className={`flex-1 font-cairo ${mapLocationLabel || mapLocation ? 'text-[#111111]' : 'text-[#D1D5DB]'}`}
-            style={{ writingDirection: 'rtl' }}
-            numberOfLines={1}
-          >
-            {mapLocationLabel
-              ? mapLocationLabel
-              : mapLocation
-                ? mapLocation
-                : 'حدد الموقع على الخريطة'}
-          </Text>
+      <PropertyMapField
+        mapLocation={mapLocation}
+        mapLocationLabel={mapLocationLabel}
+        onPress={() => setShowMapPicker(true)}
+        onClear={() => {
+          updateField('mapLocation', null);
+          updateField('mapLocationLabel', null);
+        }}
+      />
 
-          {/* Map Icon or Clear Button */}
-          {mapLocationLabel || mapLocation ? (
-            <TouchableOpacity onPress={handleClearMap} className="p-1">
-              <Feather name="x-circle" size={18} color="#94A3B8" />
-            </TouchableOpacity>
-          ) : (
-            <View className="p-1">
-              <Feather name="map-pin" size={18} color="#15304D" />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+      <PropertyCategorySizeRow
+        propertyCategory={propertyCategory}
+        onPressCategory={() => categoryDrawerRef.current?.present()}
+        isEdit={isEdit}
+        areaSize={areaSize}
+        onChangeAreaSize={(value) => updateField('areaSize', value)}
+      />
 
-      {/* --- 3. Category & Area Size Row --- */}
-      <View className="mb-2 w-full flex-row gap-3" style={{ gap: 12 }}>
-        <DrawerTrigger
-          label="فئة العقار"
-          placeholder="اختر فئة العقار"
-          value={propertyCategory?.label}
-          onPress={() => categoryDrawerRef.current?.present()}
-          required={true}
-          disabled={isEdit && !!propertyCategory}
-          locked={isEdit && !!propertyCategory}
-        />
+      <PropertyAgeYearsRow
+        listingType={listingType}
+        requestYear={requestYear}
+        onChangeRequestYear={(value) => updateField('requestYear', value)}
+        requiredYear={requiredYear}
+        onChangeRequiredYear={(value) => updateField('requiredYear', value)}
+        propertyAge={propertyAge}
+        onChangePropertyAge={(value) => updateField('propertyAge', value)}
+        automatedNumber={automatedNumber}
+        onChangeAutomatedNumber={(value) => updateField('automatedNumber', value)}
+      />
 
-        {/* Area Size Text Input */}
-        <View className="mb-6 flex-1" style={{ flex: 1 }}>
-          <Text
-            className="mb-1 font-cairo-medium text-sm text-[#111111]"
-            style={{
-              writingDirection: 'rtl',
-            }}
-          >
-            المساحة <Text className="text-red-500">*</Text>
-          </Text>
-          <View
-            className={`h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] px-4 py-3 ${isEdit ? 'bg-gray-50' : 'bg-white'}`}
-            style={{ width: '100%', gap: 8 }}
-          >
-            <TextInput
-              className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-              style={{ flex: 1, textAlign: 'right' }}
-              placeholder="300"
-              placeholderTextColor="#D1D5DB"
-              keyboardType="numeric"
-              value={areaSize}
-              onChangeText={(text) => updateField('areaSize', text)}
-              editable={!isEdit || !areaSize}
-            />
-            <View className="flex-row items-center gap-1.5">
-              <Text className="font-cairo-medium text-xs text-[#94A3B8]">م²</Text>
-              {(isEdit && !!areaSize) && <LockIcon size={14} color="#94A3B8" />}
-            </View>
-          </View>
-        </View>
-      </View>
+      <PropertyStepperRow
+        listingType={listingType}
+        floors={floors}
+        onChangeFloors={(value) => updateField('floors', value)}
+        baths={baths}
+        onChangeBaths={(value) => updateField('baths', value)}
+        rooms={rooms}
+        onChangeRooms={(value) => updateField('rooms', value)}
+      />
 
-      {/* --- 4. Automated Property Number --- */}
-      <View className="mb-6 w-full flex-row gap-3" style={{ gap: 12 }}>
-        {/* Property Age */}
-        <View className="mb-6 flex-1" style={{ flex: 1 }}>
-          <Text
-            className="mb-1 font-cairo-medium text-sm text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            عمر العقار
-          </Text>
-          <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-            style={{ width: '100%' }}
-          >
-            <TextInput
-              className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-              style={{ flex: 1, textAlign: 'right' }}
-              placeholder="السنين"
-              placeholderTextColor="#D1D5DB"
-              keyboardType="numeric"
-              value={propertyAge}
-              onChangeText={(text) => updateField('propertyAge', text)}
-            />
-          </View>
-        </View>
+      <PropertyAmenitiesChips
+        activeFeatures={activeFeatures}
+        selectedFeatures={features}
+        onToggleFeature={handleToggleFeature}
+      />
 
-        {/* Automated Number */}
-        <View className="mb-6 flex-1" style={{ flex: 1 }}>
-          <Text
-            className="mb-1 font-cairo-medium text-sm text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            الرقم الالي للعقار
-          </Text>
-          <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-            style={{ width: '100%' }}
-          >
-            <TextInput
-              className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-              style={{ flex: 1, textAlign: 'right' }}
-              placeholder="768954093"
-              placeholderTextColor="#D1D5DB"
-              keyboardType="numeric"
-              value={automatedNumber}
-              onChangeText={(text) => updateField('automatedNumber', text)}
-            />
-            <Image
-              source={require('@/assets/icons/add-listing/automated-number.png')}
-              style={{ width: 17, height: 16 }}
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* --- 5. Steppers Row (Rooms & Baths & Floors) --- */}
-      <View className="mb-2 w-full flex-row gap-3">
-        {propertyCategory?.id !== 'apartment' && (
-          <StepperInput
-            title="عدد الادوار"
-            value={floors}
-            onChange={(val) => updateField('floors', val)}
-            min={0}
-            max={20}
-          />
-        )}
-        <StepperInput
-          title="عدد الحمامات"
-          value={baths}
-          onChange={(val) => updateField('baths', val)}
-          min={0}
-          max={20}
-        />
-        <StepperInput
-          title="عدد الغرف"
-          value={rooms}
-          onChange={(val) => updateField('rooms', val)}
-          min={0}
-          max={20}
-        />
-      </View>
-
-      {/* --- Drawers (Rendered invisibly at the bottom of the component) --- */}
+      {/* --- Drawers --- */}
       <SelectionDrawer
         ref={govDrawerRef}
         title="اختر المحافظة"
@@ -297,28 +181,17 @@ export default function SharedPropertyInfo() {
         onSelect={(item) => updateField('propertyCategory', item)}
       />
 
-      {(() => {
-        let initialLat: number | undefined;
-        let initialLng: number | undefined;
-        if (mapLocation && mapLocation.includes(',')) {
-          const [latStr, lngStr] = mapLocation.split(',');
-          initialLat = parseFloat(latStr);
-          initialLng = parseFloat(lngStr);
-        }
-        return (
-          <MapPickerModal
-            visible={showMapPicker}
-            onClose={() => setShowMapPicker(false)}
-            onConfirm={(addressName, lat, lng) => {
-              updateField('mapLocation', `${lat},${lng}`);
-              updateField('mapLocationLabel', addressName);
-            }}
-            initialLat={initialLat}
-            initialLng={initialLng}
-            initialAddressLabel={mapLocationLabel || undefined}
-          />
-        );
-      })()}
+      <MapPickerModal
+        visible={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        onConfirm={(addressName, lat, lng) => {
+          updateField('mapLocation', `${lat},${lng}`);
+          updateField('mapLocationLabel', addressName);
+        }}
+        initialLat={initialLat}
+        initialLng={initialLng}
+        initialAddressLabel={mapLocationLabel || undefined}
+      />
     </View>
   );
 }

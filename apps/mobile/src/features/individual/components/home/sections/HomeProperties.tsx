@@ -3,7 +3,13 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { forwardRef, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { useFavorites } from '@/features/individual/hooks/useFavorites';
@@ -15,6 +21,7 @@ import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -41,6 +48,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
   const { scrollContentBottomPadding } = useTabBarHeight();
   const { isTablet, cardColumns } = useResponsiveLayout();
   const { favoritedIds, toggleFavorite } = useFavorites();
+  const token = useAuthStore((state) => state.token);
 
   // Bottom Sheet Ref & Selected Property State
   const detailsSheetRef = useRef<BottomSheetModal>(null);
@@ -66,10 +74,17 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
     data: infiniteData,
     isLoading: isFilterLoading,
     isFetchingNextPage: isLoadingMore,
+    isError,
+    refetch,
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['homeProperties', activeFilter],
+    // Includes `token` so a login/logout while this screen stays mounted
+    // (the (individual) tab group is reused across the auth flow -- see
+    // resetToIdentityHome) triggers a real refetch of user-specific
+    // results (e.g. per-user pricing/eligibility) instead of continuing to
+    // show whatever was cached from before the auth state changed.
+    queryKey: ['homeProperties', activeFilter, token],
     queryFn: ({ pageParam }) =>
       feedService.getProperties(getBackendType(activeFilter), pageParam, 10),
     initialPageParam: 1,
@@ -125,6 +140,27 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
               <PropertySkeleton key={key} cardWidth="100%" />
             ),
           )}
+        </View>
+      );
+    }
+    if (isError) {
+      return (
+        <View className="items-center justify-center py-20">
+          <Text className="mb-2 font-cairo-bold text-lg text-[#111111]">
+            تعذر تحميل العقارات
+          </Text>
+          <Text className="mb-4 text-center font-cairo-medium text-sm text-[#6B6A6A]">
+            حدث خطأ أثناء تحميل العقارات. تأكد من اتصالك بالشبكة.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => refetch()}
+            className="rounded-full bg-[#15304D] px-6 py-3"
+          >
+            <Text className="font-cairo-semibold text-sm text-white">
+              إعادة المحاولة
+            </Text>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -285,6 +321,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
         onFavorite={() =>
           selectedProperty && toggleFavorite(selectedProperty.id)
         }
+        onShare={() => selectedProperty && shareProperty(selectedProperty)}
         onClose={() => detailsSheetRef.current?.dismiss()}
         onViewProperty={() => {
           if (selectedProperty) {

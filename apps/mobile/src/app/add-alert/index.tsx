@@ -20,7 +20,13 @@ import AlertPropertiesTab, {
   DEFAULT_ALERT_PROPERTIES_STATE,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import AlertSuccessModal from '@/shared/components/add-alert/AlertSuccessModal';
+import {
+  alertsService,
+  mapAuctionsStateToPayload,
+  mapPropertiesStateToPayload,
+} from '@/shared/api/alerts.service';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 type AlertTab = 'properties' | 'auctions';
 
@@ -63,10 +69,18 @@ export default function AddAlertScreen() {
     }
 
     setIsSubmitting(true);
-    // Simulate request submission
-    await new Promise((resolve) => setTimeout(resolve, 600));
-    setIsSubmitting(false);
-    setShowSuccess(true);
+    try {
+      const payload =
+        activeTab === 'properties'
+          ? mapPropertiesStateToPayload(propertiesState)
+          : mapAuctionsStateToPayload(auctionsState);
+      await alertsService.create(payload);
+      setShowSuccess(true);
+    } catch (err) {
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل إنشاء التنبيه'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

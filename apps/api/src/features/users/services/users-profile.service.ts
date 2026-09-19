@@ -1,10 +1,12 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { NAME_REGEX, NAME_REGEX_MESSAGE } from '../../../core/validators/name.regex';
 import { StorageService } from 'src/core/storage/storage.service';
 import { CreateCompanyInvoiceDto } from '../dto/create-company-invoice.dto';
 import { CreateProjectDto } from '../dto/create-project.dto';
@@ -24,6 +26,18 @@ export class UsersProfileService {
     dto: UpdateProfileDto,
     logoFile?: Express.Multer.File,
   ) {
+    // A person's name is restricted to letters/spaces (see name.regex.ts) --
+    // company/office names legitimately contain digits and symbols (e.g.
+    // "24/7 Real Estate Co."), so this only applies to individual profiles,
+    // unlike RegisterIndividualDto where the DTO itself is individual-only.
+    if (
+      role === Role.INDIVIDUAL &&
+      dto.name !== undefined &&
+      !NAME_REGEX.test(dto.name)
+    ) {
+      throw new BadRequestException(NAME_REGEX_MESSAGE);
+    }
+
     // 1. Update basic user fields if provided
     const userUpdateData: Prisma.UserUpdateInput = {};
     if (dto.name !== undefined) userUpdateData.name = dto.name;
