@@ -6,6 +6,7 @@ import {
   Role,
   ApprovalStatus,
   IdentityType,
+  RequestStatus,
 } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -250,6 +251,7 @@ async function main() {
   // 1. Clean existing records in correct order to avoid foreign key conflicts
   console.log('🧹 Cleaning old records...');
   await prisma.propertyDeletionLog.deleteMany();
+  await prisma.companyRequest.deleteMany();
   await prisma.favorite.deleteMany();
   await prisma.message.deleteMany();
   await prisma.conversationParticipant.deleteMany();
@@ -695,6 +697,93 @@ async function main() {
     });
   }
   console.log('✅ Seeded individual@buyootna.com with 5 listings.');
+
+  // 6b. Seed demo CompanyRequest rows (leads marketplace) so the company
+  // requests list/details screens (wired to real data, no request-creation
+  // UI exists yet) have something real to show. Targeted at the developer
+  // company (youssef@youssef.app) since that's the account used for company
+  // QA throughout dev; individual@buyootna.com is the client.
+  const developerCompanyIdentityId = userIdToIdentityId.get(developerUserId)!;
+  await prisma.companyRequest.createMany({
+    data: [
+      {
+        clientIdentityId: individualIdentityId,
+        targetIdentityId: developerCompanyIdentityId,
+        title: 'تشطيب كامل لمحل تجاري',
+        category: 'تشطيب و ديكور',
+        priceRange: '22,000 - 15,000 د.ك',
+        location: 'شمال غرب صليبيخات',
+        images: [
+          'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80',
+          'https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=400&q=80',
+        ],
+        offerType: 'عرض مخصص',
+        description:
+          'محل تجاري بمساحة 120م، يحتاج تشطيب كامل وتصميم داخلي عصري.',
+        status: RequestStatus.PENDING,
+      },
+      {
+        clientIdentityId: individualIdentityId,
+        targetIdentityId: developerCompanyIdentityId,
+        title: 'تمديدات كهرباء لمحل تجاري',
+        category: 'أعمال كهربائية',
+        priceRange: '9,000 - 6,000 د.ك',
+        location: 'السالمية',
+        offerType: 'عرض مخصص',
+        description:
+          'محل ملابس بمساحة 120م، يحتاج تمديدات كهربائية كاملة ولوحة توزيع.',
+        status: RequestStatus.RESPONDED,
+      },
+      {
+        clientIdentityId: individualIdentityId,
+        targetIdentityId: developerCompanyIdentityId,
+        acceptedByIdentityId: developerCompanyIdentityId,
+        title: 'صيانة تكييف مركزي لمكتب',
+        category: 'تكييف وتبريد',
+        priceRange: '18,000 - 12,000 د.ك',
+        location: 'الجهراء',
+        offerType: 'عرض مخصص',
+        description:
+          'مكتب إداري بمساحة 200م، يحتاج صيانة شاملة لنظام التكييف المركزي.',
+        status: RequestStatus.ACCEPTED,
+      },
+      {
+        clientIdentityId: individualIdentityId,
+        targetIdentityId: developerCompanyIdentityId,
+        title: 'دهانات فيلا سكنية',
+        category: 'دهانات',
+        priceRange: '5,000 - 3,000 د.ك',
+        location: 'الفروانية',
+        offerType: 'عرض مخصص',
+        description: 'فيلا من طابقين تحتاج دهانات داخلية وخارجية كاملة.',
+        status: RequestStatus.REJECTED,
+      },
+      // Public/marketplace requests -- visible to any company, still open
+      {
+        clientIdentityId: individualIdentityId,
+        title: 'تركيب كاميرات مراقبة لفيلا',
+        category: 'أنظمة أمنية',
+        priceRange: '45,000 - 30,000 د.ك',
+        location: 'الفروانية',
+        offerType: 'عرض عام',
+        description:
+          'فيلا سكنية من طابقين، تحتاج تركيب 8 كاميرات مراقبة خارجية ونظام تسجيل.',
+        status: RequestStatus.PENDING,
+      },
+      {
+        clientIdentityId: individualIdentityId,
+        acceptedByIdentityId: developerCompanyIdentityId,
+        title: 'تصميم حديقة منزلية',
+        category: 'تنسيق حدائق',
+        priceRange: '3,000 - 1,500 د.ك',
+        location: 'مدينة جابر الأحمد',
+        offerType: 'عرض عام',
+        description: 'حديقة منزلية بمساحة 80م، تحتاج تصميم وتنسيق كامل.',
+        status: RequestStatus.ACCEPTED,
+      },
+    ],
+  });
+  console.log('✅ Seeded 6 demo CompanyRequest rows.');
 
   // 7. Seed Dedicated App Store Reviewer Office (مكتب عقاري) Account
   console.log('🏢 Seeding App Store Reviewer Office Account...');

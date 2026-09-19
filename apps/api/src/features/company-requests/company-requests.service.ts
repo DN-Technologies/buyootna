@@ -1,0 +1,247 @@
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, RequestStatus } from '@prisma/client';
+import { PrismaService } from '../../core/prisma/prisma.service';
+import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
+
+const CLIENT_INCLUDE = {
+  user: true,
+  individualData: true,
+  officeData: true,
+  companyData: true,
+  receivedReviews: { select: { rating: true } },
+} satisfies Prisma.IdentityInclude;
+
+type RequestWithClient = Prisma.CompanyRequestGetPayload<{
+  include: { clientIdentity: { include: typeof CLIENT_INCLUDE } };
+}>;
+
+export type RequestScopeFilter = 'company' | 'public';
+export type RequestStatusFilter =
+  | 'all'
+  | 'pending'
+  | 'accepted'
+  | 'responded'
+  | 'rejected';
+
+@Injectable()
+export class CompanyRequestsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findMine(
+    identityId: string,
+    params: {
+      scope: RequestScopeFilter;
+      status?: RequestStatusFilter;
+      search?: string;
+    },
+  ): Promise<CompanyRequestResponseDto[]> {
+    const where: Prisma.CompanyRequestWhereInput =
+      params.scope === 'company'
+        ? { targetIdentityId: identityId }
+        : {
+            targetIdentityId: null,
+            OR: [
+              { acceptedByIdentityId: null },
+              { acceptedByIdentityId: identityId },
+            ],
+          };
+
+    if (params.status && params.status !== 'all') {
+      where.status = params.status.toUpperCase() as RequestStatus;
+    }
+
+    if (params.search?.trim()) {
+      const q = params.search.trim();
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            { location: { contains: q, mode: 'insensitive' } },
+          ],
+        },
+      ];
+    }
+
+    const requests = await this.prisma.companyRequest.findMany({
+      where,
+      include: { clientIdentity: { include: CLIENT_INCLUDE } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const previousOffersByClient = await this.countPreviousOffers(
+      requests.map((r) => r.clientIdentityId),
+    );
+
+    return requests.map((r) =>
+      this.toResponseDto(r, identityId, previousOffersByClient.get(r.clientIdentityId) ?? 0),
+    );
+  }
+
+  async findOne(
+    id: string,
+    identityId: string,
+  ): Promise<CompanyRequestResponseDto> {
+    const request = await this.getVisibleRequestOrThrow(id, identityId);
+    const previousOffers = await this.prisma.companyRequest.count({
+      where: { clientIdentityId: request.clientIdentityId, NOT: { id } },
+    });
+    return this.toResponseDto(request, identityId, previousOffers);
+  }
+
+  async accept(
+    id: string,
+    identityId: string,
+  ): Promise<CompanyRequestResponseDto> {
+    const request = await this.getVisibleRequestOrThrow(id, identityId);
+
+    if (request.targetIdentityId && request.targetIdentityId !== identityId) {
+      throw new NotFoundException('الطلب غير موجود');
+    }
+
+    // Atomic, race-safe claim: only succeeds if the request is still PENDING
+    // at the moment of the update -- this is what makes "first company to
+    // accept a public request wins" actually safe under concurrent accepts.
+    const { count } = await this.prisma.companyRequest.updateMany({
+      where: { id, status: RequestStatus.PENDING },
+      data: { status: RequestStatus.ACCEPTED, acceptedByIdentityId: identityId },
+    });
+
+    if (count === 0) {
+      throw new ConflictException(
+        'تم التعامل مع هذا الطلب بالفعل من قبل شركة أخرى',
+      );
+    }
+
+    return this.findOne(id, identityId);
+  }
+
+  async reject(
+    id: string,
+    identityId: string,
+  ): Promise<CompanyRequestResponseDto> {
+    const request = await this.getVisibleRequestOrThrow(id, identityId);
+
+    // A company can only reject a request that was sent directly to it --
+    // rejecting a public/marketplace lead would incorrectly remove it from
+    // every other company's list too, since status is a single shared field.
+    if (request.targetIdentityId !== identityId) {
+      throw new ForbiddenException(
+        'لا يمكن رفض طلب عام غير موجه لشركتك',
+      );
+    }
+
+    await this.prisma.companyRequest.update({
+      where: { id },
+      data: { status: RequestStatus.REJECTED },
+    });
+
+    return this.findOne(id, identityId);
+  }
+
+  async markResponded(
+    id: string,
+    identityId: string,
+  ): Promise<CompanyRequestResponseDto> {
+    await this.getVisibleRequestOrThrow(id, identityId);
+
+    await this.prisma.companyRequest.updateMany({
+      where: { id, status: RequestStatus.PENDING },
+      data: { status: RequestStatus.RESPONDED },
+    });
+
+    return this.findOne(id, identityId);
+  }
+
+  private async getVisibleRequestOrThrow(
+    id: string,
+    identityId: string,
+  ): Promise<RequestWithClient> {
+    const request = await this.prisma.companyRequest.findUnique({
+      where: { id },
+      include: { clientIdentity: { include: CLIENT_INCLUDE } },
+    });
+
+    const isVisible =
+      !!request &&
+      (request.targetIdentityId === identityId ||
+        request.targetIdentityId === null ||
+        request.acceptedByIdentityId === identityId);
+
+    if (!request || !isVisible) {
+      throw new NotFoundException('الطلب غير موجود');
+    }
+
+    return request;
+  }
+
+  private async countPreviousOffers(
+    clientIdentityIds: string[],
+  ): Promise<Map<string, number>> {
+    if (clientIdentityIds.length === 0) return new Map();
+
+    const grouped = await this.prisma.companyRequest.groupBy({
+      by: ['clientIdentityId'],
+      where: { clientIdentityId: { in: clientIdentityIds } },
+      _count: { _all: true },
+    });
+
+    return new Map(grouped.map((g) => [g.clientIdentityId, g._count._all]));
+  }
+
+  private toResponseDto(
+    request: RequestWithClient,
+    viewerIdentityId: string,
+    previousOffers: number,
+  ): CompanyRequestResponseDto {
+    const client = request.clientIdentity;
+    const profile =
+      client.individualData || client.officeData || client.companyData;
+    const name = profile?.name || 'مستخدم';
+    const avatarUrl =
+      client.individualData?.avatarUrl ??
+      client.officeData?.logoUrl ??
+      client.companyData?.logoUrl ??
+      null;
+    const ratings = client.receivedReviews.map((r) => r.rating);
+    const rating =
+      ratings.length > 0
+        ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+        : null;
+
+    return {
+      id: request.id,
+      clientIdentityId: request.clientIdentityId,
+      title: request.title,
+      clientName: name,
+      requestNumber: `#${request.id.slice(-6).toUpperCase()}`,
+      category: request.category,
+      priceRange: request.priceRange,
+      location: request.location,
+      attachmentsCount: request.images.length,
+      offerType: request.offerType,
+      images: request.images,
+      latitude: request.latitude,
+      longitude: request.longitude,
+      description: request.description,
+      status: request.status.toLowerCase() as CompanyRequestResponseDto['status'],
+      scope: request.targetIdentityId ? 'company' : 'public',
+      createdAt: request.createdAt.toISOString(),
+      client: {
+        name,
+        joinedDate: client.createdAt.toISOString(),
+        previousOffers,
+        rating,
+        avatarUrl,
+        phone: client.user.phone,
+        whatsapp: client.user.whatsapp,
+        isVerified: client.companyData?.isVerified ?? client.officeData?.isVerified ?? false,
+      },
+    };
+  }
+}

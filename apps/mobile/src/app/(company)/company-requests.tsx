@@ -1,12 +1,7 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import {
-  Alert,
-  RefreshControl,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { useCallback, useState } from 'react';
+import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -15,11 +10,15 @@ import {
   CompanyRequestsFilterPills,
   CompanyRequestsHeader,
   CompanyRequestsScopeTabs,
-  MOCK_COMPANY_REQUESTS,
   RequestScope,
   RequestStatusFilter,
   SearchIcon,
 } from '@/features/company/components/requests';
+import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
+import { chatService } from '@/shared/api/chat.service';
+import { companyRequestsService } from '@/shared/api/companyRequests.service';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function CompanyRequestsScreen() {
   const router = useRouter();
@@ -27,56 +26,40 @@ export default function CompanyRequestsScreen() {
   const [activeStatusFilter, setActiveStatusFilter] =
     useState<RequestStatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const filteredRequests = useMemo(() => {
-    return MOCK_COMPANY_REQUESTS.filter((req) => {
-      // 1. Filter by scope ('company' vs 'public')
-      if (req.scope !== activeScope) {
-        return false;
-      }
+  const { data: requests, isLoading, refetch } = useCompanyRequests(
+    activeScope,
+    activeStatusFilter,
+    debouncedSearch,
+  );
 
-      // 2. Filter by status pill ('all' | 'pending' | 'accepted' | 'responded')
-      if (activeStatusFilter !== 'all' && req.status !== activeStatusFilter) {
-        return false;
-      }
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
-      // 3. Filter by search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.trim().toLowerCase();
-        const matchesTitle = req.title.toLowerCase().includes(query);
-        const matchesClient = req.clientName.toLowerCase().includes(query);
-        const matchesLocation = req.location.toLowerCase().includes(query);
-        const matchesDesc = req.description.toLowerCase().includes(query);
-        if (
-          !matchesTitle &&
-          !matchesClient &&
-          !matchesLocation &&
-          !matchesDesc
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [activeScope, activeStatusFilter, searchQuery]);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 600);
-  };
-
-  const handleReplyPress = (request: CompanyRequestItem) => {
-    Alert.alert('الرد على الطلب', `تقديم عرض سعر لطلب: "${request.title}"`);
+  const handleReplyPress = async (request: CompanyRequestItem) => {
+    try {
+      const conversation = await chatService.createConversation(
+        request.clientIdentityId,
+      );
+      await companyRequestsService.markResponded(request.id);
+      refetch();
+      router.push(`/chat/${conversation.id}` as any);
+    } catch (error: any) {
+      const backendMsg = error?.response?.data?.message;
+      const msg = Array.isArray(backendMsg)
+        ? backendMsg.join('\n')
+        : backendMsg || 'تعذر بدء المحادثة مع العميل';
+      showAlert('تنبيه', msg);
+    }
   };
 
   const handleDetailsPress = (request: CompanyRequestItem) => {
     router.push(`/(company)/(requests)/${request.id}`);
   };
-
 
   const handleFilterToggle = () => {
     Alert.alert('تصفية متقدمة', 'خيارات تصفية إضافية حسب الموقع ونطاق السعر');
@@ -113,14 +96,14 @@ export default function CompanyRequestsScreen() {
         }}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
+            refreshing={isLoading}
+            onRefresh={refetch}
             tintColor="#15304D"
           />
         }
       >
-        {filteredRequests.length > 0 ? (
-          filteredRequests.map((request) => (
+        {requests.length > 0 ? (
+          requests.map((request) => (
             <CompanyRequestListItem
               key={request.id}
               request={request}

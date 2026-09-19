@@ -3,11 +3,16 @@ import { Text, TouchableOpacity, View } from 'react-native';
 export interface RequestDetailsBottomBarProps {
   onAcceptPress?: () => void;
   onRejectPress?: () => void;
+  // A public/marketplace request can't be rejected (rejecting it would
+  // incorrectly hide it from every other company too, since status is a
+  // single shared field) -- hide the button rather than show one that no-ops.
+  showReject?: boolean;
 }
 
 export default function RequestDetailsBottomBar({
   onAcceptPress,
   onRejectPress,
+  showReject = true,
 }: RequestDetailsBottomBarProps) {
   return (
     <View className="border-t border-[#ECECEC] bg-white px-4 py-3">
@@ -29,19 +34,21 @@ export default function RequestDetailsBottomBar({
         </TouchableOpacity>
 
         {/* Child 1 (Visual Left): Reject Button */}
-        <TouchableOpacity
-          testID="request-details-reject-button"
-          onPress={onRejectPress}
-          activeOpacity={0.8}
-          className="h-[48px] flex-1 items-center justify-center rounded-[24px] border border-[#9C1E28] bg-white"
-        >
-          <Text
-            className="font-cairo-semibold text-[14px] text-[#9C1E28]"
-            style={{ writingDirection: 'rtl' }}
+        {showReject && (
+          <TouchableOpacity
+            testID="request-details-reject-button"
+            onPress={onRejectPress}
+            activeOpacity={0.8}
+            className="h-[48px] flex-1 items-center justify-center rounded-[24px] border border-[#9C1E28] bg-white"
           >
-            رفض
-          </Text>
-        </TouchableOpacity>
+            <Text
+              className="font-cairo-semibold text-[14px] text-[#9C1E28]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              رفض
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

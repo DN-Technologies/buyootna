@@ -31,14 +31,20 @@ const STATUS_CONFIGS: Record<RequestStatus, StatusConfig> = {
     bgClass: 'bg-[#E1EFEC]',
     textClass: 'text-[#15A72B]',
   },
+  rejected: {
+    label: 'مرفوضة',
+    bgClass: 'bg-[#FBE9E9]',
+    textClass: 'text-[#9C1E28]',
+  },
 };
 
 export default function RequestDetailsTitleCard({
   title,
-  requestNumber = 'طلب رقم 01#',
-  category = 'تشطيب و ديكور',
+  requestNumber,
+  category,
   status,
 }: RequestDetailsTitleCardProps) {
+  const subtitle = [requestNumber, category].filter(Boolean).join(' • ');
   const statusConfig = STATUS_CONFIGS[status] ?? STATUS_CONFIGS.pending;
 
   return (
@@ -59,7 +65,7 @@ export default function RequestDetailsTitleCard({
             className="font-cairo-medium text-[14px] text-[#6B6A6A]"
             style={{ writingDirection: 'rtl' }}
           >
-            {requestNumber} • {category}
+            {subtitle}
           </Text>
         </View>
 

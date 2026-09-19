@@ -33,6 +33,7 @@ import { ReviewsModule } from './features/reviews/reviews.module';
 import { AdminModule } from './features/admin/admin.module';
 import { IdentitiesModule } from './features/identities/identities.module';
 import { CompaniesModule } from './features/companies/companies.module';
+import { CompanyRequestsModule } from './features/company-requests/company-requests.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { CompaniesModule } from './features/companies/companies.module';
     AdminModule,
     IdentitiesModule,
     CompaniesModule,
+    CompanyRequestsModule,
   ],
   controllers: [AppController],
   providers: [
