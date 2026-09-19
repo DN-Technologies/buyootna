@@ -4,9 +4,7 @@ import {
   Get,
   Patch,
   Post,
-  Query,
   UploadedFile,
-  UploadedFiles,
   UseGuards,
   UseInterceptors,
   Param,
@@ -23,52 +21,24 @@ import {
 } from '@nestjs/swagger';
 import { UsersRegistrationService } from './services/users-registration.service';
 import { UsersProfileService } from './services/users-profile.service';
-import { UsersDirectoryService } from './services/users-directory.service';
-import {
-  RegisterCompanyDto,
-  RegisterIndividualDto,
-  RegisterOfficeDto,
-} from './dto/register.dto';
+import { RegisterIndividualDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { CreateCompanyInvoiceDto } from './dto/create-company-invoice.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { Role } from '@prisma/client';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
-import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
-import { GetOfficesFilterDto } from './dto/get-offices-filter.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import {
-  CompanyDetailsResponseDto,
-  CompanyListResponseDto,
   FindUserResponseDto,
   MeResponseDto,
-  OfficeDetailsResponseDto,
-  OfficeListResponseDto,
-  RegisterCompanyResponseDto,
   RegisterIndividualResponseDto,
-  RegisterOfficeResponseDto,
   SimpleMessageResponseDto,
   UpdateProfileResponseDto,
   UserSafeDto,
 } from './dto/user-response.dto';
 import { OtpRequestRateLimit } from '../../core/decorators/otp-rate-limit.decorator';
-
-const LOGO_LICENSE_UPLOAD_BODY = {
-  schema: {
-    type: 'object' as const,
-    properties: {
-      logo: { type: 'string', format: 'binary' },
-      license: { type: 'string', format: 'binary' },
-    },
-  },
-};
 
 @ApiTags('Users')
 @Controller('users')
@@ -76,7 +46,6 @@ export class UsersController {
   constructor(
     private readonly registrationService: UsersRegistrationService,
     private readonly profileService: UsersProfileService,
-    private readonly directoryService: UsersDirectoryService,
   ) {}
 
   @Post('register/individual')
@@ -88,106 +57,11 @@ export class UsersController {
     return this.registrationService.registerIndividual(dto);
   }
 
-  @Post('register/company')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'logo', maxCount: 1 },
-      { name: 'license', maxCount: 1 },
-    ]),
-  )
-  @ApiOperation({
-    summary:
-      'Register a new company account, with optional logo/license file upload',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
-  @ApiResponse({ status: 201, type: RegisterCompanyResponseDto })
-  @ApiCommonErrors()
-  async registerCompany(
-    @Body() dto: RegisterCompanyDto,
-    @UploadedFiles()
-    files: {
-      logo?: Express.Multer.File[];
-      license?: Express.Multer.File[];
-    },
-  ) {
-    // Extract the single file from the arrays pprovided by Multer
-    const logoFile = files.logo ? files.logo[0] : undefined;
-    const licenseFile = files.license ? files.license[0] : undefined;
-
-    return this.registrationService.registerCompany(dto, logoFile, licenseFile);
-  }
-
-  @Get('companies')
-  @ApiOperation({
-    summary: 'List approved companies, paginated and filterable',
-  })
-  @ApiResponse({ status: 200, type: CompanyListResponseDto })
-  @ApiCommonErrors()
-  async findAllCompanies(@Query() filters: GetCompaniesFilterDto) {
-    return this.directoryService.findCompanies(filters);
-  }
-
-  @Get('company/:id')
-  @ApiOperation({
-    summary: 'Get public details for a company by identity or user ID',
-  })
-  @ApiParam({ name: 'id', description: 'Company identity ID or user ID' })
-  @ApiResponse({ status: 200, type: CompanyDetailsResponseDto })
-  @ApiCommonErrors()
-  async findCompanyDetails(@Param('id') id: string) {
-    return this.directoryService.findCompanyDetails(id);
-  }
-
-  @Get('offices')
-  @ApiOperation({
-    summary: 'List approved real-estate offices, paginated and filterable',
-  })
-  @ApiResponse({ status: 200, type: OfficeListResponseDto })
-  @ApiCommonErrors()
-  async findAllOffices(@Query() filters: GetOfficesFilterDto) {
-    return this.directoryService.findOffices(filters);
-  }
-
-  @Get('office/:id')
-  @ApiOperation({
-    summary: 'Get public details for an office by identity or user ID',
-  })
-  @ApiParam({ name: 'id', description: 'Office identity ID or user ID' })
-  @ApiResponse({ status: 200, type: OfficeDetailsResponseDto })
-  @ApiCommonErrors()
-  async findOfficeDetails(@Param('id') id: string) {
-    return this.directoryService.findOfficeDetails(id);
-  }
-
-  @Post('register/office')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'logo', maxCount: 1 },
-      { name: 'license', maxCount: 1 },
-    ]),
-  )
-  @ApiOperation({
-    summary:
-      'Register a new office account, with optional logo/license file upload',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody(LOGO_LICENSE_UPLOAD_BODY)
-  @ApiResponse({ status: 201, type: RegisterOfficeResponseDto })
-  @ApiCommonErrors()
-  async registerOffice(
-    @Body() dto: RegisterOfficeDto,
-    @UploadedFiles()
-    files: {
-      logo?: Express.Multer.File[];
-      license?: Express.Multer.File[];
-    },
-  ) {
-    const logoFile = files.logo ? files.logo[0] : undefined;
-    const licenseFile = files.license ? files.license[0] : undefined;
-
-    return this.registrationService.registerOffice(dto, logoFile, licenseFile);
-  }
+  // register/company, companies, company/:id now live in CompanyController;
+  // register/office, offices, office/:id now live in OfficeController
+  // (features/company, features/office) -- kept on the same `users` route
+  // prefix via a separate controller class per account type, rather than
+  // here.
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('profile')
@@ -217,47 +91,9 @@ export class UsersController {
     return this.profileService.updateProfile(reqUser.userId, role, dto, logo);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Post('profile/projects')
-  @ApiAuth()
-  @ApiOperation({
-    summary:
-      "Create a portfolio project for the current user's company profile",
-  })
-  @ApiBody({ type: CreateProjectDto })
-  @ApiCommonErrors()
-  async createProject(
-    @CurrentUser() reqUser: RequestUser,
-    @Body() dto: CreateProjectDto,
-  ) {
-    return this.profileService.createProject(reqUser.userId, dto);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('profile/invoices')
-  @ApiAuth()
-  @ApiOperation({
-    summary: "Create a customer invoice for the current user's company profile",
-  })
-  @ApiBody({ type: CreateCompanyInvoiceDto })
-  @ApiCommonErrors()
-  async createInvoice(
-    @CurrentUser() reqUser: RequestUser,
-    @Body() dto: CreateCompanyInvoiceDto,
-  ) {
-    return this.profileService.createInvoice(reqUser.userId, dto);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('profile/invoices')
-  @ApiAuth()
-  @ApiOperation({
-    summary: "List the current user's company customer invoices",
-  })
-  @ApiCommonErrors()
-  async listInvoices(@CurrentUser() reqUser: RequestUser) {
-    return this.profileService.listInvoices(reqUser.userId);
-  }
+  // profile/projects and profile/invoices (create + list) now live in
+  // CompanyController -- company-only, moved alongside the rest of the
+  // company-specific account endpoints.
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('role')

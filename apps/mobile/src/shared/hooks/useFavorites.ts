@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { favoritesService } from '@/features/individual/services/favorites.service';
+import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient as sharedQueryClient } from '@/shared/api/queryClient';
 import { registerIdentityScopedStore } from '@/shared/store/identityScopedStores';
 import { useAuthStore } from '@/shared/store/useAuthStore';

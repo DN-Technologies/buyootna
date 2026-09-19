@@ -21,8 +21,8 @@ import {
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import CompanyProfileCard from '@/features/company/components/CompanyProfileCard';
-import MenuItem from '@/features/individual/components/more/MenuItem';
 import ContentContainer from '@/shared/components/ContentContainer';
+import MenuItem from '@/shared/components/MenuItem';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';

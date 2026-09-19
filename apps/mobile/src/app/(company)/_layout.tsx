@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import CompanyActionsSheet from '@/features/company/components/CompanyActionsSheet';
-import CustomTabBar from '@/features/individual/components/CustomTabBar';
+import CustomTabBar from '@/shared/components/CustomTabBar';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { useAuthStore } from '@/shared/store/useAuthStore';

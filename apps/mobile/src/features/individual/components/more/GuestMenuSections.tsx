@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { AuctionsIcon, ChatIcon, DealsIcon, SavedIcon } from '@/assets/icons/more';
+import MenuItem from '@/shared/components/MenuItem';
 import { showAlert } from '@/shared/utils/alert';
 
-import MenuItem from './MenuItem';
 import MenuSection from './MenuSection';
 import {
   BellIcon,

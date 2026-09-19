@@ -1,10 +1,10 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import { ApiAuth } from '../../core/swagger/api-auth.decorator';
-import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
-import type { RequestUser } from '../auth/strategies/jwt.strategy';
+import { CurrentUser } from '../../../core/decorators/current-user.decorator';
+import { ApiAuth } from '../../../core/swagger/api-auth.decorator';
+import { ApiCommonErrors } from '../../../core/swagger/api-common-errors.decorator';
+import type { RequestUser } from '../../auth/strategies/jwt.strategy';
 import { CompaniesService } from './companies.service';
 import { CompanyDashboardResponseDto } from './dto/company-dashboard-response.dto';
 

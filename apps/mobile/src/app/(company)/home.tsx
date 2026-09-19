@@ -17,10 +17,10 @@ import {
   PublicRequestsSection,
 } from '@/features/company/components/home';
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
-import { useMyActivity } from '@/features/individual/hooks/useMyActivity';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';

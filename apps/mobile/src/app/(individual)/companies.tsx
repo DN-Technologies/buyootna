@@ -20,9 +20,9 @@ import { SortIcon } from '@/assets/icons';
 import { HomeSearchIcon } from '@/assets/icons/home/header';
 import CategoryFilterSheet, {
   COMPANY_CATEGORY_OPTIONS,
-} from '@/features/individual/components/companies/CategoryFilterSheet';
+} from '@/shared/components/CategoryFilterSheet';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import { chatService } from '@/shared/api/chat.service';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';

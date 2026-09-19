@@ -1,12 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
 import { trim } from '../../../core/validators/trim.transform';
 
@@ -28,92 +21,6 @@ export class RegisterIndividualDto {
   password: string;
 }
 
-export class RegisterCompanyDto {
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  email: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @MinLength(8)
-  password: string;
-
-  @IsString()
-  @IsOptional()
-  services?: string;
-
-  @IsString()
-  @IsOptional()
-  hqLocation?: string;
-
-  @IsString()
-  @IsOptional()
-  serviceAreas?: string;
-
-  @IsString()
-  @IsOptional()
-  about?: string;
-
-  @IsString()
-  @IsOptional()
-  licenseActivity?: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'رقم الرخصة مطلوب' })
-  licenseNumber: string;
-
-  @IsString()
-  @IsOptional()
-  licenseExpiry?: string;
-}
-
-export class RegisterOfficeDto {
-  @Transform(trim)
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
-  @IsNotEmpty({ message: 'البريد الإلكتروني مطلوب' })
-  email: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
-
-  @IsString()
-  @MinLength(8)
-  password: string;
-
-  @IsString()
-  @IsOptional()
-  hqLocation?: string;
-
-  @IsString()
-  @IsOptional()
-  about?: string;
-
-  @IsString()
-  @IsOptional()
-  services?: string;
-
-  @IsString()
-  @IsOptional()
-  licenseActivity?: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'رقم الرخصة مطلوب' })
-  licenseNumber: string;
-
-  @IsString()
-  @IsOptional()
-  licenseExpiry?: string;
-}
+// RegisterCompanyDto / RegisterOfficeDto now live in
+// features/company/dto/register-company.dto.ts and
+// features/office/dto/register-office.dto.ts.

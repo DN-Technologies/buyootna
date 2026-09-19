@@ -5,9 +5,9 @@ import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 
 interface HomeOfficesProps {
   refreshing?: boolean;

@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { COMPANY_CATEGORY_OPTIONS } from '@/features/individual/components/companies/CategoryFilterSheet';
+import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/CategoryFilterSheet';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';

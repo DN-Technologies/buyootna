@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, RequestStatus } from '@prisma/client';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { PrismaService } from '../../../core/prisma/prisma.service';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 
 const CLIENT_INCLUDE = {
@@ -22,11 +22,7 @@ type RequestWithClient = Prisma.CompanyRequestGetPayload<{
 
 export type RequestScopeFilter = 'company' | 'public';
 export type RequestStatusFilter =
-  | 'all'
-  | 'pending'
-  | 'accepted'
-  | 'responded'
-  | 'rejected';
+  'all' | 'pending' | 'accepted' | 'responded' | 'rejected';
 
 @Injectable()
 export class CompanyRequestsService {
@@ -79,7 +75,11 @@ export class CompanyRequestsService {
     );
 
     return requests.map((r) =>
-      this.toResponseDto(r, identityId, previousOffersByClient.get(r.clientIdentityId) ?? 0),
+      this.toResponseDto(
+        r,
+        identityId,
+        previousOffersByClient.get(r.clientIdentityId) ?? 0,
+      ),
     );
   }
 
@@ -109,7 +109,10 @@ export class CompanyRequestsService {
     // accept a public request wins" actually safe under concurrent accepts.
     const { count } = await this.prisma.companyRequest.updateMany({
       where: { id, status: RequestStatus.PENDING },
-      data: { status: RequestStatus.ACCEPTED, acceptedByIdentityId: identityId },
+      data: {
+        status: RequestStatus.ACCEPTED,
+        acceptedByIdentityId: identityId,
+      },
     });
 
     if (count === 0) {
@@ -131,9 +134,7 @@ export class CompanyRequestsService {
     // rejecting a public/marketplace lead would incorrectly remove it from
     // every other company's list too, since status is a single shared field.
     if (request.targetIdentityId !== identityId) {
-      throw new ForbiddenException(
-        'لا يمكن رفض طلب عام غير موجه لشركتك',
-      );
+      throw new ForbiddenException('لا يمكن رفض طلب عام غير موجه لشركتك');
     }
 
     await this.prisma.companyRequest.update({
@@ -211,7 +212,9 @@ export class CompanyRequestsService {
     const ratings = client.receivedReviews.map((r) => r.rating);
     const rating =
       ratings.length > 0
-        ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+        ? Math.round(
+            (ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10,
+          ) / 10
         : null;
 
     return {
@@ -229,7 +232,8 @@ export class CompanyRequestsService {
       latitude: request.latitude,
       longitude: request.longitude,
       description: request.description,
-      status: request.status.toLowerCase() as CompanyRequestResponseDto['status'],
+      status:
+        request.status.toLowerCase() as CompanyRequestResponseDto['status'],
       scope: request.targetIdentityId ? 'company' : 'public',
       createdAt: request.createdAt.toISOString(),
       client: {
@@ -240,7 +244,10 @@ export class CompanyRequestsService {
         avatarUrl,
         phone: client.user.phone,
         whatsapp: client.user.whatsapp,
-        isVerified: client.companyData?.isVerified ?? client.officeData?.isVerified ?? false,
+        isVerified:
+          client.companyData?.isVerified ??
+          client.officeData?.isVerified ??
+          false,
       },
     };
   }

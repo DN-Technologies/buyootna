@@ -7,14 +7,10 @@ import {
   Body,
   Param,
   UseGuards,
-  UseInterceptors,
-  UploadedFiles,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
-  ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -27,8 +23,6 @@ import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import {
   CreateIndividualIdentityDto,
-  CreateCompanyIdentityDto,
-  CreateOfficeIdentityDto,
   UpdateIndividualIdentityDto,
   UpdateCompanyIdentityDto,
   UpdateOfficeIdentityDto,
@@ -98,91 +92,10 @@ export class IdentitiesController {
     return this.identitiesService.createIndividual(reqUser.userId, dto);
   }
 
-  // POST /identities/company - Create company identity
-  @Post('company')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'logo', maxCount: 1 },
-      { name: 'license', maxCount: 1 },
-    ]),
-  )
-  @ApiOperation({
-    summary:
-      'Create a company identity for the current user, with optional logo/license file upload',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        logo: { type: 'string', format: 'binary' },
-        license: { type: 'string', format: 'binary' },
-      },
-    },
-  })
-  @ApiResponse({ status: 201, type: IdentityResponseDto })
-  @ApiCommonErrors()
-  createCompany(
-    @CurrentUser() reqUser: RequestUser,
-    @Body() dto: CreateCompanyIdentityDto,
-    @UploadedFiles()
-    files: {
-      logo?: Express.Multer.File[];
-      license?: Express.Multer.File[];
-    },
-  ) {
-    const logoFile = files.logo ? files.logo[0] : undefined;
-    const licenseFile = files.license ? files.license[0] : undefined;
-    return this.identitiesService.createCompany(
-      reqUser.userId,
-      dto,
-      logoFile,
-      licenseFile,
-    );
-  }
-
-  // POST /identities/office - Create office identity
-  @Post('office')
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'logo', maxCount: 1 },
-      { name: 'license', maxCount: 1 },
-    ]),
-  )
-  @ApiOperation({
-    summary:
-      'Create an office identity for the current user, with optional logo/license file upload',
-  })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        logo: { type: 'string', format: 'binary' },
-        license: { type: 'string', format: 'binary' },
-      },
-    },
-  })
-  @ApiResponse({ status: 201, type: IdentityResponseDto })
-  @ApiCommonErrors()
-  createOffice(
-    @CurrentUser() reqUser: RequestUser,
-    @Body() dto: CreateOfficeIdentityDto,
-    @UploadedFiles()
-    files: {
-      logo?: Express.Multer.File[];
-      license?: Express.Multer.File[];
-    },
-  ) {
-    const logoFile = files.logo ? files.logo[0] : undefined;
-    const licenseFile = files.license ? files.license[0] : undefined;
-    return this.identitiesService.createOffice(
-      reqUser.userId,
-      dto,
-      logoFile,
-      licenseFile,
-    );
-  }
+  // POST /identities/company and POST /identities/office now live in
+  // CompanyIdentityController / OfficeIdentityController (features/company,
+  // features/office) -- kept on the same `identities` route prefix via a
+  // separate controller class per account type, rather than here.
 
   // PATCH /identities/:id - Update identity profile
   @Patch(':id')

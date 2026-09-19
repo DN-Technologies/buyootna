@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useFavorites } from '@/features/individual/hooks/useFavorites';
 import { chatService } from '@/shared/api/chat.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
@@ -25,6 +24,7 @@ import PropertyMediaHeader from '@/shared/components/PropertyMediaHeader';
 import PropertyOverview from '@/shared/components/PropertyOverview';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useFavorites } from '@/shared/hooks/useFavorites';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import {

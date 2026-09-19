@@ -6,8 +6,8 @@ import {
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
-import { CreateCompanyInvoiceDto } from '../dto/create-company-invoice.dto';
-import { CreateProjectDto } from '../dto/create-project.dto';
+import { CreateCompanyInvoiceDto } from '../../company/dto/create-company-invoice.dto';
+import { CreateProjectDto } from '../../company/dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 @Injectable()

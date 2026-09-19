@@ -32,8 +32,10 @@ import { PaymentsModule } from './features/payments/payments.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
 import { AdminModule } from './features/admin/admin.module';
 import { IdentitiesModule } from './features/identities/identities.module';
-import { CompaniesModule } from './features/companies/companies.module';
-import { CompanyRequestsModule } from './features/company-requests/company-requests.module';
+import { CompaniesModule } from './features/company/companies/companies.module';
+import { CompanyRequestsModule } from './features/company/company-requests/company-requests.module';
+import { CompanyModule } from './features/company/company.module';
+import { OfficeModule } from './features/office/office.module';
 
 @Module({
   imports: [
@@ -54,6 +56,12 @@ import { CompanyRequestsModule } from './features/company-requests/company-reque
     MailModule,
     EmailOtpModule,
     OtpRateLimiterModule,
+    // CompanyModule/OfficeModule declare more specific `/users/*` routes
+    // (companies, offices, etc.) than UsersModule's catch-all `GET /:id` --
+    // they must be registered before UsersModule so Nest's router matches
+    // the specific routes first instead of the catch-all shadowing them.
+    CompanyModule,
+    OfficeModule,
     UsersModule,
     AuthModule,
     RecoveryModule,

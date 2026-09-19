@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { GetCompaniesFilterDto } from '../dto/get-companies-filter.dto';
-import { GetOfficesFilterDto } from '../dto/get-offices-filter.dto';
+import { GetCompaniesFilterDto } from '../../company/dto/get-companies-filter.dto';
+import { GetOfficesFilterDto } from '../../office/dto/get-offices-filter.dto';
 import {
   OFFICE_LISTING_PROPERTY_SELECT,
   formatOfficeListings,
