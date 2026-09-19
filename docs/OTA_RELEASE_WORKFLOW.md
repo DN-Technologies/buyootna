@@ -30,19 +30,22 @@ subscribes to the `production` channel and will pull whatever was most
 recently published with `eas update --channel production` (subject to the
 runtime-version match above).
 
-## 2. ⚠️ Current limitation — read this first
+## 2. Native binaries without `expo-updates` can't receive OTA — confirmed working otherwise
 
-**`expo-updates` was only added to this project now.** Every native binary
-built and submitted before this change (including the latest production iOS
-build and the latest production Android build) has no updates client at
-all and **cannot receive OTA updates, ever** — not retroactively. OTA only
-becomes available to real users starting with the first native
-build/submission made *after* this change lands.
+`expo-updates` support requires a native build that includes it. Any
+binary built and submitted *before* `expo-updates` was added to this
+project has no updates client at all and cannot receive OTA updates,
+retroactively or otherwise — those users need a new native build/install
+before OTA reaches them.
 
-Until that new build ships and is installed by users, `eas update` will
-succeed (it publishes to the channel) but nothing will actually reach
-anyone. Don't rely on OTA reaching production users until you've confirmed
-a post-this-change build has been submitted and is live.
+As of the production iOS build submitted and confirmed live in this
+repo's history (build #9, version 1.3.0), the OTA pipeline is confirmed
+working end-to-end against a real production build: `eas update --channel
+production` publishes are verifiably served to that runtime via the
+manifest endpoint, and confirmed reaching an installed build. Don't
+assume OTA is broken by default — but do confirm, for any given cohort of
+users, that they're on a native build that actually shipped with
+`expo-updates` before assuming a publish will reach them.
 
 ## 3. What can be OTA
 
