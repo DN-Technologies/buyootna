@@ -20,15 +20,15 @@ import DraftPreviewSheet from '@/features/individual/components/activity/DraftPr
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
 import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
 import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
-import { ActivityItem, useMyActivity } from '@/features/individual/hooks/useMyActivity';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import apiClient from '@/shared/api/api';
 import { alertsService } from '@/shared/api/alerts.service';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
   RadioOption,
 } from '@/shared/components/profile/RadioSelectionSheet';
+import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';

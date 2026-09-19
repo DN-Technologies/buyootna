@@ -15,11 +15,9 @@ import {
   isEmail,
   isPhone,
 } from '../../../core/utils/user.utils';
-import {
-  RegisterCompanyDto,
-  RegisterIndividualDto,
-  RegisterOfficeDto,
-} from '../dto/register.dto';
+import { RegisterIndividualDto } from '../dto/register.dto';
+import { RegisterCompanyDto } from '../../company/dto/register-company.dto';
+import { RegisterOfficeDto } from '../../office/dto/register-office.dto';
 
 @Injectable()
 export class UsersRegistrationService {

@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface MenuItemProps {

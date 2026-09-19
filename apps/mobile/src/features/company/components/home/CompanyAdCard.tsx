@@ -6,8 +6,8 @@ import {
   BathIcon,
   BedIcon,
 } from '@/assets/icons/home/property';
-import { type ActivityItem } from '@/features/individual/hooks/useMyActivity';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { type ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,

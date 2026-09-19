@@ -1,7 +1,11 @@
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CompanyRequestsService } from './company-requests.service';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { PrismaService } from '../../../core/prisma/prisma.service';
 
 const baseClientIdentity = {
   id: 'client-1',
@@ -99,16 +103,23 @@ describe('CompanyRequestsService', () => {
       );
     });
 
-    it('maps rating as the average of the client\'s received reviews', async () => {
-      const [result] = await service.findMine('company-1', { scope: 'company' });
+    it("maps rating as the average of the client's received reviews", async () => {
+      const [result] = await service.findMine('company-1', {
+        scope: 'company',
+      });
       expect(result.client.rating).toBe(4.5);
     });
 
     it('returns a null rating when the client has no reviews yet', async () => {
       prisma.companyRequest.findMany.mockResolvedValue([
-        { ...baseRequest, clientIdentity: { ...baseClientIdentity, receivedReviews: [] } },
+        {
+          ...baseRequest,
+          clientIdentity: { ...baseClientIdentity, receivedReviews: [] },
+        },
       ]);
-      const [result] = await service.findMine('company-1', { scope: 'company' });
+      const [result] = await service.findMine('company-1', {
+        scope: 'company',
+      });
       expect(result.client.rating).toBeNull();
     });
   });

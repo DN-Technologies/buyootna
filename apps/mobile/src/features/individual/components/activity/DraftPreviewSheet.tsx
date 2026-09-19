@@ -18,7 +18,7 @@ import {
   LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,

@@ -1,6 +1,6 @@
 import { FlatList, View } from 'react-native';
 
-import type { ActivityItem } from '@/features/individual/hooks/useMyActivity';
+import type { ActivityItem } from '@/shared/hooks/useMyActivity';
 
 import CompanyAdCard from './CompanyAdCard';
 import SectionHeader from './SectionHeader';

@@ -22,11 +22,11 @@ import {
   ShowIcon,
   TermsIcon,
 } from '@/assets/icons/settings';
-import MenuItem from '@/features/individual/components/more/MenuItem';
 import {
   settingsService,
   UserSettingsResponse,
 } from '@/shared/api/settings.service';
+import MenuItem from '@/shared/components/MenuItem';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 

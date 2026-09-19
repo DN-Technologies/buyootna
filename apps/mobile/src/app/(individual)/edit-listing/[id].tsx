@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SharedPropertyInfo from '@/app/add-listing/SharedPropertyInfo';
-import ExchangePropertyTab from '@/app/add-listing/tabs/ExchangePropertyTab';
-import RentPropertyTab from '@/app/add-listing/tabs/RentPropertyTab';
-import SellPropertyTab from '@/app/add-listing/tabs/SellPropertyTab';
+import SharedPropertyInfo from '@/app/(individual)/add-listing/SharedPropertyInfo';
+import ExchangePropertyTab from '@/app/(individual)/add-listing/tabs/ExchangePropertyTab';
+import RentPropertyTab from '@/app/(individual)/add-listing/tabs/RentPropertyTab';
+import SellPropertyTab from '@/app/(individual)/add-listing/tabs/SellPropertyTab';
 import { propertiesService } from '@/shared/api/properties.service';
 import DiscardChangesSheet from '@/shared/components/add-listing/DiscardChangesSheet';
 import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';

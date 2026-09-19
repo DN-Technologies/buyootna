@@ -6,13 +6,13 @@ import { useState } from 'react';
 import { RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useFavorites } from '@/features/individual/hooks/useFavorites';
 import {
   FavoritesResponse,
   favoritesService,
-} from '@/features/individual/services/favorites.service';
+} from '@/shared/api/favorites.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import { useFavorites } from '@/shared/hooks/useFavorites';
 import { shareProperty } from '@/shared/utils/helpers/property';
 
 const FAVORITES_QUERY_KEY = ['favorites'];

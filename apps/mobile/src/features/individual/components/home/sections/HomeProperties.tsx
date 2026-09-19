@@ -12,15 +12,15 @@ import {
 } from 'react-native';
 
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
-import { useFavorites } from '@/features/individual/hooks/useFavorites';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/PropertyCard';
 import PropertyListItem from '@/shared/components/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import { useFavorites } from '@/shared/hooks/useFavorites';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';

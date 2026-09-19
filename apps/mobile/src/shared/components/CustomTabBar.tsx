@@ -19,7 +19,7 @@ import {
   OrdersIcon,
   PropertiesTabIcon,
 } from '@/assets/icons/tab/index';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 
 interface CustomTabBarProps extends BottomTabBarProps {
   onOpenPlusSheet: () => void;

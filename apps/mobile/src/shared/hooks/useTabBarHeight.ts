@@ -6,9 +6,9 @@ const CONTENT_BOTTOM_MARGIN = 40;
 
 /**
  * Height of the floating CustomTabBar (must stay in sync with
- * features/individual/components/CustomTabBar.tsx's BAR_HEIGHT), plus the
- * padding scrollable screens under the (individual) tab navigator should add
- * to their content so the last item isn't hidden behind the bar.
+ * shared/components/CustomTabBar.tsx's BAR_HEIGHT), plus the padding
+ * scrollable screens under any account type's tab navigator should add to
+ * their content so the last item isn't hidden behind the bar.
  */
 export function useTabBarHeight() {
   const insets = useSafeAreaInsets();

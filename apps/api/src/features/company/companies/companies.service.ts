@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InvoiceStatus, ListingStatus, SlotStatus } from '@prisma/client';
-import { PrismaService } from '../../core/prisma/prisma.service';
+import { PrismaService } from '../../../core/prisma/prisma.service';
 import { CompanyDashboardResponseDto } from './dto/company-dashboard-response.dto';
 
 @Injectable()
