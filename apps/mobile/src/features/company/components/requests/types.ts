@@ -1,8 +1,13 @@
-export type RequestStatus = 'pending' | 'responded' | 'accepted';
+export type RequestStatus = 'pending' | 'responded' | 'accepted' | 'rejected';
 
 export type RequestScope = 'company' | 'public';
 
-export type RequestStatusFilter = 'all' | 'pending' | 'accepted' | 'responded';
+export type RequestStatusFilter =
+  | 'all'
+  | 'pending'
+  | 'accepted'
+  | 'responded'
+  | 'rejected';
 
 export interface RequestClientInfo {
   name: string;
@@ -17,6 +22,7 @@ export interface RequestClientInfo {
 
 export interface CompanyRequestItem {
   id: string;
+  clientIdentityId: string;
   title: string;
   clientName: string;
   requestNumber?: string;
@@ -32,7 +38,7 @@ export interface CompanyRequestItem {
   description: string;
   status: RequestStatus;
   scope: RequestScope;
-  createdAt?: string;
+  createdAt: string;
   client?: RequestClientInfo;
 }
 

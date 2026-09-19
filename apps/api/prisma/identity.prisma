@@ -34,6 +34,18 @@ model Identity {
   companyInvoices CompanyInvoice[]
   alerts          Alert[]
 
+  // Company-requests (leads marketplace)
+  requestsAsClient CompanyRequest[] @relation("ClientRequests")
+  requestsTargeted CompanyRequest[] @relation("TargetedRequests")
+  requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
+
+  // Restored after being accidentally dropped by an unrelated migration on
+  // this branch -- see the add_alerts_back migration. This branch doesn't
+  // carry the Alerts feature's NestJS module (that lives on
+  // fix/individual-bugs), only the Prisma model, so `prisma migrate dev`
+  // stops treating the table as drift to remove.
+  alerts Alert[]
+
   @@index([userId])
   @@index([userId, isActive])
 }

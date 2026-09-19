@@ -1,21 +1,105 @@
 import { fireEvent, render, within } from '@testing-library/react-native';
 import { Alert } from 'react-native';
 
+import { CompanyRequestItem } from '@/features/company/components/requests';
+import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
+import { chatService } from '@/shared/api/chat.service';
+import { companyRequestsService } from '@/shared/api/companyRequests.service';
+
 import CompanyRequestsScreen from '../company-requests';
 
 const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+  useRouter: () => ({ push: mockPush }),
+}));
+
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (effect: () => void) => effect(),
+}));
+
+jest.mock('@/features/company/hooks/useCompanyRequests', () => ({
+  useCompanyRequests: jest.fn(),
+}));
+
+jest.mock('@/shared/api/chat.service', () => ({
+  chatService: { createConversation: jest.fn() },
+}));
+
+jest.mock('@/shared/api/companyRequests.service', () => ({
+  companyRequestsService: { markResponded: jest.fn() },
 }));
 
 jest.spyOn(Alert, 'alert');
 
-describe('CompanyRequestsScreen (Figma Design Implementation 4410:164470)', () => {
+const mockUseCompanyRequests = useCompanyRequests as jest.Mock;
+
+const ALL_REQUESTS: CompanyRequestItem[] = [
+  {
+    id: 'req-1',
+    clientIdentityId: 'client-1',
+    title: 'تمديدات كهرباء لمحل تجاري',
+    clientName: 'عبد الله القحطاني',
+    location: 'السالمية',
+    attachmentsCount: 3,
+    description: 'محل ملابس بمساحة 120م، يحتاج تمديدات كهربائية كاملة.',
+    status: 'pending',
+    scope: 'company',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'req-2',
+    clientIdentityId: 'client-1',
+    title: 'تمديدات كهرباء لمحل تجاري',
+    clientName: 'عبد الله القحطاني',
+    location: 'السالمية',
+    attachmentsCount: 3,
+    description: 'محل ملابس بمساحة 120م، يحتاج تمديدات كهربائية كاملة.',
+    status: 'responded',
+    scope: 'company',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'req-3',
+    clientIdentityId: 'client-1',
+    title: 'تمديدات كهرباء لمحل تجاري',
+    clientName: 'عبد الله القحطاني',
+    location: 'السالمية',
+    attachmentsCount: 3,
+    description: 'محل ملابس بمساحة 120م، يحتاج تمديدات كهربائية كاملة.',
+    status: 'accepted',
+    scope: 'company',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'req-pub-1',
+    clientIdentityId: 'client-2',
+    title: 'صيانة تكييف مركزي لمكتب',
+    clientName: 'سارة المطيري',
+    location: 'الجهراء',
+    attachmentsCount: 2,
+    description: 'مكتب إداري بمساحة 200م، يحتاج صيانة شاملة لنظام التكييف.',
+    status: 'pending',
+    scope: 'public',
+    createdAt: '2026-01-01T00:00:00.000Z',
+  },
+];
+
+function mockRequestsFor(scope: 'company' | 'public', status: string) {
+  mockUseCompanyRequests.mockReturnValue({
+    data: ALL_REQUESTS.filter(
+      (r) => r.scope === scope && (status === 'all' || r.status === status),
+    ),
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  });
+}
+
+describe('CompanyRequestsScreen (real data)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRequestsFor('company', 'all');
   });
 
   it('renders header with title "الطلبات", search input, and filter button', async () => {
@@ -53,82 +137,67 @@ describe('CompanyRequestsScreen (Figma Design Implementation 4410:164470)', () =
     expect(within(respondedPill).getByText('تم الرد')).toBeTruthy();
   });
 
-  it('switches between "خاصة بالشركة" and "عامة" scopes', async () => {
-    const { getByTestId, queryByText, getAllByText } = await render(
-      <CompanyRequestsScreen />,
-    );
+  it('re-queries the hook with the "public" scope when switching tabs', async () => {
+    const { getByTestId } = await render(<CompanyRequestsScreen />);
 
-    // Initial default is 'company' scope -> includes 'عبد الله القحطاني'
-    expect(getAllByText('عبد الله القحطاني').length).toBeGreaterThan(0);
-    expect(queryByText('سارة المطيري')).toBeNull();
-
-    // Switch to public requests
     await fireEvent.press(getByTestId('company-requests-tab-public'));
 
-    // Public scope requests should now be visible
-    expect(queryByText('سارة المطيري')).toBeTruthy();
-    expect(queryByText('صيانة تكييف مركزي لمكتب')).toBeTruthy();
-    expect(queryByText('عبد الله القحطاني')).toBeNull();
+    expect(mockUseCompanyRequests).toHaveBeenLastCalledWith(
+      'public',
+      'all',
+      '',
+    );
   });
 
-  it('filters requests by status pill', async () => {
-    const { getByTestId, queryByTestId } = await render(
+  it('re-queries the hook with the selected status filter', async () => {
+    const { getByTestId } = await render(<CompanyRequestsScreen />);
+
+    await fireEvent.press(getByTestId('company-requests-filter-pending'));
+
+    expect(mockUseCompanyRequests).toHaveBeenLastCalledWith(
+      'company',
+      'pending',
+      '',
+    );
+  });
+
+  it('renders requests returned by the hook and an empty state when there are none', async () => {
+    const { getByTestId, getByText, rerender } = await render(
       <CompanyRequestsScreen />,
     );
 
-    // In 'company' scope with 'all': req-1 (pending), req-2 (responded), req-3 (accepted), req-4 (accepted)
     expect(getByTestId('company-request-card-req-1')).toBeTruthy();
     expect(getByTestId('company-request-card-req-2')).toBeTruthy();
     expect(getByTestId('company-request-card-req-3')).toBeTruthy();
 
-    // Select 'pending'
-    await fireEvent.press(getByTestId('company-requests-filter-pending'));
-    expect(getByTestId('company-request-card-req-1')).toBeTruthy();
-    expect(queryByTestId('company-request-card-req-2')).toBeNull();
-    expect(queryByTestId('company-request-card-req-3')).toBeNull();
+    mockUseCompanyRequests.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+    await rerender(<CompanyRequestsScreen />);
 
-    // Select 'responded'
-    await fireEvent.press(getByTestId('company-requests-filter-responded'));
-    expect(queryByTestId('company-request-card-req-1')).toBeNull();
-    expect(getByTestId('company-request-card-req-2')).toBeTruthy();
-
-    // Reset to 'all'
-    await fireEvent.press(getByTestId('company-requests-filter-all'));
-    expect(getByTestId('company-request-card-req-1')).toBeTruthy();
-    expect(getByTestId('company-request-card-req-2')).toBeTruthy();
-  });
-
-  it('filters requests by search input text', async () => {
-    const { getByPlaceholderText, queryByTestId, getByText } = await render(
-      <CompanyRequestsScreen />,
-    );
-
-    const searchInput = getByPlaceholderText('ابحث عن طلب عرض سعر...');
-
-    // Type nonexistent query
-    await fireEvent.changeText(searchInput, 'كلمة غير موجودة');
-
-    // Empty state should be visible
     expect(getByText('لا توجد طلبات مطابقة')).toBeTruthy();
-    expect(queryByTestId('company-request-card-req-1')).toBeNull();
-
-    // Clear search
-    await fireEvent.changeText(searchInput, '');
-    expect(queryByTestId('company-request-card-req-1')).toBeTruthy();
   });
 
-  it('triggers alert on "الرد" and "التفاصيل" button presses', async () => {
+  it('starts a chat and marks the request responded on "الرد" press', async () => {
+    (chatService.createConversation as jest.Mock).mockResolvedValue({ id: 'conv-1' });
+    (companyRequestsService.markResponded as jest.Mock).mockResolvedValue({});
+
     const { getByTestId } = await render(<CompanyRequestsScreen />);
 
-    // Press reply on first card
     const replyBtn = getByTestId('company-request-reply-btn-req-1');
     await fireEvent.press(replyBtn);
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'الرد على الطلب',
-      expect.stringContaining('تقديم عرض سعر لطلب:'),
-    );
 
-    // Press details on first card -> navigates to details screen
+    expect(chatService.createConversation).toHaveBeenCalledWith('client-1');
+    expect(companyRequestsService.markResponded).toHaveBeenCalledWith('req-1');
+    expect(mockPush).toHaveBeenCalledWith('/chat/conv-1');
+  });
+
+  it('navigates to the details screen on "التفاصيل" press', async () => {
+    const { getByTestId } = await render(<CompanyRequestsScreen />);
+
     const detailsBtn = getByTestId('company-request-details-btn-req-1');
     await fireEvent.press(detailsBtn);
     expect(mockPush).toHaveBeenCalledWith('/(company)/(requests)/req-1');

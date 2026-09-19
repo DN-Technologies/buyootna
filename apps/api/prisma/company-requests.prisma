@@ -1,0 +1,34 @@
+model CompanyRequest {
+  id String @id @default(uuid())
+
+  clientIdentityId String
+  clientIdentity   Identity @relation("ClientRequests", fields: [clientIdentityId], references: [id], onDelete: Cascade)
+
+  // null => public/marketplace request (any company can view); set => sent
+  // directly to one company and only that company can act on it.
+  targetIdentityId String?
+  targetIdentity   Identity? @relation("TargetedRequests", fields: [targetIdentityId], references: [id], onDelete: Cascade)
+
+  // Set once a company accepts -- the company that claimed a public request,
+  // or (redundantly, for consistency) the targeted company for a directed one.
+  acceptedByIdentityId String?
+  acceptedByIdentity   Identity? @relation("AcceptedRequests", fields: [acceptedByIdentityId], references: [id], onDelete: SetNull)
+
+  title       String
+  category    String?
+  priceRange  String?
+  location    String
+  latitude    Float?
+  longitude   Float?
+  offerType   String?
+  images      String[] @default([])
+  description String
+
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([targetIdentityId])
+  @@index([clientIdentityId])
+  @@index([status])
+}

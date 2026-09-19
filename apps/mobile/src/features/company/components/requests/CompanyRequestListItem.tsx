@@ -36,6 +36,11 @@ const STATUS_CONFIGS: Record<RequestStatus, StatusConfig> = {
     bgClass: 'bg-[#E1EFEC]',
     textClass: 'text-[#15A72B]',
   },
+  rejected: {
+    label: 'مرفوضة',
+    bgClass: 'bg-[#FBE9E9]',
+    textClass: 'text-[#9C1E28]',
+  },
 };
 
 export default function CompanyRequestListItem({

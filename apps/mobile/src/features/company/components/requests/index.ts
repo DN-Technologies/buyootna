@@ -8,5 +8,4 @@ export type { CompanyRequestsScopeTabsProps } from './CompanyRequestsScopeTabs';
 export { default as CompanyRequestsScopeTabs } from './CompanyRequestsScopeTabs';
 export * from './details';
 export * from './icons';
-export * from './mockRequests';
 export * from './types';
