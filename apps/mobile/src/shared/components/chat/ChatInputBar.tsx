@@ -95,9 +95,13 @@ export default function ChatInputBar({
         // directly-measured keyboard height is the sole source of bottom
         // spacing there now. Android still relies on adjustResize, so it
         // keeps using the static home-indicator inset unconditionally.
+        // +8 on iOS: sitting exactly flush against the keyboard (zero gap)
+        // read as visually cramped -- a small breathing-room gap looks
+        // right without being large enough to re-expose the predictive
+        // bar this was fixed for.
         paddingBottom:
           Platform.OS === 'ios' && iosKeyboardHeight > 0
-            ? iosKeyboardHeight
+            ? iosKeyboardHeight + 8
             : Math.max(insets.bottom, 12),
         shadowColor: '#ABACBC',
         shadowOpacity: 0.25,
