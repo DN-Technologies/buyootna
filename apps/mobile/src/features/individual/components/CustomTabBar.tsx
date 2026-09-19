@@ -25,6 +25,33 @@ interface CustomTabBarProps extends BottomTabBarProps {
   onOpenPlusSheet: () => void;
 }
 
+// The full set of real tab screens across all three account types (plus
+// the special "add" center-button route). Detail/form screens (edit
+// profile, add-service, add-project, etc.) are reachable via router.push()
+// without being declared as Tabs.Screen entries in their (group)/_layout.tsx
+// -- but React Navigation still invokes this component's `tabBar` render
+// prop for them regardless of that (confirmed live: neither leaving them
+// undeclared, nor nesting them under their own Stack-typed _layout.tsx,
+// stopped it). Explicitly refusing to render for anything not in this
+// whitelist is what actually guarantees the floating bar never shows on
+// top of those screens, independent of whatever routing-nesting behavior
+// led to this component being invoked in the first place.
+const KNOWN_TAB_ROUTE_NAMES = new Set([
+  'home',
+  'company-home',
+  'office-home',
+  'companies',
+  'activity',
+  'company-requests',
+  'office-properties',
+  'company-chats',
+  'office-chats',
+  'more',
+  'company-more',
+  'office-more',
+  'add',
+]);
+
 export default function CustomTabBar({
   state,
   descriptors,
@@ -34,6 +61,12 @@ export default function CustomTabBar({
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const { tabBarHeight: BAR_HEIGHT } = useTabBarHeight();
+
+  // See KNOWN_TAB_ROUTE_NAMES above for why this check exists at all.
+  const activeRouteName = state.routes[state.index]?.name;
+  if (!KNOWN_TAB_ROUTE_NAMES.has(activeRouteName)) {
+    return null;
+  }
 
   // iPad constraint: floating centered tab bar
   const isTablet = windowWidth >= 768;
