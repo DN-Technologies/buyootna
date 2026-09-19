@@ -247,8 +247,15 @@ export default function ChatDetailsScreen() {
       )}
 
       <ContentContainer className="flex-1">
+        {/* No Android `behavior` -- AndroidManifest already sets
+            windowSoftInputMode="adjustResize", so the OS resizes the
+            window itself. Also applying KeyboardAvoidingView's own
+            "height" adjustment on top of that double-compensates (worse
+            with edgeToEdgeEnabled), which is what let the keyboard
+            overlap the input bar. Matches the same fix already applied in
+            search/index.tsx and add-alert/index.tsx. */}
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1 }}
         >
           <ChatHeader
