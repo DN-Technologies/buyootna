@@ -33,8 +33,11 @@ export class StandardSearchStrategy implements SearchStrategy {
     }
 
     // 3. Build Category & Steppers
-    if (filters.category)
-      where.category = filters.category.toUpperCase() as PropertyCategory;
+    if (filters.category && filters.category.length > 0) {
+      where.category = {
+        in: filters.category.map((c) => c.toUpperCase() as PropertyCategory),
+      };
+    }
     if (filters.rooms) where.beds = { gte: filters.rooms }; // Greater than or equal to requested rooms
     if (filters.baths) where.baths = { gte: filters.baths };
 

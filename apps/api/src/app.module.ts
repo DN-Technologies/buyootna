@@ -36,6 +36,7 @@ import { CompaniesModule } from './features/company/companies/companies.module';
 import { CompanyRequestsModule } from './features/company/company-requests/company-requests.module';
 import { CompanyModule } from './features/company/company.module';
 import { OfficeModule } from './features/office/office.module';
+import { AlertsModule } from './features/alerts/alerts.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { OfficeModule } from './features/office/office.module';
     IdentitiesModule,
     CompaniesModule,
     CompanyRequestsModule,
+    AlertsModule,
   ],
   controllers: [AppController],
   providers: [

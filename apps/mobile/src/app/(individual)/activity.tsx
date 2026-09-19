@@ -1,8 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useScrollToTop } from '@react-navigation/native';
+import { useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,12 +13,16 @@ import ActivityListHeader from '@/features/individual/components/activity/Activi
 import ActivityListItem from '@/features/individual/components/activity/ActivityListItem';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
+import AlertListItem from '@/features/individual/components/activity/AlertListItem';
+import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
 import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
 import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
+import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import apiClient from '@/shared/api/api';
+import { alertsService } from '@/shared/api/alerts.service';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
   RadioOption,
@@ -27,6 +31,7 @@ import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 const AD_SORT_OPTIONS: RadioOption[] = [
   { label: 'الأحدث أولاً', value: 'NEWEST' },
@@ -60,6 +65,9 @@ export default function ActivityScreen() {
     null,
   );
 
+  const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
+  const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
+
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     null,
@@ -92,6 +100,29 @@ export default function ActivityScreen() {
     hasSubscription,
     subscription,
   } = useMyActivity();
+
+  const {
+    data: alerts,
+    isLoading: isLoadingAlerts,
+    error: alertsError,
+    refetch: refetchAlerts,
+  } = useMyAlerts();
+
+  // Refetch on every focus -- the global 30s React Query staleTime means a
+  // simple remount alone doesn't guarantee fresh data, so freeAdsRemaining
+  // (and the ad list) could still show a value that's already out of date
+  // by the time the user checks here vs. the Add Ad flow, which always
+  // reads the live value directly (bypasses the query cache entirely).
+  // Alerts follow the same rule -- an alert created from the Add Alert
+  // screen wouldn't otherwise show up here until the 30s cache expired.
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        refetch();
+        refetchAlerts();
+      }
+    }, [token, refetch, refetchAlerts]),
+  );
 
   const { filterPills, sortedAndFilteredData } = useActivityFilters(
     data,
@@ -170,6 +201,28 @@ export default function ActivityScreen() {
     setPropertyToDelete(null);
   };
 
+  const handleDeleteAlert = (alertId: string) => {
+    setAlertToDelete(alertId);
+    alertDeleteSheetRef.current?.present();
+  };
+
+  const handleConfirmDeleteAlert = async () => {
+    if (!alertToDelete) return;
+    try {
+      await alertsService.remove(alertToDelete);
+      triggerToast('تم حذف التنبيه بنجاح.');
+      refetchAlerts();
+    } catch (err) {
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف التنبيه'));
+    } finally {
+      setAlertToDelete(null);
+    }
+  };
+
+  const handleCancelDeleteAlert = () => {
+    setAlertToDelete(null);
+  };
+
   const handlePublishDraftAction = async (propertyId: string) => {
     try {
       await apiClient.patch(`/properties/${propertyId}`, { isDraft: false });
@@ -210,14 +263,22 @@ export default function ActivityScreen() {
       {/* Scrolling list */}
       <FlashList
         ref={listRef}
-        data={activeTab === 'اعلاناتي' ? sortedAndFilteredData : []}
+        data={
+          activeTab === 'اعلاناتي'
+            ? sortedAndFilteredData
+            : activeTab === 'تنبيهاتي'
+              ? alerts
+              : []
+        }
         keyExtractor={(item) => item.id}
         getItemType={(item) =>
-          item.status === 'DRAFT'
-            ? 'draft'
-            : item.status === 'EXPIRED' || item.status === 'CLOSED'
-              ? 'archived'
-              : 'active'
+          activeTab === 'تنبيهاتي'
+            ? 'alert'
+            : item.status === 'DRAFT'
+              ? 'draft'
+              : item.status === 'EXPIRED' || item.status === 'CLOSED'
+                ? 'archived'
+                : 'active'
         }
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -246,23 +307,31 @@ export default function ActivityScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <ActivityEmptyState
-            isLoading={isLoading}
-            error={error}
-            activeFilterId={activeFilterId}
-          />
+          activeTab === 'تنبيهاتي' ? (
+            <AlertsEmptyState isLoading={isLoadingAlerts} error={alertsError} />
+          ) : (
+            <ActivityEmptyState
+              isLoading={isLoading}
+              error={error}
+              activeFilterId={activeFilterId}
+            />
+          )
         }
-        renderItem={({ item }) => (
-          <ActivityListItem
-            property={item}
-            activeFilterId={activeFilterId}
-            onEditPress={handleEditAd}
-            onFeaturePress={handleFeatureAd}
-            onDeletePress={handleDeleteAd}
-            onPublishDraftPress={handlePublishDraft}
-            onArchivedPress={(id) => router.push(`/property/${id}` as any)}
-          />
-        )}
+        renderItem={({ item }) =>
+          activeTab === 'تنبيهاتي' ? (
+            <AlertListItem alert={item as any} onDeletePress={handleDeleteAlert} />
+          ) : (
+            <ActivityListItem
+              property={item as ActivityItem}
+              activeFilterId={activeFilterId}
+              onEditPress={handleEditAd}
+              onFeaturePress={handleFeatureAd}
+              onDeletePress={handleDeleteAd}
+              onPublishDraftPress={handlePublishDraft}
+              onArchivedPress={(id) => router.push(`/property/${id}` as any)}
+            />
+          )
+        }
       />
 
       {/* --- Property Preview Bottom Sheet --- */}
@@ -281,6 +350,17 @@ export default function ActivityScreen() {
         ref={deleteSheetRef}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      {/* --- Alert Delete Confirmation Bottom Sheet --- */}
+      <DeleteConfirmationSheet
+        ref={alertDeleteSheetRef}
+        onConfirm={handleConfirmDeleteAlert}
+        onCancel={handleCancelDeleteAlert}
+        title="هل أنت متأكد من حذف التنبيه؟"
+        description="لن تصلك إشعارات بعد الآن بخصوص هذا التنبيه"
+        confirmLabel="حذف التنبيه"
+        skipReasonStep
       />
 
       {/* --- Feature Ad Bottom Sheet --- */}

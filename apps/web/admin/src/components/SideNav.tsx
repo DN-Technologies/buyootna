@@ -94,16 +94,18 @@ function SideNavContent() {
       dir="rtl"
     >
       {/* Brand Header */}
-      <div className="h-17.5 border-b border-[#ECECEC] flex items-center justify-center px-6 shrink-0">
-        <Link href="/" className="flex items-center justify-center">
+      <div className="h-17.5 border-b border-[#ECECEC] flex items-center justify-between px-6 shrink-0">
+        <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/logo.png"
+            src="/logo-icon.png"
             alt="Buyootna Logo"
-            width={138}
-            height={34}
-            className="h-8.5 w-34.5 object-contain"
-            priority
+            width={40}
+            height={40}
+            className="object-contain"
           />
+          <span className="font-['Cairo'] font-bold text-[20px] text-primary">
+            بيوتنا
+          </span>
         </Link>
       </div>
 

@@ -14,13 +14,13 @@ import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 export type OperationType = 'sale' | 'rent' | 'exchange';
 
-const OPERATION_OPTIONS: { id: OperationType; label: string }[] = [
+export const OPERATION_OPTIONS: { id: OperationType; label: string }[] = [
   { id: 'sale', label: 'بيع' },
   { id: 'rent', label: 'ايجار' },
   { id: 'exchange', label: 'بدل' },
 ];
 
-const CATEGORY_OPTIONS: SelectionItem[] = [
+export const CATEGORY_OPTIONS: SelectionItem[] = [
   { id: 'residential', label: 'سكني' },
   { id: 'commercial', label: 'تجاري' },
   { id: 'investment', label: 'استثماري' },

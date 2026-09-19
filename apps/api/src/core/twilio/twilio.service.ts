@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Twilio from 'twilio';
-import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 
 const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
@@ -17,7 +16,7 @@ export class TwilioService {
     { code: string; expiresAt: Date }
   >();
 
-  constructor(private readonly rateLimiter?: OtpRateLimiterService) {
+  constructor() {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
@@ -58,6 +57,13 @@ export class TwilioService {
 
   /**
    * Send an OTP verification SMS using Twilio Verify API.
+   *
+   * Does not record this against the OTP request rate limiter -- callers
+   * key that by whatever field their own @OtpRequestRateLimit guard
+   * checks (a raw identifier, a phone, a userId, ...), which this generic
+   * "just send it" method has no way to know. Call
+   * OtpRateLimiterService.recordRequest() with that same key yourself
+   * after a successful send.
    */
   async sendVerification(phone: string): Promise<{ success: boolean }> {
     const formattedPhone = this.formatPhoneNumber(phone);
@@ -71,8 +77,6 @@ export class TwilioService {
       this.logger.warn(
         `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
       );
-      this.rateLimiter?.recordRequest(phone);
-      this.rateLimiter?.recordRequest(formattedPhone);
       return { success: true };
     }
 
@@ -87,8 +91,6 @@ export class TwilioService {
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
-      this.rateLimiter?.recordRequest(phone);
-      this.rateLimiter?.recordRequest(formattedPhone);
       return { success: true };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);

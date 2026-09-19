@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,6 +9,28 @@ import { BuyootnaLogo, CompanyLogo } from '@/assets/icons';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 
 const appVersion = Constants.expoConfig?.version;
+
+// A quick on-device way to confirm an OTA update actually landed: these are
+// static properties of the current launch, not a live check, so they always
+// describe what's running right now.
+const otaStatusLabel = Updates.isEmbeddedLaunch
+  ? 'النسخة المدمجة بالتطبيق (بدون تحديث OTA)'
+  : `تحديث OTA${
+      Updates.createdAt ? ' بتاريخ ' + Updates.createdAt.toLocaleString('ar-EG') : ''
+    }`;
+const otaUpdateId = !Updates.isEmbeddedLaunch ? Updates.updateId : null;
+
+// Baked in by scripts/release-ota.js from its required --message at publish
+// time, so QA can read what an OTA update actually changed on-device
+// instead of needing EAS dashboard/git access. Absent on the embedded
+// build (never published via that script) and on any OTA build published
+// before this was added.
+const otaReleaseNote = !Updates.isEmbeddedLaunch
+  ? process.env.EXPO_PUBLIC_OTA_RELEASE_NOTE
+  : null;
+const otaCommit = !Updates.isEmbeddedLaunch
+  ? process.env.EXPO_PUBLIC_OTA_COMMIT
+  : null;
 
 export default function AboutScreen() {
   const router = useRouter();
@@ -113,10 +136,24 @@ export default function AboutScreen() {
 
         {/* --- App Version --- */}
         {!!appVersion && (
-          <View className="mt-8 items-center">
+          <View className="mt-8 items-center gap-1">
             <Text className="font-cairo-medium text-xs text-[#A0A0A0]">
               الإصدار {appVersion}
             </Text>
+            <Text className="font-cairo text-[10px] text-[#A0A0A0]">
+              {otaStatusLabel}
+            </Text>
+            {!!otaUpdateId && (
+              <Text className="font-cairo text-[10px] text-[#A0A0A0]">
+                معرف التحديث: {otaUpdateId.slice(0, 8)}
+                {otaCommit ? ` (${otaCommit})` : ''}
+              </Text>
+            )}
+            {!!otaReleaseNote && (
+              <Text className="mt-1 px-8 text-center font-cairo-medium text-[11px] text-[#15304D]">
+                {otaReleaseNote}
+              </Text>
+            )}
           </View>
         )}
       </ScrollView>

@@ -1,6 +1,13 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { IsEmailOrPhone } from '../../../core/validators/is-email-or-phone.validator';
+import { NAME_REGEX, NAME_REGEX_MESSAGE } from '../../../core/validators/name.regex';
 import { trim } from '../../../core/validators/trim.transform';
 
 export class RegisterIndividualDto {
@@ -9,6 +16,7 @@ export class RegisterIndividualDto {
   @IsNotEmpty({ message: 'الاسم مطلوب' })
   @MinLength(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' })
   @MaxLength(32, { message: 'الاسم يجب ألا يتجاوز 32 حرفاً' })
+  @Matches(NAME_REGEX, { message: NAME_REGEX_MESSAGE })
   name: string;
 
   @IsString()

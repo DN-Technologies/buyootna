@@ -1,6 +1,15 @@
 # CLAUDE.md - Assistant Guidelines for Buyootna Monorepo
 
-Welcome to the **Buyootna** codebase. This guide provides quick commands, architectural rules, and development practices for AI assistants working in this repository.
+Welcome to the **Buyootna** codebase. This file is an entry point, not the
+full picture — read [`docs/ai/context.md`](docs/ai/context.md) first, on
+every task, before touching any code. It has the project overview, the
+routing table for the rest of `docs/ai/`, and the rules that apply
+regardless of task type. This file exists mainly to make sure that
+happens, plus a quick command reference below.
+
+`AGENTS.md` at the repo root is this file's twin for Codex — same
+routing, same commands, kept in sync. Don't let the two drift; update
+both together.
 
 ---
 
@@ -65,47 +74,15 @@ docker compose build
 
 ---
 
-## 🏗️ Monorepo Structure & Package Mapping
+## Start here: `docs/ai/`
 
-This repository uses **PNPM Workspaces**.
+Read [`docs/ai/context.md`](docs/ai/context.md) before starting any task.
+It routes you to the rest — architecture, testing, security, release, code
+review, glossary — only reading what's relevant to the task at hand
+instead of loading everything up front. It also has the monorepo package
+map and the handful of rules that apply to every task regardless of type
+(Jest v29 pin, single lockfile, branching, empirical verification).
 
-| Directory | Package Name | Description |
-| :--- | :--- | :--- |
-| `apps/api` | `api` | NestJS REST & WebSocket Backend API (Prisma + PostgreSQL) |
-| `apps/mobile` | `buyootna` | React Native & Expo Router Mobile Application |
-| `apps/web/landing` | `@buyootna/web-landing` | Next.js Marketing & Landing Page |
-| `apps/web/companies` | `@buyootna/web-companies` | Next.js Corporate / Company Portal |
-| `apps/web/offices` | `@buyootna/web-offices` | Next.js Real Estate Agency / Office Portal |
-| `apps/web/management` | `@buyootna/web-management` | Next.js Property Management Portal |
-| `apps/web/admin` | `@buyootna/web-admin` | Next.js System Administrator Dashboard |
-| `packages/ui` | `@buyootna/ui` | Shared UI components package |
-
----
-
-## 📐 Architecture & Key Patterns
-
-### 1. Backend API (`apps/api`)
-- **Framework**: NestJS (v11) with TypeScript strict mode.
-- **ORM**: Prisma (v7) with PostgreSQL (`@prisma/adapter-pg`).
-- **Authentication**: Passport JWT strategy (`AuthGuard('jwt')`), Local strategy, and Twilio SMS OTP verification.
-- **Testing**: Jest v29 + `ts-jest`. Always mock injected dependencies in `TestingModule` providers (`{ provide: ServiceName, useValue: {} }`).
-
-### 2. Mobile App (`apps/mobile`)
-- **Framework**: Expo (v54) + Expo Router (v6) + React Native (v0.81).
-- **Styling**: NativeWind (v4) + TailwindCSS.
-- **State & Validation**: Zustand + Zod (`loginSchema`, `signupSchema`).
-- **Testing**: Jest v29 + `jest-expo`.
-
-### 3. Docker & Deployment
-- All web apps and API use multi-stage Dockerfiles matching the monorepo root build context (`context: .`).
-- Production deployment runs automatically via GitHub Actions CD pipeline ([`.github/workflows/cd.yml`](file://.github/workflows/cd.yml)) on push to `main`.
-
----
-
-## ⚠️ Important Gotchas & Rules
-
-1. **Jest & Types Compatibility**: Both `apps/api` and `apps/mobile` must use **Jest v29** (`@types/jest@^29.5.14` and `jest@^29.7.0`). Do not upgrade Jest to v30 as `ts-jest` v29 and `jest-expo` require Jest v29.
-2. **Lockfile Integrity**: Never keep individual `pnpm-lock.yaml` files inside sub-directories like `apps/api/pnpm-lock.yaml`. Always use the single root `pnpm-lock.yaml`.
-3. **Branching**: `main` is production and `dev` is the development/integration branch. Feature work targets `dev`. `main` is never pushed to directly — production changes land only via a `dev` → `main` pull request, gated by passing CI status checks and required review (`.github/CODEOWNERS`). A local pre-push hook (`.husky/pre-push`) blocks direct pushes to `main` as a first line of defense.
-4. **Production deploys**: `cd.yml` no longer runs automatically on push to `main` — it's `workflow_dispatch` only. After a PR merges to `main`, someone with write access must manually trigger the "CD Pipeline" workflow from the Actions tab to deploy, giving a human checkpoint before production changes go live (GitHub's paid "Required reviewers" Environment gate isn't available on this repo's plan).
-5. **Production database**: Production runs its own PostgreSQL container (`postgres` service in `docker-compose.yaml`, backed by the `postgres-backup` sidecar for scheduled + pre-migration dumps). Development/local always uses the Neon `DATABASE_URL` already configured in `apps/api/.env` — never point local dev at the production database.
+If a task would change something documented as a rule or contract in one
+of those files, stop and get explicit approval before proceeding — see
+`context.md`'s closing section for the exact expectation.

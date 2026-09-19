@@ -2,6 +2,7 @@ import { useScrollToTop } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 
 import { useMyActivity } from '@/shared/hooks/useMyActivity';
+import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import ActivityScreen from '../activity';
@@ -22,6 +23,10 @@ jest.mock('@/shared/hooks/useMyActivity', () => ({
   useMyActivity: jest.fn(),
 }));
 
+jest.mock('@/features/individual/hooks/useMyAlerts', () => ({
+  useMyAlerts: jest.fn(),
+}));
+
 // useTabBarHeight calls useSafeAreaInsets(), which throws without a
 // <SafeAreaProvider> ancestor -- stub it rather than wrap every render.
 jest.mock('react-native-safe-area-context', () => ({
@@ -31,12 +36,22 @@ jest.mock('react-native-safe-area-context', () => ({
 
 // useScrollToTop needs a real navigation tree to find the parent tab
 // navigator, which this test doesn't render -- stub it as a no-op.
+// useFocusEffect just needs to run its callback once like a plain effect.
 jest.mock('@react-navigation/native', () => ({
   useScrollToTop: jest.fn(),
+  useFocusEffect: (callback: () => void) => callback(),
 }));
 
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 const mockUseMyActivity = useMyActivity as jest.Mock;
+const mockUseMyAlerts = useMyAlerts as jest.Mock;
+
+const DEFAULT_ALERTS_RESULT = {
+  data: [],
+  isLoading: false,
+  error: null,
+  refetch: jest.fn(),
+};
 
 describe('ActivityScreen', () => {
   beforeEach(() => {
@@ -55,6 +70,7 @@ describe('ActivityScreen', () => {
         hasSubscription: false,
         subscription: undefined,
       });
+      mockUseMyAlerts.mockReturnValue(DEFAULT_ALERTS_RESULT);
     });
 
     it('shows the guest empty state instead of the activity list', async () => {
@@ -76,6 +92,7 @@ describe('ActivityScreen', () => {
         hasSubscription: false,
         subscription: undefined,
       });
+      mockUseMyAlerts.mockReturnValue(DEFAULT_ALERTS_RESULT);
     });
 
     it('renders the header title and the empty state when there is no activity yet', async () => {

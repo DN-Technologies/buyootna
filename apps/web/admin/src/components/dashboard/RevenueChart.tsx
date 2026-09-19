@@ -54,7 +54,7 @@ export default function RevenueChart() {
 
   return (
     <Card
-      className="lg:col-span-2 bg-white border-[#ECECEC] p-[20px] select-none relative overflow-hidden"
+      className="lg:col-span-2 bg-white border-[#ECECEC] p-5 select-none relative overflow-hidden"
       data-node-id="2376:5464"
     >
       <div className="flex items-start justify-between w-full pb-6">
@@ -69,17 +69,17 @@ export default function RevenueChart() {
 
         <Button
           variant="outline"
-          className="bg-white border border-[#E2E8F0] rounded-[6px] h-[30px] px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
+          className="bg-white border border-[#E2E8F0] rounded-md h-7.5 px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
         >
           <ChevronDown className="w-3.5 h-3.5 text-[#111111]" />
           <span>هذه السنة</span>
         </Button>
       </div>
 
-      <div className="relative w-full h-[260px] mt-2">
+      <div className="relative w-full h-65 mt-2">
         {isHovered && activeMonth && (
           <div
-            className="absolute bg-white border border-[#eceeef] shadow-lg rounded-[6px] px-[12px] py-[10px] z-10 flex flex-col gap-1.5 pointer-events-none transition-all duration-150 ease-out text-right border-solid"
+            className="absolute bg-white border border-[#eceeef] shadow-lg rounded-md px-3 py-2.5 z-10 flex flex-col gap-1.5 pointer-events-none transition-all duration-150 ease-out text-right border-solid"
             style={{
               left: `${(activeMonth.x / 800) * 100}%`,
               top: `${(activeMonth.y / 240) * 100 - 32}%`,
@@ -102,7 +102,7 @@ export default function RevenueChart() {
         )}
 
         <svg
-          className="w-full h-[220px]"
+          className="w-full h-55"
           viewBox="0 0 800 240"
           preserveAspectRatio="none"
           onMouseMove={handleMouseMove}
@@ -200,7 +200,7 @@ export default function RevenueChart() {
         </svg>
 
         {/* X-Axis Labels */}
-        <div className="absolute left-[60px] right-[80px] bottom-0 flex justify-between select-none">
+        <div className="absolute left-15 right-20 bottom-0 flex justify-between select-none">
           {chartMonths.map((m, idx) => (
             <div
               key={idx}

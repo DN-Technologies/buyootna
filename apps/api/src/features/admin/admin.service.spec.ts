@@ -1,9 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
+import { AdminUsersService } from './services/admin-users.service';
+import { AdminIdentityService } from './services/admin-identity.service';
+import { AdminExportService } from './services/admin-export.service';
+import { AdminPasswordService } from './services/admin-password.service';
+import { AdminCouponService } from './services/admin-coupon.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Role, IdentityType } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
+import { MailService } from '../../core/mail/mail.service';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
 interface MockPrismaService {
@@ -81,9 +88,22 @@ describe('AdminService', () => {
       create: jest.fn().mockResolvedValue({ id: 'notif-1' }),
     };
 
+    const jwtService = {
+      sign: jest.fn().mockReturnValue('mock-reset-token-123'),
+    };
+
+    const mailService = {
+      sendMail: jest.fn().mockResolvedValue({ success: true }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
+        AdminUsersService,
+        AdminIdentityService,
+        AdminExportService,
+        AdminPasswordService,
+        AdminCouponService,
         {
           provide: PrismaService,
           useValue: prisma,
@@ -91,6 +111,14 @@ describe('AdminService', () => {
         {
           provide: NotificationsService,
           useValue: notifications,
+        },
+        {
+          provide: JwtService,
+          useValue: jwtService,
+        },
+        {
+          provide: MailService,
+          useValue: mailService,
         },
       ],
     }).compile();
@@ -197,6 +225,25 @@ describe('AdminService', () => {
       expect(res.user.id).toBe('new-user-1');
       expect((res.user as { password?: string }).password).toBeUndefined();
     });
+
+    it('should derive name from email or phone when name is omitted', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockImplementation(({ data }: any) =>
+        Promise.resolve({ id: 'user-derived', ...data }),
+      );
+      prisma.individualProfile.create.mockResolvedValue({ id: 'prof-2' });
+      prisma.identity.create.mockResolvedValue({
+        id: 'ident-2',
+        type: IdentityType.INDIVIDUAL,
+      });
+
+      const res = await service.createIndividual({
+        email: 'alisalem@example.com',
+        password: 'Password123!',
+      });
+
+      expect(res.user.name).toBe('alisalem');
+    });
   });
 
   describe('updateUserStatus', () => {
@@ -301,4 +348,101 @@ describe('AdminService', () => {
       expect(csv).toContain('"2"');
     });
   });
+
+  describe('sendUserPasswordResetLink', () => {
+    it('should throw NotFoundException if user is not found', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.sendUserPasswordResetLink('non-existent-user'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if user has no email', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-no-email',
+        name: 'User Without Email',
+        email: null,
+      });
+
+      await expect(
+        service.sendUserPasswordResetLink('user-no-email'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should send a 60-minute reset link to user email and return success message', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-valid',
+        name: 'Mohamed Elgareh',
+        email: 'mohamedelgareh@gmail.com',
+      });
+
+      const res = await service.sendUserPasswordResetLink('user-valid');
+
+      expect(res.message).toContain(
+        'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح',
+      );
+      expect(res.email).toBe('mohamedelgareh@gmail.com');
+    });
+  });
+
+  describe('coupons', () => {
+    it('should return available promotional coupons', () => {
+      const coupons = service.getAvailableCoupons();
+      expect(coupons).toBeDefined();
+      expect(coupons.length).toBeGreaterThan(0);
+      expect(coupons[0].name).toBe('Byoutna10');
+    });
+
+    it('should throw NotFoundException when granting coupon to non-existent user', async () => {
+      prisma.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.grantCoupon('non-existent', {
+          couponCode: 'LAUNCHPROMO26',
+          couponName: 'Byoutna10',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should grant coupon and return success message matching Figma 5634:72196', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-coupon-1',
+        name: 'على البالي',
+        email: 'ali@example.com',
+      });
+
+      const res = await service.grantCoupon('user-coupon-1', {
+        couponCode: 'LAUNCHPROMO26',
+        couponName: 'Byoutna10',
+        notifyEmail: true,
+      });
+
+      expect(res.message).toBe(
+        'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
+      );
+      expect(res.coupon.code).toBe('LAUNCHPROMO26');
+      expect(res.userId).toBe('user-coupon-1');
+    });
+
+    it('should grant coupon to multiple users and return summary', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 'u1', name: 'محمد الجارح', email: 'm1@example.com' },
+        { id: 'u2', name: 'أحمد علي', email: 'm2@example.com' },
+      ]);
+
+      const res = await service.grantBulkCoupon({
+        userIds: ['u1', 'u2'],
+        couponCode: 'LAUNCHPROMO26',
+        couponName: 'Byoutna10',
+        notifyEmail: true,
+      });
+
+      expect(res.grantedCount).toBe(2);
+      expect(res.message).toBe('تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.');
+      expect(res.grantedUserIds).toEqual(['u1', 'u2']);
+    });
+  });
 });
+
+

@@ -26,7 +26,15 @@ import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/AppAlertModal';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
+import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+
+// Guards every push/navigate/replace call in the app (both `router.push(...)`
+// and `useRouter().push(...)` resolve to the same expo-router singleton this
+// patches) against rapid duplicate taps stacking the same screen more than
+// once. Must run before any screen can call router.push, so it's at module
+// scope, not inside RootLayout.
+installNavigationDebounce();
 
 // Screen-transition performance + breadcrumbs. The nav container ref gets
 // registered on it once RootLayout mounts, below.

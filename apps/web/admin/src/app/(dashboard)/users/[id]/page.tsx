@@ -16,8 +16,10 @@ import UserAdsTabContent from '@/components/users/ads/UserAdsTabContent'
 import UserRequestsTabContent from '@/components/users/requests/UserRequestsTabContent'
 import UserPackagesTabContent from '@/components/users/packages/UserPackagesTabContent'
 import ChangePackageDrawer from '@/components/users/packages/ChangePackageDrawer'
-import AddExceptionalFeatureDrawer from '@/components/users/packages/AddExceptionalFeatureDrawer'
 import UserInvoicesDiscountsTabContent from '@/components/users/invoices/UserInvoicesDiscountsTabContent'
+import AddExceptionalFeatureDrawer from '@/components/users/packages/AddExceptionalFeatureDrawer'
+import AddCouponModal from '@/components/users/AddCouponModal'
+import SuccessToast from '@/components/users/SuccessToast'
 import UserReportsTabContent from '@/components/users/reports/UserReportsTabContent'
 import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabContent'
 import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
@@ -81,6 +83,7 @@ export default function UserOverviewPage() {
 
   const [changePackageOpen, setChangePackageOpen] = useState(false)
   const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] = useState(false)
+  const [addCouponOpen, setAddCouponOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const currentTabSlug = searchParams.get('tab')
@@ -121,6 +124,8 @@ export default function UserOverviewPage() {
       setChangePackageOpen(true)
     } else if (action === 'add_exceptional_feature') {
       setAddExceptionalFeatureOpen(true)
+    } else if (action === 'add_coupon') {
+      setAddCouponOpen(true)
     }
   }
 
@@ -166,15 +171,12 @@ export default function UserOverviewPage() {
 
   return (
     <div className="flex flex-col gap-5 pb-10 relative" dir="rtl">
-      {/* Floating Success Toast (Figma Nodes 4043:137427 & 4043:137453) */}
-      {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-[#15a72b] rounded-lg px-4 py-2.5 shadow-lg flex items-center gap-2 font-['Cairo'] text-right animate-in fade-in slide-in-from-top-2 duration-300">
-          <CheckCircle2 className="w-5 h-5 text-[#15a72b] shrink-0" />
-          <span className="text-[14px] font-medium text-[#111111]">
-            {toastMessage}
-          </span>
-        </div>
-      )}
+      {/* Floating Success Toast (Figma Node 5634:72196) */}
+      <SuccessToast
+        message={toastMessage || ''}
+        isOpen={!!toastMessage}
+        onClose={() => setToastMessage(null)}
+      />
 
       {/* Bleeds to cancel the dashboard shell's padding, matching PageHeader's pattern */}
       <div className="-mx-6 -mt-6 md:-mx-8 md:-mt-8 flex flex-col gap-4 bg-white">
@@ -271,6 +273,16 @@ export default function UserOverviewPage() {
         onClose={() => setAddExceptionalFeatureOpen(false)}
         onSuccess={() =>
           showToast(`تم منح مميزات استثنائية للمستخدم “${displayName}” بنجاح.`)
+        }
+      />
+
+      {/* Add Discount Coupon Modal (Figma Nodes 5634:71560, 5634:71598, 5634:71780) */}
+      <AddCouponModal
+        user={user ? { id: user.id, name: displayName, email: user.email } : null}
+        isOpen={addCouponOpen}
+        onClose={() => setAddCouponOpen(false)}
+        onSuccess={() =>
+          showToast(`تم اضافة كوبون خصم للمستخدم “${displayName}” بنجاح.`)
         }
       />
     </div>

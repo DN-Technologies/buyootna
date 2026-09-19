@@ -1,9 +1,5 @@
-import { Text, View } from 'react-native';
+import CreateListingScreen from '@/app/(individual)/add-listing/index';
 
 export default function AddScreen() {
-  return (
-    <View>
-      <Text>Add Screen</Text>
-    </View>
-  );
+  return <CreateListingScreen />;
 }

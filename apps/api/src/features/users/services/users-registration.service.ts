@@ -9,6 +9,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   checkUserExists,
   isEmail,
@@ -25,6 +26,7 @@ export class UsersRegistrationService {
     private readonly storageService: StorageService,
     private readonly twilioService: TwilioService,
     private readonly emailOtpService: EmailOtpService,
+    private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
   // --- Register Individual ---
@@ -70,6 +72,9 @@ export class UsersRegistrationService {
     if (phone) {
       try {
         await this.twilioService.sendVerification(phone);
+        // Keyed by the raw identifier to match @OtpRequestRateLimit('identifier')
+        // on the controller, which is what actually enforces the cooldown.
+        this.rateLimiter?.recordRequest(dto.identifier);
       } catch (error) {
         console.log(error);
         throw new InternalServerErrorException(

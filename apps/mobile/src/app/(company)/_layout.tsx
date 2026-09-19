@@ -41,6 +41,10 @@ export default function CompanyLayout() {
         screenOptions={{
           headerShown: false,
         }}
+        // See the matching comment in (individual)/_layout.tsx -- the
+        // default 'firstRoute' backBehavior drops the real navigation
+        // history, sending "Back" to Home from any pushed sub-screen.
+        backBehavior="history"
       >
         <Tabs.Screen name="home" />
         <Tabs.Screen name="company-requests" />

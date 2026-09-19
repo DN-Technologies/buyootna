@@ -5,7 +5,7 @@ import { Card } from '@buyootna/ui'
 export default function UsersDonutChart() {
   return (
     <Card
-      className="lg:col-span-1 bg-white border-[#ECECEC] p-[17px] flex flex-col gap-4 relative select-none"
+      className="lg:col-span-1 bg-white border-[#ECECEC] p-4.25 flex flex-col gap-4 relative select-none"
       data-node-id="2376:5436"
     >
       <div className="space-y-1 text-right">
@@ -18,7 +18,7 @@ export default function UsersDonutChart() {
       </div>
 
       <div className="flex items-center justify-center py-4">
-        <div className="relative w-[170px] h-[170px]">
+        <div className="relative w-42.5 h-42.5">
           <svg
             className="w-full h-full transform -rotate-90"
             viewBox="0 0 100 100"

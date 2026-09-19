@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { createSwaggerAuthMiddleware } from './core/swagger/swagger-auth.middleware';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -20,9 +21,15 @@ async function bootstrap() {
   // Enable CORS so React Native frontend can talk to it!
   app.enableCors();
 
-  // Swagger docs only outside production — keeps the full API surface
-  // (including admin/internal endpoints) off the live prod server.
-  if (process.env.NODE_ENV !== 'production') {
+  // Swagger docs protected by HTTP Basic Auth for QA testing and development
+  const enableSwagger =
+    process.env.ENABLE_SWAGGER === 'true' ||
+    process.env.NODE_ENV !== 'production' ||
+    Boolean(process.env.SWAGGER_PASSWORD);
+
+  if (enableSwagger && process.env.ENABLE_SWAGGER !== 'false') {
+    app.use(createSwaggerAuthMiddleware());
+
     const config = new DocumentBuilder()
       .setTitle('Buyootna API')
       .setDescription('Buyootna backend REST API')
@@ -32,6 +39,7 @@ async function bootstrap() {
       .addServer('https://api.buyootna.cloud', 'Production')
       .build();
     const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
     SwaggerModule.setup('api/docs', app, document);
   }
 

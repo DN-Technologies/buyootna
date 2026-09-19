@@ -63,11 +63,19 @@ export default function SearchResultsScreen() {
   const [advancedFilters, setAdvancedFilters] =
     useState<AdvancedFilterState | null>(initialAdvancedFilters);
 
+  // Bumped every time the user explicitly applies a filter (even one that's
+  // identical in value to a prior search), so React Query always issues a
+  // fresh request instead of silently reusing a cached result set keyed by
+  // filter value -- otherwise an ad published after an earlier identical
+  // search would stay invisible until the screen happens to unmount/remount.
+  const [searchNonce, setSearchNonce] = useState(0);
+
   // Unified search runner: keyed on search text OR advanced filters, so
   // switching between the two starts a brand-new paginated query.
   const {
     data: infiniteData,
     isLoading,
+    isError,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -76,6 +84,7 @@ export default function SearchResultsScreen() {
       'searchResults',
       debouncedSearchText.trim(),
       advancedFilters,
+      searchNonce,
     ],
     queryFn: ({ pageParam }) =>
       advancedFilters
@@ -102,6 +111,7 @@ export default function SearchResultsScreen() {
     (data: { tab: string; filters: any }) => {
       setSearchText(''); // Clear text search
       setAdvancedFilters(data);
+      setSearchNonce((n) => n + 1);
     },
     [],
   );
@@ -207,6 +217,13 @@ export default function SearchResultsScreen() {
                   <SuggestionCardSkeleton key={i} />
                 ))}
               </View>
+            ) : isError ? (
+              <EmptySearchResult
+                title="تعذر تحميل النتائج"
+                subtitle="حدث خطأ أثناء البحث. يرجى المحاولة مرة أخرى."
+                onActivateAlert={handleActivateAlert}
+                onExploreNow={handleExploreNow}
+              />
             ) : (
               <EmptySearchResult
                 onActivateAlert={handleActivateAlert}

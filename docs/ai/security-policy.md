@@ -1,0 +1,57 @@
+# Security Policy
+
+Read this for anything touching auth, permissions, PII, the admin module,
+third-party integrations (Twilio, Sentry, S3, Mapbox), or direct database
+access.
+
+## Authentication
+
+- Passport JWT strategy (`AuthGuard('jwt')`) for authenticated routes,
+  Local strategy for login, Twilio SMS OTP for phone verification.
+- **OTP rate limiting**: `OtpRateLimiterService` is checked via
+  `OtpRateLimitGuard` on the request path. **Recording a successful send
+  (`recordRequest`) is the responsibility of the specific caller that
+  knows the correct guard-matching key — never `TwilioService.
+  sendVerification()` itself.** This repo shipped a bug where
+  `sendVerification` recorded its own request, causing every caller to
+  double/triple-count and escalate the cooldown incorrectly; it was fixed
+  by moving `recordRequest` into each caller. Don't reintroduce recording
+  inside the shared send method.
+
+## API documentation exposure
+
+- Swagger UI (`/docs`, `/api/docs`) is protected by HTTP Basic Auth in
+  `createSwaggerAuthMiddleware` (`apps/api/src/core/swagger/
+  swagger-auth.middleware.ts`), controlled by `SWAGGER_USER`/
+  `SWAGGER_PASSWORD` env vars (with hardcoded defaults if unset). Treat
+  these as real credentials — don't disable the guard or weaken it without
+  checking with the user first.
+
+## Admin module
+
+`apps/api/src/features/admin/` is RBAC-relevant — anything touching it
+(new endpoints, permission checks, the web admin portal at
+`apps/web/admin`) is a security-sensitive change, not a routine feature
+change. Flag it explicitly and be conservative about scope.
+
+## Database access
+
+- CLAUDE.md's standing rule: **development/local always uses the Neon
+  `DATABASE_URL` already configured in `apps/api/.env` — never point
+  local dev at the production database.** This file doesn't restate that
+  rule, it reinforces it: treat it as load-bearing, not a suggestion.
+- Before running any migration that will touch a real (dev or prod)
+  database, confirm which instance `DATABASE_URL` actually resolves to —
+  don't assume from the variable name alone. This repo's production
+  `.env` has at times pointed at a Neon instance shared with development,
+  which is exactly the kind of thing that looks fine until a migration
+  runs somewhere unintended. When in doubt, do a read-only check
+  (`SELECT current_database()`, check row counts/timestamps against what
+  you expect) before writing.
+- If you ever discover migration history that doesn't match the live
+  database state (a stuck `_prisma_migrations` record, a table that
+  exists without a corresponding migration file), do not run `prisma
+  migrate reset` to "fix" it — that drops all data. Repair the history
+  with `prisma migrate resolve --applied` after confirming the live
+  schema is actually correct, the way this was done earlier in this
+  repo's history for a drifted `Session`/`CompanyProject` migration state.
