@@ -39,6 +39,7 @@ import {
   AdminUpdateUserStatusResponseDto,
   AdminUsersListResponseDto,
 } from './dto/admin-response.dto';
+import { AdminDashboardResponseDto } from './dto/admin-dashboard-response.dto';
 
 @ApiTags('Admin')
 @ApiAuth()
@@ -50,6 +51,17 @@ import {
 @UseGuards(AuthGuard('jwt'), AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Get('dashboard')
+  @ApiOperation({
+    summary:
+      'Get platform-wide admin dashboard stats: user/revenue metrics, users-by-type breakdown, monthly revenue, recent registrations, and pending company/office verifications',
+  })
+  @ApiResponse({ status: 200, type: AdminDashboardResponseDto })
+  @ApiCommonErrors()
+  async getDashboard() {
+    return this.adminService.getDashboard();
+  }
 
   @Get('users')
   @ApiOperation({

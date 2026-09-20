@@ -1,8 +1,35 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Card } from '@buyootna/ui'
 
-export default function UsersDonutChart() {
+interface UsersDonutChartProps {
+  individual: number
+  company: number
+  office: number
+}
+
+const RADIUS = 38
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+
+export default function UsersDonutChart({
+  individual,
+  company,
+  office,
+}: UsersDonutChartProps) {
+  const segments = useMemo(() => {
+    const total = individual + company + office || 1
+    const individualArc = (individual / total) * CIRCUMFERENCE
+    const companyArc = (company / total) * CIRCUMFERENCE
+    const officeArc = (office / total) * CIRCUMFERENCE
+
+    return {
+      individual: { arc: individualArc, offset: 0 },
+      company: { arc: companyArc, offset: -individualArc },
+      office: { arc: officeArc, offset: -(individualArc + companyArc) },
+    }
+  }, [individual, company, office])
+
   return (
     <Card
       className="lg:col-span-1 bg-white border-[#ECECEC] p-4.25 flex flex-col gap-4 relative select-none"
@@ -26,34 +53,34 @@ export default function UsersDonutChart() {
             <circle
               cx="50"
               cy="50"
-              r="38"
+              r={RADIUS}
               fill="none"
               stroke="#3B82F6"
               strokeWidth="12"
-              strokeDasharray="174 238.76"
-              strokeDashoffset="0"
+              strokeDasharray={`${segments.individual.arc} ${CIRCUMFERENCE}`}
+              strokeDashoffset={segments.individual.offset}
               className="transition-all duration-300"
             />
             <circle
               cx="50"
               cy="50"
-              r="38"
-              fill="none"
-              stroke="#EAB308"
-              strokeWidth="12"
-              strokeDasharray="42 238.76"
-              strokeDashoffset="-177"
-              className="transition-all duration-300"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="38"
+              r={RADIUS}
               fill="none"
               stroke="#10B981"
               strokeWidth="12"
-              strokeDasharray="15 238.76"
-              strokeDashoffset="-222"
+              strokeDasharray={`${segments.company.arc} ${CIRCUMFERENCE}`}
+              strokeDashoffset={segments.company.offset}
+              className="transition-all duration-300"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={RADIUS}
+              fill="none"
+              stroke="#EAB308"
+              strokeWidth="12"
+              strokeDasharray={`${segments.office.arc} ${CIRCUMFERENCE}`}
+              strokeDashoffset={segments.office.offset}
               className="transition-all duration-300"
             />
           </svg>
@@ -69,7 +96,7 @@ export default function UsersDonutChart() {
             </span>
           </div>
           <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            200
+            {individual}
           </span>
         </div>
         <div className="flex items-center justify-between w-full h-[22.5px]">
@@ -80,7 +107,7 @@ export default function UsersDonutChart() {
             </span>
           </div>
           <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            20
+            {company}
           </span>
         </div>
         <div className="flex items-center justify-between w-full h-[22.5px]">
@@ -91,7 +118,7 @@ export default function UsersDonutChart() {
             </span>
           </div>
           <span className="font-sans font-semibold text-[13px] text-[#111111]">
-            50
+            {office}
           </span>
         </div>
       </div>

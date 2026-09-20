@@ -2,35 +2,9 @@
 
 import { Card, Button } from '@buyootna/ui'
 
-const recentActivities = [
-  {
-    id: '1',
-    text: 'قام المشرف أحمد بتعديل باقات الشركات.',
-    time: 'منذ ساعتين',
-  },
-  {
-    id: '2',
-    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
-    time: 'منذ 30 دقيقة',
-  },
-  { id: '3', text: 'تم استلام بلاغ جديد لخدمة التشطيب.', time: 'منذ ساعتين' },
-  {
-    id: '4',
-    text: 'تم الاشتراك في باقة سنوية جديدة من مكتب المستقبل للعقارات.',
-    time: 'منذ ساعتين',
-  },
-  {
-    id: '5',
-    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
-    time: 'منذ ساعتين',
-  },
-  {
-    id: '6',
-    text: 'قام المشرف ايمن بتوثيق مكتب "أطلس الهندسي".',
-    time: 'منذ ساعتين',
-  },
-]
-
+// Not wired to real data -- no activity/audit-log model exists in the
+// backend yet, so nothing in the app records a row here. Shows an honest
+// empty state instead of fabricated rows until that domain gets built.
 export default function RecentActivitiesCard() {
   return (
     <Card
@@ -48,27 +22,16 @@ export default function RecentActivitiesCard() {
         </div>
         <Button
           variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
+          disabled
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl opacity-50 cursor-not-allowed"
         >
           عرض سجل الأنشطة
         </Button>
       </div>
 
-      <div className="flex flex-col w-full divide-y divide-[#ECECEC] border-t border-[#ECECEC]">
-        {recentActivities.map((act) => (
-          <div
-            key={act.id}
-            className="flex items-center justify-between px-6 h-12 w-full hover:bg-[#F9FAFB]/50 transition duration-150"
-          >
-            <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] text-right truncate pl-4 flex-1">
-              {act.text}
-            </p>
-            <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] text-left shrink-0">
-              {act.time}
-            </span>
-          </div>
-        ))}
-      </div>
+      <p className="px-6 py-6 text-center font-['Cairo'] text-[13px] text-[#6b6a6a] border-t border-[#ECECEC]">
+        سجل الأنشطة غير متاح بعد
+      </p>
     </Card>
   )
 }

@@ -12,6 +12,7 @@ import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
+import { AdminDashboardService } from './services/admin-dashboard.service';
 
 @Injectable()
 export class AdminService {
@@ -21,7 +22,12 @@ export class AdminService {
     private readonly adminExportService: AdminExportService,
     private readonly adminPasswordService: AdminPasswordService,
     private readonly adminCouponService: AdminCouponService,
+    private readonly adminDashboardService: AdminDashboardService,
   ) {}
+
+  async getDashboard() {
+    return this.adminDashboardService.getDashboard();
+  }
 
   async getUsers(filters: AdminUsersFilterDto) {
     return this.adminUsersService.getUsers(filters);

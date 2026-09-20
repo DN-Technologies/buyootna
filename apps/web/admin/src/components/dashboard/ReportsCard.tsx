@@ -2,49 +2,9 @@
 
 import { Card, Button } from '@buyootna/ui'
 
-const reports = [
-  {
-    id: '1',
-    type: 'عقار',
-    title: 'فيلا بالتجمع الخامس',
-    reason: 'معلومات غير صحيحة',
-    time: 'منذ 47 دقيقة',
-    priority: 'عاجل',
-    priorityColor: 'text-[#9c1e28]',
-    bulletColor: 'bg-[#9c1e28]',
-  },
-  {
-    id: '2',
-    type: 'عقار',
-    title: 'فيلا بالتجمع الخامس',
-    reason: 'معلومات غير صحيحة',
-    time: 'منذ 47 دقيقة',
-    priority: 'عاجل',
-    priorityColor: 'text-[#9c1e28]',
-    bulletColor: 'bg-[#9c1e28]',
-  },
-  {
-    id: '3',
-    type: 'عقار',
-    title: 'فيلا بالتجمع الخامس',
-    reason: 'معلومات غير صحيحة',
-    time: 'منذ 47 دقيقة',
-    priority: 'منخفضة',
-    priorityColor: 'text-[#344054]',
-    bulletColor: 'bg-[#344054]',
-  },
-  {
-    id: '4',
-    type: 'عقار',
-    title: 'فيلا بالتجمع الخامس',
-    reason: 'معلومات غير صحيحة',
-    time: 'منذ 47 دقيقة',
-    priority: 'متوسط',
-    priorityColor: 'text-[#b97500]',
-    bulletColor: 'bg-[#b97500]',
-  },
-]
-
+// Not wired to real data -- no Report model exists in the backend yet, so
+// nothing in the app can create a row here. Shows an honest empty state
+// instead of fabricated rows until that domain gets built.
 export default function ReportsCard() {
   return (
     <Card
@@ -62,43 +22,16 @@ export default function ReportsCard() {
         </div>
         <Button
           variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
+          disabled
+          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl opacity-50 cursor-not-allowed"
         >
           عرض الكل
         </Button>
       </div>
 
-      <div className="flex flex-col w-full">
-        {reports.map((rep, idx) => (
-          <div
-            key={rep.id}
-            className={`flex items-center justify-between py-3.5 w-full ${
-              idx < reports.length - 1 ? 'border-b border-[#ECEEEF]' : ''
-            }`}
-          >
-            <div className="flex flex-col gap-1.5 items-start text-right">
-              <div className="flex items-center gap-1  h-5 rounded-[99px]">
-                <span
-                  className={`font-['Cairo'] font-medium text-[12px] ${rep.priorityColor}`}
-                >
-                  {rep.priority}
-                </span>
-                <span className={`w-2 h-2 rounded-full ${rep.bulletColor}`} />
-              </div>
-              <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
-                <span>عقار </span>
-                <span className="font-normal text-[#111111]">{rep.title}</span>
-              </p>
-              <p className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a] leading-none mt-0.5">
-                {rep.reason} · {rep.time}
-              </p>
-            </div>
-            <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer">
-              التفاصيل
-            </button>
-          </div>
-        ))}
-      </div>
+      <p className="py-6 text-center font-['Cairo'] text-[13px] text-[#6b6a6a]">
+        نظام البلاغات غير متاح بعد
+      </p>
     </Card>
   )
 }
