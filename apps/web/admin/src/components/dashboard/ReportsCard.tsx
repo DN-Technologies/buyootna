@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, Button } from '@buyootna/ui'
 
 interface ReportItem {
@@ -62,12 +63,14 @@ export default function ReportsCard() {
             آخر البلاغات التي لم يتم التعامل معها
           </p>
         </div>
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl cursor-pointer"
-        >
-          عرض الكل
-        </Button>
+        <Link href="/reports">
+          <Button
+            variant="ghost"
+            className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl cursor-pointer"
+          >
+            عرض الكل
+          </Button>
+        </Link>
       </div>
 
       <div className="flex flex-col w-full divide-y divide-[#ECECEC]">
