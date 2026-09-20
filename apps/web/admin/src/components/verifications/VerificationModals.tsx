@@ -88,6 +88,7 @@ export default function VerificationModals({
         onApprove={onApproveClick}
         onReject={onRejectClick}
         onRequestEdit={onRequestEditClick}
+        onRevoke={onRejectClick}
       />
 
       {/* Approve Confirmation Modal */}
@@ -98,12 +99,18 @@ export default function VerificationModals({
         isLoading={isSubmitting}
       />
 
-      {/* Reject Confirmation Modal */}
+      {/* Reject / Revoke Confirmation Modal matching Figma node 2769:52213 & 2772:54805 */}
       <RejectVerificationModal
         isOpen={rejectModalOpen}
         onClose={onCloseRejectModal}
         onConfirm={onConfirmReject}
         isLoading={isSubmitting}
+        isRevoke={selectedForReview?.status === 'موثق'}
+        targetName={
+          selectedForReview
+            ? `${selectedForReview.type === 'شركة' ? 'شركة' : 'مكتب'} "${selectedForReview.name}"`
+            : undefined
+        }
       />
 
       {/* Request Edit Modal */}

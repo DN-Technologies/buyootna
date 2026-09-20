@@ -37,28 +37,35 @@ export default function VerificationTable({
         </div>
 
         {/* Account Type */}
-        <div className="w-30 text-right">
+        <div className="w-28 text-right">
           <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
             نوع الحساب
           </span>
         </div>
 
-        {/* Status */}
-        <div className="w-30 text-right">
+        {/* Verification Status */}
+        <div className="w-24 text-right">
           <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
             الحالة
           </span>
         </div>
 
         {/* Attachments */}
-        <div className="w-60 text-right">
+        <div className="w-20 text-right">
           <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
             المرفقات
           </span>
         </div>
 
+        {/* Account Activity Status (نشط / موقوف) */}
+        <div className="w-20 text-right">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            الحالة
+          </span>
+        </div>
+
         {/* Sent Date */}
-        <div className="w-30 text-right">
+        <div className="w-28 text-right">
           <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
             تاريخ الارسال
           </span>
@@ -72,7 +79,7 @@ export default function VerificationTable({
         </div>
       </div>
 
-      {/* Table Rows matching Figma 4779:123043 & 2769:50810 */}
+      {/* Table Rows matching Figma 4779:123043 & 2769:52652 */}
       {rows.length === 0 ? (
         <div className="py-12 text-center text-[#6B6A6A] font-['Cairo'] text-[14px]">
           لا توجد طلبات تحقق مطابقة للبحث أو التصفية الحالية
@@ -106,21 +113,15 @@ export default function VerificationTable({
                   </div>
                 </div>
 
-                {/* Account Type Badge */}
-                <div className="w-30 text-right">
-                  <span
-                    className={`inline-flex items-center justify-center px-2 py-0.5 rounded-[99px] text-[11px] font-['Cairo'] font-medium ${
-                      row.accountType === 'شركة'
-                        ? 'bg-[#FFFAEB] text-[#93370D]'
-                        : 'bg-[#F2F4F7] text-[#344054]'
-                    }`}
-                  >
+                {/* Account Type */}
+                <div className="w-28 text-right">
+                  <span className="font-['Cairo'] font-normal text-[13px] text-[#111111]">
                     {row.accountType}
                   </span>
                 </div>
 
-                {/* Status Indicator */}
-                <div className="w-30 text-right">
+                {/* Verification Status Indicator */}
+                <div className="w-24 text-right">
                   <div className="inline-flex items-center gap-1.5">
                     <span
                       className={`size-1.5 rounded-full shrink-0 ${
@@ -128,7 +129,9 @@ export default function VerificationTable({
                           ? 'bg-[#6B6A6A]'
                           : row.status === 'مرفوض'
                             ? 'bg-[#9C1E28]'
-                            : 'bg-[#018B1B]'
+                            : row.status === 'قيد الانتظار'
+                              ? 'bg-[#B97500]'
+                              : 'bg-[#1791E7]'
                       }`}
                     />
                     <span
@@ -137,7 +140,9 @@ export default function VerificationTable({
                           ? 'text-[#6B6A6A]'
                           : row.status === 'مرفوض'
                             ? 'text-[#9C1E28]'
-                            : 'text-[#018B1B]'
+                            : row.status === 'قيد الانتظار'
+                              ? 'text-[#B97500]'
+                              : 'text-[#1791E7]'
                       }`}
                     >
                       {row.status}
@@ -146,12 +151,31 @@ export default function VerificationTable({
                 </div>
 
                 {/* Attachments */}
-                <div className="w-60 text-right font-['Cairo'] font-normal text-[13px] text-[#111111] truncate">
+                <div className="w-20 text-right font-['Cairo'] font-normal text-[13px] text-[#111111] truncate">
                   {row.attachmentsText}
                 </div>
 
+                {/* Account Activity Status Pill */}
+                <div className="w-20 text-right">
+                  {row.accountStatus ? (
+                    <span
+                      className={`inline-flex items-center justify-center px-2 py-0.5 rounded-[99px] text-[12px] font-['Cairo'] font-medium ${
+                        row.accountStatus === 'نشط'
+                          ? 'bg-[rgba(18,194,129,0.1)] text-[#018B1B]'
+                          : 'bg-[rgba(245,184,70,0.1)] text-[#DB9718]'
+                      }`}
+                    >
+                      {row.accountStatus}
+                    </span>
+                  ) : (
+                    <span className="text-[#A0A0A0] text-[12px] font-['Cairo']">
+                      ــــــ
+                    </span>
+                  )}
+                </div>
+
                 {/* Sent Date */}
-                <div className="w-30 text-right font-['Cairo'] font-normal text-[12px] text-[#6B6A6A]">
+                <div className="w-28 text-right font-['Cairo'] font-normal text-[12px] text-[#6B6A6A]">
                   {row.sentAt}
                 </div>
 

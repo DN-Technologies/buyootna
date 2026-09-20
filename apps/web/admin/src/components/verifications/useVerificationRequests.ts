@@ -56,7 +56,7 @@ export function useVerificationRequests() {
 
       // Status filter
       if (statusFilter === 'VERIFIED' && row.status !== 'موثق') return false
-      if (statusFilter === 'PENDING' && row.status !== 'غير موثق') return false
+      if (statusFilter === 'PENDING' && row.status !== 'قيد الانتظار') return false
       if (statusFilter === 'UNVERIFIED' && row.status !== 'غير موثق') return false
 
       // Search query
@@ -114,6 +114,8 @@ export function useVerificationRequests() {
       licenseExpiry: row.licenseExpiry || null,
       logoUrl: row.logoUrl || null,
       createdAt: new Date().toISOString(),
+      status: row.status,
+      sentAt: row.sentAt,
     }
     setSelectedForReview(pendingItem)
     setReviewDrawerOpen(true)
@@ -179,16 +181,23 @@ export function useVerificationRequests() {
       // Fallback optimistic UI
     }
 
+    const isRevoking = selectedForReview.status === 'موثق'
     const rejectedId = selectedForReview.identityId
     setRows((prev) =>
       prev.map((r) =>
-        r.id === rejectedId ? { ...r, status: 'مرفوض' as const } : r
+        r.id === rejectedId
+          ? {
+              ...r,
+              status: isRevoking ? ('غير موثق' as const) : ('مرفوض' as const),
+              actionLabel: 'مراجعة' as const,
+            }
+          : r
       )
     )
     setIsSubmitting(false)
     setRejectModalOpen(false)
     setReviewDrawerOpen(false)
-    setToastMessage('تم رفض طلب التوثيق.')
+    setToastMessage(isRevoking ? 'تم إلغاء التوثيق بنجاح.' : 'تم رفض طلب التوثيق.')
     setShowToast(true)
   }
 

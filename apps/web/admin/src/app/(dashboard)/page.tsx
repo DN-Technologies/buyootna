@@ -101,7 +101,7 @@ const FIGMA_DEFAULT_DATA: AdminDashboardResponse = {
   pendingVerifications: [
     {
       identityId: 'pv1',
-      name: 'المستقبل',
+      name: 'مكتب المستقبل',
       type: 'مكتب عقاري',
       licenseNumber: '74978930863',
       licenseActivity: 'تنفيذ وتشطيب',
@@ -292,10 +292,11 @@ export default function DashboardPage() {
         status: 'REJECTED',
         ...options,
       })
+      const isRevoking = selectedRequest.status === 'موثق'
       setLastApprovedRequest(selectedRequest)
       setIsRejectModalOpen(false)
       setIsDrawerOpen(false)
-      setToastMessage('تم رفض طلب التوثيق بنجاح.')
+      setToastMessage(isRevoking ? 'تم إلغاء التوثيق بنجاح.' : 'تم رفض طلب التوثيق بنجاح.')
       setShowToast(true)
       reload()
     } catch (err) {
@@ -403,7 +404,7 @@ export default function DashboardPage() {
         <RecentActivitiesCard />
       </div>
 
-      {/* Slide-over Verification Drawer matching Figma node 2732:151741 & 2734:152868 */}
+      {/* Slide-over Verification Drawer matching Figma node 2732:151741 & 2772:54236 */}
       <ReviewVerificationDrawer
         isOpen={isDrawerOpen}
         onClose={handleCloseDrawer}
@@ -411,6 +412,7 @@ export default function DashboardPage() {
         onApprove={handleApproveClick}
         onRequestEdit={handleRequestEditClick}
         onReject={handleRejectClick}
+        onRevoke={handleRejectClick}
       />
 
       {/* Approval Confirmation Modal matching Figma node 2734:152314 */}
@@ -421,15 +423,21 @@ export default function DashboardPage() {
         isLoading={isSubmittingDecision}
       />
 
-      {/* Reject Confirmation Modal matching Figma node 2734:152236 */}
+      {/* Reject / Revoke Confirmation Modal matching Figma node 2734:152236 & 2772:54805 */}
       <RejectVerificationModal
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onConfirm={handleConfirmReject}
         isLoading={isSubmittingDecision}
+        isRevoke={selectedRequest?.status === 'موثق'}
+        targetName={
+          selectedRequest
+            ? `${selectedRequest.type === 'شركة' ? 'شركة' : 'مكتب'} "${selectedRequest.name}"`
+            : undefined
+        }
       />
 
-      {/* Request Edit Modal matching Figma node 2804:65127 */}
+      {/* Request Edit Modal matching Figma node 2804:65078 */}
       <RequestEditModal
         isOpen={isRequestEditModalOpen}
         onClose={() => setIsRequestEditModalOpen(false)}

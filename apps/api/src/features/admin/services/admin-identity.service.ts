@@ -31,7 +31,9 @@ export class AdminIdentityService {
       await this.mailService.sendMail(options);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Notification email to ${options.to} failed: ${message}`);
+      this.logger.warn(
+        `Notification email to ${options.to} failed: ${message}`,
+      );
     }
   }
 
