@@ -23,7 +23,7 @@ export default function RootLayout({
       className="h-full antialiased"
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans bg-[#0A1118] text-[#ECEFF2]" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col font-sans bg-[#F9FAFB] text-[#111111] antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>
