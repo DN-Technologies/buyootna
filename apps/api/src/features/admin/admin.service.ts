@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
+import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
 import {
   AdminGrantCouponDto,
@@ -46,6 +47,13 @@ export class AdminService {
     dto: AdminUpdateIdentityStatusDto,
   ) {
     return this.adminIdentityService.updateIdentityStatus(identityId, dto);
+  }
+
+  async requestIdentityEdit(
+    identityId: string,
+    dto: AdminRequestIdentityEditDto,
+  ) {
+    return this.adminIdentityService.requestIdentityEdit(identityId, dto);
   }
 
   async deleteUser(userId: string) {

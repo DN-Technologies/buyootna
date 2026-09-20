@@ -71,6 +71,21 @@ class AdminDashboardPendingVerificationDto {
 
   @ApiProperty({ enum: ['شركة', 'مكتب عقاري'] })
   type: string;
+
+  @ApiProperty({ nullable: true })
+  licenseNumber: string | null;
+
+  @ApiProperty({ nullable: true })
+  licenseActivity: string | null;
+
+  @ApiProperty({ nullable: true })
+  licenseExpiry: string | null;
+
+  @ApiProperty({ nullable: true })
+  logoUrl: string | null;
+
+  @ApiProperty()
+  createdAt: Date;
 }
 
 export class AdminDashboardResponseDto {

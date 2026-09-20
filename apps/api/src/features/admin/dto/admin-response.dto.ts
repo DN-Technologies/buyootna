@@ -105,10 +105,9 @@ export class AdminUpdateUserStatusResponseDto {
   user: Record<string, unknown>;
 }
 
-export class AdminUpdateIdentityStatusResponseDto {
-  @ApiProperty()
-  message: string;
-}
+// AdminUpdateIdentityStatusResponseDto removed -- the service actually
+// returns the full updated Identity (see IdentityResponseDto in
+// features/identities/dto/identity-response.dto.ts), not a bare message.
 
 export class AdminResetPasswordResponseDto {
   @ApiProperty({ example: 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح' })

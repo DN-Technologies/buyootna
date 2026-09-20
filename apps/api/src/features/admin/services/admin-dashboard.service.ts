@@ -91,7 +91,9 @@ export class AdminDashboardService {
         },
         _sum: { amount: true },
       }),
-      this.prisma.user.count({ where: { role: Role.INDIVIDUAL, isAdmin: false } }),
+      this.prisma.user.count({
+        where: { role: Role.INDIVIDUAL, isAdmin: false },
+      }),
       this.prisma.user.count({ where: { role: Role.COMPANY, isAdmin: false } }),
       this.prisma.user.count({ where: { role: Role.OFFICE, isAdmin: false } }),
       this.prisma.user.findMany({
@@ -104,13 +106,29 @@ export class AdminDashboardService {
         where: { status: ApprovalStatus.PENDING },
         take: 7,
         orderBy: { createdAt: 'desc' },
-        select: { identityId: true, name: true },
+        select: {
+          identityId: true,
+          name: true,
+          licenseNumber: true,
+          licenseActivity: true,
+          licenseExpiry: true,
+          logoUrl: true,
+          createdAt: true,
+        },
       }),
       this.prisma.officeIdentityData.findMany({
         where: { status: ApprovalStatus.PENDING },
         take: 7,
         orderBy: { createdAt: 'desc' },
-        select: { identityId: true, name: true },
+        select: {
+          identityId: true,
+          name: true,
+          licenseNumber: true,
+          licenseActivity: true,
+          licenseExpiry: true,
+          logoUrl: true,
+          createdAt: true,
+        },
       }),
       this.prisma.invoice.findMany({
         where: {
@@ -166,11 +184,21 @@ export class AdminDashboardService {
         identityId: c.identityId,
         name: c.name,
         type: 'شركة' as const,
+        licenseNumber: c.licenseNumber,
+        licenseActivity: c.licenseActivity,
+        licenseExpiry: c.licenseExpiry,
+        logoUrl: c.logoUrl,
+        createdAt: c.createdAt,
       })),
       ...pendingOffices.map((o) => ({
         identityId: o.identityId,
         name: o.name,
         type: 'مكتب عقاري' as const,
+        licenseNumber: o.licenseNumber,
+        licenseActivity: o.licenseActivity,
+        licenseExpiry: o.licenseExpiry,
+        logoUrl: o.logoUrl,
+        createdAt: o.createdAt,
       })),
     ].slice(0, 7);
 

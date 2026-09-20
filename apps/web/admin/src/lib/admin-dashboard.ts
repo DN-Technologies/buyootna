@@ -34,6 +34,11 @@ export interface AdminDashboardPendingVerification {
   identityId: string;
   name: string;
   type: 'شركة' | 'مكتب عقاري';
+  licenseNumber: string | null;
+  licenseActivity: string | null;
+  licenseExpiry: string | null;
+  logoUrl: string | null;
+  createdAt: string;
 }
 
 export interface AdminDashboardResponse {
@@ -46,6 +51,38 @@ export interface AdminDashboardResponse {
 
 export async function fetchAdminDashboard(): Promise<AdminDashboardResponse> {
   const res = await api.get('/admin/dashboard');
+  return res.data;
+}
+
+export interface UpdateIdentityStatusOptions {
+  status: 'APPROVED' | 'REJECTED';
+  reason?: string;
+  notifyEmail?: boolean;
+  notifyInApp?: boolean;
+}
+
+export async function updateIdentityStatus(
+  identityId: string,
+  options: UpdateIdentityStatusOptions,
+) {
+  const res = await api.patch(`/admin/identities/${identityId}/status`, options);
+  return res.data;
+}
+
+export interface RequestIdentityEditOptions {
+  notes: string;
+  notifyEmail?: boolean;
+  notifyInApp?: boolean;
+}
+
+export async function requestIdentityEdit(
+  identityId: string,
+  options: RequestIdentityEditOptions,
+) {
+  const res = await api.post(
+    `/admin/identities/${identityId}/request-edit`,
+    options,
+  );
   return res.data;
 }
 

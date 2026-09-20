@@ -19,6 +19,8 @@ import { useDashboardPage } from './useDashboardPage'
 import {
   AdminDashboardResponse,
   AdminDashboardPendingVerification,
+  updateIdentityStatus,
+  requestIdentityEdit,
 } from '@/lib/admin-dashboard'
 
 function formatChange(pct: number): string {
@@ -101,36 +103,71 @@ const FIGMA_DEFAULT_DATA: AdminDashboardResponse = {
       identityId: 'pv1',
       name: 'المستقبل',
       type: 'مكتب عقاري',
+      licenseNumber: '74978930863',
+      licenseActivity: 'تنفيذ وتشطيب',
+      licenseExpiry: '17 مارس 2028',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv2',
       name: 'دار العقار الحديث',
       type: 'شركة',
+      licenseNumber: '74978930864',
+      licenseActivity: 'وساطة عقارية',
+      licenseExpiry: '22 يونيو 2027',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv3',
       name: 'المنار',
       type: 'شركة',
+      licenseNumber: '74978930865',
+      licenseActivity: 'وساطة عقارية',
+      licenseExpiry: '05 سبتمبر 2027',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv4',
       name: 'الأمل',
       type: 'مكتب عقاري',
+      licenseNumber: '74978930866',
+      licenseActivity: 'تنفيذ وتشطيب',
+      licenseExpiry: '11 نوفمبر 2028',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv5',
       name: 'شركة الأفق',
       type: 'شركة',
+      licenseNumber: '74978930867',
+      licenseActivity: 'وساطة عقارية',
+      licenseExpiry: '30 يناير 2027',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv6',
       name: 'مكتب الصفا',
       type: 'مكتب عقاري',
+      licenseNumber: '74978930868',
+      licenseActivity: 'تنفيذ وتشطيب',
+      licenseExpiry: '14 ابريل 2028',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     },
     {
       identityId: 'pv7',
       name: 'شركة الرائد',
       type: 'شركة',
+      licenseNumber: '74978930869',
+      licenseActivity: 'وساطة عقارية',
+      licenseExpiry: '19 ديسمبر 2027',
+      logoUrl: null,
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     },
   ],
 }
@@ -153,6 +190,7 @@ export default function DashboardPage() {
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false)
   const [isRequestEditModalOpen, setIsRequestEditModalOpen] = useState(false)
+  const [isSubmittingDecision, setIsSubmittingDecision] = useState(false)
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState('تم اعتماد التوثيق بنجاح.')
   const [lastApprovedRequest, setLastApprovedRequest] =
@@ -217,56 +255,86 @@ export default function DashboardPage() {
     setIsRequestEditModalOpen(true)
   }
 
-  const handleConfirmBadge = (_options: {
+  const handleConfirmBadge = async (options: {
     notifyEmail: boolean
     notifyInApp: boolean
   }) => {
-    if (selectedRequest) {
+    if (!selectedRequest) return
+    setIsSubmittingDecision(true)
+    try {
+      await updateIdentityStatus(selectedRequest.identityId, {
+        status: 'APPROVED',
+        ...options,
+      })
       setLastApprovedRequest(selectedRequest)
-      setPendingRequests((prev) =>
-        prev.filter((r) => r.identityId !== selectedRequest.identityId),
-      )
+      setIsConfirmModalOpen(false)
+      setIsDrawerOpen(false)
+      setToastMessage('تم اعتماد التوثيق بنجاح.')
+      setShowToast(true)
+      reload()
+    } catch (err) {
+      console.error('Failed to approve identity:', err)
+      window.alert('تعذر اعتماد التوثيق. يرجى المحاولة مرة أخرى.')
+    } finally {
+      setIsSubmittingDecision(false)
     }
-    setIsConfirmModalOpen(false)
-    setIsDrawerOpen(false)
-    setToastMessage('تم اعتماد التوثيق بنجاح.')
-    setShowToast(true)
   }
 
-  const handleConfirmReject = (_options: {
+  const handleConfirmReject = async (options: {
     reason: string
     notifyEmail: boolean
     notifyInApp: boolean
   }) => {
-    if (selectedRequest) {
+    if (!selectedRequest) return
+    setIsSubmittingDecision(true)
+    try {
+      await updateIdentityStatus(selectedRequest.identityId, {
+        status: 'REJECTED',
+        ...options,
+      })
       setLastApprovedRequest(selectedRequest)
-      setPendingRequests((prev) =>
-        prev.filter((r) => r.identityId !== selectedRequest.identityId),
-      )
+      setIsRejectModalOpen(false)
+      setIsDrawerOpen(false)
+      setToastMessage('تم رفض طلب التوثيق بنجاح.')
+      setShowToast(true)
+      reload()
+    } catch (err) {
+      console.error('Failed to reject identity:', err)
+      window.alert('تعذر رفض الطلب. يرجى المحاولة مرة أخرى.')
+    } finally {
+      setIsSubmittingDecision(false)
     }
-    setIsRejectModalOpen(false)
-    setIsDrawerOpen(false)
-    setToastMessage('تم رفض طلب التوثيق بنجاح.')
-    setShowToast(true)
   }
 
-  const handleConfirmRequestEdit = (_options: {
+  const handleConfirmRequestEdit = async (options: {
     notes: string
     notifyEmail: boolean
     notifyInApp: boolean
   }) => {
-    if (selectedRequest) {
+    if (!selectedRequest) return
+    setIsSubmittingDecision(true)
+    try {
+      await requestIdentityEdit(selectedRequest.identityId, options)
       setLastApprovedRequest(selectedRequest)
-      setPendingRequests((prev) =>
-        prev.filter((r) => r.identityId !== selectedRequest.identityId),
-      )
+      setIsRequestEditModalOpen(false)
+      setIsDrawerOpen(false)
+      setToastMessage('تم إرسال طلب التعديل بنجاح.')
+      setShowToast(true)
+      reload()
+    } catch (err) {
+      console.error('Failed to request identity edit:', err)
+      window.alert('تعذر إرسال طلب التعديل. يرجى المحاولة مرة أخرى.')
+    } finally {
+      setIsSubmittingDecision(false)
     }
-    setIsRequestEditModalOpen(false)
-    setIsDrawerOpen(false)
-    setToastMessage('تم إرسال طلب التعديل بنجاح.')
-    setShowToast(true)
   }
 
+  // "Undo" is intentionally local-only: by the time this toast shows, the
+  // approve/reject/request-edit call above has already persisted and a
+  // notification may already have been sent, so a true backend reversal
+  // would need its own "never mind" notification. This just restores the
+  // item to the on-screen list for this session -- it will NOT reappear as
+  // pending after a page refresh, since the backend decision already stuck.
   const handleUndoApproval = () => {
     if (lastApprovedRequest) {
       setPendingRequests((prev) => [lastApprovedRequest, ...prev])
@@ -350,6 +418,7 @@ export default function DashboardPage() {
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={handleConfirmBadge}
+        isLoading={isSubmittingDecision}
       />
 
       {/* Reject Confirmation Modal matching Figma node 2734:152236 */}
@@ -357,6 +426,7 @@ export default function DashboardPage() {
         isOpen={isRejectModalOpen}
         onClose={() => setIsRejectModalOpen(false)}
         onConfirm={handleConfirmReject}
+        isLoading={isSubmittingDecision}
       />
 
       {/* Request Edit Modal matching Figma node 2804:65127 */}
@@ -364,6 +434,7 @@ export default function DashboardPage() {
         isOpen={isRequestEditModalOpen}
         onClose={() => setIsRequestEditModalOpen(false)}
         onConfirm={handleConfirmRequestEdit}
+        isLoading={isSubmittingDecision}
       />
     </div>
   )

@@ -2,7 +2,10 @@
 
 import React from 'react'
 import { CloseIcon, FileArrowUpIcon } from '@/components/icons/AdminIcons'
-import { AdminDashboardPendingVerification } from '@/lib/admin-dashboard'
+import {
+  AdminDashboardPendingVerification,
+  formatRelativeArabicTime,
+} from '@/lib/admin-dashboard'
 
 export interface ReviewVerificationDrawerProps {
   isOpen: boolean
@@ -28,7 +31,6 @@ export default function ReviewVerificationDrawer({
 }: ReviewVerificationDrawerProps) {
   if (!isOpen || !request) return null
 
-  const isOffice = request.type === 'مكتب عقاري'
   const badgeStyle =
     TYPE_BADGE_STYLES[request.type] ?? TYPE_BADGE_STYLES['مكتب عقاري']
 
@@ -57,7 +59,7 @@ export default function ReviewVerificationDrawer({
                 </h2>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="font-['Cairo'] font-medium text-[12px] text-[#6b6a6a]">
-                    {request.name} · منذ ساعة
+                    {request.name} · {formatRelativeArabicTime(request.createdAt)}
                   </span>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[11px] font-['Cairo'] font-semibold ${badgeStyle.bg} ${badgeStyle.color}`}
@@ -84,7 +86,7 @@ export default function ReviewVerificationDrawer({
                   رقم الرخصة
                 </span>
                 <span className="font-['Cairo'] font-bold text-[15px] text-[#111111]">
-                  74978930863
+                  {request.licenseNumber || 'ــــــــ'}
                 </span>
               </div>
 
@@ -96,7 +98,7 @@ export default function ReviewVerificationDrawer({
                   نشاط الرخصة
                 </span>
                 <span className="font-['Cairo'] font-bold text-[15px] text-[#111111]">
-                  {isOffice ? 'تنفيذ وتشطيب' : 'ــــــــ'}
+                  {request.licenseActivity || 'ــــــــ'}
                 </span>
               </div>
 
@@ -108,7 +110,7 @@ export default function ReviewVerificationDrawer({
                   تاريخ انتهاء الرخصة
                 </span>
                 <span className="font-['Cairo'] font-bold text-[15px] text-[#111111]">
-                  17 مارس 2028
+                  {request.licenseExpiry || 'ــــــــ'}
                 </span>
               </div>
 
