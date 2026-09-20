@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
+import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
 import {
   AdminGrantCouponDto,
@@ -12,6 +13,7 @@ import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
+import { AdminDashboardService } from './services/admin-dashboard.service';
 
 @Injectable()
 export class AdminService {
@@ -21,7 +23,12 @@ export class AdminService {
     private readonly adminExportService: AdminExportService,
     private readonly adminPasswordService: AdminPasswordService,
     private readonly adminCouponService: AdminCouponService,
+    private readonly adminDashboardService: AdminDashboardService,
   ) {}
+
+  async getDashboard() {
+    return this.adminDashboardService.getDashboard();
+  }
 
   async getUsers(filters: AdminUsersFilterDto) {
     return this.adminUsersService.getUsers(filters);
@@ -40,6 +47,13 @@ export class AdminService {
     dto: AdminUpdateIdentityStatusDto,
   ) {
     return this.adminIdentityService.updateIdentityStatus(identityId, dto);
+  }
+
+  async requestIdentityEdit(
+    identityId: string,
+    dto: AdminRequestIdentityEditDto,
+  ) {
+    return this.adminIdentityService.requestIdentityEdit(identityId, dto);
   }
 
   async deleteUser(userId: string) {

@@ -6,6 +6,7 @@ import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
+import { AdminDashboardService } from './services/admin-dashboard.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { Role, IdentityType } from '@prisma/client';
@@ -32,12 +33,21 @@ interface MockPrismaService {
   };
   companyIdentityData: {
     update: jest.Mock;
+    findMany: jest.Mock;
   };
   officeIdentityData: {
     update: jest.Mock;
+    findMany: jest.Mock;
   };
   plan: {
     findFirst: jest.Mock;
+  };
+  invoice: {
+    aggregate: jest.Mock;
+    findMany: jest.Mock;
+  };
+  reviewRequest: {
+    create: jest.Mock;
   };
   $transaction: jest.Mock;
 }
@@ -46,10 +56,15 @@ interface MockNotificationsService {
   create: jest.Mock;
 }
 
+interface MockMailService {
+  sendMail: jest.Mock;
+}
+
 describe('AdminService', () => {
   let service: AdminService;
   let prisma: MockPrismaService;
   let notifications: MockNotificationsService;
+  let mail: MockMailService;
 
   beforeEach(async () => {
     prisma = {
@@ -71,12 +86,21 @@ describe('AdminService', () => {
       },
       companyIdentityData: {
         update: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
       },
       officeIdentityData: {
         update: jest.fn(),
+        findMany: jest.fn().mockResolvedValue([]),
       },
       plan: {
         findFirst: jest.fn(),
+      },
+      invoice: {
+        aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 0 } }),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      reviewRequest: {
+        create: jest.fn().mockResolvedValue({ id: 'review-request-1' }),
       },
       $transaction: jest.fn(
         (callback: (tx: MockPrismaService) => Promise<unknown>) =>
@@ -92,7 +116,7 @@ describe('AdminService', () => {
       sign: jest.fn().mockReturnValue('mock-reset-token-123'),
     };
 
-    const mailService = {
+    mail = {
       sendMail: jest.fn().mockResolvedValue({ success: true }),
     };
 
@@ -104,6 +128,7 @@ describe('AdminService', () => {
         AdminExportService,
         AdminPasswordService,
         AdminCouponService,
+        AdminDashboardService,
         {
           provide: PrismaService,
           useValue: prisma,
@@ -118,7 +143,7 @@ describe('AdminService', () => {
         },
         {
           provide: MailService,
-          useValue: mailService,
+          useValue: mail,
         },
       ],
     }).compile();
@@ -441,6 +466,244 @@ describe('AdminService', () => {
       expect(res.grantedCount).toBe(2);
       expect(res.message).toBe('تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.');
       expect(res.grantedUserIds).toEqual(['u1', 'u2']);
+    });
+  });
+
+  describe('getDashboard', () => {
+    it('computes metrics, usersByType, recent registrations, and pending verifications', async () => {
+      // user.count call order: totalUsersNow, totalUsersLastMonth,
+      // trialAccountsNow, trialAccountsLastMonth, countIndividual,
+      // countCompany, countOffice
+      prisma.user.count
+        .mockResolvedValueOnce(120) // totalUsersNow
+        .mockResolvedValueOnce(100) // totalUsersLastMonth
+        .mockResolvedValueOnce(80) // trialAccountsNow
+        .mockResolvedValueOnce(70) // trialAccountsLastMonth
+        .mockResolvedValueOnce(90) // countIndividual
+        .mockResolvedValueOnce(20) // countCompany
+        .mockResolvedValueOnce(10); // countOffice
+
+      prisma.invoice.aggregate
+        .mockResolvedValueOnce({ _sum: { amount: 500 } }) // this month
+        .mockResolvedValueOnce({ _sum: { amount: 250 } }); // last month
+
+      prisma.user.findMany.mockResolvedValue([
+        {
+          id: 'u-1',
+          name: 'سالم الكندري',
+          email: 'salem@example.com',
+          phone: null,
+          role: Role.COMPANY,
+          createdAt: new Date('2026-02-01T00:00:00Z'),
+          activePlan: { name: 'الفضية' },
+        },
+      ]);
+
+      prisma.companyIdentityData.findMany.mockResolvedValue([
+        { identityId: 'company-identity-1', name: 'شركة الاختبار' },
+      ]);
+      prisma.officeIdentityData.findMany.mockResolvedValue([
+        { identityId: 'office-identity-1', name: 'مكتب الاختبار' },
+      ]);
+
+      const result = await service.getDashboard();
+
+      expect(result.metrics.totalUsers).toBe(120);
+      expect(result.metrics.totalUsersChangePct).toBe(20);
+      expect(result.metrics.trialAccounts).toBe(80);
+      expect(result.metrics.revenueTotal).toBe(500);
+      expect(result.metrics.revenueChangePct).toBe(100);
+
+      expect(result.usersByType).toEqual({
+        individual: 90,
+        company: 20,
+        office: 10,
+      });
+
+      expect(result.recentRegistrations).toHaveLength(1);
+      expect(result.recentRegistrations[0].accountType).toBe('شركة');
+      expect(result.recentRegistrations[0].planName).toBe('الفضية');
+
+      expect(result.pendingVerifications).toEqual([
+        { identityId: 'company-identity-1', name: 'شركة الاختبار', type: 'شركة' },
+        { identityId: 'office-identity-1', name: 'مكتب الاختبار', type: 'مكتب عقاري' },
+      ]);
+
+      expect(result.revenueByMonth).toHaveLength(12);
+    });
+
+    it('returns 0% change when the previous period has no data', async () => {
+      prisma.user.count
+        .mockResolvedValueOnce(5) // totalUsersNow
+        .mockResolvedValueOnce(0) // totalUsersLastMonth
+        .mockResolvedValueOnce(0) // trialAccountsNow
+        .mockResolvedValueOnce(0) // trialAccountsLastMonth
+        .mockResolvedValueOnce(0) // countIndividual
+        .mockResolvedValueOnce(0) // countCompany
+        .mockResolvedValueOnce(0); // countOffice
+
+      prisma.user.findMany.mockResolvedValue([]);
+
+      const result = await service.getDashboard();
+
+      expect(result.metrics.totalUsersChangePct).toBe(0);
+      expect(result.metrics.revenueChangePct).toBe(0);
+    });
+  });
+
+  describe('updateIdentityStatus', () => {
+    const companyIdentity = {
+      id: 'identity-company-1',
+      userId: 'user-1',
+      type: 'COMPANY',
+      companyData: { id: 'company-data-1' },
+      officeData: null,
+      user: { id: 'user-1', email: 'company@example.com', name: 'شركة الاختبار' },
+    };
+
+    it('creates a ReviewRequest with the reason when rejecting with one', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+
+      await service.updateIdentityStatus('identity-company-1', {
+        status: 'REJECTED',
+        reason: 'الرخصة منتهية الصلاحية',
+      });
+
+      expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
+        data: {
+          status: 'REJECTED',
+          notes: 'الرخصة منتهية الصلاحية',
+          companyIdentityDataId: 'company-data-1',
+        },
+      });
+    });
+
+    it('does not create a ReviewRequest when approving', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+
+      await service.updateIdentityStatus('identity-company-1', {
+        status: 'APPROVED',
+      });
+
+      expect(prisma.reviewRequest.create).not.toHaveBeenCalled();
+    });
+
+    it('skips the in-app notification when notifyInApp is false', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+
+      await service.updateIdentityStatus('identity-company-1', {
+        status: 'APPROVED',
+        notifyInApp: false,
+      });
+
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('skips the email when notifyEmail is false', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+
+      await service.updateIdentityStatus('identity-company-1', {
+        status: 'APPROVED',
+        notifyEmail: false,
+      });
+
+      expect(mail.sendMail).not.toHaveBeenCalled();
+    });
+
+    it('sends both notification channels by default', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+
+      await service.updateIdentityStatus('identity-company-1', {
+        status: 'APPROVED',
+      });
+
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 'user-1', type: 'IDENTITY_APPROVED' }),
+      );
+      expect(mail.sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: 'company@example.com' }),
+      );
+    });
+
+    it('still succeeds when the notification email fails to send', async () => {
+      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
+      mail.sendMail.mockRejectedValueOnce(new Error('Invalid `to` field'));
+
+      await expect(
+        service.updateIdentityStatus('identity-company-1', {
+          status: 'APPROVED',
+        }),
+      ).resolves.toBeDefined();
+    });
+  });
+
+  describe('requestIdentityEdit', () => {
+    const officeIdentity = {
+      id: 'identity-office-1',
+      userId: 'user-2',
+      type: 'OFFICE',
+      companyData: null,
+      officeData: { id: 'office-data-1', status: 'PENDING' },
+      user: { id: 'user-2', email: 'office@example.com', name: 'مكتب الاختبار' },
+    };
+
+    it('creates a PENDING ReviewRequest with the notes and leaves the identity untouched', async () => {
+      prisma.identity.findUnique.mockResolvedValue(officeIdentity);
+
+      const result = await service.requestIdentityEdit('identity-office-1', {
+        notes: 'يرجى رفع صورة رخصة أوضح',
+      });
+
+      expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
+        data: {
+          status: 'PENDING',
+          notes: 'يرجى رفع صورة رخصة أوضح',
+          officeIdentityDataId: 'office-data-1',
+        },
+      });
+      expect(prisma.officeIdentityData.update).not.toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('notifies with type IDENTITY_EDIT_REQUESTED by default', async () => {
+      prisma.identity.findUnique.mockResolvedValue(officeIdentity);
+
+      await service.requestIdentityEdit('identity-office-1', {
+        notes: 'يرجى رفع صورة رخصة أوضح',
+      });
+
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-2',
+          type: 'IDENTITY_EDIT_REQUESTED',
+        }),
+      );
+      expect(mail.sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: 'office@example.com' }),
+      );
+    });
+
+    it('throws BadRequestException for an individual identity', async () => {
+      prisma.identity.findUnique.mockResolvedValue({
+        id: 'identity-ind-1',
+        userId: 'user-3',
+        type: 'INDIVIDUAL',
+        companyData: null,
+        officeData: null,
+        user: { id: 'user-3', email: 'ind@example.com', name: 'فرد' },
+      });
+
+      await expect(
+        service.requestIdentityEdit('identity-ind-1', { notes: 'test' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('throws NotFoundException when the identity does not exist', async () => {
+      prisma.identity.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.requestIdentityEdit('missing-id', { notes: 'test' }),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

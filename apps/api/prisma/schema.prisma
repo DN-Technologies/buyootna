@@ -169,6 +169,7 @@ model NotificationPreferences {
 enum NotificationType {
   IDENTITY_APPROVED
   IDENTITY_REJECTED
+  IDENTITY_EDIT_REQUESTED
 }
 
 model Notification {

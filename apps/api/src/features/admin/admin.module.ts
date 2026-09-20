@@ -8,6 +8,7 @@ import { AdminIdentityService } from './services/admin-identity.service';
 import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
+import { AdminDashboardService } from './services/admin-dashboard.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AdminCouponService } from './services/admin-coupon.service';
     AdminExportService,
     AdminPasswordService,
     AdminCouponService,
+    AdminDashboardService,
   ],
   exports: [
     AdminService,
@@ -32,6 +34,7 @@ import { AdminCouponService } from './services/admin-coupon.service';
     AdminExportService,
     AdminPasswordService,
     AdminCouponService,
+    AdminDashboardService,
   ],
 })
 export class AdminModule {}
