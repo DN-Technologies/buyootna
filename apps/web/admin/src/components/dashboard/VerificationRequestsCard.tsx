@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Card, Button } from '@buyootna/ui'
 import { AdminDashboardPendingVerification } from '@/lib/admin-dashboard'
 
@@ -31,12 +32,14 @@ export default function VerificationRequestsCard({
             حسابات تنتظر مراجعة مستندات التوثيق
           </p>
         </div>
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
-        >
-          عرض الكل
-        </Button>
+        <Link href="/verifications">
+          <Button
+            variant="ghost"
+            className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl cursor-pointer"
+          >
+            عرض الكل
+          </Button>
+        </Link>
       </div>
 
       {requests.length === 0 ? (

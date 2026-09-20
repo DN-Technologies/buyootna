@@ -1,0 +1,228 @@
+'use client'
+
+import React from 'react'
+import { ChevronLeft } from 'lucide-react'
+import { VerificationTableRow } from './types'
+
+interface VerificationTableProps {
+  rows: VerificationTableRow[]
+  selectedIds: string[]
+  onToggleSelectAll: () => void
+  onToggleSelectRow: (id: string) => void
+  onOpenReview: (row: VerificationTableRow) => void
+}
+
+export default function VerificationTable({
+  rows,
+  selectedIds,
+  onToggleSelectAll,
+  onToggleSelectRow,
+  onOpenReview,
+}: VerificationTableProps) {
+  return (
+    <div className="bg-white border border-[#ECECEC] rounded-lg overflow-hidden">
+      {/* Table Header matching Figma 4779:123026 */}
+      <div className="bg-[#FBFBFB] border-b border-[#ECECEC] px-5 py-3 flex items-center justify-between text-right">
+        {/* User Name + Select All Checkbox */}
+        <div className="flex items-center gap-4 w-65 justify-start">
+          <input
+            type="checkbox"
+            checked={rows.length > 0 && selectedIds.length === rows.length}
+            onChange={onToggleSelectAll}
+            className="w-4.5 h-4.5 rounded border-[#D7D7D7] text-primary focus:ring-0 cursor-pointer accent-primary"
+          />
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            اسم المستخدم
+          </span>
+        </div>
+
+        {/* Account Type */}
+        <div className="w-30 text-right">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            نوع الحساب
+          </span>
+        </div>
+
+        {/* Status */}
+        <div className="w-30 text-right">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            الحالة
+          </span>
+        </div>
+
+        {/* Attachments */}
+        <div className="w-60 text-right">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            المرفقات
+          </span>
+        </div>
+
+        {/* Sent Date */}
+        <div className="w-30 text-right">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            تاريخ الارسال
+          </span>
+        </div>
+
+        {/* Actions */}
+        <div className="w-20 text-center">
+          <span className="font-['Cairo'] font-semibold text-[12px] text-[#6B6A6A]">
+            الاجراءات
+          </span>
+        </div>
+      </div>
+
+      {/* Table Rows matching Figma 4779:123043 & 2769:50810 */}
+      {rows.length === 0 ? (
+        <div className="py-12 text-center text-[#6B6A6A] font-['Cairo'] text-[14px]">
+          لا توجد طلبات تحقق مطابقة للبحث أو التصفية الحالية
+        </div>
+      ) : (
+        <div className="divide-y divide-[#ECECEC]">
+          {rows.map((row) => {
+            const isSelected = selectedIds.includes(row.id)
+            return (
+              <div
+                key={row.id}
+                className={`h-12 px-5 flex items-center justify-between text-right transition-colors ${
+                  isSelected ? 'bg-[#F9FAFE]' : 'hover:bg-[#F9FAFB]/60'
+                }`}
+              >
+                {/* User Name & Checkbox */}
+                <div className="flex items-center gap-4 w-65 justify-start">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onToggleSelectRow(row.id)}
+                    className="w-4.5 h-4.5 rounded border-[#D7D7D7] text-primary focus:ring-0 cursor-pointer accent-primary"
+                  />
+                  <div className="flex flex-col text-right truncate">
+                    <span className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-tight truncate">
+                      {row.name}
+                    </span>
+                    <span className="font-['Cairo'] font-normal text-[12px] text-[#6B6A6A] leading-tight truncate">
+                      {row.email}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Account Type Badge */}
+                <div className="w-30 text-right">
+                  <span
+                    className={`inline-flex items-center justify-center px-2 py-0.5 rounded-[99px] text-[11px] font-['Cairo'] font-medium ${
+                      row.accountType === 'شركة'
+                        ? 'bg-[#FFFAEB] text-[#93370D]'
+                        : 'bg-[#F2F4F7] text-[#344054]'
+                    }`}
+                  >
+                    {row.accountType}
+                  </span>
+                </div>
+
+                {/* Status Indicator */}
+                <div className="w-30 text-right">
+                  <div className="inline-flex items-center gap-1.5">
+                    <span
+                      className={`size-1.5 rounded-full shrink-0 ${
+                        row.status === 'غير موثق'
+                          ? 'bg-[#6B6A6A]'
+                          : row.status === 'مرفوض'
+                            ? 'bg-[#9C1E28]'
+                            : 'bg-[#018B1B]'
+                      }`}
+                    />
+                    <span
+                      className={`text-[12px] font-['Cairo'] font-medium ${
+                        row.status === 'غير موثق'
+                          ? 'text-[#6B6A6A]'
+                          : row.status === 'مرفوض'
+                            ? 'text-[#9C1E28]'
+                            : 'text-[#018B1B]'
+                      }`}
+                    >
+                      {row.status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Attachments */}
+                <div className="w-60 text-right font-['Cairo'] font-normal text-[13px] text-[#111111] truncate">
+                  {row.attachmentsText}
+                </div>
+
+                {/* Sent Date */}
+                <div className="w-30 text-right font-['Cairo'] font-normal text-[12px] text-[#6B6A6A]">
+                  {row.sentAt}
+                </div>
+
+                {/* Actions Link */}
+                <div className="w-20 text-center">
+                  <button
+                    type="button"
+                    onClick={() => onOpenReview(row)}
+                    className="font-['Cairo'] font-bold text-[13px] text-primary hover:underline cursor-pointer"
+                  >
+                    {row.actionLabel}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Table Pagination Footer matching Figma 4779:123251 */}
+      <div className="border-t border-[#ECECEC] px-5 py-3 flex items-center justify-between bg-white text-right">
+        {/* Item Count */}
+        <span className="font-['Cairo'] font-normal text-[12px] text-[#A0A0A0]">
+          {rows.length} من 100 مستخدم
+        </span>
+
+        {/* Navigation Controls */}
+        <div className="flex items-center gap-3">
+          {/* Previous */}
+          <button
+            type="button"
+            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#A0A0A0] hover:text-[#111111] transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4 text-[#A0A0A0]" />
+            <span>السابق</span>
+          </button>
+
+          {/* Page Numbers */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className="size-6 rounded-lg bg-primary text-white flex items-center justify-center font-['Inter'] font-medium text-[14px]"
+            >
+              1
+            </button>
+            <button
+              type="button"
+              className="size-6 rounded-lg text-[#111111] hover:bg-slate-100 flex items-center justify-center font-['Inter'] font-medium text-[14px] cursor-pointer"
+            >
+              2
+            </button>
+            <button
+              type="button"
+              className="size-6 rounded-lg text-[#111111] hover:bg-slate-100 flex items-center justify-center font-['Inter'] font-medium text-[14px] cursor-pointer"
+            >
+              3
+            </button>
+          </div>
+
+          {/* Next */}
+          <button
+            type="button"
+            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#111111] hover:text-primary transition-colors cursor-pointer"
+          >
+            <span>التالي</span>
+            <div className="rotate-180 flex items-center">
+              <ChevronLeft className="w-4 h-4 text-[#111111]" />
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
