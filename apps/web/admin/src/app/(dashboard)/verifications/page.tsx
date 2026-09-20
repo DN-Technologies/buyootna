@@ -16,6 +16,10 @@ export default function VerificationRequestsPage() {
     filters,
     selection,
     filteredRows,
+    loading,
+    counts,
+    stats,
+    pagination,
     review,
     modals,
     toast,
@@ -56,6 +60,8 @@ export default function VerificationRequestsPage() {
         onTabChange={tab.setActiveTab}
         onExport={bulk.handleBulkExport}
         onBack={() => router.back()}
+        counts={counts}
+        stats={stats}
       />
 
       {/* Search, Filter Toolbar & Bulk Actions Bar */}
@@ -93,6 +99,9 @@ export default function VerificationRequestsPage() {
         onToggleSelectAll={selection.handleToggleSelectAll}
         onToggleSelectRow={selection.handleToggleSelectRow}
         onOpenReview={review.handleOpenReview}
+        pagination={pagination}
+        onPageChange={pagination.setCurrentPage}
+        loading={loading}
       />
     </div>
   )

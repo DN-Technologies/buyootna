@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { VerificationStatusFilter } from '@/components/dashboard/StatusFilterDropdown'
 import { SortByOption } from '@/components/dashboard/SortByDropdown'
 import {
@@ -9,29 +9,53 @@ import {
   requestIdentityEdit,
 } from '@/lib/admin-dashboard'
 import {
-  VerificationTableRow,
-  VerificationTab,
-  INITIAL_VERIFICATION_ROWS,
-} from './types'
+  fetchVerifications,
+  notifyUsers as notifyUsersApi,
+  AdminVerificationsResponse,
+} from '@/lib/admin-verifications'
+import { updateUserStatus } from '@/lib/admin-users'
+import { VerificationTableRow, VerificationTab } from './types'
+
+const EMPTY_RESPONSE: AdminVerificationsResponse = {
+  data: [],
+  meta: { total: 0, currentPage: 1, limit: 10, totalPages: 1 },
+  counts: { all: 0, companies: 0, offices: 0 },
+  stats: { pendingCount: 0, approvedTodayCount: 0, rejectedTodayCount: 0 },
+}
+
+function toAccountType(
+  tab: VerificationTab,
+): 'شركة' | 'مكتب عقاري' | undefined {
+  if (tab === 'companies') return 'شركة'
+  if (tab === 'offices') return 'مكتب عقاري'
+  return undefined
+}
 
 export function useVerificationRequests() {
   // Tab filter: 'all' | 'offices' | 'companies'
-  const [activeTab, setActiveTab] = useState<VerificationTab>('all')
+  const [activeTab, setActiveTabState] = useState<VerificationTab>('all')
 
   // Search and status filters
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<VerificationStatusFilter>('ALL')
+  const [searchQuery, setSearchQueryState] = useState('')
+  const [statusFilter, setStatusFilterState] =
+    useState<VerificationStatusFilter>('ALL')
   const [showStatusMenu, setShowStatusMenu] = useState(false)
 
   // Sort filter matching Figma node 2772:54857
-  const [sortBy, setSortBy] = useState<SortByOption>('ALL')
+  const [sortBy, setSortByState] = useState<SortByOption>('ALL')
   const [showSortMenu, setShowSortMenu] = useState(false)
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
-  // Rows state
-  const [rows, setRows] = useState<VerificationTableRow[]>(INITIAL_VERIFICATION_ROWS)
+  // Fetched data
+  const [response, setResponse] =
+    useState<AdminVerificationsResponse>(EMPTY_RESPONSE)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Review & Modal States
   const [reviewDrawerOpen, setReviewDrawerOpen] = useState(false)
@@ -47,55 +71,78 @@ export function useVerificationRequests() {
   const [toastMessage, setToastMessage] = useState('تم اعتماد التوثيق بنجاح.')
   const [lastVerifiedId, setLastVerifiedId] = useState<string | null>(null)
 
-  // Filtered and sorted rows
-  const filteredRows = useMemo(() => {
-    let result = rows.filter((row) => {
-      // Tab filter
-      if (activeTab === 'offices' && row.accountType !== 'مكتب عقاري') return false
-      if (activeTab === 'companies' && row.accountType !== 'شركة') return false
-
-      // Status filter
-      if (statusFilter === 'VERIFIED' && row.status !== 'موثق') return false
-      if (statusFilter === 'PENDING' && row.status !== 'قيد الانتظار') return false
-      if (statusFilter === 'UNVERIFIED' && row.status !== 'غير موثق') return false
-
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase()
-        const matchesName = row.name.toLowerCase().includes(q)
-        const matchesEmail = row.email.toLowerCase().includes(q)
-        const matchesType = row.accountType.toLowerCase().includes(q)
-        return matchesName || matchesEmail || matchesType
-      }
-
-      return true
-    })
-
-    if (sortBy === 'NEWEST') {
-      result = [...result].sort(
-        (a, b) => (b.createdAtTimestamp || 0) - (a.createdAtTimestamp || 0)
-      )
-    } else if (sortBy === 'OLDEST') {
-      result = [...result].sort(
-        (a, b) => (a.createdAtTimestamp || 0) - (b.createdAtTimestamp || 0)
-      )
+  const loadVerifications = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetchVerifications({
+        search: searchQuery.trim() || undefined,
+        accountType: toAccountType(activeTab),
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+        sortOrder: sortBy === 'ALL' ? undefined : sortBy,
+        page: currentPage,
+        limit: 10,
+      })
+      setResponse(res)
+    } catch (err) {
+      console.error('Failed to load verification requests:', err)
+      setError('تعذر الاتصال بالخادم. يرجى التأكد من تشغيل خادم الخلفية.')
+    } finally {
+      setLoading(false)
     }
+  }, [searchQuery, activeTab, statusFilter, sortBy, currentPage])
 
-    return result
-  }, [rows, activeTab, statusFilter, searchQuery, sortBy])
+  useEffect(() => {
+    loadVerifications()
+  }, [loadVerifications])
+
+  const rows: VerificationTableRow[] = response.data.map((r) => ({
+    id: r.identityId,
+    userId: r.userId,
+    name: r.name,
+    email: r.email,
+    accountType: r.accountType,
+    status: r.status,
+    accountStatus: r.accountStatus,
+    attachmentsText: r.attachmentsText,
+    sentAt: r.sentAt,
+    actionLabel: r.actionLabel,
+    licenseNumber: r.licenseNumber || undefined,
+    licenseActivity: r.licenseActivity || undefined,
+    licenseExpiry: r.licenseExpiry || undefined,
+    logoUrl: r.logoUrl || undefined,
+  }))
+
+  // Filter/tab/sort setters reset back to page 1
+  const setActiveTab = (tab: VerificationTab) => {
+    setActiveTabState(tab)
+    setCurrentPage(1)
+  }
+  const setSearchQuery = (query: string) => {
+    setSearchQueryState(query)
+    setCurrentPage(1)
+  }
+  const setStatusFilter = (status: VerificationStatusFilter) => {
+    setStatusFilterState(status)
+    setCurrentPage(1)
+  }
+  const setSortBy = (sort: SortByOption) => {
+    setSortByState(sort)
+    setCurrentPage(1)
+  }
 
   // Selection handlers
   const handleToggleSelectAll = () => {
-    if (selectedIds.length === filteredRows.length) {
+    if (selectedIds.length === rows.length && rows.length > 0) {
       setSelectedIds([])
     } else {
-      setSelectedIds(filteredRows.map((r) => r.id))
+      setSelectedIds(rows.map((r) => r.id))
     }
   }
 
   const handleToggleSelectRow = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     )
   }
 
@@ -141,27 +188,25 @@ export function useVerificationRequests() {
   }) => {
     if (!selectedForReview) return
     setIsSubmitting(true)
+    const approvedId = selectedForReview.identityId
     try {
-      await updateIdentityStatus(selectedForReview.identityId, {
+      await updateIdentityStatus(approvedId, {
         status: 'APPROVED',
         notifyEmail: options.notifyEmail,
       })
-    } catch {
-      // Fallback optimistic UI
+      setLastVerifiedId(approvedId)
+      setToastMessage('تم اعتماد التوثيق بنجاح.')
+      setShowToast(true)
+      await loadVerifications()
+    } catch (err) {
+      console.error('Failed to approve identity:', err)
+      setToastMessage('حدث خطأ أثناء اعتماد التوثيق.')
+      setShowToast(true)
+    } finally {
+      setIsSubmitting(false)
+      setConfirmModalOpen(false)
+      setReviewDrawerOpen(false)
     }
-
-    const approvedId = selectedForReview.identityId
-    setRows((prev) =>
-      prev.map((r) =>
-        r.id === approvedId ? { ...r, status: 'موثق' as const } : r
-      )
-    )
-    setLastVerifiedId(approvedId)
-    setIsSubmitting(false)
-    setConfirmModalOpen(false)
-    setReviewDrawerOpen(false)
-    setToastMessage('تم اعتماد التوثيق بنجاح.')
-    setShowToast(true)
   }
 
   const handleConfirmReject = async (options: {
@@ -171,34 +216,27 @@ export function useVerificationRequests() {
   }) => {
     if (!selectedForReview) return
     setIsSubmitting(true)
+    const isRevoking = selectedForReview.status === 'موثق'
     try {
       await updateIdentityStatus(selectedForReview.identityId, {
         status: 'REJECTED',
         reason: options.reason,
         notifyEmail: options.notifyEmail,
       })
-    } catch {
-      // Fallback optimistic UI
-    }
-
-    const isRevoking = selectedForReview.status === 'موثق'
-    const rejectedId = selectedForReview.identityId
-    setRows((prev) =>
-      prev.map((r) =>
-        r.id === rejectedId
-          ? {
-              ...r,
-              status: isRevoking ? ('غير موثق' as const) : ('مرفوض' as const),
-              actionLabel: 'مراجعة' as const,
-            }
-          : r
+      setToastMessage(
+        isRevoking ? 'تم إلغاء التوثيق بنجاح.' : 'تم رفض طلب التوثيق.',
       )
-    )
-    setIsSubmitting(false)
-    setRejectModalOpen(false)
-    setReviewDrawerOpen(false)
-    setToastMessage(isRevoking ? 'تم إلغاء التوثيق بنجاح.' : 'تم رفض طلب التوثيق.')
-    setShowToast(true)
+      setShowToast(true)
+      await loadVerifications()
+    } catch (err) {
+      console.error('Failed to reject identity:', err)
+      setToastMessage('حدث خطأ أثناء رفض طلب التوثيق.')
+      setShowToast(true)
+    } finally {
+      setIsSubmitting(false)
+      setRejectModalOpen(false)
+      setReviewDrawerOpen(false)
+    }
   }
 
   const handleConfirmRequestEdit = async (options: {
@@ -213,27 +251,34 @@ export function useVerificationRequests() {
         notes: options.notes,
         notifyEmail: options.notifyEmail,
       })
-    } catch {
-      // Fallback optimistic UI
+      setToastMessage('تم إرسال طلب التعديل إلى المستخدم.')
+      setShowToast(true)
+      await loadVerifications()
+    } catch (err) {
+      console.error('Failed to request identity edit:', err)
+      setToastMessage('حدث خطأ أثناء إرسال طلب التعديل.')
+      setShowToast(true)
+    } finally {
+      setIsSubmitting(false)
+      setRequestEditModalOpen(false)
+      setReviewDrawerOpen(false)
     }
-
-    setIsSubmitting(false)
-    setRequestEditModalOpen(false)
-    setReviewDrawerOpen(false)
-    setToastMessage('تم إرسال طلب التعديل إلى المستخدم.')
-    setShowToast(true)
   }
 
-  const handleUndoVerification = () => {
-    if (lastVerifiedId) {
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === lastVerifiedId ? { ...r, status: 'غير موثق' as const } : r
-        )
-      )
-      setLastVerifiedId(null)
-    }
+  // Undo re-uses the reject flow, since revoking a verification is the same
+  // backend operation as rejecting it (see ../../../CLAUDE plan notes: there
+  // is no separate "revoked" state in the schema).
+  const handleUndoVerification = async () => {
+    const approvedId = lastVerifiedId
+    if (!approvedId) return
     setShowToast(false)
+    setLastVerifiedId(null)
+    try {
+      await updateIdentityStatus(approvedId, { status: 'REJECTED' })
+      await loadVerifications()
+    } catch (err) {
+      console.error('Failed to undo verification:', err)
+    }
   }
 
   // Bulk Actions
@@ -248,8 +293,8 @@ export function useVerificationRequests() {
         .concat(
           selectedRows.map(
             (r) =>
-              `"${r.name}","${r.email}","${r.accountType}","${r.status}","${r.attachmentsText}","${r.sentAt}"`
-          )
+              `"${r.name}","${r.email}","${r.accountType}","${r.status}","${r.attachmentsText}","${r.sentAt}"`,
+          ),
         )
         .join('\n')
     const encodedUri = encodeURI(csvContent)
@@ -261,25 +306,54 @@ export function useVerificationRequests() {
     document.body.removeChild(link)
   }
 
-  const handleBulkBlock = () => {
-    setRows((prev) =>
-      prev.map((r) =>
-        selectedIds.includes(r.id) ? { ...r, status: 'مرفوض' as const } : r
-      )
-    )
+  const handleBulkBlock = async () => {
+    const targets = rows.filter((r) => selectedIds.includes(r.id) && r.userId)
+    for (const row of targets) {
+      try {
+        await updateUserStatus(row.userId as string, 'blocked')
+      } catch (err) {
+        console.error(`Failed to block user for row ${row.id}:`, err)
+      }
+    }
     setSelectedIds([])
     setToastMessage('تم حظر الحسابات المحددة.')
     setShowToast(true)
+    await loadVerifications()
   }
 
-  const handleBulkSuspend = () => {
+  const handleBulkSuspend = async () => {
+    const targets = rows.filter((r) => selectedIds.includes(r.id) && r.userId)
+    for (const row of targets) {
+      try {
+        await updateUserStatus(row.userId as string, 'suspended')
+      } catch (err) {
+        console.error(`Failed to suspend user for row ${row.id}:`, err)
+      }
+    }
     setSelectedIds([])
     setToastMessage('تم إيقاف الحسابات المحددة مؤقتاً.')
     setShowToast(true)
+    await loadVerifications()
   }
 
-  const handleBulkNotify = () => {
-    setToastMessage(`تم إرسال إشعار جماعي إلى ${selectedIds.length} مستخدم.`)
+  const handleBulkNotify = async () => {
+    if (selectedIds.length === 0) return
+    const title = window.prompt('عنوان الإشعار:')
+    if (!title) return
+    const message = window.prompt('نص الإشعار:')
+    if (!message) return
+
+    const userIds = rows
+      .filter((r) => selectedIds.includes(r.id) && r.userId)
+      .map((r) => r.userId as string)
+
+    try {
+      const res = await notifyUsersApi({ userIds, title, message })
+      setToastMessage(res.message)
+    } catch (err) {
+      console.error('Failed to send bulk notification:', err)
+      setToastMessage('حدث خطأ أثناء إرسال الإشعار الجماعي.')
+    }
     setShowToast(true)
   }
 
@@ -307,7 +381,18 @@ export function useVerificationRequests() {
       handleClearSelection,
     },
     rows,
-    filteredRows,
+    filteredRows: rows,
+    loading,
+    error,
+    counts: response.counts,
+    stats: response.stats,
+    pagination: {
+      currentPage,
+      setCurrentPage,
+      totalPages: response.meta.totalPages,
+      totalItems: response.meta.total,
+      currentCount: rows.length,
+    },
     review: {
       reviewDrawerOpen,
       setReviewDrawerOpen,

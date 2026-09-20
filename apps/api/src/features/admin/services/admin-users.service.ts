@@ -11,12 +11,23 @@ import {
   UserAccountStatusAction,
 } from '../dto/admin-update-status.dto';
 import { AdminCreateIndividualDto } from '../dto/admin-create-individual.dto';
+import {
+  AdminNotifyUsersDto,
+  AdminNotifyUsersResponseDto,
+} from '../dto/admin-notify-users.dto';
 import { IdentityType, Prisma, Role } from '@prisma/client';
 import { checkUserExists } from '../../../core/utils/user.utils';
+import { NotificationsService } from '../../notifications/notifications.service';
+import { MailService } from '../../../core/mail/mail.service';
+import { adminCustomMessageTemplate } from '../../../core/mail/templates/admin-custom-message.template';
 
 @Injectable()
 export class AdminUsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+    private readonly mailService: MailService,
+  ) {}
 
   async getUsers(filters: AdminUsersFilterDto) {
     const {
@@ -426,6 +437,68 @@ export class AdminUsersService {
       user: userWithoutPassword,
       profile: result.profile,
       identity: result.identity,
+    };
+  }
+
+  async notifyUsers(
+    dto: AdminNotifyUsersDto,
+  ): Promise<AdminNotifyUsersResponseDto> {
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: dto.userIds } },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const notifiedUserIds: string[] = [];
+    const failedUserIds: string[] = [];
+
+    for (const userId of dto.userIds) {
+      const user = userMap.get(userId);
+      if (!user) {
+        failedUserIds.push(userId);
+        continue;
+      }
+
+      try {
+        if (dto.notifyInApp !== false) {
+          await this.notificationsService.create({
+            userId: user.id,
+            type: 'ADMIN_CUSTOM_MESSAGE',
+            title: dto.title,
+            body: dto.message,
+          });
+        }
+
+        if (dto.notifyEmail !== false && user.email) {
+          // Best-effort: a delivery failure for one recipient shouldn't
+          // fail the whole batch -- matches AdminIdentityService's
+          // sendMailBestEffort pattern for the same reason.
+          try {
+            await this.mailService.sendMail({
+              to: user.email,
+              subject: dto.title,
+              html: adminCustomMessageTemplate({
+                userName: user.name || 'مستخدم بيوتنا',
+                title: dto.title,
+                message: dto.message,
+              }),
+            });
+          } catch {
+            // Notification still counts as sent (in-app succeeded, or
+            // in-app was skipped intentionally); only email delivery failed.
+          }
+        }
+
+        notifiedUserIds.push(userId);
+      } catch {
+        failedUserIds.push(userId);
+      }
+    }
+
+    return {
+      message: `تم إرسال الإشعار إلى ${notifiedUserIds.length} مستخدم.`,
+      notifiedCount: notifiedUserIds.length,
+      notifiedUserIds,
+      failedUserIds,
     };
   }
 

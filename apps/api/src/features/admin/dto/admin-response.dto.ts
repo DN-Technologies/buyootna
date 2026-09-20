@@ -116,3 +116,17 @@ export class AdminResetPasswordResponseDto {
   @ApiProperty({ example: 'user@example.com' })
   email: string;
 }
+
+export class AdminNotifyUsersResponseDto {
+  @ApiProperty({ example: 'تم إرسال الإشعار إلى 2 مستخدم.' })
+  message: string;
+
+  @ApiProperty({ example: 2 })
+  notifiedCount: number;
+
+  @ApiProperty({ type: [String], example: ['u-1', 'u-2'] })
+  notifiedUserIds: string[];
+
+  @ApiProperty({ type: [String], example: [] })
+  failedUserIds: string[];
+}

@@ -17,6 +17,8 @@ interface MockAdminService {
   getAvailableCoupons: jest.Mock;
   grantCoupon: jest.Mock;
   grantBulkCoupon: jest.Mock;
+  getVerifications: jest.Mock;
+  notifyUsers: jest.Mock;
 }
 
 describe('AdminController', () => {
@@ -36,6 +38,8 @@ describe('AdminController', () => {
       getAvailableCoupons: jest.fn(),
       grantCoupon: jest.fn(),
       grantBulkCoupon: jest.fn(),
+      getVerifications: jest.fn(),
+      notifyUsers: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -53,6 +57,28 @@ describe('AdminController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('getVerifications should forward filters to service', async () => {
+    const filters = { status: 'PENDING' as const, page: 1, limit: 10 };
+    adminService.getVerifications.mockResolvedValue({ data: [] });
+
+    await controller.getVerifications(filters);
+    expect(adminService.getVerifications).toHaveBeenCalledWith(filters);
+  });
+
+  it('notifyUsers should forward dto to service', async () => {
+    const dto = { userIds: ['u-1', 'u-2'], title: 'عنوان', message: 'رسالة' };
+    adminService.notifyUsers.mockResolvedValue({
+      message: 'تم إرسال الإشعار إلى 2 مستخدم.',
+      notifiedCount: 2,
+      notifiedUserIds: ['u-1', 'u-2'],
+      failedUserIds: [],
+    });
+
+    const result = await controller.notifyUsers(dto);
+    expect(adminService.notifyUsers).toHaveBeenCalledWith(dto);
+    expect(result.notifiedCount).toBe(2);
   });
 
   it('getUsers should forward filters to service', async () => {
@@ -122,11 +148,11 @@ describe('AdminController', () => {
     expect(result.email).toBe('user@example.com');
   });
 
-  it('getAvailableCoupons should delegate to service', async () => {
+  it('getAvailableCoupons should delegate to service', () => {
     adminService.getAvailableCoupons.mockReturnValue([
       { id: 'c1', name: 'Byoutna10', code: 'LAUNCHPROMO26', discount: '10%' },
     ]);
-    const result = await controller.getAvailableCoupons();
+    const result = controller.getAvailableCoupons();
     expect(adminService.getAvailableCoupons).toHaveBeenCalled();
     expect(result[0].code).toBe('LAUNCHPROMO26');
   });
@@ -156,5 +182,3 @@ describe('AdminController', () => {
     expect(result.grantedCount).toBe(2);
   });
 });
-
-

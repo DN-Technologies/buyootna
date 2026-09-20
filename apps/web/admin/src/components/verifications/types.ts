@@ -1,5 +1,6 @@
 export interface VerificationTableRow {
   id: string
+  userId?: string
   name: string
   email: string
   accountType: 'شركة' | 'مكتب عقاري'

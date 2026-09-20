@@ -3,19 +3,28 @@
 import React from 'react'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
-import {
-  HomeBreadcrumbIcon,
-  ExportTrayIcon,
-  TrendArrowDownIcon,
-  TrendArrowUpIcon,
-} from '@/components/icons/AdminIcons'
+import { HomeBreadcrumbIcon, ExportTrayIcon } from '@/components/icons/AdminIcons'
 import { VerificationTab } from './types'
+
+interface VerificationHeaderCounts {
+  all: number
+  companies: number
+  offices: number
+}
+
+interface VerificationHeaderStats {
+  pendingCount: number
+  approvedTodayCount: number
+  rejectedTodayCount: number
+}
 
 interface VerificationHeaderProps {
   activeTab: VerificationTab
   onTabChange: (tab: VerificationTab) => void
   onExport: () => void
   onBack: () => void
+  counts: VerificationHeaderCounts
+  stats: VerificationHeaderStats
 }
 
 export default function VerificationHeader({
@@ -23,6 +32,8 @@ export default function VerificationHeader({
   onTabChange,
   onExport,
   onBack,
+  counts,
+  stats,
 }: VerificationHeaderProps) {
   return (
     <div className="border-b border-[#ECECEC] pb-5 pt-2 px-8 -mx-6 -mt-6 md:-mx-8 md:-mt-8 flex flex-col gap-1.5 text-right shrink-0 bg-white">
@@ -78,60 +89,36 @@ export default function VerificationHeader({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
         {/* Card 1: قيد المراجعة (RTL rightmost) */}
         <div className="bg-[#F8FAFC] rounded-lg p-4 flex flex-col gap-2 border border-transparent hover:border-[#ECECEC] transition-colors">
-          <div className="flex items-center justify-between w-full">
-            <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
-              قيد المراجعة
-            </span>
-            <div className="bg-[rgba(255,249,72,0.15)] rounded-md px-1.5 py-0.5 flex items-center gap-1">
-              <span className="font-['Inter'] font-medium text-[11px] text-[#F5B846] leading-none">
-                3.2%
-              </span>
-              <TrendArrowDownIcon className="w-3 h-3" color="#F5B846" />
-            </div>
-          </div>
+          <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
+            قيد المراجعة
+          </span>
           <div className="text-right">
             <span className="font-['Cairo'] font-bold text-[24px] text-[#111111] leading-tight">
-              20
+              {stats.pendingCount}
             </span>
           </div>
         </div>
 
         {/* Card 2: تم اعتمادها اليوم (RTL middle) */}
         <div className="bg-[#F8FAFC] rounded-lg p-4 flex flex-col gap-2 border border-transparent hover:border-[#ECECEC] transition-colors">
-          <div className="flex items-center justify-between w-full">
-            <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
-              تم اعتمادها اليوم
-            </span>
-            <div className="bg-[rgba(18,194,129,0.1)] rounded-md px-1.5 py-0.5 flex items-center gap-1">
-              <span className="font-['Inter'] font-medium text-[11px] text-[#12C281] leading-none">
-                8.1%
-              </span>
-              <TrendArrowUpIcon className="w-3 h-3" color="#12C281" />
-            </div>
-          </div>
+          <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
+            تم اعتمادها اليوم
+          </span>
           <div className="text-right">
             <span className="font-['Cairo'] font-bold text-[24px] text-[#018B1B] leading-tight">
-              7
+              {stats.approvedTodayCount}
             </span>
           </div>
         </div>
 
         {/* Card 3: تم رفضها اليوم (RTL leftmost) */}
         <div className="bg-[#F8FAFC] rounded-lg p-4 flex flex-col gap-2 border border-transparent hover:border-[#ECECEC] transition-colors">
-          <div className="flex items-center justify-between w-full">
-            <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
-              تم رفضها اليوم
-            </span>
-            <div className="bg-[rgba(245,70,81,0.1)] rounded-md px-1.5 py-0.5 flex items-center gap-1">
-              <span className="font-['Inter'] font-medium text-[11px] text-[#F54651] leading-none">
-                3.2%
-              </span>
-              <TrendArrowDownIcon className="w-3 h-3" color="#F54651" />
-            </div>
-          </div>
+          <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A]">
+            تم رفضها اليوم
+          </span>
           <div className="text-right">
             <span className="font-['Cairo'] font-bold text-[24px] text-[#9C1E28] leading-tight">
-              3
+              {stats.rejectedTodayCount}
             </span>
           </div>
         </div>
@@ -148,7 +135,7 @@ export default function VerificationHeader({
               : 'text-[#6B6A6A] font-medium hover:text-[#111111]'
           }`}
         >
-          الكل (50)
+          الكل ({counts.all})
           {activeTab === 'all' && (
             <span className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-t-md" />
           )}
@@ -163,7 +150,7 @@ export default function VerificationHeader({
               : 'text-[#6B6A6A] font-medium hover:text-[#111111]'
           }`}
         >
-          المكاتب العقارية (50)
+          المكاتب العقارية ({counts.offices})
           {activeTab === 'offices' && (
             <span className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-t-md" />
           )}
@@ -178,7 +165,7 @@ export default function VerificationHeader({
               : 'text-[#6B6A6A] font-medium hover:text-[#111111]'
           }`}
         >
-          الشركات (20)
+          الشركات ({counts.companies})
           {activeTab === 'companies' && (
             <span className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-t-md" />
           )}

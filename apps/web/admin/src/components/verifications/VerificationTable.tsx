@@ -4,12 +4,22 @@ import React from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { VerificationTableRow } from './types'
 
+interface VerificationTablePagination {
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  currentCount: number
+}
+
 interface VerificationTableProps {
   rows: VerificationTableRow[]
   selectedIds: string[]
   onToggleSelectAll: () => void
   onToggleSelectRow: (id: string) => void
   onOpenReview: (row: VerificationTableRow) => void
+  pagination: VerificationTablePagination
+  onPageChange: (page: number) => void
+  loading?: boolean
 }
 
 export default function VerificationTable({
@@ -18,7 +28,12 @@ export default function VerificationTable({
   onToggleSelectAll,
   onToggleSelectRow,
   onOpenReview,
+  pagination,
+  onPageChange,
+  loading,
 }: VerificationTableProps) {
+  const { currentPage, totalPages, totalItems, currentCount } = pagination
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
   return (
     <div className="bg-white border border-[#ECECEC] rounded-lg overflow-hidden">
       {/* Table Header matching Figma 4779:123026 */}
@@ -80,7 +95,11 @@ export default function VerificationTable({
       </div>
 
       {/* Table Rows matching Figma 4779:123043 & 2769:52652 */}
-      {rows.length === 0 ? (
+      {loading ? (
+        <div className="py-12 text-center text-[#6B6A6A] font-['Cairo'] text-[14px]">
+          جارٍ التحميل...
+        </div>
+      ) : rows.length === 0 ? (
         <div className="py-12 text-center text-[#6B6A6A] font-['Cairo'] text-[14px]">
           لا توجد طلبات تحقق مطابقة للبحث أو التصفية الحالية
         </div>
@@ -199,7 +218,7 @@ export default function VerificationTable({
       <div className="border-t border-[#ECECEC] px-5 py-3 flex items-center justify-between bg-white text-right">
         {/* Item Count */}
         <span className="font-['Cairo'] font-normal text-[12px] text-[#A0A0A0]">
-          {rows.length} من 100 مستخدم
+          {currentCount} من {totalItems} مستخدم
         </span>
 
         {/* Navigation Controls */}
@@ -207,7 +226,9 @@ export default function VerificationTable({
           {/* Previous */}
           <button
             type="button"
-            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#A0A0A0] hover:text-[#111111] transition-colors cursor-pointer"
+            disabled={currentPage <= 1}
+            onClick={() => onPageChange(currentPage - 1)}
+            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#A0A0A0] hover:text-[#111111] disabled:opacity-40 disabled:hover:text-[#A0A0A0] transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4 text-[#A0A0A0]" />
             <span>السابق</span>
@@ -215,30 +236,28 @@ export default function VerificationTable({
 
           {/* Page Numbers */}
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="size-6 rounded-lg bg-primary text-white flex items-center justify-center font-['Inter'] font-medium text-[14px]"
-            >
-              1
-            </button>
-            <button
-              type="button"
-              className="size-6 rounded-lg text-[#111111] hover:bg-slate-100 flex items-center justify-center font-['Inter'] font-medium text-[14px] cursor-pointer"
-            >
-              2
-            </button>
-            <button
-              type="button"
-              className="size-6 rounded-lg text-[#111111] hover:bg-slate-100 flex items-center justify-center font-['Inter'] font-medium text-[14px] cursor-pointer"
-            >
-              3
-            </button>
+            {pageNumbers.map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => onPageChange(page)}
+                className={`size-6 rounded-lg flex items-center justify-center font-['Inter'] font-medium text-[14px] cursor-pointer ${
+                  page === currentPage
+                    ? 'bg-primary text-white'
+                    : 'text-[#111111] hover:bg-slate-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
           </div>
 
           {/* Next */}
           <button
             type="button"
-            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#111111] hover:text-primary transition-colors cursor-pointer"
+            disabled={currentPage >= totalPages}
+            onClick={() => onPageChange(currentPage + 1)}
+            className="flex items-center gap-1 text-[14px] font-['Cairo'] font-normal text-[#111111] hover:text-primary disabled:opacity-40 disabled:hover:text-[#111111] transition-colors cursor-pointer disabled:cursor-not-allowed"
           >
             <span>التالي</span>
             <div className="rotate-180 flex items-center">

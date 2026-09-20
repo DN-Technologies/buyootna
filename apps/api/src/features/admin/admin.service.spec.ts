@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminUsersService } from './services/admin-users.service';
 import { AdminIdentityService } from './services/admin-identity.service';
@@ -7,143 +6,123 @@ import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
-import { PrismaService } from '../../core/prisma/prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
-import { Role, IdentityType } from '@prisma/client';
-import { JwtService } from '@nestjs/jwt';
-import { MailService } from '../../core/mail/mail.service';
+import { AdminVerificationsService } from './services/admin-verifications.service';
+import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
-interface MockPrismaService {
-  user: {
-    findMany: jest.Mock;
-    findUnique: jest.Mock;
-    findFirst: jest.Mock;
-    count: jest.Mock;
-    create: jest.Mock;
-    update: jest.Mock;
-    delete: jest.Mock;
-  };
-  individualProfile: {
-    create: jest.Mock;
-  };
-  identity: {
-    findUnique: jest.Mock;
-    create: jest.Mock;
-  };
-  companyIdentityData: {
-    update: jest.Mock;
-    findMany: jest.Mock;
-  };
-  officeIdentityData: {
-    update: jest.Mock;
-    findMany: jest.Mock;
-  };
-  plan: {
-    findFirst: jest.Mock;
-  };
-  invoice: {
-    aggregate: jest.Mock;
-    findMany: jest.Mock;
-  };
-  reviewRequest: {
-    create: jest.Mock;
-  };
-  $transaction: jest.Mock;
+interface MockAdminUsersService {
+  getUsers: jest.Mock;
+  getUserById: jest.Mock;
+  updateUserStatus: jest.Mock;
+  deleteUser: jest.Mock;
+  createIndividual: jest.Mock;
+  notifyUsers: jest.Mock;
 }
 
-interface MockNotificationsService {
-  create: jest.Mock;
+interface MockAdminIdentityService {
+  updateIdentityStatus: jest.Mock;
+  requestIdentityEdit: jest.Mock;
 }
 
-interface MockMailService {
-  sendMail: jest.Mock;
+interface MockAdminExportService {
+  exportUsersCsv: jest.Mock;
+}
+
+interface MockAdminPasswordService {
+  sendUserPasswordResetLink: jest.Mock;
+}
+
+interface MockAdminCouponService {
+  getAvailableCoupons: jest.Mock;
+  grantCoupon: jest.Mock;
+  grantBulkCoupon: jest.Mock;
+}
+
+interface MockAdminDashboardService {
+  getDashboard: jest.Mock;
+}
+
+interface MockAdminVerificationsService {
+  getVerifications: jest.Mock;
 }
 
 describe('AdminService', () => {
   let service: AdminService;
-  let prisma: MockPrismaService;
-  let notifications: MockNotificationsService;
-  let mail: MockMailService;
+  let adminUsersService: MockAdminUsersService;
+  let adminIdentityService: MockAdminIdentityService;
+  let adminExportService: MockAdminExportService;
+  let adminPasswordService: MockAdminPasswordService;
+  let adminCouponService: MockAdminCouponService;
+  let adminDashboardService: MockAdminDashboardService;
+  let adminVerificationsService: MockAdminVerificationsService;
 
   beforeEach(async () => {
-    prisma = {
-      user: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        findFirst: jest.fn(),
-        count: jest.fn(),
-        create: jest.fn(),
-        update: jest.fn(),
-        delete: jest.fn(),
-      },
-      individualProfile: {
-        create: jest.fn(),
-      },
-      identity: {
-        findUnique: jest.fn(),
-        create: jest.fn(),
-      },
-      companyIdentityData: {
-        update: jest.fn(),
-        findMany: jest.fn().mockResolvedValue([]),
-      },
-      officeIdentityData: {
-        update: jest.fn(),
-        findMany: jest.fn().mockResolvedValue([]),
-      },
-      plan: {
-        findFirst: jest.fn(),
-      },
-      invoice: {
-        aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 0 } }),
-        findMany: jest.fn().mockResolvedValue([]),
-      },
-      reviewRequest: {
-        create: jest.fn().mockResolvedValue({ id: 'review-request-1' }),
-      },
-      $transaction: jest.fn(
-        (callback: (tx: MockPrismaService) => Promise<unknown>) =>
-          callback(prisma),
-      ),
+    adminUsersService = {
+      getUsers: jest.fn(),
+      getUserById: jest.fn(),
+      updateUserStatus: jest.fn(),
+      deleteUser: jest.fn(),
+      createIndividual: jest.fn(),
+      notifyUsers: jest.fn(),
     };
 
-    notifications = {
-      create: jest.fn().mockResolvedValue({ id: 'notif-1' }),
+    adminIdentityService = {
+      updateIdentityStatus: jest.fn(),
+      requestIdentityEdit: jest.fn(),
     };
 
-    const jwtService = {
-      sign: jest.fn().mockReturnValue('mock-reset-token-123'),
+    adminExportService = {
+      exportUsersCsv: jest.fn(),
     };
 
-    mail = {
-      sendMail: jest.fn().mockResolvedValue({ success: true }),
+    adminPasswordService = {
+      sendUserPasswordResetLink: jest.fn(),
+    };
+
+    adminCouponService = {
+      getAvailableCoupons: jest.fn(),
+      grantCoupon: jest.fn(),
+      grantBulkCoupon: jest.fn(),
+    };
+
+    adminDashboardService = {
+      getDashboard: jest.fn(),
+    };
+
+    adminVerificationsService = {
+      getVerifications: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
-        AdminUsersService,
-        AdminIdentityService,
-        AdminExportService,
-        AdminPasswordService,
-        AdminCouponService,
-        AdminDashboardService,
         {
-          provide: PrismaService,
-          useValue: prisma,
+          provide: AdminUsersService,
+          useValue: adminUsersService,
         },
         {
-          provide: NotificationsService,
-          useValue: notifications,
+          provide: AdminIdentityService,
+          useValue: adminIdentityService,
         },
         {
-          provide: JwtService,
-          useValue: jwtService,
+          provide: AdminExportService,
+          useValue: adminExportService,
         },
         {
-          provide: MailService,
-          useValue: mail,
+          provide: AdminPasswordService,
+          useValue: adminPasswordService,
+        },
+        {
+          provide: AdminCouponService,
+          useValue: adminCouponService,
+        },
+        {
+          provide: AdminDashboardService,
+          useValue: adminDashboardService,
+        },
+        {
+          provide: AdminVerificationsService,
+          useValue: adminVerificationsService,
         },
       ],
     }).compile();
@@ -155,557 +134,196 @@ describe('AdminService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getUsers', () => {
-    it('should calculate adsCount and scope stats when role is INDIVIDUAL', async () => {
-      const mockUsers = [
-        {
-          id: 'user-1',
-          name: 'علي حسن',
-          email: 'ali@example.com',
-          phone: '+96599991111',
-          role: Role.INDIVIDUAL,
-          isDisabled: false,
-          isBlocked: false,
-          createdAt: new Date('2026-01-15T10:00:00Z'),
-          activePlan: { name: 'الفضية' },
-          identities: [
-            {
-              type: 'INDIVIDUAL',
-              individualData: { name: 'علي حسن' },
-              _count: { properties: 4 },
-            },
-          ],
-        },
-      ];
+  describe('facade delegation', () => {
+    it('delegates getDashboard to AdminDashboardService', async () => {
+      const mockResult = { metrics: {} };
+      adminDashboardService.getDashboard.mockResolvedValue(mockResult);
 
-      prisma.user.findMany.mockResolvedValue(mockUsers);
-      // Mock counts: totalCount, totalUsers, totalActive, totalBlocked, totalSuspended, countIndividual, countOffice, countCompany
-      prisma.user.count
-        .mockResolvedValueOnce(1) // where
-        .mockResolvedValueOnce(1) // total role
-        .mockResolvedValueOnce(1) // active role
-        .mockResolvedValueOnce(0) // blocked role
-        .mockResolvedValueOnce(0) // suspended role
-        .mockResolvedValueOnce(1) // Role.INDIVIDUAL
-        .mockResolvedValueOnce(0) // Role.OFFICE
-        .mockResolvedValueOnce(0); // Role.COMPANY
+      const result = await service.getDashboard();
 
-      const result = await service.getUsers({
-        role: Role.INDIVIDUAL,
-        subscriptionPlan: 'الفضية',
-        sortOrder: 'desc',
-        page: 1,
-        limit: 10,
-      });
-
-      expect(result.data).toHaveLength(1);
-      expect(result.data[0].adsCount).toBe(4);
-      expect(result.data[0].subscriptionPlan).toBe('الفضية');
-      expect(result.data[0].accountType).toBe('فرد');
-      expect(result.stats.total).toBe(1);
-      expect(result.stats.active).toBe(1);
-      expect(result.counts.individual).toBe(1);
-    });
-  });
-
-  describe('createIndividual', () => {
-    it('should throw BadRequestException if neither email nor phone is provided', async () => {
-      await expect(
-        service.createIndividual({
-          name: 'محمد أحمد',
-        }),
-      ).rejects.toThrow(BadRequestException);
+      expect(adminDashboardService.getDashboard).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockResult);
     });
 
-    it('should create individual user, profile, and identity in a transaction', async () => {
-      prisma.user.findFirst.mockResolvedValue(null); // No collision
+    it('delegates getVerifications to AdminVerificationsService', async () => {
+      const filters = { page: 1, limit: 10 };
+      const mockResult = { data: [] };
+      adminVerificationsService.getVerifications.mockResolvedValue(mockResult);
 
-      const createdUser = {
-        id: 'new-user-1',
-        name: 'سالم الكندري',
-        email: 'salem@example.com',
-        phone: '+96599992222',
-        role: Role.INDIVIDUAL,
-        password: 'hashed-password',
-      };
+      const result = await service.getVerifications(filters as any);
 
-      prisma.user.create.mockResolvedValue(createdUser);
-      prisma.individualProfile.create.mockResolvedValue({ id: 'prof-1' });
-      prisma.identity.create.mockResolvedValue({
-        id: 'ident-1',
-        type: IdentityType.INDIVIDUAL,
-      });
-
-      const res = await service.createIndividual({
-        name: 'سالم الكندري',
-        email: 'salem@example.com',
-        phone: '+96599992222',
-        password: 'Password123!',
-      });
-
-      expect(prisma.$transaction).toHaveBeenCalled();
-      expect(prisma.user.create).toHaveBeenCalled();
-      expect(prisma.individualProfile.create).toHaveBeenCalled();
-      expect(prisma.identity.create).toHaveBeenCalled();
-      expect(res.user.id).toBe('new-user-1');
-      expect((res.user as { password?: string }).password).toBeUndefined();
-    });
-
-    it('should derive name from email or phone when name is omitted', async () => {
-      prisma.user.findFirst.mockResolvedValue(null);
-      prisma.user.create.mockImplementation(({ data }: any) =>
-        Promise.resolve({ id: 'user-derived', ...data }),
+      expect(adminVerificationsService.getVerifications).toHaveBeenCalledWith(
+        filters,
       );
-      prisma.individualProfile.create.mockResolvedValue({ id: 'prof-2' });
-      prisma.identity.create.mockResolvedValue({
-        id: 'ident-2',
-        type: IdentityType.INDIVIDUAL,
-      });
-
-      const res = await service.createIndividual({
-        email: 'alisalem@example.com',
-        password: 'Password123!',
-      });
-
-      expect(res.user.name).toBe('alisalem');
-    });
-  });
-
-  describe('updateUserStatus', () => {
-    it('should block a user', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'u-1',
-        isBlocked: false,
-        password: 'hash',
-      });
-      prisma.user.update.mockResolvedValue({
-        id: 'u-1',
-        isBlocked: true,
-        password: 'hash',
-      });
-
-      const res = await service.updateUserStatus('u-1', {
-        status: UserAccountStatusAction.BLOCKED,
-      });
-
-      expect(res.user.isBlocked).toBe(true);
-      expect((res.user as { password?: string }).password).toBeUndefined();
+      expect(result).toBe(mockResult);
     });
 
-    it('should throw BadRequestException if trying to update status of an admin user', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'admin-id',
-        isAdmin: true,
-      });
+    it('delegates notifyUsers to AdminUsersService', async () => {
+      const dto = { userIds: ['u-1'], title: 'مرحبا', message: 'نص' };
+      const mockResult = { notifiedCount: 1 };
+      adminUsersService.notifyUsers.mockResolvedValue(mockResult);
 
-      await expect(
-        service.updateUserStatus('admin-id', {
-          status: UserAccountStatusAction.SUSPENDED,
-        }),
-      ).rejects.toThrow(BadRequestException);
+      const result = await service.notifyUsers(dto);
+
+      expect(adminUsersService.notifyUsers).toHaveBeenCalledWith(dto);
+      expect(result).toBe(mockResult);
     });
 
-    it('should throw NotFoundException if user not found', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
-      await expect(
-        service.updateUserStatus('missing-id', {
-          status: UserAccountStatusAction.ACTIVE,
-        }),
-      ).rejects.toThrow(NotFoundException);
+    it('delegates getUsers to AdminUsersService', async () => {
+      const filter = { role: Role.INDIVIDUAL, page: 1, limit: 10 };
+      const mockResult = { data: [] };
+      adminUsersService.getUsers.mockResolvedValue(mockResult);
+
+      const result = await service.getUsers(filter);
+
+      expect(adminUsersService.getUsers).toHaveBeenCalledWith(filter);
+      expect(result).toBe(mockResult);
     });
-  });
 
-  describe('deleteUser', () => {
-    it('should throw BadRequestException if trying to delete an admin user', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'admin-id',
-        isAdmin: true,
-      });
+    it('delegates getUserById to AdminUsersService', async () => {
+      const mockUser = { id: 'u-1', name: 'User 1' };
+      adminUsersService.getUserById.mockResolvedValue(mockUser);
 
-      await expect(service.deleteUser('admin-id')).rejects.toThrow(
-        BadRequestException,
+      const result = await service.getUserById('u-1');
+
+      expect(adminUsersService.getUserById).toHaveBeenCalledWith('u-1');
+      expect(result).toBe(mockUser);
+    });
+
+    it('delegates updateUserStatus to AdminUsersService', async () => {
+      const dto = { status: UserAccountStatusAction.BLOCKED };
+      const mockResult = { user: { id: 'u-1', isBlocked: true } };
+      adminUsersService.updateUserStatus.mockResolvedValue(mockResult);
+
+      const result = await service.updateUserStatus('u-1', dto);
+
+      expect(adminUsersService.updateUserStatus).toHaveBeenCalledWith(
+        'u-1',
+        dto,
       );
+      expect(result).toBe(mockResult);
     });
 
-    it('should delete non-admin user successfully', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'user-id',
-        isAdmin: false,
-      });
-      prisma.user.delete.mockResolvedValue({ id: 'user-id' });
+    it('delegates updateIdentityStatus to AdminIdentityService', async () => {
+      const dto = { status: 'APPROVED' } as any;
+      const mockResult = { id: 'ident-1', status: 'APPROVED' };
+      adminIdentityService.updateIdentityStatus.mockResolvedValue(mockResult);
 
-      const res = await service.deleteUser('user-id');
-      expect(res.message).toBe('تم حذف المستخدم بنجاح');
-      expect(prisma.user.delete).toHaveBeenCalledWith({
-        where: { id: 'user-id' },
-      });
-    });
-  });
+      const result = await service.updateIdentityStatus('ident-1', dto);
 
-  describe('exportUsersCsv', () => {
-    it('should return CSV with UTF-8 BOM and headers', async () => {
-      jest.spyOn(service, 'getUsers').mockResolvedValue({
-        data: [
-          {
-            id: 'u-1',
-            name: 'فهد العتيبي',
-            email: 'fahad@example.com',
-            phone: '+96599993333',
-            accountType: 'فرد',
-            verificationStatus: '—',
-            subscriptionPlan: 'العادية',
-            adsCount: 2,
-            accountStatus: 'نشط',
-            registrationDate: '10/01/2026',
-          },
-        ],
-        meta: { total: 1, currentPage: 1, limit: 10000, totalPages: 1 },
-        stats: { total: 1, active: 1, blocked: 0, suspended: 0 },
-        counts: { all: 1, individual: 1, office: 0, company: 0 },
-      });
-
-      const csv = await service.exportUsersCsv({ role: Role.INDIVIDUAL });
-
-      expect(csv.startsWith('\uFEFF')).toBe(true);
-      expect(csv).toContain('معرف الفرد');
-      expect(csv).toContain('فهد العتيبي');
-      expect(csv).toContain('fahad@example.com');
-      expect(csv).toContain('"2"');
-    });
-  });
-
-  describe('sendUserPasswordResetLink', () => {
-    it('should throw NotFoundException if user is not found', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
-
-      await expect(
-        service.sendUserPasswordResetLink('non-existent-user'),
-      ).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw BadRequestException if user has no email', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'user-no-email',
-        name: 'User Without Email',
-        email: null,
-      });
-
-      await expect(
-        service.sendUserPasswordResetLink('user-no-email'),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('should send a 60-minute reset link to user email and return success message', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'user-valid',
-        name: 'Mohamed Elgareh',
-        email: 'mohamedelgareh@gmail.com',
-      });
-
-      const res = await service.sendUserPasswordResetLink('user-valid');
-
-      expect(res.message).toContain(
-        'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح',
+      expect(adminIdentityService.updateIdentityStatus).toHaveBeenCalledWith(
+        'ident-1',
+        dto,
       );
-      expect(res.email).toBe('mohamedelgareh@gmail.com');
-    });
-  });
-
-  describe('coupons', () => {
-    it('should return available promotional coupons', () => {
-      const coupons = service.getAvailableCoupons();
-      expect(coupons).toBeDefined();
-      expect(coupons.length).toBeGreaterThan(0);
-      expect(coupons[0].name).toBe('Byoutna10');
+      expect(result).toBe(mockResult);
     });
 
-    it('should throw NotFoundException when granting coupon to non-existent user', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
+    it('delegates requestIdentityEdit to AdminIdentityService', async () => {
+      const dto = { notes: 'يرجى رفع رخصة أوضح' };
+      const mockResult = { id: 'req-1' };
+      adminIdentityService.requestIdentityEdit.mockResolvedValue(mockResult);
 
-      await expect(
-        service.grantCoupon('non-existent', {
-          couponCode: 'LAUNCHPROMO26',
-          couponName: 'Byoutna10',
-        }),
-      ).rejects.toThrow(NotFoundException);
+      const result = await service.requestIdentityEdit('ident-1', dto);
+
+      expect(adminIdentityService.requestIdentityEdit).toHaveBeenCalledWith(
+        'ident-1',
+        dto,
+      );
+      expect(result).toBe(mockResult);
     });
 
-    it('should grant coupon and return success message matching Figma 5634:72196', async () => {
-      prisma.user.findUnique.mockResolvedValue({
-        id: 'user-coupon-1',
-        name: 'على البالي',
+    it('delegates deleteUser to AdminUsersService', async () => {
+      const mockResult = { message: 'تم حذف المستخدم بنجاح' };
+      adminUsersService.deleteUser.mockResolvedValue(mockResult);
+
+      const result = await service.deleteUser('u-1');
+
+      expect(adminUsersService.deleteUser).toHaveBeenCalledWith('u-1');
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates createIndividual to AdminUsersService', async () => {
+      const dto = {
+        name: 'علي حسن',
         email: 'ali@example.com',
-      });
+        password: 'Password123!',
+      };
+      const mockResult = { user: { id: 'new-u' } };
+      adminUsersService.createIndividual.mockResolvedValue(mockResult);
 
-      const res = await service.grantCoupon('user-coupon-1', {
-        couponCode: 'LAUNCHPROMO26',
-        couponName: 'Byoutna10',
-        notifyEmail: true,
-      });
+      const result = await service.createIndividual(dto);
 
-      expect(res.message).toBe(
-        'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
-      );
-      expect(res.coupon.code).toBe('LAUNCHPROMO26');
-      expect(res.userId).toBe('user-coupon-1');
+      expect(adminUsersService.createIndividual).toHaveBeenCalledWith(dto);
+      expect(result).toBe(mockResult);
     });
 
-    it('should grant coupon to multiple users and return summary', async () => {
-      prisma.user.findMany.mockResolvedValue([
-        { id: 'u1', name: 'محمد الجارح', email: 'm1@example.com' },
-        { id: 'u2', name: 'أحمد علي', email: 'm2@example.com' },
-      ]);
-
-      const res = await service.grantBulkCoupon({
-        userIds: ['u1', 'u2'],
-        couponCode: 'LAUNCHPROMO26',
-        couponName: 'Byoutna10',
-        notifyEmail: true,
-      });
-
-      expect(res.grantedCount).toBe(2);
-      expect(res.message).toBe('تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.');
-      expect(res.grantedUserIds).toEqual(['u1', 'u2']);
-    });
-  });
-
-  describe('getDashboard', () => {
-    it('computes metrics, usersByType, recent registrations, and pending verifications', async () => {
-      // user.count call order: totalUsersNow, totalUsersLastMonth,
-      // trialAccountsNow, trialAccountsLastMonth, countIndividual,
-      // countCompany, countOffice
-      prisma.user.count
-        .mockResolvedValueOnce(120) // totalUsersNow
-        .mockResolvedValueOnce(100) // totalUsersLastMonth
-        .mockResolvedValueOnce(80) // trialAccountsNow
-        .mockResolvedValueOnce(70) // trialAccountsLastMonth
-        .mockResolvedValueOnce(90) // countIndividual
-        .mockResolvedValueOnce(20) // countCompany
-        .mockResolvedValueOnce(10); // countOffice
-
-      prisma.invoice.aggregate
-        .mockResolvedValueOnce({ _sum: { amount: 500 } }) // this month
-        .mockResolvedValueOnce({ _sum: { amount: 250 } }); // last month
-
-      prisma.user.findMany.mockResolvedValue([
-        {
-          id: 'u-1',
-          name: 'سالم الكندري',
-          email: 'salem@example.com',
-          phone: null,
-          role: Role.COMPANY,
-          createdAt: new Date('2026-02-01T00:00:00Z'),
-          activePlan: { name: 'الفضية' },
+    it('delegates exportUsersCsv to AdminExportService with callback', async () => {
+      const filter = { role: Role.INDIVIDUAL };
+      const mockCsv = '\uFEFFheader,row';
+      adminExportService.exportUsersCsv.mockImplementation(
+        async (f, callback) => {
+          if (callback) {
+            await callback(f);
+          }
+          return mockCsv;
         },
-      ]);
-
-      prisma.companyIdentityData.findMany.mockResolvedValue([
-        { identityId: 'company-identity-1', name: 'شركة الاختبار' },
-      ]);
-      prisma.officeIdentityData.findMany.mockResolvedValue([
-        { identityId: 'office-identity-1', name: 'مكتب الاختبار' },
-      ]);
-
-      const result = await service.getDashboard();
-
-      expect(result.metrics.totalUsers).toBe(120);
-      expect(result.metrics.totalUsersChangePct).toBe(20);
-      expect(result.metrics.trialAccounts).toBe(80);
-      expect(result.metrics.revenueTotal).toBe(500);
-      expect(result.metrics.revenueChangePct).toBe(100);
-
-      expect(result.usersByType).toEqual({
-        individual: 90,
-        company: 20,
-        office: 10,
-      });
-
-      expect(result.recentRegistrations).toHaveLength(1);
-      expect(result.recentRegistrations[0].accountType).toBe('شركة');
-      expect(result.recentRegistrations[0].planName).toBe('الفضية');
-
-      expect(result.pendingVerifications).toEqual([
-        { identityId: 'company-identity-1', name: 'شركة الاختبار', type: 'شركة' },
-        { identityId: 'office-identity-1', name: 'مكتب الاختبار', type: 'مكتب عقاري' },
-      ]);
-
-      expect(result.revenueByMonth).toHaveLength(12);
-    });
-
-    it('returns 0% change when the previous period has no data', async () => {
-      prisma.user.count
-        .mockResolvedValueOnce(5) // totalUsersNow
-        .mockResolvedValueOnce(0) // totalUsersLastMonth
-        .mockResolvedValueOnce(0) // trialAccountsNow
-        .mockResolvedValueOnce(0) // trialAccountsLastMonth
-        .mockResolvedValueOnce(0) // countIndividual
-        .mockResolvedValueOnce(0) // countCompany
-        .mockResolvedValueOnce(0); // countOffice
-
-      prisma.user.findMany.mockResolvedValue([]);
-
-      const result = await service.getDashboard();
-
-      expect(result.metrics.totalUsersChangePct).toBe(0);
-      expect(result.metrics.revenueChangePct).toBe(0);
-    });
-  });
-
-  describe('updateIdentityStatus', () => {
-    const companyIdentity = {
-      id: 'identity-company-1',
-      userId: 'user-1',
-      type: 'COMPANY',
-      companyData: { id: 'company-data-1' },
-      officeData: null,
-      user: { id: 'user-1', email: 'company@example.com', name: 'شركة الاختبار' },
-    };
-
-    it('creates a ReviewRequest with the reason when rejecting with one', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'REJECTED',
-        reason: 'الرخصة منتهية الصلاحية',
-      });
-
-      expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
-        data: {
-          status: 'REJECTED',
-          notes: 'الرخصة منتهية الصلاحية',
-          companyIdentityDataId: 'company-data-1',
-        },
-      });
-    });
-
-    it('does not create a ReviewRequest when approving', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'APPROVED',
-      });
-
-      expect(prisma.reviewRequest.create).not.toHaveBeenCalled();
-    });
-
-    it('skips the in-app notification when notifyInApp is false', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'APPROVED',
-        notifyInApp: false,
-      });
-
-      expect(notifications.create).not.toHaveBeenCalled();
-    });
-
-    it('skips the email when notifyEmail is false', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'APPROVED',
-        notifyEmail: false,
-      });
-
-      expect(mail.sendMail).not.toHaveBeenCalled();
-    });
-
-    it('sends both notification channels by default', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'APPROVED',
-      });
-
-      expect(notifications.create).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'user-1', type: 'IDENTITY_APPROVED' }),
       );
-      expect(mail.sendMail).toHaveBeenCalledWith(
-        expect.objectContaining({ to: 'company@example.com' }),
+      adminUsersService.getUsers.mockResolvedValue({ data: [] });
+
+      const result = await service.exportUsersCsv(filter);
+
+      expect(adminExportService.exportUsersCsv).toHaveBeenCalledWith(
+        filter,
+        expect.any(Function),
       );
+      expect(adminUsersService.getUsers).toHaveBeenCalledWith(filter);
+      expect(result).toBe(mockCsv);
     });
 
-    it('still succeeds when the notification email fails to send', async () => {
-      prisma.identity.findUnique.mockResolvedValue(companyIdentity);
-      mail.sendMail.mockRejectedValueOnce(new Error('Invalid `to` field'));
-
-      await expect(
-        service.updateIdentityStatus('identity-company-1', {
-          status: 'APPROVED',
-        }),
-      ).resolves.toBeDefined();
-    });
-  });
-
-  describe('requestIdentityEdit', () => {
-    const officeIdentity = {
-      id: 'identity-office-1',
-      userId: 'user-2',
-      type: 'OFFICE',
-      companyData: null,
-      officeData: { id: 'office-data-1', status: 'PENDING' },
-      user: { id: 'user-2', email: 'office@example.com', name: 'مكتب الاختبار' },
-    };
-
-    it('creates a PENDING ReviewRequest with the notes and leaves the identity untouched', async () => {
-      prisma.identity.findUnique.mockResolvedValue(officeIdentity);
-
-      const result = await service.requestIdentityEdit('identity-office-1', {
-        notes: 'يرجى رفع صورة رخصة أوضح',
-      });
-
-      expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
-        data: {
-          status: 'PENDING',
-          notes: 'يرجى رفع صورة رخصة أوضح',
-          officeIdentityDataId: 'office-data-1',
-        },
-      });
-      expect(prisma.officeIdentityData.update).not.toHaveBeenCalled();
-      expect(result).toBeDefined();
-    });
-
-    it('notifies with type IDENTITY_EDIT_REQUESTED by default', async () => {
-      prisma.identity.findUnique.mockResolvedValue(officeIdentity);
-
-      await service.requestIdentityEdit('identity-office-1', {
-        notes: 'يرجى رفع صورة رخصة أوضح',
-      });
-
-      expect(notifications.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          userId: 'user-2',
-          type: 'IDENTITY_EDIT_REQUESTED',
-        }),
+    it('delegates sendUserPasswordResetLink to AdminPasswordService', async () => {
+      const mockResult = { message: 'تم الإرسال', email: 'test@example.com' };
+      adminPasswordService.sendUserPasswordResetLink.mockResolvedValue(
+        mockResult,
       );
-      expect(mail.sendMail).toHaveBeenCalledWith(
-        expect.objectContaining({ to: 'office@example.com' }),
-      );
+
+      const result = await service.sendUserPasswordResetLink('u-1');
+
+      expect(
+        adminPasswordService.sendUserPasswordResetLink,
+      ).toHaveBeenCalledWith('u-1');
+      expect(result).toBe(mockResult);
     });
 
-    it('throws BadRequestException for an individual identity', async () => {
-      prisma.identity.findUnique.mockResolvedValue({
-        id: 'identity-ind-1',
-        userId: 'user-3',
-        type: 'INDIVIDUAL',
-        companyData: null,
-        officeData: null,
-        user: { id: 'user-3', email: 'ind@example.com', name: 'فرد' },
-      });
+    it('delegates getAvailableCoupons to AdminCouponService', () => {
+      const mockCoupons = [{ id: 'c1', name: 'Coupon 1' }];
+      adminCouponService.getAvailableCoupons.mockReturnValue(mockCoupons);
 
-      await expect(
-        service.requestIdentityEdit('identity-ind-1', { notes: 'test' }),
-      ).rejects.toThrow(BadRequestException);
+      const result = service.getAvailableCoupons();
+
+      expect(adminCouponService.getAvailableCoupons).toHaveBeenCalledTimes(1);
+      expect(result).toBe(mockCoupons);
     });
 
-    it('throws NotFoundException when the identity does not exist', async () => {
-      prisma.identity.findUnique.mockResolvedValue(null);
+    it('delegates grantCoupon to AdminCouponService', async () => {
+      const dto = { couponCode: 'PROMO10' };
+      const mockResult = { message: 'تم المنح' };
+      adminCouponService.grantCoupon.mockResolvedValue(mockResult);
 
-      await expect(
-        service.requestIdentityEdit('missing-id', { notes: 'test' }),
-      ).rejects.toThrow(NotFoundException);
+      const result = await service.grantCoupon('u-1', dto);
+
+      expect(adminCouponService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates grantBulkCoupon to AdminCouponService', async () => {
+      const dto = { userIds: ['u1', 'u2'], couponCode: 'PROMO10' };
+      const mockResult = { grantedCount: 2 };
+      adminCouponService.grantBulkCoupon.mockResolvedValue(mockResult);
+
+      const result = await service.grantBulkCoupon(dto);
+
+      expect(adminCouponService.grantBulkCoupon).toHaveBeenCalledWith(dto);
+      expect(result).toBe(mockResult);
     });
   });
 });
-
-
