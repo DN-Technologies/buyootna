@@ -170,6 +170,7 @@ enum NotificationType {
   IDENTITY_APPROVED
   IDENTITY_REJECTED
   IDENTITY_EDIT_REQUESTED
+  ADMIN_CUSTOM_MESSAGE
 }
 
 model Notification {

@@ -5,6 +5,11 @@ import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status
 import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
 import {
+  AdminNotifyUsersDto,
+  AdminNotifyUsersResponseDto,
+} from './dto/admin-notify-users.dto';
+import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
+import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
 } from './dto/admin-grant-coupon.dto';
@@ -14,6 +19,7 @@ import { AdminExportService } from './services/admin-export.service';
 import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
+import { AdminVerificationsService } from './services/admin-verifications.service';
 
 @Injectable()
 export class AdminService {
@@ -24,10 +30,21 @@ export class AdminService {
     private readonly adminPasswordService: AdminPasswordService,
     private readonly adminCouponService: AdminCouponService,
     private readonly adminDashboardService: AdminDashboardService,
+    private readonly adminVerificationsService: AdminVerificationsService,
   ) {}
 
   async getDashboard() {
     return this.adminDashboardService.getDashboard();
+  }
+
+  async getVerifications(filters: AdminVerificationsFilterDto) {
+    return this.adminVerificationsService.getVerifications(filters);
+  }
+
+  async notifyUsers(
+    dto: AdminNotifyUsersDto,
+  ): Promise<AdminNotifyUsersResponseDto> {
+    return this.adminUsersService.notifyUsers(dto);
   }
 
   async getUsers(filters: AdminUsersFilterDto) {

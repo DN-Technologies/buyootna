@@ -39,6 +39,8 @@ export interface AdminDashboardPendingVerification {
   licenseExpiry: string | null;
   logoUrl: string | null;
   createdAt: string;
+  status?: string | null;
+  sentAt?: string | null;
 }
 
 export interface AdminDashboardResponse {

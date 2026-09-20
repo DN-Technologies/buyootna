@@ -25,6 +25,8 @@ import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
 import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
+import { AdminNotifyUsersDto } from './dto/admin-notify-users.dto';
+import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -35,11 +37,13 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import { ApiErrorResponseDto } from '../../core/swagger/api-error-response.dto';
 import {
   AdminDeleteUserResponseDto,
+  AdminNotifyUsersResponseDto,
   AdminResetPasswordResponseDto,
   AdminUpdateUserStatusResponseDto,
   AdminUsersListResponseDto,
 } from './dto/admin-response.dto';
 import { AdminDashboardResponseDto } from './dto/admin-dashboard-response.dto';
+import { AdminVerificationsListResponseDto } from './dto/admin-verifications-response.dto';
 import { IdentityResponseDto } from '../identities/dto/identity-response.dto';
 
 @ApiTags('Admin')
@@ -62,6 +66,30 @@ export class AdminController {
   @ApiCommonErrors()
   async getDashboard() {
     return this.adminService.getDashboard();
+  }
+
+  @Get('verifications')
+  @ApiOperation({
+    summary:
+      'List company/office verification requests, paginated/filterable, with status counts and today stats',
+  })
+  @ApiResponse({ status: 200, type: AdminVerificationsListResponseDto })
+  @ApiCommonErrors()
+  async getVerifications(@Query() filters: AdminVerificationsFilterDto) {
+    return this.adminService.getVerifications(filters);
+  }
+
+  @Post('users/notify')
+  @ApiOperation({
+    summary:
+      'Send a custom in-app and/or email notification to one or more users',
+  })
+  @ApiResponse({ status: 200, type: AdminNotifyUsersResponseDto })
+  @ApiCommonErrors()
+  async notifyUsers(
+    @Body() dto: AdminNotifyUsersDto,
+  ): Promise<AdminNotifyUsersResponseDto> {
+    return this.adminService.notifyUsers(dto);
   }
 
   @Get('users')
@@ -186,7 +214,7 @@ export class AdminController {
   })
   @ApiResponse({ status: 200, description: 'Available promotional coupons' })
   @ApiCommonErrors()
-  async getAvailableCoupons() {
+  getAvailableCoupons() {
     return this.adminService.getAvailableCoupons();
   }
 
