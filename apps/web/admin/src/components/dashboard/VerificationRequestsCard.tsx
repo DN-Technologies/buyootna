@@ -5,6 +5,7 @@ import { AdminDashboardPendingVerification } from '@/lib/admin-dashboard'
 
 export interface VerificationRequestsCardProps {
   requests: AdminDashboardPendingVerification[]
+  onReview?: (request: AdminDashboardPendingVerification) => void
 }
 
 const TYPE_STYLES: Record<string, { color: string; bg: string }> = {
@@ -14,10 +15,11 @@ const TYPE_STYLES: Record<string, { color: string; bg: string }> = {
 
 export default function VerificationRequestsCard({
   requests,
+  onReview,
 }: VerificationRequestsCardProps) {
   return (
     <Card
-      className="bg-white border-[#ECECEC] py-5 flex flex-col gap-4 relative select-none"
+      className="bg-white lg:col-span-1 border-[#ECECEC] py-5 flex flex-col gap-4 relative select-none"
       data-node-id="2376:5816"
     >
       <div className="flex items-start justify-between w-full px-4.5">
@@ -75,7 +77,11 @@ export default function VerificationRequestsCard({
                       {req.type}
                     </span>
                   </div>
-                  <button className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-20">
+                  <button
+                    type="button"
+                    onClick={() => onReview?.(req)}
+                    className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:underline cursor-pointer text-left w-20"
+                  >
                     مراجعة
                   </button>
                 </div>
