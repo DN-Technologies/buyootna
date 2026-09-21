@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { AuthIdentitiesService } from './services/auth-identities.service';
 import { SessionsService } from '../devices/sessions.service';
@@ -96,10 +97,17 @@ describe('AuthService Unit Tests', () => {
 
   const mockUsersRegistrationService = {
     completeEmailRegistration: jest.fn(),
+    completePhoneRegistration: jest.fn(),
   };
 
   const mockEmailOtpService = {
     getMockOtp: jest.fn(),
+  };
+
+  const mockPhoneRegistrationPendingService = {
+    save: jest.fn(),
+    hasPending: jest.fn(),
+    consume: jest.fn(),
   };
 
   const mockTwilioService = {
@@ -149,6 +157,10 @@ describe('AuthService Unit Tests', () => {
           useValue: mockUsersRegistrationService,
         },
         { provide: EmailOtpService, useValue: mockEmailOtpService },
+        {
+          provide: PhoneRegistrationPendingService,
+          useValue: mockPhoneRegistrationPendingService,
+        },
         { provide: OtpRateLimiterService, useValue: mockOtpRateLimiterService },
         { provide: AuthIdentitiesService, useValue: mockIdentitiesService },
         { provide: SessionsService, useValue: mockSessionsService },
@@ -520,35 +532,35 @@ describe('AuthService Unit Tests', () => {
   });
 
   describe('verifyRegistrationOtp', () => {
-    it('throws BadRequestException when the phone is not registered', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(null);
+    it('throws BadRequestException when there is no pending registration for the phone', async () => {
+      mockPhoneRegistrationPendingService.hasPending.mockReturnValue(false);
 
       await expect(
         service.verifyRegistrationOtp('+96555123456', '123456'),
       ).rejects.toThrow(BadRequestException);
+      expect(mockTwilioService.checkVerification).not.toHaveBeenCalled();
     });
 
-    it('throws BadRequestException when the OTP is invalid or expired', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        phone: '+96555123456',
-        password: 'hashed',
-      });
+    it('throws BadRequestException when the OTP is invalid or expired, without consuming the pending signup', async () => {
+      mockPhoneRegistrationPendingService.hasPending.mockReturnValue(true);
       mockTwilioService.checkVerification.mockResolvedValue(false);
 
       await expect(
         service.verifyRegistrationOtp('+96555123456', '000000'),
       ).rejects.toThrow(BadRequestException);
+      expect(
+        mockUsersRegistrationService.completePhoneRegistration,
+      ).not.toHaveBeenCalled();
     });
 
-    it('logs the user in on a valid OTP', async () => {
-      const dbUser = {
-        id: 'user-1',
-        phone: '+96555123456',
-        password: 'hashed',
-      };
-      mockPrismaService.user.findUnique.mockResolvedValue(dbUser);
+    it('creates the account via UsersRegistrationService then logs the user in on a valid OTP', async () => {
+      const createdUser = { id: 'user-1', phone: '+96555123456' };
+      mockPhoneRegistrationPendingService.hasPending.mockReturnValue(true);
       mockTwilioService.checkVerification.mockResolvedValue(true);
+      mockUsersRegistrationService.completePhoneRegistration.mockResolvedValue({
+        user: createdUser,
+        profile: { id: 'profile-1' },
+      });
       const loginSpy = jest
         .spyOn(service, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
@@ -558,14 +570,25 @@ describe('AuthService Unit Tests', () => {
         '123456',
       );
 
+      expect(
+        mockUsersRegistrationService.completePhoneRegistration,
+      ).toHaveBeenCalledWith('+96555123456');
+      expect(loginSpy).toHaveBeenCalledWith(createdUser, undefined, {});
       expect(result).toBe(MOCK_LOGIN_RESULT);
-      expect(loginSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'user-1' }),
-        undefined,
-        {},
+    });
+
+    it('propagates a failure from account creation without logging in', async () => {
+      mockPhoneRegistrationPendingService.hasPending.mockReturnValue(true);
+      mockTwilioService.checkVerification.mockResolvedValue(true);
+      mockUsersRegistrationService.completePhoneRegistration.mockRejectedValue(
+        new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة'),
       );
-      const loginArg = loginSpy.mock.calls[0][0];
-      expect(loginArg).not.toHaveProperty('password');
+      const loginSpy = jest.spyOn(service, 'login');
+
+      await expect(
+        service.verifyRegistrationOtp('+96555123456', '123456'),
+      ).rejects.toThrow(BadRequestException);
+      expect(loginSpy).not.toHaveBeenCalled();
     });
   });
 

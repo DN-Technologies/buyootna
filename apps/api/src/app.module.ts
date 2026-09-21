@@ -14,6 +14,7 @@ import { StorageModule } from './core/storage/storage.module';
 import { TwilioModule } from './core/twilio/twilio.module';
 import { MailModule } from './core/mail/mail.module';
 import { EmailOtpModule } from './core/email-otp/email-otp.module';
+import { PhoneRegistrationModule } from './core/phone-registration/phone-registration.module';
 import { OtpRateLimiterModule } from './core/otp-rate-limiter/otp-rate-limiter.module';
 import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
@@ -53,6 +54,7 @@ import { AlertsModule } from './features/alerts/alerts.module';
     TwilioModule,
     MailModule,
     EmailOtpModule,
+    PhoneRegistrationModule,
     OtpRateLimiterModule,
     UsersModule,
     AuthModule,
