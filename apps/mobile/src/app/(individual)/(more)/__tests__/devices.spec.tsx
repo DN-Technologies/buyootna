@@ -1,22 +1,28 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, waitFor } from '@testing-library/react-native';
+import { fireEvent,render, waitFor } from '@testing-library/react-native';
 
 import { devicesService } from '@/shared/api/devices.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
 
 import RegisteredDevicesScreen from '../devices';
 
+const mockReplace = jest.fn();
+
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: mockReplace,
+    back: jest.fn(),
+  }),
 }));
 
 jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock('react-native-safe-area-context', () => ({
-  ...jest.requireActual('react-native-safe-area-context'),
-  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
+jest.mock('@/shared/utils/alert', () => ({
+  showAlert: jest.fn(),
 }));
 
 // useFocusEffect needs a real NavigationContainer ancestor otherwise. Real
@@ -41,12 +47,53 @@ jest.mock('@/shared/api/devices.service', () => ({
   },
 }));
 
+// RN's Fabric-era <Modal> hosts its children outside the tree RNTL queries
+// can see, and empty Touchables collapse away entirely, so drive the
+// confirmation sheets through a plain passthrough with collapsable={false}
+// instead (the real modal is presentational; the screen's wiring is what
+// these tests assert).
+jest.mock('@/features/individual/components/more/LogoutConfirmationModal', () => {
+  const { TouchableOpacity } = require('react-native');
+  return {
+    __esModule: true,
+    default: ({
+      visible,
+      onConfirm,
+      onClose,
+    }: {
+      visible: boolean;
+      onConfirm: () => void;
+      onClose: () => void;
+    }) =>
+      visible ? (
+        <>
+          <TouchableOpacity
+            testID="confirm-logout"
+            collapsable={false}
+            onPress={onConfirm}
+          />
+          <TouchableOpacity
+            testID="close-logout"
+            collapsable={false}
+            onPress={onClose}
+          />
+        </>
+      ) : null,
+  };
+});
+
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 const mockGetDevices = devicesService.getDevices as jest.Mock;
+const mockRevokeAllDevices = devicesService.revokeAllDevices as jest.Mock;
+const mockShowAlert = showAlert as jest.Mock;
 
-async function renderScreen(queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-})) {
+let mockLogout: jest.Mock;
+
+async function renderScreen(
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  }),
+) {
   return {
     queryClient,
     ...(await render(
@@ -61,9 +108,16 @@ describe('RegisteredDevicesScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     capturedFocusEffect = undefined;
+    mockLogout = jest.fn().mockResolvedValue(undefined);
     mockUseAuthStore.mockImplementation((selector: any) =>
-      selector({ sessionId: 'session-a' }),
+      selector({
+        sessionId: 'session-a',
+        logout: mockLogout,
+      }),
     );
+    // The master "log out everywhere" button renders regardless of list
+    // state; only tests that assert on the list need a session payload.
+    mockGetDevices.mockResolvedValue([]);
   });
 
   it('shows every session the backend returns, not just the current device', async () => {
@@ -79,10 +133,6 @@ describe('RegisteredDevicesScreen', () => {
   });
 
   it('refetches when the screen is re-focused, not just on first mount', async () => {
-    mockGetDevices.mockResolvedValue([
-      { id: 'session-a', deviceName: 'iPhone 15 Pro', platform: 'ios', isActive: true, lastActive: '', location: null },
-    ]);
-
     await renderScreen();
 
     await waitFor(() => {
@@ -99,5 +149,52 @@ describe('RegisteredDevicesScreen', () => {
     await waitFor(() => {
       expect(mockGetDevices).toHaveBeenCalledTimes(2);
     });
+  });
+
+  // Regression coverage for the reported Critical bug: "log out from all
+  // devices" used to only shrink the list -- the current device never
+  // cleared its credentials and never left for the login screen.
+  it('logging out from all devices also logs the current device out and routes to the auth screen', async () => {
+    mockRevokeAllDevices.mockResolvedValue({ count: 1 });
+
+    const { getByTestId } = await renderScreen();
+
+    fireEvent.press(getByTestId('logout-all-devices'));
+    await waitFor(() => {
+      expect(getByTestId('confirm-logout')).toBeTruthy();
+    });
+    fireEvent.press(getByTestId('confirm-logout'));
+
+    await waitFor(() => {
+      expect(mockRevokeAllDevices).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(mockLogout).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith('/(auth)/individual-auth');
+    });
+  });
+
+  it('shows an error and stays put when the revoke-all call fails', async () => {
+    mockRevokeAllDevices.mockRejectedValue(new Error('network down'));
+
+    const { getByTestId } = await renderScreen();
+
+    fireEvent.press(getByTestId('logout-all-devices'));
+    await waitFor(() => {
+      expect(getByTestId('confirm-logout')).toBeTruthy();
+    });
+    fireEvent.press(getByTestId('confirm-logout'));
+
+    await waitFor(() => {
+      // A response-less error surfaces as the connectivity message.
+      expect(mockShowAlert).toHaveBeenCalledWith(
+        'خطأ',
+        'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',
+      );
+    });
+    expect(mockLogout).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)/individual-auth');
   });
 });

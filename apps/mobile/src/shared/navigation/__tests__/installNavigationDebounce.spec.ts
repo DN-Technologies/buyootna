@@ -1,15 +1,23 @@
 describe('installNavigationDebounce', () => {
-  let router: { push: jest.Mock; navigate: jest.Mock; replace: jest.Mock };
+  let router: {
+    push: jest.Mock;
+    navigate: jest.Mock;
+    replace: jest.Mock;
+    back: jest.Mock;
+    dismiss: jest.Mock;
+    dismissAll: jest.Mock;
+  };
   let originalPush: jest.Mock;
   let originalNavigate: jest.Mock;
   let originalReplace: jest.Mock;
+  let originalBack: jest.Mock;
   let now: number;
 
   beforeEach(() => {
     // Fully isolated per test: installNavigationDebounce only wraps once
     // per module instance (module-scoped `installed` flag) and tracks the
-    // last-navigation timestamp in module state, so a fresh module +
-    // fresh mocks per test avoids any cross-test bleed.
+    // last-navigation timestamp + last target in module state, so a fresh
+    // module + fresh mocks per test avoids any cross-test bleed.
     jest.resetModules();
     now = 1_000_000;
     jest.spyOn(Date, 'now').mockImplementation(() => now);
@@ -18,6 +26,7 @@ describe('installNavigationDebounce', () => {
     originalPush = router.push;
     originalNavigate = router.navigate;
     originalReplace = router.replace;
+    originalBack = router.back;
 
     const {
       installNavigationDebounce,
@@ -67,5 +76,49 @@ describe('installNavigationDebounce', () => {
     expect(originalPush).toHaveBeenCalledTimes(2);
     expect(originalPush).toHaveBeenNthCalledWith(1, '/a');
     expect(originalPush).toHaveBeenNthCalledWith(2, '/b');
+  });
+
+  // Regression coverage for the reported bug: taps spread over more than
+  // the 600ms burst window used to stack one duplicate screen per tap --
+  // the same target must now be refused indefinitely until the user leaves
+  // the screen.
+  it('refuses a consecutive identical target even after the debounce window', () => {
+    router.push('/chat/1' as any);
+    now += 700;
+    router.push('/chat/1' as any);
+    now += 700;
+    router.push('/chat/1' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(1);
+  });
+
+  it('allows the same target again once the user went back', () => {
+    router.push('/chat/1' as any);
+    now += 700;
+    router.back();
+    now += 700;
+    router.push('/chat/1' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(2);
+    expect(originalBack).toHaveBeenCalledTimes(1);
+  });
+
+  it('normalizes object hrefs against their string equivalent', () => {
+    router.push('/chat/1' as any);
+    now += 700;
+    router.push({
+      pathname: '/chat/1',
+      params: {},
+    } as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(1);
+  });
+
+  it('still allows a different target after the window', () => {
+    router.push('/chat/1' as any);
+    now += 700;
+    router.push('/chat/2' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(2);
   });
 });

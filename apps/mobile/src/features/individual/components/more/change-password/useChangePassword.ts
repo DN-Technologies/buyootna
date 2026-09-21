@@ -92,6 +92,10 @@ export function useChangePassword() {
       setOtp('');
       setOtpError('');
       bottomSheetRef.current?.present();
+      // Focus once the sheet's entrance animation has settled: focusing at
+      // mount (autoFocus) raced the presentation and left the keyboard
+      // fighting the sheet's position, hiding the OTP boxes behind it.
+      setTimeout(() => otpInputRef.current?.focus(), 600);
     } catch (e: any) {
       showAlert(
         'خطأ',

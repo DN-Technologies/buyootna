@@ -49,7 +49,12 @@ export const ChangePasswordOtpSheet = forwardRef<
     },
     ref,
   ) => {
-    const snapPoints = useMemo(() => ['55%'], []);
+    // 80% — deliberately tall so the OTP boxes and submit button sit above
+    // any keyboard BY GEOMETRY: gorhom's internal keyboard handling
+    // (keyboardBehavior) proved inert under the new architecture (Fabric),
+    // so keep the keyboard props as best-effort headroom but never rely on
+    // them to keep this sheet's content visible.
+    const snapPoints = useMemo(() => ['80%'], []);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -76,6 +81,14 @@ export const ChangePasswordOtpSheet = forwardRef<
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        // The sheet must sit fully above the keyboard: "extend" grows it to
+        // clear the keyboard instead of leaving the OTP boxes underneath it
+        // (the reported bug). The other two props match every other input
+        // sheet in the app.
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
@@ -126,6 +139,7 @@ export const ChangePasswordOtpSheet = forwardRef<
             {/* Hidden Input */}
             <TextInput
               ref={otpInputRef}
+              testID="otp-hidden-input"
               value={otp}
               onChangeText={(text) => {
                 const clean = text.replace(/[^0-9]/g, '');
@@ -140,7 +154,6 @@ export const ChangePasswordOtpSheet = forwardRef<
                 opacity: 0,
               }}
               pointerEvents="none"
-              autoFocus
             />
 
             {otpError !== '' && (
