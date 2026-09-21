@@ -23,7 +23,10 @@ import { AdminService } from './admin.service';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
+import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
+import { AdminNotifyUsersDto } from './dto/admin-notify-users.dto';
+import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -34,11 +37,14 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import { ApiErrorResponseDto } from '../../core/swagger/api-error-response.dto';
 import {
   AdminDeleteUserResponseDto,
+  AdminNotifyUsersResponseDto,
   AdminResetPasswordResponseDto,
-  AdminUpdateIdentityStatusResponseDto,
   AdminUpdateUserStatusResponseDto,
   AdminUsersListResponseDto,
 } from './dto/admin-response.dto';
+import { AdminDashboardResponseDto } from './dto/admin-dashboard-response.dto';
+import { AdminVerificationsListResponseDto } from './dto/admin-verifications-response.dto';
+import { IdentityResponseDto } from '../identities/dto/identity-response.dto';
 
 @ApiTags('Admin')
 @ApiAuth()
@@ -50,6 +56,41 @@ import {
 @UseGuards(AuthGuard('jwt'), AdminGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Get('dashboard')
+  @ApiOperation({
+    summary:
+      'Get platform-wide admin dashboard stats: user/revenue metrics, users-by-type breakdown, monthly revenue, recent registrations, and pending company/office verifications',
+  })
+  @ApiResponse({ status: 200, type: AdminDashboardResponseDto })
+  @ApiCommonErrors()
+  async getDashboard() {
+    return this.adminService.getDashboard();
+  }
+
+  @Get('verifications')
+  @ApiOperation({
+    summary:
+      'List company/office verification requests, paginated/filterable, with status counts and today stats',
+  })
+  @ApiResponse({ status: 200, type: AdminVerificationsListResponseDto })
+  @ApiCommonErrors()
+  async getVerifications(@Query() filters: AdminVerificationsFilterDto) {
+    return this.adminService.getVerifications(filters);
+  }
+
+  @Post('users/notify')
+  @ApiOperation({
+    summary:
+      'Send a custom in-app and/or email notification to one or more users',
+  })
+  @ApiResponse({ status: 200, type: AdminNotifyUsersResponseDto })
+  @ApiCommonErrors()
+  async notifyUsers(
+    @Body() dto: AdminNotifyUsersDto,
+  ): Promise<AdminNotifyUsersResponseDto> {
+    return this.adminService.notifyUsers(dto);
+  }
 
   @Get('users')
   @ApiOperation({
@@ -128,16 +169,31 @@ export class AdminController {
   @Patch('identities/:id/status')
   @ApiOperation({
     summary:
-      "Update an identity's approval status (e.g. company/office verification)",
+      "Update an identity's approval status (e.g. company/office verification), optionally with a rejection reason and notify-channel choices",
   })
   @ApiParam({ name: 'id', description: 'Identity ID' })
-  @ApiResponse({ status: 200, type: AdminUpdateIdentityStatusResponseDto })
+  @ApiResponse({ status: 200, type: IdentityResponseDto })
   @ApiCommonErrors()
   async updateIdentityStatus(
     @Param('id') id: string,
     @Body() dto: AdminUpdateIdentityStatusDto,
   ) {
     return this.adminService.updateIdentityStatus(id, dto);
+  }
+
+  @Post('identities/:id/request-edit')
+  @ApiOperation({
+    summary:
+      'Send a company/office identity back for corrections -- keeps it PENDING and notifies the owner with the given notes',
+  })
+  @ApiParam({ name: 'id', description: 'Identity ID' })
+  @ApiResponse({ status: 201, type: IdentityResponseDto })
+  @ApiCommonErrors()
+  async requestIdentityEdit(
+    @Param('id') id: string,
+    @Body() dto: AdminRequestIdentityEditDto,
+  ) {
+    return this.adminService.requestIdentityEdit(id, dto);
   }
 
   @Post('users/:id/reset-password')
@@ -158,13 +214,14 @@ export class AdminController {
   })
   @ApiResponse({ status: 200, description: 'Available promotional coupons' })
   @ApiCommonErrors()
-  async getAvailableCoupons() {
+  getAvailableCoupons() {
     return this.adminService.getAvailableCoupons();
   }
 
   @Post('users/bulk/coupon')
   @ApiOperation({
-    summary: 'Grant a promotional discount coupon code to multiple user accounts',
+    summary:
+      'Grant a promotional discount coupon code to multiple user accounts',
   })
   @ApiResponse({
     status: 201,
@@ -185,11 +242,7 @@ export class AdminController {
     description: 'Discount coupon granted to user successfully',
   })
   @ApiCommonErrors()
-  async grantCoupon(
-    @Param('id') id: string,
-    @Body() dto: AdminGrantCouponDto,
-  ) {
+  async grantCoupon(@Param('id') id: string, @Body() dto: AdminGrantCouponDto) {
     return this.adminService.grantCoupon(id, dto);
   }
 }
-

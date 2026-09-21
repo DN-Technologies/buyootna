@@ -22,10 +22,10 @@ import { I18nManager, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { FAVORITE_IDS_QUERY_KEY } from '@/features/individual/hooks/useFavorites';
-import { favoritesService } from '@/features/individual/services/favorites.service';
+import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/AppAlertModal';
+import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

@@ -13,12 +13,12 @@ import GuestMenuSections from '@/features/individual/components/more/GuestMenuSe
 import GuestProfileGreetingCard from '@/features/individual/components/more/GuestProfileGreetingCard';
 import IndividualMenuSections from '@/features/individual/components/more/IndividualMenuSections';
 import MoreScreenFooter from '@/features/individual/components/more/MoreScreenFooter';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';

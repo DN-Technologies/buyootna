@@ -3,6 +3,7 @@
 import { ChevronLeft, Download } from 'lucide-react'
 import { Button } from '@buyootna/ui'
 import React, { Fragment } from 'react'
+import { HomeBreadcrumbIcon } from '@/components/icons/AdminIcons'
 
 export interface HeaderAction {
   label: string
@@ -34,19 +35,24 @@ export default function PageHeader({
       className="border-b border-[#ECECEC] pb-5 pt-2.5 px-8 -mx-6 -mt-6 md:-mx-8 md:-mt-8 mb-6 flex flex-col gap-1.5 text-right shrink-0"
       dir="rtl"
     >
-      {/* Breadcrumbs */}
+      {/* Breadcrumbs matching Figma 2772:54879 */}
       <div className="flex gap-1.5 items-center justify-start text-[14px] font-['Cairo']">
         {breadcrumbs.map((crumb, idx) => (
           <Fragment key={idx}>
-            <span
-              className={
-                idx === breadcrumbs.length - 1
-                  ? 'text-[#111111] font-normal'
-                  : 'text-[#A0A0A0] font-normal'
-              }
-            >
-              {crumb}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {idx === 0 && (
+                <HomeBreadcrumbIcon className="w-3.5 h-3.5 text-[#111111]" />
+              )}
+              <span
+                className={
+                  idx === breadcrumbs.length - 1
+                    ? 'text-[#111111] font-normal'
+                    : 'text-[#A0A0A0] font-normal'
+                }
+              >
+                {crumb}
+              </span>
+            </div>
             {idx < breadcrumbs.length - 1 && (
               <ChevronLeft className="w-3.5 h-3.5 text-[#A0A0A0]" />
             )}

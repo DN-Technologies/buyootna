@@ -12,9 +12,9 @@ import {
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
+import MenuItem from '@/shared/components/MenuItem';
 import { showAlert } from '@/shared/utils/alert';
 
-import MenuItem from './MenuItem';
 import MenuSection from './MenuSection';
 import { BellIcon } from './moreScreenIcons';
 

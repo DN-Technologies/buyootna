@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,

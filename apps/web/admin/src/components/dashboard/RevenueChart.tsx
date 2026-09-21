@@ -1,26 +1,43 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { Card, Button } from '@buyootna/ui'
 
-const chartMonths = [
-  { name: 'ديسمبر', value: '110,000 د.ك', x: 60, y: 184 },
-  { name: 'نوفمبر', value: '108,000 د.ك', x: 120, y: 182 },
-  { name: 'اكتوبر', value: '122,000 د.ك', x: 180, y: 170 },
-  { name: 'سبتمبر', value: '135,000 د.ك', x: 240, y: 162 },
-  { name: 'اغسطس', value: '148,000 د.ك', x: 300, y: 156 },
-  { name: 'يوليو', value: '130,000 د.ك', x: 360, y: 165 },
-  { name: 'يونيو', value: '172,000 د.ك', x: 420, y: 137 },
-  { name: 'مايو', value: '195,000 د.ك', x: 480, y: 123 },
-  { name: 'ابريل', value: '210,000 د.ك', x: 540, y: 115 },
-  { name: 'مارس', value: '235,000 د.ك', x: 600, y: 106 },
-  { name: 'فبراير', value: '250,000 د.ك', x: 660, y: 95 },
-  { name: 'يناير', value: '137,000 د.ك', x: 720, y: 56 },
-]
+export interface RevenueChartMonth {
+  month: string
+  year: number
+  amount: number
+}
 
-export default function RevenueChart() {
-  const [activeMonthIdx, setActiveMonthIdx] = useState<number>(11) // January (index 11) is active by default
+interface RevenueChartProps {
+  data: RevenueChartMonth[]
+}
+
+const CHART_LEFT = 60
+const CHART_RIGHT = 720
+const CHART_TOP = 16
+const CHART_BOTTOM = 220
+
+function formatAmount(amount: number): string {
+  return `${amount.toLocaleString('en-US')} د.ك`
+}
+
+export default function RevenueChart({ data }: RevenueChartProps) {
+  const points = useMemo(() => {
+    const maxVal = Math.max(...data.map((d) => d.amount), 1)
+    const step = data.length > 1 ? (CHART_RIGHT - CHART_LEFT) / (data.length - 1) : 0
+
+    return data.map((d, idx) => ({
+      ...d,
+      x: CHART_LEFT + idx * step,
+      y: CHART_BOTTOM - (d.amount / maxVal) * (CHART_BOTTOM - CHART_TOP),
+    }))
+  }, [data])
+
+  const [activeMonthIdx, setActiveMonthIdx] = useState<number>(
+    Math.max(points.length - 1, 0),
+  )
   const [isHovered, setIsHovered] = useState<boolean>(true)
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
@@ -33,8 +50,8 @@ export default function RevenueChart() {
     let closestIdx = 0
     let minDiff = Infinity
 
-    chartMonths.forEach((m, idx) => {
-      const diff = Math.abs(viewBoxX - m.x)
+    points.forEach((p, idx) => {
+      const diff = Math.abs(viewBoxX - p.x)
       if (diff < minDiff) {
         minDiff = diff
         closestIdx = idx
@@ -45,12 +62,29 @@ export default function RevenueChart() {
     setIsHovered(true)
   }
 
-  const activeMonth = chartMonths[activeMonthIdx]
+  const activeMonth = points[activeMonthIdx]
 
-  // SVG coordinate details for drawing
-  const svgLineD =
-    'M 60,184 C 90,184 90,182 120,182 C 150,182 150,170 180,170 C 210,170 210,162 240,162 C 270,162 270,156 300,156 C 330,156 330,165 360,165 C 390,165 390,137 420,137 C 450,137 450,123 480,123 C 510,123 510,115 540,115 C 570,115 570,106 600,106 C 630,106 630,95 660,95 C 690,95 690,56 720,56'
-  const svgAreaD = `${svgLineD} L 720,240 L 60,240 Z`
+  // Smooth line through the points using the same "half-step" cubic bezier
+  // construction as the original hand-drawn chart: for consecutive points
+  // (x0,y0)->(x1,y1), control points sit at the horizontal midpoint.
+  const { svgLineD, svgAreaD } = useMemo(() => {
+    if (points.length === 0) return { svgLineD: '', svgAreaD: '' }
+    let d = `M ${points[0].x},${points[0].y}`
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1]
+      const cur = points[i]
+      const midX = (prev.x + cur.x) / 2
+      d += ` C ${midX},${prev.y} ${midX},${cur.y} ${cur.x},${cur.y}`
+    }
+    const area = `${d} L ${points[points.length - 1].x},240 L ${points[0].x},240 Z`
+    return { svgLineD: d, svgAreaD: area }
+  }, [points])
+
+  const maxVal = Math.max(...data.map((d) => d.amount), 1)
+  const yAxisLabels = [1, 0.75, 0.5, 0.25, 0].map((frac) => ({
+    val: Math.round((maxVal * frac) / 1000) * 1000,
+    y: CHART_TOP + (1 - frac) * (CHART_BOTTOM - CHART_TOP) - 8,
+  }))
 
   return (
     <Card
@@ -63,7 +97,7 @@ export default function RevenueChart() {
             الإيرادات والمصروفات
           </h3>
           <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
-            تحليل مالي شهري لعام 2026
+            تحليل مالي شهري لآخر 12 شهر
           </p>
         </div>
 
@@ -87,11 +121,11 @@ export default function RevenueChart() {
             }}
           >
             <p className="font-['Cairo'] font-semibold text-[13px] text-[#111111] leading-none">
-              {activeMonth.name}
+              {activeMonth.month}
             </p>
             <div className="flex items-center justify-end gap-2 shrink-0">
               <span className="font-['Cairo'] font-normal text-[12px] text-[#111111]">
-                {activeMonth.value}
+                {formatAmount(activeMonth.amount)}
               </span>
               <span className="font-['Cairo'] font-normal text-[12px] text-[#6b6a6a]">
                 الايرادات
@@ -130,12 +164,12 @@ export default function RevenueChart() {
           ))}
 
           {/* Vertical Grid */}
-          {chartMonths.map((m, idx) => (
+          {points.map((p, idx) => (
             <line
               key={idx}
-              x1={m.x}
+              x1={p.x}
               y1="0"
-              x2={m.x}
+              x2={p.x}
               y2="240"
               stroke="#ECECEC"
               strokeDasharray="4 4"
@@ -144,13 +178,7 @@ export default function RevenueChart() {
           ))}
 
           {/* Y-Axis Labels */}
-          {[
-            { val: '360', y: 8 },
-            { val: '270', y: 68 },
-            { val: '180', y: 128 },
-            { val: '90', y: 188 },
-            { val: '0', y: 236 },
-          ].map((axis, idx) => (
+          {yAxisLabels.map((axis, idx) => (
             <text
               key={idx}
               x="745"
@@ -159,7 +187,7 @@ export default function RevenueChart() {
               fill="#6B6A6A"
               className="font-sans text-[11px]"
             >
-              {axis.val}
+              {axis.val.toLocaleString('en-US')}
             </text>
           ))}
 
@@ -201,7 +229,7 @@ export default function RevenueChart() {
 
         {/* X-Axis Labels */}
         <div className="absolute left-15 right-20 bottom-0 flex justify-between select-none">
-          {chartMonths.map((m, idx) => (
+          {points.map((p, idx) => (
             <div
               key={idx}
               className={`font-['Cairo'] text-[11px] font-medium transition duration-150 ${
@@ -211,7 +239,7 @@ export default function RevenueChart() {
               }`}
               style={{ width: '40px', textAlign: 'center' }}
             >
-              {m.name}
+              {p.month}
             </div>
           ))}
         </div>

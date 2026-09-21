@@ -63,10 +63,7 @@ function UsersPageContent() {
       )}
 
       {/* Statistics Cards Grid */}
-      <UserStatsGrid
-        totalTitle={config.totalStatTitle}
-        stats={data.stats}
-      />
+      <UserStatsGrid totalTitle={config.totalStatTitle} stats={data.stats} />
 
       {/* Bulk Action Toolbar when rows are selected */}
       {selection.selectedIds.length > 0 && (
@@ -88,7 +85,7 @@ function UsersPageContent() {
             <button
               type="button"
               onClick={selection.handleOpenBulkCoupon}
-              className="h-9 px-4 rounded-3xl bg-[#15304D] text-white font-['Cairo'] font-semibold text-[13px] hover:bg-[#1E4368] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="h-9 px-4 rounded-3xl bg-primary text-white font-['Cairo'] font-semibold text-[13px] hover:bg-[#1E4368] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Ticket className="size-3.5" />
               <span>منح كوبون خصم</span>

@@ -105,10 +105,9 @@ export class AdminUpdateUserStatusResponseDto {
   user: Record<string, unknown>;
 }
 
-export class AdminUpdateIdentityStatusResponseDto {
-  @ApiProperty()
-  message: string;
-}
+// AdminUpdateIdentityStatusResponseDto removed -- the service actually
+// returns the full updated Identity (see IdentityResponseDto in
+// features/identities/dto/identity-response.dto.ts), not a bare message.
 
 export class AdminResetPasswordResponseDto {
   @ApiProperty({ example: 'تم إرسال رابط إعادة تعيين كلمة المرور بنجاح' })
@@ -116,4 +115,18 @@ export class AdminResetPasswordResponseDto {
 
   @ApiProperty({ example: 'user@example.com' })
   email: string;
+}
+
+export class AdminNotifyUsersResponseDto {
+  @ApiProperty({ example: 'تم إرسال الإشعار إلى 2 مستخدم.' })
+  message: string;
+
+  @ApiProperty({ example: 2 })
+  notifiedCount: number;
+
+  @ApiProperty({ type: [String], example: ['u-1', 'u-2'] })
+  notifiedUserIds: string[];
+
+  @ApiProperty({ type: [String], example: [] })
+  failedUserIds: string[];
 }

@@ -16,24 +16,32 @@ export interface IndividualData {
 }
 
 export interface CompanyData {
+  id?: string;
   name: string;
   logoUrl: string | null;
   services?: string | null;
   hqLocation?: string | null;
   serviceAreas?: string | null;
   about?: string | null;
+  licenseActivity?: string | null;
   licenseNumber?: string;
+  licenseExpiry?: string | null;
+  licenseFileUrl?: string | null;
   isVerified?: boolean;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 export interface OfficeData {
+  id?: string;
   name: string;
   logoUrl: string | null;
   services?: string | null;
   hqLocation?: string | null;
   about?: string | null;
+  licenseActivity?: string | null;
   licenseNumber?: string;
+  licenseExpiry?: string | null;
+  licenseFileUrl?: string | null;
   isVerified?: boolean;
   status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
@@ -53,6 +61,7 @@ export interface User {
   id: string;
   email: string | null;
   phone: string | null;
+  whatsapp?: string | null;
   isDisabled: boolean;
   isBlocked: boolean;
   createdAt: string;

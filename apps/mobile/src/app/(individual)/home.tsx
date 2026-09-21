@@ -17,11 +17,11 @@ import HomeFilterPills from '@/features/individual/components/home/HomeFilterPil
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ContentContainer from '@/shared/components/ContentContainer';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { HomeFeedResponse } from '@/types/feed';

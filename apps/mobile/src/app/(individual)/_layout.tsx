@@ -2,10 +2,10 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router, Tabs } from 'expo-router';
 import { useRef } from 'react';
 
-import CustomTabBar from '@/features/individual/components/CustomTabBar';
 import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import CustomTabBar from '@/shared/components/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function MainLayout() {

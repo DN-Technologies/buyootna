@@ -6,7 +6,7 @@ import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BuyootnaLogo, CompanyLogo } from '@/assets/icons';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 
 const appVersion = Constants.expoConfig?.version;
 

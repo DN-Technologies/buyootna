@@ -57,8 +57,14 @@ enum SlotStatus {
   EXHAUSTED
 }
 
+enum RequestStatus {
+  PENDING
+  RESPONDED
+  ACCEPTED
+  REJECTED
+}
+
 enum AlertType {
   PROPERTIES
   AUCTIONS
 }
-

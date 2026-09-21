@@ -72,7 +72,7 @@ const CompanyActionsSheet = forwardRef<
               activeOpacity={0.8}
               onPress={() => {
                 handleClose();
-                router.push('/(company)/add-service');
+                router.push('/add-service');
               }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#15304D] bg-[#15304D] px-4 py-3"
             >
@@ -92,7 +92,7 @@ const CompanyActionsSheet = forwardRef<
               activeOpacity={0.7}
               onPress={() => {
                 handleClose();
-                router.push('/(company)/create-invoice');
+                router.push('/create-invoice');
               }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
             >
@@ -112,7 +112,7 @@ const CompanyActionsSheet = forwardRef<
               activeOpacity={0.7}
               onPress={() => {
                 handleClose();
-                router.push('/(company)/add-project');
+                router.push('/add-project');
               }}
               className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
             >

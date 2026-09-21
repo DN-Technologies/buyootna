@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { ActivityFilterType, FilterPill } from '@/features/individual/components/activity/ActivityFilterPills';
-import { ActivityItem } from '@/features/individual/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/useMyActivity';
 
 export type ActivitySortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
 

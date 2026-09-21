@@ -34,6 +34,11 @@ model Identity {
   companyInvoices CompanyInvoice[]
   alerts          Alert[]
 
+  // Company-requests (leads marketplace)
+  requestsAsClient CompanyRequest[] @relation("ClientRequests")
+  requestsTargeted CompanyRequest[] @relation("TargetedRequests")
+  requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
+
   @@index([userId])
   @@index([userId, isActive])
 }

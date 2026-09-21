@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, ChevronDown, Search, Menu, X, LogOut, Loader2 } from 'lucide-react'
+import { Menu, X, LogOut, Loader2 } from 'lucide-react'
+import {
+  SearchIcon,
+  NotificationBellIcon,
+  ChevronDownIcon,
+} from '@/components/icons/AdminIcons'
 import SideNav from '@/components/SideNav'
 import { api } from '@/lib/api'
-import { clearSession, getStoredUser, getToken, type StoredUser } from '@/lib/auth'
+import {
+  clearSession,
+  getStoredUser,
+  getToken,
+  type StoredUser,
+} from '@/lib/auth'
 
 export default function DashboardLayout({
   children,
@@ -100,13 +110,17 @@ export default function DashboardLayout({
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-screen">
-        {/* Figma compliant TopBar (node 2376:5360) */}
-        <header className="h-17.5 bg-white border-b border-[#ECECEC] flex items-center justify-between px-8 shrink-0 z-30">
+        {/* Figma TopBar (node 2321:591) */}
+        <header
+          className="h-17.5 bg-white border-b border-[#ECECEC] flex items-center justify-between px-8 shrink-0 z-30"
+          dir="rtl"
+        >
           {/* Right Side (RTL): Mobile toggle + Search Input */}
           <div className="flex items-center gap-4 flex-1">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-1.5 rounded-lg text-[#6B6A6A] hover:bg-[#F8F9FA] transition"
+              aria-label="القائمة"
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -115,51 +129,54 @@ export default function DashboardLayout({
               )}
             </button>
 
-            {/* Pill Search box */}
-            <div className="hidden sm:flex items-center justify-end bg-white border border-[#ECECEC] rounded-[64px] px-3.5 py-1.5 w-full max-w-107 shrink-0">
-              <div className="flex items-center justify-end gap-2 w-full">
+            {/* Pill Search box matching Figma 2333:5461 */}
+            <div className="hidden sm:flex items-center justify-end bg-white border border-[#ECECEC] rounded-[64px] px-3 py-2 w-full max-w-107 shrink-0">
+              <div className="flex items-center justify-end gap-1.5 w-full">
                 <input
                   type="text"
-                  placeholder="ابحث عن عقار أو خدمة..."
+                  placeholder="ابحث عن ما ترغب به..."
                   className="bg-transparent border-none text-right font-['Cairo'] font-medium text-[13px] text-[#111111] placeholder-[#989898] focus:outline-none w-full"
                 />
-                <Search className="w-4.5 h-4.5 text-[#989898]" />
+                <SearchIcon className="w-5 h-5 shrink-0 text-[#989898]" />
               </div>
             </div>
           </div>
 
-          {/* Left Side (RTL): Profile Details & Notification Bell */}
-          <div className="flex items-center gap-6">
-            {/* Notification Bell with Red Dot */}
-            <button className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#111111] hover:bg-[#F8F9FA] transition">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 left-4.5 w-1.5 h-1.5 rounded-full bg-[#BA0003]" />
+          {/* Left Side (RTL): Notification Bell & Profile Details */}
+          <div className="flex items-center gap-5.5">
+            {/* Notification Bell with Red Dot matching Figma 2321:554 */}
+            <button
+              className="relative w-8 h-8 rounded-full flex items-center justify-center text-[#111111] hover:bg-[#F8F9FA] transition"
+              aria-label="الإشعارات"
+            >
+              <NotificationBellIcon className="w-4 h-4 text-[#111111]" />
+              <span className="absolute top-1.5 left-4 size-1.5 rounded-full bg-[#BA0003]" />
             </button>
 
-            {/* Vertical Divider */}
+            {/* Vertical Divider matching Figma Line 243 */}
             <div className="w-px h-8 bg-[#ECECEC]" />
 
-            {/* Profile Dropdown Toggle */}
+            {/* Profile Dropdown Toggle matching Figma 2321:561 */}
             <div className="relative">
               <div
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 className="flex items-center gap-3 cursor-pointer hover:opacity-85 transition"
               >
-                <ChevronDown className="w-4 h-4 text-[#111111]" />
-                <div className="relative rounded-[200px] w-10 h-10 overflow-hidden bg-gray-100 border border-[#ECECEC]">
-                  <img
-                    alt={currentUser?.name || 'المشرف'}
-                    className="object-cover w-full h-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  />
-                </div>
+                <ChevronDownIcon className="w-4 h-4 text-[#111111]" />
                 <div className="flex flex-col gap-0.5 text-right">
-                  <p className="font-['Cairo'] font-semibold text-[16px] text-[#111111] leading-none">
-                    {currentUser?.name || currentUser?.email || currentUser?.phone || 'المشرف'}
+                  <p className="font-['Cairo'] font-semibold text-[16px] text-[#111111] leading-[1.2]">
+                    {currentUser?.name || 'نواف الجارحي'}
                   </p>
-                  <p className="font-['Cairo'] font-normal text-[13px] text-[#6B6A6A] leading-none">
-                    مشرف
+                  <p className="font-['Cairo'] font-normal text-[13px] text-[#6B6A6A] leading-[1.2]">
+                    مشرف عام
                   </p>
+                </div>
+                <div className="relative rounded-full w-10 h-10 overflow-hidden bg-gray-100 border border-[#ECECEC] shrink-0">
+                  <img
+                    alt={currentUser?.name || 'نواف الجارحي'}
+                    className="object-cover w-full h-full"
+                    src="/avatar-nawaf.png"
+                  />
                 </div>
               </div>
 
