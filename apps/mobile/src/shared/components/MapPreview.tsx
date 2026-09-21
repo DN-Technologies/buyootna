@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import Mapbox, { Camera, MapView, PointAnnotation } from '@rnmapbox/maps';
+import type { ComponentType } from 'react';
 import {
   ImageBackground,
   Linking,
@@ -12,11 +12,29 @@ import {
 
 import { showAlert } from '@/shared/utils/alert';
 
-// Initialize Mapbox with public access token
-Mapbox.setAccessToken(
-  process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
-    'pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ',
-);
+// Resolved lazily and defensively: the property-details screen is the only
+// place in the main flow that mounts a native map, and a binary without the
+// Mapbox native module (an older internal/preview build, Expo Go) must fall
+// back to the static image instead of crashing the entire screen at import
+// time (global error boundary -> "please restart the application").
+type MapboxComponent = ComponentType<any>;
+interface MapboxModule {
+  default: { setAccessToken: (token: string) => void };
+  MapView: MapboxComponent;
+  Camera: MapboxComponent;
+  PointAnnotation: MapboxComponent;
+}
+let Mapbox: MapboxModule | null = null;
+try {
+  const mapbox = require('@rnmapbox/maps') as MapboxModule;
+  mapbox.default.setAccessToken(
+    process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
+      'pk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcmh2dTZ3azFrNzczMHNldzNyc2hia3gifQ.VteDtFkHHKEsyVL004WSkQ',
+  );
+  Mapbox = mapbox;
+} catch (e) {
+  console.warn('Mapbox native module unavailable, using static fallback:', e);
+}
 
 export interface MapPreviewProps {
   location: string;
@@ -63,9 +81,9 @@ export default function MapPreview({
         onPress={handlePress}
         className="h-[160px] w-full items-center justify-center overflow-hidden rounded-3xl border border-gray-200 bg-gray-50"
       >
-        {hasCoords ? (
+        {hasCoords && Mapbox ? (
           <View pointerEvents="none" className="absolute inset-0">
-            <MapView
+            <Mapbox.MapView
               style={StyleSheet.absoluteFillObject}
               styleURL="mapbox://styles/mapbox/light-v11"
               logoEnabled={false}
@@ -76,20 +94,20 @@ export default function MapPreview({
               rotateEnabled={false}
               pitchEnabled={false}
             >
-              <Camera
+              <Mapbox.Camera
                 zoomLevel={13.5}
                 centerCoordinate={[longitude!, latitude!]}
                 animationMode="none"
               />
-              <PointAnnotation
+              <Mapbox.PointAnnotation
                 id="property-pin"
                 coordinate={[longitude!, latitude!]}
               >
                 <View style={styles.pinContainer}>
                   <Feather name="home" size={16} color="#FFFFFF" />
                 </View>
-              </PointAnnotation>
-            </MapView>
+              </Mapbox.PointAnnotation>
+            </Mapbox.MapView>
           </View>
         ) : (
           /* Static Map Background Image Fallback */
