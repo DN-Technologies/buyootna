@@ -45,6 +45,9 @@ describe('ChangePasswordOtpSheet', () => {
 
     const modalProps = capturedModalProps.at(-1);
     expect(modalProps).toBeDefined();
+    // Tall enough that the OTP boxes and submit button sit above any
+    // keyboard by geometry (gorhom keyboard handling is inert under Fabric).
+    expect(modalProps?.snapPoints).toEqual(['80%']);
     expect(modalProps?.keyboardBehavior).toBe('extend');
     expect(modalProps?.keyboardBlurBehavior).toBe('restore');
     expect(modalProps?.android_keyboardInputMode).toBe('adjustResize');

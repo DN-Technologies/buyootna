@@ -49,7 +49,12 @@ export const ChangePasswordOtpSheet = forwardRef<
     },
     ref,
   ) => {
-    const snapPoints = useMemo(() => ['55%'], []);
+    // 80% — deliberately tall so the OTP boxes and submit button sit above
+    // any keyboard BY GEOMETRY: gorhom's internal keyboard handling
+    // (keyboardBehavior) proved inert under the new architecture (Fabric),
+    // so keep the keyboard props as best-effort headroom but never rely on
+    // them to keep this sheet's content visible.
+    const snapPoints = useMemo(() => ['80%'], []);
 
     const renderBackdrop = useCallback(
       (props: any) => (
