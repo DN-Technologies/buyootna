@@ -12,6 +12,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
+import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import {
   ApiForbiddenResponse,
   ApiOperation,
@@ -27,6 +29,10 @@ import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.d
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
 import { AdminNotifyUsersDto } from './dto/admin-notify-users.dto';
 import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
+import { AdminReportsFilterDto } from './dto/admin-reports-filter.dto';
+import { AdminReportUpdateDto } from './dto/admin-report-update.dto';
+import { AdminReportsBulkDto } from './dto/admin-reports-bulk.dto';
+import { AdminRemovePropertyDto } from './dto/admin-remove-property.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -44,6 +50,7 @@ import {
 } from './dto/admin-response.dto';
 import { AdminDashboardResponseDto } from './dto/admin-dashboard-response.dto';
 import { AdminVerificationsListResponseDto } from './dto/admin-verifications-response.dto';
+import { AdminReportsListResponseDto } from './dto/admin-reports-response.dto';
 import { IdentityResponseDto } from '../identities/dto/identity-response.dto';
 
 @ApiTags('Admin')
@@ -77,6 +84,91 @@ export class AdminController {
   @ApiCommonErrors()
   async getVerifications(@Query() filters: AdminVerificationsFilterDto) {
     return this.adminService.getVerifications(filters);
+  }
+
+  @Get('reports')
+  @ApiOperation({
+    summary:
+      'List moderation reports, paginated/filterable, with status/priority/date filters and stats',
+  })
+  @ApiResponse({ status: 200, type: AdminReportsListResponseDto })
+  @ApiCommonErrors()
+  async getReports(@Query() filters: AdminReportsFilterDto) {
+    return this.adminService.getReports(filters);
+  }
+
+  @Get('reports/:id')
+  @ApiOperation({ summary: 'Get a single report by ID' })
+  @ApiParam({ name: 'id', description: 'Report ID' })
+  @ApiCommonErrors()
+  async getReportById(@Param('id') id: string) {
+    return this.adminService.getReportById(id);
+  }
+
+  @Patch('reports/:id')
+  @ApiOperation({
+    summary: "Update a report's status (resolve/dismiss) and/or priority",
+  })
+  @ApiParam({ name: 'id', description: 'Report ID' })
+  @ApiCommonErrors()
+  async updateReport(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminReportUpdateDto,
+  ) {
+    return this.adminService.updateReport(id, dto, reqUser.userId);
+  }
+
+  @Post('reports/bulk-resolve')
+  @ApiOperation({ summary: 'Resolve multiple reports at once' })
+  @ApiCommonErrors()
+  async bulkResolveReports(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: AdminReportsBulkDto,
+  ) {
+    return this.adminService.resolveReports(dto.ids, reqUser.userId);
+  }
+
+  @Post('reports/bulk-dismiss')
+  @ApiOperation({ summary: 'Dismiss multiple reports at once' })
+  @ApiCommonErrors()
+  async bulkDismissReports(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: AdminReportsBulkDto,
+  ) {
+    return this.adminService.dismissReports(dto.ids, reqUser.userId);
+  }
+
+  @Get('users/:id/reports')
+  @ApiOperation({ summary: 'List reports filed against a specific user' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getReportsForUser(
+    @Param('id') id: string,
+    @Query() filters: AdminReportsFilterDto,
+  ) {
+    return this.adminService.getReportsForUser(id, filters);
+  }
+
+  @Get('properties/:id/reports')
+  @ApiOperation({ summary: 'List reports filed against a specific property' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiCommonErrors()
+  async getReportsForProperty(@Param('id') id: string) {
+    return this.adminService.getReportsForProperty(id);
+  }
+
+  @Delete('properties/:id')
+  @ApiOperation({
+    summary: 'Permanently delete a reported property (admin moderation action)',
+  })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiCommonErrors()
+  async removeReportedProperty(
+    @Param('id') id: string,
+    @Body() dto: AdminRemovePropertyDto,
+  ) {
+    return this.adminService.removeReportedProperty(id, dto?.reason);
   }
 
   @Post('users/notify')

@@ -40,7 +40,12 @@ const TYPE_OPTIONS: TypeFilterOption[] = [
   'شركة',
 ]
 
-const STATUS_OPTIONS: StatusFilterOption[] = ['الكل', 'قيد الانتظار', 'تم حلها']
+const STATUS_OPTIONS: StatusFilterOption[] = [
+  'الكل',
+  'قيد الانتظار',
+  'تم حلها',
+  'مرفوض',
+]
 
 const PRIORITY_OPTIONS: PriorityFilterOption[] = [
   'الكل',

@@ -4,6 +4,7 @@ import { AdminService } from './admin.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 import type { Response } from 'express';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 
 interface MockAdminService {
   getUsers: jest.Mock;
@@ -19,7 +20,17 @@ interface MockAdminService {
   grantBulkCoupon: jest.Mock;
   getVerifications: jest.Mock;
   notifyUsers: jest.Mock;
+  getReports: jest.Mock;
+  getReportById: jest.Mock;
+  updateReport: jest.Mock;
+  resolveReports: jest.Mock;
+  dismissReports: jest.Mock;
+  getReportsForUser: jest.Mock;
+  getReportsForProperty: jest.Mock;
+  removeReportedProperty: jest.Mock;
 }
+
+const ADMIN_REQ_USER = { userId: 'admin-1' } as RequestUser;
 
 describe('AdminController', () => {
   let controller: AdminController;
@@ -40,6 +51,14 @@ describe('AdminController', () => {
       grantBulkCoupon: jest.fn(),
       getVerifications: jest.fn(),
       notifyUsers: jest.fn(),
+      getReports: jest.fn(),
+      getReportById: jest.fn(),
+      updateReport: jest.fn(),
+      resolveReports: jest.fn(),
+      dismissReports: jest.fn(),
+      getReportsForUser: jest.fn(),
+      getReportsForProperty: jest.fn(),
+      removeReportedProperty: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -57,6 +76,84 @@ describe('AdminController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('getReports should forward filters to service', async () => {
+    const filters = { status: 'PENDING' as const, page: 1, limit: 10 };
+    adminService.getReports.mockResolvedValue({ data: [] });
+
+    await controller.getReports(filters);
+    expect(adminService.getReports).toHaveBeenCalledWith(filters);
+  });
+
+  it('getReportById should forward id to service', async () => {
+    adminService.getReportById.mockResolvedValue({ id: 'rep-1' });
+    const result = await controller.getReportById('rep-1');
+    expect(adminService.getReportById).toHaveBeenCalledWith('rep-1');
+    expect(result.id).toBe('rep-1');
+  });
+
+  it('updateReport should forward reqUser, id, and dto to service', async () => {
+    const dto = { status: 'RESOLVED' as const };
+    adminService.updateReport.mockResolvedValue({ id: 'rep-1' });
+
+    await controller.updateReport(ADMIN_REQ_USER, 'rep-1', dto);
+    expect(adminService.updateReport).toHaveBeenCalledWith(
+      'rep-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('bulkResolveReports should forward reqUser and ids to service', async () => {
+    adminService.resolveReports.mockResolvedValue({ updatedCount: 2 });
+
+    await controller.bulkResolveReports(ADMIN_REQ_USER, {
+      ids: ['rep-1', 'rep-2'],
+    });
+    expect(adminService.resolveReports).toHaveBeenCalledWith(
+      ['rep-1', 'rep-2'],
+      'admin-1',
+    );
+  });
+
+  it('bulkDismissReports should forward reqUser and ids to service', async () => {
+    adminService.dismissReports.mockResolvedValue({ updatedCount: 1 });
+
+    await controller.bulkDismissReports(ADMIN_REQ_USER, { ids: ['rep-1'] });
+    expect(adminService.dismissReports).toHaveBeenCalledWith(
+      ['rep-1'],
+      'admin-1',
+    );
+  });
+
+  it('getReportsForUser should forward id and filters to service', async () => {
+    const filters = { page: 1, limit: 10 };
+    adminService.getReportsForUser.mockResolvedValue({ data: [] });
+
+    await controller.getReportsForUser('u-1', filters);
+    expect(adminService.getReportsForUser).toHaveBeenCalledWith(
+      'u-1',
+      filters,
+    );
+  });
+
+  it('getReportsForProperty should forward id to service', async () => {
+    adminService.getReportsForProperty.mockResolvedValue([]);
+    await controller.getReportsForProperty('prop-1');
+    expect(adminService.getReportsForProperty).toHaveBeenCalledWith('prop-1');
+  });
+
+  it('removeReportedProperty should forward id and reason to service', async () => {
+    adminService.removeReportedProperty.mockResolvedValue({
+      message: 'تم حذف الإعلان بنجاح',
+    });
+
+    await controller.removeReportedProperty('prop-1', { reason: 'مخالفة' });
+    expect(adminService.removeReportedProperty).toHaveBeenCalledWith(
+      'prop-1',
+      'مخالفة',
+    );
   });
 
   it('getVerifications should forward filters to service', async () => {

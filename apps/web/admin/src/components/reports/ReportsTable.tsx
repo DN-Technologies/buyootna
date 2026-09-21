@@ -54,6 +54,11 @@ const STATUS_CONFIG: Record<
     text: 'text-[#DB9718]',
     label: 'قيد الانتظار',
   },
+  مرفوض: {
+    bg: 'bg-[rgba(245,70,81,0.1)]',
+    text: 'text-[#9C1E28]',
+    label: 'مرفوض',
+  },
 }
 
 export function ReportsTable({
@@ -212,12 +217,12 @@ export function ReportsTable({
                         type="button"
                         onClick={() => onOpenReview(report)}
                         className={`text-xs font-semibold px-3 py-1 rounded transition cursor-pointer ${
-                          report.status === 'تم حلها'
+                          report.status !== 'قيد الانتظار'
                             ? 'text-primary hover:bg-[#F2F4F7]'
                             : 'text-primary bg-[#F2F6FA] hover:bg-[#E4ECF5]'
                         }`}
                       >
-                        {report.status === 'تم حلها' ? 'عرض' : 'مراجعة'}
+                        {report.status !== 'قيد الانتظار' ? 'عرض' : 'مراجعة'}
                       </button>
                     </td>
                   </tr>

@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { OfficeDetailsResponse,officeService } from '@/shared/api/office.service';
+import { reportsService } from '@/shared/api/reports.service';
 import { reviewsService } from '@/shared/api/reviews.service';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import ContentContainer from '@/shared/components/ContentContainer';
@@ -27,6 +28,7 @@ import {
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem } from '@/shared/components/profile/types';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -60,6 +62,7 @@ export default function OfficeProfileScreen() {
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
+  const reportSheetRef = useRef<BottomSheetModal>(null);
 
   const {
     data: office,
@@ -103,6 +106,19 @@ export default function OfficeProfileScreen() {
       refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
+      showAlert('خطأ', msg);
+    }
+  };
+
+  const handleSubmitReport = async (reason: string, description?: string) => {
+    try {
+      await reportsService.submitReport(targetUserId, reason, description);
+      showAlert(
+        'تم الإرسال',
+        'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
+      );
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'تعذر إرسال البلاغ';
       showAlert('خطأ', msg);
     }
   };
@@ -179,7 +195,11 @@ export default function OfficeProfileScreen() {
             onPress={() => {
               showAlert('خيارات', '', [
                 { text: 'مشاركة الملف الشخصي', onPress: () => {} },
-                { text: 'إبلاغ عن المكتب', style: 'destructive' },
+                {
+                  text: 'إبلاغ عن المكتب',
+                  style: 'destructive',
+                  onPress: () => reportSheetRef.current?.present(),
+                },
                 { text: 'إلغاء', style: 'cancel' },
               ]);
             }}
@@ -390,6 +410,7 @@ export default function OfficeProfileScreen() {
           services={services.length ? services : undefined}
           onRequestSubmitted={() => {}}
         />
+        <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
       </ContentContainer>
     </SafeAreaView>
   );

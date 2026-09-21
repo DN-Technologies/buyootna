@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "NotificationType" ADD VALUE 'REPORT_RESOLVED';
+ALTER TYPE "NotificationType" ADD VALUE 'REPORT_DISMISSED';

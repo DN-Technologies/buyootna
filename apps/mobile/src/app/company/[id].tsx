@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { companyService } from '@/shared/api/company.service';
+import { reportsService } from '@/shared/api/reports.service';
 import { reviewsService } from '@/shared/api/reviews.service';
 import CompanyGalleryTab from '@/shared/components/company/CompanyGalleryTab';
 import CompanyHeaderCard from '@/shared/components/company/CompanyHeaderCard';
@@ -24,6 +25,7 @@ import { SortBottomSheet } from '@/shared/components/profile/ProfileFilterSheet'
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem } from '@/shared/components/profile/types';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -55,6 +57,7 @@ export default function CompanyProfileScreen() {
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
+  const reportSheetRef = useRef<BottomSheetModal>(null);
 
   const {
     data: company,
@@ -99,6 +102,19 @@ export default function CompanyProfileScreen() {
       refetchReviews();
     } catch (error: any) {
       const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
+      showAlert('خطأ', msg);
+    }
+  };
+
+  const handleSubmitReport = async (reason: string, description?: string) => {
+    try {
+      await reportsService.submitReport(targetUserId, reason, description);
+      showAlert(
+        'تم الإرسال',
+        'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
+      );
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'تعذر إرسال البلاغ';
       showAlert('خطأ', msg);
     }
   };
@@ -175,7 +191,11 @@ export default function CompanyProfileScreen() {
             onPress={() => {
               showAlert('خيارات', '', [
                 { text: 'مشاركة الملف الشخصي', onPress: () => {} },
-                { text: 'إبلاغ عن الشركة', style: 'destructive' },
+                {
+                  text: 'إبلاغ عن الشركة',
+                  style: 'destructive',
+                  onPress: () => reportSheetRef.current?.present(),
+                },
                 { text: 'إلغاء', style: 'cancel' },
               ]);
             }}
@@ -375,6 +395,7 @@ export default function CompanyProfileScreen() {
           services={services.length ? services : undefined}
           onRequestSubmitted={() => {}}
         />
+        <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
       </ContentContainer>
     </SafeAreaView>
   );

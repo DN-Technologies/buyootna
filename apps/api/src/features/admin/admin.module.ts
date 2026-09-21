@@ -10,6 +10,7 @@ import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminVerificationsService } from './services/admin-verifications.service';
+import { AdminReportsService } from './services/admin-reports.service';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AdminVerificationsService } from './services/admin-verifications.servic
     AdminCouponService,
     AdminDashboardService,
     AdminVerificationsService,
+    AdminReportsService,
   ],
   exports: [
     AdminService,
@@ -38,6 +40,7 @@ import { AdminVerificationsService } from './services/admin-verifications.servic
     AdminCouponService,
     AdminDashboardService,
     AdminVerificationsService,
+    AdminReportsService,
   ],
 })
 export class AdminModule {}

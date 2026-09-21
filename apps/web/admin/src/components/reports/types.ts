@@ -1,8 +1,10 @@
 export type ReportPriority = 'عاجل' | 'متوسط' | 'منخفضة'
-export type ReportStatus = 'قيد الانتظار' | 'تم حلها'
+export type ReportStatus = 'قيد الانتظار' | 'تم حلها' | 'مرفوض'
 export type ReportType = 'عقار' | 'خدمة' | 'فرد' | 'مكتب عقاري' | 'شركة'
+export type ReportTargetType = 'USER' | 'PROPERTY'
 
 export interface UserSummary {
+  id?: string
   name: string
   email: string
   avatar?: string
@@ -20,6 +22,7 @@ export interface ReportItem {
   reportNumber: string // e.g. "RP-1025"
   submittedBy: UserSummary
   against: UserSummary
+  targetType?: ReportTargetType
   type: ReportType
   reportCategory?: string // e.g. "بيع"
   reason: string // e.g. "معلومات غير صحيحة", "خدمة وهمية غير مكتملة"
@@ -38,7 +41,7 @@ export interface ReportItem {
   attachments?: ReportAttachment[]
 }
 
-export type StatusFilterOption = 'الكل' | 'قيد الانتظار' | 'تم حلها'
+export type StatusFilterOption = 'الكل' | 'قيد الانتظار' | 'تم حلها' | 'مرفوض'
 export type TypeFilterOption = 'الكل' | 'عقار' | 'خدمة' | 'فرد' | 'مكتب عقاري' | 'شركة'
 export type PriorityFilterOption = 'الكل' | 'منخفض' | 'متوسط' | 'عاجل'
 export type DateFilterOption = 'الكل' | 'اليوم' | 'هذا الأسبوع' | 'هذا الشهر'
@@ -47,6 +50,7 @@ export interface ReportStats {
   total: number
   pending: number
   resolved: number
+  dismissed?: number
 }
 
 export interface ReportPagination {

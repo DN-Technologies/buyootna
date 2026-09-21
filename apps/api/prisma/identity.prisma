@@ -32,6 +32,8 @@ model Identity {
   invoices        Invoice[]
   projects        CompanyProject[]
   companyInvoices CompanyInvoice[]
+  reportsFiled    Report[]                  @relation("ReporterIdentityReports")
+  reportsAgainst  Report[]                  @relation("TargetIdentityReports")
 
   @@index([userId])
   @@index([userId, isActive])
