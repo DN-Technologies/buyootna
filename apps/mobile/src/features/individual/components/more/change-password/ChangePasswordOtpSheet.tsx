@@ -76,6 +76,14 @@ export const ChangePasswordOtpSheet = forwardRef<
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        // The sheet must sit fully above the keyboard: "extend" grows it to
+        // clear the keyboard instead of leaving the OTP boxes underneath it
+        // (the reported bug). The other two props match every other input
+        // sheet in the app.
+        keyboardBehavior="extend"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
+        enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
@@ -126,6 +134,7 @@ export const ChangePasswordOtpSheet = forwardRef<
             {/* Hidden Input */}
             <TextInput
               ref={otpInputRef}
+              testID="otp-hidden-input"
               value={otp}
               onChangeText={(text) => {
                 const clean = text.replace(/[^0-9]/g, '');
@@ -140,7 +149,6 @@ export const ChangePasswordOtpSheet = forwardRef<
                 opacity: 0,
               }}
               pointerEvents="none"
-              autoFocus
             />
 
             {otpError !== '' && (
