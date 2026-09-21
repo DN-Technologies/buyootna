@@ -30,12 +30,27 @@ describe('Password recovery flow (e2e)', () => {
     await app.close();
   });
 
-  it('resets a password end-to-end: request-otp -> verify-otp -> reset-password -> login', async () => {
-    const phone = randomKuwaitPhone();
+  // Registration defers account creation until the OTP verifies, so a
+  // fixture user only exists once the phone signup flow is completed.
+  async function registerAndVerifyPhoneAccount(
+    phone: string,
+    password: string,
+  ): Promise<void> {
     await request(app.getHttpServer())
       .post('/users/register/individual')
-      .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
+      .send({ name: TEST_NAME, identifier: phone, password })
       .expect(201);
+
+    const signupOtp = getMockOtpCode(app, phone);
+    await request(app.getHttpServer())
+      .post('/auth/register/verify-otp')
+      .send({ phone, otp: signupOtp })
+      .expect(201);
+  }
+
+  it('resets a password end-to-end: request-otp -> verify-otp -> reset-password -> login', async () => {
+    const phone = randomKuwaitPhone();
+    await registerAndVerifyPhoneAccount(phone, TEST_PASSWORD);
 
     await request(app.getHttpServer())
       .post('/auth/recovery/request-otp')
@@ -81,10 +96,7 @@ describe('Password recovery flow (e2e)', () => {
 
   it('rejects an invalid OTP on verify-otp with 400', async () => {
     const phone = randomKuwaitPhone();
-    await request(app.getHttpServer())
-      .post('/users/register/individual')
-      .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
-      .expect(201);
+    await registerAndVerifyPhoneAccount(phone, TEST_PASSWORD);
 
     await request(app.getHttpServer())
       .post('/auth/recovery/request-otp')
@@ -197,10 +209,7 @@ describe('Password recovery flow (e2e)', () => {
       await registerAndVerifyEmailAccount(email, TEST_PASSWORD);
 
       const phone = randomKuwaitPhone();
-      await request(app.getHttpServer())
-        .post('/users/register/individual')
-        .send({ name: TEST_NAME, identifier: phone, password: TEST_PASSWORD })
-        .expect(201);
+      await registerAndVerifyPhoneAccount(phone, TEST_PASSWORD);
 
       await request(app.getHttpServer())
         .post('/auth/recovery/request-otp')
