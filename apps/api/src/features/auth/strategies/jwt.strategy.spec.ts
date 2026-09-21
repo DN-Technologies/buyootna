@@ -64,7 +64,10 @@ describe('JwtStrategy', () => {
     sessionFindUnique.mockResolvedValue({ userId: 'user-1' });
     identityFindFirst.mockResolvedValue(identity);
 
-    const result = await strategy.validate({ ...basePayload, sid: 'session-1' });
+    const result = await strategy.validate({
+      ...basePayload,
+      sid: 'session-1',
+    });
 
     expect(result.sessionId).toBe('session-1');
     expect(sessionFindUnique).toHaveBeenCalledWith({
