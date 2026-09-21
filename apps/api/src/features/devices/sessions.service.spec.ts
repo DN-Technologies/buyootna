@@ -50,13 +50,13 @@ describe('SessionsService Unit Tests', () => {
           deviceName: 'iPhone 13 Pro Max',
           ipAddress: '1.2.3.4',
           userAgent: 'test-agent',
-        }),
+        }) as unknown,
         update: expect.objectContaining({
           platform: 'ios',
           deviceModel: 'iPhone 13 Pro Max',
           deviceName: 'iPhone 13 Pro Max',
           isActive: true,
-        }),
+        }) as unknown,
       });
     });
 
@@ -68,8 +68,13 @@ describe('SessionsService Unit Tests', () => {
         platform: 'android',
       });
 
-      const call = mockPrismaService.session.upsert.mock.calls[0][0];
-      expect(call.create.deviceName).toBe('جهاز أندرويد');
+      expect(mockPrismaService.session.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            deviceName: 'جهاز أندرويد',
+          }) as unknown,
+        }) as unknown,
+      );
     });
 
     it('falls back to a plain create with no upsert key when no deviceId is given', async () => {
@@ -82,7 +87,7 @@ describe('SessionsService Unit Tests', () => {
         data: expect.objectContaining({
           userId: 'user-1',
           deviceName: 'آيفون',
-        }),
+        }) as unknown,
       });
     });
   });
@@ -139,7 +144,7 @@ describe('SessionsService Unit Tests', () => {
 
       expect(mockPrismaService.session.update).toHaveBeenCalledWith({
         where: { id: 'session-1' },
-        data: { lastActive: expect.any(Date) },
+        data: { lastActive: expect.any(Date) as unknown },
       });
     });
 

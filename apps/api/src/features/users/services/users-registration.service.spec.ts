@@ -4,6 +4,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from '../../../core/storage/storage.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
 import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from '../../../core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   BadRequestException,
@@ -58,6 +59,11 @@ describe('UsersRegistrationService', () => {
     sendRegistrationOtp: jest.Mock;
     verifyAndConsume: jest.Mock;
   };
+  let phonePendingService: {
+    save: jest.Mock;
+    hasPending: jest.Mock;
+    consume: jest.Mock;
+  };
   let rateLimiter: { recordRequest: jest.Mock };
 
   beforeEach(async () => {
@@ -69,6 +75,11 @@ describe('UsersRegistrationService', () => {
       sendRegistrationOtp: jest.fn().mockResolvedValue(undefined),
       verifyAndConsume: jest.fn(),
     };
+    phonePendingService = {
+      save: jest.fn(),
+      hasPending: jest.fn().mockReturnValue(true),
+      consume: jest.fn(),
+    };
     rateLimiter = { recordRequest: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -78,6 +89,10 @@ describe('UsersRegistrationService', () => {
         { provide: StorageService, useValue: {} },
         { provide: TwilioService, useValue: twilioService },
         { provide: EmailOtpService, useValue: emailOtpService },
+        {
+          provide: PhoneRegistrationPendingService,
+          useValue: phonePendingService,
+        },
         { provide: OtpRateLimiterService, useValue: rateLimiter },
       ],
     }).compile();
@@ -124,17 +139,30 @@ describe('UsersRegistrationService', () => {
       expect(bcrypt.compareSync('password123', hashedPassword)).toBe(true);
     });
 
-    it('creates a user with only phone set and sends an SMS OTP when the identifier is phone-shaped', async () => {
+    it('stashes the signup in the pending store and creates no account when the identifier is phone-shaped', async () => {
       const result = await service.registerIndividual({
         name: 'Ali',
         identifier: '55123456',
         password: 'password123',
       });
 
-      expect(result.user?.phone).toBe('55123456');
-      expect(result.user?.email).toBeNull();
+      expect(result).toEqual({
+        otpRequired: true,
+        identifier: '55123456',
+        message: 'تم إرسال رمز التحقق إلى هاتفك',
+      });
       expect(twilioService.sendVerification).toHaveBeenCalledWith('55123456');
       expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+      expect(phonePendingService.save).toHaveBeenCalledWith(
+        '55123456',
+        'Ali',
+        expect.any(String),
+      );
+      const [, , hashedPassword] = phonePendingService.save.mock
+        .calls[0] as [string, string, string];
+      expect(hashedPassword).not.toBe('password123');
+      expect(bcrypt.compareSync('password123', hashedPassword)).toBe(true);
     });
 
     it('records exactly one OTP request against the rate limiter per phone send, keyed by the raw identifier', async () => {
@@ -174,7 +202,7 @@ describe('UsersRegistrationService', () => {
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
-    it('throws InternalServerErrorException and creates no user when Twilio sendVerification fails for a phone identifier', async () => {
+    it('throws InternalServerErrorException and stashes nothing when Twilio sendVerification fails for a phone identifier', async () => {
       twilioService.sendVerification.mockRejectedValue(
         new Error('twilio down'),
       );
@@ -187,6 +215,7 @@ describe('UsersRegistrationService', () => {
         }),
       ).rejects.toThrow(InternalServerErrorException);
 
+      expect(phonePendingService.save).not.toHaveBeenCalled();
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -202,46 +231,6 @@ describe('UsersRegistrationService', () => {
           password: 'password123',
         }),
       ).rejects.toThrow(InternalServerErrorException);
-    });
-
-    it('throws InternalServerErrorException when the database transaction fails for a phone identifier', async () => {
-      (prisma.$transaction as jest.Mock).mockRejectedValue(
-        new Error('db down'),
-      );
-
-      await expect(
-        service.registerIndividual({
-          name: 'Ali',
-          identifier: '55123456',
-          password: 'password123',
-        }),
-      ).rejects.toThrow(InternalServerErrorException);
-    });
-
-    it('creates an associated IndividualProfile and an active INDIVIDUAL Identity record carrying the given name for a phone identifier', async () => {
-      let tx: Tx | undefined;
-      prisma.$transaction.mockImplementation((cb: (tx: Tx) => unknown) => {
-        tx = buildTx();
-        return cb(tx);
-      });
-
-      await service.registerIndividual({
-        name: 'Ali',
-        identifier: '55123456',
-        password: 'password123',
-      });
-
-      expect(tx!.individualProfile.create).toHaveBeenCalledWith({
-        data: { userId: 'user-1' },
-      });
-      expect(tx!.identity.create).toHaveBeenCalledWith({
-        data: {
-          userId: 'user-1',
-          type: 'INDIVIDUAL',
-          isActive: true,
-          individualData: { create: { name: 'Ali' } },
-        },
-      });
     });
   });
 
@@ -302,6 +291,70 @@ describe('UsersRegistrationService', () => {
 
       await expect(
         service.completeEmailRegistration('ali@example.com', '123456'),
+      ).rejects.toThrow(ConflictException);
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('completePhoneRegistration', () => {
+    it('throws BadRequestException and creates no user when there is no pending registration', async () => {
+      phonePendingService.consume.mockReturnValue(null);
+
+      await expect(
+        service.completePhoneRegistration('55123456'),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('creates the account only after verification, using the name and hashed password stashed at registration time', async () => {
+      phonePendingService.consume.mockReturnValue({
+        name: 'Ali',
+        hashedPassword: 'hashed-value',
+      });
+      let tx: Tx | undefined;
+      prisma.$transaction.mockImplementation((cb: (tx: Tx) => unknown) => {
+        tx = buildTx();
+        return cb(tx);
+      });
+
+      const result = await service.completePhoneRegistration('55123456');
+
+      expect(result.user.phone).toBe('55123456');
+      expect(result.user.email).toBeNull();
+      expect(result.user).not.toHaveProperty('password');
+      const createCalls = tx!.user.create.mock.calls as Array<
+        [{ data: { password: string; name: string } }]
+      >;
+      expect(createCalls[0][0].data.password).toBe('hashed-value');
+      expect(createCalls[0][0].data.name).toBe('Ali');
+      expect(tx!.individualProfile.create).toHaveBeenCalledWith({
+        data: { userId: 'user-1' },
+      });
+      expect(tx!.identity.create).toHaveBeenCalledWith({
+        data: {
+          userId: 'user-1',
+          type: 'INDIVIDUAL',
+          isActive: true,
+          individualData: { create: { name: 'Ali' } },
+        },
+      });
+    });
+
+    it('re-checks for a conflicting user before creating the account', async () => {
+      phonePendingService.consume.mockReturnValue({
+        name: 'Ali',
+        hashedPassword: 'hashed-value',
+      });
+      prisma.user.findFirst.mockResolvedValue({
+        id: 'existing-user',
+        email: null,
+        phone: '55123456',
+      });
+
+      await expect(
+        service.completePhoneRegistration('55123456'),
       ).rejects.toThrow(ConflictException);
 
       expect(prisma.$transaction).not.toHaveBeenCalled();

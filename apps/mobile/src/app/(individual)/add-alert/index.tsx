@@ -25,6 +25,8 @@ import {
   mapAuctionsStateToPayload,
   mapPropertiesStateToPayload,
 } from '@/shared/api/alerts.service';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
@@ -32,6 +34,7 @@ type AlertTab = 'properties' | 'auctions';
 
 export default function AddAlertScreen() {
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
   const [activeTab, setActiveTab] = useState<AlertTab>('properties');
   const [propertiesState, setPropertiesState] = useState<AlertPropertiesState>(
@@ -202,7 +205,7 @@ export default function AddAlertScreen() {
         }}
         onReturnHome={() => {
           setShowSuccess(false);
-          router.replace('/home');
+          router.replace(getIdentityHomeRoute(activeIdentity?.type));
         }}
       />
     </SafeAreaView>

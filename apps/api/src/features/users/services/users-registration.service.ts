@@ -9,6 +9,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   checkUserExists,
@@ -26,16 +27,16 @@ export class UsersRegistrationService {
     private readonly storageService: StorageService,
     private readonly twilioService: TwilioService,
     private readonly emailOtpService: EmailOtpService,
+    private readonly phoneRegistrationPendingService: PhoneRegistrationPendingService,
     private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
   // --- Register Individual ---
-  // Email identifiers are verified BEFORE any account exists: the hashed
-  // password sits in EmailOtpService's pending store until verify-otp
-  // succeeds (see completeEmailRegistration), so an abandoned/never-verified
-  // email signup leaves zero DB rows. Phone identifiers keep the existing
-  // behavior — the account is created immediately and the OTP just gates
-  // login — since only email verification was asked for.
+  // Neither email NOR phone identifiers create an account up front: the
+  // signup details sit in a pending store until verify-otp succeeds (see
+  // completeEmailRegistration / completePhoneRegistration), so an
+  // abandoned/never-verified signup leaves zero DB rows — no admin-dashboard
+  // pollution, no permanently squatted unique phone.
   async registerIndividual(dto: RegisterIndividualDto) {
     const email = isEmail(dto.identifier) ? dto.identifier : undefined;
     const phone = isPhone(dto.identifier) ? dto.identifier : undefined;
@@ -64,11 +65,6 @@ export class UsersRegistrationService {
       };
     }
 
-    // Send the OTP before creating any account records. Sending used to
-    // happen after the DB transaction committed, so a Twilio failure left
-    // an orphaned account in place — checkUserExists would then reject the
-    // same phone/email on every retry with no way to actually finish
-    // signing up.
     if (phone) {
       try {
         await this.twilioService.sendVerification(phone);
@@ -81,15 +77,39 @@ export class UsersRegistrationService {
           'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
         );
       }
+      this.phoneRegistrationPendingService.save(phone, dto.name, hashedPassword);
+      return {
+        otpRequired: true,
+        identifier: phone,
+        message: 'تم إرسال رمز التحقق إلى هاتفك',
+      };
     }
 
-    const { user, profile } = await this.createIndividualAccount(
+    throw new BadRequestException('صيغة البريد الإلكتروني أو رقم الهاتف غير صحيحة');
+  }
+
+  /**
+   * Verifies a pending phone registration's OTP and, only on success,
+   * actually creates the account. Called after verifyRegistrationOtp
+   * confirmed the code with Twilio Verify.
+   */
+  async completePhoneRegistration(phone: string) {
+    const pending = this.phoneRegistrationPendingService.consume(phone);
+    if (!pending) {
+      throw new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة');
+    }
+
+    // Re-check for a race: another registration (e.g. via a different
+    // identifier path) could have taken this phone while the OTP was
+    // pending.
+    await checkUserExists(this.prisma, undefined, phone);
+
+    return this.createIndividualAccount(
       undefined,
       phone,
-      dto.name,
-      hashedPassword,
+      pending.name,
+      pending.hashedPassword,
     );
-    return { user, profile };
   }
 
   /**

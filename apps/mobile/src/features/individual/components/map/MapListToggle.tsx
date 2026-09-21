@@ -7,7 +7,7 @@ export function MapListToggle() {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={() => router.push('/home')} // Route back to the main list feed
+      onPress={() => router.push('/(individual)/home')} // Route back to the main list feed
       className="absolute bottom-[90px] right-5 z-10 flex-row items-center justify-center rounded-full bg-[#111111] px-5 py-3.5 shadow-lg shadow-gray-400/50"
     >
       <Text className="mr-2 font-cairo-bold text-[14px] text-white">

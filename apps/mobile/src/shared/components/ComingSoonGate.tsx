@@ -41,17 +41,19 @@ export default function ComingSoonGate() {
 
   const handleGoBack = async () => {
     const individualIdentity = identities.find(
-      (identity) =>
-        identity.type === 'INDIVIDUAL' && identity.id !== activeIdentity?.id,
+      (identity) => identity.type === 'INDIVIDUAL',
     );
 
-    if (individualIdentity) {
-      await switchIdentity(individualIdentity.id);
-      router.replace('/(individual)/home');
-    } else {
+    if (!individualIdentity) {
       await logout();
       router.replace('/(auth)/individual-auth');
+      return;
     }
+
+    if (individualIdentity.id !== activeIdentity?.id) {
+      await switchIdentity(individualIdentity.id);
+    }
+    router.replace('/(individual)/home');
   };
 
   return (

@@ -27,9 +27,9 @@ export function useIndividualAuth() {
   );
   const [signupStep, setSignupStep] = useState<1 | 2>(1);
   const [signupIdentifier, setSignupIdentifier] = useState('');
-  // Only needed to resend an email OTP: unlike phone, no account exists yet
-  // to re-request a code for, so resending re-runs the same registration
-  // call, which needs the name and password again.
+  // Kept so a resend can re-run the same registration call: no account
+  // exists until the OTP verifies (for either phone or email), so resending
+  // re-registers, which needs the name and password again.
   const [signupName, setSignupName] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [isFormLoading, setIsFormLoading] = useState(false);
@@ -96,9 +96,9 @@ export function useIndividualAuth() {
       });
 
       // Both phone (SMS) and email now send an OTP that must be verified
-      // before the account exists — the backend never creates an email
-      // account synchronously, to guarantee no account without a verified
-      // address.
+      // before the account exists — the backend creates nothing until the
+      // code checks out, to guarantee no account without a verified
+      // identifier.
       setSignupIdentifier(data.identifier);
       setSignupName(data.name);
       setSignupPassword(data.password);
@@ -147,20 +147,14 @@ export function useIndividualAuth() {
 
   const onResendOtp = async (): Promise<ResendOtpResult> => {
     try {
-      if (isPhoneIdentifier(signupIdentifier)) {
-        await apiClient.post('/auth/recovery/request-otp', {
-          identifier: signupIdentifier,
-        });
-      } else {
-        // No account exists yet for a pending email signup, so there's
-        // nothing to request a fresh OTP "for" — re-running registration
-        // itself re-sends one.
-        await apiClient.post('/users/register/individual', {
-          name: signupName,
-          identifier: signupIdentifier,
-          password: signupPassword,
-        });
-      }
+      // No account exists yet for a pending signup (phone or email), so
+      // there's nothing to request a fresh OTP "for" — re-running
+      // registration itself re-sends one.
+      await apiClient.post('/users/register/individual', {
+        name: signupName,
+        identifier: signupIdentifier,
+        password: signupPassword,
+      });
       showAlert('تم بنجاح', 'تم إعادة إرسال رمز التحقق');
       return { success: true };
     } catch (error: any) {

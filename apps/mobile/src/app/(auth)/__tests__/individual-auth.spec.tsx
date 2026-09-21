@@ -292,7 +292,7 @@ describe('IndividualAuthScreen', () => {
         expect(mockSetAuth).not.toHaveBeenCalled();
       });
 
-      it('resend posts to the recovery request-otp endpoint with the signup phone', async () => {
+      it('resend re-runs the registration call with the stashed name and phone (no account exists until OTP verifies)', async () => {
         // Fake timers must be active BEFORE the OTP step mounts its 45s
         // countdown interval — switching mid-test can't retroactively
         // convert an already-scheduled real setInterval into a fake one.
@@ -310,8 +310,12 @@ describe('IndividualAuthScreen', () => {
 
         await waitFor(() => {
           expect(mockApiClient.post).toHaveBeenCalledWith(
-            '/auth/recovery/request-otp',
-            { identifier: '51234567' },
+            '/users/register/individual',
+            {
+              name: 'Ali Salem',
+              identifier: '51234567',
+              password: 'Password123!',
+            },
           );
         });
       });

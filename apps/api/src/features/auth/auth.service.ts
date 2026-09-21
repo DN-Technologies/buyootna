@@ -8,6 +8,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { DeviceCtx, SessionsService } from '../devices/sessions.service';
 import { JwtService } from '@nestjs/jwt';
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly twilioService: TwilioService,
     private readonly usersRegistrationService: UsersRegistrationService,
     private readonly emailOtpService: EmailOtpService,
+    private readonly phoneRegistrationPendingService: PhoneRegistrationPendingService,
     private readonly identities: AuthIdentitiesService,
     private readonly sessions: SessionsService,
     private readonly rateLimiter?: OtpRateLimiterService,
@@ -294,17 +296,15 @@ export class AuthService {
     };
   }
 
-  // 4. Verify OTP during individual registration
+  // 4. Verify OTP during individual registration. No user exists yet —
+  // registration only stashed the signup in PhoneRegistrationPendingService;
+  // the account is created here once Twilio confirms the code.
   async verifyRegistrationOtp(
     phone: string,
     otp: string,
     deviceCtx: DeviceCtx = {},
   ) {
-    const user = await this.prisma.user.findUnique({
-      where: { phone },
-    });
-
-    if (!user) {
+    if (!this.phoneRegistrationPendingService.hasPending(phone)) {
       this.rateLimiter?.recordVerifyAttempt(phone, false);
       throw new BadRequestException('رقم الهاتف غير مسجل');
     }
@@ -317,12 +317,10 @@ export class AuthService {
 
     this.rateLimiter?.recordVerifyAttempt(phone, true);
 
-    // Return access token and user info
-    const userWithoutPassword = { ...user };
-    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
-      .password;
+    const { user } =
+      await this.usersRegistrationService.completePhoneRegistration(phone);
 
-    return this.login(userWithoutPassword, undefined, deviceCtx);
+    return this.login(user, undefined, deviceCtx);
   }
 
   // Unlike verifyRegistrationOtp (phone), no user exists yet here —
