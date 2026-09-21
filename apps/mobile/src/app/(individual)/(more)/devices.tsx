@@ -18,10 +18,13 @@ import LogoutConfirmationModal from '@/features/individual/components/more/Logou
 import { devicesService } from '@/shared/api/devices.service';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 export default function RegisteredDevicesScreen() {
   const router = useRouter();
   const currentSessionId = useAuthStore((s) => s.sessionId);
+  const logout = useAuthStore((s) => s.logout);
 
   // Modal Visibility States
   const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
@@ -59,6 +62,7 @@ export default function RegisteredDevicesScreen() {
       refetch();
     } catch (e) {
       console.error('Failed to logout device:', e);
+      showAlert('خطأ', getApiErrorMessage(e, 'تعذر تسجيل الخروج من الجهاز'));
     }
   };
 
@@ -66,9 +70,17 @@ export default function RegisteredDevicesScreen() {
     try {
       await devicesService.revokeAllDevices();
       setShowLogoutAll(false);
-      refetch();
+      // Every OTHER session is now dead server-side; end this device's own
+      // session too and send the user to login, matching the action's
+      // "log out everywhere" promise.
+      await logout();
+      router.replace('/(auth)/individual-auth');
     } catch (e) {
       console.error('Failed to logout all devices:', e);
+      showAlert(
+        'خطأ',
+        getApiErrorMessage(e, 'تعذر تسجيل الخروج من جميع الأجهزة'),
+      );
     }
   };
 
@@ -92,6 +104,7 @@ export default function RegisteredDevicesScreen() {
         <View className="px-5">
           {/* --- Master Log Out Button --- */}
           <TouchableOpacity
+            testID="logout-all-devices"
             onPress={() => setShowLogoutAll(true)}
             className="mb-8 flex-row items-center justify-center gap-2 rounded-full border border-[#9C1E28] bg-white py-3.5"
           >
