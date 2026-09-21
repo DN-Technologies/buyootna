@@ -58,6 +58,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('الحساب محظور');
     }
 
+    // Session revocation check: removing a device from the active-sessions
+    // list deletes its Session row, and that must immediately stop the
+    // device's (otherwise unexpired) JWT from authenticating. Tokens issued
+    // before sessions existed carry no sid claim and can't be revoked —
+    // they keep validating until they expire.
+    if (payload.sid) {
+      const session = await this.prisma.session.findUnique({
+        where: { id: payload.sid },
+        select: { userId: true },
+      });
+      if (!session || session.userId !== payload.sub) {
+        throw new UnauthorizedException(
+          'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى',
+        );
+      }
+    }
+
     // Validate identity belongs to this user
     const identity = await this.prisma.identity.findFirst({
       where: {

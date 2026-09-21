@@ -111,13 +111,18 @@ export default function PropertyDetailsScreen() {
   const handleChat = () => {
     if (!property) return;
     guardAction(async () => {
-      if (user && property.host && user.id === property.host.id) {
+      const hostId = property.host?.id;
+      if (hostId && user && user.id === hostId) {
         showAlert('تنبيه', 'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.');
+        return;
+      }
+      if (!hostId) {
+        showAlert('تنبيه', 'تعذر بدء المحادثة، بيانات المعلن غير متاحة حالياً');
         return;
       }
       try {
         const response = await chatService.createConversation(
-          property.host.id,
+          hostId,
           property.id,
         );
         router.push(`/chat/${response.id}`);
@@ -271,19 +276,21 @@ export default function PropertyDetailsScreen() {
           {/* --- Card 4: Lister/Host Profile Snippet --- */}
           <View className="mt-5 px-5">
             <ListerProfileSnippet
-              name={property.host.name}
-              joinedDate={property.host.joinedDate}
-              rating={property.host.rating}
-              avatarUrl={property.host.avatarUrl}
-              isVerified={property.host.isVerified}
+              name={property.host?.name ?? 'مستخدم'}
+              joinedDate={property.host?.joinedDate ?? ''}
+              rating={property.host?.rating ?? 0}
+              avatarUrl={property.host?.avatarUrl ?? ''}
+              isVerified={property.host?.isVerified}
               onPress={() => {
+                const hostId = property.host?.id;
+                if (!hostId) return;
                 if (
-                  property.host.role === 'COMPANY' ||
-                  property.host.role === 'OFFICE'
+                  property.host?.role === 'COMPANY' ||
+                  property.host?.role === 'OFFICE'
                 ) {
-                  router.push(`/company/${property.host.id}`);
+                  router.push(`/company/${hostId}`);
                 } else {
-                  router.push(`/profile/${property.host.id}`);
+                  router.push(`/profile/${hostId}`);
                 }
               }}
             />

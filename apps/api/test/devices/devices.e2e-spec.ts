@@ -127,6 +127,31 @@ describe('Devices / active sessions (e2e)', () => {
     expect(sessions[0].id).toBe(deviceA.sessionId);
   });
 
+  // Regression coverage for the reported Critical security bug: revoking a
+  // device used to only delete its Session row, while the device's JWT kept
+  // authenticating until expiry -- the revoked device retained full access.
+  it('revoking a device invalidates its token: the revoked device gets 401 on its next request', async () => {
+    const phone = await registerUser('device-a', 'ios');
+
+    const deviceA = await loginFromDevice(phone, 'device-a', 'ios');
+    const deviceB = await loginFromDevice(phone, 'device-b', 'android');
+
+    await request(app.getHttpServer())
+      .delete(`/devices/${deviceB.sessionId}`)
+      .set('Authorization', `Bearer ${deviceA.access_token}`)
+      .expect(200);
+
+    // Device B's now-orphaned JWT must stop authenticating immediately.
+    await request(app.getHttpServer())
+      .get('/devices')
+      .set('Authorization', `Bearer ${deviceB.access_token}`)
+      .expect(401);
+
+    // Device A's own session must keep working.
+    const sessions = await getDevices(deviceA.access_token);
+    expect(sessions).toHaveLength(1);
+  });
+
   // Regression coverage: revokeAllExceptCurrent used to keep whichever
   // session was most-recently-active rather than the caller's own session,
   // so a caller on an older device would get revoked instead of the other

@@ -69,7 +69,9 @@ export default function PropertyOverview({
           {type !== 'EXCHANGE' ? (
             <View className="mt-1 items-start">
               <Text className="text-2xl font-semibold text-[#111111]">
-                {price.toLocaleString()}{' '}
+                {typeof price === 'number'
+                  ? price.toLocaleString()
+                  : 'السعر غير محدد'}{' '}
                 <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
                   د.ك {type === 'RENT' && '/ شهرياً'}
                 </Text>
