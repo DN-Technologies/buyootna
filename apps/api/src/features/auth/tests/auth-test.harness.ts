@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { AuthIdentitiesService } from '../services/auth-identities.service';
 import { SessionsService } from '../../devices/sessions.service';
@@ -85,9 +86,15 @@ export interface AuthTestContext {
   };
   usersRegistration: {
     completeEmailRegistration: jest.Mock;
+    completePhoneRegistration: jest.Mock;
   };
   emailOtp: {
     getMockOtp: jest.Mock;
+  };
+  phoneRegistrationPending: {
+    save: jest.Mock;
+    hasPending: jest.Mock;
+    consume: jest.Mock;
   };
   otpRateLimiter: {
     checkRequestLimit: jest.Mock;
@@ -138,10 +145,17 @@ export function createAuthTestContext(): AuthTestContext {
 
   const mockUsersRegistrationService = {
     completeEmailRegistration: jest.fn(),
+    completePhoneRegistration: jest.fn(),
   };
 
   const mockEmailOtpService = {
     getMockOtp: jest.fn(),
+  };
+
+  const mockPhoneRegistrationPendingService = {
+    save: jest.fn(),
+    hasPending: jest.fn(),
+    consume: jest.fn(),
   };
 
   const mockTwilioService = {
@@ -178,6 +192,7 @@ export function createAuthTestContext(): AuthTestContext {
     twilio: mockTwilioService,
     usersRegistration: mockUsersRegistrationService,
     emailOtp: mockEmailOtpService,
+    phoneRegistrationPending: mockPhoneRegistrationPendingService,
     otpRateLimiter: mockOtpRateLimiterService,
     identities: mockIdentitiesService,
     sessions: mockSessionsService,
@@ -201,6 +216,10 @@ export function createAuthTestContext(): AuthTestContext {
             useValue: mockUsersRegistrationService,
           },
           { provide: EmailOtpService, useValue: mockEmailOtpService },
+          {
+            provide: PhoneRegistrationPendingService,
+            useValue: mockPhoneRegistrationPendingService,
+          },
           {
             provide: OtpRateLimiterService,
             useValue: mockOtpRateLimiterService,

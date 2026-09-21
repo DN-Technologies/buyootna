@@ -3,35 +3,35 @@ import { AuthTestContext, MOCK_LOGIN_RESULT } from './auth-test.harness';
 
 export function registerOtpAuthTests(ctx: AuthTestContext) {
   describe('verifyRegistrationOtp', () => {
-    it('throws BadRequestException when the phone is not registered', async () => {
-      ctx.prisma.user.findUnique.mockResolvedValue(null);
+    it('throws BadRequestException when there is no pending registration for the phone', async () => {
+      ctx.phoneRegistrationPending.hasPending.mockReturnValue(false);
 
       await expect(
         ctx.service.verifyRegistrationOtp('+96555123456', '123456'),
       ).rejects.toThrow(BadRequestException);
+      expect(ctx.twilio.checkVerification).not.toHaveBeenCalled();
     });
 
-    it('throws BadRequestException when the OTP is invalid or expired', async () => {
-      ctx.prisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        phone: '+96555123456',
-        password: 'hashed',
-      });
+    it('throws BadRequestException when the OTP is invalid or expired, without consuming the pending signup', async () => {
+      ctx.phoneRegistrationPending.hasPending.mockReturnValue(true);
       ctx.twilio.checkVerification.mockResolvedValue(false);
 
       await expect(
         ctx.service.verifyRegistrationOtp('+96555123456', '000000'),
       ).rejects.toThrow(BadRequestException);
+      expect(
+        ctx.usersRegistration.completePhoneRegistration,
+      ).not.toHaveBeenCalled();
     });
 
-    it('logs the user in on a valid OTP', async () => {
-      const dbUser = {
-        id: 'user-1',
-        phone: '+96555123456',
-        password: 'hashed',
-      };
-      ctx.prisma.user.findUnique.mockResolvedValue(dbUser);
+    it('creates the account via UsersRegistrationService then logs the user in on a valid OTP', async () => {
+      const createdUser = { id: 'user-1', phone: '+96555123456' };
+      ctx.phoneRegistrationPending.hasPending.mockReturnValue(true);
       ctx.twilio.checkVerification.mockResolvedValue(true);
+      ctx.usersRegistration.completePhoneRegistration.mockResolvedValue({
+        user: createdUser,
+        profile: { id: 'profile-1' },
+      });
       const loginSpy = jest
         .spyOn(ctx.service, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
@@ -41,14 +41,25 @@ export function registerOtpAuthTests(ctx: AuthTestContext) {
         '123456',
       );
 
+      expect(
+        ctx.usersRegistration.completePhoneRegistration,
+      ).toHaveBeenCalledWith('+96555123456');
+      expect(loginSpy).toHaveBeenCalledWith(createdUser, undefined, {});
       expect(result).toBe(MOCK_LOGIN_RESULT);
-      expect(loginSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ id: 'user-1' }),
-        undefined,
-        {},
+    });
+
+    it('propagates a failure from account creation without logging in', async () => {
+      ctx.phoneRegistrationPending.hasPending.mockReturnValue(true);
+      ctx.twilio.checkVerification.mockResolvedValue(true);
+      ctx.usersRegistration.completePhoneRegistration.mockRejectedValue(
+        new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة'),
       );
-      const loginArg = loginSpy.mock.calls[0][0] as Record<string, unknown>;
-      expect(loginArg).not.toHaveProperty('password');
+      const loginSpy = jest.spyOn(ctx.service, 'login');
+
+      await expect(
+        ctx.service.verifyRegistrationOtp('+96555123456', '123456'),
+      ).rejects.toThrow(BadRequestException);
+      expect(loginSpy).not.toHaveBeenCalled();
     });
   });
 
