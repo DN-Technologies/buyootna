@@ -26,6 +26,8 @@ import { COMPANY_CATEGORY_OPTIONS } from '@/features/individual/components/compa
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 
 const SPECIALTY_OPTIONS = COMPANY_CATEGORY_OPTIONS.filter(
@@ -56,6 +58,7 @@ const inputStyle: TextStyle = {
 
 export default function RequestQuoteScreen() {
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
   const successSheetRef = useRef<BottomSheetModal>(null);
   const keyboardAccessoryId = useId();
 
@@ -385,7 +388,7 @@ export default function RequestQuoteScreen() {
         secondaryButtonText="العودة للرئيسية"
         onSecondaryPress={() => {
           successSheetRef.current?.dismiss();
-          router.replace('/home');
+          router.replace(getIdentityHomeRoute(activeIdentity?.type));
         }}
       />
     </SafeAreaView>

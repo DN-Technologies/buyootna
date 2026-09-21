@@ -20,6 +20,8 @@ import SearchHeader from '@/shared/components/search/SearchHeader';
 import SuggestionCard from '@/shared/components/search/SuggestionCard';
 import SuggestionCardSkeleton from '@/shared/components/skeletons/SuggestionCardSkeleton';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Holds the active advanced filter context for pagination
 interface AdvancedFilterState {
@@ -30,6 +32,7 @@ interface AdvancedFilterState {
 export default function SearchResultsScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
   const {
     query,
     tab: routeTab,
@@ -142,7 +145,7 @@ export default function SearchResultsScreen() {
   };
 
   const handleExploreNow = () => {
-    router.push('/home');
+    router.push(getIdentityHomeRoute(activeIdentity?.type));
   };
 
   return (

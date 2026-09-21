@@ -3,6 +3,8 @@ import { Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 export interface SuccessModalProps {
@@ -36,13 +38,14 @@ export default function SuccessModal({
   propertyId,
 }: SuccessModalProps) {
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
   const insets = useSafeAreaInsets();
   const resetForm = useListingStore((state) => state.resetForm);
 
   const handleReturnHome = () => {
     onClose();
     resetForm();
-    router.replace('/home');
+    router.replace(getIdentityHomeRoute(activeIdentity?.type));
   };
 
   const handleViewAd = () => {
@@ -51,7 +54,7 @@ export default function SuccessModal({
     if (propertyId) {
       router.replace(`/property/${propertyId}`);
     } else {
-      router.replace('/home');
+      router.replace(getIdentityHomeRoute(activeIdentity?.type));
     }
   };
 

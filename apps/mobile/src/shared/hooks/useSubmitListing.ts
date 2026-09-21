@@ -4,6 +4,8 @@ import { useRef, useState } from 'react';
 
 import { plansService, PublishOption } from '@/shared/api/plans.service';
 import { propertiesService } from '@/shared/api/properties.service';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -14,6 +16,7 @@ import { showAlert } from '@/shared/utils/alert';
  */
 export function useSubmitListing() {
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
   const slotPickerRef = useRef<BottomSheetModal>(null);
   const quotaSheetRef = useRef<BottomSheetModal>(null);
@@ -131,7 +134,7 @@ export function useSubmitListing() {
           text: 'حسناً',
           onPress: () => {
             resetForm();
-            router.replace('/home');
+            router.replace(getIdentityHomeRoute(activeIdentity?.type));
           },
         },
       ]);

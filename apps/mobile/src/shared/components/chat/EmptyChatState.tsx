@@ -2,8 +2,12 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
+
 export default function EmptyChatState() {
   const router = useRouter();
+  const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
   return (
     <View className="mt-20 flex-1 items-center justify-center px-8">
@@ -22,7 +26,7 @@ export default function EmptyChatState() {
 
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => router.push('/home')}
+        onPress={() => router.push(getIdentityHomeRoute(activeIdentity?.type))}
         className="w-full items-center justify-center rounded-xl bg-[#15304D] py-4"
       >
         <Text className="font-cairo-bold text-[15px] text-white">
