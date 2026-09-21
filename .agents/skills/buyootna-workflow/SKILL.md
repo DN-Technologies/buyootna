@@ -55,6 +55,8 @@ docker compose build
 
 ## 🛑 Common Issues & Troubleshooting
 
-- **`ts-jest` or Jest Version Mismatch**: Keep `jest` at `^29.7.0` and `@types/jest` at `^29.5.14` in both `apps/api` and `apps/mobile`.
-- **NestJS Testing Injector Errors**: Ensure all constructor dependencies of tested controllers or services have matching `{ provide: Service, useValue: {} }` mock providers in `Test.createTestingModule`.
-- **Docker Lockfile Mismatch**: Do not create or retain `pnpm-lock.yaml` inside `apps/api/`. All Docker builds use the monorepo root `pnpm-lock.yaml`.
+See [`docs/ai/testing-policy.md`](../../../docs/ai/testing-policy.md) for
+Jest version pinning and NestJS test-mocking conventions, and
+[`docs/ai/context.md`](../../../docs/ai/context.md) for the single-lockfile
+rule — both apply here and aren't repeated in this file to avoid the two
+drifting apart.

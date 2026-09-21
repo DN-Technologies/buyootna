@@ -30,7 +30,8 @@ export class StandardFilterDto {
   @Type(() => SelectionItemDto)
   areas?: SelectionItemDto[];
 
-  @IsOptional() @IsString() category?: string;
+  // Mobile's category picker is a multi-select chip group -- accept a list.
+  @IsOptional() @IsArray() @IsString({ each: true }) category?: string[];
   @IsOptional() @IsNumber() @Type(() => Number) rooms?: number;
   @IsOptional() @IsNumber() @Type(() => Number) baths?: number;
 

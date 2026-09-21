@@ -94,6 +94,86 @@ async function main() {
   console.log(`✓ Target channel: ${channel}`);
   console.log(`✓ Message: "${message}"`);
 
+  // 6. Force the same runtime env eas.json's matching build profile uses,
+  // overriding whatever is in the local shell/.env.
+  //
+  // Unlike `eas build`, `eas update` does NOT read eas.json's build-profile
+  // `env` block at all -- it just re-bundles JS using whatever the invoking
+  // shell/.env already has. Locally that's deliberately EXPO_PUBLIC_API_URL
+  // pointed at localhost for day-to-day dev work, which means a plain `eas
+  // update` run silently ships a bundle wired to talk to the developer's
+  // own laptop instead of the real API -- indistinguishable from a real
+  // update to every device that installs it (the app never crashes, it just
+  // can never successfully reach the server, forever, until reinstalled).
+  // This shipped to production undetected multiple times before this check
+  // existed. Force-matching the build profile's env here is the fix.
+  const easJsonPath = path.join(__dirname, '..', 'eas.json');
+  const easJson = JSON.parse(fs.readFileSync(easJsonPath, 'utf8'));
+  const buildProfileEnv = easJson.build?.[channel]?.env ?? {};
+
+  // Neutralize EVERY EXPO_PUBLIC_*/config key the local .env FILE defines,
+  // not just the ones this script happens to know are risky, and not just
+  // whatever this process's own process.env carries.
+  //
+  // Overriding individual known keys via process.env (as an earlier version
+  // of this script did for EXPO_PUBLIC_API_URL alone) is insufficient for
+  // two reasons, both confirmed live:
+  //   1. It's whack-a-mole -- it caught the localhost API URL leak, but not
+  //      EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS, which is =true in .env for
+  //      local feat/companies dev work and leaked into a real publish,
+  //      unlocking company accounts for every production user.
+  //   2. `eas update` internally re-invokes `expo export`, which loads
+  //      apps/mobile/.env itself from disk via @expo/env, independent of
+  //      whatever this script already put in process.env for the child.
+  //      Standard dotenv semantics only skip loading a key from the file if
+  //      it's already SET in the environment -- merely deleting/omitting a
+  //      key (this script's first attempt) leaves it unset, so the child's
+  //      own .env load fills it right back in from the file regardless.
+  // The fix: read .env directly, and for every key it defines that isn't
+  // part of the target build profile's env, explicitly set it to '' (not
+  // omit it) so the child sees it as already-set and never loads the
+  // file's real value. eas.json's build.<channel>.env remains the one
+  // authoritative source for what should actually ship.
+  const dotenvPath = path.join(__dirname, '..', '.env');
+  const dotenvKeys = fs
+    .readFileSync(dotenvPath, 'utf8')
+    .split('\n')
+    .map((line) => line.match(/^([A-Za-z_][A-Za-z0-9_]*)=/))
+    .filter(Boolean)
+    .map((match) => match[1]);
+
+  const neutralizedEnv = {};
+  const neutralizedKeys = [];
+  for (const key of dotenvKeys) {
+    if (!(key in buildProfileEnv)) {
+      neutralizedEnv[key] = '';
+      neutralizedKeys.push(key);
+    }
+  }
+  const cleanEnv = {
+    ...Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => !(key in neutralizedEnv)),
+    ),
+    ...neutralizedEnv,
+  };
+  if (neutralizedKeys.length > 0) {
+    console.log(`✓ Neutralized local-only .env keys not in build.${channel}.env: ${neutralizedKeys.join(', ')}`);
+  }
+
+  const LOCAL_API_URL_PATTERN = /localhost|127\.0\.0\.1|10\.0\.2\.2/;
+  const resolvedApiUrl = buildProfileEnv.EXPO_PUBLIC_API_URL;
+
+  if (!resolvedApiUrl || LOCAL_API_URL_PATTERN.test(resolvedApiUrl)) {
+    console.log(
+      `✗ eas.json's build.${channel}.env has no safe EXPO_PUBLIC_API_URL (got "${resolvedApiUrl}").`,
+    );
+    console.log('  Refusing to publish an OTA update that would break every device that installs it.');
+    process.exit(1);
+  }
+  console.log(
+    `✓ Runtime env forced to match eas.json's build.${channel} profile (EXPO_PUBLIC_API_URL: ${resolvedApiUrl})`,
+  );
+
   console.log('━'.repeat(38));
   console.log('');
   console.log(`About to run: eas update --channel ${channel} --message "${message}"`);
@@ -103,10 +183,35 @@ async function main() {
     process.exit(1);
   }
 
-  const result = spawnSync('eas', ['update', '--channel', channel, '--message', message], {
-    stdio: 'inherit',
-    cwd: path.join(__dirname, '..'),
-  });
+  // Bake the release message (and the commit it shipped from) into the
+  // published JS bundle itself, via the same EXPO_PUBLIC_* mechanism this
+  // project already uses for build-time config. eas update re-bundles JS
+  // using the current environment, so these become readable at runtime by
+  // app code (see the About screen) -- giving QA a human-readable "what
+  // changed" without needing EAS dashboard/git access, while the native
+  // app `version` stays untouched so this OTA push keeps reaching the
+  // current runtime.
+  const shortSha = git(['rev-parse', '--short', 'HEAD']);
+  // --clear-cache: Metro's bundler cache doesn't key on *values* of inlined
+  // EXPO_PUBLIC_* env vars, only on source file content + transform config
+  // -- so a plain re-run can silently reuse a bundle output built under a
+  // previous env (exactly how localhost:8000 kept shipping even after the
+  // env override above was added and confirmed correct). Without this flag
+  // that override is necessary but not sufficient.
+  const result = spawnSync(
+    'eas',
+    ['update', '--channel', channel, '--message', message, '--clear-cache'],
+    {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+      env: {
+        ...cleanEnv,
+        ...buildProfileEnv,
+        EXPO_PUBLIC_OTA_RELEASE_NOTE: message,
+        EXPO_PUBLIC_OTA_COMMIT: shortSha,
+      },
+    },
+  );
   process.exit(result.status ?? 1);
 }
 

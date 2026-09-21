@@ -28,6 +28,13 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockSearchParams,
 }));
 
+// useSafeAreaInsets throws without a real <SafeAreaProvider> ancestor --
+// stub it rather than wrap every render.
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
+}));
+
 jest.mock('@/shared/api/chat.service', () => ({
   chatService: {
     getConversations: jest.fn(),

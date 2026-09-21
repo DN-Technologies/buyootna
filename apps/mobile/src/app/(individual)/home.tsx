@@ -17,11 +17,12 @@ import HomeFilterPills from '@/features/individual/components/home/HomeFilterPil
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
 import ContentContainer from '@/shared/components/ContentContainer';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { HomeFeedResponse } from '@/types/feed';
 
@@ -29,6 +30,7 @@ type PrimaryTab = 'all' | 'properties' | 'offices';
 type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
 
 export default function HomeScreen() {
+  const token = useAuthStore((state) => state.token);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const { scrollContentBottomPadding } = useTabBarHeight();
   // Shared across all three possible active scrollables below (only one is
@@ -77,10 +79,15 @@ export default function HomeScreen() {
     }
   };
 
-  // --- Initial Load ---
+  // --- Initial Load, and again on every login/logout ---
+  // The (individual) tab group stays mounted underneath the (auth) flow
+  // (see resetToIdentityHome in shared/navigation/getIdentityHomeRoute.ts),
+  // so a successful login reuses this exact screen instance instead of
+  // remounting it -- a mount-only effect here would keep showing whatever
+  // was fetched before login until the app is force-restarted.
   useEffect(() => {
     loadFeed();
-  }, []);
+  }, [token]);
 
   // --- Pull to Refresh Handle ---
   const onRefresh = async () => {

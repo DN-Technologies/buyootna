@@ -172,6 +172,7 @@ export default function ExchangeProperties({
       <PropertyDetailsSheet
         ref={detailsSheetRef}
         property={selectedProperty}
+        onShare={() => selectedProperty && shareProperty(selectedProperty)}
         onClose={() => detailsSheetRef.current?.dismiss()}
         onViewProperty={() => {
           if (selectedProperty) {

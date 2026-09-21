@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import CompanyActionsSheet from '@/features/company/components/CompanyActionsSheet';
-import CustomTabBar from '@/features/individual/components/CustomTabBar';
+import CustomTabBar from '@/shared/components/CustomTabBar';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
 import ComingSoonGate from '@/shared/components/ComingSoonGate';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -41,6 +41,10 @@ export default function CompanyLayout() {
         screenOptions={{
           headerShown: false,
         }}
+        // See the matching comment in (individual)/_layout.tsx -- the
+        // default 'firstRoute' backBehavior drops the real navigation
+        // history, sending "Back" to Home from any pushed sub-screen.
+        backBehavior="history"
       >
         <Tabs.Screen name="home" />
         <Tabs.Screen name="company-requests" />
@@ -50,6 +54,12 @@ export default function CompanyLayout() {
 
         <Tabs.Screen name="company-chats" />
         <Tabs.Screen name="company-more" />
+        {/* company-edit-profile / add-service / add-project / create-invoice
+            live under (more)/, not as Tabs.Screen entries here -- matches
+            (individual)/(more)/'s pattern: a route group with no explicit
+            Tabs.Screen registration renders as a plain full-screen stack
+            push instead of being wrapped by this Tabs navigator, so the
+            floating CustomTabBar doesn't show on top of them. */}
       </Tabs>
       {/* Bottom sheets mounted outside Tabs so the backdrop covers the entire screen */}
       <CompanyActionsSheet ref={actionsSheetRef} />

@@ -5,9 +5,10 @@ import { forwardRef, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
-import { useTabBarHeight } from '@/features/individual/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 interface HomeOfficesProps {
   refreshing?: boolean;
@@ -22,6 +23,7 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
   ) {
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
+  const token = useAuthStore((state) => state.token);
   const [favoriteOverrides, setFavoriteOverrides] = useState<
     Record<string, boolean>
   >({});
@@ -33,7 +35,8 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['offices'],
+    // See HomeProperties.tsx for why `token` is part of this key.
+    queryKey: ['offices', token],
     queryFn: ({ pageParam }) => feedService.getOffices(pageParam, 10),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>

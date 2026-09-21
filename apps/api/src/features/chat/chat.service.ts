@@ -11,6 +11,75 @@ import { SendMessageDto } from './dto/send-message.dto';
 export class ChatService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Resolves the display name/avatar for a conversation's other participant.
+   * Some participants were created via a legacy userId with no identityId
+   * link (e.g. a caller that resolved the recipient as a plain User rather
+   * than their active Identity), so ident?.* alone can come back empty even
+   * though the account has a perfectly real name -- fall back to that
+   * user's active Identity, then their bare User row, before giving up on
+   * the generic placeholder.
+   */
+  private async resolveOtherParticipantDisplay(otherPart?: {
+    userId: string | null;
+    identity?: {
+      companyData?: { name: string; logoUrl?: string | null } | null;
+      officeData?: { name: string; logoUrl?: string | null } | null;
+      individualData?: {
+        name?: string | null;
+        avatarUrl?: string | null;
+      } | null;
+      user?: { name: string | null; avatarUrl: string | null } | null;
+    } | null;
+  }): Promise<{ name: string; avatarUrl: string }> {
+    const ident = otherPart?.identity;
+
+    let name =
+      ident?.companyData?.name ||
+      ident?.officeData?.name ||
+      ident?.individualData?.name ||
+      ident?.user?.name ||
+      undefined;
+    let avatarUrl =
+      ident?.companyData?.logoUrl ||
+      ident?.officeData?.logoUrl ||
+      ident?.individualData?.avatarUrl ||
+      ident?.user?.avatarUrl ||
+      undefined;
+
+    if (!name && otherPart?.userId) {
+      const activeIdentity = await this.prisma.identity.findFirst({
+        where: { userId: otherPart.userId, isActive: true },
+        include: { individualData: true, companyData: true, officeData: true },
+      });
+      name =
+        activeIdentity?.companyData?.name ||
+        activeIdentity?.officeData?.name ||
+        activeIdentity?.individualData?.name ||
+        undefined;
+      avatarUrl =
+        avatarUrl ||
+        activeIdentity?.companyData?.logoUrl ||
+        activeIdentity?.officeData?.logoUrl ||
+        activeIdentity?.individualData?.avatarUrl ||
+        undefined;
+
+      if (!name) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: otherPart.userId },
+          select: { name: true, avatarUrl: true },
+        });
+        name = user?.name || undefined;
+        avatarUrl = avatarUrl || user?.avatarUrl || undefined;
+      }
+    }
+
+    return {
+      name: name || 'مستخدم بيوتنا',
+      avatarUrl: avatarUrl || '@/assets/images/no-image.png',
+    };
+  }
+
   // Find or create a 1:1 conversation between two users/identities
   async findOrCreateConversation(
     userId: string,
@@ -157,20 +226,8 @@ export class ChatService {
           (p) => p.userId !== userId && p.identityId !== userId,
         );
         const ident = otherPart?.identity;
-
-        const otherUserName =
-          ident?.companyData?.name ||
-          ident?.officeData?.name ||
-          ident?.individualData?.name ||
-          ident?.user?.name ||
-          'مستخدم بيوتنا';
-
-        const otherUserAvatar =
-          ident?.companyData?.logoUrl ||
-          ident?.officeData?.logoUrl ||
-          ident?.individualData?.avatarUrl ||
-          ident?.user?.avatarUrl ||
-          '@/assets/images/no-image.png';
+        const { name: otherUserName, avatarUrl: otherUserAvatar } =
+          await this.resolveOtherParticipantDisplay(otherPart);
 
         const lastMessage = conv.messages[0];
         const myParticipantRecord = conv.participants.find(
@@ -311,20 +368,8 @@ export class ChatService {
       (p) => p.userId !== userId && p.identityId !== userId,
     );
     const ident = otherPart?.identity;
-
-    const otherUserName =
-      ident?.companyData?.name ||
-      ident?.officeData?.name ||
-      ident?.individualData?.name ||
-      ident?.user?.name ||
-      'مستخدم بيوتنا';
-
-    const otherUserAvatar =
-      ident?.companyData?.logoUrl ||
-      ident?.officeData?.logoUrl ||
-      ident?.individualData?.avatarUrl ||
-      ident?.user?.avatarUrl ||
-      '@/assets/images/no-image.png';
+    const { name: otherUserName, avatarUrl: otherUserAvatar } =
+      await this.resolveOtherParticipantDisplay(otherPart);
 
     return {
       data: messages.reverse().map((msg) => ({

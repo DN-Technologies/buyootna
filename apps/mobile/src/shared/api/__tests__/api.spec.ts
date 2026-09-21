@@ -13,12 +13,14 @@ import apiClient, {
 jest.mock('axios', () => {
   const mockRequestUse = jest.fn();
   const mockResponseUse = jest.fn();
-  const mockAxiosInstance = {
+  // Callable (not just an object) so retry logic can re-invoke the instance
+  // as `apiClient(config)`, exactly like the real axios instance does.
+  const mockAxiosInstance = Object.assign(jest.fn(), {
     interceptors: {
       request: { use: mockRequestUse },
       response: { use: mockResponseUse },
     },
-  };
+  });
   const mockCreate = jest.fn(() => mockAxiosInstance);
   return {
     __esModule: true,
@@ -32,7 +34,7 @@ const { mockRequestUse, mockResponseUse, mockAxiosInstance, mockCreate } = (
     __mock: {
       mockRequestUse: jest.Mock;
       mockResponseUse: jest.Mock;
-      mockAxiosInstance: unknown;
+      mockAxiosInstance: jest.Mock;
       mockCreate: jest.Mock;
     };
   }
@@ -162,6 +164,52 @@ describe('apiClient interceptors', () => {
 
       await expect(responseErrorHandler(error)).rejects.toBe(error);
       expect(onUnauthorized).not.toHaveBeenCalled();
+    });
+
+    describe('network error retry', () => {
+      beforeEach(() => {
+        mockAxiosInstance.mockReset();
+        jest.useFakeTimers();
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('retries a genuine network error (no `response`) and resolves if the retry succeeds', async () => {
+        const config: any = { url: '/properties/feed/home' };
+        const networkError = { config };
+        mockAxiosInstance.mockResolvedValueOnce({ data: 'ok' });
+
+        const promise = responseErrorHandler(networkError);
+        await jest.advanceTimersByTimeAsync(1200);
+
+        await expect(promise).resolves.toEqual({ data: 'ok' });
+        expect(mockAxiosInstance).toHaveBeenCalledTimes(1);
+        expect(mockAxiosInstance).toHaveBeenCalledWith(
+          expect.objectContaining({ __retryCount: 1 }),
+        );
+      });
+
+      it('gives up and rejects with the original error once the retry budget is already spent', async () => {
+        const config: any = {
+          url: '/properties/feed/home',
+          __retryCount: 4,
+        };
+        const networkError = { config };
+
+        await expect(responseErrorHandler(networkError)).rejects.toBe(
+          networkError,
+        );
+        expect(mockAxiosInstance).not.toHaveBeenCalled();
+      });
+
+      it('does not retry a real HTTP error response from the server', async () => {
+        const error = { response: { status: 500 }, config: { url: '/x' } };
+
+        await expect(responseErrorHandler(error)).rejects.toBe(error);
+        expect(mockAxiosInstance).not.toHaveBeenCalled();
+      });
     });
   });
 });

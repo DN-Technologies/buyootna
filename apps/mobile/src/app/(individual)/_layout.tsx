@@ -1,11 +1,11 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { Tabs } from 'expo-router';
+import { router, Tabs } from 'expo-router';
 import { useRef } from 'react';
 
-import CustomTabBar from '@/features/individual/components/CustomTabBar';
 import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import CustomTabBar from '@/shared/components/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function MainLayout() {
@@ -39,6 +39,12 @@ export default function MainLayout() {
         screenOptions={{
           headerShown: false,
         }}
+        // The default 'firstRoute' rebuilds this navigator's back-history to
+        // just [home, currentRoute] on every navigation, so "Back" from any
+        // (more)/* sub-screen (which lives inside this Tabs group) always
+        // landed on Home instead of the More tab it was actually pushed
+        // from. 'history' preserves the real navigation path instead.
+        backBehavior="history"
       >
         <Tabs.Screen name="home" />
         <Tabs.Screen name="companies" />
@@ -63,7 +69,10 @@ export default function MainLayout() {
         ref={plusSheetRef}
         onQuotaExhausted={handleOpenQuotaSheet}
       />
-      <QuotaExhaustedSheet ref={quotaSheetRef} />
+      <QuotaExhaustedSheet
+        ref={quotaSheetRef}
+        onBrowsePackages={() => router.push('/plans')}
+      />
       <AuthGuardSheet ref={authGuardSheetRef} />
     </>
   );

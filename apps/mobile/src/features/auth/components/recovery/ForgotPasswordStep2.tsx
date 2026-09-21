@@ -1,28 +1,35 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import {
   verifyOtpSchema,
   VerifyOtpValues,
 } from '@/features/auth/recoverySchemas';
+import {
+  ResendOtpResult,
+  useOtpResendTimer,
+} from '@/shared/hooks/useOtpResendTimer';
 
 interface ForgotPasswordStep2Props {
   identifier: string;
-  onSubmit: (data: VerifyOtpValues) => void;
+  onSubmit: (data: VerifyOtpValues) => Promise<boolean>;
+  onResendOtp: () => Promise<ResendOtpResult>;
 }
 
 export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
   identifier,
   onSubmit,
+  onResendOtp,
 }) => {
   const router = useRouter();
-  const [timer, setTimer] = useState(45);
+  const { secondsLeft, isReady, limitReachedMessage, handleResendResult } =
+    useOtpResendTimer(45);
   const otpInputRef = useRef<TextInput>(null);
 
-  const { control, handleSubmit, watch } = useForm<VerifyOtpValues>({
+  const { control, handleSubmit, watch, setValue } = useForm<VerifyOtpValues>({
     resolver: zodResolver(verifyOtpSchema),
     mode: 'onChange',
   });
@@ -30,14 +37,26 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
   const otpValue = watch('otp');
   const isStep2Disabled = !otpValue || otpValue.trim() === '';
 
-  // Timer Logic
-  useEffect(() => {
-    let interval: NodeJS.Timeout | number;
-    if (timer > 0) {
-      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+  const handleVerify = async (data: VerifyOtpValues) => {
+    const success = await onSubmit(data);
+    if (!success) {
+      // Let the user retype immediately instead of having to clear the
+      // stale wrong/expired code themselves first.
+      setValue('otp', '');
+      otpInputRef.current?.focus();
     }
-    return () => clearInterval(interval);
-  }, [timer]);
+  };
+
+  const handleResend = async () => {
+    // The success alert is a native Modal, which iOS can visibly delay
+    // presenting while a keyboard is still open/animating -- dismiss it
+    // up front so the alert isn't competing with that by the time the
+    // request resolves (the countdown timer, a plain text re-render, has
+    // no such delay, which is what made the two look out of sync).
+    Keyboard.dismiss();
+    const result = await onResendOtp();
+    handleResendResult(result);
+  };
 
   return (
     <View className="flex-1 justify-between">
@@ -113,16 +132,24 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
 
         {/* Resend Timer */}
         <View className="mb-8 items-center">
-          {timer > 0 ? (
-            <Text className="font-cairo-semibold text-sm text-gray-medium">
-              إعادة إرسال الرمز خلال 00:{timer.toString().padStart(2, '0')}
+          {limitReachedMessage ? (
+            <Text className="px-4 text-center font-cairo-semibold text-sm text-red-500">
+              {limitReachedMessage}
             </Text>
-          ) : (
-            <TouchableOpacity activeOpacity={0.7} onPress={() => setTimer(45)}>
+          ) : isReady ? (
+            <TouchableOpacity activeOpacity={0.7} onPress={handleResend}>
               <Text className="font-cairo-bold text-sm text-secondary underline">
                 إعادة إرسال الرمز
               </Text>
             </TouchableOpacity>
+          ) : (
+            <Text className="font-cairo-semibold text-sm text-gray-medium">
+              إعادة إرسال الرمز خلال{' '}
+              {Math.floor(secondsLeft / 60)
+                .toString()
+                .padStart(2, '0')}
+              :{(secondsLeft % 60).toString().padStart(2, '0')}
+            </Text>
           )}
         </View>
       </View>
@@ -130,7 +157,7 @@ export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
       <View className="mt-auto w-full">
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={handleSubmit(onSubmit)}
+          onPress={handleSubmit(handleVerify)}
           disabled={isStep2Disabled}
           className={`h-[48px] w-full items-center justify-center rounded-3xl ${
             isStep2Disabled ? 'bg-[#A6A6A6]' : 'bg-[#15304D]'
