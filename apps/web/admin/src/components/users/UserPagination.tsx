@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { ChevronRight, ChevronLeft } from 'lucide-react'
 
 interface UserPaginationProps {
@@ -57,38 +58,43 @@ export default function UserPagination({
   totalPages,
   totalItems,
   currentCount,
-  itemLabel = 'فرد',
+  itemLabel = 'مستخدم',
   onPageChange,
 }: UserPaginationProps) {
   const pages = getPaginationRange(currentPage, totalPages)
 
   return (
-    <div className="w-full flex items-center justify-between py-4 px-2 font-['Cairo'] text-right">
+    <div
+      className="w-full flex items-center justify-between py-3 px-6 md:px-8 font-['Cairo'] text-right border-t border-[#ECECEC] bg-white select-none"
+      dir="rtl"
+      data-node-id="5634:69405"
+      data-name="pagination"
+    >
       {/* Page Navigation Controls (Left side in RTL) */}
-      <div className="flex items-center gap-1.5 text-[14px]">
-        {/* Next Button */}
+      <div className="flex items-center gap-3 text-[14px]">
+        {/* Next Button ("التالي" in RTL) */}
         <button
           type="button"
           disabled={currentPage >= totalPages}
           onClick={() => onPageChange(currentPage + 1)}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E2E8F0] font-medium text-[#111111] transition-colors ${
+          className={`flex items-center gap-1 font-normal text-[14px] transition-colors ${
             currentPage >= totalPages
-              ? 'opacity-50 cursor-not-allowed bg-white'
-              : 'bg-white hover:bg-[#F8FAFC] cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed text-[#A0A0A0]'
+              : 'text-[#111111] hover:text-black cursor-pointer'
           }`}
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 text-inherit" />
           <span>التالي</span>
         </button>
 
         {/* Page Numbers */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 font-['Inter']">
           {pages.map((page, index) => {
             if (page === ELLIPSIS) {
               return (
                 <span
                   key={`ellipsis-${index}`}
-                  className="w-8 h-8 flex items-center justify-center text-[14px] font-bold text-[#111111]"
+                  className="w-6 h-6 flex items-center justify-center text-[14px] text-[#A0A0A0]"
                 >
                   {ELLIPSIS}
                 </span>
@@ -101,10 +107,10 @@ export default function UserPagination({
                 key={page}
                 type="button"
                 onClick={() => onPageChange(page)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-[14px] cursor-pointer transition-colors ${
+                className={`w-6 h-6 rounded-lg flex items-center justify-center text-[14px] font-medium transition-colors cursor-pointer ${
                   isActive
                     ? 'bg-primary text-white'
-                    : 'bg-white text-[#111111] hover:bg-[#F1F5F9]'
+                    : 'text-[#111111] hover:bg-gray-100'
                 }`}
               >
                 {page}
@@ -113,24 +119,24 @@ export default function UserPagination({
           })}
         </div>
 
-        {/* Previous Button */}
+        {/* Previous Button ("السابق" in RTL) */}
         <button
           type="button"
           disabled={currentPage <= 1}
           onClick={() => onPageChange(currentPage - 1)}
-          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#E2E8F0] font-medium text-[#111111] transition-colors ${
+          className={`flex items-center gap-1 font-normal text-[14px] transition-colors ${
             currentPage <= 1
-              ? 'opacity-50 cursor-not-allowed bg-white'
-              : 'bg-white hover:bg-[#F8FAFC] cursor-pointer'
+              ? 'opacity-40 cursor-not-allowed text-[#A0A0A0]'
+              : 'text-[#111111] hover:text-black cursor-pointer'
           }`}
         >
           <span>السابق</span>
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 text-inherit" />
         </button>
       </div>
 
-      {/* Info Count Text (Right side in RTL) */}
-      <p className="text-[14px] font-medium text-[#6B6A6A]">
+      {/* Info Count Text (Right side in RTL) matching Figma 5634:69405 */}
+      <p className="text-[12px] font-normal text-[#A0A0A0]">
         {currentCount} من {totalItems} {itemLabel}
       </p>
     </div>

@@ -1,9 +1,10 @@
 'use client'
 
 import { Suspense } from 'react'
-import { Download, Plus, Ticket } from 'lucide-react'
+import { Download, Plus } from 'lucide-react'
 import PageHeader from '@/components/PageHeader'
 import UserTableFilters from '@/components/users/UserTableFilters'
+import SelectedUsersActions from '@/components/users/SelectedUsersActions'
 import UserTable from '@/components/users/UserTable'
 import UserPagination from '@/components/users/UserPagination'
 import {
@@ -14,7 +15,6 @@ import {
 
 function UsersPageContent() {
   const {
-    config,
     data,
     loading,
     error,
@@ -29,13 +29,13 @@ function UsersPageContent() {
 
   return (
     <div className="space-y-6 text-right pb-10" dir="rtl">
-      {/* Header */}
+      {/* Header matching Figma 5634:69044 */}
       <PageHeader
-        breadcrumbs={config.breadcrumbs}
-        title={config.title}
-        subtitle={config.subtitle}
+        breadcrumbs={['إدارة الحسابات', 'الأفراد']}
+        title="المستخدمون"
+        subtitle="إدارة جميع حسابات المنصة، ومتابعة الاشتراكات والحالة والنشاط."
         primaryAction={{
-          label: config.addLabel,
+          label: 'اضافة مستخدم',
           onClick: pageActions.handleAddUser,
           icon: <Plus className="w-4 h-4 text-white" />,
         }}
@@ -62,50 +62,33 @@ function UsersPageContent() {
         </div>
       )}
 
-      {/* Statistics Cards Grid */}
-      <UserStatsGrid totalTitle={config.totalStatTitle} stats={data.stats} />
+      {/* Statistics Cards Grid matching Figma 5634:69056 */}
+      <UserStatsGrid totalTitle="إجمالي المستخدمين" stats={data.stats} />
 
-      {/* Bulk Action Toolbar when rows are selected */}
-      {selection.selectedIds.length > 0 && (
-        <div className="bg-[#F9FAFE] border border-[#ECECEC] rounded-lg p-3 px-4 flex items-center justify-between shadow-xs transition-all animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-3">
-            <span className="font-['Cairo'] font-semibold text-[14px] text-[#111111]">
-              تم تحديد {selection.selectedIds.length} من الـ{config.entityName}
-            </span>
-            <button
-              type="button"
-              onClick={selection.handleClearSelection}
-              className="text-[13px] text-[#6B6A6A] hover:text-[#111111] font-medium underline cursor-pointer"
-            >
-              إلغاء التحديد
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={selection.handleOpenBulkCoupon}
-              className="h-9 px-4 rounded-3xl bg-primary text-white font-['Cairo'] font-semibold text-[13px] hover:bg-[#1E4368] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <Ticket className="size-3.5" />
-              <span>منح كوبون خصم</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
+      {/* Main Content Area matching Figma 5634:69158 */}
       <div className="bg-white border border-[#ECECEC] rounded-lg flex flex-col gap-0 overflow-hidden shadow-xs">
-        {/* Filter and Search Bar */}
+        {/* Filter and Search Bar matching Figma 5634:69126 */}
         <UserTableFilters
           searchQuery={filters.searchQuery}
           onSearchChange={filters.handleSearchChange}
+          selectedType={filters.selectedType}
+          onTypeChange={filters.handleTypeFilterChange}
           selectedStatus={filters.statusFilter}
           onStatusChange={filters.handleStatusFilterChange}
           selectedSubscription={filters.subscriptionFilter}
           onSubscriptionChange={filters.handleSubscriptionFilterChange}
           dateSort={filters.dateSort}
           onDateSortToggle={filters.handleDateSortToggle}
+        />
+
+        {/* Selected Users Bulk Action Toolbar matching Figma 2376:74201 / 5634:69044 */}
+        <SelectedUsersActions
+          selectedCount={selection.selectedIds.length}
+          onClearSelection={selection.handleClearSelection}
+          onBulkNotification={selection.handleBulkNotification}
+          onBulkExport={selection.handleBulkExport}
+          onBulkSuspend={selection.handleBulkSuspend}
+          onBulkBlock={selection.handleBulkBlock}
         />
 
         {/* User Data Table with Figma Activity Dropdown & Multi-selection */}
@@ -125,17 +108,17 @@ function UsersPageContent() {
           onReactivateUser={modalsHandlers.setReactivateModalUser}
           onBlockUser={modalsHandlers.setBlockModalUser}
           onResetPassword={modalsHandlers.setResetPasswordModalUser}
-          userLabel={config.userLabel}
-          entityName={config.entityName}
+          userLabel="اسم المستخدم"
+          entityName="مستخدمين"
         />
 
-        {/* Pagination Footer */}
+        {/* Pagination Footer matching Figma 5634:69405 */}
         <UserPagination
           currentPage={pagination.currentPage}
           totalPages={pagination.totalPages}
           totalItems={pagination.totalItems}
           currentCount={pagination.currentCount}
-          itemLabel={config.entitySingle}
+          itemLabel="مستخدم"
           onPageChange={pagination.setCurrentPage}
         />
       </div>
@@ -149,9 +132,9 @@ export default function UsersPage() {
       fallback={
         <div className="space-y-6 text-right" dir="rtl">
           <PageHeader
-            breadcrumbs={['الرئيسية', 'إدارة الحسابات', 'الأفراد']}
-            title="الأفراد"
-            subtitle="إدارة جميع حسابات الأفراد، ومتابعة الاشتراكات والحالة والنشاط."
+            breadcrumbs={['إدارة الحسابات', 'الأفراد']}
+            title="المستخدمون"
+            subtitle="إدارة جميع حسابات المنصة، ومتابعة الاشتراكات والحالة والنشاط."
           />
         </div>
       }
