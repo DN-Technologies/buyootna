@@ -9,6 +9,8 @@ import {
   AdminNotifyUsersResponseDto,
 } from './dto/admin-notify-users.dto';
 import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
+import { AdminReportsFilterDto } from './dto/admin-reports-filter.dto';
+import { AdminReportUpdateDto } from './dto/admin-report-update.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -20,6 +22,7 @@ import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminVerificationsService } from './services/admin-verifications.service';
+import { AdminReportsService } from './services/admin-reports.service';
 
 @Injectable()
 export class AdminService {
@@ -31,10 +34,64 @@ export class AdminService {
     private readonly adminCouponService: AdminCouponService,
     private readonly adminDashboardService: AdminDashboardService,
     private readonly adminVerificationsService: AdminVerificationsService,
+    private readonly adminReportsService: AdminReportsService,
   ) {}
 
   async getDashboard() {
-    return this.adminDashboardService.getDashboard();
+    const [dashboard, reportStats] = await Promise.all([
+      this.adminDashboardService.getDashboard(),
+      this.adminReportsService.getDashboardReportStats(),
+    ]);
+    return {
+      ...dashboard,
+      metrics: {
+        ...dashboard.metrics,
+        newReportsCount: reportStats.newReportsCount,
+      },
+    };
+  }
+
+  async getReports(filters: AdminReportsFilterDto) {
+    return this.adminReportsService.getReports(filters);
+  }
+
+  async getReportById(id: string) {
+    return this.adminReportsService.getReportById(id);
+  }
+
+  async updateReport(
+    id: string,
+    dto: AdminReportUpdateDto,
+    adminUserId: string,
+  ) {
+    return this.adminReportsService.updateReport(id, dto, adminUserId);
+  }
+
+  async resolveReports(ids: string[], adminUserId: string) {
+    return this.adminReportsService.resolveReports(ids, adminUserId);
+  }
+
+  async dismissReports(ids: string[], adminUserId: string) {
+    return this.adminReportsService.dismissReports(ids, adminUserId);
+  }
+
+  async getReportsForUser(userId: string, filters: AdminReportsFilterDto) {
+    return this.adminReportsService.getReportsForUser(userId, filters);
+  }
+
+  async getReportsForProperty(propertyId: string) {
+    return this.adminReportsService.getReportsForProperty(propertyId);
+  }
+
+  async removeReportedProperty(propertyId: string, reason?: string) {
+    return this.adminReportsService.removeReportedProperty(
+      propertyId,
+      reason,
+    );
+  }
+
+  async getAssignableAdmins() {
+    return this.adminReportsService.getAssignableAdmins();
   }
 
   async getVerifications(filters: AdminVerificationsFilterDto) {

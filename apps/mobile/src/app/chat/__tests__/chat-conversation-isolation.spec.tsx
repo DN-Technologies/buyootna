@@ -61,6 +61,12 @@ jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: { getState: jest.fn(() => ({ user: { id: 'individual-1' } })) },
 }));
 
+// ReportReasonSheet renders @gorhom/bottom-sheet's BottomSheetTextInput,
+// which isn't renderable in this jest-expo environment (unrelated to the
+// conversation-isolation behavior under test here) -- stub it out the same
+// way the other screen-external dependencies above are mocked.
+jest.mock('@/shared/components/report/ReportReasonSheet', () => 'ReportReasonSheet');
+
 const mockGetMessages = chatService.getMessages as jest.Mock;
 
 const conversationA = {

@@ -90,7 +90,11 @@ describe('AdminIdentityService', () => {
       type: 'COMPANY',
       companyData: { id: 'company-data-1' },
       officeData: null,
-      user: { id: 'user-1', email: 'company@example.com', name: 'شركة الاختبار' },
+      user: {
+        id: 'user-1',
+        email: 'company@example.com',
+        name: 'شركة الاختبار',
+      },
     };
 
     it('creates a ReviewRequest with the reason when rejecting with one', async () => {
@@ -150,7 +154,10 @@ describe('AdminIdentityService', () => {
       });
 
       expect(notifications.create).toHaveBeenCalledWith(
-        expect.objectContaining({ userId: 'user-1', type: 'IDENTITY_APPROVED' }),
+        expect.objectContaining({
+          userId: 'user-1',
+          type: 'IDENTITY_APPROVED',
+        }),
       );
       expect(mail.sendMail).toHaveBeenCalledWith(
         expect.objectContaining({ to: 'company@example.com' }),
@@ -176,7 +183,11 @@ describe('AdminIdentityService', () => {
       type: 'OFFICE',
       companyData: null,
       officeData: { id: 'office-data-1', status: 'PENDING' },
-      user: { id: 'user-2', email: 'office@example.com', name: 'مكتب الاختبار' },
+      user: {
+        id: 'user-2',
+        email: 'office@example.com',
+        name: 'مكتب الاختبار',
+      },
     };
 
     it('creates a PENDING ReviewRequest with the notes and leaves the identity untouched', async () => {

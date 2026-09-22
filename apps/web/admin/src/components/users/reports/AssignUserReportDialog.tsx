@@ -2,40 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
+import { AdminModerator, fetchAssignableAdmins } from '@/lib/admin-reports'
 
-export interface AdminOption {
-  id: string
-  name: string
-  role: string
-  avatarInitial: string
-}
-
-const mockAdminOptions: AdminOption[] = [
-  {
-    id: '1',
-    name: 'محمد الجارح',
-    role: 'مشرف عام',
-    avatarInitial: 'م',
-  },
-  {
-    id: '2',
-    name: 'محمد الجارح',
-    role: 'مسؤول الدعم الفني',
-    avatarInitial: 'م',
-  },
-  {
-    id: '3',
-    name: 'محمد الجارح',
-    role: 'مشرف',
-    avatarInitial: 'م',
-  },
-  {
-    id: '4',
-    name: 'محمد الجارح',
-    role: 'مشرف',
-    avatarInitial: 'م',
-  },
-]
+export type AdminOption = AdminModerator
 
 export interface AssignUserReportDialogProps {
   open: boolean
@@ -48,6 +17,7 @@ export default function AssignUserReportDialog({
   onClose,
   onAssignSuccess,
 }: AssignUserReportDialogProps) {
+  const [admins, setAdmins] = useState<AdminOption[]>([])
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<AdminOption | null>(null)
 
@@ -57,6 +27,9 @@ export default function AssignUserReportDialog({
     }
     if (open) {
       document.addEventListener('keydown', onKeyDown)
+      fetchAssignableAdmins()
+        .then(setAdmins)
+        .catch((err) => console.error('Failed to load admins:', err))
     }
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [open, onClose])
@@ -111,7 +84,9 @@ export default function AssignUserReportDialog({
           >
             {selectedAdmin ? (
               <span className="text-[14px] font-semibold text-[#111111]">
-                {selectedAdmin.name} ({selectedAdmin.role})
+                {selectedAdmin.email
+                  ? `${selectedAdmin.name} (${selectedAdmin.email})`
+                  : selectedAdmin.name}
               </span>
             ) : (
               <span className="text-[14px] font-medium text-[#94A3B8]">
@@ -124,29 +99,37 @@ export default function AssignUserReportDialog({
           {/* Admin Selector Dropdown List (Nodes 4043:136676 & 4043:136772) */}
           {dropdownOpen && (
             <div className="absolute top-20 right-0 left-0 bg-white border border-[#ECECEC] rounded-xl shadow-lg p-2 z-20 flex flex-col gap-1 max-h-60 overflow-y-auto">
-              {mockAdminOptions.map((admin, idx) => (
-                <button
-                  key={`${admin.id}-${idx}`}
-                  type="button"
-                  onClick={() => {
-                    setSelectedAdmin(admin)
-                    setDropdownOpen(false)
-                  }}
-                  className="w-full p-2.5 flex items-center gap-3 rounded-lg hover:bg-[#F8FAFC] transition-colors text-right cursor-pointer"
-                >
-                  <div className="size-8 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[13px] flex items-center justify-center shrink-0">
-                    {admin.avatarInitial}
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-[14px] font-bold text-[#111111]">
-                      {admin.name}
-                    </span>
-                    <span className="text-[12px] font-medium text-[#6B6A6A]">
-                      {admin.role}
-                    </span>
-                  </div>
-                </button>
-              ))}
+              {admins.length === 0 ? (
+                <p className="text-[13px] text-[#6B6A6A] text-center py-2">
+                  لا يوجد مشرفون متاحون
+                </p>
+              ) : (
+                admins.map((admin) => (
+                  <button
+                    key={admin.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAdmin(admin)
+                      setDropdownOpen(false)
+                    }}
+                    className="w-full p-2.5 flex items-center gap-3 rounded-lg hover:bg-[#F8FAFC] transition-colors text-right cursor-pointer"
+                  >
+                    <div className="size-8 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[13px] flex items-center justify-center shrink-0">
+                      {admin.name.charAt(0)}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[14px] font-bold text-[#111111]">
+                        {admin.name}
+                      </span>
+                      {admin.email && (
+                        <span className="text-[12px] font-medium text-[#6B6A6A]">
+                          {admin.email}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>

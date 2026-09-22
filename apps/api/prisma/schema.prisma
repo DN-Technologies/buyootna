@@ -27,6 +27,10 @@ model User {
   notifications    Notification[]
   sessions         Session[]
   socialAccounts   SocialAccount[]
+  reportsFiled     Report[]                  @relation("ReporterReports")
+  reportsAgainst   Report[]                  @relation("TargetUserReports")
+  reportsResolved  Report[]                  @relation("ReportResolvedBy")
+  reportsAssigned  Report[]                  @relation("ReportAssignedAdmin")
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -171,6 +175,8 @@ enum NotificationType {
   IDENTITY_REJECTED
   IDENTITY_EDIT_REQUESTED
   ADMIN_CUSTOM_MESSAGE
+  REPORT_RESOLVED
+  REPORT_DISMISSED
 }
 
 model Notification {

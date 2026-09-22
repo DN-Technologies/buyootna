@@ -5,7 +5,7 @@ import React from 'react'
 export interface StatCardProps {
   title: string
   count: number | string
-  change: string
+  change?: string
   trend?: 'up' | 'down'
   variant?: 'green' | 'red' | 'orange'
 }
@@ -46,15 +46,17 @@ export default function StatCard({
         </p>
 
         {/* Badge (Left side in RTL) matching Figma 2772:55554 */}
-        <div
-          className={`flex items-center justify-center px-1.5 py-0.5 rounded-md ${currentVariant.bg}`}
-        >
-          <span
-            className={`font-['Inter'] font-medium text-[11px] leading-[16.5px] ${currentVariant.text}`}
+        {change && (
+          <div
+            className={`flex items-center justify-center px-1.5 py-0.5 rounded-md ${currentVariant.bg}`}
           >
-            {change}
-          </span>
-        </div>
+            <span
+              className={`font-['Inter'] font-medium text-[11px] leading-[16.5px] ${currentVariant.text}`}
+            >
+              {change}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Value Row matching Figma 2772:54891 */}

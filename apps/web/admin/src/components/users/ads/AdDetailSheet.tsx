@@ -1,16 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { EyeOff, RefreshCw, Star } from 'lucide-react'
 import AdDetailHeader, { AdDetailTab } from './AdDetailHeader'
 import AdDetailInfo from './AdDetailInfo'
-import {
-  initialMockReports,
-  MockReport,
-  ReportDetailView,
-  ReportsList,
-} from './AdReportsTab'
-import AssignReportDialog, { MockAdmin } from './AssignReportDialog'
+import { MockReport, ReportDetailView, ReportsList } from './AdReportsTab'
+import AssignReportDialog from './AssignReportDialog'
 import ReportActionToast, { ToastState } from './ReportActionToast'
 import ConfirmActionDialog, {
   ConfirmActionType,
@@ -18,6 +13,31 @@ import ConfirmActionDialog, {
 import FeatureAdDialog from './FeatureAdDialog'
 import type { AdminUserProperty } from '@/lib/admin-users'
 import { getAdCode, getAdLabel } from '@/lib/property-labels'
+import {
+  AdminModerator,
+  AdminReportRow,
+  deleteReportedProperty,
+  fetchPropertyReports,
+  updateReport,
+} from '@/lib/admin-reports'
+import { AD_TAB_PRIORITY_LABEL, AD_TAB_STATUS_LABEL } from '@/lib/report-labels'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
+
+function toMockReport(row: AdminReportRow): MockReport {
+  return {
+    id: row.id,
+    code: row.reportNumber,
+    reason: row.reason,
+    reporterName: row.submittedBy?.name || 'مستخدم بيوتنا',
+    reporterPhone: row.submittedBy?.phone || '',
+    reporterEmail: row.submittedBy?.email || '',
+    timeAgo: formatRelativeArabicTime(row.createdAt),
+    priority: AD_TAB_PRIORITY_LABEL[row.priority],
+    status: AD_TAB_STATUS_LABEL[row.status],
+    details: row.description || '',
+    attachments: [],
+  }
+}
 
 function notImplemented(action: string) {
   alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
@@ -31,7 +51,7 @@ export default function AdDetailSheet({
   onClose: () => void
 }) {
   const [activeTab, setActiveTab] = useState<AdDetailTab>('details')
-  const [reports, setReports] = useState<MockReport[]>(initialMockReports)
+  const [reports, setReports] = useState<MockReport[]>([])
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
   const [assigningReport, setAssigningReport] = useState<MockReport | null>(
     null,
@@ -58,25 +78,55 @@ export default function AdDetailSheet({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [onClose])
 
-  function handleCloseReport(report: MockReport) {
-    const previousStatus = report.status
-    setReports((prev) =>
-      prev.map((r) => (r.id === report.id ? { ...r, status: 'مغلقة' } : r)),
-    )
-    setToast({
-      message: 'تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.',
-      onUndo: () =>
-        setReports((prev) =>
-          prev.map((r) =>
-            r.id === report.id ? { ...r, status: previousStatus } : r,
-          ),
-        ),
-    })
+  const loadReports = useCallback(async () => {
+    try {
+      const rows = await fetchPropertyReports(property.id)
+      setReports(rows.map(toMockReport))
+    } catch (err) {
+      console.error('Failed to load property reports:', err)
+    }
+  }, [property.id])
+
+  useEffect(() => {
+    loadReports()
+  }, [loadReports])
+
+  async function handleCloseReport(report: MockReport) {
+    try {
+      await updateReport(report.id, { status: 'RESOLVED' })
+      setToast({ message: 'تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.' })
+      setSelectedReportId(null)
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to close report:', err)
+      setToast({ message: 'حدث خطأ أثناء إغلاق البلاغ.' })
+    }
   }
 
-  function handleConfirmAssign(admin: MockAdmin) {
-    setAssigningReport(null)
-    setToast({ message: `تم اسناد البلاغ إلى ${admin.name} بنجاح.` })
+  async function handleDeleteAd() {
+    if (!confirm(`هل أنت متأكد من رغبتك في حذف الإعلان "${adLabel}"؟`)) return
+    try {
+      await deleteReportedProperty(property.id, 'تم حذف الإعلان استجابةً لبلاغ')
+      setToast({ message: 'تم حذف الإعلان بنجاح.' })
+      onClose()
+    } catch (err) {
+      console.error('Failed to delete reported property:', err)
+      setToast({ message: 'حدث خطأ أثناء حذف الإعلان.' })
+    }
+  }
+
+  async function handleConfirmAssign(admin: AdminModerator) {
+    const report = assigningReport
+    if (!report) return
+    try {
+      await updateReport(report.id, { assignedAdminId: admin.id })
+      setAssigningReport(null)
+      setToast({ message: `تم اسناد البلاغ إلى ${admin.name} بنجاح.` })
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to assign report:', err)
+      setToast({ message: 'حدث خطأ أثناء اسناد البلاغ.' })
+    }
   }
 
   return (
@@ -94,6 +144,7 @@ export default function AdDetailSheet({
             onBack={() => setSelectedReportId(null)}
             onCloseReport={handleCloseReport}
             onAssignReport={setAssigningReport}
+            onDeleteAd={handleDeleteAd}
           />
         ) : (
           <>

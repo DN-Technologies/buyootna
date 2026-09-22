@@ -1,3 +1,4 @@
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -5,6 +6,7 @@ import { KeyboardAvoidingView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ChatMessage } from '@/shared/api/chat.service';
+import { reportsService } from '@/shared/api/reports.service';
 import ChatHeader from '@/shared/components/chat/ChatHeader';
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatPinnedContext from '@/shared/components/chat/ChatPinnedContext';
@@ -14,6 +16,7 @@ import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
 import MessageBubble from '@/shared/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubble';
 import ContentContainer from '@/shared/components/ContentContainer';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import { socketService } from '@/shared/services/socket.service';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -77,6 +80,7 @@ export default function ChatDetailsScreen() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [showPinnedContext, setShowPinnedContext] = useState(true);
+  const reportSheetRef = useRef<BottomSheetModal>(null);
 
   // Zustand Chat Store selectors — every one of these reads this specific
   // screen's own conversationId out of a conversationId-keyed map, never a
@@ -167,23 +171,22 @@ export default function ChatDetailsScreen() {
   };
 
   const handleReportUser = () => {
-    showAlert(
-      'إبلاغ عن مستخدم',
-      'هل تريد تقديم بلاغ ضد هذا المستخدم لمخالفته شروط الاستخدام؟',
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        {
-          text: 'إبلاغ',
-          style: 'destructive',
-          onPress: () => {
-            showAlert(
-              'تم الإرسال',
-              'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
-            );
-          },
-        },
-      ],
-    );
+    reportSheetRef.current?.present();
+  };
+
+  const handleSubmitReport = async (reason: string, description?: string) => {
+    const targetUserId = conversation?.otherUser.id;
+    if (!targetUserId) return;
+    try {
+      await reportsService.submitReport(targetUserId, reason, description);
+      showAlert(
+        'تم الإرسال',
+        'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
+      );
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'تعذر إرسال البلاغ';
+      showAlert('خطأ', msg);
+    }
   };
 
   // Main Message Renderer
@@ -348,6 +351,8 @@ export default function ChatDetailsScreen() {
         onClose={() => setShowImageOptions(false)}
         onDownload={() => console.log('Download image')}
       />
+
+      <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
     </SafeAreaView>
   );
 }
