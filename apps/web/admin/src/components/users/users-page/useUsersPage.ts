@@ -143,6 +143,15 @@ export function useUsersPage() {
     setCurrentPage(1)
   }
 
+  const handleTypeFilterChange = (type: string) => {
+    if (type) {
+      router.push(`/users?type=${type}`)
+    } else {
+      router.push('/users')
+    }
+    setCurrentPage(1)
+  }
+
   const handleStatusFilterChange = (status: string) => {
     setStatusFilter(status)
     setCurrentPage(1)
@@ -180,6 +189,79 @@ export function useUsersPage() {
     const selectedUsers = data.data.filter((u) => selectedIds.includes(u.id))
     if (selectedUsers.length > 0) {
       setCouponModalUsers(selectedUsers)
+    }
+  }
+
+  const handleBulkNotification = () => {
+    const selectedUsers = data.data.filter((u) => selectedIds.includes(u.id))
+    if (selectedUsers.length > 0) {
+      setNotificationModalUser(selectedUsers[0])
+    }
+  }
+
+  const handleBulkExport = async () => {
+    try {
+      const selectedUsers = data.data.filter((u) => selectedIds.includes(u.id))
+      if (selectedUsers.length === 0) return
+      const headers = ['المعرف', 'الاسم', 'البريد الإلكتروني', 'الباقة', 'الحالة', 'تاريخ التسجيل']
+      const rows = selectedUsers.map((u) => [
+        u.id,
+        u.name,
+        u.email,
+        u.subscriptionPlan,
+        u.accountStatus,
+        u.registrationDate,
+      ])
+      const csvContent =
+        '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `selected-users-export.csv`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast(`تم تصدير ${selectedUsers.length} مستخدمين بنجاح`)
+    } catch (err) {
+      console.error('Bulk export failed:', err)
+      showToast('حدث خطأ أثناء تصدير البيانات')
+    }
+  }
+
+  const handleBulkSuspend = async () => {
+    if (
+      !confirm(
+        `هل أنت متأكد من رغبتك في إيقاف ${selectedIds.length} مستخدمين؟`,
+      )
+    )
+      return
+    try {
+      await Promise.all(selectedIds.map((id) => updateUserStatus(id, 'suspended')))
+      await loadUsers()
+      setSelectedIds([])
+      showToast('تم إيقاف حسابات المستخدمين المحددين بنجاح')
+    } catch (err) {
+      console.error('Failed to suspend users:', err)
+      showToast('حدث خطأ أثناء إيقاف الحسابات')
+    }
+  }
+
+  const handleBulkBlock = async () => {
+    if (
+      !confirm(
+        `هل أنت متأكد من رغبتك في حظر ${selectedIds.length} مستخدمين؟`,
+      )
+    )
+      return
+    try {
+      await Promise.all(selectedIds.map((id) => updateUserStatus(id, 'blocked')))
+      await loadUsers()
+      setSelectedIds([])
+      showToast('تم حظر حسابات المستخدمين المحددين بنجاح')
+    } catch (err) {
+      console.error('Failed to block users:', err)
+      showToast('حدث خطأ أثناء حظر الحسابات')
     }
   }
 
@@ -390,8 +472,10 @@ export function useUsersPage() {
       searchQuery,
       statusFilter,
       subscriptionFilter,
+      selectedType: typeParam || '',
       dateSort,
       handleSearchChange,
+      handleTypeFilterChange,
       handleStatusFilterChange,
       handleSubscriptionFilterChange,
       handleDateSortToggle,
@@ -402,6 +486,10 @@ export function useUsersPage() {
       handleToggleSelectAll,
       handleClearSelection,
       handleOpenBulkCoupon,
+      handleBulkNotification,
+      handleBulkExport,
+      handleBulkSuspend,
+      handleBulkBlock,
     },
     pagination: {
       currentPage,

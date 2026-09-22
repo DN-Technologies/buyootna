@@ -137,20 +137,23 @@ export default function UserTable({
   const allSelected = users.length > 0 && selectedIds.length === users.length
 
   return (
-    <div className="w-full overflow-x-auto bg-white font-['Cairo'] relative select-none">
+    <div
+      className="w-full overflow-x-auto bg-white font-['Cairo'] relative select-none"
+      data-node-id="5634:69158"
+    >
       <table className="w-full text-right border-collapse" dir="rtl">
-        {/* Table Header */}
+        {/* Table Header matching Figma 5634:69159 */}
         <thead>
           <tr className="bg-[#FBFBFB] border-b border-[#ECECEC] text-[12px] font-semibold text-[#6B6A6A] h-11">
-            <th className="py-3 px-4 text-right">
+            <th className="py-3 px-5 text-right w-65">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={handleToggleSelectAll}
-                  className={`w-4.5 h-4.5 rounded-sm border flex items-center justify-center cursor-pointer transition-colors ${
+                  className={`w-4.5 h-4.5 rounded-sm border flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
                     allSelected
                       ? 'bg-primary border-primary text-white'
-                      : 'border-[#CBD5E1] bg-white hover:border-gray-400'
+                      : 'border-[#D0D5DD] bg-white hover:border-gray-400'
                   }`}
                   aria-label="تحديد الكل"
                 >
@@ -161,19 +164,19 @@ export default function UserTable({
                 </span>
               </div>
             </th>
-            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A]">
+            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A] w-30">
               الاشتراك
             </th>
-            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A]">
+            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A] w-25">
               الاعلانات
             </th>
-            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A]">
+            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A] w-25">
               الحالة
             </th>
-            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A]">
+            <th className="py-3 px-4 font-semibold text-[12px] text-[#6B6A6A] w-32.5">
               تاريخ التسجيل
             </th>
-            <th className="py-3 px-4 text-center font-semibold text-[12px] text-[#6B6A6A]">
+            <th className="py-3 px-5 text-center font-semibold text-[12px] text-[#6B6A6A] w-22.5">
               الاجراءات
             </th>
           </tr>
@@ -184,7 +187,7 @@ export default function UserTable({
           {loading ? (
             Array.from({ length: 5 }).map((_, idx) => (
               <tr key={idx} className="h-12 border-b border-[#ECECEC]">
-                <td className="py-2.5 px-4">
+                <td className="py-2.5 px-5">
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-4.5 w-4.5 rounded-xs" />
                     <div className="flex flex-col gap-1">
@@ -205,7 +208,7 @@ export default function UserTable({
                 <td className="py-2.5 px-4">
                   <Skeleton className="h-4 w-24" />
                 </td>
-                <td className="py-2.5 px-4 text-center">
+                <td className="py-2.5 px-5 text-center">
                   <Skeleton className="h-6 w-14 rounded-md mx-auto" />
                 </td>
               </tr>
@@ -224,12 +227,13 @@ export default function UserTable({
               return (
                 <tr
                   key={user.id}
-                  className={`h-12 border-b border-[#ECECEC]/70 hover:bg-[#F8FAFC] transition-colors ${
-                    isSelected ? 'bg-[#F9FAFE]' : 'bg-white'
+                  className={`h-12 border-b border-[#ECECEC]/70 transition-colors ${
+                    isSelected ? 'bg-[#F9FAFE]' : 'bg-white hover:bg-[#F8FAFC]'
                   }`}
+                  data-node-id="5634:69176"
                 >
                   {/* User Checkbox + Name & Email */}
-                  <td className="py-2 px-4">
+                  <td className="py-2 px-5">
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
@@ -237,7 +241,7 @@ export default function UserTable({
                         className={`w-4.5 h-4.5 rounded-sm border flex items-center justify-center cursor-pointer shrink-0 transition-colors ${
                           isSelected
                             ? 'bg-primary border-primary text-white'
-                            : 'border-[#CBD5E1] bg-white hover:border-gray-400'
+                            : 'border-[#D0D5DD] bg-white hover:border-gray-400'
                         }`}
                         aria-label={`تحديد ${user.name}`}
                       >
@@ -278,13 +282,13 @@ export default function UserTable({
                   </td>
 
                   {/* Actions Column */}
-                  <td className="py-2 px-4 relative">
-                    <div className="flex items-center justify-center gap-1">
+                  <td className="py-2 px-5 relative">
+                    <div className="flex items-center justify-center gap-1.5">
                       {/* View Details Eye */}
                       <button
                         type="button"
                         onClick={() => onViewUser?.(user)}
-                        className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
+                        className="p-1 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
                         title="عرض التفاصيل"
                       >
                         <Eye className="w-4.5 h-4.5" />
@@ -297,7 +301,7 @@ export default function UserTable({
                           onClick={() =>
                             setActiveMenuId(isMenuOpen ? null : user.id)
                           }
-                          className="p-1.5 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
+                          className="p-1 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
                           title="المزيد من الإجراءات"
                         >
                           <MoreVertical className="w-4.5 h-4.5" />
