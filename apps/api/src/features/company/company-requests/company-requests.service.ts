@@ -83,6 +83,42 @@ export class CompanyRequestsService {
     );
   }
 
+  // Admin-facing: every request tied to this identity, either as the
+  // individual who submitted it or as the company/office it was sent to /
+  // accepted by. No visibility restriction -- callers are admin routes.
+  async findForIdentityAsAdmin(
+    identityId: string,
+    role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE',
+  ): Promise<CompanyRequestResponseDto[]> {
+    const where: Prisma.CompanyRequestWhereInput =
+      role === 'INDIVIDUAL'
+        ? { clientIdentityId: identityId }
+        : {
+            OR: [
+              { targetIdentityId: identityId },
+              { acceptedByIdentityId: identityId },
+            ],
+          };
+
+    const requests = await this.prisma.companyRequest.findMany({
+      where,
+      include: { clientIdentity: { include: CLIENT_INCLUDE } },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const previousOffersByClient = await this.countPreviousOffers(
+      requests.map((r) => r.clientIdentityId),
+    );
+
+    return requests.map((r) =>
+      this.toResponseDto(
+        r,
+        identityId,
+        previousOffersByClient.get(r.clientIdentityId) ?? 0,
+      ),
+    );
+  }
+
   async findOne(
     id: string,
     identityId: string,

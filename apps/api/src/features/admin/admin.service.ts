@@ -23,6 +23,10 @@ import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminVerificationsService } from './services/admin-verifications.service';
 import { AdminReportsService } from './services/admin-reports.service';
+import { AdminPropertiesService } from './services/admin-properties.service';
+import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
+import { AdminRequestsService } from './services/admin-requests.service';
+import { AdminExhibitionService } from './services/admin-exhibition.service';
 
 @Injectable()
 export class AdminService {
@@ -35,6 +39,9 @@ export class AdminService {
     private readonly adminDashboardService: AdminDashboardService,
     private readonly adminVerificationsService: AdminVerificationsService,
     private readonly adminReportsService: AdminReportsService,
+    private readonly adminPropertiesService: AdminPropertiesService,
+    private readonly adminRequestsService: AdminRequestsService,
+    private readonly adminExhibitionService: AdminExhibitionService,
   ) {}
 
   async getDashboard() {
@@ -83,11 +90,40 @@ export class AdminService {
     return this.adminReportsService.getReportsForProperty(propertyId);
   }
 
-  async removeReportedProperty(propertyId: string, reason?: string) {
+  async removeReportedProperty(
+    propertyId: string,
+    reason?: string,
+    adminUserId?: string,
+  ) {
     return this.adminReportsService.removeReportedProperty(
       propertyId,
       reason,
+      adminUserId,
     );
+  }
+
+  async updateProperty(
+    propertyId: string,
+    dto: AdminUpdatePropertyDto,
+    adminUserId: string,
+  ) {
+    return this.adminPropertiesService.updateProperty(
+      propertyId,
+      dto,
+      adminUserId,
+    );
+  }
+
+  async getRequestsForUser(userId: string) {
+    return this.adminRequestsService.getRequestsForUser(userId);
+  }
+
+  async getProjectsForUser(userId: string) {
+    return this.adminExhibitionService.getProjectsForUser(userId);
+  }
+
+  async deleteProject(projectId: string, adminUserId: string) {
+    return this.adminExhibitionService.deleteProject(projectId, adminUserId);
   }
 
   async getAssignableAdmins() {

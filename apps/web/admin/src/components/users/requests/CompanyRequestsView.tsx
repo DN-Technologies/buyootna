@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
-import type { RequestItem } from './requests.types'
+import type { RequestItem, RequestStatus } from './requests.types'
 import { STATUS_LABELS, STATUS_STYLES } from './requests.types'
 import CompanyRequestsMetrics from './CompanyRequestsMetrics'
 import RequestsEmptyState from './RequestsEmptyState'
@@ -19,7 +19,7 @@ export default function CompanyRequestsView({
   const [typeFilter, setTypeFilter] = useState<'all' | 'private' | 'public'>(
     'all',
   )
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | RequestStatus>('all')
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
 
   const statusDropdownRef = useRef<HTMLDivElement>(null)
@@ -38,14 +38,7 @@ export default function CompanyRequestsView({
   }, [])
 
   const filteredRequests = requests.filter((req) => {
-    if (
-      typeFilter === 'private' &&
-      req.type !== 'private' &&
-      req.type !== 'خاص'
-    )
-      return false
-    if (typeFilter === 'public' && req.type !== 'public' && req.type !== 'عام')
-      return false
+    if (typeFilter !== 'all' && req.type !== typeFilter) return false
     if (statusFilter !== 'all' && req.status !== statusFilter) return false
     return true
   })
@@ -106,22 +99,22 @@ export default function CompanyRequestsView({
           >
             <span>
               الحالة:{' '}
-              {statusFilter === 'all'
-                ? 'الكل'
-                : STATUS_LABELS[statusFilter] || statusFilter}
+              {statusFilter === 'all' ? 'الكل' : STATUS_LABELS[statusFilter]}
             </span>
             <ChevronDown className="w-4 h-4 text-[#6B6A6A]" />
           </button>
 
           {statusDropdownOpen && (
             <div className="absolute left-0 mt-1 w-44 bg-white border border-[#ECECEC] rounded-xl shadow-xl py-1 z-30 text-right">
-              {[
-                { key: 'all', label: 'الكل' },
-                { key: 'pending', label: 'قيد الانتظار' },
-                { key: 'accepted', label: 'مقبولة' },
-                { key: 'completed', label: 'منتهي' },
-                { key: 'cancelled', label: 'ملغاة' },
-              ].map((opt) => (
+              {(
+                [
+                  { key: 'all', label: 'الكل' },
+                  { key: 'pending', label: STATUS_LABELS.pending },
+                  { key: 'responded', label: STATUS_LABELS.responded },
+                  { key: 'accepted', label: STATUS_LABELS.accepted },
+                  { key: 'rejected', label: STATUS_LABELS.rejected },
+                ] as const
+              ).map((opt) => (
                 <button
                   key={opt.key}
                   type="button"
@@ -176,14 +169,12 @@ export default function CompanyRequestsView({
                     <td className="py-3.5 px-4">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
-                          req.type === 'private' || req.type === 'خاص'
+                          req.type === 'private'
                             ? 'bg-[#FDF4FF] text-[#C026D3]'
                             : 'bg-[#EFF6FF] text-[#2563EB]'
                         }`}
                       >
-                        {req.type === 'private' || req.type === 'خاص'
-                          ? 'خاص'
-                          : 'عام'}
+                        {req.type === 'private' ? 'خاص' : 'عام'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
@@ -198,12 +189,9 @@ export default function CompanyRequestsView({
                     </td>
                     <td className="py-3.5 px-4">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
-                          STATUS_STYLES[req.status] ||
-                          'bg-[#F1F5F9] text-[#64748B]'
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[req.status]}`}
                       >
-                        {STATUS_LABELS[req.status] || req.status}
+                        {STATUS_LABELS[req.status]}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-[#6B6A6A]">{req.date}</td>

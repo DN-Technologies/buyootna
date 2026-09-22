@@ -8,6 +8,9 @@ import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminVerificationsService } from './services/admin-verifications.service';
 import { AdminReportsService } from './services/admin-reports.service';
+import { AdminPropertiesService } from './services/admin-properties.service';
+import { AdminRequestsService } from './services/admin-requests.service';
+import { AdminExhibitionService } from './services/admin-exhibition.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
@@ -60,6 +63,19 @@ interface MockAdminReportsService {
   getDashboardReportStats: jest.Mock;
 }
 
+interface MockAdminPropertiesService {
+  updateProperty: jest.Mock;
+}
+
+interface MockAdminRequestsService {
+  getRequestsForUser: jest.Mock;
+}
+
+interface MockAdminExhibitionService {
+  getProjectsForUser: jest.Mock;
+  deleteProject: jest.Mock;
+}
+
 describe('AdminService', () => {
   let service: AdminService;
   let adminUsersService: MockAdminUsersService;
@@ -70,6 +86,9 @@ describe('AdminService', () => {
   let adminDashboardService: MockAdminDashboardService;
   let adminVerificationsService: MockAdminVerificationsService;
   let adminReportsService: MockAdminReportsService;
+  let adminPropertiesService: MockAdminPropertiesService;
+  let adminRequestsService: MockAdminRequestsService;
+  let adminExhibitionService: MockAdminExhibitionService;
 
   beforeEach(async () => {
     adminUsersService = {
@@ -123,6 +142,19 @@ describe('AdminService', () => {
       }),
     };
 
+    adminPropertiesService = {
+      updateProperty: jest.fn(),
+    };
+
+    adminRequestsService = {
+      getRequestsForUser: jest.fn(),
+    };
+
+    adminExhibitionService = {
+      getProjectsForUser: jest.fn(),
+      deleteProject: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
@@ -157,6 +189,18 @@ describe('AdminService', () => {
         {
           provide: AdminReportsService,
           useValue: adminReportsService,
+        },
+        {
+          provide: AdminPropertiesService,
+          useValue: adminPropertiesService,
+        },
+        {
+          provide: AdminRequestsService,
+          useValue: adminRequestsService,
+        },
+        {
+          provide: AdminExhibitionService,
+          useValue: adminExhibitionService,
         },
       ],
     }).compile();
@@ -290,11 +334,65 @@ describe('AdminService', () => {
       const result = await service.removeReportedProperty(
         'prop-1',
         'مخالفة',
+        'admin-1',
       );
 
       expect(adminReportsService.removeReportedProperty).toHaveBeenCalledWith(
         'prop-1',
         'مخالفة',
+        'admin-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates updateProperty to AdminPropertiesService', async () => {
+      const dto = { isHidden: true };
+      const mockResult = { id: 'prop-1', isHidden: true };
+      adminPropertiesService.updateProperty.mockResolvedValue(mockResult);
+
+      const result = await service.updateProperty('prop-1', dto, 'admin-1');
+
+      expect(adminPropertiesService.updateProperty).toHaveBeenCalledWith(
+        'prop-1',
+        dto,
+        'admin-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getRequestsForUser to AdminRequestsService', async () => {
+      const mockResult: any[] = [];
+      adminRequestsService.getRequestsForUser.mockResolvedValue(mockResult);
+
+      const result = await service.getRequestsForUser('u-1');
+
+      expect(adminRequestsService.getRequestsForUser).toHaveBeenCalledWith(
+        'u-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getProjectsForUser to AdminExhibitionService', async () => {
+      const mockResult: any[] = [];
+      adminExhibitionService.getProjectsForUser.mockResolvedValue(mockResult);
+
+      const result = await service.getProjectsForUser('u-1');
+
+      expect(adminExhibitionService.getProjectsForUser).toHaveBeenCalledWith(
+        'u-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates deleteProject to AdminExhibitionService', async () => {
+      const mockResult = { message: 'تم الحذف' };
+      adminExhibitionService.deleteProject.mockResolvedValue(mockResult);
+
+      const result = await service.deleteProject('project-1', 'admin-1');
+
+      expect(adminExhibitionService.deleteProject).toHaveBeenCalledWith(
+        'project-1',
+        'admin-1',
       );
       expect(result).toBe(mockResult);
     });

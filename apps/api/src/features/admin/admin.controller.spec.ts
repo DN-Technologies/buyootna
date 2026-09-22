@@ -28,6 +28,10 @@ interface MockAdminService {
   getReportsForUser: jest.Mock;
   getReportsForProperty: jest.Mock;
   removeReportedProperty: jest.Mock;
+  updateProperty: jest.Mock;
+  getRequestsForUser: jest.Mock;
+  getProjectsForUser: jest.Mock;
+  deleteProject: jest.Mock;
   getAssignableAdmins: jest.Mock;
 }
 
@@ -60,6 +64,10 @@ describe('AdminController', () => {
       getReportsForUser: jest.fn(),
       getReportsForProperty: jest.fn(),
       removeReportedProperty: jest.fn(),
+      updateProperty: jest.fn(),
+      getRequestsForUser: jest.fn(),
+      getProjectsForUser: jest.fn(),
+      deleteProject: jest.fn(),
       getAssignableAdmins: jest.fn(),
     };
 
@@ -146,15 +154,51 @@ describe('AdminController', () => {
     expect(adminService.getReportsForProperty).toHaveBeenCalledWith('prop-1');
   });
 
-  it('removeReportedProperty should forward id and reason to service', async () => {
+  it('removeReportedProperty should forward id, reason and adminUserId to service', async () => {
     adminService.removeReportedProperty.mockResolvedValue({
       message: 'تم حذف الإعلان بنجاح',
     });
 
-    await controller.removeReportedProperty('prop-1', { reason: 'مخالفة' });
+    await controller.removeReportedProperty(ADMIN_REQ_USER, 'prop-1', {
+      reason: 'مخالفة',
+    });
     expect(adminService.removeReportedProperty).toHaveBeenCalledWith(
       'prop-1',
       'مخالفة',
+      'admin-1',
+    );
+  });
+
+  it('updateProperty should forward id, dto and adminUserId to service', async () => {
+    adminService.updateProperty.mockResolvedValue({ id: 'prop-1' });
+
+    const dto = { isHidden: true };
+    await controller.updateProperty(ADMIN_REQ_USER, 'prop-1', dto);
+    expect(adminService.updateProperty).toHaveBeenCalledWith(
+      'prop-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('getRequestsForUser should forward id to service', async () => {
+    adminService.getRequestsForUser.mockResolvedValue([]);
+    await controller.getRequestsForUser('u-1');
+    expect(adminService.getRequestsForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getProjectsForUser should forward id to service', async () => {
+    adminService.getProjectsForUser.mockResolvedValue([]);
+    await controller.getProjectsForUser('u-1');
+    expect(adminService.getProjectsForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('deleteProject should forward id and adminUserId to service', async () => {
+    adminService.deleteProject.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteProject(ADMIN_REQ_USER, 'project-1');
+    expect(adminService.deleteProject).toHaveBeenCalledWith(
+      'project-1',
+      'admin-1',
     );
   });
 

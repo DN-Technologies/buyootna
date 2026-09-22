@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -119,6 +120,32 @@ export class CompanyController {
     @Body() dto: CreateProjectDto,
   ) {
     return this.profileService.createProject(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile/projects')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "List the current user's company portfolio projects",
+  })
+  @ApiCommonErrors()
+  async listMyProjects(@CurrentUser() reqUser: RequestUser) {
+    return this.profileService.listMyProjects(reqUser.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('profile/projects/:id')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Delete one of the current user's company portfolio projects",
+  })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiCommonErrors()
+  async deleteMyProject(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.profileService.deleteMyProject(reqUser.userId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -33,6 +33,7 @@ import { AdminReportsFilterDto } from './dto/admin-reports-filter.dto';
 import { AdminReportUpdateDto } from './dto/admin-report-update.dto';
 import { AdminReportsBulkDto } from './dto/admin-reports-bulk.dto';
 import { AdminRemovePropertyDto } from './dto/admin-remove-property.dto';
+import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -166,10 +167,62 @@ export class AdminController {
   @ApiParam({ name: 'id', description: 'Property ID' })
   @ApiCommonErrors()
   async removeReportedProperty(
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto: AdminRemovePropertyDto,
   ) {
-    return this.adminService.removeReportedProperty(id, dto?.reason);
+    return this.adminService.removeReportedProperty(
+      id,
+      dto?.reason,
+      reqUser.userId,
+    );
+  }
+
+  @Patch('properties/:id')
+  @ApiOperation({
+    summary:
+      "Update a property's moderation flags (hide/unhide, feature, status) as an admin action",
+  })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiCommonErrors()
+  async updateProperty(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminUpdatePropertyDto,
+  ) {
+    return this.adminService.updateProperty(id, dto, reqUser.userId);
+  }
+
+  @Get('users/:id/requests')
+  @ApiOperation({
+    summary:
+      "List a user's company-requests -- as the submitter (individual) or as the target/accepter (company/office)",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getRequestsForUser(@Param('id') id: string) {
+    return this.adminService.getRequestsForUser(id);
+  }
+
+  @Get('users/:id/projects')
+  @ApiOperation({
+    summary: "List a company user's portfolio (exhibition) projects",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getProjectsForUser(@Param('id') id: string) {
+    return this.adminService.getProjectsForUser(id);
+  }
+
+  @Delete('projects/:id')
+  @ApiOperation({ summary: 'Permanently delete a portfolio project' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiCommonErrors()
+  async deleteProject(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.adminService.deleteProject(id, reqUser.userId);
   }
 
   @Get('moderators')

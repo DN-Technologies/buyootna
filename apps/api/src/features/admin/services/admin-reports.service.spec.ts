@@ -3,6 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { AdminReportsService } from './admin-reports.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
+import { AdminAuditLogService } from './admin-audit-log.service';
 import { ReportStatus, ReportTargetType } from '@prisma/client';
 
 describe('AdminReportsService', () => {
@@ -15,10 +16,11 @@ describe('AdminReportsService', () => {
       update: jest.Mock;
     };
     propertyDeletionLog: { create: jest.Mock };
-    property: { delete: jest.Mock };
+    property: { delete: jest.Mock; findUnique: jest.Mock };
     user: { findMany: jest.Mock };
   };
   let notifications: { create: jest.Mock };
+  let auditLog: { log: jest.Mock };
 
   const mockRow = {
     id: 'rep-1',
@@ -71,16 +73,24 @@ describe('AdminReportsService', () => {
         update: jest.fn().mockResolvedValue(mockRow),
       },
       propertyDeletionLog: { create: jest.fn() },
-      property: { delete: jest.fn() },
+      property: {
+        delete: jest.fn(),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'prop-1',
+          identity: { userId: 'owner-1' },
+        }),
+      },
       user: { findMany: jest.fn().mockResolvedValue([]) },
     };
     notifications = { create: jest.fn().mockResolvedValue({ id: 'notif-1' }) };
+    auditLog = { log: jest.fn().mockResolvedValue(undefined) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminReportsService,
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsService, useValue: notifications },
+        { provide: AdminAuditLogService, useValue: auditLog },
       ],
     }).compile();
 
@@ -248,13 +258,26 @@ describe('AdminReportsService', () => {
 
   describe('removeReportedProperty', () => {
     it('logs a PropertyDeletionLog row and deletes the property', async () => {
-      await service.removeReportedProperty('prop-1', 'مخالفة');
+      await service.removeReportedProperty('prop-1', 'مخالفة', 'admin-1');
 
       expect(prisma.propertyDeletionLog.create).toHaveBeenCalledWith({
         data: { propertyId: 'prop-1', reason: 'مخالفة' },
       });
       expect(prisma.property.delete).toHaveBeenCalledWith({
         where: { id: 'prop-1' },
+      });
+    });
+
+    it('writes a PROPERTY_DELETED audit-log entry against the property owner', async () => {
+      await service.removeReportedProperty('prop-1', 'مخالفة', 'admin-1');
+
+      expect(auditLog.log).toHaveBeenCalledWith({
+        actorAdminId: 'admin-1',
+        action: 'PROPERTY_DELETED',
+        targetType: 'PROPERTY',
+        targetId: 'prop-1',
+        targetUserId: 'owner-1',
+        metadata: { reason: 'مخالفة' },
       });
     });
   });

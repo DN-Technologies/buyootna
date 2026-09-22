@@ -11,8 +11,10 @@ type AdsFilter = 'all' | 'active' | 'featured' | 'deleted'
 
 export default function UserAdsTabContent({
   properties,
+  onRefresh,
 }: {
   properties: AdminUserProperty[]
+  onRefresh?: () => void
 }) {
   const [filter, setFilter] = useState<AdsFilter>('all')
   const [selectedProperty, setSelectedProperty] =
@@ -91,6 +93,7 @@ export default function UserAdsTabContent({
               key={property.id}
               property={property}
               onViewDetails={setSelectedProperty}
+              onRefresh={onRefresh}
             />
           ))}
         </div>
@@ -100,6 +103,7 @@ export default function UserAdsTabContent({
         <AdDetailSheet
           property={selectedProperty}
           onClose={() => setSelectedProperty(null)}
+          onRefresh={onRefresh}
         />
       )}
     </div>

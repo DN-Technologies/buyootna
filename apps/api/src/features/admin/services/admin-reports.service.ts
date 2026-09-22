@@ -1,13 +1,18 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma, ReportPriority, ReportStatus, ReportTargetType } from '@prisma/client';
+import { Prisma, ReportStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { AdminReportsFilterDto } from '../dto/admin-reports-filter.dto';
 import { AdminReportUpdateDto } from '../dto/admin-report-update.dto';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 function dayBounds(daysAgo: number) {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysAgo);
+  const start = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() - daysAgo,
+  );
   const end = new Date(
     now.getFullYear(),
     now.getMonth(),
@@ -96,6 +101,7 @@ export class AdminReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly auditLog: AdminAuditLogService,
   ) {}
 
   async getReports(filters: AdminReportsFilterDto) {
@@ -111,11 +117,9 @@ export class AdminReportsService {
     } = filters;
 
     const where: Prisma.ReportWhereInput = {
-      ...(status !== 'ALL' ? { status: status as ReportStatus } : {}),
-      ...(priority !== 'ALL' ? { priority: priority as ReportPriority } : {}),
-      ...(targetType !== 'ALL'
-        ? { targetType: targetType as ReportTargetType }
-        : {}),
+      ...(status !== 'ALL' ? { status: status } : {}),
+      ...(priority !== 'ALL' ? { priority: priority } : {}),
+      ...(targetType !== 'ALL' ? { targetType: targetType } : {}),
       ...(targetRole !== 'ALL' ? { targetUser: { role: targetRole } } : {}),
     };
 
@@ -186,9 +190,9 @@ export class AdminReportsService {
     if (!existing) throw new NotFoundException('البلاغ غير موجود');
 
     const data: Prisma.ReportUpdateInput = {};
-    if (dto.priority) data.priority = dto.priority as ReportPriority;
+    if (dto.priority) data.priority = dto.priority;
     if (dto.status) {
-      data.status = dto.status as ReportStatus;
+      data.status = dto.status;
       data.resolvedAt = new Date();
       data.resolvedByAdmin = { connect: { id: adminUserId } };
     }
@@ -261,7 +265,7 @@ export class AdminReportsService {
     const where: Prisma.ReportWhereInput = {
       targetUserId: userId,
       ...(filters.status && filters.status !== 'ALL'
-        ? { status: filters.status as ReportStatus }
+        ? { status: filters.status }
         : {}),
     };
 
@@ -296,7 +300,16 @@ export class AdminReportsService {
     return rows.map(toRow);
   }
 
-  async removeReportedProperty(propertyId: string, reason?: string) {
+  async removeReportedProperty(
+    propertyId: string,
+    reason?: string,
+    adminUserId?: string,
+  ) {
+    const existing = await this.prisma.property.findUnique({
+      where: { id: propertyId },
+      include: { identity: { select: { userId: true } } },
+    });
+
     await this.prisma.propertyDeletionLog.create({
       data: {
         propertyId,
@@ -304,6 +317,16 @@ export class AdminReportsService {
       },
     });
     await this.prisma.property.delete({ where: { id: propertyId } });
+
+    await this.auditLog.log({
+      actorAdminId: adminUserId,
+      action: 'PROPERTY_DELETED',
+      targetType: 'PROPERTY',
+      targetId: propertyId,
+      targetUserId: existing?.identity?.userId,
+      metadata: reason ? { reason } : undefined,
+    });
+
     return { message: 'تم حذف الإعلان بنجاح' };
   }
 

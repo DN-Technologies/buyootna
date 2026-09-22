@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
@@ -25,6 +25,7 @@ import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabCont
 import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
 import UserNotesTabContent from '@/components/users/notes/UserNotesTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
+import { fetchUserReports } from '@/lib/admin-reports'
 
 const roleLabels: Record<string, string> = {
   INDIVIDUAL: 'فرد',
@@ -80,6 +81,7 @@ export default function UserOverviewPage() {
   const [user, setUser] = useState<AdminUserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reportsCount, setReportsCount] = useState<number | undefined>(undefined)
 
   const [changePackageOpen, setChangePackageOpen] = useState(false)
   const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] = useState(false)
@@ -96,24 +98,41 @@ export default function UserOverviewPage() {
     router.replace(`${pathname}?${newParams.toString()}`, { scroll: false })
   }
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
+  const loadUser = useCallback(
+    async (opts: { showSpinner?: boolean } = {}) => {
       try {
-        setLoading(true)
+        if (opts.showSpinner) setLoading(true)
         setError(null)
         const data = await fetchUserDetails(params.id)
-        if (!cancelled) setUser(data)
+        setUser(data)
       } catch (err) {
         console.error('Failed to load user details:', err)
-        if (!cancelled) setError('تعذر تحميل بيانات المستخدم.')
+        setError('تعذر تحميل بيانات المستخدم.')
       } finally {
-        if (!cancelled) setLoading(false)
+        if (opts.showSpinner) setLoading(false)
       }
-    }
+    },
+    [params.id],
+  )
 
-    load()
+  useEffect(() => {
+    loadUser({ showSpinner: true })
+  }, [loadUser])
+
+  const refreshAds = useCallback(() => {
+    loadUser()
+  }, [loadUser])
+
+  // Lightweight parallel fetch for UserQuickStats — independent of which
+  // tab is active. More counts (requests/rating) get added here as their
+  // admin endpoints land in later phases.
+  useEffect(() => {
+    let cancelled = false
+    fetchUserReports(params.id, { limit: 1 })
+      .then((res) => {
+        if (!cancelled) setReportsCount(res.meta.total)
+      })
+      .catch((err) => console.error('Failed to load reports count:', err))
     return () => {
       cancelled = true
     }
@@ -191,7 +210,13 @@ export default function UserOverviewPage() {
           userId={user.id}
           onActionSelect={handleHeaderAction}
         />
-        <UserQuickStats userRole={userRole} />
+        <UserQuickStats
+          userRole={userRole}
+          stats={{
+            reportsCount,
+            adsCount: identity?.properties?.length,
+          }}
+        />
         <UserDetailTabs
           activeTab={activeTab}
           onTabChange={handleTabChange}
@@ -200,13 +225,16 @@ export default function UserOverviewPage() {
       </div>
 
       {activeTab === 'الاعلانات' ? (
-        <UserAdsTabContent properties={identity?.properties || []} />
+        <UserAdsTabContent
+          properties={identity?.properties || []}
+          onRefresh={refreshAds}
+        />
       ) : activeTab === 'الطلبات' ? (
-        <UserRequestsTabContent userRole={userRole} />
+        <UserRequestsTabContent userRole={userRole} userId={user.id} />
       ) : activeTab === 'الخدمات' ? (
         <UserServicesTabContent />
       ) : activeTab === 'المعرض' ? (
-        <UserExhibitionTabContent />
+        <UserExhibitionTabContent userId={user.id} />
       ) : activeTab === 'الباقة' ? (
         <UserPackagesTabContent />
       ) : activeTab === 'الفواتير والخصم' ? (
@@ -226,7 +254,7 @@ export default function UserOverviewPage() {
           whatsapp={user.whatsapp || '—'}
           phone={user.phone || '—'}
           userId={user.id}
-          isPendingVerification={true}
+          isPendingVerification={identity?.companyData?.status === 'PENDING'}
           lastActivity="اليوم 09:30 صباحاً"
           lastLogin="28 فبراير 2025"
           joinedAt={formatArabicDate(user.createdAt)}
@@ -238,7 +266,7 @@ export default function UserOverviewPage() {
           whatsapp={user.whatsapp || '—'}
           phone={user.phone || '—'}
           userId={user.id}
-          isPendingVerification={true}
+          isPendingVerification={identity?.officeData?.status === 'PENDING'}
           lastActivity="اليوم 09:30 صباحاً"
           lastLogin="28 فبراير 2025"
           joinedAt={formatArabicDate(user.createdAt)}
