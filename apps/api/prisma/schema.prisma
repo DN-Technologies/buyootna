@@ -30,6 +30,7 @@ model User {
   reportsFiled     Report[]                  @relation("ReporterReports")
   reportsAgainst   Report[]                  @relation("TargetUserReports")
   reportsResolved  Report[]                  @relation("ReportResolvedBy")
+  reportsAssigned  Report[]                  @relation("ReportAssignedAdmin")
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete

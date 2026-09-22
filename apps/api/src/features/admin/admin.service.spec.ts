@@ -56,6 +56,7 @@ interface MockAdminReportsService {
   getReportsForUser: jest.Mock;
   getReportsForProperty: jest.Mock;
   removeReportedProperty: jest.Mock;
+  getAssignableAdmins: jest.Mock;
   getDashboardReportStats: jest.Mock;
 }
 
@@ -116,6 +117,7 @@ describe('AdminService', () => {
       getReportsForUser: jest.fn(),
       getReportsForProperty: jest.fn(),
       removeReportedProperty: jest.fn(),
+      getAssignableAdmins: jest.fn(),
       getDashboardReportStats: jest.fn().mockResolvedValue({
         newReportsCount: 0,
       }),
@@ -294,6 +296,16 @@ describe('AdminService', () => {
         'prop-1',
         'مخالفة',
       );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getAssignableAdmins to AdminReportsService', async () => {
+      const mockResult = [{ id: 'admin-1', name: 'أحمد', email: null }];
+      adminReportsService.getAssignableAdmins.mockResolvedValue(mockResult);
+
+      const result = await service.getAssignableAdmins();
+
+      expect(adminReportsService.getAssignableAdmins).toHaveBeenCalledTimes(1);
       expect(result).toBe(mockResult);
     });
 

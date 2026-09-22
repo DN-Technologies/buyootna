@@ -31,6 +31,7 @@ export default function ReportsPage() {
     handleBulkResolve,
     isConfirmModalOpen,
     resolveModalCount,
+    isSubmitting,
     handleCloseConfirmModal,
     handleConfirmResolution,
     handleResolveReport,
@@ -38,6 +39,7 @@ export default function ReportsPage() {
     stats,
     pagination,
     setCurrentPage,
+    loading,
     selectedReport,
     isDrawerOpen,
     handleOpenReview,
@@ -51,7 +53,7 @@ export default function ReportsPage() {
       {/* Toast Notification (Figma Node 4940:87791) */}
       {toastMessage && (
         <div
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-[#15A72B] rounded-[8px] px-4 py-2.5 shadow-[0px_2px_1px_rgba(33,37,41,0.06),0px_0px_0.5px_rgba(33,37,41,0.08)] flex items-center gap-2.5 animate-in fade-in slide-in-from-top-3 duration-200"
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-white border border-[#15A72B] rounded-lg px-4 py-2.5 shadow-[0px_2px_1px_rgba(33,37,41,0.06),0px_0px_0.5px_rgba(33,37,41,0.08)] flex items-center gap-2.5 animate-in fade-in slide-in-from-top-3 duration-200"
           data-node-id="4940:87791"
           data-name="mess"
         >
@@ -85,6 +87,7 @@ export default function ReportsPage() {
         count={resolveModalCount}
         onClose={handleCloseConfirmModal}
         onConfirm={handleConfirmResolution}
+        isSubmitting={isSubmitting}
       />
 
       {/* Page Header (Breadcrumbs, Title, 3 Stat Cards) */}
@@ -116,6 +119,7 @@ export default function ReportsPage() {
         onOpenReview={handleOpenReview}
         pagination={pagination}
         onPageChange={setCurrentPage}
+        loading={loading}
       />
     </div>
   )

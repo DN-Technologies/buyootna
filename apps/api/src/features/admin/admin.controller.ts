@@ -51,6 +51,7 @@ import {
 import { AdminDashboardResponseDto } from './dto/admin-dashboard-response.dto';
 import { AdminVerificationsListResponseDto } from './dto/admin-verifications-response.dto';
 import { AdminReportsListResponseDto } from './dto/admin-reports-response.dto';
+import { AdminModeratorDto } from './dto/admin-moderator.dto';
 import { IdentityResponseDto } from '../identities/dto/identity-response.dto';
 
 @ApiTags('Admin')
@@ -169,6 +170,16 @@ export class AdminController {
     @Body() dto: AdminRemovePropertyDto,
   ) {
     return this.adminService.removeReportedProperty(id, dto?.reason);
+  }
+
+  @Get('moderators')
+  @ApiOperation({
+    summary: 'List admin accounts assignable as a report moderator',
+  })
+  @ApiResponse({ status: 200, type: [AdminModeratorDto] })
+  @ApiCommonErrors()
+  async getAssignableAdmins() {
+    return this.adminService.getAssignableAdmins();
   }
 
   @Post('users/notify')

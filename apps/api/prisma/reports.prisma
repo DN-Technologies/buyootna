@@ -41,6 +41,9 @@ model Report {
   resolvedByAdminId  String?
   resolvedByAdmin    User?     @relation("ReportResolvedBy", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
 
+  assignedAdminId String?
+  assignedAdmin   User?   @relation("ReportAssignedAdmin", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -48,5 +51,6 @@ model Report {
   @@index([targetUserId])
   @@index([targetPropertyId])
   @@index([reporterUserId])
+  @@index([assignedAdminId])
   @@index([createdAt])
 }

@@ -4,12 +4,20 @@ export type BackendReportStatus = 'PENDING' | 'RESOLVED' | 'DISMISSED'
 export type BackendReportPriority = 'LOW' | 'MEDIUM' | 'URGENT'
 export type BackendReportTargetType = 'USER' | 'PROPERTY'
 
+export type BackendUserRole = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE'
+
 export interface AdminReportUserSummary {
   id: string
   name: string
   email: string | null
   phone: string | null
+  role: BackendUserRole | null
   avatarUrl: string | null
+}
+
+export interface AdminReportAssignedAdmin {
+  id: string
+  name: string
 }
 
 export interface AdminReportRow {
@@ -22,6 +30,7 @@ export interface AdminReportRow {
   description: string | null
   submittedBy: AdminReportUserSummary | null
   against: AdminReportUserSummary | null
+  assignedAdmin: AdminReportAssignedAdmin | null
   createdAt: string
   resolvedAt: string | null
 }
@@ -31,6 +40,7 @@ export interface AdminReportsFilters {
   status?: 'ALL' | BackendReportStatus
   priority?: 'ALL' | BackendReportPriority
   targetType?: 'ALL' | BackendReportTargetType
+  targetRole?: 'ALL' | BackendUserRole
   dateFilter?: 'ALL' | 'TODAY' | 'WEEK' | 'MONTH'
   page?: number
   limit?: number
@@ -60,6 +70,7 @@ export async function fetchReports(
   if (filters.status) params.status = filters.status
   if (filters.priority) params.priority = filters.priority
   if (filters.targetType) params.targetType = filters.targetType
+  if (filters.targetRole) params.targetRole = filters.targetRole
   if (filters.dateFilter) params.dateFilter = filters.dateFilter
   if (filters.page) params.page = filters.page
   if (filters.limit) params.limit = filters.limit
@@ -76,6 +87,8 @@ export async function fetchReport(id: string): Promise<AdminReportRow> {
 export interface UpdateReportInput {
   status?: 'RESOLVED' | 'DISMISSED'
   priority?: BackendReportPriority
+  // Pass a user id to assign, or '' to unassign.
+  assignedAdminId?: string
 }
 
 export async function updateReport(
@@ -144,5 +157,16 @@ export async function deleteReportedProperty(
   const res = await api.delete(`/admin/properties/${propertyId}`, {
     data: { reason },
   })
+  return res.data
+}
+
+export interface AdminModerator {
+  id: string
+  name: string
+  email: string | null
+}
+
+export async function fetchAssignableAdmins(): Promise<AdminModerator[]> {
+  const res = await api.get('/admin/moderators')
   return res.data
 }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ExternalLink, FileText, X } from 'lucide-react'
+import { ExternalLink, X } from 'lucide-react'
 import { UserReportItem } from './UserReportsTabContent'
 import AssignReportModal, { Moderator } from './AssignReportModal'
 import ReportSuccessToast from './ReportSuccessToast'
+import { updateReport } from '@/lib/admin-reports'
 
 export interface ReportDetailDrawerProps {
   open: boolean
@@ -53,9 +54,15 @@ export default function ReportDetailDrawer({
 
   const isClosed = report.status === 'مغلقة'
 
-  const handleAssignModerator = (moderator: Moderator) => {
-    onAssign?.(report)
-    setToastMessage(`تم إسناد البلاغ للمشرف ${moderator.name} بنجاح.`)
+  const handleAssignModerator = async (moderator: Moderator) => {
+    try {
+      await updateReport(report.id, { assignedAdminId: moderator.id })
+      onAssign?.(report)
+      setToastMessage(`تم إسناد البلاغ للمشرف ${moderator.name} بنجاح.`)
+    } catch (err) {
+      console.error('Failed to assign report:', err)
+      setToastMessage('حدث خطأ أثناء اسناد البلاغ.')
+    }
     setTimeout(() => setToastMessage(null), 5000)
   }
 
@@ -132,7 +139,9 @@ export default function ReportDetailDrawer({
                     {report.submitter}
                   </span>
                   <span className="text-[12px] font-medium text-[#6B6A6A]">
-                    mohamedelgareh@gmail.com · +96568690396
+                    {[report.submitterEmail, report.submitterPhone]
+                      .filter(Boolean)
+                      .join(' · ') || '—'}
                   </span>
                 </div>
               </div>
@@ -153,7 +162,7 @@ export default function ReportDetailDrawer({
               سبب البلاغ
             </span>
             <span className="text-[14px] font-bold text-[#111111]">
-              معلومات مضللة
+              {report.title}
             </span>
           </div>
 
@@ -163,39 +172,12 @@ export default function ReportDetailDrawer({
               التفاصيل
             </span>
             <p className="text-[13px] font-medium text-[#111111] leading-relaxed bg-[#F8FAFC] p-3.5 rounded-xl border border-[#ECECEC]">
-              أرغب بالبدل في منطقة &quot;خيران السكنية&quot; أو &quot;المنطقة
-              العاشرة&quot; ▪ يفضل زاوية أو شارع واحد ▪ مستعد للتفاوض مع المواقع
-              المميزة في خيران الأرض في موقع مميز جداً بضاحية N5، قريبة من مجمع
-              الخدمات والمسجد، مدخل ومخرج سهل جداً من الطريق الرئيسي، الرغبة
-              جادة جداً للبدل في خيران السكنية لدواعي القرب من الأهل.
+              {report.details || 'لا توجد تفاصيل إضافية.'}
             </p>
           </div>
 
-          {/* Section 4: Attachments */}
-          <div className="flex flex-col gap-2">
-            <span className="text-[12px] font-medium text-[#6B6A6A]">
-              المرفقات
-            </span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button
-                type="button"
-                onClick={() => alert('معاينة تقرير_الفحص.pdf')}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#ECECEC] text-[13px] font-medium text-[#111111] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
-              >
-                <FileText className="w-4 h-4 text-[#6B6A6A]" />
-                <span>تقرير_الفحص.pdf</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => alert('معاينة صورة_الكهرباء.jpg')}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F8FAFC] border border-[#ECECEC] text-[13px] font-medium text-[#111111] hover:bg-[#F1F5F9] transition-colors cursor-pointer"
-              >
-                <FileText className="w-4 h-4 text-[#6B6A6A]" />
-                <span>صورة_الكهرباء.jpg</span>
-              </button>
-            </div>
-          </div>
+          {/* No attachments section: the Report model has no attachments
+              field yet -- there is nothing real to render here. */}
         </div>
 
         {/* Footer Actions (Node 4043:133626) */}

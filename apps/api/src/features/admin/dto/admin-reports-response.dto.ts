@@ -20,6 +20,14 @@ export class ReportUserSummaryDto {
   avatarUrl: string | null;
 }
 
+export class ReportAssignedAdminDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+}
+
 export class AdminReportRowDto {
   @ApiProperty()
   id: string;
@@ -47,6 +55,9 @@ export class AdminReportRowDto {
 
   @ApiProperty({ type: ReportUserSummaryDto, nullable: true })
   against: ReportUserSummaryDto | null;
+
+  @ApiProperty({ type: ReportAssignedAdminDto, nullable: true })
+  assignedAdmin: ReportAssignedAdminDto | null;
 
   @ApiProperty()
   createdAt: string;

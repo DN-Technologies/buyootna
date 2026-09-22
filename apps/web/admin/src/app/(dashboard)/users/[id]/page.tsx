@@ -212,7 +212,7 @@ export default function UserOverviewPage() {
       ) : activeTab === 'الفواتير والخصم' ? (
         <UserInvoicesDiscountsTabContent />
       ) : activeTab === 'البلاغات' ? (
-        <UserReportsTabContent />
+        <UserReportsTabContent userId={user.id} />
       ) : activeTab === 'التقييمات' ? (
         <UserRatingsTabContent />
       ) : activeTab === 'السجل' ? (

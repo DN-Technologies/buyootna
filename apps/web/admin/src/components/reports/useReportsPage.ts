@@ -1,6 +1,25 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import {
+  AdminReportRow,
+  AdminReportsResponse,
+  BackendReportPriority,
+  BackendReportStatus,
+  bulkDismissReports,
+  bulkResolveReports,
+  fetchReport,
+  fetchReports,
+  updateReport,
+} from '@/lib/admin-reports'
+import {
+  MAIN_PRIORITY_LABEL,
+  MAIN_STATUS_LABEL,
+  reportTypeLabel,
+  TYPE_FILTER_TO_BACKEND,
+} from '@/lib/report-labels'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 import {
   ReportItem,
   ReportStats,
@@ -11,223 +30,71 @@ import {
   DateFilterOption,
 } from './types'
 
-const INITIAL_REPORTS: ReportItem[] = [
-  {
-    id: '1',
-    reportNumber: 'RP-1025',
-    submittedBy: {
-      name: 'محمد المالك',
-      email: 'mohamedelgareh@gmail.com',
-      phone: '+96568690396',
-    },
-    against: {
-      name: 'علي البالي',
-      email: 'dar@gmail.com',
-    },
-    type: 'عقار',
-    reportCategory: 'بيع',
-    reason: 'معلومات غير صحيحة',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ ساعة',
-    priority: 'عاجل',
-    targetTitle: 'شقة',
-    targetPrice: '150,000',
-    targetCurrency: 'د.ك',
-    targetArea: '200 م2',
-    targetLocation: 'شمال غرب صليبيخات',
-    targetPropertyType: 'عمارة',
-    targetImage: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=80',
-    description:
-      'أرغب بالبدل في منطقة "خيران السكنية" أو "المنطقة العاشرة" • يفضل زاوية أو شارع واحد • مستعد للتفاوض مع المواقع المميزة في خيران الأرض في موقع مميز جداً بضاحية N5، قريبة من مجمع الخدمات والمسجد. مدخل ومخرج سهل جداً من الطريق الرئيسي. الرغبة جادة جداً للبدل في خيران السكنية لدواعي القرب من الأهل.',
-    attachments: [
-      { name: 'صورة_الكهرباء.jpg', type: 'image' },
-      { name: 'تقرير_الفحص.pdf', type: 'pdf' },
-    ],
-  },
-  {
-    id: '2',
-    reportNumber: 'RP-1024',
-    submittedBy: {
-      name: 'سارة محمود',
-      email: 'sara.m@example.com',
-    },
-    against: {
-      name: 'شركة النور العقارية',
-      email: 'info@alnoor.com',
-    },
-    type: 'شركة',
-    reason: 'خدمة وهمية غير مكتملة',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ 3 ساعات',
-    priority: 'متوسط',
-    targetTitle: 'حجز وحدة سكنية بالعاصمة الإدارية',
-    description:
-      'تم دفع مقدم الحجز ولم يتم تسليم أي سند استلام أو عقد مبدئي رغم مرور المهلة المتفق عليها.',
-  },
-  {
-    id: '3',
-    reportNumber: 'RP-1023',
-    submittedBy: {
-      name: 'عمر فاروق',
-      email: 'omar.f@example.com',
-    },
-    against: {
-      name: 'مكتب الأهرام العقاري',
-      email: 'contact@ahram.com',
-    },
-    type: 'مكتب عقاري',
-    reason: 'سعر مضلل ومخالف',
-    status: 'تم حلها',
-    createdAt: 'منذ 5 ساعات',
-    priority: 'منخفضة',
-    targetTitle: 'شقة للإيجار بالمعادي دجلة',
-    description:
-      'السعر المكتوب في الإعلان 15,000 ج.م شهرياً ولكن عند التواصل تم طلب 25,000 ج.م.',
-  },
-  {
-    id: '4',
-    reportNumber: 'RP-1022',
-    submittedBy: {
-      name: 'كريم حسن',
-      email: 'karim.h@example.com',
-    },
-    against: {
-      name: 'إبراهيم سعيد',
-      email: 'ibrahim@example.com',
-    },
-    type: 'فرد',
-    reason: 'احتيال ونصب مالي',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ يوم',
-    priority: 'عاجل',
-    targetTitle: 'شاليه بقرية أمواج الساحل الشمالي',
-    description:
-      'قام المعلن بطلب تحويل تأمين عبر محفظة إلكترونية ثم أغلق الهاتف ولم يكن مالكاً للشاليه.',
-  },
-  {
-    id: '5',
-    reportNumber: 'RP-1021',
-    submittedBy: {
-      name: 'منى يوسف',
-      email: 'mona.y@example.com',
-    },
-    against: {
-      name: 'مؤسسة الإعمار للتشطيبات',
-      email: 'contact@emaar.com',
-    },
-    type: 'خدمة',
-    reason: 'عدم الالتزام بموعد التسليم',
-    status: 'تم حلها',
-    createdAt: 'منذ يومين',
-    priority: 'متوسط',
-    targetTitle: 'باقة تشطيبات ديكور داخلي متكاملة',
-    description:
-      'تأخر في تسليم أعمال التشطيب لأكثر من 45 يوماً دون تقديم أي مبرر فني.',
-  },
-  {
-    id: '6',
-    reportNumber: 'RP-1020',
-    submittedBy: {
-      name: 'حازم إمام',
-      email: 'hazem.e@example.com',
-    },
-    against: {
-      name: 'شركة الأندلس للتطوير',
-      email: 'andalus@example.com',
-    },
-    type: 'شركة',
-    reason: 'مواصفات العقار غير مطابقة',
-    status: 'تم حلها',
-    createdAt: 'منذ 3 أيام',
-    priority: 'منخفضة',
-    targetTitle: 'مكتب تجاري بالشيخ زايد',
-    description:
-      'المكتب غير مرخص تجارياً عكس ما تم الإعلان عنه في تفاصيل العقار.',
-  },
-  {
-    id: '7',
-    reportNumber: 'RP-1019',
-    submittedBy: {
-      name: 'طارق فتحي',
-      email: 'tarek.f@example.com',
-    },
-    against: {
-      name: 'خالد العوضي',
-      email: 'khaled@example.com',
-    },
-    type: 'عقار',
-    reason: 'إعلان مكرر ومزعج',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ 4 أيام',
-    priority: 'منخفضة',
-    targetTitle: 'روف دوبلكس بالدقي',
-    description:
-      'تم نشر نفس الإعلان أكثر من 10 مرات في نفس اليوم لإغراق نتائج البحث.',
-  },
-  {
-    id: '8',
-    reportNumber: 'RP-1018',
-    submittedBy: {
-      name: 'رانيا عادل',
-      email: 'rania.a@example.com',
-    },
-    against: {
-      name: 'مكتب المستقبل العقاري',
-      email: 'info@future.com',
-    },
-    type: 'مكتب عقاري',
-    reason: 'طلب عمولة غير قانونية',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ 5 أيام',
-    priority: 'عاجل',
-    targetTitle: 'مقر إداري بمصر الجديدة',
-    description:
-      'طلب عمولة وساطة بنسبة تفوق الحد الأقصى المسموح به وإصرار على الدفع نقداً دون إيصال.',
-  },
-  {
-    id: '9',
-    reportNumber: 'RP-1017',
-    submittedBy: {
-      name: 'حسام نبيل',
-      email: 'hossam.n@example.com',
-    },
-    against: {
-      name: 'أحمد سمير',
-      email: 'ahmed.s@example.com',
-    },
-    type: 'خدمة',
-    reason: 'خدمة صيانة رديئة ومخالفة',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ 6 أيام',
-    priority: 'متوسط',
-    targetTitle: 'خدمات عزل أسطح ومسابح',
-    description:
-      'تسريب المياه حدث مجدداً بعد يومين من انتهاء العمل ورفض الفني الحضور للإصلاح.',
-  },
-  {
-    id: '10',
-    reportNumber: 'RP-1016',
-    submittedBy: {
-      name: 'نادية سامي',
-      email: 'nadia.s@example.com',
-    },
-    against: {
-      name: 'يوسف كمال',
-      email: 'youssef.k@example.com',
-    },
-    type: 'عقار',
-    reason: 'صور مأخوذة من إعلان آخر',
-    status: 'قيد الانتظار',
-    createdAt: 'منذ أسبوع',
-    priority: 'عاجل',
-    targetTitle: 'بنتهاوس فاخر بكمبوند بالم هيلز',
-    description:
-      'الصور المستخدمة في الإعلان تعود لشقتي الخاصة وتم نسخها بدون إذن وتغيير الأسعار.',
-  },
-]
+const EMPTY_RESPONSE: AdminReportsResponse = {
+  data: [],
+  meta: { total: 0, currentPage: 1, limit: 10, totalPages: 1 },
+  stats: { total: 0, pending: 0, resolved: 0, dismissed: 0 },
+}
+
+const STATUS_LABEL_TO_BACKEND: Record<
+  Exclude<StatusFilterOption, 'الكل'>,
+  BackendReportStatus
+> = {
+  'قيد الانتظار': 'PENDING',
+  'تم حلها': 'RESOLVED',
+  مرفوض: 'DISMISSED',
+}
+
+const PRIORITY_LABEL_TO_BACKEND: Record<
+  Exclude<PriorityFilterOption, 'الكل'>,
+  BackendReportPriority
+> = {
+  منخفض: 'LOW',
+  متوسط: 'MEDIUM',
+  عاجل: 'URGENT',
+}
+
+const DATE_LABEL_TO_BACKEND: Record<
+  Exclude<DateFilterOption, 'الكل'>,
+  'TODAY' | 'WEEK' | 'MONTH'
+> = {
+  اليوم: 'TODAY',
+  'هذا الأسبوع': 'WEEK',
+  'هذا الشهر': 'MONTH',
+}
+
+function toReportItem(row: AdminReportRow): ReportItem {
+  return {
+    id: row.id,
+    reportNumber: row.reportNumber,
+    submittedBy: row.submittedBy
+      ? {
+          id: row.submittedBy.id,
+          name: row.submittedBy.name,
+          email: row.submittedBy.email || '—',
+          phone: row.submittedBy.phone || undefined,
+        }
+      : { name: 'مستخدم بيوتنا', email: '—' },
+    against: row.against
+      ? {
+          id: row.against.id,
+          name: row.against.name,
+          email: row.against.email || '—',
+          phone: row.against.phone || undefined,
+        }
+      : { name: 'مستخدم محذوف', email: '—' },
+    targetType: row.targetType,
+    type: reportTypeLabel(row.targetType, row.against?.role ?? null),
+    reason: row.reason,
+    status: MAIN_STATUS_LABEL[row.status],
+    createdAt: formatRelativeArabicTime(row.createdAt),
+    priority: MAIN_PRIORITY_LABEL[row.priority],
+    description: row.description || undefined,
+  }
+}
 
 export function useReportsPage() {
-  const [reports, setReports] = useState<ReportItem[]>(INITIAL_REPORTS)
+  const searchParams = useSearchParams()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilterOption>('الكل')
   const [typeFilter, setTypeFilter] = useState<TypeFilterOption>('الكل')
@@ -240,88 +107,112 @@ export function useReportsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const [reportToResolve, setReportToResolve] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  // Filtered reports
-  const filteredReports = useMemo(() => {
-    return reports.filter((item) => {
-      // Search matching
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase()
-        const matchNumber = item.reportNumber.toLowerCase().includes(query)
-        const matchSubmitter =
-          item.submittedBy.name.toLowerCase().includes(query) ||
-          item.submittedBy.email.toLowerCase().includes(query)
-        const matchAgainst =
-          item.against.name.toLowerCase().includes(query) ||
-          item.against.email.toLowerCase().includes(query)
-        const matchReason = item.reason.toLowerCase().includes(query)
-        const matchType = item.type.toLowerCase().includes(query)
-        if (
-          !matchNumber &&
-          !matchSubmitter &&
-          !matchAgainst &&
-          !matchReason &&
-          !matchType
-        ) {
-          return false
-        }
-      }
+  const [response, setResponse] = useState<AdminReportsResponse>(EMPTY_RESPONSE)
+  const [loading, setLoading] = useState(true)
 
-      // Status filter
-      if (statusFilter !== 'الكل' && item.status !== statusFilter) {
-        return false
-      }
+  // "خدمة" (service) has no real backend entity to match -- short-circuit
+  // to an empty result instead of sending a nonsensical filter.
+  const isServiceTypeFilter = typeFilter === 'خدمة'
 
-      // Type filter
-      if (typeFilter !== 'الكل' && item.type !== typeFilter) {
-        return false
-      }
-
-      // Priority filter (matching Figma Node 4881:16018)
-      if (priorityFilter !== 'الكل') {
-        if (priorityFilter === 'منخفض' && item.priority !== 'منخفضة') {
-          return false
-        }
-        if (priorityFilter !== 'منخفض' && item.priority !== priorityFilter) {
-          return false
-        }
-      }
-
-      return true
-    })
-  }, [reports, searchQuery, statusFilter, typeFilter, priorityFilter])
-
-  // Dynamic stats calculation (always based on total data set)
-  const stats: ReportStats = useMemo(() => {
-    const total = reports.length
-    const pending = reports.filter((r) => r.status === 'قيد الانتظار').length
-    const resolved = reports.filter((r) => r.status === 'تم حلها').length
-    return {
-      total: total + 10, // matching ~20 from Figma design
-      pending: pending,
-      resolved: resolved,
+  const loadReports = useCallback(async () => {
+    if (isServiceTypeFilter) {
+      setResponse(EMPTY_RESPONSE)
+      setLoading(false)
+      return
     }
-  }, [reports])
+    try {
+      setLoading(true)
+      const typeMapping =
+        typeFilter !== 'الكل' ? TYPE_FILTER_TO_BACKEND[typeFilter] : undefined
+      const res = await fetchReports({
+        search: searchQuery.trim() || undefined,
+        status: statusFilter !== 'الكل' ? STATUS_LABEL_TO_BACKEND[statusFilter] : undefined,
+        priority:
+          priorityFilter !== 'الكل' ? PRIORITY_LABEL_TO_BACKEND[priorityFilter] : undefined,
+        targetType: typeMapping?.targetType,
+        targetRole: typeMapping?.targetRole,
+        dateFilter: dateFilter !== 'الكل' ? DATE_LABEL_TO_BACKEND[dateFilter] : undefined,
+        page: currentPage,
+        limit: 10,
+      })
+      setResponse(res)
+    } catch (err) {
+      console.error('Failed to load reports:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [
+    isServiceTypeFilter,
+    searchQuery,
+    statusFilter,
+    typeFilter,
+    priorityFilter,
+    dateFilter,
+    currentPage,
+  ])
 
-  // Pagination info
-  const pageSize = 10
-  const totalPages = Math.max(1, Math.ceil(filteredReports.length / pageSize))
-  const paginatedReports = useMemo(() => {
-    const start = (currentPage - 1) * pageSize
-    return filteredReports.slice(start, start + pageSize)
-  }, [filteredReports, currentPage, pageSize])
+  useEffect(() => {
+    loadReports()
+  }, [loadReports])
+
+  // Deep-link support for the dashboard ReportsCard's "التفاصيل" button
+  // (?open=<reportId>): fetch that one report and open the review drawer.
+  useEffect(() => {
+    const openId = searchParams.get('open')
+    if (!openId) return
+    fetchReport(openId)
+      .then((row) => {
+        setSelectedReport(toReportItem(row))
+        setIsDrawerOpen(true)
+      })
+      .catch((err) => console.error('Failed to open linked report:', err))
+    // Only run once on mount for the id present at load time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const reports: ReportItem[] = response.data.map(toReportItem)
+
+  const handleSetSearchQuery = (query: string) => {
+    setSearchQuery(query)
+    setCurrentPage(1)
+  }
+  const handleSetStatusFilter = (status: StatusFilterOption) => {
+    setStatusFilter(status)
+    setCurrentPage(1)
+  }
+  const handleSetTypeFilter = (type: TypeFilterOption) => {
+    setTypeFilter(type)
+    setCurrentPage(1)
+  }
+  const handleSetPriorityFilter = (priority: PriorityFilterOption) => {
+    setPriorityFilter(priority)
+    setCurrentPage(1)
+  }
+  const handleSetDateFilter = (date: DateFilterOption) => {
+    setDateFilter(date)
+    setCurrentPage(1)
+  }
+
+  const stats: ReportStats = {
+    total: response.stats.total,
+    pending: response.stats.pending,
+    resolved: response.stats.resolved,
+    dismissed: response.stats.dismissed,
+  }
 
   const pagination: ReportPagination = {
     currentPage,
-    totalPages,
-    totalItems: filteredReports.length,
-    pageSize,
+    totalPages: response.meta.totalPages,
+    totalItems: response.meta.total,
+    pageSize: response.meta.limit,
   }
 
   // Row selection actions
   const toggleSelectAll = () => {
-    const currentIds = paginatedReports.map((r) => r.id)
+    const currentIds = reports.map((r) => r.id)
     const allSelected = currentIds.every((id) => selectedIds.includes(id))
     if (allSelected) {
       setSelectedIds((prev) => prev.filter((id) => !currentIds.includes(id)))
@@ -364,35 +255,42 @@ export function useReportsPage() {
     setReportToResolve(null)
   }
 
-  const handleConfirmResolution = () => {
-    if (reportToResolve) {
-      const targetId = reportToResolve
-      setReports((prev) =>
-        prev.map((r) => (r.id === targetId ? { ...r, status: 'تم حلها' } : r))
-      )
-      setSelectedReport((prev) =>
-        prev && prev.id === targetId ? { ...prev, status: 'تم حلها' } : prev
-      )
+  const handleConfirmResolution = async () => {
+    setIsSubmitting(true)
+    try {
+      if (reportToResolve) {
+        await updateReport(reportToResolve, { status: 'RESOLVED' })
+        setSelectedReport((prev) =>
+          prev && prev.id === reportToResolve ? { ...prev, status: 'تم حلها' } : prev,
+        )
+        triggerToast('تم تغيير حالة البلاغ الى "تم الحل" بنجاح.')
+      } else if (selectedIds.length > 0) {
+        const count = selectedIds.length
+        await bulkResolveReports(selectedIds)
+        triggerToast(`تم تغيير حالة ${count} بلاغات الى "تم الحل" بنجاح.`)
+        setSelectedIds([])
+      }
       setIsConfirmModalOpen(false)
       setReportToResolve(null)
-      triggerToast('تم تغيير حالة البلاغ الى "تم الحل" بنجاح.')
-    } else if (selectedIds.length > 0) {
-      const count = selectedIds.length
-      setReports((prev) =>
-        prev.map((r) =>
-          selectedIds.includes(r.id) ? { ...r, status: 'تم حلها' } : r
-        )
-      )
-      setIsConfirmModalOpen(false)
-      triggerToast(`تم تغيير حالة ${count} بلاغات الى "تم الحل" بنجاح.`)
-      setSelectedIds([])
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to resolve report(s):', err)
+      triggerToast('حدث خطأ أثناء تحديث حالة البلاغ.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   // Single report dismissal
-  const handleDismissReport = (id: string) => {
-    setReports((prev) => prev.filter((r) => r.id !== id))
-    triggerToast('تم رفض البلاغ وإزالته من المراجعة')
+  const handleDismissReport = async (id: string) => {
+    try {
+      await updateReport(id, { status: 'DISMISSED' })
+      triggerToast('تم رفض البلاغ وإزالته من المراجعة')
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to dismiss report:', err)
+      triggerToast('حدث خطأ أثناء رفض البلاغ.')
+    }
   }
 
   // Drawer handlers
@@ -407,18 +305,18 @@ export function useReportsPage() {
   }
 
   return {
-    reports: paginatedReports,
-    allFilteredCount: filteredReports.length,
+    reports,
+    allFilteredCount: pagination.totalItems,
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: handleSetSearchQuery,
     statusFilter,
-    setStatusFilter,
+    setStatusFilter: handleSetStatusFilter,
     typeFilter,
-    setTypeFilter,
+    setTypeFilter: handleSetTypeFilter,
     priorityFilter,
-    setPriorityFilter,
+    setPriorityFilter: handleSetPriorityFilter,
     dateFilter,
-    setDateFilter,
+    setDateFilter: handleSetDateFilter,
     selectedIds,
     toggleSelectAll,
     toggleSelectRow,
@@ -427,6 +325,7 @@ export function useReportsPage() {
     isConfirmModalOpen,
     reportToResolve,
     resolveModalCount: reportToResolve ? 1 : selectedIds.length,
+    isSubmitting,
     handleOpenBulkConfirm,
     handleOpenSingleConfirm,
     handleCloseConfirmModal,
@@ -436,6 +335,7 @@ export function useReportsPage() {
     stats,
     pagination,
     setCurrentPage,
+    loading,
     selectedReport,
     isDrawerOpen,
     handleOpenReview,

@@ -16,6 +16,7 @@ interface ReportsTableProps {
   onOpenReview: (report: ReportItem) => void
   pagination: ReportPagination
   onPageChange: (page: number) => void
+  loading?: boolean
 }
 
 const PRIORITY_CONFIG: Record<
@@ -68,6 +69,7 @@ export function ReportsTable({
   onOpenReview,
   pagination,
   onPageChange,
+  loading,
 }: ReportsTableProps) {
   const allSelected =
     reports.length > 0 && reports.every((r) => selectedIds.includes(r.id))
@@ -108,7 +110,13 @@ export function ReportsTable({
 
           {/* Table Body */}
           <tbody className="divide-y divide-[#ECECEC] text-sm text-[#111111]">
-            {reports.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={10} className="py-12 text-center text-[#6B6A6A]">
+                  جارٍ التحميل...
+                </td>
+              </tr>
+            ) : reports.length === 0 ? (
               <tr>
                 <td colSpan={10} className="py-12 text-center text-[#6B6A6A]">
                   لا توجد بلاغات تطابق معايير البحث والفلترة.

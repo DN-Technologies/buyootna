@@ -16,6 +16,7 @@ describe('AdminReportsService', () => {
     };
     propertyDeletionLog: { create: jest.Mock };
     property: { delete: jest.Mock };
+    user: { findMany: jest.Mock };
   };
   let notifications: { create: jest.Mock };
 
@@ -71,6 +72,7 @@ describe('AdminReportsService', () => {
       },
       propertyDeletionLog: { create: jest.fn() },
       property: { delete: jest.fn() },
+      user: { findMany: jest.fn().mockResolvedValue([]) },
     };
     notifications = { create: jest.fn().mockResolvedValue({ id: 'notif-1' }) };
 
@@ -174,6 +176,57 @@ describe('AdminReportsService', () => {
       await expect(
         service.updateReport('rep-1', { status: 'DISMISSED' }, 'admin-1'),
       ).resolves.toBeDefined();
+    });
+
+    it('connects the assigned admin when assignedAdminId is set', async () => {
+      await service.updateReport(
+        'rep-1',
+        { assignedAdminId: 'admin-2' },
+        'admin-1',
+      );
+
+      expect(prisma.report.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            assignedAdmin: { connect: { id: 'admin-2' } },
+          }),
+        }),
+      );
+    });
+
+    it('disconnects the assigned admin when assignedAdminId is empty', async () => {
+      await service.updateReport(
+        'rep-1',
+        { assignedAdminId: '' },
+        'admin-1',
+      );
+
+      expect(prisma.report.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            assignedAdmin: { disconnect: true },
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('getAssignableAdmins', () => {
+    it('returns admin accounts only, ordered by name', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 'admin-1', name: 'أحمد', email: 'ahmed@example.com' },
+        { id: 'admin-2', name: null, email: 'noname@example.com' },
+      ]);
+
+      const result = await service.getAssignableAdmins();
+
+      expect(prisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { isAdmin: true } }),
+      );
+      expect(result).toEqual([
+        { id: 'admin-1', name: 'أحمد', email: 'ahmed@example.com' },
+        { id: 'admin-2', name: 'noname@example.com', email: 'noname@example.com' },
+      ]);
     });
   });
 

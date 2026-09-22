@@ -1,34 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
-
-// Mock admin directory: there is no "list admin users" endpoint wired into
-// the frontend yet, and the report itself is already fully mock data (no
-// Report model exists) — so this stays consistent with that placeholder
-// policy rather than half-wiring one piece of a mock flow to real data.
-export interface MockAdmin {
-  id: string
-  name: string
-  role: string
-}
-
-const mockAdmins: MockAdmin[] = [
-  { id: '1', name: 'محمد الجارح', role: 'مشرف عام' },
-  { id: '2', name: 'محمد الجارح', role: 'مسؤول الدعم الفني' },
-  { id: '3', name: 'محمد الجارح', role: 'مشرف' },
-  { id: '4', name: 'محمد الجارح', role: 'مشرف' },
-]
+import { AdminModerator, fetchAssignableAdmins } from '@/lib/admin-reports'
 
 export default function AssignReportDialog({
   onClose,
   onConfirm,
 }: {
   onClose: () => void
-  onConfirm: (admin: MockAdmin) => void
+  onConfirm: (admin: AdminModerator) => void
 }) {
+  const [admins, setAdmins] = useState<AdminModerator[]>([])
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState<MockAdmin | null>(null)
+  const [selected, setSelected] = useState<AdminModerator | null>(null)
+
+  useEffect(() => {
+    fetchAssignableAdmins()
+      .then(setAdmins)
+      .catch((err) => console.error('Failed to load admins:', err))
+  }, [])
 
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
@@ -56,7 +47,9 @@ export default function AssignReportDialog({
               className={`text-[14px] text-right flex-1 ${selected ? 'text-[#111111]' : 'text-[#979797]'}`}
             >
               {selected
-                ? `${selected.name} · ${selected.role}`
+                ? selected.email
+                  ? `${selected.name} · ${selected.email}`
+                  : selected.name
                 : 'اختر أو اكتب اسم او بريد المشرف'}
             </span>
             <ChevronDown className="w-4.5 h-4.5 text-[#111111]" />
@@ -69,27 +62,37 @@ export default function AssignReportDialog({
                 onClick={() => setOpen(false)}
               />
               <div className="absolute top-full mt-1.5 w-full bg-white border border-[#ECECEC] rounded-lg shadow-lg py-3 px-4 flex flex-col gap-3 z-20">
-                {mockAdmins.map((admin) => (
-                  <button
-                    key={admin.id}
-                    type="button"
-                    onClick={() => {
-                      setSelected(admin)
-                      setOpen(false)
-                    }}
-                    className="flex items-center gap-2 w-full cursor-pointer hover:opacity-80"
-                  >
-                    <div className="size-8 rounded-full bg-[#BEEFB9] flex items-center justify-center text-[#0F1828] text-[12px] font-medium shrink-0">
-                      {admin.name.charAt(0)}
-                    </div>
-                    <div className="flex flex-col text-right">
-                      <p className="text-[13px] font-semibold text-[#111111]">
-                        {admin.name}
-                      </p>
-                      <p className="text-[12px] text-[#6B6A6A]">{admin.role}</p>
-                    </div>
-                  </button>
-                ))}
+                {admins.length === 0 ? (
+                  <p className="text-[13px] text-[#6B6A6A] text-center py-2">
+                    لا يوجد مشرفون متاحون
+                  </p>
+                ) : (
+                  admins.map((admin) => (
+                    <button
+                      key={admin.id}
+                      type="button"
+                      onClick={() => {
+                        setSelected(admin)
+                        setOpen(false)
+                      }}
+                      className="flex items-center gap-2 w-full cursor-pointer hover:opacity-80"
+                    >
+                      <div className="size-8 rounded-full bg-[#BEEFB9] flex items-center justify-center text-[#0F1828] text-[12px] font-medium shrink-0">
+                        {admin.name.charAt(0)}
+                      </div>
+                      <div className="flex flex-col text-right">
+                        <p className="text-[13px] font-semibold text-[#111111]">
+                          {admin.name}
+                        </p>
+                        {admin.email && (
+                          <p className="text-[12px] text-[#6B6A6A]">
+                            {admin.email}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             </>
           )}

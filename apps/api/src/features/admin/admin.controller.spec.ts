@@ -28,6 +28,7 @@ interface MockAdminService {
   getReportsForUser: jest.Mock;
   getReportsForProperty: jest.Mock;
   removeReportedProperty: jest.Mock;
+  getAssignableAdmins: jest.Mock;
 }
 
 const ADMIN_REQ_USER = { userId: 'admin-1' } as RequestUser;
@@ -59,6 +60,7 @@ describe('AdminController', () => {
       getReportsForUser: jest.fn(),
       getReportsForProperty: jest.fn(),
       removeReportedProperty: jest.fn(),
+      getAssignableAdmins: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -154,6 +156,16 @@ describe('AdminController', () => {
       'prop-1',
       'مخالفة',
     );
+  });
+
+  it('getAssignableAdmins should delegate to service', async () => {
+    adminService.getAssignableAdmins.mockResolvedValue([
+      { id: 'admin-1', name: 'أحمد', email: null },
+    ]);
+
+    const result = await controller.getAssignableAdmins();
+    expect(adminService.getAssignableAdmins).toHaveBeenCalledTimes(1);
+    expect(result[0].id).toBe('admin-1');
   });
 
   it('getVerifications should forward filters to service', async () => {

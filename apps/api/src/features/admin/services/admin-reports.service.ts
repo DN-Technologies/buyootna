@@ -32,6 +32,7 @@ const REPORT_INCLUDE = {
   targetIdentity: {
     include: { individualData: true, companyData: true, officeData: true },
   },
+  assignedAdmin: true,
 } satisfies Prisma.ReportInclude;
 
 type ReportRow = Prisma.ReportGetPayload<{ include: typeof REPORT_INCLUDE }>;
@@ -80,6 +81,9 @@ function toRow(row: ReportRow) {
     description: row.description,
     submittedBy: toUserSummary(row.reporterUser, row.reporterIdentity),
     against: toUserSummary(row.targetUser, row.targetIdentity),
+    assignedAdmin: row.assignedAdmin
+      ? { id: row.assignedAdmin.id, name: row.assignedAdmin.name || 'مشرف' }
+      : null,
     createdAt: row.createdAt.toISOString(),
     resolvedAt: row.resolvedAt ? row.resolvedAt.toISOString() : null,
   };
@@ -187,6 +191,11 @@ export class AdminReportsService {
       data.status = dto.status as ReportStatus;
       data.resolvedAt = new Date();
       data.resolvedByAdmin = { connect: { id: adminUserId } };
+    }
+    if (dto.assignedAdminId !== undefined) {
+      data.assignedAdmin = dto.assignedAdminId
+        ? { connect: { id: dto.assignedAdminId } }
+        : { disconnect: true };
     }
 
     const updated = await this.prisma.report.update({
@@ -296,6 +305,19 @@ export class AdminReportsService {
     });
     await this.prisma.property.delete({ where: { id: propertyId } });
     return { message: 'تم حذف الإعلان بنجاح' };
+  }
+
+  async getAssignableAdmins() {
+    const admins = await this.prisma.user.findMany({
+      where: { isAdmin: true },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: 'asc' },
+    });
+    return admins.map((a) => ({
+      id: a.id,
+      name: a.name || a.email || 'مشرف',
+      email: a.email,
+    }));
   }
 
   async getDashboardReportStats() {

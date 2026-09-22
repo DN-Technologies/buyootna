@@ -90,6 +90,10 @@ export class AdminService {
     );
   }
 
+  async getAssignableAdmins() {
+    return this.adminReportsService.getAssignableAdmins();
+  }
+
   async getVerifications(filters: AdminVerificationsFilterDto) {
     return this.adminVerificationsService.getVerifications(filters);
   }

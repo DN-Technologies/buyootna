@@ -26,7 +26,6 @@ const DEFAULT_METRICS: MetricItem[] = [
     id: 'reports',
     title: 'البلاغات الجديدة',
     count: '0',
-    change: '0%',
     variant: 'red',
   },
   {
