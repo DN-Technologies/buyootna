@@ -1,17 +1,42 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CheckCircle2, X } from 'lucide-react'
+import { AdminPlan, changeUserPlan, fetchPlans } from '@/lib/admin-plans'
 
 export interface UpgradePackageDialogProps {
   open: boolean
   onClose: () => void
+  userId: string
+  onSuccess?: () => void
 }
 
 export default function UpgradePackageDialog({
   open,
   onClose,
+  userId,
+  onSuccess,
 }: UpgradePackageDialogProps) {
+  const [plans, setPlans] = useState<AdminPlan[]>([])
+  const [loading, setLoading] = useState(false)
+  const [purchasingId, setPurchasingId] = useState<string | null>(null)
+
+  const loadPlans = useCallback(async () => {
+    try {
+      setLoading(true)
+      const rows = await fetchPlans()
+      setPlans(rows)
+    } catch (err) {
+      console.error('Failed to load plans:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (open) loadPlans()
+  }, [open, loadPlans])
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -23,6 +48,19 @@ export default function UpgradePackageDialog({
   }, [open, onClose])
 
   if (!open) return null
+
+  async function handlePurchase(plan: AdminPlan) {
+    try {
+      setPurchasingId(plan.id)
+      await changeUserPlan(userId, { planId: plan.id })
+      onSuccess?.()
+      onClose()
+    } catch (err) {
+      console.error('Failed to change plan:', err)
+    } finally {
+      setPurchasingId(null)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 font-['Cairo'] flex items-center justify-center p-4">
@@ -48,183 +86,80 @@ export default function UpgradePackageDialog({
           </button>
         </div>
 
-        {/* 3 Tier Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
-          {/* Card 1: Normal */}
-          <div className="bg-white border border-[#ECECEC] rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm">
-            <div>
-              {/* Header Banner */}
-              <div className="bg-[#F8FAFC] p-6 text-right flex flex-col gap-1 border-b border-[#ECECEC]">
-                <span className="text-[28px] font-bold text-[#111111] leading-tight">
-                  0 د.ك
-                </span>
-                <span className="text-[14px] font-medium text-[#6B6A6A]">
-                  الباقة العادية
-                </span>
-              </div>
-
-              {/* Body Content */}
-              <div className="p-5 flex flex-col gap-4 text-right">
-                <h3 className="text-[16px] font-bold text-[#111111]">
-                  باقة الإعلانات العادية
-                </h3>
-                <ul className="flex flex-col gap-2.5 text-[13px] font-medium text-[#111111]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>اعلان واحد نشط.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>مدة النشر 10 ايام.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>حتى 5 صورة للعقار.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>ظهور في نتائج البحث.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>تواصل مباشر مع المهتمين.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="p-5 pt-0">
-              <button
-                type="button"
-                onClick={() => {
-                  alert('تم اختيار "شراء الباقة العادية"')
-                  onClose()
-                }}
-                className="w-full h-11 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#111111] font-bold text-[14px] rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer"
+        {loading ? (
+          <p className="text-center text-[14px] text-[#6B6A6A] py-8">
+            جاري تحميل الباقات...
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
+            {plans.map((plan) => (
+              <div
+                key={plan.id}
+                className="bg-white border border-[#ECECEC] rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm"
               >
-                شراء الباقة
-              </button>
-            </div>
+                <div>
+                  <div className="bg-[#F8FAFC] p-6 text-right flex flex-col gap-1 border-b border-[#ECECEC]">
+                    <span className="text-[28px] font-bold text-[#111111] leading-tight">
+                      {plan.price} د.ك
+                    </span>
+                    <span className="text-[14px] font-medium text-[#6B6A6A]">
+                      {plan.name}
+                    </span>
+                  </div>
+
+                  <div className="p-5 flex flex-col gap-4 text-right">
+                    <h3 className="text-[16px] font-bold text-[#111111]">
+                      باقة {plan.name}
+                    </h3>
+                    <ul className="flex flex-col gap-2.5 text-[13px] font-medium text-[#111111]">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                        <span>{plan.maxActiveAds} اعلان نشط.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                        <span>مدة النشر {plan.durationDays} يوم.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                        <span>حتى {plan.maxImagesPerAd} صورة للعقار.</span>
+                      </li>
+                      {plan.featuredDays > 0 && (
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                          <span>تثبيت {plan.featuredDays} ايام في نتائج البحث.</span>
+                        </li>
+                      )}
+                      {plan.prioritySearch && (
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                          <span>اولوية الظهور في نتائج البحث.</span>
+                        </li>
+                      )}
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0">
+                  <button
+                    type="button"
+                    onClick={() => handlePurchase(plan)}
+                    disabled={purchasingId === plan.id}
+                    className="w-full h-11 bg-primary hover:bg-[#0F2238] disabled:opacity-60 text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer"
+                  >
+                    {purchasingId === plan.id ? 'جاري الشراء...' : 'شراء الباقة'}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-
-          {/* Card 2: Silver */}
-          <div className="bg-white border border-[#ECECEC] rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm">
-            <div>
-              {/* Header Banner */}
-              <div className="bg-[#F8FAFC] p-6 text-right flex flex-col gap-1 border-b border-[#ECECEC]">
-                <span className="text-[28px] font-bold text-[#111111] leading-tight">
-                  5 د.ك
-                </span>
-                <span className="text-[14px] font-medium text-[#6B6A6A]">
-                  الباقة الفضية
-                </span>
-              </div>
-
-              {/* Body Content */}
-              <div className="p-5 flex flex-col gap-4 text-right">
-                <h3 className="text-[16px] font-bold text-[#111111]">
-                  باقة الإعلانات الفضية
-                </h3>
-                <ul className="flex flex-col gap-2.5 text-[13px] font-medium text-[#111111]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>اعلان واحد نشط.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>مدة النشر 45 يوم.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>حتى 10 صورة للعقار.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>تثبيت 5 ايام في نتائج البحث.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>ظهور في نتائج البحث المميزة.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>تواصل مباشر مع المهتمين.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="p-5 pt-0">
-              <button
-                type="button"
-                onClick={() => {
-                  alert('تم اختيار "شراء الباقة الفضية"')
-                  onClose()
-                }}
-                className="w-full h-11 bg-[#F8FAFC] hover:bg-[#F1F5F9] text-[#111111] font-bold text-[14px] rounded-xl border border-[#E2E8F0] transition-colors cursor-pointer"
-              >
-                شراء الباقة
-              </button>
-            </div>
-          </div>
-
-          {/* Card 3: Gold */}
-          <div className="bg-white border border-[#ECECEC] rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm">
-            <div>
-              {/* Header Banner */}
-              <div className="bg-linear-to-l from-[#FFB81C] to-[#FF9900] p-6 text-white text-right flex flex-col gap-1">
-                <span className="text-[28px] font-bold leading-tight">
-                  20 د.ك
-                </span>
-                <span className="text-[14px] font-medium opacity-90">
-                  الباقة الذهبية
-                </span>
-              </div>
-
-              {/* Body Content */}
-              <div className="p-5 flex flex-col gap-4 text-right">
-                <h3 className="text-[16px] font-bold text-[#111111]">
-                  باقة الإعلانات الذهبية
-                </h3>
-                <ul className="flex flex-col gap-2.5 text-[13px] font-medium text-[#111111]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>4 اعلانات نشطة في نفس الوقت.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>مدة النشر 60 يوم.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>حتى 15 صورة للعقار.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>تثبيت 7 ايام في نتائج البحث.</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#018B1B] shrink-0" />
-                    <span>اولولية الظهور في البحث الجغرافي.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="p-5 pt-0">
-              <button
-                type="button"
-                onClick={() => {
-                  alert('تم اختيار "شراء الباقة الذهبية"')
-                  onClose()
-                }}
-                className="w-full h-11 bg-primary hover:bg-[#0F2238] text-white font-bold text-[14px] rounded-xl transition-colors cursor-pointer"
-              >
-                شراء الباقة
-              </button>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   )

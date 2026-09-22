@@ -32,6 +32,11 @@ interface MockAdminService {
   getRequestsForUser: jest.Mock;
   getProjectsForUser: jest.Mock;
   deleteProject: jest.Mock;
+  getWallet: jest.Mock;
+  changePlan: jest.Mock;
+  grantExceptionalFeature: jest.Mock;
+  getInvoicesForUser: jest.Mock;
+  getCouponHistoryForUser: jest.Mock;
   getAssignableAdmins: jest.Mock;
 }
 
@@ -68,6 +73,11 @@ describe('AdminController', () => {
       getRequestsForUser: jest.fn(),
       getProjectsForUser: jest.fn(),
       deleteProject: jest.fn(),
+      getWallet: jest.fn(),
+      changePlan: jest.fn(),
+      grantExceptionalFeature: jest.fn(),
+      getInvoicesForUser: jest.fn(),
+      getCouponHistoryForUser: jest.fn(),
       getAssignableAdmins: jest.fn(),
     };
 
@@ -142,10 +152,7 @@ describe('AdminController', () => {
     adminService.getReportsForUser.mockResolvedValue({ data: [] });
 
     await controller.getReportsForUser('u-1', filters);
-    expect(adminService.getReportsForUser).toHaveBeenCalledWith(
-      'u-1',
-      filters,
-    );
+    expect(adminService.getReportsForUser).toHaveBeenCalledWith('u-1', filters);
   });
 
   it('getReportsForProperty should forward id to service', async () => {
@@ -200,6 +207,42 @@ describe('AdminController', () => {
       'project-1',
       'admin-1',
     );
+  });
+
+  it('getWallet should forward id to service', async () => {
+    adminService.getWallet.mockResolvedValue({ freeAdsRemaining: 0 });
+    await controller.getWallet('u-1');
+    expect(adminService.getWallet).toHaveBeenCalledWith('u-1');
+  });
+
+  it('changePlan should forward id, dto and adminUserId to service', async () => {
+    adminService.changePlan.mockResolvedValue({});
+    const dto = { planId: 'plan-1' };
+    await controller.changePlan(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.changePlan).toHaveBeenCalledWith('u-1', dto, 'admin-1');
+  });
+
+  it('grantExceptionalFeature should forward id, dto and adminUserId to service', async () => {
+    adminService.grantExceptionalFeature.mockResolvedValue({ message: 'ok' });
+    const dto = { adsCount: 3 };
+    await controller.grantExceptionalFeature(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.grantExceptionalFeature).toHaveBeenCalledWith(
+      'u-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('getInvoicesForUser should forward id to service', async () => {
+    adminService.getInvoicesForUser.mockResolvedValue([]);
+    await controller.getInvoicesForUser('u-1');
+    expect(adminService.getInvoicesForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getCouponHistoryForUser should forward id to service', async () => {
+    adminService.getCouponHistoryForUser.mockResolvedValue([]);
+    await controller.getCouponHistoryForUser('u-1');
+    expect(adminService.getCouponHistoryForUser).toHaveBeenCalledWith('u-1');
   });
 
   it('getAssignableAdmins should delegate to service', async () => {
@@ -310,17 +353,21 @@ describe('AdminController', () => {
     expect(result[0].code).toBe('LAUNCHPROMO26');
   });
 
-  it('grantCoupon should forward params and dto to service', async () => {
+  it('grantCoupon should forward params, dto and adminUserId to service', async () => {
     adminService.grantCoupon.mockResolvedValue({
       message: 'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
     });
     const dto = { couponCode: 'LAUNCHPROMO26', couponName: 'Byoutna10' };
-    const result = await controller.grantCoupon('u-1', dto);
-    expect(adminService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
+    const result = await controller.grantCoupon(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.grantCoupon).toHaveBeenCalledWith(
+      'u-1',
+      dto,
+      'admin-1',
+    );
     expect(result.message).toContain('تم اضافة كوبون خصم للمستخدم');
   });
 
-  it('grantBulkCoupon should forward dto to service', async () => {
+  it('grantBulkCoupon should forward dto and adminUserId to service', async () => {
     adminService.grantBulkCoupon.mockResolvedValue({
       message: 'تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.',
       grantedCount: 2,
@@ -330,8 +377,8 @@ describe('AdminController', () => {
       couponCode: 'LAUNCHPROMO26',
       couponName: 'Byoutna10',
     };
-    const result = await controller.grantBulkCoupon(dto);
-    expect(adminService.grantBulkCoupon).toHaveBeenCalledWith(dto);
+    const result = await controller.grantBulkCoupon(ADMIN_REQ_USER, dto);
+    expect(adminService.grantBulkCoupon).toHaveBeenCalledWith(dto, 'admin-1');
     expect(result.grantedCount).toBe(2);
   });
 });

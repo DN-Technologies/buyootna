@@ -7,6 +7,7 @@ export interface ChangePackageDrawerProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
+  userId: string
   userName?: string
   userEmail?: string
   accountType?: string
@@ -17,6 +18,7 @@ export default function ChangePackageDrawer({
   open,
   onClose,
   onSuccess,
+  userId,
   userName,
   userEmail,
   accountType,
@@ -27,6 +29,7 @@ export default function ChangePackageDrawer({
       open={open}
       onClose={onClose}
       onSuccess={() => onSuccess()}
+      userId={userId}
       userName={userName}
       userEmail={userEmail}
       accountType={accountType}

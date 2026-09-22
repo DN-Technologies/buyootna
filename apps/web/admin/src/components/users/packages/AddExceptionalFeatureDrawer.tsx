@@ -2,17 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { X, Calendar, ChevronUp, ChevronDown } from 'lucide-react'
+import { grantExceptionalFeature } from '@/lib/admin-plans'
 
 export interface AddExceptionalFeatureDrawerProps {
   open: boolean
   onClose: () => void
   onSuccess: () => void
+  userId: string
 }
 
 export default function AddExceptionalFeatureDrawer({
   open,
   onClose,
   onSuccess,
+  userId,
 }: AddExceptionalFeatureDrawerProps) {
   const [adsCount, setAdsCount] = useState<string>('')
   const [photosCount, setPhotosCount] = useState<string>('')
@@ -23,6 +26,7 @@ export default function AddExceptionalFeatureDrawer({
   const [expiryDate, setExpiryDate] = useState<string>('')
   const [notifyEmail, setNotifyEmail] = useState<boolean>(false)
   const [notifyApp, setNotifyApp] = useState<boolean>(false)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -42,10 +46,27 @@ export default function AddExceptionalFeatureDrawer({
     durationDays !== '' ||
     expiryDate !== ''
 
-  const handleSubmit = () => {
-    if (!isFormValid) return
-    onSuccess()
-    onClose()
+  const handleSubmit = async () => {
+    if (!isFormValid || submitting) return
+    setSubmitting(true)
+    try {
+      await grantExceptionalFeature(userId, {
+        adsCount: adsCount !== '' ? Number(adsCount) : undefined,
+        photosCount: photosCount !== '' ? Number(photosCount) : undefined,
+        durationDays: durationDays !== '' ? Number(durationDays) : undefined,
+        priorityVisibility,
+        featuredResultsVisibility,
+        expiryDate: expiryDate !== '' ? expiryDate : undefined,
+        notifyEmail,
+        notifyApp,
+      })
+      onSuccess()
+      onClose()
+    } catch (err) {
+      console.error('Failed to grant exceptional feature:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -293,14 +314,14 @@ export default function AddExceptionalFeatureDrawer({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!isFormValid}
+            disabled={!isFormValid || submitting}
             className={`h-11 w-full font-bold text-[14px] rounded-full transition-colors cursor-pointer ${
-              isFormValid
+              isFormValid && !submitting
                 ? 'bg-primary text-white hover:bg-[#0f2338]'
                 : 'bg-[#94A3B8] text-white cursor-not-allowed'
             }`}
           >
-            إضافة المزايا
+            {submitting ? 'جاري الإضافة...' : 'إضافة المزايا'}
           </button>
 
           <button

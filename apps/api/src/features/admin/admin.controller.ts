@@ -34,6 +34,8 @@ import { AdminReportUpdateDto } from './dto/admin-report-update.dto';
 import { AdminReportsBulkDto } from './dto/admin-reports-bulk.dto';
 import { AdminRemovePropertyDto } from './dto/admin-remove-property.dto';
 import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
+import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
+import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -225,6 +227,61 @@ export class AdminController {
     return this.adminService.deleteProject(id, reqUser.userId);
   }
 
+  @Get('users/:id/wallet')
+  @ApiOperation({
+    summary:
+      "Get a user's ad-credit wallet: balances, active plan slots, and history",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getWallet(@Param('id') id: string) {
+    return this.adminService.getWallet(id);
+  }
+
+  @Post('users/:id/plan')
+  @ApiOperation({
+    summary: "Change a user's plan by creating a new active plan slot",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async changePlan(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminChangePlanDto,
+  ) {
+    return this.adminService.changePlan(id, dto, reqUser.userId);
+  }
+
+  @Post('users/:id/exceptional-feature')
+  @ApiOperation({
+    summary: "Grant a user's account exceptional/promotional features",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async grantExceptionalFeature(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminGrantExceptionalFeatureDto,
+  ) {
+    return this.adminService.grantExceptionalFeature(id, dto, reqUser.userId);
+  }
+
+  @Get('users/:id/invoices')
+  @ApiOperation({ summary: "List a user's invoices" })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getInvoicesForUser(@Param('id') id: string) {
+    return this.adminService.getInvoicesForUser(id);
+  }
+
+  @Get('users/:id/coupons')
+  @ApiOperation({ summary: "List a user's coupon-grant history" })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getCouponHistoryForUser(@Param('id') id: string) {
+    return this.adminService.getCouponHistoryForUser(id);
+  }
+
   @Get('moderators')
   @ApiOperation({
     summary: 'List admin accounts assignable as a report moderator',
@@ -384,8 +441,11 @@ export class AdminController {
     description: 'Discount coupon granted to multiple users successfully',
   })
   @ApiCommonErrors()
-  async grantBulkCoupon(@Body() dto: AdminGrantBulkCouponDto) {
-    return this.adminService.grantBulkCoupon(dto);
+  async grantBulkCoupon(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: AdminGrantBulkCouponDto,
+  ) {
+    return this.adminService.grantBulkCoupon(dto, reqUser.userId);
   }
 
   @Post('users/:id/coupon')
@@ -398,7 +458,11 @@ export class AdminController {
     description: 'Discount coupon granted to user successfully',
   })
   @ApiCommonErrors()
-  async grantCoupon(@Param('id') id: string, @Body() dto: AdminGrantCouponDto) {
-    return this.adminService.grantCoupon(id, dto);
+  async grantCoupon(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminGrantCouponDto,
+  ) {
+    return this.adminService.grantCoupon(id, dto, reqUser.userId);
   }
 }

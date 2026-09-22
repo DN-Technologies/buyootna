@@ -15,12 +15,18 @@ import { AdminAuditLogService } from './services/admin-audit-log.service';
 import { AdminPropertiesService } from './services/admin-properties.service';
 import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
+import { AdminPlansService } from './services/admin-plans.service';
+import { AdminInvoicesService } from './services/admin-invoices.service';
 import { CompanyRequestsModule } from '../company/company-requests/company-requests.module';
+import { PlansModule } from '../plans/plans.module';
+import { InvoicesModule } from '../invoices/invoices.module';
 
 @Module({
   imports: [
     NotificationsModule,
     CompanyRequestsModule,
+    PlansModule,
+    InvoicesModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
     }),
@@ -40,6 +46,8 @@ import { CompanyRequestsModule } from '../company/company-requests/company-reque
     AdminPropertiesService,
     AdminRequestsService,
     AdminExhibitionService,
+    AdminPlansService,
+    AdminInvoicesService,
   ],
   exports: [
     AdminService,
@@ -55,6 +63,8 @@ import { CompanyRequestsModule } from '../company/company-requests/company-reque
     AdminPropertiesService,
     AdminRequestsService,
     AdminExhibitionService,
+    AdminPlansService,
+    AdminInvoicesService,
   ],
 })
 export class AdminModule {}

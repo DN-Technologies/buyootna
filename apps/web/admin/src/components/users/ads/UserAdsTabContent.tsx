@@ -1,24 +1,40 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Megaphone } from 'lucide-react'
 import UserAdsCreditCard from './UserAdsCreditCard'
 import UserAdCard from './UserAdCard'
 import AdDetailSheet from './AdDetailSheet'
 import type { AdminUserProperty } from '@/lib/admin-users'
+import { AdminUserWallet, fetchUserWallet } from '@/lib/admin-plans'
 
 type AdsFilter = 'all' | 'active' | 'featured' | 'deleted'
 
 export default function UserAdsTabContent({
   properties,
+  userId,
   onRefresh,
 }: {
   properties: AdminUserProperty[]
+  userId: string
   onRefresh?: () => void
 }) {
   const [filter, setFilter] = useState<AdsFilter>('all')
   const [selectedProperty, setSelectedProperty] =
     useState<AdminUserProperty | null>(null)
+  const [wallet, setWallet] = useState<AdminUserWallet | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchUserWallet(userId)
+      .then((data) => {
+        if (!cancelled) setWallet(data)
+      })
+      .catch((err) => console.error('Failed to load wallet:', err))
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
 
   const activeCount = properties.filter(
     (p) => p.status === 'ACTIVE' && !p.isHidden,
@@ -49,8 +65,12 @@ export default function UserAdsTabContent({
   return (
     <div className="flex flex-col gap-5 w-full font-['Cairo']" dir="rtl">
       <UserAdsCreditCard
-        isFreeUsed={properties.length > 0}
-        paidCredit={properties.length > 0 ? '7 / 10' : null}
+        isFreeUsed={wallet ? wallet.freeAdsRemaining === 0 : false}
+        paidCredit={
+          wallet && wallet.slots.length > 0
+            ? String(wallet.slots.reduce((sum, s) => sum + s.adsRemaining, 0))
+            : null
+        }
       />
 
       <div className="bg-white border border-[#ECECEC] rounded-lg flex items-center p-1 w-full gap-1 overflow-x-auto">

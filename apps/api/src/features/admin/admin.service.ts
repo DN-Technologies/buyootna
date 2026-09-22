@@ -27,6 +27,10 @@ import { AdminPropertiesService } from './services/admin-properties.service';
 import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
 import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
+import { AdminPlansService } from './services/admin-plans.service';
+import { AdminInvoicesService } from './services/admin-invoices.service';
+import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
+import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 
 @Injectable()
 export class AdminService {
@@ -42,6 +46,8 @@ export class AdminService {
     private readonly adminPropertiesService: AdminPropertiesService,
     private readonly adminRequestsService: AdminRequestsService,
     private readonly adminExhibitionService: AdminExhibitionService,
+    private readonly adminPlansService: AdminPlansService,
+    private readonly adminInvoicesService: AdminInvoicesService,
   ) {}
 
   async getDashboard() {
@@ -126,6 +132,30 @@ export class AdminService {
     return this.adminExhibitionService.deleteProject(projectId, adminUserId);
   }
 
+  async getWallet(userId: string) {
+    return this.adminPlansService.getWallet(userId);
+  }
+
+  async changePlan(
+    userId: string,
+    dto: AdminChangePlanDto,
+    adminUserId: string,
+  ) {
+    return this.adminPlansService.changePlan(userId, dto, adminUserId);
+  }
+
+  async grantExceptionalFeature(
+    userId: string,
+    dto: AdminGrantExceptionalFeatureDto,
+    adminUserId: string,
+  ) {
+    return this.adminPlansService.grantExceptionalFeature(
+      userId,
+      dto,
+      adminUserId,
+    );
+  }
+
   async getAssignableAdmins() {
     return this.adminReportsService.getAssignableAdmins();
   }
@@ -188,11 +218,23 @@ export class AdminService {
     return this.adminCouponService.getAvailableCoupons();
   }
 
-  async grantCoupon(userId: string, dto: AdminGrantCouponDto) {
-    return this.adminCouponService.grantCoupon(userId, dto);
+  async getInvoicesForUser(userId: string) {
+    return this.adminInvoicesService.getInvoicesForUser(userId);
   }
 
-  async grantBulkCoupon(dto: AdminGrantBulkCouponDto) {
-    return this.adminCouponService.grantBulkCoupon(dto);
+  async getCouponHistoryForUser(userId: string) {
+    return this.adminInvoicesService.getCouponHistoryForUser(userId);
+  }
+
+  async grantCoupon(
+    userId: string,
+    dto: AdminGrantCouponDto,
+    adminUserId?: string,
+  ) {
+    return this.adminCouponService.grantCoupon(userId, dto, adminUserId);
+  }
+
+  async grantBulkCoupon(dto: AdminGrantBulkCouponDto, adminUserId?: string) {
+    return this.adminCouponService.grantBulkCoupon(dto, adminUserId);
   }
 }

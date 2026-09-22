@@ -11,6 +11,8 @@ import { AdminReportsService } from './services/admin-reports.service';
 import { AdminPropertiesService } from './services/admin-properties.service';
 import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
+import { AdminPlansService } from './services/admin-plans.service';
+import { AdminInvoicesService } from './services/admin-invoices.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
@@ -76,6 +78,17 @@ interface MockAdminExhibitionService {
   deleteProject: jest.Mock;
 }
 
+interface MockAdminPlansService {
+  getWallet: jest.Mock;
+  changePlan: jest.Mock;
+  grantExceptionalFeature: jest.Mock;
+}
+
+interface MockAdminInvoicesService {
+  getInvoicesForUser: jest.Mock;
+  getCouponHistoryForUser: jest.Mock;
+}
+
 describe('AdminService', () => {
   let service: AdminService;
   let adminUsersService: MockAdminUsersService;
@@ -89,6 +102,8 @@ describe('AdminService', () => {
   let adminPropertiesService: MockAdminPropertiesService;
   let adminRequestsService: MockAdminRequestsService;
   let adminExhibitionService: MockAdminExhibitionService;
+  let adminPlansService: MockAdminPlansService;
+  let adminInvoicesService: MockAdminInvoicesService;
 
   beforeEach(async () => {
     adminUsersService = {
@@ -155,6 +170,17 @@ describe('AdminService', () => {
       deleteProject: jest.fn(),
     };
 
+    adminPlansService = {
+      getWallet: jest.fn(),
+      changePlan: jest.fn(),
+      grantExceptionalFeature: jest.fn(),
+    };
+
+    adminInvoicesService = {
+      getInvoicesForUser: jest.fn(),
+      getCouponHistoryForUser: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
@@ -201,6 +227,14 @@ describe('AdminService', () => {
         {
           provide: AdminExhibitionService,
           useValue: adminExhibitionService,
+        },
+        {
+          provide: AdminPlansService,
+          useValue: adminPlansService,
+        },
+        {
+          provide: AdminInvoicesService,
+          useValue: adminInvoicesService,
         },
       ],
     }).compile();
@@ -397,6 +431,76 @@ describe('AdminService', () => {
       expect(result).toBe(mockResult);
     });
 
+    it('delegates getWallet to AdminPlansService', async () => {
+      const mockResult = { freeAdsRemaining: 0 };
+      adminPlansService.getWallet.mockResolvedValue(mockResult);
+
+      const result = await service.getWallet('u-1');
+
+      expect(adminPlansService.getWallet).toHaveBeenCalledWith('u-1');
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates changePlan to AdminPlansService', async () => {
+      const dto = { planId: 'plan-1' };
+      const mockResult = { freeAdsRemaining: 0 };
+      adminPlansService.changePlan.mockResolvedValue(mockResult);
+
+      const result = await service.changePlan('u-1', dto, 'admin-1');
+
+      expect(adminPlansService.changePlan).toHaveBeenCalledWith(
+        'u-1',
+        dto,
+        'admin-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates grantExceptionalFeature to AdminPlansService', async () => {
+      const dto = { adsCount: 3 };
+      const mockResult = { message: 'تم منح المميزات الاستثنائية بنجاح' };
+      adminPlansService.grantExceptionalFeature.mockResolvedValue(mockResult);
+
+      const result = await service.grantExceptionalFeature(
+        'u-1',
+        dto,
+        'admin-1',
+      );
+
+      expect(adminPlansService.grantExceptionalFeature).toHaveBeenCalledWith(
+        'u-1',
+        dto,
+        'admin-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getInvoicesForUser to AdminInvoicesService', async () => {
+      const mockResult: any[] = [];
+      adminInvoicesService.getInvoicesForUser.mockResolvedValue(mockResult);
+
+      const result = await service.getInvoicesForUser('u-1');
+
+      expect(adminInvoicesService.getInvoicesForUser).toHaveBeenCalledWith(
+        'u-1',
+      );
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getCouponHistoryForUser to AdminInvoicesService', async () => {
+      const mockResult: any[] = [];
+      adminInvoicesService.getCouponHistoryForUser.mockResolvedValue(
+        mockResult,
+      );
+
+      const result = await service.getCouponHistoryForUser('u-1');
+
+      expect(
+        adminInvoicesService.getCouponHistoryForUser,
+      ).toHaveBeenCalledWith('u-1');
+      expect(result).toBe(mockResult);
+    });
+
     it('delegates getAssignableAdmins to AdminReportsService', async () => {
       const mockResult = [{ id: 'admin-1', name: 'أحمد', email: null }];
       adminReportsService.getAssignableAdmins.mockResolvedValue(mockResult);
@@ -571,9 +675,13 @@ describe('AdminService', () => {
       const mockResult = { message: 'تم المنح' };
       adminCouponService.grantCoupon.mockResolvedValue(mockResult);
 
-      const result = await service.grantCoupon('u-1', dto);
+      const result = await service.grantCoupon('u-1', dto, 'admin-1');
 
-      expect(adminCouponService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
+      expect(adminCouponService.grantCoupon).toHaveBeenCalledWith(
+        'u-1',
+        dto,
+        'admin-1',
+      );
       expect(result).toBe(mockResult);
     });
 
@@ -582,9 +690,12 @@ describe('AdminService', () => {
       const mockResult = { grantedCount: 2 };
       adminCouponService.grantBulkCoupon.mockResolvedValue(mockResult);
 
-      const result = await service.grantBulkCoupon(dto);
+      const result = await service.grantBulkCoupon(dto, 'admin-1');
 
-      expect(adminCouponService.grantBulkCoupon).toHaveBeenCalledWith(dto);
+      expect(adminCouponService.grantBulkCoupon).toHaveBeenCalledWith(
+        dto,
+        'admin-1',
+      );
       expect(result).toBe(mockResult);
     });
   });

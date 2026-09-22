@@ -227,6 +227,7 @@ export default function UserOverviewPage() {
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent
           properties={identity?.properties || []}
+          userId={user.id}
           onRefresh={refreshAds}
         />
       ) : activeTab === 'الطلبات' ? (
@@ -236,9 +237,9 @@ export default function UserOverviewPage() {
       ) : activeTab === 'المعرض' ? (
         <UserExhibitionTabContent userId={user.id} />
       ) : activeTab === 'الباقة' ? (
-        <UserPackagesTabContent />
+        <UserPackagesTabContent userId={user.id} />
       ) : activeTab === 'الفواتير والخصم' ? (
-        <UserInvoicesDiscountsTabContent />
+        <UserInvoicesDiscountsTabContent userId={user.id} />
       ) : activeTab === 'البلاغات' ? (
         <UserReportsTabContent userId={user.id} />
       ) : activeTab === 'التقييمات' ? (
@@ -289,6 +290,7 @@ export default function UserOverviewPage() {
         open={changePackageOpen}
         onClose={() => setChangePackageOpen(false)}
         onSuccess={() => showToast('تم تغيير الباقة بنجاح.')}
+        userId={user.id}
         userName={displayName}
         userEmail={user.email || '—'}
         accountType={accountType}
@@ -297,6 +299,7 @@ export default function UserOverviewPage() {
 
       {/* Add Exceptional Feature Drawer */}
       <AddExceptionalFeatureDrawer
+        userId={user.id}
         open={addExceptionalFeatureOpen}
         onClose={() => setAddExceptionalFeatureOpen(false)}
         onSuccess={() =>
