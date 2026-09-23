@@ -18,7 +18,7 @@ import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router';
 import { Component, ReactNode, useEffect } from 'react';
-import { I18nManager, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -28,6 +28,7 @@ import AppAlertModal from '@/shared/components/AppAlertModal';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { ensureRtlDirection } from '@/shared/utils/rtl';
 
 // Guards every push/navigate/replace call in the app (both `router.push(...)`
 // and `useRouter().push(...)` resolve to the same expo-router singleton this
@@ -35,6 +36,12 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 // once. Must run before any screen can call router.push, so it's at module
 // scope, not inside RootLayout.
 installNavigationDebounce();
+
+// Persists RN's RTL flags on a fresh install and reloads once so the very
+// first launch renders RTL (instead of a mirrored LTR layout until the next
+// manual restart). Also module scope: before first paint, while the splash
+// still covers the screen.
+ensureRtlDirection();
 
 // Screen-transition performance + breadcrumbs. The nav container ref gets
 // registered on it once RootLayout mounts, below.
@@ -119,15 +126,6 @@ function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded, error]);
-
-  useEffect(() => {
-    // Force RTL for Arabic support
-    if (!I18nManager.isRTL) {
-      I18nManager.forceRTL(true);
-      I18nManager.allowRTL(true);
-      // Note: Might require an app reload on first install to take effect
-    }
-  }, []);
 
   useEffect(() => {
     // Safely hydrate our authentication tokens from hardware storage
