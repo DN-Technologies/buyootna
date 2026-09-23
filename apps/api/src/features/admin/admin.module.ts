@@ -17,9 +17,12 @@ import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
 import { AdminPlansService } from './services/admin-plans.service';
 import { AdminInvoicesService } from './services/admin-invoices.service';
+import { AdminRatingsService } from './services/admin-ratings.service';
+import { AdminNotesService } from './services/admin-notes.service';
 import { CompanyRequestsModule } from '../company/company-requests/company-requests.module';
 import { PlansModule } from '../plans/plans.module';
 import { InvoicesModule } from '../invoices/invoices.module';
+import { ReviewsModule } from '../reviews/reviews.module';
 
 @Module({
   imports: [
@@ -27,6 +30,7 @@ import { InvoicesModule } from '../invoices/invoices.module';
     CompanyRequestsModule,
     PlansModule,
     InvoicesModule,
+    ReviewsModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
     }),
@@ -48,6 +52,8 @@ import { InvoicesModule } from '../invoices/invoices.module';
     AdminExhibitionService,
     AdminPlansService,
     AdminInvoicesService,
+    AdminRatingsService,
+    AdminNotesService,
   ],
   exports: [
     AdminService,
@@ -65,6 +71,8 @@ import { InvoicesModule } from '../invoices/invoices.module';
     AdminExhibitionService,
     AdminPlansService,
     AdminInvoicesService,
+    AdminRatingsService,
+    AdminNotesService,
   ],
 })
 export class AdminModule {}

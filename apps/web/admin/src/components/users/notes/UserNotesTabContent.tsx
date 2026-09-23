@@ -1,100 +1,96 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FileText, Pencil, Trash2 } from 'lucide-react'
 import DeleteNoteDialog from './DeleteNoteDialog'
+import {
+  AdminNoteRow,
+  createNote,
+  deleteNote,
+  fetchUserNotes,
+  updateNote,
+} from '@/lib/admin-notes'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
-export interface UserNoteItem {
-  id: string
-  title: string
-  content: string
-  author: string
-  dateAgo: string
-}
-
-const initialNotes: UserNoteItem[] = [
-  {
-    id: 'note-1',
-    title: 'حذف الاعلان',
-    content:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مبهرة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    author: 'نواف الجارحي',
-    dateAgo: 'منذ أسبوعين',
-  },
-  {
-    id: 'note-2',
-    title: 'تعطيل حساب المستخدم',
-    content:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مبهرة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    author: 'محمد المالك',
-    dateAgo: 'منذ أسبوعين',
-  },
-  {
-    id: 'note-3',
-    title: 'حذف الاعلان',
-    content:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مبهرة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    author: 'محمد المالك',
-    dateAgo: 'منذ أسبوعين',
-  },
-]
-
-export default function UserNotesTabContent() {
-  const [notesList, setNotesList] = useState<UserNoteItem[]>(initialNotes)
+export default function UserNotesTabContent({ userId }: { userId: string }) {
+  const [notes, setNotes] = useState<AdminNoteRow[]>([])
+  const [loading, setLoading] = useState(true)
   const [newNoteText, setNewNoteText] = useState('')
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleAddOrUpdateNote = () => {
-    if (!newNoteText.trim()) return
-
-    if (editingNoteId) {
-      setNotesList((prev) =>
-        prev.map((item) =>
-          item.id === editingNoteId
-            ? { ...item, content: newNoteText.trim() }
-            : item,
-        ),
-      )
-      setEditingNoteId(null)
-    } else {
-      const newNote: UserNoteItem = {
-        id: `note-${Date.now()}`,
-        title: 'ملاحظة جديدة',
-        content: newNoteText.trim(),
-        author: 'مشرف النظام',
-        dateAgo: 'الآن',
-      }
-      setNotesList((prev) => [newNote, ...prev])
+  const load = useCallback(async () => {
+    try {
+      setLoading(true)
+      const rows = await fetchUserNotes(userId)
+      setNotes(rows)
+    } catch (err) {
+      console.error('Failed to load notes:', err)
+    } finally {
+      setLoading(false)
     }
+  }, [userId])
 
-    setNewNoteText('')
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function handleAddOrUpdateNote() {
+    if (!newNoteText.trim() || submitting) return
+    setSubmitting(true)
+    try {
+      if (editingNoteId) {
+        await updateNote(editingNoteId, newNoteText.trim())
+        setEditingNoteId(null)
+      } else {
+        await createNote(userId, { content: newNoteText.trim() })
+      }
+      setNewNoteText('')
+      await load()
+    } catch (err) {
+      console.error('Failed to save note:', err)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
-  const handleStartEdit = (note: UserNoteItem) => {
+  function handleStartEdit(note: AdminNoteRow) {
     setEditingNoteId(note.id)
     setNewNoteText(note.content)
   }
 
-  const handleCancel = () => {
+  function handleCancel() {
     setNewNoteText('')
     setEditingNoteId(null)
   }
 
-  const handleDeleteConfirm = () => {
-    if (deleteTargetId) {
-      setNotesList((prev) => prev.filter((item) => item.id !== deleteTargetId))
+  async function handleDeleteConfirm() {
+    if (!deleteTargetId) return
+    try {
+      await deleteNote(deleteTargetId)
       if (editingNoteId === deleteTargetId) {
         handleCancel()
       }
       setDeleteTargetId(null)
+      await load()
+    } catch (err) {
+      console.error('Failed to delete note:', err)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="w-full py-16 text-center text-[#6B6A6A] font-['Cairo']">
+        جاري التحميل...
+      </div>
+    )
   }
 
   return (
     <div className="flex flex-col gap-6 w-full font-['Cairo']" dir="rtl">
       {/* Top Section: Notes List or Empty State */}
-      {notesList.length === 0 ? (
+      {notes.length === 0 ? (
         /* Empty State View */
         <div className="bg-white border border-[#ECECEC] rounded-2xl flex flex-col items-center justify-center py-12 px-6 text-center w-full min-h-50">
           <div className="flex flex-col items-center gap-1.5 mb-3">
@@ -111,7 +107,7 @@ export default function UserNotesTabContent() {
       ) : (
         /* Populated Notes List */
         <div className="flex flex-col gap-3.5 w-full max-h-95 overflow-y-auto pl-1 pr-1">
-          {notesList.map((note) => (
+          {notes.map((note) => (
             <div
               key={note.id}
               className="bg-white border border-[#ECECEC] rounded-xl p-4 flex flex-col gap-3 text-right w-full transition-all hover:border-[#D4D4D4]"
@@ -150,7 +146,8 @@ export default function UserNotesTabContent() {
               {/* Author & Timestamp */}
               <div className="flex items-center text-[13px] font-normal text-[#6B6A6A]">
                 <span>
-                  {note.author} · {note.dateAgo}
+                  {note.authorAdmin?.name || 'مشرف النظام'} ·{' '}
+                  {formatRelativeArabicTime(note.createdAt)}
                 </span>
               </div>
             </div>
@@ -173,7 +170,7 @@ export default function UserNotesTabContent() {
         <div className="flex items-center gap-2.5">
           <button
             type="button"
-            disabled={!newNoteText.trim()}
+            disabled={!newNoteText.trim() || submitting}
             onClick={handleAddOrUpdateNote}
             className="bg-primary text-white font-bold text-[14px] px-6 py-2.5 rounded-2xl hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >

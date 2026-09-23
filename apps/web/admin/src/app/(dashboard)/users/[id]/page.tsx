@@ -243,11 +243,11 @@ export default function UserOverviewPage() {
       ) : activeTab === 'البلاغات' ? (
         <UserReportsTabContent userId={user.id} />
       ) : activeTab === 'التقييمات' ? (
-        <UserRatingsTabContent />
+        <UserRatingsTabContent userId={user.id} />
       ) : activeTab === 'السجل' ? (
         <UserLogsTabContent />
       ) : activeTab === 'ملاحظات' ? (
-        <UserNotesTabContent />
+        <UserNotesTabContent userId={user.id} />
       ) : userRole === 'COMPANY' ? (
         <CompanyProfileOverview
           email={user.email || '—'}

@@ -29,6 +29,10 @@ import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
 import { AdminPlansService } from './services/admin-plans.service';
 import { AdminInvoicesService } from './services/admin-invoices.service';
+import { AdminRatingsService } from './services/admin-ratings.service';
+import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
+import { AdminNotesService } from './services/admin-notes.service';
+import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 
@@ -48,6 +52,8 @@ export class AdminService {
     private readonly adminExhibitionService: AdminExhibitionService,
     private readonly adminPlansService: AdminPlansService,
     private readonly adminInvoicesService: AdminInvoicesService,
+    private readonly adminRatingsService: AdminRatingsService,
+    private readonly adminNotesService: AdminNotesService,
   ) {}
 
   async getDashboard() {
@@ -224,6 +230,38 @@ export class AdminService {
 
   async getCouponHistoryForUser(userId: string) {
     return this.adminInvoicesService.getCouponHistoryForUser(userId);
+  }
+
+  async getReviewsForUser(userId: string, query?: GetReviewsDto) {
+    return this.adminRatingsService.getReviewsForUser(userId, query);
+  }
+
+  async getReviewsSummaryForUser(userId: string) {
+    return this.adminRatingsService.getSummaryForUser(userId);
+  }
+
+  async deleteReview(reviewId: string) {
+    return this.adminRatingsService.deleteReview(reviewId);
+  }
+
+  async getNotesForUser(userId: string) {
+    return this.adminNotesService.getNotesForUser(userId);
+  }
+
+  async createNote(
+    userId: string,
+    dto: AdminCreateNoteDto,
+    authorAdminId: string,
+  ) {
+    return this.adminNotesService.createNote(userId, dto, authorAdminId);
+  }
+
+  async updateNote(noteId: string, dto: AdminUpdateNoteDto) {
+    return this.adminNotesService.updateNote(noteId, dto);
+  }
+
+  async deleteNote(noteId: string) {
+    return this.adminNotesService.deleteNote(noteId);
   }
 
   async grantCoupon(

@@ -36,6 +36,8 @@ import { AdminRemovePropertyDto } from './dto/admin-remove-property.dto';
 import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
+import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
+import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -280,6 +282,71 @@ export class AdminController {
   @ApiCommonErrors()
   async getCouponHistoryForUser(@Param('id') id: string) {
     return this.adminService.getCouponHistoryForUser(id);
+  }
+
+  @Get('users/:id/reviews')
+  @ApiOperation({ summary: "List a user's received reviews" })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getReviewsForUser(
+    @Param('id') id: string,
+    @Query() query: GetReviewsDto,
+  ) {
+    return this.adminService.getReviewsForUser(id, query);
+  }
+
+  @Get('users/:id/reviews/summary')
+  @ApiOperation({
+    summary: "Get a user's review summary (average, total, breakdown)",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getReviewsSummaryForUser(@Param('id') id: string) {
+    return this.adminService.getReviewsSummaryForUser(id);
+  }
+
+  @Delete('reviews/:id')
+  @ApiOperation({ summary: 'Permanently delete a review' })
+  @ApiParam({ name: 'id', description: 'Review ID' })
+  @ApiCommonErrors()
+  async deleteReview(@Param('id') id: string) {
+    return this.adminService.deleteReview(id);
+  }
+
+  @Get('users/:id/notes')
+  @ApiOperation({ summary: 'List internal admin notes for a user' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getNotesForUser(@Param('id') id: string) {
+    return this.adminService.getNotesForUser(id);
+  }
+
+  @Post('users/:id/notes')
+  @ApiOperation({ summary: 'Create an internal admin note for a user' })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async createNote(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminCreateNoteDto,
+  ) {
+    return this.adminService.createNote(id, dto, reqUser.userId);
+  }
+
+  @Patch('notes/:id')
+  @ApiOperation({ summary: 'Update an internal admin note' })
+  @ApiParam({ name: 'id', description: 'Note ID' })
+  @ApiCommonErrors()
+  async updateNote(@Param('id') id: string, @Body() dto: AdminUpdateNoteDto) {
+    return this.adminService.updateNote(id, dto);
+  }
+
+  @Delete('notes/:id')
+  @ApiOperation({ summary: 'Delete an internal admin note' })
+  @ApiParam({ name: 'id', description: 'Note ID' })
+  @ApiCommonErrors()
+  async deleteNote(@Param('id') id: string) {
+    return this.adminService.deleteNote(id);
   }
 
   @Get('moderators')

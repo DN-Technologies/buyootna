@@ -37,6 +37,13 @@ interface MockAdminService {
   grantExceptionalFeature: jest.Mock;
   getInvoicesForUser: jest.Mock;
   getCouponHistoryForUser: jest.Mock;
+  getReviewsForUser: jest.Mock;
+  getReviewsSummaryForUser: jest.Mock;
+  deleteReview: jest.Mock;
+  getNotesForUser: jest.Mock;
+  createNote: jest.Mock;
+  updateNote: jest.Mock;
+  deleteNote: jest.Mock;
   getAssignableAdmins: jest.Mock;
 }
 
@@ -78,6 +85,13 @@ describe('AdminController', () => {
       grantExceptionalFeature: jest.fn(),
       getInvoicesForUser: jest.fn(),
       getCouponHistoryForUser: jest.fn(),
+      getReviewsForUser: jest.fn(),
+      getReviewsSummaryForUser: jest.fn(),
+      deleteReview: jest.fn(),
+      getNotesForUser: jest.fn(),
+      createNote: jest.fn(),
+      updateNote: jest.fn(),
+      deleteNote: jest.fn(),
       getAssignableAdmins: jest.fn(),
     };
 
@@ -243,6 +257,57 @@ describe('AdminController', () => {
     adminService.getCouponHistoryForUser.mockResolvedValue([]);
     await controller.getCouponHistoryForUser('u-1');
     expect(adminService.getCouponHistoryForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getReviewsForUser should forward id and query to service', async () => {
+    adminService.getReviewsForUser.mockResolvedValue({ data: [] });
+    const query = { page: '1' };
+    await controller.getReviewsForUser('u-1', query);
+    expect(adminService.getReviewsForUser).toHaveBeenCalledWith('u-1', query);
+  });
+
+  it('getReviewsSummaryForUser should forward id to service', async () => {
+    adminService.getReviewsSummaryForUser.mockResolvedValue({
+      averageRating: 0,
+    });
+    await controller.getReviewsSummaryForUser('u-1');
+    expect(adminService.getReviewsSummaryForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('deleteReview should forward id to service', async () => {
+    adminService.deleteReview.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteReview('review-1');
+    expect(adminService.deleteReview).toHaveBeenCalledWith('review-1');
+  });
+
+  it('getNotesForUser should forward id to service', async () => {
+    adminService.getNotesForUser.mockResolvedValue([]);
+    await controller.getNotesForUser('u-1');
+    expect(adminService.getNotesForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('createNote should forward id, dto and adminUserId to service', async () => {
+    adminService.createNote.mockResolvedValue({ id: 'note-1' });
+    const dto = { content: 'نص' };
+    await controller.createNote(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.createNote).toHaveBeenCalledWith(
+      'u-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('updateNote should forward id and dto to service', async () => {
+    adminService.updateNote.mockResolvedValue({ id: 'note-1' });
+    const dto = { content: 'نص جديد' };
+    await controller.updateNote('note-1', dto);
+    expect(adminService.updateNote).toHaveBeenCalledWith('note-1', dto);
+  });
+
+  it('deleteNote should forward id to service', async () => {
+    adminService.deleteNote.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteNote('note-1');
+    expect(adminService.deleteNote).toHaveBeenCalledWith('note-1');
   });
 
   it('getAssignableAdmins should delegate to service', async () => {
