@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
   CallIcon,
@@ -11,6 +11,7 @@ import {
 } from '@/assets/icons/home/cards';
 import { PropertiesTabIcon } from '@/assets/icons/tab';
 import { showAlert } from '@/shared/utils/alert';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 export interface OfficeListCardProps {
   id: string;
@@ -55,7 +56,7 @@ export default function OfficeListCard({
       return;
     }
     const cleanPhone = phone.replace(/[^0-9+]/g, '');
-    Linking.openURL(`tel:${cleanPhone}`).catch(() => {
+    openUrlThrottled(`tel:${cleanPhone}`).catch(() => {
       showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
     });
   };

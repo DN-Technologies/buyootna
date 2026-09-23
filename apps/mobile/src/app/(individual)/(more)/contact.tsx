@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { BuyootnaLogoDark } from '@/assets/icons';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 // Gmail multicolored logo component
 const GmailIcon = ({ size = 24 }: { size?: number }) => (
@@ -49,18 +50,18 @@ export default function ContactUsScreen() {
   };
 
   const openWhatsApp = () => {
-    Linking.openURL('whatsapp://send?phone=96599507399').catch(() => {
+    openUrlThrottled('whatsapp://send?phone=96599507399').catch(() => {
       // Fallback to web link if app not installed
       Linking.openURL('https://wa.me/96599507399');
     });
   };
 
   const openDialer = () => {
-    Linking.openURL('tel:99507399');
+    openUrlThrottled('tel:99507399');
   };
 
   const openEmail = () => {
-    Linking.openURL('mailto:buyootna@hotmail.com');
+    openUrlThrottled('mailto:buyootna@hotmail.com');
   };
 
   return (

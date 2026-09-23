@@ -1,5 +1,7 @@
 import { Image } from 'expo-image';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 import { RequestClientInfo } from '../types';
 import {
@@ -40,7 +42,7 @@ export default function RequestDetailsClientCard({
       return;
     }
     if (client.phone) {
-      Linking.openURL(`tel:${client.phone}`).catch(() => {});
+      openUrlThrottled(`tel:${client.phone}`).catch(() => {});
     }
   };
 
@@ -51,7 +53,7 @@ export default function RequestDetailsClientCard({
     }
     if (client.whatsapp) {
       const cleanNumber = client.whatsapp.replace(/[^\d+]/g, '');
-      Linking.openURL(`https://wa.me/${cleanNumber}`).catch(() => {});
+      openUrlThrottled(`https://wa.me/${cleanNumber}`).catch(() => {});
     }
   };
 
