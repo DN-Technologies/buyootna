@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -6,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, RequestStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 
 const CLIENT_INCLUDE = {
@@ -20,13 +22,59 @@ type RequestWithClient = Prisma.CompanyRequestGetPayload<{
   include: { clientIdentity: { include: typeof CLIENT_INCLUDE } };
 }>;
 
-export type RequestScopeFilter = 'company' | 'public';
+export type RequestScopeFilter = 'company' | 'public' | 'mine';
 export type RequestStatusFilter =
   'all' | 'pending' | 'accepted' | 'responded' | 'rejected';
 
 @Injectable()
 export class CompanyRequestsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Submits a price-quote request as the current identity. Omitting
+   * targetIdentityId publishes a public/marketplace request any company can
+   * claim; setting it sends the request directly to that COMPANY/OFFICE.
+   */
+  async create(
+    clientIdentityId: string,
+    dto: CreateCompanyRequestDto,
+  ): Promise<CompanyRequestResponseDto> {
+    let targetIdentityId: string | null = null;
+
+    if (dto.targetIdentityId) {
+      const target = await this.prisma.identity.findUnique({
+        where: { id: dto.targetIdentityId },
+        select: { id: true, type: true },
+      });
+      if (!target || (target.type !== 'COMPANY' && target.type !== 'OFFICE')) {
+        throw new BadRequestException('الجهة المطلوبة غير موجودة');
+      }
+      if (target.id === clientIdentityId) {
+        throw new BadRequestException('لا يمكن إرسال طلب إلى نفسك');
+      }
+      targetIdentityId = target.id;
+    }
+
+    const request = await this.prisma.companyRequest.create({
+      data: {
+        clientIdentityId,
+        targetIdentityId,
+        title: dto.title,
+        category: dto.category,
+        priceRange: dto.priceRange,
+        offerType: dto.offerType,
+        location: dto.location,
+        latitude: dto.latitude,
+        longitude: dto.longitude,
+        images: dto.images ?? [],
+        description: dto.description,
+        status: RequestStatus.PENDING,
+      },
+      include: { clientIdentity: { include: CLIENT_INCLUDE } },
+    });
+
+    return this.toResponseDto(request, clientIdentityId, 0);
+  }
 
   async findMine(
     identityId: string,
@@ -39,13 +87,17 @@ export class CompanyRequestsService {
     const where: Prisma.CompanyRequestWhereInput =
       params.scope === 'company'
         ? { targetIdentityId: identityId }
-        : {
-            targetIdentityId: null,
-            OR: [
-              { acceptedByIdentityId: null },
-              { acceptedByIdentityId: identityId },
-            ],
-          };
+        : params.scope === 'mine'
+          ? // The requester's own submissions, directed and public alike --
+            // this is the "طلباتي" surface in My Activity.
+            { clientIdentityId: identityId }
+          : {
+              targetIdentityId: null,
+              OR: [
+                { acceptedByIdentityId: null },
+                { acceptedByIdentityId: identityId },
+              ],
+            };
 
     if (params.status && params.status !== 'all') {
       where.status = params.status.toUpperCase() as RequestStatus;

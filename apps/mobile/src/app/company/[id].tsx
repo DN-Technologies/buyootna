@@ -1,209 +1,66 @@
-import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRef, useState } from 'react';
+import { ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { companyService } from '@/shared/api/company.service';
-import { reportsService } from '@/shared/api/reports.service';
-import { reviewsService } from '@/shared/api/reviews.service';
+import CompanyAboutTab from '@/shared/components/company/CompanyAboutTab';
+import CompanyBottomBar from '@/shared/components/company/CompanyBottomBar';
 import CompanyGalleryTab from '@/shared/components/company/CompanyGalleryTab';
 import CompanyHeaderCard from '@/shared/components/company/CompanyHeaderCard';
+import CompanyModals from '@/shared/components/company/CompanyModals';
+import CompanyNavBar from '@/shared/components/company/CompanyNavBar';
 import CompanyServicesTab from '@/shared/components/company/CompanyServicesTab';
-import CompanyWorkingHours from '@/shared/components/company/CompanyWorkingHours';
-import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
+import CompanyTabsSwitcher, {
+  CompanyTab,
+} from '@/shared/components/company/CompanyTabsSwitcher';
 import ContentContainer from '@/shared/components/ContentContainer';
-import AddReviewSheet from '@/shared/components/profile/AddReviewSheet';
-import { SortBottomSheet } from '@/shared/components/profile/ProfileFilterSheet';
-import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
-import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
-import { ReviewItem } from '@/shared/components/profile/types';
-import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
-import { showAlert } from '@/shared/utils/alert';
-
-type CompanyTab = 'about' | 'services' | 'gallery';
-
-const DEFAULT_REVIEW_SUMMARY = {
-  averageRating: 0,
-  totalRatingsCount: 0,
-  ratingBreakdown: [
-    { star: 5, pct: '0%' },
-    { star: 4, pct: '0%' },
-    { star: 3, pct: '0%' },
-    { star: 2, pct: '0%' },
-    { star: 1, pct: '0%' },
-  ],
-};
+import { useCompanyDetails } from '@/shared/hooks/useCompanyDetails';
+import { useCompanyReport } from '@/shared/hooks/useCompanyReport';
+import { useCompanyReviews } from '@/shared/hooks/useCompanyReviews';
 
 export default function CompanyProfileScreen() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
+  const companyId =
+    typeof id === 'string' ? id : Array.isArray(id) ? id[0] : '';
 
   const [activeTab, setActiveTab] = useState<CompanyTab>('about');
-  const [visibleReviewsCount, setVisibleReviewsCount] = useState(3);
-  const [reviewSort, setReviewSort] = useState('all');
 
   // Modal references
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
-  const reportSheetRef = useRef<BottomSheetModal>(null);
+
+  // Data & Business Logic Hooks (Separation of Concerns)
+  const { company, isLoading, services, projects, targetUserId } =
+    useCompanyDetails(companyId);
 
   const {
-    data: company,
-    isLoading,
-    isError: companyError,
-  } = useQuery({
-    queryKey: ['company', id],
-    queryFn: () => companyService.getCompanyDetails(String(id)),
-    enabled: !!id,
-  });
+    reviewSummary,
+    reviews,
+    displayedReviews,
+    visibleReviewsCount,
+    reviewSort,
+    setReviewSort,
+    handleShowMoreReviews,
+    handleAddReview,
+    handleToggleLike,
+    handleToggleDislike,
+  } = useCompanyReviews(targetUserId, Boolean(company));
 
-  useEffect(() => {
-    if (companyError) {
-      showAlert('خطأ', 'تعذر تحميل بيانات الشركة');
-    }
-  }, [companyError]);
-
-  const services = company?.services ?? [];
-  const projects = company?.projects ?? [];
-  const targetUserId = company?.userId || String(id);
-  const reviewsQueryKey = ['companyReviews', targetUserId, reviewSort];
-
-  const { data: reviewsData, refetch: refetchReviews } = useQuery({
-    queryKey: reviewsQueryKey,
-    queryFn: async () => {
-      const [sumRes, revRes] = await Promise.all([
-        reviewsService.getSummary(targetUserId),
-        reviewsService.getReviews(targetUserId, reviewSort),
-      ]);
-      return { summary: sumRes, reviews: revRes.data || [] };
-    },
-    enabled: !!company,
-  });
-
-  const reviewSummary = reviewsData?.summary ?? DEFAULT_REVIEW_SUMMARY;
-  const reviews = reviewsData?.reviews ?? [];
-
-  const handleAddReview = async (comment: string, rating: number) => {
-    try {
-      await reviewsService.addReview(targetUserId, rating, comment);
-      showAlert('تم بنجاح', 'تم إضافة تقييمك بنجاح');
-      refetchReviews();
-    } catch (error: any) {
-      const msg = error.response?.data?.message || 'تعذر إضافة التقييم';
-      showAlert('خطأ', msg);
-    }
-  };
-
-  const handleSubmitReport = async (reason: string, description?: string) => {
-    try {
-      await reportsService.submitReport(targetUserId, reason, description);
-      showAlert(
-        'تم الإرسال',
-        'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته.',
-      );
-    } catch (error: any) {
-      const msg = error.response?.data?.message || 'تعذر إرسال البلاغ';
-      showAlert('خطأ', msg);
-    }
-  };
-
-  const handleToggleLike = async (revId: string) => {
-    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsData) =>
-      prev
-        ? {
-            ...prev,
-            reviews: prev.reviews.map((r: ReviewItem) =>
-              r.id === revId
-                ? {
-                    ...r,
-                    likes: r.userLiked ? r.likes - 1 : r.likes + 1,
-                    userLiked: !r.userLiked,
-                    dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes,
-                    userDisliked: false,
-                  }
-                : r,
-            ),
-          }
-        : prev,
-    );
-    try {
-      await reviewsService.toggleLike(revId);
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    }
-  };
-
-  const handleToggleDislike = async (revId: string) => {
-    queryClient.setQueryData(reviewsQueryKey, (prev: typeof reviewsData) =>
-      prev
-        ? {
-            ...prev,
-            reviews: prev.reviews.map((r: ReviewItem) =>
-              r.id === revId
-                ? {
-                    ...r,
-                    dislikes: r.userDisliked ? r.dislikes - 1 : r.dislikes + 1,
-                    userDisliked: !r.userDisliked,
-                    likes: r.userLiked ? r.likes - 1 : r.likes,
-                    userLiked: false,
-                  }
-                : r,
-            ),
-          }
-        : prev,
-    );
-    try {
-      await reviewsService.toggleDislike(revId);
-    } catch (error) {
-      console.error('Error toggling dislike:', error);
-    }
-  };
-
-  const displayedReviews = reviews.slice(0, visibleReviewsCount);
+  const { reportSheetRef, handleOpenReport, handleSubmitReport } =
+    useCompanyReport(targetUserId);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ContentContainer className="flex-1">
-        {/* ── Top Navigation Header ── */}
-        <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-3">
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.back()}
-            className="h-9 w-9 items-center justify-center rounded-full bg-[#F8FAFC]"
-          >
-            <Feather name="chevron-right" size={22} color="#111111" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => {
-              showAlert('خيارات', '', [
-                { text: 'مشاركة الملف الشخصي', onPress: () => {} },
-                {
-                  text: 'إبلاغ عن الشركة',
-                  style: 'destructive',
-                  onPress: () => reportSheetRef.current?.present(),
-                },
-                { text: 'إلغاء', style: 'cancel' },
-              ]);
-            }}
-            className="h-9 w-9 items-center justify-center rounded-full bg-[#F8FAFC]"
-          >
-            <Feather name="more-vertical" size={20} color="#111111" />
-          </TouchableOpacity>
-        </View>
+        {/* Navigation Bar */}
+        <CompanyNavBar
+          onBack={() => router.back()}
+          onOpenReport={handleOpenReport}
+        />
 
         {isLoading ? (
           <CompanyDetailSkeleton />
@@ -220,134 +77,28 @@ export default function CompanyProfileScreen() {
             contentContainerStyle={{ paddingBottom: 110 }}
           >
             <View className="px-5 pt-4">
-              {/* ── 1. Company Header Card ── */}
+              {/* Header Info Card */}
               <CompanyHeaderCard company={company} />
 
-              {/* ── 2. 3-Tab Navigation Switcher ── */}
-              <View className="mb-6 flex-row items-center border-b border-gray-200">
-                {/* Tab 1: About Company (عن الشركة) */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setActiveTab('about')}
-                  className={`flex-1 items-center border-b-2 pb-3 ${
-                    activeTab === 'about'
-                      ? 'border-[#15304D]'
-                      : 'border-transparent'
-                  }`}
-                >
-                  <Text
-                    className={`font-cairo-bold text-base ${
-                      activeTab === 'about'
-                        ? 'text-[#15304D]'
-                        : 'text-[#6B6A6A]'
-                    }`}
-                  >
-                    عن الشركة
-                  </Text>
-                </TouchableOpacity>
+              {/* Tab Navigation Switcher */}
+              <CompanyTabsSwitcher
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              />
 
-                {/* Tab 2: Services (الخدمات) */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setActiveTab('services')}
-                  className={`flex-1 items-center border-b-2 pb-3 ${
-                    activeTab === 'services'
-                      ? 'border-[#15304D]'
-                      : 'border-transparent'
-                  }`}
-                >
-                  <Text
-                    className={`font-cairo-bold text-base ${
-                      activeTab === 'services'
-                        ? 'text-[#15304D]'
-                        : 'text-[#6B6A6A]'
-                    }`}
-                  >
-                    الخدمات
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Tab 3: Gallery / Portfolio (المعرض) */}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => setActiveTab('gallery')}
-                  className={`flex-1 items-center border-b-2 pb-3 ${
-                    activeTab === 'gallery'
-                      ? 'border-[#15304D]'
-                      : 'border-transparent'
-                  }`}
-                >
-                  <Text
-                    className={`font-cairo-bold text-base ${
-                      activeTab === 'gallery'
-                        ? 'text-[#15304D]'
-                        : 'text-[#6B6A6A]'
-                    }`}
-                  >
-                    المعرض
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* ── 3. Tab Contents ── */}
+              {/* Tab Contents */}
               {activeTab === 'about' && (
-                <View>
-                  {/* Working Hours */}
-                  <CompanyWorkingHours />
-
-                  {/* Reviews Section Header & Toolbar */}
-                  <View className="mb-4 flex-row items-center justify-between">
-                    <Text className="font-cairo-semibold text-[14px] text-[#6B6A6A]">
-                      التقييمات
-                    </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => sortSheetRef.current?.present()}
-                      className="flex-row items-center gap-1.5"
-                    >
-                      <Feather name="sliders" size={14} color="#6B6A6A" />
-                      <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-                        الترتيب حسب
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Rating Breakdown & Share Opinion Button */}
-                  <ReviewsSummarySection
-                    averageRating={reviewSummary.averageRating}
-                    totalRatingsCount={reviewSummary.totalRatingsCount}
-                    ratingBreakdown={reviewSummary.ratingBreakdown}
-                    onAddReview={() => addReviewSheetRef.current?.present()}
-                    onSortPress={() => sortSheetRef.current?.present()}
-                  />
-
-                  {/* Reviews List */}
-                  <View className="mt-4 space-y-4">
-                    {displayedReviews.map((rev) => (
-                      <ReviewCardItem
-                        key={rev.id}
-                        item={rev}
-                        onToggleLike={handleToggleLike}
-                        onToggleDislike={handleToggleDislike}
-                      />
-                    ))}
-                  </View>
-
-                  {/* Show More Button */}
-                  {visibleReviewsCount < reviews.length && (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() =>
-                        setVisibleReviewsCount((prev) => prev + 3)
-                      }
-                      className="mt-6 self-center rounded-full border border-gray-200 px-6 py-2.5 bg-white"
-                    >
-                      <Text className="font-cairo-semibold text-xs text-[#111111]">
-                        عرض المزيد
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
+                <CompanyAboutTab
+                  reviewSummary={reviewSummary}
+                  reviews={reviews}
+                  displayedReviews={displayedReviews}
+                  visibleReviewsCount={visibleReviewsCount}
+                  onOpenSort={() => sortSheetRef.current?.present()}
+                  onOpenAddReview={() => addReviewSheetRef.current?.present()}
+                  onToggleLike={handleToggleLike}
+                  onToggleDislike={handleToggleDislike}
+                  onShowMoreReviews={handleShowMoreReviews}
+                />
               )}
 
               {activeTab === 'services' && (
@@ -361,41 +112,27 @@ export default function CompanyProfileScreen() {
           </ScrollView>
         )}
 
-        {/* ── 4. Fixed Bottom Quote Request Bar ── */}
-        <View
-          style={{ paddingBottom: Math.max(insets.bottom, 12) }}
-          className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 pt-3"
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => quoteModalRef.current?.present()}
-            className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
-          >
-            <Text className="font-cairo-bold text-base leading-[24px] text-white">
-              طلب عرض سعر
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* Fixed Bottom Quote Request Action Bar */}
+        <CompanyBottomBar
+          onRequestQuote={() => quoteModalRef.current?.present()}
+        />
 
-        {/* ── 5. Modals & Sheets ── */}
-        <AddReviewSheet
-          ref={addReviewSheetRef}
-          onSubmit={handleAddReview}
-        />
-        <SortBottomSheet
-          ref={sortSheetRef}
-          selectedValue={reviewSort}
-          onSelect={setReviewSort}
-        />
-        <QuoteRequestModal
-          ref={quoteModalRef}
+        {/* Coordinated Modals & Bottom Sheets */}
+        <CompanyModals
+          addReviewSheetRef={addReviewSheetRef}
+          sortSheetRef={sortSheetRef}
+          quoteModalRef={quoteModalRef}
+          reportSheetRef={reportSheetRef}
           companyName={company?.name || ''}
           companySubtitle={company?.bio}
           companyLogoUrl={company?.logoUrl}
           services={services.length ? services : undefined}
-          onRequestSubmitted={() => {}}
+          targetIdentityId={company?.id}
+          reviewSort={reviewSort}
+          onSelectSort={setReviewSort}
+          onAddReview={handleAddReview}
+          onSubmitReport={handleSubmitReport}
         />
-        <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
       </ContentContainer>
     </SafeAreaView>
   );

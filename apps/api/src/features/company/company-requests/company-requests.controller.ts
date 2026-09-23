@@ -1,8 +1,10 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +19,7 @@ import type {
   RequestScopeFilter,
   RequestStatusFilter,
 } from './company-requests.service';
+import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 
 @ApiTags('Company Requests')
@@ -28,12 +31,30 @@ export class CompanyRequestsController {
     private readonly companyRequestsService: CompanyRequestsService,
   ) {}
 
+  @Post()
+  @ApiOperation({
+    summary:
+      'Submit a price-quote request as the current identity (directed to a company/office, or public when no target is given)',
+  })
+  @ApiResponse({ status: 201, type: CompanyRequestResponseDto })
+  @ApiCommonErrors()
+  async create(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: CreateCompanyRequestDto,
+  ) {
+    return this.companyRequestsService.create(reqUser.identityId, dto);
+  }
+
   @Get('me')
   @ApiOperation({
     summary:
-      'List service requests (leads) visible to the current company identity',
+      'List service requests (leads) visible to the current company identity, or scope=mine for the requests this identity submitted',
   })
-  @ApiQuery({ name: 'scope', enum: ['company', 'public'], required: false })
+  @ApiQuery({
+    name: 'scope',
+    enum: ['company', 'public', 'mine'],
+    required: false,
+  })
   @ApiQuery({
     name: 'status',
     enum: ['all', 'pending', 'accepted', 'responded', 'rejected'],

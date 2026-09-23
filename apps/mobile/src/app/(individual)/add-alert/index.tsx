@@ -11,6 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  alertsService,
+  mapAuctionsStateToPayload,
+  mapPropertiesStateToPayload,
+} from '@/shared/api/alerts.service';
 import AlertAuctionsTab, {
   AlertAuctionsState,
   DEFAULT_ALERT_AUCTIONS_STATE,
@@ -20,11 +25,6 @@ import AlertPropertiesTab, {
   DEFAULT_ALERT_PROPERTIES_STATE,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import AlertSuccessModal from '@/shared/components/add-alert/AlertSuccessModal';
-import {
-  alertsService,
-  mapAuctionsStateToPayload,
-  mapPropertiesStateToPayload,
-} from '@/shared/api/alerts.service';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';

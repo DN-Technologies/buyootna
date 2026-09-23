@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import React from 'react';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { openUrlThrottled } from '@/shared/utils/openUrl';

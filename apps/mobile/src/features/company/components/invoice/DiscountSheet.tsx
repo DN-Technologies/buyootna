@@ -1,13 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { Ionicons } from '@expo/vector-icons';
 import { forwardRef, useCallback, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { showAlert } from '@/shared/utils/alert';
+
 import FieldLabel from './FieldLabel';
 
 const inputClassName =
