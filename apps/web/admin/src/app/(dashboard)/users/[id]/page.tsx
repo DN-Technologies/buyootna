@@ -26,6 +26,8 @@ import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
 import UserNotesTabContent from '@/components/users/notes/UserNotesTabContent'
 import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
 import { fetchUserReports } from '@/lib/admin-reports'
+import { fetchUserReviewsSummary } from '@/lib/admin-ratings'
+import { fetchUserRequests } from '@/lib/admin-requests'
 
 const roleLabels: Record<string, string> = {
   INDIVIDUAL: 'فرد',
@@ -82,6 +84,9 @@ export default function UserOverviewPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [reportsCount, setReportsCount] = useState<number | undefined>(undefined)
+  const [ratingAverage, setRatingAverage] = useState<number | undefined>(undefined)
+  const [ratingCount, setRatingCount] = useState<number | undefined>(undefined)
+  const [requestsCount, setRequestsCount] = useState<number | undefined>(undefined)
 
   const [changePackageOpen, setChangePackageOpen] = useState(false)
   const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] = useState(false)
@@ -123,9 +128,8 @@ export default function UserOverviewPage() {
     loadUser()
   }, [loadUser])
 
-  // Lightweight parallel fetch for UserQuickStats — independent of which
-  // tab is active. More counts (requests/rating) get added here as their
-  // admin endpoints land in later phases.
+  // Lightweight parallel fetches for UserQuickStats — independent of which
+  // tab is active. servicesCount stays unset (no Service backend exists).
   useEffect(() => {
     let cancelled = false
     fetchUserReports(params.id, { limit: 1 })
@@ -133,6 +137,19 @@ export default function UserOverviewPage() {
         if (!cancelled) setReportsCount(res.meta.total)
       })
       .catch((err) => console.error('Failed to load reports count:', err))
+    fetchUserReviewsSummary(params.id)
+      .then((res) => {
+        if (!cancelled) {
+          setRatingAverage(res.averageRating)
+          setRatingCount(res.totalRatingsCount)
+        }
+      })
+      .catch((err) => console.error('Failed to load ratings summary:', err))
+    fetchUserRequests(params.id)
+      .then((res) => {
+        if (!cancelled) setRequestsCount(res.length)
+      })
+      .catch((err) => console.error('Failed to load requests count:', err))
     return () => {
       cancelled = true
     }
@@ -215,6 +232,9 @@ export default function UserOverviewPage() {
           stats={{
             reportsCount,
             adsCount: identity?.properties?.length,
+            ratingAverage,
+            ratingCount,
+            requestsCount,
           }}
         />
         <UserDetailTabs
@@ -245,7 +265,7 @@ export default function UserOverviewPage() {
       ) : activeTab === 'التقييمات' ? (
         <UserRatingsTabContent userId={user.id} />
       ) : activeTab === 'السجل' ? (
-        <UserLogsTabContent />
+        <UserLogsTabContent userId={user.id} />
       ) : activeTab === 'ملاحظات' ? (
         <UserNotesTabContent userId={user.id} />
       ) : userRole === 'COMPANY' ? (

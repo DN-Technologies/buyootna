@@ -210,6 +210,36 @@ export class AdminReportsService {
 
     if (dto.status) {
       await this.notifyReporterBestEffort(updated);
+      await this.auditLog.log({
+        actorAdminId: adminUserId,
+        action:
+          dto.status === ReportStatus.RESOLVED
+            ? 'REPORT_RESOLVED'
+            : 'REPORT_DISMISSED',
+        targetType: 'REPORT',
+        targetId: id,
+        targetUserId: updated.targetUserId ?? undefined,
+      });
+    }
+    if (dto.assignedAdminId !== undefined) {
+      await this.auditLog.log({
+        actorAdminId: adminUserId,
+        action: 'REPORT_ASSIGNED',
+        targetType: 'REPORT',
+        targetId: id,
+        targetUserId: updated.targetUserId ?? undefined,
+        metadata: { assignedAdminId: dto.assignedAdminId || null },
+      });
+    }
+    if (dto.priority) {
+      await this.auditLog.log({
+        actorAdminId: adminUserId,
+        action: 'REPORT_PRIORITY_CHANGED',
+        targetType: 'REPORT',
+        targetId: id,
+        targetUserId: updated.targetUserId ?? undefined,
+        metadata: { priority: dto.priority },
+      });
     }
 
     return toRow(updated);
@@ -244,6 +274,16 @@ export class AdminReportsService {
         });
         updatedIds.push(id);
         await this.notifyReporterBestEffort(updated);
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action:
+            status === ReportStatus.RESOLVED
+              ? 'REPORT_RESOLVED'
+              : 'REPORT_DISMISSED',
+          targetType: 'REPORT',
+          targetId: id,
+          targetUserId: updated.targetUserId ?? undefined,
+        });
       } catch (error) {
         this.logger.warn(`Failed to update report ${id}: ${error}`);
         failedIds.push(id);

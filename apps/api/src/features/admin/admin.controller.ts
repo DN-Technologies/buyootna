@@ -313,6 +313,24 @@ export class AdminController {
     return this.adminService.deleteReview(id);
   }
 
+  @Get('users/:id/logs')
+  @ApiOperation({
+    summary: "Paginated audit-log entries for a user's detail page",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getLogsForUser(
+    @Param('id') id: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.adminService.getLogsForUser(
+      id,
+      page ? parseInt(page, 10) : undefined,
+      limit ? parseInt(limit, 10) : undefined,
+    );
+  }
+
   @Get('users/:id/notes')
   @ApiOperation({ summary: 'List internal admin notes for a user' })
   @ApiParam({ name: 'id', description: 'User ID' })
@@ -367,9 +385,10 @@ export class AdminController {
   @ApiResponse({ status: 200, type: AdminNotifyUsersResponseDto })
   @ApiCommonErrors()
   async notifyUsers(
+    @CurrentUser() reqUser: RequestUser,
     @Body() dto: AdminNotifyUsersDto,
   ): Promise<AdminNotifyUsersResponseDto> {
-    return this.adminService.notifyUsers(dto);
+    return this.adminService.notifyUsers(dto, reqUser.userId);
   }
 
   @Get('users')
@@ -431,10 +450,11 @@ export class AdminController {
   @ApiResponse({ status: 200, type: AdminUpdateUserStatusResponseDto })
   @ApiCommonErrors()
   async updateUserStatus(
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto: AdminUpdateStatusDto,
   ) {
-    return this.adminService.updateUserStatus(id, dto);
+    return this.adminService.updateUserStatus(id, dto, reqUser.userId);
   }
 
   @Delete('users/:id')
@@ -455,10 +475,11 @@ export class AdminController {
   @ApiResponse({ status: 200, type: IdentityResponseDto })
   @ApiCommonErrors()
   async updateIdentityStatus(
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto: AdminUpdateIdentityStatusDto,
   ) {
-    return this.adminService.updateIdentityStatus(id, dto);
+    return this.adminService.updateIdentityStatus(id, dto, reqUser.userId);
   }
 
   @Post('identities/:id/request-edit')
@@ -470,10 +491,11 @@ export class AdminController {
   @ApiResponse({ status: 201, type: IdentityResponseDto })
   @ApiCommonErrors()
   async requestIdentityEdit(
+    @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
     @Body() dto: AdminRequestIdentityEditDto,
   ) {
-    return this.adminService.requestIdentityEdit(id, dto);
+    return this.adminService.requestIdentityEdit(id, dto, reqUser.userId);
   }
 
   @Post('users/:id/reset-password')

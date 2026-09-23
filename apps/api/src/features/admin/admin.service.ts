@@ -35,6 +35,7 @@ import { AdminNotesService } from './services/admin-notes.service';
 import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
+import { AdminAuditLogService } from './services/admin-audit-log.service';
 
 @Injectable()
 export class AdminService {
@@ -54,6 +55,7 @@ export class AdminService {
     private readonly adminInvoicesService: AdminInvoicesService,
     private readonly adminRatingsService: AdminRatingsService,
     private readonly adminNotesService: AdminNotesService,
+    private readonly adminAuditLogService: AdminAuditLogService,
   ) {}
 
   async getDashboard() {
@@ -172,8 +174,9 @@ export class AdminService {
 
   async notifyUsers(
     dto: AdminNotifyUsersDto,
+    adminUserId?: string,
   ): Promise<AdminNotifyUsersResponseDto> {
-    return this.adminUsersService.notifyUsers(dto);
+    return this.adminUsersService.notifyUsers(dto, adminUserId);
   }
 
   async getUsers(filters: AdminUsersFilterDto) {
@@ -184,22 +187,36 @@ export class AdminService {
     return this.adminUsersService.getUserById(id);
   }
 
-  async updateUserStatus(userId: string, dto: AdminUpdateStatusDto) {
-    return this.adminUsersService.updateUserStatus(userId, dto);
+  async updateUserStatus(
+    userId: string,
+    dto: AdminUpdateStatusDto,
+    adminUserId?: string,
+  ) {
+    return this.adminUsersService.updateUserStatus(userId, dto, adminUserId);
   }
 
   async updateIdentityStatus(
     identityId: string,
     dto: AdminUpdateIdentityStatusDto,
+    adminUserId?: string,
   ) {
-    return this.adminIdentityService.updateIdentityStatus(identityId, dto);
+    return this.adminIdentityService.updateIdentityStatus(
+      identityId,
+      dto,
+      adminUserId,
+    );
   }
 
   async requestIdentityEdit(
     identityId: string,
     dto: AdminRequestIdentityEditDto,
+    adminUserId?: string,
   ) {
-    return this.adminIdentityService.requestIdentityEdit(identityId, dto);
+    return this.adminIdentityService.requestIdentityEdit(
+      identityId,
+      dto,
+      adminUserId,
+    );
   }
 
   async deleteUser(userId: string) {
@@ -262,6 +279,10 @@ export class AdminService {
 
   async deleteNote(noteId: string) {
     return this.adminNotesService.deleteNote(noteId);
+  }
+
+  async getLogsForUser(userId: string, page?: number, limit?: number) {
+    return this.adminAuditLogService.getLogsForUser(userId, page, limit);
   }
 
   async grantCoupon(

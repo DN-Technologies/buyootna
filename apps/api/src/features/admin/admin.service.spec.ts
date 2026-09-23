@@ -15,6 +15,7 @@ import { AdminPlansService } from './services/admin-plans.service';
 import { AdminInvoicesService } from './services/admin-invoices.service';
 import { AdminRatingsService } from './services/admin-ratings.service';
 import { AdminNotesService } from './services/admin-notes.service';
+import { AdminAuditLogService } from './services/admin-audit-log.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
@@ -104,6 +105,10 @@ interface MockAdminNotesService {
   deleteNote: jest.Mock;
 }
 
+interface MockAdminAuditLogService {
+  getLogsForUser: jest.Mock;
+}
+
 describe('AdminService', () => {
   let service: AdminService;
   let adminUsersService: MockAdminUsersService;
@@ -121,6 +126,7 @@ describe('AdminService', () => {
   let adminInvoicesService: MockAdminInvoicesService;
   let adminRatingsService: MockAdminRatingsService;
   let adminNotesService: MockAdminNotesService;
+  let adminAuditLogService: MockAdminAuditLogService;
 
   beforeEach(async () => {
     adminUsersService = {
@@ -211,6 +217,10 @@ describe('AdminService', () => {
       deleteNote: jest.fn(),
     };
 
+    adminAuditLogService = {
+      getLogsForUser: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminService,
@@ -274,6 +284,10 @@ describe('AdminService', () => {
           provide: AdminNotesService,
           useValue: adminNotesService,
         },
+        {
+          provide: AdminAuditLogService,
+          useValue: adminAuditLogService,
+        },
       ],
     }).compile();
 
@@ -311,7 +325,7 @@ describe('AdminService', () => {
       const mockResult = { data: [] };
       adminReportsService.getReports.mockResolvedValue(mockResult);
 
-      const result = await service.getReports(filters as any);
+      const result = await service.getReports(filters);
 
       expect(adminReportsService.getReports).toHaveBeenCalledWith(filters);
       expect(result).toBe(mockResult);
@@ -376,7 +390,7 @@ describe('AdminService', () => {
       const mockResult = { data: [] };
       adminReportsService.getReportsForUser.mockResolvedValue(mockResult);
 
-      const result = await service.getReportsForUser('u-1', filters as any);
+      const result = await service.getReportsForUser('u-1', filters);
 
       expect(adminReportsService.getReportsForUser).toHaveBeenCalledWith(
         'u-1',
@@ -399,9 +413,7 @@ describe('AdminService', () => {
 
     it('delegates removeReportedProperty to AdminReportsService', async () => {
       const mockResult = { message: 'تم حذف الإعلان بنجاح' };
-      adminReportsService.removeReportedProperty.mockResolvedValue(
-        mockResult,
-      );
+      adminReportsService.removeReportedProperty.mockResolvedValue(mockResult);
 
       const result = await service.removeReportedProperty(
         'prop-1',
@@ -533,9 +545,9 @@ describe('AdminService', () => {
 
       const result = await service.getCouponHistoryForUser('u-1');
 
-      expect(
-        adminInvoicesService.getCouponHistoryForUser,
-      ).toHaveBeenCalledWith('u-1');
+      expect(adminInvoicesService.getCouponHistoryForUser).toHaveBeenCalledWith(
+        'u-1',
+      );
       expect(result).toBe(mockResult);
     });
 
@@ -559,9 +571,7 @@ describe('AdminService', () => {
 
       const result = await service.getReviewsSummaryForUser('u-1');
 
-      expect(adminRatingsService.getSummaryForUser).toHaveBeenCalledWith(
-        'u-1',
-      );
+      expect(adminRatingsService.getSummaryForUser).toHaveBeenCalledWith('u-1');
       expect(result).toBe(mockResult);
     });
 
@@ -571,9 +581,7 @@ describe('AdminService', () => {
 
       const result = await service.deleteReview('review-1');
 
-      expect(adminRatingsService.deleteReview).toHaveBeenCalledWith(
-        'review-1',
-      );
+      expect(adminRatingsService.deleteReview).toHaveBeenCalledWith('review-1');
       expect(result).toBe(mockResult);
     });
 
@@ -609,10 +617,7 @@ describe('AdminService', () => {
 
       const result = await service.updateNote('note-1', dto);
 
-      expect(adminNotesService.updateNote).toHaveBeenCalledWith(
-        'note-1',
-        dto,
-      );
+      expect(adminNotesService.updateNote).toHaveBeenCalledWith('note-1', dto);
       expect(result).toBe(mockResult);
     });
 
@@ -623,6 +628,20 @@ describe('AdminService', () => {
       const result = await service.deleteNote('note-1');
 
       expect(adminNotesService.deleteNote).toHaveBeenCalledWith('note-1');
+      expect(result).toBe(mockResult);
+    });
+
+    it('delegates getLogsForUser to AdminAuditLogService', async () => {
+      const mockResult = { data: [], meta: { total: 0 } };
+      adminAuditLogService.getLogsForUser.mockResolvedValue(mockResult);
+
+      const result = await service.getLogsForUser('u-1', 2, 5);
+
+      expect(adminAuditLogService.getLogsForUser).toHaveBeenCalledWith(
+        'u-1',
+        2,
+        5,
+      );
       expect(result).toBe(mockResult);
     });
 
@@ -641,7 +660,7 @@ describe('AdminService', () => {
       const mockResult = { data: [] };
       adminVerificationsService.getVerifications.mockResolvedValue(mockResult);
 
-      const result = await service.getVerifications(filters as any);
+      const result = await service.getVerifications(filters);
 
       expect(adminVerificationsService.getVerifications).toHaveBeenCalledWith(
         filters,
@@ -654,9 +673,12 @@ describe('AdminService', () => {
       const mockResult = { notifiedCount: 1 };
       adminUsersService.notifyUsers.mockResolvedValue(mockResult);
 
-      const result = await service.notifyUsers(dto);
+      const result = await service.notifyUsers(dto, 'admin-1');
 
-      expect(adminUsersService.notifyUsers).toHaveBeenCalledWith(dto);
+      expect(adminUsersService.notifyUsers).toHaveBeenCalledWith(
+        dto,
+        'admin-1',
+      );
       expect(result).toBe(mockResult);
     });
 
@@ -686,11 +708,12 @@ describe('AdminService', () => {
       const mockResult = { user: { id: 'u-1', isBlocked: true } };
       adminUsersService.updateUserStatus.mockResolvedValue(mockResult);
 
-      const result = await service.updateUserStatus('u-1', dto);
+      const result = await service.updateUserStatus('u-1', dto, 'admin-1');
 
       expect(adminUsersService.updateUserStatus).toHaveBeenCalledWith(
         'u-1',
         dto,
+        'admin-1',
       );
       expect(result).toBe(mockResult);
     });
@@ -700,11 +723,16 @@ describe('AdminService', () => {
       const mockResult = { id: 'ident-1', status: 'APPROVED' };
       adminIdentityService.updateIdentityStatus.mockResolvedValue(mockResult);
 
-      const result = await service.updateIdentityStatus('ident-1', dto);
+      const result = await service.updateIdentityStatus(
+        'ident-1',
+        dto,
+        'admin-1',
+      );
 
       expect(adminIdentityService.updateIdentityStatus).toHaveBeenCalledWith(
         'ident-1',
         dto,
+        'admin-1',
       );
       expect(result).toBe(mockResult);
     });
@@ -714,11 +742,16 @@ describe('AdminService', () => {
       const mockResult = { id: 'req-1' };
       adminIdentityService.requestIdentityEdit.mockResolvedValue(mockResult);
 
-      const result = await service.requestIdentityEdit('ident-1', dto);
+      const result = await service.requestIdentityEdit(
+        'ident-1',
+        dto,
+        'admin-1',
+      );
 
       expect(adminIdentityService.requestIdentityEdit).toHaveBeenCalledWith(
         'ident-1',
         dto,
+        'admin-1',
       );
       expect(result).toBe(mockResult);
     });

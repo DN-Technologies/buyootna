@@ -44,6 +44,7 @@ interface MockAdminService {
   createNote: jest.Mock;
   updateNote: jest.Mock;
   deleteNote: jest.Mock;
+  getLogsForUser: jest.Mock;
   getAssignableAdmins: jest.Mock;
 }
 
@@ -92,6 +93,7 @@ describe('AdminController', () => {
       createNote: jest.fn(),
       updateNote: jest.fn(),
       deleteNote: jest.fn(),
+      getLogsForUser: jest.fn(),
       getAssignableAdmins: jest.fn(),
     };
 
@@ -290,11 +292,7 @@ describe('AdminController', () => {
     adminService.createNote.mockResolvedValue({ id: 'note-1' });
     const dto = { content: 'نص' };
     await controller.createNote(ADMIN_REQ_USER, 'u-1', dto);
-    expect(adminService.createNote).toHaveBeenCalledWith(
-      'u-1',
-      dto,
-      'admin-1',
-    );
+    expect(adminService.createNote).toHaveBeenCalledWith('u-1', dto, 'admin-1');
   });
 
   it('updateNote should forward id and dto to service', async () => {
@@ -308,6 +306,22 @@ describe('AdminController', () => {
     adminService.deleteNote.mockResolvedValue({ message: 'تم الحذف' });
     await controller.deleteNote('note-1');
     expect(adminService.deleteNote).toHaveBeenCalledWith('note-1');
+  });
+
+  it('getLogsForUser should forward id and parsed pagination to service', async () => {
+    adminService.getLogsForUser.mockResolvedValue({ data: [] });
+    await controller.getLogsForUser('u-1', '2', '5');
+    expect(adminService.getLogsForUser).toHaveBeenCalledWith('u-1', 2, 5);
+  });
+
+  it('getLogsForUser should pass undefined pagination when not provided', async () => {
+    adminService.getLogsForUser.mockResolvedValue({ data: [] });
+    await controller.getLogsForUser('u-1');
+    expect(adminService.getLogsForUser).toHaveBeenCalledWith(
+      'u-1',
+      undefined,
+      undefined,
+    );
   });
 
   it('getAssignableAdmins should delegate to service', async () => {
@@ -337,8 +351,8 @@ describe('AdminController', () => {
       failedUserIds: [],
     });
 
-    const result = await controller.notifyUsers(dto);
-    expect(adminService.notifyUsers).toHaveBeenCalledWith(dto);
+    const result = await controller.notifyUsers(ADMIN_REQ_USER, dto);
+    expect(adminService.notifyUsers).toHaveBeenCalledWith(dto, 'admin-1');
     expect(result.notifiedCount).toBe(2);
   });
 
@@ -383,14 +397,16 @@ describe('AdminController', () => {
     expect(result).toBe('csv-content');
   });
 
-  it('updateUserStatus should forward params and dto', async () => {
+  it('updateUserStatus should forward params, dto and adminUserId', async () => {
     adminService.updateUserStatus.mockResolvedValue({ message: 'Updated' });
-    await controller.updateUserStatus('u-1', {
+    await controller.updateUserStatus(ADMIN_REQ_USER, 'u-1', {
       status: UserAccountStatusAction.ACTIVE,
     });
-    expect(adminService.updateUserStatus).toHaveBeenCalledWith('u-1', {
-      status: UserAccountStatusAction.ACTIVE,
-    });
+    expect(adminService.updateUserStatus).toHaveBeenCalledWith(
+      'u-1',
+      { status: UserAccountStatusAction.ACTIVE },
+      'admin-1',
+    );
   });
 
   it('deleteUser should forward id to service', async () => {

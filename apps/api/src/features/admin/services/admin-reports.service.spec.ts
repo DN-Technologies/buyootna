@@ -169,11 +169,32 @@ describe('AdminReportsService', () => {
       expect(notifications.create).toHaveBeenCalledWith(
         expect.objectContaining({ userId: 'user-1', type: 'REPORT_RESOLVED' }),
       );
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorAdminId: 'admin-1',
+          action: 'REPORT_RESOLVED',
+          targetType: 'REPORT',
+          targetId: 'rep-1',
+          targetUserId: 'user-2',
+        }),
+      );
     });
 
     it('does not notify when only priority changes', async () => {
       await service.updateReport('rep-1', { priority: 'URGENT' }, 'admin-1');
       expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('logs REPORT_PRIORITY_CHANGED when only priority changes', async () => {
+      await service.updateReport('rep-1', { priority: 'URGENT' }, 'admin-1');
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'REPORT_PRIORITY_CHANGED',
+          targetType: 'REPORT',
+          targetId: 'rep-1',
+          metadata: { priority: 'URGENT' },
+        }),
+      );
     });
 
     it('does not fail the request when the notification send throws', async () => {
@@ -202,14 +223,16 @@ describe('AdminReportsService', () => {
           }),
         }),
       );
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'REPORT_ASSIGNED',
+          metadata: { assignedAdminId: 'admin-2' },
+        }),
+      );
     });
 
     it('disconnects the assigned admin when assignedAdminId is empty', async () => {
-      await service.updateReport(
-        'rep-1',
-        { assignedAdminId: '' },
-        'admin-1',
-      );
+      await service.updateReport('rep-1', { assignedAdminId: '' }, 'admin-1');
 
       expect(prisma.report.update).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -235,7 +258,11 @@ describe('AdminReportsService', () => {
       );
       expect(result).toEqual([
         { id: 'admin-1', name: 'أحمد', email: 'ahmed@example.com' },
-        { id: 'admin-2', name: 'noname@example.com', email: 'noname@example.com' },
+        {
+          id: 'admin-2',
+          name: 'noname@example.com',
+          email: 'noname@example.com',
+        },
       ]);
     });
   });
@@ -253,6 +280,22 @@ describe('AdminReportsService', () => {
 
       expect(result.updatedCount).toBe(1);
       expect(result.failedIds).toEqual(['rep-2']);
+    });
+
+    it('logs REPORT_RESOLVED only for the successfully updated report', async () => {
+      prisma.report.update
+        .mockResolvedValueOnce({ ...mockRow, status: ReportStatus.RESOLVED })
+        .mockRejectedValueOnce(new Error('not found'));
+
+      await service.resolveReports(['rep-1', 'rep-2'], 'admin-1');
+
+      expect(auditLog.log).toHaveBeenCalledTimes(1);
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'REPORT_RESOLVED',
+          targetId: 'rep-1',
+        }),
+      );
     });
   });
 
