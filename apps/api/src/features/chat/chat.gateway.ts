@@ -76,7 +76,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('send_message')
   async handleSendMessage(
     client: Socket,
-    payload: { conversationId: string } & SendMessageDto,
+    payload: { conversationId: string; tempId?: string } & SendMessageDto,
   ) {
     const senderId = client.data.userId;
     if (!senderId) {
@@ -119,7 +119,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         'Failed to handle send_message socket event:',
         error.message,
       );
-      client.emit('error', { message: 'تعذر إرسال الرسالة عبر الخادم' });
+      // Echo the caller's tempId back so the client can roll back exactly
+      // the optimistic bubble that failed to persist.
+      client.emit('message_error', {
+        conversationId: payload.conversationId,
+        tempId: payload.tempId,
+        message: 'تعذر إرسال الرسالة عبر الخادم',
+      });
     }
   }
 }

@@ -39,7 +39,7 @@ jest.mock('@/shared/services/socket.service', () => ({
     getSocket: jest.fn(),
     joinConversation: jest.fn(),
     leaveConversation: jest.fn(),
-    sendMessage: jest.fn(),
+    sendMessage: jest.fn(() => true),
     onNewMessage: jest.fn(() => jest.fn()),
     onConversationUpdated: jest.fn(() => jest.fn()),
   },
@@ -77,10 +77,13 @@ describe('useChatStore — conversation isolation', () => {
       content: 'Test message for Company A',
       type: 'TEXT',
     });
-    expect(socketService.sendMessage).toHaveBeenCalledWith('company-a', {
-      content: 'Test message for Company A',
-      type: 'TEXT',
-    });
+    expect(socketService.sendMessage).toHaveBeenCalledWith(
+      'company-a',
+      expect.objectContaining({
+        content: 'Test message for Company A',
+        type: 'TEXT',
+      }),
+    );
     expect(
       useChatStore
         .getState()

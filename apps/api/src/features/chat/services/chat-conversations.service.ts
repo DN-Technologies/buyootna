@@ -139,9 +139,12 @@ export class ChatConversationsService {
         participants: {
           some: { OR: [{ userId }, { identityId: userId }] },
         },
-        messages: {
-          some: {},
-        },
+        // NOTE: deliberately no `messages: { some: {} }` filter here. A
+        // conversation starts empty (created by "contact" taps before any
+        // message is sent), and filtering it out made newly initiated chats
+        // invisible in the inbox until the first message persisted -- the
+        // clients already render a "بدء المحادثة" placeholder for empty
+        // rooms, so they are meant to be listed.
       },
       include: {
         property: {
@@ -245,9 +248,8 @@ export class ChatConversationsService {
         participants: {
           some: { OR: [{ userId }, { identityId: userId }] },
         },
-        messages: {
-          some: {},
-        },
+        // Keep in sync with the list query above: empty (newly initiated)
+        // conversations count too.
       },
     });
 

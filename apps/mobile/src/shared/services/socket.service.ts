@@ -43,6 +43,11 @@ class SocketService {
     return this.socket;
   }
 
+  /** Whether the chat socket is currently connected and able to deliver. */
+  isConnected(): boolean {
+    return !!this.socket?.connected;
+  }
+
   joinConversation(conversationId: string) {
     if (this.socket) {
       this.socket.emit('join_conversation', conversationId);
@@ -55,6 +60,13 @@ class SocketService {
     }
   }
 
+  /**
+   * Emits a send attempt. Returns false (without emitting) when there is no
+   * socket at all -- the caller is expected to treat that as a failed send
+   * rather than showing an optimistic bubble that will never be confirmed.
+   * `tempId` is echoed back by the server on a `message_error` so the
+   * caller can roll back exactly the bubble that failed.
+   */
   sendMessage(
     conversationId: string,
     payload: {
@@ -62,11 +74,14 @@ class SocketService {
       type?: string;
       imageUrl?: string;
       propertyId?: string;
+      tempId?: string;
     },
-  ) {
-    if (this.socket) {
-      this.socket.emit('send_message', { conversationId, ...payload });
+  ): boolean {
+    if (!this.socket) {
+      return false;
     }
+    this.socket.emit('send_message', { conversationId, ...payload });
+    return true;
   }
 
   onNewMessage(callback: (message: any) => void) {
@@ -80,6 +95,20 @@ class SocketService {
     this.socket?.on('conversation_updated', callback);
     return () => {
       this.socket?.off('conversation_updated', callback);
+    };
+  }
+
+  /** Server could not persist a send_message (see ChatGateway). */
+  onMessageError(
+    callback: (data: {
+      conversationId: string;
+      tempId?: string;
+      message?: string;
+    }) => void,
+  ) {
+    this.socket?.on('message_error', callback);
+    return () => {
+      this.socket?.off('message_error', callback);
     };
   }
 }
