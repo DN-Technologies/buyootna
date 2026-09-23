@@ -1,6 +1,6 @@
 import { FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { KeyboardAvoidingView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -58,23 +58,6 @@ export default function ChatDetailsScreen() {
       )}
 
       <ContentContainer className="flex-1">
-        {/* No `behavior` on either platform:
-            - Android: AndroidManifest already sets windowSoftInputMode
-              "adjustResize", so the OS resizes the window itself.
-              KeyboardAvoidingView's own "height" adjustment on top of
-              that double-compensates (worse with edgeToEdgeEnabled),
-              which is what let the keyboard overlap the input bar.
-              Matches the fix already applied in search/index.tsx and
-              add-alert/index.tsx.
-            - iOS: KeyboardAvoidingView's 'padding' behavior was confirmed
-              live to under-count the keyboard's predictive-text bar,
-              leaving the input bar's bottom edge rendered behind it.
-              ChatInputBar now tracks the keyboard's real height itself
-              and sizes its own bottom padding directly -- applying
-              KeyboardAvoidingView's padding on top of that here would
-              double it. FlashList (flex: 1, sibling of ChatInputBar
-              below) naturally gives up space as ChatInputBar grows, same
-              net effect without KeyboardAvoidingView's involvement. */}
         <KeyboardAvoidingView style={{ flex: 1 }}>
           <ChatHeader
             userName={otherUserName}
