@@ -21,6 +21,24 @@ export interface ReviewItem {
   userDisliked?: boolean;
 }
 
+export interface ReviewSummary {
+  averageRating: number;
+  totalRatingsCount: number;
+  ratingBreakdown: { star: number; pct: string }[];
+}
+
+export const DEFAULT_REVIEW_SUMMARY: ReviewSummary = {
+  averageRating: 0,
+  totalRatingsCount: 0,
+  ratingBreakdown: [
+    { star: 5, pct: '0%' },
+    { star: 4, pct: '0%' },
+    { star: 3, pct: '0%' },
+    { star: 2, pct: '0%' },
+    { star: 1, pct: '0%' },
+  ],
+};
+
 export const SEEDED_REVIEWS: ReviewItem[] = [
   {
     id: 'rev-1',

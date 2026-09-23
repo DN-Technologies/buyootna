@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import React from 'react';
-import { Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
+
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 import { LocationPinSmallIcon } from '../icons';
 import { MaximizeMapIcon } from './icons';
@@ -35,7 +37,7 @@ export default function RequestDetailsMap({
     });
 
     if (url) {
-      Linking.openURL(url).catch(() => {});
+      openUrlThrottled(url).catch(() => {});
     }
   };
 

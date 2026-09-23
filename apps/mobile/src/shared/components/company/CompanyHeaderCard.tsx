@@ -1,8 +1,9 @@
 import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { LocationIcon } from '@/assets/icons/home/cards';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 export interface CompanyHeaderData {
   id: string;
@@ -32,7 +33,7 @@ interface CompanyHeaderCardProps {
 export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
   const handleOpenLink = (url?: string) => {
     if (url) {
-      Linking.openURL(url).catch(() => {});
+      openUrlThrottled(url).catch(() => {});
     }
   };
 
