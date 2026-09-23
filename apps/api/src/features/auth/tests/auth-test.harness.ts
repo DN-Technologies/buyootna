@@ -59,7 +59,7 @@ export interface IdentityCreateArgs {
 
 export interface UserUpdateArgs {
   where: { id: string };
-  data: { password: string };
+  data: { password: string; passwordChangedAt?: Date };
 }
 
 export interface AuthTestContext {

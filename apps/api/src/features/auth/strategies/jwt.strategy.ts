@@ -9,6 +9,7 @@ export interface JwtPayload {
   ident: string; // identityId (active identity)
   type: IdentityType; // INDIVIDUAL | COMPANY | OFFICE
   sid?: string; // sessionId — optional so tokens issued before this claim existed keep validating
+  iat?: number; // "issued at" (seconds), stamped automatically by jsonwebtoken
 }
 
 export interface RequestUser {
@@ -63,6 +64,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // device's (otherwise unexpired) JWT from authenticating. Tokens issued
     // before sessions existed carry no sid claim and can't be revoked —
     // they keep validating until they expire.
+    //
+    // The sid-less gap is closed by passwordChangedAt: changing the password
+    // stamps the account, and legacy no-sid tokens issued before that moment
+    // are rejected here (30s skew tolerance for clock drift between issuing
+    // and verifying hosts). Sid-backed tokens remain governed by their
+    // Session row alone, so the device that changed the password stays
+    // logged in.
+    const passwordChangedAtMs = user.passwordChangedAt?.getTime();
+    if (
+      !payload.sid &&
+      passwordChangedAtMs &&
+      (payload.iat ?? 0) * 1000 < passwordChangedAtMs - 30_000
+    ) {
+      throw new UnauthorizedException(
+        'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى',
+      );
+    }
+
     if (payload.sid) {
       const session = await this.prisma.session.findUnique({
         where: { id: payload.sid },
