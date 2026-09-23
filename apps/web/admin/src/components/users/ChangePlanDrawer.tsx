@@ -1,14 +1,14 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { ChangePlanDrawerProps, PlanTiming } from './change-plan/types'
-import { PLAN_DEFINITIONS } from './change-plan/constants'
 import UserInfoCard from './change-plan/UserInfoCard'
 import PlanSelectionSection from './change-plan/PlanSelectionSection'
 import TimingOptionsSection from './change-plan/TimingOptionsSection'
 import NotificationChannelsSection from './change-plan/NotificationChannelsSection'
 import DrawerFooter from './change-plan/DrawerFooter'
+import { AdminPlan, changeUserPlan, fetchPlans } from '@/lib/admin-plans'
 
 export type { ChangePlanDrawerProps }
 
@@ -17,33 +17,45 @@ export default function ChangePlanDrawer({
   onClose,
   onSuccess,
   user,
+  userId,
   userName = 'محمد الجارح',
   userEmail = 'mohamedelgareh@gmail.com',
   accountType = 'فرد',
   currentPlanLabel,
 }: ChangePlanDrawerProps) {
-  const [selectedPlanId, setSelectedPlanId] = useState<'basic' | 'gold' | null>(
-    null,
-  )
-  const [selectedSubTierId, setSelectedSubTierId] = useState<string | null>(
-    null,
-  )
+  const resolvedUserId = user?.id || userId
+
+  const [plans, setPlans] = useState<AdminPlan[]>([])
+  const [plansLoading, setPlansLoading] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [timing, setTiming] = useState<PlanTiming>('immediate')
   const [notifyEmail, setNotifyEmail] = useState(false)
   const [notifyApp, setNotifyApp] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  const loadPlans = useCallback(async () => {
+    try {
+      setPlansLoading(true)
+      const rows = await fetchPlans()
+      setPlans(rows)
+    } catch (err) {
+      console.error('Failed to load plans:', err)
+    } finally {
+      setPlansLoading(false)
+    }
+  }, [])
+
   // Reset form when drawer opens or user changes
   useEffect(() => {
     if (open) {
       setSelectedPlanId(null)
-      setSelectedSubTierId(null)
       setTiming('immediate')
       setNotifyEmail(false)
       setNotifyApp(false)
       setLoading(false)
+      loadPlans()
     }
-  }, [open, user])
+  }, [open, user, loadPlans])
 
   // Close on Escape key
   useEffect(() => {
@@ -76,39 +88,20 @@ export default function ChangePlanDrawer({
     resolvedCurrentPlan !== '—' &&
     resolvedCurrentPlan !== 'ـــــــ'
 
-  const isFormValid = !!selectedPlanId && !!selectedSubTierId
-
-  const handlePlanToggle = (planId: 'basic' | 'gold') => {
-    if (selectedPlanId === planId) {
-      setSelectedPlanId(null)
-      setSelectedSubTierId(null)
-    } else {
-      setSelectedPlanId(planId)
-      setSelectedSubTierId(null)
-    }
-  }
-
-  const handleSubTierSelect = (subTierId: string) => {
-    setSelectedSubTierId((prev) => (prev === subTierId ? null : subTierId))
-  }
+  const isFormValid = !!selectedPlanId && !!resolvedUserId
 
   const handleSubmit = async () => {
-    if (!isFormValid || loading) return
+    if (!isFormValid || loading || !resolvedUserId || !selectedPlanId) return
     setLoading(true)
 
-    const chosenPlan = PLAN_DEFINITIONS.find((p) => p.id === selectedPlanId)
-    const chosenSubTier = chosenPlan?.subTiers.find(
-      (s) => s.id === selectedSubTierId,
-    )
-    const planSummary = chosenPlan
-      ? `${chosenPlan.name} (${chosenSubTier?.name || ''})`
-      : 'الباقة الجديدة'
+    const chosenPlan = plans.find((p) => p.id === selectedPlanId)
 
     try {
-      // Small simulated delay for feedback
-      await new Promise((resolve) => setTimeout(resolve, 400))
-      onSuccess?.(user?.id || '', planSummary)
+      await changeUserPlan(resolvedUserId, { planId: selectedPlanId })
+      onSuccess?.(resolvedUserId, chosenPlan?.name || 'الباقة الجديدة')
       onClose()
+    } catch (err) {
+      console.error('Failed to change plan:', err)
     } finally {
       setLoading(false)
     }
@@ -160,10 +153,10 @@ export default function ChangePlanDrawer({
           />
 
           <PlanSelectionSection
+            plans={plans}
+            loading={plansLoading}
             selectedPlanId={selectedPlanId}
-            selectedSubTierId={selectedSubTierId}
-            onPlanToggle={handlePlanToggle}
-            onSubTierSelect={handleSubTierSelect}
+            onSelectPlan={setSelectedPlanId}
           />
 
           <TimingOptionsSection

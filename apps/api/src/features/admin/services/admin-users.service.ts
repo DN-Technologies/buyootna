@@ -20,6 +20,7 @@ import { checkUserExists } from '../../../core/utils/user.utils';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { MailService } from '../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../core/mail/templates/admin-custom-message.template';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 @Injectable()
 export class AdminUsersService {
@@ -27,6 +28,7 @@ export class AdminUsersService {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly mailService: MailService,
+    private readonly auditLog: AdminAuditLogService,
   ) {}
 
   async getUsers(filters: AdminUsersFilterDto) {
@@ -318,7 +320,11 @@ export class AdminUsersService {
     return { message: 'تم حذف المستخدم بنجاح' };
   }
 
-  async updateUserStatus(id: string, dto: AdminUpdateStatusDto) {
+  async updateUserStatus(
+    id: string,
+    dto: AdminUpdateStatusDto,
+    adminUserId?: string,
+  ) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
       throw new NotFoundException('المستخدم غير موجود');
@@ -351,6 +357,15 @@ export class AdminUsersService {
     const userWithoutPassword = { ...updatedUser };
     delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
       .password;
+
+    await this.auditLog.log({
+      actorAdminId: adminUserId,
+      action: 'USER_STATUS_CHANGED',
+      targetType: 'USER',
+      targetId: id,
+      targetUserId: id,
+      metadata: { status: dto.status },
+    });
 
     return {
       message: 'تم تحديث حالة المستخدم بنجاح',
@@ -442,6 +457,7 @@ export class AdminUsersService {
 
   async notifyUsers(
     dto: AdminNotifyUsersDto,
+    adminUserId?: string,
   ): Promise<AdminNotifyUsersResponseDto> {
     const users = await this.prisma.user.findMany({
       where: { id: { in: dto.userIds } },
@@ -489,6 +505,14 @@ export class AdminUsersService {
         }
 
         notifiedUserIds.push(userId);
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action: 'USER_NOTIFIED',
+          targetType: 'USER',
+          targetId: userId,
+          targetUserId: userId,
+          metadata: { title: dto.title },
+        });
       } catch {
         failedUserIds.push(userId);
       }

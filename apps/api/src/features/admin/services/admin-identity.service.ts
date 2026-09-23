@@ -11,6 +11,7 @@ import { AdminUpdateIdentityStatusDto } from '../dto/admin-update-identity-statu
 import { AdminRequestIdentityEditDto } from '../dto/admin-request-identity-edit.dto';
 import { identityVerificationDecisionTemplate } from '../../../core/mail/templates/identity-verification-decision.template';
 import { identityEditRequestedTemplate } from '../../../core/mail/templates/identity-edit-requested.template';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 @Injectable()
 export class AdminIdentityService {
@@ -20,6 +21,7 @@ export class AdminIdentityService {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly mailService: MailService,
+    private readonly auditLog: AdminAuditLogService,
   ) {}
 
   // The identity/ReviewRequest write above this call already succeeded and
@@ -40,6 +42,7 @@ export class AdminIdentityService {
   async updateIdentityStatus(
     identityId: string,
     dto: AdminUpdateIdentityStatusDto,
+    adminUserId?: string,
   ) {
     const identity = await this.prisma.identity.findUnique({
       where: { id: identityId },
@@ -120,6 +123,16 @@ export class AdminIdentityService {
       });
     }
 
+    await this.auditLog.log({
+      actorAdminId: adminUserId,
+      action:
+        dto.status === 'APPROVED' ? 'IDENTITY_APPROVED' : 'IDENTITY_REJECTED',
+      targetType: 'IDENTITY',
+      targetId: identityId,
+      targetUserId: identity.userId,
+      metadata: dto.reason ? { reason: dto.reason } : undefined,
+    });
+
     return this.prisma.identity.findUnique({
       where: { id: identityId },
       include: { companyData: true, officeData: true, individualData: true },
@@ -129,6 +142,7 @@ export class AdminIdentityService {
   async requestIdentityEdit(
     identityId: string,
     dto: AdminRequestIdentityEditDto,
+    adminUserId?: string,
   ) {
     const identity = await this.prisma.identity.findUnique({
       where: { id: identityId },
@@ -187,6 +201,15 @@ export class AdminIdentityService {
         }),
       });
     }
+
+    await this.auditLog.log({
+      actorAdminId: adminUserId,
+      action: 'IDENTITY_EDIT_REQUESTED',
+      targetType: 'IDENTITY',
+      targetId: identityId,
+      targetUserId: identity.userId,
+      metadata: { notes: dto.notes },
+    });
 
     return this.prisma.identity.findUnique({
       where: { id: identityId },

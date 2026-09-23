@@ -1,75 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Star, ThumbsDown, ThumbsUp, Trash2 } from 'lucide-react'
 import DeleteReviewDialog from './DeleteReviewDialog'
+import {
+  AdminReviewRow,
+  AdminReviewsSummary,
+  deleteReview,
+  fetchUserReviews,
+  fetchUserReviewsSummary,
+} from '@/lib/admin-ratings'
 
-export interface UserReviewItem {
-  id: string
-  userName: string
-  userAvatarInitial: string
-  dateAgo: string
-  comment: string
-  likes: number
-  dislikes: number
-}
-
-const mockReviews: UserReviewItem[] = [
-  {
-    id: 'rev-1',
-    userName: 'أسامة الكندري',
-    userAvatarInitial: 'أ',
-    dateAgo: 'منذ أسبوعين',
-    comment:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مدهشة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    likes: 4,
-    dislikes: 0,
-  },
-  {
-    id: 'rev-2',
-    userName: 'أسامة الكندري',
-    userAvatarInitial: 'أ',
-    dateAgo: 'منذ أسبوعين',
-    comment:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مدهشة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    likes: 4,
-    dislikes: 0,
-  },
-  {
-    id: 'rev-3',
-    userName: 'أسامة الكندري',
-    userAvatarInitial: 'أ',
-    dateAgo: 'منذ أسبوعين',
-    comment:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مدهشة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    likes: 4,
-    dislikes: 0,
-  },
-  {
-    id: 'rev-4',
-    userName: 'أسامة الكندري',
-    userAvatarInitial: 'أ',
-    dateAgo: 'منذ أسبوعين',
-    comment:
-      'تعاملت مع أركان لتصميم واجهة قسيمتي في خيران، والنتيجة كانت مدهشة جداً. الالتزام بالمواعيد وسعة صدر المهندسين كانت أفضل ميزة.',
-    likes: 4,
-    dislikes: 0,
-  },
-]
-
-const ratingDistribution = [
-  { stars: 5, percentage: '85%' },
-  { stars: 4, percentage: '60%' },
-  { stars: 3, percentage: '40%' },
-  { stars: 2, percentage: '25%' },
-  { stars: 1, percentage: '15%' },
-]
-
-export default function UserRatingsTabContent() {
-  const [reviewsList, setReviewsList] = useState<UserReviewItem[]>(mockReviews)
+export default function UserRatingsTabContent({ userId }: { userId: string }) {
+  const [reviews, setReviews] = useState<AdminReviewRow[]>([])
+  const [summary, setSummary] = useState<AdminReviewsSummary | null>(null)
+  const [loading, setLoading] = useState(true)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
-  if (reviewsList.length === 0) {
+  const load = useCallback(async () => {
+    try {
+      setLoading(true)
+      const [reviewsRes, summaryRes] = await Promise.all([
+        fetchUserReviews(userId),
+        fetchUserReviewsSummary(userId),
+      ])
+      setReviews(reviewsRes.data)
+      setSummary(summaryRes)
+    } catch (err) {
+      console.error('Failed to load reviews:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [userId])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  if (loading) {
+    return (
+      <div className="w-full py-16 text-center text-[#6B6A6A] font-['Cairo']">
+        جاري التحميل...
+      </div>
+    )
+  }
+
+  if (reviews.length === 0) {
     /* Node 4043:133270: 0-State View */
     return (
       <div
@@ -87,12 +63,14 @@ export default function UserRatingsTabContent() {
     )
   }
 
-  const handleDelete = () => {
-    if (deleteTargetId) {
-      setReviewsList((prev) =>
-        prev.filter((item) => item.id !== deleteTargetId),
-      )
+  async function handleDelete() {
+    if (!deleteTargetId) return
+    try {
+      await deleteReview(deleteTargetId)
       setDeleteTargetId(null)
+      await load()
+    } catch (err) {
+      console.error('Failed to delete review:', err)
     }
   }
 
@@ -106,26 +84,28 @@ export default function UserRatingsTabContent() {
           {/* Rating Score */}
           <div className="flex flex-col items-center justify-center p-4 min-w-35">
             <div className="flex items-center gap-1">
-              <span className="text-[32px] font-bold text-[#111111]">4.5</span>
+              <span className="text-[32px] font-bold text-[#111111]">
+                {summary?.averageRating ?? 0}
+              </span>
               <Star className="w-7 h-7 fill-[#FFB81C] text-[#FFB81C]" />
             </div>
             <span className="text-[13px] font-medium text-[#6B6A6A] mt-1">
-              100 تقييم
+              {summary?.totalRatingsCount ?? 0} تقييم
             </span>
           </div>
 
           {/* Rating Distribution Progress Bars */}
           <div className="flex flex-col gap-2 flex-1 w-full">
-            {ratingDistribution.map((item) => (
+            {(summary?.ratingBreakdown ?? []).map((item) => (
               <div
-                key={item.stars}
+                key={item.star}
                 className="flex items-center gap-3 text-[13px] font-medium text-[#6B6A6A]"
               >
-                <span className="w-3 text-center shrink-0">{item.stars}</span>
+                <span className="w-3 text-center shrink-0">{item.star}</span>
                 <div className="flex-1 bg-[#F1F5F9] rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-[#FFB81C] h-2 rounded-full transition-all duration-300"
-                    style={{ width: item.percentage }}
+                    style={{ width: item.pct }}
                   />
                 </div>
               </div>
@@ -141,7 +121,7 @@ export default function UserRatingsTabContent() {
         </h3>
 
         <div className="flex flex-col divide-y divide-[#ECECEC] w-full">
-          {reviewsList.map((review) => (
+          {reviews.map((review) => (
             <div
               key={review.id}
               className="py-4 flex flex-col gap-3 first:pt-0 last:pb-0 w-full"
@@ -149,15 +129,24 @@ export default function UserRatingsTabContent() {
               {/* Header row */}
               <div className="flex items-center justify-between gap-4 w-full">
                 <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[15px] flex items-center justify-center shrink-0">
-                    {review.userAvatarInitial}
+                  <div className="size-10 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[15px] flex items-center justify-center shrink-0 overflow-hidden">
+                    {review.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={review.avatarUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      review.userName.charAt(0)
+                    )}
                   </div>
                   <div className="flex flex-col gap-0.5 text-right">
                     <span className="text-[14px] font-bold text-[#111111]">
                       {review.userName}
                     </span>
                     <span className="text-[12px] font-medium text-[#6B6A6A]">
-                      {review.dateAgo}
+                      {review.timeAgo}
                     </span>
                   </div>
                 </div>
@@ -178,22 +167,17 @@ export default function UserRatingsTabContent() {
                 {review.comment}
               </p>
 
-              {/* Likes / Dislikes reactions */}
+              {/* Likes / Dislikes reactions (display-only, matching that
+                  these are unwired in every other review surface too) */}
               <div className="flex items-center gap-4 pr-13 pt-1 text-[13px] font-medium text-[#6B6A6A]">
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
-                >
+                <span className="flex items-center gap-1.5">
                   <ThumbsUp className="w-4 h-4" />
                   <span>({review.likes})</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
-                >
+                </span>
+                <span className="flex items-center gap-1.5">
                   <ThumbsDown className="w-4 h-4" />
                   <span>({review.dislikes})</span>
-                </button>
+                </span>
               </div>
             </div>
           ))}

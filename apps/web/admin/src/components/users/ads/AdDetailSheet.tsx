@@ -10,7 +10,7 @@ import ReportActionToast, { ToastState } from './ReportActionToast'
 import ConfirmActionDialog, {
   ConfirmActionType,
 } from './ConfirmActionDialog'
-import FeatureAdDialog from './FeatureAdDialog'
+import FeatureAdDialog, { featuredUntilFromDuration } from './FeatureAdDialog'
 import type { AdminUserProperty } from '@/lib/admin-users'
 import { getAdCode, getAdLabel } from '@/lib/property-labels'
 import {
@@ -20,6 +20,7 @@ import {
   fetchPropertyReports,
   updateReport,
 } from '@/lib/admin-reports'
+import { updateProperty } from '@/lib/admin-properties'
 import { AD_TAB_PRIORITY_LABEL, AD_TAB_STATUS_LABEL } from '@/lib/report-labels'
 import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
@@ -39,16 +40,14 @@ function toMockReport(row: AdminReportRow): MockReport {
   }
 }
 
-function notImplemented(action: string) {
-  alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
-}
-
 export default function AdDetailSheet({
   property,
   onClose,
+  onRefresh,
 }: {
   property: AdminUserProperty
   onClose: () => void
+  onRefresh?: () => void
 }) {
   const [activeTab, setActiveTab] = useState<AdDetailTab>('details')
   const [reports, setReports] = useState<MockReport[]>([])
@@ -108,10 +107,22 @@ export default function AdDetailSheet({
     try {
       await deleteReportedProperty(property.id, 'تم حذف الإعلان استجابةً لبلاغ')
       setToast({ message: 'تم حذف الإعلان بنجاح.' })
+      onRefresh?.()
       onClose()
     } catch (err) {
       console.error('Failed to delete reported property:', err)
       setToast({ message: 'حدث خطأ أثناء حذف الإعلان.' })
+    }
+  }
+
+  async function handleUnhide() {
+    try {
+      await updateProperty(property.id, { isHidden: false })
+      setToast({ message: 'تم إظهار الإعلان بنجاح.' })
+      onRefresh?.()
+    } catch (err) {
+      console.error('Failed to unhide property:', err)
+      setToast({ message: 'حدث خطأ أثناء إظهار الإعلان.' })
     }
   }
 
@@ -193,9 +204,7 @@ export default function AdDetailSheet({
                 <button
                   type="button"
                   onClick={() =>
-                    property.isHidden
-                      ? notImplemented('إظهار')
-                      : setConfirmAction('hide')
+                    property.isHidden ? handleUnhide() : setConfirmAction('hide')
                   }
                   className="flex-1 h-11.5 flex items-center justify-center gap-1.5 rounded-full border border-[#E2E8F0] text-[#111111] text-[14px] font-semibold cursor-pointer"
                 >
@@ -231,15 +240,28 @@ export default function AdDetailSheet({
           adLabel={adLabel}
           code={code}
           onClose={() => setConfirmAction(null)}
-          onConfirm={() => {
+          onConfirm={async ({ reason }) => {
             setConfirmAction(null)
-            notImplemented(
-              confirmAction === 'delete'
-                ? 'حذف'
-                : confirmAction === 'hide'
-                  ? 'اخفاء'
-                  : 'اعادة النشر',
-            )
+            try {
+              if (confirmAction === 'delete') {
+                await deleteReportedProperty(property.id, reason)
+                setToast({ message: 'تم حذف الإعلان بنجاح.' })
+                onRefresh?.()
+                onClose()
+                return
+              }
+              if (confirmAction === 'hide') {
+                await updateProperty(property.id, { isHidden: true })
+                setToast({ message: 'تم اخفاء الإعلان بنجاح.' })
+              } else {
+                await updateProperty(property.id, { status: 'ACTIVE' })
+                setToast({ message: 'تم اعادة نشر الإعلان بنجاح.' })
+              }
+              onRefresh?.()
+            } catch (err) {
+              console.error(`Failed to ${confirmAction} property:`, err)
+              setToast({ message: 'حدث خطأ أثناء تنفيذ الإجراء.' })
+            }
           }}
         />
       )}
@@ -249,9 +271,19 @@ export default function AdDetailSheet({
           adLabel={adLabel}
           code={code}
           onClose={() => setShowFeatureDialog(false)}
-          onConfirm={() => {
+          onConfirm={async ({ duration }) => {
             setShowFeatureDialog(false)
-            notImplemented('تمييز')
+            try {
+              await updateProperty(property.id, {
+                isFeatured: true,
+                featuredUntil: featuredUntilFromDuration(duration),
+              })
+              setToast({ message: 'تم تمييز الإعلان بنجاح.' })
+              onRefresh?.()
+            } catch (err) {
+              console.error('Failed to feature property:', err)
+              setToast({ message: 'حدث خطأ أثناء تمييز الإعلان.' })
+            }
           }}
         />
       )}

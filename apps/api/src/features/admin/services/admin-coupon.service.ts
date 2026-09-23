@@ -9,6 +9,7 @@ import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
 } from '../dto/admin-grant-coupon.dto';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 export interface AvailableCoupon {
   id: string;
@@ -28,13 +29,18 @@ export class AdminCouponService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
+    private readonly auditLog: AdminAuditLogService,
   ) {}
 
   getAvailableCoupons(): AvailableCoupon[] {
     return AVAILABLE_SYSTEM_COUPONS;
   }
 
-  async grantCoupon(userId: string, dto: AdminGrantCouponDto) {
+  async grantCoupon(
+    userId: string,
+    dto: AdminGrantCouponDto,
+    adminUserId?: string,
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -67,6 +73,14 @@ export class AdminCouponService {
 
     const displayName = user.name || user.email || 'المستخدم';
 
+    await this.auditLog.log({
+      actorAdminId: adminUserId,
+      action: 'COUPON_GRANTED',
+      targetType: 'COUPON',
+      targetUserId: user.id,
+      metadata: { couponCode: dto.couponCode, couponName: dto.couponName },
+    });
+
     return {
       message: `تم اضافة كوبون خصم للمستخدم “${displayName}” بنجاح.`,
       coupon: {
@@ -77,7 +91,7 @@ export class AdminCouponService {
     };
   }
 
-  async grantBulkCoupon(dto: AdminGrantBulkCouponDto) {
+  async grantBulkCoupon(dto: AdminGrantBulkCouponDto, adminUserId?: string) {
     if (!dto.userIds || dto.userIds.length === 0) {
       throw new BadRequestException('يجب تحديد مستخدم واحد على الأقل');
     }
@@ -126,6 +140,13 @@ export class AdminCouponService {
       }
 
       grantedUserIds.push(user.id);
+      await this.auditLog.log({
+        actorAdminId: adminUserId,
+        action: 'COUPON_BULK_GRANTED',
+        targetType: 'COUPON',
+        targetUserId: user.id,
+        metadata: { couponCode: dto.couponCode, couponName: dto.couponName },
+      });
     }
 
     return {

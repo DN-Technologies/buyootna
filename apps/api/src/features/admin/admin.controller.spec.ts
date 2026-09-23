@@ -28,6 +28,23 @@ interface MockAdminService {
   getReportsForUser: jest.Mock;
   getReportsForProperty: jest.Mock;
   removeReportedProperty: jest.Mock;
+  updateProperty: jest.Mock;
+  getRequestsForUser: jest.Mock;
+  getProjectsForUser: jest.Mock;
+  deleteProject: jest.Mock;
+  getWallet: jest.Mock;
+  changePlan: jest.Mock;
+  grantExceptionalFeature: jest.Mock;
+  getInvoicesForUser: jest.Mock;
+  getCouponHistoryForUser: jest.Mock;
+  getReviewsForUser: jest.Mock;
+  getReviewsSummaryForUser: jest.Mock;
+  deleteReview: jest.Mock;
+  getNotesForUser: jest.Mock;
+  createNote: jest.Mock;
+  updateNote: jest.Mock;
+  deleteNote: jest.Mock;
+  getLogsForUser: jest.Mock;
   getAssignableAdmins: jest.Mock;
 }
 
@@ -60,6 +77,23 @@ describe('AdminController', () => {
       getReportsForUser: jest.fn(),
       getReportsForProperty: jest.fn(),
       removeReportedProperty: jest.fn(),
+      updateProperty: jest.fn(),
+      getRequestsForUser: jest.fn(),
+      getProjectsForUser: jest.fn(),
+      deleteProject: jest.fn(),
+      getWallet: jest.fn(),
+      changePlan: jest.fn(),
+      grantExceptionalFeature: jest.fn(),
+      getInvoicesForUser: jest.fn(),
+      getCouponHistoryForUser: jest.fn(),
+      getReviewsForUser: jest.fn(),
+      getReviewsSummaryForUser: jest.fn(),
+      deleteReview: jest.fn(),
+      getNotesForUser: jest.fn(),
+      createNote: jest.fn(),
+      updateNote: jest.fn(),
+      deleteNote: jest.fn(),
+      getLogsForUser: jest.fn(),
       getAssignableAdmins: jest.fn(),
     };
 
@@ -134,10 +168,7 @@ describe('AdminController', () => {
     adminService.getReportsForUser.mockResolvedValue({ data: [] });
 
     await controller.getReportsForUser('u-1', filters);
-    expect(adminService.getReportsForUser).toHaveBeenCalledWith(
-      'u-1',
-      filters,
-    );
+    expect(adminService.getReportsForUser).toHaveBeenCalledWith('u-1', filters);
   });
 
   it('getReportsForProperty should forward id to service', async () => {
@@ -146,15 +177,150 @@ describe('AdminController', () => {
     expect(adminService.getReportsForProperty).toHaveBeenCalledWith('prop-1');
   });
 
-  it('removeReportedProperty should forward id and reason to service', async () => {
+  it('removeReportedProperty should forward id, reason and adminUserId to service', async () => {
     adminService.removeReportedProperty.mockResolvedValue({
       message: 'تم حذف الإعلان بنجاح',
     });
 
-    await controller.removeReportedProperty('prop-1', { reason: 'مخالفة' });
+    await controller.removeReportedProperty(ADMIN_REQ_USER, 'prop-1', {
+      reason: 'مخالفة',
+    });
     expect(adminService.removeReportedProperty).toHaveBeenCalledWith(
       'prop-1',
       'مخالفة',
+      'admin-1',
+    );
+  });
+
+  it('updateProperty should forward id, dto and adminUserId to service', async () => {
+    adminService.updateProperty.mockResolvedValue({ id: 'prop-1' });
+
+    const dto = { isHidden: true };
+    await controller.updateProperty(ADMIN_REQ_USER, 'prop-1', dto);
+    expect(adminService.updateProperty).toHaveBeenCalledWith(
+      'prop-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('getRequestsForUser should forward id to service', async () => {
+    adminService.getRequestsForUser.mockResolvedValue([]);
+    await controller.getRequestsForUser('u-1');
+    expect(adminService.getRequestsForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getProjectsForUser should forward id to service', async () => {
+    adminService.getProjectsForUser.mockResolvedValue([]);
+    await controller.getProjectsForUser('u-1');
+    expect(adminService.getProjectsForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('deleteProject should forward id and adminUserId to service', async () => {
+    adminService.deleteProject.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteProject(ADMIN_REQ_USER, 'project-1');
+    expect(adminService.deleteProject).toHaveBeenCalledWith(
+      'project-1',
+      'admin-1',
+    );
+  });
+
+  it('getWallet should forward id to service', async () => {
+    adminService.getWallet.mockResolvedValue({ freeAdsRemaining: 0 });
+    await controller.getWallet('u-1');
+    expect(adminService.getWallet).toHaveBeenCalledWith('u-1');
+  });
+
+  it('changePlan should forward id, dto and adminUserId to service', async () => {
+    adminService.changePlan.mockResolvedValue({});
+    const dto = { planId: 'plan-1' };
+    await controller.changePlan(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.changePlan).toHaveBeenCalledWith('u-1', dto, 'admin-1');
+  });
+
+  it('grantExceptionalFeature should forward id, dto and adminUserId to service', async () => {
+    adminService.grantExceptionalFeature.mockResolvedValue({ message: 'ok' });
+    const dto = { adsCount: 3 };
+    await controller.grantExceptionalFeature(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.grantExceptionalFeature).toHaveBeenCalledWith(
+      'u-1',
+      dto,
+      'admin-1',
+    );
+  });
+
+  it('getInvoicesForUser should forward id to service', async () => {
+    adminService.getInvoicesForUser.mockResolvedValue([]);
+    await controller.getInvoicesForUser('u-1');
+    expect(adminService.getInvoicesForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getCouponHistoryForUser should forward id to service', async () => {
+    adminService.getCouponHistoryForUser.mockResolvedValue([]);
+    await controller.getCouponHistoryForUser('u-1');
+    expect(adminService.getCouponHistoryForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('getReviewsForUser should forward id and query to service', async () => {
+    adminService.getReviewsForUser.mockResolvedValue({ data: [] });
+    const query = { page: '1' };
+    await controller.getReviewsForUser('u-1', query);
+    expect(adminService.getReviewsForUser).toHaveBeenCalledWith('u-1', query);
+  });
+
+  it('getReviewsSummaryForUser should forward id to service', async () => {
+    adminService.getReviewsSummaryForUser.mockResolvedValue({
+      averageRating: 0,
+    });
+    await controller.getReviewsSummaryForUser('u-1');
+    expect(adminService.getReviewsSummaryForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('deleteReview should forward id to service', async () => {
+    adminService.deleteReview.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteReview('review-1');
+    expect(adminService.deleteReview).toHaveBeenCalledWith('review-1');
+  });
+
+  it('getNotesForUser should forward id to service', async () => {
+    adminService.getNotesForUser.mockResolvedValue([]);
+    await controller.getNotesForUser('u-1');
+    expect(adminService.getNotesForUser).toHaveBeenCalledWith('u-1');
+  });
+
+  it('createNote should forward id, dto and adminUserId to service', async () => {
+    adminService.createNote.mockResolvedValue({ id: 'note-1' });
+    const dto = { content: 'نص' };
+    await controller.createNote(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.createNote).toHaveBeenCalledWith('u-1', dto, 'admin-1');
+  });
+
+  it('updateNote should forward id and dto to service', async () => {
+    adminService.updateNote.mockResolvedValue({ id: 'note-1' });
+    const dto = { content: 'نص جديد' };
+    await controller.updateNote('note-1', dto);
+    expect(adminService.updateNote).toHaveBeenCalledWith('note-1', dto);
+  });
+
+  it('deleteNote should forward id to service', async () => {
+    adminService.deleteNote.mockResolvedValue({ message: 'تم الحذف' });
+    await controller.deleteNote('note-1');
+    expect(adminService.deleteNote).toHaveBeenCalledWith('note-1');
+  });
+
+  it('getLogsForUser should forward id and parsed pagination to service', async () => {
+    adminService.getLogsForUser.mockResolvedValue({ data: [] });
+    await controller.getLogsForUser('u-1', '2', '5');
+    expect(adminService.getLogsForUser).toHaveBeenCalledWith('u-1', 2, 5);
+  });
+
+  it('getLogsForUser should pass undefined pagination when not provided', async () => {
+    adminService.getLogsForUser.mockResolvedValue({ data: [] });
+    await controller.getLogsForUser('u-1');
+    expect(adminService.getLogsForUser).toHaveBeenCalledWith(
+      'u-1',
+      undefined,
+      undefined,
     );
   });
 
@@ -185,8 +351,8 @@ describe('AdminController', () => {
       failedUserIds: [],
     });
 
-    const result = await controller.notifyUsers(dto);
-    expect(adminService.notifyUsers).toHaveBeenCalledWith(dto);
+    const result = await controller.notifyUsers(ADMIN_REQ_USER, dto);
+    expect(adminService.notifyUsers).toHaveBeenCalledWith(dto, 'admin-1');
     expect(result.notifiedCount).toBe(2);
   });
 
@@ -231,14 +397,16 @@ describe('AdminController', () => {
     expect(result).toBe('csv-content');
   });
 
-  it('updateUserStatus should forward params and dto', async () => {
+  it('updateUserStatus should forward params, dto and adminUserId', async () => {
     adminService.updateUserStatus.mockResolvedValue({ message: 'Updated' });
-    await controller.updateUserStatus('u-1', {
+    await controller.updateUserStatus(ADMIN_REQ_USER, 'u-1', {
       status: UserAccountStatusAction.ACTIVE,
     });
-    expect(adminService.updateUserStatus).toHaveBeenCalledWith('u-1', {
-      status: UserAccountStatusAction.ACTIVE,
-    });
+    expect(adminService.updateUserStatus).toHaveBeenCalledWith(
+      'u-1',
+      { status: UserAccountStatusAction.ACTIVE },
+      'admin-1',
+    );
   });
 
   it('deleteUser should forward id to service', async () => {
@@ -266,17 +434,21 @@ describe('AdminController', () => {
     expect(result[0].code).toBe('LAUNCHPROMO26');
   });
 
-  it('grantCoupon should forward params and dto to service', async () => {
+  it('grantCoupon should forward params, dto and adminUserId to service', async () => {
     adminService.grantCoupon.mockResolvedValue({
       message: 'تم اضافة كوبون خصم للمستخدم “على البالي” بنجاح.',
     });
     const dto = { couponCode: 'LAUNCHPROMO26', couponName: 'Byoutna10' };
-    const result = await controller.grantCoupon('u-1', dto);
-    expect(adminService.grantCoupon).toHaveBeenCalledWith('u-1', dto);
+    const result = await controller.grantCoupon(ADMIN_REQ_USER, 'u-1', dto);
+    expect(adminService.grantCoupon).toHaveBeenCalledWith(
+      'u-1',
+      dto,
+      'admin-1',
+    );
     expect(result.message).toContain('تم اضافة كوبون خصم للمستخدم');
   });
 
-  it('grantBulkCoupon should forward dto to service', async () => {
+  it('grantBulkCoupon should forward dto and adminUserId to service', async () => {
     adminService.grantBulkCoupon.mockResolvedValue({
       message: 'تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.',
       grantedCount: 2,
@@ -286,8 +458,8 @@ describe('AdminController', () => {
       couponCode: 'LAUNCHPROMO26',
       couponName: 'Byoutna10',
     };
-    const result = await controller.grantBulkCoupon(dto);
-    expect(adminService.grantBulkCoupon).toHaveBeenCalledWith(dto);
+    const result = await controller.grantBulkCoupon(ADMIN_REQ_USER, dto);
+    expect(adminService.grantBulkCoupon).toHaveBeenCalledWith(dto, 'admin-1');
     expect(result.grantedCount).toBe(2);
   });
 });

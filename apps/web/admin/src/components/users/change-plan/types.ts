@@ -5,22 +5,11 @@ export interface ChangePlanDrawerProps {
   onClose: () => void
   onSuccess?: (userId: string, planName: string) => void
   user?: UserRow | null
+  userId?: string
   userName?: string
   userEmail?: string
   accountType?: string
   currentPlanLabel?: string
-}
-
-export interface SubTier {
-  id: string
-  name: string
-  price: string
-}
-
-export interface PlanDefinition {
-  id: 'basic' | 'gold'
-  name: string
-  subTiers: SubTier[]
 }
 
 export type PlanTiming = 'immediate' | 'after_expiry'

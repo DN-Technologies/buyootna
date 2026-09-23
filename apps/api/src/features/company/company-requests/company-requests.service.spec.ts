@@ -200,4 +200,31 @@ describe('CompanyRequestsService', () => {
       ).resolves.toBeDefined();
     });
   });
+
+  describe('findForIdentityAsAdmin', () => {
+    it('scopes to clientIdentityId for an INDIVIDUAL identity', async () => {
+      await service.findForIdentityAsAdmin('client-1', 'INDIVIDUAL');
+
+      expect(prisma.companyRequest.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { clientIdentityId: 'client-1' },
+        }),
+      );
+    });
+
+    it('scopes to targetIdentityId or acceptedByIdentityId for a COMPANY identity', async () => {
+      await service.findForIdentityAsAdmin('company-1', 'COMPANY');
+
+      expect(prisma.companyRequest.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            OR: [
+              { targetIdentityId: 'company-1' },
+              { acceptedByIdentityId: 'company-1' },
+            ],
+          },
+        }),
+      );
+    });
+  });
 });

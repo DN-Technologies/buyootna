@@ -300,6 +300,23 @@ export class ReviewsService {
     return { message: 'تم حذف التقييم بنجاح' };
   }
 
+  // Admin moderation: same as deleteReview but without the ownership check.
+  async adminDeleteReview(reviewId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException('التقييم غير موجود');
+    }
+
+    await this.prisma.review.delete({
+      where: { id: reviewId },
+    });
+
+    return { message: 'تم حذف التقييم بنجاح' };
+  }
+
   private formatTimeAgo(date: Date): string {
     const now = new Date();
     const diffMs = now.getTime() - new Date(date).getTime();

@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { NAME_REGEX, NAME_REGEX_MESSAGE } from '../../../core/validators/name.regex';
+import {
+  NAME_REGEX,
+  NAME_REGEX_MESSAGE,
+} from '../../../core/validators/name.regex';
 import { StorageService } from 'src/core/storage/storage.service';
 import { CreateCompanyInvoiceDto } from '../../company/dto/create-company-invoice.dto';
 import { CreateProjectDto } from '../../company/dto/create-project.dto';
@@ -156,6 +159,40 @@ export class UsersProfileService {
     });
 
     return { success: true, project };
+  }
+
+  // --- List/delete own portfolio projects (company accounts only) ---
+  async listMyProjects(userId: string) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+    });
+    if (!identity) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    return this.prisma.companyProject.findMany({
+      where: { identityId: identity.id },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async deleteMyProject(userId: string, projectId: string) {
+    const identity = await this.prisma.identity.findFirst({
+      where: { userId, type: 'COMPANY' },
+    });
+    if (!identity) {
+      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
+    }
+
+    const project = await this.prisma.companyProject.findUnique({
+      where: { id: projectId },
+    });
+    if (!project || project.identityId !== identity.id) {
+      throw new NotFoundException('المشروع غير موجود');
+    }
+
+    await this.prisma.companyProject.delete({ where: { id: projectId } });
+    return { success: true, message: 'تم حذف المشروع بنجاح' };
   }
 
   // --- Customer invoices (company accounts only) ---

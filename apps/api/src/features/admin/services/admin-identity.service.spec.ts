@@ -4,6 +4,7 @@ import { AdminIdentityService } from './admin-identity.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { MailService } from '../../../core/mail/mail.service';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 interface MockPrismaService {
   identity: {
@@ -33,6 +34,7 @@ describe('AdminIdentityService', () => {
   let prisma: MockPrismaService;
   let notifications: MockNotificationsService;
   let mail: MockMailService;
+  let auditLog: { log: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -58,6 +60,8 @@ describe('AdminIdentityService', () => {
       sendMail: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    auditLog = { log: jest.fn().mockResolvedValue(undefined) };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminIdentityService,
@@ -72,6 +76,10 @@ describe('AdminIdentityService', () => {
         {
           provide: MailService,
           useValue: mail,
+        },
+        {
+          provide: AdminAuditLogService,
+          useValue: auditLog,
         },
       ],
     }).compile();
@@ -100,10 +108,14 @@ describe('AdminIdentityService', () => {
     it('creates a ReviewRequest with the reason when rejecting with one', async () => {
       prisma.identity.findUnique.mockResolvedValue(companyIdentity);
 
-      await service.updateIdentityStatus('identity-company-1', {
-        status: 'REJECTED',
-        reason: 'الرخصة منتهية الصلاحية',
-      });
+      await service.updateIdentityStatus(
+        'identity-company-1',
+        {
+          status: 'REJECTED',
+          reason: 'الرخصة منتهية الصلاحية',
+        },
+        'admin-1',
+      );
 
       expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
         data: {
@@ -112,6 +124,16 @@ describe('AdminIdentityService', () => {
           companyIdentityDataId: 'company-data-1',
         },
       });
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorAdminId: 'admin-1',
+          action: 'IDENTITY_REJECTED',
+          targetType: 'IDENTITY',
+          targetId: 'identity-company-1',
+          targetUserId: 'user-1',
+          metadata: { reason: 'الرخصة منتهية الصلاحية' },
+        }),
+      );
     });
 
     it('does not create a ReviewRequest when approving', async () => {
@@ -193,9 +215,11 @@ describe('AdminIdentityService', () => {
     it('creates a PENDING ReviewRequest with the notes and leaves the identity untouched', async () => {
       prisma.identity.findUnique.mockResolvedValue(officeIdentity);
 
-      const result = await service.requestIdentityEdit('identity-office-1', {
-        notes: 'يرجى رفع صورة رخصة أوضح',
-      });
+      const result = await service.requestIdentityEdit(
+        'identity-office-1',
+        { notes: 'يرجى رفع صورة رخصة أوضح' },
+        'admin-1',
+      );
 
       expect(prisma.reviewRequest.create).toHaveBeenCalledWith({
         data: {
@@ -204,6 +228,16 @@ describe('AdminIdentityService', () => {
           officeIdentityDataId: 'office-data-1',
         },
       });
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorAdminId: 'admin-1',
+          action: 'IDENTITY_EDIT_REQUESTED',
+          targetType: 'IDENTITY',
+          targetId: 'identity-office-1',
+          targetUserId: 'user-2',
+          metadata: { notes: 'يرجى رفع صورة رخصة أوضح' },
+        }),
+      );
       expect(prisma.officeIdentityData.update).not.toHaveBeenCalled();
       expect(result).toBeDefined();
     });

@@ -106,6 +106,8 @@ export interface AdminIdentityData {
   name: string;
   avatarUrl?: string | null;
   logoUrl?: string | null;
+  // Only present on companyData/officeData (identity verification status).
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 export interface AdminUserProperty {
