@@ -275,3 +275,73 @@ describe('ChatService.findOrCreateConversation', () => {
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 });
+
+describe('ChatService.getConversations', () => {
+  let service: ChatService;
+  let prisma: {
+    conversation: { count: jest.Mock; findMany: jest.Mock };
+    message: { count: jest.Mock };
+  };
+
+  beforeEach(async () => {
+    prisma = {
+      conversation: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'conv-empty',
+            createdAt: new Date('2026-09-23T10:00:00Z'),
+            updatedAt: new Date('2026-09-23T10:00:00Z'),
+            property: null,
+            // A freshly initiated conversation: participants but no messages.
+            participants: [
+              { userId: 'user-1', identityId: null, lastReadAt: null },
+              { userId: null, identityId: 'identity-2' },
+            ],
+            messages: [],
+          },
+        ]),
+        count: jest.fn().mockResolvedValue(1),
+      },
+      message: { count: jest.fn().mockResolvedValue(0) },
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ChatParticipantDisplayService,
+        ChatConversationsService,
+        ChatMessagesService,
+        ChatService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+
+    service = module.get<ChatService>(ChatService);
+  });
+
+  it('lists empty (newly initiated) conversations — no messages filter in the where clause', async () => {
+    const result = await service.getConversations('user-1');
+
+    // Regression guard for the QA ticket "newly initiated conversations do
+    // not appear in the Chats list": the old query filtered
+    // `messages: { some: {} }`, which hid every room created by a
+    // "contact" tap before its first message persisted.
+    const [listArgs] = (
+      prisma.conversation.findMany.mock.calls as unknown as [
+        [{ where: Record<string, unknown> }],
+      ]
+    )[0];
+    expect(listArgs.where).not.toHaveProperty('messages');
+
+    const [countArgs] = (
+      prisma.conversation.count.mock.calls as unknown as [
+        [{ where: Record<string, unknown> }],
+      ]
+    )[0];
+    expect(countArgs.where).not.toHaveProperty('messages');
+
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].id).toBe('conv-empty');
+    expect(result.data[0].lastMessage).toBeNull();
+    expect(result.meta.total).toBe(1);
+  });
+});

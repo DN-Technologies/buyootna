@@ -54,7 +54,12 @@ interface ChatState {
       imageUrl?: string;
       propertyId?: string;
     },
-  ) => void;
+  ) => boolean;
+  /**
+   * Rolls back the optimistic bubble for a send the server refused to
+   * persist (tempId comes back on the socket's message_error event).
+   */
+  messageFailed: (conversationId: string, tempId?: string) => void;
   receiveMessage: (conversationId: string, message: ChatMessage) => void;
   markConversationAsRead: (conversationId: string) => Promise<void>;
   setActiveConversation: (conversationId: string | null) => void;
@@ -186,13 +191,26 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     sendMessage: (conversationId, payload) => {
-      // 1. Emit via socket
-      socketService.sendMessage(conversationId, payload);
+      // The tempId is generated up front and used as the optimistic
+      // bubble's id, so a `message_error` echo can roll back exactly this
+      // bubble.
+      const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+
+      // 1. Emit via socket. No socket object at all means the emit would be
+      // silently dropped -- report the failure instead of showing an
+      // optimistic bubble that can never be confirmed.
+      const emitted = socketService.sendMessage(conversationId, {
+        ...payload,
+        tempId,
+      });
+      if (!emitted) {
+        return false;
+      }
 
       // 2. Add optimistic message to UI instantly, scoped to this
       // conversation's own slice only.
       const optimisticMsg: ChatMessage = {
-        id: `temp-${Date.now()}`,
+        id: tempId,
         type: payload.type || 'TEXT',
         content: payload.content,
         imageUrl: payload.imageUrl,
@@ -216,6 +234,30 @@ export const useChatStore = create<ChatState>((set, get) => {
           ],
         },
       }));
+
+      return true;
+    },
+
+    messageFailed: (conversationId, tempId) => {
+      set((state) => {
+        const existing = state.messagesByConversation[conversationId] || [];
+        // No correlation id (older client/server pair): fall back to
+        // dropping the most recent still-sending bubble.
+        let lastSendingId: string | undefined;
+        for (const msg of existing) {
+          if (msg.sending) lastSendingId = msg.id;
+        }
+        const filtered = existing.filter((msg) => {
+          if (tempId) return msg.id !== tempId;
+          return !msg.sending || msg.id !== lastSendingId;
+        });
+        return {
+          messagesByConversation: {
+            ...state.messagesByConversation,
+            [conversationId]: filtered,
+          },
+        };
+      });
     },
 
     receiveMessage: (conversationId, message) => {
