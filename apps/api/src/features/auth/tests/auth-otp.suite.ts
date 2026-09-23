@@ -33,7 +33,7 @@ export function registerOtpAuthTests(ctx: AuthTestContext) {
         profile: { id: 'profile-1' },
       });
       const loginSpy = jest
-        .spyOn(ctx.service, 'login')
+        .spyOn(ctx.sessionService, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
 
       const result = await ctx.service.verifyRegistrationOtp(
@@ -54,7 +54,7 @@ export function registerOtpAuthTests(ctx: AuthTestContext) {
       ctx.usersRegistration.completePhoneRegistration.mockRejectedValue(
         new BadRequestException('انتهت جلسة التسجيل، يرجى إعادة المحاولة'),
       );
-      const loginSpy = jest.spyOn(ctx.service, 'login');
+      const loginSpy = jest.spyOn(ctx.sessionService, 'login');
 
       await expect(
         ctx.service.verifyRegistrationOtp('+96555123456', '123456'),
@@ -71,7 +71,7 @@ export function registerOtpAuthTests(ctx: AuthTestContext) {
         profile: { id: 'profile-1' },
       });
       const loginSpy = jest
-        .spyOn(ctx.service, 'login')
+        .spyOn(ctx.sessionService, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
 
       const result = await ctx.service.verifyEmailRegistrationOtp(
@@ -90,7 +90,7 @@ export function registerOtpAuthTests(ctx: AuthTestContext) {
       ctx.usersRegistration.completeEmailRegistration.mockRejectedValue(
         new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية'),
       );
-      const loginSpy = jest.spyOn(ctx.service, 'login');
+      const loginSpy = jest.spyOn(ctx.sessionService, 'login');
 
       await expect(
         ctx.service.verifyEmailRegistrationOtp('ali@example.com', '000000'),
