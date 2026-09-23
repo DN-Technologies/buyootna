@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
@@ -361,7 +362,18 @@ export class AuthService {
       throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
     }
 
-    await this.twilioService.sendVerification(user.phone);
+    // Twilio failures (unverifiable/malformed number, trial-account limits,
+    // provider outage) used to re-throw out of sendVerification and surface
+    // as a raw 500 -- QA's "server error on change password for phone
+    // accounts". Translate into the same handled, user-facing error the
+    // registration flow already produces for a failed send.
+    try {
+      await this.twilioService.sendVerification(user.phone);
+    } catch {
+      throw new InternalServerErrorException(
+        'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
+      );
+    }
     this.rateLimiter?.recordRequest(user.id);
 
     return { message: 'تم إرسال رمز التحقق بنجاح' };
