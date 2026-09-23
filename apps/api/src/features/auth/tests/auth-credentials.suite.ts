@@ -1,4 +1,8 @@
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuthTestContext, UserUpdateArgs } from './auth-test.harness';
@@ -75,6 +79,27 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
 
       expect(ctx.twilio.sendVerification).toHaveBeenCalledWith('+96555123456');
       expect(result).toEqual({ message: 'تم إرسال رمز التحقق بنجاح' });
+    });
+
+    it('translates a Twilio send failure into a handled error instead of a raw 500', async () => {
+      // E.g. a trial-account recipient limit, a non-E.164 phone on file, or
+      // a provider outage -- whatever Twilio rejects with must reach the
+      // client as the handled Arabic error, not an unhandled exception.
+      ctx.twilio.sendVerification.mockRejectedValue(
+        new Error('Twilio: number is not verified'),
+      );
+
+      await expect(
+        ctx.service.requestChangePasswordOtp({
+          phone: '+96555123456',
+        } as unknown as User),
+      ).rejects.toThrow(InternalServerErrorException);
+
+      await expect(
+        ctx.service.requestChangePasswordOtp({
+          phone: '+96555123456',
+        } as unknown as User),
+      ).rejects.toThrow('تعذر إرسال رمز التحقق');
     });
   });
 

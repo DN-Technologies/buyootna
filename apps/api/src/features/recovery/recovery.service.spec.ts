@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { InternalServerErrorException } from '@nestjs/common';
 import { RecoveryService } from './recovery.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
@@ -115,6 +116,28 @@ describe('RecoveryService', () => {
       await expect(
         service.requestOtp({ identifier: 'not-an-identifier' }),
       ).rejects.toThrow('يجب إدخال بريد إلكتروني أو رقم هاتف صالح');
+    });
+
+    it('translates a Twilio send failure into a handled error instead of a raw 500', async () => {
+      prisma.user.findFirst.mockResolvedValue(phoneUser);
+      twilioService.sendVerification.mockRejectedValueOnce(
+        new Error('Twilio: number is not verified'),
+      );
+
+      await expect(
+        service.requestOtp({ identifier: '+96599998888' }),
+      ).rejects.toThrow(InternalServerErrorException);
+    });
+
+    it('translates an email send failure into a handled error instead of a raw 500', async () => {
+      prisma.user.findFirst.mockResolvedValue(emailUser);
+      emailOtpService.sendPasswordResetOtp.mockRejectedValueOnce(
+        new Error('SMTP unavailable'),
+      );
+
+      await expect(
+        service.requestOtp({ identifier: 'jane@example.com' }),
+      ).rejects.toThrow(InternalServerErrorException);
     });
   });
 

@@ -8,6 +8,10 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleAuthService } from './services/google-auth.service';
 import { AppleAuthService } from './services/apple-auth.service';
 import { AuthIdentitiesService } from './services/auth-identities.service';
+import { AuthCredentialsService } from './services/auth-credentials.service';
+import { AuthSessionService } from './services/auth-session.service';
+import { AuthRegistrationService } from './services/auth-registration.service';
+import { AuthPasswordService } from './services/auth-password.service';
 import { UsersModule } from '../users/users.module';
 import { DevicesModule } from '../devices/devices.module';
 
@@ -22,6 +26,10 @@ import { DevicesModule } from '../devices/devices.module';
     DevicesModule,
   ],
   providers: [
+    AuthCredentialsService,
+    AuthSessionService,
+    AuthRegistrationService,
+    AuthPasswordService,
     AuthService,
     LocalStrategy,
     JwtStrategy,
