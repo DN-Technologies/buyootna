@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import CompanyRequestListItem from '@/features/company/components/requests/CompanyRequestListItem';
 import ActivityEmptyState from '@/features/individual/components/activity/ActivityEmptyState';
 import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
 import ActivityGuestView from '@/features/individual/components/activity/ActivityGuestView';
@@ -29,7 +30,14 @@ import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { AlertItem } from '@/shared/api/alerts.service';
+import { alertsService } from '@/shared/api/alerts.service';
+import apiClient from '@/shared/api/api';
+import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import RadioSelectionSheet, {
+  RadioOption,
+} from '@/shared/components/profile/RadioSelectionSheet';
 import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
+import { useMyRequests } from '@/shared/hooks/useMyRequests';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -80,6 +88,14 @@ export default function ActivityScreen() {
     refetch: refetchAlerts,
   } = useMyAlerts();
 
+  // Price-quote requests this identity submitted (عروضي tab).
+  const {
+    data: myRequests,
+    isLoading: isLoadingRequests,
+    error: requestsError,
+    refetch: refetchRequests,
+  } = useMyRequests();
+
   // Refetch on every focus -- the global 30s React Query staleTime means a
   // simple remount alone doesn't guarantee fresh data, so freeAdsRemaining
   // (and the ad list) could still show a value that's already out of date
@@ -87,13 +103,17 @@ export default function ActivityScreen() {
   // reads the live value directly (bypasses the query cache entirely).
   // Alerts follow the same rule -- an alert created from the Add Alert
   // screen wouldn't otherwise show up here until the 30s cache expired.
+  // Same for submitted quote requests: a request created from the
+  // request-quote screen or a company profile must appear the next time
+  // this screen is focused.
   useFocusEffect(
     useCallback(() => {
       if (token) {
         refetch();
         refetchAlerts();
+        refetchRequests();
       }
-    }, [token, refetch, refetchAlerts]),
+    }, [token, refetch, refetchAlerts, refetchRequests]),
   );
 
   const { filterPills, sortedAndFilteredData } = useActivityFilters(
@@ -138,7 +158,9 @@ export default function ActivityScreen() {
             ? sortedAndFilteredData
             : isAlertsTab
               ? alerts
-              : []
+              : activeTab === 'عروضي'
+                ? myRequests
+                : []
         }
         keyExtractor={(item) => item.id}
         getItemType={(item) =>
@@ -160,6 +182,12 @@ export default function ActivityScreen() {
           <RefreshControl
             refreshing={isAlertsTab ? isLoadingAlerts : isLoading}
             onRefresh={isAlertsTab ? refetchAlerts : refetch}
+            refreshing={isLoading || isLoadingRequests}
+            onRefresh={() => {
+              refetch();
+              refetchAlerts();
+              refetchRequests();
+            }}
             tintColor="#15304D"
           />
         }
@@ -184,6 +212,15 @@ export default function ActivityScreen() {
         ListEmptyComponent={
           isAlertsTab ? (
             <AlertsEmptyState isLoading={isLoadingAlerts} error={alertsError} />
+          ) : activeTab === 'عروضي' ? (
+            <GuestEmptyState
+              icon="file-text"
+              title="لا توجد طلبات بعد"
+              description={
+                requestsError ||
+                'طلبات عرض السعر التي ترسلها ستظهر هنا لتتابع حالتها.'
+              }
+            />
           ) : (
             <ActivityEmptyState
               isLoading={isLoading}
@@ -201,6 +238,10 @@ export default function ActivityScreen() {
               onDeletePress={alertActions.handleDeleteAlert}
               onPress={(id) => router.push(`/alert-matches/${id}` as any)}
             />
+          activeTab === 'تنبيهاتي' ? (
+            <AlertListItem alert={item as any} onDeletePress={handleDeleteAlert} />
+          ) : activeTab === 'عروضي' ? (
+            <CompanyRequestListItem request={item as any} />
           ) : (
             <ActivityListItem
               property={item as ActivityItem}

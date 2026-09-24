@@ -4,6 +4,7 @@ import { AdminUsersService } from './admin-users.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { MailService } from '../../../core/mail/mail.service';
+import { AdminAuditLogService } from './admin-audit-log.service';
 import { Role, IdentityType } from '@prisma/client';
 import { UserAccountStatusAction } from '../dto/admin-update-status.dto';
 
@@ -40,6 +41,7 @@ describe('AdminUsersService', () => {
   let prisma: MockPrismaService;
   let notifications: MockNotificationsService;
   let mail: MockMailService;
+  let auditLog: { log: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -73,6 +75,8 @@ describe('AdminUsersService', () => {
       sendMail: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    auditLog = { log: jest.fn().mockResolvedValue(undefined) };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminUsersService,
@@ -87,6 +91,10 @@ describe('AdminUsersService', () => {
         {
           provide: MailService,
           useValue: mail,
+        },
+        {
+          provide: AdminAuditLogService,
+          useValue: auditLog,
         },
       ],
     }).compile();
@@ -250,12 +258,24 @@ describe('AdminUsersService', () => {
         password: 'hash',
       });
 
-      const res = await service.updateUserStatus('u-1', {
-        status: UserAccountStatusAction.BLOCKED,
-      });
+      const res = await service.updateUserStatus(
+        'u-1',
+        { status: UserAccountStatusAction.BLOCKED },
+        'admin-1',
+      );
 
       expect(res.user.isBlocked).toBe(true);
       expect((res.user as { password?: string }).password).toBeUndefined();
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorAdminId: 'admin-1',
+          action: 'USER_STATUS_CHANGED',
+          targetType: 'USER',
+          targetId: 'u-1',
+          targetUserId: 'u-1',
+          metadata: { status: UserAccountStatusAction.BLOCKED },
+        }),
+      );
     });
 
     it('should throw BadRequestException if trying to update status of an admin user', async () => {
@@ -323,11 +343,14 @@ describe('AdminUsersService', () => {
         { id: 'u-2', email: 'b@example.com', name: 'سارة' },
       ]);
 
-      const res = await service.notifyUsers({
-        userIds: ['u-1', 'u-2'],
-        title: 'تنبيه هام',
-        message: 'يرجى تحديث بيانات حسابك.',
-      });
+      const res = await service.notifyUsers(
+        {
+          userIds: ['u-1', 'u-2'],
+          title: 'تنبيه هام',
+          message: 'يرجى تحديث بيانات حسابك.',
+        },
+        'admin-1',
+      );
 
       expect(notifications.create).toHaveBeenCalledTimes(2);
       expect(notifications.create).toHaveBeenCalledWith(
@@ -340,6 +363,16 @@ describe('AdminUsersService', () => {
       expect(mail.sendMail).toHaveBeenCalledTimes(2);
       expect(res.notifiedCount).toBe(2);
       expect(res.failedUserIds).toEqual([]);
+      expect(auditLog.log).toHaveBeenCalledTimes(2);
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          actorAdminId: 'admin-1',
+          action: 'USER_NOTIFIED',
+          targetType: 'USER',
+          targetId: 'u-1',
+          targetUserId: 'u-1',
+        }),
+      );
     });
 
     it('reports missing users as failed without failing the whole batch', async () => {

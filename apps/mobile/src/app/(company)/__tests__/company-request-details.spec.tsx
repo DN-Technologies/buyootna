@@ -5,6 +5,7 @@ import { CompanyRequestItem } from '@/features/company/components/requests';
 import { useCompanyRequestDetails } from '@/features/company/hooks/useCompanyRequestDetails';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
+import { resetLinkThrottle } from '@/shared/utils/openUrl';
 
 import CompanyRequestDetailsScreen from '../(requests)/[id]';
 
@@ -86,6 +87,9 @@ function mockDetails(overrides: Partial<CompanyRequestItem> = {}) {
 describe('CompanyRequestDetailsScreen (real data)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // The call/WhatsApp asserts below press links back-to-back; the
+    // openUrlThrottled burst lock must start clean for each test.
+    resetLinkThrottle();
     mockDetails();
   });
 
@@ -198,6 +202,11 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
 
     await fireEvent.press(getByTestId('request-details-call-button'));
     expect(Linking.openURL).toHaveBeenCalledWith('tel:+96590000000');
+
+    // An independent button, not a repeat tap of the same one -- clear the
+    // openUrlThrottled burst lock so the WhatsApp open is not swallowed as
+    // a double-tap.
+    resetLinkThrottle();
 
     await fireEvent.press(getByTestId('request-details-whatsapp-button'));
     expect(Linking.openURL).toHaveBeenCalledWith('https://wa.me/+96590000000');

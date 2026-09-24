@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -57,12 +58,23 @@ export class RecoveryService {
     // Deliver the OTP over whichever channel the entered identifier
     // actually is — an email-only account (no phone on file) previously
     // fell through this check silently, so no OTP was ever sent for it.
-    if (validPhone && user.phone) {
-      await this.twilioService.sendVerification(user.phone);
-    } else if (validEmail && user.email) {
-      await this.emailOtpService.sendPasswordResetOtp(
-        user.email,
-        user.name ?? 'مستخدم',
+    //
+    // Send failures (Twilio rejecting an unverifiable/malformed number,
+    // provider outage, SMTP failure) must not escape as a raw 500 -- they
+    // are translated into the same handled, user-facing error the
+    // registration flow produces for a failed send.
+    try {
+      if (validPhone && user.phone) {
+        await this.twilioService.sendVerification(user.phone);
+      } else if (validEmail && user.email) {
+        await this.emailOtpService.sendPasswordResetOtp(
+          user.email,
+          user.name ?? 'مستخدم',
+        );
+      }
+    } catch {
+      throw new InternalServerErrorException(
+        'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
       );
     }
 

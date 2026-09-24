@@ -1,6 +1,8 @@
 export type RequestStatus = 'pending' | 'responded' | 'accepted' | 'rejected';
 
-export type RequestScope = 'company' | 'public';
+// 'mine' is the requester-facing scope (requests this identity submitted),
+// surfaced in My Activity's عروضي tab.
+export type RequestScope = 'company' | 'public' | 'mine';
 
 export type RequestStatusFilter =
   | 'all'

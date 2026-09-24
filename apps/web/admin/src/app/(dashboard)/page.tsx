@@ -8,7 +8,7 @@ import RevenueChart from '@/components/dashboard/RevenueChart'
 import UsersDonutChart from '@/components/dashboard/UsersDonutChart'
 import RecentRegistrationsTable from '@/components/dashboard/RecentRegistrationsTable'
 import RecentActivitiesCard from '@/components/dashboard/RecentActivitiesCard'
-import ReportsCard from '@/components/dashboard/ReportsCard'
+import ReportsCard, { ReportCardItem } from '@/components/dashboard/ReportsCard'
 import VerificationRequestsCard from '@/components/dashboard/VerificationRequestsCard'
 import ReviewVerificationDrawer from '@/components/dashboard/ReviewVerificationDrawer'
 import ConfirmVerificationModal from '@/components/dashboard/ConfirmVerificationModal'
@@ -21,7 +21,10 @@ import {
   AdminDashboardPendingVerification,
   updateIdentityStatus,
   requestIdentityEdit,
+  formatRelativeArabicTime,
 } from '@/lib/admin-dashboard'
+import { fetchReports } from '@/lib/admin-reports'
+import { MAIN_PRIORITY_LABEL, reportTypeLabel } from '@/lib/report-labels'
 
 function formatChange(pct: number): string {
   const sign = pct > 0 ? '+' : ''
@@ -36,6 +39,7 @@ const FIGMA_DEFAULT_DATA: AdminDashboardResponse = {
     trialAccountsChangePct: 8.1,
     revenueTotal: 84800,
     revenueChangePct: 8.1,
+    newReportsCount: 10,
   },
   usersByType: {
     individual: 200,
@@ -195,12 +199,29 @@ export default function DashboardPage() {
   const [toastMessage, setToastMessage] = useState('تم اعتماد التوثيق بنجاح.')
   const [lastApprovedRequest, setLastApprovedRequest] =
     useState<AdminDashboardPendingVerification | null>(null)
+  const [pendingReports, setPendingReports] = useState<ReportCardItem[]>([])
 
   useEffect(() => {
     if (activeData.pendingVerifications) {
       setPendingRequests(activeData.pendingVerifications)
     }
   }, [activeData])
+
+  useEffect(() => {
+    fetchReports({ status: 'PENDING', limit: 4 })
+      .then((res) => {
+        setPendingReports(
+          res.data.map((row) => ({
+            id: row.id,
+            title: row.against?.name || reportTypeLabel(row.targetType, row.against?.role ?? null),
+            reason: row.reason,
+            timeAgo: formatRelativeArabicTime(row.createdAt),
+            priority: MAIN_PRIORITY_LABEL[row.priority],
+          })),
+        )
+      })
+      .catch((err) => console.error('Failed to load pending reports:', err))
+  }, [])
 
   const metrics: MetricItem[] = [
     {
@@ -213,8 +234,7 @@ export default function DashboardPage() {
     {
       id: 'reports',
       title: 'البلاغات الجديدة',
-      count: '10',
-      change: '-3.2%',
+      count: activeData.metrics.newReportsCount.toLocaleString('en-US'),
       variant: 'red',
     },
     {
@@ -389,7 +409,7 @@ export default function DashboardPage() {
 
       {/* Data Cards Row 1: Reports + Recent Registrations */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
-        <ReportsCard />
+        <ReportsCard reports={pendingReports} />
         <RecentRegistrationsTable
           registrations={activeData.recentRegistrations}
         />

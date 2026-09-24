@@ -3,6 +3,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
+import { ChatConversationsService } from './services/chat-conversations.service';
+import { ChatMessagesService } from './services/chat-messages.service';
+import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
 
 @Module({
   imports: [
@@ -11,6 +14,12 @@ import { ChatGateway } from './chat.gateway';
     }),
   ],
   controllers: [ChatController],
-  providers: [ChatService, ChatGateway],
+  providers: [
+    ChatParticipantDisplayService,
+    ChatConversationsService,
+    ChatMessagesService,
+    ChatService,
+    ChatGateway,
+  ],
 })
 export class ChatModule {}

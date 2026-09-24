@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AdminCouponService } from './admin-coupon.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { MailService } from '../../../core/mail/mail.service';
+import { AdminAuditLogService } from './admin-audit-log.service';
 
 describe('AdminCouponService', () => {
   let service: AdminCouponService;
@@ -13,6 +14,7 @@ describe('AdminCouponService', () => {
     };
   };
   let mail: { sendMail: jest.Mock };
+  let auditLog: { log: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -26,6 +28,8 @@ describe('AdminCouponService', () => {
       sendMail: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    auditLog = { log: jest.fn().mockResolvedValue(undefined) };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AdminCouponService,
@@ -36,6 +40,10 @@ describe('AdminCouponService', () => {
         {
           provide: MailService,
           useValue: mail,
+        },
+        {
+          provide: AdminAuditLogService,
+          useValue: auditLog,
         },
       ],
     }).compile();
@@ -93,6 +101,28 @@ describe('AdminCouponService', () => {
       expect(res.coupon.code).toBe('LAUNCHPROMO26');
       expect(res.userId).toBe('user-coupon-1');
     });
+
+    it('logs COUPON_GRANTED against the user', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-coupon-1',
+        name: 'على البالي',
+        email: 'ali@example.com',
+      });
+
+      await service.grantCoupon(
+        'user-coupon-1',
+        { couponCode: 'LAUNCHPROMO26', couponName: 'Byoutna10' },
+        'admin-1',
+      );
+
+      expect(auditLog.log).toHaveBeenCalledWith({
+        actorAdminId: 'admin-1',
+        action: 'COUPON_GRANTED',
+        targetType: 'COUPON',
+        targetUserId: 'user-coupon-1',
+        metadata: { couponCode: 'LAUNCHPROMO26', couponName: 'Byoutna10' },
+      });
+    });
   });
 
   describe('grantBulkCoupon', () => {
@@ -122,6 +152,35 @@ describe('AdminCouponService', () => {
       expect(res.message).toBe('تم اضافة كوبون خصم لـ 2 مستخدمين بنجاح.');
       expect(res.grantedUserIds).toEqual(['u1', 'u2']);
       expect(res.failedUserIds).toEqual(['missing-user']);
+    });
+
+    it('logs COUPON_BULK_GRANTED once per successfully granted user', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        { id: 'u1', name: 'محمد الجارح', email: 'm1@example.com' },
+        { id: 'u2', name: 'أحمد علي', email: 'm2@example.com' },
+      ]);
+
+      await service.grantBulkCoupon(
+        {
+          userIds: ['u1', 'u2', 'missing-user'],
+          couponCode: 'LAUNCHPROMO26',
+        },
+        'admin-1',
+      );
+
+      expect(auditLog.log).toHaveBeenCalledTimes(2);
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'COUPON_BULK_GRANTED',
+          targetUserId: 'u1',
+        }),
+      );
+      expect(auditLog.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'COUPON_BULK_GRANTED',
+          targetUserId: 'u2',
+        }),
+      );
     });
   });
 });

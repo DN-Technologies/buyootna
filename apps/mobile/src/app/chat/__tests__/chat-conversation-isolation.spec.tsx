@@ -51,15 +51,22 @@ jest.mock('@/shared/services/socket.service', () => ({
     getSocket: jest.fn(),
     joinConversation: jest.fn(),
     leaveConversation: jest.fn(),
-    sendMessage: jest.fn(),
+    sendMessage: jest.fn(() => true),
     onNewMessage: jest.fn(() => jest.fn()),
     onConversationUpdated: jest.fn(() => jest.fn()),
+    onMessageError: jest.fn(() => jest.fn()),
   },
 }));
 
 jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: { getState: jest.fn(() => ({ user: { id: 'individual-1' } })) },
 }));
+
+// ReportReasonSheet renders @gorhom/bottom-sheet's BottomSheetTextInput,
+// which isn't renderable in this jest-expo environment (unrelated to the
+// conversation-isolation behavior under test here) -- stub it out the same
+// way the other screen-external dependencies above are mocked.
+jest.mock('@/shared/components/report/ReportReasonSheet', () => 'ReportReasonSheet');
 
 const mockGetMessages = chatService.getMessages as jest.Mock;
 
@@ -128,10 +135,13 @@ describe('ChatDetailScreen — conversation isolation (integration)', () => {
     await waitFor(() => {
       expect(screenA.getByText('Test message for Company A')).toBeTruthy();
     });
-    expect(socketService.sendMessage).toHaveBeenCalledWith(conversationA.id, {
-      content: 'Test message for Company A',
-      type: 'TEXT',
-    });
+    expect(socketService.sendMessage).toHaveBeenCalledWith(
+      conversationA.id,
+      expect.objectContaining({
+        content: 'Test message for Company A',
+        type: 'TEXT',
+      }),
+    );
 
     // 4. Navigate back to the main chat list — unmount Company A's screen.
     screenA.unmount();

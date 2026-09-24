@@ -59,6 +59,55 @@ describe('JwtStrategy', () => {
     expect(sessionFindUnique).not.toHaveBeenCalled();
   });
 
+  it('rejects a legacy no-sid token issued before the last password change', async () => {
+    const changedAt = Date.parse('2026-09-23T12:00:00Z');
+    userFindUnique.mockResolvedValue({
+      ...user,
+      passwordChangedAt: new Date(changedAt),
+    });
+
+    await expect(
+      strategy.validate({
+        ...basePayload,
+        iat: Math.floor(changedAt / 1000) - 3600, // issued an hour earlier
+      }),
+    ).rejects.toThrow(UnauthorizedException);
+    expect(identityFindFirst).not.toHaveBeenCalled();
+  });
+
+  it('accepts a legacy no-sid token issued after the last password change', async () => {
+    const changedAt = Date.parse('2026-09-23T12:00:00Z');
+    userFindUnique.mockResolvedValue({
+      ...user,
+      passwordChangedAt: new Date(changedAt),
+    });
+    identityFindFirst.mockResolvedValue(identity);
+
+    const result = await strategy.validate({
+      ...basePayload,
+      iat: Math.floor(changedAt / 1000) + 60, // issued a minute later
+    });
+
+    expect(result.userId).toBe('user-1');
+  });
+
+  it('keeps sid-backed tokens valid across a password change (the session row governs them)', async () => {
+    userFindUnique.mockResolvedValue({
+      ...user,
+      passwordChangedAt: new Date(Date.parse('2026-09-23T12:00:00Z')),
+    });
+    sessionFindUnique.mockResolvedValue({ userId: 'user-1' });
+    identityFindFirst.mockResolvedValue(identity);
+
+    const result = await strategy.validate({
+      ...basePayload,
+      sid: 'session-1',
+      iat: Math.floor(Date.parse('2026-09-23T10:00:00Z') / 1000),
+    });
+
+    expect(result.userId).toBe('user-1');
+  });
+
   it('validates a token whose sid points at an existing session owned by the user', async () => {
     userFindUnique.mockResolvedValue(user);
     sessionFindUnique.mockResolvedValue({ userId: 'user-1' });

@@ -9,6 +9,8 @@ import {
   AdminNotifyUsersResponseDto,
 } from './dto/admin-notify-users.dto';
 import { AdminVerificationsFilterDto } from './dto/admin-verifications-filter.dto';
+import { AdminReportsFilterDto } from './dto/admin-reports-filter.dto';
+import { AdminReportUpdateDto } from './dto/admin-report-update.dto';
 import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
@@ -20,6 +22,20 @@ import { AdminPasswordService } from './services/admin-password.service';
 import { AdminCouponService } from './services/admin-coupon.service';
 import { AdminDashboardService } from './services/admin-dashboard.service';
 import { AdminVerificationsService } from './services/admin-verifications.service';
+import { AdminReportsService } from './services/admin-reports.service';
+import { AdminPropertiesService } from './services/admin-properties.service';
+import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
+import { AdminRequestsService } from './services/admin-requests.service';
+import { AdminExhibitionService } from './services/admin-exhibition.service';
+import { AdminPlansService } from './services/admin-plans.service';
+import { AdminInvoicesService } from './services/admin-invoices.service';
+import { AdminRatingsService } from './services/admin-ratings.service';
+import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
+import { AdminNotesService } from './services/admin-notes.service';
+import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
+import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
+import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
+import { AdminAuditLogService } from './services/admin-audit-log.service';
 
 @Injectable()
 export class AdminService {
@@ -31,10 +47,125 @@ export class AdminService {
     private readonly adminCouponService: AdminCouponService,
     private readonly adminDashboardService: AdminDashboardService,
     private readonly adminVerificationsService: AdminVerificationsService,
+    private readonly adminReportsService: AdminReportsService,
+    private readonly adminPropertiesService: AdminPropertiesService,
+    private readonly adminRequestsService: AdminRequestsService,
+    private readonly adminExhibitionService: AdminExhibitionService,
+    private readonly adminPlansService: AdminPlansService,
+    private readonly adminInvoicesService: AdminInvoicesService,
+    private readonly adminRatingsService: AdminRatingsService,
+    private readonly adminNotesService: AdminNotesService,
+    private readonly adminAuditLogService: AdminAuditLogService,
   ) {}
 
   async getDashboard() {
-    return this.adminDashboardService.getDashboard();
+    const [dashboard, reportStats] = await Promise.all([
+      this.adminDashboardService.getDashboard(),
+      this.adminReportsService.getDashboardReportStats(),
+    ]);
+    return {
+      ...dashboard,
+      metrics: {
+        ...dashboard.metrics,
+        newReportsCount: reportStats.newReportsCount,
+      },
+    };
+  }
+
+  async getReports(filters: AdminReportsFilterDto) {
+    return this.adminReportsService.getReports(filters);
+  }
+
+  async getReportById(id: string) {
+    return this.adminReportsService.getReportById(id);
+  }
+
+  async updateReport(
+    id: string,
+    dto: AdminReportUpdateDto,
+    adminUserId: string,
+  ) {
+    return this.adminReportsService.updateReport(id, dto, adminUserId);
+  }
+
+  async resolveReports(ids: string[], adminUserId: string) {
+    return this.adminReportsService.resolveReports(ids, adminUserId);
+  }
+
+  async dismissReports(ids: string[], adminUserId: string) {
+    return this.adminReportsService.dismissReports(ids, adminUserId);
+  }
+
+  async getReportsForUser(userId: string, filters: AdminReportsFilterDto) {
+    return this.adminReportsService.getReportsForUser(userId, filters);
+  }
+
+  async getReportsForProperty(propertyId: string) {
+    return this.adminReportsService.getReportsForProperty(propertyId);
+  }
+
+  async removeReportedProperty(
+    propertyId: string,
+    reason?: string,
+    adminUserId?: string,
+  ) {
+    return this.adminReportsService.removeReportedProperty(
+      propertyId,
+      reason,
+      adminUserId,
+    );
+  }
+
+  async updateProperty(
+    propertyId: string,
+    dto: AdminUpdatePropertyDto,
+    adminUserId: string,
+  ) {
+    return this.adminPropertiesService.updateProperty(
+      propertyId,
+      dto,
+      adminUserId,
+    );
+  }
+
+  async getRequestsForUser(userId: string) {
+    return this.adminRequestsService.getRequestsForUser(userId);
+  }
+
+  async getProjectsForUser(userId: string) {
+    return this.adminExhibitionService.getProjectsForUser(userId);
+  }
+
+  async deleteProject(projectId: string, adminUserId: string) {
+    return this.adminExhibitionService.deleteProject(projectId, adminUserId);
+  }
+
+  async getWallet(userId: string) {
+    return this.adminPlansService.getWallet(userId);
+  }
+
+  async changePlan(
+    userId: string,
+    dto: AdminChangePlanDto,
+    adminUserId: string,
+  ) {
+    return this.adminPlansService.changePlan(userId, dto, adminUserId);
+  }
+
+  async grantExceptionalFeature(
+    userId: string,
+    dto: AdminGrantExceptionalFeatureDto,
+    adminUserId: string,
+  ) {
+    return this.adminPlansService.grantExceptionalFeature(
+      userId,
+      dto,
+      adminUserId,
+    );
+  }
+
+  async getAssignableAdmins() {
+    return this.adminReportsService.getAssignableAdmins();
   }
 
   async getVerifications(filters: AdminVerificationsFilterDto) {
@@ -43,8 +174,9 @@ export class AdminService {
 
   async notifyUsers(
     dto: AdminNotifyUsersDto,
+    adminUserId?: string,
   ): Promise<AdminNotifyUsersResponseDto> {
-    return this.adminUsersService.notifyUsers(dto);
+    return this.adminUsersService.notifyUsers(dto, adminUserId);
   }
 
   async getUsers(filters: AdminUsersFilterDto) {
@@ -55,22 +187,36 @@ export class AdminService {
     return this.adminUsersService.getUserById(id);
   }
 
-  async updateUserStatus(userId: string, dto: AdminUpdateStatusDto) {
-    return this.adminUsersService.updateUserStatus(userId, dto);
+  async updateUserStatus(
+    userId: string,
+    dto: AdminUpdateStatusDto,
+    adminUserId?: string,
+  ) {
+    return this.adminUsersService.updateUserStatus(userId, dto, adminUserId);
   }
 
   async updateIdentityStatus(
     identityId: string,
     dto: AdminUpdateIdentityStatusDto,
+    adminUserId?: string,
   ) {
-    return this.adminIdentityService.updateIdentityStatus(identityId, dto);
+    return this.adminIdentityService.updateIdentityStatus(
+      identityId,
+      dto,
+      adminUserId,
+    );
   }
 
   async requestIdentityEdit(
     identityId: string,
     dto: AdminRequestIdentityEditDto,
+    adminUserId?: string,
   ) {
-    return this.adminIdentityService.requestIdentityEdit(identityId, dto);
+    return this.adminIdentityService.requestIdentityEdit(
+      identityId,
+      dto,
+      adminUserId,
+    );
   }
 
   async deleteUser(userId: string) {
@@ -95,11 +241,59 @@ export class AdminService {
     return this.adminCouponService.getAvailableCoupons();
   }
 
-  async grantCoupon(userId: string, dto: AdminGrantCouponDto) {
-    return this.adminCouponService.grantCoupon(userId, dto);
+  async getInvoicesForUser(userId: string) {
+    return this.adminInvoicesService.getInvoicesForUser(userId);
   }
 
-  async grantBulkCoupon(dto: AdminGrantBulkCouponDto) {
-    return this.adminCouponService.grantBulkCoupon(dto);
+  async getCouponHistoryForUser(userId: string) {
+    return this.adminInvoicesService.getCouponHistoryForUser(userId);
+  }
+
+  async getReviewsForUser(userId: string, query?: GetReviewsDto) {
+    return this.adminRatingsService.getReviewsForUser(userId, query);
+  }
+
+  async getReviewsSummaryForUser(userId: string) {
+    return this.adminRatingsService.getSummaryForUser(userId);
+  }
+
+  async deleteReview(reviewId: string) {
+    return this.adminRatingsService.deleteReview(reviewId);
+  }
+
+  async getNotesForUser(userId: string) {
+    return this.adminNotesService.getNotesForUser(userId);
+  }
+
+  async createNote(
+    userId: string,
+    dto: AdminCreateNoteDto,
+    authorAdminId: string,
+  ) {
+    return this.adminNotesService.createNote(userId, dto, authorAdminId);
+  }
+
+  async updateNote(noteId: string, dto: AdminUpdateNoteDto) {
+    return this.adminNotesService.updateNote(noteId, dto);
+  }
+
+  async deleteNote(noteId: string) {
+    return this.adminNotesService.deleteNote(noteId);
+  }
+
+  async getLogsForUser(userId: string, page?: number, limit?: number) {
+    return this.adminAuditLogService.getLogsForUser(userId, page, limit);
+  }
+
+  async grantCoupon(
+    userId: string,
+    dto: AdminGrantCouponDto,
+    adminUserId?: string,
+  ) {
+    return this.adminCouponService.grantCoupon(userId, dto, adminUserId);
+  }
+
+  async grantBulkCoupon(dto: AdminGrantBulkCouponDto, adminUserId?: string) {
+    return this.adminCouponService.grantBulkCoupon(dto, adminUserId);
   }
 }

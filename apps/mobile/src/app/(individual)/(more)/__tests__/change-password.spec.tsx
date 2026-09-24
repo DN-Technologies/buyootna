@@ -140,7 +140,7 @@ describe('ChangePasswordScreen', () => {
           'old-password',
           'new-password',
           undefined,
-          false,
+          true,
         );
       });
       expect(mockSettingsService.requestChangePasswordOtp).not.toHaveBeenCalled();
@@ -212,7 +212,7 @@ describe('ChangePasswordScreen', () => {
           'old-password',
           'new-password',
           '123456',
-          false,
+          true,
         );
       });
 

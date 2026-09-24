@@ -10,9 +10,10 @@ import {
   X,
 } from 'lucide-react'
 
-// Fully mock data: there is no Report model anywhere in the backend (for
-// ads or otherwise), so this tab is a static visual mockup, matching the
-// policy agreed for this tab. All actions below are placeholders.
+// A real Report model exists now, but nothing submits PROPERTY-type
+// reports yet (no such UI exists on mobile) -- fetchPropertyReports always
+// returns an empty array today, so this tab correctly renders its 0-state
+// until property reporting is wired on mobile in a future pass.
 export interface MockReport {
   id: string
   code: string
@@ -21,13 +22,13 @@ export interface MockReport {
   reporterPhone: string
   reporterEmail: string
   timeAgo: string
-  priority: 'متوسط' | 'منخفضة'
+  priority: 'عاجل' | 'متوسط' | 'منخفضة'
   status: 'مفتوحة' | 'مغلقة'
   details: string
   attachments: string[]
 }
 
-export const initialMockReports: MockReport[] = [
+const initialMockReports: MockReport[] = [
   {
     id: '1',
     code: 'RP-1025',
@@ -71,6 +72,7 @@ export const initialMockReports: MockReport[] = [
 ]
 
 const priorityStyles: Record<MockReport['priority'], string> = {
+  عاجل: 'bg-[#FEF3F2] text-[#9C1E28]',
   متوسط: 'bg-[#FFF9DA] text-[#B97500]',
   منخفضة: 'bg-[#EDEDED] text-[#344054]',
 }
@@ -181,11 +183,13 @@ export function ReportDetailView({
   onBack,
   onCloseReport,
   onAssignReport,
+  onDeleteAd,
 }: {
   report: MockReport
   onBack: () => void
   onCloseReport: (report: MockReport) => void
   onAssignReport: (report: MockReport) => void
+  onDeleteAd?: () => void
 }) {
   return (
     <div className="flex flex-col w-full font-['Cairo']" dir="rtl">
@@ -278,7 +282,7 @@ export function ReportDetailView({
       <div className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full">
         <button
           type="button"
-          onClick={() => notImplemented('حذف الاعلان')}
+          onClick={() => (onDeleteAd ? onDeleteAd() : notImplemented('حذف الاعلان'))}
           className="flex-1 h-11.5 flex items-center justify-center rounded-full border border-[#9C1E28] text-[#9C1E28] text-[14px] font-semibold cursor-pointer"
         >
           حذف الاعلان

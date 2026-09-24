@@ -16,6 +16,7 @@ import {
   DealsIcon,
   RolesIcon,
   SettingsIcon,
+  ReportsNavIcon,
 } from '@/components/icons/AdminIcons'
 
 interface NavItem {
@@ -64,6 +65,11 @@ const navGroups: NavGroup[] = [
         title: 'الاشعارات',
         href: '/notifications',
         icon: NotificationBellIcon,
+      },
+      {
+        title: 'البلاغات',
+        href: '/reports',
+        icon: ReportsNavIcon,
       },
       { title: 'الصفقات والمزادات', href: '/deals', icon: DealsIcon },
       { title: 'الأدوار والصلاحيات', href: '/roles', icon: RolesIcon },

@@ -19,6 +19,10 @@ model User {
   isBlocked  Boolean @default(false)
   isAdmin    Boolean @default(false)
 
+  // Set on every successful password change; JwtStrategy rejects legacy
+  // no-sid tokens issued before this moment.
+  passwordChangedAt DateTime?
+
   // Relations
   identities       Identity[]
   otpCode          OtpCode?
@@ -27,6 +31,14 @@ model User {
   notifications    Notification[]
   sessions         Session[]
   socialAccounts   SocialAccount[]
+  reportsFiled     Report[]                  @relation("ReporterReports")
+  reportsAgainst   Report[]                  @relation("TargetUserReports")
+  reportsResolved  Report[]                  @relation("ReportResolvedBy")
+  reportsAssigned  Report[]                  @relation("ReportAssignedAdmin")
+  adminActionLogsActed AdminActionLog[]      @relation("AdminActionLogActor")
+  adminActionLogsAbout AdminActionLog[]      @relation("AdminActionLogTarget")
+  adminNotesAuthored   AdminNote[]           @relation("AdminNoteAuthor")
+  adminNotesAbout      AdminNote[]           @relation("AdminNoteTarget")
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -172,6 +184,8 @@ enum NotificationType {
   IDENTITY_EDIT_REQUESTED
   ADMIN_CUSTOM_MESSAGE
   ALERT_MATCH
+  REPORT_RESOLVED
+  REPORT_DISMISSED
 }
 
 model Notification {
@@ -227,8 +241,27 @@ model Plan {
   prioritySearch Boolean        @default(false)
   users          User[]
   slots          UserPlanSlot[]
+  packages       PlanPackage[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+}
+
+// A purchasable quantity option within a plan tier (e.g. gold × 5 ads).
+// The plan carries the per-ad benefits; the package carries the ad count
+// and price actually charged.
+model PlanPackage {
+  id        String    @id @default(uuid())
+  planId    String
+  adsCount  Int
+  price     Float
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  plan      Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([planId, adsCount])
 }
 
 model FAQ {
@@ -252,8 +285,13 @@ model Invoice {
   dueDate     DateTime?
   delayDays   Int? // e.g. 5 for notice
   planSlots   UserPlanSlot[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+
+  // Set for plan purchases so fulfillment knows exactly what was bought
+  planId        String?
+  planPackageId String?
+  planPackage   PlanPackage? @relation(fields: [planPackageId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   // New identity-based relation
   identityId String?

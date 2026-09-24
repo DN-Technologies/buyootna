@@ -43,7 +43,10 @@ export function useChangePassword() {
         oldPassword: '',
         newPassword: '',
         confirmPassword: '',
-        logoutAllDevices: false,
+        // Secure by default: revoking other devices on a password change is
+        // the expected behavior (QA ticket: old sessions stayed alive). The
+        // switch remains functional for explicit opt-out.
+        logoutAllDevices: true,
       },
     });
 

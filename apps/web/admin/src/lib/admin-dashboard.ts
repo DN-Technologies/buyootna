@@ -7,6 +7,7 @@ export interface AdminDashboardMetrics {
   trialAccountsChangePct: number;
   revenueTotal: number;
   revenueChangePct: number;
+  newReportsCount: number;
 }
 
 export interface AdminDashboardUsersByType {

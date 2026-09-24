@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../auth.service';
+import { AuthCredentialsService } from '../services/auth-credentials.service';
+import { AuthSessionService } from '../services/auth-session.service';
+import { AuthRegistrationService } from '../services/auth-registration.service';
+import { AuthPasswordService } from '../services/auth-password.service';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { TwilioService } from 'src/core/twilio/twilio.service';
@@ -55,11 +59,15 @@ export interface IdentityCreateArgs {
 
 export interface UserUpdateArgs {
   where: { id: string };
-  data: { password: string };
+  data: { password: string; passwordChangedAt?: Date };
 }
 
 export interface AuthTestContext {
   service: AuthService;
+  // The registration/social suites assert "ends in login" by spying on the
+  // session service directly -- since the modularization, the registration
+  // paths call AuthSessionService.login, not a facade method.
+  sessionService: AuthSessionService;
   prisma: {
     user: {
       findFirst: jest.Mock;
@@ -187,6 +195,7 @@ export function createAuthTestContext(): AuthTestContext {
 
   const context: AuthTestContext = {
     service: null as unknown as AuthService,
+    sessionService: null as unknown as AuthSessionService,
     prisma: mockPrismaService,
     jwt: mockJwtService,
     twilio: mockTwilioService,
@@ -207,6 +216,10 @@ export function createAuthTestContext(): AuthTestContext {
 
       const module: TestingModule = await Test.createTestingModule({
         providers: [
+          AuthCredentialsService,
+          AuthSessionService,
+          AuthRegistrationService,
+          AuthPasswordService,
           AuthService,
           { provide: PrismaService, useValue: mockPrismaService },
           { provide: JwtService, useValue: mockJwtService },
@@ -230,6 +243,8 @@ export function createAuthTestContext(): AuthTestContext {
       }).compile();
 
       context.service = module.get<AuthService>(AuthService);
+      context.sessionService =
+        module.get<AuthSessionService>(AuthSessionService);
     },
   };
 

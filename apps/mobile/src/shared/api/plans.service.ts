@@ -1,5 +1,11 @@
 import apiClient from '@/shared/api/api';
 
+export interface PlanPackage {
+  id: string;
+  adsCount: number;
+  price: number;
+}
+
 export interface PlanItem {
   id: string;
   slug: string;
@@ -10,6 +16,7 @@ export interface PlanItem {
   badge: string | null;
   features: string[];
   color: string;
+  packages?: PlanPackage[];
 }
 
 export interface WalletSlot {
@@ -21,6 +28,8 @@ export interface WalletSlot {
   badge?: string;
   adsRemaining: number;
   maxActiveAds: number;
+  // Ads the slot started with; absent from APIs that predate plan packages
+  totalAds?: number;
   createdAt: string;
 }
 

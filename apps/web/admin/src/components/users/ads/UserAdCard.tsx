@@ -23,16 +23,15 @@ import {
   getStatusBadge,
   typeLabels,
 } from '@/lib/property-labels'
+import { deleteReportedProperty } from '@/lib/admin-reports'
+import { updateProperty } from '@/lib/admin-properties'
 import ConfirmActionDialog, {
   ConfirmActionType,
 } from './ConfirmActionDialog'
-import FeatureAdDialog from './FeatureAdDialog'
+import FeatureAdDialog, { featuredUntilFromDuration } from './FeatureAdDialog'
 
-// نسخ/إظهار (un-hiding) have no confirmation design and no backend API —
-// left as lightweight placeholders. حذف/اخفاء/اعادة النشر/تمييز now go
-// through their confirmation dialogs; the dialogs' own confirm buttons
-// still end in the same "not implemented" notice since none of these
-// mutate real data yet.
+// نسخ (copy) has no confirmation design and no backend API — left as a
+// lightweight placeholder.
 function notImplemented(action: string) {
   alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
 }
@@ -40,14 +39,25 @@ function notImplemented(action: string) {
 export default function UserAdCard({
   property,
   onViewDetails,
+  onRefresh,
 }: {
   property: AdminUserProperty
   onViewDetails: (property: AdminUserProperty) => void
+  onRefresh?: () => void
 }) {
   const [confirmAction, setConfirmAction] = useState<ConfirmActionType | null>(
     null,
   )
   const [showFeatureDialog, setShowFeatureDialog] = useState(false)
+
+  async function handleUnhide() {
+    try {
+      await updateProperty(property.id, { isHidden: false })
+      onRefresh?.()
+    } catch (err) {
+      console.error('Failed to unhide property:', err)
+    }
+  }
 
   const badge = getStatusBadge(property)
   const typeLabel = typeLabels[property.type] || property.type
@@ -143,9 +153,7 @@ export default function UserAdCard({
           <button
             type="button"
             onClick={() =>
-              property.isHidden
-                ? notImplemented('إظهار')
-                : setConfirmAction('hide')
+              property.isHidden ? handleUnhide() : setConfirmAction('hide')
             }
             className="h-8 flex items-center gap-1 justify-center px-4 rounded-[20px] border border-[#E2E8F0] bg-white text-[14px] font-semibold text-[#111111] cursor-pointer hover:bg-[#F8FAFC]"
           >
@@ -187,15 +195,20 @@ export default function UserAdCard({
           adLabel={adLabel}
           code={code}
           onClose={() => setConfirmAction(null)}
-          onConfirm={() => {
+          onConfirm={async ({ reason }) => {
             setConfirmAction(null)
-            notImplemented(
-              confirmAction === 'delete'
-                ? 'حذف'
-                : confirmAction === 'hide'
-                  ? 'اخفاء'
-                  : 'اعادة النشر',
-            )
+            try {
+              if (confirmAction === 'delete') {
+                await deleteReportedProperty(property.id, reason)
+              } else if (confirmAction === 'hide') {
+                await updateProperty(property.id, { isHidden: true })
+              } else {
+                await updateProperty(property.id, { status: 'ACTIVE' })
+              }
+              onRefresh?.()
+            } catch (err) {
+              console.error(`Failed to ${confirmAction} property:`, err)
+            }
           }}
         />
       )}
@@ -205,9 +218,17 @@ export default function UserAdCard({
           adLabel={adLabel}
           code={code}
           onClose={() => setShowFeatureDialog(false)}
-          onConfirm={() => {
+          onConfirm={async ({ duration }) => {
             setShowFeatureDialog(false)
-            notImplemented('تمييز')
+            try {
+              await updateProperty(property.id, {
+                isFeatured: true,
+                featuredUntil: featuredUntilFromDuration(duration),
+              })
+              onRefresh?.()
+            } catch (err) {
+              console.error('Failed to feature property:', err)
+            }
           }}
         />
       )}

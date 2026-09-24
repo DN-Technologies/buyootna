@@ -1,3 +1,5 @@
+import { Image } from 'expo-image';
+
 import apiClient from '@/shared/api/api';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -56,6 +58,26 @@ export const propertiesService = {
   incrementViews: async (id: string): Promise<void> => {
     // We don't need to return data here, just fire and forget
     await apiClient.patch(`/properties/${id}/view`);
+  },
+
+  /**
+   * Fetches full property details, prefetches the hero image, and silently pings view count.
+   */
+  getPropertyDetails: async (id: string): Promise<PropertyDetailsDto> => {
+    const data = await propertiesService.getPropertyById(id);
+
+    if (data.images && data.images.length > 0) {
+      try {
+        await Image.prefetch(data.images[0]);
+      } catch (e) {
+        console.warn('Prefetch failed:', e);
+      }
+    }
+
+    // Silently ping the view counter in the background.
+    propertiesService.incrementViews(id).catch(() => {});
+
+    return data;
   },
 
   /**

@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import {
@@ -18,6 +19,7 @@ import SharedPropertyInfo from '@/app/(individual)/add-listing/SharedPropertyInf
 import ExchangePropertyTab from '@/app/(individual)/add-listing/tabs/ExchangePropertyTab';
 import RentPropertyTab from '@/app/(individual)/add-listing/tabs/RentPropertyTab';
 import SellPropertyTab from '@/app/(individual)/add-listing/tabs/SellPropertyTab';
+import { plansService } from '@/shared/api/plans.service';
 import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
 import { useListingStore } from '@/shared/store/useListingStore';
 
@@ -40,6 +42,18 @@ export default function CreateListingScreen() {
     requiredYear,
     fetchFeatures,
   } = useListingStore();
+
+  // The free-ad banner used to be a hardcoded "لديك إعلان مجاني واحد" shown
+  // to everyone, contradicting the live balance on My Activity (QA ticket:
+  // quota mismatch between My Activity and the Add Ad flow). Drive it from
+  // the real wallet; the ['wallet'] key is shared with the account-balance
+  // screen's cache.
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet'],
+    queryFn: () => plansService.getWallet(),
+    staleTime: 0,
+  });
+  const freeAdsRemaining = wallet?.freeAdsRemaining ?? 0;
 
   useEffect(() => {
     fetchFeatures();
@@ -96,24 +110,30 @@ export default function CreateListingScreen() {
           contentContainerStyle={{ paddingBottom: 150 }}
         >
           <View className="px-5 pt-3">
-            {/* --- Free Ad Promotional Banner --- */}
-            <View className="mb-6 flex-row items-center justify-between rounded-xl bg-[#F5F7F9] p-4">
-              <View className="flex-1 pl-3">
-                <Text
-                  className="mb-1 font-cairo-bold text-sm text-[#15304D]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  لديك إعلان مجاني واحد
-                </Text>
-                <Text
-                  className="font-cairo-medium text-xs leading-5 text-[#6B6A6A]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  يمكنك نشر هذا الإعلان مجاناً، وبعده يمكنك شراء باقات إعلانية إضافية.
-                </Text>
+            {/* --- Free Ad Promotional Banner (only when the wallet actually
+                 has free ads left; hidden otherwise so it can't contradict
+                 the My Activity balance) --- */}
+            {freeAdsRemaining > 0 && (
+              <View className="mb-6 flex-row items-center justify-between rounded-xl bg-[#F5F7F9] p-4">
+                <View className="flex-1 pl-3">
+                  <Text
+                    className="mb-1 font-cairo-bold text-sm text-[#15304D]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    {freeAdsRemaining === 1
+                      ? 'لديك إعلان مجاني واحد'
+                      : `لديك ${freeAdsRemaining} إعلانات مجانية`}
+                  </Text>
+                  <Text
+                    className="font-cairo-medium text-xs leading-5 text-[#6B6A6A]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    يمكنك نشر هذا الإعلان مجاناً، وبعده يمكنك شراء باقات إعلانية إضافية.
+                  </Text>
+                </View>
+                <Text className="text-3xl">🎉</Text>
               </View>
-              <Text className="text-3xl">🎉</Text>
-            </View>
+            )}
 
             {/* --- Ad Type Selection (نوع الإعلان) --- */}
             <View className="mb-6">
