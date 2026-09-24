@@ -49,6 +49,11 @@ export class PaymentsController {
       required: ['planSlug', 'appRedirectUrl'],
       properties: {
         planSlug: { type: 'string' },
+        adsCount: {
+          type: 'integer',
+          description:
+            "Ad count of the selected package (one of the plan's `packages[].adsCount` from GET /plans). Omit to buy the plan's legacy single package.",
+        },
         appRedirectUrl: { type: 'string' },
         sourceId: { type: 'string' },
       },
@@ -61,12 +66,14 @@ export class PaymentsController {
     @Body('planSlug') planSlug: string,
     @Body('appRedirectUrl') appRedirectUrl: string,
     @Body('sourceId') sourceId?: string,
+    @Body('adsCount') adsCount?: number,
   ) {
     return this.paymentsService.createCharge(
       reqUser.userId,
       planSlug,
       appRedirectUrl,
       sourceId,
+      adsCount,
     );
   }
 

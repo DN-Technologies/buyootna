@@ -23,6 +23,7 @@ WebBrowser.maybeCompleteAuthSession();
 export interface PlanOption {
   id: string;
   slug: string;
+  adsCount: number;
   label: string;
   price: string;
 }
@@ -38,12 +39,14 @@ const BASIC_OPTIONS: PlanOption[] = [
   {
     id: 'basic-2',
     slug: 'regular',
+    adsCount: 2,
     label: 'باقة 2 اعلان',
     price: '10 د.ك',
   },
   {
     id: 'basic-5',
     slug: 'regular',
+    adsCount: 5,
     label: 'باقة 5 اعلانات',
     price: '22.5 د.ك',
   },
@@ -61,12 +64,14 @@ const GOLD_OPTIONS: PlanOption[] = [
   {
     id: 'gold-1',
     slug: 'gold',
+    adsCount: 1,
     label: 'باقة 1 اعلان',
     price: '12 د.ك',
   },
   {
     id: 'gold-5',
     slug: 'gold',
+    adsCount: 5,
     label: 'باقة 5 اعلانات',
     price: '50 د.ك',
   },
@@ -156,6 +161,8 @@ export default function PlansScreen() {
       const charge = await paymentsService.createCharge(
         targetSlug,
         appRedirectUrl,
+        undefined,
+        option.adsCount,
       );
 
       if (charge.status === 'PAID') {

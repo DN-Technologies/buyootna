@@ -141,6 +141,8 @@ describe('PlansScreen', () => {
       expect(paymentsService.createCharge).toHaveBeenCalledWith(
         'regular',
         expect.stringContaining('payment-callback'),
+        undefined,
+        2,
       );
       expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
         'https://payment.tap.company/test',
@@ -173,6 +175,8 @@ describe('PlansScreen', () => {
       expect(paymentsService.createCharge).toHaveBeenCalledWith(
         'gold',
         expect.stringContaining('payment-callback'),
+        undefined,
+        5,
       );
       expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
         'https://payment.tap.company/gold-test',
