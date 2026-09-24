@@ -3,31 +3,36 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SortingIcon } from '@/assets/icons/activity';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 
-interface ActivityTabsRowProps {
-  tabs: string[];
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+export interface ActivityTab<T extends string = string> {
+  id: T;
+  label: string;
+}
+
+interface ActivityTabsRowProps<T extends string> {
+  tabs: ActivityTab<T>[];
+  activeTab: T;
+  onTabChange: (tab: T) => void;
   onFilterPress: () => void;
   onSortPress: () => void;
 }
 
-export default function ActivityTabsRow({
+export default function ActivityTabsRow<T extends string>({
   tabs,
   activeTab,
   onTabChange,
   onFilterPress,
   onSortPress,
-}: ActivityTabsRowProps) {
+}: ActivityTabsRowProps<T>) {
   return (
     <View className="mb-4 flex-row items-center gap-2 px-5">
       {/* Tab Pill Container */}
       <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab;
+          const isActive = activeTab === tab.id;
           return (
             <TouchableOpacity
-              key={tab}
-              onPress={() => onTabChange(tab)}
+              key={tab.id}
+              onPress={() => onTabChange(tab.id)}
               className="h-full flex-1 items-center justify-center rounded-full"
               activeOpacity={0.7}
             >
@@ -39,7 +44,7 @@ export default function ActivityTabsRow({
                       : 'font-cairo text-[#6B6A6A]'
                   } text-sm leading-[22px]`}
                 >
-                  {tab}
+                  {tab.label}
                 </Text>
                 {isActive && (
                   <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />

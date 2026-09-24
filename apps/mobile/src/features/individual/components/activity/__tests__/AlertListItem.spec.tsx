@@ -135,14 +135,14 @@ describe('AlertListItem', () => {
     expect(onToggleActive).toHaveBeenCalledWith('property-1', false);
   });
 
-  it('triggers onDeletePress when delete button is pressed', async () => {
+  it('triggers onDeletePress when the card is long-pressed', async () => {
     const onDeletePress = jest.fn();
-    const { getByTestId } = await render(
+    const { getByText } = await render(
       <AlertListItem alert={basePropertyAlert} onDeletePress={onDeletePress} />,
     );
 
-    const deleteBtn = getByTestId('alert-delete-btn');
-    fireEvent.press(deleteBtn);
+    // The card has no delete button -- deleting is a long-press on the card
+    await fireEvent(getByText('شقة للإيجار - السلام'), 'longPress');
 
     expect(onDeletePress).toHaveBeenCalledWith('property-1');
   });
