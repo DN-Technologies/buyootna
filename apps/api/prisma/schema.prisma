@@ -240,8 +240,27 @@ model Plan {
   prioritySearch Boolean        @default(false)
   users          User[]
   slots          UserPlanSlot[]
+  packages       PlanPackage[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
+}
+
+// A purchasable quantity option within a plan tier (e.g. gold × 5 ads).
+// The plan carries the per-ad benefits; the package carries the ad count
+// and price actually charged.
+model PlanPackage {
+  id        String    @id @default(uuid())
+  planId    String
+  adsCount  Int
+  price     Float
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  plan      Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([planId, adsCount])
 }
 
 model FAQ {
@@ -265,8 +284,13 @@ model Invoice {
   dueDate     DateTime?
   delayDays   Int? // e.g. 5 for notice
   planSlots   UserPlanSlot[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+
+  // Set for plan purchases so fulfillment knows exactly what was bought
+  planId        String?
+  planPackageId String?
+  planPackage   PlanPackage? @relation(fields: [planPackageId], references: [id], onDelete: SetNull)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   // New identity-based relation
   identityId String?

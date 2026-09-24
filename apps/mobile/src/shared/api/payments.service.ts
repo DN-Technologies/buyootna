@@ -15,9 +15,11 @@ export const paymentsService = {
     planSlug: string,
     appRedirectUrl: string,
     sourceId?: string,
+    adsCount?: number,
   ): Promise<ChargeResponse> => {
     const response = await apiClient.post<ChargeResponse>('/payments/charge', {
       planSlug,
+      adsCount,
       appRedirectUrl,
       sourceId,
     });
