@@ -28,6 +28,8 @@ export interface WalletSlot {
   badge?: string;
   adsRemaining: number;
   maxActiveAds: number;
+  // Ads the slot started with; absent from APIs that predate plan packages
+  totalAds?: number;
   createdAt: string;
 }
 

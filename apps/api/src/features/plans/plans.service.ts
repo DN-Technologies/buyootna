@@ -41,7 +41,12 @@ export class PlansService {
   async getUserWallet(userId: string) {
     const allSlots = await this.prisma.userPlanSlot.findMany({
       where: { userId },
-      include: { plan: true },
+      include: {
+        plan: true,
+        invoice: {
+          select: { planPackage: { select: { adsCount: true } } },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -112,6 +117,12 @@ export class PlansService {
         badge: s.plan.badge,
         adsRemaining: s.adsRemaining,
         maxActiveAds: s.plan.maxActiveAds,
+        // Ads this slot started with: the purchased package's count, else the
+        // plan's (legacy/admin-granted slots, where it can't be less than
+        // what's still remaining).
+        totalAds:
+          s.invoice?.planPackage?.adsCount ??
+          Math.max(s.plan.maxActiveAds, s.adsRemaining),
         createdAt: s.createdAt,
       })),
       history: formattedHistory,

@@ -100,6 +100,12 @@ class WalletSlotDto {
   @ApiProperty()
   maxActiveAds: number;
 
+  @ApiProperty({
+    description:
+      'Ads this slot started with (purchased package size, else the plan default)',
+  })
+  totalAds: number;
+
   @ApiProperty()
   createdAt: Date;
 }
