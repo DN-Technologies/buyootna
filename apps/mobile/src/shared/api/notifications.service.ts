@@ -8,7 +8,19 @@ export interface NotificationPrefsResponse {
   phoneEnabled: boolean;
 }
 
-export type NotificationType = 'IDENTITY_APPROVED' | 'IDENTITY_REJECTED';
+export type NotificationType =
+  | 'IDENTITY_APPROVED'
+  | 'IDENTITY_REJECTED'
+  | 'IDENTITY_EDIT_REQUESTED'
+  | 'ADMIN_CUSTOM_MESSAGE'
+  | 'ALERT_MATCH'
+  | 'REPORT_RESOLVED'
+  | 'REPORT_DISMISSED';
+
+// What a notification points at, e.g. the matched listing for ALERT_MATCH
+export interface NotificationData {
+  propertyId?: string;
+}
 
 export interface AppNotification {
   id: string;
@@ -18,6 +30,7 @@ export interface AppNotification {
   body: string;
   identityId: string | null;
   isRead: boolean;
+  data?: NotificationData | null;
   createdAt: string;
 }
 
@@ -53,5 +66,13 @@ export const notificationsService = {
 
   markAllAsRead: async (): Promise<void> => {
     await apiClient.patch('/notifications/read-all');
+  },
+
+  markAsUnread: async (id: string): Promise<void> => {
+    await apiClient.patch(`/notifications/${id}/unread`);
+  },
+
+  remove: async (id: string): Promise<void> => {
+    await apiClient.delete(`/notifications/${id}`);
   },
 };

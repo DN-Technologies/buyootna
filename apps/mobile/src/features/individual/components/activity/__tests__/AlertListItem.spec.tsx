@@ -146,4 +146,23 @@ describe('AlertListItem', () => {
 
     expect(onDeletePress).toHaveBeenCalledWith('property-1');
   });
+
+  it('renders cancel action and created date when showCancelAction is true (Figma 767:44644)', async () => {
+    const onDeletePress = jest.fn();
+    const onCancelPress = jest.fn();
+    const { getByText, getByTestId } = await render(
+      <AlertListItem
+        alert={basePropertyAlert}
+        onDeletePress={onDeletePress}
+        showCancelAction={true}
+        onCancelPress={onCancelPress}
+      />,
+    );
+
+    expect(getByText(/تم الإنشاء في:/)).toBeTruthy();
+    expect(getByText('إلغاء التنبيه')).toBeTruthy();
+
+    fireEvent.press(getByTestId('cancel-alert-footer-btn'));
+    expect(onCancelPress).toHaveBeenCalledWith('property-1');
+  });
 });

@@ -9,6 +9,13 @@ export const TABS: ActivityTab<ActivityTabId>[] = [
   { id: 'alerts', label: 'تنبيهاتي' },
 ];
 
+// Where the header "+" goes on each tab
+export const ADD_ROUTE_BY_TAB: Record<ActivityTabId, string> = {
+  ads: '/add-listing',
+  offers: '/request-quote',
+  alerts: '/add-alert',
+};
+
 export type AdSortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
 
 export const AD_SORT_OPTIONS: RadioOption[] = [

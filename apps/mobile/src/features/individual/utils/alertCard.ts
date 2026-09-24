@@ -30,6 +30,34 @@ export function findLabel(
   return list.find((item) => item.id === id)?.label;
 }
 
+const ARABIC_MONTHS = [
+  'يناير',
+  'فبراير',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسمبر',
+];
+
+export function formatCreatedDate(dateStr?: string | null): string {
+  if (!dateStr) return '12 مايو 2026';
+  try {
+    const d = new Date(dateStr);
+    const day = d.getDate();
+    const month = ARABIC_MONTHS[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day} ${month} ${year}`;
+  } catch {
+    return dateStr;
+  }
+}
+
 export function formatAuctionDate(dateStr: string) {
   try {
     const d = new Date(dateStr);

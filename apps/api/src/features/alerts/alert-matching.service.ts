@@ -111,6 +111,7 @@ export class AlertMatchingService {
         type: 'ALERT_MATCH',
         title: 'تطابق جديد لتنبيهك',
         body,
+        data: { propertyId },
       });
     }
   }

@@ -5,6 +5,7 @@ import {
   AD_SORT_OPTIONS,
   type AdSortBy,
 } from '@/features/individual/components/activity/constants';
+import DeleteAllAlertsSheet from '@/features/individual/components/activity/DeleteAllAlertsSheet';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
@@ -59,6 +60,13 @@ export default function ActivitySheets({
         description="لن تصلك إشعارات بعد الآن بخصوص هذا التنبيه"
         confirmLabel="حذف التنبيه"
         skipReasonStep
+      />
+
+      {/* --- Delete All Alerts Confirmation Bottom Sheet --- */}
+      <DeleteAllAlertsSheet
+        ref={alertActions.deleteAllAlertsSheetRef}
+        onConfirm={alertActions.handleConfirmDeleteAllAlerts}
+        onCancel={alertActions.handleCancelDeleteAllAlerts}
       />
 
       {/* --- Feature Ad Bottom Sheet --- */}

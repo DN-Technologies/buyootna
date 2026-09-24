@@ -19,7 +19,9 @@ export function useAlertActions({
   triggerToast,
 }: UseAlertActionsParams) {
   const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
+  const deleteAllAlertsSheetRef = useRef<BottomSheetModal>(null);
   const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
+  const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
 
   // Optimistic isActive values shown until the refetched list catches up
   const [activeOverrides, setActiveOverrides] = useState<
@@ -102,8 +104,38 @@ export function useAlertActions({
     setAlertToDelete(null);
   };
 
+  const handleOpenOptionsMenu = () => {
+    setIsOptionsMenuVisible(true);
+  };
+
+  const handleCloseOptionsMenu = () => {
+    setIsOptionsMenuVisible(false);
+  };
+
+  const handlePromptDeleteAllAlerts = () => {
+    setIsOptionsMenuVisible(false);
+    deleteAllAlertsSheetRef.current?.present();
+  };
+
+  const handleConfirmDeleteAllAlerts = async () => {
+    if (!alerts || alerts.length === 0) return;
+    try {
+      await Promise.all(alerts.map((a) => alertsService.remove(a.id)));
+      triggerToast('تم حذف جميع التنبيهات بنجاح');
+      refetchAlerts();
+    } catch (err) {
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف التنبيهات'));
+    }
+  };
+
+  const handleCancelDeleteAllAlerts = () => {
+    deleteAllAlertsSheetRef.current?.dismiss();
+  };
+
   return {
     alertDeleteSheetRef,
+    deleteAllAlertsSheetRef,
+    isOptionsMenuVisible,
     allAlertsPaused,
     isAlertActive,
     handleDeleteAlert,
@@ -111,5 +143,10 @@ export function useAlertActions({
     handleCancelDeleteAlert,
     handleToggleAllAlerts,
     handleToggleAlertActive,
+    handleOpenOptionsMenu,
+    handleCloseOptionsMenu,
+    handlePromptDeleteAllAlerts,
+    handleConfirmDeleteAllAlerts,
+    handleCancelDeleteAllAlerts,
   };
 }

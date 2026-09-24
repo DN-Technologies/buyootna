@@ -19,8 +19,10 @@ import ActivityTabsRow from '@/features/individual/components/activity/ActivityT
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
 import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
+import AlertsOptionsMenu from '@/features/individual/components/activity/AlertsOptionsMenu';
 import {
   type ActivityTabId,
+  ADD_ROUTE_BY_TAB,
   type AdSortBy,
   TABS,
 } from '@/features/individual/components/activity/constants';
@@ -30,12 +32,7 @@ import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { AlertItem } from '@/shared/api/alerts.service';
-import { alertsService } from '@/shared/api/alerts.service';
-import apiClient from '@/shared/api/api';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
-import RadioSelectionSheet, {
-  RadioOption,
-} from '@/shared/components/profile/RadioSelectionSheet';
 import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useMyRequests } from '@/shared/hooks/useMyRequests';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
@@ -131,13 +128,25 @@ export default function ActivityScreen() {
   }
 
   const isAdsTab = activeTab === 'ads';
+  const isOffersTab = activeTab === 'offers';
   const isAlertsTab = activeTab === 'alerts';
+
+  // Refresh only the list that's on screen
+  const listRefresh = isAlertsTab
+    ? { refreshing: isLoadingAlerts, onRefresh: refetchAlerts }
+    : isOffersTab
+      ? { refreshing: isLoadingRequests, onRefresh: refetchRequests }
+      : { refreshing: isLoading, onRefresh: refetch };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ActivityHeader
-        onAddPress={() => router.push('/add-listing')}
-        onMenuPress={adActions.handleMenuPress}
+        onAddPress={() => router.push(ADD_ROUTE_BY_TAB[activeTab] as any)}
+        onMenuPress={
+          isAlertsTab
+            ? alertActions.handleOpenOptionsMenu
+            : adActions.handleMenuPress
+        }
       />
 
       <ActivityTabsRow
@@ -158,7 +167,7 @@ export default function ActivityScreen() {
             ? sortedAndFilteredData
             : isAlertsTab
               ? alerts
-              : activeTab === 'عروضي'
+              : isOffersTab
                 ? myRequests
                 : []
         }
@@ -166,7 +175,9 @@ export default function ActivityScreen() {
         getItemType={(item) =>
           isAlertsTab
             ? 'alert'
-            : item.status === 'DRAFT'
+            : isOffersTab
+              ? 'request'
+              : item.status === 'DRAFT'
               ? 'draft'
               : item.status === 'EXPIRED' || item.status === 'CLOSED'
                 ? 'archived'
@@ -180,14 +191,8 @@ export default function ActivityScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={isAlertsTab ? isLoadingAlerts : isLoading}
-            onRefresh={isAlertsTab ? refetchAlerts : refetch}
-            refreshing={isLoading || isLoadingRequests}
-            onRefresh={() => {
-              refetch();
-              refetchAlerts();
-              refetchRequests();
-            }}
+            refreshing={listRefresh.refreshing}
+            onRefresh={listRefresh.onRefresh}
             tintColor="#15304D"
           />
         }
@@ -211,8 +216,12 @@ export default function ActivityScreen() {
         }
         ListEmptyComponent={
           isAlertsTab ? (
-            <AlertsEmptyState isLoading={isLoadingAlerts} error={alertsError} />
-          ) : activeTab === 'عروضي' ? (
+            <AlertsEmptyState
+              isLoading={isLoadingAlerts}
+              error={alertsError}
+              onAddAlertPress={() => router.push('/add-alert' as any)}
+            />
+          ) : isOffersTab ? (
             <GuestEmptyState
               icon="file-text"
               title="لا توجد طلبات بعد"
@@ -238,9 +247,7 @@ export default function ActivityScreen() {
               onDeletePress={alertActions.handleDeleteAlert}
               onPress={(id) => router.push(`/alert-matches/${id}` as any)}
             />
-          activeTab === 'تنبيهاتي' ? (
-            <AlertListItem alert={item as any} onDeletePress={handleDeleteAlert} />
-          ) : activeTab === 'عروضي' ? (
+          ) : isOffersTab ? (
             <CompanyRequestListItem request={item as any} />
           ) : (
             <ActivityListItem
@@ -262,6 +269,12 @@ export default function ActivityScreen() {
         sortSheetRef={sortSheetRef}
         sortBy={sortBy}
         onSortChange={setSortBy}
+      />
+
+      <AlertsOptionsMenu
+        visible={alertActions.isOptionsMenuVisible}
+        onClose={alertActions.handleCloseOptionsMenu}
+        onDeleteAllPress={alertActions.handlePromptDeleteAllAlerts}
       />
 
       {/* --- Success Toast Notification --- */}
