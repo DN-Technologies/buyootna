@@ -144,6 +144,17 @@ export default function PlansScreen() {
   });
   const { plans, wallet } = data;
 
+  // Show the price the backend will actually charge; the hardcoded price is
+  // the fallback while plans load or if the API has no matching package.
+  const withApiPrice = (opt: PlanOption): PlanOption => {
+    const pkg = plans
+      .find((p) => p.slug === opt.slug)
+      ?.packages?.find((k) => k.adsCount === opt.adsCount);
+    return pkg ? { ...opt, price: `${pkg.price} د.ك` } : opt;
+  };
+  const basicOptions = BASIC_OPTIONS.map(withApiPrice);
+  const goldOptions = GOLD_OPTIONS.map(withApiPrice);
+
   const handleBuyPlan = async (tier: 'basic' | 'gold', option: PlanOption) => {
     if (isProcessing) return;
 
@@ -190,10 +201,10 @@ export default function PlansScreen() {
   };
 
   const selectedBasicOption =
-    BASIC_OPTIONS.find((o) => o.id === selectedBasicOptionId) ||
-    BASIC_OPTIONS[0];
+    basicOptions.find((o) => o.id === selectedBasicOptionId) ||
+    basicOptions[0];
   const selectedGoldOption =
-    GOLD_OPTIONS.find((o) => o.id === selectedGoldOptionId) || GOLD_OPTIONS[0];
+    goldOptions.find((o) => o.id === selectedGoldOptionId) || goldOptions[0];
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
@@ -295,7 +306,7 @@ export default function PlansScreen() {
 
                 {/* Package Options Grid */}
                 <View className="flex-row gap-2">
-                  {BASIC_OPTIONS.map((opt) => (
+                  {basicOptions.map((opt) => (
                     <PlanOptionItem
                       key={opt.id}
                       option={opt}
@@ -364,7 +375,7 @@ export default function PlansScreen() {
 
                 {/* Package Options Grid */}
                 <View className="flex-row gap-2">
-                  {GOLD_OPTIONS.map((opt) => (
+                  {goldOptions.map((opt) => (
                     <PlanOptionItem
                       key={opt.id}
                       option={opt}

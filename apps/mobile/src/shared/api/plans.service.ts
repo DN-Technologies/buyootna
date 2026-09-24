@@ -1,5 +1,11 @@
 import apiClient from '@/shared/api/api';
 
+export interface PlanPackage {
+  id: string;
+  adsCount: number;
+  price: number;
+}
+
 export interface PlanItem {
   id: string;
   slug: string;
@@ -10,6 +16,7 @@ export interface PlanItem {
   badge: string | null;
   features: string[];
   color: string;
+  packages?: PlanPackage[];
 }
 
 export interface WalletSlot {

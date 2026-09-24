@@ -26,6 +26,45 @@ ALTER TABLE "PlanPackage" ADD CONSTRAINT "PlanPackage_planId_fkey" FOREIGN KEY (
 ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_planPackageId_fkey" FOREIGN KEY ("planPackageId") REFERENCES "PlanPackage"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 
+-- Align the plan tiers with the redesigned mobile plans screen (mirrors
+-- prisma/seeds/seed.ts, which production never runs). Keyed by slug, so a
+-- tier missing from this database is left alone.
+UPDATE "Plan" SET
+    "name" = 'الاساسية',
+    "price" = 10,
+    "originalPrice" = NULL,
+    "discountText" = NULL,
+    "badge" = NULL,
+    "maxActiveAds" = 1,
+    "durationDays" = 30,
+    "maxImagesPerAd" = 5,
+    "featuredDays" = 0,
+    "prioritySearch" = false,
+    "features" = ARRAY['مدة النشر 30 يوم.', 'حتى 5 صورة للعقار.', 'ظهور في نتائج البحث.', 'تواصل مباشر مع المهتمين.'],
+    "isActive" = true,
+    "updatedAt" = CURRENT_TIMESTAMP
+WHERE "slug" = 'regular';
+
+UPDATE "Plan" SET
+    "name" = 'الذهبية',
+    "price" = 12,
+    "originalPrice" = NULL,
+    "discountText" = NULL,
+    "badge" = 'موصى به',
+    "maxActiveAds" = 1,
+    "durationDays" = 30,
+    "maxImagesPerAd" = 15,
+    "featuredDays" = 7,
+    "prioritySearch" = true,
+    "features" = ARRAY['تمييز الاعلانات.', 'حتى 15 صورة للعقار.', 'مدة النشر 30 يوم.', 'ظهور في أعلى نتائج البحث.', 'اولوية الظهور في البحث الجغرافي.'],
+    "isActive" = true,
+    "updatedAt" = CURRENT_TIMESTAMP
+WHERE "slug" = 'gold';
+
+-- Silver is no longer sold; keep the row so existing slots/invoices resolve.
+UPDATE "Plan" SET "isActive" = false, "updatedAt" = CURRENT_TIMESTAMP
+WHERE "slug" = 'silver';
+
 -- Seed the package options shown on the mobile plans screen for the
 -- existing plan tiers. Skips any tier that doesn't exist in this database.
 INSERT INTO "PlanPackage" ("id", "planId", "adsCount", "price", "sortOrder", "updatedAt")

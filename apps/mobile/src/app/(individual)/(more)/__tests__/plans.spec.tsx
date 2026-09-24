@@ -183,4 +183,33 @@ describe('PlansScreen', () => {
       );
     });
   });
+
+  it('shows the backend package price instead of the hardcoded one', async () => {
+    (plansService.getPlans as jest.Mock).mockResolvedValue([
+      {
+        id: 'gold-plan',
+        slug: 'gold',
+        name: 'الباقة الذهبية',
+        price: 12,
+        originalPrice: null,
+        discountText: null,
+        badge: 'موصى به',
+        features: [],
+        color: '#D06400',
+        packages: [
+          { id: 'pkg-gold-1', adsCount: 1, price: 12 },
+          { id: 'pkg-gold-5', adsCount: 5, price: 55 },
+        ],
+      },
+    ]);
+
+    const { getByText, queryByText } = await renderWithClient(<PlansScreen />);
+
+    await waitFor(() => {
+      expect(getByText('55 د.ك')).toBeTruthy();
+    });
+    expect(queryByText('50 د.ك')).toBeNull();
+    // Basic has no packages from the API, so its hardcoded prices remain
+    expect(getByText('22.5 د.ك')).toBeTruthy();
+  });
 });
