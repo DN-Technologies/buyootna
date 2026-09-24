@@ -1,8 +1,8 @@
 import { useScrollToTop } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 
-import { useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
+import { useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import ActivityScreen from '../activity';

@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AlertsService } from './alerts.service';
@@ -17,7 +25,9 @@ export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new saved alert for the current identity' })
+  @ApiOperation({
+    summary: 'Create a new saved alert for the current identity',
+  })
   @ApiResponse({ status: 201, type: AlertResponseDto })
   @ApiCommonErrors()
   async create(
@@ -36,13 +46,12 @@ export class AlertsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: "Delete one of the current identity's saved alerts" })
+  @ApiOperation({
+    summary: "Delete one of the current identity's saved alerts",
+  })
   @ApiParam({ name: 'id', description: 'Alert ID' })
   @ApiCommonErrors()
-  async remove(
-    @CurrentUser() reqUser: RequestUser,
-    @Param('id') id: string,
-  ) {
+  async remove(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
     return this.alertsService.remove(reqUser.identityId, id);
   }
 }

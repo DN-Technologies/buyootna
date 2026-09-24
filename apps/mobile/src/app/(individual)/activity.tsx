@@ -15,14 +15,15 @@ import ActivitySuccessToast from '@/features/individual/components/activity/Acti
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
+import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
 import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
 import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
-import apiClient from '@/shared/api/api';
 import { alertsService } from '@/shared/api/alerts.service';
+import apiClient from '@/shared/api/api';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
 import RadioSelectionSheet, {
   RadioOption,
@@ -67,6 +68,7 @@ export default function ActivityScreen() {
 
   const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
   const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
+  const [pausedAlertIds, setPausedAlertIds] = useState<string[]>([]);
 
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
@@ -223,6 +225,29 @@ export default function ActivityScreen() {
     setAlertToDelete(null);
   };
 
+  const allAlertsPaused = Boolean(
+    alerts &&
+      alerts.length > 0 &&
+      alerts.every((a) => pausedAlertIds.includes(a.id)),
+  );
+
+  const handleToggleAllAlerts = () => {
+    if (!alerts || alerts.length === 0) return;
+    if (allAlertsPaused) {
+      setPausedAlertIds([]);
+    } else {
+      setPausedAlertIds(alerts.map((a) => a.id));
+    }
+  };
+
+  const handleToggleAlertActive = (alertId: string) => {
+    setPausedAlertIds((prev) =>
+      prev.includes(alertId)
+        ? prev.filter((id) => id !== alertId)
+        : [...prev, alertId],
+    );
+  };
+
   const handlePublishDraftAction = async (propertyId: string) => {
     try {
       await apiClient.patch(`/properties/${propertyId}`, { isDraft: false });
@@ -304,6 +329,11 @@ export default function ActivityScreen() {
               freeAdsRemaining={freeAdsRemaining}
               onPromoPress={handlePromoAction}
             />
+          ) : activeTab === 'تنبيهاتي' && alerts && alerts.length > 0 ? (
+            <AlertsListHeader
+              allPaused={allAlertsPaused}
+              onToggleAll={handleToggleAllAlerts}
+            />
           ) : null
         }
         ListEmptyComponent={
@@ -319,7 +349,12 @@ export default function ActivityScreen() {
         }
         renderItem={({ item }) =>
           activeTab === 'تنبيهاتي' ? (
-            <AlertListItem alert={item as any} onDeletePress={handleDeleteAlert} />
+            <AlertListItem
+              alert={item as any}
+              isActive={!pausedAlertIds.includes((item as any).id)}
+              onToggleActive={handleToggleAlertActive}
+              onDeletePress={handleDeleteAlert}
+            />
           ) : (
             <ActivityListItem
               property={item as ActivityItem}
