@@ -90,9 +90,18 @@ export class AuthPasswordService {
     const hashedNewPassword = await bcrypt.hash(newPass, 10);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashedNewPassword },
+      data: {
+        password: hashedNewPassword,
+        // Lets JwtStrategy reject legacy tokens that carry no sid claim
+        // (issued before sessions existed) and could otherwise not be
+        // revoked by the session deletion below.
+        passwordChangedAt: new Date(),
+      },
     });
 
+    // Revoking other devices is opt-out: the client's switch defaults to
+    // ON, and this branch is what actually kills Device B's session (its
+    // next request 401s via JwtStrategy's sid check).
     if (logoutAllDevices) {
       await this.sessions.deleteAllExceptCurrent(userId, currentSessionId);
     }

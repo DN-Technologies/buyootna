@@ -207,6 +207,9 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
       expect(bcrypt.compareSync('new-password', updateArgs.data.password)).toBe(
         true,
       );
+      // Lets JwtStrategy reject legacy no-sid tokens issued before this
+      // moment (the revocation gap for tokens predating the sid claim).
+      expect(updateArgs.data.passwordChangedAt).toBeInstanceOf(Date);
       expect(result).toEqual({ message: 'تم تغيير كلمة المرور بنجاح' });
     });
 

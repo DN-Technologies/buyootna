@@ -19,6 +19,10 @@ model User {
   isBlocked  Boolean @default(false)
   isAdmin    Boolean @default(false)
 
+  // Set on every successful password change; JwtStrategy rejects legacy
+  // no-sid tokens issued before this moment.
+  passwordChangedAt DateTime?
+
   // Relations
   identities       Identity[]
   otpCode          OtpCode?
