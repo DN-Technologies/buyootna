@@ -20,29 +20,114 @@ import { showAlert } from '@/shared/utils/alert';
 
 WebBrowser.maybeCompleteAuthSession();
 
+export interface PlanOption {
+  id: string;
+  slug: string;
+  label: string;
+  price: string;
+}
+
+const BASIC_FEATURES = [
+  'مدة النشر 30 يوم.',
+  'حتى 5 صورة للعقار.',
+  'ظهور في نتائج البحث.',
+  'تواصل مباشر مع المهتمين.',
+];
+
+const BASIC_OPTIONS: PlanOption[] = [
+  {
+    id: 'basic-2',
+    slug: 'regular',
+    label: 'باقة 2 اعلان',
+    price: '10 د.ك',
+  },
+  {
+    id: 'basic-5',
+    slug: 'regular',
+    label: 'باقة 5 اعلانات',
+    price: '22.5 د.ك',
+  },
+];
+
+const GOLD_FEATURES = [
+  'تمييز الاعلانات.',
+  'حتى 15 صورة للعقار.',
+  'مدة النشر 30 يوم.',
+  'ظهور في أعلى نتائج البحث.',
+  'اولوية الظهور في البحث الجغرافي.',
+];
+
+const GOLD_OPTIONS: PlanOption[] = [
+  {
+    id: 'gold-1',
+    slug: 'gold',
+    label: 'باقة 1 اعلان',
+    price: '12 د.ك',
+  },
+  {
+    id: 'gold-5',
+    slug: 'gold',
+    label: 'باقة 5 اعلانات',
+    price: '50 د.ك',
+  },
+];
+
 async function fetchPlansData() {
   const [plansRes, walletRes] = await Promise.all([
-    plansService.getPlans(),
+    plansService.getPlans().catch(() => []),
     plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
   ]);
 
-  const plans = plansRes.map((plan) => ({
-    id: plan.slug,
-    name: plan.name,
-    price: `${plan.price} دينار كويتي`,
-    originalPrice: plan.originalPrice ? `${plan.originalPrice}` : undefined,
-    discountText: plan.discountText || undefined,
-    features: plan.features,
-    color: plan.color || '#15304D',
-    badge: plan.badge || '',
-  }));
+  return { plans: plansRes, wallet: walletRes };
+}
 
-  return { plans, wallet: walletRes };
+function PlanOptionItem({
+  option,
+  isSelected,
+  onSelect,
+}: {
+  option: PlanOption;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onSelect}
+      className={`flex-1 flex-row items-center gap-2 rounded-lg p-3 ${
+        isSelected
+          ? 'border border-[#15304D] bg-[#F5F7F9]'
+          : 'border border-transparent bg-[#F5F7F9]'
+      }`}
+    >
+      <View
+        className={`h-5 w-5 items-center justify-center rounded-full ${
+          isSelected ? 'border-2 border-[#15304D]' : 'border border-[#D7D7D7]'
+        }`}
+      >
+        {isSelected && (
+          <View className="h-2.5 w-2.5 rounded-full bg-[#15304D]" />
+        )}
+      </View>
+      <View className='items-start'>
+        <Text className="font-cairo-medium text-sm text-[#111111]">
+          {option.label}
+        </Text>
+        <Text className="font-cairo-bold text-base text-[#111111]">
+          {option.price}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
 }
 
 export default function PlansScreen() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
+  const [selectedBasicOptionId, setSelectedBasicOptionId] =
+    useState<string>('basic-2');
+  const [selectedGoldOptionId, setSelectedGoldOptionId] =
+    useState<string>('gold-1');
 
   const {
     data = { plans: [], wallet: { freeAdsRemaining: 0, slots: [] } },
@@ -54,14 +139,22 @@ export default function PlansScreen() {
   });
   const { plans, wallet } = data;
 
-  const handleBuyPlan = async (planSlug: string) => {
+  const handleBuyPlan = async (tier: 'basic' | 'gold', option: PlanOption) => {
     if (isProcessing) return;
 
-    setIsProcessing(planSlug);
+    setIsProcessing(tier);
     try {
+      const targetSlug =
+        plans.find(
+          (p) =>
+            p.slug === option.slug ||
+            (tier === 'basic' && (p.slug === 'regular' || p.slug === 'basic')) ||
+            (tier === 'gold' && p.slug === 'gold'),
+        )?.slug || option.slug;
+
       const appRedirectUrl = Linking.createURL('payment-callback');
       const charge = await paymentsService.createCharge(
-        planSlug,
+        targetSlug,
         appRedirectUrl,
       );
 
@@ -89,10 +182,16 @@ export default function PlansScreen() {
     }
   };
 
+  const selectedBasicOption =
+    BASIC_OPTIONS.find((o) => o.id === selectedBasicOptionId) ||
+    BASIC_OPTIONS[0];
+  const selectedGoldOption =
+    GOLD_OPTIONS.find((o) => o.id === selectedGoldOptionId) || GOLD_OPTIONS[0];
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
+      <View className="flex-row items-center justify-between px-5 py-4">
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.back()}
@@ -100,7 +199,7 @@ export default function PlansScreen() {
         >
           <Feather name="chevron-right" size={24} color="#111111" />
         </TouchableOpacity>
-        <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
+        <Text className="font-cairo-semibold text-[18px] leading-[26px] text-[#111111]">
           الباقات
         </Text>
         <View className="w-8" />
@@ -109,7 +208,7 @@ export default function PlansScreen() {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View className="gap-6 px-5 py-6">
-            {[1, 2, 3].map((key) => (
+            {[1, 2].map((key) => (
               <PlanCardSkeleton key={key} />
             ))}
           </View>
@@ -162,100 +261,125 @@ export default function PlansScreen() {
                 ))}
               </View>
             )}
-            {/* Plan Cards */}
+
+            {/* Plan Cards Container */}
             <View className="gap-6">
-              {plans.map((plan) => (
-                <View
-                  key={plan.id}
-                  className={`relative rounded-2xl border bg-white p-5 shadow-sm shadow-gray-200/50 ${
-                    plan.id === 'gold' ? 'border-[#D06400]' : 'border-[#ECECEC]'
-                  }`}
+              {/* 1. Basic Plan Card */}
+              <View className="rounded-2xl border border-[#ECECEC] bg-white p-5">
+                <Text className="font-cairo-bold text-[17px] leading-[22px] text-[#111111]" 
+                  style={{ writingDirection: "rtl" }}
                 >
-                  {/* Centered Top Badge */}
-                  {plan.badge ? (
-                    <View className="absolute -top-[14.5px] left-0 right-0 items-center">
-                      <LinearGradient
-                        colors={['#FF8D28', '#FACC15']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          borderRadius: 22,
-                          paddingHorizontal: 16,
-                          paddingVertical: 6,
-                          height: 29,
-                          width: 111,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: 5,
-                        }}
-                      >
-                        <Feather name="award" size={12} color="#111111" />
-                        <Text className="font-cairo-semibold text-[12px] leading-[20px] text-[#111111]">
-                          {plan.badge}
-                        </Text>
-                      </LinearGradient>
-                    </View>
-                  ) : null}
+                  الباقة الاساسية
+                </Text>
 
-                  {/* Main Info */}
-                  <View className="mt-2 items-start">
-                    <Text className="mb-1 font-cairo-semibold text-base text-[#111111]">
-                      {plan.name}
-                    </Text>
-                    <View className="mb-4 flex-row items-baseline gap-2">
-                      <Text className="font-cairo-bold text-lg text-[#111111]">
-                        {plan.price}
+                <View className="my-3 h-[1px] bg-[#ECECEC]" />
+
+                {/* Features List */}
+                <View className="mb-6 gap-2">
+                  {BASIC_FEATURES.map((feat, idx) => (
+                    <View key={idx} className="flex-row items-center gap-2">
+                      <Feather name="check" size={16} color="#018B1B" />
+                      <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+                        {feat}
                       </Text>
-                      {plan.originalPrice && (
-                        <Text className="font-cairo text-lg text-[#6B6A6A] line-through">
-                          {plan.originalPrice}
-                        </Text>
-                      )}
-                      {plan.discountText && (
-                        <Text className="font-cairo text-lg text-[#018B1B]">
-                          {plan.discountText}
-                        </Text>
-                      )}
                     </View>
-                  </View>
+                  ))}
+                </View>
 
-                  {/* Divider */}
-                  <View className="my-4 h-[1px] bg-gray-100" />
+                {/* Package Options Grid */}
+                <View className="flex-row gap-2">
+                  {BASIC_OPTIONS.map((opt) => (
+                    <PlanOptionItem
+                      key={opt.id}
+                      option={opt}
+                      isSelected={selectedBasicOptionId === opt.id}
+                      onSelect={() => setSelectedBasicOptionId(opt.id)}
+                    />
+                  ))}
+                </View>
 
-                  {/* Features List */}
-                  <View className="mb-6 gap-2">
-                    {plan.features.map((feat: string, idx: number) => (
-                      <View key={idx} className="flex-row items-center gap-2">
-                        <Feather name="check" size={16} color="#018B1B" />
-                        <Text
-                          className="flex-1 font-cairo text-sm text-[#111111]"
-                          style={{ writingDirection: 'rtl' }}
-                        >
-                          {feat}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
+                {/* Buy Button */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => handleBuyPlan('basic', selectedBasicOption)}
+                  disabled={isProcessing === 'basic'}
+                  className="mt-3.5 h-12 w-full items-center justify-center rounded-[24px] bg-[#15304D]"
+                  style={{ opacity: isProcessing === 'basic' ? 0.6 : 1 }}
+                >
+                  <Text className="font-cairo-semibold leading-[22px] text-sm text-white">
+                    {isProcessing === 'basic' ? 'جاري التحميل...' : 'اشتر الان'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-                  {/* Buy Button */}
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => handleBuyPlan(plan.id)}
-                    disabled={isProcessing === plan.id}
-                    className="h-12 w-full items-center justify-center rounded-[24px]"
+              {/* 2. Golden Plan Card */}
+              <View className="relative mt-2 rounded-2xl border border-[#D06400] bg-white p-5">
+                {/* Centered Top Recommended Badge */}
+                <View className="absolute -top-[14px] left-0 right-0 items-center">
+                  <LinearGradient
+                    colors={['#FF8D28', '#FACC15']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
                     style={{
-                      backgroundColor: '#15304D',
-                      opacity: isProcessing === plan.id ? 0.6 : 1,
+                      borderRadius: 22,
+                      paddingHorizontal: 16,
+                      paddingVertical: 5,
+                      height: 28,
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
-                    <Text className="font-cairo-semibold text-[14px] text-white">
-                      {isProcessing === plan.id ? 'جاري التحميل...' : 'اشتر الآن'}
+                    <Text className="font-cairo-semibold leading-[18px] text-xs text-[#111111]">
+                      موصى به
                     </Text>
-                  </TouchableOpacity>
+                  </LinearGradient>
                 </View>
-              ))}
+
+                <Text className="font-cairo-bold text-[17px] leading-[22px] text-[#111111]"
+                  style={{ writingDirection: "rtl" }}
+                >
+                  الباقة الذهبية
+                </Text>
+
+                <View className="my-3 h-[1px] bg-[#ECECEC]" />
+
+                {/* Features List */}
+                <View className="mb-6 gap-2">
+                  {GOLD_FEATURES.map((feat, idx) => (
+                    <View key={idx} className="flex-row items-center gap-2">
+                      <Feather name="check" size={16} color="#018B1B" />
+                      <Text className="font-cairo text-sm leading-[22px] text-[#111111]">
+                        {feat}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Package Options Grid */}
+                <View className="flex-row gap-2">
+                  {GOLD_OPTIONS.map((opt) => (
+                    <PlanOptionItem
+                      key={opt.id}
+                      option={opt}
+                      isSelected={selectedGoldOptionId === opt.id}
+                      onSelect={() => setSelectedGoldOptionId(opt.id)}
+                    />
+                  ))}
+                </View>
+
+                {/* Buy Button */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => handleBuyPlan('gold', selectedGoldOption)}
+                  disabled={isProcessing === 'gold'}
+                  className="mt-3.5 h-12 w-full items-center justify-center rounded-[24px] bg-[#15304D]"
+                  style={{ opacity: isProcessing === 'gold' ? 0.6 : 1 }}
+                >
+                  <Text className="font-cairo-semibold leading-[22px] text-sm text-white">
+                    {isProcessing === 'gold' ? 'جاري التحميل...' : 'اشتر الان'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
