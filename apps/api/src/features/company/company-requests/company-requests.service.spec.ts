@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
@@ -45,9 +46,11 @@ describe('CompanyRequestsService', () => {
       findUnique: jest.Mock;
       updateMany: jest.Mock;
       update: jest.Mock;
+      create: jest.Mock;
       count: jest.Mock;
       groupBy: jest.Mock;
     };
+    identity: { findUnique: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -57,9 +60,11 @@ describe('CompanyRequestsService', () => {
         findUnique: jest.fn().mockResolvedValue(baseRequest),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         update: jest.fn().mockResolvedValue(baseRequest),
+        create: jest.fn().mockResolvedValue(baseRequest),
         count: jest.fn().mockResolvedValue(0),
         groupBy: jest.fn().mockResolvedValue([]),
       },
+      identity: { findUnique: jest.fn() },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -121,6 +126,97 @@ describe('CompanyRequestsService', () => {
         scope: 'company',
       });
       expect(result.client.rating).toBeNull();
+    });
+
+    it('scopes to the caller as the submitter for the "mine" scope', async () => {
+      await service.findMine('client-1', { scope: 'mine' });
+
+      expect(prisma.companyRequest.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            clientIdentityId: 'client-1',
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('create', () => {
+    const dto = {
+      title: 'تشطيب',
+      category: 'تشطيب',
+      location: 'السالمية',
+      latitude: 29.33,
+      longitude: 48.05,
+      priceRange: '100 - 300 د.ك',
+      offerType: 'عرض مخصص',
+      description: 'أحتاج تشطيب كامل',
+      images: ['https://x/1.jpg'],
+    };
+
+    it('creates a directed request as the caller with PENDING status', async () => {
+      prisma.identity.findUnique.mockResolvedValue({
+        id: 'company-1',
+        type: 'COMPANY',
+      });
+
+      const result = await service.create('client-1', {
+        ...dto,
+        targetIdentityId: 'company-1',
+      });
+
+      expect(prisma.companyRequest.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            clientIdentityId: 'client-1',
+            targetIdentityId: 'company-1',
+            status: 'PENDING',
+            images: ['https://x/1.jpg'],
+          }),
+        }),
+      );
+      expect(result.id).toBe('req-1');
+    });
+
+    it('creates a public request when no target identity is given', async () => {
+      prisma.companyRequest.create.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+      });
+
+      const result = await service.create('client-1', { ...dto });
+
+      expect(prisma.identity.findUnique).not.toHaveBeenCalled();
+      expect(prisma.companyRequest.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            clientIdentityId: 'client-1',
+            targetIdentityId: null,
+          }),
+        }),
+      );
+      expect(result.scope).toBe('public');
+    });
+
+    it('rejects a request directed at a missing or non-company target', async () => {
+      prisma.identity.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.create('client-1', { ...dto, targetIdentityId: 'ghost' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.companyRequest.create).not.toHaveBeenCalled();
+    });
+
+    it('rejects sending a request to yourself', async () => {
+      prisma.identity.findUnique.mockResolvedValue({
+        id: 'client-1',
+        type: 'INDIVIDUAL',
+      });
+
+      await expect(
+        service.create('client-1', { ...dto, targetIdentityId: 'client-1' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.companyRequest.create).not.toHaveBeenCalled();
     });
   });
 
