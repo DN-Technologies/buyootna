@@ -18,6 +18,7 @@ export interface AlertListItemProps {
   isActive?: boolean;
   onToggleActive?: (id: string, nextActive: boolean) => void;
   onDeletePress: (id: string) => void;
+  onPress?: (id: string) => void;
 }
 
 export default function AlertListItem({
@@ -25,6 +26,7 @@ export default function AlertListItem({
   isActive: controlledIsActive,
   onToggleActive,
   onDeletePress,
+  onPress,
 }: AlertListItemProps) {
   const [internalActive, setInternalActive] = useState(true);
   const isActive = controlledIsActive !== undefined ? controlledIsActive : internalActive;
@@ -45,6 +47,7 @@ export default function AlertListItem({
   return (
     <TouchableOpacity
       activeOpacity={0.9}
+      onPress={onPress ? () => onPress(alert.id) : undefined}
       onLongPress={() => onDeletePress(alert.id)}
       className="mb-3 rounded-xl border border-[#D7D7D7] bg-white pt-4 shadow-none"
     >
@@ -102,7 +105,10 @@ export default function AlertListItem({
         </View>
       </View>
 
-      <AlertCardFooter createdAt={alert.createdAt} isActive={isActive} />
+      <AlertCardFooter
+        lastMatchedAt={alert.lastMatchedAt}
+        isActive={isActive}
+      />
     </TouchableOpacity>
   );
 }

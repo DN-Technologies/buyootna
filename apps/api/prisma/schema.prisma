@@ -171,6 +171,7 @@ enum NotificationType {
   IDENTITY_REJECTED
   IDENTITY_EDIT_REQUESTED
   ADMIN_CUSTOM_MESSAGE
+  ALERT_MATCH
 }
 
 model Notification {

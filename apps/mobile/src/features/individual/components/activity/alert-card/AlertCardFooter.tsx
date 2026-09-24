@@ -5,13 +5,13 @@ import { formatRelativeMatchTime } from '@/features/individual/utils/alertCard';
 const isRTL = I18nManager.isRTL;
 
 export interface AlertCardFooterProps {
-  createdAt?: string | null;
+  lastMatchedAt?: string | null;
   isActive: boolean;
 }
 
 // Bottom row: [Status text] (Left) <---> [Green Dot + Relative Time] (Right)
 export default function AlertCardFooter({
-  createdAt,
+  lastMatchedAt,
   isActive,
 }: AlertCardFooterProps) {
   return (
@@ -29,9 +29,13 @@ export default function AlertCardFooter({
     >
       {/* Right Element: Relative Match Time + Active Green Dot */}
       <View className="flex-row items-center gap-1.5">
-        <View className="h-2 w-2 rounded-full bg-[#018B1B]" />
+        <View
+          className={`h-2 w-2 rounded-full ${
+            lastMatchedAt ? 'bg-[#018B1B]' : 'bg-[#D7D7D7]'
+          }`}
+        />
         <Text className="font-cairo-medium text-[13px] text-[#111111]">
-          {formatRelativeMatchTime(createdAt)}
+          {formatRelativeMatchTime(lastMatchedAt)}
         </Text>
       </View>
 

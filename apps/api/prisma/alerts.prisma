@@ -26,7 +26,27 @@ model Alert {
   startDate DateTime?
   endDate   DateTime?
 
+  // Paused alerts are skipped by matching
+  isActive      Boolean      @default(true)
+  lastMatchedAt DateTime?
+  matches       AlertMatch[]
+
   createdAt DateTime @default(now())
 
   @@index([identityId])
+  @@index([isActive, type, governorateId])
+}
+
+// A listing that matched an alert when it was published. Unique per pair so
+// a republished listing never notifies the same alert twice.
+model AlertMatch {
+  id         String   @id @default(uuid())
+  alertId    String
+  alert      Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([alertId, propertyId])
+  @@index([propertyId])
 }

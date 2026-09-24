@@ -40,7 +40,7 @@ export function formatAuctionDate(dateStr: string) {
 }
 
 export function formatRelativeMatchTime(dateStr?: string | null): string {
-  if (!dateStr) return 'اخر تطابق منذ 5 ساعات';
+  if (!dateStr) return 'لا يوجد تطابق بعد';
   try {
     const diffMs = Date.now() - new Date(dateStr).getTime();
     if (diffMs <= 0) return 'اخر تطابق منذ قليل';
@@ -53,7 +53,7 @@ export function formatRelativeMatchTime(dateStr?: string | null): string {
     if (diffDays <= 10) return `اخر تطابق منذ ${diffDays} أيام`;
     return `اخر تطابق منذ ${diffDays} يوم`;
   } catch {
-    return 'اخر تطابق منذ 5 ساعات';
+    return 'لا يوجد تطابق بعد';
   }
 }
 

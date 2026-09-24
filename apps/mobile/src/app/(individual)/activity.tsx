@@ -199,6 +199,7 @@ export default function ActivityScreen() {
               isActive={alertActions.isAlertActive((item as AlertItem).id)}
               onToggleActive={alertActions.handleToggleAlertActive}
               onDeletePress={alertActions.handleDeleteAlert}
+              onPress={(id) => router.push(`/alert-matches/${id}` as any)}
             />
           ) : (
             <ActivityListItem

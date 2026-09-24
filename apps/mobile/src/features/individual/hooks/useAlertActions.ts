@@ -12,7 +12,7 @@ interface UseAlertActionsParams {
 }
 
 // State, sheet ref and handlers for the "تنبيهاتي" tab: per-alert and
-// pause-all toggles, and delete confirmation.
+// pause-all toggles (persisted on the server), and delete confirmation.
 export function useAlertActions({
   alerts,
   refetchAlerts,
@@ -20,7 +20,65 @@ export function useAlertActions({
 }: UseAlertActionsParams) {
   const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
   const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
-  const [pausedAlertIds, setPausedAlertIds] = useState<string[]>([]);
+
+  // Optimistic isActive values shown until the refetched list catches up
+  const [activeOverrides, setActiveOverrides] = useState<
+    Record<string, boolean>
+  >({});
+
+  const isAlertActive = (alertId: string) => {
+    if (alertId in activeOverrides) return activeOverrides[alertId];
+    return alerts?.find((a) => a.id === alertId)?.isActive ?? true;
+  };
+
+  const allAlertsPaused = Boolean(
+    alerts && alerts.length > 0 && alerts.every((a) => !isAlertActive(a.id)),
+  );
+
+  const clearOverrides = (ids: string[]) =>
+    setActiveOverrides((prev) => {
+      const next = { ...prev };
+      ids.forEach((id) => delete next[id]);
+      return next;
+    });
+
+  // Show the new state immediately, persist it, then resync from the server.
+  // On failure the override is dropped, so the toggle snaps back.
+  const persistActive = async (
+    ids: string[],
+    isActive: boolean,
+    request: () => Promise<unknown>,
+  ) => {
+    setActiveOverrides((prev) => ({
+      ...prev,
+      ...Object.fromEntries(ids.map((id) => [id, isActive])),
+    }));
+    try {
+      await request();
+      await refetchAlerts();
+    } catch (err) {
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في تحديث حالة التنبيه'));
+    } finally {
+      clearOverrides(ids);
+    }
+  };
+
+  const handleToggleAlertActive = (alertId: string) => {
+    const nextActive = !isAlertActive(alertId);
+    return persistActive([alertId], nextActive, () =>
+      alertsService.setActive(alertId, nextActive),
+    );
+  };
+
+  const handleToggleAllAlerts = () => {
+    if (!alerts || alerts.length === 0) return;
+    const nextActive = allAlertsPaused;
+    return persistActive(
+      alerts.map((a) => a.id),
+      nextActive,
+      () => alertsService.setAllActive(nextActive),
+    );
+  };
 
   const handleDeleteAlert = (alertId: string) => {
     setAlertToDelete(alertId);
@@ -43,31 +101,6 @@ export function useAlertActions({
   const handleCancelDeleteAlert = () => {
     setAlertToDelete(null);
   };
-
-  const allAlertsPaused = Boolean(
-    alerts &&
-      alerts.length > 0 &&
-      alerts.every((a) => pausedAlertIds.includes(a.id)),
-  );
-
-  const handleToggleAllAlerts = () => {
-    if (!alerts || alerts.length === 0) return;
-    if (allAlertsPaused) {
-      setPausedAlertIds([]);
-    } else {
-      setPausedAlertIds(alerts.map((a) => a.id));
-    }
-  };
-
-  const handleToggleAlertActive = (alertId: string) => {
-    setPausedAlertIds((prev) =>
-      prev.includes(alertId)
-        ? prev.filter((id) => id !== alertId)
-        : [...prev, alertId],
-    );
-  };
-
-  const isAlertActive = (alertId: string) => !pausedAlertIds.includes(alertId);
 
   return {
     alertDeleteSheetRef,

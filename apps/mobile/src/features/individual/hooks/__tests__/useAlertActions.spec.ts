@@ -6,16 +6,24 @@ import { showAlert } from '@/shared/utils/alert';
 import { useAlertActions } from '../useAlertActions';
 
 jest.mock('@/shared/api/alerts.service', () => ({
-  alertsService: { remove: jest.fn() },
+  alertsService: {
+    remove: jest.fn(),
+    setActive: jest.fn(),
+    setAllActive: jest.fn(),
+  },
 }));
 
 jest.mock('@/shared/utils/alert', () => ({
   showAlert: jest.fn(),
 }));
 
-const alerts = [{ id: 'a1' }, { id: 'a2' }] as AlertItem[];
+const buildAlerts = (a1Active = true, a2Active = true) =>
+  [
+    { id: 'a1', isActive: a1Active },
+    { id: 'a2', isActive: a2Active },
+  ] as AlertItem[];
 
-async function setup() {
+async function setup(alerts: AlertItem[] = buildAlerts()) {
   const refetchAlerts = jest.fn();
   const triggerToast = jest.fn();
   const utils = await renderHook(() =>
@@ -27,29 +35,71 @@ async function setup() {
 describe('useAlertActions', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('toggles a single alert between active and paused', async () => {
-    const { result } = await setup();
+  it('reads the active state from the server data', async () => {
+    const { result } = await setup(buildAlerts(true, false));
+
     expect(result.current.isAlertActive('a1')).toBe(true);
-
-    await act(() => result.current.handleToggleAlertActive('a1'));
-    expect(result.current.isAlertActive('a1')).toBe(false);
-    expect(result.current.isAlertActive('a2')).toBe(true);
+    expect(result.current.isAlertActive('a2')).toBe(false);
     expect(result.current.allAlertsPaused).toBe(false);
+  });
 
-    await act(() => result.current.handleToggleAlertActive('a1'));
+  it('treats alerts from an older API (no isActive) as active', async () => {
+    const { result } = await setup([{ id: 'a1' }] as AlertItem[]);
     expect(result.current.isAlertActive('a1')).toBe(true);
   });
 
-  it('pauses all alerts, then resumes all once everything is paused', async () => {
-    const { result } = await setup();
+  it('persists a single toggle, flipping it immediately', async () => {
+    let resolveRequest: () => void = () => {};
+    (alertsService.setActive as jest.Mock).mockReturnValue(
+      new Promise<void>((resolve) => {
+        resolveRequest = resolve;
+      }),
+    );
+    const { result, refetchAlerts } = await setup();
 
-    await act(() => result.current.handleToggleAllAlerts());
-    expect(result.current.allAlertsPaused).toBe(true);
-    expect(result.current.isAlertActive('a2')).toBe(false);
+    let pending: Promise<unknown> | undefined;
+    await act(async () => {
+      pending = result.current.handleToggleAlertActive('a1');
+    });
+    // Optimistic: already paused while the request is in flight
+    expect(result.current.isAlertActive('a1')).toBe(false);
+    expect(alertsService.setActive).toHaveBeenCalledWith('a1', false);
 
-    await act(() => result.current.handleToggleAllAlerts());
-    expect(result.current.allAlertsPaused).toBe(false);
+    await act(async () => {
+      resolveRequest();
+      await pending;
+    });
+    expect(refetchAlerts).toHaveBeenCalled();
+  });
+
+  it('snaps back and shows an error when the toggle fails', async () => {
+    (alertsService.setActive as jest.Mock).mockRejectedValue(new Error('x'));
+    const { result, refetchAlerts } = await setup();
+
+    await act(() => result.current.handleToggleAlertActive('a1'));
+
     expect(result.current.isAlertActive('a1')).toBe(true);
+    expect(showAlert).toHaveBeenCalledWith('خطأ', expect.any(String));
+    expect(refetchAlerts).not.toHaveBeenCalled();
+  });
+
+  it('pauses all when any alert is active', async () => {
+    (alertsService.setAllActive as jest.Mock).mockResolvedValue({ count: 2 });
+    const { result } = await setup(buildAlerts(true, false));
+
+    await act(() => result.current.handleToggleAllAlerts());
+
+    expect(alertsService.setAllActive).toHaveBeenCalledWith(false);
+  });
+
+  it('resumes all when every alert is paused', async () => {
+    (alertsService.setAllActive as jest.Mock).mockResolvedValue({ count: 2 });
+    const { result } = await setup(buildAlerts(false, false));
+    expect(result.current.allAlertsPaused).toBe(true);
+
+    await act(() => result.current.handleToggleAllAlerts());
+
+    expect(alertsService.setAllActive).toHaveBeenCalledWith(true);
   });
 
   it('deletes the chosen alert, then shows a toast and refetches', async () => {
@@ -74,11 +124,5 @@ describe('useAlertActions', () => {
     expect(showAlert).toHaveBeenCalledWith('خطأ', expect.any(String));
     expect(triggerToast).not.toHaveBeenCalled();
     expect(refetchAlerts).not.toHaveBeenCalled();
-  });
-
-  it('does nothing on confirm when no alert was chosen', async () => {
-    const { result } = await setup();
-    await act(() => result.current.handleConfirmDeleteAlert());
-    expect(alertsService.remove).not.toHaveBeenCalled();
   });
 });

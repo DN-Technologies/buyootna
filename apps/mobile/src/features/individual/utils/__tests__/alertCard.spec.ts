@@ -170,7 +170,7 @@ describe('formatRelativeMatchTime', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it.each([
-    [null, 'اخر تطابق منذ 5 ساعات'],
+    [null, 'لا يوجد تطابق بعد'],
     [hoursAgo(-1), 'اخر تطابق منذ قليل'],
     [hoursAgo(0.5), 'اخر تطابق منذ قليل'],
     [hoursAgo(5), 'اخر تطابق منذ 5 ساعات'],

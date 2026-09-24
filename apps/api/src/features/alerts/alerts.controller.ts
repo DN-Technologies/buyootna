@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -11,7 +12,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AlertsService } from './alerts.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
-import { AlertResponseDto } from './dto/alert-response.dto';
+import {
+  AlertResponseDto,
+  AlertsBulkUpdateResponseDto,
+} from './dto/alert-response.dto';
+import { UpdateAlertActiveDto } from './dto/update-alert-active.dto';
+import { PropertyCardDto } from '../properties/dto/property-response.dto';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
@@ -43,6 +49,50 @@ export class AlertsController {
   @ApiCommonErrors()
   async findMine(@CurrentUser() reqUser: RequestUser) {
     return this.alertsService.findMine(reqUser.identityId);
+  }
+
+  // Declared before ':id' so "active" isn't captured as an alert id
+  @Patch('active')
+  @ApiOperation({
+    summary: "Pause or resume all of the current identity's alerts",
+  })
+  @ApiResponse({ status: 200, type: AlertsBulkUpdateResponseDto })
+  @ApiCommonErrors()
+  async setAllActive(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: UpdateAlertActiveDto,
+  ) {
+    return this.alertsService.setAllActive(reqUser.identityId, dto.isActive);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: "Pause or resume one of the current identity's alerts",
+  })
+  @ApiParam({ name: 'id', description: 'Alert ID' })
+  @ApiResponse({ status: 200, type: AlertResponseDto })
+  @ApiCommonErrors()
+  async setActive(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateAlertActiveDto,
+  ) {
+    return this.alertsService.setActive(reqUser.identityId, id, dto.isActive);
+  }
+
+  @Get(':id/matches')
+  @ApiOperation({
+    summary:
+      "List live listings that match one of the current identity's alerts",
+  })
+  @ApiParam({ name: 'id', description: 'Alert ID' })
+  @ApiResponse({ status: 200, type: [PropertyCardDto] })
+  @ApiCommonErrors()
+  async findMatches(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.alertsService.findMatches(reqUser.identityId, id);
   }
 
   @Delete(':id')
