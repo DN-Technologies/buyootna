@@ -1,0 +1,63 @@
+enum AdminActorType {
+  ADMIN
+  SYSTEM
+}
+
+enum AdminActionType {
+  PROPERTY_DELETED
+  PROPERTY_HIDDEN
+  PROPERTY_UNHIDDEN
+  PROPERTY_FEATURED
+  PROPERTY_REPUBLISHED
+  REPORT_RESOLVED
+  REPORT_DISMISSED
+  REPORT_ASSIGNED
+  REPORT_PRIORITY_CHANGED
+  IDENTITY_APPROVED
+  IDENTITY_REJECTED
+  IDENTITY_EDIT_REQUESTED
+  COUPON_GRANTED
+  COUPON_BULK_GRANTED
+  USER_STATUS_CHANGED
+  USER_NOTIFIED
+  PLAN_CHANGED
+  EXCEPTIONAL_FEATURE_GRANTED
+  COMPANY_PROJECT_DELETED
+}
+
+model AdminActionLog {
+  id           String         @id @default(uuid())
+  actorType    AdminActorType @default(ADMIN)
+  actorAdminId String?
+  actorAdmin   User?          @relation("AdminActionLogActor", fields: [actorAdminId], references: [id], onDelete: SetNull)
+
+  action     AdminActionType
+  targetType String
+  targetId   String?
+
+  // Whose user-detail "السجل" tab this entry shows up under.
+  targetUserId String?
+  targetUser   User?   @relation("AdminActionLogTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([targetUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}
+
+model AdminNote {
+  id            String   @id @default(uuid())
+  targetUserId  String
+  targetUser    User     @relation("AdminNoteTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  authorAdminId String?
+  authorAdmin   User?    @relation("AdminNoteAuthor", fields: [authorAdminId], references: [id], onDelete: SetNull)
+  title         String   @default("ملاحظة")
+  content       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([targetUserId])
+}

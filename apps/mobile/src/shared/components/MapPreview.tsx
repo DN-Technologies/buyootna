@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import type { ComponentType } from 'react';
 import {
   ImageBackground,
-  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -11,6 +10,7 @@ import {
 } from 'react-native';
 
 import { showAlert } from '@/shared/utils/alert';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 // Resolved lazily and defensively: the property-details screen is the only
 // place in the main flow that mounts a native map, and a binary without the
@@ -67,7 +67,7 @@ export default function MapPreview({
       });
 
       if (url) {
-        Linking.openURL(url).catch(() => {
+        openUrlThrottled(url).catch(() => {
           showAlert('خطأ', 'تعذر فتح تطبيق الخرائط');
         });
       }

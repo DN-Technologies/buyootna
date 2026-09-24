@@ -7,6 +7,14 @@ import { ScrollArea } from '@buyootna/ui'
 type Duration = 'day' | 'week' | 'month'
 type ApplyMethod = 'type-only' | 'type-and-credit'
 
+const DURATION_DAYS: Record<Duration, number> = { day: 1, week: 7, month: 30 }
+
+export function featuredUntilFromDuration(duration: Duration): string {
+  const until = new Date()
+  until.setDate(until.getDate() + DURATION_DAYS[duration])
+  return until.toISOString()
+}
+
 const durationOptions: {
   id: Duration
   label: string

@@ -887,30 +887,42 @@ async function main() {
 
   // --- Seed Plans ---
   console.log('🌱 Seeding subscription plans...');
+  // Two purchasable tiers, each sold in ad-count packages (PlanPackage).
+  // Silver is kept but deactivated so existing wallet slots still resolve.
   const plans = [
     {
       slug: 'regular',
-      name: 'العادية',
-      price: 3,
+      name: 'الاساسية',
+      price: 10,
+      originalPrice: null,
+      discountText: null,
+      badge: null,
       maxActiveAds: 1,
-      durationDays: 10,
+      durationDays: 30,
       maxImagesPerAd: 5,
       featuredDays: 0,
       prioritySearch: false,
       features: [
-        'اعلان واحد نشط.',
-        'مدة النشر 10 ايام.',
+        'مدة النشر 30 يوم.',
         'حتى 5 صورة للعقار.',
         'ظهور في نتائج البحث.',
         'تواصل مباشر مع المهتمين.',
       ],
       color: '#15304D',
       sortOrder: 1,
+      isActive: true,
+      packages: [
+        { adsCount: 2, price: 10, sortOrder: 1 },
+        { adsCount: 5, price: 22.5, sortOrder: 2 },
+      ],
     },
     {
       slug: 'silver',
       name: 'الفضية',
       price: 5,
+      originalPrice: null,
+      discountText: null,
+      badge: null,
       maxActiveAds: 1,
       durationDays: 45,
       maxImagesPerAd: 10,
@@ -926,37 +938,53 @@ async function main() {
       ],
       color: '#15304D',
       sortOrder: 2,
+      isActive: false,
+      packages: [],
     },
     {
       slug: 'gold',
       name: 'الذهبية',
-      price: 10,
-      originalPrice: 20,
-      discountText: 'خصم 50%',
+      price: 12,
+      originalPrice: null,
+      discountText: null,
       badge: 'موصى به',
-      maxActiveAds: 4,
-      durationDays: 60,
+      maxActiveAds: 1,
+      durationDays: 30,
       maxImagesPerAd: 15,
       featuredDays: 7,
       prioritySearch: true,
       features: [
-        '4 اعلانات نشطة في نفس الوقت.',
-        'مدة النشر 60 يوم.',
+        'تمييز الاعلانات.',
         'حتى 15 صورة للعقار.',
-        'تثبيت 7 ايام في نتائج البحث.',
+        'مدة النشر 30 يوم.',
+        'ظهور في أعلى نتائج البحث.',
         'اولوية الظهور في البحث الجغرافي.',
       ],
       color: '#15304D',
       sortOrder: 3,
+      isActive: true,
+      packages: [
+        { adsCount: 1, price: 12, sortOrder: 1 },
+        { adsCount: 5, price: 50, sortOrder: 2 },
+      ],
     },
   ];
 
-  for (const plan of plans) {
-    await prisma.plan.upsert({
+  for (const { packages, ...plan } of plans) {
+    const saved = await prisma.plan.upsert({
       where: { slug: plan.slug },
       update: plan,
       create: plan,
     });
+    for (const pkg of packages) {
+      await prisma.planPackage.upsert({
+        where: {
+          planId_adsCount: { planId: saved.id, adsCount: pkg.adsCount },
+        },
+        update: pkg,
+        create: { ...pkg, planId: saved.id },
+      });
+    }
   }
   console.log('✅ Seeded subscription plans.');
 

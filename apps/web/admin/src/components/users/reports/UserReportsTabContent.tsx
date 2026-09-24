@@ -1,57 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, MoreVertical } from 'lucide-react'
 import ReportDetailDrawer from './ReportDetailDrawer'
 import AssignUserReportDialog, { AdminOption } from './AssignUserReportDialog'
+import { AdminReportRow, fetchUserReports, updateReport } from '@/lib/admin-reports'
+import { USER_TAB_PRIORITY_LABEL, USER_TAB_STATUS_LABEL } from '@/lib/report-labels'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
 export interface UserReportItem {
   id: string
   code: string
   title: string
   submitter: string
+  submitterEmail?: string
+  submitterPhone?: string
   date: string
   status: 'مفتوحة' | 'معلقة' | 'مغلقة'
   priority?: 'منخفضة' | 'متوسطة' | 'عالية'
+  details?: string
 }
 
-const mockUserReports: UserReportItem[] = [
-  {
-    id: 'rp-1',
-    code: 'RP-1025 #',
-    title: 'معلومات غير صحيحة',
-    submitter: 'محمد المالكي',
-    date: '12 يوليو 09:30 ص',
-    status: 'مفتوحة',
-    priority: 'متوسطة',
-  },
-  {
-    id: 'rp-2',
-    code: 'RP-1025 #',
-    title: 'معلومات غير صحيحة',
-    submitter: 'محمد المالكي',
-    date: '12 يوليو 09:30 ص',
-    status: 'مفتوحة',
-    priority: 'منخفضة',
-  },
-  {
-    id: 'rp-3',
-    code: 'RP-1025 #',
-    title: 'معلومات غير صحيحة',
-    submitter: 'محمد المالكي',
-    date: '12 يوليو 09:30 ص',
-    status: 'معلقة',
-  },
-  {
-    id: 'rp-4',
-    code: 'RP-1025 #',
-    title: 'معلومات غير صحيحة',
-    submitter: 'محمد المالكي',
-    date: '12 يوليو 09:30 ص',
-    status: 'مفتوحة',
-    priority: 'منخفضة',
-  },
-]
+function toUserReportItem(row: AdminReportRow): UserReportItem {
+  return {
+    id: row.id,
+    code: `${row.reportNumber} #`,
+    title: row.reason,
+    submitter: row.submittedBy?.name || 'مستخدم بيوتنا',
+    submitterEmail: row.submittedBy?.email || undefined,
+    submitterPhone: row.submittedBy?.phone || undefined,
+    date: formatRelativeArabicTime(row.createdAt),
+    status: USER_TAB_STATUS_LABEL[row.status],
+    priority: USER_TAB_PRIORITY_LABEL[row.priority],
+    details: row.description || undefined,
+  }
+}
 
 const statusBadgeStyles: Record<UserReportItem['status'], string> = {
   مفتوحة: 'bg-[#FEF3F2] text-[#9C1E28]',
@@ -65,17 +48,62 @@ const priorityBadgeStyles: Record<NonNullable<UserReportItem['priority']>, strin
   عالية: 'bg-[#FEF3F2] text-[#9C1E28]',
 }
 
-export default function UserReportsTabContent() {
+interface UserReportsTabContentProps {
+  userId: string
+}
+
+export default function UserReportsTabContent({ userId }: UserReportsTabContentProps) {
+  const [reports, setReports] = useState<UserReportItem[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const [selectedReport, setSelectedReport] = useState<UserReportItem | null>(null)
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [reportForAssign, setReportForAssign] = useState<UserReportItem | null>(
+    null,
+  )
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  const openCount = mockUserReports.filter((r) => r.status === 'مفتوحة').length
-  const closedCount = mockUserReports.filter((r) => r.status === 'مغلقة').length
-  const totalCount = mockUserReports.length
+  const loadReports = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await fetchUserReports(userId, { limit: 50 })
+      setReports(res.data.map(toUserReportItem))
+    } catch (err) {
+      console.error('Failed to load user reports:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [userId])
 
-  if (mockUserReports.length === 0) {
+  useEffect(() => {
+    loadReports()
+  }, [loadReports])
+
+  const openCount = reports.filter((r) => r.status === 'مفتوحة').length
+  const closedCount = reports.filter((r) => r.status === 'مغلقة').length
+  const totalCount = reports.length
+
+  const handleCloseReport = async (report: UserReportItem) => {
+    try {
+      await updateReport(report.id, { status: 'RESOLVED' })
+      setToastMessage('تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.')
+      setSelectedReport(null)
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to close report:', err)
+      setToastMessage('حدث خطأ أثناء إغلاق البلاغ.')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white border border-[#ECECEC] rounded-xl flex items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']" dir="rtl">
+        <span className="text-[14px] font-medium text-[#6B6A6A]">جارٍ التحميل...</span>
+      </div>
+    )
+  }
+
+  if (reports.length === 0) {
     /* Node 4043:133410: 0-State View */
     return (
       <div className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']" dir="rtl">
@@ -108,7 +136,7 @@ export default function UserReportsTabContent() {
             onClick={() => setToastMessage(null)}
             className="text-primary font-bold text-[15px] hover:underline cursor-pointer"
           >
-            تراجع
+            إغلاق
           </button>
         </div>
       )}
@@ -148,7 +176,7 @@ export default function UserReportsTabContent() {
 
       {/* Reports Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-        {mockUserReports.map((report) => (
+        {reports.map((report) => (
           <div
             key={report.id}
             className="relative bg-white border border-[#ECECEC] rounded-xl p-4 flex flex-col justify-between gap-3 text-right"
@@ -200,6 +228,7 @@ export default function UserReportsTabContent() {
                     <button
                       type="button"
                       onClick={() => {
+                        setReportForAssign(report)
                         setAssignDialogOpen(true)
                         setActiveMenuId(null)
                       }}
@@ -210,9 +239,7 @@ export default function UserReportsTabContent() {
                     <button
                       type="button"
                       onClick={() => {
-                        setToastMessage(
-                          'تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.',
-                        )
+                        handleCloseReport(report)
                         setActiveMenuId(null)
                       }}
                       className="w-full px-3 py-1.5 text-[13px] font-medium text-[#111111] hover:bg-[#F8FAFC] rounded cursor-pointer text-right"
@@ -252,19 +279,31 @@ export default function UserReportsTabContent() {
         open={!!selectedReport}
         onClose={() => setSelectedReport(null)}
         report={selectedReport}
-        onAssign={() => setAssignDialogOpen(true)}
-        onCloseReport={() =>
-          setToastMessage('تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.')
-        }
+        onAssign={() => loadReports()}
+        onCloseReport={handleCloseReport}
       />
 
       {/* Assign Dialog (Nodes 4043:136666, 4043:136676, 4043:136772) */}
       <AssignUserReportDialog
         open={assignDialogOpen}
-        onClose={() => setAssignDialogOpen(false)}
-        onAssignSuccess={(admin: AdminOption) =>
-          setToastMessage(`تم إسناد البلاغ للمشرف ${admin.name} بنجاح.`)
-        }
+        onClose={() => {
+          setAssignDialogOpen(false)
+          setReportForAssign(null)
+        }}
+        onAssignSuccess={async (admin: AdminOption) => {
+          if (!reportForAssign) return
+          try {
+            await updateReport(reportForAssign.id, {
+              assignedAdminId: admin.id,
+            })
+            setToastMessage(`تم إسناد البلاغ للمشرف ${admin.name} بنجاح.`)
+            await loadReports()
+          } catch (err) {
+            console.error('Failed to assign report:', err)
+            setToastMessage('حدث خطأ أثناء اسناد البلاغ.')
+          }
+          setReportForAssign(null)
+        }}
       />
     </div>
   )

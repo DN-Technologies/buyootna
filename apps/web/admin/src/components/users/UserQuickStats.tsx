@@ -3,54 +3,82 @@
 import { Star } from 'lucide-react'
 import Skeleton from '@/components/ui/Skeleton'
 
+export interface UserQuickStatsValues {
+  reportsCount?: number
+  ratingAverage?: number
+  ratingCount?: number
+  requestsCount?: number
+  adsCount?: number
+  servicesCount?: number
+}
+
 export interface UserQuickStatsProps {
   isOffice?: boolean
   userRole?: 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
   loading?: boolean
+  stats?: UserQuickStatsValues
+}
+
+function fmt(value: number | undefined): string {
+  return value === undefined ? '—' : String(value)
+}
+
+interface StatDisplay {
+  label: string
+  value: string
+  valueClassName?: string
+  ratingCount?: string
+  showStar?: boolean
 }
 
 export default function UserQuickStats({
   isOffice = false,
   userRole,
   loading = false,
+  stats: values = {},
 }: UserQuickStatsProps) {
   const role = userRole || (isOffice ? 'OFFICE' : 'INDIVIDUAL')
 
-  const individualStats = [
-    { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
+  const ratingDisplay: StatDisplay = {
+    label: 'التقييم',
+    ratingCount: values.ratingCount !== undefined ? `(${values.ratingCount} تقييم)` : '',
+    value: values.ratingAverage !== undefined ? values.ratingAverage.toFixed(1) : '—',
+    showStar: true,
+  }
+
+  const individualStats: StatDisplay[] = [
     {
-      label: 'التقييم',
-      ratingCount: '(٢١٤ تقييم)',
-      value: '3.5',
-      showStar: true,
+      label: 'البلاغات',
+      value: fmt(values.reportsCount),
+      valueClassName: 'text-[#9C1E28]',
     },
-    { label: 'الطلبات', value: '2' },
-    { label: 'العقارات المباعة', value: '2' },
-    { label: 'الاعلانات', value: '1' },
+    ratingDisplay,
+    { label: 'الطلبات', value: fmt(values.requestsCount) },
+    // No "sold" concept exists on Property (ListingStatus has no SOLD state).
+    { label: 'العقارات المباعة', value: '—' },
+    { label: 'الاعلانات', value: fmt(values.adsCount) },
   ]
 
-  const officeStats = [
-    { label: 'الاعلانات', value: '1' },
-    { label: 'الخدمات', value: '2' },
+  const officeStats: StatDisplay[] = [
+    { label: 'الاعلانات', value: fmt(values.adsCount) },
+    { label: 'الخدمات', value: fmt(values.servicesCount) },
+    ratingDisplay,
     {
-      label: 'التقييم',
-      ratingCount: '(٢١٤ تقييم)',
-      value: '3.5',
-      showStar: true,
+      label: 'البلاغات',
+      value: fmt(values.reportsCount),
+      valueClassName: 'text-[#9C1E28]',
     },
-    { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
   ]
 
-  const companyStats = [
-    { label: 'الخدمات', value: '1' },
-    { label: 'الطلبات', value: '2' },
+  const companyStats: StatDisplay[] = [
+    { label: 'الخدمات', value: fmt(values.servicesCount) },
+    { label: 'الطلبات', value: fmt(values.requestsCount) },
+    ratingDisplay,
     {
-      label: 'التقييم',
-      ratingCount: '(٢١٤ تقييم)',
-      value: '3.5',
-      showStar: true,
+      label: 'البلاغات',
+      value: fmt(values.reportsCount),
+      valueClassName: 'text-[#9C1E28]',
     },
-    { label: 'البلاغات', value: '1', valueClassName: 'text-[#9C1E28]' },
   ]
 
   const stats =

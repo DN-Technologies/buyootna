@@ -2,20 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
+import { AdminModerator, fetchAssignableAdmins } from '@/lib/admin-reports'
 
-export interface Moderator {
-  id: string
-  name: string
-  role: string
-  avatar?: string
-}
-
-const MODERATORS: Moderator[] = [
-  { id: 'MOD-1', name: 'محمد الجارح', role: 'مشرف عام' },
-  { id: 'MOD-2', name: 'محمد الجارح', role: 'مسؤول الدعم الفني' },
-  { id: 'MOD-3', name: 'محمد الجارح', role: 'مشرف' },
-  { id: 'MOD-4', name: 'علي العتيبي', role: 'مشرف' },
-]
+export type Moderator = AdminModerator
 
 export interface AssignReportModalProps {
   isOpen: boolean
@@ -30,12 +19,20 @@ export default function AssignReportModal({
   onClose,
   onAssign,
 }: AssignReportModalProps) {
+  const [moderators, setModerators] = useState<Moderator[]>([])
   const [selectedModerator, setSelectedModerator] = useState<Moderator | null>(
     null,
   )
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    fetchAssignableAdmins()
+      .then(setModerators)
+      .catch((err) => console.error('Failed to load admins:', err))
+  }, [isOpen])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -52,10 +49,10 @@ export default function AssignReportModal({
 
   if (!isOpen) return null
 
-  const filteredModerators = MODERATORS.filter(
+  const filteredModerators = moderators.filter(
     (mod) =>
       mod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mod.role.toLowerCase().includes(searchQuery.toLowerCase()),
+      (mod.email || '').toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -99,7 +96,9 @@ export default function AssignReportModal({
                 }`}
               >
                 {selectedModerator
-                  ? `${selectedModerator.name} (${selectedModerator.role})`
+                  ? selectedModerator.email
+                    ? `${selectedModerator.name} (${selectedModerator.email})`
+                    : selectedModerator.name
                   : 'اختر أو اكتب اسم او بريد المشرف'}
               </span>
               <ChevronDown className="w-4 h-4 text-[#6B6A6A]" />
@@ -120,28 +119,36 @@ export default function AssignReportModal({
                   />
                 </div>
 
-                {filteredModerators.map((mod) => (
-                  <div
-                    key={mod.id}
-                    onClick={() => {
-                      setSelectedModerator(mod)
-                      setDropdownOpen(false)
-                    }}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#F8FAFC] cursor-pointer transition-colors"
-                  >
-                    <div className="size-9 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[14px] flex items-center justify-center shrink-0">
-                      {mod.name.charAt(0)}
+                {filteredModerators.length === 0 ? (
+                  <p className="text-[13px] text-[#6B6A6A] text-center py-2">
+                    لا يوجد مشرفون متاحون
+                  </p>
+                ) : (
+                  filteredModerators.map((mod) => (
+                    <div
+                      key={mod.id}
+                      onClick={() => {
+                        setSelectedModerator(mod)
+                        setDropdownOpen(false)
+                      }}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#F8FAFC] cursor-pointer transition-colors"
+                    >
+                      <div className="size-9 rounded-full bg-[#D1FAE5] text-[#059669] font-bold text-[14px] flex items-center justify-center shrink-0">
+                        {mod.name.charAt(0)}
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[13px] font-bold text-[#111111]">
+                          {mod.name}
+                        </span>
+                        {mod.email && (
+                          <span className="text-[12px] text-[#6B6A6A]">
+                            {mod.email}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-[13px] font-bold text-[#111111]">
-                        {mod.name}
-                      </span>
-                      <span className="text-[12px] text-[#6B6A6A]">
-                        {mod.role}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </div>

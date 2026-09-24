@@ -8,7 +8,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react'
-import type { RequestItem } from './requests.types'
+import type { RequestItem, RequestStatus } from './requests.types'
 import { STATUS_LABELS, STATUS_STYLES } from './requests.types'
 import RequestsEmptyState from './RequestsEmptyState'
 
@@ -25,7 +25,7 @@ export default function IndividualRequestsView({
   const [typeFilter, setTypeFilter] = useState<'all' | 'private' | 'public'>(
     'all',
   )
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | RequestStatus>('all')
 
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false)
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false)
@@ -54,14 +54,7 @@ export default function IndividualRequestsView({
   }, [])
 
   const filteredRequests = requests.filter((req) => {
-    if (
-      typeFilter === 'private' &&
-      req.type !== 'private' &&
-      req.type !== 'خاص'
-    )
-      return false
-    if (typeFilter === 'public' && req.type !== 'public' && req.type !== 'عام')
-      return false
+    if (typeFilter !== 'all' && req.type !== typeFilter) return false
     if (statusFilter !== 'all' && req.status !== statusFilter) return false
     return true
   })
@@ -121,16 +114,18 @@ export default function IndividualRequestsView({
 
             {typeDropdownOpen && (
               <div className="absolute left-0 mt-1 w-36 bg-white border border-[#ECECEC] rounded-xl shadow-xl py-1 z-30 text-right">
-                {[
-                  { key: 'all', label: 'الكل' },
-                  { key: 'private', label: 'خاص' },
-                  { key: 'public', label: 'عام' },
-                ].map((opt) => (
+                {(
+                  [
+                    { key: 'all', label: 'الكل' },
+                    { key: 'private', label: 'خاص' },
+                    { key: 'public', label: 'عام' },
+                  ] as const
+                ).map((opt) => (
                   <button
                     key={opt.key}
                     type="button"
                     onClick={() => {
-                      setTypeFilter(opt.key as any)
+                      setTypeFilter(opt.key)
                       setTypeDropdownOpen(false)
                     }}
                     className="w-full px-3 py-2 text-[13px] text-[#111111] hover:bg-slate-50 flex items-center justify-between font-medium cursor-pointer"
@@ -163,12 +158,15 @@ export default function IndividualRequestsView({
 
             {statusDropdownOpen && (
               <div className="absolute left-0 mt-1 w-44 bg-white border border-[#ECECEC] rounded-xl shadow-xl py-1 z-30 text-right">
-                {[
-                  { key: 'all', label: 'الكل' },
-                  { key: 'تم الرد', label: 'تم الرد' },
-                  { key: 'قيد الانتظار', label: 'قيد الانتظار' },
-                  { key: 'مقبولة', label: 'مقبولة' },
-                ].map((opt) => (
+                {(
+                  [
+                    { key: 'all', label: 'الكل' },
+                    { key: 'pending', label: STATUS_LABELS.pending },
+                    { key: 'responded', label: STATUS_LABELS.responded },
+                    { key: 'accepted', label: STATUS_LABELS.accepted },
+                    { key: 'rejected', label: STATUS_LABELS.rejected },
+                  ] as const
+                ).map((opt) => (
                   <button
                     key={opt.key}
                     type="button"
@@ -235,24 +233,19 @@ export default function IndividualRequestsView({
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
-                            req.type === 'private' || req.type === 'خاص'
+                            req.type === 'private'
                               ? 'bg-[#FDF4FF] text-[#C026D3]'
                               : 'bg-[#EFF6FF] text-[#2563EB]'
                           }`}
                         >
-                          {req.type === 'private' || req.type === 'خاص'
-                            ? 'خاص'
-                            : 'عام'}
+                          {req.type === 'private' ? 'خاص' : 'عام'}
                         </span>
                       </td>
                       <td className="py-3.5 px-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
-                            STATUS_STYLES[req.status] ||
-                            'bg-[#F1F5F9] text-[#64748B]'
-                          }`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${STATUS_STYLES[req.status]}`}
                         >
-                          {STATUS_LABELS[req.status] || req.status}
+                          {STATUS_LABELS[req.status]}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-[#111111] font-medium">

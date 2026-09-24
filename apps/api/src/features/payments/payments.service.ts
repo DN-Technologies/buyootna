@@ -39,6 +39,7 @@ export class PaymentsService {
     planSlug: string,
     appRedirectUrl: string,
     sourceId = 'src_all',
+    adsCount?: number | string,
   ) {
     if (!this.tapSecretKey) {
       throw new InternalServerErrorException(
@@ -62,22 +63,45 @@ export class PaymentsService {
       throw new NotFoundException('الباقة غير موجودة أو غير نشطة');
     }
 
+    // The selected package (identified by its ad count) decides the price
+    // and ads credited. Clients that predate packages send no adsCount and
+    // buy the plan as a whole.
+    let planPackage: { id: string; adsCount: number; price: number } | null =
+      null;
+    if (adsCount !== undefined && adsCount !== null) {
+      const requestedAds = Number(adsCount);
+      if (!Number.isInteger(requestedAds) || requestedAds <= 0) {
+        throw new BadRequestException('عدد الإعلانات غير صالح');
+      }
+      planPackage = await this.prisma.planPackage.findFirst({
+        where: { planId: plan.id, adsCount: requestedAds, isActive: true },
+        select: { id: true, adsCount: true, price: true },
+      });
+      if (!planPackage) {
+        throw new NotFoundException('خيار الباقة غير موجود أو غير نشط');
+      }
+    }
+    const amount = planPackage ? planPackage.price : plan.price;
+    const adsToGrant = planPackage ? planPackage.adsCount : plan.maxActiveAds;
+
     // 1. Create a PENDING invoice in our database
     const invoiceNo = `INV-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const invoice = await this.prisma.invoice.create({
       data: {
         invoiceNo,
         planName: plan.name,
-        planDetails: `باقة ${plan.name} - ${plan.slug === 'gold' ? '4 إعلانات' : 'إعلان واحد'}`,
-        amount: plan.price,
+        planDetails: `باقة ${plan.name} - ${adsToGrant === 1 ? 'إعلان واحد' : `${adsToGrant} إعلانات`}`,
+        amount,
         status: 'PENDING',
         userId: user.id,
+        planId: plan.id,
+        planPackageId: planPackage?.id ?? null,
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days due date
       },
     });
 
     // 2. If the plan is free (0 KWD), skip payment gateway
-    if (plan.price === 0) {
+    if (amount === 0) {
       await this.prisma.$transaction(async (tx) => {
         await tx.invoice.update({
           where: { id: invoice.id },
@@ -87,7 +111,7 @@ export class PaymentsService {
           data: {
             userId,
             planId: plan.id,
-            adsRemaining: plan.maxActiveAds,
+            adsRemaining: adsToGrant,
             status: 'ACTIVE',
             invoiceId: invoice.id,
           },
@@ -128,7 +152,7 @@ export class PaymentsService {
 
     // 4. Construct Tap Charge API payload
     const tapPayload = {
-      amount: plan.price,
+      amount,
       currency: 'KWD',
       threeDSecure: true,
       save_card: false,
@@ -137,6 +161,7 @@ export class PaymentsService {
       metadata: {
         userId: user.id,
         planId: plan.id,
+        planPackageId: planPackage?.id,
         invoiceId: invoice.id,
       },
       customer: {
@@ -304,24 +329,28 @@ export class PaymentsService {
   private async fulfillPayment(invoiceId: string) {
     const invoice = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
+      include: { planPackage: true },
     });
 
     if (!invoice || invoice.status === 'PAID') {
       return;
     }
 
-    // Find matching Plan in DB
-    const plan = await this.prisma.plan.findFirst({
-      where: {
-        OR: [
-          { name: invoice.planName },
-          { slug: invoice.planName.toLowerCase() },
-          { name: { contains: invoice.planName } },
-        ],
-      },
-    });
+    // Invoices created before planId was recorded fall back to a name match
+    const plan = invoice.planId
+      ? await this.prisma.plan.findUnique({ where: { id: invoice.planId } })
+      : await this.prisma.plan.findFirst({
+          where: {
+            OR: [
+              { name: invoice.planName },
+              { slug: invoice.planName.toLowerCase() },
+              { name: { contains: invoice.planName } },
+            ],
+          },
+        });
 
-    const adsToAdd = plan ? plan.maxActiveAds : 1;
+    const adsToAdd =
+      invoice.planPackage?.adsCount ?? (plan ? plan.maxActiveAds : 1);
 
     await this.prisma.$transaction(async (tx) => {
       // 1. Mark Invoice as PAID
@@ -336,7 +365,7 @@ export class PaymentsService {
           data: {
             userId: invoice.userId,
             planId: plan.id,
-            adsRemaining: plan.maxActiveAds,
+            adsRemaining: adsToAdd,
             status: 'ACTIVE',
             invoiceId: invoice.id,
           },

@@ -1,5 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class PlanPackageDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ description: 'Number of ads this package adds to the wallet' })
+  adsCount: number;
+
+  @ApiProperty({ description: 'Price in KWD' })
+  price: number;
+}
+
 export class PlanDto {
   @ApiProperty()
   id: string;
@@ -48,6 +59,9 @@ export class PlanDto {
 
   @ApiProperty()
   prioritySearch: boolean;
+
+  @ApiProperty({ type: [PlanPackageDto] })
+  packages: PlanPackageDto[];
 }
 
 class WalletBalanceCountsDto {
@@ -85,6 +99,12 @@ class WalletSlotDto {
 
   @ApiProperty()
   maxActiveAds: number;
+
+  @ApiProperty({
+    description:
+      'Ads this slot started with (purchased package size, else the plan default)',
+  })
+  totalAds: number;
 
   @ApiProperty()
   createdAt: Date;

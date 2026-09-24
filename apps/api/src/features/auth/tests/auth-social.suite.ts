@@ -21,7 +21,7 @@ export function registerSocialAuthTests(ctx: AuthTestContext) {
         user: existingUser,
       });
       const loginSpy = jest
-        .spyOn(ctx.service, 'login')
+        .spyOn(ctx.sessionService, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
 
       const result = await ctx.service.loginOrRegisterWithSocial(
@@ -51,7 +51,7 @@ export function registerSocialAuthTests(ctx: AuthTestContext) {
       };
       ctx.prisma.user.findUnique.mockResolvedValue(existingUser);
       const loginSpy = jest
-        .spyOn(ctx.service, 'login')
+        .spyOn(ctx.sessionService, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
 
       const result = await ctx.service.loginOrRegisterWithSocial(
@@ -83,7 +83,7 @@ export function registerSocialAuthTests(ctx: AuthTestContext) {
       ctx.prisma.socialAccount.findUnique.mockResolvedValue(null);
       ctx.prisma.user.findUnique.mockResolvedValue(null);
       const loginSpy = jest
-        .spyOn(ctx.service, 'login')
+        .spyOn(ctx.sessionService, 'login')
         .mockResolvedValue(MOCK_LOGIN_RESULT);
 
       let tx: Tx | undefined;

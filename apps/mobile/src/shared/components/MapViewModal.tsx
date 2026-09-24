@@ -1,6 +1,5 @@
 import { Feather } from '@expo/vector-icons';
 import {
-  Linking,
   Modal,
   Platform,
   Text,
@@ -11,6 +10,7 @@ import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { showAlert } from '@/shared/utils/alert';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 interface MapViewModalProps {
   visible: boolean;
@@ -36,7 +36,7 @@ export default function MapViewModal({
       android: `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodedLabel})`,
     });
     if (url) {
-      Linking.openURL(url).catch(() => {
+      openUrlThrottled(url).catch(() => {
         showAlert('خطأ', 'تعذر فتح تطبيق الخرائط');
       });
     }

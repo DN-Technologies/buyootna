@@ -2,8 +2,10 @@ import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 
 import { chatService } from '@/shared/api/chat.service';
+import { useSingleFlight } from '@/shared/hooks/useSingleFlight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 import { PropertyDetailsDto } from '@/types/property';
 
 interface UsePropertyContactActionsOptions {
@@ -24,6 +26,7 @@ export function usePropertyContactActions({
 }: UsePropertyContactActionsOptions) {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const runOnce = useSingleFlight();
 
   const handleWhatsApp = () => {
     if (onWhatsAppPress) {
@@ -35,17 +38,9 @@ export function usePropertyContactActions({
     const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
     const waUrl = `whatsapp://send?phone=${cleanPhone}`;
     const webUrl = `https://wa.me/${cleanPhone}`;
-    Linking.canOpenURL(waUrl)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(waUrl);
-        } else {
-          Linking.openURL(webUrl);
-        }
-      })
-      .catch(() => {
-        Linking.openURL(webUrl);
-      });
+    openUrlThrottled(waUrl).catch(() => {
+      Linking.openURL(webUrl);
+    });
   };
 
   const handleCall = () => {
@@ -59,12 +54,12 @@ export function usePropertyContactActions({
       return;
     }
     const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
-    Linking.openURL(`tel:${cleanPhone}`).catch(() => {
+    openUrlThrottled(`tel:${cleanPhone}`).catch(() => {
       showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية');
     });
   };
 
-  const handleChat = async () => {
+  const handleChat = () => {
     if (onChatPress) {
       onChatPress();
       return;
@@ -76,21 +71,25 @@ export function usePropertyContactActions({
       return;
     }
 
-    try {
-      const response = await chatService.createConversation(
-        property.host.id,
-        property.id,
-      );
-      onClose?.();
-      router.push(`/chat/${response.id}`);
-    } catch (error: any) {
-      console.error('Failed to start chat conversation:', error);
-      const backendMsg = error?.response?.data?.message;
-      const msg = Array.isArray(backendMsg)
-        ? backendMsg.join('\n')
-        : backendMsg || 'تعذر بدء المحادثة مع البائع';
-      showAlert('تنبيه', msg);
-    }
+    // Single-flight: a rapid double-tap must not fire createConversation
+    // twice (duplicate conversation + a second, different chat screen).
+    runOnce(async () => {
+      try {
+        const response = await chatService.createConversation(
+          property.host.id,
+          property.id,
+        );
+        onClose?.();
+        router.push(`/chat/${response.id}`);
+      } catch (error: any) {
+        console.error('Failed to start chat conversation:', error);
+        const backendMsg = error?.response?.data?.message;
+        const msg = Array.isArray(backendMsg)
+          ? backendMsg.join('\n')
+          : backendMsg || 'تعذر بدء المحادثة مع البائع';
+        showAlert('تنبيه', msg);
+      }
+    });
   };
 
   return { handleWhatsApp, handleCall, handleChat };

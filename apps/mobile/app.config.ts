@@ -102,6 +102,7 @@ const config: ExpoConfig = {
     ],
     'expo-router',
     './plugins/withPrebuiltDsyms',
+    './plugins/withRtlFlags',
     [
       '@sentry/react-native/expo',
       {

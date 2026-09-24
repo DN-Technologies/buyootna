@@ -33,6 +33,7 @@ import { PaymentsModule } from './features/payments/payments.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
 import { AdminModule } from './features/admin/admin.module';
 import { IdentitiesModule } from './features/identities/identities.module';
+import { ReportsModule } from './features/reports/reports.module';
 import { CompaniesModule } from './features/company/companies/companies.module';
 import { CompanyRequestsModule } from './features/company/company-requests/company-requests.module';
 import { CompanyModule } from './features/company/company.module';
@@ -86,6 +87,7 @@ import { AlertsModule } from './features/alerts/alerts.module';
     AdminModule,
     IdentitiesModule,
     CompaniesModule,
+    ReportsModule,
     CompanyRequestsModule,
     AlertsModule,
   ],

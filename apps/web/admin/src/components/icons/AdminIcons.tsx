@@ -215,5 +215,16 @@ export function CheckBigIcon({ className = 'w-4 h-4', color = '#006C4A', ...prop
   )
 }
 
+export function ReportsNavIcon({ className = 'w-4.5 h-4.5', color = 'currentColor', ...props }: IconProps) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className={className} {...props}>
+      <path d="M9 16.5C12.5 15 15 11.5 15 7.5V3.75L9 1.5L3 3.75V7.5C3 11.5 5.5 15 9 16.5Z" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M9 6V9" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9" cy="11.5" r="0.75" fill={color}/>
+    </svg>
+  )
+}
+
+
 
 

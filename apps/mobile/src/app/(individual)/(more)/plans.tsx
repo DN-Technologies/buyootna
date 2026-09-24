@@ -1,260 +1,49 @@
-import { Feather } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useState } from 'react';
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { paymentsService } from '@/shared/api/payments.service';
-import { plansService } from '@/shared/api/plans.service';
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import PlanCard from '@/features/individual/components/plans/PlanCard';
+import PlansHeader from '@/features/individual/components/plans/PlansHeader';
+import PlansWalletSection from '@/features/individual/components/plans/PlansWalletSection';
+import { usePlans } from '@/features/individual/hooks/usePlans';
 import PlanCardSkeleton from '@/shared/components/skeletons/PlanCardSkeleton';
-import { showAlert } from '@/shared/utils/alert';
 
 WebBrowser.maybeCompleteAuthSession();
 
-async function fetchPlansData() {
-  const [plansRes, walletRes] = await Promise.all([
-    plansService.getPlans(),
-    plansService.getWallet().catch(() => ({ freeAdsRemaining: 0, slots: [] })),
-  ]);
-
-  const plans = plansRes.map((plan) => ({
-    id: plan.slug,
-    name: plan.name,
-    price: `${plan.price} دينار كويتي`,
-    originalPrice: plan.originalPrice ? `${plan.originalPrice}` : undefined,
-    discountText: plan.discountText || undefined,
-    features: plan.features,
-    color: plan.color || '#15304D',
-    badge: plan.badge || '',
-  }));
-
-  return { plans, wallet: walletRes };
-}
-
 export default function PlansScreen() {
   const router = useRouter();
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-
-  const {
-    data = { plans: [], wallet: { freeAdsRemaining: 0, slots: [] } },
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['plans'],
-    queryFn: fetchPlansData,
-  });
-  const { plans, wallet } = data;
-
-  const handleBuyPlan = async (planSlug: string) => {
-    if (isProcessing) return;
-
-    setIsProcessing(planSlug);
-    try {
-      const appRedirectUrl = Linking.createURL('payment-callback');
-      const charge = await paymentsService.createCharge(
-        planSlug,
-        appRedirectUrl,
-      );
-
-      if (charge.status === 'PAID') {
-        showAlert('نجاح', 'تم تفعيل الباقة بنجاح!');
-        refetch();
-        return;
-      }
-
-      if (!charge.checkoutUrl) {
-        throw new Error('لم يتم استلام رابط الدفع من بوابة الدفع.');
-      }
-
-      await WebBrowser.openBrowserAsync(charge.checkoutUrl);
-    } catch (error: any) {
-      console.error('Payment Error:', error);
-      showAlert(
-        'خطأ',
-        error.response?.data?.message ||
-          error.message ||
-          'حدث خطأ أثناء معالجة الدفع.',
-      );
-    } finally {
-      setIsProcessing(null);
-    }
-  };
+  const { tiers, wallet, isLoading, isProcessing, selectOption, buyPlan } =
+    usePlans();
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-gray-100 px-5 py-4">
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => router.back()}
-          className="w-8"
-        >
-          <Feather name="chevron-right" size={24} color="#111111" />
-        </TouchableOpacity>
-        <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
-          الباقات
-        </Text>
-        <View className="w-8" />
-      </View>
+      <PlansHeader onBack={() => router.back()} />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View className="gap-6 px-5 py-6">
-            {[1, 2, 3].map((key) => (
+            {[1, 2].map((key) => (
               <PlanCardSkeleton key={key} />
             ))}
           </View>
         ) : (
           <View className="px-5 py-6">
-            {/* Wallet Section */}
-            {(wallet.freeAdsRemaining > 0 || wallet.slots.length > 0) && (
-              <View className="mb-6 rounded-2xl bg-[#F4F7FB] p-4 border border-[#DCE4EE]">
-                <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center gap-2">
-                    <Feather name="folder" size={20} color="#15304D" />
-                    <Text className="font-cairo-bold text-base text-[#15304D]">
-                      محفظتك الإعلانية
-                    </Text>
-                  </View>
-                  <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
-                    رصيد الإعلانات المتوفر
-                  </Text>
-                </View>
+            <PlansWalletSection wallet={wallet} />
 
-                {wallet.freeAdsRemaining > 0 && (
-                  <View className="mb-2 flex-row items-center justify-between rounded-xl bg-white p-3 border border-gray-100">
-                    <Text className="font-cairo-semibold text-sm text-[#111111]">
-                      الإعلان المجاني الترحيبي
-                    </Text>
-                    <Text className="font-cairo-bold text-sm text-[#018B1B]">
-                      متبقي 1 إعلان
-                    </Text>
-                  </View>
-                )}
-
-                {wallet.slots.map((slot) => (
-                  <View
-                    key={slot.id}
-                    className="mb-2 flex-row items-center justify-between rounded-xl bg-white p-3 border border-gray-100"
-                  >
-                    <View className="flex-row items-center gap-2">
-                      <View
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: slot.color || '#15304D' }}
-                      />
-                      <Text className="font-cairo-semibold text-sm text-[#111111]">
-                        باقة {slot.planName}
-                      </Text>
-                    </View>
-                    <Text className="font-cairo-bold text-sm text-[#15304D]">
-                      متبقي {slot.adsRemaining} من {slot.maxActiveAds} إعلانات
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-            {/* Plan Cards */}
             <View className="gap-6">
-              {plans.map((plan) => (
-                <View
-                  key={plan.id}
-                  className={`relative rounded-2xl border bg-white p-5 shadow-sm shadow-gray-200/50 ${
-                    plan.id === 'gold' ? 'border-[#D06400]' : 'border-[#ECECEC]'
-                  }`}
-                >
-                  {/* Centered Top Badge */}
-                  {plan.badge ? (
-                    <View className="absolute -top-[14.5px] left-0 right-0 items-center">
-                      <LinearGradient
-                        colors={['#FF8D28', '#FACC15']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          borderRadius: 22,
-                          paddingHorizontal: 16,
-                          paddingVertical: 6,
-                          height: 29,
-                          width: 111,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          gap: 5,
-                        }}
-                      >
-                        <Feather name="award" size={12} color="#111111" />
-                        <Text className="font-cairo-semibold text-[12px] leading-[20px] text-[#111111]">
-                          {plan.badge}
-                        </Text>
-                      </LinearGradient>
-                    </View>
-                  ) : null}
-
-                  {/* Main Info */}
-                  <View className="mt-2 items-start">
-                    <Text className="mb-1 font-cairo-semibold text-base text-[#111111]">
-                      {plan.name}
-                    </Text>
-                    <View className="mb-4 flex-row items-baseline gap-2">
-                      <Text className="font-cairo-bold text-lg text-[#111111]">
-                        {plan.price}
-                      </Text>
-                      {plan.originalPrice && (
-                        <Text className="font-cairo text-lg text-[#6B6A6A] line-through">
-                          {plan.originalPrice}
-                        </Text>
-                      )}
-                      {plan.discountText && (
-                        <Text className="font-cairo text-lg text-[#018B1B]">
-                          {plan.discountText}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-
-                  {/* Divider */}
-                  <View className="my-4 h-[1px] bg-gray-100" />
-
-                  {/* Features List */}
-                  <View className="mb-6 gap-2">
-                    {plan.features.map((feat: string, idx: number) => (
-                      <View key={idx} className="flex-row items-center gap-2">
-                        <Feather name="check" size={16} color="#018B1B" />
-                        <Text
-                          className="flex-1 font-cairo text-sm text-[#111111]"
-                          style={{ writingDirection: 'rtl' }}
-                        >
-                          {feat}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-
-                  {/* Buy Button */}
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => handleBuyPlan(plan.id)}
-                    disabled={isProcessing === plan.id}
-                    className="h-12 w-full items-center justify-center rounded-[24px]"
-                    style={{
-                      backgroundColor: '#15304D',
-                      opacity: isProcessing === plan.id ? 0.6 : 1,
-                    }}
-                  >
-                    <Text className="font-cairo-semibold text-[14px] text-white">
-                      {isProcessing === plan.id ? 'جاري التحميل...' : 'اشتر الآن'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              {tiers.map((tier) => (
+                <PlanCard
+                  key={tier.id}
+                  title={tier.title}
+                  features={tier.features}
+                  options={tier.options}
+                  selectedOptionId={tier.selectedOption.id}
+                  recommended={tier.recommended}
+                  isProcessing={isProcessing === tier.id}
+                  onSelectOption={(optionId) => selectOption(tier.id, optionId)}
+                  onBuy={() => buyPlan(tier.id, tier.selectedOption)}
+                />
               ))}
             </View>
           </View>

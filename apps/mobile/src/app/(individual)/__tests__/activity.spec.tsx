@@ -28,6 +28,15 @@ jest.mock('@/features/individual/hooks/useMyAlerts', () => ({
   useMyAlerts: jest.fn(),
 }));
 
+jest.mock('@/shared/hooks/useMyRequests', () => ({
+  useMyRequests: jest.fn(() => ({
+    data: [],
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+}));
+
 // useTabBarHeight calls useSafeAreaInsets(), which throws without a
 // <SafeAreaProvider> ancestor -- stub it rather than wrap every render.
 jest.mock('react-native-safe-area-context', () => ({

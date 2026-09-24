@@ -21,6 +21,14 @@ describe('UsersProfileService', () => {
       },
       companyIdentityData: { update: jest.fn().mockResolvedValue({}) },
       officeIdentityData: { update: jest.fn().mockResolvedValue({}) },
+      companyProject: {
+        findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'project-1',
+          identityId: 'identity-1',
+        }),
+        delete: jest.fn().mockResolvedValue({}),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -72,6 +80,35 @@ describe('UsersProfileService', () => {
           data: expect.objectContaining({ name: '24/7 Real Estate Co.' }),
         }),
       );
+    });
+  });
+
+  describe('listMyProjects / deleteMyProject', () => {
+    it('scopes listMyProjects to the caller company identity', async () => {
+      await service.listMyProjects('user-1');
+      expect(prisma.companyProject.findMany).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        orderBy: { createdAt: 'desc' },
+      });
+    });
+
+    it('throws when deleting a project owned by a different identity', async () => {
+      prisma.companyProject.findUnique.mockResolvedValue({
+        id: 'project-1',
+        identityId: 'someone-elses-identity',
+      });
+
+      await expect(
+        service.deleteMyProject('user-1', 'project-1'),
+      ).rejects.toThrow();
+      expect(prisma.companyProject.delete).not.toHaveBeenCalled();
+    });
+
+    it('deletes a project owned by the caller', async () => {
+      await service.deleteMyProject('user-1', 'project-1');
+      expect(prisma.companyProject.delete).toHaveBeenCalledWith({
+        where: { id: 'project-1' },
+      });
     });
   });
 });

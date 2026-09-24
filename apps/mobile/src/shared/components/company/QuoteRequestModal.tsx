@@ -25,6 +25,7 @@ import {
   View,
 } from 'react-native';
 
+import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/MapPickerModal';
 import { showAlert } from '@/shared/utils/alert';
@@ -40,6 +41,11 @@ interface QuoteRequestModalProps {
   companyLogoUrl?: string;
   services?: ServiceItem[];
   onRequestSubmitted?: () => void;
+  /**
+   * The COMPANY/OFFICE identity this directed quote is sent to. Without it
+   * the request would be public — the profile modals always have one.
+   */
+  targetIdentityId?: string;
 }
 
 const DEFAULT_SERVICES: ServiceItem[] = [
@@ -71,6 +77,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       companyLogoUrl,
       services = DEFAULT_SERVICES,
       onRequestSubmitted,
+      targetIdentityId,
     },
     ref,
   ) => {
@@ -155,20 +162,41 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
         return;
       }
 
+      // The service dropdown's options come from the company's own services
+      // list; their titles are the human-readable category.
+      const category =
+        services.find((svc) => svc.id === serviceId)?.title || serviceId;
+
       try {
         setIsSubmitting(true);
-        // Simulate request submission
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await companyRequestsService.create({
+          title: category,
+          category,
+          priceRange:
+            priceFrom || priceTo ? `${priceFrom || 0} - ${priceTo || 0} د.ك` : undefined,
+          offerType: 'عرض مخصص',
+          location: addressLabel,
+          latitude: addressCoords?.lat,
+          longitude: addressCoords?.lng,
+          description,
+          images: attachments,
+          targetIdentityId,
+        });
         showAlert(
           'تم بنجاح',
           `تم إرسال طلب عرض السعر إلى ${companyName} بنجاح!`,
         );
+        resetForm();
         internalRef.current?.dismiss();
         if (onRequestSubmitted) {
           onRequestSubmitted();
         }
-      } catch {
-        showAlert('خطأ', 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً');
+      } catch (error: any) {
+        const backendMessage = error?.response?.data?.message;
+        const message = Array.isArray(backendMessage)
+          ? backendMessage.join('\n')
+          : backendMessage || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً';
+        showAlert('خطأ', message);
       } finally {
         setIsSubmitting(false);
       }
