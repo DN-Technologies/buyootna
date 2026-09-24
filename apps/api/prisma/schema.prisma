@@ -196,6 +196,9 @@ model Notification {
   body       String
   identityId String?
   isRead     Boolean          @default(false)
+  // What the notification points at, e.g. { propertyId } for ALERT_MATCH,
+  // so tapping it can open the right screen
+  data       Json?
   createdAt  DateTime         @default(now())
   user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 

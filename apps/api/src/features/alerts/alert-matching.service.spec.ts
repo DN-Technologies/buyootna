@@ -119,6 +119,7 @@ describe('AlertMatchingService', () => {
       type: 'ALERT_MATCH',
       title: 'تطابق جديد لتنبيهك',
       body: 'شقة للإيجار في السلام',
+      data: { propertyId: 'prop-1' },
     });
   });
 

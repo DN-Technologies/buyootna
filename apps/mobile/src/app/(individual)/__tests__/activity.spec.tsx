@@ -1,6 +1,6 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { router } from 'expo-router';
 import { fireEvent, render } from '@testing-library/react-native';
+import { router } from 'expo-router';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useMyActivity } from '@/shared/hooks/useMyActivity';

@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { fireEvent, render } from '@testing-library/react-native';
-import React, { createRef } from 'react';
+import { createRef } from 'react';
 
 import DeleteAllAlertsSheet from '../DeleteAllAlertsSheet';
 

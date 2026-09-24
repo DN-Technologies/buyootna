@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { NotificationType } from '@prisma/client';
+import { NotificationType, Prisma } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { UpdateNotificationPrefsDto } from './dto/update-notification-prefs.dto';
 
@@ -13,6 +13,7 @@ export class NotificationsService {
     title: string;
     body: string;
     identityId?: string;
+    data?: Prisma.InputJsonValue;
   }) {
     return this.prisma.notification.create({ data: params });
   }
@@ -52,6 +53,27 @@ export class NotificationsService {
     return { success: true };
   }
 
+  async markAsUnread(userId: string, id: string) {
+    await this.findOwned(userId, id);
+    return this.prisma.notification.update({
+      where: { id },
+      data: { isRead: false },
+    });
+  }
+
+  async remove(userId: string, id: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+    if (!notification || notification.userId !== userId) {
+      throw new NotFoundException('الإشعار غير موجود');
+    }
+    await this.prisma.notification.delete({
+      where: { id },
+    });
+    return { success: true };
+  }
+
   async getPreferences(userId: string) {
     let prefs = await this.prisma.notificationPreferences.findUnique({
       where: { userId },
@@ -70,5 +92,15 @@ export class NotificationsService {
       where: { userId },
       data: dto,
     });
+  }
+
+  private async findOwned(userId: string, id: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+    });
+    if (!notification || notification.userId !== userId) {
+      throw new NotFoundException('الإشعار غير موجود');
+    }
+    return notification;
   }
 }

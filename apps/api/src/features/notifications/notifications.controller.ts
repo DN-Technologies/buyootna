@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
@@ -57,6 +65,27 @@ export class NotificationsController {
     @Param('id') id: string,
   ) {
     return this.notificationsService.markAsRead(reqUser.userId, id);
+  }
+
+  @Patch(':id/unread')
+  @ApiOperation({ summary: 'Mark a single notification as unread' })
+  @ApiParam({ name: 'id', description: 'Notification ID' })
+  @ApiResponse({ status: 200, type: NotificationResponseDto })
+  @ApiCommonErrors()
+  async markAsUnread(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.notificationsService.markAsUnread(reqUser.userId, id);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a single notification' })
+  @ApiParam({ name: 'id', description: 'Notification ID' })
+  @ApiResponse({ status: 200, type: SuccessResponseDto })
+  @ApiCommonErrors()
+  async remove(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
+    return this.notificationsService.remove(reqUser.userId, id);
   }
 
   @Get('preferences')

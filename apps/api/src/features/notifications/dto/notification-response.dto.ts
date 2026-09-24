@@ -23,6 +23,14 @@ export class NotificationResponseDto {
   @ApiProperty()
   isRead: boolean;
 
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Link target for the notification, e.g. { propertyId } for ALERT_MATCH',
+    example: { propertyId: 'b1f2…' },
+  })
+  data: Record<string, unknown> | null;
+
   @ApiProperty()
   createdAt: Date;
 }
