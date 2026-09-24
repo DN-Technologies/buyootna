@@ -53,6 +53,20 @@ export class AlertResponseDto {
   @ApiProperty({ nullable: true })
   endDate: Date | null;
 
+  @ApiProperty({ description: 'Paused alerts are skipped by matching' })
+  isActive: boolean;
+
+  @ApiProperty({ nullable: true })
+  lastMatchedAt: Date | null;
+
+  @ApiProperty({ description: 'Listings matched since the alert was created' })
+  matchCount: number;
+
   @ApiProperty()
   createdAt: Date;
+}
+
+export class AlertsBulkUpdateResponseDto {
+  @ApiProperty({ description: 'Number of alerts updated' })
+  count: number;
 }

@@ -1,6 +1,7 @@
 import apiClient from '@/shared/api/api';
 import { AlertAuctionsState } from '@/shared/components/add-alert/AlertAuctionsTab';
 import { AlertPropertiesState } from '@/shared/components/add-alert/AlertPropertiesTab';
+import type { PropertyDto } from '@/types/feed';
 
 export interface AlertItem {
   id: string;
@@ -21,6 +22,10 @@ export interface AlertItem {
   startDate: string | null;
   endDate: string | null;
   createdAt: string;
+  // Optional: absent from APIs that predate alert matching
+  isActive?: boolean;
+  lastMatchedAt?: string | null;
+  matchCount?: number;
 }
 
 export interface CreateAlertPayload {
@@ -104,6 +109,28 @@ export const alertsService = {
 
   remove: async (id: string): Promise<any> => {
     const response = await apiClient.delete(`/alerts/${id}`);
+    return response.data;
+  },
+
+  setActive: async (id: string, isActive: boolean): Promise<AlertItem> => {
+    const response = await apiClient.patch<AlertItem>(`/alerts/${id}`, {
+      isActive,
+    });
+    return response.data;
+  },
+
+  setAllActive: async (isActive: boolean): Promise<{ count: number }> => {
+    const response = await apiClient.patch<{ count: number }>(
+      '/alerts/active',
+      { isActive },
+    );
+    return response.data;
+  },
+
+  getMatches: async (id: string): Promise<PropertyDto[]> => {
+    const response = await apiClient.get<PropertyDto[]>(
+      `/alerts/${id}/matches`,
+    );
     return response.data;
   },
 };

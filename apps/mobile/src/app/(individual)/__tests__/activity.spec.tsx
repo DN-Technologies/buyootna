@@ -1,5 +1,5 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useMyActivity } from '@/shared/hooks/useMyActivity';
@@ -124,6 +124,47 @@ describe('ActivityScreen', () => {
       expect(useScrollToTop).toHaveBeenCalledWith(
         expect.objectContaining({ current: null }),
       );
+    });
+
+    // Pull-to-refresh used to always refetch ads, even on the alerts tab.
+    it('pull-to-refresh refetches the list of the active tab', async () => {
+      const flashListModule = require('@shopify/flash-list');
+      const flashListSpy = jest.spyOn(flashListModule, 'FlashList');
+      const refetchAds = jest.fn();
+      const refetchAlerts = jest.fn();
+      mockUseMyActivity.mockReturnValue({
+        ...mockUseMyActivity(),
+        refetch: refetchAds,
+      });
+      mockUseMyAlerts.mockReturnValue({
+        ...DEFAULT_ALERTS_RESULT,
+        refetch: refetchAlerts,
+      });
+      const pullToRefresh = () => {
+        const props = flashListSpy.mock.calls.at(-1)![0] as {
+          refreshControl: { props: { onRefresh: () => void } };
+        };
+        props.refreshControl.props.onRefresh();
+      };
+
+      const { getByText } = await render(<ActivityScreen />);
+      // Focus refetches both on mount; only count the pull-to-refresh calls
+      refetchAds.mockClear();
+      refetchAlerts.mockClear();
+
+      pullToRefresh();
+      expect(refetchAds).toHaveBeenCalledTimes(1);
+      expect(refetchAlerts).not.toHaveBeenCalled();
+
+      await fireEvent.press(getByText('تنبيهاتي'));
+      refetchAds.mockClear();
+      refetchAlerts.mockClear();
+
+      pullToRefresh();
+      expect(refetchAlerts).toHaveBeenCalledTimes(1);
+      expect(refetchAds).not.toHaveBeenCalled();
+
+      flashListSpy.mockRestore();
     });
   });
 });

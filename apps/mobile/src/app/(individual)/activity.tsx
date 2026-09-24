@@ -9,19 +9,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import CompanyRequestListItem from '@/features/company/components/requests/CompanyRequestListItem';
 import ActivityEmptyState from '@/features/individual/components/activity/ActivityEmptyState';
 import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
+import ActivityGuestView from '@/features/individual/components/activity/ActivityGuestView';
 import ActivityHeader from '@/features/individual/components/activity/ActivityHeader';
 import ActivityListHeader from '@/features/individual/components/activity/ActivityListHeader';
 import ActivityListItem from '@/features/individual/components/activity/ActivityListItem';
+import ActivitySheets from '@/features/individual/components/activity/ActivitySheets';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
-import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
-import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
-import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
+import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
+import {
+  type ActivityTabId,
+  type AdSortBy,
+  TABS,
+} from '@/features/individual/components/activity/constants';
 import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
 import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
+import { useAdActions } from '@/features/individual/hooks/useAdActions';
+import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
+import { AlertItem } from '@/shared/api/alerts.service';
 import { alertsService } from '@/shared/api/alerts.service';
 import apiClient from '@/shared/api/api';
 import GuestEmptyState from '@/shared/components/GuestEmptyState';
@@ -32,16 +40,6 @@ import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useMyRequests } from '@/shared/hooks/useMyRequests';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { showAlert } from '@/shared/utils/alert';
-import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
-
-const AD_SORT_OPTIONS: RadioOption[] = [
-  { label: 'الأحدث أولاً', value: 'NEWEST' },
-  { label: 'السعر: من الأعلى إلى الأقل', value: 'PRICE_DESC' },
-  { label: 'السعر: من الأقل إلى الأعلى', value: 'PRICE_ASC' },
-];
-
-const TABS = ['اعلاناتي', 'عروضي', 'تنبيهاتي'];
 
 export default function ActivityScreen() {
   const { token } = useAuthStore();
@@ -49,31 +47,11 @@ export default function ActivityScreen() {
   const toastBottomOffset = tabBarHeight + 40;
 
   // Local UI state
-  const [activeTab, setActiveTab] = useState('اعلاناتي');
+  const [activeTab, setActiveTab] = useState<ActivityTabId>('ads');
   const [activeFilterId, setActiveFilterId] =
     useState<ActivityFilterType>('ALL');
-  const [sortBy, setSortBy] = useState<'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC'>(
-    'NEWEST',
-  );
-
+  const [sortBy, setSortBy] = useState<AdSortBy>('NEWEST');
   const sortSheetRef = useRef<BottomSheetModal>(null);
-  const draftSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedDraft, setSelectedDraft] = useState<ActivityItem | undefined>(
-    undefined,
-  );
-
-  const deleteSheetRef = useRef<BottomSheetModal>(null);
-  const [propertyToDelete, setPropertyToDelete] = useState<string | null>(
-    null,
-  );
-
-  const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
-  const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
-
-  const featureAdSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
-    null,
-  );
 
   const listRef = useRef<FlashListRef<any>>(null);
   useScrollToTop(listRef);
@@ -144,124 +122,22 @@ export default function ActivityScreen() {
     sortBy,
   );
 
-  // Handle redirect to login if unauthenticated
+  const adActions = useAdActions({ refetch, triggerToast, freeAdsRemaining });
+  const alertActions = useAlertActions({ alerts, refetchAlerts, triggerToast });
+
+  // Handle redirect to login if unauthenticated. Must stay below every hook.
   if (!token) {
-    return (
-      <SafeAreaView
-        className="flex-1 bg-white"
-        edges={['top', 'left', 'right']}
-      >
-        <ActivityHeader
-          onAddPress={() => router.push('/add-listing')}
-          onMenuPress={() => {
-            setPropertyToDelete(null);
-            deleteSheetRef.current?.present();
-          }}
-        />
-        <GuestEmptyState
-          icon="send"
-          title="ابدأ رحلتك العقارية"
-          description="سجل حسابك لإدارة الإعلانات والتنبيهات وعروض الأسعار الخاصة بك"
-        />
-      </SafeAreaView>
-    );
+    return <ActivityGuestView onMenuPress={adActions.handleMenuPress} />;
   }
 
-  const handleEditAd = (propertyId: string) => {
-    router.push({
-      pathname: '/add-listing',
-      params: { editId: propertyId },
-    });
-  };
-
-  const handleFeatureAd = (propertyId: string) => {
-    setSelectedPropertyId(propertyId);
-    featureAdSheetRef.current?.present();
-  };
-
-  const handleDeleteAd = (propertyId: string) => {
-    setPropertyToDelete(propertyId);
-    deleteSheetRef.current?.present();
-  };
-
-  const handleFeatureSuccess = () => {
-    triggerToast('تم تمييز إعلانك بنجاح', 'تم تفعيل التميز لهذا الإعلان');
-    refetch();
-  };
-
-  const handlePublishDraft = (property: ActivityItem) => {
-    setSelectedDraft(property);
-    draftSheetRef.current?.present();
-  };
-
-  const handleConfirmDelete = async (reason?: string) => {
-    if (!propertyToDelete) return;
-    try {
-      await apiClient.delete(`/properties/${propertyToDelete}`, {
-        data: reason ? { reason } : undefined,
-      });
-      triggerToast('تم حذف الاعلان بنجاح.');
-      refetch();
-    } catch (err: any) {
-      console.error('Error deleting property:', err);
-      const msg = err.response?.data?.message || 'فشل في حذف الإعلان';
-      showAlert('خطأ', msg);
-    } finally {
-      setPropertyToDelete(null);
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setPropertyToDelete(null);
-  };
-
-  const handleDeleteAlert = (alertId: string) => {
-    setAlertToDelete(alertId);
-    alertDeleteSheetRef.current?.present();
-  };
-
-  const handleConfirmDeleteAlert = async () => {
-    if (!alertToDelete) return;
-    try {
-      await alertsService.remove(alertToDelete);
-      triggerToast('تم حذف التنبيه بنجاح.');
-      refetchAlerts();
-    } catch (err) {
-      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف التنبيه'));
-    } finally {
-      setAlertToDelete(null);
-    }
-  };
-
-  const handleCancelDeleteAlert = () => {
-    setAlertToDelete(null);
-  };
-
-  const handlePublishDraftAction = async (propertyId: string) => {
-    try {
-      await apiClient.patch(`/properties/${propertyId}`, { isDraft: false });
-      triggerToast('تم نشر الإعلان بنجاح.');
-      refetch();
-    } catch (err: any) {
-      console.error('Error publishing draft:', err);
-      const msg = err.response?.data?.message || 'فشل في نشر الإعلان';
-      showAlert('خطأ', msg);
-    }
-  };
-
-  const handlePromoAction = () => {
-    const route = freeAdsRemaining > 0 ? '/add-listing' : '/plans';
-    router.push(route as any);
-  };
+  const isAdsTab = activeTab === 'ads';
+  const isAlertsTab = activeTab === 'alerts';
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ActivityHeader
         onAddPress={() => router.push('/add-listing')}
-        onMenuPress={() => {
-          setPropertyToDelete(null);
-          deleteSheetRef.current?.present();
-        }}
+        onMenuPress={adActions.handleMenuPress}
       />
 
       <ActivityTabsRow
@@ -278,9 +154,9 @@ export default function ActivityScreen() {
       <FlashList
         ref={listRef}
         data={
-          activeTab === 'اعلاناتي'
+          isAdsTab
             ? sortedAndFilteredData
-            : activeTab === 'تنبيهاتي'
+            : isAlertsTab
               ? alerts
               : activeTab === 'عروضي'
                 ? myRequests
@@ -288,7 +164,7 @@ export default function ActivityScreen() {
         }
         keyExtractor={(item) => item.id}
         getItemType={(item) =>
-          activeTab === 'تنبيهاتي'
+          isAlertsTab
             ? 'alert'
             : item.status === 'DRAFT'
               ? 'draft'
@@ -304,6 +180,8 @@ export default function ActivityScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
+            refreshing={isAlertsTab ? isLoadingAlerts : isLoading}
+            onRefresh={isAlertsTab ? refetchAlerts : refetch}
             refreshing={isLoading || isLoadingRequests}
             onRefresh={() => {
               refetch();
@@ -314,7 +192,7 @@ export default function ActivityScreen() {
           />
         }
         ListHeaderComponent={
-          activeTab === 'اعلاناتي' ? (
+          isAdsTab ? (
             <ActivityListHeader
               filterPills={filterPills}
               activeFilterId={activeFilterId}
@@ -322,12 +200,17 @@ export default function ActivityScreen() {
               hasSubscription={hasSubscription}
               subscription={subscription}
               freeAdsRemaining={freeAdsRemaining}
-              onPromoPress={handlePromoAction}
+              onPromoPress={adActions.handlePromoAction}
+            />
+          ) : isAlertsTab && alerts && alerts.length > 0 ? (
+            <AlertsListHeader
+              allPaused={alertActions.allAlertsPaused}
+              onToggleAll={alertActions.handleToggleAllAlerts}
             />
           ) : null
         }
         ListEmptyComponent={
-          activeTab === 'تنبيهاتي' ? (
+          isAlertsTab ? (
             <AlertsEmptyState isLoading={isLoadingAlerts} error={alertsError} />
           ) : activeTab === 'عروضي' ? (
             <GuestEmptyState
@@ -347,6 +230,14 @@ export default function ActivityScreen() {
           )
         }
         renderItem={({ item }) =>
+          isAlertsTab ? (
+            <AlertListItem
+              alert={item as AlertItem}
+              isActive={alertActions.isAlertActive((item as AlertItem).id)}
+              onToggleActive={alertActions.handleToggleAlertActive}
+              onDeletePress={alertActions.handleDeleteAlert}
+              onPress={(id) => router.push(`/alert-matches/${id}` as any)}
+            />
           activeTab === 'تنبيهاتي' ? (
             <AlertListItem alert={item as any} onDeletePress={handleDeleteAlert} />
           ) : activeTab === 'عروضي' ? (
@@ -355,60 +246,22 @@ export default function ActivityScreen() {
             <ActivityListItem
               property={item as ActivityItem}
               activeFilterId={activeFilterId}
-              onEditPress={handleEditAd}
-              onFeaturePress={handleFeatureAd}
-              onDeletePress={handleDeleteAd}
-              onPublishDraftPress={handlePublishDraft}
+              onEditPress={adActions.handleEditAd}
+              onFeaturePress={adActions.handleFeatureAd}
+              onDeletePress={adActions.handleDeleteAd}
+              onPublishDraftPress={adActions.handlePublishDraft}
               onArchivedPress={(id) => router.push(`/property/${id}` as any)}
             />
           )
         }
       />
 
-      {/* --- Property Preview Bottom Sheet --- */}
-      <DraftPreviewSheet
-        ref={draftSheetRef}
-        property={selectedDraft}
-        onDeletePress={() =>
-          selectedDraft && handleDeleteAd(selectedDraft.id)
-        }
-        onPublishPress={handlePublishDraftAction}
-        onEditPress={() => {}}
-      />
-
-      {/* --- Delete Confirmation Bottom Sheet --- */}
-      <DeleteConfirmationSheet
-        ref={deleteSheetRef}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-      />
-
-      {/* --- Alert Delete Confirmation Bottom Sheet --- */}
-      <DeleteConfirmationSheet
-        ref={alertDeleteSheetRef}
-        onConfirm={handleConfirmDeleteAlert}
-        onCancel={handleCancelDeleteAlert}
-        title="هل أنت متأكد من حذف التنبيه؟"
-        description="لن تصلك إشعارات بعد الآن بخصوص هذا التنبيه"
-        confirmLabel="حذف التنبيه"
-        skipReasonStep
-      />
-
-      {/* --- Feature Ad Bottom Sheet --- */}
-      <FeatureAdSheet
-        ref={featureAdSheetRef}
-        propertyId={selectedPropertyId || undefined}
-        onSuccess={handleFeatureSuccess}
-      />
-
-      {/* --- Sort Ads Bottom Sheet --- */}
-      <RadioSelectionSheet
-        ref={sortSheetRef}
-        title="الترتيب حسب"
-        options={AD_SORT_OPTIONS}
-        selectedValue={sortBy}
-        onSelect={(value) => setSortBy(value as typeof sortBy)}
-        snapPoints={['40%']}
+      <ActivitySheets
+        adActions={adActions}
+        alertActions={alertActions}
+        sortSheetRef={sortSheetRef}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
       />
 
       {/* --- Success Toast Notification --- */}

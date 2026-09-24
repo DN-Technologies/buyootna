@@ -1,124 +1,114 @@
+import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 
-import { AlertItem } from '@/shared/api/alerts.service';
+import AlertCardFooter from '@/features/individual/components/activity/alert-card/AlertCardFooter';
+import AlertChips from '@/features/individual/components/activity/alert-card/AlertChips';
+import AlertToggle from '@/features/individual/components/activity/alert-card/AlertToggle';
+import AlertTypeIcon from '@/features/individual/components/activity/alert-card/AlertTypeIcon';
+import CalendarIcon from '@/features/individual/components/activity/alert-card/CalendarIcon';
 import {
-  CATEGORY_OPTIONS,
-  OPERATION_OPTIONS,
-} from '@/shared/components/add-alert/AlertPropertiesTab';
-import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
+  getAlertChips,
+  getAlertTitle,
+  getAuctionDateRange,
+} from '@/features/individual/utils/alertCard';
+import { AlertItem } from '@/shared/api/alerts.service';
 
-interface AlertListItemProps {
+export interface AlertListItemProps {
   alert: AlertItem;
+  isActive?: boolean;
+  onToggleActive?: (id: string, nextActive: boolean) => void;
   onDeletePress: (id: string) => void;
-}
-
-const TrashIcon = ({
-  color = '#9C1E28',
-  size = 18,
-}: {
-  color?: string;
-  size?: number;
-}) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path
-      d="M19 7L18.1327 19.1422C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1422L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20"
-      stroke={color}
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-function findLabel(list: { id: string; label: string }[], id: string | null) {
-  if (!id) return undefined;
-  return list.find((item) => item.id === id)?.label;
-}
-
-function formatDate(dateStr: string) {
-  try {
-    return new Date(dateStr).toLocaleDateString('ar-KW', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  } catch {
-    return dateStr;
-  }
+  onPress?: (id: string) => void;
 }
 
 export default function AlertListItem({
   alert,
+  isActive: controlledIsActive,
+  onToggleActive,
   onDeletePress,
+  onPress,
 }: AlertListItemProps) {
-  const governorateLabel = findLabel(GOVERNORATES, alert.governorateId);
-  const areaLabel = findLabel(AREAS[alert.governorateId] ?? [], alert.areaId);
-  const categoryLabel = findLabel(CATEGORY_OPTIONS, alert.categoryId);
-  const operationLabel = OPERATION_OPTIONS.find(
-    (o) => o.id === alert.operationType?.toLowerCase(),
-  )?.label;
+  const [internalActive, setInternalActive] = useState(true);
+  const isActive = controlledIsActive !== undefined ? controlledIsActive : internalActive;
 
-  const locationLabel = [governorateLabel, areaLabel]
-    .filter(Boolean)
-    .join(' - ');
+  const handleToggle = () => {
+    const nextState = !isActive;
+    if (controlledIsActive === undefined) {
+      setInternalActive(nextState);
+    }
+    onToggleActive?.(alert.id, nextState);
+  };
+
+  const isAuction = alert.type === 'AUCTIONS';
+  const { title, subtitle } = getAlertTitle(alert);
+  const chips = getAlertChips(alert);
+  const auctionDateRange = getAuctionDateRange(alert);
 
   return (
-    <View className="z-10 mb-4 rounded-md border border-[#ECECEC] bg-white p-4 shadow-sm shadow-gray-200/30">
-      <View className="mb-2 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-2">
-          <View
-            className={`rounded-lg px-3 py-1 ${
-              alert.type === 'PROPERTIES' ? 'bg-[#EAF1F8]' : 'bg-[#FDF2E5]'
-            }`}
-          >
-            <Text
-              className={`font-cairo-bold text-[11px] ${
-                alert.type === 'PROPERTIES'
-                  ? 'text-[#15304D]'
-                  : 'text-[#B5690F]'
-              }`}
-            >
-              {alert.type === 'PROPERTIES' ? 'عقارات' : 'مزادات'}
-            </Text>
-          </View>
-          {operationLabel && (
-            <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-              {operationLabel}
-            </Text>
-          )}
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={onPress ? () => onPress(alert.id) : undefined}
+      onLongPress={() => onDeletePress(alert.id)}
+      className="mb-3 rounded-xl border border-[#D7D7D7] bg-white pt-4 shadow-none"
+    >
+      {/* Top Row: [Toggle] (Left) <---> [Details] (Center) <---> [Icon/Badge] (Right) */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          gap: 12,
+        }}
+      >
+        {/* Right Element: Icon / Ministry Emblem */}
+        <View style={{ flexShrink: 0 }}>
+          <AlertTypeIcon alert={alert} />
         </View>
 
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => onDeletePress(alert.id)}
-          className="p-1"
-        >
-          <TrashIcon size={18} color="#9C1E28" />
-        </TouchableOpacity>
+        {/* Center Element: Content & Badges (Aligned Right for Arabic) */}
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <Text
+            className={`font-cairo-semibold text-sm ${
+              isAuction ? 'text-[#111111]' : 'text-[#15304D]'
+            }`}
+            style={{ writingDirection: "rtl" }}
+          >
+            {title}
+          </Text>
+
+          {isAuction && subtitle ? (
+            <Text
+              className="mt-1 font-cairo text-xs text-[#111111]"
+              style={{ writingDirection: "rtl" }}
+            >
+              {subtitle}
+            </Text>
+          ) : null}
+
+          {isAuction && auctionDateRange ? (
+            <View className="mt-2 flex-row items-center gap-1.5">
+              <Text className="font-cairo text-xs text-[#111111]">
+                {auctionDateRange}
+              </Text>
+              <CalendarIcon />
+            </View>
+          ) : null}
+
+          {/* Chips for Properties & Exchange */}
+          {!isAuction ? <AlertChips chips={chips} /> : null}
+        </View>
+
+        {/* Left Element: Toggle Switch & Options */}
+        <View style={{ flexShrink: 0, alignItems: 'flex-start', gap: 6 }}>
+          <AlertToggle isOn={isActive} onToggle={handleToggle} />
+        </View>
       </View>
 
-      {(locationLabel || categoryLabel) && (
-        <Text className="mb-1 font-cairo-semibold text-sm text-[#111111]">
-          {[categoryLabel, locationLabel].filter(Boolean).join(' - ')}
-        </Text>
-      )}
-
-      {alert.type === 'AUCTIONS' && (alert.startDate || alert.endDate) && (
-        <Text className="font-cairo text-xs text-[#6B6A6A]">
-          {alert.startDate ? formatDate(alert.startDate) : ''}
-          {alert.startDate && alert.endDate ? ' - ' : ''}
-          {alert.endDate ? formatDate(alert.endDate) : ''}
-        </Text>
-      )}
-
-      {alert.type === 'PROPERTIES' && (alert.price || alert.rentValue) && (
-        <Text className="font-cairo text-xs text-[#6B6A6A]">
-          {alert.price
-            ? `السعر: ${alert.price.toLocaleString()} د.ك`
-            : `الإيجار: ${alert.rentValue?.toLocaleString()} د.ك`}
-        </Text>
-      )}
-    </View>
+      <AlertCardFooter
+        lastMatchedAt={alert.lastMatchedAt}
+        isActive={isActive}
+      />
+    </TouchableOpacity>
   );
 }

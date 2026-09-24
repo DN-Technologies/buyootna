@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ListingStatus } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { AlertMatchingService } from '../../alerts/alert-matching.service';
 import { CreatePropertyDto } from '../dto/create-property.dto';
 import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PropertiesQuotaService } from './properties-quota.service';
@@ -15,7 +16,15 @@ export class PropertiesMutationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly quotaService: PropertiesQuotaService,
+    private readonly alertMatching: AlertMatchingService,
   ) {}
+
+  // A listing just went live: notify matching alerts. Runs after the
+  // transaction has committed and is not awaited -- it never throws, and a
+  // slow or failed match must not hold up or fail the publish.
+  private notifyAlertMatches(propertyId: string) {
+    void this.alertMatching.notifyMatchesForProperty(propertyId);
+  }
 
   // --- CREATE ---
   async create(identityId: string, dto: CreatePropertyDto) {
@@ -23,7 +32,7 @@ export class PropertiesMutationsService {
     const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
     if (!isDraft) {
-      return await this.prisma.$transaction(async (tx) => {
+      const created = await this.prisma.$transaction(async (tx) => {
         const imagesCount = propertyData.images?.length || 0;
         const quota = await this.quotaService.resolvePublishQuota(
           identityId,
@@ -71,6 +80,8 @@ export class PropertiesMutationsService {
           property: newProperty,
         };
       });
+      this.notifyAlertMatches(created.property.id);
+      return created;
     } else {
       let referenceNumber = 0;
       let isUnique = false;
@@ -109,7 +120,7 @@ export class PropertiesMutationsService {
       existingProperty.status === 'DRAFT' && isDraft === false;
 
     if (isPublishingDraft) {
-      return await this.prisma.$transaction(async (tx) => {
+      const published = await this.prisma.$transaction(async (tx) => {
         const imagesToCheck = updateData.images || existingProperty.images;
         const imagesCount = imagesToCheck?.length || 0;
 
@@ -148,6 +159,8 @@ export class PropertiesMutationsService {
           property: publishedProperty,
         };
       });
+      this.notifyAlertMatches(published.property.id);
+      return published;
     }
 
     let newStatus = existingProperty.status;
@@ -162,6 +175,13 @@ export class PropertiesMutationsService {
         status: newStatus,
       },
     });
+
+    if (
+      newStatus === ListingStatus.ACTIVE &&
+      existingProperty.status !== ListingStatus.ACTIVE
+    ) {
+      this.notifyAlertMatches(propertyId);
+    }
 
     return {
       message: 'تم تحديث الإعلان بنجاح',
@@ -208,7 +228,7 @@ export class PropertiesMutationsService {
     const property = await this.verifyOwnership(identityId, propertyId);
     const imagesCount = property.images?.length || 0;
 
-    return await this.prisma.$transaction(async (tx) => {
+    const renewed = await this.prisma.$transaction(async (tx) => {
       const quota = await this.quotaService.resolvePublishQuota(
         identityId,
         planSlotId,
@@ -243,6 +263,8 @@ export class PropertiesMutationsService {
         property: updated,
       };
     });
+    this.notifyAlertMatches(propertyId);
+    return renewed;
   }
 
   // --- HELPER: Verify Ownership ---

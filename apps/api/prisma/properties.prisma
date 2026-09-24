@@ -43,6 +43,7 @@ model Property {
   governorate        Governorate?     @relation(fields: [governorateId], references: [id])
   favorites          Favorite[]
   conversations      Conversation[]
+  alertMatches       AlertMatch[]
   reports            Report[]
 
   // New identity-based relation
