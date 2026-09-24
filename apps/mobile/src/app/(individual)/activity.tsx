@@ -158,8 +158,8 @@ export default function ActivityScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refetch}
+            refreshing={isAlertsTab ? isLoadingAlerts : isLoading}
+            onRefresh={isAlertsTab ? refetchAlerts : refetch}
             tintColor="#15304D"
           />
         }
