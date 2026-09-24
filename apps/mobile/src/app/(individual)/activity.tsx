@@ -18,7 +18,9 @@ import ActivityTabsRow from '@/features/individual/components/activity/ActivityT
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
 import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
+import AlertsOptionsMenu from '@/features/individual/components/activity/AlertsOptionsMenu';
 import {
+  ADD_ROUTE_BY_TAB,
   type ActivityTabId,
   type AdSortBy,
   TABS,
@@ -116,8 +118,12 @@ export default function ActivityScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ActivityHeader
-        onAddPress={() => router.push('/add-listing')}
-        onMenuPress={adActions.handleMenuPress}
+        onAddPress={() => router.push(ADD_ROUTE_BY_TAB[activeTab] as any)}
+        onMenuPress={
+          isAlertsTab
+            ? alertActions.handleOpenOptionsMenu
+            : adActions.handleMenuPress
+        }
       />
 
       <ActivityTabsRow
@@ -183,7 +189,11 @@ export default function ActivityScreen() {
         }
         ListEmptyComponent={
           isAlertsTab ? (
-            <AlertsEmptyState isLoading={isLoadingAlerts} error={alertsError} />
+            <AlertsEmptyState
+              isLoading={isLoadingAlerts}
+              error={alertsError}
+              onAddAlertPress={() => router.push('/add-alert' as any)}
+            />
           ) : (
             <ActivityEmptyState
               isLoading={isLoading}
@@ -221,6 +231,12 @@ export default function ActivityScreen() {
         sortSheetRef={sortSheetRef}
         sortBy={sortBy}
         onSortChange={setSortBy}
+      />
+
+      <AlertsOptionsMenu
+        visible={alertActions.isOptionsMenuVisible}
+        onClose={alertActions.handleCloseOptionsMenu}
+        onDeleteAllPress={alertActions.handlePromptDeleteAllAlerts}
       />
 
       {/* --- Success Toast Notification --- */}

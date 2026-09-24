@@ -15,6 +15,9 @@ export default function ActivityHeader({
       {/* Plus Button (Right side in RTL) */}
       <TouchableOpacity
         onPress={onAddPress}
+        testID="activity-add-btn"
+        accessibilityRole="button"
+        accessibilityLabel="إضافة"
         className="h-10 w-10 items-center justify-center rounded-full"
         activeOpacity={0.7}
       >

@@ -19,6 +19,8 @@ export interface AlertListItemProps {
   onToggleActive?: (id: string, nextActive: boolean) => void;
   onDeletePress: (id: string) => void;
   onPress?: (id: string) => void;
+  showCancelAction?: boolean;
+  onCancelPress?: (id: string) => void;
 }
 
 export default function AlertListItem({
@@ -27,6 +29,8 @@ export default function AlertListItem({
   onToggleActive,
   onDeletePress,
   onPress,
+  showCancelAction,
+  onCancelPress,
 }: AlertListItemProps) {
   const [internalActive, setInternalActive] = useState(true);
   const isActive = controlledIsActive !== undefined ? controlledIsActive : internalActive;
@@ -108,6 +112,9 @@ export default function AlertListItem({
       <AlertCardFooter
         lastMatchedAt={alert.lastMatchedAt}
         isActive={isActive}
+        createdAt={alert.createdAt}
+        showCancelAction={showCancelAction}
+        onCancelPress={onCancelPress ? () => onCancelPress(alert.id) : undefined}
       />
     </TouchableOpacity>
   );

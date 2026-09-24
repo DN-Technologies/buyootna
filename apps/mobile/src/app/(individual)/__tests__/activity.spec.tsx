@@ -1,4 +1,5 @@
 import { useScrollToTop } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { fireEvent, render } from '@testing-library/react-native';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
@@ -156,6 +157,19 @@ describe('ActivityScreen', () => {
       expect(refetchAds).not.toHaveBeenCalled();
 
       flashListSpy.mockRestore();
+    });
+
+    it.each([
+      ['اعلاناتي', '/add-listing'],
+      ['عروضي', '/request-quote'],
+      ['تنبيهاتي', '/add-alert'],
+    ])('the header + on %s opens %s', async (tab, route) => {
+      const { getByText, getByTestId } = await render(<ActivityScreen />);
+
+      await fireEvent.press(getByText(tab));
+      await fireEvent.press(getByTestId('activity-add-btn'));
+
+      expect(router.push).toHaveBeenLastCalledWith(route);
     });
   });
 });

@@ -18,18 +18,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SortIcon } from '@/assets/icons';
 import { HomeSearchIcon } from '@/assets/icons/home/header';
-import CategoryFilterSheet, {
-  COMPANY_CATEGORY_OPTIONS,
-} from '@/shared/components/CategoryFilterSheet';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { feedService } from '@/features/individual/services/feed.service';
 import { chatService } from '@/shared/api/chat.service';
 import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import CategoryFilterSheet, {
+  COMPANY_CATEGORY_OPTIONS,
+} from '@/shared/components/CategoryFilterSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { showAlert } from '@/shared/utils/alert';
 
 export default function CompaniesScreen() {

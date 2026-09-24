@@ -13,9 +13,11 @@ describe('UsersProfileService', () => {
     prisma = {
       user: { update: jest.fn().mockResolvedValue({}) },
       identity: {
-        findFirst: jest
-          .fn()
-          .mockResolvedValue({ id: 'identity-1', companyData: {}, officeData: {} }),
+        findFirst: jest.fn().mockResolvedValue({
+          id: 'identity-1',
+          companyData: {},
+          officeData: {},
+        }),
       },
       companyIdentityData: { update: jest.fn().mockResolvedValue({}) },
       officeIdentityData: { update: jest.fn().mockResolvedValue({}) },
@@ -63,7 +65,7 @@ describe('UsersProfileService', () => {
     it('does not restrict a company name to letters-only', async () => {
       await service.updateProfile('user-1', Role.COMPANY, {
         name: '24/7 Real Estate Co.',
-      } as any);
+      });
 
       expect(prisma.companyIdentityData.update).toHaveBeenCalledWith(
         expect.objectContaining({

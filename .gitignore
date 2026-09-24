@@ -25,6 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 .expo/
 .turbo/
+.opencode/
 
 # postgres backups (server-generated, not source)
 backups/
