@@ -1,4 +1,3 @@
-import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { EdgeInsets } from 'react-native-safe-area-context';
 

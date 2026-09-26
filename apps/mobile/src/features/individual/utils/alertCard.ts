@@ -8,6 +8,7 @@ import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 export const AMENITY_LABELS: Record<string, string> = {
   pool: 'حمام سباحة',
   garage: 'جراج',
+  parking: 'مواقف سيارات',
   elevator: 'مصعد',
   garden: 'حديقة',
   maid_room: 'غرفة خادمة',

@@ -16,6 +16,7 @@ import ActivityListItem from '@/features/individual/components/activity/Activity
 import ActivitySheets from '@/features/individual/components/activity/ActivitySheets';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
+import AlertDeleteToast from '@/features/individual/components/activity/AlertDeleteToast';
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
 import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
@@ -166,7 +167,7 @@ export default function ActivityScreen() {
           isAdsTab
             ? sortedAndFilteredData
             : isAlertsTab
-              ? alerts
+              ? alertActions.displayedAlerts
               : isOffersTab
                 ? myRequests
                 : []
@@ -207,7 +208,7 @@ export default function ActivityScreen() {
               freeAdsRemaining={freeAdsRemaining}
               onPromoPress={adActions.handlePromoAction}
             />
-          ) : isAlertsTab && alerts && alerts.length > 0 ? (
+          ) : isAlertsTab && alertActions.displayedAlerts && alertActions.displayedAlerts.length > 0 ? (
             <AlertsListHeader
               allPaused={alertActions.allAlertsPaused}
               onToggleAll={alertActions.handleToggleAllAlerts}
@@ -245,7 +246,7 @@ export default function ActivityScreen() {
               isActive={alertActions.isAlertActive((item as AlertItem).id)}
               onToggleActive={alertActions.handleToggleAlertActive}
               onDeletePress={alertActions.handleDeleteAlert}
-              onPress={(id) => router.push(`/alert-matches/${id}` as any)}
+              onPress={() => alertActions.handleOpenAlertDetails(item as AlertItem)}
             />
           ) : isOffersTab ? (
             <CompanyRequestListItem request={item as any} />
@@ -285,6 +286,13 @@ export default function ActivityScreen() {
         bottomOffset={toastBottomOffset}
         fadeAnim={fadeAnim}
         slideAnim={slideAnim}
+      />
+
+      {/* --- Delete Alert Toast Notification --- */}
+      <AlertDeleteToast
+        visible={alertActions.isDeleteToastVisible}
+        onUndo={alertActions.handleUndoDeleteAlert}
+        onDismiss={alertActions.handleDismissDeleteToast}
       />
     </SafeAreaView>
   );

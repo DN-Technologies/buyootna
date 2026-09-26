@@ -1,5 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { AlertItem, alertsService } from '@/shared/api/alerts.service';
 import { showAlert } from '@/shared/utils/alert';
@@ -12,7 +12,7 @@ interface UseAlertActionsParams {
 }
 
 // State, sheet ref and handlers for the "تنبيهاتي" tab: per-alert and
-// pause-all toggles (persisted on the server), and delete confirmation.
+// pause-all toggles (persisted on the server), delete confirmation, and details sheet.
 export function useAlertActions({
   alerts,
   refetchAlerts,
@@ -20,8 +20,19 @@ export function useAlertActions({
 }: UseAlertActionsParams) {
   const alertDeleteSheetRef = useRef<BottomSheetModal>(null);
   const deleteAllAlertsSheetRef = useRef<BottomSheetModal>(null);
+  const alertDetailsSheetRef = useRef<BottomSheetModal>(null);
+
+  const [selectedAlertForDetails, setSelectedAlertForDetails] =
+    useState<AlertItem | null>(null);
   const [alertToDelete, setAlertToDelete] = useState<string | null>(null);
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
+
+  // Undo delete toast state
+  const [isDeleteToastVisible, setIsDeleteToastVisible] = useState(false);
+  const [pendingDeleteAlert, setPendingDeleteAlert] = useState<AlertItem | null>(
+    null,
+  );
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Optimistic isActive values shown until the refetched list catches up
   const [activeOverrides, setActiveOverrides] = useState<
@@ -33,8 +44,14 @@ export function useAlertActions({
     return alerts?.find((a) => a.id === alertId)?.isActive ?? true;
   };
 
+  const displayedAlerts = useMemo(() => {
+    if (!alerts) return [];
+    if (!pendingDeleteAlert) return alerts;
+    return alerts.filter((a) => a.id !== pendingDeleteAlert.id);
+  }, [alerts, pendingDeleteAlert]);
+
   const allAlertsPaused = Boolean(
-    alerts && alerts.length > 0 && alerts.every((a) => !isAlertActive(a.id)),
+    displayedAlerts.length > 0 && displayedAlerts.every((a) => !isAlertActive(a.id)),
   );
 
   const clearOverrides = (ids: string[]) =>
@@ -45,7 +62,6 @@ export function useAlertActions({
     });
 
   // Show the new state immediately, persist it, then resync from the server.
-  // On failure the override is dropped, so the toggle snaps back.
   const persistActive = async (
     ids: string[],
     isActive: boolean,
@@ -73,13 +89,73 @@ export function useAlertActions({
   };
 
   const handleToggleAllAlerts = () => {
-    if (!alerts || alerts.length === 0) return;
+    if (!displayedAlerts || displayedAlerts.length === 0) return;
     const nextActive = allAlertsPaused;
     return persistActive(
-      alerts.map((a) => a.id),
+      displayedAlerts.map((a) => a.id),
       nextActive,
       () => alertsService.setAllActive(nextActive),
     );
+  };
+
+  // Open & Close Details Bottom Sheet
+  const handleOpenAlertDetails = (alert: AlertItem) => {
+    setSelectedAlertForDetails(alert);
+    alertDetailsSheetRef.current?.present();
+  };
+
+  const handleCloseAlertDetails = () => {
+    alertDetailsSheetRef.current?.dismiss();
+    setSelectedAlertForDetails(null);
+  };
+
+  // Actual backend delete execution
+  const commitDeleteAlert = async (alertId: string) => {
+    try {
+      await alertsService.remove(alertId);
+      refetchAlerts();
+    } catch (err) {
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف التنبيه'));
+    }
+  };
+
+  // Delete with Undo Toast flow (matching node 1864:120272)
+  const handleDeleteWithUndo = (alert: AlertItem) => {
+    if (pendingDeleteAlert && deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+      commitDeleteAlert(pendingDeleteAlert.id);
+    }
+
+    setPendingDeleteAlert(alert);
+    setIsDeleteToastVisible(true);
+
+    deleteTimerRef.current = setTimeout(() => {
+      commitDeleteAlert(alert.id);
+      setPendingDeleteAlert(null);
+      setIsDeleteToastVisible(false);
+      deleteTimerRef.current = null;
+    }, 4000);
+  };
+
+  const handleUndoDeleteAlert = () => {
+    if (deleteTimerRef.current) {
+      clearTimeout(deleteTimerRef.current);
+      deleteTimerRef.current = null;
+    }
+    setPendingDeleteAlert(null);
+    setIsDeleteToastVisible(false);
+  };
+
+  const handleDismissDeleteToast = () => {
+    if (pendingDeleteAlert) {
+      if (deleteTimerRef.current) {
+        clearTimeout(deleteTimerRef.current);
+        deleteTimerRef.current = null;
+      }
+      commitDeleteAlert(pendingDeleteAlert.id);
+      setPendingDeleteAlert(null);
+    }
+    setIsDeleteToastVisible(false);
   };
 
   const handleDeleteAlert = (alertId: string) => {
@@ -89,19 +165,22 @@ export function useAlertActions({
 
   const handleConfirmDeleteAlert = async () => {
     if (!alertToDelete) return;
-    try {
-      await alertsService.remove(alertToDelete);
-      triggerToast('تم حذف التنبيه بنجاح.');
-      refetchAlerts();
-    } catch (err) {
-      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف التنبيه'));
-    } finally {
-      setAlertToDelete(null);
+    const target = alerts?.find((a) => a.id === alertToDelete);
+    setAlertToDelete(null);
+    if (target) {
+      handleDeleteWithUndo(target);
+    } else {
+      await commitDeleteAlert(alertToDelete);
     }
   };
 
   const handleCancelDeleteAlert = () => {
     setAlertToDelete(null);
+  };
+
+  const handleDeleteFromDetails = (alert: AlertItem) => {
+    handleCloseAlertDetails();
+    handleDeleteWithUndo(alert);
   };
 
   const handleOpenOptionsMenu = () => {
@@ -118,9 +197,9 @@ export function useAlertActions({
   };
 
   const handleConfirmDeleteAllAlerts = async () => {
-    if (!alerts || alerts.length === 0) return;
+    if (!displayedAlerts || displayedAlerts.length === 0) return;
     try {
-      await Promise.all(alerts.map((a) => alertsService.remove(a.id)));
+      await Promise.all(displayedAlerts.map((a) => alertsService.remove(a.id)));
       triggerToast('تم حذف جميع التنبيهات بنجاح');
       refetchAlerts();
     } catch (err) {
@@ -135,9 +214,15 @@ export function useAlertActions({
   return {
     alertDeleteSheetRef,
     deleteAllAlertsSheetRef,
+    alertDetailsSheetRef,
+    selectedAlertForDetails,
     isOptionsMenuVisible,
     allAlertsPaused,
+    displayedAlerts,
     isAlertActive,
+    handleOpenAlertDetails,
+    handleCloseAlertDetails,
+    handleDeleteFromDetails,
     handleDeleteAlert,
     handleConfirmDeleteAlert,
     handleCancelDeleteAlert,
@@ -148,5 +233,9 @@ export function useAlertActions({
     handlePromptDeleteAllAlerts,
     handleConfirmDeleteAllAlerts,
     handleCancelDeleteAllAlerts,
+    // Undo delete toast
+    isDeleteToastVisible,
+    handleUndoDeleteAlert,
+    handleDismissDeleteToast,
   };
 }

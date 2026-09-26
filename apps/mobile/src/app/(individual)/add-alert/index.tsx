@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,6 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
+import {
+  alertToAuctionsState,
+  alertToPropertiesState,
+} from '@/features/individual/utils/alertForm';
 import {
   alertsService,
   mapAuctionsStateToPayload,
@@ -46,6 +51,33 @@ export default function AddAlertScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  // Edit mode: /add-alert?editId=<id> fills the form from the saved alert
+  const { editId } = useLocalSearchParams<{ editId?: string }>();
+  const isEdit = !!editId;
+  const { data: myAlerts, isLoading: isLoadingAlerts } = useMyAlerts();
+  const editingAlert = isEdit
+    ? myAlerts.find((a) => a.id === editId)
+    : undefined;
+  const hydratedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isEdit || hydratedRef.current || isLoadingAlerts) return;
+    if (!editingAlert) {
+      hydratedRef.current = true;
+      showAlert('خطأ', 'التنبيه غير موجود أو تم حذفه');
+      router.back();
+      return;
+    }
+    hydratedRef.current = true;
+    if (editingAlert.type === 'AUCTIONS') {
+      setActiveTab('auctions');
+      setAuctionsState(alertToAuctionsState(editingAlert));
+    } else {
+      setActiveTab('properties');
+      setPropertiesState(alertToPropertiesState(editingAlert));
+    }
+  }, [isEdit, editingAlert, isLoadingAlerts, router]);
+
   const updatePropertiesField = <K extends keyof AlertPropertiesState>(
     field: K,
     value: AlertPropertiesState[K],
@@ -77,10 +109,22 @@ export default function AddAlertScreen() {
         activeTab === 'properties'
           ? mapPropertiesStateToPayload(propertiesState)
           : mapAuctionsStateToPayload(auctionsState);
-      await alertsService.create(payload);
-      setShowSuccess(true);
+      if (isEdit) {
+        await alertsService.update(editId!, payload);
+        // The activity screen refetches alerts on focus
+        router.back();
+      } else {
+        await alertsService.create(payload);
+        setShowSuccess(true);
+      }
     } catch (err) {
-      showAlert('خطأ', getApiErrorMessage(err, 'فشل إنشاء التنبيه'));
+      showAlert(
+        'خطأ',
+        getApiErrorMessage(
+          err,
+          isEdit ? 'فشل تعديل التنبيه' : 'فشل إنشاء التنبيه',
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -102,7 +146,7 @@ export default function AddAlertScreen() {
             <Feather name="chevron-right" size={24} color="#111111" />
           </TouchableOpacity>
           <Text className="font-cairo-semibold text-lg text-[#111111]">
-            إضافة تنبيه
+            {isEdit ? 'تعديل التنبيه' : 'إضافة تنبيه'}
           </Text>
           <View className="w-8" />
         </View>
@@ -190,7 +234,7 @@ export default function AddAlertScreen() {
             className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
           >
             <Text className="font-cairo-bold text-base text-white">
-              إنشاء تنبيه
+              {isEdit ? 'حفظ التعديلات' : 'إنشاء تنبيه'}
             </Text>
           </TouchableOpacity>
         </View>
