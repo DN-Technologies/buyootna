@@ -19,6 +19,9 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          # The build + backup + migrate + restart script takes ~10 min and
+          # the action's default 10m timeout killed a deploy mid-build.
+          command_timeout: 30m
           script: |
             set -e
             cd ${{ secrets.TARGET_DIR }}
