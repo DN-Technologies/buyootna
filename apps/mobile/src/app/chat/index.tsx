@@ -117,9 +117,8 @@ export default function ChatsInboxScreen() {
               محادثاتي
             </Text>
   
-            <TouchableOpacity className="w-10 items-start">
-              <Feather name="plus" size={24} color="#111111" />
-            </TouchableOpacity>
+            {/* Balances the back button so the title stays centred */}
+            <View className="w-10" />
           </View>
   
           {/* --- 2. Interactive Search Bar --- */}
