@@ -5,20 +5,20 @@ import { Keyboard, Modal, StyleSheet, View } from 'react-native';
 
 import { showAlert } from '@/shared/utils/alert';
 
-import { LocationConfirmCard } from './map-picker/LocationConfirmCard';
-import { MapCenterPin } from './map-picker/MapCenterPin';
-import { MapControls } from './map-picker/MapControls';
-import { MapSearchHeader } from './map-picker/MapSearchHeader';
+import { LocationConfirmCard } from './picker/LocationConfirmCard';
+import { MapCenterPin } from './picker/MapCenterPin';
+import { MapControls } from './picker/MapControls';
+import { MapSearchHeader } from './picker/MapSearchHeader';
 import {
   DEFAULT_CENTER,
   DEFAULT_ZOOM,
   MapPickerModalProps,
   SearchResultItem,
-} from './map-picker/types';
-import { useLocationSearch } from './map-picker/useLocationSearch';
-import { useMapGeocoding } from './map-picker/useMapGeocoding';
+} from './picker/types';
+import { useLocationSearch } from './picker/useLocationSearch';
+import { useMapGeocoding } from './picker/useMapGeocoding';
 
-export type { MapPickerModalProps } from './map-picker/types';
+export type { MapPickerModalProps } from './picker/types';
 
 export default function MapPickerModal({
   visible,

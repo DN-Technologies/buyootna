@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 
 import apiClient from '@/shared/api/api';
-import Avatar from '@/shared/components/Avatar';
+import Avatar from '@/shared/components/ui/Avatar';
 import { showAlert } from '@/shared/utils/alert';
 
 interface AvatarPickerProps {

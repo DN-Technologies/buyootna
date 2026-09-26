@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import AppLogo from '@/shared/components/AppLogo';
+import AppLogo from '@/shared/components/ui/AppLogo';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

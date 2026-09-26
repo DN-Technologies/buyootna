@@ -5,7 +5,7 @@ import { Control, Controller } from 'react-hook-form';
 import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface StepProps {
   control: Control<CompanySignupFormValues>;

@@ -9,7 +9,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { FeatureIcon } from '@/assets/icons/activity';
 import { CloseIcon } from '@/assets/icons/home/property';
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 interface FeatureAdSheetProps {
   propertyId?: string;

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { AdLevel } from '@/shared/store/useListingStore';
 
 interface AdLevelSelectorProps {

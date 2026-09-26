@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { z } from 'zod';
 
 import apiClient from '@/shared/api/api';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 

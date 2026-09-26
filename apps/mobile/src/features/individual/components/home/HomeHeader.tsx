@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { MapIcon, NotificationIcon } from '@/assets/icons/home/header/index';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';

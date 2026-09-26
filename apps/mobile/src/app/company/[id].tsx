@@ -14,8 +14,8 @@ import CompanyServicesTab from '@/shared/components/company/CompanyServicesTab';
 import CompanyTabsSwitcher, {
   CompanyTab,
 } from '@/shared/components/company/CompanyTabsSwitcher';
-import ContentContainer from '@/shared/components/ContentContainer';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useCompanyDetails } from '@/shared/hooks/useCompanyDetails';
 import { useCompanyReport } from '@/shared/hooks/useCompanyReport';
 import { useCompanyReviews } from '@/shared/hooks/useCompanyReviews';

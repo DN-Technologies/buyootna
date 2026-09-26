@@ -27,7 +27,7 @@ import {
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
-import MapPickerModal from '@/shared/components/MapPickerModal';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { showAlert } from '@/shared/utils/alert';
 
 interface ServiceItem {

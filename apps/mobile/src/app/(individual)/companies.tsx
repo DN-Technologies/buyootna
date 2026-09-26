@@ -21,11 +21,11 @@ import { HomeSearchIcon } from '@/assets/icons/home/header';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
 import { feedService } from '@/features/individual/services/feed.service';
 import { chatService } from '@/shared/api/chat.service';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
+import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CategoryFilterSheet, {
   COMPANY_CATEGORY_OPTIONS,
-} from '@/shared/components/CategoryFilterSheet';
-import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
+} from '@/shared/components/filters/CategoryFilterSheet';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';

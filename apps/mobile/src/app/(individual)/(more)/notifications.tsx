@@ -8,7 +8,7 @@ import {
   NotificationPrefsResponse,
   notificationsService,
 } from '@/shared/api/notifications.service';
-import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

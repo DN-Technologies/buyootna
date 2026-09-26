@@ -3,9 +3,9 @@ import { Tabs } from 'expo-router';
 import { useRef } from 'react';
 
 import CompanyActionsSheet from '@/features/company/components/CompanyActionsSheet';
-import CustomTabBar from '@/shared/components/CustomTabBar';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
-import ComingSoonGate from '@/shared/components/ComingSoonGate';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
+import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
+import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 // Company tabs stay behind the ComingSoonGate unless explicitly enabled via

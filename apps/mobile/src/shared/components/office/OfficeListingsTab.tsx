@@ -3,8 +3,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import PropertyCard from '@/shared/components/PropertyCard';
-import PropertyListItem from '@/shared/components/PropertyListItem';
+import PropertyCard from '@/shared/components/property/PropertyCard';
+import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import { shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 

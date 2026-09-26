@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ShareIcon } from '@/assets/icons/home/property';
-import Avatar from '@/shared/components/Avatar';
+import Avatar from '@/shared/components/ui/Avatar';
 
 interface AccountProfileHeaderCardProps {
   avatarUrl?: string | null;

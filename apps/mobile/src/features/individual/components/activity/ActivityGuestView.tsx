@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ActivityHeader from '@/features/individual/components/activity/ActivityHeader';
-import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 
 export interface ActivityGuestViewProps {
   onMenuPress: () => void;

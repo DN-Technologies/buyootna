@@ -21,9 +21,9 @@ import {
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import CompanyProfileCard from '@/features/company/components/CompanyProfileCard';
-import ContentContainer from '@/shared/components/ContentContainer';
-import MenuItem from '@/shared/components/MenuItem';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
+import MenuItem from '@/shared/components/ui/MenuItem';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';

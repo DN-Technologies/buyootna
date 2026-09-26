@@ -13,9 +13,9 @@ import GuestMenuSections from '@/features/individual/components/more/GuestMenuSe
 import GuestProfileGreetingCard from '@/features/individual/components/more/GuestProfileGreetingCard';
 import IndividualMenuSections from '@/features/individual/components/more/IndividualMenuSections';
 import MoreScreenFooter from '@/features/individual/components/more/MoreScreenFooter';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
-import ContentContainer from '@/shared/components/ContentContainer';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';

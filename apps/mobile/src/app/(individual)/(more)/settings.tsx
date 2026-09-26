@@ -26,7 +26,7 @@ import {
   settingsService,
   UserSettingsResponse,
 } from '@/shared/api/settings.service';
-import MenuItem from '@/shared/components/MenuItem';
+import MenuItem from '@/shared/components/ui/MenuItem';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 

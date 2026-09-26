@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 import { ChangePasswordFormValues } from './changePasswordSchema';
 

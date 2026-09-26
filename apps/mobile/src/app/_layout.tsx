@@ -24,7 +24,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
-import AppAlertModal from '@/shared/components/AppAlertModal';
+import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';

@@ -4,7 +4,6 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
 import AddReviewSheet from '@/shared/components/profile/AddReviewSheet';
 import {
   FilterBottomSheet,
@@ -14,7 +13,8 @@ import ProfileHeader from '@/shared/components/profile/ProfileHeader';
 import ProfileListingsTab from '@/shared/components/profile/ProfileListingsTab';
 import ProfileNavBar from '@/shared/components/profile/ProfileNavBar';
 import ProfileReviewsTab from '@/shared/components/profile/ProfileReviewsTab';
-import PropertyActionBar from '@/shared/components/PropertyActionBar';
+import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useProfileContact } from '@/shared/hooks/useProfileContact';
 import { useUserProfile } from '@/shared/hooks/useUserProfile';
 

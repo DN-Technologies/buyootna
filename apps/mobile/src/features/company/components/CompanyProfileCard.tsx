@@ -8,7 +8,7 @@ import {
   ShareArrowIcon,
   VerifyBadgeIcon,
 } from '@/assets/icons/more';
-import Avatar from '@/shared/components/Avatar';
+import Avatar from '@/shared/components/ui/Avatar';
 
 export interface CompanyProfileCardProps {
   displayName: string;

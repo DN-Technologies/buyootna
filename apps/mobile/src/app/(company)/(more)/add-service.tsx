@@ -14,8 +14,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { settingsService } from '@/shared/api/settings.service';
-import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/CategoryFilterSheet';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
+import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';

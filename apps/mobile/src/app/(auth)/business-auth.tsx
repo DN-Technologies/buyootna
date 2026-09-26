@@ -9,7 +9,7 @@ import {
   CompanySignupForm,
 } from '@/features/auth/components/company';
 import { useBusinessAuth } from '@/features/auth/hooks';
-import ComingSoonGate from '@/shared/components/ComingSoonGate';
+import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
 
 export default function BusinessAuthScreen() {
   const {

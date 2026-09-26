@@ -7,7 +7,7 @@ import {
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import SelectionCard from '@/shared/components/SelectionCard';
+import SelectionCard from '@/shared/components/ui/SelectionCard';
 import { AccountType } from '@/types';
 
 // Company option stays hidden unless explicitly enabled via env

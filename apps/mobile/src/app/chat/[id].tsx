@@ -9,8 +9,8 @@ import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ImageDownloadBottomSheet from '@/shared/components/chat/ImageDownloadBottomSheet';
-import ContentContainer from '@/shared/components/ContentContainer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useChatConversation } from '@/shared/hooks/useChatConversation';
 import { useChatReport } from '@/shared/hooks/useChatReport';
 

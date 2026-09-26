@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 
 import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
-import { SafeImage as Image } from '@/shared/components/SafeImage';
+import { SafeImage as Image } from '@/shared/components/ui/SafeImage';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { Identity, IdentityType } from '@/shared/store/useAuthStore';

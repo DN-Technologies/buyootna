@@ -14,8 +14,8 @@ import {
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
-import PropertyCard from '@/shared/components/PropertyCard';
-import PropertyListItem from '@/shared/components/PropertyListItem';
+import PropertyCard from '@/shared/components/property/PropertyCard';
+import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useFavorites } from '@/shared/hooks/useFavorites';

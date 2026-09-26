@@ -20,10 +20,10 @@ import {
 } from '@/assets/icons/more';
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
-import Avatar from '@/shared/components/Avatar';
-import ContentContainer from '@/shared/components/ContentContainer';
-import MenuItem from '@/shared/components/MenuItem';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
+import Avatar from '@/shared/components/ui/Avatar';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
+import MenuItem from '@/shared/components/ui/MenuItem';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';

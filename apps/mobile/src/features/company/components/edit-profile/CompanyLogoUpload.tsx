@@ -1,7 +1,7 @@
 import { TouchableOpacity, View } from 'react-native';
 
 import { CameraBadgeIcon } from '@/assets/icons/more';
-import Avatar from '@/shared/components/Avatar';
+import Avatar from '@/shared/components/ui/Avatar';
 
 interface CompanyLogoUploadProps {
   avatarUri?: string | null;

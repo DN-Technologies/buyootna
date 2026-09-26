@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
-import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/CategoryFilterSheet';
+import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
 import { showAlert } from '@/shared/utils/alert';
 
 export const SPECIALTY_OPTIONS = COMPANY_CATEGORY_OPTIONS.filter(

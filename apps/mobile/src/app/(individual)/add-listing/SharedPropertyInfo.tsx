@@ -9,7 +9,7 @@ import PropertyLocationRow from '@/shared/components/add-listing/PropertyLocatio
 import PropertyMapField from '@/shared/components/add-listing/PropertyMapField';
 import PropertyStepperRow from '@/shared/components/add-listing/PropertyStepperRow';
 import SelectionDrawer from '@/shared/components/filters/SelectionDrawer';
-import MapPickerModal from '@/shared/components/MapPickerModal';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
