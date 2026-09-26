@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import {
   GestureResponderEvent,
   Text,
@@ -90,7 +91,14 @@ export default function NotificationCard({
     >
       {/* Right: Category Icon */}
       <View className="mt-0.5 size-[26px] items-center justify-center">
-        {isInvoice ? (
+        {notification.type === 'NEW_DEVICE_LOGIN' ? (
+          <Feather
+            name="shield"
+            size={22}
+            color="#111111"
+            testID="notification-security-icon"
+          />
+        ) : isInvoice ? (
           <NotificationReceiptIcon size={22} color="#111111" />
         ) : (
           <NotificationHomeIcon size={24} color="#111111" />

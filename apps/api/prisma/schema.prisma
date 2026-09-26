@@ -186,6 +186,7 @@ enum NotificationType {
   ALERT_MATCH
   REPORT_RESOLVED
   REPORT_DISMISSED
+  NEW_DEVICE_LOGIN
 }
 
 model Notification {
@@ -210,6 +211,9 @@ model Session {
   id          String   @id @default(uuid())
   userId      String
   deviceId    String?
+  // Expo push token registered by the app on this device, for security
+  // alerts such as a login from another device
+  pushToken   String?
   platform    String?
   deviceModel String?
   deviceName  String

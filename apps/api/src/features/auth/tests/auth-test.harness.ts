@@ -12,6 +12,7 @@ import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import { AuthIdentitiesService } from '../services/auth-identities.service';
+import { LoginAlertService } from '../../devices/login-alert.service';
 import { SessionsService } from '../../devices/sessions.service';
 import { SocialProvider } from '@prisma/client';
 
@@ -123,6 +124,7 @@ export interface AuthTestContext {
     deleteAllExceptCurrent: jest.Mock;
     touchLastActive: jest.Mock;
   };
+  loginAlerts: { notifyNewDeviceLogin: jest.Mock };
   setup: () => Promise<void>;
 }
 
@@ -187,6 +189,8 @@ export function createAuthTestContext(): AuthTestContext {
     createDefaultForOrphanedUser: jest.fn(),
   };
 
+  const mockLoginAlertService = { notifyNewDeviceLogin: jest.fn() };
+
   const mockSessionsService = {
     upsertSession: jest.fn().mockResolvedValue({ id: 'session-1' }),
     deleteAllExceptCurrent: jest.fn(),
@@ -205,6 +209,7 @@ export function createAuthTestContext(): AuthTestContext {
     otpRateLimiter: mockOtpRateLimiterService,
     identities: mockIdentitiesService,
     sessions: mockSessionsService,
+    loginAlerts: mockLoginAlertService,
     setup: async () => {
       jest.clearAllMocks();
       mockPrismaService.$transaction.mockImplementation(
@@ -239,6 +244,7 @@ export function createAuthTestContext(): AuthTestContext {
           },
           { provide: AuthIdentitiesService, useValue: mockIdentitiesService },
           { provide: SessionsService, useValue: mockSessionsService },
+          { provide: LoginAlertService, useValue: mockLoginAlertService },
         ],
       }).compile();
 

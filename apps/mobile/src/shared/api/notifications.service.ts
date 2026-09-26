@@ -15,11 +15,14 @@ export type NotificationType =
   | 'ADMIN_CUSTOM_MESSAGE'
   | 'ALERT_MATCH'
   | 'REPORT_RESOLVED'
-  | 'REPORT_DISMISSED';
+  | 'REPORT_DISMISSED'
+  | 'NEW_DEVICE_LOGIN';
 
 // What a notification points at, e.g. the matched listing for ALERT_MATCH
 export interface NotificationData {
   propertyId?: string;
+  // NEW_DEVICE_LOGIN: the session that just signed in
+  sessionId?: string;
 }
 
 export interface AppNotification {

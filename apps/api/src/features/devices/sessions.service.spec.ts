@@ -9,6 +9,7 @@ describe('SessionsService Unit Tests', () => {
     session: {
       create: jest.fn(),
       upsert: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
       findFirst: jest.fn(),
       deleteMany: jest.fn(),
@@ -89,6 +90,42 @@ describe('SessionsService Unit Tests', () => {
           deviceName: 'آيفون',
         }) as unknown,
       });
+    });
+
+    it('flags a device the account has not used before as new', async () => {
+      mockPrismaService.session.findUnique.mockResolvedValue(null);
+      mockPrismaService.session.upsert.mockResolvedValue({ id: 'session-2' });
+
+      const result = await service.upsertSession('user-1', {
+        deviceId: 'device-2',
+      });
+
+      expect(mockPrismaService.session.findUnique).toHaveBeenCalledWith({
+        where: { userId_deviceId: { userId: 'user-1', deviceId: 'device-2' } },
+        select: { id: true },
+      });
+      expect(result).toEqual({ id: 'session-2', isNewDevice: true });
+    });
+
+    it('does not flag a returning device as new', async () => {
+      mockPrismaService.session.findUnique.mockResolvedValue({
+        id: 'session-1',
+      });
+      mockPrismaService.session.upsert.mockResolvedValue({ id: 'session-1' });
+
+      const result = await service.upsertSession('user-1', {
+        deviceId: 'device-1',
+      });
+
+      expect(result.isNewDevice).toBe(false);
+    });
+
+    it('treats a login without a deviceId as a new device', async () => {
+      mockPrismaService.session.create.mockResolvedValue({ id: 'session-3' });
+
+      const result = await service.upsertSession('user-1', {});
+
+      expect(result.isNewDevice).toBe(true);
     });
   });
 

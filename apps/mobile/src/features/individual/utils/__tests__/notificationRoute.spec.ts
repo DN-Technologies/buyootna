@@ -31,4 +31,12 @@ describe('getNotificationRoute', () => {
       ),
     ).toBeNull();
   });
+
+  it('opens Active Devices for a new-login security alert', () => {
+    expect(
+      getNotificationRoute(
+        notification({ type: 'NEW_DEVICE_LOGIN', data: { sessionId: 's1' } }),
+      ),
+    ).toBe('/devices');
+  });
 });

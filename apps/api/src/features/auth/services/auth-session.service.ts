@@ -12,6 +12,7 @@ import {
   AuthIdentitiesService,
   IdentityWithData,
 } from './auth-identities.service';
+import { LoginAlertService } from '../../devices/login-alert.service';
 import { DeviceCtx, SessionsService } from '../../devices/sessions.service';
 
 /**
@@ -25,6 +26,7 @@ export class AuthSessionService {
     private readonly jwtService: JwtService,
     private readonly identities: AuthIdentitiesService,
     private readonly sessions: SessionsService,
+    private readonly loginAlerts: LoginAlertService,
   ) {}
 
   // Generate JWT token with identity information
@@ -68,7 +70,14 @@ export class AuthSessionService {
       throw new BadRequestException('لا توجد هوية مرتبطة بهذا الحساب');
     }
 
-    const session = await this.sessions.upsertSession(user.id, deviceCtx);
+    const { isNewDevice, ...session } = await this.sessions.upsertSession(
+      user.id,
+      deviceCtx,
+    );
+    if (isNewDevice) {
+      // Not awaited, and it never throws: alerting must not slow the login
+      void this.loginAlerts.notifyNewDeviceLogin(user.id, session);
+    }
 
     // Build JWT payload
     const payload: JwtPayload = {
