@@ -154,6 +154,59 @@ describe('AlertsService', () => {
     });
   });
 
+  describe('update', () => {
+    const dto = {
+      type: 'PROPERTIES',
+      operationType: 'RENT',
+      governorateId: 'hawally',
+      areaId: 'hawally_2',
+      categoryId: 'apartment',
+      rentValue: 600,
+    } as CreateAlertDto;
+
+    it('replaces the criteria, clearing fields the form left out', async () => {
+      prisma.alert.findUnique.mockResolvedValue({
+        id: 'alert-1',
+        identityId: 'identity-1',
+      });
+      prisma.alert.update.mockResolvedValue({
+        id: 'alert-1',
+        _count: { matches: 2 },
+      });
+
+      const result = await service.update('identity-1', 'alert-1', dto);
+
+      const { data } = prisma.alert.update.mock.calls[0][0];
+      expect(data).toEqual(
+        expect.objectContaining({
+          operationType: 'RENT',
+          areaId: 'hawally_2',
+          rentValue: 600,
+          price: null,
+          rooms: null,
+          amenities: [],
+          startDate: null,
+        }),
+      );
+      // Pause state and ownership are not part of an edit
+      expect(data).not.toHaveProperty('isActive');
+      expect(data).not.toHaveProperty('identityId');
+      expect(result).toEqual({ id: 'alert-1', matchCount: 2 });
+    });
+
+    it("404s for someone else's alert without updating it", async () => {
+      prisma.alert.findUnique.mockResolvedValue({
+        id: 'alert-1',
+        identityId: 'someone-else',
+      });
+
+      await expect(
+        service.update('identity-1', 'alert-1', dto),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.alert.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe('setAllActive', () => {
     it("only updates the current identity's alerts", async () => {
       prisma.alert.updateMany.mockResolvedValue({ count: 4 });

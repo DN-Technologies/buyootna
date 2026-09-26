@@ -13,6 +13,29 @@ const MATCHES_LIMIT = 50;
 
 type AlertWithCount = Alert & { _count: { matches: number } };
 
+function toAlertCriteria(dto: CreateAlertDto) {
+  return {
+    type: dto.type,
+    operationType: dto.operationType
+      ? (dto.operationType as ListingType)
+      : null,
+    governorateId: dto.governorateId,
+    areaId: dto.areaId ?? null,
+    categoryId: dto.categoryId ?? null,
+    price: dto.price ?? null,
+    rentValue: dto.rentValue ?? null,
+    areaSize: dto.areaSize ?? null,
+    rooms: dto.rooms ?? null,
+    baths: dto.baths ?? null,
+    floors: dto.floors ?? null,
+    requestYear: dto.requestYear ?? null,
+    requiredYear: dto.requiredYear ?? null,
+    amenities: dto.amenities ?? [],
+    startDate: dto.startDate ? new Date(dto.startDate) : null,
+    endDate: dto.endDate ? new Date(dto.endDate) : null,
+  };
+}
+
 function toAlertResponse({ _count, ...alert }: AlertWithCount) {
   return { ...alert, matchCount: _count.matches };
 }
@@ -23,28 +46,20 @@ export class AlertsService {
 
   async create(identityId: string, dto: CreateAlertDto) {
     return this.prisma.alert.create({
-      data: {
-        identityId,
-        type: dto.type,
-        operationType: dto.operationType
-          ? (dto.operationType as ListingType)
-          : undefined,
-        governorateId: dto.governorateId,
-        areaId: dto.areaId,
-        categoryId: dto.categoryId,
-        price: dto.price,
-        rentValue: dto.rentValue,
-        areaSize: dto.areaSize,
-        rooms: dto.rooms,
-        baths: dto.baths,
-        floors: dto.floors,
-        requestYear: dto.requestYear,
-        requiredYear: dto.requiredYear,
-        amenities: dto.amenities ?? [],
-        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
-      },
+      data: { identityId, ...toAlertCriteria(dto) },
     });
+  }
+
+  // Replaces the alert's criteria (the edit form always sends the full set;
+  // anything omitted is cleared). Pause state and match history are kept.
+  async update(identityId: string, id: string, dto: CreateAlertDto) {
+    await this.findOwned(identityId, id);
+    const alert = await this.prisma.alert.update({
+      where: { id },
+      data: toAlertCriteria(dto),
+      include: { _count: { select: { matches: true } } },
+    });
+    return toAlertResponse(alert);
   }
 
   async findMine(identityId: string) {

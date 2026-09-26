@@ -1,6 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { router } from 'expo-router';
 import { RefObject } from 'react';
 
+import AlertDetailsSheet from '@/features/individual/components/activity/AlertDetailsSheet';
 import {
   AD_SORT_OPTIONS,
   type AdSortBy,
@@ -67,6 +69,28 @@ export default function ActivitySheets({
         ref={alertActions.deleteAllAlertsSheetRef}
         onConfirm={alertActions.handleConfirmDeleteAllAlerts}
         onCancel={alertActions.handleCancelDeleteAllAlerts}
+      />
+
+      {/* --- Alert Details Bottom Sheet (Auctions & Properties) --- */}
+      <AlertDetailsSheet
+        ref={alertActions.alertDetailsSheetRef}
+        alert={alertActions.selectedAlertForDetails}
+        isActive={
+          alertActions.selectedAlertForDetails
+            ? alertActions.isAlertActive(alertActions.selectedAlertForDetails.id)
+            : true
+        }
+        onToggleActive={alertActions.handleToggleAlertActive}
+        onClose={alertActions.handleCloseAlertDetails}
+        onDeletePress={alertActions.handleDeleteFromDetails}
+        onEditPress={(alert) => {
+          alertActions.handleCloseAlertDetails();
+          router.push({ pathname: '/add-alert', params: { editId: alert.id } });
+        }}
+        onViewMatchesPress={(alert) => {
+          alertActions.handleCloseAlertDetails();
+          router.push(`/alert-matches/${alert.id}` as any);
+        }}
       />
 
       {/* --- Feature Ad Bottom Sheet --- */}

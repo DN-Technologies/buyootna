@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -78,6 +79,22 @@ export class AlertsController {
     @Body() dto: UpdateAlertActiveDto,
   ) {
     return this.alertsService.setActive(reqUser.identityId, id, dto.isActive);
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary:
+      "Edit one of the current identity's alerts (replaces its criteria)",
+  })
+  @ApiParam({ name: 'id', description: 'Alert ID' })
+  @ApiResponse({ status: 200, type: AlertResponseDto })
+  @ApiCommonErrors()
+  async update(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: CreateAlertDto,
+  ) {
+    return this.alertsService.update(reqUser.identityId, id, dto);
   }
 
   @Get(':id/matches')

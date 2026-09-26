@@ -4,13 +4,22 @@ export interface AlertToggleProps {
   isOn: boolean;
   onToggle: () => void;
   testID?: string;
+  // 'sm' on the alert card, 'lg' in the details sheet header
+  size?: 'sm' | 'lg';
 }
+
+const SIZES = {
+  sm: { width: 24, height: 14, knob: 10 },
+  lg: { width: 42, height: 24, knob: 20 },
+};
 
 export default function AlertToggle({
   isOn,
   onToggle,
   testID,
+  size = 'sm',
 }: AlertToggleProps) {
+  const { width, height, knob } = SIZES[size];
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -20,8 +29,8 @@ export default function AlertToggle({
       accessibilityState={{ checked: isOn }}
       accessibilityLabel={isOn ? 'تفعيل التنبيه' : 'ايقاف التنبيه'}
       style={{
-        width: 24,
-        height: 14,
+        width,
+        height,
         borderRadius: 12,
         backgroundColor: isOn ? '#15304D' : '#D7D7D7',
         padding: 2,
@@ -32,9 +41,9 @@ export default function AlertToggle({
     >
       <View
         style={{
-          width: 10,
-          height: 10,
-          borderRadius: 10,
+          width: knob,
+          height: knob,
+          borderRadius: knob / 2,
           backgroundColor: '#FFFFFF',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 1 },

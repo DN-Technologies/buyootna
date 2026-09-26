@@ -107,6 +107,14 @@ export const alertsService = {
     return response.data;
   },
 
+  update: async (
+    id: string,
+    payload: CreateAlertPayload,
+  ): Promise<AlertItem> => {
+    const response = await apiClient.put<AlertItem>(`/alerts/${id}`, payload);
+    return response.data;
+  },
+
   remove: async (id: string): Promise<any> => {
     const response = await apiClient.delete(`/alerts/${id}`);
     return response.data;

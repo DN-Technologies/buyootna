@@ -33,7 +33,14 @@ async function setup(alerts: AlertItem[] = buildAlerts()) {
 }
 
 describe('useAlertActions', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   it('reads the active state from the server data', async () => {
     const { result } = await setup(buildAlerts(true, false));
@@ -102,27 +109,95 @@ describe('useAlertActions', () => {
     expect(alertsService.setAllActive).toHaveBeenCalledWith(true);
   });
 
-  it('deletes the chosen alert, then shows a toast and refetches', async () => {
+  it('optimistically hides the alert, shows undo toast, and commits delete after timeout', async () => {
     (alertsService.remove as jest.Mock).mockResolvedValue(undefined);
-    const { result, refetchAlerts, triggerToast } = await setup();
+    const { result, refetchAlerts } = await setup();
 
     await act(() => result.current.handleDeleteAlert('a2'));
     await act(() => result.current.handleConfirmDeleteAlert());
 
+    // Optimistically removed from displayedAlerts
+    expect(
+      result.current.displayedAlerts.find((a) => a.id === 'a2'),
+    ).toBeUndefined();
+    expect(result.current.isDeleteToastVisible).toBe(true);
+    expect(alertsService.remove).not.toHaveBeenCalled();
+
+    // Fast-forward timer
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
     expect(alertsService.remove).toHaveBeenCalledWith('a2');
-    expect(triggerToast).toHaveBeenCalledWith('تم حذف التنبيه بنجاح.');
     expect(refetchAlerts).toHaveBeenCalled();
+    expect(result.current.isDeleteToastVisible).toBe(false);
+  });
+
+  it('restores the alert when undo is pressed', async () => {
+    const { result, refetchAlerts } = await setup();
+
+    await act(() => result.current.handleDeleteAlert('a2'));
+    await act(() => result.current.handleConfirmDeleteAlert());
+
+    expect(
+      result.current.displayedAlerts.find((a) => a.id === 'a2'),
+    ).toBeUndefined();
+    expect(result.current.isDeleteToastVisible).toBe(true);
+
+    await act(() => result.current.handleUndoDeleteAlert());
+
+    // Restored!
+    expect(
+      result.current.displayedAlerts.find((a) => a.id === 'a2'),
+    ).toBeDefined();
+    expect(result.current.isDeleteToastVisible).toBe(false);
+
+    // Fast-forward timer to make sure no deletion happens
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
+    expect(alertsService.remove).not.toHaveBeenCalled();
+    expect(refetchAlerts).not.toHaveBeenCalled();
   });
 
   it('shows an error and does not refetch when delete fails', async () => {
     (alertsService.remove as jest.Mock).mockRejectedValue(new Error('boom'));
-    const { result, refetchAlerts, triggerToast } = await setup();
+    const { result, refetchAlerts } = await setup();
 
     await act(() => result.current.handleDeleteAlert('a1'));
     await act(() => result.current.handleConfirmDeleteAlert());
 
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+
     expect(showAlert).toHaveBeenCalledWith('خطأ', expect.any(String));
-    expect(triggerToast).not.toHaveBeenCalled();
     expect(refetchAlerts).not.toHaveBeenCalled();
+  });
+
+  it('opens and closes alert details', async () => {
+    const alerts = buildAlerts();
+    const { result } = await setup(alerts);
+
+    await act(() => result.current.handleOpenAlertDetails(alerts[0]));
+    expect(result.current.selectedAlertForDetails).toBe(alerts[0]);
+
+    await act(() => result.current.handleCloseAlertDetails());
+    expect(result.current.selectedAlertForDetails).toBeNull();
+  });
+
+  it('handles delete from details sheet', async () => {
+    const alerts = buildAlerts();
+    const { result } = await setup(alerts);
+
+    await act(() => result.current.handleOpenAlertDetails(alerts[0]));
+    await act(() => result.current.handleDeleteFromDetails(alerts[0]));
+
+    expect(result.current.selectedAlertForDetails).toBeNull();
+    expect(result.current.isDeleteToastVisible).toBe(true);
+    expect(
+      result.current.displayedAlerts.find((a) => a.id === 'a1'),
+    ).toBeUndefined();
   });
 });
