@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 
 type PropertyTabFilter = 'all' | 'published' | 'draft' | 'archived';
 

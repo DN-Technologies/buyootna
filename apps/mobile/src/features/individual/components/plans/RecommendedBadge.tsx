@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 export default function RecommendedBadge() {
   return (

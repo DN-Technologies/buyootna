@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlertMatches } from '@/features/individual/hooks/useAlertMatches';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { getAlertTitle } from '@/features/individual/utils/alertCard';
-import PropertyListItem from '@/shared/components/PropertyListItem';
+import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import { useFavorites } from '@/shared/hooks/useFavorites';
 

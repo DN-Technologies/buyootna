@@ -24,8 +24,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
-import AppAlertModal from '@/shared/components/AppAlertModal';
+import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
+import { usePushRegistration } from '@/shared/hooks/usePushRegistration';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ensureRtlDirection } from '@/shared/utils/rtl';
@@ -110,6 +111,9 @@ function RootLayout() {
   const loadPersistedAuth = useAuthStore((state) => state.loadPersistedAuth);
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
+
+  // Push token for security alerts (e.g. a login from another device)
+  usePushRegistration(token);
   const navigationRef = useNavigationContainerRef();
 
   const [loaded, error] = useFonts({

@@ -2,12 +2,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
-import ContentContainer from '@/shared/components/ContentContainer';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
+import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import PropertyDetailsContent from '@/shared/components/property/PropertyDetailsContent';
 import PropertyErrorState from '@/shared/components/property/PropertyErrorState';
-import PropertyActionBar from '@/shared/components/PropertyActionBar';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useFavorites } from '@/shared/hooks/useFavorites';
 import { usePropertyActions } from '@/shared/hooks/usePropertyActions';

@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { SafeImage } from '@/shared/components/SafeImage';
+import { SafeImage } from '@/shared/components/ui/SafeImage';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
 

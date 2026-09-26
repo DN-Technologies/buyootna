@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface IndividualSignupFormProps {
   onSubmit: (data: SignupFormValues) => void;

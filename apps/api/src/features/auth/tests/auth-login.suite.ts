@@ -40,6 +40,35 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       });
     });
 
+    it('sends the new-login alert when the session is on a new device', async () => {
+      ctx.identities.findActive.mockResolvedValueOnce(buildIdentity());
+      ctx.sessions.upsertSession.mockResolvedValueOnce({
+        id: 'session-new',
+        deviceName: 'iPhone 15',
+        isNewDevice: true,
+      });
+
+      const result = await ctx.service.login(user);
+
+      expect(ctx.loginAlerts.notifyNewDeviceLogin).toHaveBeenCalledWith(
+        'user-1',
+        { id: 'session-new', deviceName: 'iPhone 15' },
+      );
+      expect(result.sessionId).toBe('session-new');
+    });
+
+    it('does not alert when the device has logged in before', async () => {
+      ctx.identities.findActive.mockResolvedValueOnce(buildIdentity());
+      ctx.sessions.upsertSession.mockResolvedValueOnce({
+        id: 'session-1',
+        isNewDevice: false,
+      });
+
+      await ctx.service.login(user);
+
+      expect(ctx.loginAlerts.notifyNewDeviceLogin).not.toHaveBeenCalled();
+    });
+
     it('falls back to the currently active identity when no identityId is provided', async () => {
       const activeIdentity = buildIdentity({ isActive: true });
       ctx.identities.findActive.mockResolvedValueOnce(activeIdentity);

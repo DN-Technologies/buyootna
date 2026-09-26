@@ -7,7 +7,7 @@ import {
   requestOtpSchema,
   RequestOtpValues,
 } from '@/features/auth/recoverySchemas';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface ForgotPasswordStep1Props {
   onSubmit: (data: RequestOtpValues) => void;

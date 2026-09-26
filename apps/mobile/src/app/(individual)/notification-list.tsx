@@ -18,7 +18,7 @@ import NotificationTabs from '@/features/individual/components/notifications/Not
 import { useNotificationList } from '@/features/individual/hooks/useNotificationList';
 import { getNotificationRoute } from '@/features/individual/utils/notificationRoute';
 import { AppNotification } from '@/shared/api/notifications.service';
-import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

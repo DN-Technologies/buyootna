@@ -11,9 +11,9 @@ import {
   getStep1Fields,
   STEP_2_FIELDS,
 } from '@/features/auth/companyAuthSchemas';
-import MapPickerModal from '@/shared/components/MapPickerModal';
-import SelectionBottomSheet from '@/shared/components/SelectionBottomSheet';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSheet';
+import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 
 import { CompanySignupProgress } from './CompanySignupProgress';

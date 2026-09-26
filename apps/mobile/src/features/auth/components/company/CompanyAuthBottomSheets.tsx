@@ -1,8 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import React from 'react';
 
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
-import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
+import AccountTypeBottomSheet from '@/shared/components/auth/AccountTypeBottomSheet';
 import { AccountType } from '@/types';
 
 interface CompanyAuthBottomSheetsProps {

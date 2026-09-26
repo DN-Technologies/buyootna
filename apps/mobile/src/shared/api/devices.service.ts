@@ -24,4 +24,9 @@ export const devicesService = {
     const response = await apiClient.delete('/devices');
     return response.data;
   },
+
+  /** Registers this device's Expo push token (null stops push here). */
+  setPushToken: async (token: string | null): Promise<void> => {
+    await apiClient.patch('/devices/current/push-token', { token });
+  },
 };

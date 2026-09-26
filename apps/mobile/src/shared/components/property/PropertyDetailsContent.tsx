@@ -1,12 +1,12 @@
 import { ScrollView, Text, View } from 'react-native';
 import { EdgeInsets } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
-import ListerProfileSnippet from '@/shared/components/ListerProfileSnippet';
-import MapPreview from '@/shared/components/MapPreview';
-import PropertyDetailsBody from '@/shared/components/PropertyDetailsBody';
-import PropertyMediaHeader from '@/shared/components/PropertyMediaHeader';
-import PropertyOverview from '@/shared/components/PropertyOverview';
+import MapPreview from '@/shared/components/map/MapPreview';
+import ListerProfileSnippet from '@/shared/components/property/ListerProfileSnippet';
+import PropertyDetailsBody from '@/shared/components/property/PropertyDetailsBody';
+import PropertyMediaHeader from '@/shared/components/property/PropertyMediaHeader';
+import PropertyOverview from '@/shared/components/property/PropertyOverview';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,

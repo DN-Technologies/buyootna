@@ -10,7 +10,7 @@ import {
   FavoritesResponse,
   favoritesService,
 } from '@/shared/api/favorites.service';
-import PropertyCard from '@/shared/components/PropertyCard';
+import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
 import { useFavorites } from '@/shared/hooks/useFavorites';
 import { shareProperty } from '@/shared/utils/helpers/property';

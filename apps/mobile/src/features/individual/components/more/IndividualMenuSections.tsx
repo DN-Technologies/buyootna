@@ -12,7 +12,7 @@ import {
   SettingsIcon,
   StarIcon,
 } from '@/assets/icons/more';
-import MenuItem from '@/shared/components/MenuItem';
+import MenuItem from '@/shared/components/ui/MenuItem';
 import { showAlert } from '@/shared/utils/alert';
 
 import MenuSection from './MenuSection';

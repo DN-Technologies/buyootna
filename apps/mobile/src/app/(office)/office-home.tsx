@@ -13,8 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HomeSearchIcon, NotificationIcon } from '@/assets/icons/home/header';
-import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';

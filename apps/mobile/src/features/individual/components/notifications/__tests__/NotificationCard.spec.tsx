@@ -75,4 +75,21 @@ describe('NotificationCard', () => {
       expect(formatRelativeTime(new Date(now - 172800000).toISOString())).toBe('منذ يومين');
     });
   });
+
+  it('shows the security icon for a new-login alert', async () => {
+    const { getByTestId } = await render(
+      <NotificationCard
+        notification={{
+          ...mockNotification,
+          type: 'NEW_DEVICE_LOGIN',
+          title: 'تسجيل دخول من جهاز جديد',
+          body: 'iPhone 15',
+        }}
+        onPress={jest.fn()}
+        onMenuPress={jest.fn()}
+      />,
+    );
+
+    expect(getByTestId('notification-security-icon')).toBeTruthy();
+  });
 });

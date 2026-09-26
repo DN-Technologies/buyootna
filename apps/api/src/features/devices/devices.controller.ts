@@ -1,4 +1,12 @@
-import { Controller, Get, Delete, Param, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DevicesService } from './devices.service';
@@ -11,6 +19,7 @@ import {
   RevokeDeviceResponseDto,
   SessionResponseDto,
 } from './dto/device-response.dto';
+import { UpdatePushTokenDto } from './dto/update-push-token.dto';
 
 @ApiTags('Devices')
 @ApiAuth()
@@ -25,8 +34,27 @@ export class DevicesController {
   })
   @ApiResponse({ status: 200, type: [SessionResponseDto] })
   @ApiCommonErrors()
-  async getDevices(@CurrentUser() reqUser: RequestUser): Promise<Session[]> {
+  async getDevices(
+    @CurrentUser() reqUser: RequestUser,
+  ): Promise<Omit<Session, 'pushToken'>[]> {
     return this.devicesService.getDevices(reqUser.userId);
+  }
+
+  @Patch('current/push-token')
+  @ApiOperation({
+    summary:
+      "Register (or clear) this device's Expo push token on the caller's own session",
+  })
+  @ApiCommonErrors()
+  async setPushToken(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: UpdatePushTokenDto,
+  ): Promise<{ success: boolean }> {
+    return this.devicesService.setPushToken(
+      reqUser.userId,
+      reqUser.sessionId,
+      dto.token,
+    );
   }
 
   @Delete(':id')

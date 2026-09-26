@@ -6,7 +6,7 @@ import {
   resetPasswordSchema,
   ResetPasswordValues,
 } from '@/features/auth/recoverySchemas';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface ForgotPasswordStep3Props {
   onSubmit: (data: ResetPasswordValues) => void;

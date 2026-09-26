@@ -17,8 +17,8 @@ import {
   PublicRequestsSection,
 } from '@/features/company/components/home';
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
-import ContentContainer from '@/shared/components/ContentContainer';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';

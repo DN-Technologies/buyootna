@@ -22,7 +22,7 @@ import InvoiceItemsStep, {
 import InvoiceProgressBar from '@/features/company/components/invoice/InvoiceProgressBar';
 import InvoiceReceipt from '@/features/company/components/invoice/InvoiceReceipt';
 import { companyService } from '@/shared/api/company.service';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';

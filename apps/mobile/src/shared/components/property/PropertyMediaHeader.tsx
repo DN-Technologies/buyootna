@@ -11,7 +11,7 @@ import { EdgeInsets } from 'react-native-safe-area-context';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
 import { ArrowBackIcon, ShareIcon } from '@/assets/icons/home/property';
-import { SafeImage } from '@/shared/components/SafeImage';
+import { SafeImage } from '@/shared/components/ui/SafeImage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HEADER_HEIGHT = 350;

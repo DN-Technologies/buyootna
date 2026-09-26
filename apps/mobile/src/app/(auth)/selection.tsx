@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import AppLogo from '@/shared/components/AppLogo';
-import SelectionCard from '@/shared/components/SelectionCard';
+import AppLogo from '@/shared/components/ui/AppLogo';
+import SelectionCard from '@/shared/components/ui/SelectionCard';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { AccountType } from '@/types';
 

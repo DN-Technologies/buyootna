@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 import { MoreIcon } from '@/assets/icons/activity';
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,

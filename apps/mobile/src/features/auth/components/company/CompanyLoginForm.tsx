@@ -9,7 +9,7 @@ import {
   CompanyLoginFormValues,
   companyLoginSchema,
 } from '@/features/auth/companyAuthSchemas';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface CompanyLoginFormProps {
   onSubmit: (data: CompanyLoginFormValues & { rememberMe: boolean }) => void;

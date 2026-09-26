@@ -3,7 +3,7 @@ import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
 import { AreaIcon, ShareIcon } from '@/assets/icons/home/property';
 import { HomeIcon, PropertiesTabIcon } from '@/assets/icons/tab';
-import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 export interface PropertyListItemProps {
   id?: string;

@@ -1,9 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import React from 'react';
 
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
-import AccountTypeBottomSheet from '@/shared/components/AccountTypeBottomSheet';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import AccountTypeBottomSheet from '@/shared/components/auth/AccountTypeBottomSheet';
+import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import { AccountType } from '@/types';
 
 interface IndividualAuthBottomSheetsProps {

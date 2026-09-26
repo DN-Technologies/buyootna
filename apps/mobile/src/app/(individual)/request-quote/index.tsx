@@ -25,9 +25,9 @@ import {
   SPECIALTY_OPTIONS,
   useRequestQuoteForm,
 } from '@/features/individual/hooks/useRequestQuoteForm';
+import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
-import MapPickerModal from '@/shared/components/MapPickerModal';
-import SuccessBottomSheet from '@/shared/components/SuccessBottomSheet';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

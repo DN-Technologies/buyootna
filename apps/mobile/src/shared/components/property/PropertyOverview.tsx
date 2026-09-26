@@ -10,7 +10,7 @@ import {
   LocationIcon,
   RequestIcon,
 } from '@/assets/icons/home/property';
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 export interface PropertyOverviewProps {
   type: 'SALE' | 'RENT' | 'EXCHANGE';

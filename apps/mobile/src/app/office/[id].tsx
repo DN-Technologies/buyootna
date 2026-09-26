@@ -4,7 +4,6 @@ import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ContentContainer from '@/shared/components/ContentContainer';
 import OfficeAboutTab from '@/shared/components/office/OfficeAboutTab';
 import OfficeBottomBar from '@/shared/components/office/OfficeBottomBar';
 import OfficeHeaderCard from '@/shared/components/office/OfficeHeaderCard';
@@ -16,6 +15,7 @@ import OfficeTabsSwitcher, {
   OfficeTab,
 } from '@/shared/components/office/OfficeTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
+import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useOfficeDetails } from '@/shared/hooks/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/useOfficeReviews';

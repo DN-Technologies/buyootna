@@ -8,7 +8,7 @@ import {
   HeartIcon,
   LocationIcon,
 } from '@/assets/icons/home/cards';
-import { SafeLinearGradient as LinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 // --- 1. Property Preview Card ---
 export function PropertyPreviewCard({

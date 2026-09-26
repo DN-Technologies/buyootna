@@ -1,13 +1,13 @@
 import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { LoginFormValues, loginSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
-import FormInput from '@/shared/components/FormInput';
+import FormInput from '@/shared/components/ui/FormInput';
 
 interface IndividualLoginFormProps {
   onSubmit: (data: LoginFormValues & { rememberMe: boolean }) => void;

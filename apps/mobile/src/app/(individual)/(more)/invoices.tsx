@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InvoicesEmptyIcon } from '@/assets/icons/more';
 import { invoicesService, InvoiceStatus } from '@/shared/api/invoices.service';
-import ConnectionErrorModal from '@/shared/components/ConnectionErrorModal';
+import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { showAlert } from '@/shared/utils/alert';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';

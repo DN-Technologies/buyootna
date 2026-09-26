@@ -4,8 +4,8 @@ import { useRef } from 'react';
 
 import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
-import AuthGuardSheet from '@/shared/components/AuthGuardSheet';
-import CustomTabBar from '@/shared/components/CustomTabBar';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
+import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function MainLayout() {

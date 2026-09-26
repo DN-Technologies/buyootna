@@ -8,7 +8,7 @@ import { Image } from 'expo-image';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { SafeLinearGradient } from '@/shared/components/SafeLinearGradient';
+import { SafeLinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 interface SuccessBottomSheetProps {
   title: string;

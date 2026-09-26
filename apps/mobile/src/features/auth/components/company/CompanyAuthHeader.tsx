@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import AppLogo from '@/shared/components/AppLogo';
+import AppLogo from '@/shared/components/ui/AppLogo';
 
 interface CompanyAuthHeaderProps {
   type: 'company' | 'office';

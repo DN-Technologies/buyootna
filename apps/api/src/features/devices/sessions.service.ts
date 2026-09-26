@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Session } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 // Per-request device info, extracted by AuthController from headers/req.ip
@@ -36,15 +37,28 @@ export class SessionsService {
    * so re-logging in on the same device refreshes one row instead of piling
    * up duplicates; falls back to a plain create (no upsert key) for clients
    * that haven't started sending the device headers yet.
+   *
+   * `isNewDevice` is true when this login created a Session row rather than
+   * refreshing one -- i.e. the account was just accessed from a device it
+   * hasn't been used on before, which triggers the new-login security alert.
    */
-  async upsertSession(userId: string, deviceCtx: DeviceCtx) {
+  async upsertSession(
+    userId: string,
+    deviceCtx: DeviceCtx,
+  ): Promise<Session & { isNewDevice: boolean }> {
     const deviceName =
       deviceCtx.deviceModel ||
       (deviceCtx.platform && PLATFORM_DEVICE_NAMES[deviceCtx.platform]) ||
       'جهاز الهاتف الحالي';
 
     if (deviceCtx.deviceId) {
-      return this.prisma.session.upsert({
+      const existing = await this.prisma.session.findUnique({
+        where: {
+          userId_deviceId: { userId, deviceId: deviceCtx.deviceId },
+        },
+        select: { id: true },
+      });
+      const session = await this.prisma.session.upsert({
         where: {
           userId_deviceId: { userId, deviceId: deviceCtx.deviceId },
         },
@@ -67,9 +81,10 @@ export class SessionsService {
           lastActive: new Date(),
         },
       });
+      return { ...session, isNewDevice: !existing };
     }
 
-    return this.prisma.session.create({
+    const session = await this.prisma.session.create({
       data: {
         userId,
         deviceModel: deviceCtx.deviceModel,
@@ -78,6 +93,7 @@ export class SessionsService {
         userAgent: deviceCtx.userAgent,
       },
     });
+    return { ...session, isNewDevice: true };
   }
 
   /**

@@ -33,7 +33,7 @@ import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { AlertItem } from '@/shared/api/alerts.service';
-import GuestEmptyState from '@/shared/components/GuestEmptyState';
+import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useMyRequests } from '@/shared/hooks/useMyRequests';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';

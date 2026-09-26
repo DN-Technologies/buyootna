@@ -4,7 +4,7 @@ import {
   BottomSheetModal,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import React, { forwardRef, useCallback, useMemo } from 'react';
+import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface LogoutBottomSheetProps {
