@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Session } from '@prisma/client';
 import { MailService } from '../../core/mail/mail.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { PushService } from '../../core/push/push.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { LoginAlertService } from './login-alert.service';
 
@@ -9,11 +10,12 @@ describe('LoginAlertService', () => {
   let service: LoginAlertService;
 
   const prisma = {
-    session: { count: jest.fn() },
+    session: { findMany: jest.fn() },
     user: { findUnique: jest.fn() },
   };
   const notifications = { create: jest.fn() };
   const mail = { sendMail: jest.fn() };
+  const push = { sendToTokens: jest.fn() };
 
   const newSession = {
     id: 'session-new',
@@ -25,7 +27,10 @@ describe('LoginAlertService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    prisma.session.count.mockResolvedValue(1);
+    prisma.session.findMany.mockResolvedValue([
+      { pushToken: 'ExponentPushToken[device-a]' },
+      { pushToken: null },
+    ]);
     prisma.user.findUnique.mockResolvedValue({
       name: 'سارة',
       email: 'owner@example.com',
@@ -37,21 +42,24 @@ describe('LoginAlertService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: NotificationsService, useValue: notifications },
         { provide: MailService, useValue: mail },
+        { provide: PushService, useValue: push },
       ],
     }).compile();
     service = module.get(LoginAlertService);
   });
 
   it('does nothing when the account has no other active device', async () => {
-    prisma.session.count.mockResolvedValue(0);
+    prisma.session.findMany.mockResolvedValue([]);
 
     await service.notifyNewDeviceLogin('user-1', newSession);
 
-    expect(prisma.session.count).toHaveBeenCalledWith({
+    expect(prisma.session.findMany).toHaveBeenCalledWith({
       where: { userId: 'user-1', isActive: true, id: { not: 'session-new' } },
+      select: { pushToken: true },
     });
     expect(notifications.create).not.toHaveBeenCalled();
     expect(mail.sendMail).not.toHaveBeenCalled();
+    expect(push.sendToTokens).not.toHaveBeenCalled();
   });
 
   it('notifies in-app with the device and a link to the session', async () => {
@@ -105,5 +113,18 @@ describe('LoginAlertService', () => {
     await expect(
       service.notifyNewDeviceLogin('user-1', newSession),
     ).resolves.toBeUndefined();
+  });
+
+  it("pushes to the account's other devices that registered a token", async () => {
+    await service.notifyNewDeviceLogin('user-1', newSession);
+
+    expect(push.sendToTokens).toHaveBeenCalledWith(
+      ['ExponentPushToken[device-a]'],
+      {
+        title: 'تسجيل دخول من جهاز جديد',
+        body: expect.stringContaining('iPhone 15'),
+        data: { type: 'NEW_DEVICE_LOGIN', route: '/devices' },
+      },
+    );
   });
 });

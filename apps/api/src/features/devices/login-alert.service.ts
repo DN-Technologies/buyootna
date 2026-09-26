@@ -3,6 +3,7 @@ import { Session } from '@prisma/client';
 import { MailService } from '../../core/mail/mail.service';
 import { newDeviceLoginTemplate } from '../../core/mail/templates/new-device-login.template';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { PushService } from '../../core/push/push.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 const LOGIN_TIME_FORMAT: Intl.DateTimeFormatOptions = {
@@ -28,6 +29,7 @@ export class LoginAlertService {
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
     private readonly mailService: MailService,
+    private readonly pushService: PushService,
   ) {}
 
   /** Never throws: an alert failure must not block or fail the login. */
@@ -42,10 +44,11 @@ export class LoginAlertService {
   private async alert(userId: string, newSession: Session) {
     // Only worth alerting when the account is already signed in elsewhere
     // (not on a first login / registration / the only device logging back in)
-    const otherSessions = await this.prisma.session.count({
+    const otherSessions = await this.prisma.session.findMany({
       where: { userId, isActive: true, id: { not: newSession.id } },
+      select: { pushToken: true },
     });
-    if (otherSessions === 0) return;
+    if (otherSessions.length === 0) return;
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -58,13 +61,22 @@ export class LoginAlertService {
       LOGIN_TIME_FORMAT,
     );
 
+    const title = 'تسجيل دخول من جهاز جديد';
+    const body = `${newSession.deviceName} · ${loginTime}`;
+
     await this.notificationsService.create({
       userId,
       type: 'NEW_DEVICE_LOGIN',
-      title: 'تسجيل دخول من جهاز جديد',
-      body: `${newSession.deviceName} · ${loginTime}`,
+      title,
+      body,
       data: { sessionId: newSession.id },
     });
+
+    // Push to the account's other devices (never the one that just logged in)
+    await this.pushService.sendToTokens(
+      otherSessions.map((s) => s.pushToken).filter((t): t is string => !!t),
+      { title, body, data: { type: 'NEW_DEVICE_LOGIN', route: '/devices' } },
+    );
 
     if (user.email) {
       await this.mailService.sendMail({

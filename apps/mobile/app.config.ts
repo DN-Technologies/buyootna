@@ -53,7 +53,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna-mobile',
-  version: '1.3.0',
+  version: '1.4.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
@@ -101,6 +101,14 @@ const config: ExpoConfig = {
       },
     ],
     'expo-router',
+    [
+      'expo-notifications',
+      {
+        // Android status-bar icon must be a white-on-transparent silhouette
+        icon: './src/assets/images/android-icon-monochrome.png',
+        color: '#15304D',
+      },
+    ],
     './plugins/withPrebuiltDsyms',
     './plugins/withRtlFlags',
     [

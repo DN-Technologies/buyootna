@@ -11,6 +11,7 @@ describe('DevicesService Unit Tests', () => {
       findMany: jest.fn(),
       findFirst: jest.fn(),
       deleteMany: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
 
@@ -45,6 +46,7 @@ describe('DevicesService Unit Tests', () => {
       expect(mockPrismaService.session.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1', isActive: true },
         orderBy: { lastActive: 'desc' },
+        omit: { pushToken: true },
       });
       expect(result).toBe(sessions);
     });
@@ -79,6 +81,46 @@ describe('DevicesService Unit Tests', () => {
         'session-current',
       );
       expect(result).toEqual({ count: 1 });
+    });
+  });
+
+  describe('setPushToken', () => {
+    const token = 'ExponentPushToken[abc123]';
+
+    it("stores the token on the caller's own session only", async () => {
+      mockPrismaService.session.updateMany.mockResolvedValue({ count: 1 });
+
+      const result = await service.setPushToken('user-1', 'session-1', token);
+
+      // Same device token can't stay on another session/account
+      expect(mockPrismaService.session.updateMany).toHaveBeenNthCalledWith(1, {
+        where: { pushToken: token, NOT: { id: 'session-1' } },
+        data: { pushToken: null },
+      });
+      expect(mockPrismaService.session.updateMany).toHaveBeenNthCalledWith(2, {
+        where: { id: 'session-1', userId: 'user-1' },
+        data: { pushToken: token },
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('clears the token when null is sent', async () => {
+      mockPrismaService.session.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.setPushToken('user-1', 'session-1', null);
+
+      expect(mockPrismaService.session.updateMany).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.session.updateMany).toHaveBeenCalledWith({
+        where: { id: 'session-1', userId: 'user-1' },
+        data: { pushToken: null },
+      });
+    });
+
+    it('rejects a token issued before sessions existed (no sid)', async () => {
+      await expect(
+        service.setPushToken('user-1', undefined, token),
+      ).rejects.toThrow('يرجى تسجيل الدخول مرة أخرى');
+      expect(mockPrismaService.session.updateMany).not.toHaveBeenCalled();
     });
   });
 });
