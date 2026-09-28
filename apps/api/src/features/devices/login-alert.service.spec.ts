@@ -127,4 +127,20 @@ describe('LoginAlertService', () => {
       },
     );
   });
+
+  it('includes the login location in the alert and the email', async () => {
+    await service.notifyNewDeviceLogin('user-1', {
+      ...newSession,
+      location: 'Cairo، مصر',
+    });
+
+    expect(notifications.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.stringMatching(/^iPhone 15 · Cairo، مصر · /),
+      }),
+    );
+    const { html } = mail.sendMail.mock.calls[0][0];
+    expect(html).toContain('الموقع');
+    expect(html).toContain('Cairo، مصر');
+  });
 });

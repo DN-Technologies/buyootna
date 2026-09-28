@@ -62,7 +62,9 @@ export class LoginAlertService {
     );
 
     const title = 'تسجيل دخول من جهاز جديد';
-    const body = `${newSession.deviceName} · ${loginTime}`;
+    const body = [newSession.deviceName, newSession.location, loginTime]
+      .filter(Boolean)
+      .join(' · ');
 
     await this.notificationsService.create({
       userId,
@@ -86,6 +88,7 @@ export class LoginAlertService {
           userName: user.name || 'مستخدم بيوتنا',
           deviceName: newSession.deviceName,
           loginTime,
+          location: newSession.location,
           ipAddress: newSession.ipAddress,
         }),
       });

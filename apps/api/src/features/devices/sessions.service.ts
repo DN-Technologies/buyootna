@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Session } from '@prisma/client';
+import { GeoIpService } from '../../core/geoip/geoip.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 // Per-request device info, extracted by AuthController from headers/req.ip
@@ -29,7 +30,10 @@ const PLATFORM_DEVICE_NAMES: Record<string, string> = {
  */
 @Injectable()
 export class SessionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geoIp: GeoIpService,
+  ) {}
 
   /**
    * Creates or refreshes the Session row representing a login. Keyed by
@@ -50,6 +54,8 @@ export class SessionsService {
       deviceCtx.deviceModel ||
       (deviceCtx.platform && PLATFORM_DEVICE_NAMES[deviceCtx.platform]) ||
       'جهاز الهاتف الحالي';
+    // "City، الدولة" from the login IP; refreshed on every login
+    const location = this.geoIp.locate(deviceCtx.ip);
 
     if (deviceCtx.deviceId) {
       const existing = await this.prisma.session.findUnique({
@@ -69,6 +75,7 @@ export class SessionsService {
           deviceModel: deviceCtx.deviceModel,
           deviceName,
           ipAddress: deviceCtx.ip,
+          location,
           userAgent: deviceCtx.userAgent,
         },
         update: {
@@ -76,6 +83,7 @@ export class SessionsService {
           deviceModel: deviceCtx.deviceModel,
           deviceName,
           ipAddress: deviceCtx.ip,
+          location,
           userAgent: deviceCtx.userAgent,
           isActive: true,
           lastActive: new Date(),
@@ -90,6 +98,7 @@ export class SessionsService {
         deviceModel: deviceCtx.deviceModel,
         deviceName,
         ipAddress: deviceCtx.ip,
+        location,
         userAgent: deviceCtx.userAgent,
       },
     });

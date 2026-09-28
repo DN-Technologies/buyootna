@@ -132,6 +132,19 @@ describe('RegisteredDevicesScreen', () => {
     expect(await findByText('Pixel 9')).toBeTruthy();
   });
 
+  it("shows each device's real location, and no made-up Kuwait fallback", async () => {
+    mockGetDevices.mockResolvedValue([
+      { id: 'session-a', deviceName: 'iPhone 15 Pro', platform: 'ios', isActive: true, lastActive: '', location: 'Cairo، مصر' },
+      { id: 'session-b', deviceName: 'Pixel 9', platform: 'android', isActive: true, lastActive: '', location: null },
+    ]);
+
+    const { findByText, queryByText } = await renderScreen();
+
+    expect(await findByText(/Cairo، مصر/)).toBeTruthy();
+    expect(await findByText(/موقع غير معروف/)).toBeTruthy();
+    expect(queryByText(/الكويت/)).toBeNull();
+  });
+
   it('refetches when the screen is re-focused, not just on first mount', async () => {
     await renderScreen();
 

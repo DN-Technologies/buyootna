@@ -16,6 +16,10 @@ services:
     expose: ["8000"]
     env_file:
       - ./apps/api/.env
+    volumes:
+      # MaxMind GeoLite2 database for device locations; kept across deploys
+      # and refreshed weekly by the API (needs MAXMIND_* in apps/api/.env)
+      - geoip_data:/app/apps/api/data/geoip
     restart: always
     depends_on:
       - postgres
@@ -102,6 +106,7 @@ services:
 
 volumes:
   postgres_data:
+  geoip_data:
 
 networks:
   # Shared with the dar-alnokhba stack on this host so nginx can reach its

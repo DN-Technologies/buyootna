@@ -2,12 +2,20 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { createSwaggerAuthMiddleware } from './core/swagger/swagger-auth.middleware';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Behind exactly one proxy (nginx), which sets X-Forwarded-For. Without
+  // this, req.ip is nginx's container address, so session IPs and the
+  // device location on Active Devices were wrong. Safe to trust one hop:
+  // the api container is only `expose`d (no published port) in
+  // docker-compose.yaml, so every request comes through nginx.
+  app.set('trust proxy', 1);
 
   // Enable global validation
   app.useGlobalPipes(

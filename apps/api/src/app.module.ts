@@ -13,6 +13,7 @@ import { RecoveryModule } from './features/recovery/recovery.module';
 import { StorageModule } from './core/storage/storage.module';
 import { TwilioModule } from './core/twilio/twilio.module';
 import { MailModule } from './core/mail/mail.module';
+import { GeoIpModule } from './core/geoip/geoip.module';
 import { EmailOtpModule } from './core/email-otp/email-otp.module';
 import { PhoneRegistrationModule } from './core/phone-registration/phone-registration.module';
 import { OtpRateLimiterModule } from './core/otp-rate-limiter/otp-rate-limiter.module';
@@ -57,6 +58,7 @@ import { AlertsModule } from './features/alerts/alerts.module';
     PrismaModule,
     TwilioModule,
     MailModule,
+    GeoIpModule,
     EmailOtpModule,
     PhoneRegistrationModule,
     OtpRateLimiterModule,

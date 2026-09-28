@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SessionsService } from './sessions.service';
+import { GeoIpService } from '../../core/geoip/geoip.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 describe('SessionsService Unit Tests', () => {
@@ -16,13 +17,17 @@ describe('SessionsService Unit Tests', () => {
     },
   };
 
+  const mockGeoIp = { locate: jest.fn().mockReturnValue('Cairo، مصر') };
+
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockGeoIp.locate.mockReturnValue('Cairo، مصر');
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SessionsService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: GeoIpService, useValue: mockGeoIp },
       ],
     }).compile();
 
@@ -118,6 +123,22 @@ describe('SessionsService Unit Tests', () => {
       });
 
       expect(result.isNewDevice).toBe(false);
+    });
+
+    it('stores the login location on create and update', async () => {
+      mockPrismaService.session.findUnique.mockResolvedValue(null);
+      mockPrismaService.session.upsert.mockResolvedValue({ id: 'session-9' });
+
+      await service.upsertSession('user-1', {
+        deviceId: 'device-9',
+        ip: '41.33.0.1',
+      });
+
+      expect(mockGeoIp.locate).toHaveBeenCalledWith('41.33.0.1');
+      const { create, update } =
+        mockPrismaService.session.upsert.mock.calls[0][0];
+      expect(create.location).toBe('Cairo، مصر');
+      expect(update.location).toBe('Cairo، مصر');
     });
 
     it('treats a login without a deviceId as a new device', async () => {
