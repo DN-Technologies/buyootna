@@ -16,6 +16,7 @@ import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
 import { useSocialAuth } from './useSocialAuth';
+import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
 
 export type IndividualAuthMode = 'login' | 'signup';
 export type AuthMode = IndividualAuthMode;
@@ -74,6 +75,7 @@ export function useIndividualAuth() {
         response.data.access_token,
         response.data.sessionId,
       );
+      notifyIfReactivated(response.data);
 
       resetToIdentityHome(response.data.activeIdentity?.type);
     } catch (error: any) {

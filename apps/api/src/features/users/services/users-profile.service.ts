@@ -300,6 +300,7 @@ export class UsersProfileService {
     whatsapp: true,
     avatarUrl: true,
     isDisabled: true,
+    isBlocked: true,
     isAdmin: true,
     identities: {
       include: {

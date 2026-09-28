@@ -15,28 +15,28 @@ import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
 } from './dto/admin-grant-coupon.dto';
-import { AdminUsersService } from './services/admin-users.service';
-import { AdminIdentityService } from './services/admin-identity.service';
-import { AdminExportService } from './services/admin-export.service';
-import { AdminPasswordService } from './services/admin-password.service';
-import { AdminCouponService } from './services/admin-coupon.service';
-import { AdminDashboardService } from './services/admin-dashboard.service';
-import { AdminVerificationsService } from './services/admin-verifications.service';
-import { AdminReportsService } from './services/admin-reports.service';
-import { AdminPropertiesService } from './services/admin-properties.service';
+import { AdminUsersService } from './services/users/admin-users.service';
+import { AdminIdentityService } from './services/users/admin-identity.service';
+import { AdminExportService } from './services/dashboard/admin-export.service';
+import { AdminPasswordService } from './services/users/admin-password.service';
+import { AdminCouponService } from './services/billing/admin-coupon.service';
+import { AdminDashboardService } from './services/dashboard/admin-dashboard.service';
+import { AdminVerificationsService } from './services/users/admin-verifications.service';
+import { AdminReportsService } from './services/moderation/admin-reports.service';
+import { AdminPropertiesService } from './services/moderation/admin-properties.service';
 import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
-import { AdminRequestsService } from './services/admin-requests.service';
-import { AdminExhibitionService } from './services/admin-exhibition.service';
-import { AdminPlansService } from './services/admin-plans.service';
-import { AdminInvoicesService } from './services/admin-invoices.service';
-import { AdminRatingsService } from './services/admin-ratings.service';
+import { AdminRequestsService } from './services/user-profile/admin-requests.service';
+import { AdminExhibitionService } from './services/user-profile/admin-exhibition.service';
+import { AdminPlansService } from './services/billing/admin-plans.service';
+import { AdminInvoicesService } from './services/billing/admin-invoices.service';
+import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
-import { AdminNotesService } from './services/admin-notes.service';
+import { AdminNotesService } from './services/users/admin-notes.service';
 import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
-import { AdminAuditLogService } from './services/admin-audit-log.service';
-import { AdminFeaturePackagesService } from './services/admin-feature-packages.service';
+import { AdminAuditLogService } from './services/audit/admin-audit-log.service';
+import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
 import {
   AdminCreateFeaturePackageDto,
   AdminUpdateFeaturePackageDto,

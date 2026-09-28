@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersRegistrationService } from './services/users-registration.service';
 import { UsersProfileService } from './services/users-profile.service';
 import { UsersDirectoryService } from './services/users-directory.service';
+import { AccountSuspensionService } from './services/account-suspension.service';
 import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 
 describe('UsersController', () => {
@@ -22,6 +23,10 @@ describe('UsersController', () => {
         },
         {
           provide: UsersDirectoryService,
+          useValue: {},
+        },
+        {
+          provide: AccountSuspensionService,
           useValue: {},
         },
         {

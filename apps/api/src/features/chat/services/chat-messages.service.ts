@@ -152,6 +152,38 @@ export class ChatMessagesService {
       throw new ForbiddenException('ليس لديك صلاحية للإرسال في هذه المحادثة');
     }
 
+    // The other side suspended their account (or was blocked): no new
+    // messages until they're back
+    const others = await this.prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        NOT: { OR: [{ userId: senderId }, { identityId: senderId }] },
+      },
+      select: {
+        userId: true,
+        identity: {
+          select: { user: { select: { isDisabled: true, isBlocked: true } } },
+        },
+      },
+    });
+    // Legacy participants reference the user directly
+    const legacyUserIds = others
+      .filter((p) => !p.identity && p.userId)
+      .map((p) => p.userId!);
+    const legacyUsers = legacyUserIds.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: legacyUserIds } },
+          select: { isDisabled: true, isBlocked: true },
+        })
+      : [];
+    const unavailable = [
+      ...others.map((p) => p.identity?.user),
+      ...legacyUsers,
+    ].some((u) => u?.isDisabled || u?.isBlocked);
+    if (unavailable) {
+      throw new ForbiddenException('هذا الحساب غير متاح حالياً');
+    }
+
     return await this.prisma.$transaction(async (tx) => {
       const message = await tx.message.create({
         data: {

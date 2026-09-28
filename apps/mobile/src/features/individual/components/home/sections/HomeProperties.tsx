@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import type { HomeSort } from '@/features/individual/components/home/homeSort';
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
 import { propertiesService } from '@/shared/api/properties.service';
@@ -34,6 +35,7 @@ interface HomePropertiesProps {
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
   viewMode?: 'card' | 'list';
+  sortBy?: HomeSort;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
 }
 
@@ -44,6 +46,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
       refreshing = false,
       onRefresh,
       viewMode = 'card',
+      sortBy = 'DEFAULT',
       ListHeaderComponent,
     },
     ref,
@@ -88,9 +91,14 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
     // resetToIdentityHome) triggers a real refetch of user-specific
     // results (e.g. per-user pricing/eligibility) instead of continuing to
     // show whatever was cached from before the auth state changed.
-    queryKey: ['homeProperties', activeFilter, token],
+    queryKey: ['homeProperties', activeFilter, sortBy, token],
     queryFn: ({ pageParam }) =>
-      feedService.getProperties(getBackendType(activeFilter), pageParam, 10),
+      feedService.getProperties(
+        getBackendType(activeFilter),
+        pageParam,
+        10,
+        sortBy,
+      ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,

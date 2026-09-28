@@ -7,6 +7,7 @@ import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
 
 // Google Sign-In requires either a GoogleService-Info.plist or an iosClientId —
 // calling configure() without one throws synchronously and crashes the screen,
@@ -36,6 +37,7 @@ export function useSocialAuth() {
       response.data.access_token,
       response.data.sessionId,
     );
+    notifyIfReactivated(response.data);
 
     resetToIdentityHome(response.data.activeIdentity?.type);
   };

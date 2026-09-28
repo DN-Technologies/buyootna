@@ -1,6 +1,7 @@
 import 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import './globals.css';
+import '@/shared/styles/nativewindInterop';
 
 import {
   Almarai_400Regular,

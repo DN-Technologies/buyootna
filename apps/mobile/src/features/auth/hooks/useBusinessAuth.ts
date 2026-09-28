@@ -13,6 +13,7 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
+import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
 
 // Company/office accounts stay behind the ComingSoonGate unless explicitly
 // enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
@@ -77,6 +78,7 @@ export function useBusinessAuth() {
         response.data.access_token,
         response.data.sessionId,
       );
+      notifyIfReactivated(response.data);
       resetToIdentityHome(response.data.activeIdentity?.type);
     } catch (error: any) {
       showAlert(

@@ -44,6 +44,17 @@ export class ChatConversationsService {
       throw new NotFoundException('المستلم غير موجود');
     }
 
+    // A suspended (تعطيل مؤقت) or blocked account can't be contacted
+    const recipientStatus = recipientUser
+      ? recipientUser
+      : await this.prisma.user.findUnique({
+          where: { id: recipientIdentity!.userId },
+          select: { isDisabled: true, isBlocked: true },
+        });
+    if (recipientStatus?.isDisabled || recipientStatus?.isBlocked) {
+      throw new ForbiddenException('هذا الحساب غير متاح حالياً');
+    }
+
     // Verify property exists if propertyId is provided
     let validPropertyId: string | null = null;
     if (propertyId) {

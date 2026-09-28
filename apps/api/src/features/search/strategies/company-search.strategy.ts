@@ -93,6 +93,8 @@ export class CompanySearchStrategy implements SearchStrategy {
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'COMPANY',
       companyData: companyProfileFilter,
+      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
+      user: { isDisabled: false, isBlocked: false },
     };
 
     const [identities, total] = await Promise.all([
