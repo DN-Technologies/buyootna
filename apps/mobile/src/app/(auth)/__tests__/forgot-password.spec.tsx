@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import apiClient from '@/shared/api/api';
@@ -205,4 +205,88 @@ describe('ForgotPasswordScreen', () => {
   // currently-supported testing-library query without adding a testID to
   // the production component, which is out of scope for a test-only
   // change — so handleBack's step-1-vs-step-2+ branching is not covered.
+
+  describe('OTP rate limits drive the countdown, never a toast', () => {
+    const cooldownError = (retryAfter: number) => ({
+      response: {
+        status: 429,
+        data: {
+          statusCode: 429,
+          message: `يرجى الانتظار ${retryAfter} ثانية قبل طلب رمز تحقق جديد`,
+          code: 'OTP_COOLDOWN',
+          retryAfter,
+        },
+      },
+    });
+
+    const submitStep1 = async (getByPlaceholderText: any, getByText: any) => {
+      await fireEvent.changeText(
+        getByPlaceholderText('alisalem@gmail.com'),
+        'ali@example.com',
+      );
+      await fireEvent.press(getByText('إرسال رمز التحقق'));
+    };
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('a rate-limited resend updates the countdown instead of showing a toast', async () => {
+      jest.useFakeTimers();
+      const { getByPlaceholderText, getByText, queryByText } = await render(
+        <ForgotPasswordScreen />,
+      );
+      mockApiClient.post.mockResolvedValueOnce({ data: {} });
+      await submitStep1(getByPlaceholderText, getByText);
+      await waitFor(() => getByText('التحقق من الرمز'));
+
+      // Initial 45s countdown runs out -> resend becomes available
+      await act(async () => {
+        jest.advanceTimersByTime(46_000);
+      });
+      mockApiClient.post.mockRejectedValueOnce(cooldownError(120));
+      await fireEvent.press(getByText('إعادة إرسال الرمز'));
+
+      await waitFor(() => {
+        expect(getByText(/إعادة إرسال الرمز خلال\s+0[12]:[0-9]{2}/)).toBeTruthy();
+      });
+      expect(useAlertStore.getState().showAlert).not.toHaveBeenCalled();
+      // Button stays hidden until the server's wait has passed
+      expect(queryByText('إعادة إرسال الرمز')).toBeNull();
+    });
+
+    it('a rate-limited first send still opens the code step with the countdown', async () => {
+      const { getByPlaceholderText, getByText } = await render(
+        <ForgotPasswordScreen />,
+      );
+      mockApiClient.post.mockRejectedValueOnce(cooldownError(90));
+
+      await submitStep1(getByPlaceholderText, getByText);
+
+      await waitFor(() => getByText('التحقق من الرمز'));
+      expect(getByText(/إعادة إرسال الرمز خلال\s+01:(2|3)[0-9]/)).toBeTruthy();
+      expect(useAlertStore.getState().showAlert).not.toHaveBeenCalled();
+    });
+
+    it('the daily limit is shown inline on the code step, not as a toast', async () => {
+      const { getByPlaceholderText, getByText } = await render(
+        <ForgotPasswordScreen />,
+      );
+      mockApiClient.post.mockRejectedValueOnce({
+        response: {
+          status: 429,
+          data: {
+            message: 'تم تجاوز الحد الأقصى لطلبات رمز التحقق',
+            code: 'OTP_DAILY_LIMIT',
+            retryAfter: 3600,
+          },
+        },
+      });
+
+      await submitStep1(getByPlaceholderText, getByText);
+
+      await waitFor(() => getByText('تم تجاوز الحد الأقصى لطلبات رمز التحقق'));
+      expect(useAlertStore.getState().showAlert).not.toHaveBeenCalled();
+    });
+  });
 });

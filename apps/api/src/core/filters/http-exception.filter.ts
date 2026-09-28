@@ -19,6 +19,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const exceptionResponse = exception.getResponse();
 
     let message: string | string[] = '';
+    // Extra fields the server put on the exception (e.g. the OTP rate
+    // limiter's `code` + `retryAfter`, which the app uses to drive its
+    // resend countdown). Previously dropped when rebuilding the body.
+    let extras: Record<string, unknown> = {};
 
     if (typeof exceptionResponse === 'string') {
       message = exceptionResponse;
@@ -26,8 +30,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       typeof exceptionResponse === 'object' &&
       exceptionResponse !== null
     ) {
-      const resObj = exceptionResponse as { message?: string | string[] };
+      const resObj = exceptionResponse as {
+        message?: string | string[];
+      } & Record<string, unknown>;
       message = resObj.message ?? exception.message;
+      extras = { ...resObj };
     } else {
       message = exception.message;
     }
@@ -67,7 +74,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       translatedMessage = await translate(message);
     }
 
+    if (typeof extras.retryAfter === 'number') {
+      response.setHeader('Retry-After', String(extras.retryAfter));
+    }
+
     response.status(status).json({
+      ...extras,
+      // Always authoritative, never taken from the payload
       statusCode: status,
       message: translatedMessage,
       error: exception.name,
