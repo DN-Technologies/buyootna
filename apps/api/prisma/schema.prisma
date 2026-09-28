@@ -229,6 +229,10 @@ model Session {
   userAgent   String?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The persona this device is using: logging in again on the same device
+  // resumes it, and switching on one device leaves the others alone
+  activeIdentityId String?
+  activeIdentity   Identity? @relation(fields: [activeIdentityId], references: [id], onDelete: SetNull)
 
   @@unique([userId, deviceId])
   @@index([userId])

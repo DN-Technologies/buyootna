@@ -51,23 +51,17 @@ export class AuthSessionService {
       reactivated = true;
     }
 
-    // Get the active identity or the specified one
+    // Which persona this login opens with: the one asked for, else the one
+    // this device was using, else the account's last used, else the first
     let identity: IdentityWithData | null;
 
     if (identityId) {
       identity = await this.identities.findById(identityId, user.id);
     } else {
-      identity = await this.identities.findActive(user.id);
-
-      // If no active identity, get the first one (and set it as active)
-      if (!identity) {
-        identity = await this.identities.findEarliest(user.id);
-
-        if (identity) {
-          await this.identities.activate(identity.id);
-          identity.isActive = true;
-        }
-      }
+      identity =
+        (await this.identities.findForDevice(user.id, deviceCtx.deviceId)) ??
+        (await this.identities.findActive(user.id)) ??
+        (await this.identities.findEarliest(user.id));
 
       // Self-heal: registration always creates the User row and its first
       // Identity together in one transaction, so a User with zero
@@ -89,7 +83,11 @@ export class AuthSessionService {
     const { isNewDevice, ...session } = await this.sessions.upsertSession(
       user.id,
       deviceCtx,
+      identity.id,
     );
+    if (!identity.isActive) {
+      await this.identities.markLastUsed(user.id, identity.id);
+    }
     if (isNewDevice) {
       // Not awaited, and it never throws: alerting must not slow the login
       void this.loginAlerts.notifyNewDeviceLogin(user.id, session);
@@ -109,8 +107,12 @@ export class AuthSessionService {
       access_token: this.jwtService.sign(payload),
       sessionId: session.id,
       user,
-      activeIdentity: identity,
-      identities,
+      activeIdentity: { ...identity, isActive: true },
+      // isActive here means "active on this device"
+      identities: identities.map((i) => ({
+        ...i,
+        isActive: i.id === identity.id,
+      })),
       ...(reactivated ? { reactivated: true } : {}),
     };
   }
@@ -139,19 +141,12 @@ export class AuthSessionService {
       throw new ForbiddenException('الهوية غير موجودة أو لا تنتمي لهذا الحساب');
     }
 
-    // Update isActive flags in a transaction
-    await this.prisma.$transaction([
-      // Deactivate all user's identities
-      this.prisma.identity.updateMany({
-        where: { userId },
-        data: { isActive: false },
-      }),
-      // Activate the selected identity
-      this.prisma.identity.update({
-        where: { id: identityId },
-        data: { isActive: true },
-      }),
-    ]);
+    // This device now uses it, and it becomes the account's last used one;
+    // other devices keep their own persona
+    await this.identities.markLastUsed(userId, identityId);
+    if (sessionId) {
+      await this.sessions.setActiveIdentity(sessionId, identityId);
+    }
 
     // Get updated user
     const user = await this.prisma.user.findUnique({

@@ -115,7 +115,8 @@ export interface AuthTestContext {
     findById: jest.Mock;
     findActive: jest.Mock;
     findEarliest: jest.Mock;
-    activate: jest.Mock;
+    findForDevice: jest.Mock;
+    markLastUsed: jest.Mock;
     listAll: jest.Mock;
     createDefaultForOrphanedUser: jest.Mock;
   };
@@ -123,6 +124,7 @@ export interface AuthTestContext {
     upsertSession: jest.Mock;
     deleteAllExceptCurrent: jest.Mock;
     touchLastActive: jest.Mock;
+    setActiveIdentity: jest.Mock;
   };
   loginAlerts: { notifyNewDeviceLogin: jest.Mock };
   setup: () => Promise<void>;
@@ -184,7 +186,9 @@ export function createAuthTestContext(): AuthTestContext {
     findById: jest.fn(),
     findActive: jest.fn(),
     findEarliest: jest.fn(),
-    activate: jest.fn(),
+    // No persona remembered for the device unless a test says so
+    findForDevice: jest.fn().mockResolvedValue(null),
+    markLastUsed: jest.fn(),
     listAll: jest.fn().mockResolvedValue([]),
     createDefaultForOrphanedUser: jest.fn(),
   };
@@ -195,6 +199,7 @@ export function createAuthTestContext(): AuthTestContext {
     upsertSession: jest.fn().mockResolvedValue({ id: 'session-1' }),
     deleteAllExceptCurrent: jest.fn(),
     touchLastActive: jest.fn(),
+    setActiveIdentity: jest.fn(),
   };
 
   const context: AuthTestContext = {

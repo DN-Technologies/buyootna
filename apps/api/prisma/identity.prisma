@@ -8,6 +8,8 @@ model Identity {
   id        String       @id @default(uuid())
   userId    String
   type      IdentityType
+  // The persona used last, on any device -- what a brand-new device opens
+  // with. Each device's own current persona is Session.activeIdentityId.
   isActive  Boolean      @default(false)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
@@ -18,6 +20,9 @@ model Identity {
   individualData IndividualIdentityData?
   companyData    CompanyIdentityData?
   officeData     OfficeIdentityData?
+
+  // Devices currently using this persona
+  activeOnSessions Session[]
 
   // Identity-scoped data
   properties      Property[]

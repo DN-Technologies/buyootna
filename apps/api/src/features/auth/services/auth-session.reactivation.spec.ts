@@ -17,6 +17,8 @@ describe('AuthSessionService.login account status', () => {
   };
   const identity = { id: 'i1', type: 'INDIVIDUAL', isActive: true };
   const identities = {
+    findForDevice: jest.fn().mockResolvedValue(null),
+    markLastUsed: jest.fn(),
     findActive: jest.fn().mockResolvedValue(identity),
     listAll: jest.fn().mockResolvedValue([identity]),
   };

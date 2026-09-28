@@ -196,15 +196,22 @@ export class UsersController {
     }
 
     const { identities, ...userWithoutIdentities } = fullUser;
-    const activeIdentity =
-      identities?.find((identity) => identity.isActive) ??
-      identities?.[0] ??
-      null;
+    // The persona this device's token carries -- other devices may be on
+    // another one; isActive means "active on this device"
+    const activeId =
+      identities?.find((identity) => identity.id === reqUser.identityId)?.id ??
+      identities?.find((identity) => identity.isActive)?.id ??
+      identities?.[0]?.id;
+    const deviceIdentities = (identities ?? []).map((identity) => ({
+      ...identity,
+      isActive: identity.id === activeId,
+    }));
 
     return {
       user: userWithoutIdentities,
-      activeIdentity,
-      identities: identities ?? [],
+      activeIdentity:
+        deviceIdentities.find((identity) => identity.isActive) ?? null,
+      identities: deviceIdentities,
     };
   }
 

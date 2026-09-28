@@ -58,11 +58,35 @@ export class AuthIdentitiesService {
     });
   }
 
-  async activate(identityId: string): Promise<void> {
-    await this.prisma.identity.update({
-      where: { id: identityId },
-      data: { isActive: true },
+  /**
+   * Marks this persona as the account's last used one (Identity.isActive),
+   * which is what a device with no persona of its own opens with.
+   */
+  async markLastUsed(userId: string, identityId: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.identity.updateMany({
+        where: { userId, id: { not: identityId }, isActive: true },
+        data: { isActive: false },
+      }),
+      this.prisma.identity.update({
+        where: { id: identityId },
+        data: { isActive: true },
+      }),
+    ]);
+  }
+
+  /** The persona this device was last using, if it still exists. */
+  async findForDevice(
+    userId: string,
+    deviceId?: string,
+  ): Promise<IdentityWithData | null> {
+    if (!deviceId) return null;
+    const session = await this.prisma.session.findUnique({
+      where: { userId_deviceId: { userId, deviceId } },
+      select: { activeIdentityId: true },
     });
+    if (!session?.activeIdentityId) return null;
+    return this.findById(session.activeIdentityId, userId);
   }
 
   listAll(userId: string): Promise<IdentityWithData[]> {
