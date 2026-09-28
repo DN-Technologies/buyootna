@@ -3,7 +3,6 @@ import {
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
@@ -18,6 +17,7 @@ import {
   LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,
@@ -65,11 +65,6 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
     };
 
     if (!property) return null;
-
-    const coverImage = property.images?.[0];
-    const imageSource = coverImage
-      ? { uri: coverImage }
-      : require('@/assets/images/no-image.png');
 
     // Construct label like "شقة للبيع" or "عقار تجاري للبيع"
     const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
@@ -141,31 +136,16 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
 
         {/* --- Scrollable Body Content --- */}
         <BottomSheetScrollView showsVerticalScrollIndicator={false}>
-          {/* Cover image area */}
+          {/* All uploaded images, swipeable */}
           <View className="px-6 my-4">
-            <View className="relative h-[210px] w-full overflow-hidden rounded-sm bg-gray-50">
-              <Image
-                source={imageSource}
-                className="h-full w-full"
-                contentFit="cover"
-              />
-
-              {/* Mock premium tag */}
-              {property.isPremium && (
-                <View className="absolute left-4 top-4 rounded-lg bg-[#FA9E1B] px-3 py-1.5 shadow-sm">
-                  <Text className="font-cairo-bold text-[11px] text-[#111111]">
-                    إعلان مميز
-                  </Text>
-                </View>
-              )}
-
-              {/* Pagination Dots */}
-              <View className="absolute bottom-4 left-0 right-0 flex-row justify-center items-center gap-1.5">
-                <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
-                <View className="h-1.5 w-4 rounded-full bg-[#15304D]" />
-              </View>
-            </View>
+            <PropertyImageCarousel
+              images={
+                property.images?.length
+                  ? property.images
+                  : [require('@/assets/images/no-image.png')]
+              }
+              isFeatured={!!property.isPremium}
+            />
           </View>
 
           {/* Price & Date Row */}

@@ -33,7 +33,9 @@ export default function DraftAdCard({
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
           source={imageSource}
-          className="h-full w-full"
+          // expo-image isn't a NativeWind-styled component: className would
+          // be ignored and the image rendered at 0x0
+          style={{ width: '100%', height: '100%' }}
           contentFit="cover"
         />
 

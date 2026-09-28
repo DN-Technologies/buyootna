@@ -1,0 +1,26 @@
+import { render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
+
+import ArchivedAdCard from '../ArchivedAdCard';
+import { IMAGE_URLS, makeActivityItem, renderedImages } from './draftFixture';
+
+jest.mock('expo-image', () => require('./draftFixture').mockExpoImage());
+
+beforeEach(() => {
+  renderedImages.length = 0;
+});
+
+describe('ArchivedAdCard', () => {
+  it('shows the first image as a full-size thumbnail', async () => {
+    await render(
+      <ArchivedAdCard property={makeActivityItem({ status: 'EXPIRED' as any })} />,
+    );
+    const [image] = renderedImages;
+
+    expect(image.source).toEqual({ uri: IMAGE_URLS[0] });
+    expect(StyleSheet.flatten(image.style)).toMatchObject({
+      width: '100%',
+      height: '100%',
+    });
+  });
+});
