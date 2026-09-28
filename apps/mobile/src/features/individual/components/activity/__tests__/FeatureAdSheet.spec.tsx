@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render } from '@testing-library/react-native';
 import * as WebBrowser from 'expo-web-browser';
-import React from 'react';
 
 import { paymentsService } from '@/shared/api/payments.service';
 import { showAlert } from '@/shared/utils/alert';
