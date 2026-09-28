@@ -1,3 +1,4 @@
+import type { HomeSort } from '@/features/individual/components/home/homeSort';
 import apiClient from '@/shared/api/api';
 import {
   CompaniesResponse,
@@ -27,13 +28,17 @@ export const feedService = {
     type?: 'SALE' | 'RENT' | 'EXCHANGE',
     page: number = 1,
     limit: number = 10,
+    sort: HomeSort = 'DEFAULT',
   ): Promise<PropertiesResponse> => {
-    let url = `/properties?page=${page}&limit=${limit}`;
-    if (type) {
-      url = `/properties?type=${type}&page=${page}&limit=${limit}`;
-    }
-    console.log('URL', url);
-    const response = await apiClient.get<PropertiesResponse>(url);
+    const response = await apiClient.get<PropertiesResponse>('/properties', {
+      params: {
+        page,
+        limit,
+        ...(type ? { type } : {}),
+        // The default order needs no param (and older APIs don't know it)
+        ...(sort !== 'DEFAULT' ? { sort } : {}),
+      },
+    });
     return response.data;
   },
 

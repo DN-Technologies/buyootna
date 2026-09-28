@@ -14,16 +14,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SortIcon } from '@/assets/icons';
 import { FilterHorizontalIcon } from '@/assets/icons/home/header';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
+import {
+  HOME_SORT_OPTIONS,
+  type HomeSort,
+} from '@/features/individual/components/home/homeSort';
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
 import { feedService } from '@/features/individual/services/feed.service';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
+import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { showAlert } from '@/shared/utils/alert';
 import { HomeFeedResponse } from '@/types/feed';
 
 type PrimaryTab = 'all' | 'properties' | 'offices';
@@ -32,6 +36,8 @@ type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
 export default function HomeScreen() {
   const token = useAuthStore((state) => state.token);
   const filterSheetRef = useRef<BottomSheetModal>(null);
+  const sortSheetRef = useRef<BottomSheetModal>(null);
+  const [sortBy, setSortBy] = useState<HomeSort>('DEFAULT');
   const { scrollContentBottomPadding } = useTabBarHeight();
   // Shared across all three possible active scrollables below (only one is
   // ever mounted at a time), so tapping the already-active Home tab scrolls
@@ -147,7 +153,10 @@ export default function HomeScreen() {
         {/* Sort Button */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => showAlert('قريباً', 'ميزة الترتيب ستكون متاحة قريباً')}
+          onPress={() => sortSheetRef.current?.present()}
+          accessibilityRole="button"
+          accessibilityLabel="الترتيب حسب"
+          testID="home-sort-button"
           className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
         >
           <SortIcon size={18} color="#111111" />
@@ -176,6 +185,7 @@ export default function HomeScreen() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             viewMode={viewMode}
+            sortBy={sortBy}
             ListHeaderComponent={renderHeader(false)}
           />
         ) : activeTab === 'offices' ? (
@@ -213,6 +223,17 @@ export default function HomeScreen() {
         <GlobalFilterSheet
           ref={filterSheetRef}
           onApplyFilters={handleAdvancedSearch}
+        />
+        {/* Sorts the عقارات list; picking one from another tab opens it */}
+        <RadioSelectionSheet
+          ref={sortSheetRef}
+          title="الترتيب حسب"
+          options={HOME_SORT_OPTIONS}
+          selectedValue={sortBy}
+          onSelect={(value) => {
+            setSortBy(value as HomeSort);
+            if (activeTab !== 'properties') setActiveTab('properties');
+          }}
         />
         <ConnectionErrorModal
           visible={showErrorModal}

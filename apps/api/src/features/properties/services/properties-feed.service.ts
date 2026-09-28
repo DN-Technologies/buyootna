@@ -1,13 +1,40 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { GetPropertiesFilterDto } from '../dto/get-properties-filter.dto';
+import {
+  GetPropertiesFilterDto,
+  type PropertySort,
+} from '../dto/get-properties-filter.dto';
 import {
   formatCompanies,
   formatDateToMonthYear,
   formatProperties,
 } from './property-formatting.util';
 import { notExpiredWhere } from './property-expiry.util';
+
+// Stable orders for paginated lists: the id tiebreaker keeps ads with the
+// same publish time from shifting between pages
+function listOrder(
+  sort: PropertySort,
+): Prisma.PropertyOrderByWithRelationInput[] {
+  if (sort === 'NEWEST' || sort === 'OLDEST') {
+    return [
+      {
+        publishedAt: {
+          sort: sort === 'NEWEST' ? 'desc' : 'asc',
+          nulls: 'last',
+        },
+      },
+      { id: 'asc' },
+    ];
+  }
+  return [
+    { isPriority: 'desc' },
+    { isFeatured: 'desc' },
+    { publishedAt: { sort: 'desc', nulls: 'last' } },
+    { id: 'asc' },
+  ];
+}
 
 @Injectable()
 export class PropertiesFeedService {
@@ -107,7 +134,13 @@ export class PropertiesFeedService {
 
   // --- PAGINATED FEED (For Infinite Scroll) ---
   async findAll(filters: GetPropertiesFilterDto) {
-    const { type, page = 1, limit = 10, identityId } = filters;
+    const {
+      type,
+      page = 1,
+      limit = 10,
+      identityId,
+      sort = 'DEFAULT',
+    } = filters;
 
     const skip = (page - 1) * limit;
 
@@ -127,11 +160,7 @@ export class PropertiesFeedService {
         where: whereClause,
         skip: skip,
         take: limit,
-        orderBy: [
-          { isPriority: 'desc' },
-          { isFeatured: 'desc' },
-          { publishedAt: { sort: 'desc', nulls: 'last' } },
-        ],
+        orderBy: listOrder(sort),
         include: {
           identity: {
             select: {
