@@ -9,6 +9,12 @@ export interface UserSettingsResponse {
   hideOfficeAds: boolean;
 }
 
+export interface SuspendOtpResponse {
+  channel: 'phone' | 'email';
+  // Masked, e.g. "+965 •••• 88" or "a•••@gmail.com"
+  destination: string;
+}
+
 export const settingsService = {
   getSettings: async (): Promise<UserSettingsResponse> => {
     const response = await apiClient.get<UserSettingsResponse>('/settings');
@@ -33,11 +39,24 @@ export const settingsService = {
     return response.data;
   },
 
-  disableAccount: async (): Promise<{ success: boolean; message: string }> => {
-    const response = await apiClient.patch<{
+  /** Sends the code confirming a temporary suspension (SMS, or email). */
+  requestSuspendOtp: async (): Promise<SuspendOtpResponse> => {
+    const response = await apiClient.post<SuspendOtpResponse>(
+      '/users/account/suspend/request-otp',
+    );
+    return response.data;
+  },
+
+  /** Suspends the account; signing in again reactivates it. */
+  suspendAccount: async (payload: {
+    otp: string;
+    reasons: string[];
+    note?: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    const response = await apiClient.post<{
       success: boolean;
       message: string;
-    }>('/users/account/disable');
+    }>('/users/account/suspend', payload);
     return response.data;
   },
 
