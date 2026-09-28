@@ -43,4 +43,26 @@ describe('AlertsOptionsMenu', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(onDeleteAllPress).toHaveBeenCalledTimes(1);
   });
+
+  it('is reused by the ads tab with its own label, and can be disabled', async () => {
+    const onDeleteAllPress = jest.fn();
+
+    const { getByTestId, getByText, queryByText } = await render(
+      <AlertsOptionsMenu
+        visible={true}
+        onClose={jest.fn()}
+        onDeleteAllPress={onDeleteAllPress}
+        deleteAllLabel="حذف جميع الإعلانات"
+        deleteAllTestID="delete-all-ads-menu-item"
+        deleteAllDisabled
+      />,
+    );
+
+    expect(getByText('حذف جميع الإعلانات')).toBeTruthy();
+    expect(queryByText('حذف جميع التنبيهات')).toBeNull();
+    const item = getByTestId('delete-all-ads-menu-item');
+    expect(item).toBeDisabled();
+    await fireEvent.press(item);
+    expect(onDeleteAllPress).not.toHaveBeenCalled();
+  });
 });

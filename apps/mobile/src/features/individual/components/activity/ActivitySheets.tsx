@@ -53,6 +53,16 @@ export default function ActivitySheets({
         onCancel={adActions.handleCancelDelete}
       />
 
+      {/* --- Delete All Ads Confirmation (header "⋮" menu) --- */}
+      <DeleteConfirmationSheet
+        ref={adActions.deleteAllSheetRef}
+        onConfirm={adActions.handleConfirmDeleteAll}
+        title="هل أنت متأكد من حذف جميع الإعلانات؟"
+        description={`سيتم حذف ${adActions.listedAdsCount} إعلان ولن تظهر للمستخدمين بعد الآن، وسيتم فقدان مدة التميز المتبقية`}
+        confirmLabel="حذف جميع الإعلانات"
+        skipReasonStep
+      />
+
       {/* --- Alert Delete Confirmation Bottom Sheet --- */}
       <DeleteConfirmationSheet
         ref={alertActions.alertDeleteSheetRef}
