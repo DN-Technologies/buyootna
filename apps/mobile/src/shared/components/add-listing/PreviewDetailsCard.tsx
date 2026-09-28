@@ -134,7 +134,9 @@ export default function PreviewDetailsCard({
         <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
           الموقع
         </Text>
-        <Text className="text-right font-cairo-semibold text-[14px] text-[#15304D]">
+        <Text className="font-cairo-semibold text-[14px] text-[#15304D]"
+          style={{ writingDirection: "rtl" }}
+        >
           {draftData.mapLocationLabel
             ? draftData.mapLocationLabel
             : `${draftData.governorate?.label || ''} - ${draftData.area?.label || ''}`}
