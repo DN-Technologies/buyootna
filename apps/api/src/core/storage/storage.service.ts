@@ -1,4 +1,9 @@
-import { PutObjectCommand, S3Client, S3ClientConfig } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+  S3ClientConfig,
+} from '@aws-sdk/client-s3';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
@@ -51,6 +56,26 @@ export class StorageService {
       throw new InternalServerErrorException('فشل في رفع الملف');
     }
   }
+  /**
+   * Deletes a file this service uploaded, given the URL uploadFile returned.
+   * Best effort: used to clean up after a failed write, so it never throws.
+   * URLs that aren't ours (other buckets, external links) are ignored.
+   */
+  async deleteFile(url: string | null | undefined): Promise<void> {
+    const prefix = `https://${this.bucketName}.s3.${this.region}.amazonaws.com/`;
+    if (!url || !url.startsWith(prefix)) return;
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucketName,
+          Key: url.slice(prefix.length),
+        }),
+      );
+    } catch (error) {
+      console.error('S3 Delete Error:', error);
+    }
+  }
+
   // Multiple File Uploads
   async uploadMultipleFiles(
     files: Express.Multer.File[],

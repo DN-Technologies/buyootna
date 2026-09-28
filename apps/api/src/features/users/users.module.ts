@@ -7,8 +7,10 @@ import { AccountSuspensionService } from './services/account-suspension.service'
 import { ProviderCardsService } from './services/provider-cards.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
+import { IdentitiesModule } from '../identities/identities.module';
 
 @Module({
+  imports: [IdentitiesModule],
   // CompanyController / OfficeController declare literal `/users/*` routes
   // (companies, offices, register/company, ...) that must be registered
   // before UsersController's catch-all `GET /:id`, or that route shadows

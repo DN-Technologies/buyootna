@@ -9,6 +9,10 @@ import { Prisma, RequestStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
+import {
+  assertApprovedProvider,
+  isApprovedProvider,
+} from '../../identities/persona-rules';
 
 const CLIENT_INCLUDE = {
   user: true,
@@ -44,10 +48,22 @@ export class CompanyRequestsService {
     if (dto.targetIdentityId) {
       const target = await this.prisma.identity.findUnique({
         where: { id: dto.targetIdentityId },
-        select: { id: true, type: true },
+        select: {
+          id: true,
+          type: true,
+          companyData: { select: { status: true } },
+          officeData: { select: { status: true } },
+        },
       });
       if (!target || (target.type !== 'COMPANY' && target.type !== 'OFFICE')) {
         throw new BadRequestException('الجهة المطلوبة غير موجودة');
+      }
+      // A company/office still under review can't receive requests yet
+      const targetStatus = (target.companyData ?? target.officeData)?.status;
+      if (targetStatus !== 'APPROVED') {
+        throw new BadRequestException(
+          'هذه الجهة غير متاحة لاستقبال الطلبات حالياً',
+        );
       }
       if (target.id === clientIdentityId) {
         throw new BadRequestException('لا يمكن إرسال طلب إلى نفسك');
@@ -84,6 +100,15 @@ export class CompanyRequestsService {
       search?: string;
     },
   ): Promise<CompanyRequestResponseDto[]> {
+    // Leads (directed or marketplace) reach approved companies/offices only;
+    // a provider's own submissions ("mine") stay visible either way
+    if (
+      params.scope !== 'mine' &&
+      !(await isApprovedProvider(this.prisma, identityId))
+    ) {
+      return [];
+    }
+
     const where: Prisma.CompanyRequestWhereInput =
       params.scope === 'company'
         ? { targetIdentityId: identityId }
@@ -186,6 +211,7 @@ export class CompanyRequestsService {
     id: string,
     identityId: string,
   ): Promise<CompanyRequestResponseDto> {
+    await assertApprovedProvider(this.prisma, identityId);
     const request = await this.getVisibleRequestOrThrow(id, identityId);
 
     if (request.targetIdentityId && request.targetIdentityId !== identityId) {

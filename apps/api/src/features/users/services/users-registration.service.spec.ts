@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersRegistrationService } from './users-registration.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { StorageService } from '../../../core/storage/storage.service';
+import { IdentitiesService } from '../../identities/identities.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
 import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
 import { PhoneRegistrationPendingService } from '../../../core/phone-registration/phone-registration-pending.service';
@@ -65,6 +65,11 @@ describe('UsersRegistrationService', () => {
     consume: jest.Mock;
   };
   let rateLimiter: { recordRequest: jest.Mock };
+  let identitiesService: {
+    uploadProviderFiles: jest.Mock;
+    createProviderPersonaInTx: jest.Mock;
+    deleteUploads: jest.Mock;
+  };
 
   beforeEach(async () => {
     prisma = buildPrismaMock();
@@ -81,12 +86,23 @@ describe('UsersRegistrationService', () => {
       consume: jest.fn(),
     };
     rateLimiter = { recordRequest: jest.fn() };
+    identitiesService = {
+      uploadProviderFiles: jest
+        .fn()
+        .mockResolvedValue({ logoUrl: 'https://bucket/logo.png' }),
+      createProviderPersonaInTx: jest.fn().mockResolvedValue({
+        id: 'identity-c',
+        companyData: { id: 'cd-1' },
+        officeData: null,
+      }),
+      deleteUploads: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersRegistrationService,
         { provide: PrismaService, useValue: prisma },
-        { provide: StorageService, useValue: {} },
+        { provide: IdentitiesService, useValue: identitiesService },
         { provide: TwilioService, useValue: twilioService },
         { provide: EmailOtpService, useValue: emailOtpService },
         {
@@ -358,6 +374,60 @@ describe('UsersRegistrationService', () => {
       ).rejects.toThrow(ConflictException);
 
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+  describe('registerCompany', () => {
+    const dto = {
+      email: 'co@example.com',
+      password: 'password123',
+      name: 'شركة',
+      licenseNumber: '12 3',
+    } as never;
+    const withLicenseLookups = () =>
+      Object.assign(prisma, {
+        companyIdentityData: { findFirst: jest.fn().mockResolvedValue(null) },
+        officeIdentityData: { findFirst: jest.fn().mockResolvedValue(null) },
+      });
+
+    it('creates the login, then the persona through IdentitiesService', async () => {
+      withLicenseLookups();
+
+      const result = await service.registerCompany(dto);
+
+      expect(identitiesService.createProviderPersonaInTx).toHaveBeenCalledWith(
+        expect.anything(),
+        'COMPANY',
+        'user-1',
+        expect.objectContaining({ logoUrl: 'https://bucket/logo.png' }),
+        { isActive: true },
+      );
+      expect(result.profile).toEqual({ id: 'cd-1' });
+      expect(result.user).not.toHaveProperty('password');
+    });
+
+    it('refuses a taken licence with 409 before uploading anything', async () => {
+      withLicenseLookups().officeIdentityData.findFirst.mockResolvedValue({
+        id: 'od-1',
+      });
+
+      await expect(service.registerCompany(dto)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(identitiesService.uploadProviderFiles).not.toHaveBeenCalled();
+    });
+
+    it('removes the uploads and keeps the 409 when the persona is refused', async () => {
+      withLicenseLookups();
+      identitiesService.createProviderPersonaInTx.mockRejectedValue(
+        new ConflictException('رقم الترخيص مسجل مسبقاً'),
+      );
+
+      await expect(service.registerCompany(dto)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(identitiesService.deleteUploads).toHaveBeenCalledWith({
+        logoUrl: 'https://bucket/logo.png',
+      });
     });
   });
 });

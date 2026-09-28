@@ -44,6 +44,8 @@ model Identity {
   requestsTargeted CompanyRequest[] @relation("TargetedRequests")
   requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
 
+  // One individual, one company and one office per account
+  @@unique([userId, type])
   @@index([userId])
   @@index([userId, isActive])
 }
@@ -69,7 +71,9 @@ model CompanyIdentityData {
   serviceAreas    String?
   about           String?
   licenseActivity String?
-  licenseNumber   String
+  // Normalised (no spaces, Western digits); unique across companies AND
+  // offices -- the cross-table half is enforced in IdentitiesService
+  licenseNumber   String         @unique
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?
@@ -95,7 +99,9 @@ model OfficeIdentityData {
   hqLocation      String?
   about           String?
   licenseActivity String?
-  licenseNumber   String
+  // Normalised (no spaces, Western digits); unique across companies AND
+  // offices -- the cross-table half is enforced in IdentitiesService
+  licenseNumber   String         @unique
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

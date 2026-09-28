@@ -64,7 +64,15 @@ describe('CompanyRequestsService', () => {
         count: jest.fn().mockResolvedValue(0),
         groupBy: jest.fn().mockResolvedValue([]),
       },
-      identity: { findUnique: jest.fn() },
+      // The caller/target: an approved company unless a test says otherwise
+      identity: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'company-1',
+          type: 'COMPANY',
+          companyData: { status: 'APPROVED' },
+          officeData: null,
+        }),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -155,11 +163,6 @@ describe('CompanyRequestsService', () => {
     };
 
     it('creates a directed request as the caller with PENDING status', async () => {
-      prisma.identity.findUnique.mockResolvedValue({
-        id: 'company-1',
-        type: 'COMPANY',
-      });
-
       const result = await service.create('client-1', {
         ...dto,
         targetIdentityId: 'company-1',
@@ -217,6 +220,54 @@ describe('CompanyRequestsService', () => {
         service.create('client-1', { ...dto, targetIdentityId: 'client-1' }),
       ).rejects.toThrow(BadRequestException);
       expect(prisma.companyRequest.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('companies/offices under review', () => {
+    const pendingOffice = {
+      id: 'office-1',
+      type: 'OFFICE',
+      companyData: null,
+      officeData: { status: 'PENDING' },
+    };
+
+    it('cannot be sent a request', async () => {
+      prisma.identity.findUnique.mockResolvedValue(pendingOffice);
+
+      await expect(
+        service.create('client-1', {
+          title: 't',
+          category: 'c',
+          location: 'l',
+          description: 'd',
+          targetIdentityId: 'office-1',
+        } as never),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.companyRequest.create).not.toHaveBeenCalled();
+    });
+
+    it('see no leads, but still see their own submissions', async () => {
+      prisma.identity.findUnique.mockResolvedValue(pendingOffice);
+
+      await expect(
+        service.findMine('office-1', { scope: 'company' }),
+      ).resolves.toEqual([]);
+      await expect(
+        service.findMine('office-1', { scope: 'public' }),
+      ).resolves.toEqual([]);
+      expect(prisma.companyRequest.findMany).not.toHaveBeenCalled();
+
+      await service.findMine('office-1', { scope: 'mine' });
+      expect(prisma.companyRequest.findMany).toHaveBeenCalled();
+    });
+
+    it('cannot accept a request', async () => {
+      prisma.identity.findUnique.mockResolvedValue(pendingOffice);
+
+      await expect(service.accept('req-1', 'office-1')).rejects.toThrow(
+        'حسابك قيد المراجعة',
+      );
+      expect(prisma.companyRequest.updateMany).not.toHaveBeenCalled();
     });
   });
 

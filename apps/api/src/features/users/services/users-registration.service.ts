@@ -1,12 +1,12 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { IdentityType, Role } from '@prisma/client';
+import { IdentityType, Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { StorageService } from 'src/core/storage/storage.service';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
 import { PhoneRegistrationPendingService } from 'src/core/phone-registration/phone-registration-pending.service';
@@ -19,12 +19,18 @@ import {
 import { RegisterIndividualDto } from '../dto/register.dto';
 import { RegisterCompanyDto } from '../../company/dto/register-company.dto';
 import { RegisterOfficeDto } from '../../office/dto/register-office.dto';
+import { IdentitiesService } from '../../identities/identities.service';
+import {
+  assertLicenseAvailable,
+  normalizeLicenseNumber,
+  rethrowAsConflict,
+} from '../../identities/persona-rules';
 
 @Injectable()
 export class UsersRegistrationService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly storageService: StorageService,
+    private readonly identitiesService: IdentitiesService,
     private readonly twilioService: TwilioService,
     private readonly emailOtpService: EmailOtpService,
     private readonly phoneRegistrationPendingService: PhoneRegistrationPendingService,
@@ -77,7 +83,11 @@ export class UsersRegistrationService {
           'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
         );
       }
-      this.phoneRegistrationPendingService.save(phone, dto.name, hashedPassword);
+      this.phoneRegistrationPendingService.save(
+        phone,
+        dto.name,
+        hashedPassword,
+      );
       return {
         otpRequired: true,
         identifier: phone,
@@ -85,7 +95,9 @@ export class UsersRegistrationService {
       };
     }
 
-    throw new BadRequestException('صيغة البريد الإلكتروني أو رقم الهاتف غير صحيحة');
+    throw new BadRequestException(
+      'صيغة البريد الإلكتروني أو رقم الهاتف غير صحيحة',
+    );
   }
 
   /**
@@ -189,126 +201,59 @@ export class UsersRegistrationService {
   }
 
   // --- Register Company ---
-  async registerCompany(
+  registerCompany(
     dto: RegisterCompanyDto,
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    await checkUserExists(this.prisma, dto.email, dto.phone);
-
-    // 1. Upload files to S3 if they exist
-    let logoUrl: string | null = null;
-    let licenseFileUrl: string | null = null;
-
-    if (logoFile) {
-      logoUrl = await this.storageService.uploadFile(logoFile, 'company-logos');
-    }
-    if (licenseFile) {
-      licenseFileUrl = await this.storageService.uploadFile(
-        licenseFile,
-        'company-licenses',
-      );
-    }
-
-    // 2. Hash password and save to DB
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
-    try {
-      const result = await this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
-          data: {
-            email: dto.email,
-            phone: dto.phone,
-            password: hashedPassword,
-            role: Role.COMPANY,
-          },
-        });
-
-        const profile = await tx.companyProfile.create({
-          data: {
-            userId: user.id,
-            name: dto.name,
-            services: dto.services,
-            hqLocation: dto.hqLocation,
-            serviceAreas: dto.serviceAreas,
-            about: dto.about,
-            licenseActivity: dto.licenseActivity,
-            licenseNumber: dto.licenseNumber,
-            licenseExpiry: dto.licenseExpiry,
-            logoUrl: logoUrl,
-            licenseFileUrl: licenseFileUrl,
-          },
-        });
-
-        // Add ReviewRequest for Option C
-        await tx.reviewRequest.create({
-          data: {
-            companyProfileId: profile.id,
-            status: 'PENDING',
-            notes: 'طلب تسجيل شركة جديدة',
-          },
-        });
-
-        // Create the Identity record auth/login relies on.
-        await tx.identity.create({
-          data: {
-            userId: user.id,
-            type: IdentityType.COMPANY,
-            isActive: true,
-            companyData: {
-              create: {
-                name: dto.name,
-                services: dto.services,
-                hqLocation: dto.hqLocation,
-                serviceAreas: dto.serviceAreas,
-                about: dto.about,
-                licenseActivity: dto.licenseActivity,
-                licenseNumber: dto.licenseNumber,
-                licenseExpiry: dto.licenseExpiry,
-                logoUrl: logoUrl,
-                licenseFileUrl: licenseFileUrl,
-              },
-            },
-          },
-        });
-
-        return { user, profile };
-      });
-
-      // Remove password from response
-      const userWithoutPassword = { ...result.user };
-      delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
-        .password;
-      return { user: userWithoutPassword, profile: result.profile };
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('حدث خطأ أثناء إنشاء حساب الشركة');
-    }
+    return this.registerProvider(
+      IdentityType.COMPANY,
+      dto,
+      logoFile,
+      licenseFile,
+      'حدث خطأ أثناء إنشاء حساب الشركة',
+    );
   }
 
   // --- Register Office ---
-  async registerOffice(
+  registerOffice(
     dto: RegisterOfficeDto,
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
+    return this.registerProvider(
+      IdentityType.OFFICE,
+      dto,
+      logoFile,
+      licenseFile,
+      'حدث خطأ أثناء إنشاء حساب المكتب',
+    );
+  }
+
+  /**
+   * Direct company/office signup: creates the login and then the persona
+   * through IdentitiesService -- the same path (and rules) as adding a
+   * company/office from inside the app. Everything is validated before any
+   * file is uploaded, and uploads are removed again if the write fails.
+   */
+  private async registerProvider(
+    type: typeof IdentityType.COMPANY | typeof IdentityType.OFFICE,
+    dto: RegisterCompanyDto | RegisterOfficeDto,
+    logoFile: Express.Multer.File | undefined,
+    licenseFile: Express.Multer.File | undefined,
+    failureMessage: string,
+  ) {
     await checkUserExists(this.prisma, dto.email, dto.phone);
+    await assertLicenseAvailable(
+      this.prisma,
+      normalizeLicenseNumber(dto.licenseNumber),
+    );
 
-    // 1. Upload files to S3 if they exist
-    let logoUrl: string | null = null;
-    let licenseFileUrl: string | null = null;
-
-    if (logoFile) {
-      logoUrl = await this.storageService.uploadFile(logoFile, 'office-logos');
-    }
-    if (licenseFile) {
-      licenseFileUrl = await this.storageService.uploadFile(
-        licenseFile,
-        'office-licenses',
-      );
-    }
-
-    // 2. Hash password and save to DB
+    const uploaded = await this.identitiesService.uploadProviderFiles(
+      type,
+      logoFile,
+      licenseFile,
+    );
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     try {
@@ -318,67 +263,44 @@ export class UsersRegistrationService {
             email: dto.email,
             phone: dto.phone,
             password: hashedPassword,
-            role: Role.OFFICE,
+            role: type === IdentityType.COMPANY ? Role.COMPANY : Role.OFFICE,
           },
         });
 
-        const profile = await tx.officeProfile.create({
-          data: {
-            userId: user.id,
-            name: dto.name,
-            services: dto.services,
-            hqLocation: dto.hqLocation,
-            about: dto.about,
-            licenseActivity: dto.licenseActivity,
-            licenseNumber: dto.licenseNumber,
-            licenseExpiry: dto.licenseExpiry,
-            logoUrl: logoUrl,
-            licenseFileUrl: licenseFileUrl,
-          },
-        });
+        const identity = await this.identitiesService.createProviderPersonaInTx(
+          tx,
+          type,
+          user.id,
+          { ...dto, ...uploaded },
+          { isActive: true },
+        );
 
-        // Add ReviewRequest for Option C
-        await tx.reviewRequest.create({
-          data: {
-            officeProfileId: profile.id,
-            status: 'PENDING',
-            notes: 'طلب تسجيل مكتب عقاري جديد',
-          },
-        });
-
-        // Create the Identity record auth/login relies on.
-        await tx.identity.create({
-          data: {
-            userId: user.id,
-            type: IdentityType.OFFICE,
-            isActive: true,
-            officeData: {
-              create: {
-                name: dto.name,
-                services: dto.services,
-                hqLocation: dto.hqLocation,
-                about: dto.about,
-                licenseActivity: dto.licenseActivity,
-                licenseNumber: dto.licenseNumber,
-                licenseExpiry: dto.licenseExpiry,
-                logoUrl: logoUrl,
-                licenseFileUrl: licenseFileUrl,
-              },
-            },
-          },
-        });
-
-        return { user, profile };
+        return { user, identity };
       });
 
       // Remove password from response
       const userWithoutPassword = { ...result.user };
       delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
         .password;
-      return { user: userWithoutPassword, profile: result.profile };
+      return {
+        user: userWithoutPassword,
+        profile: result.identity.companyData ?? result.identity.officeData,
+      };
     } catch (error) {
+      await this.identitiesService.deleteUploads(uploaded);
+      if (error instanceof HttpException) throw error;
+      if (isLicenseConflict(error)) rethrowAsConflict(error);
       console.log(error);
-      throw new InternalServerErrorException('حدث خطأ أثناء إنشاء حساب المكتب');
+      throw new InternalServerErrorException(failureMessage);
     }
   }
+}
+
+// A licence number taken by a concurrent signup (unique index)
+function isLicenseConflict(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2002' &&
+    JSON.stringify(error.meta?.target ?? '').includes('licenseNumber')
+  );
 }
