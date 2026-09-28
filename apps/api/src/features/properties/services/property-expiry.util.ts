@@ -16,3 +16,33 @@ import { Prisma } from '@prisma/client';
 export function notExpiredWhere(): Prisma.PropertyWhereInput {
   return { OR: [{ endDate: null }, { endDate: { gt: new Date() } }] };
 }
+
+/**
+ * Hides a listing whose owner suspended their account (تعطيل مؤقت) or was
+ * blocked/disabled by an admin. Suspension flips only the user's flags, so
+ * their ads come back by themselves when they sign in again.
+ */
+export function ownerActiveWhere(): Prisma.PropertyWhereInput {
+  return { identity: { user: { isDisabled: false, isBlocked: false } } };
+}
+
+/** Everything a listing needs to be shown to the public. */
+export function publicListingWhere(): Prisma.PropertyWhereInput {
+  return {
+    AND: [
+      { status: 'ACTIVE', isHidden: false },
+      notExpiredWhere(),
+      ownerActiveWhere(),
+    ],
+  };
+}
+
+/**
+ * Narrows a query's own filter to public listings, combined with AND so the
+ * query's OR/AND clauses can't be overwritten.
+ */
+export function withPublicListing(
+  where: Prisma.PropertyWhereInput,
+): Prisma.PropertyWhereInput {
+  return { AND: [where, publicListingWhere()] };
+}

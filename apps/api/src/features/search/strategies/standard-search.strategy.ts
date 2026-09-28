@@ -6,6 +6,7 @@ import {
   PaginatedResult,
   SearchStrategy,
 } from 'src/features/search/interfaces/search-strategy.interface';
+import { withPublicListing } from '../../properties/services/property-expiry.util';
 
 @Injectable()
 export class StandardSearchStrategy implements SearchStrategy {
@@ -69,7 +70,7 @@ export class StandardSearchStrategy implements SearchStrategy {
     // 6. Execute Query & Count concurrently
     const [data, total] = await Promise.all([
       this.prisma.property.findMany({
-        where,
+        where: withPublicListing(where),
         skip,
         take: limit,
         orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
@@ -85,7 +86,7 @@ export class StandardSearchStrategy implements SearchStrategy {
           area: true,
         }, // Include relations
       }),
-      this.prisma.property.count({ where }),
+      this.prisma.property.count({ where: withPublicListing(where) }),
     ]);
 
     return {

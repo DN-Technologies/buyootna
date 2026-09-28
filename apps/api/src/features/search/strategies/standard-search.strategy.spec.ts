@@ -29,7 +29,8 @@ describe('StandardSearchStrategy', () => {
   it('does not filter by category when the category list is empty (mobile default state)', async () => {
     await strategy.execute({ type: 'sell', category: [] } as any, 1, 10);
 
-    const where = prisma.property.findMany.mock.calls[0][0].where;
+    // The strategy's own filter; the public-listing rules are ANDed with it
+    const where = prisma.property.findMany.mock.calls[0][0].where.AND[0];
     expect(where.category).toBeUndefined();
   });
 
@@ -40,7 +41,8 @@ describe('StandardSearchStrategy', () => {
       10,
     );
 
-    const where = prisma.property.findMany.mock.calls[0][0].where;
+    // The strategy's own filter; the public-listing rules are ANDed with it
+    const where = prisma.property.findMany.mock.calls[0][0].where.AND[0];
     expect(where.category).toEqual({ in: ['APARTMENT', 'VILLA'] });
   });
 
@@ -55,7 +57,8 @@ describe('StandardSearchStrategy', () => {
       10,
     );
 
-    const where = prisma.property.findMany.mock.calls[0][0].where;
+    // The strategy's own filter; the public-listing rules are ANDed with it
+    const where = prisma.property.findMany.mock.calls[0][0].where.AND[0];
     expect(where.governorateId).toEqual({ in: ['capital'] });
     expect(where.areaId).toEqual({ in: ['capital_1'] });
   });

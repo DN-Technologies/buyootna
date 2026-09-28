@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
+import { accountSuspendOtpTemplate } from '../mail/templates/account-suspend-otp.template';
 import { passwordResetOtpTemplate } from '../mail/templates/password-reset-otp.template';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
@@ -34,6 +35,8 @@ export class EmailOtpService {
   // collides with, or gets consumed by, an unrelated pending signup for the
   // same address.
   private readonly pendingResets = new Map<string, PendingPasswordReset>();
+  // Codes confirming a self-suspension, keyed by the account's email
+  private readonly pendingSuspends = new Map<string, PendingPasswordReset>();
 
   constructor(
     private readonly mailService: MailService,
@@ -137,6 +140,46 @@ export class EmailOtpService {
     }
 
     this.pendingResets.delete(email);
+    return true;
+  }
+
+  /** Sends the code confirming "suspend my account" to an email-only account. */
+  async sendAccountSuspendOtp(email: string, userName: string): Promise<void> {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.pendingSuspends.set(email, {
+      otp,
+      expiresAt: new Date(Date.now() + OTP_TTL_MS()),
+    });
+
+    if (this.mailService.isMockMode) {
+      this.logger.warn(
+        `[MOCK MAIL] Resend is disabled or unconfigured. Account-suspend OTP for ${email}: ${otp}`,
+      );
+    }
+
+    await this.mailService.sendMail({
+      to: email,
+      subject: 'رمز تأكيد تعطيل الحساب - Buyootna',
+      html: accountSuspendOtpTemplate({ userName, otp }),
+    });
+    // Rate limiting is keyed by user id by the caller (AccountSuspension)
+  }
+
+  /** Dev/CI-only accessor for a pending account-suspend OTP. */
+  getMockAccountSuspendOtp(email: string): string | null {
+    return this.mailService.isMockMode
+      ? (this.pendingSuspends.get(email)?.otp ?? null)
+      : null;
+  }
+
+  /** Validates an account-suspend OTP and, if correct, consumes it. */
+  verifyAccountSuspendOtp(email: string, otp: string): boolean {
+    const record = this.pendingSuspends.get(email);
+    if (!record || record.expiresAt < new Date() || record.otp !== otp) {
+      return false;
+    }
+
+    this.pendingSuspends.delete(email);
     return true;
   }
 }

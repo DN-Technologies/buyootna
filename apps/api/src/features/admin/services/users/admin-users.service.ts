@@ -346,6 +346,7 @@ export class AdminUsersService {
       case UserAccountStatusAction.ACTIVE:
         dataToUpdate.isDisabled = false;
         dataToUpdate.isBlocked = false;
+        dataToUpdate.suspendedAt = null;
         break;
     }
 

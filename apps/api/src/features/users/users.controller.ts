@@ -38,7 +38,13 @@ import {
   UpdateProfileResponseDto,
   UserSafeDto,
 } from './dto/user-response.dto';
-import { OtpRequestRateLimit } from '../../core/decorators/otp-rate-limit.decorator';
+import {
+  OtpRequestRateLimit,
+  OtpRequestRateLimitFromUser,
+  OtpVerifyRateLimitFromUser,
+} from '../../core/decorators/otp-rate-limit.decorator';
+import { SuspendAccountDto } from './dto/suspend-account.dto';
+import { AccountSuspensionService } from './services/account-suspension.service';
 
 @ApiTags('Users')
 @Controller('users')
@@ -46,6 +52,7 @@ export class UsersController {
   constructor(
     private readonly registrationService: UsersRegistrationService,
     private readonly profileService: UsersProfileService,
+    private readonly suspensionService: AccountSuspensionService,
   ) {}
 
   @Post('register/individual')
@@ -126,9 +133,47 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post('account/suspend/request-otp')
+  @OtpRequestRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Send the code confirming a temporary suspension (SMS, or email when there is no phone)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: '{ channel: "phone" | "email", destination: masked }',
+  })
+  @ApiCommonErrors()
+  requestSuspendOtp(@CurrentUser() reqUser: RequestUser) {
+    return this.suspensionService.requestOtp(reqUser.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('account/suspend')
+  @OtpVerifyRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Temporarily suspend your account with the code and reasons; signing in again reactivates it',
+  })
+  @ApiResponse({ status: 201, type: SimpleMessageResponseDto })
+  @ApiCommonErrors()
+  suspendAccount(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: SuspendAccountDto,
+  ) {
+    return this.suspensionService.suspend(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Patch('account/disable')
   @ApiAuth()
-  @ApiOperation({ summary: "Temporarily disable the current user's account" })
+  @ApiOperation({
+    summary:
+      "Deprecated (older app builds): temporarily disable the current user's account without a code. Use POST /users/account/suspend.",
+    deprecated: true,
+  })
   @ApiResponse({ status: 200, type: SimpleMessageResponseDto })
   @ApiCommonErrors()
   async disableAccount(@CurrentUser() reqUser: RequestUser) {
@@ -172,7 +217,8 @@ export class UsersController {
   @ApiCommonErrors()
   async findOne(@Param('id') id: string) {
     const fullUser = await this.profileService.findFullUser(id);
-    if (!fullUser) {
+    // A suspended or blocked account's profile is hidden from others
+    if (!fullUser || fullUser.isDisabled || fullUser.isBlocked) {
       throw new NotFoundException('المستخدم غير موجود');
     }
     return fullUser;

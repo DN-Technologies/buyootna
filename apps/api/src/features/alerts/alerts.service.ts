@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Alert, ListingType } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { notExpiredWhere } from '../properties/services/property-expiry.util';
+import { notExpiredWhere, ownerActiveWhere } from '../properties/services/property-expiry.util';
 import {
   formatProperties,
   propertyFeedPayload,
@@ -98,6 +98,7 @@ export class AlertsService {
           alertMatchWhere(alert),
           { status: 'ACTIVE', isHidden: false },
           notExpiredWhere(),
+          ownerActiveWhere(),
           { NOT: { identityId } },
         ],
       },

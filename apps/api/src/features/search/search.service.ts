@@ -87,6 +87,7 @@ export class SearchService {
         where: {
           type: 'COMPANY',
           companyData: { status: 'APPROVED' },
+          user: { isDisabled: false, isBlocked: false },
         },
         skip,
         take: limit,
@@ -96,6 +97,7 @@ export class SearchService {
         where: {
           type: 'COMPANY',
           companyData: { status: 'APPROVED' },
+          user: { isDisabled: false, isBlocked: false },
         },
       }),
     ]);

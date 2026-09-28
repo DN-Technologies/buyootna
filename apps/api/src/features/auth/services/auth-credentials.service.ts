@@ -48,7 +48,9 @@ export class AuthCredentialsService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
-    if (user.isDisabled && !user.isAdmin) {
+    // A self-suspended account (suspendedAt set) signs in and is reactivated
+    // by AuthSessionService.login(); an admin disable stays refused
+    if (user.isDisabled && !user.isAdmin && !user.suspendedAt) {
       throw new UnauthorizedException('الحساب معطل مؤقتاً');
     }
 

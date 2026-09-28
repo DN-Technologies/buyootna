@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -114,6 +114,12 @@ export class LoginResponseDto {
 
   @ApiProperty({ type: [IdentityResponseDto] })
   identities: IdentityResponseDto[];
+
+  @ApiPropertyOptional({
+    description:
+      'True when this sign-in reactivated an account the user had suspended',
+  })
+  reactivated?: boolean;
 }
 
 export class MessageResponseDto {

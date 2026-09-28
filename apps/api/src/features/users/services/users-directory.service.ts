@@ -50,6 +50,8 @@ export class UsersDirectoryService {
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'COMPANY',
       companyData: companyDataWhere,
+      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
+      user: { isDisabled: false, isBlocked: false },
     };
 
     const [identities, totalCount] = await Promise.all([
@@ -146,6 +148,8 @@ export class UsersDirectoryService {
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'OFFICE',
       officeData: officeDataWhere,
+      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
+      user: { isDisabled: false, isBlocked: false },
     };
 
     const [identities, totalCount] = await Promise.all([

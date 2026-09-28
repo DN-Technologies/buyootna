@@ -6,7 +6,10 @@ import {
   Prisma,
 } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { notExpiredWhere } from '../properties/services/property-expiry.util';
+import {
+  notExpiredWhere,
+  ownerActiveWhere,
+} from '../properties/services/property-expiry.util';
 import { GetMapBoundsDto, MapPinType } from './dto/get-map-bounds.dto';
 import {
   companiesToFeatureCollection,
@@ -57,7 +60,7 @@ export class MapService {
       // `where.OR` below is used for the free-text search match — Prisma
       // ANDs every top-level key together, so this still combines correctly
       // without the two OR-clauses stomping on each other.
-      AND: [notExpiredWhere()],
+      AND: [notExpiredWhere(), ownerActiveWhere()],
     };
 
     if (dto.governorateId) where.governorateId = dto.governorateId;

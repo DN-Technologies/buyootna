@@ -10,7 +10,7 @@ import {
   formatDateToMonthYear,
   formatProperties,
 } from './property-formatting.util';
-import { notExpiredWhere } from './property-expiry.util';
+import { notExpiredWhere, ownerActiveWhere } from './property-expiry.util';
 
 // Stable orders for paginated lists: the id tiebreaker keeps ads with the
 // same publish time from shifting between pages
@@ -45,7 +45,7 @@ export class PropertiesFeedService {
     const [saleProperties, rentProperties, exchangeProperties, topCompanies] =
       await Promise.all([
         this.prisma.property.findMany({
-          where: { type: 'SALE', status: 'ACTIVE', ...notExpiredWhere() },
+          where: { type: 'SALE', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -66,7 +66,7 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'RENT', status: 'ACTIVE', ...notExpiredWhere() },
+          where: { type: 'RENT', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -87,7 +87,7 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'EXCHANGE', status: 'ACTIVE', ...notExpiredWhere() },
+          where: { type: 'EXCHANGE', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -115,6 +115,7 @@ export class PropertiesFeedService {
               isNot: null,
               is: { status: 'APPROVED' },
             },
+            user: { isDisabled: false, isBlocked: false },
           },
           orderBy: { createdAt: 'desc' },
           take: 5,
@@ -146,7 +147,9 @@ export class PropertiesFeedService {
 
     const whereClause: Prisma.PropertyWhereInput = {
       status: 'ACTIVE',
+      isHidden: false,
       ...notExpiredWhere(),
+      ...ownerActiveWhere(),
     };
     if (type) {
       whereClause.type = type;
@@ -198,6 +201,7 @@ export class PropertiesFeedService {
             id: true,
             type: true,
             createdAt: true,
+            user: { select: { isDisabled: true, isBlocked: true } },
             individualData: {
               select: { name: true, avatarUrl: true },
             },
@@ -217,7 +221,10 @@ export class PropertiesFeedService {
       },
     });
 
-    if (!property) {
+    // An owner who suspended their account (or was blocked) has their ads
+    // hidden -- the owner themselves is signed out while suspended
+    const ownerUser = property?.identity?.user;
+    if (!property || ownerUser?.isDisabled || ownerUser?.isBlocked) {
       throw new NotFoundException('عذراً، هذا العقار غير موجود أو تم حذفه');
     }
 

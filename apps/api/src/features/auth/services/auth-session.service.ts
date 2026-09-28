@@ -35,6 +35,22 @@ export class AuthSessionService {
     identityId?: string,
     deviceCtx: DeviceCtx = {},
   ) {
+    // Every sign-in path (password, OTP, registration, Google, Apple) comes
+    // through here, so account status is enforced once for all of them
+    if (!user.isAdmin && user.isBlocked) {
+      throw new UnauthorizedException('الحساب محظور');
+    }
+    let reactivated = false;
+    if (user.isDisabled && !user.isAdmin) {
+      if (!user.suspendedAt) {
+        throw new UnauthorizedException('الحساب معطل مؤقتاً');
+      }
+      // The user suspended their own account: signing in brings it back
+      await this.reactivate(user.id);
+      user = { ...user, isDisabled: false, suspendedAt: null };
+      reactivated = true;
+    }
+
     // Get the active identity or the specified one
     let identity: IdentityWithData | null;
 
@@ -95,7 +111,23 @@ export class AuthSessionService {
       user,
       activeIdentity: identity,
       identities,
+      ...(reactivated ? { reactivated: true } : {}),
     };
+  }
+
+  // Ends a self-suspension: the account is live again and the open
+  // suspension record gets its return date
+  private async reactivate(userId: string) {
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { isDisabled: false, suspendedAt: null },
+      }),
+      this.prisma.accountSuspension.updateMany({
+        where: { userId, reactivatedAt: null },
+        data: { reactivatedAt: new Date() },
+      }),
+    ]);
   }
 
   // Switch active identity
