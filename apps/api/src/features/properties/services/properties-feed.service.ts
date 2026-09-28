@@ -22,7 +22,7 @@ export class PropertiesFeedService {
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
-            { createdAt: 'desc' },
+            { publishedAt: { sort: 'desc', nulls: 'last' } },
           ],
           take: 5,
           include: {
@@ -43,7 +43,7 @@ export class PropertiesFeedService {
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
-            { createdAt: 'desc' },
+            { publishedAt: { sort: 'desc', nulls: 'last' } },
           ],
           take: 5,
           include: {
@@ -64,7 +64,7 @@ export class PropertiesFeedService {
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
-            { createdAt: 'desc' },
+            { publishedAt: { sort: 'desc', nulls: 'last' } },
           ],
           take: 5,
           include: {
@@ -130,7 +130,7 @@ export class PropertiesFeedService {
         orderBy: [
           { isPriority: 'desc' },
           { isFeatured: 'desc' },
-          { createdAt: 'desc' },
+          { publishedAt: { sort: 'desc', nulls: 'last' } },
         ],
         include: {
           identity: {

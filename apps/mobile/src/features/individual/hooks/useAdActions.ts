@@ -42,12 +42,16 @@ export function useAdActions({
   );
 
   const deleteAllSheetRef = useRef<BottomSheetModal>(null);
+  const toggleVisibilitySheetRef = useRef<BottomSheetModal>(null);
   const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
 
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     null,
   );
+
+  const allHidden =
+    listedAds.length > 0 && listedAds.every((p) => Boolean(p.isHidden));
 
   const handleEditAd = (propertyId: string) => {
     // The dedicated edit screen: pre-filled, with the fields that can't
@@ -74,6 +78,12 @@ export function useAdActions({
     setIsOptionsMenuVisible(false);
   };
 
+  const handlePromptToggleVisibility = () => {
+    setIsOptionsMenuVisible(false);
+    if (listedAds.length === 0) return;
+    toggleVisibilitySheetRef.current?.present();
+  };
+
   const handlePromptDeleteAll = () => {
     setIsOptionsMenuVisible(false);
     if (listedAds.length === 0) return;
@@ -92,6 +102,25 @@ export function useAdActions({
         old && {
           ...old,
           activity: old.activity.filter((p) => !ids.includes(p.id)),
+        },
+    );
+    return () =>
+      snapshot.forEach(([key, data]) => queryClient.setQueryData(key, data));
+  };
+
+  // Optimistically updates isHidden on listed ads in query cache
+  const updateHiddenInCache = (ids: string[], isHidden: boolean) => {
+    const snapshot = queryClient.getQueriesData<MyActivityCache>({
+      queryKey: MY_ACTIVITY_KEY,
+    });
+    queryClient.setQueriesData<MyActivityCache>(
+      { queryKey: MY_ACTIVITY_KEY },
+      (old) =>
+        old && {
+          ...old,
+          activity: old.activity.map((p) =>
+            ids.includes(p.id) ? { ...p, isHidden } : p,
+          ),
         },
     );
     return () =>
@@ -154,6 +183,41 @@ export function useAdActions({
     refetch();
   };
 
+  const handleConfirmToggleVisibility = async () => {
+    const ids = listedAds.map((p) => p.id);
+    if (ids.length === 0) return;
+    const targetIsHidden = !allHidden;
+    const restore = updateHiddenInCache(ids, targetIsHidden);
+    try {
+      const results = await Promise.allSettled(
+        ids.map((id) =>
+          apiClient.patch(`/properties/${id}`, { isHidden: targetIsHidden }),
+        ),
+      );
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed === 0) {
+        triggerToast(
+          targetIsHidden
+            ? 'تم إخفاء جميع الإعلانات بنجاح'
+            : 'تم إظهار جميع الإعلانات بنجاح',
+        );
+      } else {
+        restore();
+        showAlert(
+          'خطأ',
+          failed === ids.length
+            ? 'فشل في تحديث حالة الإعلانات'
+            : `تعذر تحديث حالة ${failed} من ${ids.length} إعلانات`,
+        );
+      }
+    } catch (err) {
+      restore();
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في تحديث حالة الإعلانات'));
+    } finally {
+      refetch();
+    }
+  };
+
   const handleCancelDelete = () => {
     setPropertyToDelete(null);
   };
@@ -180,8 +244,10 @@ export function useAdActions({
     deleteSheetRef,
     deleteAllSheetRef,
     featureAdSheetRef,
+    toggleVisibilitySheetRef,
     isOptionsMenuVisible,
     listedAdsCount: listedAds.length,
+    allHidden,
     selectedDraft,
     selectedPropertyId,
     handleEditAd,
@@ -191,6 +257,8 @@ export function useAdActions({
     handleCloseOptionsMenu,
     handlePromptDeleteAll,
     handleConfirmDeleteAll,
+    handlePromptToggleVisibility,
+    handleConfirmToggleVisibility,
     handleFeatureSuccess,
     handlePublishDraft,
     handleConfirmDelete,

@@ -40,6 +40,7 @@ export class PropertiesActivityService {
       status: p.status,
       updatedAt: p.updatedAt,
       createdAt: p.createdAt,
+      publishedAt: p.publishedAt,
       endDate: p.endDate,
       isPremium: p.isFeatured,
       isHidden: p.isHidden,

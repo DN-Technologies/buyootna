@@ -23,8 +23,10 @@ jest.mock('@/shared/utils/alert', () => ({
 }));
 
 const mockDelete = apiClient.delete as jest.Mock;
+const mockPatch = apiClient.patch as jest.Mock;
 
-const ad = (id: string) => ({ id, status: 'ACTIVE' }) as ActivityItem;
+const ad = (id: string, isHidden = false) =>
+  ({ id, status: 'ACTIVE', isHidden }) as ActivityItem;
 const ADS = [ad('p1'), ad('p2'), ad('p3')];
 
 // Matches the ['myActivity', status] query useMyActivity() caches
@@ -32,6 +34,12 @@ const cachedIds = (queryClient: QueryClient) =>
   queryClient
     .getQueryData<{ activity: ActivityItem[] }>(['myActivity', undefined])!
     .activity.map((p) => p.id);
+
+const cachedActivity = (queryClient: QueryClient) =>
+  queryClient.getQueryData<{ activity: ActivityItem[] }>([
+    'myActivity',
+    undefined,
+  ])!.activity;
 
 let queryClient: QueryClient;
 
@@ -63,6 +71,7 @@ async function setup(listedAds: ActivityItem[] = ADS) {
   const present = jest.fn();
   (utils.result.current.deleteSheetRef as any).current = { present };
   (utils.result.current.deleteAllSheetRef as any).current = { present };
+  (utils.result.current.toggleVisibilitySheetRef as any).current = { present };
   return { ...utils, queryClient, refetch, triggerToast, present };
 }
 
@@ -198,6 +207,110 @@ describe('useAdActions', () => {
 
       expect(present).not.toHaveBeenCalled();
       expect(mockDelete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('header ⋮ → إخفاء / إظهار جميع الإعلانات', () => {
+    it('calculates allHidden based on listedAds isHidden flags', async () => {
+      const visibleAds = [ad('p1', false), ad('p2', false)];
+      const { result: visibleResult } = await setup(visibleAds);
+      expect(visibleResult.current.allHidden).toBe(false);
+
+      const mixedAds = [ad('p1', true), ad('p2', false)];
+      const { result: mixedResult } = await setup(mixedAds);
+      expect(mixedResult.current.allHidden).toBe(false);
+
+      const hiddenAds = [ad('p1', true), ad('p2', true)];
+      const { result: hiddenResult } = await setup(hiddenAds);
+      expect(hiddenResult.current.allHidden).toBe(true);
+    });
+
+    it('opens the toggle visibility sheet and closes options menu', async () => {
+      const { result, present } = await setup();
+
+      await act(() => result.current.handleMenuPress());
+      await act(() => result.current.handlePromptToggleVisibility());
+
+      expect(result.current.isOptionsMenuVisible).toBe(false);
+      expect(present).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides all ads when they are currently visible', async () => {
+      mockPatch.mockResolvedValue({});
+      const { result, queryClient, refetch, triggerToast } = await setup([
+        ad('p1', false),
+        ad('p2', false),
+      ]);
+
+      await act(() => result.current.handleConfirmToggleVisibility());
+
+      expect(mockPatch).toHaveBeenCalledWith('/properties/p1', {
+        isHidden: true,
+      });
+      expect(mockPatch).toHaveBeenCalledWith('/properties/p2', {
+        isHidden: true,
+      });
+      expect(
+        cachedActivity(queryClient)
+          .slice(0, 2)
+          .every((p) => p.isHidden === true),
+      ).toBe(true);
+      expect(triggerToast).toHaveBeenCalledWith(
+        'تم إخفاء جميع الإعلانات بنجاح',
+      );
+      expect(refetch).toHaveBeenCalled();
+    });
+
+    it('shows all ads when they are currently hidden', async () => {
+      mockPatch.mockResolvedValue({});
+      const { result, queryClient, refetch, triggerToast } = await setup([
+        ad('p1', true),
+        ad('p2', true),
+      ]);
+
+      await act(() => result.current.handleConfirmToggleVisibility());
+
+      expect(mockPatch).toHaveBeenCalledWith('/properties/p1', {
+        isHidden: false,
+      });
+      expect(mockPatch).toHaveBeenCalledWith('/properties/p2', {
+        isHidden: false,
+      });
+      expect(
+        cachedActivity(queryClient)
+          .slice(0, 2)
+          .every((p) => p.isHidden === false),
+      ).toBe(true);
+      expect(triggerToast).toHaveBeenCalledWith(
+        'تم إظهار جميع الإعلانات بنجاح',
+      );
+      expect(refetch).toHaveBeenCalled();
+    });
+
+    it('restores cache and alerts on failure', async () => {
+      mockPatch
+        .mockResolvedValueOnce({})
+        .mockRejectedValueOnce(new Error('Network error'));
+      const { result, refetch, triggerToast } = await setup();
+
+      await act(() => result.current.handleConfirmToggleVisibility());
+
+      expect(triggerToast).not.toHaveBeenCalled();
+      expect(showAlert).toHaveBeenCalledWith(
+        'خطأ',
+        'تعذر تحديث حالة 1 من 3 إعلانات',
+      );
+      expect(refetch).toHaveBeenCalled();
+    });
+
+    it('does nothing when no ads are listed', async () => {
+      const { result, present } = await setup([]);
+
+      await act(() => result.current.handlePromptToggleVisibility());
+      await act(() => result.current.handleConfirmToggleVisibility());
+
+      expect(present).not.toHaveBeenCalled();
+      expect(mockPatch).not.toHaveBeenCalled();
     });
   });
 });

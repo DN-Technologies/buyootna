@@ -29,11 +29,11 @@ describe('useActivityFilters', () => {
     const { result } = await renderHook(() => useActivityFilters(data, 'ALL', 'NEWEST'));
 
     expect(result.current.filterPills).toEqual([
-      { id: 'ARCHIVED', label: 'مؤرشفة (2)' },
-      { id: 'DRAFT', label: 'مسودة (1)' },
-      { id: 'PREMIUM', label: 'مميزة (1)' },
-      { id: 'ACTIVE', label: 'نشطة (2)' },
       { id: 'ALL', label: 'الكل (5)' },
+      { id: 'ACTIVE', label: 'نشطة (2)' },
+      { id: 'PREMIUM', label: 'مميزة (1)' },
+      { id: 'DRAFT', label: 'مسودة (1)' },
+      { id: 'ARCHIVED', label: 'مؤرشفة (2)' },
     ]);
   });
 

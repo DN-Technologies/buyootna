@@ -19,6 +19,7 @@ export interface ActivityItem {
   status: ActivityListingStatus;
   updatedAt: string;
   createdAt?: string;
+  publishedAt?: string | null;
   endDate?: string | null;
   isPremium?: boolean;
   isHidden?: boolean;

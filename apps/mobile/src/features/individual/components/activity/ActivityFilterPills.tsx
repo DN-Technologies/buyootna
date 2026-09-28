@@ -28,7 +28,9 @@ export default function ActivityFilterPills({
       horizontal
       showsHorizontalScrollIndicator={false}
       className="mb-4"
-      contentContainerStyle={{ flexDirection: 'row-reverse' }}
+      // No row-reverse: the app is forced RTL, so the row already starts on
+      // the right. Reversing it again pushed the last pill (مؤرشفة)
+      // off-screen where it couldn't be scrolled to.
     >
       {filterPills.map((pill) => {
         const isActive = activeFilterId === pill.id;

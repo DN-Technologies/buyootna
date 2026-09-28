@@ -33,47 +33,13 @@ export default function ArchivedAdCard({
 
   return (
     <TouchableOpacity
+      testID="archived-ad-card"
       activeOpacity={0.85}
       onPress={onPress}
-      className="mb-3 w-full flex-row items-center justify-between rounded-2xl border border-gray-100/90 bg-white p-3 shadow-sm"
-      style={{
-        elevation: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
-      }}
+      className="mb-3 w-full flex-row items-center justify-between overflow-hidden rounded-[6px] border border-[#ECECEC] bg-white"
     >
-      {/* --- Left Column: Info (Title, Price, Expiration Date) --- */}
-      <View className="flex-1 justify-center pr-3">
-        {/* Title */}
-        <Text
-          className="font-cairo-bold text-[15px] leading-[22px] text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-          numberOfLines={1}
-        >
-          {displayLabel || 'عقار سكني'}
-        </Text>
-
-        {/* Price Row */}
-        <View className="my-0.5 flex-row items-baseline gap-1">
-          <Text className="font-cairo-bold text-lg text-[#111111]">
-            {property.price ? property.price.toLocaleString() : '---'}
-          </Text>
-          <Text className="font-cairo-medium text-xs text-[#6B6A6A]">د.ك</Text>
-        </View>
-
-        {/* Expiry Date */}
-        <View className="flex-row items-center gap-1.5">
-          <Feather name="calendar" size={13} color="#6B6A6A" />
-          <Text className="font-cairo text-xs text-[#6B6A6A]">
-            منتهي في {formattedExpiryDate}
-          </Text>
-        </View>
-      </View>
-
       {/* --- Right Column: Property Image & Slide Dots --- */}
-      <View className="relative h-[95px] w-[130px] overflow-hidden rounded-xl bg-gray-50">
+      <View className="relative h-[93px] w-[113px] overflow-hidden rounded-r-[6px] bg-gray-50">
         <Image
           source={imageSource}
           // expo-image isn't a NativeWind-styled component: className would
@@ -87,6 +53,35 @@ export default function ArchivedAdCard({
           <View className="h-1 w-1 rounded-full bg-white/70" />
           <View className="h-1 w-1 rounded-full bg-white/70" />
           <View className="h-1 w-3.5 rounded-full bg-[#15304D]" />
+        </View>
+      </View>
+      {/* --- Left Column: Info (Title, Price, Expiration Date) --- */}
+      <View className="flex-1 justify-center px-3 py-2.5">
+        {/* Title */}
+        <Text
+          className="font-cairo-semibold text-[14px] leading-[22px] text-[#15304D]"
+          style={{ writingDirection: 'rtl' }}
+          numberOfLines={1}
+        >
+          {displayLabel || 'عقار سكني'}
+        </Text>
+
+        {/* Price Row */}
+        <View className="my-1 flex-row items-baseline gap-1">
+          <Text className="font-cairo-semibold text-[22px] leading-[26px] text-[#111111]">
+            {property.price ? property.price.toLocaleString() : '---'}
+          </Text>
+          <Text className="font-cairo-semibold text-[12px] text-[#111111]">
+            د.ك
+          </Text>
+        </View>
+
+        {/* Expiry Date */}
+        <View className="flex-row items-center gap-1">
+          <Feather name="calendar" size={14} color="#6B6A6A" />
+          <Text className="font-cairo-medium text-[12px] leading-[22px] text-[#6B6A6A]">
+            منتهي في {formattedExpiryDate}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

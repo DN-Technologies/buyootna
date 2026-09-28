@@ -32,6 +32,9 @@ export default function ActivityHeader({
       {/* More Options Button (Left side in RTL) */}
       <TouchableOpacity
         onPress={onMenuPress}
+        testID="activity-menu-btn"
+        accessibilityRole="button"
+        accessibilityLabel="خيارات الإعلانات"
         className="h-10 w-10 items-center justify-center rounded-full"
         activeOpacity={0.7}
       >

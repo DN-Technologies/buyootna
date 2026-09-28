@@ -11,6 +11,7 @@ import DeleteAllAlertsSheet from '@/features/individual/components/activity/Dele
 import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
 import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
+import ToggleAdsVisibilitySheet from '@/features/individual/components/activity/ToggleAdsVisibilitySheet';
 import type { useAdActions } from '@/features/individual/hooks/useAdActions';
 import type { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
@@ -61,6 +62,13 @@ export default function ActivitySheets({
         description={`سيتم حذف ${adActions.listedAdsCount} إعلان ولن تظهر للمستخدمين بعد الآن، وسيتم فقدان مدة التميز المتبقية`}
         confirmLabel="حذف جميع الإعلانات"
         skipReasonStep
+      />
+
+      {/* --- Toggle Ads Visibility Bottom Sheet --- */}
+      <ToggleAdsVisibilitySheet
+        ref={adActions.toggleVisibilitySheetRef}
+        mode={adActions.allHidden ? 'show' : 'hide'}
+        onConfirm={adActions.handleConfirmToggleVisibility}
       />
 
       {/* --- Alert Delete Confirmation Bottom Sheet --- */}

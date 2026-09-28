@@ -51,7 +51,7 @@ export class ExchangeSearchStrategy implements SearchStrategy {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
       }),
       this.prisma.property.count({ where }),
     ]);

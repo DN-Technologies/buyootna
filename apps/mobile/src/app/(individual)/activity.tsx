@@ -16,6 +16,7 @@ import ActivityListItem from '@/features/individual/components/activity/Activity
 import ActivitySheets from '@/features/individual/components/activity/ActivitySheets';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
+import AdsOptionsMenu from '@/features/individual/components/activity/AdsOptionsMenu';
 import AlertDeleteToast from '@/features/individual/components/activity/AlertDeleteToast';
 import AlertListItem from '@/features/individual/components/activity/AlertListItem';
 import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
@@ -263,7 +264,12 @@ export default function ActivityScreen() {
               onFeaturePress={adActions.handleFeatureAd}
               onDeletePress={adActions.handleDeleteAd}
               onPublishDraftPress={adActions.handlePublishDraft}
-              onArchivedPress={(id) => router.push(`/property/${id}` as any)}
+              onArchivedPress={(id) =>
+                router.push({
+                  pathname: `/property/${id}`,
+                  params: { archived: 'true' },
+                } as any)
+              }
             />
           )
         }
@@ -283,14 +289,14 @@ export default function ActivityScreen() {
         onDeleteAllPress={alertActions.handlePromptDeleteAllAlerts}
       />
 
-      {/* Header "⋮" on the ads tab: same menu, deleting the listed ads */}
-      <AlertsOptionsMenu
+      {/* Header "⋮" on the ads tab: options menu for ads */}
+      <AdsOptionsMenu
         visible={adActions.isOptionsMenuVisible}
         onClose={adActions.handleCloseOptionsMenu}
+        allHidden={adActions.allHidden}
+        onToggleVisibilityPress={adActions.handlePromptToggleVisibility}
         onDeleteAllPress={adActions.handlePromptDeleteAll}
-        deleteAllLabel="حذف جميع الإعلانات"
-        deleteAllTestID="delete-all-ads-menu-item"
-        deleteAllDisabled={adActions.listedAdsCount === 0}
+        disabled={adActions.listedAdsCount === 0}
       />
 
       {/* --- Success Toast Notification --- */}

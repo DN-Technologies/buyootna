@@ -18,6 +18,7 @@ import { usePropertyContactActions } from '@/features/individual/components/prop
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
+  publishedDate,
 } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -122,7 +123,7 @@ const PropertyDetailsSheet = forwardRef<
 
                 <PropertyPriceViewsRow
                   price={property.price}
-                  createdAt={property.createdAt}
+                  createdAt={publishedDate(property) ?? property.createdAt}
                   views={property.views}
                 />
 

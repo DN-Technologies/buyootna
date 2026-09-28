@@ -9,6 +9,7 @@ import PropertyOverview from '@/shared/components/property/PropertyOverview';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import {
   formatTimeAgo,
+  publishedDate,
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
@@ -65,7 +66,7 @@ export default function PropertyDetailsContent({
           title={displayTitle}
           price={property.price}
           isFeatured={property.isFeatured}
-          timeAgo={formatTimeAgo(property.createdAt)}
+          timeAgo={formatTimeAgo(publishedDate(property) ?? property.createdAt)}
           views={property.views}
           area={property.areaSize ?? property.area}
           location={property.location}

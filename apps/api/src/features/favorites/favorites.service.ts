@@ -108,6 +108,7 @@ export class FavoritesService {
         description: prop.description,
         images: prop.images,
         createdAt: prop.createdAt,
+        publishedAt: prop.publishedAt,
         views: prop.views,
         area: prop.areaSize || 0,
         beds: prop.beds || 0,

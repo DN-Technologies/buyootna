@@ -14,6 +14,10 @@ model Property {
   images             String[]
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
+  // When the ad last went live (first publish, publishing a draft, or
+  // republishing an archived ad). Listings sort by it; createdAt stays the
+  // true creation date. Null for drafts never published.
+  publishedAt        DateTime?
   views              Int              @default(0)
   areaId             String?
   areaSize           Float?
@@ -64,6 +68,7 @@ model Property {
   @@index([status])
   @@index([latitude, longitude])
   @@index([identityId])
+  @@index([publishedAt])
 }
 
 model PropertyDeletionLog {

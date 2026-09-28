@@ -26,12 +26,13 @@ export function useActivityFilters(
       (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
     ).length;
 
+    // Reading order (right to left in the app's RTL layout)
     return [
-      { id: 'ARCHIVED', label: `مؤرشفة (${archivedCount})` },
-      { id: 'DRAFT', label: `مسودة (${draftCount})` },
-      { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
-      { id: 'ACTIVE', label: `نشطة (${activeCount})` },
       { id: 'ALL', label: `الكل (${allCount})` },
+      { id: 'ACTIVE', label: `نشطة (${activeCount})` },
+      { id: 'PREMIUM', label: `مميزة (${premiumCount})` },
+      { id: 'DRAFT', label: `مسودة (${draftCount})` },
+      { id: 'ARCHIVED', label: `مؤرشفة (${archivedCount})` },
     ];
   }, [data]);
 

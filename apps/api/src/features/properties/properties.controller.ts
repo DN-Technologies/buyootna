@@ -26,6 +26,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
 import type { ListingStatus } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { RenewPropertyDto } from './dto/renew-property.dto';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
@@ -239,21 +240,24 @@ export class PropertiesController {
   @Post(':id/renew')
   @UseGuards(AuthGuard('jwt'))
   @ApiAuth()
-  @ApiOperation({ summary: 'Renew/re-publish an expired or archived property' })
-  @ApiParam({ name: 'id', description: 'Property ID' })
-  @ApiBody({
-    required: false,
-    schema: {
-      type: 'object',
-      properties: { planSlotId: { type: 'string' } },
-    },
+  @ApiOperation({
+    summary:
+      'Republish one of your archived (expired/closed) ads, spending one credit',
   })
-  @ApiResponse({ status: 200, description: 'Property renewed successfully' })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiBody({ type: RenewPropertyDto, required: false })
+  @ApiResponse({ status: 201, description: 'Property republished' })
+  @ApiResponse({ status: 400, description: 'The ad is not archived' })
+  @ApiResponse({
+    status: 403,
+    description: 'No credit left, or the chosen slot is not usable',
+  })
+  @ApiResponse({ status: 409, description: 'The ad was already republished' })
   @ApiCommonErrors()
   async renew(
     @CurrentUser() reqUser: RequestUser,
     @Param('id') id: string,
-    @Body() dto?: { planSlotId?: string },
+    @Body() dto: RenewPropertyDto,
   ) {
     return this.propertiesService.renew(
       reqUser.identityId,

@@ -189,5 +189,14 @@ describe('ActivityScreen', () => {
 
       expect(router.push).toHaveBeenLastCalledWith(route);
     });
+
+    it('tapping the header menu button on the ads tab opens AdsOptionsMenu with hide and delete options', async () => {
+      const { getByTestId, getByText } = await render(<ActivityScreen />);
+
+      await fireEvent.press(getByTestId('activity-menu-btn'));
+
+      expect(getByText('اخفاء جميع الاعلانات')).toBeTruthy();
+      expect(getByText('حذف الكل')).toBeTruthy();
+    });
   });
 });
