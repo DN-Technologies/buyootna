@@ -8,10 +8,14 @@ import {
   formatOfficeListings,
   formatServiceList,
 } from './profile-formatting.util';
+import { ProviderCardsService } from './provider-cards.service';
 
 @Injectable()
 export class UsersDirectoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly providerCards: ProviderCardsService,
+  ) {}
 
   // --- Find Companies ---
   async findCompanies(filters: GetCompaniesFilterDto) {
@@ -65,57 +69,8 @@ export class UsersDirectoryService {
       this.prisma.identity.count({ where: whereClause }),
     ]);
 
-    const identityIds = identities.map((i) => i.id);
-    const userIds = identities.map((i) => i.userId);
-
-    const [propertyStats, reviewStats] = await Promise.all([
-      this.prisma.property.groupBy({
-        by: ['identityId'],
-        where: { identityId: { in: identityIds } },
-        _count: { _all: true },
-        _max: { createdAt: true },
-      }),
-      this.prisma.review.groupBy({
-        by: ['targetUserId'],
-        where: { targetUserId: { in: userIds } },
-        _avg: { rating: true },
-        _count: { _all: true },
-      }),
-    ]);
-
-    const projectsCountByIdentity = new Map(
-      propertyStats.map((p) => [p.identityId, p._count._all]),
-    );
-    const lastActivityByIdentity = new Map(
-      propertyStats.map((p) => [p.identityId, p._max.createdAt]),
-    );
-    const avgRatingByUser = new Map(
-      reviewStats.map((r) => [r.targetUserId, r._avg.rating]),
-    );
-    const reviewsCountByUser = new Map(
-      reviewStats.map((r) => [r.targetUserId, r._count._all]),
-    );
-
-    const formattedCompanies = identities
-      .filter((i) => i.companyData !== null)
-      .map((i) => {
-        const avgRating = avgRatingByUser.get(i.userId);
-        return {
-          id: i.id,
-          userId: i.userId,
-          name: i.companyData!.name,
-          category: i.companyData!.services || '',
-          rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
-          reviewsCount: reviewsCountByUser.get(i.userId) ?? 0,
-          projectsCount: String(projectsCountByIdentity.get(i.id) ?? 0),
-          serviceArea: i.companyData!.serviceAreas,
-          logoUrl: i.companyData!.logoUrl,
-          isVerified: i.companyData!.isVerified,
-          lastActivityAt: (
-            lastActivityByIdentity.get(i.id) ?? i.companyData!.updatedAt
-          ).toISOString(),
-        };
-      });
+    const formattedCompanies =
+      await this.providerCards.formatCompanyCards(identities);
 
     return {
       data: formattedCompanies,
@@ -163,40 +118,8 @@ export class UsersDirectoryService {
       this.prisma.identity.count({ where: whereClause }),
     ]);
 
-    const userIds = identities.map((i) => i.userId);
-
-    const reviewStats = await this.prisma.review.groupBy({
-      by: ['targetUserId'],
-      where: { targetUserId: { in: userIds } },
-      _avg: { rating: true },
-      _count: { _all: true },
-    });
-
-    const avgRatingByUser = new Map(
-      reviewStats.map((r) => [r.targetUserId, r._avg.rating]),
-    );
-    const reviewsCountByUser = new Map(
-      reviewStats.map((r) => [r.targetUserId, r._count._all]),
-    );
-
-    const formattedOffices = identities
-      .filter((i) => i.officeData !== null)
-      .map((i) => {
-        const avgRating = avgRatingByUser.get(i.userId);
-        return {
-          id: i.id,
-          userId: i.userId,
-          name: i.officeData!.name,
-          rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
-          reviewsCount: reviewsCountByUser.get(i.userId) ?? 0,
-          location: i.officeData!.hqLocation || '',
-          logoUrl: i.officeData!.logoUrl,
-          isVerified: i.officeData!.isVerified,
-          phone: i.user?.phone,
-          whatsapp: i.user?.whatsapp || i.user?.phone,
-          isFavorite: false,
-        };
-      });
+    const formattedOffices =
+      await this.providerCards.formatOfficeCards(identities);
 
     return {
       data: formattedOffices,

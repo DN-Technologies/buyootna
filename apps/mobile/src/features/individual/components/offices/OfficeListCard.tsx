@@ -168,17 +168,17 @@ export default function OfficeListCard({
         {/* Right in RTL: Properties Count */}
         <View className="flex-row items-center gap-1.5">
           <PropertiesTabIcon color="#6B6A6A" size={14} />
-          <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
+          <Text className="font-cairo-medium leading-[20px] text-xs text-[#6B6A6A]">
             {propertiesCount} عقار
           </Text>
         </View>
 
         {/* Left in RTL: Rating & Reviews */}
         <View className="flex-row items-center gap-1">
-          <Text className="font-cairo text-xs text-[#8E8E93]">
+          <Text className="font-cairo leading-[22px] text-xs text-[#8E8E93]">
             ( {reviewsCount > 0 ? `+${reviewsCount}` : '+40'} تقييم )
           </Text>
-          <Text className="font-cairo-bold text-xs text-[#111111]">
+          <Text className="font-cairo-bold leading-[22px] text-xs text-[#111111]">
             {rating}
           </Text>
           <MaterialIcons name="star" size={14} color="#F59E0B" />

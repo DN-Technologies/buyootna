@@ -1,164 +1,227 @@
-import { Feather } from '@expo/vector-icons';
-import { FlashList } from '@shopify/flash-list';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { RefreshControl, Text, TouchableOpacity, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import FavoriteCompanyCard from '@/features/individual/components/favorites/FavoriteCompanyCard';
+import FavoritePropertyCard from '@/features/individual/components/favorites/FavoritePropertyCard';
+import FavoritesEmptyState from '@/features/individual/components/favorites/FavoritesEmptyState';
+import FavoritesHeader from '@/features/individual/components/favorites/FavoritesHeader';
+import FavoritesList from '@/features/individual/components/favorites/FavoritesList';
+import FavoritesOptionsSheet from '@/features/individual/components/favorites/FavoritesOptionsSheet';
+import FavoritesSortSheet, {
+  FavoritesSortOption,
+} from '@/features/individual/components/favorites/FavoritesSortSheet';
+import FavoritesSubHeader from '@/features/individual/components/favorites/FavoritesSubHeader';
+import FavoritesTabs, {
+  FavoritesTab,
+} from '@/features/individual/components/favorites/FavoritesTabs';
+import FavoritesUndoToast from '@/features/individual/components/favorites/FavoritesUndoToast';
+import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
+import { useFavoriteProperties } from '@/features/individual/hooks/useFavoriteProperties';
+import { useFavoriteProviders } from '@/features/individual/hooks/useFavoriteProviders';
+import { useFavoritesUndo } from '@/features/individual/hooks/useFavoritesUndo';
 import {
-  FavoritesResponse,
-  favoritesService,
-} from '@/shared/api/favorites.service';
-import PropertyCard from '@/shared/components/property/PropertyCard';
+  sortByRating,
+  sortFavoriteProperties,
+} from '@/features/individual/utils/favoritesSort';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
-import { useFavorites } from '@/shared/hooks/useFavorites';
-import { shareProperty } from '@/shared/utils/helpers/property';
+import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
+import { openChatWith } from '@/shared/utils/openChat';
 
-const FAVORITES_QUERY_KEY = ['favorites'];
+function PropertiesLoading() {
+  return (
+    <View>
+      {[1, 2, 3].map((key) => (
+        <View key={key} className="mb-4">
+          <PropertySkeleton />
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export default function FavoritesScreen() {
   const router = useRouter();
-  const { toggleFavorite } = useFavorites();
-  const queryClient = useQueryClient();
+  const favorites = useFavoriteProperties();
+  const favoriteCompanies = useFavoriteProviders('COMPANY');
+  const favoriteOffices = useFavoriteProviders('OFFICE');
+  const undo = useFavoritesUndo();
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<FavoritesTab>('properties');
+  const [selectedSort, setSelectedSort] = useState<FavoritesSortOption>('all');
 
-  const {
-    data,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: FAVORITES_QUERY_KEY,
-    queryFn: ({ pageParam }) => favoritesService.getFavorites(pageParam, 10),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.meta.hasNextPage ? lastPage.meta.page + 1 : undefined,
-  });
+  const sortSheetRef = useRef<BottomSheetModal>(null);
+  const optionsSheetRef = useRef<BottomSheetModal>(null);
 
-  const properties = data?.pages.flatMap((page) => page.data) ?? [];
+  const sortedProperties = useMemo(
+    () => sortFavoriteProperties(favorites.properties, selectedSort),
+    [favorites.properties, selectedSort],
+  );
+  const sortedCompanies = useMemo(
+    () => sortByRating(favoriteCompanies.items, selectedSort),
+    [favoriteCompanies.items, selectedSort],
+  );
+  const sortedOffices = useMemo(
+    () => sortByRating(favoriteOffices.items, selectedSort),
+    [favoriteOffices.items, selectedSort],
+  );
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Discard any pages loaded beyond the first before refetching, so a
-    // pull-to-refresh resets the list back to a fresh page 1.
-    queryClient.setQueryData(
-      FAVORITES_QUERY_KEY,
-      (old: { pages: FavoritesResponse[]; pageParams: number[] } | undefined) =>
-        old
-          ? { pages: old.pages.slice(0, 1), pageParams: old.pageParams.slice(0, 1) }
-          : old,
-    );
-    await refetch();
-    setIsRefreshing(false);
+  const countByTab: Record<FavoritesTab, number> = {
+    properties: sortedProperties.length,
+    companies: sortedCompanies.length,
+    offices: sortedOffices.length,
   };
 
-  const handleLoadMore = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
+  const handleClearAll = async () => {
+    const list =
+      activeTab === 'properties'
+        ? favorites
+        : activeTab === 'companies'
+          ? favoriteCompanies
+          : favoriteOffices;
+    undo.offerUndo(await list.removeAll());
   };
 
-  const handleFavoriteToggle = async (propertyId: string) => {
-    await toggleFavorite(propertyId);
-    // Optimistically remove from list
-    queryClient.setQueryData(
-      FAVORITES_QUERY_KEY,
-      (old: { pages: FavoritesResponse[]; pageParams: number[] } | undefined) =>
-        old
-          ? {
-              ...old,
-              pages: old.pages.map((page) => ({
-                ...page,
-                data: page.data.filter((p) => p.id !== propertyId),
-              })),
-            }
-          : old,
+  const handleExplorePress = () => {
+    router.push(
+      activeTab === 'companies' ? '/(individual)/companies' : '/(individual)/home',
     );
   };
+
+  const emptyState = <FavoritesEmptyState onExplorePress={handleExplorePress} />;
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-gray-50 px-5 py-4">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="h-8 w-8 items-center justify-center"
-        >
-          <Feather name="chevron-right" size={24} color="#111111" />
-        </TouchableOpacity>
-        <Text className="font-cairo-bold text-lg text-[#111111]">
-          العقارات المحفوظة
-        </Text>
-        <View className="w-8" />
+      <FavoritesHeader
+        onOptionsPress={() => optionsSheetRef.current?.present()}
+        onBackPress={() => router.back()}
+      />
+
+      <FavoritesTabs
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          setSelectedSort('all');
+        }}
+      />
+
+      <FavoritesSubHeader
+        activeTab={activeTab}
+        totalCount={countByTab[activeTab]}
+        onSortPress={() => sortSheetRef.current?.present()}
+      />
+
+      <View className="flex-1">
+        {activeTab === 'properties' && (
+          <FavoritesList
+            data={sortedProperties}
+            refreshing={favorites.isRefreshing}
+            onRefresh={favorites.refresh}
+            onEndReached={favorites.loadMore}
+            emptyComponent={
+              favorites.isLoading ? <PropertiesLoading /> : emptyState
+            }
+            renderItem={({ item }) => (
+              <FavoritePropertyCard
+                id={item.id}
+                price={item.price}
+                categoryLabel={item.category || 'عمارة'}
+                location={item.location || 'شمال غرب صليبيخات'}
+                area={item.area || 200}
+                propertyIncome={item.propertyIncome ?? 0}
+                isFeatured={item.isFeatured ?? true}
+                onPress={() => router.push(`/property/${item.id}`)}
+                onFavoriteToggle={async () =>
+                  undo.offerUndo(await favorites.remove(item))
+                }
+                onShare={() => shareProperty(item as any)}
+              />
+            )}
+          />
+        )}
+
+        {activeTab === 'companies' && (
+          <FavoritesList
+            data={sortedCompanies}
+            refreshing={favoriteCompanies.isRefreshing}
+            onRefresh={favoriteCompanies.refresh}
+            onEndReached={favoriteCompanies.loadMore}
+            emptyComponent={
+              favoriteCompanies.isLoading ? <PropertiesLoading /> : emptyState
+            }
+            renderItem={({ item }) => (
+              <FavoriteCompanyCard
+                id={item.id}
+                name={item.name}
+                category={item.category}
+                rating={item.rating}
+                reviewsCount={item.reviewsCount}
+                projectsCount={item.projectsCount}
+                lastActivity={formatTimeAgo(item.lastActivityAt)}
+                logoUrl={item.logoUrl}
+                isVerified={item.isVerified}
+                onPress={() => router.push(`/company/${item.id}`)}
+                onFavoriteToggle={async () =>
+                  undo.offerUndo(await favoriteCompanies.remove(item))
+                }
+                onQuoteRequest={() =>
+                  router.push(
+                    `/(individual)/request-quote?companyId=${item.id}` as any,
+                  )
+                }
+                onChatPress={() => openChatWith(router, { recipientId: item.id })}
+              />
+            )}
+          />
+        )}
+
+        {activeTab === 'offices' && (
+          <FavoritesList
+            data={sortedOffices}
+            refreshing={favoriteOffices.isRefreshing}
+            onRefresh={favoriteOffices.refresh}
+            onEndReached={favoriteOffices.loadMore}
+            emptyComponent={
+              favoriteOffices.isLoading ? <PropertiesLoading /> : emptyState
+            }
+            renderItem={({ item }) => (
+              <OfficeListCard
+                id={item.id}
+                name={item.name}
+                rating={item.rating}
+                reviewsCount={item.reviewsCount}
+                location={item.location}
+                logoUrl={item.logoUrl ?? undefined}
+                isVerified={item.isVerified}
+                phone={item.phone}
+                whatsapp={item.whatsapp}
+                isFavorite
+                onPress={() => router.push(`/office/${item.id}` as any)}
+                onToggleFavorite={async () =>
+                  undo.offerUndo(await favoriteOffices.remove(item))
+                }
+                onChatPress={() => openChatWith(router, { recipientId: item.id })}
+              />
+            )}
+          />
+        )}
       </View>
 
-      {/* List */}
-      <FlashList
-        data={properties}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingTop: 16,
-          paddingBottom: 50,
-        }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor="#15304D"
-          />
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListEmptyComponent={
-          isLoading ? (
-            <View>
-              {[1, 2, 3].map((key) => (
-                <View key={key} className="mb-4">
-                  <PropertySkeleton />
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View className="items-center justify-center px-5 py-20">
-              <View className="mb-4 h-16 w-16 items-center justify-center rounded-full bg-gray-50">
-                <Feather name="heart" size={28} color="#64748B" />
-              </View>
-              <Text className="mb-2 text-center font-cairo-bold text-lg text-[#111111]">
-                لا توجد عقارات محفوظة
-              </Text>
-              <Text className="text-center font-cairo-medium text-sm leading-6 text-[#64748B]">
-                احفظ العقارات التي تعجبك لتجدها هنا لاحقاً وتتابع تحديثاتها
-                بسهولة.
-              </Text>
-            </View>
-          )
-        }
-        renderItem={({ item }) => (
-          <View className="mb-4">
-            <PropertyCard
-              id={item.id}
-              images={item.images}
-              price={item.price}
-              companyName={item.host.name}
-              categoryLabel={item.category}
-              propertyIncome={item.propertyIncome}
-              area={item.area}
-              beds={item.beds}
-              baths={item.baths}
-              location={item.location}
-              isFavorited={true}
-              onPress={() => router.push(`/property/${item.id}`)}
-              onFavorite={() => handleFavoriteToggle(item.id)}
-              onShare={() => shareProperty(item)}
-            />
-          </View>
-        )}
+      <FavoritesSortSheet
+        ref={sortSheetRef}
+        activeTab={activeTab}
+        selectedSort={selectedSort}
+        onSelectSort={setSelectedSort}
+      />
+
+      <FavoritesOptionsSheet ref={optionsSheetRef} onClearAll={handleClearAll} />
+
+      <FavoritesUndoToast
+        visible={undo.visible}
+        onUndo={undo.undo}
+        onDismiss={undo.dismiss}
       />
     </SafeAreaView>
   );

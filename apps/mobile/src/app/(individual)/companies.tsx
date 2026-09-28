@@ -27,6 +27,7 @@ import CategoryFilterSheet, {
 } from '@/shared/components/filters/CategoryFilterSheet';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { openChatWith } from '@/shared/utils/openChat';
@@ -60,9 +61,7 @@ export default function CompaniesScreen() {
             selectedCategories.length - 1
           }`;
 
-  const [favoriteOverrides, setFavoriteOverrides] = useState<
-    Record<string, boolean>
-  >({});
+  const providerFavorites = useProviderFavorites();
   const [selectedCompanyName, setSelectedCompanyName] = useState('الشركة');
 
   // --- Fetch companies whenever the category or search text changes ---
@@ -228,13 +227,10 @@ export default function CompaniesScreen() {
               lastActivityAt={item.lastActivityAt}
               logoUrl={item.logoUrl}
               isVerified={item.isVerified}
-              isFavorite={favoriteOverrides[item.id] ?? item.isFavorite ?? false}
+              isFavorite={providerFavorites.isFavorited(item.id)}
               onPress={() => router.push(`/company/${item.id}` as any)}
               onToggleFavorite={() =>
-                setFavoriteOverrides((prev) => ({
-                  ...prev,
-                  [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
-                }))
+                guardAction(() => providerFavorites.toggleFavorite(item.id))
               }
               onChatPress={() => handleChatPress(item.userId)}
               onQuotePress={() => handleQuotePress(item.name)}
