@@ -57,6 +57,19 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## Device locations (MaxMind GeoLite2)
+
+Active Devices shows each session's approximate location ("City، الدولة"),
+looked up from the login IP in a local GeoLite2-City database.
+
+- Set `MAXMIND_ACCOUNT_ID` and `MAXMIND_LICENSE_KEY` (free MaxMind account)
+  in `apps/api/.env`. The API downloads the database on startup when it's
+  missing or older than 7 days, and refreshes it weekly.
+- `GEOIP_DB_PATH` overrides the default `data/geoip/GeoLite2-City.mmdb`
+  (a Docker volume, `geoip_data`, in production).
+- Without credentials, locations are simply unknown; logins are unaffected.
+- Attribution is required by the GeoLite2 license; see `NOTICE`.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

@@ -2,6 +2,7 @@ export interface NewDeviceLoginTemplateParams {
   userName: string;
   deviceName: string;
   loginTime: string;
+  location?: string | null;
   ipAddress?: string | null;
 }
 
@@ -19,8 +20,12 @@ export function newDeviceLoginTemplate({
   userName,
   deviceName,
   loginTime,
+  location,
   ipAddress,
 }: NewDeviceLoginTemplateParams): string {
+  const locationRow = location
+    ? `<tr><td class="label">الموقع</td><td class="value">${escapeHtml(location)}</td></tr>`
+    : '';
   const ipRow = ipAddress
     ? `<tr><td class="label">عنوان IP</td><td class="value">${escapeHtml(ipAddress)}</td></tr>`
     : '';
@@ -92,6 +97,7 @@ export function newDeviceLoginTemplate({
     <table class="details">
       <tr><td class="label">الجهاز</td><td class="value">${escapeHtml(deviceName)}</td></tr>
       <tr><td class="label">الوقت</td><td class="value">${escapeHtml(loginTime)}</td></tr>
+      ${locationRow}
       ${ipRow}
     </table>
     <div class="warning">

@@ -1,0 +1,5 @@
+Buyootna
+
+This product includes GeoLite2 data created by MaxMind, available from
+https://www.maxmind.com. It is used by the API (apps/api/src/core/geoip) to
+show the approximate location of signed-in devices.

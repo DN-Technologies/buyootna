@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499236191856",
+    "project_id": "buyootna-90b9b",
+    "storage_bucket": "buyootna-90b9b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499236191856:android:2c4ed57155e483501b7eb5",
+        "android_client_info": {
+          "package_name": "com.constyoussef.buyootna.login"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAS7NzikVdpwBzZU5psnZ3ww-P2uDCn1k4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

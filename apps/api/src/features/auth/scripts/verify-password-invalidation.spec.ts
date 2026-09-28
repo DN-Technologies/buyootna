@@ -20,6 +20,7 @@
 import * as bcrypt from 'bcrypt';
 
 import { SessionsService } from '../../devices/sessions.service';
+import type { GeoIpService } from '../../../core/geoip/geoip.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
 import { JwtStrategy } from '../strategies/jwt.strategy';
 import { AuthPasswordService } from '../services/auth-password.service';
@@ -53,7 +54,10 @@ describeIfDb('password change session invalidation (real Postgres)', () => {
     prisma = new PrismaService();
     await prisma.$connect();
 
-    sessions = new SessionsService(prisma);
+    // Location lookup isn't under test here
+    sessions = new SessionsService(prisma, {
+      locate: () => null,
+    } as unknown as GeoIpService);
     // (prisma, twilio, sessions) — this user has no phone on file, so the
     // Twilio dependency is never touched by changePassword.
     passwordService = new AuthPasswordService(

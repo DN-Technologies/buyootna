@@ -41,7 +41,9 @@ export default function RegisteredDevicesScreen() {
         isActive: session.isActive,
         isCurrent: session.id === currentSessionId,
         status: session.isActive ? 'نشط الان' : 'نشط مؤخراً',
-        location: session.location || 'الكويت',
+        // Resolved by the server from the login IP; unknown locally / for
+        // sessions from before location tracking
+        location: session.location || 'موقع غير معروف',
       }));
     },
   });

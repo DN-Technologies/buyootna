@@ -81,6 +81,10 @@ const config: ExpoConfig = {
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: 'com.constyoussef.buyootna.login',
+    // Firebase config for FCM, which delivers Android push notifications
+    // (expo-notifications). Client config only -- the FCM service-account
+    // key lives in EAS credentials, never in the repo.
+    googleServicesFile: './google-services.json',
   },
   web: {
     output: 'static',
