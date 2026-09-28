@@ -1,5 +1,6 @@
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useCallback } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
@@ -13,6 +14,8 @@ export interface ChatMessageListProps {
   onLoadMore: () => void;
   onPressProperty: (propertyId?: string) => void;
   onPressImage: () => void;
+  // Shows a spinner while there's nothing to show yet
+  isLoading?: boolean;
 }
 
 export default function ChatMessageList({
@@ -21,6 +24,7 @@ export default function ChatMessageList({
   onLoadMore,
   onPressProperty,
   onPressImage,
+  isLoading = false,
 }: ChatMessageListProps) {
   const renderMessage = useCallback(
     ({ item }: { item: DisplayMessage }) => {
@@ -66,6 +70,17 @@ export default function ChatMessageList({
     },
     [onPressImage, onPressProperty],
   );
+
+  if (isLoading && messages.length === 0) {
+    return (
+      <View
+        testID="chat-messages-loading"
+        className="flex-1 items-center justify-center"
+      >
+        <ActivityIndicator size="large" color="#15304D" />
+      </View>
+    );
+  }
 
   return (
     <FlashList

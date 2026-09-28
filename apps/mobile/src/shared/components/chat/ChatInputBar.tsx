@@ -18,6 +18,8 @@ interface ChatInputBarProps {
   showAttachmentMenu: boolean;
   setShowAttachmentMenu: (show: boolean) => void;
   onAttachImage: () => void;
+  // While the conversation is still being created
+  sendDisabled?: boolean;
 }
 
 export default function ChatInputBar({
@@ -27,6 +29,7 @@ export default function ChatInputBar({
   showAttachmentMenu,
   setShowAttachmentMenu,
   onAttachImage,
+  sendDisabled = false,
 }: ChatInputBarProps) {
   const insets = useSafeAreaInsets();
 
@@ -159,12 +162,13 @@ export default function ChatInputBar({
       <TouchableOpacity
         testID="chat-send-button"
         onPress={onSend}
+        disabled={sendDisabled}
         className="h-8 w-8 items-center justify-center"
       >
         <Feather
           name="send"
           size={24}
-          color={inputText.trim() ? '#15304D' : '#94A3B8'}
+          color={inputText.trim() && !sendDisabled ? '#15304D' : '#94A3B8'}
         />
       </TouchableOpacity>
     </View>

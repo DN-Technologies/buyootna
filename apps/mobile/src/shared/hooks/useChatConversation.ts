@@ -100,7 +100,8 @@ export function useChatConversation({
   ]);
 
   const handleSendMessage = useCallback(() => {
-    if (!inputText.trim()) return;
+    // No conversation yet (still being created): keep the text for later
+    if (!conversationId || !inputText.trim()) return;
     const sent = sendMessage(conversationId, {
       content: inputText.trim(),
       type: 'TEXT',
@@ -140,6 +141,7 @@ export function useChatConversation({
     otherUserId,
     propertyContext,
     conversation,
+    isLoadingMessages: isLoading,
     handleSendMessage,
     handleLoadMore,
   };

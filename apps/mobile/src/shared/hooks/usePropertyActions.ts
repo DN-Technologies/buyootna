@@ -1,15 +1,14 @@
 import { useRouter } from 'expo-router';
 import { Linking, Share } from 'react-native';
 
-import { chatService } from '@/shared/api/chat.service';
 import { normalizeKuwaitPhone } from '@/shared/hooks/useProfileContact';
-import { useSingleFlight } from '@/shared/hooks/useSingleFlight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
+import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -25,7 +24,6 @@ export function usePropertyActions({
   toggleFavorite,
 }: UsePropertyActionsOptions) {
   const router = useRouter();
-  const runOnce = useSingleFlight();
   const user = useAuthStore((state) => state.user);
 
   const handleWhatsapp = () => {
@@ -60,43 +58,19 @@ export function usePropertyActions({
   const handleChat = () => {
     if (!property) return;
 
-    // Single-flight: the guarded action creates the conversation before
-    // navigating, so a rapid double-tap must not fire it twice (the API
-    // would create the conversation and push a second, different chat
-    // screen past the router's same-target dedup).
-    runOnce(() =>
-      guardAction(async () => {
-        const hostId = property.host?.id;
-        if (hostId && user && user.id === hostId) {
-          showAlert(
-            'تنبيه',
-            'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.',
-          );
-          return;
-        }
-        if (!hostId) {
-          showAlert(
-            'تنبيه',
-            'تعذر بدء المحادثة، بيانات المعلن غير متاحة حالياً',
-          );
-          return;
-        }
-        try {
-          const response = await chatService.createConversation(
-            hostId,
-            property.id,
-          );
-          router.push(`/chat/${response.id}`);
-        } catch (error: any) {
-          console.error('Failed to start chat conversation:', error);
-          const backendMsg = error?.response?.data?.message;
-          const msg = Array.isArray(backendMsg)
-            ? backendMsg.join('\n')
-            : backendMsg || 'تعذر بدء المحادثة مع البائع';
-          showAlert('تنبيه', msg);
-        }
-      }),
-    );
+    guardAction(() => {
+      const hostId = property.host?.id;
+      if (hostId && user && user.id === hostId) {
+        showAlert('تنبيه', 'لا يمكنك بدء محادثة مع نفسك، هذا الإعلان خاص بك.');
+        return;
+      }
+      if (!hostId) {
+        showAlert('تنبيه', 'تعذر بدء المحادثة، بيانات المعلن غير متاحة حالياً');
+        return;
+      }
+      // Opens the chat at once; the chat screen creates the conversation
+      openChatWith(router, { recipientId: hostId, propertyId: property.id });
+    });
   };
 
   const handleShare = async () => {

@@ -13,12 +13,27 @@ import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useChatConversation } from '@/shared/hooks/useChatConversation';
 import { useChatReport } from '@/shared/hooks/useChatReport';
+import { useStartConversation } from '@/shared/hooks/useStartConversation';
+import { NEW_CHAT_ID } from '@/shared/utils/openChat';
 
 export default function ChatDetailsScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
-  const conversationId = typeof id === 'string' ? id : id[0];
+  const params = useLocalSearchParams<{
+    id: string;
+    recipientId?: string;
+    propertyId?: string;
+  }>();
+  const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const listRef = useRef<FlashListRef<any>>(null);
+
+  // Opened as /chat/new: the screen shows right away and the conversation
+  // is created here, instead of the tap waiting for it
+  const isNewChat = routeId === NEW_CHAT_ID;
+  const { conversationId: startedId, isStarting } = useStartConversation({
+    recipientId: isNewChat ? params.recipientId : undefined,
+    propertyId: isNewChat ? params.propertyId : undefined,
+  });
+  const conversationId = isNewChat ? (startedId ?? '') : routeId;
 
   const {
     inputText,
@@ -37,6 +52,7 @@ export default function ChatDetailsScreen() {
     otherUserAvatar,
     otherUserId,
     propertyContext,
+    isLoadingMessages,
     handleSendMessage,
     handleLoadMore,
   } = useChatConversation({ conversationId, listRef });
@@ -87,9 +103,11 @@ export default function ChatDetailsScreen() {
               }
             }}
             onPressImage={() => setShowImageOptions(true)}
+            isLoading={isStarting || isLoadingMessages}
           />
 
           <ChatInputBar
+            sendDisabled={!conversationId}
             inputText={inputText}
             onInputChange={setInputText}
             onSend={handleSendMessage}
