@@ -35,6 +35,10 @@ import { AdminReportsBulkDto } from './dto/admin-reports-bulk.dto';
 import { AdminRemovePropertyDto } from './dto/admin-remove-property.dto';
 import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
+import {
+  AdminCreateFeaturePackageDto,
+  AdminUpdateFeaturePackageDto,
+} from './dto/admin-feature-package.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
 import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
@@ -518,6 +522,44 @@ export class AdminController {
   @ApiCommonErrors()
   getAvailableCoupons() {
     return this.adminService.getAvailableCoupons();
+  }
+
+  @Get('feature-packages')
+  @ApiOperation({
+    summary:
+      'List every "feature this ad" package (active and inactive) with its price',
+  })
+  @ApiResponse({ status: 200, description: 'Feature packages' })
+  @ApiCommonErrors()
+  getFeaturePackages() {
+    return this.adminService.getFeaturePackages();
+  }
+
+  @Post('feature-packages')
+  @ApiOperation({ summary: 'Add a "feature this ad" package' })
+  @ApiResponse({ status: 201, description: 'The created package' })
+  @ApiCommonErrors()
+  createFeaturePackage(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: AdminCreateFeaturePackageDto,
+  ) {
+    return this.adminService.createFeaturePackage(dto, reqUser.userId);
+  }
+
+  @Patch('feature-packages/:id')
+  @ApiOperation({
+    summary:
+      'Edit a "feature this ad" package (price, label, days, order, or deactivate it)',
+  })
+  @ApiParam({ name: 'id', description: 'Feature package ID' })
+  @ApiResponse({ status: 200, description: 'The updated package' })
+  @ApiCommonErrors()
+  updateFeaturePackage(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminUpdateFeaturePackageDto,
+  ) {
+    return this.adminService.updateFeaturePackage(id, dto, reqUser.userId);
   }
 
   @Post('users/bulk/coupon')

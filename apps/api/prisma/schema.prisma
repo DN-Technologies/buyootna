@@ -253,6 +253,21 @@ model Plan {
   updatedAt      DateTime       @updatedAt
 }
 
+// A paid "feature this ad" option (e.g. 7 days for 3 KWD). Admin-editable;
+// the charge amount always comes from here, never from the client.
+model FeaturePackage {
+  id           String    @id @default(uuid())
+  label        String
+  description  String    @default("")
+  durationDays Int
+  price        Float
+  sortOrder    Int       @default(0)
+  isActive     Boolean   @default(true)
+  invoices     Invoice[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
 // A purchasable quantity option within a plan tier (e.g. gold × 5 ads).
 // The plan carries the per-ad benefits; the package carries the ad count
 // and price actually charged.
@@ -297,6 +312,16 @@ model Invoice {
   planId        String?
   planPackageId String?
   planPackage   PlanPackage? @relation(fields: [planPackageId], references: [id], onDelete: SetNull)
+
+  // Set for "feature this ad" purchases instead of a plan. featureDays is
+  // the duration paid for, kept even if the package is later edited, and
+  // propertyId goes null (invoice kept) if the ad is deleted.
+  featurePackageId String?
+  featurePackage   FeaturePackage? @relation(fields: [featurePackageId], references: [id], onDelete: SetNull)
+  propertyId       String?
+  property         Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  featureDays      Int?
+
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 

@@ -28,6 +28,7 @@ import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import {
   CreateChargeResponseDto,
+  FeaturePackageResponseDto,
   InvoiceStatusResponseDto,
 } from './dto/payment-response.dto';
 
@@ -77,6 +78,56 @@ export class PaymentsController {
     );
   }
 
+  @Get('feature-packages')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary: 'List the active "feature this ad" packages and their prices',
+  })
+  @ApiResponse({ status: 200, type: [FeaturePackageResponseDto] })
+  @ApiCommonErrors()
+  getFeaturePackages() {
+    return this.paymentsService.getFeaturePackages();
+  }
+
+  @Post('feature-charge')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Create a Tap Payments charge to feature one of the current identity's active ads",
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['propertyId', 'featurePackageId', 'appRedirectUrl'],
+      properties: {
+        propertyId: { type: 'string' },
+        featurePackageId: { type: 'string' },
+        appRedirectUrl: { type: 'string' },
+        sourceId: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, type: CreateChargeResponseDto })
+  @ApiCommonErrors()
+  async createFeatureCharge(
+    @CurrentUser() reqUser: RequestUser,
+    @Body('propertyId') propertyId: string,
+    @Body('featurePackageId') featurePackageId: string,
+    @Body('appRedirectUrl') appRedirectUrl: string,
+    @Body('sourceId') sourceId?: string,
+  ) {
+    return this.paymentsService.createFeatureCharge(
+      reqUser.userId,
+      reqUser.identityId,
+      propertyId,
+      featurePackageId,
+      appRedirectUrl,
+      sourceId,
+    );
+  }
+
   @Get('redirect')
   @ApiOperation({
     summary:
@@ -85,17 +136,20 @@ export class PaymentsController {
   @ApiQuery({ name: 'tap_id', required: true })
   @ApiQuery({ name: 'invoiceId', required: true })
   @ApiQuery({ name: 'appRedirectUrl', required: true })
+  @ApiQuery({ name: 'purpose', required: false, enum: ['feature'] })
   @ApiResponse({ status: 302, description: 'Redirects to appRedirectUrl' })
   async verifyAndRedirect(
     @Query('tap_id') tapId: string,
     @Query('invoiceId') invoiceId: string,
     @Query('appRedirectUrl') appRedirectUrl: string,
     @Res() res: Response,
+    @Query('purpose') purpose?: string,
   ) {
     const redirectUrl = await this.paymentsService.verifyChargeAndRedirect(
       tapId,
       invoiceId,
       appRedirectUrl,
+      purpose,
     );
     return res.redirect(redirectUrl);
   }

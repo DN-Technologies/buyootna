@@ -16,6 +16,7 @@ import { AdminInvoicesService } from './services/admin-invoices.service';
 import { AdminRatingsService } from './services/admin-ratings.service';
 import { AdminNotesService } from './services/admin-notes.service';
 import { AdminAuditLogService } from './services/admin-audit-log.service';
+import { AdminFeaturePackagesService } from './services/admin-feature-packages.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
@@ -127,6 +128,11 @@ describe('AdminService', () => {
   let adminRatingsService: MockAdminRatingsService;
   let adminNotesService: MockAdminNotesService;
   let adminAuditLogService: MockAdminAuditLogService;
+  const adminFeaturePackagesService = {
+    list: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  };
 
   beforeEach(async () => {
     adminUsersService = {
@@ -287,6 +293,10 @@ describe('AdminService', () => {
         {
           provide: AdminAuditLogService,
           useValue: adminAuditLogService,
+        },
+        {
+          provide: AdminFeaturePackagesService,
+          useValue: adminFeaturePackagesService,
         },
       ],
     }).compile();
@@ -855,6 +865,30 @@ describe('AdminService', () => {
         'admin-1',
       );
       expect(result).toBe(mockResult);
+    });
+  });
+
+  describe('feature packages', () => {
+    it('delegates list/create/update to AdminFeaturePackagesService', async () => {
+      adminFeaturePackagesService.list.mockResolvedValue([]);
+      adminFeaturePackagesService.create.mockResolvedValue({ id: 'p' });
+      adminFeaturePackagesService.update.mockResolvedValue({ id: 'p' });
+      const dto = { label: 'تمييز ليوم', durationDays: 1, price: 1 };
+
+      await service.getFeaturePackages();
+      await service.createFeaturePackage(dto, 'admin-1');
+      await service.updateFeaturePackage('p', { price: 2 }, 'admin-1');
+
+      expect(adminFeaturePackagesService.list).toHaveBeenCalled();
+      expect(adminFeaturePackagesService.create).toHaveBeenCalledWith(
+        dto,
+        'admin-1',
+      );
+      expect(adminFeaturePackagesService.update).toHaveBeenCalledWith(
+        'p',
+        { price: 2 },
+        'admin-1',
+      );
     });
   });
 });

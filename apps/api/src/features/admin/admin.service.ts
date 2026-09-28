@@ -36,6 +36,11 @@ import { AdminCreateNoteDto, AdminUpdateNoteDto } from './dto/admin-note.dto';
 import { AdminChangePlanDto } from './dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from './dto/admin-grant-exceptional-feature.dto';
 import { AdminAuditLogService } from './services/admin-audit-log.service';
+import { AdminFeaturePackagesService } from './services/admin-feature-packages.service';
+import {
+  AdminCreateFeaturePackageDto,
+  AdminUpdateFeaturePackageDto,
+} from './dto/admin-feature-package.dto';
 
 @Injectable()
 export class AdminService {
@@ -56,6 +61,7 @@ export class AdminService {
     private readonly adminRatingsService: AdminRatingsService,
     private readonly adminNotesService: AdminNotesService,
     private readonly adminAuditLogService: AdminAuditLogService,
+    private readonly adminFeaturePackagesService: AdminFeaturePackagesService,
   ) {}
 
   async getDashboard() {
@@ -239,6 +245,23 @@ export class AdminService {
 
   getAvailableCoupons() {
     return this.adminCouponService.getAvailableCoupons();
+  }
+
+  // --- FEATURE AD PRICE LIST ---
+  getFeaturePackages() {
+    return this.adminFeaturePackagesService.list();
+  }
+
+  createFeaturePackage(dto: AdminCreateFeaturePackageDto, adminUserId: string) {
+    return this.adminFeaturePackagesService.create(dto, adminUserId);
+  }
+
+  updateFeaturePackage(
+    id: string,
+    dto: AdminUpdateFeaturePackageDto,
+    adminUserId: string,
+  ) {
+    return this.adminFeaturePackagesService.update(id, dto, adminUserId);
   }
 
   async getInvoicesForUser(userId: string) {

@@ -49,4 +49,18 @@ describe('PropertiesExpiryService', () => {
 
     await expect(service.expireOverdueListings()).resolves.toBeUndefined();
   });
+
+  it('un-features listings whose featuredUntil has passed', async () => {
+    const before = Date.now();
+
+    await service.unfeatureExpiredListings();
+
+    const call = (
+      prisma.property.updateMany.mock.calls as Prisma.PropertyUpdateManyArgs[][]
+    )[0][0];
+    expect(call.where?.isFeatured).toBe(true);
+    const cutoff = (call.where?.featuredUntil as { lte: Date }).lte;
+    expect(cutoff.getTime()).toBeGreaterThanOrEqual(before);
+    expect(call.data).toEqual({ isFeatured: false });
+  });
 });
