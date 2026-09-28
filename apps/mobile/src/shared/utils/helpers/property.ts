@@ -1,5 +1,14 @@
 import { Share } from 'react-native';
 
+/**
+ * When an ad went live: its latest publish or republish, falling back to
+ * creation for APIs that predate publishedAt.
+ */
+export const publishedDate = (p: {
+  publishedAt?: string | null;
+  createdAt?: string;
+}): string | undefined => p.publishedAt ?? p.createdAt;
+
 export const formatTimeAgo = (dateStr: string): string => {
   try {
     const date = new Date(dateStr);

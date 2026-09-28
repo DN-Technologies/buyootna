@@ -22,7 +22,11 @@ import { useFavorites } from '@/shared/hooks/useFavorites';
 import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
+import {
+  formatTimeAgo,
+  publishedDate,
+  shareProperty,
+} from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
 interface HomePropertiesProps {
@@ -230,7 +234,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
                     : '100%'
                 }
                 timeAgo={
-                  item.createdAt ? formatTimeAgo(item.createdAt) : undefined
+                  publishedDate(item) ? formatTimeAgo(publishedDate(item)!) : undefined
                 }
                 isFavorited={favoritedIds.includes(item.id)}
                 onFavorite={() => toggleFavorite(item.id)}

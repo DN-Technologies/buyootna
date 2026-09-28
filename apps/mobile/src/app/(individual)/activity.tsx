@@ -264,7 +264,12 @@ export default function ActivityScreen() {
               onFeaturePress={adActions.handleFeatureAd}
               onDeletePress={adActions.handleDeleteAd}
               onPublishDraftPress={adActions.handlePublishDraft}
-              onArchivedPress={(id) => router.push(`/property/${id}` as any)}
+              onArchivedPress={(id) =>
+                router.push({
+                  pathname: `/property/${id}`,
+                  params: { archived: 'true' },
+                } as any)
+              }
             />
           )
         }

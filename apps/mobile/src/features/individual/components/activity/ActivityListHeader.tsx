@@ -40,10 +40,10 @@ export default function ActivityListHeader({
       {activeFilterId === 'ARCHIVED' && (
         <View className="mb-3 mt-1 w-full">
           <Text
-            className="font-cairo-bold text-sm text-[#111111]"
+            className="font-cairo text-[14px] leading-[20px] text-[#111111]"
             style={{ writingDirection: 'rtl' }}
           >
-            اعلانات منتهية بعد مدة النشر (30 يوم)
+            اعلانات منتهية بعد مدة النشر (30يوم)
           </Text>
         </View>
       )}

@@ -12,6 +12,8 @@ export interface PropertyDetailsDto {
   views: number;
   images: string[];
   createdAt: string;
+  // When the ad last went live (publish or republish); older APIs omit it
+  publishedAt?: string | null;
   floors?: number;
   requestYear?: number;
   requiredYear?: number;

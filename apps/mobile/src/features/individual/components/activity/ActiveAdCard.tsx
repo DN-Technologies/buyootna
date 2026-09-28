@@ -14,6 +14,7 @@ import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
+  publishedDate,
 } from '@/shared/utils/helpers/property';
 
 interface ActiveAdCardProps {
@@ -232,7 +233,7 @@ export default function ActiveAdCard({
             </Text>
           </View>
           <Text className="font-cairo text-xs text-[#6B6A6A]">
-            تاريخ النشر: {formatDate(property.updatedAt)}
+            تاريخ النشر: {formatDate(publishedDate(property) ?? property.updatedAt)}
           </Text>
         </View>
 
