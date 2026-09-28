@@ -35,10 +35,9 @@ export function useAdActions({
   );
 
   const handleEditAd = (propertyId: string) => {
-    router.push({
-      pathname: '/add-listing',
-      params: { editId: propertyId },
-    });
+    // The dedicated edit screen: pre-filled, with the fields that can't
+    // change after publishing locked. /add-listing is the create flow.
+    router.push(`/edit-listing/${propertyId}`);
   };
 
   const handleFeatureAd = (propertyId: string) => {
