@@ -22,6 +22,7 @@ import SuggestionCardSkeleton from '@/shared/components/skeletons/SuggestionCard
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 
 // Holds the active advanced filter context for pagination
 interface AdvancedFilterState {
@@ -32,6 +33,7 @@ interface AdvancedFilterState {
 export default function SearchResultsScreen() {
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const router = useRouter();
+  const providerFavorites = useProviderFavorites();
   const activeIdentity = useAuthStore((state) => state.activeIdentity);
   const {
     query,
@@ -207,7 +209,8 @@ export default function SearchResultsScreen() {
               serviceArea={item.serviceArea}
               projectsCount={item.projectsCount}
               logoUrl={item.logoUrl}
-              isFavorite={item.isFavorite}
+              isFavorite={providerFavorites.isFavorited(item.id)}
+              onFavoritePress={() => providerFavorites.toggleFavorite(item.id)}
               onPress={() => {
                 router.push(`/company/${item.id}` as any);
               }}

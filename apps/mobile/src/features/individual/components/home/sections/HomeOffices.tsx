@@ -9,6 +9,7 @@ import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 
 interface HomeOfficesProps {
   refreshing?: boolean;
@@ -24,9 +25,7 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
   const router = useRouter();
   const { scrollContentBottomPadding } = useTabBarHeight();
   const token = useAuthStore((state) => state.token);
-  const [favoriteOverrides, setFavoriteOverrides] = useState<
-    Record<string, boolean>
-  >({});
+  const providerFavorites = useProviderFavorites();
 
   const {
     data: infiniteData,
@@ -119,14 +118,9 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
           isVerified={item.isVerified}
           phone={item.phone}
           whatsapp={item.whatsapp}
-          isFavorite={favoriteOverrides[item.id] ?? item.isFavorite ?? false}
+          isFavorite={providerFavorites.isFavorited(item.id)}
           onPress={() => router.push(`/office/${item.id}` as any)}
-          onToggleFavorite={() =>
-            setFavoriteOverrides((prev) => ({
-              ...prev,
-              [item.id]: !(prev[item.id] ?? item.isFavorite ?? false),
-            }))
-          }
+          onToggleFavorite={() => providerFavorites.toggleFavorite(item.id)}
         />
       )}
       onEndReached={fetchMoreData}

@@ -14,6 +14,7 @@ import { COMPANIES_DATA } from '@/assets/mock/companiesData';
 import CompanyCard from '@/features/individual/components/CompanyCard';
 import { feedService } from '@/features/individual/services/feed.service';
 import { CompanyDto } from '@/types/feed';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HORIZONTAL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
@@ -49,6 +50,7 @@ export default function ServiceCompanies({
   activeFilter = 'all',
 }: ServiceCompaniesProps) {
   const router = useRouter();
+  const providerFavorites = useProviderFavorites();
 
   // No companies came from the parent's home feed — fall back to local mock
   // data (e.g. cold-start / empty backend) instead of showing nothing.
@@ -164,7 +166,8 @@ export default function ServiceCompanies({
                 serviceArea={item.serviceArea}
                 logoUrl={item.logoUrl}
                 isVerified={item.isVerified}
-                isFavorite={item.isFavorite}
+                isFavorite={providerFavorites.isFavorited(item.id)}
+                onFavorite={() => providerFavorites.toggleFavorite(item.id)}
                 cardWidth={HORIZONTAL_CARD_WIDTH}
                 onPress={() => router.push(`/company/${item.id}`)}
               />
