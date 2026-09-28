@@ -20,6 +20,6 @@ export class InvoicesController {
   @ApiResponse({ status: 200, type: [InvoiceDto] })
   @ApiCommonErrors()
   async getInvoices(@CurrentUser() reqUser: RequestUser) {
-    return this.invoicesService.findUserInvoices(reqUser.userId);
+    return this.invoicesService.findIdentityInvoices(reqUser.identityId);
   }
 }

@@ -19,6 +19,7 @@ export class PlanCheckoutService {
 
   async createCharge(
     userId: string,
+    identityId: string,
     planSlug: string,
     appRedirectUrl: string,
     sourceId = 'src_all',
@@ -71,6 +72,8 @@ export class PlanCheckoutService {
         amount,
         status: 'PENDING',
         userId: user.id,
+        // The credits go to the persona that bought them
+        identityId,
         planId: plan.id,
         planPackageId: planPackage?.id ?? null,
         dueDate: invoiceDueDate(),

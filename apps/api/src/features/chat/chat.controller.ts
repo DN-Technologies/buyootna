@@ -69,7 +69,11 @@ export class ChatController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return this.chatService.getConversations(reqUser.userId, pageNum, limitNum);
+    return this.chatService.getConversations(
+      reqUser.identityId,
+      pageNum,
+      limitNum,
+    );
   }
 
   @Get('conversations/:id/messages')
@@ -90,7 +94,7 @@ export class ChatController {
     const limitNum = limit ? parseInt(limit, 10) : 20;
     return this.chatService.getMessages(
       conversationId,
-      reqUser.userId,
+      reqUser.identityId,
       cursor,
       limitNum,
     );
@@ -105,6 +109,6 @@ export class ChatController {
     @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
   ) {
-    return this.chatService.markAsRead(reqUser.userId, conversationId);
+    return this.chatService.markAsRead(reqUser.identityId, conversationId);
   }
 }

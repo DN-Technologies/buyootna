@@ -207,10 +207,16 @@ export class UsersController {
       isActive: identity.id === activeId,
     }));
 
+    const activeIdentity =
+      deviceIdentities.find((identity) => identity.isActive) ?? null;
+
     return {
-      user: userWithoutIdentities,
-      activeIdentity:
-        deviceIdentities.find((identity) => identity.isActive) ?? null,
+      // The free ad is per persona: the app reads it from here
+      user: {
+        ...userWithoutIdentities,
+        freeAdsRemaining: activeIdentity?.freeAdsRemaining ?? 0,
+      },
+      activeIdentity,
       identities: deviceIdentities,
     };
   }

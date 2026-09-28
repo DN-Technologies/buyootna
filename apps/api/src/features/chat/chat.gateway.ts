@@ -10,6 +10,13 @@ import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { SendMessageDto } from './dto/send-message.dto';
+import { JwtPayload } from '../auth/strategies/jwt.strategy';
+
+// What a connected socket speaks as (set on connect)
+interface SocketIdentity {
+  userId?: string;
+  identityId?: string;
+}
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -41,16 +48,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       // Verify token
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<JwtPayload>(token, {
         secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
       });
 
-      // Save user ID to client session
-      client.data.userId = payload.sub;
+      // The account and the persona this socket speaks as. The app
+      // reconnects with the new token when the persona is switched.
+      const socketIdentity: SocketIdentity = {
+        userId: payload.sub,
+        identityId: payload.ident,
+      };
+      client.data = socketIdentity;
 
-      // Join personal room to receive direct events (like conversation updates)
-      client.join(`user:${payload.sub}`);
-      console.log(`Client connected: user:${payload.sub} (${client.id})`);
+      // The persona's room: inbox updates for this persona only
+      client.join(`identity:${payload.ident}`);
+      console.log(`Client connected: identity:${payload.ident} (${client.id})`);
     } catch (error) {
       console.error('Socket connection authentication failed:', error.message);
       client.disconnect();
@@ -62,7 +74,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join_conversation')
-  handleJoinConversation(client: Socket, conversationId: string) {
+  async handleJoinConversation(client: Socket, conversationId: string) {
+    // Only the conversation's own personas may listen in on it
+    const { identityId } = client.data as SocketIdentity;
+    if (
+      !identityId ||
+      !(await this.chatService.isParticipant(identityId, conversationId))
+    ) {
+      return;
+    }
     client.join(`conversation:${conversationId}`);
     console.log(`Socket ${client.id} joined conversation:${conversationId}`);
   }
@@ -78,15 +98,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client: Socket,
     payload: { conversationId: string; tempId?: string } & SendMessageDto,
   ) {
-    const senderId = client.data.userId;
-    if (!senderId) {
+    const { userId, identityId } = client.data as SocketIdentity;
+    if (!userId || !identityId) {
       client.disconnect();
       return;
     }
 
     try {
       const message = await this.chatService.sendMessage(
-        senderId,
+        { userId, identityId },
         payload.conversationId,
         payload,
       );
@@ -104,9 +124,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       if (conversation) {
         for (const participant of conversation.participants) {
-          if (participant.userId !== senderId) {
+          if (participant.identityId !== identityId) {
             this.server
-              .to(`user:${participant.userId}`)
+              .to(`identity:${participant.identityId}`)
               .emit('conversation_updated', {
                 conversationId: payload.conversationId,
                 lastMessage: message,

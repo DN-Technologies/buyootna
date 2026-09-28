@@ -143,3 +143,25 @@ export async function isApprovedProvider(
     return false;
   }
 }
+
+/**
+ * The persona account-level actions land on when no persona is named (an
+ * admin granting credits to a user, a chat opened with a user id): the
+ * account's individual persona, else its earliest. Same rule as the
+ * persona_ownership migration's backfill.
+ */
+export async function findDefaultPersonaId(
+  db: Db,
+  userId: string,
+): Promise<string | null> {
+  const personas = await db.identity.findMany({
+    where: { userId },
+    select: { id: true, type: true },
+    orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+  });
+  return (
+    personas.find((p) => p.type === IdentityType.INDIVIDUAL)?.id ??
+    personas[0]?.id ??
+    null
+  );
+}

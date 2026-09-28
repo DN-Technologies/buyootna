@@ -11,6 +11,8 @@ model Identity {
   // The persona used last, on any device -- what a brand-new device opens
   // with. Each device's own current persona is Session.activeIdentityId.
   isActive  Boolean      @default(false)
+  // The welcome free ad: each persona has its own
+  freeAdsRemaining Int   @default(1)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 

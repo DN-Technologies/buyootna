@@ -71,6 +71,7 @@ export class PaymentsController {
   ) {
     return this.paymentsService.createCharge(
       reqUser.userId,
+      reqUser.identityId,
       planSlug,
       appRedirectUrl,
       sourceId,

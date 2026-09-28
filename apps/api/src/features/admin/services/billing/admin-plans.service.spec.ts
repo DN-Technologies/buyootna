@@ -11,8 +11,9 @@ describe('AdminPlansService', () => {
   let prisma: {
     plan: { findUnique: jest.Mock; findFirst: jest.Mock };
     userPlanSlot: { create: jest.Mock; findFirst: jest.Mock };
+    identity: { findMany: jest.Mock; findFirst: jest.Mock };
   };
-  let plansService: { getUserWallet: jest.Mock };
+  let plansService: { getAccountWallet: jest.Mock };
   let notifications: { create: jest.Mock };
   let auditLog: { log: jest.Mock };
 
@@ -30,9 +31,17 @@ describe('AdminPlansService', () => {
         create: jest.fn().mockResolvedValue({ id: 'slot-1' }),
         findFirst: jest.fn().mockResolvedValue(null),
       },
+      // The account's personas: credits land on the individual by default
+      identity: {
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'identity-company', type: 'COMPANY' },
+          { id: 'identity-individual', type: 'INDIVIDUAL' },
+        ]),
+        findFirst: jest.fn().mockResolvedValue({ id: 'identity-company' }),
+      },
     };
     plansService = {
-      getUserWallet: jest.fn().mockResolvedValue({ freeAdsRemaining: 0 }),
+      getAccountWallet: jest.fn().mockResolvedValue({ freeAdsRemaining: 0 }),
     };
     notifications = { create: jest.fn().mockResolvedValue({ id: 'notif-1' }) };
     auditLog = { log: jest.fn().mockResolvedValue(undefined) };
@@ -55,9 +64,9 @@ describe('AdminPlansService', () => {
   });
 
   describe('getWallet', () => {
-    it('delegates to PlansService.getUserWallet', async () => {
+    it("returns the whole account's wallet (every persona)", async () => {
       await service.getWallet('user-1');
-      expect(plansService.getUserWallet).toHaveBeenCalledWith('user-1');
+      expect(plansService.getAccountWallet).toHaveBeenCalledWith('user-1');
     });
   });
 
@@ -75,11 +84,42 @@ describe('AdminPlansService', () => {
       expect(prisma.userPlanSlot.create).toHaveBeenCalledWith({
         data: {
           planId: 'plan-1',
+          identityId: 'identity-individual',
           userId: 'user-1',
           adsRemaining: 5,
           status: 'ACTIVE',
         },
       });
+    });
+
+    it('credits the persona the admin picked, if it belongs to the user', async () => {
+      await service.changePlan(
+        'user-1',
+        { planId: 'plan-1', identityId: 'identity-company' },
+        'admin-1',
+      );
+
+      expect(prisma.identity.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'identity-company', userId: 'user-1' },
+        }),
+      );
+      const [createArg] = prisma.userPlanSlot.create.mock.calls[0] as [
+        { data: { identityId: string } },
+      ];
+      expect(createArg.data.identityId).toBe('identity-company');
+    });
+
+    it("refuses a persona that isn't the user's", async () => {
+      prisma.identity.findFirst.mockResolvedValue(null);
+      await expect(
+        service.changePlan(
+          'user-1',
+          { planId: 'plan-1', identityId: 'someone-else' },
+          'admin-1',
+        ),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.userPlanSlot.create).not.toHaveBeenCalled();
     });
 
     it('honors an explicit adsRemaining override', async () => {
@@ -122,6 +162,7 @@ describe('AdminPlansService', () => {
       expect(prisma.userPlanSlot.create).toHaveBeenCalledWith({
         data: {
           planId: 'plan-9',
+          identityId: 'identity-individual',
           userId: 'user-1',
           adsRemaining: 3,
           status: 'ACTIVE',

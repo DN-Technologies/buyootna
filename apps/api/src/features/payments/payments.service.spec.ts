@@ -137,6 +137,7 @@ describe('PaymentsService', () => {
 
       const result = await service.createCharge(
         'user-1',
+        'identity-1',
         'gold',
         'buyootna://payment-callback',
         undefined,
@@ -154,6 +155,7 @@ describe('PaymentsService', () => {
           planId: 'plan-gold',
           planPackageId: 'pkg-gold-5',
           planDetails: 'باقة الذهبية - 5 إعلانات',
+          identityId: 'identity-1',
         }),
       });
       expect(tapBody().amount).toBe(50);
@@ -170,6 +172,7 @@ describe('PaymentsService', () => {
       await expect(
         service.createCharge(
           'user-1',
+          'identity-1',
           'gold',
           'buyootna://payment-callback',
           undefined,
@@ -186,6 +189,7 @@ describe('PaymentsService', () => {
         await expect(
           service.createCharge(
             'user-1',
+            'identity-1',
             'gold',
             'buyootna://payment-callback',
             undefined,
@@ -206,6 +210,7 @@ describe('PaymentsService', () => {
 
       await service.createCharge(
         'user-1',
+        'identity-1',
         'gold',
         'buyootna://payment-callback',
         undefined,
@@ -222,6 +227,7 @@ describe('PaymentsService', () => {
     it('falls back to the plan price when no package is sent (older clients)', async () => {
       await service.createCharge(
         'user-1',
+        'identity-1',
         'gold',
         'buyootna://payment-callback',
       );
@@ -249,11 +255,13 @@ describe('PaymentsService', () => {
         planName: 'الذهبية',
         planId: 'plan-gold',
         userId: 'user-1',
+        identityId: 'identity-1',
         planPackage: { id: 'pkg-free', adsCount: 3 },
       });
 
       const result = await service.createCharge(
         'user-1',
+        'identity-1',
         'gold',
         'buyootna://payment-callback',
         undefined,
@@ -262,7 +270,12 @@ describe('PaymentsService', () => {
 
       expect(fetchMock).not.toHaveBeenCalled();
       expect(tx.userPlanSlot.create).toHaveBeenCalledWith({
-        data: containing({ planId: 'plan-gold', adsRemaining: 3 }),
+        // Credited to the persona that bought it
+        data: containing({
+          planId: 'plan-gold',
+          adsRemaining: 3,
+          identityId: 'identity-1',
+        }),
       });
       expect(result.status).toBe('PAID');
     });
@@ -270,6 +283,7 @@ describe('PaymentsService', () => {
     it('sends Tap a well-formed redirect back to the API', async () => {
       await service.createCharge(
         'user-1',
+        'identity-1',
         'gold',
         'buyootna://payment-callback',
       );

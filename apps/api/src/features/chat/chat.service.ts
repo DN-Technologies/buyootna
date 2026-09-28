@@ -34,33 +34,42 @@ export class ChatService {
     );
   }
 
-  // List all conversations for the user/identity
-  getConversations(userId: string, page = 1, limit = 10) {
-    return this.conversationsService.getConversations(userId, page, limit);
+  // The persona's conversations
+  getConversations(identityId: string, page = 1, limit = 10) {
+    return this.conversationsService.getConversations(identityId, page, limit);
   }
 
   // Get messages for a single conversation
   getMessages(
     conversationId: string,
-    userId: string,
+    identityId: string,
     cursor?: string,
     limit = 20,
   ) {
     return this.messagesService.getMessages(
       conversationId,
-      userId,
+      identityId,
       cursor,
       limit,
     );
   }
 
   // Send a message
-  sendMessage(senderId: string, conversationId: string, dto: SendMessageDto) {
-    return this.messagesService.sendMessage(senderId, conversationId, dto);
+  sendMessage(
+    sender: { userId: string; identityId: string },
+    conversationId: string,
+    dto: SendMessageDto,
+  ) {
+    return this.messagesService.sendMessage(sender, conversationId, dto);
+  }
+
+  // Whether this persona takes part in the conversation
+  async isParticipant(identityId: string, conversationId: string) {
+    return this.messagesService.isParticipant(identityId, conversationId);
   }
 
   // Mark conversation messages as read
-  markAsRead(userId: string, conversationId: string) {
-    return this.messagesService.markAsRead(userId, conversationId);
+  markAsRead(identityId: string, conversationId: string) {
+    return this.messagesService.markAsRead(identityId, conversationId);
   }
 }

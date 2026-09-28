@@ -29,6 +29,7 @@ export class PaymentsService {
   // --- CHECKOUT ---
   createCharge(
     userId: string,
+    identityId: string,
     planSlug: string,
     appRedirectUrl: string,
     sourceId?: string,
@@ -36,6 +37,7 @@ export class PaymentsService {
   ) {
     return this.planCheckout.createCharge(
       userId,
+      identityId,
       planSlug,
       appRedirectUrl,
       sourceId,
@@ -109,8 +111,10 @@ export class PaymentsService {
   }
 
   async getInvoiceStatus(userId: string, invoiceId: string) {
+    // Any persona of the account may check (the app can switch persona
+    // while a payment is being confirmed)
     const invoice = await this.prisma.invoice.findFirst({
-      where: { id: invoiceId, userId },
+      where: { id: invoiceId, identity: { userId } },
     });
 
     if (!invoice) {

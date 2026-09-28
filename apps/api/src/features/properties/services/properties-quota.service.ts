@@ -27,34 +27,28 @@ export class PropertiesQuotaService {
   ): Promise<ResolvedPublishQuota> {
     const identity = await tx.identity.findUnique({
       where: { id: identityId },
-      select: { id: true, userId: true },
+      select: { id: true, freeAdsRemaining: true },
     });
 
     if (!identity) throw new NotFoundException('الهوية غير موجودة');
 
-    // Check free ads remaining on user level (legacy)
-    const user = await tx.user.findUnique({
-      where: { id: identity.userId },
-      select: { id: true, freeAdsRemaining: true },
-    });
-
-    if (!user) throw new NotFoundException('المستخدم غير موجود');
-
-    // 1. If explicit FREE_QUOTA or no slot specified and freeAdsRemaining > 0
+    // 1. The persona's welcome free ad: asked for explicitly, or used by
+    //    default when no credit was picked and it's still there
     if (
       requestedSlotId === 'FREE_QUOTA' ||
-      (!requestedSlotId && (user.freeAdsRemaining ?? 0) > 0)
+      (!requestedSlotId && identity.freeAdsRemaining > 0)
     ) {
-      if ((user.freeAdsRemaining ?? 0) <= 0) {
+      // Conditional decrement: two publishes racing for the last free ad
+      // can't both get it
+      const { count } = await tx.identity.updateMany({
+        where: { id: identityId, freeAdsRemaining: { gt: 0 } },
+        data: { freeAdsRemaining: { decrement: 1 } },
+      });
+      if (count === 0) {
         throw new ForbiddenException(
           'لقد استنفذت الإعلان المجاني الترحيبي الخاص بك.',
         );
       }
-
-      await tx.user.update({
-        where: { id: identity.userId },
-        data: { freeAdsRemaining: { decrement: 1 } },
-      });
 
       return {
         planSlotId: null,
@@ -65,12 +59,9 @@ export class PropertiesQuotaService {
       };
     }
 
-    // Slots this identity may spend: its own, plus legacy slots that only
-    // record the owning user (plan purchases and admin grants create them
-    // with userId alone -- the same slots GET /plans/wallet lists)
-    const ownedBy: Prisma.UserPlanSlotWhereInput = {
-      OR: [{ identityId }, { identityId: null, userId: identity.userId }],
-    };
+    // Credits belong to one persona: a company's credits can't be spent
+    // by the same account's individual ads, and vice versa
+    const ownedBy: Prisma.UserPlanSlotWhereInput = { identityId };
 
     // 2. Specific Plan Slot requested OR auto-select single available slot
     let targetSlotId = requestedSlotId;

@@ -546,9 +546,10 @@ async function main() {
 
   // Legacy individualProfile above isn't what login/the app resolve an
   // active identity from anymore -- see the COMPANY identity comment above.
+  const reviewerIdentityId = randomUUID();
   await prisma.identity.create({
     data: {
-      id: randomUUID(),
+      id: reviewerIdentityId,
       userId: reviewerUserId,
       type: IdentityType.INDIVIDUAL,
       isActive: true,
@@ -565,6 +566,7 @@ async function main() {
   for (const prop of dbProperties) {
     await prisma.favorite.create({
       data: {
+        identityId: reviewerIdentityId,
         userId: reviewerUserId,
         propertyId: prop.id,
       },
@@ -574,7 +576,17 @@ async function main() {
   // Seed chat history for reviewer
   if (dbProperties.length > 0) {
     const targetProp = dbProperties[0];
-    const sellerId = targetProp.userId;
+    // Chats are between personas: the reviewer's and the ad's owner
+    const sellerIdentityId = targetProp.identityId;
+    if (!sellerIdentityId) {
+      throw new Error('Seeded ads always have an owner persona');
+    }
+    const sellerId = (
+      await prisma.identity.findUniqueOrThrow({
+        where: { id: sellerIdentityId },
+        select: { userId: true },
+      })
+    ).userId;
 
     const convId = randomUUID();
     const reviewerParticipantId = randomUUID();
@@ -587,8 +599,16 @@ async function main() {
         participants: {
           createMany: {
             data: [
-              { id: reviewerParticipantId, userId: reviewerUserId },
-              { id: sellerParticipantId, userId: sellerId },
+              {
+                id: reviewerParticipantId,
+                userId: reviewerUserId,
+                identityId: reviewerIdentityId,
+              },
+              {
+                id: sellerParticipantId,
+                userId: sellerId,
+                identityId: sellerIdentityId,
+              },
             ],
           },
         },
@@ -598,18 +618,21 @@ async function main() {
               {
                 id: randomUUID(),
                 senderId: sellerId,
+                senderIdentityId: sellerIdentityId,
                 type: 'TEXT',
                 content: 'مرحباً، هل أنت مهتم بمعاينة العقار الموضح؟',
               },
               {
                 id: randomUUID(),
                 senderId: reviewerUserId,
+                senderIdentityId: reviewerIdentityId,
                 type: 'TEXT',
                 content: 'نعم، أود الحصول على مزيد من التفاصيل وموعد المعاينة.',
               },
               {
                 id: randomUUID(),
                 senderId: sellerId,
+                senderIdentityId: sellerIdentityId,
                 type: 'TEXT',
                 content: 'بالتأكيد، يمكننا التنسيق في عطلة نهاية الأسبوع.',
               },
@@ -1099,6 +1122,10 @@ async function main() {
         dueDate: inv.dueDate,
         delayDays: inv.delayDays,
         userId: inv.userId,
+        identityId:
+          inv.userId === reviewerUserId
+            ? reviewerIdentityId
+            : individualIdentityId,
         createdAt: inv.createdAt,
       },
     });
