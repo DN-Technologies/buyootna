@@ -4,6 +4,7 @@ import { UsersRegistrationService } from './services/users-registration.service'
 import { UsersProfileService } from './services/users-profile.service';
 import { UsersDirectoryService } from './services/users-directory.service';
 import { AccountSuspensionService } from './services/account-suspension.service';
+import { ProviderCardsService } from './services/provider-cards.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
 
@@ -22,11 +23,13 @@ import { OfficeController } from '../office/office.controller';
     UsersProfileService,
     UsersDirectoryService,
     AccountSuspensionService,
+    ProviderCardsService,
   ],
   exports: [
     UsersRegistrationService,
     UsersProfileService,
     UsersDirectoryService,
+    ProviderCardsService,
   ],
 })
 export class UsersModule {}

@@ -23,6 +23,9 @@ model Identity {
   properties      Property[]
   deletionLogs    PropertyDeletionLog[]
   favorites       Favorite[]
+  // Companies/offices this identity favorited, and who favorited it
+  providerFavorites   ProviderFavorite[] @relation("ProviderFavoriteOwner")
+  favoritedByUsers    ProviderFavorite[] @relation("ProviderFavoriteTarget")
   conversations   ConversationParticipant[]
   messages        Message[]
   givenReviews    Review[]                  @relation("IdentityGivenReviews")

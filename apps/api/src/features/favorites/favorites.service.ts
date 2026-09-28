@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { ownerActiveWhere } from '../properties/services/property-expiry.util';
 
 @Injectable()
 export class FavoritesService {
@@ -52,7 +53,7 @@ export class FavoritesService {
 
     const [favorites, total] = await Promise.all([
       this.prisma.favorite.findMany({
-        where: { identityId },
+        where: { identityId, property: ownerActiveWhere() },
         include: {
           property: {
             include: {
@@ -79,7 +80,7 @@ export class FavoritesService {
         take: limit,
       }),
       this.prisma.favorite.count({
-        where: { identityId },
+        where: { identityId, property: ownerActiveWhere() },
       }),
     ]);
 
@@ -154,5 +155,31 @@ export class FavoritesService {
       select: { propertyId: true },
     });
     return { ids: favorites.map((fav) => fav.propertyId) };
+  }
+
+  /** Removes every saved ad; returns their ids for undo. */
+  async clearProperties(identityId: string) {
+    const rows = await this.prisma.favorite.findMany({
+      where: { identityId },
+      select: { propertyId: true },
+    });
+    const ids = rows.map((r) => r.propertyId);
+    await this.prisma.favorite.deleteMany({
+      where: { identityId, propertyId: { in: ids } },
+    });
+    return { ids };
+  }
+
+  /** Puts back what clearProperties() removed (skips deleted ads). */
+  async restoreProperties(identityId: string, ids: string[]) {
+    const valid = await this.prisma.property.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+    });
+    await this.prisma.favorite.createMany({
+      data: valid.map((p) => ({ identityId, propertyId: p.id })),
+      skipDuplicates: true,
+    });
+    return { ids: valid.map((p) => p.id) };
   }
 }

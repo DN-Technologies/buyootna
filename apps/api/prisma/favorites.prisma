@@ -16,3 +16,18 @@ model Favorite {
   @@index([identityId])
   @@index([propertyId])
 }
+
+// A company or office an identity saved to its favorites (المفضلة → شركات /
+// مكاتب). Both sides are identities: the saver and the provider.
+model ProviderFavorite {
+  id         String   @id @default(uuid())
+  identityId String
+  identity   Identity @relation("ProviderFavoriteOwner", fields: [identityId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   Identity @relation("ProviderFavoriteTarget", fields: [providerId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([identityId, providerId])
+  @@index([identityId])
+  @@index([providerId])
+}
