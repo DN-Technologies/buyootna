@@ -18,6 +18,16 @@ jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
+// No NavigationContainer in tests: capture the focus effect so a test can
+// simulate the screen gaining/losing focus.
+let mockFocusEffect: (() => void | (() => void)) | undefined;
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    mockFocusEffect = effect;
+  },
+}));
+
 const mockUseAuthStore = useAuthStore as unknown as jest.Mock;
 const mockSettingsService = settingsService as jest.Mocked<
   typeof settingsService
@@ -293,6 +303,123 @@ describe('ChangePasswordScreen', () => {
         2,
       );
       jest.useRealTimers();
+    });
+  });
+
+  describe('clearing sensitive data', () => {
+    const PLACEHOLDERS = [
+      'أدخل كلمة المرور الحالية',
+      'أدخل كلمة المرور الجديدة',
+      'أعد إدخال كلمة المرور الجديدة',
+    ];
+    const fieldValues = (getByPlaceholderText: any) =>
+      PLACEHOLDERS.map((p) => getByPlaceholderText(p).props.value);
+
+    // Simulates navigating away: run the focus effect, then its cleanup
+    const blurScreen = async () => {
+      const cleanupFn = mockFocusEffect?.();
+      await act(async () => {
+        if (typeof cleanupFn === 'function') cleanupFn();
+      });
+    };
+
+    it('empties the fields as soon as a direct change succeeds', async () => {
+      mockUseAuthStore.mockReturnValue({ user: { phone: null } });
+      mockSettingsService.changePassword.mockResolvedValue({ message: 'ok' });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'نجاح',
+          'تم تغيير كلمة المرور بنجاح',
+          expect.any(Array),
+        );
+      });
+      // Cleared before the user even confirms the success alert
+      expect(fieldValues(getByPlaceholderText)).toEqual(['', '', '']);
+    });
+
+    it('empties the fields and the code after a verified (OTP) change', async () => {
+      mockSettingsService.requestChangePasswordOtp.mockResolvedValue({
+        message: 'ok',
+      });
+      mockSettingsService.changePassword.mockResolvedValue({ message: 'ok' });
+      const { getByPlaceholderText, getByText, getByDisplayValue, queryByDisplayValue } =
+        await render(<ChangePasswordScreen />);
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+      await waitFor(() => getByText('تحقق من الرقم'));
+
+      await fireEvent.changeText(getByDisplayValue(''), '123456');
+      await fireEvent.press(getByText('التحقق من الرمز'));
+
+      await waitFor(() => {
+        expect(mockSettingsService.changePassword).toHaveBeenCalled();
+      });
+      await waitFor(() => {
+        expect(fieldValues(getByPlaceholderText)).toEqual(['', '', '']);
+      });
+      expect(queryByDisplayValue('123456')).toBeNull();
+    });
+
+    it('keeps what was typed when the change fails, so it can be corrected', async () => {
+      mockUseAuthStore.mockReturnValue({ user: { phone: null } });
+      mockSettingsService.changePassword.mockRejectedValue({
+        response: { data: { message: 'كلمة المرور الحالية غير صحيحة' } },
+      });
+      const { getByPlaceholderText, getByText } = await render(
+        <ChangePasswordScreen />,
+      );
+
+      await fillAndSubmitForm(getByPlaceholderText, getByText);
+
+      await waitFor(() => {
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalled();
+      });
+      expect(fieldValues(getByPlaceholderText)).toEqual([
+        'old-password',
+        'new-password',
+        'new-password',
+      ]);
+    });
+
+    it('starts empty after leaving and coming back', async () => {
+      const { getByPlaceholderText } = await render(<ChangePasswordScreen />);
+      await fireEvent.changeText(
+        getByPlaceholderText(PLACEHOLDERS[0]),
+        'old-password',
+      );
+      await fireEvent.changeText(
+        getByPlaceholderText(PLACEHOLDERS[1]),
+        'new-password',
+      );
+
+      await blurScreen();
+
+      expect(fieldValues(getByPlaceholderText)).toEqual(['', '', '']);
+    });
+
+    it('hides a revealed password again after leaving the screen', async () => {
+      const { getByPlaceholderText, getAllByLabelText } = await render(
+        <ChangePasswordScreen />,
+      );
+      await fireEvent.changeText(
+        getByPlaceholderText(PLACEHOLDERS[0]),
+        'old-password',
+      );
+      await fireEvent.press(getAllByLabelText('إظهار كلمة المرور')[0]);
+      expect(getByPlaceholderText(PLACEHOLDERS[0]).props.secureTextEntry).toBe(
+        false,
+      );
+
+      await blurScreen();
+
+      expect(getByPlaceholderText(PLACEHOLDERS[0]).props.secureTextEntry).toBe(
+        true,
+      );
     });
   });
 });

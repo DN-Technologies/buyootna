@@ -28,4 +28,23 @@ export class PropertiesExpiryService {
       this.logger.log(`Expired ${count} listing(s) past their endDate`);
     }
   }
+
+  // A paid (or plan-granted) feature lasts until featuredUntil; without
+  // this the مميز badge and top-of-feed placement would never end.
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async unfeatureExpiredListings(): Promise<void> {
+    const { count } = await this.prisma.property.updateMany({
+      where: {
+        isFeatured: true,
+        featuredUntil: { lte: new Date() },
+      },
+      data: { isFeatured: false },
+    });
+
+    if (count > 0) {
+      this.logger.log(
+        `Un-featured ${count} listing(s) past their featuredUntil`,
+      );
+    }
+  }
 }

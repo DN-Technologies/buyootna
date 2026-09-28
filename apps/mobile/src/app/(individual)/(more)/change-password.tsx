@@ -27,6 +27,7 @@ export default function ChangePasswordScreen() {
     handleResendOtp,
     handleVerifyOtp,
     handleBack,
+    formKey,
   } = useChangePassword();
 
   return (
@@ -49,6 +50,7 @@ export default function ChangePasswordScreen() {
           className="flex-1"
         >
           <ChangePasswordForm
+            key={formKey}
             control={control}
             onSubmit={handleSubmit(onSubmitForm)}
             isSubmitting={isRequestingOtp || isSubmitting}

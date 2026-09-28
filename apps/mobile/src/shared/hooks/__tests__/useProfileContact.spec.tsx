@@ -163,49 +163,29 @@ describe('useProfileContact', () => {
       await pressChat();
 
       expect(chatService.createConversation).not.toHaveBeenCalled();
+      expect(mockRouterPush).not.toHaveBeenCalled();
     });
 
-    it('initiates conversation and navigates to chat screen on success', async () => {
-      (chatService.createConversation as jest.Mock).mockResolvedValueOnce({
-        id: 'conv-123',
+    it('opens the chat screen immediately, without waiting on the network', async () => {
+      const mockProfile: UserProfile = {
+        id: 'target-user-1',
+        name: 'فهد',
+        avatarUrl: '',
+        phone: '98765432',
+        rating: 4.5,
+        joinedDate: '1/2025',
+        role: 'INDIVIDUAL',
+      };
+
+      const { pressChat } = await renderContact(mockProfile);
+      await pressChat();
+
+      // The chat screen creates the conversation while showing its loader
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/chat/[id]',
+        params: { id: 'new', recipientId: 'target-user-1' },
       });
-
-      const mockProfile: UserProfile = {
-        id: 'target-user-1',
-        name: 'فهد',
-        avatarUrl: '',
-        phone: '98765432',
-        rating: 4.5,
-        joinedDate: '1/2025',
-        role: 'INDIVIDUAL',
-      };
-
-      const { pressChat } = await renderContact(mockProfile);
-      await pressChat();
-
-      expect(chatService.createConversation).toHaveBeenCalledWith('target-user-1');
-      expect(mockRouterPush).toHaveBeenCalledWith('/chat/conv-123');
-    });
-
-    it('shows error alert when conversation creation fails', async () => {
-      (chatService.createConversation as jest.Mock).mockRejectedValueOnce(
-        new Error('Network error'),
-      );
-
-      const mockProfile: UserProfile = {
-        id: 'target-user-1',
-        name: 'فهد',
-        avatarUrl: '',
-        phone: '98765432',
-        rating: 4.5,
-        joinedDate: '1/2025',
-        role: 'INDIVIDUAL',
-      };
-
-      const { pressChat } = await renderContact(mockProfile);
-      await pressChat();
-
-      expect(showAlert).toHaveBeenCalledWith('خطأ', 'فشل بدء المحادثة');
+      expect(chatService.createConversation).not.toHaveBeenCalled();
     });
   });
 });

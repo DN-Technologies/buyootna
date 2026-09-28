@@ -24,6 +24,9 @@ export default function ForgotPasswordScreen() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [identifier, setIdentifier] = useState('');
   const [resetToken, setResetToken] = useState('');
+  const [initialResendResult, setInitialResendResult] = useState<
+    ResendOtpResult | undefined
+  >(undefined);
   const successSheetRef = useRef<BottomSheetModal>(null);
 
   const onStep1Submit = async (data: RequestOtpValues) => {
@@ -33,9 +36,21 @@ export default function ForgotPasswordScreen() {
       });
 
       setIdentifier(data.identifier);
+      setInitialResendResult(undefined);
       setStep(2);
     } catch (error: any) {
-      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إرسال رمز التحقق'));
+      const code = error?.response?.data?.code;
+      const retryAfter = error?.response?.data?.retryAfter;
+      const message = getApiErrorMessage(error, 'تعذر إرسال رمز التحقق');
+      // Rate-limited: a code was sent recently, so continue to the code
+      // step with the countdown running (no wait-time toast)
+      if (code === 'OTP_COOLDOWN' || code === 'OTP_DAILY_LIMIT') {
+        setIdentifier(data.identifier);
+        setInitialResendResult({ success: false, code, retryAfter, message });
+        setStep(2);
+        return;
+      }
+      showAlert('خطأ', message);
     }
   };
 
@@ -121,6 +136,7 @@ export default function ForgotPasswordScreen() {
               identifier={identifier}
               onSubmit={onStep2Submit}
               onResendOtp={onResendOtp}
+              initialResendResult={initialResendResult}
             />
           )}
           {step === 3 && <ForgotPasswordStep3 onSubmit={onStep3Submit} />}

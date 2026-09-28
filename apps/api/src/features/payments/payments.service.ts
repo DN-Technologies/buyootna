@@ -1,317 +1,111 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { TapChargeResponse } from './payments.types';
+import { FeatureCheckoutService } from './services/feature-checkout.service';
+import { PaymentFulfillmentService } from './services/payment-fulfillment.service';
+import { PlanCheckoutService } from './services/plan-checkout.service';
+import { TapGatewayService } from './services/tap-gateway.service';
 
-export interface TapPhonePayload {
-  country_code: string;
-  number: string;
-}
+export type {
+  PaymentPurpose,
+  TapChargeResponse,
+  TapPhonePayload,
+} from './payments.types';
 
-export interface TapChargeResponse {
-  id?: string;
-  status?: string;
-  transaction?: {
-    url?: string;
-  };
-  errors?: Array<{
-    description?: string;
-  }>;
-  reference?: {
-    transaction?: string;
-    order?: string;
-  };
-}
-
+/**
+ * Entry point for the payments controller. The work lives in ./services:
+ * checkout per purchase type, the Tap gateway, and fulfillment.
+ */
 @Injectable()
 export class PaymentsService {
-  private readonly tapSecretKey = process.env.TAP_SECRET_KEY;
-  private readonly backendUrl =
-    process.env.BACKEND_URL || 'https://api.buyootna.cloud';
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tap: TapGatewayService,
+    private readonly fulfillment: PaymentFulfillmentService,
+    private readonly planCheckout: PlanCheckoutService,
+    private readonly featureCheckout: FeatureCheckoutService,
+  ) {}
 
-  constructor(private readonly prisma: PrismaService) {}
-
-  async createCharge(
+  // --- CHECKOUT ---
+  createCharge(
     userId: string,
     planSlug: string,
     appRedirectUrl: string,
-    sourceId = 'src_all',
+    sourceId?: string,
     adsCount?: number | string,
   ) {
-    if (!this.tapSecretKey) {
-      throw new InternalServerErrorException(
-        'Tap Secret Key is not configured on the server.',
-      );
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new NotFoundException('المستخدم غير موجود');
-    }
-
-    const plan = await this.prisma.plan.findUnique({
-      where: { slug: planSlug, isActive: true },
-    });
-
-    if (!plan) {
-      throw new NotFoundException('الباقة غير موجودة أو غير نشطة');
-    }
-
-    // The selected package (identified by its ad count) decides the price
-    // and ads credited. Clients that predate packages send no adsCount and
-    // buy the plan as a whole.
-    let planPackage: { id: string; adsCount: number; price: number } | null =
-      null;
-    if (adsCount !== undefined && adsCount !== null) {
-      const requestedAds = Number(adsCount);
-      if (!Number.isInteger(requestedAds) || requestedAds <= 0) {
-        throw new BadRequestException('عدد الإعلانات غير صالح');
-      }
-      planPackage = await this.prisma.planPackage.findFirst({
-        where: { planId: plan.id, adsCount: requestedAds, isActive: true },
-        select: { id: true, adsCount: true, price: true },
-      });
-      if (!planPackage) {
-        throw new NotFoundException('خيار الباقة غير موجود أو غير نشط');
-      }
-    }
-    const amount = planPackage ? planPackage.price : plan.price;
-    const adsToGrant = planPackage ? planPackage.adsCount : plan.maxActiveAds;
-
-    // 1. Create a PENDING invoice in our database
-    const invoiceNo = `INV-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        invoiceNo,
-        planName: plan.name,
-        planDetails: `باقة ${plan.name} - ${adsToGrant === 1 ? 'إعلان واحد' : `${adsToGrant} إعلانات`}`,
-        amount,
-        status: 'PENDING',
-        userId: user.id,
-        planId: plan.id,
-        planPackageId: planPackage?.id ?? null,
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days due date
-      },
-    });
-
-    // 2. If the plan is free (0 KWD), skip payment gateway
-    if (amount === 0) {
-      await this.prisma.$transaction(async (tx) => {
-        await tx.invoice.update({
-          where: { id: invoice.id },
-          data: { status: 'PAID', paidAt: new Date() },
-        });
-        await tx.userPlanSlot.create({
-          data: {
-            userId,
-            planId: plan.id,
-            adsRemaining: adsToGrant,
-            status: 'ACTIVE',
-            invoiceId: invoice.id,
-          },
-        });
-        await tx.user.update({
-          where: { id: userId },
-          data: {
-            activePlanId: plan.id,
-          },
-        });
-      });
-      return {
-        checkoutUrl: null,
-        invoiceId: invoice.id,
-        status: 'PAID',
-      };
-    }
-
-    // 3. Format phone number for Tap (Payee Requirements require Mobile)
-    let phonePayload: TapPhonePayload = {
-      country_code: '965',
-      number: '90000000',
-    };
-    if (user.phone) {
-      const cleanPhone = user.phone.replace(/[^0-9]/g, '');
-      const number = cleanPhone.slice(-8); // extract last 8 digits
-      const countryCode =
-        cleanPhone.length > 8
-          ? cleanPhone.slice(0, cleanPhone.length - 8)
-          : '965';
-      phonePayload = {
-        country_code: countryCode.startsWith('+')
-          ? countryCode.slice(1)
-          : countryCode,
-        number: number || '90000000',
-      };
-    }
-
-    // 4. Construct Tap Charge API payload
-    const tapPayload = {
-      amount,
-      currency: 'KWD',
-      threeDSecure: true,
-      save_card: false,
-      description: `اشتراك باقة ${plan.name} - Buyootna`,
-      statement_descriptor: 'BUYOOTNA',
-      metadata: {
-        userId: user.id,
-        planId: plan.id,
-        planPackageId: planPackage?.id,
-        invoiceId: invoice.id,
-      },
-      customer: {
-        first_name: user.name
-          ? user.name.replace(/[^\x20-\x7E]/g, '').trim() || 'Customer'
-          : 'Customer',
-        last_name: 'Buyootna',
-        email: user.email || 'customer@buyootna.com',
-        phone: phonePayload,
-      },
-      source: { id: sourceId },
-      redirect: {
-        url: `${this.backendUrl}/payments/redirect?invoiceId=${invoice.id}&appRedirectUrl=${encodeURIComponent(appRedirectUrl)}`,
-      },
-      post: {
-        url: `${this.backendUrl}/payments/webhook`,
-      },
-      reference: {
-        transaction: invoice.id,
-        order: invoice.invoiceNo,
-      },
-    };
-
-    console.log(
-      '[Tap Charge] Key Prefix:',
-      this.tapSecretKey ? `${this.tapSecretKey.substring(0, 7)}...` : 'MISSING',
+    return this.planCheckout.createCharge(
+      userId,
+      planSlug,
+      appRedirectUrl,
+      sourceId,
+      adsCount,
     );
-    console.log(
-      '[Tap Charge] Creating charge with payload:',
-      JSON.stringify(tapPayload, null, 2),
-    );
-
-    try {
-      const response = await fetch('https://api.tap.company/v2/charges', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.tapSecretKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tapPayload),
-      });
-
-      const responseData = (await response.json()) as TapChargeResponse;
-      console.log('[Tap Charge] HTTP Status:', response.status);
-      console.log(
-        '[Tap Charge] Response Body:',
-        JSON.stringify(responseData, null, 2),
-      );
-
-      if (!response.ok) {
-        console.error('[Tap Charge] Error Response:', responseData);
-        throw new BadRequestException(
-          responseData?.errors?.[0]?.description ||
-            'فشل في إنشاء عملية الدفع مع بوابة الدفع',
-        );
-      }
-
-      console.log(
-        '[Tap Charge] Created successfully. Checkout URL:',
-        responseData.transaction?.url,
-      );
-
-      return {
-        checkoutUrl: responseData.transaction?.url,
-        invoiceId: invoice.id,
-        status: 'PENDING',
-      };
-    } catch (error) {
-      console.error('[Tap Charge] Exception:', error);
-      if (error instanceof BadRequestException) throw error;
-      throw new InternalServerErrorException(
-        'حدث خطأ أثناء الاتصال ببوابة الدفع Tap',
-      );
-    }
   }
 
+  getFeaturePackages() {
+    return this.featureCheckout.getPackages();
+  }
+
+  createFeatureCharge(
+    userId: string,
+    identityId: string,
+    propertyId: string,
+    featurePackageId: string,
+    appRedirectUrl: string,
+    sourceId?: string,
+  ) {
+    return this.featureCheckout.createCharge(
+      userId,
+      identityId,
+      propertyId,
+      featurePackageId,
+      appRedirectUrl,
+      sourceId,
+    );
+  }
+
+  // --- COMPLETION (Tap redirect + webhook) ---
   async verifyChargeAndRedirect(
     chargeId: string,
     invoiceId: string,
     appRedirectUrl: string,
+    purpose?: string,
   ): Promise<string> {
-    if (!this.tapSecretKey) {
-      throw new InternalServerErrorException(
-        'Tap Secret Key is not configured.',
-      );
-    }
-
-    console.log(
-      '[Tap Verify] Verifying charge:',
-      chargeId,
-      'for invoice:',
-      invoiceId,
-    );
+    const result = (status: 'success' | 'failed') =>
+      this.tap.appResultUrl(appRedirectUrl, status, invoiceId, purpose);
 
     try {
-      const response = await fetch(
-        `https://api.tap.company/v2/charges/${chargeId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.tapSecretKey}`,
-          },
-        },
-      );
-
-      const charge = (await response.json()) as TapChargeResponse;
-      console.log(
-        '[Tap Verify] Status:',
-        response.status,
-        'Charge:',
-        JSON.stringify(charge, null, 2),
-      );
-
-      if (!response.ok || !charge) {
-        console.error('[Tap Verify] Charge Error:', charge);
-        return `${appRedirectUrl}?status=failed&invoiceId=${invoiceId}`;
+      if (!(await this.tap.isChargeCapturedFor(chargeId, invoiceId))) {
+        return result('failed');
       }
-
-      const status = charge.status;
-
-      if (status === 'CAPTURED') {
-        await this.fulfillPayment(invoiceId);
-        return `${appRedirectUrl}?status=success&invoiceId=${invoiceId}`;
-      } else {
-        return `${appRedirectUrl}?status=failed&invoiceId=${invoiceId}`;
-      }
+      await this.fulfillment.fulfill(invoiceId);
+      return result('success');
     } catch (error) {
       console.error('[Tap Verify] Exception:', error);
-      return `${appRedirectUrl}?status=failed&invoiceId=${invoiceId}`;
+      return result('failed');
     }
   }
 
+  /**
+   * Tap's server-to-server callback. Its body is never trusted: the charge
+   * is re-fetched from Tap and only fulfilled when Tap itself reports it
+   * CAPTURED for this invoice -- otherwise anyone could POST
+   * `{status: "CAPTURED"}` here and get an invoice marked paid.
+   */
   async handleWebhook(chargeBody: TapChargeResponse) {
-    console.log(
-      '[Tap Webhook] Received payload:',
-      JSON.stringify(chargeBody, null, 2),
-    );
-
-    if (!chargeBody || !chargeBody.id) {
+    const chargeId = chargeBody?.id;
+    const invoiceId = chargeBody?.reference?.transaction;
+    if (!chargeId || !invoiceId) {
       return { success: false, message: 'Invalid payload' };
     }
 
-    const status = chargeBody.status;
-    const invoiceId = chargeBody.reference?.transaction;
-
-    if (status === 'CAPTURED' && invoiceId) {
-      await this.fulfillPayment(invoiceId);
-      return { success: true, message: 'Payment fulfilled' };
+    if (!(await this.tap.isChargeCapturedFor(chargeId, invoiceId))) {
+      return { success: true, message: 'Status ignored' };
     }
 
-    return { success: true, message: 'Status ignored' };
+    await this.fulfillment.fulfill(invoiceId);
+    return { success: true, message: 'Payment fulfilled' };
   }
 
   async getInvoiceStatus(userId: string, invoiceId: string) {
@@ -324,67 +118,5 @@ export class PaymentsService {
     }
 
     return { status: invoice.status };
-  }
-
-  private async fulfillPayment(invoiceId: string) {
-    const invoice = await this.prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      include: { planPackage: true },
-    });
-
-    if (!invoice || invoice.status === 'PAID') {
-      return;
-    }
-
-    // Invoices created before planId was recorded fall back to a name match
-    const plan = invoice.planId
-      ? await this.prisma.plan.findUnique({ where: { id: invoice.planId } })
-      : await this.prisma.plan.findFirst({
-          where: {
-            OR: [
-              { name: invoice.planName },
-              { slug: invoice.planName.toLowerCase() },
-              { name: { contains: invoice.planName } },
-            ],
-          },
-        });
-
-    const adsToAdd =
-      invoice.planPackage?.adsCount ?? (plan ? plan.maxActiveAds : 1);
-
-    await this.prisma.$transaction(async (tx) => {
-      // 1. Mark Invoice as PAID
-      await tx.invoice.update({
-        where: { id: invoiceId },
-        data: { status: 'PAID', paidAt: new Date() },
-      });
-
-      // 2. Create UserPlanSlot in User's Wallet
-      if (plan) {
-        await tx.userPlanSlot.create({
-          data: {
-            userId: invoice.userId,
-            planId: plan.id,
-            adsRemaining: adsToAdd,
-            status: 'ACTIVE',
-            invoiceId: invoice.id,
-          },
-        });
-      }
-
-      // 3. Update User activePlanId
-      if (plan && invoice.userId) {
-        await tx.user.update({
-          where: { id: invoice.userId },
-          data: {
-            activePlanId: plan.id,
-          },
-        });
-      }
-    });
-
-    console.log(
-      `Payment Fulfilled: Invoice ${invoice.invoiceNo} paid, user ${invoice.userId} activated plan ${plan?.name || invoice.planName} with ${adsToAdd} ads.`,
-    );
   }
 }

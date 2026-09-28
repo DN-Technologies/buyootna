@@ -45,6 +45,7 @@ model Property {
   conversations      Conversation[]
   alertMatches       AlertMatch[]
   reports            Report[]
+  featureInvoices    Invoice[]
 
   // New identity-based relation
   identityId String?

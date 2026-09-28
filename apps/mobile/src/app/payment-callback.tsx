@@ -7,29 +7,43 @@ import { showAlert } from '@/shared/utils/alert';
 
 export default function PaymentCallbackScreen() {
   const router = useRouter();
-  const { status } = useLocalSearchParams<{ status?: string; invoiceId?: string }>();
+  const { status, purpose } = useLocalSearchParams<{
+    status?: string;
+    invoiceId?: string;
+    purpose?: string;
+  }>();
 
   useEffect(() => {
     WebBrowser.dismissBrowser();
 
     if (!status) return;
 
+    // "Feature this ad" payments return to My Activity, plans to /plans
+    const isFeature = purpose === 'feature';
+    const returnTo = isFeature ? '/activity' : '/plans';
+
     if (status === 'success') {
-      showAlert('نجاح', 'تمت عملية الدفع وتفعيل الباقة بنجاح!', [
-        {
-          text: 'موافق',
-          onPress: () => router.replace('/plans'),
-        },
-      ]);
+      showAlert(
+        'نجاح',
+        isFeature
+          ? 'تم الدفع وتمييز إعلانك بنجاح!'
+          : 'تمت عملية الدفع وتفعيل الباقة بنجاح!',
+        [
+          {
+            text: 'موافق',
+            onPress: () => router.replace(returnTo),
+          },
+        ],
+      );
     } else {
       showAlert('خطأ', 'فشلت عملية الدفع أو تم إلغاؤها.', [
         {
           text: 'موافق',
-          onPress: () => router.replace('/plans'),
+          onPress: () => router.replace(returnTo),
         },
       ]);
     }
-  }, [router, status]);
+  }, [router, status, purpose]);
 
   return (
     <View className="flex-1 items-center justify-center bg-white">

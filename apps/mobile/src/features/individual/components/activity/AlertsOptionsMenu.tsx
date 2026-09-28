@@ -4,12 +4,19 @@ export interface AlertsOptionsMenuProps {
   visible: boolean;
   onClose: () => void;
   onDeleteAllPress: () => void;
+  // Reused by the ads tab; defaults keep the alerts menu as it was
+  deleteAllLabel?: string;
+  deleteAllTestID?: string;
+  deleteAllDisabled?: boolean;
 }
 
 export default function AlertsOptionsMenu({
   visible,
   onClose,
   onDeleteAllPress,
+  deleteAllLabel = 'حذف جميع التنبيهات',
+  deleteAllTestID = 'delete-all-alerts-menu-item',
+  deleteAllDisabled = false,
 }: AlertsOptionsMenuProps) {
   if (!visible) return null;
 
@@ -32,14 +39,15 @@ export default function AlertsOptionsMenu({
               onClose();
               onDeleteAllPress();
             }}
-            testID="delete-all-alerts-menu-item"
-            className="h-8 justify-center py-1"
+            testID={deleteAllTestID}
+            disabled={deleteAllDisabled}
+            className={`h-8 justify-center py-1 ${deleteAllDisabled ? 'opacity-40' : ''}`}
           >
             <Text
               className="font-cairo-medium text-[14px] leading-[22px] text-[#9C1E28]"
               style={{ writingDirection: 'rtl' }}
             >
-              حذف جميع التنبيهات
+              {deleteAllLabel}
             </Text>
           </TouchableOpacity>
         </View>

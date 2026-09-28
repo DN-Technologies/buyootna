@@ -1,15 +1,24 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 
 import apiClient from '@/shared/api/api';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+
+const MY_ACTIVITY_KEY = ['myActivity'];
+
+type MyActivityCache = { activity: ActivityItem[] } | undefined;
 
 interface UseAdActionsParams {
   refetch: () => unknown;
   triggerToast: (message: string, subtitle?: string | null) => unknown;
   freeAdsRemaining: number;
+  // The ads currently listed on the tab (after the filter pill), which is
+  // what "delete all" from the header menu removes
+  listedAds?: ActivityItem[];
 }
 
 // State, sheet refs and handlers for the "اعلاناتي" tab: edit, feature,
@@ -18,7 +27,10 @@ export function useAdActions({
   refetch,
   triggerToast,
   freeAdsRemaining,
+  listedAds = [],
 }: UseAdActionsParams) {
+  const queryClient = useQueryClient();
+
   const draftSheetRef = useRef<BottomSheetModal>(null);
   const [selectedDraft, setSelectedDraft] = useState<ActivityItem | undefined>(
     undefined,
@@ -29,16 +41,18 @@ export function useAdActions({
     null,
   );
 
+  const deleteAllSheetRef = useRef<BottomSheetModal>(null);
+  const [isOptionsMenuVisible, setIsOptionsMenuVisible] = useState(false);
+
   const featureAdSheetRef = useRef<BottomSheetModal>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
     null,
   );
 
   const handleEditAd = (propertyId: string) => {
-    router.push({
-      pathname: '/add-listing',
-      params: { editId: propertyId },
-    });
+    // The dedicated edit screen: pre-filled, with the fields that can't
+    // change after publishing locked. /add-listing is the create flow.
+    router.push(`/edit-listing/${propertyId}`);
   };
 
   const handleFeatureAd = (propertyId: string) => {
@@ -51,10 +65,37 @@ export function useAdActions({
     deleteSheetRef.current?.present();
   };
 
-  // Header "⋮" menu opens the delete sheet with no property selected
+  // Header "⋮" opens the ads options menu (delete all listed ads)
   const handleMenuPress = () => {
-    setPropertyToDelete(null);
-    deleteSheetRef.current?.present();
+    setIsOptionsMenuVisible(true);
+  };
+
+  const handleCloseOptionsMenu = () => {
+    setIsOptionsMenuVisible(false);
+  };
+
+  const handlePromptDeleteAll = () => {
+    setIsOptionsMenuVisible(false);
+    if (listedAds.length === 0) return;
+    deleteAllSheetRef.current?.present();
+  };
+
+  // Drops ads from every cached My Activity list right away so they vanish
+  // as the sheet closes; returns the previous caches to restore on failure
+  const removeFromCache = (ids: string[]) => {
+    const snapshot = queryClient.getQueriesData<MyActivityCache>({
+      queryKey: MY_ACTIVITY_KEY,
+    });
+    queryClient.setQueriesData<MyActivityCache>(
+      { queryKey: MY_ACTIVITY_KEY },
+      (old) =>
+        old && {
+          ...old,
+          activity: old.activity.filter((p) => !ids.includes(p.id)),
+        },
+    );
+    return () =>
+      snapshot.forEach(([key, data]) => queryClient.setQueryData(key, data));
   };
 
   const handleFeatureSuccess = () => {
@@ -68,20 +109,49 @@ export function useAdActions({
   };
 
   const handleConfirmDelete = async (reason?: string) => {
-    if (!propertyToDelete) return;
+    const propertyId = propertyToDelete;
+    setPropertyToDelete(null);
+    if (!propertyId) {
+      // Never close the sheet as if something happened when nothing did
+      showAlert('خطأ', 'تعذر تحديد الإعلان المراد حذفه. حاول مرة أخرى.');
+      return;
+    }
+    const restore = removeFromCache([propertyId]);
     try {
-      await apiClient.delete(`/properties/${propertyToDelete}`, {
+      await apiClient.delete(`/properties/${propertyId}`, {
         data: reason ? { reason } : undefined,
       });
       triggerToast('تم حذف الاعلان بنجاح.');
-      refetch();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error deleting property:', err);
-      const msg = err.response?.data?.message || 'فشل في حذف الإعلان';
-      showAlert('خطأ', msg);
+      restore();
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في حذف الإعلان'));
     } finally {
-      setPropertyToDelete(null);
+      refetch();
     }
+  };
+
+  const handleConfirmDeleteAll = async () => {
+    const ids = listedAds.map((p) => p.id);
+    if (ids.length === 0) return;
+    const restore = removeFromCache(ids);
+    const results = await Promise.allSettled(
+      ids.map((id) => apiClient.delete(`/properties/${id}`)),
+    );
+    const failed = results.filter((r) => r.status === 'rejected').length;
+    if (failed === 0) {
+      triggerToast('تم حذف جميع الإعلانات بنجاح.');
+    } else {
+      // Put the list back; the refetch below removes the ones that did go
+      restore();
+      showAlert(
+        'خطأ',
+        failed === ids.length
+          ? 'فشل في حذف الإعلانات'
+          : `تعذر حذف ${failed} من ${ids.length} إعلانات`,
+      );
+    }
+    refetch();
   };
 
   const handleCancelDelete = () => {
@@ -108,13 +178,19 @@ export function useAdActions({
   return {
     draftSheetRef,
     deleteSheetRef,
+    deleteAllSheetRef,
     featureAdSheetRef,
+    isOptionsMenuVisible,
+    listedAdsCount: listedAds.length,
     selectedDraft,
     selectedPropertyId,
     handleEditAd,
     handleFeatureAd,
     handleDeleteAd,
     handleMenuPress,
+    handleCloseOptionsMenu,
+    handlePromptDeleteAll,
+    handleConfirmDeleteAll,
     handleFeatureSuccess,
     handlePublishDraft,
     handleConfirmDelete,

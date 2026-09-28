@@ -112,6 +112,10 @@ export default function FormInput<T extends FieldValues>({
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setIsSecureText(!isSecureText)}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    isSecureText ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور'
+                  }
                   className="p-1"
                   style={{ marginStart: 12 }}
                 >

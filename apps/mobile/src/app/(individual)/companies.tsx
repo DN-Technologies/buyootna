@@ -20,7 +20,6 @@ import { SortIcon } from '@/assets/icons';
 import { HomeSearchIcon } from '@/assets/icons/home/header';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
 import { feedService } from '@/features/individual/services/feed.service';
-import { chatService } from '@/shared/api/chat.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CategoryFilterSheet, {
@@ -30,7 +29,7 @@ import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
-import { showAlert } from '@/shared/utils/alert';
+import { openChatWith } from '@/shared/utils/openChat';
 
 export default function CompaniesScreen() {
   const router = useRouter();
@@ -113,19 +112,8 @@ export default function CompaniesScreen() {
   };
 
   const handleChatPress = (companyUserId: string) => {
-    guardAction(async () => {
-      try {
-        const response = await chatService.createConversation(companyUserId);
-        router.push(`/chat/${response.id}` as any);
-      } catch (error: any) {
-        console.error('Failed to start chat conversation:', error);
-        const backendMsg = error?.response?.data?.message;
-        const msg = Array.isArray(backendMsg)
-          ? backendMsg.join('\n')
-          : backendMsg || 'تعذر بدء المحادثة مع الشركة';
-        showAlert('تنبيه', msg);
-      }
-    });
+    // Opens the chat at once; the chat screen creates the conversation
+    guardAction(() => openChatWith(router, { recipientId: companyUserId }));
   };
 
   const renderHeader = () => (

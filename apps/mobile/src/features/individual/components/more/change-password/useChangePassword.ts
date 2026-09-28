@@ -1,7 +1,8 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Keyboard, TextInput } from 'react-native';
 
@@ -34,6 +35,9 @@ export function useChangePassword() {
   } = useOtpResendTimer(45);
   const [isRequestingOtp, setIsRequestingOtp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Bumped to remount the inputs, which also resets each field's own
+  // show/hide-password toggle
+  const [formKey, setFormKey] = useState(0);
 
   // Form setup
   const { control, handleSubmit, getValues, reset: resetForm } =
@@ -49,6 +53,22 @@ export function useChangePassword() {
         logoutAllDevices: true,
       },
     });
+
+  // Passwords must never linger: this screen lives in the tab navigator, so
+  // it stays mounted after "back" and would otherwise show the typed values
+  // again on the next visit.
+  const clearSensitiveState = useCallback(() => {
+    resetForm();
+    setOtp('');
+    setOtpError('');
+    bottomSheetRef.current?.dismiss();
+    setFormKey((key) => key + 1);
+  }, [resetForm]);
+
+  // Leaving the screen (back, tab switch, another screen on top) wipes it
+  useFocusEffect(
+    useCallback(() => () => clearSensitiveState(), [clearSensitiveState]),
+  );
 
   // Mask Phone for display in Arabic RTL layout
   const maskedPhone = useMemo(() => {
@@ -74,6 +94,7 @@ export function useChangePassword() {
           undefined,
           logoutAllDevices,
         );
+        clearSensitiveState();
         showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح', [
           { text: 'موافق', onPress: () => router.back() },
         ]);
@@ -152,7 +173,8 @@ export function useChangePassword() {
         otp,
         logoutAllDevices,
       );
-      bottomSheetRef.current?.dismiss();
+      // Also dismisses the OTP sheet
+      clearSensitiveState();
       showAlert('نجاح', 'تم تغيير كلمة المرور بنجاح', [
         {
           text: 'موافق',
@@ -194,7 +216,7 @@ export function useChangePassword() {
     handleResendOtp,
     handleVerifyOtp,
     handleBack,
-    resetForm,
+    formKey,
   };
 }
 

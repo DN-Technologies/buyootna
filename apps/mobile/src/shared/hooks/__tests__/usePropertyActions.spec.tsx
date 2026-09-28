@@ -265,19 +265,16 @@ describe('usePropertyActions', () => {
       expect(chatService.createConversation).not.toHaveBeenCalled();
     });
 
-    it('creates conversation and navigates to chat screen on success', async () => {
-      (chatService.createConversation as jest.Mock).mockResolvedValueOnce({
-        id: 'conv-999',
-      });
-
+    it('opens the chat screen immediately, without waiting on the network', async () => {
       const { press } = await renderActions(baseProperty);
       await press('btn-chat');
 
-      expect(chatService.createConversation).toHaveBeenCalledWith(
-        'host-1',
-        'prop-100',
-      );
-      expect(mockRouterPush).toHaveBeenCalledWith('/chat/conv-999');
+      // The chat screen creates the conversation while showing its loader
+      expect(mockRouterPush).toHaveBeenCalledWith({
+        pathname: '/chat/[id]',
+        params: { id: 'new', recipientId: 'host-1', propertyId: 'prop-100' },
+      });
+      expect(chatService.createConversation).not.toHaveBeenCalled();
     });
   });
 

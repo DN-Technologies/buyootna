@@ -6,6 +6,7 @@ import {
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuthTestContext, UserUpdateArgs } from './auth-test.harness';
+import { INVALID_CREDENTIALS_MESSAGE } from '../services/auth-credentials.service';
 
 export function registerCredentialsAuthTests(ctx: AuthTestContext) {
   describe('validateUser', () => {
@@ -33,31 +34,71 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
       expect(result).toMatchObject({ id: 'user-1' });
     });
 
-    it('throws UnauthorizedException when no user matches the identifier', async () => {
+    it('uses one generic message for an unknown identifier and a wrong password', async () => {
       ctx.prisma.user.findFirst.mockResolvedValue(null);
+      const unknown = ctx.service.validateUser(
+        'missing@example.com',
+        'whatever',
+      );
+      await expect(unknown).rejects.toThrow(UnauthorizedException);
+      await expect(unknown).rejects.toThrow(INVALID_CREDENTIALS_MESSAGE);
 
-      await expect(
-        ctx.service.validateUser('missing@example.com', 'whatever'),
-      ).rejects.toThrow(UnauthorizedException);
+      ctx.prisma.user.findFirst.mockResolvedValue(dbUser);
+      const wrongPassword = ctx.service.validateUser(
+        'a@example.com',
+        'wrong-password',
+      );
+      await expect(wrongPassword).rejects.toThrow(UnauthorizedException);
+      await expect(wrongPassword).rejects.toThrow(INVALID_CREDENTIALS_MESSAGE);
     });
 
-    it('throws UnauthorizedException when the account is disabled, without checking the password', async () => {
+    it.each([
+      ['disabled', { isDisabled: true }],
+      ['blocked', { isBlocked: true }],
+    ])(
+      'does not reveal a %s account to someone with the wrong password',
+      async (_state, flags) => {
+        ctx.prisma.user.findFirst.mockResolvedValue({ ...dbUser, ...flags });
+
+        await expect(
+          ctx.service.validateUser('a@example.com', 'wrong-password'),
+        ).rejects.toThrow(INVALID_CREDENTIALS_MESSAGE);
+      },
+    );
+
+    it.each([
+      ['disabled', { isDisabled: true }, 'الحساب معطل مؤقتاً'],
+      ['blocked', { isBlocked: true }, 'الحساب محظور'],
+    ])(
+      'tells the owner (right password) that the account is %s',
+      async (_state, flags, message) => {
+        ctx.prisma.user.findFirst.mockResolvedValue({ ...dbUser, ...flags });
+
+        await expect(
+          ctx.service.validateUser('a@example.com', 'correct-password'),
+        ).rejects.toThrow(message);
+      },
+    );
+
+    it('still lets a disabled or blocked admin in with the right password', async () => {
       ctx.prisma.user.findFirst.mockResolvedValue({
         ...dbUser,
+        isAdmin: true,
         isDisabled: true,
+        isBlocked: true,
       });
 
       await expect(
         ctx.service.validateUser('a@example.com', 'correct-password'),
-      ).rejects.toThrow(UnauthorizedException);
+      ).resolves.toMatchObject({ id: 'user-1' });
     });
 
-    it('throws UnauthorizedException when the password does not match', async () => {
-      ctx.prisma.user.findFirst.mockResolvedValue(dbUser);
+    it('treats an account without a password hash as invalid credentials', async () => {
+      ctx.prisma.user.findFirst.mockResolvedValue({ ...dbUser, password: '' });
 
       await expect(
-        ctx.service.validateUser('a@example.com', 'wrong-password'),
-      ).rejects.toThrow(UnauthorizedException);
+        ctx.service.validateUser('a@example.com', ''),
+      ).rejects.toThrow(INVALID_CREDENTIALS_MESSAGE);
     });
   });
 

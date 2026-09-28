@@ -16,6 +16,7 @@ import { AdminPropertiesService } from './services/admin-properties.service';
 import { AdminRequestsService } from './services/admin-requests.service';
 import { AdminExhibitionService } from './services/admin-exhibition.service';
 import { AdminPlansService } from './services/admin-plans.service';
+import { AdminFeaturePackagesService } from './services/admin-feature-packages.service';
 import { AdminInvoicesService } from './services/admin-invoices.service';
 import { AdminRatingsService } from './services/admin-ratings.service';
 import { AdminNotesService } from './services/admin-notes.service';
@@ -54,6 +55,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
     AdminInvoicesService,
     AdminRatingsService,
     AdminNotesService,
+    AdminFeaturePackagesService,
   ],
   exports: [
     AdminService,
@@ -73,6 +75,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
     AdminInvoicesService,
     AdminRatingsService,
     AdminNotesService,
+    AdminFeaturePackagesService,
   ],
 })
 export class AdminModule {}

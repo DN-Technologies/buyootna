@@ -120,7 +120,12 @@ export default function ActivityScreen() {
     sortBy,
   );
 
-  const adActions = useAdActions({ refetch, triggerToast, freeAdsRemaining });
+  const adActions = useAdActions({
+    refetch,
+    triggerToast,
+    freeAdsRemaining,
+    listedAds: sortedAndFilteredData as ActivityItem[],
+  });
   const alertActions = useAlertActions({ alerts, refetchAlerts, triggerToast });
 
   // Handle redirect to login if unauthenticated. Must stay below every hook.
@@ -276,6 +281,16 @@ export default function ActivityScreen() {
         visible={alertActions.isOptionsMenuVisible}
         onClose={alertActions.handleCloseOptionsMenu}
         onDeleteAllPress={alertActions.handlePromptDeleteAllAlerts}
+      />
+
+      {/* Header "⋮" on the ads tab: same menu, deleting the listed ads */}
+      <AlertsOptionsMenu
+        visible={adActions.isOptionsMenuVisible}
+        onClose={adActions.handleCloseOptionsMenu}
+        onDeleteAllPress={adActions.handlePromptDeleteAll}
+        deleteAllLabel="حذف جميع الإعلانات"
+        deleteAllTestID="delete-all-ads-menu-item"
+        deleteAllDisabled={adActions.listedAdsCount === 0}
       />
 
       {/* --- Success Toast Notification --- */}

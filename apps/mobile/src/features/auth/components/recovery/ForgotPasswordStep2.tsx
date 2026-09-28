@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -17,17 +17,27 @@ interface ForgotPasswordStep2Props {
   identifier: string;
   onSubmit: (data: VerifyOtpValues) => Promise<boolean>;
   onResendOtp: () => Promise<ResendOtpResult>;
+  // Set when the first send was rate-limited (a code was sent recently): the
+  // countdown starts from the server's remaining wait instead of 45s
+  initialResendResult?: ResendOtpResult;
 }
 
 export const ForgotPasswordStep2: React.FC<ForgotPasswordStep2Props> = ({
   identifier,
   onSubmit,
   onResendOtp,
+  initialResendResult,
 }) => {
   const router = useRouter();
   const { secondsLeft, isReady, limitReachedMessage, handleResendResult } =
     useOtpResendTimer(45);
   const otpInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (initialResendResult) handleResendResult(initialResendResult);
+    // Only the result the step opened with; later resends feed it directly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { control, handleSubmit, watch, setValue } = useForm<VerifyOtpValues>({
     resolver: zodResolver(verifyOtpSchema),

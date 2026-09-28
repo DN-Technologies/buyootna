@@ -1,12 +1,21 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { fireEvent, render } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render as rtlRender } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { ReactElement } from 'react';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useMyActivity } from '@/shared/hooks/useMyActivity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import ActivityScreen from '../activity';
+
+// The data hooks are mocked, but useAdActions still updates the query cache
+// when deleting, so the screen needs a QueryClient
+const render = (ui: ReactElement) =>
+  rtlRender(
+    <QueryClientProvider client={new QueryClient()}>{ui}</QueryClientProvider>,
+  );
 
 jest.mock('@gorhom/bottom-sheet');
 jest.mock('@shopify/flash-list');
