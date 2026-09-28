@@ -65,12 +65,19 @@ export class PropertiesQuotaService {
       };
     }
 
+    // Slots this identity may spend: its own, plus legacy slots that only
+    // record the owning user (plan purchases and admin grants create them
+    // with userId alone -- the same slots GET /plans/wallet lists)
+    const ownedBy: Prisma.UserPlanSlotWhereInput = {
+      OR: [{ identityId }, { identityId: null, userId: identity.userId }],
+    };
+
     // 2. Specific Plan Slot requested OR auto-select single available slot
     let targetSlotId = requestedSlotId;
 
     if (!targetSlotId) {
       const activeSlots = await tx.userPlanSlot.findMany({
-        where: { identityId, status: 'ACTIVE', adsRemaining: { gt: 0 } },
+        where: { ...ownedBy, status: 'ACTIVE', adsRemaining: { gt: 0 } },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -90,7 +97,7 @@ export class PropertiesQuotaService {
     const slot = await tx.userPlanSlot.findFirst({
       where: {
         id: targetSlotId,
-        identityId,
+        ...ownedBy,
         status: 'ACTIVE',
         adsRemaining: { gt: 0 },
       },

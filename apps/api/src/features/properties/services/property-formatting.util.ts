@@ -85,6 +85,7 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
       baths: p.baths,
       location: p.location,
       createdAt: p.createdAt,
+      publishedAt: p.publishedAt,
       phoneNumber: p.phoneNumber,
       identityId: identity?.id,
       identityType: identity?.type,

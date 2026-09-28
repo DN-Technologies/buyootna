@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,6 +12,14 @@ import { CreatePropertyDto } from '../dto/create-property.dto';
 import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Statuses the "مؤرشفة" tab shows, and the only ones that can be republished
+const ARCHIVED_STATUSES: ListingStatus[] = [
+  ListingStatus.EXPIRED,
+  ListingStatus.CLOSED,
+];
 
 @Injectable()
 export class PropertiesMutationsService {
@@ -72,6 +82,7 @@ export class PropertiesMutationsService {
             isFeatured,
             featuredUntil,
             isPriority,
+            publishedAt: new Date(),
           },
         });
 
@@ -151,6 +162,7 @@ export class PropertiesMutationsService {
             isFeatured,
             featuredUntil,
             isPriority,
+            publishedAt: new Date(),
           },
         });
 
@@ -165,7 +177,13 @@ export class PropertiesMutationsService {
 
     let newStatus = existingProperty.status;
     if (isDraft === true) newStatus = ListingStatus.DRAFT;
-    if (isDraft === false && existingProperty.status !== 'DRAFT')
+    // Editing an archived ad keeps it archived: going live again has to go
+    // through renew(), which spends a credit and sets new dates
+    if (
+      isDraft === false &&
+      existingProperty.status !== ListingStatus.DRAFT &&
+      !ARCHIVED_STATUSES.includes(existingProperty.status)
+    )
       newStatus = ListingStatus.ACTIVE;
 
     const updatedProperty = await this.prisma.property.update({
@@ -224,11 +242,29 @@ export class PropertiesMutationsService {
   }
 
   // --- RENEW PROPERTY ---
+  /**
+   * Republishes an archived (expired/closed) ad, spending one credit: the
+   * picked wallet slot, or the free ad / only slot when none is given.
+   * The ad is claimed back to ACTIVE before the credit is spent, so two
+   * concurrent requests can't both spend one; if spending fails the whole
+   * transaction rolls back and the ad stays archived.
+   */
   async renew(identityId: string, propertyId: string, planSlotId?: string) {
     const property = await this.verifyOwnership(identityId, propertyId);
+    if (!ARCHIVED_STATUSES.includes(property.status)) {
+      throw new BadRequestException('يمكن إعادة نشر الإعلانات المؤرشفة فقط');
+    }
     const imagesCount = property.images?.length || 0;
 
     const renewed = await this.prisma.$transaction(async (tx) => {
+      const claimed = await tx.property.updateMany({
+        where: { id: propertyId, status: { in: ARCHIVED_STATUSES } },
+        data: { status: ListingStatus.ACTIVE },
+      });
+      if (claimed.count === 0) {
+        throw new ConflictException('تمت إعادة نشر هذا الإعلان بالفعل');
+      }
+
       const quota = await this.quotaService.resolvePublishQuota(
         identityId,
         planSlotId,
@@ -236,25 +272,20 @@ export class PropertiesMutationsService {
         tx,
       );
 
-      const endDate = new Date(
-        Date.now() + quota.durationDays * 24 * 60 * 60 * 1000,
-      );
-      const isFeatured = quota.featuredDays > 0;
-      const featuredUntil =
-        quota.featuredDays > 0
-          ? new Date(Date.now() + quota.featuredDays * 24 * 60 * 60 * 1000)
-          : null;
-      const isPriority = quota.prioritySearch;
-
+      const now = Date.now();
       const updated = await tx.property.update({
         where: { id: propertyId },
         data: {
           status: ListingStatus.ACTIVE,
           planSlotId: quota.planSlotId,
-          endDate,
-          isFeatured,
-          featuredUntil,
-          isPriority,
+          publishedAt: new Date(now),
+          endDate: new Date(now + quota.durationDays * DAY_MS),
+          isFeatured: quota.featuredDays > 0,
+          featuredUntil:
+            quota.featuredDays > 0
+              ? new Date(now + quota.featuredDays * DAY_MS)
+              : null,
+          isPriority: quota.prioritySearch,
         },
       });
 

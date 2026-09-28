@@ -38,6 +38,12 @@ export class PropertyCardDto {
   @ApiProperty()
   createdAt: Date;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'When the ad last went live (publish or republish)',
+  })
+  publishedAt: Date | null;
+
   @ApiProperty({ nullable: true })
   phoneNumber: string | null;
 
@@ -180,6 +186,12 @@ export class PropertyDto {
   @ApiProperty()
   createdAt: Date;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'When the ad last went live (publish or republish)',
+  })
+  publishedAt: Date | null;
+
   @ApiProperty()
   updatedAt: Date;
 
@@ -286,6 +298,12 @@ export class MyActivityPropertyDto {
 
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'When the ad last went live (publish or republish)',
+  })
+  publishedAt: Date | null;
 
   @ApiProperty({ nullable: true })
   endDate: Date | null;

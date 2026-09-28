@@ -66,7 +66,7 @@ export class DealSearchStrategy implements SearchStrategy {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
         include: {
           identity: {
             include: {

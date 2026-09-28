@@ -80,7 +80,7 @@ export class MapService {
         latitude: true,
         longitude: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
       take: MAP_LIMIT,
     });
 

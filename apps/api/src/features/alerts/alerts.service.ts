@@ -101,7 +101,10 @@ export class AlertsService {
           { NOT: { identityId } },
         ],
       },
-      orderBy: [{ isPriority: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [
+        { isPriority: 'desc' },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+      ],
       take: MATCHES_LIMIT,
       ...propertyFeedPayload,
     });
