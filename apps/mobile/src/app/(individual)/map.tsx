@@ -18,6 +18,7 @@ import {
 import type { MapFeatureProperties } from '@/features/individual/utils/mockGeoJSON';
 import type { SelectionItem } from '@/shared/components/filters/SelectionDrawer';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { AREAS } from '@/shared/utils/data/locations';
 
 const EMPTY_GEOJSON: GeoJSON.FeatureCollection<
   GeoJSON.Point,
@@ -32,9 +33,10 @@ export default function MapDashboardScreen() {
 
   const [activeCategory, setActiveCategory] = useState('بيع');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGovernorate, setSelectedGovernorate] =
-    useState<SelectionItem | null>(null);
-  const [selectedArea, setSelectedArea] = useState<SelectionItem | null>(null);
+  const [selectedGovernorates, setSelectedGovernorates] = useState<
+    SelectionItem[]
+  >([]);
+  const [selectedAreas, setSelectedAreas] = useState<SelectionItem[]>([]);
 
   const [selectedFeature, setSelectedFeature] = useState<any | null>(null);
 
@@ -52,21 +54,27 @@ export default function MapDashboardScreen() {
     setSelectedFeature(null);
   };
 
-  const handleGovernorateChange = (item: SelectionItem | null) => {
-    setSelectedGovernorate(item);
-    setSelectedArea(null);
+  const handleGovernoratesChange = (items: SelectionItem[]) => {
+    setSelectedGovernorates(items);
+    // Keep only the areas that still belong to a chosen governorate
+    const allowed = new Set(
+      items.flatMap((gov) => (AREAS[gov.id] ?? []).map((area) => area.id)),
+    );
+    setSelectedAreas((areas) =>
+      items.length ? areas.filter((area) => allowed.has(area.id)) : areas,
+    );
     setSelectedFeature(null);
   };
 
-  const handleAreaChange = (item: SelectionItem | null) => {
-    setSelectedArea(item);
+  const handleAreasChange = (items: SelectionItem[]) => {
+    setSelectedAreas(items);
     setSelectedFeature(null);
   };
 
   const handleClearFilters = () => {
     setSearchQuery('');
-    setSelectedGovernorate(null);
-    setSelectedArea(null);
+    setSelectedGovernorates([]);
+    setSelectedAreas([]);
     setSelectedFeature(null);
   };
 
@@ -79,8 +87,8 @@ export default function MapDashboardScreen() {
       'mapDiscover',
       debouncedBounds,
       activeCategory,
-      selectedGovernorate?.id,
-      selectedArea?.id,
+      selectedGovernorates.map((g) => g.id).join(','),
+      selectedAreas.map((a) => a.id).join(','),
       debouncedSearchQuery,
     ],
     queryFn: async () => {
@@ -88,10 +96,12 @@ export default function MapDashboardScreen() {
         return await mapService.discover({
           ...boundsToParams(debouncedBounds!),
           type: categoryToMapType(activeCategory),
-          ...(selectedGovernorate?.id
-            ? { governorateId: selectedGovernorate.id }
+          ...(selectedGovernorates.length
+            ? { governorateIds: selectedGovernorates.map((g) => g.id).join(',') }
             : {}),
-          ...(selectedArea?.id ? { areaId: selectedArea.id } : {}),
+          ...(selectedAreas.length
+            ? { areaIds: selectedAreas.map((a) => a.id).join(',') }
+            : {}),
           ...(debouncedSearchQuery.trim()
             ? { searchQuery: debouncedSearchQuery.trim() }
             : {}),
@@ -148,10 +158,10 @@ export default function MapDashboardScreen() {
         onCategoryChange={handleCategoryChange}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
-        selectedGovernorate={selectedGovernorate}
-        selectedArea={selectedArea}
-        onGovernorateChange={handleGovernorateChange}
-        onAreaChange={handleAreaChange}
+        selectedGovernorates={selectedGovernorates}
+        selectedAreas={selectedAreas}
+        onGovernoratesChange={handleGovernoratesChange}
+        onAreasChange={handleAreasChange}
         onOpenFilters={() => console.log('Open Detailed Filters Sheet')}
       />
 

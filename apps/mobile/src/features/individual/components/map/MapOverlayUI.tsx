@@ -12,15 +12,23 @@ import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 const CATEGORIES = ['بيع', 'ايجار', 'بدل', 'شركات'];
 
+// "حولي" for one choice, "حولي +2" for three
+function selectionLabel(items: SelectionItem[], placeholder: string) {
+  if (!items.length) return placeholder;
+  return items.length === 1
+    ? items[0].label
+    : `${items[0].label} +${items.length - 1}`;
+}
+
 interface MapOverlayUIProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   searchQuery: string;
   onSearchQueryChange: (value: string) => void;
-  selectedGovernorate: SelectionItem | null;
-  selectedArea: SelectionItem | null;
-  onGovernorateChange: (item: SelectionItem | null) => void;
-  onAreaChange: (item: SelectionItem | null) => void;
+  selectedGovernorates: SelectionItem[];
+  selectedAreas: SelectionItem[];
+  onGovernoratesChange: (items: SelectionItem[]) => void;
+  onAreasChange: (items: SelectionItem[]) => void;
   onOpenFilters: () => void;
 }
 
@@ -29,10 +37,10 @@ export default function MapOverlayUI({
   onCategoryChange,
   searchQuery,
   onSearchQueryChange,
-  selectedGovernorate,
-  selectedArea,
-  onGovernorateChange,
-  onAreaChange,
+  selectedGovernorates,
+  selectedAreas,
+  onGovernoratesChange,
+  onAreasChange,
   onOpenFilters,
 }: MapOverlayUIProps) {
   const insets = useSafeAreaInsets();
@@ -40,12 +48,13 @@ export default function MapOverlayUI({
   const govDrawerRef = useRef<any>(null);
   const areaDrawerRef = useRef<any>(null);
 
+  // Areas of every chosen governorate (all areas when none is chosen)
   const areasToDisplay = useMemo(() => {
-    if (!selectedGovernorate) {
+    if (!selectedGovernorates.length) {
       return Object.values(AREAS).flat();
     }
-    return AREAS[selectedGovernorate.id] || [];
-  }, [selectedGovernorate]);
+    return selectedGovernorates.flatMap((gov) => AREAS[gov.id] || []);
+  }, [selectedGovernorates]);
 
   return (
     <View className="pointer-events-box-none absolute left-0 right-0 top-0 z-10">
@@ -111,10 +120,11 @@ export default function MapOverlayUI({
           >
             <Text
               className={`font-cairo-medium text-[13px] ${
-                selectedGovernorate ? 'text-[#111111]' : 'text-[#64748B]'
+                selectedGovernorates.length ? 'text-[#111111]' : 'text-[#64748B]'
               }`}
+              numberOfLines={1}
             >
-              {selectedGovernorate?.label ?? 'المحافظة'}
+              {selectionLabel(selectedGovernorates, 'المحافظة')}
             </Text>
             <Feather name="chevron-down" size={16} color="#64748B" />
           </TouchableOpacity>
@@ -126,10 +136,11 @@ export default function MapOverlayUI({
           >
             <Text
               className={`font-cairo-medium text-[13px] ${
-                selectedArea ? 'text-[#111111]' : 'text-[#64748B]'
+                selectedAreas.length ? 'text-[#111111]' : 'text-[#64748B]'
               }`}
+              numberOfLines={1}
             >
-              {selectedArea?.label ?? 'المنطقة'}
+              {selectionLabel(selectedAreas, 'المنطقة')}
             </Text>
             <Feather name="chevron-down" size={16} color="#64748B" />
           </TouchableOpacity>
@@ -140,22 +151,18 @@ export default function MapOverlayUI({
         ref={govDrawerRef}
         title="اختر المحافظة"
         data={GOVERNORATES}
-        selectedItem={selectedGovernorate}
-        onSelect={(item) => {
-          onGovernorateChange(item);
-          govDrawerRef.current?.dismiss();
-        }}
+        multiSelect
+        selectedItems={selectedGovernorates}
+        onSelectMultiple={onGovernoratesChange}
       />
 
       <SelectionDrawer
         ref={areaDrawerRef}
         title="اختر المنطقة"
         data={areasToDisplay}
-        selectedItem={selectedArea}
-        onSelect={(item) => {
-          onAreaChange(item);
-          areaDrawerRef.current?.dismiss();
-        }}
+        multiSelect
+        selectedItems={selectedAreas}
+        onSelectMultiple={onAreasChange}
       />
     </View>
   );
