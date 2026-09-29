@@ -12,10 +12,12 @@ describe('IndividualSignupForm', () => {
       />,
     );
 
-    expect(getByText('الاسم')).toBeTruthy();
-    expect(getByText('رقم الهاتف أو البريد الالكتروني')).toBeTruthy();
-    expect(queryByText('البريد الإلكتروني')).toBeNull();
-    expect(queryByText('رقم الهاتف')).toBeNull();
+    // Required labels render as 'label *' in one Text
+    const label = (text: string) => new RegExp(`^${text}( \\*)?$`);
+    expect(getByText(label('الاسم'))).toBeTruthy();
+    expect(getByText(label('رقم الهاتف أو البريد الالكتروني'))).toBeTruthy();
+    expect(queryByText(label('البريد الإلكتروني'))).toBeNull();
+    expect(queryByText(label('رقم الهاتف'))).toBeNull();
   });
 
   it('submits the identifier field value when the whole form is valid', async () => {

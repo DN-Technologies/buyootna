@@ -16,7 +16,10 @@ export const ChangePasswordHeader: React.FC<ChangePasswordHeaderProps> = ({
       <TouchableOpacity onPress={onBack} className="w-8">
         <Feather name="chevron-right" size={24} color="#111111" />
       </TouchableOpacity>
-      <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
+      <Text
+        numberOfLines={1}
+        className="flex-1 text-center font-cairo-semibold text-lg leading-[24px] text-[#111111]"
+      >
         {title}
       </Text>
       <View className="w-8" />

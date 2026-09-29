@@ -61,14 +61,15 @@ export default function FormInput<T extends FieldValues>({
         return (
           <View className="mb-4 w-full">
             {/* Label */}
-            <View className="mb-1 flex-row items-center justify-start">
-              <Text className="font-cairo-semibold text-sm tracking-tight text-charcoal">
-                {label}
-              </Text>
+            {/* One Text with the * nested: as separate siblings (and with
+                letter-spacing on Arabic) Android measured the label too
+                narrow and wrapped it onto two lines */}
+            <Text className="mb-1 font-cairo-semibold text-sm text-charcoal">
+              {label}
               {isRequired && (
-                <Text className="ml-[2px] font-bold text-red-500">*</Text>
+                <Text className="font-bold text-red-500"> *</Text>
               )}
-            </View>
+            </Text>
 
             {/* Input Container */}
             <View
