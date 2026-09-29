@@ -4,8 +4,8 @@ export const admin: DocSection = {
   slug: "web-admin",
   title: { en: "Web Admin", ar: "لوحة تحكم المشرف (ويب)" },
   summary: {
-    en: "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, verifications (approving companies/offices), reports, the Plans page (static — not connected to real prices), Subscriptions & Billing (mock data), and unbuilt placeholders (Deals, Notifications, Content, Roles, Settings, Logs). Feature packages are managed through the admin API only.",
-    ar: "لوحة تحكم مدير النظام (apps/web/admin، المنفذ 3005). تغطي لوحة المعلومات، إدارة المستخدمين، طلبات الاعتماد (قبول الشركات/المكاتب)، البلاغات، صفحة الباقات (ثابتة — غير مرتبطة بالأسعار الحقيقية)، الاشتراكات والفوترة (بيانات وهمية)، والصفحات غير المبنية (الصفقات، الإشعارات، المحتوى، الأدوار، الإعدادات، السجلات). باقات التمييز تُدار عبر واجهة الإدارة البرمجية فقط.",
+    en: "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, verifications (approving companies/offices), reports, the Plans page (edits the real plans), Subscriptions & Billing (mock data), and unbuilt placeholders (Deals, Notifications, Content, Roles, Settings, Logs). Feature packages are managed through the admin API only.",
+    ar: "لوحة تحكم مدير النظام (apps/web/admin، المنفذ 3005). تغطي لوحة المعلومات، إدارة المستخدمين، طلبات الاعتماد (قبول الشركات/المكاتب)، البلاغات، صفحة الباقات (تعدّل الباقات الحقيقية)، الاشتراكات والفوترة (بيانات وهمية)، والصفحات غير المبنية (الصفقات، الإشعارات، المحتوى، الأدوار، الإعدادات، السجلات). باقات التمييز تُدار عبر واجهة الإدارة البرمجية فقط.",
   },
   stories: [
     {
@@ -214,35 +214,41 @@ export const admin: DocSection = {
     {
       id: "admin-plans-pricing",
       title: {
-        en: "Admin Plans page is static — edits don't change real prices",
-        ar: "صفحة الباقات في لوحة الإدارة ثابتة — التعديلات لا تغيّر الأسعار الحقيقية",
+        en: "Admin Plans page edits the real plans the app sells",
+        ar: "صفحة الباقات في لوحة الإدارة تعدّل الباقات الحقيقية التي يبيعها التطبيق",
       },
       priority: "P0",
       story: {
-        en: "Flag: app/(dashboard)/plans/page.tsx builds the Normal/Silver/Gold tiers from values written in the page and never calls the API, so PlanDetailDrawer shows those values and EditPlanDrawer's changes stay in the browser. Real prices and packages (what the app sells through Tap) live in the Plan/PlanPackage tables and aren't editable from this page. Don't sign off a price change made here.",
-        ar: "تنبيه: app/(dashboard)/plans/page.tsx يبني الباقات العادية/الفضية/الذهبية من قيم مكتوبة في الصفحة ولا يستدعي الواجهة البرمجية أبداً، فيعرض PlanDetailDrawer تلك القيم وتبقى تعديلات EditPlanDrawer في المتصفح. الأسعار والباقات الحقيقية (التي يبيعها التطبيق عبر Tap) موجودة في جدولي Plan/PlanPackage ولا يمكن تعديلها من هذه الصفحة. لا تعتمد تغيير سعر تم هنا.",
+        en: "Verify /plans loads the real plans (GET /admin/plans — the same Normal/Silver/Gold set in each account-type tab, since the app sells one set) and that saving the edit drawer changes them (PATCH /admin/plans/:id): name, price, hidden/active, ads per credit, publish days, images, featured/pinned, priority search. The app's feature lines are rebuilt from the numbers on save, each edit is logged as 'تعديل باقة', and the summary cards show real totals, active/hidden counts and the most-bought plan.",
+        ar: "تحقق من أن /plans تحمّل الباقات الحقيقية (GET /admin/plans — نفس مجموعة العادية/الفضية/الذهبية في كل تبويب لأن التطبيق يبيع مجموعة واحدة) وأن حفظ نافذة التعديل يغيّرها (PATCH /admin/plans/:id): الاسم، السعر، مخفية/نشطة، الإعلانات لكل رصيد، أيام النشر، الصور، التمييز/التثبيت، أولوية البحث. تُعاد كتابة أسطر المزايا في التطبيق من الأرقام عند الحفظ، ويُسجَّل كل تعديل كـ'تعديل باقة'، وتعرض بطاقات الملخص الإجماليات الحقيقية وعدد النشطة/المخفية والباقة الأكثر شراءً.",
       },
       acceptanceCriteria: {
         en: [
-          "Changing a price here and reloading shows the original value again.",
-          "The app's plans screen and GET /plans are unaffected by edits here.",
-          "When the page is wired to the API, this story is replaced with real save/discard checks.",
+          "Changing Silver's price and saving shows the new price after reload and in the app's plan screen and checkout.",
+          "Setting a plan to hidden marks it 'مخفية' here and removes it from the app's plans list; existing credits from it keep working.",
+          "Closing the drawer with unsaved changes asks to discard; discarding changes nothing.",
+          "Invalid values (negative price, 0 days) are refused.",
         ],
         ar: [
-          "تغيير السعر هنا ثم إعادة التحميل يعيد القيمة الأصلية.",
-          "شاشة الباقات في التطبيق و GET /plans لا تتأثر بالتعديلات هنا.",
-          "عند ربط الصفحة بالواجهة البرمجية تُستبدل هذه القصة بفحوص حفظ/تجاهل حقيقية.",
+          "تغيير سعر الفضية وحفظه يعرض السعر الجديد بعد إعادة التحميل وفي شاشة الباقات والدفع في التطبيق.",
+          "جعل الباقة مخفية يعلّمها 'مخفية' هنا ويزيلها من قائمة الباقات في التطبيق؛ والأرصدة الحالية منها تستمر بالعمل.",
+          "إغلاق النافذة بتعديلات غير محفوظة يطلب التأكيد؛ والتجاهل لا يغيّر شيئاً.",
+          "القيم غير الصالحة (سعر سالب، 0 أيام) تُرفض.",
         ],
       },
       testScenarios: {
         en: [
-          "Edit the Silver price, save, reload the page and compare with GET /plans.",
+          "Edit Gold's duration to 90 days, save, open the app's plans — '90 يوم' shows.",
+          "Hide Silver, check the app — gone; unhide — back.",
+          "Check the Logs tab — the edit appears as 'تعديل باقة'.",
         ],
         ar: [
-          "عدّل سعر الفضية واحفظ ثم أعد تحميل الصفحة وقارن مع GET /plans.",
+          "عدّل مدة الذهبية إلى 90 يوماً واحفظ ثم افتح باقات التطبيق — يظهر '90 يوم'.",
+          "أخفِ الفضية وتحقق من التطبيق — اختفت؛ أظهرها — عادت.",
+          "افحص تبويب السجلات — يظهر التعديل كـ'تعديل باقة'.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/review-findings",
     },
     {
       id: "admin-billing-subscriptions",
