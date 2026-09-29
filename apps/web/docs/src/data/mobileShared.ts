@@ -410,5 +410,71 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "mobile-map-location-filter",
+      title: {
+        en: "Map: choose several governorates and areas",
+        ar: "الخريطة: اختيار عدة محافظات ومناطق",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify the map's governorate and area pickers allow several choices (checkboxes and chips; the drawer stays open while picking). GET /map/discover receives governorateIds/areaIds; chosen areas narrow the pins further than their governorates; company pins match companies based in or serving any chosen place. The area list shows the areas of every chosen governorate, and removing a governorate drops its areas. The button reads 'حولي' for one choice and 'حولي +2' for three.",
+        ar: "تحقق من أن منتقيي المحافظة والمنطقة في الخريطة يسمحان بعدة اختيارات (مربعات اختيار وشرائح؛ وتبقى النافذة مفتوحة أثناء الاختيار). يستقبل GET /map/discover المعاملين governorateIds/areaIds؛ والمناطق المختارة تضيّق الدبابيس أكثر من محافظاتها؛ ودبابيس الشركات تطابق الشركات الموجودة أو التي تخدم أي مكان مختار. قائمة المناطق تعرض مناطق كل محافظة مختارة، وإزالة محافظة تزيل مناطقها. يعرض الزر 'حولي' لاختيار واحد و'حولي +2' لثلاثة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Two governorates show the pins of both; one area inside them shows only that area's pins.",
+          "Removing a governorate removes its selected areas.",
+          "Older app builds sending one governorateId/areaId still get filtered pins.",
+        ],
+        ar: [
+          "اختيار محافظتين يعرض دبابيس كلتيهما؛ واختيار منطقة داخلهما يعرض دبابيس تلك المنطقة فقط.",
+          "إزالة محافظة تزيل مناطقها المختارة.",
+          "نسخ التطبيق القديمة التي ترسل governorateId/areaId واحداً ما زالت تحصل على دبابيس مصفّاة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Pick العاصمة and الفروانية, then one area in each — pin counts drop accordingly.",
+          "Clear filters — all pins return.",
+        ],
+        ar: [
+          "اختر العاصمة والفروانية ثم منطقة في كل منهما — ينخفض عدد الدبابيس تبعاً لذلك.",
+          "امسح الفلاتر — تعود كل الدبابيس.",
+        ],
+      },
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+    },
+    {
+      id: "mobile-android-input-labels",
+      title: {
+        en: "Input labels stay on one line on Android",
+        ar: "عناوين الحقول تبقى على سطر واحد في Android",
+      },
+      priority: "P2",
+      story: {
+        en: "Regression check: required input labels (FormInput, the invoice FieldLabel) render the text and its red * as one Text with no letter-spacing — as separate Texts with negative letter-spacing, Android wrapped Arabic labels onto two lines ('كلمة المرور / الحالية'). The change-password title shows in full.",
+        ar: "فحص تراجع: عناوين الحقول الإلزامية (FormInput و FieldLabel في الفواتير) تعرض النص والنجمة الحمراء في Text واحد دون تباعد أحرف — عندما كانا منفصلين مع تباعد سالب كان Android يقسم العناوين العربية على سطرين ('كلمة المرور / الحالية'). ويظهر عنوان تغيير كلمة المرور كاملاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On an Android phone, every required label in change password, login, signup and edit profile is on one line with its *.",
+          "The change-password header reads 'تغيير كلمة المرور' in full.",
+        ],
+        ar: [
+          "على هاتف Android كل عنوان إلزامي في تغيير كلمة المرور والدخول والتسجيل وتعديل الملف على سطر واحد مع النجمة.",
+          "عنوان تغيير كلمة المرور يظهر 'تغيير كلمة المرور' كاملاً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Android: open More → change password, then signup — check each label.",
+        ],
+        ar: [
+          "Android: افتح المزيد ← تغيير كلمة المرور ثم التسجيل — افحص كل عنوان.",
+        ],
+      },
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+    },
   ],
 };

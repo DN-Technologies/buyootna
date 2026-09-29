@@ -4,8 +4,8 @@ export const landing: DocSection = {
   slug: "web-landing",
   title: { en: "Web Landing", ar: "الصفحة التسويقية (ويب)" },
   summary: {
-    en: "Next.js marketing site (apps/web/landing, port 3001): the public splash plus login/signup/forgot-password — the front door most real users and search engines hit. Signup is currently broken — it posts to the removed POST /auth/register.",
-    ar: "موقع التسويق (apps/web/landing، المنفذ 3001): الصفحة الترحيبية العامة مع الدخول/التسجيل/استعادة كلمة المرور — البوابة الأولى لمعظم المستخدمين ومحركات البحث. التسجيل معطّل حالياً — يرسل إلى POST /auth/register المحذوفة.",
+    en: "Next.js marketing site (apps/web/landing, port 3001): the public splash plus login/signup/forgot-password — the front door most real users and search engines hit. Sign-in and sign-up use the shared createPortalAuth (see the signup story).",
+    ar: "موقع التسويق (apps/web/landing، المنفذ 3001): الصفحة الترحيبية العامة مع الدخول/التسجيل/استعادة كلمة المرور — البوابة الأولى لمعظم المستخدمين ومحركات البحث. الدخول والتسجيل عبر createPortalAuth المشترك (راجع قصة التسجيل).",
   },
   stories: [
     {
@@ -52,33 +52,37 @@ export const landing: DocSection = {
     {
       id: "landing-signup-role-picker",
       title: {
-        en: "Signup on the landing portal fails — it calls a removed endpoint",
-        ar: "التسجيل في بوابة landing يفشل — يستدعي نقطة نهاية محذوفة",
+        en: "Landing portal: sign up and sign in work",
+        ar: "بوابة الموقع الرئيسي: التسجيل والدخول يعملان",
       },
       priority: "P0",
       story: {
-        en: "Broken: the portal's signup page posts to POST /auth/register with the picked role, which the API no longer has (production answers 404). Signup now lives at POST /users/register/individual (with an email/SMS code) and POST /users/register/company|office (multipart, with licence details). Until the page is moved to those, nobody can create an account here.",
-        ar: "معطّل: صفحة التسجيل في البوابة ترسل إلى POST /auth/register مع الدور المختار، وهي نقطة لم تعد موجودة في الواجهة البرمجية (الإنتاج يرد 404). التسجيل الآن عبر POST /users/register/individual (مع رمز بالبريد/SMS) و POST /users/register/company|office (بيانات متعددة الأجزاء مع الترخيص). إلى أن تُنقل الصفحة إليهما لا يمكن لأحد إنشاء حساب هنا.",
+        en: "Verify the portal's auth against the current API (shared createPortalAuth in packages/ui): login sends identifier and stores access_token; an individual signs up with POST /users/register/individual and confirms the SMS/email code (/auth/register/verify-otp or verify-email-otp); a company/office signs up with POST /users/register/company|office (email and licence required) and is signed in. Previously login always failed and signup hit the removed /auth/register. This portal defaults to INDIVIDUAL (role picker shown).",
+        ar: "تحقق من مصادقة البوابة مع الواجهة البرمجية الحالية (createPortalAuth المشترك في packages/ui): الدخول يرسل identifier ويحفظ access_token؛ والفرد يسجّل عبر POST /users/register/individual ويؤكد رمز SMS/البريد (/auth/register/verify-otp أو verify-email-otp)؛ والشركة/المكتب يسجّل عبر POST /users/register/company|office (البريد والترخيص مطلوبان) ثم يدخل مباشرة. سابقاً كان الدخول يفشل دائماً والتسجيل يستدعي /auth/register المحذوفة. هذه البوابة تبدأ بالدور INDIVIDUAL (role picker shown).",
       },
       acceptanceCriteria: {
         en: [
-          "Today: submitting the form fails (404 from the API).",
-          "After the fix: the form uses the right endpoint for the account type and the new account can log in on the portal.",
+          "A registered user signs in and lands on the portal home.",
+          "Individual signup shows the code step; a wrong code is refused; the right one signs in.",
+          "Company/office signup without a licence is refused; with one it signs in (as pending approval).",
+          "A taken licence number is refused with 'رقم الترخيص مسجل مسبقاً'.",
         ],
         ar: [
-          "اليوم: إرسال النموذج يفشل (404 من الواجهة البرمجية).",
-          "بعد الإصلاح: يستخدم النموذج نقطة النهاية الصحيحة لنوع الحساب ويمكن للحساب الجديد الدخول إلى البوابة.",
+          "المستخدم المسجّل يدخل ويصل إلى الصفحة الرئيسية للبوابة.",
+          "تسجيل الفرد يعرض خطوة الرمز؛ والرمز الخاطئ يُرفض والصحيح يسجّل الدخول.",
+          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (قيد المراجعة).",
+          "رقم الترخيص المستخدم يُرفض برسالة 'رقم الترخيص مسجل مسبقاً'.",
         ],
       },
       testScenarios: {
         en: [
-          "Fill in the signup form with a new email and submit — watch the network request.",
+          "Sign up as each role on this portal, then sign out and sign in again.",
         ],
         ar: [
-          "املأ نموذج التسجيل ببريد جديد وأرسل — راقب طلب الشبكة.",
+          "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "landing-auth-field-rules",

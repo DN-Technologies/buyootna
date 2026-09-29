@@ -4,8 +4,8 @@ export const api: DocSection = {
   slug: "api",
   title: { en: "API", ar: "واجهة البرمجة (API)" },
   summary: {
-    en: "NestJS backend (apps/api/src/features + core): auth and personas, properties/search/map/favorites, chat, notifications, plans/payments/invoices, reviews, the docs portal, and core Twilio/S3/Prisma services. These stories focus on correctness and security that a UI-only pass would miss — including two open security items (unauthenticated media upload, Twilio mock fallback).",
-    ar: "الواجهة الخلفية NestJS (apps/api/src/features + core): المصادقة والهويات، العقارات/البحث/الخريطة/المفضلة، المحادثات، الإشعارات، الباقات/المدفوعات/الفواتير، التقييمات، بوابة التوثيق، والخدمات الأساسية Twilio/S3/Prisma. تركز القصص على الصحة والأمان التي قد يفوتها الاختبار عبر الواجهة فقط — ومنها بندان أمنيان مفتوحان (رفع الوسائط دون مصادقة، وبديل Twilio الوهمي).",
+    en: "NestJS backend (apps/api/src/features + core): auth and personas, properties/search/map/favorites, chat, notifications, plans/payments/invoices, reviews, the docs portal, and core Twilio/S3/Prisma services. These stories focus on correctness and security that a UI-only pass would miss.",
+    ar: "الواجهة الخلفية NestJS (apps/api/src/features + core): المصادقة والهويات، العقارات/البحث/الخريطة/المفضلة، المحادثات، الإشعارات، الباقات/المدفوعات/الفواتير، التقييمات، بوابة التوثيق، والخدمات الأساسية Twilio/S3/Prisma. تركز القصص على الصحة والأمان التي قد يفوتها الاختبار عبر الواجهة فقط.",
   },
   stories: [
     {
@@ -235,80 +235,70 @@ export const api: DocSection = {
     {
       id: "api-otp-fallback",
       title: {
-        en: "Twilio mock-SMS fallback can turn on in production",
-        ar: "بديل الرسائل الوهمي لـ Twilio قد يعمل في الإنتاج",
+        en: "No mock SMS in production",
+        ar: "لا رسائل وهمية في الإنتاج",
       },
       priority: "P0",
       story: {
-        en: "Still open and security-relevant: twilio.service.ts switches to mock SMS mode whenever the Twilio credentials are missing — it doesn't check the environment, so a production deploy without them would silently stop sending real codes and accept mock ones. Until the code refuses mock mode in production, the production env must always have the Twilio variables, and a startup log 'Falling back to mock SMS mode' on production is an incident.",
-        ar: "ما زال قائماً ومتعلقاً بالأمان: twilio.service.ts ينتقل لوضع الرسائل الوهمية كلما غابت بيانات Twilio — دون فحص البيئة، فالنشر في الإنتاج دونها يوقف إرسال الرموز الحقيقية بصمت ويقبل الوهمية. حتى يرفض الكود الوضع الوهمي في الإنتاج، يجب أن تحتوي بيئة الإنتاج دائماً على متغيرات Twilio، وظهور سجل 'Falling back to mock SMS mode' عند التشغيل في الإنتاج حادثة أمنية.",
+        en: "Verify twilio.service.ts only uses mock SMS (codes written to the log) outside production. In production without Twilio credentials, sending a code fails with 'خدمة الرسائل النصية غير متاحة حالياً' and no code is accepted — unless ALLOW_MOCK_SMS=true is set on purpose. Startup logs 'Twilio credentials missing in production' in that case.",
+        ar: "تحقق من أن twilio.service.ts يستخدم الرسائل الوهمية (رموز تُكتب في السجل) خارج الإنتاج فقط. في الإنتاج دون بيانات Twilio يفشل إرسال الرمز برسالة 'خدمة الرسائل النصية غير متاحة حالياً' ولا يُقبل أي رمز — ما لم يُضبط ALLOW_MOCK_SMS=true عمداً. ويظهر عند التشغيل السجل 'Twilio credentials missing in production' في هذه الحالة.",
       },
       acceptanceCriteria: {
         en: [
-          "Production startup logs show 'Twilio Verify client initialized successfully', never the mock-mode warning.",
-          "Phone OTPs on production arrive by real SMS.",
-          "A fix makes the API refuse to start (or refuse OTP) in production without Twilio credentials.",
+          "Production with Twilio configured: codes arrive by real SMS.",
+          "Production without it: signup/suspension codes fail clearly; no mock code works.",
+          "Development: mock mode still works.",
         ],
         ar: [
-          "سجلات تشغيل الإنتاج تعرض 'Twilio Verify client initialized successfully' وليس تحذير الوضع الوهمي أبداً.",
-          "رموز الهاتف في الإنتاج تصل برسائل SMS حقيقية.",
-          "الإصلاح يجعل الواجهة ترفض التشغيل (أو ترفض الرموز) في الإنتاج دون بيانات Twilio.",
+          "الإنتاج مع إعداد Twilio: تصل الرموز برسائل SMS حقيقية.",
+          "الإنتاج دونه: رموز التسجيل/التعليق تفشل بوضوح؛ ولا يعمل أي رمز وهمي.",
+          "التطوير: الوضع الوهمي ما زال يعمل.",
         ],
       },
       testScenarios: {
         en: [
-          "After each deploy: docker compose logs api | grep -i twilio.",
+          "After each deploy: docker compose logs api | grep -i twilio — expect 'initialized successfully'.",
         ],
         ar: [
-          "بعد كل نشر: docker compose logs api | grep -i twilio.",
+          "بعد كل نشر: docker compose logs api | grep -i twilio — المتوقع 'initialized successfully'.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "api-media-upload",
       title: {
-        en: "Media upload endpoints have no auth guard — verify intentional or escalate as a security bug",
-        ar: "نقاط نهاية رفع الوسائط بلا أي حارس مصادقة — تحقق من كون هذا مقصوداً أو صعّده كثغرة أمنية",
+        en: "Media uploads need a signed-in user",
+        ar: "رفع الوسائط يتطلب مستخدماً مسجلاً",
       },
       priority: "P0",
       story: {
-        en: "Flag that POST media/upload/avatar and POST media/upload/listings (apps/api/src/media/media.controller.ts) currently have NO @UseGuards(AuthGuard('jwt')) at all — unlike almost every other feature controller in the API — and no file-type or size limits either — so that this is either confirmed as an intentional public-upload design or escalated as a security bug before it's assumed to require a token like everything else tested in this section. Still true as of this review; the mobile app calls both with a token, so adding the guard wouldn't break it.",
-        ar: "أشر إلى أن POST media/upload/avatar وPOST media/upload/listings (في apps/api/src/media/media.controller.ts) لا يحملان حالياً أي @UseGuards(AuthGuard('jwt')) إطلاقاً — خلافاً لكل متحكم ميزة آخر تقريباً في الواجهة البرمجية — حتى يُؤكَّد إما أن هذا تصميم رفع عام مقصود، أو يُصعَّد كثغرة أمنية، قبل افتراض أنه يتطلب رمز مصادقة مثل كل ما تم اختباره في هذا القسم.",
+        en: "Verify POST /media/upload/avatar and /media/upload/listings require a valid token (JwtAuthGuard) — they used to accept anyone, letting strangers store files in S3. File checks: images only (png/jpg/webp/heic), 5 MB for an avatar, 10 MB per listing image, up to 10 images; HEIC is converted to JPEG.",
+        ar: "تحقق من أن POST /media/upload/avatar و /media/upload/listings يتطلبان رمزاً صالحاً (JwtAuthGuard) — سابقاً كانا يقبلان أي أحد مما يسمح للغرباء بتخزين ملفات في S3. فحص الملفات: صور فقط (png/jpg/webp/heic)، 5 ميجابايت للصورة الشخصية و10 ميجابايت لكل صورة إعلان وحتى 10 صور؛ وتُحوَّل صور HEIC إلى JPEG.",
       },
       acceptanceCriteria: {
         en: [
-          "Confirm with backend/security whether these two endpoints are meant to be callable with zero authentication.",
-          "If unintentional: file as a P0 security bug — anyone with the URL could currently upload arbitrary files to S3 via these endpoints without ever logging in.",
-          "If intentional (e.g. rate-limited, or gated some other way not visible in the controller itself): document the actual protection mechanism here so this story stops flagging it every pass.",
-          "Once resolved either way, the standard file-type/size validation below still needs to hold regardless of auth state.",
+          "No token → 401 on both endpoints.",
+          "Signed in: profile photo, listing images and project images still upload from the app.",
+          "A PDF or an 11 MB image is refused.",
         ],
         ar: [
-          "تأكد مع فريقَي الواجهة الخلفية والأمن ما إذا كان من المفترض استدعاء نقطتَي النهاية هاتين دون أي مصادقة إطلاقاً.",
-          "إذا كان غير مقصود: أبلغ عنه كثغرة أمنية بأولوية P0 — أي شخص يملك الرابط يستطيع حالياً رفع ملفات عشوائية إلى S3 عبر نقطتَي النهاية هاتين دون تسجيل دخول إطلاقاً.",
-          "إذا كان مقصوداً (مثلاً محمي بتحديد معدل الطلبات، أو مقيَّد بطريقة أخرى غير ظاهرة في المتحكم نفسه): وثّق آلية الحماية الفعلية هنا حتى لا تستمر هذه القصة في الإبلاغ عن الأمر في كل جولة اختبار.",
-          "بمجرد حل الأمر بأي اتجاه، يبقى التحقق المعتاد من نوع/حجم الملف أدناه واجباً بغض النظر عن حالة المصادقة.",
+          "دون رمز ← 401 على النقطتين.",
+          "مع تسجيل الدخول: الصورة الشخصية وصور الإعلانات وصور المشاريع ما زالت تُرفع من التطبيق.",
+          "ملف PDF أو صورة بحجم 11 ميجابايت تُرفض.",
         ],
       },
       testScenarios: {
         en: [
-          "Send a POST to /media/upload/avatar and /media/upload/listings with NO Authorization header at all and confirm whether the request succeeds — if it does, this is the headline finding to report, not a footnote.",
-          "If publicly callable, check for any other protection (rate limiting, CORS, IP allowlisting) before concluding it's fully open.",
-          "Upload a valid small JPEG/PNG as an avatar and confirm it appears correctly on the profile (functional check, independent of the auth question).",
-          "Upload a non-image file (e.g. a .txt or .pdf) to both endpoints and confirm rejection with a clear error, not a generic 500.",
-          "Upload an oversized image (beyond the 5MB avatar limit seen in the validator) and confirm a clean rejection rather than a hung request.",
-          "Upload multiple listing images in one add-listing flow and confirm all are correctly associated with that listing, none dropped or mismatched.",
+          "curl -F file=@x.png /media/upload/avatar without a token — 401.",
+          "Change the profile photo in the app — works.",
         ],
         ar: [
-          "أرسل POST إلى /media/upload/avatar و/media/upload/listings دون أي رأس Authorization إطلاقاً وتأكد ما إذا كان الطلب ينجح — إن نجح، فهذه هي النتيجة الرئيسية الواجب الإبلاغ عنها، لا ملاحظة هامشية.",
-          "إذا كان قابلاً للاستدعاء علناً، تحقق من وجود أي حماية أخرى (تحديد معدل الطلبات، CORS، قائمة IP مسموح بها) قبل الجزم بأنه مفتوح بالكامل.",
-          "ارفع صورة JPEG/PNG صغيرة وصالحة كصورة شخصية وتأكد من ظهورها بشكل صحيح في الملف الشخصي (فحص وظيفي، مستقل عن مسألة المصادقة).",
-          "ارفع ملفاً ليس صورة (مثل .txt أو .pdf) إلى نقطتَي النهاية وتأكد من الرفض مع رسالة خطأ واضحة، لا خطأ 500 عام.",
-          "ارفع صورة كبيرة الحجم (تتجاوز حد 5 ميجابايت للصورة الشخصية الظاهر في أداة التحقق) وتأكد من رفض نظيف، لا طلب معلَّق.",
-          "ارفع عدة صور إعلان ضمن تدفق إضافة إعلان واحد وتأكد أن جميعها مرتبطة بشكل صحيح بذلك الإعلان، دون فقدان أو خلط أي منها.",
+          "curl -F file=@x.png /media/upload/avatar دون رمز — 401.",
+          "غيّر الصورة الشخصية في التطبيق — تعمل.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "api-persona-rules",
