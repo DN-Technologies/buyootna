@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   BookOpenCheck,
   Building2,
+  Flag,
   KeyRound,
   Languages,
   LayoutDashboard,
@@ -25,6 +26,8 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { chrome } from '@/lib/chrome'
 import { ROLE_LABELS, isAdmin, type DocsUser } from '@/lib/access'
 import type { NavSection } from '@/lib/nav'
+import { trackingText } from '@/lib/tracking'
+import { ReleasePicker, type ReleaseOption } from './ReleasePicker'
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   'mobile-shared': Smartphone,
@@ -91,11 +94,15 @@ export function Sidebar({
   sections,
   user,
   showPostman,
+  releases,
+  currentReleaseId,
 }: {
   // Only the sections this role may open (filtered on the server)
   sections: NavSection[]
   user: DocsUser
   showPostman: boolean
+  releases: ReleaseOption[]
+  currentReleaseId: string | null
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -105,6 +112,7 @@ export function Sidebar({
   const webSections = sections.filter((s) => !MOBILE_SLUGS.has(s.slug))
 
   const resources = [
+    { href: '/releases', label: trackingText[lang].releasesNav, icon: Flag },
     ...(showPostman
       ? [{ href: '/postman', label: c.navPostman, icon: Send }]
       : []),
@@ -183,6 +191,10 @@ export function Sidebar({
       </div>
 
       <div className="mt-auto pt-6">
+        <ReleasePicker releases={releases} currentId={currentReleaseId} />
+      </div>
+
+      <div className="mt-3">
         <div className="rounded-lg border border-[#1B2936] px-3 py-2">
           <p className="text-[11px] text-[#7C8894]">{c.signedInAs}</p>
           <p className="truncate text-sm font-medium text-white">{user.name}</p>

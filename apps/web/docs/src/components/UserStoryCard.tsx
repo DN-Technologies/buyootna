@@ -1,15 +1,38 @@
-"use client";
+'use client'
 
-import { CheckCircle2, ExternalLink, FlaskConical, Frame, User } from "lucide-react";
-import { UserStory, t } from "@/data/types";
-import { PriorityBadge } from "./PriorityBadge";
-import { FIGMA_FILE_URL } from "@/lib/figma";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { chrome } from "@/lib/chrome";
+import {
+  CheckCircle2,
+  ExternalLink,
+  FlaskConical,
+  Frame,
+  User,
+} from 'lucide-react'
+import { UserStory, t } from '@/data/types'
+import { PriorityBadge } from './PriorityBadge'
+import { FIGMA_FILE_URL } from '@/lib/figma'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { chrome } from '@/lib/chrome'
+import type { DocsRole } from '@/lib/access'
+import type { StoryResult } from '@/lib/tracking'
+import { StoryTracking } from './StoryTracking'
 
-export function UserStoryCard({ story }: { story: UserStory }) {
-  const { lang } = useLanguage();
-  const c = chrome[lang];
+export interface StoryTrackingProps {
+  role: DocsRole
+  releaseId: string | null
+  releaseOpen: boolean
+  current?: StoryResult
+}
+
+export function UserStoryCard({
+  story,
+  tracking,
+}: {
+  story: UserStory
+  // Test status and actions for the current release
+  tracking?: StoryTrackingProps
+}) {
+  const { lang } = useLanguage()
+  const c = chrome[lang]
 
   return (
     <article
@@ -31,7 +54,7 @@ export function UserStoryCard({ story }: { story: UserStory }) {
           </h3>
           {story.updatedIn && (
             <p className="mt-0.5 text-[11px] text-[#7C8894]">
-              {c.storyUpdatedIn}{" "}
+              {c.storyUpdatedIn}{' '}
               <span dir="ltr" className="font-mono">
                 {story.updatedIn}
               </span>
@@ -42,7 +65,7 @@ export function UserStoryCard({ story }: { story: UserStory }) {
       </div>
 
       {story.endUserStory && (
-        <div className="mt-3 flex gap-2.5 rounded-xl border border-[#1B2936] bg-[#0F1E2E]/60 px-4 py-3">
+        <div className="mt-3 flex gap-2.5 rounded-xl border border-[#1B2936] bg-primary/60 px-4 py-3">
           <User className="mt-0.5 h-4 w-4 flex-none text-accent" />
           <p className="text-sm italic leading-relaxed text-[#DCE1E6]">
             {t(story.endUserStory, lang)}
@@ -96,10 +119,10 @@ export function UserStoryCard({ story }: { story: UserStory }) {
               <li key={i} className="flex gap-2">
                 <span
                   dir="ltr"
-                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-[#0F1E2E] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
+                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
                   title={c.acTooltip}
                 >
-                  AC-{String(i + 1).padStart(2, "0")}
+                  AC-{String(i + 1).padStart(2, '0')}
                 </span>
                 <span>{item}</span>
               </li>
@@ -119,10 +142,10 @@ export function UserStoryCard({ story }: { story: UserStory }) {
               <li key={i} className="flex gap-2">
                 <span
                   dir="ltr"
-                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-[#0F1E2E] px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
+                  className="mt-0.5 flex-none rounded border border-[#2A3A47] bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold text-accent-light"
                   title={c.tcTooltip}
                 >
-                  TC-{String(i + 1).padStart(2, "0")}
+                  TC-{String(i + 1).padStart(2, '0')}
                 </span>
                 <span>{item}</span>
               </li>
@@ -130,6 +153,7 @@ export function UserStoryCard({ story }: { story: UserStory }) {
           </ul>
         </div>
       </div>
+      {tracking && <StoryTracking storyId={story.id} {...tracking} />}
     </article>
-  );
+  )
 }

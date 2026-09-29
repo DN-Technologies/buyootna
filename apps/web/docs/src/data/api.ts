@@ -399,5 +399,50 @@ export const api: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "api-docs-test-tracking",
+      title: {
+        en: "Docs portal test tracking: releases, results, comments",
+        ar: "تتبع الاختبار في بوابة التوثيق: الإصدارات والنتائج والتعليقات",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify test tracking on the docs portal: an admin creates a release (POST /qa-portal/releases) and can close/reopen it; QA records pass/fail/blocked/not run per story (POST /qa-portal/releases/:id/stories/:storyId/results — a failure needs a note); a developer can only mark a failed or blocked story 'ready to retest'; UI/UX adds design-mismatch notes (POST /qa-portal/stories/:storyId/comments); screenshots are images up to 5 MB (POST /qa-portal/attachments). Results are append-only: the newest per story is its status, older ones are its history. A client sees statuses and progress only, never notes, bug links or screenshots.",
+        ar: "تحقق من تتبع الاختبار في بوابة التوثيق: ينشئ المسؤول إصداراً (POST /qa-portal/releases) ويمكنه إغلاقه/إعادة فتحه؛ يسجّل فريق الجودة نجح/فشل/متعثر/لم يُنفَّذ لكل قصة (POST /qa-portal/releases/:id/stories/:storyId/results — الفشل يحتاج ملاحظة)؛ المطور يمكنه فقط تعليم قصة فاشلة أو متعثرة 'جاهزة لإعادة الاختبار'؛ مصمم الواجهات يضيف ملاحظات عدم تطابق التصميم (POST /qa-portal/stories/:storyId/comments)؛ لقطات الشاشة صور حتى 5 ميجابايت (POST /qa-portal/attachments). النتائج تُضاف ولا تُعدّل: الأحدث لكل قصة هو حالتها والأقدم سجلها. العميل يرى الحالات والتقدم فقط، دون الملاحظات أو روابط البلاغات أو اللقطات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only ADMIN creates, closes and reopens releases; results on a closed release are refused (409).",
+          "QA 'Failed' without a note is refused; with a note it becomes the story's status, attributed to the tester's name.",
+          "A developer's 'ready to retest' works only after a fail/blocked result; developers can't record pass/fail.",
+          "Design notes are for UI/UX (and admin); everyone on the team can comment.",
+          "The Releases page shows each release's pass percentage over the stories that role can see, and links failing/blocked stories.",
+          "A client can't open a story's history or record anything, and sees no notes.",
+        ],
+        ar: [
+          "المسؤول فقط ينشئ الإصدارات ويغلقها ويعيد فتحها؛ والنتائج على إصدار مغلق تُرفض (409).",
+          "'فشل' من الجودة دون ملاحظة يُرفض؛ ومع الملاحظة يصبح حالة القصة منسوباً لاسم المختبر.",
+          "'جاهز لإعادة الاختبار' من المطور يعمل فقط بعد نتيجة فشل/تعثر؛ ولا يسجّل المطورون نجح/فشل.",
+          "ملاحظات التصميم لمصمم الواجهات (والمسؤول)؛ وكل الفريق يمكنه التعليق.",
+          "صفحة الإصدارات تعرض نسبة النجاح لكل إصدار من القصص التي يراها الدور، وتربط القصص الفاشلة/المتعثرة.",
+          "العميل لا يمكنه فتح سجل القصة أو تسجيل أي شيء، ولا يرى الملاحظات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As Admin create '1.4.0 OTA', as QA fail one story with a note and a screenshot — the story page and the Releases page show it.",
+          "As Developer mark it ready to retest; as QA retest and pass it — history shows FAIL → READY_FOR_RETEST → PASS.",
+          "As Client open the Releases page — progress visible, notes absent.",
+          "Close the release, try recording as QA — refused; pick the closed release in the sidebar — results are read-only.",
+        ],
+        ar: [
+          "كمسؤول أنشئ '1.4.0 OTA'، وكجودة أفشل قصة مع ملاحظة ولقطة — تظهر في صفحة القصة وصفحة الإصدارات.",
+          "كمطور علّمها جاهزة لإعادة الاختبار؛ وكجودة أعد اختبارها وأنجحها — السجل يعرض فشل ← جاهز لإعادة الاختبار ← نجح.",
+          "كعميل افتح صفحة الإصدارات — التقدم ظاهر والملاحظات غائبة.",
+          "أغلق الإصدار وحاول التسجيل كجودة — يُرفض؛ اختر الإصدار المغلق من الشريط الجانبي — النتائج للقراءة فقط.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
+    },
   ],
 };

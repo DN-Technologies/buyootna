@@ -17,3 +17,77 @@ model DocsRoleCredential {
   updatedBy    String
   updatedAt    DateTime @updatedAt
 }
+
+// --- Test tracking --------------------------------------------------------
+// Stories themselves live in the repo (apps/web/docs/src/data); these tables
+// hold what people record against them, keyed by the story's id in code.
+
+enum DocsReleaseStatus {
+  OPEN
+  CLOSED
+}
+
+enum DocsResultStatus {
+  PASS
+  FAIL
+  BLOCKED
+  NOT_RUN
+  // Set by a developer on a failed/blocked story once it's fixed
+  READY_FOR_RETEST
+}
+
+enum DocsCommentKind {
+  COMMENT
+  DESIGN_MISMATCH
+}
+
+// A test round, e.g. "1.4.0 OTA 2026-09-29"
+model DocsRelease {
+  id        String            @id @default(uuid())
+  name      String
+  platform  String?
+  notes     String?
+  status    DocsReleaseStatus @default(OPEN)
+  createdBy String
+  createdAt DateTime          @default(now())
+  closedAt  DateTime?
+
+  results  DocsStoryResult[]
+  comments DocsComment[]
+
+  @@index([status, createdAt])
+}
+
+// Append-only: the newest row per (release, story) is the current status,
+// older rows are its history
+model DocsStoryResult {
+  id          String           @id @default(uuid())
+  releaseId   String
+  release     DocsRelease      @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  storyId     String
+  status      DocsResultStatus
+  note        String?
+  bugUrl      String?
+  attachments String[]
+  authorName  String
+  authorRole  DocsRole
+  createdAt   DateTime         @default(now())
+
+  @@index([releaseId, storyId, createdAt])
+}
+
+model DocsComment {
+  id          String          @id @default(uuid())
+  storyId     String
+  // Optional: a comment can be about a story in general
+  releaseId   String?
+  release     DocsRelease?    @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  kind        DocsCommentKind @default(COMMENT)
+  body        String
+  attachments String[]
+  authorName  String
+  authorRole  DocsRole
+  createdAt   DateTime        @default(now())
+
+  @@index([storyId, createdAt])
+}
