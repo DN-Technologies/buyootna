@@ -81,7 +81,9 @@ It routes you to the rest — architecture, testing, security, release, code
 review, glossary — only reading what's relevant to the task at hand
 instead of loading everything up front. It also has the monorepo package
 map and the handful of rules that apply to every task regardless of type
-(Jest v29 pin, single lockfile, branching, empirical verification).
+(Jest v29 pin, single lockfile, branching, empirical verification,
+docs follow the code — every behaviour/API/release change updates its QA
+story in `apps/web/docs/src/data/` in the same PR).
 
 If a task would change something documented as a rule or contract in one
 of those files, stop and get explicit approval before proceeding — see

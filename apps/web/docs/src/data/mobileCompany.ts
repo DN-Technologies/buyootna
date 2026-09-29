@@ -4,8 +4,8 @@ export const mobileCompany: DocSection = {
   slug: "mobile-company",
   title: { en: "Mobile — Company", ar: "الجوال — الشركة" },
   summary: {
-    en: "The (company) route group (company-home, company-more, company-chats, company-requests). IMPORTANT: this entire route group is currently gated behind ComingSoonGate — see mobile-company-office-gate in Mobile — Shared. None of the stories below are reachable by real users right now; they're a readiness checklist for when COMPANY_OFFICE_LOCKED flips off, grounded in what's actually built in the code today.",
-    ar: "مجموعة مسارات (company) (company-home، company-more، company-chats، company-requests). مهم: كامل هذه المجموعة مقفلة حالياً خلف ComingSoonGate — راجع mobile-company-office-gate في قسم 'الجوال — مشترك'. لا يمكن لأي مستخدم حقيقي الوصول إلى القصص أدناه حالياً؛ هي قائمة جاهزية لما بعد إلغاء قفل COMPANY_OFFICE_LOCKED، مبنية على ما هو مبني فعلياً في الكود اليوم.",
+    en: "The (company) route group (company-home, company-more, company-chats, company-requests). IMPORTANT: in store builds this route group is behind ComingSoonGate unless EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is 'true' (see mobile-company-office-gate). The stories below are a readiness checklist for when it's switched on; the server-side company rules (one per account, unique licence, approval before publishing) are covered in API → api-persona-rules.",
+    ar: "مجموعة مسارات (company) (company-home و company-more و company-chats و company-requests). مهم: في نسخ المتاجر تبقى هذه المجموعة خلف ComingSoonGate ما لم تكن قيمة EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS هي 'true' (راجع mobile-company-office-gate). القصص أدناه قائمة جاهزية لوقت تفعيلها؛ أما قواعد الشركة في الخادم (واحدة لكل حساب، ترخيص فريد، اعتماد قبل النشر) فموجودة في الواجهة البرمجية ← api-persona-rules.",
   },
   stories: [
     {
@@ -20,8 +20,8 @@ export const mobileCompany: DocSection = {
         ar: "بصفتي مستخدم شركة، أريد أن تعرض لوحتي الرئيسية أرقاماً حقيقية لطلباتي وخدماتي النشطة والمشاهدات والرسائل، حتى أتمكن فعلياً من قياس أداء عملي على المنصة بدلاً من النظر إلى أرقام لا تتغير أبداً.",
       },
       story: {
-        en: "Flag that company-home.tsx's entire 2x2 stats grid (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3 هذا الأسبوع', '3', '+700', '5 اليوم') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them. Track this as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off, rather than letting it be freshly discovered as 'the metrics are wrong' at that point.",
-        ar: "لاحظ أن شبكة الإحصاءات 2×2 كاملة في company-home.tsx (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة، والتي تعرض النصوص الحرفية '3 هذا الأسبوع' و'3' و'+700' و'5 اليوم') وكذلك شريط العد التنازلي للفترة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي state أو hook أو استدعاء API يغذّيها. تتبّع هذا كنقص جاهزية معروف لما بعد إلغاء قفل COMPANY_OFFICE_LOCKED، بدلاً من اكتشافه من جديد حينها على أنه 'الأرقام خاطئة'.",
+        en: "Flag that company-home.tsx's entire 2x2 stats grid (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3 هذا الأسبوع', '3', '+700', '5 اليوم') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them. Track this as a known readiness gap for whenever EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is switched on in store builds, rather than letting it be freshly discovered as 'the metrics are wrong' at that point.",
+        ar: "لاحظ أن شبكة الإحصاءات 2×2 كاملة في company-home.tsx (طلبات / خدمات نشطة / المشاهدات / الرسائل الجديدة، والتي تعرض النصوص الحرفية '3 هذا الأسبوع' و'3' و'+700' و'5 اليوم') وكذلك شريط العد التنازلي للفترة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي state أو hook أو استدعاء API يغذّيها. تتبّع هذا كنقص جاهزية معروف لما بعد تفعيل EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS في نسخ المتاجر، بدلاً من اكتشافه من جديد حينها على أنه 'الأرقام خاطئة'.",
       },
       acceptanceCriteria: {
         en: [

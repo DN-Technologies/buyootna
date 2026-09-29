@@ -4,7 +4,7 @@ import { Download, Terminal } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { chrome } from "@/lib/chrome";
 
-export default function PostmanPage() {
+export function PostmanView() {
   const { lang } = useLanguage();
   const c = chrome[lang];
 

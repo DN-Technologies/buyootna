@@ -19,6 +19,7 @@ PNPM workspace.
 | `apps/web/offices` | `@buyootna/web-offices` | Next.js Real Estate Agency / Office Portal |
 | `apps/web/management` | `@buyootna/web-management` | Next.js Property Management Portal |
 | `apps/web/admin` | `@buyootna/web-admin` | Next.js System Administrator Dashboard |
+| `apps/web/docs` | `@buyootna/web-docs` | Next.js QA docs portal (docs.buyootna.cloud): user stories, test tracking, role passwords |
 | `packages/ui` | `@buyootna/ui` | Shared UI components package |
 
 ## Where to read next
@@ -51,6 +52,15 @@ Read extra docs only when relevant — don't load all of them for every task:
    built artifact, etc. over trusting static checks alone. If you genuinely
    can't verify something live in your environment, say so plainly instead
    of claiming it works.
+5. **Docs follow the code.** Any change to user-visible behaviour, an API
+   contract (route, request/response shape, error message, permission), or
+   a release/version must update the matching QA story in
+   `apps/web/docs/src/data/` in the same PR: add or edit its acceptance
+   criteria and test scenarios in both English and Arabic, and set its
+   `updatedIn` to the branch/PR. A new feature gets a new story; a story
+   that no longer applies is removed, not left stale. Pure refactors with no
+   behaviour change are exempt, and the PR says so. Run
+   `pnpm --filter @buyootna/web-docs check` before handing work back.
 
 ## If a task conflicts with a documented rule
 

@@ -1,0 +1,19 @@
+// Docs portal (docs.buyootna.cloud): who may read and work in the QA docs.
+// Separate from app users on purpose -- a role password, not an account.
+
+enum DocsRole {
+  QA
+  DEVELOPER
+  UIUX
+  CLIENT
+  ADMIN
+}
+
+// One password per role, stored only as a bcrypt hash
+model DocsRoleCredential {
+  role         DocsRole @id
+  passwordHash String
+  // Name of whoever set it (an admin on the site, or "server script")
+  updatedBy    String
+  updatedAt    DateTime @updatedAt
+}

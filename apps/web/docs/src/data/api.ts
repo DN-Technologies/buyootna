@@ -51,38 +51,41 @@ export const api: DocSection = {
     {
       id: "api-identity-scoping",
       title: {
-        en: "identity-type.guard.ts correctly scopes multi-identity endpoints",
-        ar: "identity-type.guard.ts يقيّد نقاط النهاية متعددة الهويات بشكل صحيح",
+        en: "Everything a persona owns is scoped to that persona",
+        ar: "كل ما تملكه الهوية محصور بتلك الهوية",
       },
       priority: "P0",
       story: {
-        en: "Verify that the identity-type guard prevents a user's individual identity from calling company/office-scoped endpoints (and vice versa) even while authenticated with a valid JWT, so that identity-switching (mobile-identity-switch) is enforced server-side, not just hidden client-side.",
-        ar: "تحقق من أن حارس identity-type يمنع هوية المستخدم الفردية من استدعاء نقاط نهاية مخصصة للشركة/المكتب العقاري (والعكس صحيح) حتى مع مصادقة برمز JWT صالح، حتى يُفرض تبديل الهوية (mobile-identity-switch) من جهة الخادم فعلياً، لا أن يُخفى من جهة العميل فقط.",
+        en: "Verify the persona in the token (JWT 'ident') scopes every owned resource: properties, credits (UserPlanSlot), the free ad (Identity.freeAdsRemaining), invoices, favorites, provider favorites, chat participants and messages, and review reactions. Since the persona_ownership migration, identityId is required on these tables; the old userId columns are kept only until a later cleanup release.",
+        ar: "تحقق من أن الهوية الموجودة في الرمز (JWT 'ident') تحصر كل مورد مملوك: العقارات، والأرصدة (UserPlanSlot)، والإعلان المجاني (Identity.freeAdsRemaining)، والفواتير، والمفضلة، ومفضلة الشركات/المكاتب، والمشاركين في المحادثات والرسائل، وتفاعلات التقييمات. منذ ترحيل persona_ownership أصبح identityId إلزامياً في هذه الجداول، وتبقى أعمدة userId القديمة فقط حتى إصدار تنظيف لاحق.",
       },
       acceptanceCriteria: {
         en: [
-          "Acting as an individual identity, calling an endpoint that requires a company/office identity type returns a clear 403, not partial/empty data.",
-          "Switching identity via POST auth/identity/switch and retrying the same call succeeds once the active identity matches.",
-          "Data returned always belongs to the currently-active identity, never a different identity owned by the same account.",
+          "GET /plans/wallet, /plans/wallet/publish-options, /invoices, /favorites and /chat/conversations return only the token persona's data.",
+          "POST /properties with another persona's planSlotId is refused (403) and spends nothing.",
+          "A plan purchase (POST /payments/charge) creates the invoice and, once paid, the credit for the buying persona.",
+          "Admin views of a user (wallet, invoices) show all the account's personas together.",
         ],
         ar: [
-          "عند التصرف كهوية فردية، استدعاء نقطة نهاية تتطلب نوع هوية شركة/مكتب عقاري يعيد 403 واضحاً، لا بيانات جزئية/فارغة.",
-          "تبديل الهوية عبر POST auth/identity/switch وإعادة نفس الاستدعاء ينجح بمجرد تطابق الهوية النشطة.",
-          "البيانات المُعادة تخص دائماً الهوية النشطة حالياً، لا هوية أخرى يملكها نفس الحساب.",
+          "GET /plans/wallet و /plans/wallet/publish-options و /invoices و /favorites و /chat/conversations تعيد بيانات هوية الرمز فقط.",
+          "POST /properties مع planSlotId لهوية أخرى يُرفض (403) ولا يستهلك شيئاً.",
+          "شراء باقة (POST /payments/charge) ينشئ الفاتورة، وبعد الدفع الرصيد، للهوية المشترية.",
+          "عروض الإدارة للمستخدم (المحفظة والفواتير) تُظهر كل هويات الحساب معاً.",
         ],
       },
       testScenarios: {
         en: [
-          "As an authenticated individual identity, directly call a company-scoped endpoint (bypassing the mobile UI) and confirm a 403 rather than data leakage.",
-          "Switch to a company identity, retry the same call, and confirm it now succeeds and returns only that company identity's data.",
-          "Create two identities (individual + company) under one account, fetch data as each, and diff the results to confirm zero overlap where there shouldn't be any.",
+          "With tokens for two personas of one account, call GET /plans/wallet with each — different results.",
+          "POST /properties as persona A with persona B's slot id — 403.",
+          "GET /chat/conversations/:id/messages for a conversation of the other persona — 403.",
         ],
         ar: [
-          "بصفتك هوية فردية مصادَق عليها، استدعِ مباشرة نقطة نهاية مخصصة لهوية شركة (متجاوزاً واجهة الجوال) وتأكد من 403 لا تسرّب بيانات.",
-          "بدّل إلى هوية شركة، أعد نفس الاستدعاء، وتأكد أنه ينجح الآن ويعيد بيانات تلك الشركة فقط.",
-          "أنشئ هويتين (فردية + شركة) تحت حساب واحد، اجلب البيانات بكل منهما، وقارن النتائج للتأكد من عدم وجود أي تداخل حيث لا ينبغي أن يوجد.",
+          "برمزين لهويتين في نفس الحساب، استدعِ GET /plans/wallet بكل منهما — نتائج مختلفة.",
+          "POST /properties كهوية A مع معرّف رصيد الهوية B — 403.",
+          "GET /chat/conversations/:id/messages لمحادثة الهوية الأخرى — 403.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-favorites-endpoints",
@@ -313,6 +316,88 @@ export const api: DocSection = {
           "ارفع عدة صور إعلان ضمن تدفق إضافة إعلان واحد وتأكد أن جميعها مرتبطة بشكل صحيح بذلك الإعلان، دون فقدان أو خلط أي منها.",
         ],
       },
+    },
+    {
+      id: "api-persona-rules",
+      title: {
+        en: "Persona rules: one of each type, unique licence, approval before going live",
+        ar: "قواعد الهويات: واحدة من كل نوع، ترخيص فريد، واعتماد قبل النشر",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify the shared persona creation path used by both direct signup (POST /users/register/company|office) and in-app onboarding (POST /identities/company|office, /identities/individual): an account has at most one individual, one company and one office (409 'لديك حساب شركة بالفعل'); a licence number (spaces removed, Arabic digits made Western) is unique across all companies and offices (409 'رقم الترخيص مسجل مسبقاً'); files are uploaded only after validation and deleted if saving fails; every new company/office opens an admin approval request. Until approved, it can save drafts but can't publish, renew, receive, list or accept requests.",
+        ar: "تحقق من مسار إنشاء الهويات المشترك بين التسجيل المباشر (POST /users/register/company|office) والإضافة من داخل التطبيق (POST /identities/company|office و /identities/individual): للحساب فرد واحد وشركة واحدة ومكتب واحد كحد أقصى (409 'لديك حساب شركة بالفعل')؛ رقم الترخيص (بعد حذف المسافات وتحويل الأرقام العربية) فريد بين كل الشركات والمكاتب (409 'رقم الترخيص مسجل مسبقاً')؛ لا تُرفع الملفات إلا بعد التحقق وتُحذف إذا فشل الحفظ؛ وكل شركة/مكتب جديد يفتح طلب اعتماد للإدارة. قبل الاعتماد يمكنه حفظ المسودات ولا يمكنه النشر أو إعادة النشر أو استقبال الطلبات أو عرضها أو قبولها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A second company for the same account → 409, and no file was uploaded.",
+          "A licence already used by an office, typed with extra spaces or Arabic digits → 409.",
+          "Two simultaneous creations with the same new licence → one 201, one 409.",
+          "Pending company: POST /properties (non-draft), draft publish and /renew → 403 'حسابك قيد المراجعة…'; GET /company-requests/me (company/public) → []; accept → 403; a request aimed at it → 400.",
+          "After an admin approves it, publishing and leads work.",
+        ],
+        ar: [
+          "شركة ثانية لنفس الحساب ← 409، ولم يُرفع أي ملف.",
+          "ترخيص مستخدم لمكتب، مكتوب بمسافات إضافية أو أرقام عربية ← 409.",
+          "إنشاءان متزامنان بنفس الترخيص الجديد ← 201 واحد و 409 واحد.",
+          "شركة قيد المراجعة: POST /properties (غير مسودة) ونشر المسودة و /renew ← 403 'حسابك قيد المراجعة…'؛ GET /company-requests/me (company/public) ← []؛ القبول ← 403؛ طلب موجّه إليها ← 400.",
+          "بعد اعتماد الإدارة يعمل النشر والطلبات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Register a company with licence 'LIC 123', then an office with '١٢٣' after 'LIC' — refused.",
+          "Add a company in-app to an account that already has one — refused.",
+          "As a pending company, publish an ad — 403; save it as draft — OK.",
+          "Approve it from the admin portal and publish again — 201.",
+        ],
+        ar: [
+          "سجّل شركة بترخيص 'LIC 123' ثم مكتباً بـ 'LIC١٢٣' — يُرفض.",
+          "أضف شركة من التطبيق لحساب لديه شركة — يُرفض.",
+          "كشركة قيد المراجعة انشر إعلاناً — 403؛ احفظه كمسودة — ينجح.",
+          "اعتمدها من بوابة الإدارة وانشر مجدداً — 201.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
+    },
+    {
+      id: "api-docs-portal-access",
+      title: {
+        en: "Docs portal access: a password per role, isolated from app accounts",
+        ar: "الوصول إلى بوابة التوثيق: كلمة مرور لكل دور، منفصلة عن حسابات التطبيق",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify the QA docs portal's own access (POST /qa-portal/auth/login with role, password and name): roles QA, DEVELOPER, UIUX, CLIENT, ADMIN; passwords stored only as bcrypt hashes; tokens signed with DOCS_JWT_SECRET, so they never work on the app API and app tokens never work here. Changing a role's password (PUT /qa-portal/roles/:role/password, ADMIN only) signs everyone on that role out. Five wrong passwords from one IP for a role → 429 for 15 minutes.",
+        ar: "تحقق من الوصول الخاص ببوابة توثيق ضمان الجودة (POST /qa-portal/auth/login مع الدور وكلمة المرور والاسم): الأدوار QA و DEVELOPER و UIUX و CLIENT و ADMIN؛ كلمات المرور مخزنة كتجزئة bcrypt فقط؛ الرموز موقعة بـ DOCS_JWT_SECRET فلا تعمل على واجهة التطبيق ولا تعمل رموز التطبيق هنا. تغيير كلمة مرور دور (PUT /qa-portal/roles/:role/password للمسؤول فقط) يسجّل خروج كل من يستخدم ذلك الدور. خمس كلمات مرور خاطئة من نفس العنوان لدور واحد ← 429 لمدة 15 دقيقة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "CLIENT sees no API section or Postman page (404), and can't change passwords (403).",
+          "The session cookie is httpOnly; the browser never sees the token.",
+          "After a password change, the old password and existing sessions of that role stop working.",
+          "A docs token sent to the app API (e.g. GET /users/me) → 401.",
+        ],
+        ar: [
+          "العميل لا يرى قسم الواجهة البرمجية ولا صفحة Postman (404) ولا يمكنه تغيير كلمات المرور (403).",
+          "ملف تعريف الجلسة httpOnly؛ ولا يرى المتصفح الرمز أبداً.",
+          "بعد تغيير كلمة المرور تتوقف كلمة المرور القديمة والجلسات الحالية لذلك الدور.",
+          "إرسال رمز التوثيق إلى واجهة التطبيق (مثل GET /users/me) ← 401.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as CLIENT and open /api and /postman — both 404.",
+          "As ADMIN change the CLIENT password — a CLIENT tab already open is sent to the login page on its next navigation.",
+          "Enter a wrong password 6 times — the 6th gets 'محاولات كثيرة…'.",
+        ],
+        ar: [
+          "سجّل الدخول كعميل وافتح /api و /postman — كلاهما 404.",
+          "كمسؤول غيّر كلمة مرور العميل — تبويب العميل المفتوح يُحوَّل لصفحة الدخول عند التنقل التالي.",
+          "أدخل كلمة مرور خاطئة 6 مرات — المرة السادسة تحصل على 'محاولات كثيرة…'.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

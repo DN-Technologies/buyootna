@@ -134,6 +134,25 @@ If you ever need to trigger a deployment manually without pushing new code:
 
 ---
 
+## 🔐 Docs Portal Setup (docs.buyootna.cloud)
+
+The QA docs portal signs people in with one password per role (QA, Developer,
+UI/UX, Client, Admin). One-time setup per environment:
+
+1. Generate a secret (`openssl rand -hex 32`) and put the **same value** in
+   `apps/api/.env` and `apps/web/docs/.env` as `DOCS_JWT_SECRET`. Without it
+   the portal stays locked.
+2. Deploy (the CD run applies the `docs_portal_access` migration).
+3. Set the passwords on the server, one role at a time (hidden prompt):
+   ```bash
+   docker compose run --rm api node dist/src/scripts/docs-set-password.js ADMIN
+   ```
+   After that, the admin can change every role's password from the portal
+   (Role passwords page). Changing a password signs that role out everywhere.
+
+Locally: `pnpm --filter api docs:set-password ADMIN`, and run the docs site
+with `API_URL=http://localhost:8000` in `apps/web/docs/.env`.
+
 ## 🔍 Server Verification Commands
 
 After deployment completes, connect to your server via SSH to inspect container status and logs:

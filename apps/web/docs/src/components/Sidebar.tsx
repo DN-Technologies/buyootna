@@ -2,13 +2,15 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   BookOpenCheck,
   Building2,
+  KeyRound,
   Languages,
   LayoutDashboard,
   Lock,
+  LogOut,
   Send,
   Server,
   Smartphone,
@@ -18,10 +20,11 @@ import {
   Warehouse,
   Wrench,
 } from 'lucide-react'
-import { sections } from '@/data/sections'
-import { DocSection, t } from '@/data/types'
+import { t } from '@/data/types'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { chrome } from '@/lib/chrome'
+import { ROLE_LABELS, isAdmin, type DocsUser } from '@/lib/access'
+import type { NavSection } from '@/lib/nav'
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   'mobile-shared': Smartphone,
@@ -50,7 +53,7 @@ function NavGroup({
   lang,
 }: {
   label: string
-  items: DocSection[]
+  items: NavSection[]
   pathname: string
   lang: 'en' | 'ar'
 }) {
@@ -84,17 +87,44 @@ function NavGroup({
   )
 }
 
-export function Sidebar() {
+export function Sidebar({
+  sections,
+  user,
+  showPostman,
+}: {
+  // Only the sections this role may open (filtered on the server)
+  sections: NavSection[]
+  user: DocsUser
+  showPostman: boolean
+}) {
   const pathname = usePathname()
+  const router = useRouter()
   const { lang, setLang } = useLanguage()
   const c = chrome[lang]
   const mobileSections = sections.filter((s) => MOBILE_SLUGS.has(s.slug))
   const webSections = sections.filter((s) => !MOBILE_SLUGS.has(s.slug))
 
   const resources = [
-    { href: '/postman', label: c.navPostman, icon: Send },
+    ...(showPostman
+      ? [{ href: '/postman', label: c.navPostman, icon: Send }]
+      : []),
     { href: '/versions', label: c.navVersions, icon: Tag },
+    ...(isAdmin(user.role)
+      ? [
+          {
+            href: '/admin/passwords',
+            label: c.navAdminPasswords,
+            icon: KeyRound,
+          },
+        ]
+      : []),
   ]
+
+  const signOut = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.replace('/login')
+    router.refresh()
+  }
 
   return (
     <aside className="flex h-full w-64 flex-none flex-col overflow-y-auto border-e border-[#1B2936] bg-primary-dark px-4 py-6">
@@ -152,7 +182,22 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="mt-6 flex items-center gap-2 rounded-lg border border-[#1B2936] p-1">
+      <div className="mt-auto pt-6">
+        <div className="rounded-lg border border-[#1B2936] px-3 py-2">
+          <p className="text-[11px] text-[#7C8894]">{c.signedInAs}</p>
+          <p className="truncate text-sm font-medium text-white">{user.name}</p>
+          <p className="text-xs text-accent">{t(ROLE_LABELS[user.role], lang)}</p>
+          <button
+            onClick={signOut}
+            className="mt-2 flex items-center gap-1.5 text-xs text-[#B9C3CC] transition-colors hover:text-white"
+          >
+            <LogOut className="h-3.5 w-3.5 flex-none rtl:rotate-180" />
+            {c.logout}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center gap-2 rounded-lg border border-[#1B2936] p-1">
         <Languages className="ms-1.5 h-4 w-4 flex-none text-[#7C8894]" />
         <div className="flex flex-1 gap-1">
           <button

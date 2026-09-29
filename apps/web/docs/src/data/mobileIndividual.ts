@@ -4,53 +4,54 @@ export const mobileIndividual: DocSection = {
   slug: "mobile-individual",
   title: { en: "Mobile — Individual", ar: "الجوال — الفرد" },
   summary: {
-    en: "The (individual) route group and (auth) individual-auth/forgot-password screens — the only account type currently reachable in the mobile app (Company/Office are gated, see Mobile — Shared). Covers login, signup, Google/Apple sign-in, OTP, password recovery, the identity switcher, and favorites.",
-    ar: "مجموعة مسارات (individual) وشاشات (auth) الخاصة بـ individual-auth/forgot-password — نوع الحساب الوحيد القابل للوصول حالياً في التطبيق (الشركة والمكتب العقاري مقفلان، راجع الجوال — مشترك). يغطي هذا القسم تسجيل الدخول، التسجيل، تسجيل الدخول عبر Google/Apple، رمز التحقق OTP، استعادة كلمة المرور، مبدّل الهوية، والمفضلة.",
+    en: "The (individual) route group and the individual auth screens — the only account type reachable in store builds (Company/Office are behind a flag, see Mobile — Shared). Covers login, signup, Google/Apple sign-in, OTP, password recovery, the persona switcher, favorites (properties, companies, offices), My Activity (drafts, archive, republish, feature, delete), home sort, and temporary account suspension.",
+    ar: "مجموعة مسارات (individual) وشاشات مصادقة الفرد — نوع الحساب الوحيد المتاح في نسخ المتاجر (الشركة والمكتب خلف مفتاح تفعيل، راجع الجوال — مشترك). يغطي تسجيل الدخول، التسجيل، الدخول عبر Google/Apple، رمز التحقق، استعادة كلمة المرور، مبدّل الهوية، المفضلة (عقارات وشركات ومكاتب)، نشاطي (المسودات، الأرشفة، إعادة النشر، التمييز، الحذف)، ترتيب الرئيسية، والتعليق المؤقت للحساب.",
   },
   stories: [
     {
       id: "mobile-favorites",
       title: {
-        en: "Favorites persist correctly across the property lifecycle",
-        ar: "المفضلة تُحفظ بشكل صحيح طوال دورة حياة العقار",
+        en: "Favorites for properties, companies and offices, with clear-all and undo",
+        ar: "المفضلة للعقارات والشركات والمكاتب، مع مسح الكل والتراجع",
       },
       priority: "P0",
       endUserStory: {
-        en: "As an individual user, I want to save properties I'm interested in and find them again easily later, so that I don't lose track of listings while I'm comparing options across multiple browsing sessions.",
-        ar: "بصفتي مستخدماً فردياً، أريد حفظ العقارات التي تهمني والعثور عليها بسهولة لاحقاً، حتى لا أفقد تتبع الإعلانات أثناء مقارنة الخيارات عبر عدة جلسات تصفح.",
+        en: "As an individual user, I want to save properties, companies and offices and find them again later, so that I don't lose track of options while comparing.",
+        ar: "بصفتي مستخدماً فردياً، أريد حفظ العقارات والشركات والمكاتب والعثور عليها لاحقاً، حتى لا أفقد تتبع الخيارات أثناء المقارنة.",
       },
       story: {
-        en: "Verify the Favorites system (POST /favorites/:propertyId toggle, GET /favorites, GET /favorites/ids, GET /favorites/check/:propertyId, useFavoritesStore) behaves correctly end to end, so that a saved property reliably shows as saved everywhere in the app and survives logout/login.",
-        ar: "تحقق من أن نظام المفضلة (POST /favorites/:propertyId للتبديل، GET /favorites، GET /favorites/ids، GET /favorites/check/:propertyId، useFavoritesStore) يعمل بشكل صحيح من البداية للنهاية، حتى يظهر العقار المحفوظ بشكل موثوق كمحفوظ في كل مكان بالتطبيق ويصمد أمام تسجيل الخروج/الدخول.",
+        en: "Verify the Favorites screen's three tabs: properties (POST /favorites/:propertyId toggle, GET /favorites), companies and offices (POST /favorites/providers/:providerId toggle, GET /favorites/providers?type=COMPANY|OFFICE). 'مسح الكل' clears the current tab in one call (DELETE /favorites/all?type=properties|COMPANY|OFFICE) and shows an undo toast; 'تراجع' puts them back (POST /favorites/restore with the returned ids). Favorites belong to the active persona.",
+        ar: "تحقق من تبويبات شاشة المفضلة الثلاثة: العقارات (POST /favorites/:propertyId للتبديل، GET /favorites)، والشركات والمكاتب (POST /favorites/providers/:providerId للتبديل، GET /favorites/providers?type=COMPANY|OFFICE). 'مسح الكل' يمسح التبويب الحالي بطلب واحد (DELETE /favorites/all?type=properties|COMPANY|OFFICE) ويعرض إشعار تراجع؛ و'تراجع' يعيدها (POST /favorites/restore مع المعرّفات المُعادة). المفضلة تخص الهوية النشطة.",
       },
       acceptanceCriteria: {
         en: [
-          "Toggling favorite on Property Detail updates the heart icon instantly (optimistic) and reflects the server state after refresh.",
-          "The Favorites tab (more)/favorites shows exactly the set of properties the user has favorited, in a stable order.",
-          "Un-favoriting from the Favorites list removes it from that list without requiring a manual refresh.",
-          "Favorite state is per-user: switching identities (see mobile-identity-switch in Mobile — Shared) does not leak another identity's favorites.",
+          "Toggling a heart updates instantly and matches the server after refresh, on ad cards, company cards and office cards.",
+          "Each tab lists exactly what the persona saved, with pagination and pull-to-refresh.",
+          "'مسح الكل' empties only the current tab; 'تراجع' within the toast restores the same items.",
+          "Ads from suspended or blocked owners don't appear in Favorites.",
         ],
         ar: [
-          "تبديل حالة المفضلة في شاشة تفاصيل العقار يحدّث أيقونة القلب فوراً (بشكل تفاؤلي) ويعكس حالة الخادم بعد التحديث.",
-          "تبويب المفضلة (more)/favorites يعرض بالضبط مجموعة العقارات التي فضّلها المستخدم، بترتيب ثابت.",
-          "إلغاء التفضيل من قائمة المفضلة يزيله من تلك القائمة دون الحاجة لتحديث يدوي.",
-          "حالة التفضيل خاصة بكل مستخدم: تبديل الهويات (راجع mobile-identity-switch في الجوال — مشترك) لا يسرّب مفضلة هوية أخرى.",
+          "تبديل القلب يتحدّث فوراً ويطابق الخادم بعد التحديث، في بطاقات الإعلانات والشركات والمكاتب.",
+          "كل تبويب يعرض بالضبط ما حفظته الهوية، مع التصفح والسحب للتحديث.",
+          "'مسح الكل' يفرغ التبويب الحالي فقط؛ و'تراجع' خلال الإشعار يعيد نفس العناصر.",
+          "إعلانات المالكين المعلّقين أو المحظورين لا تظهر في المفضلة.",
         ],
       },
       testScenarios: {
         en: [
-          "Favorite a property from Search results, then verify it appears favorited on Property Detail and in the Favorites tab.",
-          "Favorite 15+ properties and confirm the Favorites list paginates/scrolls without duplication or drops.",
-          "Favorite a property, then have it deleted/archived by its owner — confirm the Favorites tab handles the now-missing property gracefully (no crash, sensible empty/removed state).",
-          "Toggle favorite rapidly (double-tap) and confirm no duplicate POSTs desync the heart icon from server state.",
+          "Save 2 companies and 1 office; open each tab — counts match.",
+          "In Companies, tap 'مسح الكل' then 'تراجع' — both companies return.",
+          "Tap 'مسح الكل' and let the toast expire — the tab stays empty after reopening the app.",
+          "Save 15+ properties — the list scrolls and paginates with no duplicates.",
         ],
         ar: [
-          "فضّل عقاراً من نتائج البحث، ثم تحقق من ظهوره كمفضّل في شاشة تفاصيل العقار وفي تبويب المفضلة.",
-          "فضّل أكثر من 15 عقاراً وتأكد أن قائمة المفضلة تتصفح/تُحمَّل تدريجياً دون تكرار أو فقدان عناصر.",
-          "فضّل عقاراً، ثم اجعل صاحبه يحذفه/يؤرشفه — تأكد أن تبويب المفضلة يتعامل مع العقار المفقود بسلاسة (دون تعطّل، مع حالة فارغة/محذوفة منطقية).",
-          "بدّل حالة المفضلة بسرعة (نقر مزدوج) وتأكد أن طلبات POST المكررة لا تُفقد تزامن أيقونة القلب مع حالة الخادم.",
+          "احفظ شركتين ومكتباً واحداً؛ افتح كل تبويب — الأعداد مطابقة.",
+          "في الشركات اضغط 'مسح الكل' ثم 'تراجع' — تعود الشركتان.",
+          "اضغط 'مسح الكل' واترك الإشعار ينتهي — يبقى التبويب فارغاً بعد إعادة فتح التطبيق.",
+          "احفظ أكثر من 15 عقاراً — القائمة تتصفح دون تكرار.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-home-feed-actions-unwired",
@@ -875,6 +876,135 @@ export const mobileIndividual: DocSection = {
           "اضغط 'إضافة هوية جديدة' وتأكد أنها تفتح خطوة نموذج التسجيل (تسجيل فردي فقط — تسجيل الشركة/المكتب العقاري مقفل، راجع الجوال — مشترك).",
         ],
       },
+    },
+    {
+      id: "mobile-account-suspension",
+      title: {
+        en: "Temporary account suspension with a code, reactivated by signing in",
+        ar: "التعليق المؤقت للحساب برمز تحقق، ويُعاد تفعيله بتسجيل الدخول",
+      },
+      priority: "P0",
+      endUserStory: {
+        en: "As a user taking a break, I want to hide my account and ads temporarily and come back just by signing in, so that I don't lose my data.",
+        ar: "بصفتي مستخدماً يأخذ استراحة، أريد إخفاء حسابي وإعلاناتي مؤقتاً والعودة بمجرد تسجيل الدخول، حتى لا أفقد بياناتي.",
+      },
+      story: {
+        en: "Verify Settings → deactivate: POST /users/account/suspend/request-otp sends a code by SMS (or by email for accounts without a phone); POST /users/account/suspend with the code and reasons suspends the account and signs the user out. While suspended, the user's ads and profile are hidden from others and no one can start a chat or send them messages. Signing in again reactivates the account (the login response carries reactivated: true). An account disabled by an admin can't reactivate itself.",
+        ar: "تحقق من الإعدادات ← تعطيل الحساب: POST /users/account/suspend/request-otp يرسل رمزاً عبر SMS (أو البريد للحسابات دون هاتف)؛ و POST /users/account/suspend مع الرمز والأسباب يعلّق الحساب ويسجّل خروج المستخدم. أثناء التعليق تُخفى إعلانات المستخدم وملفه عن الآخرين ولا يمكن لأحد بدء محادثة معه أو مراسلته. تسجيل الدخول مجدداً يعيد تفعيل الحساب (ترجع استجابة الدخول reactivated: true). الحساب المعطّل من الإدارة لا يمكنه إعادة التفعيل بنفسه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A wrong or expired code is refused with 'رمز التحقق غير صحيح أو منتهي الصلاحية' and nothing changes.",
+          "After suspending, the user is signed out and their ads disappear from home, search, favorites and the map for others.",
+          "Opening a chat with the suspended user is refused ('هذا الحساب غير متاح حالياً').",
+          "Signing in again restores the account and the ads reappear.",
+          "An admin-disabled account gets 'الحساب معطل مؤقتاً' on login.",
+        ],
+        ar: [
+          "الرمز الخاطئ أو المنتهي يُرفض برسالة 'رمز التحقق غير صحيح أو منتهي الصلاحية' ولا يتغير شيء.",
+          "بعد التعليق يُسجَّل خروج المستخدم وتختفي إعلاناته من الرئيسية والبحث والمفضلة والخريطة للآخرين.",
+          "فتح محادثة مع المستخدم المعلّق يُرفض ('هذا الحساب غير متاح حالياً').",
+          "تسجيل الدخول مجدداً يعيد الحساب وتعود الإعلانات للظهور.",
+          "الحساب المعطّل من الإدارة يحصل على 'الحساب معطل مؤقتاً' عند الدخول.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Suspend with the SMS code; from a second account search for one of the suspended user's ads — not found.",
+          "Sign back in — the reactivated account's ads are visible again from the second account.",
+          "Request a code, wait until it expires, then submit it — refused.",
+        ],
+        ar: [
+          "علّق الحساب برمز SMS؛ ومن حساب آخر ابحث عن أحد إعلاناته — غير موجود.",
+          "سجّل الدخول مجدداً — تظهر إعلانات الحساب المعاد تفعيله من الحساب الآخر.",
+          "اطلب رمزاً وانتظر انتهاءه ثم أرسله — يُرفض.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
+    },
+    {
+      id: "mobile-my-ads-lifecycle",
+      title: {
+        en: "My Activity: drafts, archive, republish, hide, delete and delete-all",
+        ar: "نشاطي: المسودات والأرشفة وإعادة النشر والإخفاء والحذف وحذف الكل",
+      },
+      priority: "P0",
+      endUserStory: {
+        en: "As an advertiser, I want to manage my ads from one place, so that I can pause, bring back or remove them without contacting support.",
+        ar: "بصفتي معلناً، أريد إدارة إعلاناتي من مكان واحد، حتى أتمكن من إيقافها أو إعادتها أو حذفها دون التواصل مع الدعم.",
+      },
+      story: {
+        en: "Verify My Activity (GET /properties/me/activity): publish a draft (PATCH /properties/:id isDraft:false, spends a credit or the free ad; draft images show); archive an ad (POST /properties/:id/archive → the 'مؤرشفة' tab); republish an archived ad (POST /properties/:id/renew with the chosen credit — fresh publish date and duration); hide/show all (PATCH isHidden on each); delete one with a reason (DELETE /properties/:id) or delete all. Edit opens the edit form, not 'add new'.",
+        ar: "تحقق من نشاطي (GET /properties/me/activity): نشر مسودة (PATCH /properties/:id مع isDraft:false، يستهلك رصيداً أو الإعلان المجاني؛ وتظهر صور المسودة)؛ أرشفة إعلان (POST /properties/:id/archive ← تبويب 'مؤرشفة')؛ إعادة نشر إعلان مؤرشف (POST /properties/:id/renew بالرصيد المختار — تاريخ نشر ومدة جديدان)؛ إخفاء/إظهار الكل (PATCH isHidden لكل إعلان)؛ حذف إعلان مع السبب (DELETE /properties/:id) أو حذف الكل. زر التعديل يفتح نموذج التعديل وليس 'إضافة جديد'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Republishing spends exactly one credit; a second tap while the first is in flight is refused without spending (409).",
+          "A republished ad moves to the top of 'الأحدث' (its publish date is now).",
+          "A company/office persona still under review can save drafts but can't publish or republish ('حسابك قيد المراجعة…').",
+          "Hidden ads are invisible to others but still listed in My Activity; 'show all' brings them back.",
+          "Deleted ads disappear everywhere, including other users' favorites.",
+        ],
+        ar: [
+          "إعادة النشر تستهلك رصيداً واحداً بالضبط؛ والضغط الثاني أثناء تنفيذ الأول يُرفض دون استهلاك (409).",
+          "الإعلان المعاد نشره ينتقل لأعلى 'الأحدث' (تاريخ نشره الآن).",
+          "هوية الشركة/المكتب قيد المراجعة يمكنها حفظ المسودات ولا يمكنها النشر أو إعادة النشر ('حسابك قيد المراجعة…').",
+          "الإعلانات المخفية لا يراها الآخرون لكنها تظهر في نشاطي؛ و'إظهار الكل' يعيدها.",
+          "الإعلانات المحذوفة تختفي في كل مكان بما في ذلك مفضلة المستخدمين الآخرين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create a draft with 3 images, reopen it — images visible; publish — status ACTIVE, credit −1.",
+          "Archive an ad, republish with a Silver credit — featured days and duration follow Silver.",
+          "Double-tap 'إعادة النشر' — one credit spent, one success, one refusal.",
+          "Hide all, check from another account — none visible; show all — visible again.",
+          "Delete all ads — My Activity is empty, and a favorite of one of them is gone for the other account.",
+        ],
+        ar: [
+          "أنشئ مسودة بثلاث صور ثم أعد فتحها — الصور ظاهرة؛ انشرها — الحالة ACTIVE والرصيد −1.",
+          "أرشف إعلاناً ثم أعد نشره برصيد فضي — أيام التمييز والمدة تتبع الفضية.",
+          "اضغط 'إعادة النشر' مرتين — يُستهلك رصيد واحد، نجاح واحد ورفض واحد.",
+          "أخفِ الكل وتحقق من حساب آخر — لا شيء ظاهر؛ أظهر الكل — تظهر مجدداً.",
+          "احذف كل الإعلانات — نشاطي فارغ، والمفضلة لأحدها اختفت عند الحساب الآخر.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
+    },
+    {
+      id: "mobile-home-sort",
+      title: {
+        en: "Home sort: default, newest and oldest",
+        ar: "ترتيب الرئيسية: الافتراضي والأحدث والأقدم",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify 'الترتيب' on the listings screen opens the radio sheet and reloads GET /properties with sort=DEFAULT|NEWEST|OLDEST. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; pages never repeat or skip ads with the same date.",
+        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح نافذة الاختيار ويعيد تحميل GET /properties مع sort=DEFAULT|NEWEST|OLDEST. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ ولا تتكرر الصفحات أو تتخطى إعلانات لها نفس التاريخ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The chosen option stays selected when the sheet is reopened.",
+          "Newest shows a just-republished ad first; Oldest shows it last.",
+          "Scrolling through several pages shows each ad exactly once.",
+        ],
+        ar: [
+          "يبقى الخيار المختار محدداً عند إعادة فتح النافذة.",
+          "الأحدث يعرض الإعلان المعاد نشره للتو أولاً؛ والأقدم يعرضه أخيراً.",
+          "التمرير عبر عدة صفحات يعرض كل إعلان مرة واحدة فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Switch between the three sorts and compare the first 5 ads.",
+          "Republish an ad, then choose Newest — it's first.",
+        ],
+        ar: [
+          "بدّل بين الترتيبات الثلاثة وقارن أول 5 إعلانات.",
+          "أعد نشر إعلان ثم اختر الأحدث — يظهر أولاً.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

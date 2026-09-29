@@ -29,6 +29,14 @@ export function UserStoryCard({ story }: { story: UserStory }) {
           <h3 className="mt-0.5 text-lg font-semibold text-white">
             {t(story.title, lang)}
           </h3>
+          {story.updatedIn && (
+            <p className="mt-0.5 text-[11px] text-[#7C8894]">
+              {c.storyUpdatedIn}{" "}
+              <span dir="ltr" className="font-mono">
+                {story.updatedIn}
+              </span>
+            </p>
+          )}
         </div>
         <PriorityBadge priority={story.priority} />
       </div>

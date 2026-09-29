@@ -1,6 +1,27 @@
 import { Localized } from "@/data/types";
 
 interface ChromeStrings {
+  storyUpdatedIn: string;
+  loginTitle: string;
+  loginSubtitle: string;
+  loginRole: string;
+  loginPassword: string;
+  loginName: string;
+  loginNamePlaceholder: string;
+  loginSubmit: string;
+  loginFailed: string;
+  signedInAs: string;
+  logout: string;
+  navAdminPasswords: string;
+  passwordsTitle: string;
+  passwordsDescription: string;
+  passwordsRole: string;
+  passwordsNew: string;
+  passwordsSave: string;
+  passwordsSaved: string;
+  passwordsLastSet: string;
+  passwordsNeverSet: string;
+  passwordsMinLength: string;
   appName: string;
   appTagline: string;
   navGroupMobile: string;
@@ -59,6 +80,27 @@ interface ChromeStrings {
 
 export const chrome: Localized<ChromeStrings> = {
   en: {
+    storyUpdatedIn: "Updated in",
+    loginTitle: "Sign in to Buyootna Docs",
+    loginSubtitle: "Choose your role, enter its password and your name. Your name is shown on everything you record.",
+    loginRole: "Role",
+    loginPassword: "Password",
+    loginName: "Your name",
+    loginNamePlaceholder: "e.g. Sara (QA)",
+    loginSubmit: "Sign in",
+    loginFailed: "Could not sign in",
+    signedInAs: "Signed in as",
+    logout: "Sign out",
+    navAdminPasswords: "Role passwords",
+    passwordsTitle: "Role passwords",
+    passwordsDescription: "Set or change the password for each role. Changing a password signs everyone using that role out immediately.",
+    passwordsRole: "Role",
+    passwordsNew: "New password",
+    passwordsSave: "Save password",
+    passwordsSaved: "Password saved",
+    passwordsLastSet: "Last set",
+    passwordsNeverSet: "Not set yet",
+    passwordsMinLength: "At least 10 characters",
     appName: "Buyootna QA Docs",
     appTagline: "docs.buyootna.cloud",
     navGroupMobile: "Mobile",
@@ -126,9 +168,30 @@ export const chrome: Localized<ChromeStrings> = {
     versionsColNotes: "Notes",
     versionsWarningTitle: "Versions aren't currently bumped per release",
     versionsWarningBody:
-      "— every web app sits at the Next.js scaffold default (0.1.0) and the API at 0.0.1, while only the mobile app's version (1.1.0) reflects real app-store submissions. Because the CD pipeline deploys straight from main on every push, the git commit SHA at deploy time is the actual source of truth for \"what's in production\" for the API and web apps — reference that commit (not this table) when filing a bug against a specific web/API build. Recommend adopting real semver bumps (or at least deploy-time commit tagging visible in the UI) if precise build-to-bug-report traceability becomes a priority.",
+      "— the web apps sit at the Next.js default (0.1.0) and the API at 0.0.1; only the mobile app's version (see app.config.ts) tracks real store releases. For the API and web apps, the commit deployed by the manual CD run on main is the source of truth for what's in production — cite that commit, not this table, when reporting a bug against a web/API build.",
   },
   ar: {
+    storyUpdatedIn: "حُدّث في",
+    loginTitle: "تسجيل الدخول إلى توثيق بيوتنا",
+    loginSubtitle: "اختر دورك، وأدخل كلمة مروره واسمك. يظهر اسمك على كل ما تسجله.",
+    loginRole: "الدور",
+    loginPassword: "كلمة المرور",
+    loginName: "اسمك",
+    loginNamePlaceholder: "مثال: سارة (ضمان الجودة)",
+    loginSubmit: "تسجيل الدخول",
+    loginFailed: "تعذر تسجيل الدخول",
+    signedInAs: "مسجل الدخول باسم",
+    logout: "تسجيل الخروج",
+    navAdminPasswords: "كلمات مرور الأدوار",
+    passwordsTitle: "كلمات مرور الأدوار",
+    passwordsDescription: "عيّن أو غيّر كلمة المرور لكل دور. تغيير كلمة المرور يسجّل خروج كل من يستخدم ذلك الدور فوراً.",
+    passwordsRole: "الدور",
+    passwordsNew: "كلمة المرور الجديدة",
+    passwordsSave: "حفظ كلمة المرور",
+    passwordsSaved: "تم حفظ كلمة المرور",
+    passwordsLastSet: "آخر تعيين",
+    passwordsNeverSet: "لم تُعيَّن بعد",
+    passwordsMinLength: "10 أحرف على الأقل",
     appName: "توثيق ضمان الجودة - بيوتنا",
     appTagline: "docs.buyootna.cloud",
     navGroupMobile: "تطبيق الجوال",
@@ -194,6 +257,6 @@ export const chrome: Localized<ChromeStrings> = {
     versionsColNotes: "ملاحظات",
     versionsWarningTitle: "لا يتم حالياً رفع أرقام الإصدارات مع كل إصدار",
     versionsWarningBody:
-      "— كل تطبيقات الويب لا تزال على القيمة الافتراضية لهيكل Next.js (0.1.0) وواجهة البرمجة على 0.0.1، بينما إصدار تطبيق الجوال (1.1.0) فقط يعكس إصدارات حقيقية تم رفعها لمتاجر التطبيقات. ولأن خط النشر المستمر (CD) ينشر مباشرة من main مع كل push، فإن رقم الـ commit في git وقت النشر هو المرجع الحقيقي لمعرفة \"ما هو منشور فعلياً في الإنتاج\" بالنسبة لواجهة البرمجة وتطبيقات الويب — استخدم ذلك الـ commit (لا هذا الجدول) عند الإبلاغ عن خطأ في إصدار معيّن من الويب أو الواجهة الخلفية. يُنصح باعتماد ترقيم إصدارات حقيقي (semver) أو على الأقل إظهار رقم الـ commit وقت النشر في الواجهة، إذا أصبح تتبّع دقيق للإصدار مقابل الخطأ المُبلَّغ عنه أولوية.",
+      "— تطبيقات الويب على القيمة الافتراضية لـ Next.js (0.1.0) وواجهة البرمجة على 0.0.1؛ فقط إصدار تطبيق الجوال (راجع app.config.ts) يتبع إصدارات المتاجر الفعلية. بالنسبة لواجهة البرمجة والويب، الـ commit المنشور عبر التشغيل اليدوي لخط النشر على main هو المرجع لما في الإنتاج — اذكر ذلك الـ commit، لا هذا الجدول، عند الإبلاغ عن خطأ في نسخة ويب أو واجهة برمجة.",
   },
 };

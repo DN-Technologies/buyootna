@@ -14,14 +14,14 @@ export const appVersions: AppVersion[] = [
   {
     name: { en: "Mobile App", ar: "تطبيق الجوال" },
     packageName: "buyootna",
-    version: "1.1.0",
+    version: "1.4.0",
     platform: {
       en: "iOS & Android (Expo SDK ~54.0.33)",
       ar: "iOS و Android (Expo SDK ~54.0.33)",
     },
     notes: {
-      en: "Bundle id com.youssefusfdev.buyootna. No buildNumber/versionCode is set in app.json — check the EAS Build dashboard for the actual store build number tied to a given release, don't infer it from this version string alone.",
-      ar: "معرّف الحزمة com.youssefusfdev.buyootna. لا يوجد buildNumber/versionCode محدد في app.json — راجع لوحة EAS Build لمعرفة رقم البناء الفعلي في المتجر المرتبط بإصدار معيّن، ولا تستنتجه من رقم الإصدار هذا وحده.",
+      en: "The app version lives in apps/mobile/app.config.ts (package.json's is stale). iOS bundle com.constyoussef.buyootna (build 10 on TestFlight); Android package com.constyoussef.buyootna.login (versionCode 4 built on EAS). OTA updates target runtime 1.4.0 — the latest production OTA was published from main (81cec03) on 2026-09-29. Build numbers auto-increment on EAS; check the EAS dashboard for the build tied to a report.",
+      ar: "رقم إصدار التطبيق موجود في apps/mobile/app.config.ts (رقم package.json قديم). معرّف iOS هو com.constyoussef.buyootna (البناء 10 على TestFlight)؛ وحزمة Android هي com.constyoussef.buyootna.login (versionCode 4 مبني على EAS). تحديثات OTA تستهدف الإصدار 1.4.0 — آخر تحديث OTA للإنتاج نُشر من main (81cec03) بتاريخ 2026-09-29. أرقام البناء تزداد تلقائياً على EAS؛ راجع لوحة EAS لمعرفة البناء المرتبط بالبلاغ.",
     },
   },
   {
@@ -30,8 +30,8 @@ export const appVersions: AppVersion[] = [
     version: "0.0.1",
     platform: { en: "NestJS backend", ar: "الواجهة الخلفية (NestJS)" },
     notes: {
-      en: "Not bumped per release. Production deploys automatically on every push to main via the CD pipeline (.github/workflows/cd.yml) — the deployed git commit SHA on main is the real source of truth for 'what's in prod right now', not this version number.",
-      ar: "لا يتم رفع رقمه مع كل إصدار. ينشر تلقائياً في الإنتاج مع كل push إلى main عبر خط النشر المستمر (.github/workflows/cd.yml) — رقم الـ commit المنشور فعلياً على main هو المرجع الحقيقي لمعرفة \"ما هو منشور حالياً في الإنتاج\"، لا رقم الإصدار هذا.",
+      en: "Not bumped per release. Production is deployed by manually running the CD Pipeline (workflow_dispatch in .github/workflows/cd.yml) on main; it also applies pending Prisma migrations. The commit that was deployed is the source of truth for what's in production, not this number.",
+      ar: "لا يتم رفع رقمه مع كل إصدار. يُنشر الإنتاج بتشغيل خط النشر CD يدوياً (workflow_dispatch في .github/workflows/cd.yml) على main، ويطبّق أيضاً ترحيلات Prisma المعلّقة. الـ commit المنشور هو المرجع لما هو موجود في الإنتاج، وليس هذا الرقم.",
     },
   },
   {
@@ -107,6 +107,9 @@ export const appVersions: AppVersion[] = [
       en: "Next.js (docs.buyootna.cloud)",
       ar: "Next.js (docs.buyootna.cloud)",
     },
-    notes: { en: "This site.", ar: "هذا الموقع نفسه." },
+    notes: {
+      en: "This site. Sign-in with a password per role (QA, Developer, UI/UX, Client/Management, Admin); stories live in apps/web/docs/src/data and are updated in the same PR as the code they describe.",
+      ar: "هذا الموقع. الدخول بكلمة مرور لكل دور (ضمان الجودة، المطور، مصمم الواجهات، العميل/الإدارة، المسؤول)؛ القصص موجودة في apps/web/docs/src/data وتُحدَّث في نفس طلب الدمج مع الكود الذي تصفه.",
+    },
   },
 ];

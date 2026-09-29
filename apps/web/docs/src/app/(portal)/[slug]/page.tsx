@@ -1,11 +1,9 @@
 import { notFound } from "next/navigation";
-import { sections, getSection } from "@/data/sections";
+import { getSection } from "@/data/sections";
+import { canSeeSection } from "@/lib/access";
+import { requireSession } from "@/lib/session";
 import { UserStoryCard } from "@/components/UserStoryCard";
 import { SectionHeader } from "@/components/SectionHeader";
-
-export function generateStaticParams() {
-  return sections.map((section) => ({ slug: section.slug }));
-}
 
 export default async function SectionPage({
   params,
@@ -13,9 +11,11 @@ export default async function SectionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const user = await requireSession();
   const section = getSection(slug);
 
-  if (!section) {
+  // A section this role can't see answers exactly like one that doesn't exist
+  if (!section || !canSeeSection(user.role, section.slug)) {
     notFound();
   }
 
