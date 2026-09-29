@@ -14,8 +14,9 @@ export interface MapDiscoverParams {
   sw_lat: number;
   sw_lng: number;
   type?: MapPinType;
-  governorateId?: string;
-  areaId?: string;
+  // Comma-separated ids: any of the chosen governorates / areas
+  governorateIds?: string;
+  areaIds?: string;
   searchQuery?: string;
 }
 

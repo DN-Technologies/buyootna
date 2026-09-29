@@ -63,8 +63,11 @@ export class MapService {
       AND: [notExpiredWhere(), ownerActiveWhere()],
     };
 
-    if (dto.governorateId) where.governorateId = dto.governorateId;
-    if (dto.areaId) where.areaId = dto.areaId;
+    // Chosen areas narrow further than their governorates, so they win
+    const { governorateIds, areaIds } = locationFilter(dto);
+    if (areaIds.length) where.areaId = { in: areaIds };
+    else if (governorateIds.length)
+      where.governorateId = { in: governorateIds };
 
     if (dto.searchQuery?.trim()) {
       const q = dto.searchQuery.trim();
@@ -108,33 +111,37 @@ export class MapService {
       ];
     }
 
-    if (dto.governorateId || dto.areaId) {
+    const { governorateIds, areaIds } = locationFilter(dto);
+    if (governorateIds.length || areaIds.length) {
       const locationOr: Prisma.CompanyIdentityDataWhereInput[] = [];
 
-      if (dto.governorateId) {
-        const gov = await this.prisma.governorate.findUnique({
-          where: { id: dto.governorateId },
+      // A company matches if it's based in, or serves, any chosen place
+      if (areaIds.length) {
+        const areas = await this.prisma.area.findMany({
+          where: { id: { in: areaIds } },
           select: { name: true },
         });
-        if (gov) {
-          locationOr.push(
-            { hqLocation: { contains: gov.name, mode: 'insensitive' } },
-            { serviceAreas: { contains: gov.name, mode: 'insensitive' } },
-            { serviceAreas: { contains: 'جميع', mode: 'insensitive' } },
-          );
-        }
-      }
-
-      if (dto.areaId) {
-        const area = await this.prisma.area.findUnique({
-          where: { id: dto.areaId },
-          select: { name: true },
-        });
-        if (area) {
+        for (const area of areas) {
           locationOr.push(
             { hqLocation: { contains: area.name, mode: 'insensitive' } },
             { serviceAreas: { contains: area.name, mode: 'insensitive' } },
           );
+        }
+      } else {
+        const govs = await this.prisma.governorate.findMany({
+          where: { id: { in: governorateIds } },
+          select: { name: true },
+        });
+        for (const gov of govs) {
+          locationOr.push(
+            { hqLocation: { contains: gov.name, mode: 'insensitive' } },
+            { serviceAreas: { contains: gov.name, mode: 'insensitive' } },
+          );
+        }
+        if (govs.length) {
+          locationOr.push({
+            serviceAreas: { contains: 'جميع', mode: 'insensitive' },
+          });
         }
       }
 
@@ -161,4 +168,15 @@ export class MapService {
       companies.map(({ identityId, ...pin }) => ({ id: identityId, ...pin })),
     );
   }
+}
+
+/** The chosen governorates/areas, from the list params or the older single ones. */
+function locationFilter(dto: GetMapBoundsDto) {
+  const merge = (list?: string[], single?: string) => [
+    ...new Set([...(list ?? []), ...(single ? [single] : [])]),
+  ];
+  return {
+    governorateIds: merge(dto.governorateIds, dto.governorateId),
+    areaIds: merge(dto.areaIds, dto.areaId),
+  };
 }
