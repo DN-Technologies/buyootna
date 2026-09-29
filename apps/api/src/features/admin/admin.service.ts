@@ -28,6 +28,8 @@ import { AdminUpdatePropertyDto } from './dto/admin-update-property.dto';
 import { AdminRequestsService } from './services/user-profile/admin-requests.service';
 import { AdminExhibitionService } from './services/user-profile/admin-exhibition.service';
 import { AdminPlansService } from './services/billing/admin-plans.service';
+import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
+import { AdminUpdatePlanDto } from './dto/admin-update-plan.dto';
 import { AdminInvoicesService } from './services/billing/admin-invoices.service';
 import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
@@ -57,6 +59,7 @@ export class AdminService {
     private readonly adminRequestsService: AdminRequestsService,
     private readonly adminExhibitionService: AdminExhibitionService,
     private readonly adminPlansService: AdminPlansService,
+    private readonly adminPlanCatalogService: AdminPlanCatalogService,
     private readonly adminInvoicesService: AdminInvoicesService,
     private readonly adminRatingsService: AdminRatingsService,
     private readonly adminNotesService: AdminNotesService,
@@ -245,6 +248,15 @@ export class AdminService {
 
   getAvailableCoupons() {
     return this.adminCouponService.getAvailableCoupons();
+  }
+
+  // --- PLANS THE APP SELLS ---
+  getPlanCatalog() {
+    return this.adminPlanCatalogService.list();
+  }
+
+  updatePlan(id: string, dto: AdminUpdatePlanDto, adminUserId: string) {
+    return this.adminPlanCatalogService.update(id, dto, adminUserId);
   }
 
   // --- FEATURE AD PRICE LIST ---

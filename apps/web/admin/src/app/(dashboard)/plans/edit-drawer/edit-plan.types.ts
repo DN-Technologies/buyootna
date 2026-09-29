@@ -4,6 +4,8 @@ export interface EditPlanDrawerItem {
   price: string
   title: string
   isGold?: boolean
+  // false = hidden: not sold in the app
+  isActive?: boolean
   features: string[]
   categoryName?: string
   activeAdsCount?: string

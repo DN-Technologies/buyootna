@@ -1,15 +1,26 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import Twilio from 'twilio';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 
 const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
+
+// Mock SMS (codes only in the server log) is for development. In production
+// it would let anyone who can read logs sign in, and real users never get
+// a code -- so there it's refused unless explicitly allowed.
+const mockSmsAllowed = () =>
+  process.env.NODE_ENV !== 'production' ||
+  process.env.ALLOW_MOCK_SMS === 'true';
 
 @Injectable()
 export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
   private twilioClient: Twilio.Twilio | null = null;
   private serviceSid: string | null = null;
-  // Dev-only: codes generated in mock SMS mode (Twilio unconfigured), keyed
+  // Dev-only (see mockSmsAllowed): codes generated in mock SMS mode, keyed
   // by formatted phone number, so checkVerification can validate them.
   private readonly mockCodes = new Map<
     string,
@@ -29,9 +40,13 @@ export class TwilioService {
       } catch (err) {
         this.logger.error('Failed to initialize Twilio client:', err);
       }
-    } else {
+    } else if (mockSmsAllowed()) {
       this.logger.warn(
         'Twilio credentials missing in environment variables. Falling back to mock SMS mode.',
+      );
+    } else {
+      this.logger.error(
+        'Twilio credentials missing in production: SMS codes are disabled until TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_VERIFY_SERVICE_SID are set.',
       );
     }
   }
@@ -69,6 +84,11 @@ export class TwilioService {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
+      if (!mockSmsAllowed()) {
+        throw new ServiceUnavailableException(
+          'خدمة الرسائل النصية غير متاحة حالياً، يرجى المحاولة لاحقاً',
+        );
+      }
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       this.mockCodes.set(formattedPhone, {
         code,
@@ -109,6 +129,7 @@ export class TwilioService {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
+      if (!mockSmsAllowed()) return false;
       const record = this.mockCodes.get(formattedPhone);
       const isValid =
         !!record && record.code === code && record.expiresAt > new Date();

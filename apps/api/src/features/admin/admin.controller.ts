@@ -46,6 +46,7 @@ import {
   AdminGrantCouponDto,
   AdminGrantBulkCouponDto,
 } from './dto/admin-grant-coupon.dto';
+import { AdminUpdatePlanDto } from './dto/admin-update-plan.dto';
 import { AdminGuard } from './guards/admin.guard';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
@@ -522,6 +523,33 @@ export class AdminController {
   @ApiCommonErrors()
   getAvailableCoupons() {
     return this.adminService.getAvailableCoupons();
+  }
+
+  @Get('plans')
+  @ApiOperation({
+    summary:
+      'Every plan the app sells (active and hidden), with its packages and how often it was bought',
+  })
+  @ApiResponse({ status: 200, description: 'Plans' })
+  @ApiCommonErrors()
+  getPlanCatalog() {
+    return this.adminService.getPlanCatalog();
+  }
+
+  @Patch('plans/:id')
+  @ApiOperation({
+    summary:
+      'Edit a plan: name, price, hidden/active, ads, days, images, featured days, priority, feature lines',
+  })
+  @ApiParam({ name: 'id', description: 'Plan ID' })
+  @ApiResponse({ status: 200, description: 'The updated plan' })
+  @ApiCommonErrors()
+  updatePlan(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: AdminUpdatePlanDto,
+  ) {
+    return this.adminService.updatePlan(id, dto, reqUser.userId);
   }
 
   @Get('feature-packages')

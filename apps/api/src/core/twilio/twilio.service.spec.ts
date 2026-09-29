@@ -125,3 +125,41 @@ describe('TwilioService (mock mode)', () => {
     return record.code;
   }
 });
+
+describe('TwilioService without credentials in production', () => {
+  const env = { ...process.env };
+
+  beforeEach(() => {
+    delete process.env.TWILIO_ACCOUNT_SID;
+    delete process.env.TWILIO_AUTH_TOKEN;
+    delete process.env.TWILIO_VERIFY_SERVICE_SID;
+    delete process.env.ALLOW_MOCK_SMS;
+    process.env.NODE_ENV = 'production';
+  });
+
+  afterEach(() => {
+    process.env = { ...env };
+  });
+
+  it('refuses to "send" a mock code instead of pretending it was sent', async () => {
+    const service = new TwilioService();
+    await expect(service.sendVerification('51234567')).rejects.toThrow(
+      'خدمة الرسائل النصية غير متاحة حالياً',
+    );
+  });
+
+  it('never accepts a code', async () => {
+    const service = new TwilioService();
+    await expect(service.checkVerification('51234567', '123456')).resolves.toBe(
+      false,
+    );
+  });
+
+  it('allows mock mode only when explicitly enabled', async () => {
+    process.env.ALLOW_MOCK_SMS = 'true';
+    const service = new TwilioService();
+    await expect(service.sendVerification('51234567')).resolves.toEqual({
+      success: true,
+    });
+  });
+});

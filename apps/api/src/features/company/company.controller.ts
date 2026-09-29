@@ -79,8 +79,9 @@ export class CompanyController {
       license?: Express.Multer.File[];
     },
   ) {
-    const logoFile = files.logo ? files.logo[0] : undefined;
-    const licenseFile = files.license ? files.license[0] : undefined;
+    // No files at all when the request isn't multipart (e.g. the web portals)
+    const logoFile = files?.logo?.[0];
+    const licenseFile = files?.license?.[0];
 
     return this.registrationService.registerCompany(dto, logoFile, licenseFile);
   }

@@ -20,6 +20,7 @@ export type BackendAdminActionType =
   | 'PLAN_CHANGED'
   | 'EXCEPTIONAL_FEATURE_GRANTED'
   | 'COMPANY_PROJECT_DELETED'
+  | 'PLAN_UPDATED'
 
 export interface AdminLogActor {
   id: string

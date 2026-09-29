@@ -1,4 +1,5 @@
 export * from "./lib/utils";
+export * from "./lib/portalAuth";
 export * from "./contexts/AuthContext";
 export * from "./components/LoginForm";
 export * from "./components/SignupForm";

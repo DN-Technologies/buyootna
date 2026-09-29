@@ -17,6 +17,7 @@ import { AdminRatingsService } from './services/user-profile/admin-ratings.servi
 import { AdminNotesService } from './services/users/admin-notes.service';
 import { AdminAuditLogService } from './services/audit/admin-audit-log.service';
 import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
+import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
 import { Role } from '@prisma/client';
 import { UserAccountStatusAction } from './dto/admin-update-status.dto';
 
@@ -128,6 +129,7 @@ describe('AdminService', () => {
   let adminRatingsService: MockAdminRatingsService;
   let adminNotesService: MockAdminNotesService;
   let adminAuditLogService: MockAdminAuditLogService;
+  const adminPlanCatalogService = { list: jest.fn(), update: jest.fn() };
   const adminFeaturePackagesService = {
     list: jest.fn(),
     create: jest.fn(),
@@ -297,6 +299,10 @@ describe('AdminService', () => {
         {
           provide: AdminFeaturePackagesService,
           useValue: adminFeaturePackagesService,
+        },
+        {
+          provide: AdminPlanCatalogService,
+          useValue: adminPlanCatalogService,
         },
       ],
     }).compile();
@@ -869,6 +875,17 @@ describe('AdminService', () => {
   });
 
   describe('feature packages', () => {
+    it('delegates the plan catalog to AdminPlanCatalogService', async () => {
+      await service.getPlanCatalog();
+      await service.updatePlan('plan-1', { price: 3 }, 'admin-1');
+      expect(adminPlanCatalogService.list).toHaveBeenCalled();
+      expect(adminPlanCatalogService.update).toHaveBeenCalledWith(
+        'plan-1',
+        { price: 3 },
+        'admin-1',
+      );
+    });
+
     it('delegates list/create/update to AdminFeaturePackagesService', async () => {
       adminFeaturePackagesService.list.mockResolvedValue([]);
       adminFeaturePackagesService.create.mockResolvedValue({ id: 'p' });
