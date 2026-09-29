@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
 export const metadata: Metadata = {
@@ -30,12 +29,7 @@ export default function RootLayout({
         className="flex h-full min-h-screen font-sans bg-[#0A1118] text-[#ECEFF2]"
         suppressHydrationWarning
       >
-        <LanguageProvider>
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-4xl px-8 py-10">{children}</div>
-          </main>
-        </LanguageProvider>
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

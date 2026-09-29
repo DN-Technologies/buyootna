@@ -96,6 +96,14 @@ services:
       context: .
       dockerfile: apps/web/docs/Dockerfile
     expose: ["3006"]
+    environment:
+      # Server-to-server: the docs site signs people in through the API
+      API_URL: http://api:8000
+    # DOCS_JWT_SECRET (same value as in apps/api/.env). Without it the site
+    # stays locked, so a missing file doesn't stop the stack from starting.
+    env_file:
+      - path: ./apps/web/docs/.env
+        required: false
     restart: always
 
   marketing:

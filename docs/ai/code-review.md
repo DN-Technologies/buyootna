@@ -28,6 +28,11 @@ reviewer should hold changes to, not a replacement for it.
   and [`testing-policy.md`](./testing-policy.md) for the ones already
   documented.
 
+- **Docs updated with the change.** User-visible behaviour, API contract
+  or release/version changes come with the matching QA story updated in
+  `apps/web/docs/src/data/` (both languages, `updatedIn` set) — or the PR
+  states why none applies. See rule 5 in [`context.md`](./context.md).
+
 ## Commit convention
 
 Commit messages in this repo's history explain the root cause and the

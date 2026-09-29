@@ -41,42 +41,42 @@ export const management: DocSection = {
           "جرّب رابطاً مباشراً محتملاً للوحة التحكم وتأكد من ظهور خطأ 404 نظيف.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "management-signup-role-bug",
       title: {
-        en: "Signup defaults to INDIVIDUAL instead of a management-specific role — verify intentional or file as a bug",
-        ar: "التسجيل يعتمد افتراضياً على INDIVIDUAL بدلاً من دور خاص بالإدارة — تحقق من كون هذا مقصوداً أو أبلغ عنه كخطأ",
+        en: "Management portal: sign up and sign in work",
+        ar: "بوابة إدارة الأملاك: التسجيل والدخول يعملان",
       },
       priority: "P0",
       story: {
-        en: 'Verify what role is actually submitted when a user signs up through apps/web/management, because SignupForm here is configured with defaultRole="INDIVIDUAL" — the same as no role selection at all — which looks like it may be an oversight left over from copying the web-companies/web-offices template rather than an intentional choice.',
-        ar: 'تحقق من الدور الذي يُرسَل فعلياً عند تسجيل مستخدم عبر apps/web/management، لأن SignupForm هنا مُهيّأ بـ defaultRole="INDIVIDUAL" — وهو ما يماثل عدم اختيار أي دور إطلاقاً — وهذا يبدو وكأنه سهو متبقٍّ من نسخ قالب web-companies/web-offices، لا خياراً مقصوداً.',
+        en: "Verify the portal's auth against the current API (shared createPortalAuth in packages/ui): login sends identifier and stores access_token; an individual signs up with POST /users/register/individual and confirms the SMS/email code (/auth/register/verify-otp or verify-email-otp); a company/office signs up with POST /users/register/company|office (email and licence required) and is signed in. Previously login always failed and signup hit the removed /auth/register. This portal defaults to INDIVIDUAL.",
+        ar: "تحقق من مصادقة البوابة مع الواجهة البرمجية الحالية (createPortalAuth المشترك في packages/ui): الدخول يرسل identifier ويحفظ access_token؛ والفرد يسجّل عبر POST /users/register/individual ويؤكد رمز SMS/البريد (/auth/register/verify-otp أو verify-email-otp)؛ والشركة/المكتب يسجّل عبر POST /users/register/company|office (البريد والترخيص مطلوبان) ثم يدخل مباشرة. سابقاً كان الدخول يفشل دائماً والتسجيل يستدعي /auth/register المحذوفة. هذه البوابة تبدأ بالدور INDIVIDUAL.",
       },
       acceptanceCriteria: {
         en: [
-          "Confirm with product/eng whether accounts created via this portal are supposed to be INDIVIDUAL, or a dedicated MANAGEMENT-type role that hasn't been wired up yet.",
-          "If INDIVIDUAL is unintentional: file a bug against apps/web/management/src/app/auth/signup (or wherever defaultRole is set) rather than treating current behavior as correct.",
-          "If INDIVIDUAL is intentional (e.g. management accounts are provisioned differently, not via self-signup): document that explicitly so this story doesn't get re-flagged every regression pass.",
+          "A registered user signs in and lands on the portal home.",
+          "Individual signup shows the code step; a wrong code is refused; the right one signs in.",
+          "Company/office signup without a licence is refused; with one it signs in (as pending approval).",
+          "A taken licence number is refused with 'رقم الترخيص مسجل مسبقاً'.",
         ],
         ar: [
-          "تأكد مع فريقَي المنتج والهندسة ما إذا كان من المفترض أن تكون الحسابات المُنشأة عبر هذه البوابة INDIVIDUAL، أم دور MANAGEMENT مخصص لم يُربط بعد.",
-          "إذا كان INDIVIDUAL غير مقصود: أبلغ عن خطأ ضد apps/web/management/src/app/auth/signup (أو أينما تُحدَّد defaultRole) بدلاً من اعتبار السلوك الحالي صحيحاً.",
-          "إذا كان INDIVIDUAL مقصوداً (مثلاً حسابات الإدارة تُنشأ بطريقة مختلفة، لا عبر التسجيل الذاتي): وثّق ذلك صراحةً حتى لا يُعاد الإبلاغ عن هذه القصة في كل جولة اختبار انحدار.",
+          "المستخدم المسجّل يدخل ويصل إلى الصفحة الرئيسية للبوابة.",
+          "تسجيل الفرد يعرض خطوة الرمز؛ والرمز الخاطئ يُرفض والصحيح يسجّل الدخول.",
+          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (قيد المراجعة).",
+          "رقم الترخيص المستخدم يُرفض برسالة 'رقم الترخيص مسجل مسبقاً'.",
         ],
       },
       testScenarios: {
         en: [
-          "Complete signup on this portal and check via network inspector / admin /users table what role the created account actually has.",
-          'Compare against the equivalent signup flow on web-companies (defaultRole="COMPANY") and web-offices (defaultRole="OFFICE") to confirm this portal is the outlier.',
-          "Escalate to the team before closing this out either way — this is exactly the kind of copy-paste-template bug that's easy to miss without cross-portal comparison.",
+          "Sign up as each role on this portal, then sign out and sign in again.",
         ],
         ar: [
-          "أكمل التسجيل عبر هذه البوابة وتحقق عبر أداة فحص الشبكة / جدول /users في لوحة تحكم المشرف من الدور الفعلي للحساب المُنشأ.",
-          'قارن مع تدفق التسجيل المكافئ على web-companies (defaultRole="COMPANY") وweb-offices (defaultRole="OFFICE") للتأكد أن هذه البوابة هي الاستثناء.',
-          "صعّد الأمر إلى الفريق قبل إغلاق هذه القصة بأي اتجاه — هذا بالضبط نوع أخطاء نسخ القوالب التي يسهل تفويتها دون مقارنة بين البوابات.",
+          "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "management-shared-form-parity",
@@ -107,6 +107,7 @@ export const management: DocSection = {
           "شغّل نفس حالات اختبار المصادقة المستخدمة لـ web-companies وweb-offices على web-management وتأكد من تطابق السلوك باستثناء حقل الدور.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

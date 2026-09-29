@@ -4,8 +4,8 @@ export const companies: DocSection = {
   slug: "web-companies",
   title: { en: "Web Companies", ar: "بوابة الشركات (ويب)" },
   summary: {
-    en: "Next.js corporate portal (apps/web/companies, port 3002). Currently an auth-only shell: a splash page plus login/signup/forgot-password, all reusing the shared @buyootna/ui forms. No company dashboard exists yet.",
-    ar: "بوابة الشركات المبنية على Next.js (apps/web/companies، المنفذ 3002). حالياً مجرد هيكل مصادقة فقط: صفحة ترحيبية بالإضافة إلى تسجيل الدخول/التسجيل/نسيت كلمة المرور، وكلها تعيد استخدام نماذج @buyootna/ui المشتركة. لا توجد لوحة تحكم للشركة بعد.",
+    en: "Next.js corporate portal (apps/web/companies, port 3002). An auth-only shell: a splash page plus login/signup/forgot-password on the shared @buyootna/ui forms. Sign-in and sign-up use the shared createPortalAuth (see the signup story). No dashboard exists yet.",
+    ar: "Next.js بوابة الشركات (apps/web/companies، المنفذ 3002). هيكل مصادقة فقط: صفحة ترحيبية مع الدخول/التسجيل/استعادة كلمة المرور بنماذج @buyootna/ui المشتركة. الدخول والتسجيل عبر createPortalAuth المشترك (راجع قصة التسجيل). لا توجد لوحة تحكم بعد.",
   },
   stories: [
     {
@@ -41,40 +41,42 @@ export const companies: DocSection = {
           "حاول تخمين/الوصول المباشر إلى رابط لوحة تحكم محتمل (مثل /dashboard أو /properties) وتأكد أنه يعطي 404 بشكل صحيح بدلاً من عرض صفحة معطوبة جزئياً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "companies-signup-role",
       title: {
-        en: "Signup correctly defaults to and submits the COMPANY role",
-        ar: "التسجيل يعتمد افتراضياً على دور COMPANY ويرسله بشكل صحيح",
+        en: "Companies portal: sign up and sign in work",
+        ar: "بوابة الشركات: التسجيل والدخول يعملان",
       },
       priority: "P0",
       story: {
-        en: 'Verify that SignupForm on this portal is configured with defaultRole="COMPANY" and actually submits COMPANY as the role to POST auth/register, so that a company signing up through this portal doesn\'t accidentally get provisioned as an individual account.',
-        ar: 'تحقق من أن SignupForm في هذه البوابة مُهيّأ بـ defaultRole="COMPANY" وأنه يرسل فعلياً COMPANY كدور إلى POST auth/register، حتى لا تُنشأ شركة تسجّل عبر هذه البوابة بالخطأ كحساب فردي.',
+        en: "Verify the portal's auth against the current API (shared createPortalAuth in packages/ui): login sends identifier and stores access_token; an individual signs up with POST /users/register/individual and confirms the SMS/email code (/auth/register/verify-otp or verify-email-otp); a company/office signs up with POST /users/register/company|office (email and licence required) and is signed in. Previously login always failed and signup hit the removed /auth/register. This portal defaults to COMPANY.",
+        ar: "تحقق من مصادقة البوابة مع الواجهة البرمجية الحالية (createPortalAuth المشترك في packages/ui): الدخول يرسل identifier ويحفظ access_token؛ والفرد يسجّل عبر POST /users/register/individual ويؤكد رمز SMS/البريد (/auth/register/verify-otp أو verify-email-otp)؛ والشركة/المكتب يسجّل عبر POST /users/register/company|office (البريد والترخيص مطلوبان) ثم يدخل مباشرة. سابقاً كان الدخول يفشل دائماً والتسجيل يستدعي /auth/register المحذوفة. هذه البوابة تبدأ بالدور COMPANY.",
       },
       acceptanceCriteria: {
         en: [
-          "The signup form does not require the user to manually pick a role — COMPANY is implicit for this portal.",
-          'The network request to auth/register includes role: "COMPANY".',
-          "A completed signup results in a user whose role/identity is COMPANY when inspected via the admin /users table.",
+          "A registered user signs in and lands on the portal home.",
+          "Individual signup shows the code step; a wrong code is refused; the right one signs in.",
+          "Company/office signup without a licence is refused; with one it signs in (as pending approval).",
+          "A taken licence number is refused with 'رقم الترخيص مسجل مسبقاً'.",
         ],
         ar: [
-          "نموذج التسجيل لا يتطلب من المستخدم اختيار دور يدوياً — COMPANY ضمني في هذه البوابة.",
-          'طلب الشبكة إلى auth/register يتضمن role: "COMPANY".',
-          "التسجيل المكتمل ينتج مستخدماً دوره/هويته COMPANY عند فحصه عبر جدول /users في لوحة تحكم المشرف.",
+          "المستخدم المسجّل يدخل ويصل إلى الصفحة الرئيسية للبوابة.",
+          "تسجيل الفرد يعرض خطوة الرمز؛ والرمز الخاطئ يُرفض والصحيح يسجّل الدخول.",
+          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (قيد المراجعة).",
+          "رقم الترخيص المستخدم يُرفض برسالة 'رقم الترخيص مسجل مسبقاً'.",
         ],
       },
       testScenarios: {
         en: [
-          "Complete signup on this portal and verify (via network inspector or admin panel) the created account is role COMPANY, not INDIVIDUAL.",
-          "Compare the created account's role against the same signup flow run on apps/web/offices to confirm the two portals don't cross-wire roles.",
+          "Sign up as each role on this portal, then sign out and sign in again.",
         ],
         ar: [
-          "أكمل التسجيل على هذه البوابة وتحقق (عبر أداة فحص الشبكة أو لوحة تحكم المشرف) أن الحساب المُنشأ دوره COMPANY، لا INDIVIDUAL.",
-          "قارن دور الحساب المُنشأ مع نفس تدفق التسجيل المُنفَّذ على apps/web/offices للتأكد أن البوابتين لا تتبادلان الأدوار بالخطأ.",
+          "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "companies-shared-form-validation",
@@ -111,6 +113,7 @@ export const companies: DocSection = {
           "افتح تذكرة اتساق بين المنصات إذا أراد فريق المنتج أن يطابق الويب قواعد zod الأكثر صرامة في الجوال — هذه القصة موجودة لجعل الفجوة الحالية صريحة، لا لتمريرها بصمت باعتبارها مقبولة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "companies-forgot-password",
@@ -147,6 +150,7 @@ export const companies: DocSection = {
           "اضغط زر الإرسال بسرعة عدة مرات وتأكد من عدم إطلاق رسائل/رموز تحقق مكررة من الواجهة (الزر يُعطَّل أثناء الإرسال).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

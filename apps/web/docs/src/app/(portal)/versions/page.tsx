@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
-import { AlertTriangle } from "lucide-react";
-import { appVersions } from "@/data/versions";
-import { t } from "@/data/types";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { chrome } from "@/lib/chrome";
+import { AlertTriangle } from 'lucide-react'
+import { appVersions } from '@/data/versions'
+import { t } from '@/data/types'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { chrome } from '@/lib/chrome'
 
 export default function VersionsPage() {
-  const { lang } = useLanguage();
-  const c = chrome[lang];
+  const { lang } = useLanguage()
+  const c = chrome[lang]
 
   return (
     <div className="space-y-8">
@@ -19,7 +19,7 @@ export default function VersionsPage() {
 
       <div className="overflow-x-auto rounded-2xl border border-[#1B2936]">
         <table className="w-full text-start text-sm">
-          <thead className="bg-[#0F1E2E] text-xs uppercase tracking-wider text-[#7C8894]">
+          <thead className="bg-primary text-xs uppercase tracking-wider text-[#7C8894]">
             <tr>
               <th className="px-4 py-3 text-start">{c.versionsColApp}</th>
               <th className="px-4 py-3 text-start">{c.versionsColVersion}</th>
@@ -58,10 +58,10 @@ export default function VersionsPage() {
         <p className="text-sm text-[#DCE1E6]">
           <span className="font-semibold text-white">
             {c.versionsWarningTitle}
-          </span>{" "}
+          </span>{' '}
           {c.versionsWarningBody}
         </p>
       </div>
     </div>
-  );
+  )
 }

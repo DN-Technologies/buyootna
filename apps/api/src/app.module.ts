@@ -40,6 +40,7 @@ import { CompanyRequestsModule } from './features/company/company-requests/compa
 import { CompanyModule } from './features/company/company.module';
 import { OfficeModule } from './features/office/office.module';
 import { AlertsModule } from './features/alerts/alerts.module';
+import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { AlertsModule } from './features/alerts/alerts.module';
     ReportsModule,
     CompanyRequestsModule,
     AlertsModule,
+    DocsPortalModule,
   ],
   controllers: [AppController],
   providers: [

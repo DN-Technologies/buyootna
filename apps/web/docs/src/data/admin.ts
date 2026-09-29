@@ -4,8 +4,8 @@ export const admin: DocSection = {
   slug: "web-admin",
   title: { en: "Web Admin", ar: "لوحة تحكم المشرف (ويب)" },
   summary: {
-    en: "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, Plans & Pricing, Subscriptions & Billing, and several intentionally-unbuilt placeholder sections (Notifications, Content, Roles, Settings, Logs).",
-    ar: "لوحة تحكم مشرف النظام المبنية على Next.js (apps/web/admin، المنفذ 3005). تغطي لوحة القيادة، إدارة المستخدمين، الباقات والأسعار، الاشتراكات والفوترة، وعدة أقسام هيكلية غير مبنية عمداً بعد (الإشعارات، إدارة المحتوى، الأدوار، الإعدادات، السجل).",
+    en: "Next.js system administrator dashboard (apps/web/admin, port 3005). Covers the dashboard, user management, verifications (approving companies/offices), reports, the Plans page (edits the real plans), Subscriptions & Billing (mock data), and unbuilt placeholders (Deals, Notifications, Content, Roles, Settings, Logs). Feature packages are managed through the admin API only.",
+    ar: "لوحة تحكم مدير النظام (apps/web/admin، المنفذ 3005). تغطي لوحة المعلومات، إدارة المستخدمين، طلبات الاعتماد (قبول الشركات/المكاتب)، البلاغات، صفحة الباقات (تعدّل الباقات الحقيقية)، الاشتراكات والفوترة (بيانات وهمية)، والصفحات غير المبنية (الصفقات، الإشعارات، المحتوى، الأدوار، الإعدادات، السجلات). باقات التمييز تُدار عبر واجهة الإدارة البرمجية فقط.",
   },
   stories: [
     {
@@ -45,6 +45,7 @@ export const admin: DocSection = {
           "سجّل الدخول كمشرف، اترك رمز الجلسة ينتهي (أو ألغِه من جهة الخادم)، ثم اضغط رابط تنقّل — تأكد من إعادة توجيه سلسة، لا طلب فاشل/خطأ 500.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-password-recovery",
@@ -85,6 +86,7 @@ export const admin: DocSection = {
           "انتقل مباشرة إلى /auth/reset-password دون إكمال التحقق عبر OTP — تأكد أنها غير قابلة للوصول/الاستخدام دون جلسة موثَّقة صالحة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-dashboard-metrics",
@@ -123,6 +125,7 @@ export const admin: DocSection = {
           "في بيئة فارغة تماماً (بلا بيانات)، تأكد أن كل رسم/بطاقة تعرض حالة فارغة/صفرية منطقية، لا خطأ أو قيمة NaN.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-users-table",
@@ -165,6 +168,7 @@ export const admin: DocSection = {
           "تصفّح قائمة تضم أكثر من 50 مستخدماً وتأكد أن أي صف لا يظهر مرتين أو يُتخطى بين الصفحات.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-user-detail-tabs",
@@ -205,46 +209,46 @@ export const admin: DocSection = {
           "افتح معرّفَي مستخدمين مختلفين في تبويبَي متصفح وتأكد من عدم تداخل حالة التبويبات بينهما (مثلاً عبر ذاكرة تخزين مؤقت مشتركة في العميل).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-plans-pricing",
       title: {
-        en: "Plans & Pricing (Normal/Silver/Gold) edits apply correctly and can be safely discarded",
-        ar: "تعديلات الباقات والأسعار (عادية/فضية/ذهبية) تُطبَّق بشكل صحيح ويمكن التراجع عنها بأمان",
+        en: "Admin Plans page edits the real plans the app sells",
+        ar: "صفحة الباقات في لوحة الإدارة تعدّل الباقات الحقيقية التي يبيعها التطبيق",
       },
       priority: "P0",
       story: {
-        en: "Verify the /plans page — PlanDetailDrawer for each tier and the 3-step EditPlanDrawer with DiscardEditsModal — saves edits correctly per tier and never silently loses or applies changes when a user backs out, so that pricing changes are intentional and accurately reflected to real users on their next billing cycle.",
-        ar: "تحقق من أن صفحة /plans — PlanDetailDrawer لكل باقة وEditPlanDrawer المكوَّن من 3 خطوات مع DiscardEditsModal — تحفظ التعديلات بشكل صحيح لكل باقة، ولا تفقد أو تطبّق تغييرات بصمت عندما يتراجع المستخدم، حتى تكون تغييرات الأسعار مقصودة وتنعكس بدقة على المستخدمين الحقيقيين في دورة الفوترة التالية.",
+        en: "Verify /plans loads the real plans (GET /admin/plans — the same Normal/Silver/Gold set in each account-type tab, since the app sells one set) and that saving the edit drawer changes them (PATCH /admin/plans/:id): name, price, hidden/active, ads per credit, publish days, images, featured/pinned, priority search. The app's feature lines are rebuilt from the numbers on save, each edit is logged as 'تعديل باقة', and the summary cards show real totals, active/hidden counts and the most-bought plan.",
+        ar: "تحقق من أن /plans تحمّل الباقات الحقيقية (GET /admin/plans — نفس مجموعة العادية/الفضية/الذهبية في كل تبويب لأن التطبيق يبيع مجموعة واحدة) وأن حفظ نافذة التعديل يغيّرها (PATCH /admin/plans/:id): الاسم، السعر، مخفية/نشطة، الإعلانات لكل رصيد، أيام النشر، الصور، التمييز/التثبيت، أولوية البحث. تُعاد كتابة أسطر المزايا في التطبيق من الأرقام عند الحفظ، ويُسجَّل كل تعديل كـ'تعديل باقة'، وتعرض بطاقات الملخص الإجماليات الحقيقية وعدد النشطة/المخفية والباقة الأكثر شراءً.",
       },
       acceptanceCriteria: {
         en: [
-          "Opening PlanDetailDrawer for Normal, Silver, and Gold each shows that tier's correct current price/features, not a shared/stale state.",
-          "Editing a plan through all 3 EditPlanDrawer steps and confirming saves the new values, visible immediately on reopening PlanDetailDrawer.",
-          "Attempting to close the EditPlanDrawer mid-edit (with unsaved changes) triggers DiscardEditsModal; confirming discard reverts to the pre-edit values with nothing saved.",
-          "Navigating away (browser back, or closing the drawer via the X) with unsaved changes is also caught by the discard flow — it isn't only the Cancel button that's guarded.",
+          "Changing Silver's price and saving shows the new price after reload and in the app's plan screen and checkout.",
+          "Setting a plan to hidden marks it 'مخفية' here and removes it from the app's plans list; existing credits from it keep working.",
+          "Closing the drawer with unsaved changes asks to discard; discarding changes nothing.",
+          "Invalid values (negative price, 0 days) are refused.",
         ],
         ar: [
-          "فتح PlanDetailDrawer للباقة العادية والفضية والذهبية يعرض في كل حالة السعر/الميزات الحالية الصحيحة لتلك الباقة، لا حالة مشتركة أو قديمة.",
-          "تعديل باقة عبر جميع خطوات EditPlanDrawer الثلاث وتأكيد الحفظ يحفظ القيم الجديدة، وتظهر فوراً عند إعادة فتح PlanDetailDrawer.",
-          "محاولة إغلاق EditPlanDrawer أثناء التعديل (مع وجود تغييرات غير محفوظة) تُظهر DiscardEditsModal؛ تأكيد التجاهل يعيد القيم إلى ما قبل التعديل دون حفظ أي شيء.",
-          "الخروج من الشاشة (زر الرجوع في المتصفح، أو إغلاق الدرج عبر علامة X) مع وجود تغييرات غير محفوظة يُلتقط أيضاً عبر تدفق التجاهل — الحماية ليست مقتصرة على زر الإلغاء فقط.",
+          "تغيير سعر الفضية وحفظه يعرض السعر الجديد بعد إعادة التحميل وفي شاشة الباقات والدفع في التطبيق.",
+          "جعل الباقة مخفية يعلّمها 'مخفية' هنا ويزيلها من قائمة الباقات في التطبيق؛ والأرصدة الحالية منها تستمر بالعمل.",
+          "إغلاق النافذة بتعديلات غير محفوظة يطلب التأكيد؛ والتجاهل لا يغيّر شيئاً.",
+          "القيم غير الصالحة (سعر سالب، 0 أيام) تُرفض.",
         ],
       },
       testScenarios: {
         en: [
-          "Edit the Gold plan's price on step 1, price a feature on step 2, review on step 3, save — reopen and confirm all three changes stuck.",
-          "Start editing Silver, change a value, click the browser back button or press Escape — confirm DiscardEditsModal appears rather than silently discarding or silently saving.",
-          "Start editing Normal, click Discard in the modal, reopen PlanDetailDrawer for Normal — confirm the original (pre-edit) values are shown, not a half-applied state.",
-          "Edit Normal and Silver in two separate sessions without saving either, confirm no cross-tier bleed (editing Normal doesn't touch Silver's draft state).",
+          "Edit Gold's duration to 90 days, save, open the app's plans — '90 يوم' shows.",
+          "Hide Silver, check the app — gone; unhide — back.",
+          "Check the Logs tab — the edit appears as 'تعديل باقة'.",
         ],
         ar: [
-          "عدّل سعر الباقة الذهبية في الخطوة 1، وسعر ميزة في الخطوة 2، وراجع في الخطوة 3، ثم احفظ — أعد الفتح وتأكد من بقاء التغييرات الثلاثة جميعها.",
-          "ابدأ تعديل الباقة الفضية، غيّر قيمة، اضغط زر الرجوع في المتصفح أو مفتاح Escape — تأكد من ظهور DiscardEditsModal بدلاً من التجاهل الصامت أو الحفظ الصامت.",
-          "ابدأ تعديل الباقة العادية، اضغط تجاهل في النافذة، أعد فتح PlanDetailDrawer للباقة العادية — تأكد من عرض القيم الأصلية (قبل التعديل)، لا حالة مطبَّقة جزئياً.",
-          "عدّل الباقة العادية والفضية في جلستين منفصلتين دون حفظ أي منهما، تأكد من عدم تداخل التعديلات بين الباقتين (تعديل العادية لا يمسّ مسودة الفضية).",
+          "عدّل مدة الذهبية إلى 90 يوماً واحفظ ثم افتح باقات التطبيق — يظهر '90 يوم'.",
+          "أخفِ الفضية وتحقق من التطبيق — اختفت؛ أظهرها — عادت.",
+          "افحص تبويب السجلات — يظهر التعديل كـ'تعديل باقة'.",
         ],
       },
+      updatedIn: "fix/review-findings",
     },
     {
       id: "admin-billing-subscriptions",
@@ -281,6 +285,7 @@ export const admin: DocSection = {
           "وثّق صراحةً في تقارير الاختبار أن هذا الفحص يعتمد على بيانات وهمية، حتى لا تُتخطى جولة اختبار البيانات الحقيقية لاحقاً بمجرد ربط الواجهة الخلفية.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-billing-invoices-empty",
@@ -315,42 +320,104 @@ export const admin: DocSection = {
           "غيّر حجم نافذة المتصفح / اختبر بعرض شاشة جوال وتأكد أن الحالة الفارغة لا تكسر التخطيط.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "admin-placeholder-pages",
       title: {
-        en: "Notifications, Content, Roles, Settings, and Logs are intentionally unbuilt scaffolds",
-        ar: "الإشعارات وإدارة المحتوى والأدوار والإعدادات والسجل هياكل غير مبنية عمداً",
+        en: "Deals, Notifications, Content, Roles, Settings and Logs are unbuilt scaffolds",
+        ar: "الصفقات والإشعارات والمحتوى والأدوار والإعدادات والسجلات هياكل غير مبنية",
       },
       priority: "P2",
       story: {
-        en: "Verify that /notifications, /content, /roles, /settings, and /logs consistently render the 'no data — ready-to-develop skeleton' placeholder with a working (if alert()-only) Export/Add button, so that these are tracked as known scaffold pages rather than 5 separate 'broken page' bug reports.",
-        ar: "تحقق من أن /notifications و/content و/roles و/settings و/logs تعرض جميعها بثبات نموذج العنصر النائب 'لا توجد بيانات — هيكل جاهز للتطوير' مع زر تصدير/إضافة فعّال (ولو أنه ينفذ alert() فقط)، حتى تُتابَع هذه الصفحات كصفحات هيكلية معروفة، لا كخمسة بلاغات أخطاء منفصلة عن 'صفحة معطوبة'.",
+        en: "Confirm these six admin pages render their 'no data' placeholder rather than an error: /deals ('لا توجد صفقات أو مزادات نشطة لعرضها حالياً'), /notifications, /content, /roles, /settings and /logs. Track them as known scaffolds, not six separate bugs.",
+        ar: "تأكد من أن صفحات الإدارة الست هذه تعرض حالة 'لا توجد بيانات' وليس خطأ: /deals ('لا توجد صفقات أو مزادات نشطة لعرضها حالياً') و /notifications و /content و /roles و /settings و /logs. تُتابَع كهياكل معروفة وليست ستة أخطاء منفصلة.",
       },
       acceptanceCriteria: {
         en: [
-          "Each of the 5 pages loads without error and shows the Arabic placeholder copy ('لا توجد بيانات لعرضها حالياً...').",
-          "Each page's Export/Add button fires a browser alert() rather than throwing a JS error or doing nothing silently.",
-          "None of the 5 pages appear in the SideNav with a broken/missing icon or label.",
+          "Each page loads without errors and shows its placeholder text.",
+          "Their buttons don't throw errors.",
+          "Each has a working link in the side menu.",
         ],
         ar: [
-          "كل صفحة من الصفحات الخمس تُحمَّل دون خطأ وتعرض النص العربي النائب ('لا توجد بيانات لعرضها حالياً...').",
-          "زر التصدير/الإضافة في كل صفحة ينفذ alert() في المتصفح بدلاً من رمي خطأ JavaScript أو عدم فعل أي شيء بصمت.",
-          "لا تظهر أي من الصفحات الخمس في SideNav بأيقونة أو تسمية معطوبة/مفقودة.",
+          "كل صفحة تُحمَّل دون أخطاء وتعرض نص الحالة الفارغة.",
+          "أزرارها لا تسبب أخطاء.",
+          "لكل منها رابط يعمل في القائمة الجانبية.",
         ],
       },
       testScenarios: {
         en: [
-          "Visit each of the 5 pages once and confirm identical placeholder structure/copy pattern across all of them (catches accidental divergence during future partial builds).",
-          "Click the Export/Add button on each and confirm the alert() fires without a console error.",
-          "Re-run this check after any of these 5 pages gets real functionality shipped, since at that point this story should be split into a real per-page story.",
+          "Open each of the six from the side menu.",
         ],
         ar: [
-          "زر كل صفحة من الصفحات الخمس مرة واحدة وتأكد من تطابق هيكل/نمط النص النائب عبرها جميعاً (يلتقط أي تباين عرضي أثناء عمليات بناء جزئية مستقبلية).",
-          "اضغط زر التصدير/الإضافة في كل صفحة وتأكد من تنفيذ alert() دون أي خطأ في وحدة التحكم.",
-          "أعد تنفيذ هذا الفحص بعد أن تحصل أي من الصفحات الخمس على وظيفة حقيقية، لأنه عندها يجب تقسيم هذه القصة إلى قصة مستقلة حقيقية لكل صفحة.",
+          "افتح كل صفحة من الست من القائمة الجانبية.",
         ],
       },
+      updatedIn: "feat/docs-platform",
+    },
+    {
+      id: "admin-verifications",
+      title: {
+        en: "Verifications: approving or rejecting new companies and offices",
+        ar: "طلبات الاعتماد: قبول أو رفض الشركات والمكاتب الجديدة",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify /verifications lists companies and offices waiting for approval (GET /admin/verifications) — from both direct signup and in-app onboarding — and that approving or rejecting (PATCH /admin/identities/:id/status) takes effect in the app: an approved company can publish and receive requests; a rejected one sees 'تم رفض طلب اعتماد حسابك…' when it tries.",
+        ar: "تحقق من أن /verifications تعرض الشركات والمكاتب المنتظرة للاعتماد (GET /admin/verifications) — من التسجيل المباشر والإضافة من داخل التطبيق — وأن القبول أو الرفض (PATCH /admin/identities/:id/status) ينعكس في التطبيق: الشركة المقبولة تستطيع النشر واستقبال الطلبات؛ والمرفوضة ترى 'تم رفض طلب اعتماد حسابك…' عند المحاولة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company added from the app appears in the list as pending.",
+          "Approving it lets it publish; its listing on the directory and map appears.",
+          "Rejecting it with a reason blocks publishing with the rejection message.",
+        ],
+        ar: [
+          "الشركة المضافة من التطبيق تظهر في القائمة كقيد المراجعة.",
+          "قبولها يسمح لها بالنشر؛ ويظهر في الدليل والخريطة.",
+          "رفضها مع سبب يمنع النشر مع رسالة الرفض.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Add a company in-app, approve it in /verifications, publish an ad from it.",
+        ],
+        ar: [
+          "أضف شركة من التطبيق واعتمدها في /verifications ثم انشر إعلاناً منها.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
+    },
+    {
+      id: "admin-feature-packages-api-only",
+      title: {
+        en: "Feature packages are editable through the admin API only",
+        ar: "باقات التمييز قابلة للتعديل عبر واجهة الإدارة البرمجية فقط",
+      },
+      priority: "P2",
+      story: {
+        en: "The packages the app sells for featuring an ad are managed by GET/POST /admin/feature-packages and PATCH /admin/feature-packages/:id, but the admin portal has no screen for them yet. Changes are made with an admin token (e.g. from Postman) until one exists.",
+        ar: "الباقات التي يبيعها التطبيق لتمييز الإعلان تُدار عبر GET/POST /admin/feature-packages و PATCH /admin/feature-packages/:id، لكن لوحة الإدارة لا تحتوي شاشة لها بعد. تُجرى التعديلات برمز مسؤول (مثلاً من Postman) حتى تتوفر الشاشة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A package deactivated through the API disappears from the app's 'تمييز الإعلان' sheet.",
+          "A price change is what the next Tap charge uses.",
+        ],
+        ar: [
+          "الباقة المعطّلة عبر الواجهة البرمجية تختفي من نافذة 'تمييز الإعلان' في التطبيق.",
+          "تغيير السعر هو ما تستخدمه عملية الدفع التالية في Tap.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "PATCH a package's price as admin, open the feature sheet in the app — the new price shows.",
+        ],
+        ar: [
+          "عدّل سعر باقة كمسؤول ثم افتح نافذة التمييز في التطبيق — يظهر السعر الجديد.",
+        ],
+      },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

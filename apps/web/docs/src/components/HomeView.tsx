@@ -2,23 +2,34 @@
 
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, Send, Tag } from "lucide-react";
-import { sections } from "@/data/sections";
 import { t } from "@/data/types";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { chrome } from "@/lib/chrome";
+import type { NavSection } from "@/lib/nav";
 
-export default function Home() {
+export function HomeView({
+  sections,
+  showPostman,
+}: {
+  // Only the sections this role may open (filtered on the server)
+  sections: NavSection[];
+  showPostman: boolean;
+}) {
   const { lang } = useLanguage();
   const c = chrome[lang];
-  const totalStories = sections.reduce((sum, s) => sum + s.stories.length, 0);
+  const totalStories = sections.reduce((sum, s) => sum + s.storyCount, 0);
 
   const resources = [
-    {
-      href: "/postman",
-      icon: Send,
-      title: c.navPostman,
-      summary: c.homePostmanCardSummary,
-    },
+    ...(showPostman
+      ? [
+          {
+            href: "/postman",
+            icon: Send,
+            title: c.navPostman,
+            summary: c.homePostmanCardSummary,
+          },
+        ]
+      : []),
     {
       href: "/versions",
       icon: Tag,
@@ -62,7 +73,7 @@ export default function Home() {
               {t(section.summary, lang)}
             </p>
             <p className="mt-3 text-xs text-[#7C8894]">
-              {section.stories.length} {c.homeStatsStories}
+              {section.storyCount} {c.homeStatsStories}
             </p>
           </Link>
         ))}

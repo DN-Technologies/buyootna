@@ -4,8 +4,8 @@ export const mobileOffice: DocSection = {
   slug: "mobile-office",
   title: { en: "Mobile — Office", ar: "الجوال — المكتب العقاري" },
   summary: {
-    en: "The (office) route group (office-home, office-more, office-chats, office-properties). IMPORTANT: this entire route group is currently gated behind ComingSoonGate — see mobile-company-office-gate in Mobile — Shared. None of the stories below are reachable by real users right now; they're a readiness checklist for when COMPANY_OFFICE_LOCKED flips off, grounded in what's actually built in the code today.",
-    ar: "مجموعة مسارات (office) (office-home، office-more، office-chats، office-properties). مهم: كامل مجموعة المسارات هذه مقفلة حالياً خلف ComingSoonGate — راجع mobile-company-office-gate في قسم 'الجوال — مشترك'. لا يمكن لأي مستخدم حقيقي الوصول إلى أي من القصص التالية حالياً؛ هي قائمة تحقق جاهزية لوقت إلغاء قفل COMPANY_OFFICE_LOCKED، مبنية على ما هو مُنفَّذ فعلياً في الكود اليوم.",
+    en: "The (office) route group (office-home, office-more, office-chats, office-properties). IMPORTANT: in store builds this route group is behind ComingSoonGate unless EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is 'true' (see mobile-company-office-gate). The stories below are a readiness checklist for when it's switched on; the server-side office rules (one per account, unique licence, approval before publishing) are covered in API → api-persona-rules.",
+    ar: "مجموعة مسارات (office) (office-home و office-more و office-chats و office-properties). مهم: في نسخ المتاجر تبقى هذه المجموعة خلف ComingSoonGate ما لم تكن قيمة EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS هي 'true' (راجع mobile-company-office-gate). القصص أدناه قائمة جاهزية لوقت تفعيلها؛ أما قواعد المكتب في الخادم (واحد لكل حساب، ترخيص فريد، اعتماد قبل النشر) فموجودة في الواجهة البرمجية ← api-persona-rules.",
   },
   stories: [
     {
@@ -20,8 +20,8 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد أن تعرض لوحة المعلومات الخاصة بي أرقاماً حقيقية عن إعلاناتي النشطة وخدماتي ومشاهداتي ورسائلي، حتى أتمكن فعلياً من تقييم أداء إعلانات مكتبي بدلاً من النظر إلى أرقام لا تتغير أبداً.",
       },
       story: {
-        en: "Flag that office-home.tsx's entire 2x2 stats grid (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3', '3', '700+', '5') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them — an identical pattern to company-home.tsx (mobile-company-dashboard-mock-data) — so this is tracked as a known readiness gap for whenever COMPANY_OFFICE_LOCKED flips off.",
-        ar: "تنويه: شبكة الإحصاءات 2×2 بالكامل في office-home.tsx (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة، التي تعرض السلاسل النصية الحرفية '3' و'3' و'700+' و'5') وشريط العد التنازلي للنسخة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي حالة (state) أو hook أو طلب API يغذّيها — وهو نمط مطابق تماماً لـ company-home.tsx (mobile-company-dashboard-mock-data) — لذا يُوثَّق هذا كفجوة جاهزية معروفة لوقت إلغاء قفل COMPANY_OFFICE_LOCKED.",
+        en: "Flag that office-home.tsx's entire 2x2 stats grid (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3', '3', '700+', '5') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them — an identical pattern to company-home.tsx (mobile-company-dashboard-mock-data) — so this is tracked as a known readiness gap for whenever EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is switched on in store builds.",
+        ar: "تنويه: شبكة الإحصاءات 2×2 بالكامل في office-home.tsx (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة، التي تعرض السلاسل النصية الحرفية '3' و'3' و'700+' و'5') وشريط العد التنازلي للنسخة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي حالة (state) أو hook أو طلب API يغذّيها — وهو نمط مطابق تماماً لـ company-home.tsx (mobile-company-dashboard-mock-data) — لذا يُوثَّق هذا كفجوة جاهزية معروفة لوقت تفعيل EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS في نسخ المتاجر.",
       },
       acceptanceCriteria: {
         en: [
@@ -47,86 +47,69 @@ export const mobileOffice: DocSection = {
           "قارن مع company-home.tsx (mobile-company-dashboard-mock-data) للتأكد أن كلا اللوحتين بُنيتا من نفس القالب الثابت في الكود.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-office-more-dead-actions",
       title: {
-        en: "Office profile 'معاينة' (Preview) and 'مشاركة' (Share) buttons have no onPress handler at all",
-        ar: "زرا 'معاينة' و'مشاركة' في ملف المكتب العقاري بلا أي معالج onPress إطلاقاً",
+        en: "Office profile 'معاينة' and 'مشاركة' buttons do nothing",
+        ar: "زرا 'معاينة' و'مشاركة' في ملف المكتب لا يفعلان شيئاً",
       },
       priority: "P2",
-      endUserStory: {
-        en: "As an office user, I want to preview how my office profile looks to the public and easily share it, so that I can check my presentation and promote my agency without leaving the app.",
-        ar: "بصفتي مستخدم مكتب عقاري، أريد معاينة شكل ملف مكتبي كما يظهر للعامة ومشاركته بسهولة، حتى أتمكن من مراجعة عرضي والترويج لمكتبي دون مغادرة التطبيق.",
-      },
       story: {
-        en: "Verify that on office-more.tsx's profile header card, the 'معاينة' (Preview) and 'مشاركة' (Share) buttons render with no onPress prop whatsoever — only 'تعديل' (Edit) actually navigates anywhere (to /edit-profile) — an identical gap to company-more.tsx (mobile-company-more-dead-actions) — so this is documented ahead of the gate lifting rather than discovered fresh.",
-        ar: "تحقق من أن زرَّي 'معاينة' و'مشاركة' في بطاقة رأس الملف الشخصي بملف office-more.tsx يُعرضان دون أي خاصية onPress إطلاقاً — وأن زر 'تعديل' فقط هو من يوجّه فعلياً إلى مكان ما (إلى /edit-profile) — وهي فجوة مطابقة تماماً لـ company-more.tsx (mobile-company-more-dead-actions) — لذا تُوثَّق هذه الفجوة مسبقاً قبل رفع القفل بدلاً من اكتشافها من جديد لاحقاً.",
+        en: "Still open: on office-more.tsx's profile card, 'معاينة' (Preview) and 'مشاركة' (Share) have no onPress; only 'تعديل' navigates. Company's identical buttons were fixed (Preview opens /company/:id, Share opens the share sheet — see mobile-company-more-actions), so that's the pattern to copy.",
+        ar: "ما زال قائماً: في بطاقة الملف في office-more.tsx لا يوجد onPress لزري 'معاينة' و'مشاركة'؛ وزر 'تعديل' فقط يعمل. أُصلحت الأزرار المطابقة في الشركة (المعاينة تفتح /company/:id والمشاركة تفتح نافذة المشاركة — راجع mobile-company-more-actions)، وهذا هو النمط الذي يُنسخ.",
       },
       acceptanceCriteria: {
         en: [
-          "Tapping 'معاينة' does nothing — no navigation, no modal, no console log, no crash.",
-          "Tapping 'مشاركة' does nothing for the same reason.",
-          "'تعديل' correctly navigates to /edit-profile and is the only one of the three action buttons that's wired up.",
+          "Today: tapping 'معاينة' or 'مشاركة' does nothing and doesn't crash.",
+          "After the fix: they behave like the company's buttons.",
         ],
         ar: [
-          "الضغط على 'معاينة' لا يفعل شيئاً — لا توجيه، لا نافذة منبثقة، لا سجل console، ولا تعطّل.",
-          "الضغط على 'مشاركة' لا يفعل شيئاً للسبب نفسه.",
-          "زر 'تعديل' يوجّه بشكل صحيح إلى /edit-profile وهو الزر الوحيد من بين الأزرار الثلاثة المفعَّل فعلياً.",
+          "اليوم: الضغط على 'معاينة' أو 'مشاركة' لا يفعل شيئاً ولا يسبب تعطلاً.",
+          "بعد الإصلاح: يتصرفان مثل أزرار الشركة.",
         ],
       },
       testScenarios: {
         en: [
-          "Tap all three action buttons on the office profile card in sequence and confirm only Edit does anything.",
-          "Cross-check against company-more.tsx (mobile-company-more-dead-actions) to confirm the two profile cards share the exact same unwired-buttons issue, not two unrelated bugs.",
-          "Flag to product whether Preview/Share are meant to ship in the release that lifts the gate, or were intentionally left unwired for a later phase.",
+          "With the flag on, open the office More tab and tap each button.",
         ],
         ar: [
-          "اضغط الأزرار الثلاثة بالتتابع على بطاقة ملف المكتب العقاري وتأكد أن زر التعديل فقط هو من ينفّذ إجراءً.",
-          "قارن مع company-more.tsx (mobile-company-more-dead-actions) للتأكد أن بطاقتَي الملف الشخصي تشتركان في نفس مشكلة الأزرار غير المفعَّلة تماماً، لا خللين منفصلين.",
-          "أبلغ المنتج عمّا إذا كان زرا معاينة/مشاركة مخطط لهما ضمن الإصدار الذي يرفع القفل، أم أنهما تُركا عمداً غير مفعَّلين لمرحلة لاحقة.",
+          "مع تفعيل المفتاح افتح تبويب المزيد للمكتب واضغط كل زر.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-office-coming-soon-menu-items",
       title: {
-        en: "Office has 4 explicit 'قريباً' menu stubs — more than Company's 2 (expected, not a bug)",
-        ar: "قائمة المكتب العقاري تحتوي 4 عناصر 'قريباً' صريحة — ضعف عدد الشركة البالغ 2 (متوقع، وليس خللاً)",
+        en: "Office menu has 4 intentional 'قريباً' items",
+        ar: "قائمة المكتب فيها 4 عناصر 'قريباً' مقصودة",
       },
       priority: "P2",
-      endUserStory: {
-        en: "As an office user, I want to eventually manage deals, auctions, and broker relationships, and see analytics on my listings, so that I can run my agency's operations from within the app.",
-        ar: "بصفتي مستخدم مكتب عقاري، أريد أن أتمكن مستقبلاً من إدارة الصفقات والمزادات وعلاقات الوسطاء، ورؤية تحليلات إعلاناتي، حتى أستطيع إدارة عمليات مكتبي من داخل التطبيق.",
-      },
       story: {
-        en: "Confirm that office-more.tsx shows Alert.alert('قريباً', ...) for 4 items — 'الصفقات' (Deals), 'المزادات' (Auctions), 'إدارة الوسطاء' (Broker Management), and 'التحليلات' (Analytics) — twice as many placeholder stubs as company-more.tsx's 2, so this asymmetry is tracked as an intentional difference in each role's roadmap, not an inconsistency to flag as a bug.",
-        ar: "تأكد من أن office-more.tsx يعرض Alert.alert('قريباً', ...) لأربعة عناصر — 'الصفقات' و'المزادات' و'إدارة الوسطاء' و'التحليلات' — أي ضعف عدد العناصر النائبة الموجودة في company-more.tsx (2 فقط)، حتى يُوثَّق هذا التفاوت كاختلاف مقصود في خارطة طريق كل دور، لا كتضارب يُبلَّغ عنه كخلل.",
+        en: "Confirm office-more.tsx shows a 'قريباً' alert for 'الصفقات' (Deals), 'المزادات' (Auctions), 'إدارة الوسطاء' (Broker management) and 'التحليلات' (Analytics) instead of navigating — planned features, not broken links. Company's menu no longer has such items.",
+        ar: "تأكد من أن office-more.tsx يعرض تنبيه 'قريباً' لـ 'الصفقات' و'المزادات' و'إدارة الوسطاء' و'التحليلات' بدلاً من التنقل — ميزات مخططة وليست روابط معطلة. قائمة الشركة لم تعد تحتوي مثل هذه العناصر.",
       },
       acceptanceCriteria: {
         en: [
-          "Tapping each of the 4 items shows its corresponding 'قريباً' alert ('ميزة الصفقات ستكون متوفرة قريباً', 'ميزة المزادات ستكون متوفرة قريباً', 'ميزة إدارة الوسطاء ستكون متوفرة قريباً', 'ميزة التحليلات ستكون متوفرة قريباً') and nothing else happens.",
-          "Every other menu item in office-more (chat, favorites, notifications, reviews, plans, account-balance, invoices, settings, about, faq, contact, privacy, terms) navigates to a real shared screen.",
-          "This asymmetry with Company (2 stubs vs. 4) is confirmed intentional per the product roadmap, not a copy-paste gap between the two role's menu screens.",
+          "Each of the 4 items shows its 'ستكون متوفرة قريباً' alert and nothing else.",
+          "Every other office menu item opens a real screen.",
         ],
         ar: [
-          "الضغط على كل عنصر من العناصر الأربعة يعرض تنبيه 'قريباً' المطابق له ('ميزة الصفقات ستكون متوفرة قريباً'، 'ميزة المزادات ستكون متوفرة قريباً'، 'ميزة إدارة الوسطاء ستكون متوفرة قريباً'، 'ميزة التحليلات ستكون متوفرة قريباً') ولا يحدث شيء آخر.",
-          "كل عنصر آخر في قائمة office-more (المحادثات، المفضلة، الإشعارات، التقييمات، الباقات، رصيد الحساب، الفواتير، الإعدادات، عن التطبيق، الأسئلة الشائعة، تواصل معنا، الخصوصية، الشروط) يوجّه إلى شاشة مشتركة حقيقية.",
-          "التأكد أن هذا التفاوت مع الشركة (2 عنصر نائب مقابل 4) مقصود فعلاً حسب خارطة طريق المنتج، لا فجوة ناتجة عن نسخ غير مكتمل بين شاشتَي القوائم للدورين.",
+          "كل عنصر من الأربعة يعرض تنبيه 'ستكون متوفرة قريباً' ولا شيء غيره.",
+          "كل عناصر قائمة المكتب الأخرى تفتح شاشة حقيقية.",
         ],
       },
       testScenarios: {
         en: [
-          "Tap all 4 'قريباً' items in office-more.tsx and confirm each shows its own correctly-worded alert.",
-          "Tap every remaining menu item and confirm all route to a real, working shared screen.",
-          "Cross-check against company-more.tsx's 2-item list (mobile-company-coming-soon-menu-items) to confirm the difference in scope is a deliberate roadmap choice.",
+          "With the flag on, tap each menu item on the office More tab.",
         ],
         ar: [
-          "اضغط جميع عناصر 'قريباً' الأربعة في office-more.tsx وتأكد أن كل عنصر يعرض تنبيهه الخاص بصياغة صحيحة.",
-          "اضغط كل عنصر متبقٍ في القائمة وتأكد أن الجميع يوجّه إلى شاشة مشتركة حقيقية وفعّالة.",
-          "قارن مع قائمة الشركة المكونة من عنصرين (mobile-company-coming-soon-menu-items) للتأكد أن اختلاف النطاق قرار مقصود ضمن خارطة الطريق.",
+          "مع تفعيل المفتاح اضغط كل عنصر في قائمة المزيد للمكتب.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-office-properties-empty",
@@ -167,6 +150,7 @@ export const mobileOffice: DocSection = {
           "أعد هذا الفحص بمجرد ربط الواجهة الخلفية، وعدّل معايير القبول لتتوقع بيانات حقيقية.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-office-add-tab-empty",
@@ -207,6 +191,7 @@ export const mobileOffice: DocSection = {
           "قارن مع (company)/add.tsx (mobile-company-add-tab-empty) للتأكد أن العنصرين النائبين لكلا الدورين متطابقان، لا فجوتين مستقلتين نشأتا بشكل منفصل.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

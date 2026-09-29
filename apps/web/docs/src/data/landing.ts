@@ -4,8 +4,8 @@ export const landing: DocSection = {
   slug: "web-landing",
   title: { en: "Web Landing", ar: "الصفحة التسويقية (ويب)" },
   summary: {
-    en: "Next.js marketing site (apps/web/landing, port 3001): the public splash plus login/signup/forgot-password, the front door most real users and search engines will actually hit.",
-    ar: "الموقع التسويقي المبني على Next.js (apps/web/landing، المنفذ 3001): الصفحة الترحيبية العامة بالإضافة إلى تسجيل الدخول/التسجيل/نسيت كلمة المرور — الباب الأمامي الذي يصله فعلياً معظم المستخدمين الحقيقيين ومحركات البحث.",
+    en: "Next.js marketing site (apps/web/landing, port 3001): the public splash plus login/signup/forgot-password — the front door most real users and search engines hit. Sign-in and sign-up use the shared createPortalAuth (see the signup story).",
+    ar: "موقع التسويق (apps/web/landing، المنفذ 3001): الصفحة الترحيبية العامة مع الدخول/التسجيل/استعادة كلمة المرور — البوابة الأولى لمعظم المستخدمين ومحركات البحث. الدخول والتسجيل عبر createPortalAuth المشترك (راجع قصة التسجيل).",
   },
   stories: [
     {
@@ -47,42 +47,42 @@ export const landing: DocSection = {
           "اختبر على عرض شاشة جوال ضيق وتأكد أن التخطيط من اليمين لليسار لا يفيض أو يقص النص.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "landing-signup-role-picker",
       title: {
-        en: "Signup's manual role picker (INDIVIDUAL/COMPANY/OFFICE) submits the selected role correctly",
-        ar: "قائمة اختيار الدور اليدوية في التسجيل (INDIVIDUAL/COMPANY/OFFICE) ترسل الدور المختار بشكل صحيح",
+        en: "Landing portal: sign up and sign in work",
+        ar: "بوابة الموقع الرئيسي: التسجيل والدخول يعملان",
       },
       priority: "P0",
       story: {
-        en: "Verify that, unlike the companies/offices/management portals (which hardcode a defaultRole), the landing site's SignupForm lets the user pick INDIVIDUAL/COMPANY/OFFICE and correctly submits whichever role was actually selected, so that a general public visitor signing up here ends up with the account type they intended.",
-        ar: "تحقق من أنه خلافاً لبوابات companies/offices/management (التي تحدد defaultRole ثابتاً في الكود)، فإن SignupForm في الموقع التسويقي يتيح للمستخدم اختيار INDIVIDUAL/COMPANY/OFFICE ويرسل فعلياً الدور المختار بشكل صحيح، حتى ينتهي الزائر العام الذي يسجّل هنا بنوع الحساب الذي قصده فعلاً.",
+        en: "Verify the portal's auth against the current API (shared createPortalAuth in packages/ui): login sends identifier and stores access_token; an individual signs up with POST /users/register/individual and confirms the SMS/email code (/auth/register/verify-otp or verify-email-otp); a company/office signs up with POST /users/register/company|office (email and licence required) and is signed in. Previously login always failed and signup hit the removed /auth/register. This portal defaults to INDIVIDUAL (role picker shown).",
+        ar: "تحقق من مصادقة البوابة مع الواجهة البرمجية الحالية (createPortalAuth المشترك في packages/ui): الدخول يرسل identifier ويحفظ access_token؛ والفرد يسجّل عبر POST /users/register/individual ويؤكد رمز SMS/البريد (/auth/register/verify-otp أو verify-email-otp)؛ والشركة/المكتب يسجّل عبر POST /users/register/company|office (البريد والترخيص مطلوبان) ثم يدخل مباشرة. سابقاً كان الدخول يفشل دائماً والتسجيل يستدعي /auth/register المحذوفة. هذه البوابة تبدأ بالدور INDIVIDUAL (role picker shown).",
       },
       acceptanceCriteria: {
         en: [
-          "Selecting each of the 3 role options changes what's submitted to auth/register — verified via network inspection, not just UI state.",
-          "The default/pre-selected role (if any) is sensible for a general-audience landing page (most likely INDIVIDUAL).",
-          "Switching the role selection after filling in other fields doesn't clear already-entered data unnecessarily.",
+          "A registered user signs in and lands on the portal home.",
+          "Individual signup shows the code step; a wrong code is refused; the right one signs in.",
+          "Company/office signup without a licence is refused; with one it signs in (as pending approval).",
+          "A taken licence number is refused with 'رقم الترخيص مسجل مسبقاً'.",
         ],
         ar: [
-          "اختيار كل من خيارات الدور الثلاثة يغيّر ما يُرسَل إلى auth/register — يُتحقق من ذلك عبر فحص الشبكة، لا حالة الواجهة فقط.",
-          "الدور الافتراضي/المُختار مسبقاً (إن وجد) منطقي لصفحة هبوط ذات جمهور عام (الأرجح INDIVIDUAL).",
-          "تبديل اختيار الدور بعد تعبئة حقول أخرى لا يمسح البيانات المُدخلة مسبقاً دون داعٍ.",
+          "المستخدم المسجّل يدخل ويصل إلى الصفحة الرئيسية للبوابة.",
+          "تسجيل الفرد يعرض خطوة الرمز؛ والرمز الخاطئ يُرفض والصحيح يسجّل الدخول.",
+          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (قيد المراجعة).",
+          "رقم الترخيص المستخدم يُرفض برسالة 'رقم الترخيص مسجل مسبقاً'.",
         ],
       },
       testScenarios: {
         en: [
-          "Sign up 3 separate test accounts, one per role option, and confirm via admin /users each ends up with the correct role.",
-          "Fill in name/email/phone, then change the role picker, and confirm the other fields aren't wiped.",
-          "Confirm the default selection on page load matches product intent (spot-check with whoever owns the marketing site).",
+          "Sign up as each role on this portal, then sign out and sign in again.",
         ],
         ar: [
-          "سجّل 3 حسابات اختبار منفصلة، حساباً واحداً لكل خيار دور، وتأكد عبر /users في لوحة تحكم المشرف أن كل حساب ينتهي بالدور الصحيح.",
-          "عبّئ الاسم/البريد الإلكتروني/الهاتف، ثم غيّر اختيار الدور، وتأكد أن الحقول الأخرى لم تُمسح.",
-          "تأكد أن الاختيار الافتراضي عند تحميل الصفحة يطابق نية فريق المنتج (تحقق سريع مع المسؤول عن الموقع التسويقي).",
+          "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
+      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "landing-auth-field-rules",
@@ -123,6 +123,7 @@ export const landing: DocSection = {
           "أرسل تسجيل دخول بمعرّف مشوَّه بوضوح وتأكد أن جهة العميل لا تمنعه، ثم تأكد أن الخادم يرفضه بشكل صحيح مع رسالة خطأ واضحة لا فشلاً عاماً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

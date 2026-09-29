@@ -6,15 +6,18 @@
     "dev": "next dev -p 3006",
     "build": "next build",
     "start": "next start -p 3006",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check": "node scripts/check-stories.mjs"
   },
   "dependencies": {
+    "@fontsource/cairo": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "jose": "^6.2.12",
     "lucide-react": "^0.475.0",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "@fontsource/cairo": "^5.3.0",
-    "@fontsource/inter": "^5.3.0"
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -23,6 +23,8 @@ export interface UserStory {
   figmaFrameUrls?: FigmaFrameRef[];
   /** Classic product/UX persona story ("As an individual user, I want X so that Y") this QA story verifies. Optional — most stories only need the QA-facing `story` field. */
   endUserStory?: Localized<string>;
+  /** The branch/PR that last changed this story, so readers can tell how current it is. Set on every edit (see docs/ai/context.md). */
+  updatedIn?: string;
 }
 
 export interface DocSection {
