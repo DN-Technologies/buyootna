@@ -20,6 +20,7 @@ export const LOG_ACTION_LABEL: Record<BackendAdminActionType, string> = {
   PLAN_CHANGED: 'تغيير الباقة',
   EXCEPTIONAL_FEATURE_GRANTED: 'منح مميزات استثنائية',
   COMPANY_PROJECT_DELETED: 'حذف مشروع من المعرض',
+  PLAN_UPDATED: 'تعديل باقة',
 }
 
 export const LOG_TARGET_TYPE_LABEL: Record<string, string> = {

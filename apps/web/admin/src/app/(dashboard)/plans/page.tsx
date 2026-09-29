@@ -1,10 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Plus, CheckCircle2, ChevronLeft } from 'lucide-react'
 import PlanDetailDrawer, { PlanDetailDrawerItem } from './PlanDetailDrawer'
 import EditPlanDrawer, { EditPlanDrawerItem } from './EditPlanDrawer'
+import {
+  AdminCatalogPlan,
+  buildPlanFeatures,
+  fetchPlanCatalog,
+  updatePlan,
+} from '@/lib/admin-plans'
 
 export interface PlanItem {
   id: string
@@ -12,6 +18,7 @@ export interface PlanItem {
   price: string
   title: string
   isGold?: boolean
+  isActive?: boolean
   features: string[]
   activeAdsCount?: string
   durationText?: string
@@ -24,186 +31,31 @@ export interface PlanItem {
   prioritySearchText?: string
 }
 
-const PLANS_DATA: Record<string, PlanItem[]> = {
-  INDIVIDUAL: [
-    {
-      id: 'normal',
-      name: 'الباقة العادية',
-      price: '0 د.ك',
-      title: 'باقة الإعلانات العادية',
-      activeAdsCount: '1',
-      durationText: '10 أيام',
-      photosCountText: '5 صور',
-      features: [
-        'اعلان واحد نشط.',
-        'مدة النشر 10 ايام.',
-        'حتى 5 صورة للعقار.',
-        'ظهور في نتائج البحث.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'silver',
-      name: 'الباقة الفضية',
-      price: '5 د.ك',
-      title: 'باقة الإعلانات الفضية',
-      activeAdsCount: '1',
-      durationText: '45 يوم',
-      photosCountText: '10 صور',
-      isPinnedAds: true,
-      isFeaturedResults: true,
-      features: [
-        'اعلان واحد نشط.',
-        'مدة النشر 45 يوم.',
-        'حتى 10 صورة للعقار.',
-        'تثبيت 5 ايام في نتائج البحث.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'gold',
-      name: 'الباقة الذهبية',
-      price: '20 د.ك',
-      title: 'باقة الإعلانات الذهبية',
-      isGold: true,
-      activeAdsCount: '4',
-      durationText: '60 يوم',
-      photosCountText: '15 صورة',
-      isPinnedAds: true,
-      pinnedAdsText: '7 ايام',
-      isFeaturedResults: true,
-      isPrioritySearch: true,
-      features: [
-        '4 اعلانات نشطة في نفس الوقت.',
-        'مدة النشر 60 يوم.',
-        'حتى 15 صورة للعقار.',
-        'تثبيت 7 ايام في نتائج البحث.',
-        'اولوية الظهور في البحث الجغرافي.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-  ],
-  OFFICE: [
-    {
-      id: 'office_normal',
-      name: 'الباقة العادية',
-      price: '50 د.ك',
-      title: 'باقة المكاتب العادية',
-      activeAdsCount: '5',
-      durationText: '30 يوم',
-      photosCountText: '10 صور',
-      features: [
-        '5 اعلانات نشطة في نفس الوقت.',
-        'مدة النشر 30 يوم.',
-        'حتى 10 صور لكل عقار.',
-        'ظهور في نتائج البحث.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'office_silver',
-      name: 'الباقة الفضية',
-      price: '120 د.ك',
-      title: 'باقة المكاتب الفضية',
-      activeAdsCount: '15',
-      durationText: '45 يوم',
-      photosCountText: '15 صورة',
-      isPinnedAds: true,
-      isFeaturedResults: true,
-      features: [
-        '15 اعلان نشط في نفس الوقت.',
-        'مدة النشر 45 يوم.',
-        'حتى 15 صورة لكل عقار.',
-        'تثبيت 10 ايام في نتائج البحث.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'office_gold',
-      name: 'الباقة الذهبية',
-      price: '250 د.ك',
-      title: 'باقة المكاتب الذهبية',
-      isGold: true,
-      activeAdsCount: '30',
-      durationText: '60 يوم',
-      photosCountText: '20 صورة',
-      isPinnedAds: true,
-      isFeaturedResults: true,
-      isPrioritySearch: true,
-      features: [
-        '30 اعلان نشط في نفس الوقت.',
-        'مدة النشر 60 يوم.',
-        'حتى 20 صورة لكل عقار.',
-        'تثبيت 15 يوم في نتائج البحث.',
-        'اولوية الظهور في البحث الجغرافي.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-  ],
-  COMPANY: [
-    {
-      id: 'company_normal',
-      name: 'الباقة العادية',
-      price: '100 د.ك',
-      title: 'باقة الشركات العادية',
-      activeAdsCount: '10',
-      durationText: '30 يوم',
-      photosCountText: '15 صورة',
-      features: [
-        '10 اعلانات نشطة في نفس الوقت.',
-        'مدة النشر 30 يوم.',
-        'حتى 15 صورة لكل عقار.',
-        'ظهور في نتائج البحث.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'company_silver',
-      name: 'الباقة الفضية',
-      price: '250 د.ك',
-      title: 'باقة الشركات الفضية',
-      activeAdsCount: '30',
-      durationText: '60 يوم',
-      photosCountText: '20 صورة',
-      isPinnedAds: true,
-      isFeaturedResults: true,
-      features: [
-        '30 اعلان نشط في نفس الوقت.',
-        'مدة النشر 60 يوم.',
-        'حتى 20 صورة لكل عقار.',
-        'تثبيت 15 يوم في نتائج البحث.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-    {
-      id: 'company_gold',
-      name: 'الباقة الذهبية',
-      price: '500 د.ك',
-      title: 'باقة الشركات الذهبية',
-      isGold: true,
-      activeAdsCount: '50',
-      durationText: '90 يوم',
-      photosCountText: '30 صورة',
-      isPinnedAds: true,
-      isFeaturedResults: true,
-      isPrioritySearch: true,
-      features: [
-        '50 اعلان نشط في نفس الوقت.',
-        'مدة النشر 90 يوم.',
-        'حتى 30 صورة لكل عقار.',
-        'تثبيت 30 يوم في نتائج البحث.',
-        'اولوية الظهور في البحث الجغرافي.',
-        'ظهور في نتائج البحث المميزة.',
-        'تواصل مباشر مع المهتمين.',
-      ],
-    },
-  ],
+// The app sells one set of plans (العادية / الفضية / الذهبية) to every
+// account type, so each tab shows the same real plans from the API.
+function toPlanItem(plan: AdminCatalogPlan): PlanItem {
+  const featured = plan.featuredDays > 0
+  return {
+    id: plan.id,
+    name: `الباقة ${plan.name}`,
+    price: `${plan.price} د.ك`,
+    title: `باقة الإعلانات ${plan.name}`,
+    isGold: plan.slug === 'gold',
+    isActive: plan.isActive,
+    features: plan.features.length ? plan.features : buildPlanFeatures(plan),
+    activeAdsCount: String(plan.maxActiveAds),
+    durationText: `${plan.durationDays} يوم`,
+    photosCountText: `${plan.maxImagesPerAd} صور`,
+    isPinnedAds: featured,
+    isFeaturedResults: featured,
+    isPrioritySearch: plan.prioritySearch,
+    pinnedAdsText: featured ? `${plan.featuredDays} ايام` : 'غير متاح',
+    featuredResultsText: featured ? 'مفعل' : 'غير متاح',
+    prioritySearchText: plan.prioritySearch ? 'مفعل' : 'غير متاح',
+  }
 }
+
+const digits = (text?: string) => Number((text ?? '').replace(/[^\d.]/g, ''))
 
 export default function PlansPage() {
   const [selectedCategory, setSelectedCategory] = useState<
@@ -216,7 +68,69 @@ export default function PlansPage() {
   const [selectedEditPlan, setSelectedEditPlan] = useState<EditPlanDrawerItem | null>(null)
   const [editPlanOpen, setEditPlanOpen] = useState(false)
 
-  const currentPlans = PLANS_DATA[selectedCategory] || PLANS_DATA.INDIVIDUAL
+  const [catalog, setCatalog] = useState<AdminCatalogPlan[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
+
+  const loadPlans = useCallback(async () => {
+    try {
+      setCatalog(await fetchPlanCatalog())
+      setLoadError(null)
+    } catch {
+      setLoadError('تعذر تحميل الباقات')
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadPlans()
+  }, [loadPlans])
+
+  const currentPlans = useMemo(() => catalog.map(toPlanItem), [catalog])
+
+  const now = new Date()
+  const addedThisMonth = catalog.filter((p) => {
+    const created = new Date(p.createdAt)
+    return (
+      created.getMonth() === now.getMonth() &&
+      created.getFullYear() === now.getFullYear()
+    )
+  }).length
+  const activeCount = catalog.filter((p) => p.isActive).length
+  const hiddenCount = catalog.length - activeCount
+  const activePercent = catalog.length
+    ? Math.round((activeCount / catalog.length) * 100)
+    : 0
+  const mostPopular = [...catalog].sort(
+    (a, b) => b.subscriptionsCount - a.subscriptionsCount,
+  )[0]
+
+  // Saves the edit drawer's values to the real plan; the feature lines the
+  // app shows are rebuilt from the new numbers
+  const handleSave = async (updated: EditPlanDrawerItem) => {
+    const current = catalog.find((p) => p.id === updated.id)
+    if (!current) return
+    const featured = !!(updated.isPinnedAds || updated.isFeaturedResults)
+    const numbers = {
+      maxActiveAds: digits(updated.activeAdsCount) || current.maxActiveAds,
+      durationDays: digits(updated.durationText) || current.durationDays,
+      maxImagesPerAd: digits(updated.photosCountText) || current.maxImagesPerAd,
+      featuredDays: featured
+        ? current.featuredDays || digits(updated.durationText) || current.durationDays
+        : 0,
+      prioritySearch: !!updated.isPrioritySearch,
+    }
+    try {
+      await updatePlan(current.id, {
+        name: updated.name.replace(/^الباقة\s+/, '').trim() || current.name,
+        price: /\d/.test(updated.price) ? digits(updated.price) : current.price,
+        isActive: updated.isActive !== false,
+        ...numbers,
+        features: buildPlanFeatures(numbers),
+      })
+      await loadPlans()
+    } catch {
+      alert('تعذر حفظ التعديلات، يرجى المحاولة مرة أخرى.')
+    }
+  }
 
   const handleOpenDetail = (plan: PlanItem) => {
     setSelectedPlanDetail({
@@ -283,10 +197,10 @@ export default function PlansPage() {
               إجمالي الباقات
             </span>
             <span className="bg-[#E6F4EA] text-[#137333] font-bold text-[11px] px-2.5 py-1 rounded-md">
-              +2 هذا الشهر
+              +{addedThisMonth} هذا الشهر
             </span>
           </div>
-          <span className="text-[28px] font-bold text-[#111111]">3</span>
+          <span className="text-[28px] font-bold text-[#111111]">{catalog.length}</span>
         </div>
 
         {/* Box 2: Active Plans */}
@@ -296,10 +210,10 @@ export default function PlansPage() {
               الباقات النشطة
             </span>
             <span className="bg-[#E6F4EA] text-[#137333] font-bold text-[11px] px-2.5 py-1 rounded-md">
-              90% من الإجمالي
+              {activePercent}% من الإجمالي
             </span>
           </div>
-          <span className="text-[28px] font-bold text-[#111111]">3</span>
+          <span className="text-[28px] font-bold text-[#111111]">{activeCount}</span>
         </div>
 
         {/* Box 3: Hidden Plans */}
@@ -312,7 +226,7 @@ export default function PlansPage() {
               غير متاحة للشراء
             </span>
           </div>
-          <span className="text-[28px] font-bold text-[#111111]">1</span>
+          <span className="text-[28px] font-bold text-[#111111]">{hiddenCount}</span>
         </div>
 
         {/* Box 4: Most Popular Plan */}
@@ -322,10 +236,10 @@ export default function PlansPage() {
               الباقة الأكثر اشتراكاً
             </span>
             <span className="bg-[#E6F4EA] text-[#137333] font-bold text-[11px] px-2.5 py-1 rounded-md">
-              +10 هذا الشهر
+              +{mostPopular?.subscriptionsThisMonth ?? 0} هذا الشهر
             </span>
           </div>
-          <span className="text-[24px] font-bold text-[#111111]">الذهبية</span>
+          <span className="text-[24px] font-bold text-[#111111]">{mostPopular?.name ?? '—'}</span>
         </div>
       </div>
 
@@ -340,7 +254,7 @@ export default function PlansPage() {
               : 'text-[#6B6A6A] hover:text-[#111111]'
           }`}
         >
-          <span>الأفراد (3)</span>
+          <span>الأفراد ({currentPlans.length})</span>
           {selectedCategory === 'INDIVIDUAL' && (
             <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
           )}
@@ -355,7 +269,7 @@ export default function PlansPage() {
               : 'text-[#6B6A6A] hover:text-[#111111]'
           }`}
         >
-          <span>المكاتب العقارية (3)</span>
+          <span>المكاتب العقارية ({currentPlans.length})</span>
           {selectedCategory === 'OFFICE' && (
             <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
           )}
@@ -370,12 +284,16 @@ export default function PlansPage() {
               : 'text-[#6B6A6A] hover:text-[#111111]'
           }`}
         >
-          <span>الشركات (3)</span>
+          <span>الشركات ({currentPlans.length})</span>
           {selectedCategory === 'COMPANY' && (
             <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
           )}
         </button>
       </div>
+
+      {loadError && (
+        <p className="text-[14px] font-medium text-red-600">{loadError}</p>
+      )}
 
       {/* Plans Tier Cards Grid (Figma Node 4477:132001) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -413,6 +331,11 @@ export default function PlansPage() {
               <div className="p-6 flex flex-col gap-4 text-right">
                 <h3 className="text-[16px] font-bold text-[#111111]">
                   {plan.title}
+                  {plan.isActive === false && (
+                    <span className="ms-2 rounded-md bg-[#FFFBEB] px-2 py-0.5 text-[11px] text-[#B45309]">
+                      مخفية
+                    </span>
+                  )}
                 </h3>
                 <ul className="flex flex-col gap-3 text-[13px] font-medium text-[#111111]">
                   {plan.features.map((feat, idx) => (
@@ -460,9 +383,7 @@ export default function PlansPage() {
         open={editPlanOpen}
         onClose={() => setEditPlanOpen(false)}
         plan={selectedEditPlan}
-        onSave={(updated) => {
-          alert(`تم حفظ تعديلات ${updated.name} بنجاح.`)
-        }}
+        onSave={(updated) => void handleSave(updated)}
       />
     </div>
   )

@@ -46,7 +46,7 @@ export default function EditPlanDrawer({
       setIsDirty(false)
       setShowDiscardModal(false)
       setFormState({
-        status: 'active',
+        status: plan.isActive === false ? 'hidden' : 'active',
         planName: plan.name || '',
         planPrice: plan.price || '',
         validityDuration: plan.durationText || '10 ايام',
@@ -99,6 +99,7 @@ export default function EditPlanDrawer({
   const handleSave = () => {
     const updated: EditPlanDrawerItem = {
       ...plan,
+      isActive: formState.status === 'active',
       name: formState.planName,
       price: formState.planPrice,
       activeAdsCount: formState.adsCount,
