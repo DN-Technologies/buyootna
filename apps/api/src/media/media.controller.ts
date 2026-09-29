@@ -6,11 +6,13 @@ import {
   Post,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import heicConvert from 'heic-convert';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiOperation,
@@ -19,14 +21,17 @@ import {
 } from '@nestjs/swagger';
 import { StorageService } from 'src/core/storage/storage.service';
 import { ApiCommonErrors } from '../core/swagger/api-common-errors.decorator';
+import { JwtAuthGuard } from '../features/auth/guards/jwt-auth.guard';
 import {
   UploadAvatarResponseDto,
   UploadListingImagesResponseDto,
 } from './dto/media-response.dto';
 
-// NOTE: no auth guard currently applied to these upload endpoints — pre-existing
-// gap, flagged separately, not part of this Swagger documentation task.
+// Signed-in users only: every upload in the apps happens after login, and
+// an open endpoint let anyone store files in the S3 bucket
 @ApiTags('Media')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('media')
 export class MediaController {
   constructor(private readonly storageService: StorageService) {}

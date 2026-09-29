@@ -1,24 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LoginForm } from "@buyootna/ui";
+import { LoginForm, createPortalAuth } from "@buyootna/ui";
 import { api } from "@/lib/api";
+
+const auth = createPortalAuth(api);
 
 export default function LoginPage() {
   const router = useRouter();
 
-  const handleLogin = async (data: any) => {
-    // API endpoint call
-    const res = await api.post("/auth/login", {
-      emailOrPhone: data.identifier,
-      password: data.password,
-    });
-    
-    if (res.data && res.data.token) {
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      router.push("/");
-    }
+  const handleLogin = async (data: { identifier: string; password: string }) => {
+    await auth.login(data.identifier, data.password);
+    router.push("/");
   };
 
   return (
