@@ -54,72 +54,39 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
-      id: "mobile-home-feed-actions-unwired",
+      id: "mobile-home-feed-actions",
       title: {
-        en: "Home feed favoriting is broken on three surfaces — Properties cards, the details sheet, and Offices' fake toggle",
-        ar: "التفضيل في الصفحة الرئيسية معطّل في ثلاث واجهات — بطاقات العقارات، شاشة التفاصيل، وتبديل المكاتب العقارية الوهمي",
+        en: "Home feed: favorite and share work on every card, sheet and office",
+        ar: "الرئيسية: المفضلة والمشاركة تعملان في كل بطاقة ونافذة ومكتب",
       },
       priority: "P0",
-      figmaFrameUrls: [
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=3539-122605&m=dev",
-          label: { en: "Home — Properties tab (بيع/Sale)", ar: "الرئيسية — تبويب العقارات (بيع)" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=5210-113445&m=dev",
-          label: { en: "Home — Offices tab", ar: "الرئيسية — تبويب المكاتب العقارية" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-59665&m=dev",
-          label: { en: "Property details bottom sheet — Sale (home-main)", ar: "شاشة تفاصيل العقار السفلية — بيع (home-main)" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1247-50901&m=dev",
-          label: { en: "Property details bottom sheet — Rent", ar: "شاشة تفاصيل العقار السفلية — إيجار" },
-        },
-      ],
-      endUserStory: {
-        en: "As an individual user browsing the home feed, I want to tap the heart icon on any listing — whether I'm scrolling the feed or looking at the expanded details sheet — to save it instantly, so that I can bookmark things wherever I encounter them instead of hunting for the one screen where it actually works.",
-        ar: "بصفتي مستخدماً فردياً أتصفح الصفحة الرئيسية، أريد أن أضغط أيقونة القلب على أي إعلان — سواء كنت أتصفح القائمة أو أنظر إلى شاشة التفاصيل الموسّعة — لحفظه فوراً، حتى أستطيع التفضيل أينما وجدت الإعلان بدلاً من البحث عن الشاشة الوحيدة التي تعمل فيها هذه الميزة فعلياً.",
-      },
       story: {
-        en: "Home-feed favoriting is broken across THREE surfaces, each in a slightly different way — track them as distinct findings, not one vague 'favorites are broken' ticket. On the عقارات (Properties) tab, PropertyCard.tsx's and PropertyListItem.tsx's heart buttons both call onPress={onFavorite} — but apps/mobile/src/features/individual/components/home/sections/HomeProperties.tsx never passes an onFavorite prop to either component, in Card view or List view. The same file's <PropertyDetailsSheet> instance — the 'عرض تفاصيل' bottom sheet opened from any of those cards — has the identical gap: PropertyDetailsSheet.tsx accepts onFavorite/onShare props and wires its own heart/share buttons to them correctly, but HomeProperties.tsx only ever passes property, onClose, and onViewProperty when rendering it. Three tap targets, one missing prop, zero functionality, and none of them show any disabled state to hint that. On the مكاتب عقارية (Offices) tab, HomeOffices.tsx DOES wire onToggleFavorite — but only into a local `favoriteOverrides` useState dictionary with no API call behind it, so the heart visually fills in and then silently reverts the moment the screen unmounts. That Offices variant is the most dangerous of the three because it's the only one that will pass a five-second smoke test.",
-        ar: "ميزة التفضيل في الصفحة الرئيسية معطّلة عبر ثلاث واجهات، كل واحدة بطريقة مختلفة قليلاً — وثّقها كنتائج منفصلة لا كتذكرة واحدة غامضة بعنوان 'المفضلة معطّلة'. في تبويب عقارات، أزرار القلب في كل من PropertyCard.tsx وPropertyListItem.tsx تستدعي onPress={onFavorite} — لكن الملف apps/mobile/src/features/individual/components/home/sections/HomeProperties.tsx لا يمرّر خاصية onFavorite لأي من المكوّنين إطلاقاً، سواء في عرض البطاقات أو عرض القائمة. نفس هذا الملف يعرض <PropertyDetailsSheet> — شاشة 'عرض تفاصيل' السفلية التي تُفتح من أي من تلك البطاقات — ولديها نفس النقص: PropertyDetailsSheet.tsx يقبل خاصيتَي onFavorite/onShare ويربط زرَّي القلب والمشاركة بهما بشكل صحيح داخلياً، لكن HomeProperties.tsx يمرّر فقط property وonClose وonViewProperty عند عرضه. ثلاث نقاط ضغط، خاصية واحدة مفقودة، صفر وظائف، ولا يظهر أي منها أي حالة تعطيل تلمّح لذلك. في تبويب مكاتب عقارية، الملف HomeOffices.tsx يربط فعلياً onToggleFavorite — لكن فقط إلى قاموس محلي من نوع useState باسم `favoriteOverrides` دون أي طلب API خلفه، فتمتلئ أيقونة القلب بصرياً باللون الأحمر ثم تعود لحالتها الأصلية بصمت بمجرد إلغاء تحميل الشاشة. هذا النوع من مكاتب عقارية هو الأخطر بين الثلاثة لأنه الوحيد الذي سينجح في اختبار سريع من خمس ثوانٍ.",
+        en: "Regression check for a fixed bug: on Home, the heart and share on property cards (Card and List view), inside the 'عرض تفاصيل' sheet, and the heart on office cards all go to the server — properties via POST /favorites/:propertyId, offices via POST /favorites/providers/:providerId — and share opens the native share sheet. Previously these were unwired or only changed local state.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: في الرئيسية، القلب والمشاركة في بطاقات العقارات (عرض البطاقات والقائمة)، وداخل نافذة 'عرض تفاصيل'، والقلب في بطاقات المكاتب، كلها تصل للخادم — العقارات عبر POST /favorites/:propertyId والمكاتب عبر POST /favorites/providers/:providerId — والمشاركة تفتح نافذة المشاركة في الجهاز. سابقاً كانت غير موصولة أو تغيّر الحالة المحلية فقط.",
       },
       acceptanceCriteria: {
         en: [
-          "AC1 (Properties cards): tapping the heart on any card in Home > عقارات, in both Card and List view, produces zero visible change and the property does not appear in the Favorites tab afterward.",
-          "AC2 (Properties cards): tapping the share icon on the same cards produces zero effect — no native share sheet opens, since onShare is equally unwired.",
-          "AC3 (Details sheet): opening 'عرض تفاصيل' from any Home-feed card and tapping the heart or share icon inside the sheet's header produces zero effect — same root cause (HomeProperties.tsx never passing onFavorite/onShare), different tap target.",
-          "AC4 (Offices): tapping the heart on an office card visibly fills red immediately (local state), but relaunching the app or navigating away and back reverts it to the server's real isFavorite value — because favoriteOverrides never reaches an API call.",
-          "AC5: this is scoped specifically to Home-originated surfaces — Search results' and Property Detail's own (full-screen, not the sheet) heart icons are correctly wired (see mobile-favorites) and must not be lumped into the same fix or the same regression check.",
-          "AC6: whatever fix lands must route all three Home surfaces through the same real POST /favorites/:propertyId (or an equivalent office-favoriting endpoint if one exists) and must correctly trigger the guest-auth-sheet for logged-out users rather than silently no-op or silently fake-toggle for them too.",
+          "A heart tapped on a Home card, in the details sheet or on an office card is still filled after closing and reopening the app, and the item appears in Favorites.",
+          "Share on a card and in the details sheet opens the native share sheet.",
+          "As a guest, tapping a heart opens the sign-in sheet instead of doing nothing.",
         ],
         ar: [
-          "AC1 (بطاقات العقارات): الضغط على القلب في أي بطاقة ضمن الرئيسية > عقارات، في عرضَي البطاقات والقائمة، لا يُحدث أي تغيير مرئي ولا يظهر العقار لاحقاً في تبويب المفضلة.",
-          "AC2 (بطاقات العقارات): الضغط على أيقونة المشاركة في نفس البطاقات لا ينتج عنه أي أثر — لا تفتح شاشة المشاركة الأصلية، لأن onShare غير مربوط بنفس الطريقة.",
-          "AC3 (شاشة التفاصيل): فتح 'عرض تفاصيل' من أي بطاقة في الرئيسية والضغط على أيقونة القلب أو المشاركة داخل رأس الشاشة لا ينتج عنه أي أثر — نفس السبب الجذري (HomeProperties.tsx لا يمرّر onFavorite/onShare أبداً)، لكن نقطة ضغط مختلفة.",
-          "AC4 (المكاتب العقارية): الضغط على القلب في بطاقة مكتب عقاري يملأه باللون الأحمر فوراً (حالة محلية)، لكن إعادة تشغيل التطبيق أو مغادرة الشاشة والعودة إليها يعيده لقيمة isFavorite الحقيقية من الخادم — لأن favoriteOverrides لا يصل أبداً إلى طلب API.",
-          "AC5: هذا النقص مقتصر تحديداً على الواجهات المنبثقة من الصفحة الرئيسية — أيقونات القلب في نتائج البحث وفي شاشة تفاصيل العقار الكاملة (لا الشاشة السفلية) مربوطة بشكل صحيح (راجع mobile-favorites) ويجب عدم خلطها بنفس الإصلاح أو نفس فحص الانحدار.",
-          "AC6: أي إصلاح يجب أن يمرّر الواجهات الثلاث عبر نفس الطلب الحقيقي POST /favorites/:propertyId (أو نقطة نهاية مكافئة لتفضيل المكاتب العقارية إن وُجدت)، ويجب أن يُفعّل بشكل صحيح شاشة مصادقة الزائر للمستخدمين غير المسجَّلين بدلاً من عدم فعل شيء بصمت أو تبديل وهمي بصمت لهم أيضاً.",
+          "القلب المضغوط في بطاقة بالرئيسية أو في نافذة التفاصيل أو في بطاقة مكتب يبقى ممتلئاً بعد إغلاق التطبيق وفتحه، ويظهر العنصر في المفضلة.",
+          "المشاركة في البطاقة وفي نافذة التفاصيل تفتح نافذة المشاركة في الجهاز.",
+          "كزائر، الضغط على القلب يفتح نافذة تسجيل الدخول بدلاً من عدم فعل شيء.",
         ],
       },
       testScenarios: {
         en: [
-          "TC1: As a logged-in user on Home > عقارات > بيع, tap the heart on the first 3 cards in Card view, then switch to List view and repeat on the same 3 cards — confirm neither view produces any visual or state change, and none of the 6 taps result in a new Favorites entry.",
-          "TC2: From that same tab, tap 'عرض تفاصيل' on any card to open the details sheet, then tap its heart and share icons — confirm both are equally inert, and that the sheet's own 'عرض العقار' button still correctly navigates to the full property page (proving onViewProperty IS wired even though onFavorite/onShare aren't).",
-          "TC3: As a logged-in user on Home > مكاتب عقارية, tap the heart on an office card and confirm it visually fills red. Force-quit and relaunch the app, return to the same tab, and confirm the heart has reverted to unfilled — proving the toggle never left the device.",
-          "TC4: As a guest (logged out), repeat TC1–TC3 and confirm whether the guest-auth sheet opens for any of the three surfaces (per mobile-guest-guard's documented behavior for Favorites) — if it opens for none of them, that's further proof these taps aren't routed through the shared guarded-action path at all.",
-          "TC5: Tap the heart on the exact same property from its own full-screen Property Detail page (not the Home card or its sheet) and confirm it DOES work there — screenshot all four side by side, since this contrast is what makes the Home-originated gaps easy to miss in a casual pass and trivial to prove once you know where to look.",
+          "Favorite from Card view, List view and the details sheet — all three show in Favorites → عقارات.",
+          "Favorite an office on Home → مكاتب عقارية, relaunch — still favorited and listed under Favorites → مكاتب.",
         ],
         ar: [
-          "TC1: بصفتك مستخدماً مسجَّل الدخول في الرئيسية > عقارات > بيع، اضغط القلب على أول 3 بطاقات في عرض البطاقات، ثم بدّل إلى عرض القائمة وكرر على نفس البطاقات الثلاث — تأكد أن أياً من العرضين لا يُحدث تغييراً مرئياً أو في الحالة، وأن أياً من الضغطات الستة لا ينتج عنه إدخال جديد في المفضلة.",
-          "TC2: من نفس التبويب، اضغط 'عرض تفاصيل' على أي بطاقة لفتح شاشة التفاصيل، ثم اضغط أيقونتَي القلب والمشاركة فيها — تأكد أن كليهما معطّل بنفس الدرجة، وأن زر 'عرض العقار' في الشاشة نفسها لا يزال يعمل بشكل صحيح للانتقال إلى صفحة العقار الكاملة (ما يثبت أن onViewProperty مربوط رغم أن onFavorite/onShare ليسا كذلك).",
-          "TC3: بصفتك مستخدماً مسجَّل الدخول في الرئيسية > مكاتب عقارية، اضغط القلب على بطاقة مكتب عقاري وتأكد أنه يمتلئ باللون الأحمر بصرياً. أغلق التطبيق قسراً وأعد تشغيله، عد لنفس التبويب، وتأكد أن القلب عاد لحالته الفارغة — ما يثبت أن التبديل لم يغادر الجهاز إطلاقاً.",
-          "TC4: بصفتك زائراً (غير مسجَّل الدخول)، كرر TC1 إلى TC3 وتأكد ما إذا كانت شاشة مصادقة الزائر تفتح في أي من الواجهات الثلاث (حسب السلوك الموثَّق في mobile-guest-guard للمفضلة) — إذا لم تفتح في أي منها، فهذا دليل إضافي على أن هذه الضغطات لا تمر إطلاقاً عبر مسار الإجراء المقيَّد المشترك.",
-          "TC5: اضغط القلب على نفس العقار بالضبط من صفحته الكاملة الخاصة بتفاصيل العقار (لا من بطاقة الرئيسية أو شاشتها) وتأكد أنه يعمل هناك فعلاً — التقط لقطة شاشة للأربعة معاً جنباً إلى جنب، لأن هذا التباين هو ما يجعل النواقص المنبثقة من الرئيسية سهلة الإغفال في جولة عابرة وسهلة الإثبات بمجرد معرفة أين تنظر.",
+          "فضّل من عرض البطاقات وعرض القائمة ونافذة التفاصيل — تظهر الثلاثة في المفضلة ← عقارات.",
+          "فضّل مكتباً في الرئيسية ← مكاتب عقارية، ثم أعد تشغيل التطبيق — يبقى مفضلاً ويظهر في المفضلة ← مكاتب.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-home-tabs-and-view-modes",
@@ -151,7 +118,7 @@ export const mobileIndividual: DocSection = {
         ar: "بصفتي مستخدماً فردياً، أريد التبديل بين العقارات والمكاتب العقارية، وتصفية العقارات حسب بيع/إيجار/بدل، والتبديل بين تخطيطي البطاقات والقائمة، حتى أتصفح بالطريقة التي تناسبني دون أن تعرض القائمة أبداً نتائج قديمة أو غير متطابقة مما كنت أنظر إليه قبل لحظات.",
       },
       story: {
-        en: "Verify HomeScreen's tab/filter state machine (activeTab: 'properties'|'offices', activePropFilter: 'all'|'sale'|'rent'|'exchange', viewMode: 'card'|'list') correctly re-triggers HomeProperties' fetch effect on every filter change and never leaks stale data from the previous filter into the newly-rendered list — this is exactly the class of state-transition bug that sails through a slow, deliberate manual pass and only shows up under real usage patterns like a user impatiently tapping between tabs.",
+        en: "Verify HomeScreen's tab/filter/sort state (sort: الافتراضي/الأحدث/الأقدم, see mobile-home-sort) and its tab/filter state machine (activeTab: 'properties'|'offices', activePropFilter: 'all'|'sale'|'rent'|'exchange', viewMode: 'card'|'list') correctly re-triggers HomeProperties' fetch effect on every filter change and never leaks stale data from the previous filter into the newly-rendered list — this is exactly the class of state-transition bug that sails through a slow, deliberate manual pass and only shows up under real usage patterns like a user impatiently tapping between tabs.",
         ar: "تحقق من أن آلة الحالة الخاصة بتبويبات/فلاتر HomeScreen (activeTab: 'properties'|'offices'، activePropFilter: 'all'|'sale'|'rent'|'exchange'، viewMode: 'card'|'list') تُعيد تفعيل تأثير الجلب في HomeProperties بشكل صحيح مع كل تغيير في الفلتر، ولا تسرّب بيانات قديمة من الفلتر السابق إلى القائمة المعروضة حديثاً — هذا بالضبط نوع أخطاء انتقال الحالة الذي يمر مرور الكرام في جولة اختبار يدوية بطيئة ومتأنية، ولا يظهر إلا في أنماط الاستخدام الحقيقية مثل مستخدم يضغط بين التبويبات بنفاد صبر.",
       },
       acceptanceCriteria: {
@@ -182,228 +149,102 @@ export const mobileIndividual: DocSection = {
           "TC4: حمّل أكثر من 20 عنصراً في عرض البطاقات، بدّل إلى عرض القائمة أثناء التمرير، وتأكد أن نفس البيانات تُعرض فوراً في عرض القائمة دون طلب شبكة إضافي أو ظهور مؤقت لحالة فارغة.",
         ],
       },
-    },
-    {
-      id: "mobile-home-property-income-fallback",
-      title: {
-        en: "List-view property income silently defaults to a hardcoded 150,000 د.ك when the API sends no value",
-        ar: "مدخول العقار في عرض القائمة يعود بصمت لقيمة ثابتة 150,000 د.ك عندما لا ترسل الواجهة الخلفية قيمة",
-      },
-      priority: "P2",
-      figmaFrameUrls: [
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=3539-122605&m=dev",
-          label: { en: "Properties tab — بيع (shows both a real 0 and a 150,000 income figure)", ar: "تبويب العقارات — بيع (يعرض قيمة 0 حقيقية وقيمة 150,000 معاً)" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-55624&m=dev",
-          label: { en: "Properties tab — إيجار", ar: "تبويب العقارات — إيجار" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-60524&m=dev",
-          label: { en: "Details sheet (building) — correct implementation for contrast: no default fallback here", ar: "شاشة التفاصيل (عمارة) — تنفيذ صحيح للمقارنة: لا يوجد قيمة احتياطية افتراضية هنا" },
-        },
-      ],
-      endUserStory: {
-        en: "As an individual user comparing properties in list view, I want the 'مدخول العقار' figure to always reflect that specific property's real rental-income data, so that I can actually trust it when deciding which property is the better investment.",
-        ar: "بصفتي مستخدماً فردياً أقارن العقارات في عرض القائمة، أريد أن تعكس قيمة 'مدخول العقار' دائماً بيانات دخل الإيجار الحقيقية لذلك العقار تحديداً، حتى أستطيع فعلاً الوثوق بها عند اختيار العقار الأفضل استثمارياً.",
-      },
-      story: {
-        en: "Flag that PropertyListItem.tsx declares `propertyIncome = 150_000` as a destructured default parameter — meaning any listing where the API's item.propertyIncome comes back undefined renders 'مدخول العقار 150,000 د.ك' in the exact same confident green styling as a genuine figure, with zero visual distinction between 'this property really yields 150,000' and 'we have no income data for this property at all.' On a financial field specifically, a senior QA pass can't stop at 'a number displays' — the number's provenance is the actual thing under test, and right now the UI has no way to tell a real value from a fabricated placeholder that happens to look completely plausible. Worth noting for the fix: PropertyDetailsSheet.tsx renders the identical field correctly — its `property.propertyIncome !== undefined && property.propertyIncome !== null` guard has no default-parameter fallback poisoning it, so the details sheet is the reference implementation to copy, not a second place that needs the same fix.",
-        ar: "أبلغ بأن الملف PropertyListItem.tsx يُعرّف `propertyIncome = 150_000` كقيمة افتراضية عند تفكيك الخصائص — أي أن أي إعلان تعود فيه قيمة item.propertyIncome من الواجهة الخلفية غير محددة (undefined) يعرض 'مدخول العقار 150,000 د.ك' بنفس التنسيق الأخضر الواثق تماماً كأنها قيمة حقيقية، دون أي تمييز بصري بين 'هذا العقار يُدرّ فعلاً 150,000' و'لا نملك أي بيانات دخل لهذا العقار إطلاقاً'. في حقل مالي تحديداً، لا يمكن لجولة اختبار جودة متمرّسة أن تكتفي بـ 'رقم يُعرض' — مصدر الرقم هو ما يُختبر فعلياً، والواجهة حالياً لا تملك أي طريقة لتمييز قيمة حقيقية عن عنصر نائب مُلفَّق يبدو معقولاً تماماً. جدير بالذكر للإصلاح: الملف PropertyDetailsSheet.tsx يعرض نفس الحقل بشكل صحيح — الشرط `property.propertyIncome !== undefined && property.propertyIncome !== null` فيه غير مسموم بأي قيمة افتراضية بديلة، لذا فشاشة التفاصيل هي التنفيذ المرجعي الذي يجب نسخه، لا مكان ثانٍ يحتاج نفس الإصلاح.",
-      },
-      acceptanceCriteria: {
-        en: [
-          "AC1: confirm whether any of the '150,000 د.ك' figures visible in the live feed today are coincidentally real, or are the fallback default masking missing data — this is only answerable via a database cross-check, never from the UI alone.",
-          "AC2: the second card in the بيع frame shows a genuine '0 د.ك' income, proving the field renders real zero values correctly — which means every card showing exactly 150,000 is now suspect and needs the same verification, not a free pass because 'it's not zero so it must be real.'",
-          "AC3: get a product decision on whether missing income data should hide the row entirely (matching the existing `propertyIncome !== undefined && propertyIncome !== null` guard's evident intent, which the default parameter currently defeats by never letting the value reach the guard as undefined) rather than fabricate a specific-looking number.",
-          "AC4: confirm the fix only needs to touch PropertyListItem.tsx — PropertyDetailsSheet.tsx already implements this field correctly and should not be touched or re-tested as if it shared the bug.",
-        ],
-        ar: [
-          "AC1: تأكد ما إذا كانت أي من قيم '150,000 د.ك' المرئية في القائمة الحية اليوم حقيقية بالصدفة، أو أنها القيمة الافتراضية البديلة التي تُخفي بيانات مفقودة — هذا سؤال لا تُجيب عنه إلا مطابقة قاعدة البيانات، لا الواجهة وحدها أبداً.",
-          "AC2: البطاقة الثانية في إطار بيع تعرض قيمة دخل '0 د.ك' حقيقية، ما يثبت أن الحقل يعرض القيم الصفرية الحقيقية بشكل صحيح — أي أن كل بطاقة تعرض 150,000 بالضبط أصبحت الآن موضع شك وتحتاج نفس التحقق، لا إعفاء تلقائياً لأنها 'ليست صفراً فلا بد أنها حقيقية'.",
-          "AC3: احصل على قرار من فريق المنتج بشأن ما إذا كان غياب بيانات الدخل يجب أن يُخفي الصف بالكامل (بما يطابق النية الواضحة للشرط الموجود `propertyIncome !== undefined && propertyIncome !== null`، الذي تُبطله القيمة الافتراضية حالياً بمنع القيمة من الوصول إليه كـ undefined أصلاً) بدلاً من تلفيق رقم يبدو محدداً.",
-          "AC4: تأكد أن الإصلاح يحتاج فقط لمس PropertyListItem.tsx — الملف PropertyDetailsSheet.tsx ينفّذ هذا الحقل بشكل صحيح مسبقاً ويجب عدم لمسه أو إعادة اختباره وكأنه يشارك نفس الخلل.",
-        ],
-      },
-      testScenarios: {
-        en: [
-          "TC1: cross-reference 5+ properties currently showing exactly '150,000 د.ك' against their database record — if any has a null/undefined propertyIncome column, that's confirmed evidence real users are being shown fabricated financial data, not a hypothetical.",
-          "TC2: create or find a test property with propertyIncome explicitly set to 0 and confirm it renders '0 د.ك', not the 150,000 fallback — the بيع frame already demonstrates this works for one such card, so use it as the known-good baseline.",
-          "TC3: file this as a data-integrity bug rather than a cosmetic one — it's a specific financial figure a buyer could reasonably factor into a real offer.",
-        ],
-        ar: [
-          "TC1: طابق أكثر من 5 عقارات تعرض حالياً '150,000 د.ك' بالضبط مع سجلها في قاعدة البيانات — إذا كان عمود propertyIncome لأي منها فارغاً (null/undefined)، فهذا دليل مؤكَّد على أن مستخدمين حقيقيين يُعرض لهم بيانات مالية ملفَّقة، لا افتراضاً نظرياً.",
-          "TC2: أنشئ أو ابحث عن عقار اختبار بقيمة propertyIncome محددة صراحةً كـ 0 وتأكد أنه يعرض '0 د.ك'، لا القيمة الاحتياطية 150,000 — إطار بيع يُظهر مسبقاً أن هذا يعمل لبطاقة واحدة من هذا النوع، فاستخدمها كخط أساس معروف الصحة.",
-          "TC3: وثّق هذا كخطأ في سلامة البيانات لا كخلل تجميلي — إنه رقم مالي محدد قد يعتمد عليه مشترٍ بشكل معقول عند تقديم عرض حقيقي.",
-        ],
-      },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-property-details-rent-price-suffix",
       title: {
-        en: "Property details sheet never shows '/شهرياً' for rentals — a rent price and a sale price render identically",
-        ar: "شاشة تفاصيل العقار لا تعرض أبداً '/شهرياً' للإيجارات — سعر الإيجار وسعر البيع يُعرضان بشكل متطابق",
+        en: "Rental prices don't say 'per month' anywhere",
+        ar: "أسعار الإيجار لا تذكر 'شهرياً' في أي مكان",
       },
       priority: "P1",
-      figmaFrameUrls: [
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1247-50901&m=dev",
-          label: { en: "Rent listing — '150,000 دك / شهرياً' per design", ar: "إعلان إيجار — '150,000 دك / شهرياً' حسب التصميم" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-59665&m=dev",
-          label: { en: "Sale listing — '150,000 دك' for comparison", ar: "إعلان بيع — '150,000 دك' للمقارنة" },
-        },
-      ],
-      endUserStory: {
-        en: "As an individual user viewing a rental listing's details, I want the price to clearly say it's a monthly rent, so that I never mistake it for the total sale price of the property and misjudge whether I can actually afford it.",
-        ar: "بصفتي مستخدماً فردياً أشاهد تفاصيل إعلان إيجار، أريد أن يوضّح السعر بجلاء أنه إيجار شهري، حتى لا أخلط بينه وبين سعر البيع الإجمالي للعقار وأخطئ في تقدير قدرتي على تحمّله فعلاً.",
-      },
       story: {
-        en: "Flag that PropertyDetailsSheet.tsx's formattedPrice logic renders the exact same markup — `{property.price.toLocaleString()} د.ك` — regardless of property.type, with no branch for 'RENT' at all, even though the Figma frame for a rental listing explicitly appends '/ شهرياً' (per month) after the price. This isn't a cosmetic omission: showing '150,000 د.ك' with no qualifier on a RENT-type listing is actively misleading — a real user has to infer from context (or the category label alone) whether that figure is a lump sum or a monthly recurring cost, and 150,000 KD/month is an absurd number that could easily be misread as a data-entry error rather than correctly understood as '150,000 KD total, paid monthly' being wrong on either reading. A senior QA pass treats price-unit ambiguity on a financial figure as a functional bug, not a copy nit.",
-        ar: "أبلغ بأن منطق formattedPrice في PropertyDetailsSheet.tsx يعرض نفس التنسيق تماماً — `{property.price.toLocaleString()} د.ك` — بغض النظر عن property.type، دون أي فرع لحالة 'RENT' إطلاقاً، رغم أن إطار Figma الخاص بإعلان الإيجار يضيف صراحةً '/ شهرياً' بعد السعر. هذا ليس إغفالاً تجميلياً: عرض '150,000 د.ك' دون أي توضيح على إعلان من نوع RENT مضلّل فعلياً — يضطر المستخدم الحقيقي للاستنتاج من السياق (أو من تصنيف الفئة وحده) ما إذا كان الرقم مبلغاً إجمالياً أم تكلفة شهرية متكررة، ورقم 150,000 دينار كويتي شهرياً رقم غير معقول قد يُفهم خطأً كخطأ في إدخال البيانات بدلاً من فهمه الصحيح كـ 'إجمالي 150,000 دينار كويتي، يُدفع شهرياً' — وكلا الفهمَين خاطئ. جولة اختبار جودة متمرّسة تُعامل غموض وحدة السعر في رقم مالي كخلل وظيفي، لا كملاحظة نصية بسيطة.",
+        en: "Still open: shared/components/property/PropertyCard.tsx and PropertyListItem.tsx (used by Home, search and the 'عرض تفاصيل' sheet) format every price the same way — '{price} د.ك' — with no branch for RENT listings, while the design shows '/ شهرياً' after a rental price. A monthly rent and a sale price look identical.",
+        ar: "ما زال قائماً: shared/components/property/PropertyCard.tsx و PropertyListItem.tsx (المستخدمة في الرئيسية والبحث ونافذة 'عرض تفاصيل') تعرض كل الأسعار بنفس الشكل — '{price} د.ك' — دون فرع لإعلانات الإيجار، بينما يعرض التصميم '/ شهرياً' بعد سعر الإيجار. فيبدو الإيجار الشهري وسعر البيع متطابقين.",
       },
       acceptanceCriteria: {
         en: [
-          "AC1: confirm property.type is available on PropertyDetailsDto at render time (it is — 'SALE'|'RENT'|'EXCHANGE') and that formattedPrice currently ignores it entirely.",
-          "AC2: a RENT-type listing's details sheet must render a per-month qualifier (matching the Figma frame's '/ شهرياً') distinguishing it from a SALE-type listing's one-time price — get explicit confirmation from design on the exact expected string before filing the fix, don't guess the copy.",
-          "AC3: confirm the equivalent price displays elsewhere in the app (Home-feed cards, Search results, full Property Detail page) either already handle this correctly or have the identical gap — this bug may not be isolated to just the details sheet.",
+          "A RENT ad shows a per-month qualifier on cards, list rows, the details sheet and the Property Detail page; a SALE ad doesn't.",
+          "The exact wording is confirmed with design before the fix.",
         ],
         ar: [
-          "AC1: تأكد أن property.type متاحة على PropertyDetailsDto وقت العرض (وهي كذلك — 'SALE'|'RENT'|'EXCHANGE') وأن formattedPrice تتجاهلها كلياً حالياً.",
-          "AC2: شاشة تفاصيل إعلان من نوع RENT يجب أن تعرض توضيحاً شهرياً (مطابقاً لـ '/ شهرياً' في إطار Figma) يميّزه عن السعر لمرة واحدة لإعلان من نوع SALE — احصل على تأكيد صريح من فريق التصميم للنص المتوقع بالضبط قبل تقديم الإصلاح، لا تخمّن الصياغة.",
-          "AC3: تأكد ما إذا كانت عروض السعر المكافئة في أماكن أخرى من التطبيق (بطاقات الرئيسية، نتائج البحث، صفحة تفاصيل العقار الكاملة) تتعامل مع هذا بشكل صحيح مسبقاً أو تحمل نفس النقص — قد لا يكون هذا الخلل مقتصراً على شاشة التفاصيل فقط.",
+          "إعلان الإيجار يعرض 'شهرياً' في البطاقات وصفوف القائمة ونافذة التفاصيل وصفحة تفاصيل العقار؛ وإعلان البيع لا يعرضها.",
+          "تُؤكَّد الصيغة الدقيقة مع التصميم قبل الإصلاح.",
         ],
       },
       testScenarios: {
         en: [
-          "TC1: Open the details sheet for a known RENT-type listing and a known SALE-type listing side by side (screenshot both) and confirm the price row is visually and textually identical between them today — that's the bug, reproduced.",
-          "TC2: Check PropertyCard.tsx and PropertyListItem.tsx (the Home-feed card components) for the same formattedPrice pattern — if they also lack a rent qualifier, this is a shared-pattern bug, not a one-off in the sheet, and should be fixed in one place all three consume rather than patched three times.",
-          "TC3: Once fixed, verify EXCHANGE-type listings are unaffected by whatever branch gets added — they use a different price/comparison model entirely (see mobile-property-details-exchange-fields-unrendered) and shouldn't accidentally inherit a rent suffix.",
+          "Open one SALE and one RENT ad on each surface — today both show only 'د.ك'.",
         ],
         ar: [
-          "TC1: افتح شاشة التفاصيل لإعلان معروف من نوع RENT وآخر من نوع SALE جنباً إلى جنب (التقط لقطة شاشة لكليهما) وتأكد أن صف السعر متطابق بصرياً ونصياً بينهما حالياً — هذا هو الخلل، مُعاد إنتاجه.",
-          "TC2: تحقق من PropertyCard.tsx وPropertyListItem.tsx (مكوّنات بطاقات الرئيسية) لنفس نمط formattedPrice — إذا كانا يفتقران أيضاً لتوضيح الإيجار، فهذا خلل في نمط مشترك، لا حالة منفردة في الشاشة، ويجب إصلاحه في مكان واحد تستهلكه الثلاثة بدلاً من ترقيعه ثلاث مرات.",
-          "TC3: بعد الإصلاح، تحقق أن إعلانات نوع EXCHANGE لا تتأثر بأي فرع يُضاف — فهي تستخدم نموذج سعر/مقارنة مختلفاً تماماً (راجع mobile-property-details-exchange-fields-unrendered) ويجب ألا ترث توضيح الإيجار عن طريق الخطأ.",
+          "افتح إعلان بيع وإعلان إيجار في كل واجهة — اليوم كلاهما يعرض 'د.ك' فقط.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-property-details-exchange-fields-unrendered",
       title: {
-        en: "Exchange listings' defining data (طلب/مع years) exists on the DTO but is rendered nowhere — not the details sheet, not the Home card",
-        ar: "بيانات إعلانات البدل الأساسية (سنوات طلب/مع) موجودة في الـ DTO لكنها غير معروضة في أي مكان — لا في شاشة التفاصيل ولا في بطاقة الرئيسية",
+        en: "Exchange ads never show their 'طلب / مع' years",
+        ar: "إعلانات البدل لا تعرض سنوات 'طلب / مع' أبداً",
       },
       priority: "P0",
-      figmaFrameUrls: [
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-66769&m=dev",
-          label: { en: "Exchange details sheet — أرض للبدل (land)", ar: "شاشة تفاصيل البدل — أرض للبدل" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-67042&m=dev",
-          label: { en: "Exchange details sheet — بيت للبدل (house)", ar: "شاشة تفاصيل البدل — بيت للبدل" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=5210-115479&m=dev",
-          label: { en: "Home card view — بدل (Exchange) tab, showing طلب/مع inline on the card itself", ar: "عرض بطاقة الرئيسية — تبويب بدل، يعرض طلب/مع مباشرة على البطاقة نفسها" },
-        },
-      ],
-      endUserStory: {
-        en: "As an individual user considering a property exchange, I want to see exactly what build year is being asked for and what year the offered property is from — right on the feed card, and again in full detail if I open it — so that I can judge whether the swap is actually fair before I ever reach out to the other party.",
-        ar: "بصفتي مستخدماً فردياً أفكّر في مبادلة عقار، أريد أن أرى بالضبط سنة البناء المطلوبة وسنة العقار المعروض — مباشرة على بطاقة القائمة، ومرة أخرى بالتفصيل الكامل إذا فتحتها — حتى أستطيع الحكم على عدالة المبادلة فعلياً قبل التواصل مع الطرف الآخر.",
-      },
       story: {
-        en: "Flag this as the sharpest finding in this whole batch, and it just got sharper: PropertyDetailsDto (apps/mobile/src/types/property.ts) already declares `requestYear?: number` and `requiredYear?: number` — almost certainly the backing fields for the design's 'طلب 2021' / 'مع 2023' rows on Exchange listings — but neither PropertyDetailsSheet.tsx nor PropertyCard.tsx ever reads or renders property.requestYear or property.requiredYear anywhere in their JSX. The Exchange Home-feed frame shows طلب/مع rendered directly on the card itself, in place of beds/baths — but PropertyCard.tsx's specs row only ever renders 'شقة {type} • {area} م²', beds, and baths, with no branch for type === 'EXCHANGE' at all. So this isn't a details-sheet-only gap anymore — it's the same two DTO fields missing from BOTH places a user would ever see them, meaning an Exchange listing's one defining trait is currently invisible everywhere in the app except the raw database.",
-        ar: "وثّق هذه النتيجة بصفتها الأبرز في هذه الدفعة كاملة، وقد ازدادت وضوحاً الآن: الملف PropertyDetailsDto (apps/mobile/src/types/property.ts) يُعرّف مسبقاً `requestYear?: number` و`requiredYear?: number` — وهما على الأرجح الحقلان الداعمان لصفَّي 'طلب 2021' / 'مع 2023' في تصميم إعلانات البدل — لكن لا PropertyDetailsSheet.tsx ولا PropertyCard.tsx يقرآن أو يعرضان property.requestYear أو property.requiredYear في أي مكان من كودهما. إطار الرئيسية الخاص بالبدل يُظهر طلب/مع معروضين مباشرة على البطاقة نفسها، مكان عدد الغرف/الحمامات — لكن صف المواصفات في PropertyCard.tsx يعرض فقط 'شقة {type} • {area} م²'، وعدد الغرف، وعدد الحمامات، دون أي فرع لحالة type === 'EXCHANGE' إطلاقاً. إذاً هذا لم يعد نقصاً في شاشة التفاصيل وحدها — بل نفس الحقلين من الـ DTO مفقودان من المكانين اللذين قد يراهما المستخدم فعلياً، ما يعني أن السمة الوحيدة المميّزة لإعلان البدل غير مرئية حالياً في أي مكان بالتطبيق باستثناء قاعدة البيانات الخام.",
+        en: "Still open: the add and edit listing flows require requestYear and requiredYear for EXCHANGE ads, but no display surface reads them — PropertyCard.tsx, PropertyListItem.tsx, the details sheet and the Property Detail page show beds/baths/area instead. An exchange ad's defining information is only visible in the database and the edit form.",
+        ar: "ما زال قائماً: مسارا إضافة وتعديل الإعلان يطلبان requestYear و requiredYear لإعلانات البدل، لكن لا توجد واجهة عرض تقرؤهما — PropertyCard.tsx و PropertyListItem.tsx ونافذة التفاصيل وصفحة تفاصيل العقار تعرض الغرف/الحمامات/المساحة بدلاً منهما. فالمعلومة الأساسية لإعلان البدل لا تظهر إلا في قاعدة البيانات ونموذج التعديل.",
       },
       acceptanceCriteria: {
         en: [
-          "AC1: open the details sheet for a real EXCHANGE-type property and confirm today's actual rendered output — expected, per the code read, is either 'السعر غير معلن' or a blank price area, with no طلب/مع rows anywhere, contradicting the Figma frame entirely.",
-          "AC2: view an EXCHANGE-type listing in the Home feed's Card view and confirm the specs row shows beds/baths (or omits them, since Exchange listings may have none) instead of the طلب/مع rows the design specifies — same root gap, second surface.",
-          "AC3: confirm property.requestYear and property.requiredYear are in fact populated by the API for real Exchange listings (not just present on the TypeScript type) — if the backend never populates them either, this is a two-sided gap, not just a frontend rendering miss.",
-          "AC4: this must be filed as a single P0 feature-completeness bug against the Exchange flow covering both surfaces, not two separate 'details sheet polish' and 'card polish' tickets that could ship independently and leave one half fixed.",
-          "AC5: confirm whether rentConditions/additionalExpenses (also unrendered in the details sheet) are meant to show for RENT-type listings specifically, and scope a second, lower-priority ticket for those if so — don't let them get lost once the Exchange fix ships.",
+          "An EXCHANGE ad shows 'طلب {requestYear}' and 'مع {requiredYear}' on its card and in its details, as in the design.",
+          "SALE and RENT ads are unaffected.",
         ],
         ar: [
-          "AC1: افتح شاشة التفاصيل لعقار حقيقي من نوع EXCHANGE وتأكد من المُخرَج المعروض فعلياً اليوم — المتوقع، حسب قراءة الكود، إما 'السعر غير معلن' أو منطقة سعر فارغة، دون أي صفوف طلب/مع في أي مكان، بما يناقض إطار Figma كلياً.",
-          "AC2: اعرض إعلان بدل من نوع EXCHANGE في عرض البطاقات بالرئيسية وتأكد أن صف المواصفات يعرض عدد الغرف/الحمامات (أو يحذفهما، لأن إعلانات البدل قد لا تملكهما) بدلاً من صفَّي طلب/مع اللذين يحدّدهما التصميم — نفس النقص الجذري، واجهة ثانية.",
-          "AC3: تأكد أن property.requestYear وproperty.requiredYear مُعبَّآن فعلياً من الواجهة الخلفية لإعلانات بدل حقيقية (لا مجرد موجودَين في نوع TypeScript) — إذا كانت الواجهة الخلفية أيضاً لا تُعبّئهما أبداً، فهذا نقص من الجانبين، لا مجرد إغفال في العرض الأمامي.",
-          "AC4: يجب توثيق هذا كخطأ واحد من أولوية P0 في اكتمال ميزة تدفق البدل يغطي الواجهتين معاً، لا تذكرتين منفصلتين بعنوان 'تحسين شاشة التفاصيل' و'تحسين البطاقة' قد تُنشران بشكل مستقل وتترك نصف الإصلاح فقط.",
-          "AC5: تأكد ما إذا كانت rentConditions/additionalExpenses (وهما أيضاً غير معروضين في شاشة التفاصيل) مقصودتين للظهور في إعلانات نوع RENT تحديداً، وحدّد نطاق تذكرة ثانية أقل أولوية لهما إن كان الأمر كذلك — لا تدعهما يُنسيان بمجرد نشر إصلاح البدل.",
+          "إعلان البدل يعرض 'طلب {requestYear}' و 'مع {requiredYear}' في بطاقته وتفاصيله كما في التصميم.",
+          "إعلانات البيع والإيجار لا تتأثر.",
         ],
       },
       testScenarios: {
         en: [
-          "TC1: Find or create a real Exchange-type listing with requestYear and requiredYear populated, open its details sheet, and document exactly what renders in place of the price row today.",
-          "TC2: View that same listing in the Home feed's Card view (بدل tab) and document what the specs row shows in place of طلب/مع — compare directly against the Exchange Home-card Figma frame.",
-          "TC3: Compare both actual outputs against the three Exchange Figma frames (two details-sheet variants + the card view) and list every row the design shows that's missing from each — expect at minimum the طلب/مع rows in both places.",
-          "TC4: Query the database for a sample of real Exchange listings and confirm requestYear/requiredYear are actually being saved by the create-listing flow (useListingStore's ExchangePropertyTab, per mobile-add-listing in Mobile — Shared) — if they're null in the DB too, the fix needs to start at listing creation, not just at either rendering surface.",
-          "TC5: Once a fix ships to both surfaces, re-verify formattedPrice's 'السعر غير معلن' fallback no longer fires for Exchange listings that do have requestYear/requiredYear data — both the card and the sheet should show the exchange comparison instead of a price-not-disclosed message that isn't even the relevant gap for this listing type.",
+          "Create an exchange ad with 2021/2023, then view it in Home, search and its detail page — the years should appear (today they don't).",
         ],
         ar: [
-          "TC1: ابحث عن أو أنشئ إعلان بدل حقيقياً بقيمتَي requestYear وrequiredYear مُعبَّأتين، افتح شاشة تفاصيله، ووثّق بالضبط ما يُعرض مكان صف السعر اليوم.",
-          "TC2: اعرض نفس الإعلان في عرض بطاقات الرئيسية (تبويب بدل) ووثّق ما يعرضه صف المواصفات مكان طلب/مع — قارن مباشرة مع إطار Figma لبطاقة البدل بالرئيسية.",
-          "TC3: قارن المُخرَجين الفعليين مع أطر Figma الثلاثة للبدل (متغيّرا شاشة التفاصيل + عرض البطاقة) واذكر كل صف يعرضه التصميم ومفقود من كل منها — توقّع على الأقل صفَّي طلب/مع في كلا المكانين.",
-          "TC4: استعلم قاعدة البيانات عن عيّنة من إعلانات بدل حقيقية وتأكد أن requestYear/requiredYear تُحفظ فعلياً عبر تدفق إنشاء الإعلان (ExchangePropertyTab ضمن useListingStore، حسب mobile-add-listing في الجوال — مشترك) — إذا كانتا فارغتين في قاعدة البيانات أيضاً، يجب أن يبدأ الإصلاح من إنشاء الإعلان، لا من واجهة العرض فقط.",
-          "TC5: بعد نشر الإصلاح للواجهتين، تحقق مجدداً أن القيمة الاحتياطية 'السعر غير معلن' في formattedPrice لم تعد تظهر لإعلانات بدل تملك بيانات requestYear/requiredYear — يجب أن تعرض كل من البطاقة والشاشة مقارنة البدل بدلاً من رسالة سعر غير معلن ليست حتى النقص ذا الصلة بهذا النوع من الإعلانات.",
+          "أنشئ إعلان بدل بسنتي 2021/2023 ثم اعرضه في الرئيسية والبحث وصفحة تفاصيله — يجب أن تظهر السنوات (اليوم لا تظهر).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
-      id: "mobile-home-card-view-layout-mismatches",
+      id: "mobile-home-card-layout",
       title: {
-        en: "Home Card view: badge and heart are swapped left/right, the share icon and income row are missing entirely",
-        ar: "عرض بطاقات الرئيسية: الشارة والقلب متبادلا الموضع يميناً/يساراً، وأيقونة المشاركة وصف الدخل غائبان تماماً",
+        en: "Home cards: badge, share/heart and income row match the design",
+        ar: "بطاقات الرئيسية: الشارة وأزرار المشاركة/القلب وسطر المدخول تطابق التصميم",
       },
-      priority: "P1",
-      figmaFrameUrls: [
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1504-76495&m=dev",
-          label: { en: "Card view — بيع (Sale)", ar: "عرض البطاقات — بيع" },
-        },
-        {
-          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1504-80245&m=dev",
-          label: { en: "Card view — إيجار (Rent)", ar: "عرض البطاقات — إيجار" },
-        },
-      ],
-      endUserStory: {
-        en: "As an individual user browsing the home feed in card view, I want the featured badge, favorite and share icons, and income figure to appear exactly where I'd expect and to actually be present, so that the app feels finished and I can compare listings at a glance the way the design intends.",
-        ar: "بصفتي مستخدماً فردياً أتصفح الصفحة الرئيسية بعرض البطاقات، أريد أن تظهر شارة الإعلان المميز، وأيقونتا التفضيل والمشاركة، ورقم الدخل بالضبط في المكان الذي أتوقعه وأن تكون موجودة فعلاً، حتى يبدو التطبيق مكتملاً وأستطيع مقارنة الإعلانات بنظرة سريعة كما يقصد التصميم.",
-      },
+      priority: "P2",
       story: {
-        en: "Flag three concrete, code-verifiable mismatches between PropertyCard.tsx (the Home feed's Card view) and its Figma frame, none of which require guessing — they're each a direct line-by-line contradiction: (1) the 'مميز' badge is styled `absolute right-3 top-3` in code but appears on the LEFT edge of the image in the design; the heart icon is styled `absolute left-3 top-3` in code but appears on the RIGHT, paired with a share icon, in the design — the two elements are positioned as exact mirror images of the design. (2) The code's heart-icon container comment literally reads '/* Absolute Top Left: Actions (Heart & Share) */' but only a single heart TouchableOpacity is actually implemented underneath it — there's no share button in Card view at all, despite the comment writer's evident intent and despite List view (PropertyListItem.tsx) having one. (3) PropertyCardProps has no propertyIncome field and the JSX never renders a 'مدخول العقار' row anywhere, even though every card in both Figma frames shows one directly under the specs row, and PropertyListItem.tsx (List view) already implements this exact row correctly — meaning there's a working reference implementation sitting one file away that Card view simply never adopted.",
-        ar: "أبلغ عن ثلاثة تناقضات ملموسة يمكن التحقق منها في الكود بين PropertyCard.tsx (عرض بطاقات الرئيسية) وإطار Figma الخاص به، لا يحتاج أي منها للتخمين — كل واحد تناقض مباشر سطراً بسطر: (1) شارة 'مميز' مصمَّمة بـ `absolute right-3 top-3` في الكود لكنها تظهر على الحافة اليسرى للصورة في التصميم؛ أيقونة القلب مصمَّمة بـ `absolute left-3 top-3` في الكود لكنها تظهر على اليمين، مقترنة بأيقونة مشاركة، في التصميم — العنصران في موضعين معكوسين تماماً مقارنة بالتصميم. (2) تعليق حاوية أيقونة القلب في الكود يقول حرفياً '/* Absolute Top Left: Actions (Heart & Share) */' لكن المُنفَّذ فعلياً تحته هو TouchableOpacity واحد للقلب فقط — لا يوجد زر مشاركة في عرض البطاقات إطلاقاً، رغم نية كاتب التعليق الواضحة ورغم أن عرض القائمة (PropertyListItem.tsx) يملك واحداً. (3) PropertyCardProps لا تملك حقل propertyIncome ولا يعرض الكود صف 'مدخول العقار' في أي مكان، رغم أن كل بطاقة في إطاري Figma تعرض واحداً مباشرة تحت صف المواصفات، وPropertyListItem.tsx (عرض القائمة) ينفّذ هذا الصف بالضبط بشكل صحيح مسبقاً — أي أن هناك تنفيذاً مرجعياً يعمل فعلياً في ملف مجاور لم يتبنّه عرض البطاقات إطلاقاً.",
+        en: "Regression check for fixed layout gaps in shared/components/property/PropertyCard.tsx (Card view) and PropertyListItem.tsx (List view): the 'مميز' badge and the share + heart buttons sit on opposite corners as in the design (positions are mirrored for the app's right-to-left layout), and the 'مدخول العقار' row shows only when the ad has a real income above 0 — no placeholder figure.",
+        ar: "فحص تراجع لفجوات تخطيط تم إصلاحها في shared/components/property/PropertyCard.tsx (عرض البطاقات) و PropertyListItem.tsx (عرض القائمة): شارة 'مميز' وزرا المشاركة والقلب في زاويتين متقابلتين كما في التصميم (المواضع معكوسة لاتجاه التطبيق من اليمين لليسار)، وسطر 'مدخول العقار' يظهر فقط عند وجود مدخول حقيقي أكبر من 0 — دون رقم افتراضي.",
       },
       acceptanceCriteria: {
         en: [
-          "AC1: the featured badge renders on the image's right edge and the heart icon renders alone on the left edge in the live app today — both are mirrored from where the Figma frame places them.",
-          "AC2: tapping the empty space in Card view's top-left corner where the design's share icon should be does nothing, because no such element exists in the DOM/view tree to tap — this is a missing element, not an unwired handler like the heart icon (see mobile-home-feed-actions-unwired for that separate issue).",
-          "AC3: no property card in Card view shows a 'مدخول العقار' figure under any circumstance, regardless of whether the underlying property has income data — confirm this is a rendering omission, not a data-availability issue, by cross-checking the identical property in List view (which does show it, per mobile-home-property-income-fallback).",
-          "AC4: get explicit confirmation from design/product on which layout is authoritative — since PropertyListItem.tsx (List view) already gets the badge/heart-share positioning and income row right, the fastest correct fix is likely to bring Card view's layout in line with List view's, not to redesign either from scratch.",
+          "Card view shows both share and heart buttons, on the corner opposite the 'مميز' badge.",
+          "An ad with no income shows no income row; an ad with income shows its real value in both views.",
         ],
         ar: [
-          "AC1: شارة الإعلان المميز تُعرض على الحافة اليمنى للصورة وأيقونة القلب تُعرض وحدها على الحافة اليسرى في التطبيق الحي اليوم — كلاهما معكوس عن موضعه في إطار Figma.",
-          "AC2: الضغط على المساحة الفارغة في الزاوية العلوية اليسرى من عرض البطاقات، حيث يُفترض وجود أيقونة المشاركة في التصميم، لا يفعل شيئاً، لأن هذا العنصر غير موجود أصلاً في شجرة العرض ليُضغط — هذا عنصر مفقود، لا معالج غير مربوط كحال أيقونة القلب (راجع mobile-home-feed-actions-unwired لتلك المشكلة المنفصلة).",
-          "AC3: لا تعرض أي بطاقة عقار في عرض البطاقات قيمة 'مدخول العقار' تحت أي ظرف، بغض النظر عن توفر بيانات الدخل للعقار المعني — تأكد أن هذا إغفال في العرض لا مشكلة في توفر البيانات، بمقارنة نفس العقار في عرض القائمة (الذي يعرضها فعلاً، حسب mobile-home-property-income-fallback).",
-          "AC4: احصل على تأكيد صريح من فريق التصميم/المنتج بشأن أي تخطيط هو المرجعي — بما أن PropertyListItem.tsx (عرض القائمة) ينفّذ مواضع الشارة والقلب/المشاركة وصف الدخل بشكل صحيح مسبقاً، فالإصلاح الأسرع والأصح على الأرجح هو مواءمة تخطيط عرض البطاقات معه، لا إعادة تصميم أي منهما من الصفر.",
+          "عرض البطاقات يعرض زري المشاركة والقلب في الزاوية المقابلة لشارة 'مميز'.",
+          "الإعلان دون مدخول لا يعرض سطر المدخول؛ والإعلان بمدخول يعرض قيمته الحقيقية في العرضين.",
         ],
       },
       testScenarios: {
         en: [
-          "TC1: Screenshot a Home-feed card in Card view next to its Figma frame at the same zoom level and confirm the badge and heart/share swap is visually obvious, not a subtle pixel-level nit.",
-          "TC2: Confirm the same property viewed in List view DOES show a correctly-positioned income row (per PropertyListItem.tsx), establishing List view as the working reference implementation to copy from rather than building the Card view fix from scratch.",
-          "TC3: After any fix, re-run mobile-home-feed-actions-unwired's Card-view test cases too — adding a share button here means there will be a new, similarly-unwired onShare tap target to verify, not just a visual fix.",
-          "TC4: Confirm badge/heart positioning on a tablet/iPad layout (see mobile-ipad-layout in Mobile — Shared) in case the swap is somehow breakpoint-specific rather than present at every size.",
+          "Compare a featured ad's card with the Figma frame.",
+          "Create an ad without income and one with 1,200 — only the second shows 'مدخول العقار 1,200 د.ك'.",
         ],
         ar: [
-          "TC1: التقط لقطة شاشة لبطاقة من الرئيسية في عرض البطاقات بجانب إطار Figma بنفس مستوى التكبير وتأكد أن تبادل موضع الشارة والقلب/المشاركة واضح بصرياً، لا ملاحظة دقيقة على مستوى البكسل.",
-          "TC2: تأكد أن نفس العقار عند عرضه في عرض القائمة يُظهر فعلاً صف دخل بموضع صحيح (حسب PropertyListItem.tsx)، ما يُثبت عرض القائمة كتنفيذ مرجعي عامل يُنسَخ منه بدلاً من بناء إصلاح عرض البطاقات من الصفر.",
-          "TC3: بعد أي إصلاح، أعد تشغيل حالات اختبار عرض البطاقات في mobile-home-feed-actions-unwired أيضاً — إضافة زر مشاركة هنا تعني وجود نقطة ضغط onShare جديدة غير مربوطة بالمثل يجب التحقق منها، لا مجرد إصلاح بصري.",
-          "TC4: تأكد من موضع الشارة/القلب على تخطيط جهاز لوحي/iPad (راجع mobile-ipad-layout في الجوال — مشترك) في حال كان التبادل مرتبطاً بحجم شاشة معيّن وليس موجوداً في كل الأحجام.",
+          "قارن بطاقة إعلان مميز بإطار Figma.",
+          "أنشئ إعلاناً دون مدخول وآخر بمدخول 1,200 — الثاني فقط يعرض 'مدخول العقار 1,200 د.ك'.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-individual-login",
@@ -454,6 +295,7 @@ export const mobileIndividual: DocSection = {
           "سجّل الدخول بمعرّف صحيح وكلمة مرور خاطئة 3 مرات متتالية وتأكد أن تنبيه الخطأ واضح في كل مرة (الرسالة قادمة من الواجهة الخلفية، لا رسالة عامة بديلة، إلا إذا فشلت الشبكة فعلياً).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-individual-signup",
@@ -483,7 +325,7 @@ export const mobileIndividual: DocSection = {
           "Submitting a Kuwaiti-phone-shaped identifier (e.g. 51234567, +96551234567, 96551234567) succeeds and is stored as the account's phone.",
           "Submitting a value that is neither a valid email nor a valid Kuwaiti phone is rejected inline before any network call, both on the mobile form (signupSchema) and — as a defense-in-depth check — by the backend's IsEmailOrPhone validator if the client-side check were ever bypassed.",
           "Password under 8 characters, or a confirmPassword mismatch, blocks submission with inline errors.",
-          "Submitting an email-shaped identifier skips the OTP step entirely and logs the user straight in (see mobile-signup-otp-skip-logic) — submitting a phone-shaped identifier routes to the OTP step instead.",
+          "Both an email-shaped and a phone-shaped identifier go to a verification-code step before the account is created (see mobile-signup-verification) — submitting a phone-shaped identifier routes to the OTP step instead.",
         ],
         ar: [
           "شاشة إنشاء الحساب تعرض حقل معرّف واحد بالضبط بعنوان 'رقم الهاتف أو البريد الالكتروني'، دون حقل هاتف منفصل — مطابقاً لإطار Figma.",
@@ -491,7 +333,7 @@ export const mobileIndividual: DocSection = {
           "إرسال معرّف بصيغة هاتف كويتي (مثل 51234567 أو +96551234567 أو 96551234567) ينجح ويُخزَّن كهاتف للحساب.",
           "إرسال قيمة لا تطابق بريداً إلكترونياً صحيحاً ولا هاتفاً كويتياً صحيحاً يُرفض داخل الشاشة قبل أي طلب شبكة، سواء في نموذج الجوال (signupSchema) أو — كطبقة حماية إضافية — عبر مُدقِّق IsEmailOrPhone في الواجهة الخلفية إذا تم تجاوز التحقق في العميل.",
           "كلمة مرور أقل من 8 أحرف، أو عدم تطابق confirmPassword، يمنع الإرسال مع أخطاء داخل الشاشة.",
-          "إرسال معرّف بصيغة بريد إلكتروني يتخطى خطوة رمز التحقق OTP بالكامل ويسجّل دخول المستخدم مباشرة (راجع mobile-signup-otp-skip-logic) — أما إرسال معرّف بصيغة هاتف فيوجّه إلى خطوة رمز التحقق بدلاً من ذلك.",
+          "المعرّف بصيغة بريد إلكتروني وبصيغة هاتف كلاهما ينتقل إلى خطوة رمز التحقق قبل إنشاء الحساب (راجع mobile-signup-verification).",
         ],
       },
       testScenarios: {
@@ -508,52 +350,44 @@ export const mobileIndividual: DocSection = {
           "حاول التسجيل مرتين بنفس المعرّف (كحقل وحيد) وتأكد أن المحاولة الثانية تُرفض برسالة 'البريد الإلكتروني مسجل بالفعل' / 'رقم الهاتف مسجل بالفعل' بدلاً من النجاح بصمت أو ترك حساب نصف مكتمل غير قابل للاستخدام.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
-      id: "mobile-signup-otp-skip-logic",
+      id: "mobile-signup-verification",
       title: {
-        en: "Signup only sends an OTP for a phone-shaped identifier — no email verification exists either way",
-        ar: "التسجيل يرسل رمز التحقق فقط عند إدخال معرّف بصيغة هاتف — ولا يوجد تحقق من البريد الإلكتروني في أي حال",
+        en: "Signup verifies the email or phone with a code before creating the account",
+        ar: "التسجيل يتحقق من البريد أو الهاتف برمز قبل إنشاء الحساب",
       },
       priority: "P0",
-      endUserStory: {
-        en: "As an individual user signing up with just my email, I want to be let into the app right away without waiting on a verification code, so that there's no friction between deciding to join and actually browsing properties.",
-        ar: "بصفتي مستخدماً فردياً أسجّل حساباً بالبريد الإلكتروني فقط، أريد الدخول إلى التطبيق فوراً دون انتظار رمز تحقق، حتى لا يكون هناك أي احتكاك بين قرار الانضمام والبدء فعلياً بتصفح العقارات.",
-      },
       story: {
-        en: "Verify that IndividualAuthScreen's onSignup only advances to the OTP step (IndividualSignupOtpStep) when the identifier entered is phone-shaped (checked client-side via isPhoneIdentifier, mirroring the backend's own isEmail/isPhone classification of the same value) — if the identifier is email-shaped, the app immediately calls POST /auth/login with the new credentials and shows the success sheet with zero verification of any kind. Also confirm the previously-fixed 'no Identity row after registration' bug stays fixed here specifically: this immediate post-signup POST /auth/login (and the phone path's POST /auth/register/verify-otp, which also internally logs the user in) must succeed on the very first attempt, since registerIndividual now creates the User + IndividualProfile + Identity together in one transaction.",
-        ar: "تحقق من أن onSignup في IndividualAuthScreen تنتقل إلى خطوة رمز التحقق (IndividualSignupOtpStep) فقط عندما يكون المعرّف المُدخَل بصيغة هاتف (يُفحص في العميل عبر isPhoneIdentifier، بما يطابق تصنيف isEmail/isPhone لنفس القيمة في الواجهة الخلفية) — أما إذا كان المعرّف بصيغة بريد إلكتروني، فإن التطبيق يستدعي فوراً POST /auth/login بالبيانات الجديدة ويعرض شاشة النجاح دون أي تحقق من أي نوع. تأكد أيضاً أن إصلاح العلة السابقة 'عدم إنشاء سجل Identity بعد التسجيل' لا يزال ساري المفعول هنا تحديداً: استدعاء POST /auth/login الفوري بعد التسجيل (ومسار الهاتف عبر POST /auth/register/verify-otp، الذي يسجّل دخول المستخدم داخلياً أيضاً) يجب أن ينجح من أول محاولة، لأن registerIndividual أصبحت تُنشئ User وIndividualProfile وIdentity معاً ضمن معاملة واحدة.",
+        en: "Verify POST /users/register/individual sends a code — by email for an email identifier, by SMS for a phone number — and creates nothing until it's confirmed: POST /auth/register/verify-email-otp or /auth/register/verify-otp creates the account (User + individual persona together) and signs the user in. An abandoned signup leaves no account and doesn't reserve the email/phone.",
+        ar: "تحقق من أن POST /users/register/individual يرسل رمزاً — بالبريد لمعرّف بريد، وبرسالة SMS لرقم هاتف — ولا يُنشئ شيئاً حتى التأكيد: POST /auth/register/verify-email-otp أو /auth/register/verify-otp ينشئ الحساب (المستخدم مع هوية الفرد معاً) ويسجّل الدخول. التسجيل المتروك لا يترك حساباً ولا يحجز البريد/الهاتف.",
       },
       acceptanceCriteria: {
         en: [
-          "Signing up with an email-shaped identifier + password results in an immediately-active, logged-in account with no OTP and no email-verification link ever sent.",
-          "Signing up with a phone-shaped identifier sends an SMS OTP via POST /auth/register/verify-otp before the account becomes usable.",
-          "Neither path ever surfaces an 'Identity Unlinked' / 'لا توجد هوية مرتبطة بهذا الحساب' error on the very first login attempt right after signup — this was a real regression previously (registration created the User but not the Identity row auth/login depends on) and must not recur.",
-          "Confirm with product/security whether 'email-only = instantly active, unverified account' is the intended trust model, since it means email ownership is never actually confirmed in that path.",
-          "The Success bottom sheet's copy is consistent for both paths (see mobile-auth-success-copy for a text-mismatch nit already spotted here).",
+          "Email signup: a code arrives by email; the account exists only after entering it.",
+          "Phone signup: a code arrives by SMS; same rule.",
+          "The first login right after verification never shows 'لا توجد هوية مرتبطة بهذا الحساب'.",
+          "Starting a signup and quitting at the code step lets someone sign up with the same email/phone later.",
         ],
         ar: [
-          "التسجيل بمعرّف بصيغة بريد إلكتروني وكلمة مرور ينتج عنه حساب نشط ومسجَّل الدخول فوراً، دون رمز تحقق ودون إرسال أي رابط تحقق من البريد الإلكتروني إطلاقاً.",
-          "التسجيل بمعرّف بصيغة هاتف يرسل رمز تحقق عبر الرسائل النصية باستخدام POST /auth/register/verify-otp قبل أن يصبح الحساب قابلاً للاستخدام.",
-          "لا يظهر في أي من المسارين خطأ 'لا توجد هوية مرتبطة بهذا الحساب' عند أول محاولة تسجيل دخول مباشرة بعد التسجيل — كانت هذه علة حقيقية سابقاً (التسجيل كان يُنشئ User دون سجل Identity الذي تعتمد عليه عملية تسجيل الدخول) ويجب ألا تتكرر.",
-          "تأكد مع فريق المنتج/الأمان ما إذا كان نموذج الثقة 'بريد إلكتروني فقط = حساب نشط فوراً وغير مُتحقَّق منه' مقصوداً، لأنه يعني أن ملكية البريد الإلكتروني لا تُؤكَّد فعلياً أبداً في هذا المسار.",
-          "صياغة شاشة النجاح السفلية متسقة بين المسارين (راجع mobile-auth-success-copy لملاحظة تعارض نصي مرصودة مسبقاً هنا).",
+          "التسجيل بالبريد: يصل رمز بالبريد؛ ولا يوجد الحساب إلا بعد إدخاله.",
+          "التسجيل بالهاتف: يصل رمز برسالة SMS؛ بنفس القاعدة.",
+          "أول دخول بعد التحقق لا يعرض 'لا توجد هوية مرتبطة بهذا الحساب' أبداً.",
+          "بدء التسجيل ثم الخروج عند خطوة الرمز يسمح بالتسجيل لاحقاً بنفس البريد/الهاتف.",
         ],
       },
       testScenarios: {
         en: [
-          "Sign up with a disposable/unowned email identifier — confirm the account is fully usable immediately, with no confirmation email ever required to be clicked, and no error is shown on the automatic post-signup login.",
-          "Sign up with a valid phone identifier, then abandon the flow before entering the OTP — confirm the account is NOT usable yet (i.e. verification is actually gating something in that path).",
-          "Sign up with a phone identifier and complete the OTP step — confirm the resulting login succeeds on the first attempt with no 'Identity Unlinked' error, and that the returned activeIdentity/identities are populated (not empty).",
-          "Attempt to sign up twice in a row with the same identifier and confirm the second attempt is cleanly rejected as already-registered rather than creating a duplicate/ghost account.",
+          "Sign up with a new email, enter the emailed code — lands signed in.",
+          "Sign up with a phone, close the app at the code step, sign up again with the same phone — allowed.",
         ],
         ar: [
-          "سجّل حساباً بمعرّف بريد إلكتروني مؤقت/غير مملوك — تأكد أن الحساب قابل للاستخدام بالكامل فوراً، دون الحاجة لفتح أي بريد تأكيد إطلاقاً، ودون ظهور أي خطأ عند تسجيل الدخول التلقائي بعد التسجيل.",
-          "سجّل حساباً بمعرّف هاتف صحيح، ثم اترك التدفق قبل إدخال رمز التحقق — تأكد أن الحساب غير قابل للاستخدام بعد (أي أن التحقق يقيّد فعلياً شيئاً ما في هذا المسار).",
-          "سجّل حساباً بمعرّف هاتف وأكمل خطوة رمز التحقق — تأكد أن تسجيل الدخول الناتج ينجح من أول محاولة دون خطأ 'لا توجد هوية مرتبطة بهذا الحساب'، وأن activeIdentity/identities المُعادة غير فارغة.",
-          "حاول التسجيل مرتين متتاليتين بنفس المعرّف وتأكد أن المحاولة الثانية تُرفض بوضوح كحساب مسجَّل مسبقاً بدلاً من إنشاء حساب مكرر/شبحي.",
+          "سجّل ببريد جديد وأدخل الرمز المرسل — يدخل مباشرة.",
+          "سجّل برقم هاتف وأغلق التطبيق عند خطوة الرمز، ثم سجّل مجدداً بنفس الرقم — مسموح.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-social-signin",
@@ -577,7 +411,7 @@ export const mobileIndividual: DocSection = {
           "Tapping Google opens the native Google account picker; tapping Apple opens the native Apple Sign-In sheet — cancelling either flow returns silently to the auth screen with no error alert (this is a deliberate no-op, not a bug).",
           "On successful sign-in via either provider, the user is logged in and routed to the identity home screen exactly like a normal email/phone login — there is no separate 'social signup success' screen.",
           "If GOOGLE_CLIENT_ID/APPLE_CLIENT_ID are not configured on the API, tapping the corresponding button surfaces a clear Arabic error ('تسجيل الدخول عبر Google/Apple غير مُفعّل حالياً') rather than a generic network-error message or a silent failure.",
-          "A brand-new social sign-in (no prior account with that email) results in a fully usable account with an active Identity immediately — same regression class as mobile-signup-otp-skip-logic, verify it doesn't recur here on a different code path.",
+          "A brand-new social sign-in (no prior account with that email) results in a fully usable account with an active Identity immediately — same regression class as mobile-signup-verification, verify it doesn't recur here on a different code path.",
         ],
         ar: [
           "يظهر كلا الزرّين في شاشة تسجيل الدخول وفي الخطوة الأولى من التسجيل، أسفل زر الإرسال الحالي، بما يطابق تخطيط الفاصل والزرّين في التصاميم المُشارَكة لهذا التحديث.",
@@ -585,7 +419,7 @@ export const mobileIndividual: DocSection = {
           "الضغط على زر Google يفتح منتقي حسابات Google الأصلي؛ والضغط على زر Apple يفتح شاشة تسجيل الدخول الأصلية من Apple — إلغاء أي من المسارين يعيد المستخدم بصمت إلى شاشة المصادقة دون رسالة خطأ (هذا سلوك مقصود، لا خلل).",
           "عند نجاح تسجيل الدخول عبر أي من المزوّدين، يتم تسجيل دخول المستخدم وتوجيهه إلى الشاشة الرئيسية لهويته تماماً كما في تسجيل الدخول العادي بالبريد/الهاتف — لا توجد شاشة نجاح منفصلة لـ 'التسجيل عبر مزوّد اجتماعي'.",
           "إذا لم تكن GOOGLE_CLIENT_ID/APPLE_CLIENT_ID مُهيَّأتين في الواجهة الخلفية، فإن الضغط على الزر المعني يُظهر رسالة خطأ عربية واضحة ('تسجيل الدخول عبر Google/Apple غير مُفعّل حالياً') بدلاً من رسالة خطأ شبكة عامة أو فشل صامت.",
-          "تسجيل دخول اجتماعي جديد تماماً (لا يوجد حساب سابق بذلك البريد) ينتج عنه حساب قابل للاستخدام بالكامل مع Identity نشطة فوراً — نفس فئة العلة الموثّقة في mobile-signup-otp-skip-logic، تأكد من عدم تكرارها هنا على مسار كود مختلف.",
+          "تسجيل دخول اجتماعي جديد تماماً (لا يوجد حساب سابق بذلك البريد) ينتج عنه حساب قابل للاستخدام بالكامل مع Identity نشطة فوراً — نفس فئة العلة الموثّقة في mobile-signup-verification، تأكد من عدم تكرارها هنا على مسار كود مختلف.",
         ],
       },
       testScenarios: {
@@ -606,6 +440,7 @@ export const mobileIndividual: DocSection = {
           "على أندرويد، تأكد أن زر Google فقط هو الظاهر وأن التخطيط لا يترك فراغاً غريباً في مكان زر Apple الموجود على iOS.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-otp-resend-countdown",
@@ -672,6 +507,7 @@ export const mobileIndividual: DocSection = {
           "أدخل 5 أرقام وتأكد أن زر التحقق يبقى معطَّلاً (رمادي)؛ أدخل الرقم السادس وتأكد أنه يصبح مفعَّلاً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-forgot-password-inline-error",
@@ -699,8 +535,8 @@ export const mobileIndividual: DocSection = {
         ar: "بصفتي مستخدماً فردياً نسيت كلمة مروري، أريد أن يُخبرني التطبيق بوضوح ومباشرة داخل الشاشة إذا كان البريد الإلكتروني أو الهاتف الذي أدخلته لا يطابق أي حساب، حتى أفهم فوراً ما الخطأ بدلاً من تخمين سبب عدم حدوث شيء.",
       },
       story: {
-        en: "Flag that the Figma design for step 1 of Forgot Password shows an inline error message under the field ('لم نتمكن من العثور على حساب مرتبط بهذه البيانات') for an unrecognized identifier, but ForgotPasswordStep1.tsx has no inline error rendering at all — the actual implementation only surfaces failures via a native Alert.alert('خطأ', ...) popup — so this is a real design/implementation mismatch worth a product decision, not just a QA pass/fail.",
-        ar: "أبلغ بأن تصميم Figma للخطوة 1 من استعادة كلمة المرور يعرض رسالة خطأ داخل الشاشة تحت الحقل ('لم نتمكن من العثور على حساب مرتبط بهذه البيانات') لمعرّف غير معروف، لكن ForgotPasswordStep1.tsx لا يعرض أي خطأ داخل الشاشة إطلاقاً — التنفيذ الفعلي يُظهر الفشل فقط عبر تنبيه أصلي Alert.alert('خطأ', ...) منبثق — فهذا تعارض حقيقي بين التصميم والتنفيذ يستحق قراراً من فريق المنتج، لا مجرد نجاح/فشل في اختبار الجودة.",
+        en: "Flag that the Figma design for step 1 of Forgot Password shows an inline error message under the field ('لم نتمكن من العثور على حساب مرتبط بهذه البيانات') for an unrecognized identifier, but ForgotPasswordStep1.tsx has no inline error rendering at all — the actual implementation only surfaces failures via a native showAlert('خطأ', ...) in app/(auth)/forgot-password.tsx popup — so this is a real design/implementation mismatch worth a product decision, not just a QA pass/fail.",
+        ar: "أبلغ بأن تصميم Figma للخطوة 1 من استعادة كلمة المرور يعرض رسالة خطأ داخل الشاشة تحت الحقل ('لم نتمكن من العثور على حساب مرتبط بهذه البيانات') لمعرّف غير معروف، لكن ForgotPasswordStep1.tsx لا يعرض أي خطأ داخل الشاشة إطلاقاً — التنفيذ الفعلي يُظهر الفشل فقط عبر تنبيه أصلي showAlert('خطأ', ...) in app/(auth)/forgot-password.tsx منبثق — فهذا تعارض حقيقي بين التصميم والتنفيذ يستحق قراراً من فريق المنتج، لا مجرد نجاح/فشل في اختبار الجودة.",
       },
       acceptanceCriteria: {
         en: [
@@ -726,6 +562,7 @@ export const mobileIndividual: DocSection = {
           "كرر الاختبار بمعرّف مشوَّه بوضوح (مثل نص عشوائي) للتأكد من إطلاق نفس مسار الخطأ المبني على Alert، لا مساراً مختلفاً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-reset-password-skip-button",
@@ -772,6 +609,7 @@ export const mobileIndividual: DocSection = {
           "استخدم زر الرجوع في الشاشة من هذه الخطوة وتأكد بالضبط أين ينتهي (المتوقع: العودة لخطوة رمز التحقق، حسب منطق step-- في handleBack) — قارن ذلك بما كان يُقصد على الأرجح بـ 'تخطي' في التصميم.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-auth-success-copy",
@@ -826,6 +664,7 @@ export const mobileIndividual: DocSection = {
           "قدّم إصلاح الصياغة كتذكرة بسيطة لا كعائق يمنع اجتياز اختبار الجودة — هذا خلل تجميلي، لا وظيفي.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-identity-switcher-sheet",
@@ -876,6 +715,7 @@ export const mobileIndividual: DocSection = {
           "اضغط 'إضافة هوية جديدة' وتأكد أنها تفتح خطوة نموذج التسجيل (تسجيل فردي فقط — تسجيل الشركة/المكتب العقاري مقفل، راجع الجوال — مشترك).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-account-suspension",

@@ -4,8 +4,8 @@ export const api: DocSection = {
   slug: "api",
   title: { en: "API", ar: "واجهة البرمجة (API)" },
   summary: {
-    en: "NestJS backend (apps/api/src/features + core): auth/identities, properties/search/map/favorites, chat, notifications, plans/payments/invoices, reviews, and core Twilio/S3/Prisma services. These stories focus on cross-cutting correctness that a UI-only pass would miss.",
-    ar: "الواجهة الخلفية المبنية بـ NestJS (apps/api/src/features + core): المصادقة/الهويات، العقارات/البحث/الخريطة/المفضلة، المحادثات، الإشعارات، الباقات/المدفوعات/الفواتير، التقييمات، وخدمات core الأساسية Twilio/S3/Prisma. تركّز هذه القصص على صحة السلوك الشاملة التي قد يفوّتها اختبار يقتصر على الواجهة فقط.",
+    en: "NestJS backend (apps/api/src/features + core): auth and personas, properties/search/map/favorites, chat, notifications, plans/payments/invoices, reviews, the docs portal, and core Twilio/S3/Prisma services. These stories focus on correctness and security that a UI-only pass would miss — including two open security items (unauthenticated media upload, Twilio mock fallback).",
+    ar: "الواجهة الخلفية NestJS (apps/api/src/features + core): المصادقة والهويات، العقارات/البحث/الخريطة/المفضلة، المحادثات، الإشعارات، الباقات/المدفوعات/الفواتير، التقييمات، بوابة التوثيق، والخدمات الأساسية Twilio/S3/Prisma. تركز القصص على الصحة والأمان التي قد يفوتها الاختبار عبر الواجهة فقط — ومنها بندان أمنيان مفتوحان (رفع الوسائط دون مصادقة، وبديل Twilio الوهمي).",
   },
   stories: [
     {
@@ -47,6 +47,7 @@ export const api: DocSection = {
           "تأكد أن نقاط نهاية عرض الشركات/المكاتب العامة لا تزال تعيد بيانات دون إرسال أي رأس مصادقة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-identity-scoping",
@@ -124,82 +125,75 @@ export const api: DocSection = {
           "أضف نفس العقار إلى المفضلة مرتين متتاليتين (تفعيل، ثم تفعيل مرة أخرى — أي استدعاءان)، وتأكد أن الاستدعاء الثاني يلغي التفعيل بدلاً من إعادة خطأ أو إضافة مزدوجة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-chat-gateway",
       title: {
-        en: "ChatGateway events stay in sync with the REST chat endpoints",
-        ar: "أحداث ChatGateway تبقى متزامنة مع نقاط نهاية المحادثة REST",
+        en: "Chat socket and REST agree, per persona",
+        ar: "مقبس المحادثة وواجهة REST متفقان، لكل هوية",
       },
       priority: "P0",
       story: {
-        en: "Verify that the WebSocket events (join_conversation, leave_conversation, send_message → new_message/conversation_updated/error) and the REST endpoints (POST conversations, GET conversations, GET conversations/:id/messages, POST conversations/:id/read) never disagree about a conversation's message history or read state, so mobile chat (mobile-chat-realtime) is provably correct at the transport layer, not just in manual UI testing.",
-        ar: "تحقق من أن أحداث WebSocket (join_conversation وleave_conversation وsend_message ← new_message/conversation_updated/error) ونقاط نهاية REST (POST conversations وGET conversations وGET conversations/:id/messages وPOST conversations/:id/read) لا تتعارضان أبداً حول سجل رسائل محادثة أو حالة القراءة، حتى تكون محادثة الجوال (mobile-chat-realtime) صحيحة قابلة للإثبات على مستوى طبقة النقل، لا فقط عبر اختبار يدوي للواجهة.",
+        en: "Verify the /chat socket and REST endpoints agree: the socket identifies the sender by the persona in its token and joins that persona's room; join_conversation only works for the conversation's personas; send_message stores the message under the sending persona and emits new_message to the conversation and conversation_updated to the other persona's room; a failure emits message_error with the client's tempId. REST: POST /chat/conversations, GET /chat/conversations, GET /chat/conversations/:id/messages, POST /chat/conversations/:id/read.",
+        ar: "تحقق من اتفاق مقبس /chat وواجهات REST: يحدد المقبس المرسل بالهوية الموجودة في رمزه وينضم لغرفة تلك الهوية؛ join_conversation يعمل فقط لهويات المحادثة؛ send_message يحفظ الرسالة باسم الهوية المرسلة ويبث new_message للمحادثة و conversation_updated لغرفة الهوية الأخرى؛ وعند الفشل يبث message_error مع tempId الخاص بالعميل. REST: POST /chat/conversations و GET /chat/conversations و GET /chat/conversations/:id/messages و POST /chat/conversations/:id/read.",
       },
       acceptanceCriteria: {
         en: [
-          "A message sent via the send_message socket event is retrievable immediately after via GET conversations/:id/messages.",
-          "join_conversation/leave_conversation correctly scope which sockets receive new_message for a given conversation — a socket that left shouldn't receive further events for it.",
-          "Sending a message to a conversation the sender isn't a participant in emits error, not new_message.",
-          "POST conversations/:id/read correctly zeroes unread count returned by whatever endpoint mobile uses to badge the chat list.",
+          "A message sent over the socket is returned by GET /chat/conversations/:id/messages right after.",
+          "A socket whose persona isn't in the conversation can't join its room or send to it (message_error).",
+          "After POST /chat/conversations/:id/read, the conversation's unreadCount in GET /chat/conversations is 0.",
+          "Switching persona (new token) moves the socket to the new persona's room.",
         ],
         ar: [
-          "رسالة مُرسلة عبر حدث send_message الخاص بالـ socket تكون قابلة للاسترجاع فوراً بعد ذلك عبر GET conversations/:id/messages.",
-          "join_conversation/leave_conversation يحددان بشكل صحيح أي اتصالات socket تستلم new_message لمحادثة معينة — اتصال غادر المحادثة يجب ألا يستلم أحداثاً أخرى لها.",
-          "إرسال رسالة إلى محادثة ليس المرسل عضواً فيها يُصدر حدث error، لا new_message.",
-          "POST conversations/:id/read يصفّر بشكل صحيح عدد غير المقروء المُعاد من أي نقطة نهاية يستخدمها الجوال لشارة قائمة المحادثات.",
+          "الرسالة المرسلة عبر المقبس يعيدها GET /chat/conversations/:id/messages مباشرة.",
+          "المقبس الذي لا تنتمي هويته للمحادثة لا يمكنه الانضمام لغرفتها أو الإرسال إليها (message_error).",
+          "بعد POST /chat/conversations/:id/read يصبح unreadCount للمحادثة في GET /chat/conversations صفراً.",
+          "تبديل الهوية (رمز جديد) ينقل المقبس لغرفة الهوية الجديدة.",
         ],
       },
       testScenarios: {
         en: [
-          "Open two socket connections as two different accounts in the same conversation; send from one, confirm the other receives new_message and conversation_updated.",
-          "Have one connection call leave_conversation, then send a message from the other — confirm the departed socket receives nothing further for that conversation.",
-          "Attempt send_message from an account with no membership in that conversation and confirm an error event, not a silently-accepted message.",
-          "Send several messages, call POST conversations/:id/read, then re-fetch unread state and confirm it's zero.",
+          "With a socket client, join someone else's conversation id and send — expect no new_message and a message_error.",
         ],
         ar: [
-          "افتح اتصالَي socket لحسابَين مختلفين في نفس المحادثة؛ أرسل من أحدهما، وتأكد أن الآخر يستلم new_message وconversation_updated.",
-          "اجعل أحد الاتصالين يستدعي leave_conversation، ثم أرسل رسالة من الآخر — تأكد أن الاتصال المغادر لا يستلم أي أحداث أخرى لتلك المحادثة.",
-          "حاول send_message من حساب ليس عضواً في تلك المحادثة وتأكد من حدث error، لا قبول صامت للرسالة.",
-          "أرسل عدة رسائل، استدعِ POST conversations/:id/read، ثم أعد جلب حالة غير المقروء وتأكد أنها صفر.",
+          "بعميل مقبس انضم لمعرّف محادثة شخص آخر وأرسل — المتوقع عدم وصول new_message وظهور message_error.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-payments-webhook",
       title: {
-        en: "Tap payment webhook is idempotent and can't be spoofed",
-        ar: "webhook الدفع عبر Tap مُحصَّن ضد التكرار ولا يمكن انتحاله",
+        en: "Tap webhook can't be forged and fulfils each invoice once",
+        ar: "إشعار Tap لا يمكن تزويره ويُنفِّذ كل فاتورة مرة واحدة",
       },
       priority: "P0",
       story: {
-        en: "Verify that POST payments/webhook correctly validates the Tap webhook signature/source and is idempotent under retries, so that a replayed or forged webhook call can't mark an invoice paid without a real payment, and a legitimate retry (Tap's own retry behavior) doesn't double-credit an account.",
-        ar: "تحقق من أن POST payments/webhook يتحقق بشكل صحيح من توقيع/مصدر webhook الخاص بـ Tap وأنه مُحصَّن ضد إعادة المحاولة (idempotent)، حتى لا يتمكن استدعاء webhook مُعاد تشغيله أو مزوَّر من وضع فاتورة كمدفوعة دون دفع حقيقي، ولا تؤدي إعادة محاولة شرعية (سلوك إعادة المحاولة الخاص بـ Tap نفسه) إلى إضافة رصيد مضاعف لحساب.",
+        en: "Verify POST /payments/webhook never trusts its body: it re-fetches the charge from Tap and fulfils only when Tap reports it CAPTURED for that invoice. Fulfilment claims the invoice atomically (only if it isn't PAID yet), so Tap's retries or the redirect and webhook arriving together credit the account once. There's no signature check — the re-fetch is the protection, so it depends on TAP_SECRET_KEY being set.",
+        ar: "تحقق من أن POST /payments/webhook لا يثق بمحتواه أبداً: يعيد جلب العملية من Tap ولا يُنفّذ إلا إذا أفاد Tap بأنها CAPTURED لتلك الفاتورة. التنفيذ يحجز الفاتورة ذرياً (فقط إن لم تكن مدفوعة بعد)، فتكرارات Tap أو وصول إعادة التوجيه والإشعار معاً تضيف الرصيد مرة واحدة. لا يوجد تحقق من التوقيع — إعادة الجلب هي الحماية، لذا تعتمد على ضبط TAP_SECRET_KEY.",
       },
       acceptanceCriteria: {
         en: [
-          "A webhook call missing valid Tap signing/auth is rejected, not processed as a real payment event.",
-          "Replaying the exact same legitimate webhook payload twice results in the invoice being marked paid once, not double-processed (e.g. double wallet credit).",
-          "GET payments/status/:invoiceId reflects the correct final state after webhook processing, matching what POST payments/charge + the redirect flow shows the user (mobile-payments).",
+          "A webhook body saying CAPTURED for an unpaid invoice with a made-up charge id changes nothing.",
+          "Sending the same real webhook twice marks the invoice paid and adds credits once.",
+          "GET /payments/status/:invoiceId shows PAID after either the redirect or the webhook.",
         ],
         ar: [
-          "استدعاء webhook بلا توقيع/مصادقة Tap صالحة يُرفض، ولا يُعامَل كحدث دفع حقيقي.",
-          "إعادة إرسال نفس حمولة webhook الشرعية مرتين ينتج عنه وضع الفاتورة كمدفوعة مرة واحدة فقط، لا معالجة مضاعفة (مثل رصيد محفظة مضاعف).",
-          "GET payments/status/:invoiceId يعكس الحالة النهائية الصحيحة بعد معالجة webhook، بما يطابق ما يعرضه للمستخدم POST payments/charge وتدفق إعادة التوجيه (mobile-payments).",
+          "محتوى إشعار يقول CAPTURED لفاتورة غير مدفوعة بمعرّف عملية مختلق لا يغيّر شيئاً.",
+          "إرسال نفس الإشعار الحقيقي مرتين يعلّم الفاتورة كمدفوعة ويضيف الرصيد مرة واحدة.",
+          "GET /payments/status/:invoiceId يعرض PAID بعد إعادة التوجيه أو الإشعار.",
         ],
       },
       testScenarios: {
         en: [
-          "Send a webhook payload with an invalid/missing signature and confirm it's rejected, and no invoice status changes.",
-          "Send a valid webhook payload twice in a row (simulating Tap's retry behavior) and confirm the invoice/wallet only reflects the payment once.",
-          "Run a full charge → redirect → webhook cycle and cross-check GET payments/status/:invoiceId matches the invoice list shown in mobile more/invoices.",
+          "Sandbox: pay, then replay the webhook payload with curl — the wallet doesn't grow twice.",
         ],
         ar: [
-          "أرسل حمولة webhook بتوقيع غير صالح/مفقود وتأكد من رفضها، وعدم تغيّر حالة أي فاتورة.",
-          "أرسل حمولة webhook صالحة مرتين متتاليتين (محاكاةً لسلوك إعادة المحاولة الخاص بـ Tap) وتأكد أن الفاتورة/المحفظة تعكس الدفعة مرة واحدة فقط.",
-          "نفّذ دورة كاملة من charge ← إعادة توجيه ← webhook وقارن أن GET payments/status/:invoiceId يطابق قائمة الفواتير المعروضة في more/invoices بالجوال.",
+          "في وضع الاختبار: ادفع ثم أعد إرسال محتوى الإشعار عبر curl — لا يتضاعف رصيد المحفظة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-search-strategies",
@@ -236,42 +230,40 @@ export const api: DocSection = {
           "أرسل نص استراتيجية غير معروف وتأكد من ظهور خطأ تحقق بدلاً من نتائج من استراتيجية افتراضية غير مقصودة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-otp-fallback",
       title: {
-        en: "Twilio OTP mock-fallback is safely dev-only",
-        ar: "البديل الوهمي لرمز OTP عبر Twilio مقتصر بأمان على بيئة التطوير فقط",
+        en: "Twilio mock-SMS fallback can turn on in production",
+        ar: "بديل الرسائل الوهمي لـ Twilio قد يعمل في الإنتاج",
       },
       priority: "P0",
       story: {
-        en: "Verify that twilio.service.ts's mock-SMS fallback (used when Twilio credentials aren't configured) is only ever active in development/test environments and never silently active in production, so that production OTP delivery can never fall back to a logged-but-not-sent 'mock' code that would let anyone log the OTP and take over an account.",
-        ar: "تحقق من أن البديل الوهمي لإرسال الرسائل النصية في twilio.service.ts (المُستخدم عند عدم ضبط بيانات اعتماد Twilio) مفعّل فقط في بيئات التطوير/الاختبار، ولا يُفعَّل أبداً بصمت في الإنتاج، حتى لا يتحول تسليم رمز OTP في الإنتاج إلى رمز 'وهمي' يُسجَّل في السجلات دون إرسال فعلي، وهو ما قد يسمح لأي شخص برؤية الرمز والاستيلاء على حساب.",
+        en: "Still open and security-relevant: twilio.service.ts switches to mock SMS mode whenever the Twilio credentials are missing — it doesn't check the environment, so a production deploy without them would silently stop sending real codes and accept mock ones. Until the code refuses mock mode in production, the production env must always have the Twilio variables, and a startup log 'Falling back to mock SMS mode' on production is an incident.",
+        ar: "ما زال قائماً ومتعلقاً بالأمان: twilio.service.ts ينتقل لوضع الرسائل الوهمية كلما غابت بيانات Twilio — دون فحص البيئة، فالنشر في الإنتاج دونها يوقف إرسال الرموز الحقيقية بصمت ويقبل الوهمية. حتى يرفض الكود الوضع الوهمي في الإنتاج، يجب أن تحتوي بيئة الإنتاج دائماً على متغيرات Twilio، وظهور سجل 'Falling back to mock SMS mode' عند التشغيل في الإنتاج حادثة أمنية.",
       },
       acceptanceCriteria: {
         en: [
-          "In an environment with valid Twilio credentials configured, OTPs are actually sent via Twilio, and the mock fallback path is never taken.",
-          "If Twilio credentials are missing, the mock fallback logs clearly and obviously (so it's caught in review/monitoring) rather than failing silently.",
-          "Production deployment configuration is verified to always have valid Twilio credentials present — this should be an explicit deploy-checklist/monitoring item, not just a code-review assumption.",
+          "Production startup logs show 'Twilio Verify client initialized successfully', never the mock-mode warning.",
+          "Phone OTPs on production arrive by real SMS.",
+          "A fix makes the API refuse to start (or refuse OTP) in production without Twilio credentials.",
         ],
         ar: [
-          "في بيئة مضبوطة ببيانات اعتماد Twilio صالحة، تُرسَل رموز OTP فعلياً عبر Twilio، ولا يُسلَك مسار البديل الوهمي إطلاقاً.",
-          "إذا كانت بيانات اعتماد Twilio مفقودة، يسجّل البديل الوهمي ذلك بوضوح وبشكل ملحوظ (بحيث يُكتشف في المراجعة/المراقبة) بدلاً من الفشل الصامت.",
-          "التحقق من أن إعدادات نشر الإنتاج تحتوي دائماً بيانات اعتماد Twilio صالحة — يجب أن يكون هذا بنداً صريحاً في قائمة تحقق النشر/المراقبة، لا افتراضاً في مراجعة الكود فقط.",
+          "سجلات تشغيل الإنتاج تعرض 'Twilio Verify client initialized successfully' وليس تحذير الوضع الوهمي أبداً.",
+          "رموز الهاتف في الإنتاج تصل برسائل SMS حقيقية.",
+          "الإصلاح يجعل الواجهة ترفض التشغيل (أو ترفض الرموز) في الإنتاج دون بيانات Twilio.",
         ],
       },
       testScenarios: {
         en: [
-          "In a local/dev environment with Twilio env vars unset, trigger an OTP request and confirm the mock fallback logs the code clearly to the console/logs.",
-          "In staging/production-like config with real Twilio credentials, trigger an OTP request and confirm it's delivered via actual SMS, not logged as a mock.",
-          "Add or confirm existence of a startup check/alert that fires if the production environment ever boots without valid Twilio credentials configured.",
+          "After each deploy: docker compose logs api | grep -i twilio.",
         ],
         ar: [
-          "في بيئة محلية/تطوير بمتغيرات بيئة Twilio غير مضبوطة، اطلب رمز OTP وتأكد أن البديل الوهمي يسجّل الرمز بوضوح في الـ console/السجلات.",
-          "في إعداد شبيه بالتجربة/الإنتاج ببيانات اعتماد Twilio حقيقية، اطلب رمز OTP وتأكد من تسليمه عبر رسالة نصية فعلية، لا تسجيله كوهمي.",
-          "أضف أو تأكد من وجود فحص/تنبيه عند بدء التشغيل يُطلق إنذاراً إذا أُقلعت بيئة الإنتاج دون بيانات اعتماد Twilio صالحة.",
+          "بعد كل نشر: docker compose logs api | grep -i twilio.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-media-upload",
@@ -281,7 +273,7 @@ export const api: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "Flag that POST media/upload/avatar and POST media/upload/listings (apps/api/src/media/media.controller.ts) currently have NO @UseGuards(AuthGuard('jwt')) at all — unlike almost every other feature controller in the API — so that this is either confirmed as an intentional public-upload design or escalated as a security bug before it's assumed to require a token like everything else tested in this section.",
+        en: "Flag that POST media/upload/avatar and POST media/upload/listings (apps/api/src/media/media.controller.ts) currently have NO @UseGuards(AuthGuard('jwt')) at all — unlike almost every other feature controller in the API — and no file-type or size limits either — so that this is either confirmed as an intentional public-upload design or escalated as a security bug before it's assumed to require a token like everything else tested in this section. Still true as of this review; the mobile app calls both with a token, so adding the guard wouldn't break it.",
         ar: "أشر إلى أن POST media/upload/avatar وPOST media/upload/listings (في apps/api/src/media/media.controller.ts) لا يحملان حالياً أي @UseGuards(AuthGuard('jwt')) إطلاقاً — خلافاً لكل متحكم ميزة آخر تقريباً في الواجهة البرمجية — حتى يُؤكَّد إما أن هذا تصميم رفع عام مقصود، أو يُصعَّد كثغرة أمنية، قبل افتراض أنه يتطلب رمز مصادقة مثل كل ما تم اختباره في هذا القسم.",
       },
       acceptanceCriteria: {
@@ -316,6 +308,7 @@ export const api: DocSection = {
           "ارفع عدة صور إعلان ضمن تدفق إضافة إعلان واحد وتأكد أن جميعها مرتبطة بشكل صحيح بذلك الإعلان، دون فقدان أو خلط أي منها.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "api-persona-rules",

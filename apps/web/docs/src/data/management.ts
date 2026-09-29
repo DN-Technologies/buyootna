@@ -41,42 +41,38 @@ export const management: DocSection = {
           "جرّب رابطاً مباشراً محتملاً للوحة التحكم وتأكد من ظهور خطأ 404 نظيف.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "management-signup-role-bug",
       title: {
-        en: "Signup defaults to INDIVIDUAL instead of a management-specific role — verify intentional or file as a bug",
-        ar: "التسجيل يعتمد افتراضياً على INDIVIDUAL بدلاً من دور خاص بالإدارة — تحقق من كون هذا مقصوداً أو أبلغ عنه كخطأ",
+        en: "Signup on the Management portal fails — it calls a removed endpoint",
+        ar: "التسجيل في بوابة Management يفشل — يستدعي نقطة نهاية محذوفة",
       },
       priority: "P0",
       story: {
-        en: 'Verify what role is actually submitted when a user signs up through apps/web/management, because SignupForm here is configured with defaultRole="INDIVIDUAL" — the same as no role selection at all — which looks like it may be an oversight left over from copying the web-companies/web-offices template rather than an intentional choice.',
-        ar: 'تحقق من الدور الذي يُرسَل فعلياً عند تسجيل مستخدم عبر apps/web/management، لأن SignupForm هنا مُهيّأ بـ defaultRole="INDIVIDUAL" — وهو ما يماثل عدم اختيار أي دور إطلاقاً — وهذا يبدو وكأنه سهو متبقٍّ من نسخ قالب web-companies/web-offices، لا خياراً مقصوداً.',
+        en: "Broken: the portal's signup page posts to POST /auth/register with role INDIVIDUAL, which the API no longer has (production answers 404). Signup now lives at POST /users/register/individual (with an email/SMS code) and POST /users/register/company|office (multipart, with licence details). Until the page is moved to those, nobody can create an account here. Separately, decide whether management accounts should really be INDIVIDUAL.",
+        ar: "معطّل: صفحة التسجيل في البوابة ترسل إلى POST /auth/register مع الدور INDIVIDUAL، وهي نقطة لم تعد موجودة في الواجهة البرمجية (الإنتاج يرد 404). التسجيل الآن عبر POST /users/register/individual (مع رمز بالبريد/SMS) و POST /users/register/company|office (بيانات متعددة الأجزاء مع الترخيص). إلى أن تُنقل الصفحة إليهما لا يمكن لأحد إنشاء حساب هنا. وبشكل منفصل، يجب تحديد ما إذا كانت حسابات الإدارة يجب أن تكون INDIVIDUAL فعلاً.",
       },
       acceptanceCriteria: {
         en: [
-          "Confirm with product/eng whether accounts created via this portal are supposed to be INDIVIDUAL, or a dedicated MANAGEMENT-type role that hasn't been wired up yet.",
-          "If INDIVIDUAL is unintentional: file a bug against apps/web/management/src/app/auth/signup (or wherever defaultRole is set) rather than treating current behavior as correct.",
-          "If INDIVIDUAL is intentional (e.g. management accounts are provisioned differently, not via self-signup): document that explicitly so this story doesn't get re-flagged every regression pass.",
+          "Today: submitting the form fails (404 from the API).",
+          "After the fix: the form uses the right endpoint for the account type and the new account can log in on the portal.",
         ],
         ar: [
-          "تأكد مع فريقَي المنتج والهندسة ما إذا كان من المفترض أن تكون الحسابات المُنشأة عبر هذه البوابة INDIVIDUAL، أم دور MANAGEMENT مخصص لم يُربط بعد.",
-          "إذا كان INDIVIDUAL غير مقصود: أبلغ عن خطأ ضد apps/web/management/src/app/auth/signup (أو أينما تُحدَّد defaultRole) بدلاً من اعتبار السلوك الحالي صحيحاً.",
-          "إذا كان INDIVIDUAL مقصوداً (مثلاً حسابات الإدارة تُنشأ بطريقة مختلفة، لا عبر التسجيل الذاتي): وثّق ذلك صراحةً حتى لا يُعاد الإبلاغ عن هذه القصة في كل جولة اختبار انحدار.",
+          "اليوم: إرسال النموذج يفشل (404 من الواجهة البرمجية).",
+          "بعد الإصلاح: يستخدم النموذج نقطة النهاية الصحيحة لنوع الحساب ويمكن للحساب الجديد الدخول إلى البوابة.",
         ],
       },
       testScenarios: {
         en: [
-          "Complete signup on this portal and check via network inspector / admin /users table what role the created account actually has.",
-          'Compare against the equivalent signup flow on web-companies (defaultRole="COMPANY") and web-offices (defaultRole="OFFICE") to confirm this portal is the outlier.',
-          "Escalate to the team before closing this out either way — this is exactly the kind of copy-paste-template bug that's easy to miss without cross-portal comparison.",
+          "Fill in the signup form with a new email and submit — watch the network request.",
         ],
         ar: [
-          "أكمل التسجيل عبر هذه البوابة وتحقق عبر أداة فحص الشبكة / جدول /users في لوحة تحكم المشرف من الدور الفعلي للحساب المُنشأ.",
-          'قارن مع تدفق التسجيل المكافئ على web-companies (defaultRole="COMPANY") وweb-offices (defaultRole="OFFICE") للتأكد أن هذه البوابة هي الاستثناء.',
-          "صعّد الأمر إلى الفريق قبل إغلاق هذه القصة بأي اتجاه — هذا بالضبط نوع أخطاء نسخ القوالب التي يسهل تفويتها دون مقارنة بين البوابات.",
+          "املأ نموذج التسجيل ببريد جديد وأرسل — راقب طلب الشبكة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "management-shared-form-parity",
@@ -107,6 +103,7 @@ export const management: DocSection = {
           "شغّل نفس حالات اختبار المصادقة المستخدمة لـ web-companies وweb-offices على web-management وتأكد من تطابق السلوك باستثناء حقل الدور.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

@@ -86,6 +86,7 @@ export const mobileShared: DocSection = {
           "أغلق التطبيق تماماً وأعد تشغيله كزائر — تأكد أن التقييد لا يزال يعمل بعد بدء تشغيل بارد (لا في حالة الجلسة الأولى فقط).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-chat-realtime",
@@ -134,7 +135,7 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "Verify that Search's live suggestions (real searchService calls) work correctly while confirming the 'recent searches' list is currently a mock/local array — so the mock history doesn't get misreported as a persistence bug, and gets tracked instead as a known gap (no Zustand/AsyncStorage persistence yet).",
+        en: "Verify (guests don't see recent searches at all) that Search's live suggestions (real searchService calls) work correctly while confirming the 'recent searches' list is currently a mock/local array — so the mock history doesn't get misreported as a persistence bug, and gets tracked instead as a known gap (no Zustand/AsyncStorage persistence yet).",
         ar: "تحقق من أن اقتراحات البحث الحيّة (عبر طلبات searchService الحقيقية) تعمل بشكل صحيح، مع تأكيد أن قائمة 'عمليات البحث الأخيرة' حالياً مجرد مصفوفة وهمية/محلية — حتى لا يُبلَّغ خطأً عن هذا السجل الوهمي كخطأ في الحفظ الدائم، بل يُوثَّق كنقص معروف (لا يوجد حفظ عبر Zustand/AsyncStorage بعد).",
       },
       acceptanceCriteria: {
@@ -165,6 +166,7 @@ export const mobileShared: DocSection = {
           "ابحث عن استعلام بلا نتائج مطابقة وتأكد من ظهور حالة فارغة مناسبة (لا شاشة بيضاء أو تحميل لا ينتهي).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-add-listing",
@@ -205,6 +207,7 @@ export const mobileShared: DocSection = {
           "عدّل إعلاناً موجوداً عبر /edit-listing/[id] وتأكد أن التعديلات تُحفظ دون تكرار الإعلان أو إعادة تعيين الحقول التي لم تُلمس.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-identity-switch",
@@ -329,48 +332,40 @@ export const mobileShared: DocSection = {
           "قارن تحديداً بشاشات الحساب التجريبي (راجع mobile-demo-account)، لأنها ما سيراه مراجعو App Store فعلياً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-demo-account",
       title: {
-        en: "App Store demo account has believable, working seeded data",
-        ar: "الحساب التجريبي لمتجر التطبيقات يحتوي بيانات أولية واقعية وفعّالة",
+        en: "App Store demo account works and matches the credentials given to Apple",
+        ar: "حساب العرض لمتجر التطبيقات يعمل ويطابق البيانات المقدمة لـ Apple",
       },
       priority: "P0",
       story: {
-        en: "Verify the demo account (demo@buyootna.cloud, per docs/plans/08-demo-account.md) has working seeded properties, a draft listing, favorites, chats, and an active subscription, so that App Store reviewers logging in with this account see a fully functional app rather than empty screens that could trigger another 4.2.2-style rejection.",
-        ar: "تحقق من أن الحساب التجريبي (demo@buyootna.cloud، حسب docs/plans/08-demo-account.md) يحتوي عقارات أولية فعّالة، وإعلان مسودة، ومفضلة، ومحادثات، واشتراكاً نشطاً، حتى يرى مراجعو App Store عند تسجيل الدخول بهذا الحساب تطبيقاً يعمل بشكل كامل بدلاً من شاشات فارغة قد تتسبب في رفض مشابه لرفض البند 4.2.2 السابق.",
+        en: "Verify the reviewer account App Review signs in with has real-looking data (ads, a draft, favorites, chats, a plan). Note a mismatch to resolve first: the seed (apps/api/prisma/seeds/seed.ts) creates reviewer@buyootna.com (plus office.reviewer@buyootna.com), while docs/plans/08-demo-account.md lists demo@buyootna.cloud — confirm which account is entered in App Store Connect and that it exists on production.",
+        ar: "تحقق من أن حساب المراجع الذي يدخل به فريق مراجعة Apple يحتوي بيانات واقعية (إعلانات، مسودة، مفضلة، محادثات، باقة). لاحظ تعارضاً يجب حله أولاً: البذرة (apps/api/prisma/seeds/seed.ts) تنشئ reviewer@buyootna.com (إضافة إلى office.reviewer@buyootna.com)، بينما يذكر docs/plans/08-demo-account.md الحساب demo@buyootna.cloud — تأكد أي حساب مُدخل في App Store Connect وأنه موجود في الإنتاج.",
       },
       acceptanceCriteria: {
         en: [
-          "Logging in as the demo account succeeds without OTP friction (or with clearly documented reviewer-facing OTP steps).",
-          "Home/Search show seeded, real-looking properties — not empty states.",
-          "The seeded draft listing is editable and viewable in add-listing/edit-listing flows.",
-          "Seeded favorites and chats are visible and navigable (chat thread has readable seeded messages).",
-          "The seeded subscription/plan shows correctly under more/plans and more/invoices.",
+          "The account listed in App Store Connect signs in on a production build without an OTP step.",
+          "Home, My Activity, Favorites, Chats and the wallet all show seeded content, not empty states.",
+          "The seeded draft opens in the edit form, and the seeded chat has readable messages.",
         ],
         ar: [
-          "تسجيل الدخول بالحساب التجريبي ينجح دون عوائق رمز التحقق OTP (أو مع خطوات OTP موثَّقة بوضوح للمراجع).",
-          "الصفحة الرئيسية/البحث تعرض عقارات أولية تبدو واقعية، لا حالات فارغة.",
-          "إعلان المسودة الأولي قابل للتعديل والعرض ضمن تدفقات إضافة/تعديل الإعلان.",
-          "المفضلة والمحادثات الأولية مرئية وقابلة للتصفح (محادثة تحتوي رسائل أولية قابلة للقراءة).",
-          "الاشتراك/الباقة الأولية تظهر بشكل صحيح ضمن more/plans وmore/invoices.",
+          "الحساب المذكور في App Store Connect يسجّل الدخول في نسخة الإنتاج دون خطوة رمز تحقق.",
+          "الرئيسية ونشاطي والمفضلة والمحادثات والمحفظة تعرض محتوى مبذوراً وليس حالات فارغة.",
+          "المسودة المبذورة تفتح في نموذج التعديل، والمحادثة المبذورة تحتوي رسائل مقروءة.",
         ],
       },
       testScenarios: {
         en: [
-          "Fresh install → log in as demo account → walk every guarded action (Chat, Favorites, Add Ad, etc.) end to end with no auth-sheet interruptions.",
-          "Confirm the seeded data survives a backend restart/reseed cycle (i.e. the seed script is idempotent and reviewer access doesn't silently break).",
-          "Verify no seeded content contains placeholder/lorem text visible to a reviewer.",
-          "Confirm the demo account is an Individual identity (not company/office), since those are gated — see mobile-company-office-gate.",
+          "Sign in on a TestFlight build with the App Store Connect reviewer credentials and walk each tab.",
         ],
         ar: [
-          "تثبيت جديد ← تسجيل الدخول بالحساب التجريبي ← جرّب كل إجراء مقيَّد (محادثة، مفضلة، إضافة إعلان، إلخ) من البداية للنهاية دون أي مقاطعة من شاشة المصادقة.",
-          "تأكد أن البيانات الأولية تصمد أمام إعادة تشغيل/إعادة تهيئة الواجهة الخلفية (أي أن نص الإعداد الأولي idempotent ولا يتعطل وصول المراجع بصمت).",
-          "تحقق أن المحتوى الأولي لا يحتوي أي نص عنصر نائب (placeholder/lorem) مرئي للمراجع.",
-          "تأكد أن الحساب التجريبي هوية فردية (لا شركة/مكتب عقاري)، لأن هذين الدورين مقفلان — راجع mobile-company-office-gate.",
+          "سجّل الدخول في نسخة TestFlight ببيانات المراجع في App Store Connect وتنقّل في كل تبويب.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "mobile-persona-ownership",

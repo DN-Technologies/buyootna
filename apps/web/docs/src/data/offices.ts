@@ -4,8 +4,8 @@ export const offices: DocSection = {
   slug: "web-offices",
   title: { en: "Web Offices", ar: "بوابة المكاتب العقارية (ويب)" },
   summary: {
-    en: "Next.js real-estate office/agency portal (apps/web/offices, port 3003). Mirrors web-companies exactly today: a splash page plus login/signup/forgot-password on shared @buyootna/ui forms. No office dashboard exists yet.",
-    ar: "بوابة المكاتب العقارية/الوكالات المبنية بـ Next.js (apps/web/offices، المنفذ 3003). تطابق حالياً بوابة web-companies تماماً: صفحة تعريفية بالإضافة إلى تسجيل الدخول/التسجيل/نسيت كلمة المرور عبر نماذج @buyootna/ui المشتركة. لا توجد لوحة تحكم للمكاتب العقارية بعد.",
+    en: "Next.js real-estate office/agency portal (apps/web/offices, port 3003). An auth-only shell: a splash page plus login/signup/forgot-password on the shared @buyootna/ui forms. Signup is currently broken — it posts to the removed POST /auth/register. No dashboard exists yet.",
+    ar: "Next.js بوابة المكاتب العقارية (apps/web/offices، المنفذ 3003). هيكل مصادقة فقط: صفحة ترحيبية مع الدخول/التسجيل/استعادة كلمة المرور بنماذج @buyootna/ui المشتركة. التسجيل معطّل حالياً — يرسل إلى POST /auth/register المحذوفة. لا توجد لوحة تحكم بعد.",
   },
   stories: [
     {
@@ -41,40 +41,38 @@ export const offices: DocSection = {
           "جرّب رابطاً مباشراً محتملاً للوحة التحكم وتأكد من ظهور خطأ 404 نظيف، لا صفحة معطوبة معروضة جزئياً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "offices-signup-role",
       title: {
-        en: "Signup correctly defaults to and submits the OFFICE role",
-        ar: "التسجيل يعتمد افتراضياً على دور OFFICE ويرسله بشكل صحيح",
+        en: "Signup on the Offices portal fails — it calls a removed endpoint",
+        ar: "التسجيل في بوابة Offices يفشل — يستدعي نقطة نهاية محذوفة",
       },
       priority: "P0",
       story: {
-        en: 'Verify SignupForm here is configured with defaultRole="OFFICE" and actually submits OFFICE to POST auth/register, so that an agency signing up through this portal isn\'t misprovisioned as an individual or company account.',
-        ar: 'تحقق من أن SignupForm هنا مُهيّأ بـ defaultRole="OFFICE" وأنه يرسل فعلياً OFFICE إلى POST auth/register، حتى لا يُنشأ حساب وكالة تُسجّل عبر هذه البوابة بشكل خاطئ كحساب فردي أو شركة.',
+        en: "Broken: the portal's signup page posts to POST /auth/register with role OFFICE, which the API no longer has (production answers 404). Signup now lives at POST /users/register/individual (with an email/SMS code) and POST /users/register/company|office (multipart, with licence details). Until the page is moved to those, nobody can create an account here.",
+        ar: "معطّل: صفحة التسجيل في البوابة ترسل إلى POST /auth/register مع الدور OFFICE، وهي نقطة لم تعد موجودة في الواجهة البرمجية (الإنتاج يرد 404). التسجيل الآن عبر POST /users/register/individual (مع رمز بالبريد/SMS) و POST /users/register/company|office (بيانات متعددة الأجزاء مع الترخيص). إلى أن تُنقل الصفحة إليهما لا يمكن لأحد إنشاء حساب هنا.",
       },
       acceptanceCriteria: {
         en: [
-          "Signup does not require the user to pick a role manually — OFFICE is implicit for this portal.",
-          'The network request to auth/register includes role: "OFFICE".',
-          "The resulting account shows as role OFFICE in the admin /users table, and correctly renders OfficeProfileOverview when viewed there.",
+          "Today: submitting the form fails (404 from the API).",
+          "After the fix: the form uses the right endpoint for the account type and the new account can log in on the portal.",
         ],
         ar: [
-          "التسجيل لا يتطلب من المستخدم اختيار الدور يدوياً — OFFICE ضمني في هذه البوابة.",
-          'طلب الشبكة إلى auth/register يتضمن role: "OFFICE".',
-          "الحساب الناتج يظهر بدور OFFICE في جدول /users بلوحة تحكم المشرف، ويعرض بشكل صحيح مكوّن OfficeProfileOverview عند عرضه هناك.",
+          "اليوم: إرسال النموذج يفشل (404 من الواجهة البرمجية).",
+          "بعد الإصلاح: يستخدم النموذج نقطة النهاية الصحيحة لنوع الحساب ويمكن للحساب الجديد الدخول إلى البوابة.",
         ],
       },
       testScenarios: {
         en: [
-          "Complete signup and confirm via network inspector or admin panel that the created account is OFFICE, not COMPANY or INDIVIDUAL.",
-          "Cross-check against a company signup done via web-companies in the same test session to confirm no role cross-wiring between the two portals.",
+          "Fill in the signup form with a new email and submit — watch the network request.",
         ],
         ar: [
-          "أكمل التسجيل وتأكد عبر أداة فحص الشبكة أو لوحة تحكم المشرف أن الحساب المُنشأ بدور OFFICE، لا COMPANY أو INDIVIDUAL.",
-          "قارن مع تسجيل شركة تم عبر web-companies في نفس جلسة الاختبار للتأكد من عدم تداخل الأدوار بين البوابتين.",
+          "املأ نموذج التسجيل ببريد جديد وأرسل — راقب طلب الشبكة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "offices-shared-form-parity",
@@ -107,6 +105,7 @@ export const offices: DocSection = {
           "إذا وصل إصلاح إلى packages/ui لأحد هذه النماذج، أعد تشغيل فحص التطابق هذا على بوابتَي companies وoffices معاً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };

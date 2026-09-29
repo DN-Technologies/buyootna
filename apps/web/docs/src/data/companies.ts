@@ -4,8 +4,8 @@ export const companies: DocSection = {
   slug: "web-companies",
   title: { en: "Web Companies", ar: "بوابة الشركات (ويب)" },
   summary: {
-    en: "Next.js corporate portal (apps/web/companies, port 3002). Currently an auth-only shell: a splash page plus login/signup/forgot-password, all reusing the shared @buyootna/ui forms. No company dashboard exists yet.",
-    ar: "بوابة الشركات المبنية على Next.js (apps/web/companies، المنفذ 3002). حالياً مجرد هيكل مصادقة فقط: صفحة ترحيبية بالإضافة إلى تسجيل الدخول/التسجيل/نسيت كلمة المرور، وكلها تعيد استخدام نماذج @buyootna/ui المشتركة. لا توجد لوحة تحكم للشركة بعد.",
+    en: "Next.js corporate portal (apps/web/companies, port 3002). An auth-only shell: a splash page plus login/signup/forgot-password on the shared @buyootna/ui forms. Signup is currently broken — it posts to the removed POST /auth/register. No dashboard exists yet.",
+    ar: "Next.js بوابة الشركات (apps/web/companies، المنفذ 3002). هيكل مصادقة فقط: صفحة ترحيبية مع الدخول/التسجيل/استعادة كلمة المرور بنماذج @buyootna/ui المشتركة. التسجيل معطّل حالياً — يرسل إلى POST /auth/register المحذوفة. لا توجد لوحة تحكم بعد.",
   },
   stories: [
     {
@@ -41,40 +41,38 @@ export const companies: DocSection = {
           "حاول تخمين/الوصول المباشر إلى رابط لوحة تحكم محتمل (مثل /dashboard أو /properties) وتأكد أنه يعطي 404 بشكل صحيح بدلاً من عرض صفحة معطوبة جزئياً.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "companies-signup-role",
       title: {
-        en: "Signup correctly defaults to and submits the COMPANY role",
-        ar: "التسجيل يعتمد افتراضياً على دور COMPANY ويرسله بشكل صحيح",
+        en: "Signup on the Companies portal fails — it calls a removed endpoint",
+        ar: "التسجيل في بوابة Companies يفشل — يستدعي نقطة نهاية محذوفة",
       },
       priority: "P0",
       story: {
-        en: 'Verify that SignupForm on this portal is configured with defaultRole="COMPANY" and actually submits COMPANY as the role to POST auth/register, so that a company signing up through this portal doesn\'t accidentally get provisioned as an individual account.',
-        ar: 'تحقق من أن SignupForm في هذه البوابة مُهيّأ بـ defaultRole="COMPANY" وأنه يرسل فعلياً COMPANY كدور إلى POST auth/register، حتى لا تُنشأ شركة تسجّل عبر هذه البوابة بالخطأ كحساب فردي.',
+        en: "Broken: the portal's signup page posts to POST /auth/register with role COMPANY, which the API no longer has (production answers 404). Signup now lives at POST /users/register/individual (with an email/SMS code) and POST /users/register/company|office (multipart, with licence details). Until the page is moved to those, nobody can create an account here.",
+        ar: "معطّل: صفحة التسجيل في البوابة ترسل إلى POST /auth/register مع الدور COMPANY، وهي نقطة لم تعد موجودة في الواجهة البرمجية (الإنتاج يرد 404). التسجيل الآن عبر POST /users/register/individual (مع رمز بالبريد/SMS) و POST /users/register/company|office (بيانات متعددة الأجزاء مع الترخيص). إلى أن تُنقل الصفحة إليهما لا يمكن لأحد إنشاء حساب هنا.",
       },
       acceptanceCriteria: {
         en: [
-          "The signup form does not require the user to manually pick a role — COMPANY is implicit for this portal.",
-          'The network request to auth/register includes role: "COMPANY".',
-          "A completed signup results in a user whose role/identity is COMPANY when inspected via the admin /users table.",
+          "Today: submitting the form fails (404 from the API).",
+          "After the fix: the form uses the right endpoint for the account type and the new account can log in on the portal.",
         ],
         ar: [
-          "نموذج التسجيل لا يتطلب من المستخدم اختيار دور يدوياً — COMPANY ضمني في هذه البوابة.",
-          'طلب الشبكة إلى auth/register يتضمن role: "COMPANY".',
-          "التسجيل المكتمل ينتج مستخدماً دوره/هويته COMPANY عند فحصه عبر جدول /users في لوحة تحكم المشرف.",
+          "اليوم: إرسال النموذج يفشل (404 من الواجهة البرمجية).",
+          "بعد الإصلاح: يستخدم النموذج نقطة النهاية الصحيحة لنوع الحساب ويمكن للحساب الجديد الدخول إلى البوابة.",
         ],
       },
       testScenarios: {
         en: [
-          "Complete signup on this portal and verify (via network inspector or admin panel) the created account is role COMPANY, not INDIVIDUAL.",
-          "Compare the created account's role against the same signup flow run on apps/web/offices to confirm the two portals don't cross-wire roles.",
+          "Fill in the signup form with a new email and submit — watch the network request.",
         ],
         ar: [
-          "أكمل التسجيل على هذه البوابة وتحقق (عبر أداة فحص الشبكة أو لوحة تحكم المشرف) أن الحساب المُنشأ دوره COMPANY، لا INDIVIDUAL.",
-          "قارن دور الحساب المُنشأ مع نفس تدفق التسجيل المُنفَّذ على apps/web/offices للتأكد أن البوابتين لا تتبادلان الأدوار بالخطأ.",
+          "املأ نموذج التسجيل ببريد جديد وأرسل — راقب طلب الشبكة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "companies-shared-form-validation",
@@ -111,6 +109,7 @@ export const companies: DocSection = {
           "افتح تذكرة اتساق بين المنصات إذا أراد فريق المنتج أن يطابق الويب قواعد zod الأكثر صرامة في الجوال — هذه القصة موجودة لجعل الفجوة الحالية صريحة، لا لتمريرها بصمت باعتبارها مقبولة.",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
     {
       id: "companies-forgot-password",
@@ -147,6 +146,7 @@ export const companies: DocSection = {
           "اضغط زر الإرسال بسرعة عدة مرات وتأكد من عدم إطلاق رسائل/رموز تحقق مكررة من الواجهة (الزر يُعطَّل أثناء الإرسال).",
         ],
       },
+      updatedIn: "feat/docs-platform",
     },
   ],
 };
