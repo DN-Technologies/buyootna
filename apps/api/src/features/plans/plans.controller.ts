@@ -36,7 +36,7 @@ export class PlansController {
   @ApiResponse({ status: 200, type: UserWalletResponseDto })
   @ApiCommonErrors()
   async getUserWallet(@CurrentUser() reqUser: RequestUser) {
-    return this.plansService.getUserWallet(reqUser.userId);
+    return this.plansService.getWallet(reqUser.identityId);
   }
 
   @Get('history')
@@ -46,7 +46,7 @@ export class PlansController {
   @ApiResponse({ status: 200, type: [PackageHistoryItemDto] })
   @ApiCommonErrors()
   async getPackageHistory(@CurrentUser() reqUser: RequestUser) {
-    return this.plansService.getPackageHistory(reqUser.userId);
+    return this.plansService.getPackageHistory(reqUser.identityId);
   }
 
   @Get('wallet/publish-options')
@@ -61,6 +61,6 @@ export class PlansController {
   async getPublishOptions(
     @CurrentUser() reqUser: RequestUser,
   ): Promise<PublishOptionsResponse> {
-    return this.plansService.getPublishOptions(reqUser.userId);
+    return this.plansService.getPublishOptions(reqUser.identityId);
   }
 }

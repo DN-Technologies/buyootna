@@ -21,15 +21,12 @@ export class ChatMessagesService {
   // Get messages for a single conversation
   async getMessages(
     conversationId: string,
-    userId: string,
+    identityId: string,
     cursor?: string,
     limit = 20,
   ) {
     const isParticipant = await this.prisma.conversationParticipant.findFirst({
-      where: {
-        conversationId,
-        OR: [{ userId }, { identityId: userId }],
-      },
+      where: { conversationId, identityId },
     });
 
     if (!isParticipant) {
@@ -78,7 +75,7 @@ export class ChatMessagesService {
 
     const prop = conversation?.property;
     const otherPart = conversation?.participants.find(
-      (p) => p.userId !== userId && p.identityId !== userId,
+      (p) => p.identityId !== identityId,
     );
     const ident = otherPart?.identity;
     const { name: otherUserName, avatarUrl: otherUserAvatar } =
@@ -105,7 +102,7 @@ export class ChatMessagesService {
                 location: prop.location,
               }
             : undefined,
-        isMine: msg.senderId === userId || msg.senderIdentityId === userId,
+        isMine: msg.senderIdentityId === identityId,
         timestamp: this.formatTime(msg.createdAt),
         createdAt: msg.createdAt,
       })),
@@ -135,17 +132,14 @@ export class ChatMessagesService {
     };
   }
 
-  // Send a message
+  // Send a message as the sender's persona
   async sendMessage(
-    senderId: string,
+    sender: { userId: string; identityId: string },
     conversationId: string,
     dto: SendMessageDto,
   ) {
     const isParticipant = await this.prisma.conversationParticipant.findFirst({
-      where: {
-        conversationId,
-        OR: [{ userId: senderId }, { identityId: senderId }],
-      },
+      where: { conversationId, identityId: sender.identityId },
     });
 
     if (!isParticipant) {
@@ -155,31 +149,16 @@ export class ChatMessagesService {
     // The other side suspended their account (or was blocked): no new
     // messages until they're back
     const others = await this.prisma.conversationParticipant.findMany({
-      where: {
-        conversationId,
-        NOT: { OR: [{ userId: senderId }, { identityId: senderId }] },
-      },
+      where: { conversationId, identityId: { not: sender.identityId } },
       select: {
-        userId: true,
         identity: {
           select: { user: { select: { isDisabled: true, isBlocked: true } } },
         },
       },
     });
-    // Legacy participants reference the user directly
-    const legacyUserIds = others
-      .filter((p) => !p.identity && p.userId)
-      .map((p) => p.userId!);
-    const legacyUsers = legacyUserIds.length
-      ? await this.prisma.user.findMany({
-          where: { id: { in: legacyUserIds } },
-          select: { isDisabled: true, isBlocked: true },
-        })
-      : [];
-    const unavailable = [
-      ...others.map((p) => p.identity?.user),
-      ...legacyUsers,
-    ].some((u) => u?.isDisabled || u?.isBlocked);
+    const unavailable = others.some(
+      (p) => p.identity.user.isDisabled || p.identity.user.isBlocked,
+    );
     if (unavailable) {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
     }
@@ -188,8 +167,8 @@ export class ChatMessagesService {
       const message = await tx.message.create({
         data: {
           conversationId,
-          senderId,
-          senderIdentityId: senderId,
+          senderId: sender.userId,
+          senderIdentityId: sender.identityId,
           type: dto.type || 'TEXT',
           content: dto.content || null,
           imageUrl: dto.imageUrl || null,
@@ -212,10 +191,7 @@ export class ChatMessagesService {
       });
 
       await tx.conversationParticipant.updateMany({
-        where: {
-          conversationId,
-          OR: [{ userId: senderId }, { identityId: senderId }],
-        },
+        where: { conversationId, identityId: sender.identityId },
         data: { lastReadAt: new Date() },
       });
 
@@ -238,7 +214,9 @@ export class ChatMessagesService {
               location: prop.location,
             }
           : undefined,
-        senderId,
+        // The app compares senderId with the signed-in account's id
+        senderId: sender.userId,
+        senderIdentityId: sender.identityId,
         timestamp: this.formatTime(message.createdAt),
         createdAt: message.createdAt,
       };
@@ -246,15 +224,20 @@ export class ChatMessagesService {
   }
 
   // Mark conversation messages as read
-  async markAsRead(userId: string, conversationId: string) {
+  async markAsRead(identityId: string, conversationId: string) {
     await this.prisma.conversationParticipant.updateMany({
-      where: {
-        conversationId,
-        OR: [{ userId }, { identityId: userId }],
-      },
+      where: { conversationId, identityId },
       data: { lastReadAt: new Date() },
     });
     return { success: true };
+  }
+
+  async isParticipant(identityId: string, conversationId: string) {
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: { conversationId, identityId },
+      select: { id: true },
+    });
+    return !!participant;
   }
 
   private formatTime(date: Date): string {

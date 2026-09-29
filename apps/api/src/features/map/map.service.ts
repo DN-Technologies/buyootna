@@ -91,10 +91,12 @@ export class MapService {
   }
 
   private async discoverCompanies(dto: GetMapBoundsDto) {
-    const profileWhere: Prisma.CompanyProfileWhereInput = {
+    const profileWhere: Prisma.CompanyIdentityDataWhereInput = {
       status: ApprovalStatus.APPROVED,
       latitude: { gte: dto.sw_lat, lte: dto.ne_lat, not: null },
       longitude: { gte: dto.sw_lng, lte: dto.ne_lng, not: null },
+      // Hidden while the owner's account is suspended or blocked
+      identity: { user: { isDisabled: false, isBlocked: false } },
     };
 
     if (dto.searchQuery?.trim()) {
@@ -107,7 +109,7 @@ export class MapService {
     }
 
     if (dto.governorateId || dto.areaId) {
-      const locationOr: Prisma.CompanyProfileWhereInput[] = [];
+      const locationOr: Prisma.CompanyIdentityDataWhereInput[] = [];
 
       if (dto.governorateId) {
         const gov = await this.prisma.governorate.findUnique({
@@ -141,10 +143,12 @@ export class MapService {
       }
     }
 
-    const rows = await this.prisma.companyProfile.findMany({
+    // Companies live on their persona (both signup paths); the pin id is the
+    // company's identity id, the id its public profile is opened by
+    const companies = await this.prisma.companyIdentityData.findMany({
       where: profileWhere,
       select: {
-        id: true,
+        identityId: true,
         latitude: true,
         longitude: true,
         logoUrl: true,
@@ -153,6 +157,8 @@ export class MapService {
       take: MAP_LIMIT,
     });
 
-    return companiesToFeatureCollection(rows);
+    return companiesToFeatureCollection(
+      companies.map(({ identityId, ...pin }) => ({ id: identityId, ...pin })),
+    );
   }
 }

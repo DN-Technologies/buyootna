@@ -88,7 +88,7 @@ export class ReviewsService {
    */
   async getReviews(
     targetUserId: string,
-    currentUserId?: string,
+    currentIdentityId?: string,
     query?: GetReviewsDto,
   ) {
     const page = query?.page ? parseInt(query.page, 10) : 1;
@@ -152,11 +152,8 @@ export class ReviewsService {
         (rx) => rx.type === ReactionType.DISLIKE,
       ).length;
 
-      const userReaction = currentUserId
-        ? r.reactions.find(
-            (rx) =>
-              rx.userId === currentUserId || rx.identityId === currentUserId,
-          )
+      const userReaction = currentIdentityId
+        ? r.reactions.find((rx) => rx.identityId === currentIdentityId)
         : null;
 
       return {
@@ -236,7 +233,12 @@ export class ReviewsService {
   /**
    * Toggle Like or Dislike on a review.
    */
-  async toggleReaction(reviewId: string, userId: string, type: ReactionType) {
+  async toggleReaction(
+    reviewId: string,
+    userId: string,
+    identityId: string,
+    type: ReactionType,
+  ) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -245,11 +247,9 @@ export class ReviewsService {
       throw new NotFoundException('التقييم غير موجود');
     }
 
+    // Reactions belong to the persona reacting
     const existingReaction = await this.prisma.reviewReaction.findFirst({
-      where: {
-        reviewId,
-        OR: [{ userId }, { identityId: userId }],
-      },
+      where: { reviewId, identityId },
     });
 
     if (existingReaction) {
@@ -269,6 +269,7 @@ export class ReviewsService {
       await this.prisma.reviewReaction.create({
         data: {
           reviewId,
+          identityId,
           userId,
           type,
         },

@@ -52,10 +52,12 @@ export class PaymentFulfillmentService {
     const fulfilled = await this.prisma.$transaction(async (tx) => {
       if (!(await this.markPaid(tx, invoice.id))) return false;
 
-      // Add the ads to the user's wallet and make it their active plan
+      // Add the ads to the buying persona's wallet; the account's
+      // activePlan stays as the admin's plan label
       if (plan) {
         await tx.userPlanSlot.create({
           data: {
+            identityId: invoice.identityId,
             userId: invoice.userId,
             planId: plan.id,
             adsRemaining: adsToAdd,

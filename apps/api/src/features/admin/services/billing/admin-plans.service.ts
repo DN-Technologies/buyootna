@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { SlotStatus } from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { PlansService } from '../../../plans/plans.service';
@@ -6,6 +11,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
 import { AdminChangePlanDto } from '../../dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from '../../dto/admin-grant-exceptional-feature.dto';
+import { findDefaultPersonaId } from '../../../identities/persona-rules';
 
 @Injectable()
 export class AdminPlansService {
@@ -18,8 +24,24 @@ export class AdminPlansService {
     private readonly auditLog: AdminAuditLogService,
   ) {}
 
+  // All of the account's personas together
   async getWallet(userId: string) {
-    return this.plansService.getUserWallet(userId);
+    return this.plansService.getAccountWallet(userId);
+  }
+
+  // Credits are per persona: the one named, else the account's default
+  private async resolveTargetPersona(userId: string, identityId?: string) {
+    if (identityId) {
+      const owned = await this.prisma.identity.findFirst({
+        where: { id: identityId, userId },
+        select: { id: true },
+      });
+      if (!owned) throw new NotFoundException('الهوية غير موجودة');
+      return identityId;
+    }
+    const fallback = await findDefaultPersonaId(this.prisma, userId);
+    if (!fallback) throw new BadRequestException('لا توجد هوية لهذا المستخدم');
+    return fallback;
   }
 
   async changePlan(
@@ -31,10 +53,12 @@ export class AdminPlansService {
       where: { id: dto.planId },
     });
     if (!plan) throw new NotFoundException('الباقة غير موجودة');
+    const identityId = await this.resolveTargetPersona(userId, dto.identityId);
 
     const slot = await this.prisma.userPlanSlot.create({
       data: {
         planId: plan.id,
+        identityId,
         userId,
         adsRemaining: dto.adsRemaining ?? plan.maxActiveAds,
         status: SlotStatus.ACTIVE,
@@ -47,10 +71,10 @@ export class AdminPlansService {
       targetType: 'PLAN',
       targetId: slot.id,
       targetUserId: userId,
-      metadata: { planId: plan.id, planName: plan.name },
+      metadata: { planId: plan.id, planName: plan.name, identityId },
     });
 
-    return this.plansService.getUserWallet(userId);
+    return this.plansService.getAccountWallet(userId);
   }
 
   async grantExceptionalFeature(
@@ -59,8 +83,12 @@ export class AdminPlansService {
     adminUserId: string,
   ) {
     if (dto.adsCount) {
+      const identityId = await this.resolveTargetPersona(
+        userId,
+        dto.identityId,
+      );
       const latestSlot = await this.prisma.userPlanSlot.findFirst({
-        where: { userId },
+        where: { identityId },
         orderBy: { createdAt: 'desc' },
       });
       const planId =
@@ -76,6 +104,7 @@ export class AdminPlansService {
         await this.prisma.userPlanSlot.create({
           data: {
             planId,
+            identityId,
             userId,
             adsRemaining: dto.adsCount,
             status: SlotStatus.ACTIVE,

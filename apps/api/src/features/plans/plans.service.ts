@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 
 export interface PublishOption {
@@ -38,9 +39,33 @@ export class PlansService {
     });
   }
 
-  async getUserWallet(userId: string) {
-    const allSlots = await this.prisma.userPlanSlot.findMany({
+  /** One persona's wallet: its own credits and its own free ad. */
+  async getWallet(identityId: string) {
+    const identity = await this.prisma.identity.findUnique({
+      where: { id: identityId },
+      select: { freeAdsRemaining: true },
+    });
+    return this.buildWallet({ identityId }, identity?.freeAdsRemaining ?? 0);
+  }
+
+  /** Every persona of an account together (the admin's view of a user). */
+  async getAccountWallet(userId: string) {
+    const free = await this.prisma.identity.aggregate({
       where: { userId },
+      _sum: { freeAdsRemaining: true },
+    });
+    return this.buildWallet(
+      { identity: { userId } },
+      free._sum.freeAdsRemaining ?? 0,
+    );
+  }
+
+  private async buildWallet(
+    slotsWhere: Prisma.UserPlanSlotWhereInput,
+    freeAdsRemaining: number,
+  ) {
+    const allSlots = await this.prisma.userPlanSlot.findMany({
+      where: slotsWhere,
       include: {
         plan: true,
         invoice: {
@@ -53,11 +78,6 @@ export class PlansService {
     const activeSlots = allSlots.filter(
       (s) => s.status === 'ACTIVE' && s.adsRemaining > 0,
     );
-
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { freeAdsRemaining: true },
-    });
 
     // Calculate balance counts by plan slug
     let gold = 0;
@@ -102,7 +122,7 @@ export class PlansService {
     });
 
     return {
-      freeAdsRemaining: user?.freeAdsRemaining ?? 0,
+      freeAdsRemaining,
       balanceCounts: {
         gold,
         silver,
@@ -129,13 +149,13 @@ export class PlansService {
     };
   }
 
-  async getPackageHistory(userId: string) {
-    const wallet = await this.getUserWallet(userId);
+  async getPackageHistory(identityId: string) {
+    const wallet = await this.getWallet(identityId);
     return wallet.history;
   }
 
-  async getPublishOptions(userId: string): Promise<PublishOptionsResponse> {
-    const wallet = await this.getUserWallet(userId);
+  async getPublishOptions(identityId: string): Promise<PublishOptionsResponse> {
+    const wallet = await this.getWallet(identityId);
 
     const options: PublishOption[] = [];
 

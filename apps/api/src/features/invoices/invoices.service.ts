@@ -6,9 +6,18 @@ import type { Invoice } from '@prisma/client';
 export class InvoicesService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** One persona's invoices. */
+  async findIdentityInvoices(identityId: string): Promise<Invoice[]> {
+    return this.prisma.invoice.findMany({
+      where: { identityId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /** Every persona of an account (the admin's view of a user). */
   async findUserInvoices(userId: string): Promise<Invoice[]> {
     return this.prisma.invoice.findMany({
-      where: { userId },
+      where: { identity: { userId } },
       orderBy: { createdAt: 'desc' },
     });
   }

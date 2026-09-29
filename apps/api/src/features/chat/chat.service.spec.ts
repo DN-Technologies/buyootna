@@ -105,9 +105,8 @@ describe('ChatService.findOrCreateConversation', () => {
   let service: ChatService;
   let prisma: {
     $transaction: jest.Mock;
-    identity: { findUnique: jest.Mock };
+    identity: { findUnique: jest.Mock; findMany: jest.Mock };
     property: { findUnique: jest.Mock };
-    user: { findUnique: jest.Mock };
   };
   let tx: {
     $executeRaw: jest.Mock;
@@ -133,9 +132,8 @@ describe('ChatService.findOrCreateConversation', () => {
     };
     prisma = {
       $transaction: jest.fn((cb: (client: typeof tx) => unknown) => cb(tx)),
-      identity: { findUnique: jest.fn() },
+      identity: { findUnique: jest.fn(), findMany: jest.fn() },
       property: { findUnique: jest.fn() },
-      user: { findUnique: jest.fn() },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -161,9 +159,20 @@ describe('ChatService.findOrCreateConversation', () => {
     return call[1];
   };
 
+  // The recipient persona (and its account's status) as the service looks
+  // it up
+  const recipientIs = (id: string, userId: string) =>
+    prisma.identity.findUnique.mockImplementation(
+      ({ where }: { where: { id: string } }) =>
+        Promise.resolve(
+          where.id === id
+            ? { id, userId, user: { isDisabled: false, isBlocked: false } }
+            : null,
+        ),
+    );
+
   it('creates the conversation inside a transaction after taking the pair advisory lock', async () => {
-    prisma.user.findUnique.mockResolvedValue(null);
-    prisma.identity.findUnique.mockResolvedValue({ id: 'identity-2' });
+    recipientIs('identity-2', 'user-2');
     tx.conversation.create.mockResolvedValue({
       id: 'conv-1',
       participants: [{}, {}],
@@ -177,17 +186,23 @@ describe('ChatService.findOrCreateConversation', () => {
 
     expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     expect(tx.$executeRaw).toHaveBeenCalledTimes(1);
-    // Symmetric key: sorted pair, so both callers contend on the same lock.
-    expect(lockKeyArg()).toBe('identity-2:user-1');
-    // The find and create ran against the transaction client...
+    // Symmetric key over the two personas, so both callers contend on the
+    // same lock
+    expect(lockKeyArg()).toBe('identity-2:identity-me');
     expect(tx.conversation.findMany).toHaveBeenCalledTimes(1);
-    expect(tx.conversation.create).toHaveBeenCalledTimes(1);
-    // ...while the legacy this.prisma conversation methods stayed untouched.
+    // Both participants are personas (with their account kept alongside)
+    const [createArg] = tx.conversation.create.mock.calls[0] as unknown as [
+      { data: { participants: { create: unknown[] } } },
+    ];
+    expect(createArg.data.participants.create).toEqual([
+      { userId: 'user-1', identityId: 'identity-me' },
+      { userId: 'user-2', identityId: 'identity-2' },
+    ]);
     expect(result).toEqual({ id: 'conv-1', participants: [{}, {}] });
   });
 
   it('locks the same symmetric key regardless of caller direction', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-1' });
+    recipientIs('identity-2', 'user-2');
     tx.conversation.create.mockResolvedValue({
       id: 'conv-1',
       participants: [{}, {}],
@@ -198,26 +213,22 @@ describe('ChatService.findOrCreateConversation', () => {
       'identity-caller',
       'identity-2',
     );
-
     const forward = lockKeyArg();
 
     tx.$executeRaw.mockClear();
-
-    prisma.user.findUnique.mockResolvedValue(null);
-    prisma.identity.findUnique.mockResolvedValue({ id: 'user-1' });
+    recipientIs('identity-caller', 'user-1');
 
     await service.findOrCreateConversation(
+      'user-2',
       'identity-2',
       'identity-caller',
-      'user-1',
     );
 
     expect(lockKeyArg()).toBe(forward);
   });
 
   it('reuses the existing conversation and never creates a duplicate', async () => {
-    prisma.user.findUnique.mockResolvedValue(null);
-    prisma.identity.findUnique.mockResolvedValue({ id: 'identity-2' });
+    recipientIs('identity-2', 'user-2');
     prisma.property.findUnique.mockResolvedValue({ id: 'prop-1' });
     tx.conversation.findMany.mockResolvedValue([
       { id: 'conv-9', propertyId: 'prop-1', participants: [{}, {}] },
@@ -236,8 +247,7 @@ describe('ChatService.findOrCreateConversation', () => {
   });
 
   it('updates the property context when the existing conversation points elsewhere', async () => {
-    prisma.user.findUnique.mockResolvedValue(null);
-    prisma.identity.findUnique.mockResolvedValue({ id: 'identity-2' });
+    recipientIs('identity-2', 'user-2');
     prisma.property.findUnique.mockResolvedValue({ id: 'prop-2' });
     tx.conversation.findMany.mockResolvedValue([
       { id: 'conv-9', propertyId: null, participants: [{}, {}] },
@@ -265,8 +275,8 @@ describe('ChatService.findOrCreateConversation', () => {
   });
 
   it('throws before opening the transaction when the recipient does not exist', async () => {
-    prisma.user.findUnique.mockResolvedValue(null);
     prisma.identity.findUnique.mockResolvedValue(null);
+    prisma.identity.findMany.mockResolvedValue([]);
 
     await expect(
       service.findOrCreateConversation('user-1', 'identity-me', 'ghost'),
@@ -294,7 +304,7 @@ describe('ChatService.getConversations', () => {
             property: null,
             // A freshly initiated conversation: participants but no messages.
             participants: [
-              { userId: 'user-1', identityId: null, lastReadAt: null },
+              { userId: 'user-1', identityId: 'identity-1', lastReadAt: null },
               { userId: null, identityId: 'identity-2' },
             ],
             messages: [],
@@ -319,7 +329,7 @@ describe('ChatService.getConversations', () => {
   });
 
   it('lists empty (newly initiated) conversations — no messages filter in the where clause', async () => {
-    const result = await service.getConversations('user-1');
+    const result = await service.getConversations('identity-1');
 
     // Regression guard for the QA ticket "newly initiated conversations do
     // not appear in the Chats list": the old query filtered
@@ -331,6 +341,10 @@ describe('ChatService.getConversations', () => {
       ]
     )[0];
     expect(listArgs.where).not.toHaveProperty('messages');
+    // The persona's own inbox only
+    expect(listArgs.where.participants).toEqual({
+      some: { identityId: 'identity-1' },
+    });
 
     const [countArgs] = (
       prisma.conversation.count.mock.calls as unknown as [

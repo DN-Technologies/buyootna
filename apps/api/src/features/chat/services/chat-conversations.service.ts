@@ -7,6 +7,7 @@ import {
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import { findDefaultPersonaId } from '../../identities/persona-rules';
 
 /**
  * Conversation lifecycle and listing: finding-or-creating the 1:1
@@ -19,39 +20,44 @@ export class ChatConversationsService {
     private readonly displayService: ChatParticipantDisplayService,
   ) {}
 
-  // Find or create a 1:1 conversation between two users/identities
+  // Find or create the 1:1 conversation between the caller's persona and a
+  // recipient persona
   async findOrCreateConversation(
     userId: string,
     identityId: string,
     recipientId: string,
     propertyId?: string,
   ) {
-    if (userId === recipientId || identityId === recipientId) {
+    // recipientId is normally a persona id (ad host, company, office card);
+    // an account id still works and means that account's default persona
+    const recipientIdentityId =
+      (
+        await this.prisma.identity.findUnique({
+          where: { id: recipientId },
+          select: { id: true },
+        })
+      )?.id ?? (await findDefaultPersonaId(this.prisma, recipientId));
+    const recipient = recipientIdentityId
+      ? await this.prisma.identity.findUnique({
+          where: { id: recipientIdentityId },
+          select: {
+            id: true,
+            userId: true,
+            user: { select: { isDisabled: true, isBlocked: true } },
+          },
+        })
+      : null;
+
+    if (!recipient) {
+      throw new NotFoundException('المستلم غير موجود');
+    }
+    // Your own personas can't message each other
+    if (recipient.userId === userId) {
       throw new ForbiddenException('لا يمكنك بدء محادثة مع نفسك');
     }
 
-    // Verify recipient exists (User or Identity), and remember which FK
-    // column their id actually belongs to — recipientId may be either a
-    // User.id or an Identity.id depending on the caller, but never both.
-    const recipientUser = await this.prisma.user.findUnique({
-      where: { id: recipientId },
-    });
-    const recipientIdentity = recipientUser
-      ? null
-      : await this.prisma.identity.findUnique({ where: { id: recipientId } });
-
-    if (!recipientUser && !recipientIdentity) {
-      throw new NotFoundException('المستلم غير موجود');
-    }
-
     // A suspended (تعطيل مؤقت) or blocked account can't be contacted
-    const recipientStatus = recipientUser
-      ? recipientUser
-      : await this.prisma.user.findUnique({
-          where: { id: recipientIdentity!.userId },
-          select: { isDisabled: true, isBlocked: true },
-        });
-    if (recipientStatus?.isDisabled || recipientStatus?.isBlocked) {
+    if (recipient.user.isDisabled || recipient.user.isBlocked) {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
     }
 
@@ -66,20 +72,15 @@ export class ChatConversationsService {
       }
     }
 
-    // Find or create a 1:1 conversation between two users/identities.
-    //
-    // The find-then-create below is serialized per participant pair with a
+    // The find-then-create below is serialized per persona pair with a
     // transaction-scoped Postgres advisory lock: a rapid double-tap on the
     // chat button fires two concurrent requests, and without the lock both
     // ran the find (finding nothing) and both created, producing duplicate
     // conversations (and, on the client, two stacked chat screens since each
-    // duplicate has a different id). A pair-unique constraint is not
-    // practical here -- participants are two rows referencing either
-    // identityId or the legacy userId -- so the lock + re-find inside one
-    // transaction is the guarantee. The key is symmetric (sorted) so both
+    // duplicate has a different id). The key is symmetric (sorted) so both
     // concurrent callers contend on the same lock regardless of who is
     // "first".
-    const lockKey = [userId, recipientId].sort().join(':');
+    const lockKey = [identityId, recipient.id].sort().join(':');
 
     return this.prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockKey}))`;
@@ -87,18 +88,8 @@ export class ChatConversationsService {
       const existingConversations = await tx.conversation.findMany({
         where: {
           AND: [
-            {
-              participants: {
-                some: { OR: [{ userId }, { identityId: userId }] },
-              },
-            },
-            {
-              participants: {
-                some: {
-                  OR: [{ userId: recipientId }, { identityId: recipientId }],
-                },
-              },
-            },
+            { participants: { some: { identityId } } },
+            { participants: { some: { identityId: recipient.id } } },
           ],
         },
         include: {
@@ -125,9 +116,7 @@ export class ChatConversationsService {
             participants: {
               create: [
                 { userId, identityId },
-                recipientUser
-                  ? { userId: recipientId, identityId: null }
-                  : { userId: null, identityId: recipientId },
+                { userId: recipient.userId, identityId: recipient.id },
               ],
             },
           },
@@ -141,15 +130,13 @@ export class ChatConversationsService {
     });
   }
 
-  // List all conversations for the user/identity
-  async getConversations(userId: string, page = 1, limit = 10) {
+  // The persona's inbox: other personas of the same account have their own
+  async getConversations(identityId: string, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
 
     const conversations = await this.prisma.conversation.findMany({
       where: {
-        participants: {
-          some: { OR: [{ userId }, { identityId: userId }] },
-        },
+        participants: { some: { identityId } },
         // NOTE: deliberately no `messages: { some: {} }` filter here. A
         // conversation starts empty (created by "contact" taps before any
         // message is sent), and filtering it out made newly initiated chats
@@ -194,7 +181,7 @@ export class ChatConversationsService {
     const formattedConversations = await Promise.all(
       conversations.map(async (conv) => {
         const otherPart = conv.participants.find(
-          (p) => p.userId !== userId && p.identityId !== userId,
+          (p) => p.identityId !== identityId,
         );
         const ident = otherPart?.identity;
         const { name: otherUserName, avatarUrl: otherUserAvatar } =
@@ -202,15 +189,13 @@ export class ChatConversationsService {
 
         const lastMessage = conv.messages[0];
         const myParticipantRecord = conv.participants.find(
-          (p) => p.userId === userId || p.identityId === userId,
+          (p) => p.identityId === identityId,
         );
 
         const unreadCount = await this.prisma.message.count({
           where: {
             conversationId: conv.id,
-            NOT: {
-              OR: [{ senderId: userId }, { senderIdentityId: userId }],
-            },
+            NOT: { senderIdentityId: identityId },
             ...(myParticipantRecord?.lastReadAt
               ? { createdAt: { gt: myParticipantRecord.lastReadAt } }
               : {}),
@@ -244,9 +229,7 @@ export class ChatConversationsService {
                 content: lastMessage.content,
                 type: lastMessage.type,
                 createdAt: lastMessage.createdAt,
-                isMine:
-                  lastMessage.senderId === userId ||
-                  lastMessage.senderIdentityId === userId,
+                isMine: lastMessage.senderIdentityId === identityId,
               }
             : null,
           unreadCount,
@@ -256,9 +239,7 @@ export class ChatConversationsService {
 
     const total = await this.prisma.conversation.count({
       where: {
-        participants: {
-          some: { OR: [{ userId }, { identityId: userId }] },
-        },
+        participants: { some: { identityId } },
         // Keep in sync with the list query above: empty (newly initiated)
         // conversations count too.
       },

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { IdentityType } from '@prisma/client';
+import { IdentityType, Prisma } from '@prisma/client';
 import { StorageService } from 'src/core/storage/storage.service';
 import {
   CreateIndividualIdentityDto,
@@ -14,6 +14,38 @@ import {
   UpdateCompanyIdentityDto,
   UpdateOfficeIdentityDto,
 } from './dto';
+import {
+  assertLicenseAvailable,
+  assertNoPersonaOfType,
+  lockKeys,
+  normalizeLicenseNumber,
+  rethrowAsConflict,
+} from './persona-rules';
+
+type ProviderType = Extract<IdentityType, 'COMPANY' | 'OFFICE'>;
+
+// The company/office fields both signup paths collect (files resolved to URLs)
+export interface ProviderPersonaData {
+  name: string;
+  licenseNumber: string;
+  services?: string;
+  hqLocation?: string;
+  serviceAreas?: string;
+  about?: string;
+  licenseActivity?: string;
+  licenseExpiry?: string;
+  logoUrl?: string | null;
+  licenseFileUrl?: string | null;
+  latitude?: number | string;
+  longitude?: number | string;
+  specialty?: string;
+}
+
+const UPLOAD_FOLDERS: Record<ProviderType, { logo: string; license: string }> =
+  {
+    COMPANY: { logo: 'company-logos', license: 'company-licenses' },
+    OFFICE: { logo: 'office-logos', license: 'office-licenses' },
+  };
 
 const IDENTITY_INCLUDE = {
   individualData: {
@@ -114,143 +146,207 @@ export class IdentitiesService {
 
   // Create individual identity
   async createIndividual(userId: string, dto: CreateIndividualIdentityDto) {
-    // Check if user already has an individual identity
-    const existingIndividual = await this.prisma.identity.findFirst({
-      where: {
-        userId,
-        type: IdentityType.INDIVIDUAL,
-      },
-    });
+    await assertNoPersonaOfType(this.prisma, userId, IdentityType.INDIVIDUAL);
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await lockKeys(tx, `persona:${userId}:INDIVIDUAL`);
+        await assertNoPersonaOfType(tx, userId, IdentityType.INDIVIDUAL);
+        const isFirstIdentity =
+          (await tx.identity.count({ where: { userId } })) === 0;
 
-    if (existingIndividual) {
-      throw new BadRequestException('لديك بالفعل هوية فردية');
-    }
-
-    // Check if this is the first identity
-    const identityCount = await this.prisma.identity.count({
-      where: { userId },
-    });
-    const isFirstIdentity = identityCount === 0;
-
-    return this.prisma.identity.create({
-      data: {
-        userId,
-        type: IdentityType.INDIVIDUAL,
-        isActive: isFirstIdentity,
-        individualData: {
-          create: {
-            name: dto.name,
-            whatsapp: dto.whatsapp,
-            avatarUrl: dto.avatarUrl,
+        return tx.identity.create({
+          data: {
+            userId,
+            type: IdentityType.INDIVIDUAL,
+            isActive: isFirstIdentity,
+            individualData: {
+              create: {
+                name: dto.name,
+                whatsapp: dto.whatsapp,
+                avatarUrl: dto.avatarUrl,
+              },
+            },
           },
-        },
-      },
-      include: IDENTITY_INCLUDE,
-    });
+          include: IDENTITY_INCLUDE,
+        });
+      });
+    } catch (error) {
+      rethrowAsConflict(error);
+    }
   }
 
-  // Create company identity
-  async createCompany(
+  // Add a company persona to an existing account (in-app onboarding)
+  createCompany(
     userId: string,
     dto: CreateCompanyIdentityDto,
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    // Upload files to S3 if they exist
-    let logoUrl = dto.logoUrl || null;
-    let licenseFileUrl = dto.licenseFileUrl || null;
-
-    if (logoFile) {
-      logoUrl = await this.storageService.uploadFile(logoFile, 'company-logos');
-    }
-    if (licenseFile) {
-      licenseFileUrl = await this.storageService.uploadFile(
-        licenseFile,
-        'company-licenses',
-      );
-    }
-
-    // Check if this is the first identity
-    const identityCount = await this.prisma.identity.count({
-      where: { userId },
-    });
-    const isFirstIdentity = identityCount === 0;
-
-    return this.prisma.identity.create({
-      data: {
-        userId,
-        type: IdentityType.COMPANY,
-        isActive: isFirstIdentity,
-        companyData: {
-          create: {
-            name: dto.name,
-            licenseNumber: dto.licenseNumber,
-            services: dto.services,
-            hqLocation: dto.hqLocation,
-            serviceAreas: dto.serviceAreas,
-            about: dto.about,
-            licenseActivity: dto.licenseActivity,
-            licenseExpiry: dto.licenseExpiry,
-            logoUrl: logoUrl,
-            licenseFileUrl: licenseFileUrl,
-            latitude: dto.latitude ? Number(dto.latitude) : undefined,
-            longitude: dto.longitude ? Number(dto.longitude) : undefined,
-            specialty: dto.specialty,
-          },
-        },
-      },
-      include: IDENTITY_INCLUDE,
-    });
+    return this.createProviderPersona(
+      IdentityType.COMPANY,
+      userId,
+      dto,
+      logoFile,
+      licenseFile,
+    );
   }
 
-  // Create office identity
-  async createOffice(
+  // Add an office persona to an existing account (in-app onboarding)
+  createOffice(
     userId: string,
     dto: CreateOfficeIdentityDto,
     logoFile?: Express.Multer.File,
     licenseFile?: Express.Multer.File,
   ) {
-    // Upload files to S3 if they exist
-    let logoUrl = dto.logoUrl || null;
-    let licenseFileUrl = dto.licenseFileUrl || null;
+    return this.createProviderPersona(
+      IdentityType.OFFICE,
+      userId,
+      dto,
+      logoFile,
+      licenseFile,
+    );
+  }
 
-    if (logoFile) {
-      logoUrl = await this.storageService.uploadFile(logoFile, 'office-logos');
+  /**
+   * Checks the rules first (so a refused request never uploads anything),
+   * then uploads the files, then creates the persona. If the write fails
+   * the uploaded files are deleted again.
+   */
+  private async createProviderPersona(
+    type: ProviderType,
+    userId: string,
+    dto: ProviderPersonaData,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
+  ) {
+    const licenseNumber = normalizeLicenseNumber(dto.licenseNumber);
+    await assertNoPersonaOfType(this.prisma, userId, type);
+    await assertLicenseAvailable(this.prisma, licenseNumber);
+
+    const uploaded = await this.uploadProviderFiles(
+      type,
+      logoFile,
+      licenseFile,
+    );
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const isFirstIdentity =
+          (await tx.identity.count({ where: { userId } })) === 0;
+        return this.createProviderPersonaInTx(
+          tx,
+          type,
+          userId,
+          { ...dto, ...pickDefined(uploaded) },
+          { isActive: isFirstIdentity },
+        );
+      });
+    } catch (error) {
+      await this.deleteUploads(uploaded);
+      rethrowAsConflict(error);
     }
-    if (licenseFile) {
-      licenseFileUrl = await this.storageService.uploadFile(
-        licenseFile,
-        'office-licenses',
-      );
+  }
+
+  /** Uploads the logo/licence files for a new company/office persona. */
+  async uploadProviderFiles(
+    type: ProviderType,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
+  ): Promise<{ logoUrl?: string; licenseFileUrl?: string }> {
+    const folders = UPLOAD_FOLDERS[type];
+    const logoUrl = logoFile
+      ? await this.storageService.uploadFile(logoFile, folders.logo)
+      : undefined;
+    try {
+      const licenseFileUrl = licenseFile
+        ? await this.storageService.uploadFile(licenseFile, folders.license)
+        : undefined;
+      return { logoUrl, licenseFileUrl };
+    } catch (error) {
+      await this.storageService.deleteFile(logoUrl);
+      throw error;
     }
+  }
 
-    // Check if this is the first identity
-    const identityCount = await this.prisma.identity.count({
-      where: { userId },
-    });
-    const isFirstIdentity = identityCount === 0;
+  async deleteUploads(uploaded: { logoUrl?: string; licenseFileUrl?: string }) {
+    await Promise.all([
+      this.storageService.deleteFile(uploaded.logoUrl),
+      this.storageService.deleteFile(uploaded.licenseFileUrl),
+    ]);
+  }
 
-    return this.prisma.identity.create({
+  /**
+   * THE one place a company/office persona is created -- used by in-app
+   * onboarding above and by direct signup (UsersRegistrationService) inside
+   * its own transaction. Enforces one-per-type and platform-wide licence
+   * uniqueness under per-key locks, and opens the approval request.
+   */
+  async createProviderPersonaInTx(
+    tx: Prisma.TransactionClient,
+    type: ProviderType,
+    userId: string,
+    data: ProviderPersonaData,
+    options: { isActive: boolean },
+  ) {
+    const licenseNumber = normalizeLicenseNumber(data.licenseNumber);
+    await lockKeys(tx, `persona:${userId}:${type}`, `license:${licenseNumber}`);
+    await assertNoPersonaOfType(tx, userId, type);
+    await assertLicenseAvailable(tx, licenseNumber);
+
+    const common = {
+      name: data.name,
+      licenseNumber,
+      services: data.services,
+      hqLocation: data.hqLocation,
+      about: data.about,
+      licenseActivity: data.licenseActivity,
+      licenseExpiry: data.licenseExpiry,
+      logoUrl: data.logoUrl ?? null,
+      licenseFileUrl: data.licenseFileUrl ?? null,
+    };
+
+    const identity = await tx.identity.create({
       data: {
         userId,
-        type: IdentityType.OFFICE,
-        isActive: isFirstIdentity,
-        officeData: {
-          create: {
-            name: dto.name,
-            licenseNumber: dto.licenseNumber,
-            services: dto.services,
-            hqLocation: dto.hqLocation,
-            about: dto.about,
-            licenseActivity: dto.licenseActivity,
-            licenseExpiry: dto.licenseExpiry,
-            logoUrl: logoUrl,
-            licenseFileUrl: licenseFileUrl,
-          },
-        },
+        type,
+        isActive: options.isActive,
+        ...(type === IdentityType.COMPANY
+          ? {
+              companyData: {
+                create: {
+                  ...common,
+                  serviceAreas: data.serviceAreas,
+                  specialty: data.specialty,
+                  latitude:
+                    data.latitude !== undefined && data.latitude !== ''
+                      ? Number(data.latitude)
+                      : undefined,
+                  longitude:
+                    data.longitude !== undefined && data.longitude !== ''
+                      ? Number(data.longitude)
+                      : undefined,
+                },
+              },
+            }
+          : { officeData: { create: common } }),
       },
       include: IDENTITY_INCLUDE,
     });
+
+    // Opens the admin approval request (new companies/offices start PENDING)
+    await tx.reviewRequest.create({
+      data: {
+        status: 'PENDING',
+        notes:
+          type === IdentityType.COMPANY
+            ? 'طلب تسجيل شركة جديدة'
+            : 'طلب تسجيل مكتب عقاري جديد',
+        ...(type === IdentityType.COMPANY
+          ? { companyIdentityDataId: identity.companyData!.id }
+          : { officeIdentityDataId: identity.officeData!.id }),
+      },
+    });
+
+    return identity;
   }
 
   // Update identity
@@ -263,6 +359,17 @@ export class IdentitiesService {
       | UpdateOfficeIdentityDto,
   ) {
     const identity = await this.findOne(userId, identityId);
+
+    // A changed licence number must still be free platform-wide
+    const nextLicense = (
+      dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto
+    ).licenseNumber;
+    const licenseNumber = nextLicense
+      ? normalizeLicenseNumber(nextLicense)
+      : undefined;
+    if (licenseNumber) {
+      await assertLicenseAvailable(this.prisma, licenseNumber, identityId);
+    }
 
     if (identity.type === IdentityType.INDIVIDUAL) {
       const individualDto = dto as UpdateIndividualIdentityDto;
@@ -280,7 +387,7 @@ export class IdentitiesService {
         where: { identityId },
         data: {
           name: companyDto.name,
-          licenseNumber: companyDto.licenseNumber,
+          licenseNumber,
           services: companyDto.services,
           hqLocation: companyDto.hqLocation,
           serviceAreas: companyDto.serviceAreas,
@@ -300,7 +407,7 @@ export class IdentitiesService {
         where: { identityId },
         data: {
           name: officeDto.name,
-          licenseNumber: officeDto.licenseNumber,
+          licenseNumber,
           services: officeDto.services,
           hqLocation: officeDto.hqLocation,
           about: officeDto.about,
@@ -414,4 +521,11 @@ export class IdentitiesService {
 
     return identity;
   }
+}
+
+// Drops undefined keys so uploaded URLs only override what was actually sent
+function pickDefined<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined),
+  ) as Partial<T>;
 }

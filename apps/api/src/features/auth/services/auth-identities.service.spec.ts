@@ -11,8 +11,11 @@ describe('AuthIdentitiesService Unit Tests', () => {
       findFirst: jest.fn(),
       findMany: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
       create: jest.fn(),
     },
+    session: { findUnique: jest.fn() },
+    $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
   };
 
   beforeEach(async () => {
@@ -63,13 +66,47 @@ describe('AuthIdentitiesService Unit Tests', () => {
     );
   });
 
-  it('activate marks the given identity active', async () => {
-    await service.activate('i-1');
+  it('markLastUsed makes the given persona the only last-used one', async () => {
+    await service.markLastUsed('user-1', 'i-1');
 
+    expect(mockPrismaService.identity.updateMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', id: { not: 'i-1' }, isActive: true },
+      data: { isActive: false },
+    });
     expect(mockPrismaService.identity.update).toHaveBeenCalledWith({
       where: { id: 'i-1' },
       data: { isActive: true },
     });
+  });
+
+  it("findForDevice resumes the persona this device's session was using", async () => {
+    mockPrismaService.session.findUnique.mockResolvedValue({
+      activeIdentityId: 'i-2',
+    });
+    mockPrismaService.identity.findFirst.mockResolvedValue({ id: 'i-2' });
+
+    await expect(service.findForDevice('user-1', 'device-a')).resolves.toEqual({
+      id: 'i-2',
+    });
+    expect(mockPrismaService.session.findUnique).toHaveBeenCalledWith({
+      where: { userId_deviceId: { userId: 'user-1', deviceId: 'device-a' } },
+      select: { activeIdentityId: true },
+    });
+    // Scoped to the account, so a stale id can't leak another user's persona
+    expect(mockPrismaService.identity.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'i-2', userId: 'user-1' } }),
+    );
+  });
+
+  it('findForDevice returns null without a deviceId or a remembered persona', async () => {
+    await expect(service.findForDevice('user-1')).resolves.toBeNull();
+    mockPrismaService.session.findUnique.mockResolvedValue({
+      activeIdentityId: null,
+    });
+    await expect(
+      service.findForDevice('user-1', 'device-a'),
+    ).resolves.toBeNull();
+    expect(mockPrismaService.identity.findFirst).not.toHaveBeenCalled();
   });
 
   it('listAll returns every identity for the user, ordered by createdAt ascending', async () => {

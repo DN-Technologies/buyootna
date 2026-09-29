@@ -62,7 +62,11 @@ export class ReviewsController {
     @Query() query: GetReviewsDto,
     @CurrentUser() reqUser?: RequestUser,
   ) {
-    return this.reviewsService.getReviews(targetUserId, reqUser?.userId, query);
+    return this.reviewsService.getReviews(
+      targetUserId,
+      reqUser?.identityId,
+      query,
+    );
   }
 
   @Get('users/:targetUserId/reviews/summary')
@@ -91,6 +95,7 @@ export class ReviewsController {
     return this.reviewsService.toggleReaction(
       reviewId,
       reqUser.userId,
+      reqUser.identityId,
       ReactionType.LIKE,
     );
   }
@@ -109,6 +114,7 @@ export class ReviewsController {
     return this.reviewsService.toggleReaction(
       reviewId,
       reqUser.userId,
+      reqUser.identityId,
       ReactionType.DISLIKE,
     );
   }

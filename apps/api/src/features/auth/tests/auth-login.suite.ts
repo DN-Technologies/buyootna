@@ -31,7 +31,7 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
         'identity-2',
         'user-1',
       );
-      expect(result.activeIdentity).toBe(identity);
+      expect(result.activeIdentity).toEqual(identity);
       expect(ctx.jwt.sign).toHaveBeenCalledWith({
         sub: 'user-1',
         ident: 'identity-2',
@@ -76,10 +76,10 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       const result = await ctx.service.login(user);
 
       expect(ctx.identities.findActive).toHaveBeenCalledWith('user-1');
-      expect(result.activeIdentity).toBe(activeIdentity);
+      expect(result.activeIdentity).toEqual(activeIdentity);
     });
 
-    it('auto-promotes the earliest-created identity to active when none is currently active', async () => {
+    it('falls back to the earliest-created identity and makes it the last used when none is active', async () => {
       const fallbackIdentity = buildIdentity({
         id: 'identity-3',
         isActive: false,
@@ -89,8 +89,47 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
 
       const result = await ctx.service.login(user);
 
-      expect(ctx.identities.activate).toHaveBeenCalledWith('identity-3');
+      expect(ctx.identities.markLastUsed).toHaveBeenCalledWith(
+        'user-1',
+        'identity-3',
+      );
       expect(result.activeIdentity.isActive).toBe(true);
+    });
+
+    it("resumes the persona this device was using, ahead of the account's last used", async () => {
+      const devicePersona = buildIdentity({
+        id: 'identity-company',
+        type: IdentityType.COMPANY,
+        isActive: false,
+      });
+      ctx.identities.findForDevice.mockResolvedValueOnce(devicePersona);
+      ctx.identities.listAll.mockResolvedValueOnce([
+        buildIdentity(),
+        devicePersona,
+      ]);
+
+      const result = await ctx.service.login(user, undefined, {
+        deviceId: 'device-a',
+      });
+
+      expect(ctx.identities.findForDevice).toHaveBeenCalledWith(
+        'user-1',
+        'device-a',
+      );
+      expect(ctx.identities.findActive).not.toHaveBeenCalled();
+      expect(ctx.sessions.upsertSession).toHaveBeenCalledWith(
+        'user-1',
+        { deviceId: 'device-a' },
+        'identity-company',
+      );
+      expect(ctx.jwt.sign).toHaveBeenCalledWith(
+        expect.objectContaining({ ident: 'identity-company' }),
+      );
+      // isActive in the response means "active on this device"
+      expect(result.identities.map((i) => [i.id, i.isActive])).toEqual([
+        ['identity-1', false],
+        ['identity-company', true],
+      ]);
     });
 
     it('self-heals by provisioning a default individual identity when the user has none at all', async () => {
@@ -115,8 +154,8 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       expect(ctx.identities.createDefaultForOrphanedUser).toHaveBeenCalledWith(
         'user-1',
       );
-      expect(ctx.identities.activate).not.toHaveBeenCalled();
-      expect(result.activeIdentity).toBe(healedIdentity);
+      expect(ctx.identities.markLastUsed).not.toHaveBeenCalled();
+      expect(result.activeIdentity).toEqual(healedIdentity);
     });
 
     it('never self-heals for an explicit identityId that does not exist -- that is a real not-found error', async () => {
@@ -163,36 +202,35 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       await expect(
         ctx.service.switchIdentity('user-1', 'identity-2'),
       ).rejects.toThrow(ForbiddenException);
-      expect(ctx.prisma.$transaction).not.toHaveBeenCalled();
+      expect(ctx.identities.markLastUsed).not.toHaveBeenCalled();
     });
 
-    it('deactivates all identities then activates the selected one, and returns a fresh JWT', async () => {
+    it("switches this device only: marks the persona last used, stores it on this device's session, and returns a fresh JWT", async () => {
       ctx.identities.findById.mockResolvedValue(identity);
       ctx.prisma.user.findUnique.mockResolvedValue({
         id: 'user-1',
         email: 'a@example.com',
         password: 'hashed',
       });
-      ctx.prisma.identity.updateMany.mockResolvedValue({ count: 2 });
-      ctx.prisma.identity.update.mockResolvedValue({
-        ...identity,
-        isActive: true,
-      });
       ctx.identities.listAll.mockResolvedValue([
-        { id: 'identity-1', isActive: false },
-        { id: 'identity-2', isActive: true },
+        { id: 'identity-1', isActive: true },
+        { id: 'identity-2', isActive: false },
       ]);
 
-      const result = await ctx.service.switchIdentity('user-1', 'identity-2');
+      const result = await ctx.service.switchIdentity(
+        'user-1',
+        'identity-2',
+        'session-a',
+      );
 
-      expect(ctx.prisma.identity.updateMany).toHaveBeenCalledWith({
-        where: { userId: 'user-1' },
-        data: { isActive: false },
-      });
-      expect(ctx.prisma.identity.update).toHaveBeenCalledWith({
-        where: { id: 'identity-2' },
-        data: { isActive: true },
-      });
+      expect(ctx.identities.markLastUsed).toHaveBeenCalledWith(
+        'user-1',
+        'identity-2',
+      );
+      expect(ctx.sessions.setActiveIdentity).toHaveBeenCalledWith(
+        'session-a',
+        'identity-2',
+      );
       expect(result.activeIdentity).toMatchObject({ isActive: true });
       expect(result.identities).toEqual([
         { id: 'identity-1', isActive: false },
@@ -203,16 +241,12 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
         sub: 'user-1',
         ident: 'identity-2',
         type: IdentityType.COMPANY,
+        sid: 'session-a',
       });
     });
 
     it('throws UnauthorizedException if the user disappears before the post-switch refetch', async () => {
       ctx.identities.findById.mockResolvedValue(identity);
-      ctx.prisma.identity.updateMany.mockResolvedValue({ count: 2 });
-      ctx.prisma.identity.update.mockResolvedValue({
-        ...identity,
-        isActive: true,
-      });
       ctx.prisma.user.findUnique.mockResolvedValue(null);
 
       await expect(

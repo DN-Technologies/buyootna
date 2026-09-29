@@ -21,8 +21,12 @@ describe('PropertiesMutationsService alert matching', () => {
     update: jest.fn(),
     updateMany: jest.fn(),
   };
+  const identity = {
+    findUnique: jest.fn().mockResolvedValue({ type: 'INDIVIDUAL' }),
+  };
   const prisma = {
     property,
+    identity,
     $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn({ property })),
   };
   const quotaService = {
@@ -157,8 +161,12 @@ describe('PropertiesMutationsService.renew', () => {
     update: jest.fn(),
     updateMany: jest.fn(),
   };
+  const identity = {
+    findUnique: jest.fn().mockResolvedValue({ type: 'INDIVIDUAL' }),
+  };
   const prisma = {
     property,
+    identity,
     $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn({ property })),
   };
   const quotaService = { resolvePublishQuota: jest.fn() };
@@ -286,5 +294,85 @@ describe('PropertiesMutationsService.renew', () => {
     );
     expect(property.update).not.toHaveBeenCalled();
     expect(alertMatching.notifyMatchesForProperty).not.toHaveBeenCalled();
+  });
+});
+
+describe('PropertiesMutationsService approval gate', () => {
+  const property = {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  };
+  const identity = { findUnique: jest.fn() };
+  const prisma = {
+    property,
+    identity,
+    $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn({ property })),
+  };
+  const quotaService = { resolvePublishQuota: jest.fn() };
+  let service: PropertiesMutationsService;
+
+  const pendingCompany = {
+    type: 'COMPANY',
+    companyData: { status: 'PENDING' },
+    officeData: null,
+  };
+  const dto = { images: [] } as unknown as CreatePropertyDto;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    identity.findUnique.mockResolvedValue(pendingCompany);
+    property.findUnique.mockResolvedValue(null);
+    property.create.mockResolvedValue({ id: 'draft-1', status: 'DRAFT' });
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PropertiesMutationsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: PropertiesQuotaService, useValue: quotaService },
+        {
+          provide: AlertMatchingService,
+          useValue: { notifyMatchesForProperty: jest.fn() },
+        },
+      ],
+    }).compile();
+    service = module.get(PropertiesMutationsService);
+  });
+
+  it('refuses publishing for a company under review, without spending a credit', async () => {
+    await expect(
+      service.create('company-1', { ...dto, isDraft: false }),
+    ).rejects.toThrow(ForbiddenException);
+    expect(quotaService.resolvePublishQuota).not.toHaveBeenCalled();
+  });
+
+  it('still lets a company under review save a draft', async () => {
+    await expect(
+      service.create('company-1', { ...dto, isDraft: true }),
+    ).resolves.toBeDefined();
+  });
+
+  it('refuses publishing a draft and republishing for a company under review', async () => {
+    property.findUnique.mockResolvedValue({
+      id: 'prop-1',
+      identityId: 'company-1',
+      status: 'DRAFT',
+      images: [],
+    });
+    await expect(
+      service.update('company-1', 'prop-1', { isDraft: false }),
+    ).rejects.toThrow(ForbiddenException);
+
+    property.findUnique.mockResolvedValue({
+      id: 'prop-1',
+      identityId: 'company-1',
+      status: 'EXPIRED',
+      images: [],
+    });
+    await expect(service.renew('company-1', 'prop-1')).rejects.toThrow(
+      ForbiddenException,
+    );
+    expect(property.updateMany).not.toHaveBeenCalled();
   });
 });

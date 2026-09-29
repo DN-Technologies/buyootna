@@ -49,6 +49,7 @@ export class SessionsService {
   async upsertSession(
     userId: string,
     deviceCtx: DeviceCtx,
+    activeIdentityId?: string,
   ): Promise<Session & { isNewDevice: boolean }> {
     const deviceName =
       deviceCtx.deviceModel ||
@@ -77,6 +78,7 @@ export class SessionsService {
           ipAddress: deviceCtx.ip,
           location,
           userAgent: deviceCtx.userAgent,
+          activeIdentityId,
         },
         update: {
           platform: deviceCtx.platform,
@@ -87,6 +89,7 @@ export class SessionsService {
           userAgent: deviceCtx.userAgent,
           isActive: true,
           lastActive: new Date(),
+          activeIdentityId,
         },
       });
       return { ...session, isNewDevice: !existing };
@@ -100,9 +103,21 @@ export class SessionsService {
         ipAddress: deviceCtx.ip,
         location,
         userAgent: deviceCtx.userAgent,
+        activeIdentityId,
       },
     });
     return { ...session, isNewDevice: true };
+  }
+
+  /** Remembers the persona a device switched to. */
+  async setActiveIdentity(
+    sessionId: string,
+    identityId: string,
+  ): Promise<void> {
+    await this.prisma.session.updateMany({
+      where: { id: sessionId },
+      data: { activeIdentityId: identityId },
+    });
   }
 
   /**

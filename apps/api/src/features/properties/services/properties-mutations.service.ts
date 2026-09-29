@@ -12,6 +12,7 @@ import { CreatePropertyDto } from '../dto/create-property.dto';
 import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
+import { assertApprovedProvider } from '../../identities/persona-rules';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -42,6 +43,8 @@ export class PropertiesMutationsService {
     const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
     if (!isDraft) {
+      // A company/office under review may save drafts but not publish
+      await assertApprovedProvider(this.prisma, identityId);
       const created = await this.prisma.$transaction(async (tx) => {
         const imagesCount = propertyData.images?.length || 0;
         const quota = await this.quotaService.resolvePublishQuota(
@@ -131,6 +134,7 @@ export class PropertiesMutationsService {
       existingProperty.status === 'DRAFT' && isDraft === false;
 
     if (isPublishingDraft) {
+      await assertApprovedProvider(this.prisma, identityId);
       const published = await this.prisma.$transaction(async (tx) => {
         const imagesToCheck = updateData.images || existingProperty.images;
         const imagesCount = imagesToCheck?.length || 0;
@@ -185,6 +189,13 @@ export class PropertiesMutationsService {
       !ARCHIVED_STATUSES.includes(existingProperty.status)
     )
       newStatus = ListingStatus.ACTIVE;
+
+    if (
+      newStatus === ListingStatus.ACTIVE &&
+      existingProperty.status !== ListingStatus.ACTIVE
+    ) {
+      await assertApprovedProvider(this.prisma, identityId);
+    }
 
     const updatedProperty = await this.prisma.property.update({
       where: { id: propertyId },
@@ -254,6 +265,7 @@ export class PropertiesMutationsService {
     if (!ARCHIVED_STATUSES.includes(property.status)) {
       throw new BadRequestException('يمكن إعادة نشر الإعلانات المؤرشفة فقط');
     }
+    await assertApprovedProvider(this.prisma, identityId);
     const imagesCount = property.images?.length || 0;
 
     const renewed = await this.prisma.$transaction(async (tx) => {

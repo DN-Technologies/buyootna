@@ -8,7 +8,11 @@ model Identity {
   id        String       @id @default(uuid())
   userId    String
   type      IdentityType
+  // The persona used last, on any device -- what a brand-new device opens
+  // with. Each device's own current persona is Session.activeIdentityId.
   isActive  Boolean      @default(false)
+  // The welcome free ad: each persona has its own
+  freeAdsRemaining Int   @default(1)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -18,6 +22,9 @@ model Identity {
   individualData IndividualIdentityData?
   companyData    CompanyIdentityData?
   officeData     OfficeIdentityData?
+
+  // Devices currently using this persona
+  activeOnSessions Session[]
 
   // Identity-scoped data
   properties      Property[]
@@ -44,6 +51,8 @@ model Identity {
   requestsTargeted CompanyRequest[] @relation("TargetedRequests")
   requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
 
+  // One individual, one company and one office per account
+  @@unique([userId, type])
   @@index([userId])
   @@index([userId, isActive])
 }
@@ -69,7 +78,9 @@ model CompanyIdentityData {
   serviceAreas    String?
   about           String?
   licenseActivity String?
-  licenseNumber   String
+  // Normalised (no spaces, Western digits); unique across companies AND
+  // offices -- the cross-table half is enforced in IdentitiesService
+  licenseNumber   String         @unique
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?
@@ -95,7 +106,9 @@ model OfficeIdentityData {
   hqLocation      String?
   about           String?
   licenseActivity String?
-  licenseNumber   String
+  // Normalised (no spaces, Western digits); unique across companies AND
+  // offices -- the cross-table half is enforced in IdentitiesService
+  licenseNumber   String         @unique
   licenseExpiry   String?
   logoUrl         String?
   licenseFileUrl  String?

@@ -18,9 +18,9 @@ model ConversationParticipant {
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  // New identity-based relation
-  identityId String?
-  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  // Owning persona
+  identityId String
+  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete

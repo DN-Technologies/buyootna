@@ -196,15 +196,28 @@ export class UsersController {
     }
 
     const { identities, ...userWithoutIdentities } = fullUser;
+    // The persona this device's token carries -- other devices may be on
+    // another one; isActive means "active on this device"
+    const activeId =
+      identities?.find((identity) => identity.id === reqUser.identityId)?.id ??
+      identities?.find((identity) => identity.isActive)?.id ??
+      identities?.[0]?.id;
+    const deviceIdentities = (identities ?? []).map((identity) => ({
+      ...identity,
+      isActive: identity.id === activeId,
+    }));
+
     const activeIdentity =
-      identities?.find((identity) => identity.isActive) ??
-      identities?.[0] ??
-      null;
+      deviceIdentities.find((identity) => identity.isActive) ?? null;
 
     return {
-      user: userWithoutIdentities,
+      // The free ad is per persona: the app reads it from here
+      user: {
+        ...userWithoutIdentities,
+        freeAdsRemaining: activeIdentity?.freeAdsRemaining ?? 0,
+      },
       activeIdentity,
-      identities: identities ?? [],
+      identities: deviceIdentities,
     };
   }
 

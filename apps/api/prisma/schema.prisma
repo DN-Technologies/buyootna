@@ -229,6 +229,10 @@ model Session {
   userAgent   String?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // The persona this device is using: logging in again on the same device
+  // resumes it, and switching on one device leaves the others alone
+  activeIdentityId String?
+  activeIdentity   Identity? @relation(fields: [activeIdentityId], references: [id], onDelete: SetNull)
 
   @@unique([userId, deviceId])
   @@index([userId])
@@ -330,9 +334,9 @@ model Invoice {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  // New identity-based relation
-  identityId String?
-  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  // Owning persona
+  identityId String
+  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -354,9 +358,9 @@ model UserPlanSlot {
   invoice    Invoice?   @relation(fields: [invoiceId], references: [id])
   properties Property[]
 
-  // New identity-based relation
-  identityId String?
-  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  // Owning persona
+  identityId String
+  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
@@ -409,9 +413,9 @@ model ReviewReaction {
   createdAt DateTime     @default(now())
   review    Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
-  // New identity-based relation
-  identityId String?
-  identity   Identity? @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  // Owning persona
+  identityId String
+  identity   Identity  @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   // Legacy user-based relation - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
