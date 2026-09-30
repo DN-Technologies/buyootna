@@ -16,9 +16,14 @@ interface IdentityOption {
   type: IdentityType;
   title: string;
   description: string;
-  icon: any;
+  icon?: any;
   route: string;
 }
+
+// Company/office accounts stay hidden unless enabled via env, the same flag
+// the signup screens use (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true)
+const COMPANIES_ENABLED =
+  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
 
 const identityOptions: IdentityOption[] = [
   {
@@ -28,6 +33,22 @@ const identityOptions: IdentityOption[] = [
     icon: require('@/assets/icons/individual-icon.svg'),
     route: '/(auth)/add-identity-individual',
   },
+  ...(COMPANIES_ENABLED
+    ? ([
+        {
+          type: 'COMPANY',
+          title: 'حساب شركة',
+          description: 'للشركات العقارية والمطورين',
+          route: '/(auth)/add-identity-company',
+        },
+        {
+          type: 'OFFICE',
+          title: 'حساب مكتب',
+          description: 'للمكاتب العقارية والوسطاء',
+          route: '/(auth)/add-identity-office',
+        },
+      ] as IdentityOption[])
+    : []),
 ];
 
 export default function AddIdentityScreen() {
@@ -51,7 +72,7 @@ export default function AddIdentityScreen() {
         >
           <Feather name="arrow-right" size={20} color="#111111" />
         </TouchableOpacity>
-        <Text className="font-cairo-bold text-lg text-charcoal">
+        <Text className="font-cairo-semibold leading-[22px] text-lg text-charcoal">
           إضافة هوية جديدة
         </Text>
         <View className="w-10" />
