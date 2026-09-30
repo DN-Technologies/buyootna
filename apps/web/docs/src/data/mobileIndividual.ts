@@ -846,5 +846,40 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "mobile-settings",
+      title: {
+        en: "Settings lists every section and each row opens its screen",
+        ar: "الإعدادات تعرض كل الأقسام وكل صف يفتح شاشته",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify More → اعدادات الحساب shows, in order: الاشعارات (notification preferences), الحساب والامان (change password, registered devices), الخصوصية (show phone, show WhatsApp, hide activity, hide office ads — saved through PATCH /settings and rolled back with a message if saving fails), الدعم والمساعدة (about, FAQ, contact), السياسات (privacy, terms), then delete account and temporary deactivation. Regression: a refactor had dropped the notifications, account & security, support rows and the show-phone switch.",
+        ar: "تحقق من أن المزيد ← اعدادات الحساب تعرض بالترتيب: الاشعارات (تفضيلات الإشعارات)، الحساب والامان (تغيير كلمة المرور، الأجهزة المسجلة)، الخصوصية (اظهار رقم الهاتف، اظهار رقم الواتساب، اخفاء النشاط، اخفاء اعلانات المكاتب — تُحفظ عبر PATCH /settings وتُعاد مع رسالة إذا فشل الحفظ)، الدعم والمساعدة (عن بيوتنا، الأسئلة الشائعة، تواصل معنا)، السياسات (الخصوصية، الشروط)، ثم حذف الحساب والتعطيل المؤقت. فحص تراجع: إعادة هيكلة سابقة أسقطت صفوف الإشعارات والحساب والأمان والدعم ومفتاح اظهار رقم الهاتف.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Each row opens its screen: notifications, change password, devices, about, FAQ, contact, privacy, terms.",
+          "Each privacy switch keeps its value after leaving and reopening the screen.",
+          "Turning off 'اظهار رقم الهاتف' hides the phone from the user's ads and profile for others.",
+        ],
+        ar: [
+          "كل صف يفتح شاشته: الإشعارات، تغيير كلمة المرور، الأجهزة، عن بيوتنا، الأسئلة الشائعة، تواصل معنا، الخصوصية، الشروط.",
+          "كل مفتاح خصوصية يحتفظ بقيمته بعد مغادرة الشاشة وإعادة فتحها.",
+          "إيقاف 'اظهار رقم الهاتف' يخفي الرقم من إعلانات المستخدم وملفه للآخرين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open settings and tap every row, returning each time.",
+          "Toggle show phone off, check one of your ads from another account.",
+        ],
+        ar: [
+          "افتح الإعدادات واضغط كل صف مع الرجوع في كل مرة.",
+          "أوقف اظهار رقم الهاتف ثم افحص أحد إعلاناتك من حساب آخر.",
+        ],
+      },
+      updatedIn: "fix/settings-missing-items",
+    },
   ],
 };

@@ -1,11 +1,16 @@
-import { View } from 'react-native';
-
-import { HideAdIcon, HideIcon, ShowIcon } from '@/assets/icons/settings';
+import {
+  HideAdIcon,
+  HideIcon,
+  InfoIcon,
+  ShowIcon,
+} from '@/assets/icons/settings';
 import type { SettingsPatch } from '@/features/individual/hooks/useUserSettings';
 
+import SettingsSection from './SettingsSection';
 import SettingsSwitchItem from './SettingsSwitchItem';
 
 interface PrivacySettingsSectionProps {
+  showPhone: boolean;
   showWhatsapp: boolean;
   hideActivity: boolean;
   hideOfficeAds: boolean;
@@ -13,13 +18,21 @@ interface PrivacySettingsSectionProps {
 }
 
 export default function PrivacySettingsSection({
+  showPhone,
   showWhatsapp,
   hideActivity,
   hideOfficeAds,
   onChange,
 }: PrivacySettingsSectionProps) {
   return (
-    <View className="rounded-xl bg-[#F9FAFE] px-4">
+    <SettingsSection title="الخصوصية">
+      <SettingsSwitchItem
+        testID="switch-phone"
+        icon={InfoIcon}
+        title="اظهار رقم الهاتف"
+        value={showPhone}
+        onValueChange={(value) => onChange({ showPhone: value })}
+      />
       <SettingsSwitchItem
         testID="switch-whatsapp"
         icon={ShowIcon}
@@ -41,6 +54,6 @@ export default function PrivacySettingsSection({
         value={hideOfficeAds}
         onValueChange={(value) => onChange({ hideOfficeAds: value })}
       />
-    </View>
+    </SettingsSection>
   );
 }

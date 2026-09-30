@@ -6,6 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeactivateAccountSheet } from '@/features/individual/components/settings';
 import AccountActions from '@/features/individual/components/settings/AccountActions';
+import AccountSecuritySection from '@/features/individual/components/settings/AccountSecuritySection';
+import NotificationsSection from '@/features/individual/components/settings/NotificationsSection';
+import PoliciesSection from '@/features/individual/components/settings/PoliciesSection';
 import PrivacySettingsSection from '@/features/individual/components/settings/PrivacySettingsSection';
 import SettingsHeader from '@/features/individual/components/settings/SettingsHeader';
 import SettingsSkeleton from '@/features/individual/components/settings/SettingsSkeleton';
@@ -34,13 +37,26 @@ export default function SettingsScreen() {
           <SettingsSkeleton />
         ) : (
           <View className="gap-6 px-5">
+            <NotificationsSection
+              onNotifications={() => router.push('/notifications')}
+            />
+            <AccountSecuritySection
+              onChangePassword={() => router.push('/change-password')}
+              onDevices={() => router.push('/devices')}
+            />
             <PrivacySettingsSection
+              showPhone={settings.showPhone}
               showWhatsapp={settings.showWhatsapp}
               hideActivity={settings.hideActivity}
               hideOfficeAds={settings.hideOfficeAds}
               onChange={settings.updateSettings}
             />
             <SupportSection
+              onAbout={() => router.push('/about')}
+              onFaq={() => router.push('/faq')}
+              onContact={() => router.push('/contact')}
+            />
+            <PoliciesSection
               onPrivacy={() => router.push('/privacy')}
               onTerms={() => router.push('/terms')}
             />

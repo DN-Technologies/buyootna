@@ -43,6 +43,7 @@ export function useUserSettings() {
 
   return {
     isLoading,
+    showPhone: settings?.showPhone ?? true,
     showWhatsapp: settings?.showWhatsapp ?? true,
     hideActivity: settings?.hideActivity ?? false,
     hideOfficeAds: settings?.hideOfficeAds ?? false,

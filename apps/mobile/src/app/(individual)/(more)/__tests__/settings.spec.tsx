@@ -109,6 +109,40 @@ describe('SettingsScreen', () => {
     });
   });
 
+  it('lists every settings row and opens its screen', async () => {
+    const { getByText } = await renderWithProviders(<SettingsScreen />);
+    await waitFor(() => expect(getByText('تغيير كلمة المرور')).toBeTruthy());
+
+    const rows: [string, string][] = [
+      ['الإشعارات', '/notifications'],
+      ['تغيير كلمة المرور', '/change-password'],
+      ['الاجهزة المسجلة', '/devices'],
+      ['عن بيوتنا', '/about'],
+      ['الأسئلة الشائعة', '/faq'],
+      ['تواصل معنا', '/contact'],
+      ['سياسة الخصوصية', '/privacy'],
+      ['الشروط والأحكام', '/terms'],
+    ];
+    for (const [title, route] of rows) {
+      await fireEvent.press(getByText(title));
+      expect(mockPush).toHaveBeenLastCalledWith(route);
+    }
+  });
+
+  it('saves the show-phone switch', async () => {
+    (settingsService.updateSettings as jest.Mock).mockResolvedValue({});
+    const { getByTestId } = await renderWithProviders(<SettingsScreen />);
+    await waitFor(() => expect(getByTestId('switch-phone')).toBeTruthy());
+
+    await fireEvent(getByTestId('switch-phone'), 'valueChange', false);
+
+    await waitFor(() =>
+      expect(settingsService.updateSettings).toHaveBeenCalledWith({
+        showPhone: false,
+      }),
+    );
+  });
+
   it('toggles switch value and calls updateSettings', async () => {
     const { getByTestId } = await renderWithProviders(<SettingsScreen />);
 
