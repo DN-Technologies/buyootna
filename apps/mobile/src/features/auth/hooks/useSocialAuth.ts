@@ -8,6 +8,10 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
+import {
+  isReactivationDeclined,
+  withReactivationPrompt,
+} from '@/shared/utils/scheduledDeactivation';
 
 // Google Sign-In requires either a GoogleService-Info.plist or an iosClientId —
 // calling configure() without one throws synchronously and crashes the screen,
@@ -43,6 +47,9 @@ export function useSocialAuth() {
   };
 
   const handleSocialAuthError = (error: any, title: string) => {
+    // "No" to reactivating early: stay on the login screen, no error
+    if (isReactivationDeclined(error)) return;
+
     // Only axios errors (i.e. the call to our own API) can meaningfully be
     // "check the API is running and connected" — a failure in the native
     // Google/Apple SDK itself (no .isAxiosError, no .response) has nothing to
@@ -70,9 +77,9 @@ export function useSocialAuth() {
         return;
       }
 
-      const response = await apiClient.post('/auth/google', {
-        idToken: result.data.idToken,
-      });
+      const response = await withReactivationPrompt(
+        apiClient.post('/auth/google', { idToken: result.data.idToken }),
+      );
       await handleSocialAuthResponse(response);
     } catch (error: any) {
       if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -98,9 +105,11 @@ export function useSocialAuth() {
         return;
       }
 
-      const response = await apiClient.post('/auth/apple', {
-        identityToken: credential.identityToken,
-      });
+      const response = await withReactivationPrompt(
+        apiClient.post('/auth/apple', {
+          identityToken: credential.identityToken,
+        }),
+      );
       await handleSocialAuthResponse(response);
     } catch (error: any) {
       if (error?.code === 'ERR_REQUEST_CANCELED') {

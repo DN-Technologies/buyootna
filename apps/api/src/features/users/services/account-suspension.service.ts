@@ -8,7 +8,9 @@ import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
+import { arabicDays } from '../../auth/account-status.util';
 import { SuspendAccountDto } from '../dto/suspend-account.dto';
+import { AccountStateService } from './account-state.service';
 
 export type SuspendOtpChannel = 'phone' | 'email';
 
@@ -29,7 +31,8 @@ export function maskEmail(email: string): string {
 /**
  * The user suspending their own account (تعطيل الحساب مؤقتًا): confirmed with
  * a code (SMS, or email for accounts without a phone), recorded with the
- * reasons, and undone by signing in again (AuthSessionService.login).
+ * reasons, and undone by signing in again (AuthSessionService.login) or,
+ * for a timed one, automatically when the period ends.
  */
 @Injectable()
 export class AccountSuspensionService {
@@ -38,6 +41,7 @@ export class AccountSuspensionService {
     private readonly twilio: TwilioService,
     private readonly emailOtp: EmailOtpService,
     private readonly rateLimiter: OtpRateLimiterService,
+    private readonly accountState: AccountStateService,
   ) {}
 
   private async findUser(userId: string) {
@@ -82,8 +86,8 @@ export class AccountSuspensionService {
   }
 
   /**
-   * Checks the code, then in one transaction disables the account, records
-   * why, and ends every session so all devices are signed out.
+   * Checks the code, then disables the account, records why, and ends every
+   * session so all devices are signed out (AccountStateService).
    */
   async suspend(userId: string, dto: SuspendAccountDto) {
     const user = await this.findUser(userId);
@@ -103,21 +107,22 @@ export class AccountSuspensionService {
       ? dto.note?.trim() || null
       : null;
 
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: user.id },
-        data: { isDisabled: true, suspendedAt: new Date() },
-      }),
-      this.prisma.accountSuspension.create({
-        data: { userId: user.id, reasons: dto.reasons, note },
-      }),
-      this.prisma.session.deleteMany({ where: { userId: user.id } }),
-    ]);
+    const until = dto.durationDays
+      ? new Date(Date.now() + dto.durationDays * 86_400_000)
+      : null;
+
+    await this.accountState.deactivateByUser(user.id, {
+      reasons: dto.reasons,
+      note,
+      until,
+    });
 
     return {
       success: true,
-      message:
-        'تم تعطيل حسابك مؤقتاً. يمكنك إعادة تفعيله في أي وقت بتسجيل الدخول.',
+      suspendedUntil: until,
+      message: dto.durationDays
+        ? `تم تعطيل حسابك مؤقتاً، وسيُعاد تفعيله تلقائياً بعد ${arabicDays(dto.durationDays)}. يمكنك إعادة تفعيله قبل ذلك بتسجيل الدخول.`
+        : 'تم تعطيل حسابك مؤقتاً. يمكنك إعادة تفعيله في أي وقت بتسجيل الدخول.',
     };
   }
 }

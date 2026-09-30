@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   UnauthorizedException,
@@ -14,6 +15,23 @@ import {
 } from './auth-identities.service';
 import { LoginAlertService } from '../../devices/login-alert.service';
 import { DeviceCtx, SessionsService } from '../../devices/sessions.service';
+import { AccountStateService } from '../../users/services/account-state.service';
+import {
+  accountStatus,
+  arabicDays,
+  daysUntil,
+  suspendedByAdminError,
+} from '../account-status.util';
+
+// A short-lived token that lets the user finish a sign-in they paused at the
+// "reactivate your account now?" question (POST /auth/reactivate). It
+// carries `kind`, which JwtStrategy refuses, so it never works as a login.
+interface ReactivationTicket {
+  sub: string;
+  kind: 'reactivate';
+  ident?: string;
+}
+const REACTIVATION_TICKET_TTL = '10m';
 
 /**
  * Token + session issuance around the active identity: building the JWT for
@@ -27,6 +45,7 @@ export class AuthSessionService {
     private readonly identities: AuthIdentitiesService,
     private readonly sessions: SessionsService,
     private readonly loginAlerts: LoginAlertService,
+    private readonly accountState: AccountStateService,
   ) {}
 
   // Generate JWT token with identity information
@@ -34,21 +53,48 @@ export class AuthSessionService {
     user: Omit<User, 'password'>,
     identityId?: string,
     deviceCtx: DeviceCtx = {},
+    opts: { confirmReactivation?: boolean } = {},
   ) {
     // Every sign-in path (password, OTP, registration, Google, Apple) comes
     // through here, so account status is enforced once for all of them
-    if (!user.isAdmin && user.isBlocked) {
-      throw new UnauthorizedException('الحساب محظور');
-    }
     let reactivated = false;
-    if (user.isDisabled && !user.isAdmin) {
-      if (!user.suspendedAt) {
-        throw new UnauthorizedException('الحساب معطل مؤقتاً');
+    if (!user.isAdmin) {
+      const status = accountStatus(user);
+      if (status === 'blocked' || status === 'suspended_by_admin') {
+        throw suspendedByAdminError();
       }
-      // The user suspended their own account: signing in brings it back
-      await this.reactivate(user.id);
-      user = { ...user, isDisabled: false, suspendedAt: null };
-      reactivated = true;
+      if (status === 'deactivated_by_user') {
+        // A timed deactivation still running: ask before ending it early.
+        // The app answers "yes" through POST /auth/reactivate with the ticket.
+        const until = user.suspendedUntil;
+        if (until && until > new Date() && !opts.confirmReactivation) {
+          const daysLeft = daysUntil(until);
+          const ticket: ReactivationTicket = {
+            sub: user.id,
+            kind: 'reactivate',
+            ...(identityId ? { ident: identityId } : {}),
+          };
+          throw new ConflictException({
+            statusCode: 409,
+            code: 'ACCOUNT_SCHEDULED_DEACTIVATION',
+            message: `حسابك معطل حالياً وسيُعاد تفعيله تلقائياً خلال ${arabicDays(daysLeft)}. هل تريد إلغاء التعطيل وتسجيل الدخول الآن؟`,
+            daysLeft,
+            suspendedUntil: until,
+            reactivationTicket: this.jwtService.sign(ticket, {
+              expiresIn: REACTIVATION_TICKET_TTL,
+            }),
+          });
+        }
+        // Signing in brings a self-deactivated account back
+        await this.accountState.reactivate(user.id);
+        user = {
+          ...user,
+          isDisabled: false,
+          suspendedAt: null,
+          suspendedUntil: null,
+        };
+        reactivated = true;
+      }
     }
 
     // Which persona this login opens with: the one asked for, else the one
@@ -106,7 +152,7 @@ export class AuthSessionService {
     return {
       access_token: this.jwtService.sign(payload),
       sessionId: session.id,
-      user,
+      user: { ...user, accountStatus: accountStatus(user) },
       activeIdentity: { ...identity, isActive: true },
       // isActive here means "active on this device"
       identities: identities.map((i) => ({
@@ -117,19 +163,37 @@ export class AuthSessionService {
     };
   }
 
-  // Ends a self-suspension: the account is live again and the open
-  // suspension record gets its return date
-  private async reactivate(userId: string) {
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: userId },
-        data: { isDisabled: false, suspendedAt: null },
-      }),
-      this.prisma.accountSuspension.updateMany({
-        where: { userId, reactivatedAt: null },
-        data: { reactivatedAt: new Date() },
-      }),
-    ]);
+  /**
+   * The "yes, reactivate now" answer to ACCOUNT_SCHEDULED_DEACTIVATION:
+   * checks the ticket from that 409 and finishes the sign-in it paused.
+   */
+  async loginWithReactivationTicket(ticket: string, deviceCtx: DeviceCtx = {}) {
+    let claims: ReactivationTicket;
+    try {
+      claims = this.jwtService.verify<ReactivationTicket>(ticket);
+    } catch {
+      claims = null as unknown as ReactivationTicket;
+    }
+    if (claims?.kind !== 'reactivate' || !claims.sub) {
+      throw new UnauthorizedException(
+        'انتهت صلاحية الطلب، يرجى تسجيل الدخول مرة أخرى',
+      );
+    }
+
+    const found = await this.prisma.user.findUnique({
+      where: { id: claims.sub },
+    });
+    if (!found) {
+      throw new UnauthorizedException(
+        'انتهت صلاحية الطلب، يرجى تسجيل الدخول مرة أخرى',
+      );
+    }
+    const { password: _password, ...user } = found;
+    // Anything but a self-deactivation (an admin acted meanwhile, or it
+    // already ended) goes through the normal checks in login()
+    return this.login(user, claims.ident, deviceCtx, {
+      confirmReactivation: true,
+    });
   }
 
   // Switch active identity

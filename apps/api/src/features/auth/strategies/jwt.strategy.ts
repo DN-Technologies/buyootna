@@ -10,6 +10,9 @@ export interface JwtPayload {
   type: IdentityType; // INDIVIDUAL | COMPANY | OFFICE
   sid?: string; // sessionId — optional so tokens issued before this claim existed keep validating
   iat?: number; // "issued at" (seconds), stamped automatically by jsonwebtoken
+  // Set only on special-purpose tokens signed with the same secret (the
+  // reactivation ticket); those must never authenticate a request
+  kind?: string;
 }
 
 export interface RequestUser {
@@ -40,6 +43,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<RequestUser> {
+    if (payload.kind) {
+      throw new UnauthorizedException(
+        'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى',
+      );
+    }
+
     // Validate both user existence AND identity ownership
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },

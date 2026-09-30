@@ -4,6 +4,7 @@ import { UsersRegistrationService } from './services/users-registration.service'
 import { UsersProfileService } from './services/users-profile.service';
 import { UsersDirectoryService } from './services/users-directory.service';
 import { AccountSuspensionService } from './services/account-suspension.service';
+import { AccountStateService } from './services/account-state.service';
 import { ProviderCardsService } from './services/provider-cards.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
@@ -25,9 +26,11 @@ import { IdentitiesModule } from '../identities/identities.module';
     UsersProfileService,
     UsersDirectoryService,
     AccountSuspensionService,
+    AccountStateService,
     ProviderCardsService,
   ],
   exports: [
+    AccountStateService,
     UsersRegistrationService,
     UsersProfileService,
     UsersDirectoryService,

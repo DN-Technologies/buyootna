@@ -156,6 +156,8 @@ export class UsersController {
   @ApiOperation({
     summary:
       'Temporarily suspend your account with the code and reasons; signing in again reactivates it',
+    description:
+      'Optional durationDays (7/14/30) makes it timed: it reactivates on its own when the period ends, and signing in before then answers 409 ACCOUNT_SCHEDULED_DEACTIVATION (see POST /auth/reactivate).',
   })
   @ApiResponse({ status: 201, type: SimpleMessageResponseDto })
   @ApiCommonErrors()

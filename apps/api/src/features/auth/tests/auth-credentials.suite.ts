@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   UnauthorizedException,
   BadRequestException,
   InternalServerErrorException,
@@ -7,6 +8,7 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { AuthTestContext, UserUpdateArgs } from './auth-test.harness';
 import { INVALID_CREDENTIALS_MESSAGE } from '../services/auth-credentials.service';
+import { SUSPENDED_BY_ADMIN_MESSAGE } from '../account-status.util';
 
 export function registerCredentialsAuthTests(ctx: AuthTestContext) {
   describe('validateUser', () => {
@@ -67,18 +69,33 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
     );
 
     it.each([
-      ['disabled', { isDisabled: true }, 'الحساب معطل مؤقتاً'],
-      ['blocked', { isBlocked: true }, 'الحساب محظور'],
+      ['suspended by an admin', { isDisabled: true }],
+      ['blocked', { isBlocked: true }],
     ])(
-      'tells the owner (right password) that the account is %s',
-      async (_state, flags, message) => {
+      'tells the owner (right password) with 403 that the account is %s',
+      async (_state, flags) => {
         ctx.prisma.user.findFirst.mockResolvedValue({ ...dbUser, ...flags });
 
-        await expect(
-          ctx.service.validateUser('a@example.com', 'correct-password'),
-        ).rejects.toThrow(message);
+        const attempt = ctx.service.validateUser(
+          'a@example.com',
+          'correct-password',
+        );
+        await expect(attempt).rejects.toThrow(ForbiddenException);
+        await expect(attempt).rejects.toThrow(SUSPENDED_BY_ADMIN_MESSAGE);
       },
     );
+
+    it('lets the owner of a self-deactivated account through, to be reactivated', async () => {
+      ctx.prisma.user.findFirst.mockResolvedValue({
+        ...dbUser,
+        isDisabled: true,
+        suspendedAt: new Date(),
+      });
+
+      await expect(
+        ctx.service.validateUser('a@example.com', 'correct-password'),
+      ).resolves.toMatchObject({ id: 'user-1' });
+    });
 
     it('still lets a disabled or blocked admin in with the right password', async () => {
       ctx.prisma.user.findFirst.mockResolvedValue({

@@ -14,6 +14,7 @@ import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limite
 import { AuthIdentitiesService } from '../services/auth-identities.service';
 import { LoginAlertService } from '../../devices/login-alert.service';
 import { SessionsService } from '../../devices/sessions.service';
+import { AccountStateService } from '../../users/services/account-state.service';
 import { SocialProvider } from '@prisma/client';
 
 export const buildTx = () => ({
@@ -250,6 +251,7 @@ export function createAuthTestContext(): AuthTestContext {
           { provide: AuthIdentitiesService, useValue: mockIdentitiesService },
           { provide: SessionsService, useValue: mockSessionsService },
           { provide: LoginAlertService, useValue: mockLoginAlertService },
+          AccountStateService,
         ],
       }).compile();
 

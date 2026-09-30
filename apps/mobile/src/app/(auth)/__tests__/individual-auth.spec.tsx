@@ -154,6 +154,97 @@ describe('IndividualAuthScreen', () => {
     });
   });
 
+  describe('login to an account deactivated for a period', () => {
+    const scheduled = {
+      response: {
+        status: 409,
+        data: {
+          code: 'ACCOUNT_SCHEDULED_DEACTIVATION',
+          message: 'حسابك معطل حالياً وسيُعاد تفعيله تلقائياً خلال 3 أيام. هل تريد إلغاء التعطيل وتسجيل الدخول الآن؟',
+          daysLeft: 3,
+          reactivationTicket: 'ticket-1',
+        },
+      },
+    };
+
+    // Signs in, then answers the "reactivate now?" question
+    const loginAndAnswer = async (answer: 'نعم، إعادة التفعيل' | 'لا') => {
+      const showAlert = useAlertStore.getState().showAlert as jest.Mock;
+      const { getByPlaceholderText, getByText } = await render(
+        <IndividualAuthScreen />,
+      );
+      await fillLoginForm(getByPlaceholderText, 'ali@example.com', 'password123');
+      await fireEvent.press(getByText('تسجيل الدخول'));
+
+      await waitFor(() =>
+        expect(showAlert).toHaveBeenCalledWith(
+          'الحساب معطل مؤقتاً',
+          scheduled.response.data.message,
+          expect.any(Array),
+        ),
+      );
+      const buttons = showAlert.mock.calls[0][2] as {
+        text: string;
+        onPress: () => void;
+      }[];
+      await act(async () => {
+        buttons.find((b) => b.text === answer)!.onPress();
+      });
+    };
+
+    it('"yes" reactivates with the ticket and signs in', async () => {
+      mockApiClient.post
+        .mockRejectedValueOnce(scheduled)
+        .mockResolvedValueOnce({ data: { ...loginResponseData, reactivated: true } });
+
+      await loginAndAnswer('نعم، إعادة التفعيل');
+
+      await waitFor(() =>
+        expect(mockApiClient.post).toHaveBeenCalledWith('/auth/reactivate', {
+          ticket: 'ticket-1',
+        }),
+      );
+      await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home');
+    });
+
+    it('"no" stays on the login screen without an error', async () => {
+      mockApiClient.post.mockRejectedValueOnce(scheduled);
+
+      await loginAndAnswer('لا');
+
+      expect(mockApiClient.post).toHaveBeenCalledTimes(1);
+      expect(mockSetAuth).not.toHaveBeenCalled();
+      expect(router.replace).not.toHaveBeenCalled();
+      // Only the question was shown, no "login failed"
+      expect(useAlertStore.getState().showAlert).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows the admin-suspension message as it comes (403)', async () => {
+      mockApiClient.post.mockRejectedValueOnce({
+        response: {
+          status: 403,
+          data: {
+            code: 'ACCOUNT_SUSPENDED_BY_ADMIN',
+            message: 'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.',
+          },
+        },
+      });
+      const { getByPlaceholderText, getByText } = await render(
+        <IndividualAuthScreen />,
+      );
+      await fillLoginForm(getByPlaceholderText, 'ali@example.com', 'password123');
+      await fireEvent.press(getByText('تسجيل الدخول'));
+
+      await waitFor(() =>
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'فشل تسجيل الدخول',
+          'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.',
+        ),
+      );
+    });
+  });
+
   describe('signup', () => {
     const switchToSignup = async (getByText: any) => {
       await fireEvent.press(getByText('تسجيل جديد'));

@@ -7,6 +7,7 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 import {
+  type DeactivateDuration,
   type DeactivateStep,
   OTHER_REASON_ID,
   OTP_LENGTH,
@@ -35,6 +36,7 @@ export function useDeactivateAccountFlow({
   const [step, setStep] = useState<DeactivateStep>('intro');
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherReasonText, setOtherReasonText] = useState('');
+  const [duration, setDuration] = useState<DeactivateDuration>(null);
   const [otp, setOtpState] = useState('');
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +60,7 @@ export function useDeactivateAccountFlow({
     setStep('intro');
     setSelectedReasons([]);
     setOtherReasonText('');
+    setDuration(null);
     setOtpState('');
     setCountdown(RESEND_SECONDS);
     setIsLoading(false);
@@ -126,6 +129,7 @@ export function useDeactivateAccountFlow({
         ...(selectedReasons.includes(OTHER_REASON_ID) && otherReasonText.trim()
           ? { note: otherReasonText.trim() }
           : {}),
+        ...(duration ? { durationDays: duration } : {}),
       });
       await useAuthStore.getState().logout();
       dismiss();
@@ -151,6 +155,8 @@ export function useDeactivateAccountFlow({
     toggleReason,
     otherReasonText,
     setOtherReasonText,
+    duration,
+    setDuration,
     otp,
     setOtp,
     otpInputRef,

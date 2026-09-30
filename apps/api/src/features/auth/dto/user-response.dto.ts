@@ -24,6 +24,17 @@ export class UserResponseDto {
 
   @ApiProperty()
   isAdmin: boolean;
+
+  @ApiPropertyOptional({
+    enum: ['active', 'deactivated_by_user', 'suspended_by_admin', 'blocked'],
+  })
+  accountStatus?: string;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'End of a timed self-deactivation',
+  })
+  suspendedUntil?: Date | null;
 }
 
 export class IndividualIdentityDataDto {

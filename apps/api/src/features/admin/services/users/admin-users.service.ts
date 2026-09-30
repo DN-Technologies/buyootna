@@ -21,6 +21,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { MailService } from '../../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../../core/mail/templates/admin-custom-message.template';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { accountStatus as accountState } from '../../../auth/account-status.util';
 
 @Injectable()
 export class AdminUsersService {
@@ -255,6 +256,8 @@ export class AdminUsersService {
         subscriptionPlan,
         adsCount,
         accountStatus,
+        accountState: accountState(user),
+        suspendedUntil: user.suspendedUntil,
         registrationDate,
       };
     });
@@ -302,7 +305,7 @@ export class AdminUsersService {
       throw new NotFoundException('المستخدم غير موجود');
     }
 
-    const userWithoutPassword = { ...user };
+    const userWithoutPassword = { ...user, accountState: accountState(user) };
     delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
       .password;
     return userWithoutPassword;
@@ -336,23 +339,38 @@ export class AdminUsersService {
 
     const dataToUpdate: Prisma.UserUpdateInput = {};
 
+    // Suspend and block are the admin's decision: suspendedAt/Until are
+    // cleared so signing in (or the timed-reactivation job) can't undo them
+    const signOut = dto.status !== UserAccountStatusAction.ACTIVE;
     switch (dto.status) {
       case UserAccountStatusAction.BLOCKED:
         dataToUpdate.isBlocked = true;
+        dataToUpdate.suspendedAt = null;
+        dataToUpdate.suspendedUntil = null;
         break;
       case UserAccountStatusAction.SUSPENDED:
         dataToUpdate.isDisabled = true;
+        dataToUpdate.suspendedAt = null;
+        dataToUpdate.suspendedUntil = null;
         break;
       case UserAccountStatusAction.ACTIVE:
         dataToUpdate.isDisabled = false;
         dataToUpdate.isBlocked = false;
         dataToUpdate.suspendedAt = null;
+        dataToUpdate.suspendedUntil = null;
         break;
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: dataToUpdate,
+    // Ending every session signs the user out on all devices at once
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id },
+        data: dataToUpdate,
+      });
+      if (signOut) {
+        await tx.session.deleteMany({ where: { userId: id } });
+      }
+      return updated;
     });
 
     const userWithoutPassword = { ...updatedUser };

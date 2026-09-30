@@ -221,6 +221,33 @@ describe('DeactivateAccountSheet', () => {
     );
   });
 
+  it('sends the chosen period, and none for "until I come back" (the default)', async () => {
+    const { getByTestId } = await render(
+      <DeactivateAccountSheet userPhone="+965 1234 5678" />
+    );
+
+    await fireEvent.press(getByTestId('deactivate-intro-continue'));
+    expect(
+      getByTestId('deactivate-duration-open').props.accessibilityState
+    ).toEqual({ selected: true });
+    await fireEvent.press(getByTestId('deactivate-reason-temp_break'));
+    await fireEvent.press(getByTestId('deactivate-duration-7'));
+    expect(
+      getByTestId('deactivate-duration-7').props.accessibilityState
+    ).toEqual({ selected: true });
+    await fireEvent.press(getByTestId('deactivate-reasons-submit'));
+    await fireEvent.changeText(getByTestId('deactivate-otp-input'), '654321');
+    await fireEvent.press(getByTestId('deactivate-otp-confirm'));
+
+    await waitFor(() =>
+      expect(settingsService.suspendAccount).toHaveBeenCalledWith({
+        otp: '654321',
+        reasons: ['temp_break'],
+        durationDays: 7,
+      })
+    );
+  });
+
   it('keeps the sheet open and clears the code when the server rejects it', async () => {
     (settingsService.suspendAccount as jest.Mock).mockRejectedValue({
       response: { data: { message: 'رمز التحقق غير صحيح أو منتهي الصلاحية' } },

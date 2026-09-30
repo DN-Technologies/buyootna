@@ -18,6 +18,7 @@ interface MockPrismaService {
     update: jest.Mock;
     delete: jest.Mock;
   };
+  session: { deleteMany: jest.Mock };
   individualProfile: {
     create: jest.Mock;
   };
@@ -54,6 +55,7 @@ describe('AdminUsersService', () => {
         update: jest.fn(),
         delete: jest.fn(),
       },
+      session: { deleteMany: jest.fn() },
       individualProfile: {
         create: jest.fn(),
       },
@@ -276,6 +278,43 @@ describe('AdminUsersService', () => {
           metadata: { status: UserAccountStatusAction.BLOCKED },
         }),
       );
+    });
+
+    it('suspending an account the user had deactivated makes it an admin suspension and signs every device out', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'u-1',
+        isDisabled: true,
+        suspendedAt: new Date(),
+        suspendedUntil: new Date(),
+      });
+      prisma.user.update.mockResolvedValue({ id: 'u-1', isDisabled: true });
+
+      await service.updateUserStatus(
+        'u-1',
+        { status: UserAccountStatusAction.SUSPENDED },
+        'admin-1',
+      );
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'u-1' },
+        data: { isDisabled: true, suspendedAt: null, suspendedUntil: null },
+      });
+      expect(prisma.session.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'u-1' },
+      });
+    });
+
+    it('reactivating keeps the sessions', async () => {
+      prisma.user.findUnique.mockResolvedValue({ id: 'u-1', isDisabled: true });
+      prisma.user.update.mockResolvedValue({ id: 'u-1' });
+
+      await service.updateUserStatus(
+        'u-1',
+        { status: UserAccountStatusAction.ACTIVE },
+        'admin-1',
+      );
+
+      expect(prisma.session.deleteMany).not.toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if trying to update status of an admin user', async () => {

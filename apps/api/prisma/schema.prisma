@@ -21,6 +21,9 @@ model User {
   // reactivate by signing in again. isDisabled without this is an admin
   // disable, which signing in doesn't undo.
   suspendedAt DateTime?
+  // Set when that self-suspension was for a fixed period (7/14/30 days);
+  // AccountStateService reactivates the account once it passes
+  suspendedUntil DateTime?
   isAdmin    Boolean @default(false)
 
   // Set on every successful password change; JwtStrategy rejects legacy
@@ -434,6 +437,8 @@ model AccountSuspension {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   reasons       String[]
   note          String?
+  // End of a timed suspension; null for "until I come back"
+  until         DateTime?
   createdAt     DateTime  @default(now())
   reactivatedAt DateTime?
 

@@ -47,11 +47,15 @@ export const settingsService = {
     return response.data;
   },
 
-  /** Suspends the account; signing in again reactivates it. */
+  /**
+   * Suspends the account; signing in again reactivates it, and a timed one
+   * (durationDays) comes back on its own when the period ends.
+   */
   suspendAccount: async (payload: {
     otp: string;
     reasons: string[];
     note?: string;
+    durationDays?: 7 | 14 | 30;
   }): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient.post<{
       success: boolean;

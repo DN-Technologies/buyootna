@@ -14,12 +14,14 @@ import { StorageService } from 'src/core/storage/storage.service';
 import { CreateCompanyInvoiceDto } from '../../company/dto/create-company-invoice.dto';
 import { CreateProjectDto } from '../../company/dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { AccountStateService } from './account-state.service';
 
 @Injectable()
 export class UsersProfileService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    private readonly accountState: AccountStateService,
   ) {}
 
   // --- Update Profile ---
@@ -275,11 +277,11 @@ export class UsersProfileService {
     return { success: true, message: 'تم حذف الحساب بنجاح' };
   }
 
+  // Older app builds' "disable" (no code, no reasons): the same
+  // self-deactivation as the suspend flow, so signing in brings it back and
+  // every device is signed out -- not an admin-style lock-out
   async disableAccount(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { isDisabled: true },
-    });
+    await this.accountState.deactivateByUser(userId, { reasons: [] });
     return { success: true, message: 'تم تعطيل الحساب بنجاح' };
   }
 

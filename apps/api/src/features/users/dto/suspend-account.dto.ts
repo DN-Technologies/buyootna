@@ -19,6 +19,9 @@ export const SUSPEND_REASONS = [
   'other',
 ] as const;
 
+// The periods the sheet offers; no value = until the user signs in again
+export const SUSPEND_DURATIONS = [7, 14, 30] as const;
+
 export class SuspendAccountDto {
   @ApiProperty({ example: '123456' })
   @IsString({ message: 'رمز التحقق مطلوب' })
@@ -38,4 +41,13 @@ export class SuspendAccountDto {
   @IsString()
   @MaxLength(500, { message: 'السبب طويل جداً' })
   note?: string;
+
+  @ApiPropertyOptional({
+    enum: SUSPEND_DURATIONS,
+    description:
+      'Reactivate automatically after this many days; omit for "until I sign in again"',
+  })
+  @IsOptional()
+  @IsIn(SUSPEND_DURATIONS, { message: 'مدة التعطيل غير صالحة' })
+  durationDays?: number;
 }
