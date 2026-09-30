@@ -181,12 +181,14 @@ export const mobileShared: DocSection = {
           "Preview screen accurately reflects every field entered, including images, before final submission.",
           "Required-field validation blocks submission with clear inline errors rather than a silent failure.",
           "Successfully created listings appear immediately in the user's own listings/'My Ads' and in relevant search feeds.",
+          "On a Sell ad, turning on 'مدخول العقار' and entering an amount saves it; the card then shows 'مدخول العقار {amount} د.ك', and editing the ad shows the saved income.",
         ],
         ar: [
           "الحقول المُدخلة في SharedPropertyInfo تبقى محفوظة بشكل صحيح عند التبديل بين تبويبات بيع/إيجار/بدل قبل الإرسال.",
           "شاشة المعاينة تعكس بدقة كل حقل تم إدخاله، بما في ذلك الصور، قبل الإرسال النهائي.",
           "التحقق من الحقول المطلوبة يمنع الإرسال مع رسائل خطأ واضحة داخل الشاشة، لا فشلاً صامتاً.",
           "الإعلانات المُنشأة بنجاح تظهر فوراً في إعلانات المستخدم الخاصة ('إعلاناتي') وفي واجهات البحث ذات الصلة.",
+          "في إعلان البيع، تفعيل 'مدخول العقار' وإدخال مبلغ يحفظه؛ ثم تعرض البطاقة 'مدخول العقار {المبلغ} د.ك'، ويظهر المدخول المحفوظ عند تعديل الإعلان.",
         ],
       },
       testScenarios: {
@@ -203,7 +205,7 @@ export const mobileShared: DocSection = {
           "عدّل إعلاناً موجوداً عبر /edit-listing/[id] وتأكد أن التعديلات تُحفظ دون تكرار الإعلان أو إعادة تعيين الحقول التي لم تُلمس.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/property-income",
     },
     {
       id: "mobile-identity-switch",

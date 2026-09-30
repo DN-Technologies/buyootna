@@ -35,6 +35,7 @@ export default function FavoritePropertyCard({
   const formattedPrice =
     typeof price === 'number' ? price.toLocaleString('en-US') : price;
 
+  const hasIncome = Number(propertyIncome) > 0;
   const formattedIncome =
     typeof propertyIncome === 'number'
       ? propertyIncome.toLocaleString('en-US')
@@ -142,32 +143,34 @@ export default function FavoritePropertyCard({
         </View>
       </View>
 
-      {/* Income Row */}
-      <View className="flex-row items-center gap-1.5 pb-2 pt-0.5">
-        <Text
-          className={`font-cairo text-sm ${
-            isExpired ? 'text-[#A0AEC0]' : 'text-[#111111]'
-          }`}
-        >
-          مدخول العقار
-        </Text>
-        <View className="flex-row items-baseline gap-1">
+      {/* Income Row: only for ads that have an income */}
+      {hasIncome && (
+        <View className="flex-row items-center gap-1.5 pb-2 pt-0.5">
           <Text
-            className={`font-cairo-bold text-base ${
-              isExpired ? 'text-[#A0AEC0]' : 'text-[#018B1B]'
+            className={`font-cairo text-sm ${
+              isExpired ? 'text-[#A0AEC0]' : 'text-[#111111]'
             }`}
           >
-            {formattedIncome}
+            مدخول العقار
           </Text>
-          <Text
-            className={`font-cairo-semibold text-xs ${
-              isExpired ? 'text-[#A0AEC0]' : 'text-[#018B1B]'
-            }`}
-          >
-            د.ك
-          </Text>
+          <View className="flex-row items-baseline gap-1">
+            <Text
+              className={`font-cairo-bold text-base ${
+                isExpired ? 'text-[#A0AEC0]' : 'text-[#018B1B]'
+              }`}
+            >
+              {formattedIncome}
+            </Text>
+            <Text
+              className={`font-cairo-semibold text-xs ${
+                isExpired ? 'text-[#A0AEC0]' : 'text-[#018B1B]'
+              }`}
+            >
+              د.ك
+            </Text>
+          </View>
         </View>
-      </View>
+      )}
 
       {/* Action Row */}
       <View className="flex-row items-center justify-between gap-2.5 pt-2">

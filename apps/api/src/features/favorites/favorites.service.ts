@@ -112,6 +112,7 @@ export class FavoritesService {
         publishedAt: prop.publishedAt,
         views: prop.views,
         area: prop.areaSize || 0,
+        propertyIncome: prop.propertyIncome,
         beds: prop.beds || 0,
         baths: prop.baths || 0,
         floors: prop.floors,

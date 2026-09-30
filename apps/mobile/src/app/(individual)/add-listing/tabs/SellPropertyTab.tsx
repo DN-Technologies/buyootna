@@ -9,6 +9,8 @@ export default function SellPropertyTab() {
   const {
     showPrice,
     price,
+    showIncome,
+    propertyIncome,
     phoneNumber,
     adDetails,
     adLevel,
@@ -33,6 +35,15 @@ export default function SellPropertyTab() {
         price={price}
         onChangePrice={(text) => updateField('price', text)}
         required={true}
+      />
+
+      {/* --- Income Toggle & Input --- */}
+      <PriceToggleField
+        label="مدخول العقار"
+        showPrice={showIncome}
+        onTogglePrice={(val) => updateField('showIncome', val)}
+        price={propertyIncome}
+        onChangePrice={(text) => updateField('propertyIncome', text)}
       />
 
       {/* --- Phone Number --- */}
