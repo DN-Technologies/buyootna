@@ -476,5 +476,38 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
+    {
+      id: "mobile-add-identity",
+      title: {
+        en: "Add identity offers only the persona types the account doesn't have yet",
+        ar: "إضافة هوية تعرض فقط أنواع الهويات غير الموجودة في الحساب",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify More → switch identity → 'إضافة هوية جديدة' lists individual, company and office (company and office only when EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is on — hidden in store builds), marks each type the account already has as 'موجود' and doesn't open it, and opens the onboarding screen for the others. One of each type per account, as the API enforces (see api-persona-rules).",
+        ar: "تحقق من أن المزيد ← تبديل الهوية ← 'إضافة هوية جديدة' تعرض الفرد والشركة والمكتب (الشركة والمكتب فقط عند تفعيل EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS — مخفية في نسخ المتاجر)، وتعلّم كل نوع موجود في الحساب بـ'موجود' ولا تفتحه، وتفتح شاشة الإضافة للبقية. هوية واحدة من كل نوع لكل حساب كما تفرض الواجهة البرمجية (راجع api-persona-rules).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With only an individual persona: individual shows 'موجود'; company and office open their forms.",
+          "After adding a company, reopening the screen shows company as 'موجود' too.",
+          "In a store build, only the individual option is listed.",
+        ],
+        ar: [
+          "مع هوية فرد فقط: الفرد يعرض 'موجود'؛ والشركة والمكتب يفتحان نموذجيهما.",
+          "بعد إضافة شركة، إعادة فتح الشاشة تعرض الشركة 'موجود' أيضاً.",
+          "في نسخة المتجر يظهر خيار الفرد فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With the flag on, add a company, go back to 'إضافة هوية جديدة' — company is 'موجود', office still available.",
+        ],
+        ar: [
+          "مع تفعيل المفتاح أضف شركة ثم ارجع إلى 'إضافة هوية جديدة' — الشركة 'موجود' والمكتب ما زال متاحاً.",
+        ],
+      },
+      updatedIn: "fix/add-identity-business",
+    },
   ],
 };
