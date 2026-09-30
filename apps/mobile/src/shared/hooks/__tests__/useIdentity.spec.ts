@@ -38,16 +38,16 @@ describe('useIdentity', () => {
       expect(result.current.canCreateIdentity('INDIVIDUAL')).toBe(true);
     });
 
-    it('is unlimited for COMPANY/OFFICE', async () => {
+    it('allows one company and one office, like the API', async () => {
       useAuthStore.setState({
         identities: [
+          buildIdentity({ id: 'i1', type: 'INDIVIDUAL' }),
           buildIdentity({ id: 'c1', type: 'COMPANY' }),
-          buildIdentity({ id: 'c2', type: 'COMPANY' }),
         ],
       });
       const { result } = await renderHook(() => useIdentity());
 
-      expect(result.current.canCreateIdentity('COMPANY')).toBe(true);
+      expect(result.current.canCreateIdentity('COMPANY')).toBe(false);
       expect(result.current.canCreateIdentity('OFFICE')).toBe(true);
     });
   });

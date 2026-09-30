@@ -64,7 +64,9 @@ export default function FormInput<T extends FieldValues>({
             {/* One Text with the * nested: as separate siblings (and with
                 letter-spacing on Arabic) Android measured the label too
                 narrow and wrapped it onto two lines */}
-            <Text className="mb-1 font-cairo-semibold text-sm text-charcoal">
+            <Text className="mb-1 font-cairo-semibold text-sm text-charcoal"
+              style={{ writingDirection: "rtl" }}
+            >
               {label}
               {isRequired && (
                 <Text className="font-bold text-red-500"> *</Text>

@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ArrowBackIcon } from '@/assets/icons/home/property';
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import apiClient from '@/shared/api/api';
@@ -107,11 +107,11 @@ export default function AddIdentityCompanyScreen() {
         <View className="flex-row items-center justify-between px-6 pb-4 pt-2">
           <TouchableOpacity
             onPress={() => router.back()}
-            className="h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+            className="h-10 w-10 items-center justify-center rounded-full"
           >
-            <Feather name="arrow-right" size={20} color="#111111" />
+            <ArrowBackIcon size={16} color="#111111" />
           </TouchableOpacity>
-          <Text className="font-cairo-bold text-lg text-charcoal">
+          <Text className="font-cairo-semibold text-lg text-charcoal">
             إضافة هوية شركة
           </Text>
           <View className="w-10" />
