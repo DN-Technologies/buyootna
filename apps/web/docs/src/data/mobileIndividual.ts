@@ -4,8 +4,8 @@ export const mobileIndividual: DocSection = {
   slug: "mobile-individual",
   title: { en: "Mobile — Individual", ar: "الجوال — الفرد" },
   summary: {
-    en: "The (individual) route group and the individual auth screens — the only account type reachable in store builds (Company/Office are behind a flag, see Mobile — Shared). Covers login, signup, Google/Apple sign-in, OTP, password recovery, the persona switcher, favorites (properties, companies, offices), My Activity (drafts, archive, republish, feature, delete), home sort, and temporary account suspension.",
-    ar: "مجموعة مسارات (individual) وشاشات مصادقة الفرد — نوع الحساب الوحيد المتاح في نسخ المتاجر (الشركة والمكتب خلف مفتاح تفعيل، راجع الجوال — مشترك). يغطي تسجيل الدخول، التسجيل، الدخول عبر Google/Apple، رمز التحقق، استعادة كلمة المرور، مبدّل الهوية، المفضلة (عقارات وشركات ومكاتب)، نشاطي (المسودات، الأرشفة، إعادة النشر، التمييز، الحذف)، ترتيب الرئيسية، والتعليق المؤقت للحساب.",
+    en: "The (individual) route group and the individual auth screens — company and office accounts are covered in their own sections. Covers login, signup, Google/Apple sign-in, OTP, password recovery, the persona switcher, favorites (properties, companies, offices), My Activity (drafts, archive, republish, feature, delete), home sort, and temporary account suspension.",
+    ar: "مجموعة مسارات (individual) وشاشات مصادقة الفرد — حسابات الشركات والمكاتب موثّقة في أقسامها. يغطي تسجيل الدخول، التسجيل، الدخول عبر Google/Apple، رمز التحقق، استعادة كلمة المرور، مبدّل الهوية، المفضلة (عقارات وشركات ومكاتب)، نشاطي (المسودات، الأرشفة، إعادة النشر، التمييز، الحذف)، ترتيب الرئيسية، والتعليق المؤقت للحساب.",
   },
   stories: [
     {

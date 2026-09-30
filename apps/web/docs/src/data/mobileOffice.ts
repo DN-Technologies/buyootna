@@ -4,8 +4,8 @@ export const mobileOffice: DocSection = {
   slug: "mobile-office",
   title: { en: "Mobile — Office", ar: "الجوال — المكتب العقاري" },
   summary: {
-    en: "The (office) route group (office-home, office-more, office-chats, office-properties, add). Office tabs, home dashboard, add action sheet, and add listing screen have been implemented matching Figma designs 4494-140590, 4494-140318, 4494-141442, 4494-141944, and 4494-141462. On the feat/offices branch, office accounts are enabled via EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS=true.",
-    ar: "مجموعة مسارات (office) (office-home و office-more و office-chats و office-properties و add). تم تطبيق تبويبات المكتب، ولوحة معلومات الصفحة الرئيسية، ونافذة الإجراءات، وشاشة إضافة إعلان وفق تصاميم فيجما 4494-140590 و 4494-140318 و 4494-141442 و 4494-141944 و 4494-141462. في فرع feat/offices، يتم تفعيل حسابات المكاتب عبر EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS=true.",
+    en: "The (office) route group (office-home, office-more, office-chats, office-properties) — live in every build (see mobile-company-office-gate). Some parts still show mock data (tracked in the stories below); the server-side office rules (one per account, unique licence, approval before publishing) are in API → api-persona-rules.",
+    ar: "مجموعة مسارات (office) (office-home و office-more و office-chats و office-properties) — مفعّلة في كل النسخ (راجع mobile-company-office-gate). بعض الأجزاء ما زالت تعرض بيانات وهمية (موثّقة في القصص أدناه)؛ وقواعد المكتب في الخادم (واحد لكل حساب، ترخيص فريد، اعتماد قبل النشر) في الواجهة البرمجية ← api-persona-rules.",
   },
   stories: [
     {

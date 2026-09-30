@@ -4,8 +4,8 @@ export const mobileCompany: DocSection = {
   slug: "mobile-company",
   title: { en: "Mobile — Company", ar: "الجوال — الشركة" },
   summary: {
-    en: "The (company) route group (company-home, company-more, company-chats, company-requests). IMPORTANT: in store builds this route group is behind ComingSoonGate unless EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is 'true' (see mobile-company-office-gate). The stories below are a readiness checklist for when it's switched on; the server-side company rules (one per account, unique licence, approval before publishing) are covered in API → api-persona-rules.",
-    ar: "مجموعة مسارات (company) (company-home و company-more و company-chats و company-requests). مهم: في نسخ المتاجر تبقى هذه المجموعة خلف ComingSoonGate ما لم تكن قيمة EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS هي 'true' (راجع mobile-company-office-gate). القصص أدناه قائمة جاهزية لوقت تفعيلها؛ أما قواعد الشركة في الخادم (واحدة لكل حساب، ترخيص فريد، اعتماد قبل النشر) فموجودة في الواجهة البرمجية ← api-persona-rules.",
+    en: "The (company) route group (company-home, company-more, company-chats, company-requests) — live in every build (see mobile-company-office-gate). Some parts still show mock data (tracked in the stories below); the server-side company rules (one per account, unique licence, approval before publishing) are in API → api-persona-rules.",
+    ar: "مجموعة مسارات (company) (company-home و company-more و company-chats و company-requests) — مفعّلة في كل النسخ (راجع mobile-company-office-gate). بعض الأجزاء ما زالت تعرض بيانات وهمية (موثّقة في القصص أدناه)؛ وقواعد الشركة في الخادم (واحدة لكل حساب، ترخيص فريد، اعتماد قبل النشر) في الواجهة البرمجية ← api-persona-rules.",
   },
   stories: [
     {
