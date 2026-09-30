@@ -84,9 +84,30 @@ describe('ChangePasswordScreen', () => {
     await fillAndSubmitForm(getByPlaceholderText, getByText);
 
     await waitFor(() => {
-      expect(mockSettingsService.requestChangePasswordOtp).toHaveBeenCalled();
+      // The current password goes along, so the server checks it before
+      // spending an SMS
+      expect(mockSettingsService.requestChangePasswordOtp).toHaveBeenCalledWith(
+        'old-password',
+      );
     });
     expect(getByText('تحقق من الرقم')).toBeTruthy();
+  });
+
+  it('blocks submit when the new password equals the current one', async () => {
+    const { getByPlaceholderText, getByText } = await render(
+      <ChangePasswordScreen />,
+    );
+
+    await fillAndSubmitForm(getByPlaceholderText, getByText, {
+      oldPassword: 'same-password',
+      newPassword: 'same-password',
+      confirmPassword: 'same-password',
+    });
+
+    await waitFor(() =>
+      expect(getByText('كلمة المرور الجديدة يجب أن تختلف عن الحالية')).toBeTruthy(),
+    );
+    expect(mockSettingsService.requestChangePasswordOtp).not.toHaveBeenCalled();
   });
 
   it('blocks submit when the new password is shorter than 6 characters', async () => {

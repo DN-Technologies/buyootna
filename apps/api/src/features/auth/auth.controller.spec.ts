@@ -174,10 +174,13 @@ describe('AuthController', () => {
     } as unknown as RequestUser;
     mockAuthService.requestChangePasswordOtp.mockResolvedValue('otp-result');
 
-    const result = await controller.requestChangePasswordOtp(reqUser);
+    const result = await controller.requestChangePasswordOtp(reqUser, {
+      oldPassword: 'current-pass',
+    });
 
     expect(mockAuthService.requestChangePasswordOtp).toHaveBeenCalledWith(
       reqUser.user,
+      'current-pass',
     );
     expect(result).toBe('otp-result');
   });

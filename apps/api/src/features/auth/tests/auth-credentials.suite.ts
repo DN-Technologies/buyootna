@@ -144,6 +144,36 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
     });
   });
 
+  describe('requestChangePasswordOtp with the current password', () => {
+    const phoneUser = {
+      id: 'user-1',
+      phone: '+96555123456',
+    } as unknown as User;
+
+    it('refuses a wrong current password without sending an SMS', async () => {
+      ctx.prisma.user.findUnique.mockResolvedValue({
+        password: bcrypt.hashSync('old-password', 4),
+      });
+
+      await expect(
+        ctx.service.requestChangePasswordOtp(phoneUser, 'typo'),
+      ).rejects.toThrow('كلمة المرور الحالية غير صحيحة');
+      expect(ctx.twilio.sendVerification).not.toHaveBeenCalled();
+    });
+
+    it('sends the code once the current password checks out', async () => {
+      ctx.prisma.user.findUnique.mockResolvedValue({
+        password: bcrypt.hashSync('old-password', 4),
+      });
+      ctx.twilio.sendVerification.mockResolvedValue({ success: true });
+
+      await expect(
+        ctx.service.requestChangePasswordOtp(phoneUser, 'old-password'),
+      ).resolves.toEqual({ message: 'تم إرسال رمز التحقق بنجاح' });
+      expect(ctx.twilio.sendVerification).toHaveBeenCalledWith('+96555123456');
+    });
+  });
+
   describe('changePassword', () => {
     const storedHash = bcrypt.hashSync('old-password', 10);
     const dbUser = {
@@ -185,6 +215,15 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
       expect(ctx.twilio.checkVerification).not.toHaveBeenCalled();
       expect(ctx.prisma.user.update).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ message: 'تم تغيير كلمة المرور بنجاح' });
+    });
+
+    it('refuses a new password equal to the current one', async () => {
+      ctx.prisma.user.findUnique.mockResolvedValue({ ...dbUser, phone: null });
+
+      await expect(
+        ctx.service.changePassword('user-1', 'old-password', 'old-password'),
+      ).rejects.toThrow('كلمة المرور الجديدة يجب أن تختلف عن الحالية');
+      expect(ctx.prisma.user.update).not.toHaveBeenCalled();
     });
 
     it('throws BadRequestException when the user has a phone but no OTP is provided', async () => {

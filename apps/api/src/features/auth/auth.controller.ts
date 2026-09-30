@@ -17,7 +17,10 @@ import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
 import { SocialProvider, type User } from '@prisma/client';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import {
+  ChangePasswordDto,
+  RequestChangePasswordOtpDto,
+} from './dto/change-password.dto';
 import { VerifyRegisterOtpDto } from './dto/verify-register-otp.dto';
 import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import { SwitchIdentityDto } from './dto/switch-identity.dto';
@@ -192,8 +195,14 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, type: MessageResponseDto })
   @ApiCommonErrors()
-  async requestChangePasswordOtp(@CurrentUser() reqUser: RequestUser) {
-    return this.authService.requestChangePasswordOtp(reqUser.user as User);
+  async requestChangePasswordOtp(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RequestChangePasswordOtpDto,
+  ) {
+    return this.authService.requestChangePasswordOtp(
+      reqUser.user as User,
+      dto.oldPassword,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))

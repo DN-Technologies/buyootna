@@ -12,6 +12,10 @@ export const changePasswordSchema = z
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'كلمة المرور الجديدة غير متطابقة',
     path: ['confirmPassword'],
+  })
+  .refine((data) => data.newPassword !== data.oldPassword, {
+    message: 'كلمة المرور الجديدة يجب أن تختلف عن الحالية',
+    path: ['newPassword'],
   });
 
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

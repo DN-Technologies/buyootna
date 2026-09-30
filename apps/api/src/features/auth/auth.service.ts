@@ -85,8 +85,8 @@ export class AuthService {
     return this.registrationService.getMockEmailOtp(email);
   }
 
-  async requestChangePasswordOtp(user: User) {
-    return this.passwordService.requestChangePasswordOtp(user);
+  async requestChangePasswordOtp(user: User, oldPassword?: string) {
+    return this.passwordService.requestChangePasswordOtp(user, oldPassword);
   }
 
   async changePassword(

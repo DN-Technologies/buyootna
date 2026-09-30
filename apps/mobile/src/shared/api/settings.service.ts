@@ -60,9 +60,13 @@ export const settingsService = {
     return response.data;
   },
 
-  requestChangePasswordOtp: async (): Promise<{ message: string }> => {
+  // The current password is checked before a code is sent
+  requestChangePasswordOtp: async (
+    oldPassword: string,
+  ): Promise<{ message: string }> => {
     const response = await apiClient.post<{ message: string }>(
       '/auth/change-password/request-otp',
+      { oldPassword },
     );
     return response.data;
   },

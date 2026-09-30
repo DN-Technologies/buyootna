@@ -23,9 +23,23 @@ export class AuthPasswordService {
     private readonly rateLimiter?: OtpRateLimiterService,
   ) {}
 
-  async requestChangePasswordOtp(user: User) {
+  async requestChangePasswordOtp(user: User, oldPassword?: string) {
     if (!user.phone) {
       throw new BadRequestException('المستخدم ليس لديه رقم هاتف مسجل');
+    }
+
+    // Check the current password before sending anything: a typo used to
+    // surface only after the SMS code was entered -- and that code was
+    // already spent, so the user needed another SMS
+    if (oldPassword !== undefined) {
+      const account = await this.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { password: true },
+      });
+      if (!account || !(await bcrypt.compare(oldPassword, account.password))) {
+        this.rateLimiter?.recordVerifyAttempt(user.id, false);
+        throw new BadRequestException('كلمة المرور الحالية غير صحيحة');
+      }
     }
 
     // Twilio failures (unverifiable/malformed number, trial-account limits,
@@ -83,6 +97,12 @@ export class AuthPasswordService {
     if (!isMatch) {
       this.rateLimiter?.recordVerifyAttempt(userId, false);
       throw new BadRequestException('كلمة المرور القديمة غير صحيحة');
+    }
+
+    if (oldPass === newPass) {
+      throw new BadRequestException(
+        'كلمة المرور الجديدة يجب أن تختلف عن الحالية',
+      );
     }
 
     this.rateLimiter?.recordVerifyAttempt(userId, true);
