@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
+import { ArrowBackIcon } from '@/assets/icons/home/property';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { IdentityType } from '@/shared/store/useAuthStore';
 
@@ -68,9 +69,9 @@ export default function AddIdentityScreen() {
       <View className="flex-row items-center justify-between px-6 pb-4 pt-2">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+          className="h-10 w-10 items-center justify-center rounded-full"
         >
-          <Feather name="arrow-right" size={20} color="#111111" />
+          <ArrowBackIcon size={15} color="#111111" />
         </TouchableOpacity>
         <Text className="font-cairo-semibold leading-[22px] text-lg text-charcoal">
           إضافة هوية جديدة
