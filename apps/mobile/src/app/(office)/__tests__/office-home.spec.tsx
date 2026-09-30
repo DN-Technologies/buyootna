@@ -80,9 +80,9 @@ describe('OfficeHomeScreen (Figma Design Implementation)', () => {
   it('renders all sections with title and "عرض الكل" buttons', async () => {
     const { getByText, getAllByText } = await render(<OfficeHomeScreen />);
 
-    expect(getByText('اعلانات المكتب')).toBeTruthy();
-    expect(getByText('الخدمات')).toBeTruthy();
-    expect(getByText('عقارات السوق')).toBeTruthy();
+    expect(getByText('اعلاناتي')).toBeTruthy();
+    expect(getByText('الخدمات النشطة')).toBeTruthy();
+    expect(getByText('عقارات قد تهمك')).toBeTruthy();
     expect(getByText('أحدث المحادثات')).toBeTruthy();
     expect(getByText('نشاط المجموعات')).toBeTruthy();
 
@@ -135,7 +135,7 @@ describe('OfficeHomeScreen (Figma Design Implementation)', () => {
   it('navigates when clicking view all on office listings', async () => {
     const { getByLabelText } = await render(<OfficeHomeScreen />);
 
-    const viewAllListings = getByLabelText('عرض الكل اعلانات المكتب');
+    const viewAllListings = getByLabelText('عرض الكل اعلاناتي');
     fireEvent.press(viewAllListings);
 
     expect(router.push).toHaveBeenCalledWith('/(office)/office-properties');

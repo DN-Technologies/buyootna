@@ -86,10 +86,10 @@ export default function OfficeHomeScreen() {
             />
           </View>
 
-          {/* 3. Section: اعلانات المكتب (Office Listings) */}
+          {/* 3. Section: اعلاناتي (My Listings) */}
           <View className="mt-6">
             <OfficeSectionHeader
-              title="اعلانات المكتب"
+              title="اعلاناتي"
               actionText="عرض الكل"
               onPressAction={() => router.push('/(office)/office-properties')}
             />
@@ -117,10 +117,10 @@ export default function OfficeHomeScreen() {
           ))}
         </ScrollView>
 
-        {/* 4. Section: الخدمات (Services) */}
+        {/* 4. Section: الخدمات النشطة (Active Services) */}
         <ContentContainer className="mt-6 px-4">
           <OfficeSectionHeader
-            title="الخدمات"
+            title="الخدمات النشطة"
             actionText="عرض الكل"
             onPressAction={() => router.push('/(office)/office-properties')}
           />
@@ -147,10 +147,10 @@ export default function OfficeHomeScreen() {
           ))}
         </ScrollView>
 
-        {/* 5. Section: عقارات السوق (Market Properties) */}
+        {/* 5. Section: عقارات قد تهمك (Market Properties) */}
         <ContentContainer className="mt-6 px-4">
           <OfficeSectionHeader
-            title="عقارات السوق"
+            title="عقارات قد تهمك"
             actionText="عرض الكل"
             onPressAction={() => router.push('/search')}
           />

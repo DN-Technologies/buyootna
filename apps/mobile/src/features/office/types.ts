@@ -63,3 +63,29 @@ export interface OfficeStats {
   newMessages: number;
   newMessagesSubtitle?: string;
 }
+
+export type OfficeListingType = 'sell' | 'rent' | 'exchange';
+
+export interface OfficeAddListingFormData {
+  listingType: OfficeListingType;
+  governorate: string;
+  area: string;
+  mapLocation?: {
+    latitude: number;
+    longitude: number;
+    address: string;
+  };
+  category: string;
+  space: string;
+  propertyAge: string;
+  paciNumber: string;
+  roomsCount: number;
+  bathroomsCount: number;
+  features: string;
+  isPriceActive: boolean;
+  price?: string;
+  phone: string;
+  description: string;
+  images: string[];
+}
+

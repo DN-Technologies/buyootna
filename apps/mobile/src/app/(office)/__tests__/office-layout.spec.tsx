@@ -15,7 +15,9 @@ jest.mock('expo-router', () => {
 });
 
 jest.mock('@/shared/components/navigation/CustomTabBar', () => 'CustomTabBar');
-jest.mock('@/shared/components/add-listing/PlusActionsSheet', () => 'PlusActionsSheet');
+jest.mock('@/features/office/components/add', () => ({
+  OfficeAddActionSheet: 'OfficeAddActionSheet',
+}));
 jest.mock('@/shared/components/add-listing/QuotaExhaustedSheet', () => 'QuotaExhaustedSheet');
 jest.mock('@/shared/components/auth/AuthGuardSheet', () => 'AuthGuardSheet');
 jest.mock('@/shared/components/auth/ComingSoonGate', () => 'ComingSoonGate');

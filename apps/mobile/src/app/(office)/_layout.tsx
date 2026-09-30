@@ -2,7 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router, Tabs } from 'expo-router';
 import { useRef } from 'react';
 
-import PlusActionsSheet from '@/shared/components/add-listing/PlusActionsSheet';
+import { OfficeAddActionSheet } from '@/features/office/components/add';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
@@ -59,10 +59,11 @@ export default function OfficeLayout() {
       </Tabs>
 
       {/* Bottom sheets mounted outside Tabs so the backdrop covers the entire screen */}
-      <PlusActionsSheet
+      <OfficeAddActionSheet
         ref={plusSheetRef}
-        onQuotaExhausted={handleOpenQuotaSheet}
+        onAddListing={() => router.push('/(office)/add')}
       />
+
       <QuotaExhaustedSheet
         ref={quotaSheetRef}
         onBrowsePackages={() => router.push('/plans')}
