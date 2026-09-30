@@ -70,12 +70,14 @@ export function useIdentity() {
   // Check if user can create more identities of a specific type
   const canCreateIdentity = useCallback(
     (type: IdentityType) => {
-      // Individual identity is limited to 1
-      if (type === 'INDIVIDUAL' && identityCounts.individual >= 1) {
-        return false;
-      }
-      // No limit on company/office identities for now
-      return true;
+      // One individual, one company and one office per account (the API
+      // refuses a second of any type)
+      const count = {
+        INDIVIDUAL: identityCounts.individual,
+        COMPANY: identityCounts.company,
+        OFFICE: identityCounts.office,
+      }[type];
+      return count === 0;
     },
     [identityCounts]
   );
