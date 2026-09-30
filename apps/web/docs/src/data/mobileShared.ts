@@ -4,48 +4,44 @@ export const mobileShared: DocSection = {
   slug: "mobile-shared",
   title: { en: "Mobile — Shared", ar: "الجوال — مشترك" },
   summary: {
-    en: "Cross-role mobile features (apps/mobile) that apply regardless of which persona is active — guest gating, chat, search, listings, persona switching, per-persona ownership, payments, layout, and the App Store demo account. Company/Office screens stay behind the EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS flag in store builds (see mobile-company-office-gate).",
-    ar: "ميزات التطبيق (apps/mobile) المشتركة بين جميع الأدوار بغض النظر عن الهوية النشطة — تقييد الزوار، المحادثات، البحث، الإعلانات، تبديل الهويات، ملكية البيانات لكل هوية، المدفوعات، التخطيط، وحساب العرض التجريبي لمتجر التطبيقات. تبقى شاشات الشركة والمكتب خلف مفتاح EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS في نسخ المتاجر (راجع mobile-company-office-gate).",
+    en: "Cross-role mobile features (apps/mobile) that apply regardless of which persona is active — guest gating, chat, search, listings, persona switching, per-persona ownership, payments, layout, and the App Store demo account. Company and office accounts are live in every build (see mobile-company-office-gate).",
+    ar: "ميزات التطبيق (apps/mobile) المشتركة بين جميع الأدوار بغض النظر عن الهوية النشطة — تقييد الزوار، المحادثات، البحث، الإعلانات، تبديل الهويات، ملكية البيانات لكل هوية، المدفوعات، التخطيط، وحساب العرض التجريبي لمتجر التطبيقات. حسابات الشركات والمكاتب مفعّلة في كل النسخ (راجع mobile-company-office-gate).",
   },
   stories: [
     {
       id: "mobile-company-office-gate",
       title: {
-        en: "Company/Office screens are gated in store builds by a feature flag",
-        ar: "شاشات الشركة والمكتب مقفلة في نسخ المتاجر عبر مفتاح تفعيل",
+        en: "Company and office accounts are live in every build",
+        ar: "حسابات الشركات والمكاتب مفعّلة في كل النسخ",
       },
       priority: "P0",
       story: {
-        en: "Confirm the Company/Office gate is controlled by EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: when it isn't 'true' (every production/TestFlight/Play build and every production OTA — eas.json's production profile doesn't set it and scripts/release-ota.js blanks it; the preview profile sets it and EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS to 'true' so internal testers' preview builds and preview OTAs show company and office), business-auth.tsx and the (company)/(office) layouts render <ComingSoonGate /> and the account-type selection hides Company/Office. With the flag on (local dev only), the real company/office screens appear. Re-verify this on every release so a dev-only flag never leaks to production.",
-        ar: "تأكد من أن قفل الشركة/المكتب يتحكم به المفتاح EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: إذا لم تكن قيمته 'true' (كل نسخ الإنتاج وTestFlight وPlay وكل تحديثات OTA للإنتاج — لا يضبطه ملف الإنتاج في eas.json ويفرّغه scripts/release-ota.js؛ أما ملف preview فيضبطه مع EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS على 'true' لتظهر الشركة والمكتب في نسخ preview وتحديثاتها للمختبرين الداخليين) فإن business-auth.tsx وتخطيطات (company)/(office) تعرض <ComingSoonGate /> وتُخفى خيارات الشركة/المكتب في شاشة اختيار نوع الحساب. عند تفعيله (في التطوير المحلي فقط) تظهر شاشات الشركة/المكتب الحقيقية. أعد التحقق في كل إصدار حتى لا يتسرب مفتاح التطوير إلى الإنتاج.",
+        en: "Company and office accounts are switched on for everyone: eas.json sets EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS and EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS to 'true' in both the production and preview profiles, and scripts/release-ota.js builds each OTA with its channel's profile values. The account-type picker, 'change account type' sheet and 'add identity' offer company and office; the (company) and (office) tabs open instead of ComingSoonGate. The flags remain a kill switch: removing them from the production profile (and publishing an OTA) puts ComingSoonGate back for company; office needs its flag set to 'false'.",
+        ar: "حسابات الشركات والمكاتب مفعّلة للجميع: يضبط eas.json المفتاحين EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS و EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS على 'true' في ملفي الإنتاج و preview، ويبني scripts/release-ota.js كل تحديث OTA بقيم ملف قناته. شاشة اختيار نوع الحساب ونافذة 'تغيير نوع الحساب' و'إضافة هوية' تعرض الشركة والمكتب؛ وتبويبات (company) و (office) تفتح بدلاً من ComingSoonGate. يبقى المفتاحان وسيلة إيقاف: إزالتهما من ملف الإنتاج (ونشر OTA) يعيد ComingSoonGate للشركة؛ أما المكتب فيحتاج ضبط مفتاحه على 'false'.",
       },
       acceptanceCriteria: {
         en: [
-          "A store/TestFlight/Play build shows 'Coming soon' for Company and Office in both the initial selection and the mid-signup 'change account type' sheet.",
-          "Opening any (company) or (office) route in a store build lands on ComingSoonGate, never a half-rendered tab.",
-          "An OTA published with scripts/release-ota.js prints 'Neutralized … EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS' in its checklist.",
-          "With the flag set to 'true' locally, the company/office signup and tabs render normally.",
+          "A production build (with the latest OTA) offers company and office at signup and in 'add identity'.",
+          "Opening a company or office persona shows its tabs, not 'coming soon'.",
+          "The OTA checklist shows both flags coming from build.production.env, not from a local .env.",
         ],
         ar: [
-          "نسخة المتجر/TestFlight/Play تعرض 'قريباً' للشركة والمكتب في شاشة الاختيار الأولى وفي نافذة 'تغيير نوع الحساب' أثناء التسجيل.",
-          "فتح أي مسار (company) أو (office) في نسخة المتجر يعرض ComingSoonGate وليس تبويباً ناقصاً.",
-          "تحديث OTA المنشور عبر scripts/release-ota.js يطبع في قائمة التحقق 'Neutralized … EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS'.",
-          "عند ضبط المفتاح على 'true' محلياً تظهر شاشات تسجيل وتبويبات الشركة/المكتب بشكل طبيعي.",
+          "نسخة الإنتاج (مع آخر OTA) تعرض الشركة والمكتب عند التسجيل وفي 'إضافة هوية'.",
+          "فتح هوية شركة أو مكتب يعرض تبويباتها وليس 'قريباً'.",
+          "قائمة تحقق OTA تُظهر أن المفتاحين من build.production.env وليس من ملف .env محلي.",
         ],
       },
       testScenarios: {
         en: [
-          "On a production build, tap Company then Office on the selection screen — both show the coming-soon state.",
-          "Deep-link to a company route on a production build — the gate appears.",
-          "Run the OTA checklist (without confirming) and read the neutralized-keys line.",
+          "On a store build after the OTA: sign up as a company; switch to it — company tabs open.",
+          "Switch to an office persona — office tabs open.",
         ],
         ar: [
-          "في نسخة الإنتاج اضغط الشركة ثم المكتب في شاشة الاختيار — كلاهما يعرض حالة 'قريباً'.",
-          "افتح رابطاً عميقاً لمسار شركة في نسخة الإنتاج — تظهر شاشة القفل.",
-          "شغّل قائمة تحقق OTA (دون التأكيد) واقرأ سطر المفاتيح المحيَّدة.",
+          "على نسخة المتجر بعد OTA: سجّل كشركة ثم بدّل إليها — تفتح تبويبات الشركة.",
+          "بدّل إلى هوية مكتب — تفتح تبويبات المكتب.",
         ],
       },
-      updatedIn: "feat/offices",
+      updatedIn: "chore/enable-business-accounts",
     },
     {
       id: "mobile-guest-guard",
@@ -484,19 +480,19 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "Verify More → switch identity → 'إضافة هوية جديدة' lists individual, company and office (company and office only when EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is on — hidden in store builds), marks each type the account already has as 'موجود' and doesn't open it, and opens the onboarding screen for the others. One of each type per account, as the API enforces (see api-persona-rules).",
-        ar: "تحقق من أن المزيد ← تبديل الهوية ← 'إضافة هوية جديدة' تعرض الفرد والشركة والمكتب (الشركة والمكتب فقط عند تفعيل EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS — مخفية في نسخ المتاجر)، وتعلّم كل نوع موجود في الحساب بـ'موجود' ولا تفتحه، وتفتح شاشة الإضافة للبقية. هوية واحدة من كل نوع لكل حساب كما تفرض الواجهة البرمجية (راجع api-persona-rules).",
+        en: "Verify More → switch identity → 'إضافة هوية جديدة' lists individual, company and office (company and office are live in every build — see mobile-company-office-gate), marks each type the account already has as 'موجود' and doesn't open it, and opens the onboarding screen for the others. One of each type per account, as the API enforces (see api-persona-rules).",
+        ar: "تحقق من أن المزيد ← تبديل الهوية ← 'إضافة هوية جديدة' تعرض الفرد والشركة والمكتب (الشركة والمكتب مفعّلان في كل النسخ — راجع mobile-company-office-gate)، وتعلّم كل نوع موجود في الحساب بـ'موجود' ولا تفتحه، وتفتح شاشة الإضافة للبقية. هوية واحدة من كل نوع لكل حساب كما تفرض الواجهة البرمجية (راجع api-persona-rules).",
       },
       acceptanceCriteria: {
         en: [
           "With only an individual persona: individual shows 'موجود'; company and office open their forms.",
           "After adding a company, reopening the screen shows company as 'موجود' too.",
-          "In a store build, only the individual option is listed.",
+          "A store build lists all three types.",
         ],
         ar: [
           "مع هوية فرد فقط: الفرد يعرض 'موجود'؛ والشركة والمكتب يفتحان نموذجيهما.",
           "بعد إضافة شركة، إعادة فتح الشاشة تعرض الشركة 'موجود' أيضاً.",
-          "في نسخة المتجر يظهر خيار الفرد فقط.",
+          "نسخة المتجر تعرض الأنواع الثلاثة.",
         ],
       },
       testScenarios: {

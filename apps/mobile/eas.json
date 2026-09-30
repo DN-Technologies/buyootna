@@ -30,7 +30,9 @@
         "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiY29uc3R5b3Vzc2VmIiwiYSI6ImNtcnZ5eDFwajAxZTQyeHFydjQ2bnN6eGMifQ.GPt8Mt8KoB4Zf27dcZZv9g",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "104779825495-f3h8u785nsrrodidi3k61ndknbs76i9l.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "104779825495-q8ai8v7c8ptrm1hrfr3k7tbdbtnrsjbc.apps.googleusercontent.com",
-        "SENTRY_ALLOW_FAILURE": "true"
+        "SENTRY_ALLOW_FAILURE": "true",
+        "EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS": "true",
+        "EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS": "true"
       }
     }
   },
