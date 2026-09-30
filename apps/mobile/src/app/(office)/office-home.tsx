@@ -1,19 +1,27 @@
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import {
-  Image,
-  RefreshControl,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { useCallback, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HomeSearchIcon, NotificationIcon } from '@/assets/icons/home/header';
-import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
+import {
+  MarketPropertyCard,
+  OfficeConversationCard,
+  OfficeGroupCard,
+  OfficeHomeHeader,
+  OfficeListingCard,
+  OfficeSectionHeader,
+  OfficeServiceCard,
+  OfficeStatsGrid,
+} from '@/features/office/components/home';
+import {
+  MARKET_PROPERTIES_MOCK,
+  OFFICE_CONVERSATIONS_MOCK,
+  OFFICE_GROUPS_MOCK,
+  OFFICE_LISTINGS_MOCK,
+  OFFICE_SERVICES_MOCK,
+  OFFICE_STATS_MOCK,
+} from '@/features/office/mockData';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
@@ -24,8 +32,10 @@ export default function OfficeHomeScreen() {
   const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
   const unreadCount = useUnreadNotificationsCount();
+  const [refreshing, setRefreshing] = useState(false);
 
-  const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
+  const officeName = displayName || 'الفيروز';
+  const officeLogo = avatarUrl || undefined;
 
   useFocusEffect(
     useCallback(() => {
@@ -35,235 +45,194 @@ export default function OfficeHomeScreen() {
     }, [refreshProfile, token])
   );
 
-  if (!activeIdentity) {
-    return (
-      <SafeAreaView className="flex-1 bg-[#F8FAFC]">
-        <ProfileHomeSkeleton />
-      </SafeAreaView>
-    );
-  }
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    if (token) {
+      await refreshProfile();
+    }
+    setRefreshing(false);
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FAFC]">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 130 }}
         refreshControl={
-          <RefreshControl
-            refreshing={false}
-            onRefresh={() => {
-              refreshProfile();
-            }}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        <ContentContainer className="px-5">
-          {/* --- 1. Top Header Bar --- */}
-          <View className="flex-row items-center justify-between pb-6 pt-4">
-            {/* Right Profile Info: Greeting, Name & Logo */}
-            <View className="flex-row items-center gap-3">
-              <View className="h-12 w-12 overflow-hidden rounded-full border border-gray-200 bg-white">
-                <Image
-                  source={{ uri: logoUrl }}
-                  className="h-full w-full"
-                  resizeMode="cover"
-                />
-              </View>
-              <View>
-                <Text
-                  className="font-cairo text-[13px] text-[#64748B]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  مرحبا بك!
-                </Text>
-                <View className="flex-row items-center gap-1.5">
-                  {isVerified && (
-                    <MaterialIcons name="verified" size={16} color="#3B82F6" />
-                  )}
-                  <Text className="font-cairo-semibold text-[16px] leading-[22px] text-[#111111]">
-                    {displayName}
-                  </Text>
-                </View>
-              </View>
-            </View>
+        <ContentContainer className="px-4">
+          {/* 1. Header */}
+          <OfficeHomeHeader
+            displayName={officeName}
+            logoUrl={officeLogo}
+            isVerified={isVerified ?? true}
+            unreadNotificationsCount={unreadCount}
+            onPressNotifications={() => router.push('/notification-list')}
+          />
 
-            {/* Left Actions: Search & Notifications */}
-            <View className="flex-row items-center">
-              <TouchableOpacity
-                onPress={() => router.push('/notification-list')}
-                className="relative h-10 w-10 items-center justify-center rounded-full"
-              >
-                <NotificationIcon size={24} color="#111111" />
-                {unreadCount > 0 && (
-                  <View className="absolute left-2 top-2 h-2.5 w-2.5 rounded-full border border-white bg-[#EF4444]" />
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push('/search')}
-                className="h-10 w-10 items-center justify-center rounded-full"
-              >
-                <HomeSearchIcon size={20} color="#111111" />
-              </TouchableOpacity>
-            </View>
+          {/* 2. 2x2 Stats Grid */}
+          <View className="mt-2">
+            <OfficeStatsGrid
+              stats={OFFICE_STATS_MOCK}
+              onPressActiveListings={() =>
+                router.push('/(office)/office-properties')
+              }
+              onPressActiveServices={() =>
+                router.push('/(office)/office-properties')
+              }
+              onPressNewMessages={() => router.push('/(office)/office-chats')}
+            />
           </View>
 
-          {/* --- 2. 2x2 Stats Grid --- */}
-          <View className="gap-3">
-            {/* Row 1 */}
-            <View className="flex-row gap-3">
-              {/* Active Listings (Right) */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => router.push('/(office)/office-properties')}
-                style={{ flex: 1, flexBasis: 0 }}
-                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-              >
-                <View className="items-start">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-                    <Ionicons
-                      name="checkmark-circle-outline"
-                      size={22}
-                      color="#15304D"
-                    />
-                  </View>
-                </View>
-                <View className="items-start">
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    3
-                  </Text>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    الإعلانات النشطة
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Active Services (Left) */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => router.push('/(office)/office-properties')}
-                style={{ flex: 1, flexBasis: 0 }}
-                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-              >
-                <View className="items-start">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-                    <Feather name="headphones" size={20} color="#15304D" />
-                  </View>
-                </View>
-                <View className="items-start">
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    3
-                  </Text>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    خدمات نشطة
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Row 2 */}
-            <View className="flex-row gap-3">
-              {/* Views (Right) */}
-              <View
-                style={{ flex: 1, flexBasis: 0 }}
-                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-              >
-                <View className="items-start">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-                    <Ionicons name="eye-outline" size={20} color="#15304D" />
-                  </View>
-                </View>
-                <View className="items-start">
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    700+
-                  </Text>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    المشاهدات
-                  </Text>
-                </View>
-              </View>
-
-              {/* New Messages (Left) */}
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => router.push('/(office)/office-chats')}
-                style={{ flex: 1, flexBasis: 0 }}
-                className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-              >
-                <View className="items-start">
-                  <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-                    <Ionicons
-                      name="chatbox-outline"
-                      size={20}
-                      color="#15304D"
-                    />
-                  </View>
-                </View>
-                <View className="items-start">
-                  <Text
-                    className="font-cairo-semibold text-[14px] text-[#15A72B]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    5
-                  </Text>
-                  <Text
-                    className="font-cairo-medium text-[14px] text-[#111111]"
-                    style={{ writingDirection: 'rtl' }}
-                  >
-                    الرسائل الجديدة
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* --- 3. Trial Banner --- */}
-          <View className="mt-4 rounded-md border border-[#ECECEC] bg-[#F9FAFE] p-4">
-            <View className="flex-row items-start justify-between">
-              <View className="flex-1 items-start">
-                <Text
-                  className="font-cairo-bold text-[15px] leading-[22px] text-[#111111]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  أنت تستخدم النسخة التجريبية
-                </Text>
-                <Text
-                  className="mt-1 font-cairo-medium text-[12px] text-[#6B6A6A]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  يتبقى 14 يومًا للاستمتاع بجميع المميزات.
-                </Text>
-              </View>
-              <Text className="text-2xl">🎉</Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={() => router.push('/plans')}
-              className="mt-4 flex-row justify-end"
-            >
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">
-                استعرض الباقات
-              </Text>
-            </TouchableOpacity>
+          {/* 3. Section: اعلاناتي (My Listings) */}
+          <View className="mt-6">
+            <OfficeSectionHeader
+              title="اعلاناتي"
+              actionText="عرض الكل"
+              onPressAction={() => router.push('/(office)/office-properties')}
+            />
           </View>
         </ContentContainer>
+
+        {/* Horizontal Listings Scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 12,
+            flexDirection: 'row-reverse',
+          }}
+          className="mt-1"
+        >
+          {OFFICE_LISTINGS_MOCK.map((listing) => (
+            <OfficeListingCard
+              key={listing.id}
+              listing={listing}
+              onPress={() => router.push('/(office)/office-properties')}
+              onManagePress={() => router.push('/(office)/office-properties')}
+            />
+          ))}
+        </ScrollView>
+
+        {/* 4. Section: الخدمات النشطة (Active Services) */}
+        <ContentContainer className="mt-6 px-4">
+          <OfficeSectionHeader
+            title="الخدمات النشطة"
+            actionText="عرض الكل"
+            onPressAction={() => router.push('/(office)/office-properties')}
+          />
+        </ContentContainer>
+
+        {/* Horizontal Services Scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 12,
+            flexDirection: 'row-reverse',
+          }}
+          className="mt-1"
+        >
+          {OFFICE_SERVICES_MOCK.map((service) => (
+            <OfficeServiceCard
+              key={service.id}
+              service={service}
+              onPress={() => router.push('/(office)/office-properties')}
+              onActionPress={() => router.push('/(office)/office-properties')}
+            />
+          ))}
+        </ScrollView>
+
+        {/* 5. Section: عقارات قد تهمك (Market Properties) */}
+        <ContentContainer className="mt-6 px-4">
+          <OfficeSectionHeader
+            title="عقارات قد تهمك"
+            actionText="عرض الكل"
+            onPressAction={() => router.push('/search')}
+          />
+        </ContentContainer>
+
+        {/* Horizontal Market Properties Scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 12,
+            flexDirection: 'row-reverse',
+          }}
+          className="mt-1"
+        >
+          {MARKET_PROPERTIES_MOCK.map((property) => (
+            <MarketPropertyCard
+              key={property.id}
+              property={property}
+              onPress={() => router.push('/search')}
+            />
+          ))}
+        </ScrollView>
+
+        {/* 6. Section: أحدث المحادثات (Recent Conversations) */}
+        <ContentContainer className="mt-6 px-4">
+          <OfficeSectionHeader
+            title="أحدث المحادثات"
+            actionText="عرض الكل"
+            onPressAction={() => router.push('/(office)/office-chats')}
+          />
+        </ContentContainer>
+
+        {/* Horizontal Conversations Scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 12,
+            flexDirection: 'row-reverse',
+          }}
+          className="mt-1"
+        >
+          {OFFICE_CONVERSATIONS_MOCK.map((conversation) => (
+            <OfficeConversationCard
+              key={conversation.id}
+              conversation={conversation}
+              onPress={() => router.push('/(office)/office-chats')}
+            />
+          ))}
+        </ScrollView>
+
+        {/* 7. Section: نشاط المجموعات (Group Activity) */}
+        <ContentContainer className="mt-6 px-4">
+          <OfficeSectionHeader
+            title="نشاط المجموعات"
+            actionText="عرض الكل"
+            onPressAction={() => router.push('/(office)/office-chats')}
+          />
+        </ContentContainer>
+
+        {/* Horizontal Group Activity Scroll */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            gap: 12,
+            flexDirection: 'row-reverse',
+          }}
+          className="mt-1"
+        >
+          {OFFICE_GROUPS_MOCK.map((group) => (
+            <OfficeGroupCard
+              key={group.id}
+              group={group}
+              onPress={() => router.push('/(office)/office-chats')}
+            />
+          ))}
+        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );

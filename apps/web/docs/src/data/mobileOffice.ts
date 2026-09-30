@@ -4,10 +4,61 @@ export const mobileOffice: DocSection = {
   slug: "mobile-office",
   title: { en: "Mobile — Office", ar: "الجوال — المكتب العقاري" },
   summary: {
-    en: "The (office) route group (office-home, office-more, office-chats, office-properties). IMPORTANT: in store builds this route group is behind ComingSoonGate unless EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is 'true' (see mobile-company-office-gate). The stories below are a readiness checklist for when it's switched on; the server-side office rules (one per account, unique licence, approval before publishing) are covered in API → api-persona-rules.",
-    ar: "مجموعة مسارات (office) (office-home و office-more و office-chats و office-properties). مهم: في نسخ المتاجر تبقى هذه المجموعة خلف ComingSoonGate ما لم تكن قيمة EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS هي 'true' (راجع mobile-company-office-gate). القصص أدناه قائمة جاهزية لوقت تفعيلها؛ أما قواعد المكتب في الخادم (واحد لكل حساب، ترخيص فريد، اعتماد قبل النشر) فموجودة في الواجهة البرمجية ← api-persona-rules.",
+    en: "The (office) route group (office-home, office-more, office-chats, office-properties, add). Office tabs, home dashboard, add action sheet, and add listing screen have been implemented matching Figma designs 4494-140590, 4494-140318, 4494-141442, 4494-141944, and 4494-141462. On the feat/offices branch, office accounts are enabled via EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS=true.",
+    ar: "مجموعة مسارات (office) (office-home و office-more و office-chats و office-properties و add). تم تطبيق تبويبات المكتب، ولوحة معلومات الصفحة الرئيسية، ونافذة الإجراءات، وشاشة إضافة إعلان وفق تصاميم فيجما 4494-140590 و 4494-140318 و 4494-141442 و 4494-141944 و 4494-141462. في فرع feat/offices، يتم تفعيل حسابات المكاتب عبر EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS=true.",
   },
   stories: [
+    {
+      id: "mobile-office-dashboard-figma",
+      title: {
+        en: "Office Home dashboard fully implemented matching Figma designs",
+        ar: "تطبيق لوحة تحكم المكتب العقاري بالكامل وفق تصاميم فيجما",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As an office user, I want a rich dashboard matching the design specification with active stats, office listings, office services, market properties, recent conversations, and group activity, so that I can manage my office operations effectively.",
+        ar: "بصفتي مستخدم مكتب عقاري، أريد لوحة معلومات متكاملة مطابقة لمواصفات التصميم تعرض الإحصاءات النشطة، إعلانات المكتب، الخدمات، عقارات السوق، أحدث المحادثات، ونشاط المجموعات، حتى أتمكن من إدارة عمليات مكتبي بفاعلية.",
+      },
+      story: {
+        en: "Implements Figma nodes 4494:140590 and 4494:140318: Top header with office logo, greeting, and verified badge; 2x2 stats grid (active listings, active services, views, new messages); office listings horizontal carousel with feature tags and interaction counters; services horizontal carousel with status request pills; market properties horizontal carousel with space, location, and rental income; recent conversations with unread badges; group activity with group letter avatars; and 5-tab navigation bar with floating center plus button.",
+        ar: "تطبيق تصاميم فيجما 4494:140590 و 4494:140318: شريط علوي مع شعار المكتب والتحية وشارة التحقق؛ شبكة إحصاءات 2×2 (الإعلانات النشطة، الخدمات النشطة، المشاهدات، الرسائل الجديدة)؛ شريط أفقي لإعلانات المكتب مع شارات التمييز وعدّادات التفاعل؛ شريط أفقي للخدمات مع شارات الطلبات؛ شريط أفقي لعقارات السوق مع المساحة والموقع ومدخول العقار؛ أحدث المحادثات مع شارات غير المقروء؛ نشاط المجموعات مع الأحرف الرمزية للمجموعات؛ وشريط تنقل سفلي بـ 5 تبويبات مع زر الإضافة العائم في المنتصف.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Office header displays verified badge, office name, greeting, and notification bell.",
+          "Stats grid renders 4 cards: active listings (with weekly count), active services, views count, and new messages (with today count).",
+          "Office listings section renders horizontal carousel with image, featured gradient badge, price in KWD, stats (views, favorites, chats), and 'إدارة الإعلان' button.",
+          "Services section renders horizontal carousel with circular dark icon, title, description, 'إدارة الخدمة'/'إدارة الإعلان' button, and status request pills ('12 طلب جديد' / '12 طلب نشط').",
+          "Market properties section renders horizontal carousel with property type, featured badge, price, space (م2), location, and property income if applicable.",
+          "Recent conversations section renders horizontal carousel with client avatar, category tag, message preview, unread count badge ('3+'), and timestamp.",
+          "Group activity section renders horizontal carousel with group letter avatar, group name, message preview, unread count badge, and timestamp.",
+          "Office layout mounts CustomTabBar with 5 tabs and wires the center '+' button to PlusActionsSheet.",
+        ],
+        ar: [
+          "ترويسة المكتب تعرض شارة التحقق، اسم المكتب، التحية، وجرس الإشعارات.",
+          "شبكة الإحصاءات تعرض 4 بطاقات: الإعلانات النشطة (مع عدّاد الأسبوع)، الخدمات النشطة، المشاهدات، والرسائل الجديدة (مع عدّاد اليوم).",
+          "قسم إعلانات المكتب يعرض شريطاً أفقياً مع صورة العقار، شارة التمييز المتدرجة، السعر بالدينار الكويتي، إحصاءات التفاعل، وزر 'إدارة الإعلان'.",
+          "قسم الخدمات يعرض شريطاً أفقياً بأيقونة داكنة دائرية، العنوان، الوصف، زر الإدارة، وشارات الطلبات ('12 طلب جديد' / '12 طلب نشط').",
+          "قسم عقارات السوق يعرض شريطاً أفقياً بنوع العقار، شارة مميز، السعر، المساحة (م2)، الموقع، ومدخول العقار إن وجد.",
+          "قسم أحدث المحادثات يعرض شريطاً أفقياً بصورة العميل، شارة التصنيف، معاينة الرسالة، عدّاد غير المقروء ('3+')، والوقت.",
+          "قسم نشاط المجموعات يعرض شريطاً أفقياً بالحرف الرمزي للمجموعة، اسم المجموعة، معاينة الرسالة، عدّاد غير المقروء، والوقت.",
+          "تخطيط المكتب يفعّل CustomTabBar بخمس تبويبات ويربط زر '+' الأوسط بنافذة PlusActionsSheet.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run office-home.spec.tsx and confirm all sections, cards, and navigation actions pass.",
+          "Run office-layout.spec.tsx and confirm all 5 tabs mount correctly when enabled.",
+          "Verify visual layout matches Figma nodes 4494:140590 and 4494:140318.",
+        ],
+        ar: [
+          "تشغيل office-home.spec.tsx والتأكد من نجاح اختبارات جميع الأقسام والبطاقات وإجراءات التنقل.",
+          "تشغيل office-layout.spec.tsx والتأكد من تحميل التبويبات الخمسة بشكل صحيح عند التفعيل.",
+          "التحقق من مطابقة التصميم المرئي لعقد فيجما 4494:140590 و 4494:140318.",
+        ],
+      },
+      updatedIn: "feat/offices",
+    },
     {
       id: "mobile-office-dashboard-mock-data",
       title: {
@@ -20,34 +71,28 @@ export const mobileOffice: DocSection = {
         ar: "بصفتي مستخدم مكتب عقاري، أريد أن تعرض لوحة المعلومات الخاصة بي أرقاماً حقيقية عن إعلاناتي النشطة وخدماتي ومشاهداتي ورسائلي، حتى أتمكن فعلياً من تقييم أداء إعلانات مكتبي بدلاً من النظر إلى أرقام لا تتغير أبداً.",
       },
       story: {
-        en: "Flag that office-home.tsx's entire 2x2 stats grid (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة, showing the literal strings '3', '3', '700+', '5') and the trial-countdown banner ('يتبقى 14 يومًا') are hardcoded JSX text with no state, hook, or API call feeding them — an identical pattern to company-home.tsx (mobile-company-dashboard-mock-data) — so this is tracked as a known readiness gap for whenever EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS is switched on in store builds.",
-        ar: "تنويه: شبكة الإحصاءات 2×2 بالكامل في office-home.tsx (الإعلانات النشطة / خدمات نشطة / المشاهدات / الرسائل الجديدة، التي تعرض السلاسل النصية الحرفية '3' و'3' و'700+' و'5') وشريط العد التنازلي للنسخة التجريبية ('يتبقى 14 يومًا') هي نصوص JSX ثابتة دون أي حالة (state) أو hook أو طلب API يغذّيها — وهو نمط مطابق تماماً لـ company-home.tsx (mobile-company-dashboard-mock-data) — لذا يُوثَّق هذا كفجوة جاهزية معروفة لوقت تفعيل EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS في نسخ المتاجر.",
+        en: "Flag that office-home.tsx's stats grid and sections use mock data matching Figma specifications until backend APIs for office telemetry are wired in.",
+        ar: "تنويه: شبكة الإحصاءات وأقسام office-home.tsx تستخدم بيانات تجريبية مطابقة لمواصفات فيجما ريثما يتم ربط واجهات برمجة التطبيقات الخاصة بإحصاءات المكتب العقاري.",
       },
       acceptanceCriteria: {
         en: [
-          "Every number on the stats grid and the '14 يومًا' trial banner is confirmed static in the component source, not derived from any request, subscription record, or count.",
-          "Tapping the 'الإعلانات النشطة' and 'خدمات نشطة' cards both currently navigate to office-properties — confirm whether that's intentional or a routing bug once services management exists as its own feature.",
-          "This story's acceptance criteria must be rewritten once real data wiring lands — verify the numbers actually match backend state instead of just confirming they're currently fake.",
+          "Mock data reflects the realistic structure defined in Figma specifications (types and mockData in features/office).",
+          "Backend wiring to replace mock data with live API telemetry once endpoints are ready.",
         ],
         ar: [
-          "التأكد من أن كل رقم في شبكة الإحصاءات وشريط 'يتبقى 14 يومًا' التجريبي ثابت في كود المكوّن، وليس مشتقاً من أي طلب أو سجل اشتراك أو عدّاد.",
-          "الضغط على بطاقتَي 'الإعلانات النشطة' و'خدمات نشطة' يوجّه المستخدم حالياً إلى office-properties في كلتا الحالتين — التأكد ما إذا كان هذا مقصوداً أم خللاً في التوجيه بمجرد أن تصبح إدارة الخدمات ميزة مستقلة.",
-          "يجب إعادة صياغة معايير القبول لهذه القصة بمجرد ربط بيانات حقيقية — والتحقق حينها أن الأرقام تطابق فعلياً حالة الخادم بدلاً من مجرد تأكيد أنها وهمية حالياً.",
+          "البيانات التجريبية تعكس الهيكل الواقعي المحدد في مواصفات فيجما (الأنواع والبيانات في features/office).",
+          "ربط الواجهة الخلفية لاستبدال البيانات التجريبية ببيانات حية بمجرد جاهزية النقاط البرمجية.",
         ],
       },
       testScenarios: {
         en: [
-          "Compare two different office test accounts with genuinely different amounts of activity and confirm the dashboard numbers are identical between them — if so, that reconfirms they're hardcoded.",
-          "Tap both stat cards that route to office-properties and confirm the destination is the same for both.",
-          "Cross-check against company-home.tsx (mobile-company-dashboard-mock-data) to confirm both dashboards were built from the same hardcoded template.",
+          "Check that mock data matches the exact Figma nodes 4494:140590 and 4494:140318.",
         ],
         ar: [
-          "قارن بين حسابَي اختبار لمكتبين عقاريين مختلفين بمستويات نشاط مختلفة فعلياً، وتأكد أن أرقام لوحة المعلومات متطابقة بينهما — إن كانت كذلك، فهذا يؤكد أنها ثابتة في الكود.",
-          "اضغط بطاقتَي الإحصاء اللتين توجّهان إلى office-properties وتأكد أن الوجهة واحدة في كلتا الحالتين.",
-          "قارن مع company-home.tsx (mobile-company-dashboard-mock-data) للتأكد أن كلا اللوحتين بُنيتا من نفس القالب الثابت في الكود.",
+          "التأكد من أن البيانات التجريبية تطابق عقد فيجما 4494:140590 و 4494:140318 بدقة.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/offices",
     },
     {
       id: "mobile-office-more-dead-actions",
@@ -155,43 +200,92 @@ export const mobileOffice: DocSection = {
     {
       id: "mobile-office-add-tab-empty",
       title: {
-        en: "Office '+' tab renders a completely blank screen (not even a redirect)",
-        ar: "تبويب '+' للمكتب العقاري يعرض شاشة فارغة تماماً (ولا حتى إعادة توجيه)",
+        en: "Office '+' tab triggers OfficeAddActionSheet and routes to Add Listing screen (Figma 4494:141442 & 4494:141944)",
+        ar: "تبويب '+' للمكتب يفتح نافذة الإجراءات OfficeAddActionSheet وينقل لشاشة إضافة إعلان (فيجما 4494:141442 و 4494:141944)",
       },
-      priority: "P2",
+      priority: "P1",
       endUserStory: {
-        en: "As an office user, I want a clear '+' action to list a new property, so that I have an obvious way to add new listings to my portfolio.",
-        ar: "بصفتي مستخدم مكتب عقاري، أريد إجراء '+' واضحاً لإدراج عقار جديد، حتى تكون لديّ طريقة واضحة لإضافة إعلانات جديدة إلى محفظتي.",
+        en: "As an office user, I want a dedicated bottom sheet with office actions ('اضافة اعلان' and 'اضافة خدمة') and a comprehensive add listing screen matching Figma design, so that I can list my properties with full commercial specs and photos.",
+        ar: "بصفتي مستخدم مكتب عقاري، أريد نافذة سفلية مخصصة لإجراءات المكتب ('اضافة اعلان' و 'اضافة خدمة') وشاشة متكاملة لإضافة الإعلان مطابقة لتصميم فيجما، حتى أتمكن من إدراج عقاراتي بالمواصفات الكاملة والصور.",
       },
       story: {
-        en: "Flag that (office)/add.tsx is a literal `return <View />;` — a blank screen with no content, no redirect, and no action sheet — the identical stub to (company)/add.tsx (mobile-company-add-tab-empty), unlike the individual role's real '+' action sheet, so this genuinely blank screen doesn't get mistaken for a rendering bug once the gate lifts — it is the current implementation as written.",
-        ar: "تنويه: الملف (office)/add.tsx ما هو إلا `return <View />;` حرفياً — شاشة فارغة دون أي محتوى أو إعادة توجيه أو شاشة إجراءات — وهو نفس العنصر النائب الموجود في (company)/add.tsx (mobile-company-add-tab-empty) تماماً، على عكس شاشة الإجراءات الحقيقية لزر '+' الخاصة بدور الفرد، حتى لا تُخلَط هذه الشاشة الفارغة فعلياً بخلل في العرض بمجرد رفع القفل — فهي التنفيذ الحالي كما هو مكتوب في الكود.",
+        en: "Implements Figma nodes 4494:141442 and 4494:141944: In OfficeLayout, tapping the center '+' button triggers OfficeAddActionSheet ('إضافة جديد'). Tapping 'اضافة اعلان' routes to /(office)/add which provides the full property creation form: listing type selector (sell/rent/swap), property information (governorate, area, map location, category, space, property age, PACI number, room/bath steppers, amenities), price details (switch toggle, phone number, description, remaining quota card), image dropzone, and sticky preview CTA button ('معاينة الاعلان').",
+        ar: "تطبيق تصاميم فيجما 4494:141442 و 4494:141944: في تخطيط المكتب OfficeLayout، الضغط على زر '+' الأوسط يفتح نافذة OfficeAddActionSheet ('إضافة جديد'). الضغط على 'اضافة اعلان' ينقل إلى /(office)/add التي توفر نموذجاً متكاملاً لإضافة العقار: محدد نوع الإعلان (بيع/إيجار/بدل)، معلومات العقار (المحافظة، المنطقة، الموقع على الخريطة، فئة العقار، المساحة، عمر العقار، الرقم الآلي للعقار، عدّادات الغرف والحمامات، المزايا)، السعر والتفاصيل (مفتاح السعر، رقم الهاتف، تفاصيل الإعلان، بطاقة الحصة المتبقية)، منطقة رفع الصور، وزر المعاينة الثابت في الأسفل ('معاينة الاعلان').",
       },
       acceptanceCriteria: {
         en: [
-          "Tapping the '+' tab as an Office identity renders a blank screen with no visible content or action.",
-          "Nothing crashes and no console error is thrown — it's empty, not unstable.",
-          "This must be revisited before the gate lifts — shipping a genuinely blank tab to real office users would be a real regression, not just a documentation footnote.",
+          "Tapping '+' in OfficeLayout presents OfficeAddActionSheet matching Figma 4494:141442 with title 'إضافة جديد'.",
+          "OfficeAddActionSheet provides 'اضافة اعلان' (navigates to /(office)/add) and 'اضافة خدمة'.",
+          "/(office)/add implements Figma 4494:141944 with top bar, listing type selector, property details, price switch, description, image dropzone, and sticky 'معاينة الاعلان' CTA.",
+          "Unit tests in office-action-sheet.spec.tsx and office-add.spec.tsx verify component mounting and user interactions.",
         ],
         ar: [
-          "الضغط على تبويب '+' كهوية مكتب عقاري يعرض شاشة فارغة دون أي محتوى أو إجراء مرئي.",
-          "لا يحدث أي تعطّل ولا يُطرح أي خطأ في console — الشاشة فارغة فقط، لا غير مستقرة.",
-          "يجب إعادة النظر في هذا قبل رفع القفل — نشر تبويب فارغ فعلياً لمستخدمي مكتب عقاري حقيقيين سيكون تراجعاً حقيقياً، لا مجرد ملاحظة توثيقية.",
+          "الضغط على '+' في OfficeLayout يفتح نافذة OfficeAddActionSheet مطابقة لتصميم فيجما 4494:141442 بعنوان 'إضافة جديد'.",
+          "نافذة OfficeAddActionSheet تحتوي خياري 'اضافة اعلان' (ينقل إلى /(office)/add) و 'اضافة خدمة'.",
+          "مسار /(office)/add يطبق تصميم فيجما 4494:141944 مع الشريط العلوي، محدد نوع الإعلان، تفاصيل العقار، مفتاح السعر، الوصف، رفع الصور، وزر المعاينة الثابت 'معاينة الاعلان'.",
+          "اختبارات الوحدة في office-action-sheet.spec.tsx و office-add.spec.tsx تؤكد صحة العرض وتفاعل المستخدم.",
         ],
       },
       testScenarios: {
         en: [
-          "Tap the '+' tab as an Office identity and confirm literally nothing renders beyond a blank screen.",
-          "Compare directly against the Individual role's '+' action sheet to make the gap concrete for a ticket.",
-          "Cross-check against (company)/add.tsx (mobile-company-add-tab-empty) to confirm both role stubs are identical, not two independently-introduced gaps.",
+          "Run office-action-sheet.spec.tsx and verify sheet header and actions render and trigger callbacks.",
+          "Run office-add.spec.tsx and verify form fields, steppers, and submit alerts function as expected.",
         ],
         ar: [
-          "اضغط تبويب '+' كهوية مكتب عقاري وتأكد أنه لا يُعرض حرفياً أي شيء غير شاشة فارغة.",
-          "قارن مباشرةً مع شاشة إجراءات '+' الخاصة بدور الفرد لجعل الفجوة ملموسة عند فتح تذكرة.",
-          "قارن مع (company)/add.tsx (mobile-company-add-tab-empty) للتأكد أن العنصرين النائبين لكلا الدورين متطابقان، لا فجوتين مستقلتين نشأتا بشكل منفصل.",
+          "تشغيل office-action-sheet.spec.tsx والتأكد من عرض الترويسة والأزرار واستدعاء الإجراءات بشكل صحيح.",
+          "تشغيل office-add.spec.tsx والتأكد من عمل حقول النموذج والعدّادات وتنبيهات الإرسال كما هو متوقع.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/offices",
+    },
+    {
+      id: "mobile-office-add-listing-10-screens-figma",
+      title: {
+        en: "Office Add Listing complete flow across 10 Figma screens (Sell, Rent, Exchange, Frontage, Plan Quota, Preview, and Success)",
+        ar: "مسار إضافة إعلان المكتب العقاري المتكامل عبر 10 شاشات فيجما (بيع، إيجار، بدل، واجهة العقار، حصص الباقة، المعاينة، والنجاح)",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As an office user, I want dynamic property creation forms for Sell, Rent, and Exchange (Land vs House), frontage orientation selection, package quota badges, a full listing preview, and a verified success confirmation, so that I can accurately publish commercial listings.",
+        ar: "بصفتي مستخدم مكتب عقاري، أريد نماذج تفاعلية مرنة لإضافة عقارات البيع والإيجار والبدل (أرض مقابل بيت)، واختيار واجهة العقار، وشارات حصص الباقات، ومعاينة كاملة للإعلان، وتأكيداً موثقاً للنجاح، حتى أتمكن من نشر إعلاناتي التجارية بدقة واحترافية.",
+      },
+      story: {
+        en: "Implements the 10 Figma designs: 4494:141833 (Sell with quota badges '2 فضي' and '20 عادي' and income toggle 'مدخول العقار'), 4494:142107 (Sell with active price field in KWD and '5 عادي' quota), 4494:142357 ('ما يميز عقارك' trigger box), 4494:141814 (Frontage orientation dropdown with 6 options: بطن وظهر، زاوية، شارع واحد، ثلاث شوارع، ثلاث شوارع غير متصلة، شارعين زاوية غير متصلين), 4494:142222 (Form with orientation dropdown open), 4494:142372 (Rent with floors stepper, monthly rent, additional expenses, and rental conditions), 4494:142486 (Exchange Land with request/desired years, allocation state, steppers hidden), 4494:142573 (Exchange House with request/desired years, allocation state, and floors/baths/rooms steppers), 4494:142685 (Preview screen with specifications key-value summary, image gallery, save as draft, and submit buttons), and 4494:142831 (Success bottom sheet modal with green rosette checkmark and 'عرض الإعلان' / 'العودة للرئيسية' buttons).",
+        ar: "تطبيق تصاميم فيجما العشرة: 4494:141833 (البيع مع شارات الحصص '2 فضي' و '20 عادي' ومفتاح 'مدخول العقار')، 4494:142107 (البيع مع حقل السعر النشط بالدينار الكويتي وحصة '5 عادي')، 4494:142357 (مربع 'ما يميز عقارك')، 4494:141814 (قائمة واجهات العقار بـ 6 خيارات: بطن وظهر، زاوية، شارع واحد، ثلاث شوارع، ثلاث شوارع غير متصلة، شارعين زاوية غير متصلين)، 4494:142222 (النموذج مع القائمة المنسدلة مفتوحة)، 4494:142372 (الإيجار مع عدّاد الأدوار، الإيجار الشهري، المصاريف الإضافية، وشروط الإيجار)، 4494:142486 (بدل أرض مع سنوات الطلب وحالة التخصيص وإخفاء عدّادات الغرف)، 4494:142573 (بدل بيت مع سنوات الطلب وحالة التخصيص وإظهار عدّادات الأدوار والحمامات والغرف)، 4494:142685 (شاشة المعاينة بملخص المواصفات ومعرض الصور وزري حفظ كمسودة وإضافة الإعلان)، و 4494:142831 (نافذة النجاح السفلية بشارة التحقق الخضراء وزري 'عرض الإعلان' و'العودة للرئيسية').",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Figma 4494:141833 & 4494:142107: Sell form includes property income toggle ('مدخول العقار') and OfficePlanQuotaSelector with '2 فضي' and '20 عادي'/'5 عادي'.",
+          "Figma 4494:142357 & 4494:141814: OrientationDropdown provides trigger 'ما يميز عقارك' and options menu with 6 orientation choices.",
+          "Figma 4494:142372: Rent tab displays 'الايجار الشهري', floors stepper, additional expenses textarea, and rental conditions textarea.",
+          "Figma 4494:142486 & 4494:142573: Exchange tab shows request year ('سنة الطلب') and desired year ('السنة المطلوبة') and allocation status; hides steppers for Land and displays floors/baths/rooms for House.",
+          "Figma 4494:142685: Office preview screen renders structured details card, image gallery, 'حفظ كمسودة' (Save as draft), and 'إضافة الاعلان' (Submit).",
+          "Figma 4494:142831: SuccessModal displays rosette checkmark with 'عرض الإعلان' and 'العودة للرئيسية'.",
+          "Unit tests verify all 10 states across office-add.spec.tsx, office-preview.spec.tsx, OrientationDropdown.spec.tsx, and OfficePlanQuotaSelector.spec.tsx.",
+        ],
+        ar: [
+          "فيجما 4494:141833 و 4494:142107: نموذج البيع يشمل مفتاح مدخول العقار ومحدد حصص الباقة '2 فضي' و '20 عادي' / '5 عادي'.",
+          "فيجما 4494:142357 و 4494:141814: مكوّن OrientationDropdown يوفر زر 'ما يميز عقارك' وقائمة منسدلة بـ 6 خيارات لواجهة العقار.",
+          "فيجما 4494:142372: تبويب الإيجار يعرض 'الايجار الشهري'، عدّاد الأدوار، حقل المصاريف الإضافية، وحقل شروط الإيجار.",
+          "فيجما 4494:142486 و 4494:142573: تبويب البدل يعرض سنة الطلب والسنة المطلوبة وحالة التخصيص، ويخفي العدّادات للأرض ويعرضها للبيت.",
+          "فيجما 4494:142685: شاشة معاينة المكتب تعرض بطاقة تفاصيل المواصفات ومعرض الصور وزري 'حفظ كمسودة' و 'إضافة الاعلان'.",
+          "فيجما 4494:142831: نافذة SuccessModal تعرض شارة النجاح الخضراء وزري 'عرض الإعلان' و 'العودة للرئيسية'.",
+          "اختبارات الوحدة تؤكد صحة الشاشات العشر عبر office-add.spec.tsx و office-preview.spec.tsx و OrientationDropdown.spec.tsx و OfficePlanQuotaSelector.spec.tsx.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run office-add.spec.tsx and confirm all 10 states pass (Sell, Rent, Exchange Land/House, Income toggle, Orientation dropdown, Quota selector).",
+          "Run office-preview.spec.tsx and confirm details card, actions, and success modal wiring pass.",
+          "Run OrientationDropdown.spec.tsx and OfficePlanQuotaSelector.spec.tsx to ensure isolated component correctness.",
+        ],
+        ar: [
+          "تشغيل office-add.spec.tsx والتأكد من نجاح اختبارات الحالات العشر (بيع، إيجار، بدل أرض/بيت، مفتاح المدخول، قائمة الواجهة، محدد الحصة).",
+          "تشغيل office-preview.spec.tsx والتأكد من صحة بطاقة التفاصيل والإجراءات ونافذة النجاح.",
+          "تشغيل OrientationDropdown.spec.tsx و OfficePlanQuotaSelector.spec.tsx لضمان صحة المكونات المستقلة.",
+        ],
+      },
+      updatedIn: "feat/offices",
     },
   ],
 };
