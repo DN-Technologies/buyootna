@@ -265,6 +265,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       showPrice: property.price !== null && property.price !== undefined,
       price: property.price ? property.price.toString() : '',
       monthlyRent: property.price ? property.price.toString() : '',
+      showIncome: !!property.propertyIncome,
+      propertyIncome: property.propertyIncome
+        ? property.propertyIncome.toString()
+        : '',
       requestYear: property.requestYear ? property.requestYear.toString() : '',
       requiredYear: property.requiredYear ? property.requiredYear.toString() : '',
       adDetails: property.description || '',
