@@ -81,6 +81,8 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
             : 'استثماري',
       categoryLabel: PROPERTY_CATEGORY_LABELS[p.category] || p.category,
       area: p.areaSize,
+      // Shown on the cards as 'مدخول العقار' (only when above 0)
+      propertyIncome: p.propertyIncome,
       beds: p.beds,
       baths: p.baths,
       location: p.location,
