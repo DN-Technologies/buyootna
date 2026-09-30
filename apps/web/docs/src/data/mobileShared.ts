@@ -16,8 +16,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "Confirm the Company/Office gate is controlled by EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: when it isn't 'true' (every store build and every OTA — eas.json doesn't set it and scripts/release-ota.js blanks it), business-auth.tsx and the (company)/(office) layouts render <ComingSoonGate /> and the account-type selection hides Company/Office. With the flag on (local dev only), the real company/office screens appear. Re-verify this on every release so a dev-only flag never leaks to production.",
-        ar: "تأكد من أن قفل الشركة/المكتب يتحكم به المفتاح EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: إذا لم تكن قيمته 'true' (كل نسخ المتاجر وكل تحديثات OTA — لا يضبطه eas.json ويفرّغه scripts/release-ota.js) فإن business-auth.tsx وتخطيطات (company)/(office) تعرض <ComingSoonGate /> وتُخفى خيارات الشركة/المكتب في شاشة اختيار نوع الحساب. عند تفعيله (في التطوير المحلي فقط) تظهر شاشات الشركة/المكتب الحقيقية. أعد التحقق في كل إصدار حتى لا يتسرب مفتاح التطوير إلى الإنتاج.",
+        en: "Confirm the Company/Office gate is controlled by EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: when it isn't 'true' (every production/TestFlight/Play build and every production OTA — eas.json's production profile doesn't set it and scripts/release-ota.js blanks it; the preview profile sets it and EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS to 'true' so internal testers' preview builds and preview OTAs show company and office), business-auth.tsx and the (company)/(office) layouts render <ComingSoonGate /> and the account-type selection hides Company/Office. With the flag on (local dev only), the real company/office screens appear. Re-verify this on every release so a dev-only flag never leaks to production.",
+        ar: "تأكد من أن قفل الشركة/المكتب يتحكم به المفتاح EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS: إذا لم تكن قيمته 'true' (كل نسخ الإنتاج وTestFlight وPlay وكل تحديثات OTA للإنتاج — لا يضبطه ملف الإنتاج في eas.json ويفرّغه scripts/release-ota.js؛ أما ملف preview فيضبطه مع EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS على 'true' لتظهر الشركة والمكتب في نسخ preview وتحديثاتها للمختبرين الداخليين) فإن business-auth.tsx وتخطيطات (company)/(office) تعرض <ComingSoonGate /> وتُخفى خيارات الشركة/المكتب في شاشة اختيار نوع الحساب. عند تفعيله (في التطوير المحلي فقط) تظهر شاشات الشركة/المكتب الحقيقية. أعد التحقق في كل إصدار حتى لا يتسرب مفتاح التطوير إلى الإنتاج.",
       },
       acceptanceCriteria: {
         en: [
@@ -45,7 +45,7 @@ export const mobileShared: DocSection = {
           "شغّل قائمة تحقق OTA (دون التأكيد) واقرأ سطر المفاتيح المحيَّدة.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/offices",
     },
     {
       id: "mobile-guest-guard",
