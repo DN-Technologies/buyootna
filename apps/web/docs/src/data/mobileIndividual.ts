@@ -881,5 +881,46 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/settings-missing-items",
     },
+    {
+      id: "mobile-change-password",
+      title: {
+        en: "Change password with an SMS code",
+        ar: "تغيير كلمة المرور برمز SMS",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify Settings → تغيير كلمة المرور: the form (current, new, confirm, 'تسجيل الخروج من جميع الأجهزة' — on by default) validates new ≠ current and confirm = new; submitting checks the current password first (POST /auth/change-password/request-otp with oldPassword) and only then sends the SMS code; the 'تحقق من الرقم' sheet shows the masked phone, six boxes and a 45 s resend; 'التحقق من الرمز' changes the password (PATCH /auth/change-password), signs out other devices if the switch is on, clears the form and returns. Accounts without a phone change it directly with the current password.",
+        ar: "تحقق من الإعدادات ← تغيير كلمة المرور: النموذج (الحالية، الجديدة، التأكيد، 'تسجيل الخروج من جميع الأجهزة' — مفعّل افتراضياً) يتحقق أن الجديدة تختلف عن الحالية وأن التأكيد يطابق الجديدة؛ الإرسال يتحقق من كلمة المرور الحالية أولاً (POST /auth/change-password/request-otp مع oldPassword) ثم يرسل رمز SMS فقط؛ نافذة 'تحقق من الرقم' تعرض الرقم المخفي وست خانات وإعادة الإرسال بعد 45 ثانية؛ 'التحقق من الرمز' يغيّر كلمة المرور (PATCH /auth/change-password)، ويسجّل خروج الأجهزة الأخرى إذا كان المفتاح مفعّلاً، ويمسح النموذج ويعود. الحسابات دون رقم هاتف تغيّرها مباشرة بكلمة المرور الحالية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A wrong current password shows 'كلمة المرور الحالية غير صحيحة' and no SMS is sent.",
+          "A new password equal to the current one is refused in the form.",
+          "A wrong code shows an inline error in the sheet and clears the boxes; the right one changes the password.",
+          "With the switch on, other devices are signed out; the current device stays signed in.",
+          "Leaving the screen clears every field.",
+        ],
+        ar: [
+          "كلمة المرور الحالية الخاطئة تعرض 'كلمة المرور الحالية غير صحيحة' ولا يُرسل SMS.",
+          "كلمة مرور جديدة مطابقة للحالية تُرفض في النموذج.",
+          "الرمز الخاطئ يعرض خطأ داخل النافذة ويمسح الخانات؛ والصحيح يغيّر كلمة المرور.",
+          "مع تفعيل المفتاح تُسجّل الأجهزة الأخرى خروجها؛ ويبقى الجهاز الحالي مسجلاً.",
+          "مغادرة الشاشة تمسح كل الحقول.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Type a wrong current password — error, no SMS arrives.",
+          "Change the password with the switch on; a second device is signed out on its next action.",
+          "Wait 45 s in the sheet and resend — a new code arrives and works.",
+        ],
+        ar: [
+          "اكتب كلمة مرور حالية خاطئة — خطأ ولا يصل SMS.",
+          "غيّر كلمة المرور مع تفعيل المفتاح؛ الجهاز الثاني يُسجّل خروجه عند الإجراء التالي.",
+          "انتظر 45 ثانية في النافذة وأعد الإرسال — يصل رمز جديد ويعمل.",
+        ],
+      },
+      updatedIn: "fix/change-password-flow",
+    },
   ],
 };

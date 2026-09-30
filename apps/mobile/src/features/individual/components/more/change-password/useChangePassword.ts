@@ -111,7 +111,9 @@ export function useChangePassword() {
 
     setIsRequestingOtp(true);
     try {
-      await settingsService.requestChangePasswordOtp();
+      await settingsService.requestChangePasswordOtp(
+        getValues('oldPassword'),
+      );
       reset(45);
       setOtp('');
       setOtpError('');
@@ -139,7 +141,9 @@ export function useChangePassword() {
     // no such delay, which is what made the two look out of sync).
     Keyboard.dismiss();
     try {
-      await settingsService.requestChangePasswordOtp();
+      await settingsService.requestChangePasswordOtp(
+        getValues('oldPassword'),
+      );
       setOtp('');
       setOtpError('');
       handleResendResult({ success: true });
