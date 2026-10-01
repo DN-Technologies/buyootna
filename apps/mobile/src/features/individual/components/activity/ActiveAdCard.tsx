@@ -22,6 +22,8 @@ interface ActiveAdCardProps {
   onEditPress: (id: string) => void;
   onFeaturePress: (id: string) => void;
   onDeletePress: (id: string) => void;
+  // Opens the ad's details
+  onPress?: () => void;
 }
 
 const formatDate = (dateStr: string) => {
@@ -55,6 +57,7 @@ export default function ActiveAdCard({
   onEditPress,
   onFeaturePress,
   onDeletePress,
+  onPress,
 }: ActiveAdCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [menuTop, setMenuTop] = useState(0);
@@ -78,8 +81,16 @@ export default function ActiveAdCard({
 
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
+  // The whole card opens the ad; the ⋮ button keeps its own tap. The menu
+  // Modal sits outside the card so its taps never reach the card's onPress
   return (
-    <View className="z-10 mb-4 overflow-hidden rounded-md border border-[#FEFEFE] bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
+    <>
+    <TouchableOpacity
+      testID={`active-ad-card-${property.id}`}
+      accessibilityRole="button"
+      activeOpacity={0.85}
+      onPress={onPress}
+      className="z-10 mb-4 overflow-hidden rounded-md border border-[#FEFEFE] bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
       {/* --- Image Header & Badges --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
@@ -152,75 +163,17 @@ export default function ActiveAdCard({
 
           {/* Left: 3-Dot Options Trigger */}
           <View ref={menuAnchorRef} className="relative z-50">
-            <TouchableOpacity activeOpacity={0.7} onPress={openMenu} className="p-1">
+            <TouchableOpacity
+              testID={`active-ad-menu-${property.id}`}
+              activeOpacity={0.7}
+              onPress={openMenu}
+              className="p-1"
+            >
               <MoreIcon size={15} color="#64748B" />
             </TouchableOpacity>
           </View>
         </View>
 
-        <Modal
-          transparent
-          visible={showMenu}
-          animationType="fade"
-          onRequestClose={() => setShowMenu(false)}
-        >
-          <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
-            <View
-              style={{
-                position: 'absolute',
-                top: menuTop,
-                right: MENU_RIGHT_OFFSET,
-                width: 196,
-              }}
-              className="rounded-md bg-white shadow-md shadow-gray-200"
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  setShowMenu(false);
-                  onEditPress(property.id);
-                }}
-                className="px-4 py-3"
-              >
-                <Text
-                  className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  تعديل
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  setShowMenu(false);
-                  onFeaturePress(property.id);
-                }}
-                className="px-4 py-3"
-              >
-                <Text
-                  className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  تمييز الإعلان
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  setShowMenu(false);
-                  onDeletePress(property.id);
-                }}
-                className="px-4 py-3"
-              >
-                <Text
-                  className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  حذف
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </Modal>
 
         {/* Price & Publication Date Row */}
         <View className="mb-4 flex-row items-center justify-between">
@@ -276,6 +229,71 @@ export default function ActiveAdCard({
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
+
+    <Modal
+      transparent
+      visible={showMenu}
+      animationType="fade"
+      onRequestClose={() => setShowMenu(false)}
+    >
+      <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
+        <View
+          style={{
+            position: 'absolute',
+            top: menuTop,
+            right: MENU_RIGHT_OFFSET,
+            width: 196,
+          }}
+          className="rounded-md bg-white shadow-md shadow-gray-200"
+        >
+          <TouchableOpacity
+            onPress={() => {
+              setShowMenu(false);
+              onEditPress(property.id);
+            }}
+            className="px-4 py-3"
+          >
+            <Text
+              className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              تعديل
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setShowMenu(false);
+              onFeaturePress(property.id);
+            }}
+            className="px-4 py-3"
+          >
+            <Text
+              className="font-cairo text-[14px] leading-[22px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              تمييز الإعلان
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setShowMenu(false);
+              onDeletePress(property.id);
+            }}
+            className="px-4 py-3"
+          >
+            <Text
+              className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              حذف
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Pressable>
+    </Modal>
+    </>
   );
 }

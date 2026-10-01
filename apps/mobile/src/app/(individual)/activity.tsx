@@ -264,10 +264,16 @@ export default function ActivityScreen() {
               onFeaturePress={adActions.handleFeatureAd}
               onDeletePress={adActions.handleDeleteAd}
               onPublishDraftPress={adActions.handlePublishDraft}
-              onArchivedPress={(id) =>
+              onOpenPress={(property) =>
                 router.push({
-                  pathname: `/property/${id}`,
-                  params: { archived: 'true' },
+                  pathname: `/property/${property.id}`,
+                  // Archived ads open with their republish action
+                  params:
+                    property.status === 'EXPIRED' ||
+                    property.status === 'CLOSED' ||
+                    activeFilterId === 'ARCHIVED'
+                      ? { archived: 'true' }
+                      : {},
                 } as any)
               }
             />
