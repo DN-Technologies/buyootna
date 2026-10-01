@@ -45,7 +45,13 @@ export default function ChatHeader({
         {isLoading ? (
           <View className="h-4 w-24 rounded bg-slate-200" />
         ) : (
-          <Text className="font-cairo-medium text-[16px] text-[#0F1828]">
+          <Text
+            testID="chat-header-name"
+            className="font-cairo-medium text-[14px] text-[#0F1828]"
+            // A long name wraps; its lines start at the avatar side (RTL)
+            style={{ writingDirection: 'rtl', textAlign: 'auto' }}
+            numberOfLines={2}
+          >
             {userName}
           </Text>
         )}

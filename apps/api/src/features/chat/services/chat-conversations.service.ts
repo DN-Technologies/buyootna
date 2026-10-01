@@ -102,10 +102,14 @@ export class ChatConversationsService {
       );
 
       if (conversation) {
-        if (validPropertyId && conversation.propertyId !== validPropertyId) {
+        // The ad banner follows how the chat was opened: from an ad it shows
+        // that ad; from a list or profile (no ad) it is cleared for both
+        // sides, so an old ad doesn't look like the topic of a new chat
+        const nextPropertyId = validPropertyId ?? null;
+        if (conversation.propertyId !== nextPropertyId) {
           conversation = await tx.conversation.update({
             where: { id: conversation.id },
-            data: { propertyId: validPropertyId, updatedAt: new Date() },
+            data: { propertyId: nextPropertyId, updatedAt: new Date() },
             include: { participants: true },
           });
         }
