@@ -13,6 +13,7 @@ import { PhoneRegistrationPendingService } from 'src/core/phone-registration/pho
 import { OtpRateLimiterService } from 'src/core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   checkUserExists,
+  defaultLoginMethod,
   isEmail,
   isPhone,
 } from '../../../core/utils/user.utils';
@@ -164,6 +165,8 @@ export class UsersRegistrationService {
               phone,
               // Only the SMS-verified registration path passes a phone
               phoneVerifiedAt: phone ? new Date() : undefined,
+              // Signs in with what it signed up with (changeable in Settings)
+              loginMethod: defaultLoginMethod(email, phone),
               password: hashedPassword,
               role: Role.INDIVIDUAL,
               // Legacy field kept in sync with individualData.name below —
@@ -266,6 +269,7 @@ export class UsersRegistrationService {
             phone: dto.phone,
             password: hashedPassword,
             role: type === IdentityType.COMPANY ? Role.COMPANY : Role.OFFICE,
+            loginMethod: defaultLoginMethod(dto.email, dto.phone),
           },
         });
 

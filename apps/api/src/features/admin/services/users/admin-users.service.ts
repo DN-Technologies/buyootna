@@ -16,7 +16,10 @@ import {
   AdminNotifyUsersResponseDto,
 } from '../../dto/admin-notify-users.dto';
 import { IdentityType, Prisma, Role } from '@prisma/client';
-import { checkUserExists } from '../../../../core/utils/user.utils';
+import {
+  checkUserExists,
+  defaultLoginMethod,
+} from '../../../../core/utils/user.utils';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { MailService } from '../../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../../core/mail/templates/admin-custom-message.template';
@@ -435,6 +438,7 @@ export class AdminUsersService {
             phone,
             // An admin-entered number counts as verified
             phoneVerifiedAt: phone ? new Date() : undefined,
+            loginMethod: defaultLoginMethod(email, phone),
             password: hashedPassword,
             role: Role.INDIVIDUAL,
             name: derivedName,

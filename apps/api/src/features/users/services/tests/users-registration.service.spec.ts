@@ -287,6 +287,10 @@ describe('UsersRegistrationService', () => {
       >;
       expect(createCalls[0][0].data.password).toBe('hashed-value');
       expect(createCalls[0][0].data.name).toBe('Ali');
+      // Signed up with an email: signs in with the email by default
+      expect(
+        (createCalls[0][0].data as { loginMethod?: string }).loginMethod,
+      ).toBe('EMAIL');
       expect(tx!.identity.create).toHaveBeenCalledWith({
         data: {
           userId: 'user-1',
@@ -348,6 +352,10 @@ describe('UsersRegistrationService', () => {
       >;
       expect(createCalls[0][0].data.password).toBe('hashed-value');
       expect(createCalls[0][0].data.name).toBe('Ali');
+      // Signed up with a phone: signs in with the phone by default
+      expect(
+        (createCalls[0][0].data as { loginMethod?: string }).loginMethod,
+      ).toBe('PHONE');
       expect(tx!.individualProfile.create).toHaveBeenCalledWith({
         data: { userId: 'user-1' },
       });
