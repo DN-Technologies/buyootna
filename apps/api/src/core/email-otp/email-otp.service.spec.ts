@@ -212,6 +212,52 @@ describe('EmailOtpService', () => {
     });
   });
 
+  describe('sendEmailChangeOtp + verifyEmailChangeOtp', () => {
+    it('confirms the address with its code, once', async () => {
+      await service.sendEmailChangeOtp('u1', 'new@example.com', 'Ali');
+      const otp = service.getMockEmailChangeOtp('u1', 'new@example.com')!;
+      expect(otp).toMatch(/^\d{6}$/);
+      expect(mockMailService.sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: 'new@example.com' }),
+      );
+
+      expect(service.verifyEmailChangeOtp('u1', 'new@example.com', otp)).toBe(
+        true,
+      );
+      // Consumed: the same code can't be used again
+      expect(service.verifyEmailChangeOtp('u1', 'new@example.com', otp)).toBe(
+        false,
+      );
+    });
+
+    it("only confirms the same user's same address", async () => {
+      await service.sendEmailChangeOtp('u1', 'new@example.com', 'Ali');
+      const otp = service.getMockEmailChangeOtp('u1', 'new@example.com')!;
+
+      expect(service.verifyEmailChangeOtp('u2', 'new@example.com', otp)).toBe(
+        false,
+      );
+      expect(service.verifyEmailChangeOtp('u1', 'other@example.com', otp)).toBe(
+        false,
+      );
+    });
+
+    it('rejects an expired code', async () => {
+      jest.useFakeTimers();
+      try {
+        await service.sendEmailChangeOtp('u1', 'new@example.com', 'Ali');
+        const otp = service.getMockEmailChangeOtp('u1', 'new@example.com')!;
+        jest.advanceTimersByTime(60 * 60 * 1000);
+
+        expect(service.verifyEmailChangeOtp('u1', 'new@example.com', otp)).toBe(
+          false,
+        );
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+
   describe('configurable TTL', () => {
     it('OTP is still valid just before the 3-minute default expiry', async () => {
       await service.sendRegistrationOtp('ali@example.com', 'Ali', 'hashed-pw');

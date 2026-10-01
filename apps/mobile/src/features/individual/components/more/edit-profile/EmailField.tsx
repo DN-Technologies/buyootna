@@ -1,14 +1,23 @@
-import { Control, Controller } from 'react-hook-form';
-import { TextInput, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
+import { Text, TextInput, View } from 'react-native';
 
 import FieldLabel from './FieldLabel';
 import type { ProfileFormData } from './types';
 
-// Read-only: the email is shown, not edited here
+export const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
+
+// Optional: an account made with a phone number has no email, and must
+// still be able to save. A new address is proven with a code (see the hint
+// passed as children).
 export default function EmailField({
   control,
+  errors,
+  children,
 }: {
   control: Control<ProfileFormData>;
+  errors: FieldErrors<ProfileFormData>;
+  children?: ReactNode;
 }) {
   return (
     <View>
@@ -17,21 +26,35 @@ export default function EmailField({
         control={control}
         name="email"
         rules={{
-          required: 'البريد الالكتروني مطلوب',
-          pattern: {
-            value: /\S+@\S+\.\S+/,
-            message: 'بريد الكتروني غير صالح',
-          },
+          validate: (value) =>
+            !value?.trim() ||
+            EMAIL_PATTERN.test(value.trim()) ||
+            'بريد الكتروني غير صالح',
         }}
-        render={({ field: { value } }) => (
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            className="border border-gray-200 rounded-xl bg-gray-50 px-4 py-3.5 text-right font-cairo-medium text-gray-400"
+            testID="edit-profile-email"
+            className={`border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
             value={value}
-            editable={false}
+            onChangeText={onChange}
+            onBlur={onBlur}
+            placeholder="ادخل البريد الالكتروني"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
             textAlign="right"
           />
         )}
       />
+      {errors.email && (
+        <Text
+          className="mt-1 font-cairo-medium text-xs text-red-500"
+          style={{ writingDirection: 'rtl' }}
+        >
+          {errors.email.message}
+        </Text>
+      )}
+      {children}
     </View>
   );
 }

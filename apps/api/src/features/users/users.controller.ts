@@ -45,8 +45,10 @@ import {
 } from '../../core/decorators/otp-rate-limit.decorator';
 import { SuspendAccountDto } from './dto/suspend-account.dto';
 import {
+  RequestEmailOtpDto,
   RequestPhoneOtpDto,
   SetLoginMethodDto,
+  VerifyEmailDto,
   VerifyPhoneDto,
 } from './dto/login-method.dto';
 import { LoginMethodService } from './services/login-method.service';
@@ -199,6 +201,40 @@ export class UsersController {
     return this.loginMethodService.verifyPhone(
       reqUser.userId,
       dto.phone,
+      dto.otp,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('account/email/request-otp')
+  @OtpRequestRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary: 'Email a code to the address to verify (and set) on the account',
+  })
+  @ApiCommonErrors()
+  requestEmailOtp(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RequestEmailOtpDto,
+  ) {
+    return this.loginMethodService.requestEmailOtp(reqUser.userId, dto.email);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('account/email/verify')
+  @OtpVerifyRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Check the code; the address becomes the account's email",
+  })
+  @ApiCommonErrors()
+  verifyEmail(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: VerifyEmailDto,
+  ) {
+    return this.loginMethodService.verifyEmail(
+      reqUser.userId,
+      dto.email,
       dto.otp,
     );
   }

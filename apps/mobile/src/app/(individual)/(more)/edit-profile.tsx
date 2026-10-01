@@ -8,11 +8,13 @@ import {
   EditProfileHeader,
   EditProfileSubmitBar,
   EmailField,
+  EmailVerificationHint,
   KuwaitPhoneField,
   NameField,
   PhoneVerificationHint,
   useEditProfile,
 } from '@/features/individual/components/more/edit-profile';
+import { LoginMethodToast } from '@/features/individual/components/settings/login-method';
 
 export default function EditProfileScreen() {
   const profile = useEditProfile();
@@ -20,7 +22,7 @@ export default function EditProfileScreen() {
     control,
     formState: { errors },
   } = profile.form;
-  const { phoneCheck } = profile;
+  const { phoneCheck, emailCheck } = profile;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -47,7 +49,12 @@ export default function EditProfileScreen() {
 
           <View className="gap-5 px-5">
             <NameField control={control} errors={errors} />
-            <EmailField control={control} />
+            <EmailField control={control} errors={errors}>
+              <EmailVerificationHint
+                visible={profile.emailNeedsCode}
+                onSend={profile.sendEmailCode}
+              />
+            </EmailField>
             <KuwaitPhoneField
               control={control}
               errors={errors}
@@ -80,6 +87,7 @@ export default function EditProfileScreen() {
       {/* SMS check for a new (or unverified) phone */}
       <ChangePasswordOtpSheet
         ref={phoneCheck.sheetRef}
+        testID="phone-otp-sheet"
         otpInputRef={phoneCheck.otpInputRef}
         otp={phoneCheck.otp}
         onOtpChange={phoneCheck.setOtp}
@@ -92,6 +100,31 @@ export default function EditProfileScreen() {
         onVerifyOtp={phoneCheck.verify}
         isSubmitting={phoneCheck.isSubmitting}
       />
+
+      {/* Emailed code for a new email address */}
+      <ChangePasswordOtpSheet
+        ref={emailCheck.sheetRef}
+        testID="email-otp-sheet"
+        title="تحقق من البريد الإلكتروني"
+        otpInputRef={emailCheck.otpInputRef}
+        otp={emailCheck.otp}
+        onOtpChange={emailCheck.setOtp}
+        otpError={emailCheck.otpError}
+        maskedPhone={emailCheck.destination}
+        secondsLeft={emailCheck.secondsLeft}
+        isReady={emailCheck.isReady}
+        limitReachedMessage={emailCheck.limitReachedMessage}
+        onResendOtp={emailCheck.resend}
+        onVerifyOtp={emailCheck.verify}
+        isSubmitting={emailCheck.isSubmitting}
+      />
+
+      {profile.toast && (
+        <LoginMethodToast
+          kind={profile.toast.kind}
+          message={profile.toast.message}
+        />
+      )}
     </SafeAreaView>
   );
 }

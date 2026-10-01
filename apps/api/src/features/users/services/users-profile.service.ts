@@ -68,7 +68,26 @@ export class UsersProfileService {
         });
       }
     }
-    if (dto.email !== undefined) userUpdateData.email = dto.email;
+    // The email is a sign-in identifier too: a new address only lands through
+    // the emailed code (POST /users/account/email/verify). The unchanged one
+    // passes through, and an empty value is "not sent" -- it never clears or
+    // blanks the address (a blank one also collided on the unique index)
+    if (dto.email !== undefined && dto.email.trim() !== '') {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true },
+      });
+      const sameEmail =
+        dto.email.trim().toLowerCase() ===
+        (current?.email ?? '').trim().toLowerCase();
+      if (!sameEmail) {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: 'EMAIL_VERIFICATION_REQUIRED',
+          message: 'يرجى التحقق من البريد الإلكتروني قبل حفظ التغييرات.',
+        });
+      }
+    }
     if (dto.whatsapp !== undefined) userUpdateData.whatsapp = dto.whatsapp;
 
     // 2. Handle file upload if a new logo/avatar is uploaded
