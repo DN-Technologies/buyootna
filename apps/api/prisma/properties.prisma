@@ -45,6 +45,9 @@ model Property {
   rentConditions     String?
   planSlotId         String?
   planSlot           UserPlanSlot?    @relation(fields: [planSlotId], references: [id])
+  // One per publish attempt, sent by the app: a repeated request with the
+  // same key returns the ad it already created instead of spending again
+  submissionKey      String?
   area               Area?            @relation(fields: [areaId], references: [id])
   governorate        Governorate?     @relation(fields: [governorateId], references: [id])
   favorites          Favorite[]
@@ -71,6 +74,7 @@ model Property {
   @@index([latitude, longitude])
   @@index([identityId])
   @@index([publishedAt])
+  @@unique([identityId, submissionKey])
 }
 
 model PropertyDeletionLog {

@@ -37,15 +37,29 @@ export function useSubmitListing() {
     setSubmissionError,
     buildApiPayload,
     resetForm,
+    ensureSubmissionKey,
+    clearSubmissionKey,
   } = useListingStore();
+
+  // One publish at a time: a second tap while the first is still checking
+  // the balance or uploading would spend the package twice
+  const publishingRef = useRef(false);
 
   const submitListing = async (
     isDraft: boolean,
     planSlotId?: string,
-  ): Promise<{ success: boolean; error?: string; propertyId?: string }> => {
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    // Server error code, e.g. PACKAGE_UNUSABLE
+    code?: string;
+    propertyId?: string;
+  }> => {
     try {
       setSubmitting(true);
       setSubmissionError(null);
+      // Same key on every retry of this publish (see useListingStore)
+      if (!isDraft) ensureSubmissionKey();
 
       let uploadedUrls: string[] = [];
       if (draftData.images.length > 0) {
@@ -54,6 +68,7 @@ export function useSubmitListing() {
 
       const payload = buildApiPayload(isDraft, uploadedUrls, planSlotId);
       const res = await propertiesService.createProperty(payload);
+      if (!isDraft) clearSubmissionKey();
 
       return { success: true, propertyId: res.property.id };
     } catch (error: unknown) {
@@ -61,7 +76,7 @@ export function useSubmitListing() {
         error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
 
       const axiosError = error as {
-        response?: { data?: { message?: string | string[] } };
+        response?: { data?: { message?: string | string[]; code?: string } };
       };
       const backendMessage = axiosError?.response?.data?.message;
       const displayMessage = Array.isArray(backendMessage)
@@ -69,41 +84,78 @@ export function useSubmitListing() {
         : backendMessage || errorMessage;
 
       setSubmissionError(displayMessage);
-      return { success: false, error: displayMessage };
+      return {
+        success: false,
+        error: displayMessage,
+        code: axiosError?.response?.data?.code,
+      };
     } finally {
       setSubmitting(false);
     }
   };
 
+  // The packages the user can publish from right now, or null (with the
+  // matching sheet shown) when there are none for this ad
+  const loadEligibleOptions = async (): Promise<PublishOption[] | null> => {
+    const optionsRes = await plansService.getPublishOptions();
+
+    if (!optionsRes.canPublish || optionsRes.options.length === 0) {
+      setQuotaSheetMode('exhausted');
+      quotaSheetRef.current?.present();
+      return null;
+    }
+
+    const wantsFeatured = draftData.adLevel === 'premium';
+    const eligibleOptions = wantsFeatured
+      ? optionsRes.options.filter((option) => option.featuredDays > 0)
+      : optionsRes.options;
+
+    if (eligibleOptions.length === 0) {
+      setQuotaSheetMode('featuredUnavailable');
+      quotaSheetRef.current?.present();
+      return null;
+    }
+    return eligibleOptions;
+  };
+
+  // Publishes from one package; if the server refuses that package (used up
+  // meanwhile, or another persona's), offers what's left instead of leaving
+  // the user at a dead-end error
+  const publishFrom = async (slotId: string) => {
+    const res = await submitListing(false, slotId);
+    if (res.success) {
+      setCreatedPropertyId(res.propertyId ?? null);
+      setShowSuccess(true);
+      return;
+    }
+    if (res.code !== 'PACKAGE_UNUSABLE') {
+      showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
+      return;
+    }
+
+    const remaining = await loadEligibleOptions();
+    if (!remaining) return;
+    showAlert('تعذر النشر من هذه الباقة', res.error || '', [
+      {
+        text: 'اختيار باقة أخرى',
+        onPress: () => {
+          setPublishOptions(remaining);
+          slotPickerRef.current?.present();
+        },
+      },
+    ]);
+  };
+
   const handleSubmit = async () => {
+    if (publishingRef.current) return;
+    publishingRef.current = true;
+    setSubmitting(true);
     try {
-      const optionsRes = await plansService.getPublishOptions();
-
-      if (!optionsRes.canPublish || optionsRes.options.length === 0) {
-        setQuotaSheetMode('exhausted');
-        quotaSheetRef.current?.present();
-        return;
-      }
-
-      const wantsFeatured = draftData.adLevel === 'premium';
-      const eligibleOptions = wantsFeatured
-        ? optionsRes.options.filter((option) => option.featuredDays > 0)
-        : optionsRes.options;
-
-      if (eligibleOptions.length === 0) {
-        setQuotaSheetMode('featuredUnavailable');
-        quotaSheetRef.current?.present();
-        return;
-      }
+      const eligibleOptions = await loadEligibleOptions();
+      if (!eligibleOptions) return;
 
       if (eligibleOptions.length === 1) {
-        const res = await submitListing(false, eligibleOptions[0].slotId);
-        if (res.success) {
-          setCreatedPropertyId(res.propertyId ?? null);
-          setShowSuccess(true);
-        } else {
-          showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
-        }
+        await publishFrom(eligibleOptions[0].slotId);
         return;
       }
 
@@ -112,17 +164,23 @@ export function useSubmitListing() {
     } catch (e) {
       console.error('Failed to check publish options:', e);
       showAlert('خطأ', 'فشل في التحقق من رصيد الإعلانات');
+    } finally {
+      setSubmitting(false);
+      publishingRef.current = false;
     }
   };
 
   const handleSlotSelected = async (slotId: string) => {
+    if (publishingRef.current) return;
+    publishingRef.current = true;
     slotPickerRef.current?.dismiss();
-    const res = await submitListing(false, slotId);
-    if (res.success) {
-      setCreatedPropertyId(res.propertyId ?? null);
-      setShowSuccess(true);
-    } else {
-      showAlert('خطأ', res.error || 'فشل في إضافة الإعلان');
+    try {
+      await publishFrom(slotId);
+    } catch (e) {
+      console.error('Failed to publish:', e);
+      showAlert('خطأ', 'فشل في إضافة الإعلان');
+    } finally {
+      publishingRef.current = false;
     }
   };
 

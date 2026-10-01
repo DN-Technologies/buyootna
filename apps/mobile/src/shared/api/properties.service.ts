@@ -34,6 +34,7 @@ export interface CreatePropertyPayload {
   additionalExpenses?: string;
   rentConditions?: string;
   planSlotId?: string;
+  submissionKey?: string;
 }
 
 export interface CreatePropertyResponse {

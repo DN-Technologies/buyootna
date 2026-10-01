@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   ValidateIf,
   ValidateNested,
 } from 'class-validator';
@@ -20,6 +21,12 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsString()
   planSlotId?: string;
+
+  // One per publish attempt: repeating a request with the same key returns
+  // the ad already created instead of spending the package again
+  @IsOptional()
+  @IsUUID('4', { message: 'مفتاح الإرسال غير صالح' })
+  submissionKey?: string;
 
   @IsEnum(ListingType, { message: 'نوع الإعلان غير صالح' })
   type: ListingType;
