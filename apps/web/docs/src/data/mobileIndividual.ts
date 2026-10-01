@@ -1010,5 +1010,54 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/account-state",
     },
+    {
+      id: "mobile-service-invoices",
+      title: {
+        en: "فواتير الخدمات: invoices companies issued to you — search, sort, details, download, share, delete",
+        ar: "فواتير الخدمات: الفواتير التي أصدرتها الشركات لك — بحث وترتيب وتفاصيل وتحميل ومشاركة وحذف",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As a client, I want every invoice a company issued me in one place, so that I can check what I paid for and keep a copy.",
+        ar: "بصفتي عميلاً، أريد كل فاتورة أصدرتها لي شركة في مكان واحد، حتى أراجع ما دفعت مقابله وأحتفظ بنسخة.",
+      },
+      story: {
+        en: "Verify More → فواتير الخدمات opens the list (it no longer says قريباً). Each card shows the invoice number, the service, the amount, 'تم الدفع في: {date}' (or 'بانتظار الدفع' until the company marks it paid) and تحميل. The search box matches the invoice number, the service or the company name; the sort button opens 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً). Tapping a card opens 'تفاصيل الفاتورة': company logo, name and specialty, invoice number, issue date and time, service, warranty, line items, discount and total, with تحميل / مشاركة (a PDF via the share sheet) and حذف, which asks 'حذف فاتورة الخدمة ؟' and removes it from your list only. The download icon at the top exports the whole list as one PDF. With no invoices the empty state shows 'لا توجد فواتير للخدمات حتى الآن'. A new invoice and its payment also arrive as notifications.",
+        ar: "تحقق من أن المزيد ← فواتير الخدمات يفتح القائمة (لم تعد تظهر قريباً). كل بطاقة تعرض رقم الفاتورة والخدمة والمبلغ و'تم الدفع في: {التاريخ}' (أو 'بانتظار الدفع' حتى تؤكد الشركة الدفع) وزر تحميل. البحث يطابق رقم الفاتورة أو الخدمة أو اسم الشركة؛ وزر الترتيب يفتح 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً). الضغط على بطاقة يفتح 'تفاصيل الفاتورة': شعار الشركة واسمها وتخصصها ورقم الفاتورة وتاريخ ووقت الإصدار والخدمة والكفالة والبنود والخصم والإجمالي، مع تحميل / مشاركة (ملف PDF عبر نافذة المشاركة) وحذف، الذي يسأل 'حذف فاتورة الخدمة ؟' ويزيلها من قائمتك فقط. أيقونة التحميل في الأعلى تصدّر القائمة كاملة كملف PDF واحد. عند عدم وجود فواتير تظهر حالة 'لا توجد فواتير للخدمات حتى الآن'. وتصل الفاتورة الجديدة وتأكيد دفعها كإشعارات أيضاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only invoices addressed to the signed-in persona appear.",
+          "Search and sort change the list; a search with no match shows 'لا توجد نتائج مطابقة'.",
+          "The details total equals the items minus the discount.",
+          "تحميل and مشاركة open the share sheet with a PDF of that invoice; the header icon exports the visible list.",
+          "حذف asks first; after confirming the invoice disappears and stays gone after reopening the screen. تراجع keeps it.",
+          "A card shows 'بانتظار الدفع' until the company marks it paid, then 'تم الدفع في'.",
+        ],
+        ar: [
+          "تظهر فقط الفواتير الموجهة للهوية المسجّل بها الدخول.",
+          "البحث والترتيب يغيّران القائمة؛ والبحث بلا نتائج يعرض 'لا توجد نتائج مطابقة'.",
+          "إجمالي التفاصيل يساوي البنود ناقص الخصم.",
+          "تحميل ومشاركة يفتحان نافذة المشاركة بملف PDF للفاتورة؛ وأيقونة الأعلى تصدّر القائمة الظاهرة.",
+          "حذف يسأل أولاً؛ وبعد التأكيد تختفي الفاتورة وتبقى مختفية بعد إعادة فتح الشاشة. وتراجع يبقيها.",
+          "البطاقة تعرض 'بانتظار الدفع' حتى تؤكد الشركة الدفع، ثم 'تم الدفع في'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual, send a request to a test company; as the company accept it and issue an invoice picking that client. Back as the individual: a notification arrives and the invoice is in فواتير الخدمات with 'بانتظار الدفع'.",
+          "As the company mark it paid — the individual's card shows 'تم الدفع في' with today's date.",
+          "Search by part of the company name and by the invoice number; switch to الأقدم أولاً.",
+          "Open the details, tap تحميل and save to Files; tap مشاركة and send it; delete it and confirm it's gone.",
+        ],
+        ar: [
+          "كفرد أرسل طلباً لشركة اختبار؛ وكشركة اقبله وأصدر فاتورة باختيار ذلك العميل. عد كفرد: يصل إشعار وتظهر الفاتورة في فواتير الخدمات مع 'بانتظار الدفع'.",
+          "كشركة أكّد الدفع — تعرض بطاقة الفرد 'تم الدفع في' بتاريخ اليوم.",
+          "ابحث بجزء من اسم الشركة وبرقم الفاتورة؛ وبدّل إلى الأقدم أولاً.",
+          "افتح التفاصيل واضغط تحميل واحفظ في الملفات؛ واضغط مشاركة وأرسلها؛ ثم احذفها وتأكد أنها اختفت.",
+        ],
+      },
+      updatedIn: "feat/service-invoices",
+    },
   ],
 };

@@ -122,7 +122,7 @@ describe('CompanyMoreScreen (Figma Design Implementation)', () => {
     expect(router.push).toHaveBeenCalledWith('/add-project');
 
     fireEvent.press(getByText('فواتير الخدمات'));
-    expect(router.push).toHaveBeenCalledWith('/create-invoice');
+    expect(router.push).toHaveBeenCalledWith('/company-service-invoices');
 
     fireEvent.press(getByText('المحادثات'));
     expect(router.push).toHaveBeenCalledWith('/(company)/company-chats');

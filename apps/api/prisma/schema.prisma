@@ -201,6 +201,7 @@ enum NotificationType {
   REPORT_RESOLVED
   REPORT_DISMISSED
   NEW_DEVICE_LOGIN
+  SERVICE_INVOICE
 }
 
 model Notification {

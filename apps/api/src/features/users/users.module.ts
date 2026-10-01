@@ -10,9 +10,10 @@ import { ProviderCardsService } from './services/provider-cards.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
 import { IdentitiesModule } from '../identities/identities.module';
+import { ServiceInvoicesModule } from '../service-invoices/service-invoices.module';
 
 @Module({
-  imports: [IdentitiesModule],
+  imports: [IdentitiesModule, ServiceInvoicesModule],
   // CompanyController / OfficeController declare literal `/users/*` routes
   // (companies, offices, register/company, ...) that must be registered
   // before UsersController's catch-all `GET /:id`, or that route shadows

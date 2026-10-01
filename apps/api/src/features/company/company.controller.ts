@@ -4,6 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UploadedFiles,
@@ -36,6 +38,8 @@ import {
 import { UsersDirectoryService } from '../users/services/users-directory.service';
 import { UsersProfileService } from '../users/services/users-profile.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
+import { ListServiceInvoicesDto } from '../service-invoices/dto/list-service-invoices.dto';
+import { CompanyInvoicesService } from '../service-invoices/services/company-invoices.service';
 
 const LOGO_LICENSE_UPLOAD_BODY = {
   schema: {
@@ -54,6 +58,7 @@ export class CompanyController {
     private readonly registrationService: UsersRegistrationService,
     private readonly profileService: UsersProfileService,
     private readonly directoryService: UsersDirectoryService,
+    private readonly companyInvoices: CompanyInvoicesService,
   ) {}
 
   @Post('register/company')
@@ -153,7 +158,8 @@ export class CompanyController {
   @Post('profile/invoices')
   @ApiAuth()
   @ApiOperation({
-    summary: "Create a customer invoice for the current user's company profile",
+    summary:
+      "Issue a service invoice from the current company persona; with requestId (an accepted request) it reaches that client's فواتير الخدمات",
   })
   @ApiBody({ type: CreateCompanyInvoiceDto })
   @ApiCommonErrors()
@@ -161,17 +167,48 @@ export class CompanyController {
     @CurrentUser() reqUser: RequestUser,
     @Body() dto: CreateCompanyInvoiceDto,
   ) {
-    return this.profileService.createInvoice(reqUser.userId, dto);
+    return this.companyInvoices.create(reqUser.identityId, dto);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile/invoices')
   @ApiAuth()
   @ApiOperation({
-    summary: "List the current user's company customer invoices",
+    summary:
+      'Invoices the current company persona issued, searchable (invoice no., service, client) and sorted',
   })
   @ApiCommonErrors()
-  async listInvoices(@CurrentUser() reqUser: RequestUser) {
-    return this.profileService.listInvoices(reqUser.userId);
+  async listInvoices(
+    @CurrentUser() reqUser: RequestUser,
+    @Query() query: ListServiceInvoicesDto,
+  ) {
+    return this.companyInvoices.list(reqUser.identityId, query);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile/invoices/clients')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'The clients the current company can invoice: its accepted requests (requestId, title, clientName)',
+  })
+  @ApiCommonErrors()
+  async invoiceableClients(@CurrentUser() reqUser: RequestUser) {
+    return this.companyInvoices.invoiceableRequests(reqUser.identityId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile/invoices/:id/paid')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Mark one of the company's invoices paid (sets paidAt and notifies the client)",
+  })
+  @ApiCommonErrors()
+  async markInvoicePaid(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.companyInvoices.markPaid(reqUser.identityId, id);
   }
 }

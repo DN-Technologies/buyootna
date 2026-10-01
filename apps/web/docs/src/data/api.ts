@@ -507,5 +507,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/account-state",
     },
+    {
+      id: "api-service-invoices",
+      title: {
+        en: "Service invoices: client and company endpoints",
+        ar: "فواتير الخدمات: نقاط العميل والشركة",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify the client routes GET /service-invoices (?search=&sort=newest|oldest), GET /service-invoices/:id and DELETE /service-invoices/:id (hides it from the client only, clientDeletedAt), all scoped to the signed-in persona; and the company routes POST /users/profile/invoices (optional requestId of an ACCEPTED request accepted by this company → clientIdentityId and the client's name; otherwise clientName is required), GET /users/profile/invoices (?search=&sort=), GET /users/profile/invoices/clients (its accepted requests) and PATCH /users/profile/invoices/:id/paid (sets paidAt once, notifies the client with a SERVICE_INVOICE notification and push). Company routes use the active company persona.",
+        ar: "تحقق من نقاط العميل GET /service-invoices (?search=&sort=newest|oldest) و GET /service-invoices/:id و DELETE /service-invoices/:id (تخفيها عن العميل فقط، clientDeletedAt)، وكلها مقيدة بالهوية المسجّل بها الدخول؛ ونقاط الشركة POST /users/profile/invoices (requestId اختياري لطلب ACCEPTED قبلته هذه الشركة → clientIdentityId واسم العميل؛ وإلا فـ clientName مطلوب) و GET /users/profile/invoices (?search=&sort=) و GET /users/profile/invoices/clients (طلباتها المقبولة) و PATCH /users/profile/invoices/:id/paid (يضبط paidAt مرة واحدة ويُشعر العميل بإشعار SERVICE_INVOICE ودفع). نقاط الشركة تستخدم هوية الشركة النشطة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A requestId that is pending or accepted by another company → 400 'يمكن إصدار الفاتورة فقط لطلب قبلته شركتك'.",
+          "Totals are computed by the server (items minus discount, discount capped at the subtotal).",
+          "Another user's invoice → 404 on detail, delete and mark-paid.",
+          "Marking paid twice keeps the first date; a client can't mark paid.",
+          "After the client deletes, the company list still has it.",
+        ],
+        ar: [
+          "requestId لطلب معلّق أو قبلته شركة أخرى → 400 'يمكن إصدار الفاتورة فقط لطلب قبلته شركتك'.",
+          "يحسب الخادم المجاميع (البنود ناقص الخصم، والخصم لا يتجاوز المجموع).",
+          "فاتورة مستخدم آخر → 404 في التفاصيل والحذف وتأكيد الدفع.",
+          "تأكيد الدفع مرتين يحتفظ بالتاريخ الأول؛ ولا يمكن للعميل تأكيد الدفع.",
+          "بعد حذف العميل تبقى الفاتورة في قائمة الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Issue with requestId → linkedToClient: true; the client's GET /service-invoices lists it with the company header.",
+          "GET /service-invoices?sort=x → 400.",
+          "PATCH …/paid as the company → paidAt set; as the client → 404.",
+        ],
+        ar: [
+          "أصدر مع requestId → linkedToClient: true؛ و GET /service-invoices للعميل تعرضها مع ترويسة الشركة.",
+          "GET /service-invoices?sort=x → 400.",
+          "PATCH …/paid كشركة → يُضبط paidAt؛ وكعميل → 404.",
+        ],
+      },
+      updatedIn: "feat/service-invoices",
+    },
   ],
 };

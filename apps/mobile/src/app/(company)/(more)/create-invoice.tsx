@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import {
@@ -40,9 +41,12 @@ export default function CreateInvoiceScreen() {
   const router = useRouter();
   const { displayName, avatarUrl } = useIdentity();
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState<WizardStep>(1);
   const [clientName, setClientName] = useState('');
+  // Set when the client was picked from an accepted request
+  const [requestId, setRequestId] = useState<string | null>(null);
   const [invoiceNo] = useState(generateProvisionalInvoiceNo);
   const [title, setTitle] = useState('');
   const [warrantyMonths, setWarrantyMonths] = useState('');
@@ -93,7 +97,9 @@ export default function CreateInvoiceScreen() {
     setIsSubmitting(true);
     try {
       const response = await companyService.createInvoice({
-        clientName: clientName.trim(),
+        ...(requestId
+          ? { requestId }
+          : { clientName: clientName.trim() }),
         title: title.trim(),
         warrantyMonths: warrantyMonths.trim() || undefined,
         issueDate: issueDate.toISOString(),
@@ -101,6 +107,9 @@ export default function CreateInvoiceScreen() {
         discount: appliedDiscount || undefined,
       });
       refreshProfile();
+      void queryClient.invalidateQueries({
+        queryKey: ['service-invoices', 'company'],
+      });
       setIsSubmitting(false);
 
       shareInvoice(response?.invoice?.invoiceNo ?? invoiceNo);
@@ -138,6 +147,7 @@ export default function CreateInvoiceScreen() {
     successSheetRef.current?.dismiss();
     setStep(1);
     setClientName('');
+    setRequestId(null);
     setTitle('');
     setWarrantyMonths('');
     setIssueDate(new Date());
@@ -175,6 +185,11 @@ export default function CreateInvoiceScreen() {
               <InvoiceGeneralDataStep
                 clientName={clientName}
                 onChangeClientName={setClientName}
+                requestId={requestId}
+                onSelectClient={(client) => {
+                  setRequestId(client?.requestId ?? null);
+                  setClientName(client?.clientName ?? '');
+                }}
                 invoiceNo={invoiceNo}
                 title={title}
                 onChangeTitle={setTitle}

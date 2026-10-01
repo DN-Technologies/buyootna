@@ -96,9 +96,7 @@ export default function IndividualMenuSections({
         <MenuItem
           icon={BillIcon}
           title="فواتير الخدمات"
-          onPress={() =>
-            showAlert('قريباً', 'ميزة فواتير الخدمات ستكون متوفرة قريباً')
-          }
+          onPress={() => router.push('/service-invoices')}
         />
       </MenuSection>
 
