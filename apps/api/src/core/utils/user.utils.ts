@@ -1,4 +1,5 @@
 import { ConflictException } from '@nestjs/common';
+import { LoginMethod } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -44,4 +45,20 @@ export async function checkUserExists(
       throw new ConflictException('رقم الهاتف مسجل بالفعل');
     }
   }
+}
+
+/**
+ * The sign-in method a new account starts with: the identifier it signed up
+ * with. An account created with both (company/office sign-up) accepts either
+ * (null = BOTH). The user can change it later in Settings.
+ */
+export function defaultLoginMethod(
+  email?: string | null,
+  phone?: string | null,
+): LoginMethod | null {
+  const hasEmail = !!email?.trim();
+  const hasPhone = !!phone?.trim();
+  if (hasPhone && !hasEmail) return LoginMethod.PHONE;
+  if (hasEmail && !hasPhone) return LoginMethod.EMAIL;
+  return null;
 }

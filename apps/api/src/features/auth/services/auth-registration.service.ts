@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { defaultLoginMethod } from 'src/core/utils/user.utils';
 import { TwilioService } from 'src/core/twilio/twilio.service';
 import { UsersRegistrationService } from '../../users/services/users-registration.service';
 import { EmailOtpService } from 'src/core/email-otp/email-otp.service';
@@ -95,6 +96,7 @@ export class AuthRegistrationService {
             email: profile.email,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
+            loginMethod: defaultLoginMethod(profile.email, null),
           },
         });
 

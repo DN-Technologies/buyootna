@@ -10,6 +10,7 @@ import {
   EmailField,
   EmailVerificationHint,
   KuwaitPhoneField,
+  LoginMethodNote,
   NameField,
   PhoneVerificationHint,
   useEditProfile,
@@ -23,6 +24,8 @@ export default function EditProfileScreen() {
     formState: { errors },
   } = profile.form;
   const { phoneCheck, emailCheck } = profile;
+  // "(اختياري)" only once the sign-in method is known
+  const methodKnown = profile.loginMethod !== null;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -48,8 +51,16 @@ export default function EditProfileScreen() {
           />
 
           <View className="gap-5 px-5">
+            <LoginMethodNote
+              method={profile.loginMethod}
+              onChange={profile.openSettings}
+            />
             <NameField control={control} errors={errors} />
-            <EmailField control={control} errors={errors}>
+            <EmailField
+              control={control}
+              errors={errors}
+              required={!methodKnown || profile.emailRequired}
+            >
               <EmailVerificationHint
                 visible={profile.emailNeedsCode}
                 onSend={profile.sendEmailCode}
@@ -61,6 +72,9 @@ export default function EditProfileScreen() {
               name="phone"
               label="رقم الهاتف"
               requiredMessage="رقم الهاتف مطلوب"
+              required={!methodKnown || profile.phoneRequired}
+              // Checked on save against the sign-in method instead
+              requiredInForm={false}
             >
               <PhoneVerificationHint
                 phoneChanged={profile.phoneChanged}

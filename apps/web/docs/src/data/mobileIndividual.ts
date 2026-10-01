@@ -1131,6 +1131,9 @@ export const mobileIndividual: DocSection = {
           "Pressing تعديل البيانات before verifying shows the amber toast and saves nothing.",
           "The right code shows the green toast, the link disappears, and saving works.",
           "Changing or adding a phone number opens the SMS code sheet on save; the rest is saved after the code.",
+          "Required fields follow طريقة تسجيل الدخول: PHONE → phone required, email '(اختياري)'; EMAIL → email required, phone '(اختياري)'; BOTH → both required.",
+          "A note above the fields says which is required and why, with 'يمكنك تغييرها من الإعدادات' opening Settings.",
+          "Saving with a required field empty shows an amber toast naming it ('البريد الإلكتروني مطلوب حسب طريقة تسجيل الدخول لديك.' / 'رقم الهاتف مطلوب حسب طريقة تسجيل الدخول لديك.') and saves nothing.",
         ],
         ar: [
           "المستخدم الذي سجّل برقم هاتف (بدون بريد) يستطيع تغيير اسمه والحفظ.",
@@ -1139,6 +1142,9 @@ export const mobileIndividual: DocSection = {
           "الضغط على تعديل البيانات قبل التحقق يُظهر التنبيه البرتقالي ولا يحفظ شيئاً.",
           "الرمز الصحيح يُظهر التنبيه الأخضر ويختفي الرابط ويعمل الحفظ.",
           "تغيير أو إضافة رقم هاتف يفتح نافذة رمز SMS عند الحفظ؛ ويُحفظ الباقي بعد الرمز.",
+          "الحقول المطلوبة تتبع طريقة تسجيل الدخول: PHONE ← الهاتف مطلوب والبريد '(اختياري)'؛ EMAIL ← البريد مطلوب والهاتف '(اختياري)'؛ BOTH ← كلاهما مطلوب.",
+          "ملاحظة فوق الحقول توضح المطلوب وسببه، مع 'يمكنك تغييرها من الإعدادات' التي تفتح الإعدادات.",
+          "الحفظ مع حقل مطلوب فارغ يُظهر تنبيهاً برتقالياً يسميه ('البريد الإلكتروني مطلوب حسب طريقة تسجيل الدخول لديك.' / 'رقم الهاتف مطلوب حسب طريقة تسجيل الدخول لديك.') ولا يحفظ شيئاً.",
         ],
       },
       testScenarios: {

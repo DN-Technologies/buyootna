@@ -7,21 +7,24 @@ import type { ProfileFormData } from './types';
 
 export const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
 
-// Optional: an account made with a phone number has no email, and must
-// still be able to save. A new address is proven with a code (see the hint
-// passed as children).
+// Required or optional by the sign-in method (useEditProfile checks it on
+// save, since the method loads after the form). A new address is proven
+// with a code (see the hint passed as children).
 export default function EmailField({
   control,
   errors,
+  required = false,
   children,
 }: {
   control: Control<ProfileFormData>;
   errors: FieldErrors<ProfileFormData>;
+  // Set by the sign-in method; shown as "(اختياري)" when false
+  required?: boolean;
   children?: ReactNode;
 }) {
   return (
     <View>
-      <FieldLabel>البريد الالكتروني</FieldLabel>
+      <FieldLabel optional={!required}>البريد الالكتروني</FieldLabel>
       <Controller
         control={control}
         name="email"

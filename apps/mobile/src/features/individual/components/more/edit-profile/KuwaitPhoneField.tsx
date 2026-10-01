@@ -12,6 +12,12 @@ interface KuwaitPhoneFieldProps {
   name: 'phone' | 'whatsapp';
   label: string;
   requiredMessage: string;
+  // False when the sign-in method makes this number optional ("(اختياري)")
+  required?: boolean;
+  // False when the screen checks "required" on save instead of in the form
+  // (the phone: its requirement loads after the form, which would leave the
+  // form's validity stale)
+  requiredInForm?: boolean;
   // Shown under the input (e.g. the phone's verification hint)
   children?: ReactNode;
 }
@@ -23,16 +29,23 @@ export default function KuwaitPhoneField({
   name,
   label,
   requiredMessage,
+  required = true,
+  requiredInForm = required,
   children,
 }: KuwaitPhoneFieldProps) {
   return (
     <View>
-      <FieldLabel>{label}</FieldLabel>
+      <FieldLabel optional={!required}>{label}</FieldLabel>
       <View className="flex-row gap-2">
         <Controller
           control={control}
           name={name}
-          rules={{ required: requiredMessage, minLength: 8 }}
+          // A cleared optional number is fine; a typed one must be complete
+          rules={
+            requiredInForm
+              ? { required: requiredMessage, minLength: 8 }
+              : { minLength: 8 }
+          }
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
               className={`flex-1 border ${errors[name] ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
