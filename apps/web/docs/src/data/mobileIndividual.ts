@@ -1111,7 +1111,6 @@ export const mobileIndividual: DocSection = {
         ],
       },
       updatedIn: "fix/individual-bugs",
-    },
     {
       id: "mobile-edit-profile-verify-contacts",
       title: {
@@ -1162,6 +1161,6 @@ export const mobileIndividual: DocSection = {
         ],
       },
       updatedIn: "fix/individual-bugs",
-    },
+    }
   ],
 };
