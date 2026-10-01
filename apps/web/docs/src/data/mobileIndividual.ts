@@ -1112,5 +1112,50 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/individual-bugs",
     },
+    {
+      id: "mobile-edit-profile-verify-contacts",
+      title: {
+        en: "Edit Profile: a new email or phone is verified with a code, and phone-only accounts can save",
+        ar: "تعديل الملف الشخصي: البريد أو الرقم الجديد يُتحقق منه برمز، وحسابات الهاتف فقط تستطيع الحفظ",
+      },
+      priority: "P0",
+      story: {
+        en: "In تعديل الملف الشخصي the email is now editable and optional. A new or added email shows 'ارسال رمز التحقق'; it opens the 'تحقق من البريد الإلكتروني' sheet with the 6-digit code sent to that address and a 45-second resend timer. Saving before verifying shows 'يرجى التحقق من البريد الإلكتروني قبل حفظ التغييرات.'; a correct code shows 'تم التحقق من البريد الالكتروني بنجاح.' and the profile can then be saved. A new or added phone still opens the 'تحقق من الرقم' SMS sheet on save. Fixes a bug: an account made with a phone number (no email) could never save, because the empty email was required.",
+        ar: "في تعديل الملف الشخصي أصبح البريد الإلكتروني قابلاً للتعديل واختيارياً. البريد الجديد أو المضاف يُظهر 'ارسال رمز التحقق'، الذي يفتح نافذة 'تحقق من البريد الإلكتروني' مع رمز من 6 أرقام يُرسل إلى ذلك العنوان ومؤقت إعادة إرسال 45 ثانية. الحفظ قبل التحقق يُظهر 'يرجى التحقق من البريد الإلكتروني قبل حفظ التغييرات.'؛ والرمز الصحيح يُظهر 'تم التحقق من البريد الالكتروني بنجاح.' ثم يمكن حفظ الملف. الرقم الجديد أو المضاف ما زال يفتح نافذة 'تحقق من الرقم' برسالة SMS عند الحفظ. يصلح خطأ: الحساب المُنشأ برقم هاتف (بدون بريد) لم يكن يستطيع الحفظ أبداً لأن البريد الفارغ كان مطلوباً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A user who signed up with a phone number (no email) can change their name and save.",
+          "Typing a new valid email shows 'ارسال رمز التحقق' under the field; an invalid one shows 'بريد الكتروني غير صالح' and no link.",
+          "Tapping the link sends a code to that email and opens the sheet showing the full address.",
+          "Pressing تعديل البيانات before verifying shows the amber toast and saves nothing.",
+          "The right code shows the green toast, the link disappears, and saving works.",
+          "Changing or adding a phone number opens the SMS code sheet on save; the rest is saved after the code.",
+        ],
+        ar: [
+          "المستخدم الذي سجّل برقم هاتف (بدون بريد) يستطيع تغيير اسمه والحفظ.",
+          "كتابة بريد جديد صحيح تُظهر 'ارسال رمز التحقق' تحت الحقل؛ والبريد غير الصحيح يُظهر 'بريد الكتروني غير صالح' بدون الرابط.",
+          "الضغط على الرابط يرسل رمزاً إلى ذلك البريد ويفتح النافذة مع العنوان كاملاً.",
+          "الضغط على تعديل البيانات قبل التحقق يُظهر التنبيه البرتقالي ولا يحفظ شيئاً.",
+          "الرمز الصحيح يُظهر التنبيه الأخضر ويختفي الرابط ويعمل الحفظ.",
+          "تغيير أو إضافة رقم هاتف يفتح نافذة رمز SMS عند الحفظ؛ ويُحفظ الباقي بعد الرمز.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in with a phone-only account, edit the name, tap تعديل البيانات — it saves.",
+          "Add an email, tap تعديل البيانات — amber toast; tap ارسال رمز التحقق, enter the emailed code — green toast; save — the email is on the profile.",
+          "Enter a wrong code — the error shows and the boxes clear for a retry.",
+          "Change the phone number and save — the SMS sheet opens; after the code the profile saves.",
+        ],
+        ar: [
+          "سجّل الدخول بحساب هاتف فقط، عدّل الاسم، اضغط تعديل البيانات — يُحفظ.",
+          "أضف بريداً، اضغط تعديل البيانات — تنبيه برتقالي؛ اضغط ارسال رمز التحقق وأدخل الرمز المرسل — تنبيه أخضر؛ احفظ — يظهر البريد في الملف.",
+          "أدخل رمزاً خاطئاً — يظهر الخطأ وتُفرغ الخانات لإعادة المحاولة.",
+          "غيّر رقم الهاتف واحفظ — تفتح نافذة SMS؛ وبعد الرمز يُحفظ الملف.",
+        ],
+      },
+      updatedIn: "fix/individual-bugs",
+    },
   ],
 };

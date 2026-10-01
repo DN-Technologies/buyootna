@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { EmailOtpService } from '../../../../core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from '../../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { TwilioService } from '../../../../core/twilio/twilio.service';
@@ -24,10 +25,15 @@ describe('LoginMethodService', () => {
     recordRequest: jest.fn(),
     recordVerifyAttempt: jest.fn(),
   };
+  const emailOtp = {
+    sendEmailChangeOtp: jest.fn().mockResolvedValue(undefined),
+    verifyEmailChangeOtp: jest.fn(),
+  };
   const service = new LoginMethodService(
     prisma as unknown as PrismaService,
     twilio as unknown as TwilioService,
     rateLimiter as unknown as OtpRateLimiterService,
+    emailOtp as unknown as EmailOtpService,
   );
 
   const user = (over: Record<string, unknown> = {}) => ({
@@ -142,6 +148,69 @@ describe('LoginMethodService', () => {
         }),
       );
       expect(result.phoneVerified).toBe(true);
+    });
+  });
+
+  describe('email verification', () => {
+    it('emails a code to the new address, normalised', async () => {
+      prisma.user.findUnique.mockResolvedValue({ name: 'سالم' });
+
+      await expect(
+        service.requestEmailOtp('u1', '  Salem@Mail.COM '),
+      ).resolves.toEqual({ destination: 'salem@mail.com' });
+
+      expect(emailOtp.sendEmailChangeOtp).toHaveBeenCalledWith(
+        'u1',
+        'salem@mail.com',
+        'سالم',
+      );
+      expect(rateLimiter.recordRequest).toHaveBeenCalledWith('u1');
+    });
+
+    it('refuses an address already on another account (any case)', async () => {
+      prisma.user.findFirst.mockResolvedValue({ id: 'u2' });
+
+      await expect(
+        service.requestEmailOtp('u1', 'taken@mail.com'),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(prisma.user.findFirst).toHaveBeenCalledWith({
+        where: {
+          email: { equals: 'taken@mail.com', mode: 'insensitive' },
+          id: { not: 'u1' },
+        },
+        select: { id: true },
+      });
+      expect(emailOtp.sendEmailChangeOtp).not.toHaveBeenCalled();
+    });
+
+    it('sets the address only with the right code', async () => {
+      emailOtp.verifyEmailChangeOtp.mockReturnValue(true);
+
+      const result = await service.verifyEmail('u1', 'New@Mail.com', '123456');
+
+      expect(emailOtp.verifyEmailChangeOtp).toHaveBeenCalledWith(
+        'u1',
+        'new@mail.com',
+        '123456',
+      );
+      expect(prisma.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { email: 'new@mail.com' } }),
+      );
+      expect(result).toMatchObject({
+        email: 'new@mail.com',
+        message: 'تم التحقق من البريد الإلكتروني',
+      });
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith('u1', true);
+    });
+
+    it('rejects a wrong code without touching the account', async () => {
+      emailOtp.verifyEmailChangeOtp.mockReturnValue(false);
+
+      await expect(
+        service.verifyEmail('u1', 'new@mail.com', '000000'),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.user.update).not.toHaveBeenCalled();
+      expect(rateLimiter.recordVerifyAttempt).toHaveBeenCalledWith('u1', false);
     });
   });
 });

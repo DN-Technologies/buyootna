@@ -151,4 +151,25 @@ export const settingsService = {
     );
     return response.data;
   },
+
+  /** Emails a code to an address the user wants on their account. */
+  requestEmailOtp: async (email: string): Promise<{ destination: string }> => {
+    const response = await apiClient.post<{ destination: string }>(
+      '/users/account/email/request-otp',
+      { email },
+    );
+    return response.data;
+  },
+
+  /** With the right code the address becomes the account's email. */
+  verifyEmail: async (
+    email: string,
+    otp: string,
+  ): Promise<LoginMethodResponse> => {
+    const response = await apiClient.post<LoginMethodResponse>(
+      '/users/account/email/verify',
+      { email, otp },
+    );
+    return response.data;
+  },
 };

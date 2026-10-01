@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { LoginMethod } from '@prisma/client';
 import type { LoginMethodChoice } from '../dto/login-method.dto';
+import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
 import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { TwilioService } from '../../../core/twilio/twilio.service';
@@ -22,7 +23,8 @@ export const NO_EMAIL_MESSAGE =
  * طريقة تسجيل الدخول: which identifier (email or phone) a password login
  * accepts, and proving a phone number with an SMS code so it can be that
  * identifier. A phone only becomes the account's phone once its code is
- * checked here -- Edit Profile no longer changes it directly.
+ * checked here -- Edit Profile no longer changes it directly. An email
+ * address is proven the same way, with a code sent to it.
  */
 @Injectable()
 export class LoginMethodService {
@@ -30,6 +32,7 @@ export class LoginMethodService {
     private readonly prisma: PrismaService,
     private readonly twilio: TwilioService,
     private readonly rateLimiter: OtpRateLimiterService,
+    private readonly emailOtp: EmailOtpService,
   ) {}
 
   private async findUser(userId: string) {
@@ -148,5 +151,72 @@ export class LoginMethodService {
       },
     });
     return { ...this.view(updated), message: 'تم التحقق من رقم الهاتف' };
+  }
+
+  /** Lowercased and trimmed: "Ali@X.com " and "ali@x.com" are one address. */
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  private async assertEmailAvailable(userId: string, email: string) {
+    const taken = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+        id: { not: userId },
+      },
+      select: { id: true },
+    });
+    if (taken) {
+      throw new ConflictException('البريد الإلكتروني مستخدم في حساب آخر');
+    }
+  }
+
+  /** Emails a code to the address the user wants on their account. */
+  async requestEmailOtp(userId: string, email: string) {
+    const clean = this.normalizeEmail(email);
+    await this.assertEmailAvailable(userId, clean);
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    try {
+      await this.emailOtp.sendEmailChangeOtp(
+        userId,
+        clean,
+        user?.name || 'مستخدم بيوتنا',
+      );
+    } catch {
+      throw new InternalServerErrorException(
+        'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',
+      );
+    }
+    this.rateLimiter.recordRequest(userId);
+    return { destination: clean };
+  }
+
+  /** Checks the code; only then does the address become the account's. */
+  async verifyEmail(userId: string, email: string, otp: string) {
+    const clean = this.normalizeEmail(email);
+    await this.assertEmailAvailable(userId, clean);
+    const valid = this.emailOtp.verifyEmailChangeOtp(userId, clean, otp);
+    this.rateLimiter.recordVerifyAttempt(userId, valid);
+    if (!valid) {
+      throw new BadRequestException('رمز التحقق غير صحيح أو منتهي الصلاحية');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { email: clean },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        phoneVerifiedAt: true,
+        loginMethod: true,
+      },
+    });
+    return {
+      ...this.view(updated),
+      message: 'تم التحقق من البريد الإلكتروني',
+    };
   }
 }

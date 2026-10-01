@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
 import { accountSuspendOtpTemplate } from '../mail/templates/account-suspend-otp.template';
+import { emailChangeOtpTemplate } from '../mail/templates/email-change-otp.template';
 import { passwordResetOtpTemplate } from '../mail/templates/password-reset-otp.template';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
@@ -37,6 +38,12 @@ export class EmailOtpService {
   private readonly pendingResets = new Map<string, PendingPasswordReset>();
   // Codes confirming a self-suspension, keyed by the account's email
   private readonly pendingSuspends = new Map<string, PendingPasswordReset>();
+  // Codes proving an address a signed-in user wants on their account, keyed
+  // by user and address so a code only ever confirms that pair
+  private readonly pendingEmailChanges = new Map<
+    string,
+    PendingPasswordReset
+  >();
 
   constructor(
     private readonly mailService: MailService,
@@ -180,6 +187,56 @@ export class EmailOtpService {
     }
 
     this.pendingSuspends.delete(email);
+    return true;
+  }
+
+  private emailChangeKey(userId: string, email: string): string {
+    return `${userId}:${email}`;
+  }
+
+  /** Sends the code proving `email` before it becomes the user's address. */
+  async sendEmailChangeOtp(
+    userId: string,
+    email: string,
+    userName: string,
+  ): Promise<void> {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    this.pendingEmailChanges.set(this.emailChangeKey(userId, email), {
+      otp,
+      expiresAt: new Date(Date.now() + OTP_TTL_MS()),
+    });
+
+    if (this.mailService.isMockMode) {
+      this.logger.warn(
+        `[MOCK MAIL] Resend is disabled or unconfigured. Email-change OTP for ${email}: ${otp}`,
+      );
+    }
+
+    await this.mailService.sendMail({
+      to: email,
+      subject: 'رمز التحقق من البريد الإلكتروني - Buyootna',
+      html: emailChangeOtpTemplate({ userName, otp }),
+    });
+    // Rate limiting is keyed by user id by the caller (LoginMethodService)
+  }
+
+  /** Dev/CI-only accessor for a pending email-change OTP. */
+  getMockEmailChangeOtp(userId: string, email: string): string | null {
+    return this.mailService.isMockMode
+      ? (this.pendingEmailChanges.get(this.emailChangeKey(userId, email))
+          ?.otp ?? null)
+      : null;
+  }
+
+  /** Validates an email-change OTP and, if correct, consumes it. */
+  verifyEmailChangeOtp(userId: string, email: string, otp: string): boolean {
+    const key = this.emailChangeKey(userId, email);
+    const record = this.pendingEmailChanges.get(key);
+    if (!record || record.expiresAt < new Date() || record.otp !== otp) {
+      return false;
+    }
+
+    this.pendingEmailChanges.delete(key);
     return true;
   }
 }

@@ -628,5 +628,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "api-email-verification",
+      title: {
+        en: "A new account email is set only through an emailed code",
+        ar: "البريد الجديد للحساب يُعيَّن فقط عبر رمز يُرسل إليه",
+      },
+      priority: "P0",
+      story: {
+        en: "POST /users/account/email/request-otp {email} emails a 6-digit code to the address (rate limited per user, like the phone route) and refuses an address already on another account (409, any letter case). POST /users/account/email/verify {email, otp} sets it as the account's email only with the right code; a code is single-use, expires, and only confirms that user and that address. PATCH /users/profile now refuses a different email with 400 EMAIL_VERIFICATION_REQUIRED, accepts the unchanged one in any case, and treats an empty email as not sent (it never blanks the address).",
+        ar: "POST /users/account/email/request-otp {email} يرسل رمزاً من 6 أرقام إلى العنوان (بحد للطلبات لكل مستخدم مثل مسار الهاتف) ويرفض عنواناً مستخدماً في حساب آخر (409، بأي حالة أحرف). POST /users/account/email/verify {email, otp} يجعله بريد الحساب فقط بالرمز الصحيح؛ الرمز لمرة واحدة وينتهي، ولا يؤكد إلا ذلك المستخدم وذلك العنوان. PATCH /users/profile يرفض الآن بريداً مختلفاً بـ 400 EMAIL_VERIFICATION_REQUIRED، ويقبل البريد نفسه بأي حالة أحرف، ويعامل البريد الفارغ كأنه لم يُرسل (لا يمسح العنوان أبداً).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "request-otp with an invalid address → 400 'بريد الكتروني غير صالح'.",
+          "request-otp for an address on another account → 409 'البريد الإلكتروني مستخدم في حساب آخر'.",
+          "verify with a wrong, expired or reused code → 400 and the email is unchanged.",
+          "verify with the right code → the email is set (lowercased) and returned.",
+          "PATCH /users/profile with a new email → 400 EMAIL_VERIFICATION_REQUIRED; with '' or the same email → 200.",
+        ],
+        ar: [
+          "request-otp بعنوان غير صالح ← 400 'بريد الكتروني غير صالح'.",
+          "request-otp لعنوان في حساب آخر ← 409 'البريد الإلكتروني مستخدم في حساب آخر'.",
+          "verify برمز خاطئ أو منتهٍ أو مستخدم ← 400 ولا يتغير البريد.",
+          "verify بالرمز الصحيح ← يُعيَّن البريد (بأحرف صغيرة) ويُعاد.",
+          "PATCH /users/profile ببريد جديد ← 400 EMAIL_VERIFICATION_REQUIRED؛ وبـ '' أو بنفس البريد ← 200.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With mail in mock mode, request a code for a made-up address, read it from the API log, verify — /users/me shows the new email.",
+          "Reuse the same code — 400.",
+          "PATCH /users/profile with another email without a code — 400 EMAIL_VERIFICATION_REQUIRED.",
+        ],
+        ar: [
+          "مع البريد في الوضع التجريبي، اطلب رمزاً لعنوان وهمي، اقرأه من سجل الخادم، ثم تحقق — يظهر البريد الجديد في ‎/users/me.",
+          "أعد استخدام نفس الرمز — 400.",
+          "PATCH /users/profile ببريد آخر بدون رمز — 400 EMAIL_VERIFICATION_REQUIRED.",
+        ],
+      },
+      updatedIn: "fix/individual-bugs",
+    },
   ],
 };

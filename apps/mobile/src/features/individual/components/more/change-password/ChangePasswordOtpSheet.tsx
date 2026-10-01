@@ -18,7 +18,12 @@ interface ChangePasswordOtpSheetProps {
   otp: string;
   onOtpChange: (text: string) => void;
   otpError: string;
+  // Where the code went: a masked phone, or the full email address
   maskedPhone: string;
+  // Defaults to the phone wording
+  title?: string;
+  // Tells two of these sheets on one screen apart (tests)
+  testID?: string;
   secondsLeft: number;
   isReady: boolean;
   limitReachedMessage: string | null;
@@ -39,6 +44,8 @@ export const ChangePasswordOtpSheet = forwardRef<
       onOtpChange,
       otpError,
       maskedPhone,
+      title = 'تحقق من الرقم',
+      testID,
       secondsLeft,
       isReady,
       limitReachedMessage,
@@ -95,14 +102,14 @@ export const ChangePasswordOtpSheet = forwardRef<
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="flex-1 px-6 pb-8 pt-4">
+        <BottomSheetView testID={testID} className="flex-1 px-6 pb-8 pt-4">
           {/* Close button X */}
           <View className="mb-4 flex-row items-center justify-between">
             <TouchableOpacity onPress={handleClose} className="p-1">
               <Feather name="x" size={22} color="#111111" />
             </TouchableOpacity>
             <Text className="font-cairo-bold text-lg text-[#111111]">
-              تحقق من الرقم
+              {title}
             </Text>
             <View className="w-8" />
           </View>

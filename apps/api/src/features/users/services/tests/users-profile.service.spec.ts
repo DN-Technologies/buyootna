@@ -123,6 +123,64 @@ describe('UsersProfileService', () => {
     });
   });
 
+  describe('email (a sign-in identifier)', () => {
+    beforeEach(() => {
+      prisma.user.findUnique.mockResolvedValue({
+        phone: '+96599998888',
+        email: 'Salem@Mail.com',
+      });
+      // An individual save also updates the persona's own row
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'identity-1',
+        individualData: { name: 'سالم', whatsapp: null, avatarUrl: null },
+      });
+      prisma.individualIdentityData = {
+        update: jest.fn().mockResolvedValue({}),
+      };
+    });
+
+    it('refuses a new address -- it only changes through the emailed code', async () => {
+      const attempt = service.updateProfile('user-1', Role.INDIVIDUAL, {
+        email: 'other@mail.com',
+      });
+      await expect(attempt).rejects.toMatchObject({
+        response: { code: 'EMAIL_VERIFICATION_REQUIRED' },
+      });
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+
+    it('accepts the unchanged address in any case and leaves it alone', async () => {
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        email: ' salem@mail.com ',
+        whatsapp: '99998888',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { whatsapp: '99998888' },
+      });
+    });
+
+    it('lets a phone sign-in user (no email) save: an empty email is "not sent"', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        phone: '+96599998888',
+        email: null,
+      });
+
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        name: 'سالم',
+        email: '',
+        phone: '99998888',
+        whatsapp: '99998888',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'سالم', whatsapp: '99998888' },
+      });
+    });
+  });
+
   describe('listMyProjects / deleteMyProject', () => {
     it('scopes listMyProjects to the caller company identity', async () => {
       await service.listMyProjects('user-1');
