@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 import { CreatePropertyPayload, propertiesService } from '@/shared/api/properties.service';
+import { formatDetails } from '@/shared/components/map/picker/addressParsing';
+import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 import type { PropertyDetailsDto } from '@/types/property';
 
@@ -29,6 +31,8 @@ export interface ListingStateData {
   features: string[]; // المزايا (Array of IDs)
   mapLocation: string | null; // e.g., "Lat, Lng" or a location object
   mapLocationLabel: string | null;
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة from the map picker
+  addressDetails: AddressDetails | null;
   propertyAge: string;
 
   showPrice: boolean; // Toggle state
@@ -136,6 +140,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   features: [],
   mapLocation: null,
   mapLocationLabel: null,
+  addressDetails: null,
   propertyAge: '',
   showPrice: true,
   showIncome: false,
@@ -247,8 +252,18 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       }
     }
 
+    // The pin and the address details the ad was published with
+    const hasPin =
+      typeof property.latitude === 'number' &&
+      typeof property.longitude === 'number';
+
     set({
       isEdit: true,
+      mapLocation: hasPin ? `${property.latitude},${property.longitude}` : null,
+      mapLocationLabel: hasPin
+        ? formatDetails(property.addressDetails) || property.location || null
+        : null,
+      addressDetails: property.addressDetails ?? null,
       listingType: property.type === 'SALE' ? 'sell' : property.type === 'RENT' ? 'rent' : 'exchange',
       governorate,
       area,
@@ -327,6 +342,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       const [latStr, lngStr] = state.mapLocation.split(',');
       payload.latitude = parseFloat(latStr.trim());
       payload.longitude = parseFloat(lngStr.trim());
+    }
+    if (state.addressDetails) {
+      payload.addressDetails = state.addressDetails;
     }
 
     // Features (store as full objects for richer data)

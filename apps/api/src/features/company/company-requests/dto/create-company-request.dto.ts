@@ -8,8 +8,11 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { AddressDetailsDto } from '../../../../core/dto/address-details.dto';
 
 /**
  * Creates a price-quote request. Authenticated as the requesting identity;
@@ -48,6 +51,12 @@ export class CreateCompanyRequestDto {
   @IsNotEmpty()
   @MaxLength(200)
   location: string;
+
+  @ApiProperty({ required: false, type: AddressDetailsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDetailsDto)
+  addressDetails?: AddressDetailsDto;
 
   @ApiProperty({ required: false })
   @IsNumber()

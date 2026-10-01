@@ -57,7 +57,13 @@ export class PropertiesFeedService {
     const [saleProperties, rentProperties, exchangeProperties, topCompanies] =
       await Promise.all([
         this.prisma.property.findMany({
-          where: { type: 'SALE', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
+          where: {
+            type: 'SALE',
+            status: 'ACTIVE',
+            isHidden: false,
+            ...notExpiredWhere(),
+            ...ownerActiveWhere(),
+          },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -78,7 +84,13 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'RENT', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
+          where: {
+            type: 'RENT',
+            status: 'ACTIVE',
+            isHidden: false,
+            ...notExpiredWhere(),
+            ...ownerActiveWhere(),
+          },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },
@@ -99,7 +111,13 @@ export class PropertiesFeedService {
         }),
 
         this.prisma.property.findMany({
-          where: { type: 'EXCHANGE', status: 'ACTIVE', isHidden: false, ...notExpiredWhere(), ...ownerActiveWhere() },
+          where: {
+            type: 'EXCHANGE',
+            status: 'ACTIVE',
+            isHidden: false,
+            ...notExpiredWhere(),
+            ...ownerActiveWhere(),
+          },
           orderBy: [
             { isPriority: 'desc' },
             { isFeatured: 'desc' },

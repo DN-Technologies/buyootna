@@ -48,6 +48,7 @@ export default function RequestQuoteScreen() {
     setPriceTo,
     addressLabel,
     addressCoords,
+    addressDetails,
     showMapPicker,
     setShowMapPicker,
     description,
@@ -176,6 +177,7 @@ export default function RequestQuoteScreen() {
         initialLat={addressCoords?.lat}
         initialLng={addressCoords?.lng}
         initialAddressLabel={addressLabel || undefined}
+        initialDetails={addressDetails}
       />
 
       <SuccessBottomSheet

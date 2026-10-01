@@ -30,6 +30,14 @@ export interface PropertyDetailsDto {
   propertyIncome?: number | null;
   additionalExpenses?: string | null;
   rentConditions?: string | null;
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة
+  addressDetails?: {
+    block?: string;
+    street?: string;
+    avenue?: string;
+    building?: string;
+    landmark?: string;
+  } | null;
   latitude?: number | null;
   longitude?: number | null;
   host: {

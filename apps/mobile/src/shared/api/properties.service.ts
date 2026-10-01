@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 
 import apiClient from '@/shared/api/api';
+import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 import { PropertyDetailsDto } from '@/types/property';
 
 // The shape of the payload we send to POST /properties
@@ -15,6 +16,7 @@ export interface CreatePropertyPayload {
   description: string;
   images: string[];
   propertyAge?: number;
+  addressDetails?: AddressDetails;
   latitude?: number;
   longitude?: number;
   price?: number;

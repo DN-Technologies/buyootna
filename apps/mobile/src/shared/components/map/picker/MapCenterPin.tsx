@@ -24,7 +24,7 @@ export function MapCenterPin({ isLoadingAddress }: MapCenterPinProps) {
           {/* Floating Badge above pin */}
           <View className="mb-1 rounded-full bg-[#15304D] px-3 py-1 shadow-md">
             <Text className="font-cairo-semibold text-xs leading-[20px] text-white">
-              اسحب الخريطة لتحديد الموقع
+              اسحب الخريطة أو اضغط لتحديد الموقع
             </Text>
           </View>
 

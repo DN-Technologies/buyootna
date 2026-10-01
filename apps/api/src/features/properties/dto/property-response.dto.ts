@@ -234,6 +234,12 @@ export class PropertyDto {
   @ApiProperty({ nullable: true })
   exchangeStatus: string | null;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'block / street / avenue / building / landmark',
+  })
+  addressDetails?: Record<string, string> | null;
+
   @ApiProperty({ nullable: true })
   latitude: number | null;
 

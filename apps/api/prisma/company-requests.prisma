@@ -18,6 +18,8 @@ model CompanyRequest {
   category    String?
   priceRange  String?
   location    String
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة, from the location picker
+  addressDetails Json?
   latitude    Float?
   longitude   Float?
   offerType   String?

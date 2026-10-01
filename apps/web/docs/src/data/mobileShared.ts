@@ -507,5 +507,56 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/add-identity-business",
     },
+    {
+      id: "mobile-location-picker",
+      title: {
+        en: "Location picker: tap to place, address details, recent and saved places, Kuwait area search",
+        ar: "منتقي الموقع: الضغط للتحديد وتفاصيل العنوان والأماكن الأخيرة والمحفوظة والبحث بمناطق الكويت",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As someone adding an ad or asking for a quote, I want to place my location precisely and quickly, with the block, street and house, so that the other side finds the place.",
+        ar: "بصفتي أضيف إعلاناً أو أطلب عرض سعر، أريد تحديد موقعي بدقة وسرعة مع القطعة والشارع والمنزل، حتى يجد الطرف الآخر المكان.",
+      },
+      story: {
+        en: "Verify the map picker (add listing, quote request screen and popup, company sign-up): the search bar and buttons sit below the notch; tapping anywhere on the map moves the pin there; '+ إضافة تفاصيل العنوان' opens العنوان (editable), القطعة, الشارع, الجادة, المنزل / المبنى and علامة مميزة — the map pre-fills what it knows (block, street, house) and never overwrites a field the user typed; the summary ('قطعة 6، شارع …، منزل 12') shows under the address. With the search box focused and empty, المحفوظة (المنزل / العمل / named places, from the account) and الأخيرة (the last 5 confirmed, on the device) appear; tapping one jumps there with its details; long-press deletes a saved one. Typing an area matches our list of Kuwait areas (spelling variants such as ة/ه and أ/ا included) in an 'المناطق' group above the map results; 'السالمية قطعة 5' centres on Salmiya and fills القطعة = 5. 'حفظ الموقع' saves the spot as المنزل, العمل or a custom name (signed-in users). The details are saved on ads and quote requests and shown on the ad and on the company's request view.",
+        ar: "تحقق من منتقي الموقع (إضافة إعلان، شاشة ونافذة طلب السعر، تسجيل الشركة): شريط البحث والأزرار تحت النوتش؛ الضغط في أي مكان على الخريطة ينقل الدبوس إليه؛ '+ إضافة تفاصيل العنوان' تفتح العنوان (قابل للتعديل) والقطعة والشارع والجادة والمنزل / المبنى وعلامة مميزة — تملأ الخريطة ما تعرفه (القطعة والشارع والمنزل) ولا تستبدل أبداً حقلاً كتبه المستخدم؛ ويظهر الملخص ('قطعة 6، شارع …، منزل 12') تحت العنوان. عند التركيز على البحث وهو فارغ تظهر المحفوظة (المنزل / العمل / أماكن مسماة، من الحساب) والأخيرة (آخر 5 مؤكدة، على الجهاز)؛ الضغط على أحدها ينتقل إليه مع تفاصيله؛ والضغط المطوّل يحذف المحفوظ. كتابة منطقة تطابق قائمتنا لمناطق الكويت (مع اختلافات الكتابة مثل ة/ه وأ/ا) في مجموعة 'المناطق' فوق نتائج الخريطة؛ و'السالمية قطعة 5' تتمركز على السالمية وتملأ القطعة = 5. 'حفظ الموقع' يحفظ المكان كالمنزل أو العمل أو باسم مخصص (للمسجلين). تُحفظ التفاصيل في الإعلانات وطلبات السعر وتظهر في الإعلان وفي عرض الطلب لدى الشركة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Nothing overlaps the notch or the home indicator on any iPhone.",
+          "A tap moves the pin; dragging still works.",
+          "Typed details survive moving the map; the map only fills empty fields.",
+          "The ad details show the address line under the location; the company sees it with the request's location.",
+          "Recent places persist after closing the app; saved places follow the account to another device.",
+          "Area search finds 'الاحمدي' for 'الأحمدي' and fills the block from 'قطعة N'.",
+          "Guests see recent places but no 'حفظ الموقع'.",
+        ],
+        ar: [
+          "لا يتداخل شيء مع النوتش أو مؤشر الشاشة الرئيسية على أي آيفون.",
+          "الضغط ينقل الدبوس؛ والسحب ما زال يعمل.",
+          "التفاصيل المكتوبة تبقى عند تحريك الخريطة؛ والخريطة تملأ الحقول الفارغة فقط.",
+          "تفاصيل الإعلان تعرض سطر العنوان تحت الموقع؛ والشركة تراه مع موقع الطلب.",
+          "الأماكن الأخيرة تبقى بعد إغلاق التطبيق؛ والمحفوظة تنتقل مع الحساب لجهاز آخر.",
+          "البحث بالمناطق يجد 'الاحمدي' عند كتابة 'الأحمدي' ويملأ القطعة من 'قطعة N'.",
+          "الزوار يرون الأماكن الأخيرة دون 'حفظ الموقع'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Add an ad: open the map, tap a street, add الجادة and المنزل, confirm, publish; open the ad — the address line shows.",
+          "Send a quote request with details; as the company open it — the details are next to the location.",
+          "Save a place as المنزل, sign in on another phone, open the picker and focus search — المنزل is listed.",
+          "Search 'السالميه قطعة 5' and pick the area — the map centres there and القطعة shows 5.",
+        ],
+        ar: [
+          "أضف إعلاناً: افتح الخريطة واضغط على شارع وأضف الجادة والمنزل وأكّد وانشر؛ افتح الإعلان — يظهر سطر العنوان.",
+          "أرسل طلب سعر مع التفاصيل؛ وكشركة افتحه — تظهر التفاصيل بجانب الموقع.",
+          "احفظ مكاناً كالمنزل، وسجّل الدخول من هاتف آخر، وافتح المنتقي وركّز على البحث — يظهر المنزل.",
+          "ابحث 'السالميه قطعة 5' واختر المنطقة — تتمركز الخريطة هناك وتظهر القطعة 5.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };

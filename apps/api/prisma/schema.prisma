@@ -44,6 +44,7 @@ model User {
   notifications    Notification[]
   sessions         Session[]
   suspensions      AccountSuspension[]
+  savedLocations   SavedLocation[]
   socialAccounts   SocialAccount[]
   reportsFiled     Report[]                  @relation("ReporterReports")
   reportsAgainst   Report[]                  @relation("TargetUserReports")
@@ -448,6 +449,30 @@ model AccountSuspension {
   until         DateTime?
   createdAt     DateTime  @default(now())
   reactivatedAt DateTime?
+
+  @@index([userId])
+}
+
+enum SavedLocationLabel {
+  HOME
+  WORK
+  OTHER
+}
+
+// Places the user saved in the location picker (المنزل / العمل / custom)
+model SavedLocation {
+  id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     SavedLocationLabel
+  // Shown for OTHER; HOME and WORK use their fixed titles
+  name      String?
+  address   String
+  latitude  Float
+  longitude Float
+  details   Json?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 
   @@index([userId])
 }

@@ -7,9 +7,11 @@ import {
   IsOptional,
   IsString,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ListingType, PropertyCategory, PropertyStatus } from '@prisma/client';
+import { AddressDetailsDto } from '../../../core/dto/address-details.dto';
 
 export class CreatePropertyDto {
   @IsBoolean({ message: 'حالة المسودة يجب أن تكون قيمة منطقية' })
@@ -49,6 +51,12 @@ export class CreatePropertyDto {
   @Type(() => Number)
   @IsNumber({}, { message: 'عمر العقار يجب أن يكون رقماً' })
   propertyAge?: number;
+
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة from the location picker
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AddressDetailsDto)
+  addressDetails?: AddressDetailsDto;
 
   @IsOptional()
   @Type(() => Number)

@@ -15,6 +15,7 @@ import PropertyImageCarousel from '@/features/individual/components/property-det
 import PropertyPriceViewsRow from '@/features/individual/components/property-details-sheet/PropertyPriceViewsRow';
 import PropertySpecsRow from '@/features/individual/components/property-details-sheet/PropertySpecsRow';
 import { usePropertyContactActions } from '@/features/individual/components/property-details-sheet/usePropertyContactActions';
+import { formatDetails } from '@/shared/components/map/picker/addressParsing';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -137,6 +138,7 @@ const PropertyDetailsSheet = forwardRef<
 
                 <PropertyAdditionalDetails
                   location={property.location}
+                  addressLine={formatDetails(property.addressDetails)}
                   propertyIncome={property.propertyIncome}
                   licenseNumber={property.licenseNumber}
                 />

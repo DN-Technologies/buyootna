@@ -5,12 +5,15 @@ import { IncomeIcon, LicenseIcon } from '@/assets/icons/home/property';
 
 interface PropertyAdditionalDetailsProps {
   location?: string;
+  // "قطعة 6، شارع …، منزل 12" from the map picker's address details
+  addressLine?: string;
   propertyIncome?: number | null;
   licenseNumber?: string;
 }
 
 export default function PropertyAdditionalDetails({
   location,
+  addressLine,
   propertyIncome,
   licenseNumber,
 }: PropertyAdditionalDetailsProps) {
@@ -20,12 +23,23 @@ export default function PropertyAdditionalDetails({
       {location && (
         <View className="flex-row items-start gap-2">
           <LocationIcon color="#15304D" size={18} />
-          <Text
-            className="flex-1 font-cairo-semibold text-sm leading-[20px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            {location}
-          </Text>
+          <View className="flex-1">
+            <Text
+              className="font-cairo-semibold text-sm leading-[20px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              {location}
+            </Text>
+            {!!addressLine && (
+              <Text
+                testID="property-address-line"
+                className="mt-0.5 font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                {addressLine}
+              </Text>
+            )}
+          </View>
         </View>
       )}
 

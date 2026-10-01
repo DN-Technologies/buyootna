@@ -31,6 +31,8 @@ model Property {
   salePercentage     Float?
   startDate          DateTime?
   exchangeStatus     PropertyStatus?
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة, from the location picker
+  addressDetails     Json?
   latitude           Float?
   longitude          Float?
   propertyAge        Int?
