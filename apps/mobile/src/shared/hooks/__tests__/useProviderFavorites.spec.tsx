@@ -64,7 +64,9 @@ describe('useProviderFavorites', () => {
     await act(() => result.current.toggleFavorite('c2'));
 
     expect(favoritesService.toggleProvider).toHaveBeenCalledWith('c2');
-    expect(result.current.isFavorited('c2')).toBe(true);
+    // React Query delivers the update on a timer; on a busy CI runner it can
+    // land just after act() returns
+    await waitFor(() => expect(result.current.isFavorited('c2')).toBe(true));
   });
 
   it('puts the heart back and explains when saving fails', async () => {
@@ -76,6 +78,9 @@ describe('useProviderFavorites', () => {
 
     await act(() => result.current.toggleFavorite('c1'));
 
+    await waitFor(() =>
+      expect(showAlert).toHaveBeenCalledWith('خطأ', 'الشركة أو المكتب غير موجود'),
+    );
     expect(result.current.isFavorited('c1')).toBe(true);
     expect(showAlert).toHaveBeenCalledWith('خطأ', 'الشركة أو المكتب غير موجود');
   });
