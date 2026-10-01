@@ -135,7 +135,9 @@ const DeleteConfirmationSheet = forwardRef<
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       keyboardBehavior="interactive"
       keyboardBlurBehavior="restore"
-      android_keyboardInputMode="adjustResize"
+      // No android_keyboardInputMode="adjustResize": with edge-to-edge the
+      // window never resizes, and in that mode the sheet doesn't move either,
+      // so the keyboard covered it. The default lets the sheet rise itself.
     >
       <BottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
         {step === 'confirm' ? (

@@ -562,5 +562,75 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "mobile-android-text-cutoff",
+      title: {
+        en: "Android: button and label text is never cut off",
+        ar: "أندرويد: نصوص الأزرار والعناوين لا تُقص أبداً",
+      },
+      priority: "P1",
+      story: {
+        en: "Regression check for a fixed bug: on Android, short labels in the Cairo font lost their last word — 'تسجيل الخروج' showed as 'تسجيل' in the logout sheet, and the same happened in other buttons. Android's default line breaking mis-measured the font and pushed the last word onto a hidden second line. A patch to React Native's Text (patches/react-native@0.81.5.patch) makes Android use the 'simple' strategy by default; iOS is unchanged.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: على أندرويد كانت العناوين القصيرة بخط Cairo تفقد كلمتها الأخيرة — 'تسجيل الخروج' تظهر 'تسجيل' في نافذة تسجيل الخروج، ويحدث نفس الشيء في أزرار أخرى. كان تقسيم الأسطر الافتراضي في أندرويد يخطئ في قياس الخط فيدفع الكلمة الأخيرة إلى سطر ثانٍ مخفي. تعديل على مكوّن Text في React Native (patches/react-native@0.81.5.patch) يجعل أندرويد يستخدم الطريقة 'simple' افتراضياً؛ ولا يتغير شيء على iOS.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On Android, the logout sheet's red button reads 'تسجيل الخروج' in full.",
+          "No button or label anywhere in the app shows a cut word or a hidden second line.",
+          "iOS looks exactly as before.",
+        ],
+        ar: [
+          "على أندرويد يظهر زر نافذة تسجيل الخروج الأحمر 'تسجيل الخروج' كاملاً.",
+          "لا يظهر في أي مكان بالتطبيق زر أو عنوان بكلمة مقصوصة أو سطر ثانٍ مخفي.",
+          "يبقى iOS كما هو تماماً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an Android phone open المزيد → تسجيل الخروج — both buttons show their full text.",
+          "Walk the main flows on Android (add ad, filters, sheets, settings) and look for cut labels.",
+        ],
+        ar: [
+          "على هاتف أندرويد افتح المزيد ← تسجيل الخروج — يظهر نص الزرين كاملاً.",
+          "تصفّح المسارات الرئيسية على أندرويد (إضافة إعلان، الفلاتر، النوافذ، الإعدادات) وابحث عن عناوين مقصوصة.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
+    {
+      id: "mobile-android-keyboard-sheets",
+      title: {
+        en: "Android: the keyboard never covers a bottom sheet's text box",
+        ar: "أندرويد: الكيبورد لا يغطي خانة الكتابة في النوافذ السفلية",
+      },
+      priority: "P1",
+      story: {
+        en: "Regression check for a fixed bug: on Android, typing in a bottom sheet (e.g. the delete-ad reason 'ما سبب حذف الاعلان؟') opened the keyboard on top of the sheet, hiding the text box and the buttons. The app draws edge-to-edge, so Android never shrinks the window for the keyboard, and the sheets were set to wait for that resize. They now lift themselves above the keyboard. Covers: delete ad, deactivate account, change-password OTP, filters, add review, report, and quote request.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: على أندرويد كان الكيبورد يفتح فوق النافذة السفلية عند الكتابة (مثل سبب حذف الإعلان 'ما سبب حذف الاعلان؟') فيخفي خانة الكتابة والأزرار. التطبيق يعرض الشاشة كاملة حتى الحواف، فلا يصغّر أندرويد النافذة عند ظهور الكيبورد، وكانت النوافذ تنتظر هذا التصغير. الآن ترتفع النوافذ بنفسها فوق الكيبورد. يشمل: حذف الإعلان، تعطيل الحساب، رمز تغيير كلمة المرور، الفلاتر، إضافة تقييم، الإبلاغ، وطلب عرض السعر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On Android, tapping the text box in any of these sheets lifts the sheet so the box and its buttons stay above the keyboard.",
+          "Closing the keyboard returns the sheet to its normal height.",
+          "iOS behaves exactly as before.",
+        ],
+        ar: [
+          "على أندرويد، الضغط على خانة الكتابة في أي من هذه النوافذ يرفع النافذة فتبقى الخانة وأزرارها فوق الكيبورد.",
+          "إغلاق الكيبورد يعيد النافذة إلى ارتفاعها الطبيعي.",
+          "يبقى iOS كما هو تماماً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an Android phone: إعلاناتي → delete an ad → choose 'سبب اخر' and type — the text box and the delete button stay visible.",
+          "Repeat in deactivate account, change password (OTP), add review, report and quote request.",
+        ],
+        ar: [
+          "على هاتف أندرويد: إعلاناتي ← حذف إعلان ← اختر 'سبب اخر' واكتب — تبقى خانة الكتابة وزر الحذف ظاهرين.",
+          "كرر ذلك في تعطيل الحساب، تغيير كلمة المرور (الرمز)، إضافة تقييم، الإبلاغ، وطلب عرض السعر.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };

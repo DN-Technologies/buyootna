@@ -86,6 +86,10 @@ const renderPicker = (onConfirm = jest.fn()) =>
     </QueryClientProvider>,
   );
 
+// The first test pays the cold load of the whole picker (map, sheets,
+// stores); under a full parallel run that alone can pass 15s
+jest.setTimeout(30000);
+
 describe('MapPickerModal', () => {
   beforeEach(() => {
     jest.clearAllMocks();

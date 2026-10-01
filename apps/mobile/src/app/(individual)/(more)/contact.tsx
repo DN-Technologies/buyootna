@@ -87,7 +87,7 @@ export default function ContactUsScreen() {
       >
         {/* Logo Section */}
         <View className="mb-6 items-center">
-          <BuyootnaLogoDark width={120} height={102} />
+          <BuyootnaLogoDark width={180} height={45} />
         </View>
 
         {/* Intro text */}

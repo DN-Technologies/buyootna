@@ -5,7 +5,7 @@ import * as Updates from 'expo-updates';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BuyootnaLogo, CompanyLogo } from '@/assets/icons';
+import { BuyootnaLogoDark, CompanyLogo } from '@/assets/icons';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 
 const appVersion = Constants.expoConfig?.version;
@@ -59,7 +59,7 @@ export default function AboutScreen() {
       >
         {/* --- Buyootna Section --- */}
         <View className="mb-6 items-center">
-          <BuyootnaLogo width={140} height={75} />
+          <BuyootnaLogoDark width={180} height={45} />
         </View>
 
         <View className="mb-8 gap-5">
