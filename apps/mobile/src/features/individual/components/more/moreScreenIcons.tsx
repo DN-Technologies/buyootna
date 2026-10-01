@@ -1,5 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 
+import { NotificationIcon } from '@/assets/icons/home/header';
+
 // Thin Feather wrappers matching MenuItem's `icon: ComponentType<{color,
 // size}>` prop shape -- kept local to this screen since these are one-off
 // glyphs, unlike the custom SVGs in @/assets/icons/more.
@@ -24,5 +26,5 @@ export const FileIcon = ({ color, size }: IconProps) => (
   <Feather name="file-text" color={color} size={size} />
 );
 export const BellIcon = ({ color, size }: IconProps) => (
-  <Feather name="bell" color={color} size={size} />
+  <NotificationIcon size={size} color={color} />
 );
