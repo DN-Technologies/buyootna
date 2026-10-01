@@ -101,12 +101,14 @@ export const mobileShared: DocSection = {
           "Two personas of the same account can't message each other ('لا يمكنك بدء محادثة مع نفسك').",
           "The inbox after switching persona lists only that persona's conversations.",
           "Messaging a suspended or blocked account is refused ('هذا الحساب غير متاح حالياً').",
+          "The ad banner at the top shows only when the chat was opened from that ad; opening the same chat from an office/company list or profile clears it for both sides, and opening it from an ad again brings that ad back.",
         ],
         ar: [
           "الرسالة المرسلة تظهر للمستلم دون تحديث وتبقى بعد إعادة فتح المحادثة.",
           "لا يمكن لهويتين في نفس الحساب مراسلة بعضهما ('لا يمكنك بدء محادثة مع نفسك').",
           "صندوق الوارد بعد تبديل الهوية يعرض محادثات تلك الهوية فقط.",
           "مراسلة حساب معلّق أو محظور تُرفض ('هذا الحساب غير متاح حالياً').",
+          "شريط الإعلان أعلى المحادثة يظهر فقط عند فتحها من ذلك الإعلان؛ وفتح نفس المحادثة من قائمة المكاتب/الشركات أو الملف الشخصي يزيله للطرفين، وفتحها من إعلان مرة أخرى يعيده.",
         ],
       },
       testScenarios: {
@@ -114,14 +116,16 @@ export const mobileShared: DocSection = {
           "Two devices, two accounts: send 5 messages quickly — all arrive in order on the other device.",
           "Double-tap 'Chat' on an ad — only one conversation is created.",
           "As Individual open a chat with a company; switch to your own Company persona — that chat isn't in the inbox.",
+          "Chat with an office from one of its ads (banner shows the ad), go back, then open the chat from Home → مكاتب عقارية — no banner; the office sees no banner either.",
         ],
         ar: [
           "جهازان وحسابان: أرسل 5 رسائل بسرعة — تصل جميعها بالترتيب على الجهاز الآخر.",
           "اضغط 'محادثة' مرتين على إعلان — تُنشأ محادثة واحدة فقط.",
           "كفرد افتح محادثة مع شركة ثم بدّل إلى هوية شركتك — لا تظهر تلك المحادثة في صندوق الوارد.",
+          "راسل مكتباً من أحد إعلاناته (يظهر الشريط بالإعلان)، ثم ارجع وافتح المحادثة من الرئيسية ← مكاتب عقارية — لا يظهر الشريط؛ ولا يظهر للمكتب أيضاً.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/chat-clear-property",
     },
     {
       id: "mobile-search",
