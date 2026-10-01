@@ -7,9 +7,11 @@ import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
+import { showAlert } from '@/shared/utils/alert';
+import { openChatWith } from '@/shared/utils/openChat';
 
 interface HomeOfficesProps {
   refreshing?: boolean;
@@ -120,6 +122,15 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
           whatsapp={item.whatsapp}
           isFavorite={providerFavorites.isFavorited(item.id)}
           onPress={() => router.push(`/office/${item.id}` as any)}
+          // The chat button starts a conversation with the office (without
+          // this the card fell back to opening the profile)
+          onChatPress={() => {
+            if (!token) {
+              showAlert('تنبيه', 'يجب تسجيل الدخول لمراسلة المكتب');
+              return;
+            }
+            openChatWith(router, { recipientId: item.id });
+          }}
           onToggleFavorite={() => providerFavorites.toggleFavorite(item.id)}
         />
       )}
