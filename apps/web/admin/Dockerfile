@@ -7,6 +7,8 @@ RUN npm install -g pnpm@10
 
 # Copy workspace configuration and dependency lockfiles
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml's patchedDependencies point here; install fails without it
+COPY patches ./patches
 COPY packages/ui/package.json ./packages/ui/
 COPY apps/web/admin/package.json ./apps/web/admin/
 
