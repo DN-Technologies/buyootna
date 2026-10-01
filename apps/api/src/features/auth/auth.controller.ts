@@ -24,6 +24,7 @@ import {
 import { VerifyRegisterOtpDto } from './dto/verify-register-otp.dto';
 import { VerifyEmailOtpDto } from './dto/verify-email-otp.dto';
 import { SwitchIdentityDto } from './dto/switch-identity.dto';
+import { ReactivateAccountDto } from './dto/reactivate-account.dto';
 import { AppleLoginDto, GoogleLoginDto } from './dto/social-login.dto';
 import type { RequestUser } from './strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
@@ -77,6 +78,22 @@ export class AuthController {
   ) {
     // req.user is populated by the LocalStrategy if successful
     return this.authService.login(req.user, undefined, extractDeviceCtx(req));
+  }
+
+  @Post('reactivate')
+  @ApiOperation({
+    summary:
+      'Finish a sign-in paused by a timed self-deactivation: ends the deactivation early and logs in',
+    description:
+      'Any sign-in (password, OTP, Google, Apple) to an account deactivated for a period that has not ended returns 409 ACCOUNT_SCHEDULED_DEACTIVATION with daysLeft and a reactivationTicket (valid 10 minutes). Posting that ticket here reactivates the account and returns the normal login response with reactivated: true.',
+  })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
+  @ApiCommonErrors()
+  reactivate(@Req() req: RequestWithUser, @Body() dto: ReactivateAccountDto) {
+    return this.authService.loginWithReactivationTicket(
+      dto.ticket,
+      extractDeviceCtx(req),
+    );
   }
 
   @Post('google')

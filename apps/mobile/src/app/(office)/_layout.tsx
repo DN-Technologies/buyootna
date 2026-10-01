@@ -56,6 +56,11 @@ export default function OfficeLayout() {
 
         <Tabs.Screen name="office-chats" />
         <Tabs.Screen name="office-more" />
+        {/* office-edit-profile lives under (more)/, not as Tabs.Screen
+            entries here -- matches (company)/(more)/'s pattern: a route group
+            with its own Stack layout renders as a plain full-screen stack push
+            instead of being wrapped by this Tabs navigator, so the floating
+            CustomTabBar doesn't show on top of it. */}
       </Tabs>
 
       {/* Bottom sheets mounted outside Tabs so the backdrop covers the entire screen */}

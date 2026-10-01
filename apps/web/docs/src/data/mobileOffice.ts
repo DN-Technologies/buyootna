@@ -97,33 +97,33 @@ export const mobileOffice: DocSection = {
     {
       id: "mobile-office-more-dead-actions",
       title: {
-        en: "Office profile 'معاينة' and 'مشاركة' buttons do nothing",
-        ar: "زرا 'معاينة' و'مشاركة' في ملف المكتب لا يفعلان شيئاً",
+        en: "Office profile single 'تعديل' button implemented matching Figma 4494:136610",
+        ar: "تطبيق زر 'تعديل' الموحد لملف المكتب وفق تصميم فيجما 4494:136610",
       },
       priority: "P2",
       story: {
-        en: "Still open: on office-more.tsx's profile card, 'معاينة' (Preview) and 'مشاركة' (Share) have no onPress; only 'تعديل' navigates. Company's identical buttons were fixed (Preview opens /company/:id, Share opens the share sheet — see mobile-company-more-actions), so that's the pattern to copy.",
-        ar: "ما زال قائماً: في بطاقة الملف في office-more.tsx لا يوجد onPress لزري 'معاينة' و'مشاركة'؛ وزر 'تعديل' فقط يعمل. أُصلحت الأزرار المطابقة في الشركة (المعاينة تفتح /company/:id والمشاركة تفتح نافذة المشاركة — راجع mobile-company-more-actions)، وهذا هو النمط الذي يُنسخ.",
+        en: "Resolved: In Figma 4494:136610, the Office profile card uses a single full-width primary 'تعديل' (Edit) button that routes to /office-edit-profile, superseding the older three-button row. Preview and Share actions were removed in the design specification in favor of the dedicated edit profile screen.",
+        ar: "تم الحل: في تصميم فيجما 4494:136610، تستخدم بطاقة ملف المكتب زر 'تعديل' رئيسي واحد بعرض كامل ينقل إلى /office-edit-profile، مستبدلة صف الأزرار الثلاثة القديم. تم استبدال زري المعاينة والمشاركة في مواصفات التصميم لصالح شاشة تعديل الملف المخصصة.",
       },
       acceptanceCriteria: {
         en: [
-          "Today: tapping 'معاينة' or 'مشاركة' does nothing and doesn't crash.",
-          "After the fix: they behave like the company's buttons.",
+          "Office profile card displays a single full-width 'تعديل' button with edit pencil icon.",
+          "Tapping 'تعديل' routes to /office-edit-profile.",
         ],
         ar: [
-          "اليوم: الضغط على 'معاينة' أو 'مشاركة' لا يفعل شيئاً ولا يسبب تعطلاً.",
-          "بعد الإصلاح: يتصرفان مثل أزرار الشركة.",
+          "بطاقة ملف المكتب تعرض زر 'تعديل' رئيسي واحد بعرض كامل مع أيقونة قلم التعديل.",
+          "الضغط على 'تعديل' ينقل إلى /office-edit-profile.",
         ],
       },
       testScenarios: {
         en: [
-          "With the flag on, open the office More tab and tap each button.",
+          "Run office-more.spec.tsx and confirm pressing 'تعديل' routes to /office-edit-profile.",
         ],
         ar: [
-          "مع تفعيل المفتاح افتح تبويب المزيد للمكتب واضغط كل زر.",
+          "تشغيل office-more.spec.tsx والتأكد من أن الضغط على 'تعديل' ينقل إلى /office-edit-profile.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/offices",
     },
     {
       id: "mobile-office-coming-soon-menu-items",
@@ -283,6 +283,90 @@ export const mobileOffice: DocSection = {
           "تشغيل office-add.spec.tsx والتأكد من نجاح اختبارات الحالات العشر (بيع، إيجار، بدل أرض/بيت، مفتاح المدخول، قائمة الواجهة، محدد الحصة).",
           "تشغيل office-preview.spec.tsx والتأكد من صحة بطاقة التفاصيل والإجراءات ونافذة النجاح.",
           "تشغيل OrientationDropdown.spec.tsx و OfficePlanQuotaSelector.spec.tsx لضمان صحة المكونات المستقلة.",
+        ],
+      },
+      updatedIn: "feat/offices",
+    },
+    {
+      id: "mobile-office-more-figma",
+      title: {
+        en: "Office More screen fully implemented matching Figma 4494:136610",
+        ar: "تطبيق شاشة 'المزيد' للمكتب العقاري بالكامل وفق تصميم فيجما 4494:136610",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As an office user, I want a dedicated More menu with my office profile card, licence number, bio, and business management links matching Figma design, so that I can manage my office operations, account, and settings seamlessly.",
+        ar: "بصفتي مستخدم مكتب عقاري، أريد قائمة 'المزيد' مخصصة مع بطاقة ملف مكتبي ورقم الترخيص والنبذة وروابط إدارة الأعمال وفق تصميم فيجما، حتى أتمكن من إدارة عمليات مكتبي وحسابي وإعداداتي بسلاسة.",
+      },
+      story: {
+        en: "Implements Figma node 4494:136610: OfficeProfileCard with navy stripe, overlapping logo, verified badge, office licence number ('الرخصة: 2454685'), bio, locations with pin icon, and full-width 'تعديل' button; and 5 organized menu sections: Business Management ('ادارة الأعمال' with listings and services), My Activity ('نشاطي' with chats badge '3' and favorites), Reviews ('التقييمات'), Account & Subscription ('الحساب والاشتراك' with plans, balance, invoices), and Settings ('الإعدادات' with account settings and logout).",
+        ar: "تطبيق تصميم فيجما 4494:136610: بطاقة OfficeProfileCard بالشريط الكحلي، الشعار المتداخل، شارة التحقق، رقم ترخيص المكتب ('الرخصة: 2454685')، النبذة التعريفية، المواقع مع أيقونة الموقع، وزر 'تعديل' بعرض كامل؛ و 5 أقسام منظمة للقائمة: إدارة الأعمال ('الاعلانات' و 'الخدمات')، نشاطي ('المحادثات' مع شارة '3' و 'المفضلة')، التقييمات ('التقييمات والمراجعات')، الحساب والاشتراك ('الباقات'، 'رصيد الحساب'، 'الفواتير')، والإعدادات ('اعدادات الحساب' و 'تسجيل الخروج').",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Office profile card renders display name, verified badge, persona pill, licence number line, bio, locations, and single 'تعديل' button.",
+          "Menu sections render exact Figma hierarchy: Business Management, My Activity (with unread badge), Reviews, Account & Subscription, and Settings.",
+          "Tapping 'تعديل' routes to /office-edit-profile.",
+          "Unit tests in office-more.spec.tsx verify all items, badges, and navigation actions.",
+        ],
+        ar: [
+          "بطاقة ملف المكتب تعرض اسم العرض، شارة التحقق، محدد الصفة، سطر رقم الترخيص، النبذة، المواقع، وزر 'تعديل' الموحد.",
+          "أقسام القائمة تطابق تسلسل فيجما بدقة: إدارة الأعمال، نشاطي (مع شارة غير المقروء)، التقييمات، الحساب والاشتراك، والإعدادات.",
+          "الضغط على 'تعديل' ينقل إلى /office-edit-profile.",
+          "اختبارات الوحدة في office-more.spec.tsx تؤكد صحة جميع العناصر والشارات وإجراءات التنقل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run office-more.spec.tsx and confirm all sections and navigation triggers pass.",
+        ],
+        ar: [
+          "تشغيل office-more.spec.tsx والتأكد من نجاح اختبارات جميع الأقسام وروابط التنقل.",
+        ],
+      },
+      updatedIn: "feat/offices",
+    },
+    {
+      id: "mobile-office-edit-profile-figma",
+      title: {
+        en: "Office Edit Profile screen fully implemented matching Figma 4494:136911 & 4494:138999",
+        ar: "تطبيق شاشة تعديل الملف الشخصي للمكتب العقاري بالكامل وفق تصميم فيجما 4494:136911 و 4494:138999",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As an office user, I want a dedicated edit profile screen with sections for office info and commercial licence upload, so that I can keep my office details accurate and verify my account.",
+        ar: "بصفتي مستخدم مكتب عقاري، أريد شاشة تعديل ملف شخصي مخصصة مع أقسام لمعلومات المكتب ورفع رخصة العمل التجارية، حتى أتمكن من تحديث بيانات مكتبي بدقة وتوثيق حسابي.",
+      },
+      story: {
+        en: "Implements Figma nodes 4494:136911 and 4494:138999: Header with back button and screen title ('تعديل الملف الشخصي'); logo upload with camera button; Section 1 'عن المكتب' (office name, email, phone with +965, whatsapp with +965, headquarters location with pin, about/bio textarea, working hours with calendar icon); Section 2 'رخصة المكتب' (activity selector, licence number, expiry date with date picker, licence document upload dropzone with 'صورة الرخصة تؤهلك لتوثيق حسابك'); and sticky bottom 'حفظ التغييرات' action button.",
+        ar: "تطبيق تصاميم فيجما 4494:136911 و 4494:138999: الترويسة مع زر الرجوع وعنوان الشاشة ('تعديل الملف الشخصي')؛ رفع الشعار مع زر الكاميرا؛ القسم الأول 'عن المكتب' (اسم المكتب، البريد، الهاتف مع +965، الواتساب مع +965، المقر الرئيسي مع أيقونة الموقع، نبذة عن الشركة، ومواعيد العمل)؛ القسم الثاني 'رخصة المكتب' (محدد النشاط، رقم الرخصة، تاريخ الانتهاء مع محدد التاريخ، منطقة رفع صورة الرخصة مع عبارة 'صورة الرخصة تؤهلك لتوثيق حسابك')؛ وزر 'حفظ التغييرات' الثابت في الأسفل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Header renders title 'تعديل الملف الشخصي' and back navigation.",
+          "Section 1 'عن المكتب' renders inputs for name, email, phone (+965), whatsapp (+965), headquarters, bio, and working hours.",
+          "Section 2 'رخصة المكتب' renders activity selector, licence number, expiry date picker, and document dropzone.",
+          "Bottom CTA 'حفظ التغييرات' is disabled when pristine and active (#15304D) when form is dirty.",
+          "Submitting form triggers apiClient.patch and refreshes profile.",
+          "Unit tests in OfficeEditProfile.spec.tsx and office-edit-profile.spec.tsx pass.",
+        ],
+        ar: [
+          "الترويسة تعرض عنوان 'تعديل الملف الشخصي' وزر الرجوع.",
+          "القسم الأول 'عن المكتب' يعرض حقول الاسم، البريد، الهاتف (+965)، الواتساب (+965)، المقر الرئيسي، النبذة، ومواعيد العمل.",
+          "القسم الثاني 'رخصة المكتب' يعرض اختيار النشاط، رقم الرخصة، تاريخ الانتهاء، ومنطقة رفع المستند.",
+          "زر 'حفظ التغييرات' معطل عندما لا توجد تغييرات ونشط (#15304D) عند تعديل أي حقل.",
+          "إرسال النموذج يستدعي apiClient.patch ويحدّث الملف الشخصي.",
+          "نجاح اختبارات الوحدة في OfficeEditProfile.spec.tsx و office-edit-profile.spec.tsx.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run OfficeEditProfile.spec.tsx and confirm all fields, dirty state detection, and submit handlers pass.",
+          "Run office-edit-profile.spec.tsx and confirm screen wrapper renders without errors.",
+        ],
+        ar: [
+          "تشغيل OfficeEditProfile.spec.tsx والتأكد من نجاح اختبارات جميع الحقول واكتشاف التعديلات ومعالجة الإرسال.",
+          "تشغيل office-edit-profile.spec.tsx والتأكد من تحميل مغلّف الشاشة دون أخطاء.",
         ],
       },
       updatedIn: "feat/offices",

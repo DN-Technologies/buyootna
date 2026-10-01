@@ -5,7 +5,12 @@ import {
 } from '@gorhom/bottom-sheet';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { DEACTIVATE_REASONS, OTHER_REASON_ID } from './constants';
+import {
+  DEACTIVATE_DURATIONS,
+  DEACTIVATE_REASONS,
+  type DeactivateDuration,
+  OTHER_REASON_ID,
+} from './constants';
 import DeactivateSheetActions from './DeactivateSheetActions';
 import ReasonOption from './ReasonOption';
 
@@ -14,6 +19,8 @@ interface DeactivateReasonsStepProps {
   otherReasonText: string;
   onToggleReason: (id: string) => void;
   onChangeOtherReason: (text: string) => void;
+  duration: DeactivateDuration;
+  onChangeDuration: (days: DeactivateDuration) => void;
   onBack: () => void;
   onSubmit: () => void;
   onCancel: () => void;
@@ -25,6 +32,8 @@ export default function DeactivateReasonsStep({
   otherReasonText,
   onToggleReason,
   onChangeOtherReason,
+  duration,
+  onChangeDuration,
   onBack,
   onSubmit,
   onCancel,
@@ -82,6 +91,39 @@ export default function DeactivateReasonsStep({
               />
             </View>
           )}
+        </View>
+
+        {/* How long: the account comes back on its own after a period */}
+        <Text className="mb-2 mt-4 font-cairo-semibold text-[14px] text-[#111111]">
+          مدة التعطيل
+        </Text>
+        <View className="flex-row flex-wrap gap-2">
+          {DEACTIVATE_DURATIONS.map((option) => {
+            const selected = option.days === duration;
+            return (
+              <TouchableOpacity
+                key={option.title}
+                testID={`deactivate-duration-${option.days ?? 'open'}`}
+                activeOpacity={0.7}
+                onPress={() => onChangeDuration(option.days)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                className={`h-[34px] items-center justify-center rounded-[10px] px-3 ${
+                  selected
+                    ? 'bg-[#15304D]'
+                    : 'border border-[#ECECEC] bg-[#F9FAFE]'
+                }`}
+              >
+                <Text
+                  className={`font-cairo-medium text-[13px] ${
+                    selected ? 'text-white' : 'text-[#111111]'
+                  }`}
+                >
+                  {option.title}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </BottomSheetScrollView>
 

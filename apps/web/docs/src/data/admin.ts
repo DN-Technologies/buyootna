@@ -419,5 +419,54 @@ export const admin: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "admin-account-suspension",
+      title: {
+        en: "Suspending or blocking a user signs them out and keeps them out until an admin reactivates",
+        ar: "إيقاف أو حظر مستخدم يسجّل خروجه ويمنعه من الدخول حتى تعيد الإدارة تفعيله",
+      },
+      priority: "P0",
+      endUserStory: {
+        en: "As an admin, I want to suspend or ban violating accounts, so that they can't use the app until their status is reviewed and can't reactivate themselves.",
+        ar: "بصفتي مشرفاً، أريد إيقاف أو حظر الحسابات المخالفة، حتى لا تستخدم التطبيق حتى مراجعة حالتها ولا تستطيع إعادة تفعيل نفسها.",
+      },
+      story: {
+        en: "Verify Users → Suspend (موقوف) / Block (محظور) (PATCH /admin/users/:id/status with suspended/blocked): the account becomes suspended_by_admin / blocked, every session is deleted so an online user is signed out on their next request, and any self-deactivation (suspendedAt/suspendedUntil) is cleared so neither signing in nor the timed-reactivation job can undo it. Signing in with the right password then returns 403 ACCOUNT_SUSPENDED_BY_ADMIN with 'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.' and changes nothing. Setting the status back to active lets them in.",
+        ar: "تحقق من المستخدمين ← إيقاف (موقوف) / حظر (محظور) (PATCH /admin/users/:id/status بالقيمة suspended/blocked): يصبح الحساب suspended_by_admin / blocked، وتُحذف كل جلساته فيُسجَّل خروج المستخدم المتصل عند طلبه التالي، ويُمسح أي تعطيل ذاتي (suspendedAt/suspendedUntil) حتى لا يلغيه تسجيل الدخول ولا مهمة إعادة التفعيل التلقائي. بعدها تسجيل الدخول بكلمة المرور الصحيحة يُرجع 403 ACCOUNT_SUSPENDED_BY_ADMIN مع 'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.' ولا يغيّر شيئاً. إعادة الحالة إلى نشط تسمح له بالدخول.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After Suspend/Block, the user's open app is signed out on its next request (401).",
+          "Login with the right password shows 'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.' (403); a wrong password still shows the generic invalid-credentials message.",
+          "The status stays suspended/blocked after any number of login attempts.",
+          "A user who had deactivated their own account and is then suspended by an admin can't get back in by signing in.",
+          "Reactivating from the dashboard lets the user sign in again and their ads reappear.",
+        ],
+        ar: [
+          "بعد الإيقاف/الحظر يُسجَّل خروج تطبيق المستخدم المفتوح عند طلبه التالي (401).",
+          "تسجيل الدخول بكلمة المرور الصحيحة يعرض 'تم إيقاف حسابك من قبل الإدارة. يرجى التواصل مع الدعم.' (403)؛ وكلمة المرور الخاطئة تعرض رسالة بيانات الدخول العامة.",
+          "تبقى الحالة موقوف/محظور مهما تكررت محاولات الدخول.",
+          "المستخدم الذي عطّل حسابه بنفسه ثم أوقفته الإدارة لا يستطيع العودة بتسجيل الدخول.",
+          "إعادة التفعيل من لوحة التحكم تسمح للمستخدم بالدخول مجدداً وتعود إعلاناته.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign a test user in on the app, suspend them from the dashboard, then pull to refresh in the app — signed out to the login screen.",
+          "Try to log in as that user — the suspension message appears; check the dashboard still shows موقوف.",
+          "Block another test user and try to log in — same message.",
+          "Deactivate a test account from the app (حتى أعود), suspend it from the dashboard, then sign in — refused with the suspension message.",
+          "Reactivate from the dashboard and sign in — works.",
+        ],
+        ar: [
+          "سجّل دخول مستخدم اختبار في التطبيق، وأوقفه من لوحة التحكم، ثم حدّث الشاشة في التطبيق — يُسجَّل خروجه إلى شاشة الدخول.",
+          "حاول الدخول بذلك المستخدم — تظهر رسالة الإيقاف؛ وتأكد أن لوحة التحكم ما زالت تعرض موقوف.",
+          "احظر مستخدم اختبار آخر وحاول الدخول — نفس الرسالة.",
+          "عطّل حساب اختبار من التطبيق (حتى أعود)، ثم أوقفه من لوحة التحكم، ثم سجّل الدخول — يُرفض برسالة الإيقاف.",
+          "أعد التفعيل من لوحة التحكم وسجّل الدخول — يعمل.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
   ],
 };

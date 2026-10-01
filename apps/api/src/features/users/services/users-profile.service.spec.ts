@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersProfileService } from './users-profile.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from '../../../core/storage/storage.service';
+import { AccountStateService } from './account-state.service';
 
 describe('UsersProfileService', () => {
   let service: UsersProfileService;
@@ -42,6 +43,7 @@ describe('UsersProfileService', () => {
           provide: StorageService,
           useValue: {},
         },
+        { provide: AccountStateService, useValue: {} },
       ],
     }).compile();
 

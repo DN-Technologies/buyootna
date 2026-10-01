@@ -12,8 +12,12 @@ import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
-import { AccountType } from '@/types';
 import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
+import {
+  isReactivationDeclined,
+  withReactivationPrompt,
+} from '@/shared/utils/scheduledDeactivation';
+import { AccountType } from '@/types';
 
 // Company/office accounts stay behind the ComingSoonGate unless explicitly
 // enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
@@ -66,10 +70,12 @@ export function useBusinessAuth() {
   ) => {
     setIsLoading(true);
     try {
-      const response = await apiClient.post('/auth/login', {
-        identifier: data.identifier,
-        password: data.password,
-      });
+      const response = await withReactivationPrompt(
+        apiClient.post('/auth/login', {
+          identifier: data.identifier,
+          password: data.password,
+        }),
+      );
 
       await setAuth(
         response.data.user,
@@ -81,6 +87,8 @@ export function useBusinessAuth() {
       notifyIfReactivated(response.data);
       resetToIdentityHome(response.data.activeIdentity?.type);
     } catch (error: any) {
+      // "No" to reactivating early: stay on the login screen, no error
+      if (isReactivationDeclined(error)) return;
       showAlert(
         'فشل تسجيل الدخول',
         getApiErrorMessage(error, 'حدث خطأ في الاتصال'),

@@ -8,6 +8,7 @@ import {
   maskEmail,
   maskPhone,
 } from './account-suspension.service';
+import { AccountStateService } from './account-state.service';
 
 describe('AccountSuspensionService', () => {
   const prisma = {
@@ -37,6 +38,7 @@ describe('AccountSuspensionService', () => {
     twilio as unknown as TwilioService,
     emailOtp as unknown as EmailOtpService,
     rateLimiter as unknown as OtpRateLimiterService,
+    new AccountStateService(prisma as unknown as PrismaService),
   );
 
   const phoneUser = {
@@ -124,7 +126,7 @@ describe('AccountSuspensionService', () => {
       expect(update.data.isDisabled).toBe(true);
       expect(update.data.suspendedAt).toBeInstanceOf(Date);
       expect(prisma.accountSuspension.create).toHaveBeenCalledWith({
-        data: { userId: 'u1', reasons: ['temp_break', 'other'], note: 'سفر' },
+        data: { userId: 'u1', reasons: ['temp_break', 'other'], note: 'سفر', until: null },
       });
       expect(prisma.session.deleteMany).toHaveBeenCalledWith({
         where: { userId: 'u1' },
@@ -152,9 +154,33 @@ describe('AccountSuspensionService', () => {
         '654321',
       );
       expect(prisma.accountSuspension.create).toHaveBeenCalledWith({
-        data: { userId: 'u2', reasons: ['not_using'], note: null },
+        data: { userId: 'u2', reasons: ['not_using'], note: null, until: null },
       });
     });
+  });
+
+  it('a timed suspension stores its end date and says when it comes back', async () => {
+    prisma.user.findUnique.mockResolvedValue(phoneUser);
+    twilio.checkVerification.mockResolvedValue(true);
+    const before = Date.now();
+
+    const result = await service.suspend('u1', {
+      otp: '123456',
+      reasons: ['temp_break'],
+      durationDays: 7,
+    });
+
+    const [[update]] = prisma.user.update.mock.calls as [
+      { data: { suspendedUntil: Date } },
+    ][];
+    const days = (update.data.suspendedUntil.getTime() - before) / 86_400_000;
+    expect(days).toBeGreaterThanOrEqual(7);
+    expect(days).toBeLessThan(7.01);
+    expect(prisma.accountSuspension.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ until: update.data.suspendedUntil }),
+    });
+    expect(result.suspendedUntil).toEqual(update.data.suspendedUntil);
+    expect(result.message).toContain('7 أيام');
   });
 
   it('masks phones and emails', () => {

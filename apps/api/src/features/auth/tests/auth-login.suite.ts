@@ -180,7 +180,7 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       expect(result).toEqual({
         access_token: 'mocked_token',
         sessionId: 'session-1',
-        user,
+        user: { ...user, accountStatus: 'active' },
         activeIdentity: identity,
         identities: allIdentities,
       });

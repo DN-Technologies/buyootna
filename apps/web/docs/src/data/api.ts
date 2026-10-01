@@ -427,5 +427,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "api-account-state",
+      title: {
+        en: "Account state: deactivation periods, the reactivation ticket and admin-suspension errors",
+        ar: "حالة الحساب: مدد التعطيل وتذكرة إعادة التفعيل وأخطاء إيقاف الإدارة",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify the account-state contract. The login response's user carries accountStatus (active | deactivated_by_user | suspended_by_admin | blocked); admin user rows carry accountState and suspendedUntil. POST /users/account/suspend accepts optional durationDays (7, 14 or 30; anything else is 400). A sign-in to a deactivation whose period hasn't ended returns 409 { code: ACCOUNT_SCHEDULED_DEACTIVATION, daysLeft, suspendedUntil, reactivationTicket, message }. POST /auth/reactivate { ticket } (ticket valid 10 minutes) reactivates and returns the normal login response with reactivated: true. An admin-suspended or blocked account gets 403 { code: ACCOUNT_SUSPENDED_BY_ADMIN } at sign-in; its tokens get 401. The hourly job reactivates self-deactivations whose suspendedUntil has passed and never touches admin suspensions.",
+        ar: "تحقق من عقد حالة الحساب. مستخدم استجابة الدخول يحمل accountStatus (active | deactivated_by_user | suspended_by_admin | blocked)؛ وصفوف المستخدمين في الإدارة تحمل accountState و suspendedUntil. POST /users/account/suspend يقبل durationDays اختيارياً (7 أو 14 أو 30؛ غير ذلك 400). تسجيل الدخول لتعطيل لم تنتهِ مدته يُرجع 409 { code: ACCOUNT_SCHEDULED_DEACTIVATION, daysLeft, suspendedUntil, reactivationTicket, message }. POST /auth/reactivate { ticket } (التذكرة صالحة 10 دقائق) يعيد التفعيل ويُرجع استجابة الدخول العادية مع reactivated: true. الحساب الموقوف أو المحظور من الإدارة يحصل على 403 { code: ACCOUNT_SUSPENDED_BY_ADMIN } عند الدخول؛ ورموزه تحصل على 401. مهمة كل ساعة تعيد تفعيل التعطيلات الذاتية التي تجاوزت suspendedUntil ولا تمس إيقافات الإدارة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The reactivation ticket never works as a bearer token (401), and an expired or garbage ticket is refused with 401.",
+          "A ticket for an account an admin suspended in the meantime is refused with 403.",
+          "Sign-in after suspendedUntil has passed reactivates silently (no 409).",
+          "Older app builds that don't send durationDays keep the open-ended behaviour.",
+        ],
+        ar: [
+          "تذكرة إعادة التفعيل لا تعمل أبداً كرمز دخول (401)، والتذكرة المنتهية أو غير الصالحة تُرفض بـ 401.",
+          "تذكرة حساب أوقفته الإدارة في الأثناء تُرفض بـ 403.",
+          "تسجيل الدخول بعد تجاوز suspendedUntil يعيد التفعيل دون سؤال (بلا 409).",
+          "إصدارات التطبيق القديمة التي لا ترسل durationDays تحتفظ بالسلوك المفتوح.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Suspend with durationDays 7; POST /auth/login → 409 with daysLeft 7; use the ticket as Authorization: Bearer on /users/me → 401; POST /auth/reactivate with it → 201 and reactivated: true.",
+          "POST /auth/reactivate with 'nope' → 401.",
+          "Suspend with durationDays 5 → 400.",
+          "Admin-suspend a user, then POST /auth/login with the right password → 403 ACCOUNT_SUSPENDED_BY_ADMIN; with a wrong one → 401.",
+        ],
+        ar: [
+          "علّق مع durationDays 7؛ POST /auth/login → 409 مع daysLeft 7؛ استخدم التذكرة كـ Authorization: Bearer على /users/me → 401؛ و POST /auth/reactivate بها → 201 و reactivated: true.",
+          "POST /auth/reactivate بالقيمة 'nope' → 401.",
+          "علّق مع durationDays 5 → 400.",
+          "أوقف مستخدماً من الإدارة ثم POST /auth/login بكلمة المرور الصحيحة → 403 ACCOUNT_SUSPENDED_BY_ADMIN؛ وبكلمة خاطئة → 401.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
   ],
 };

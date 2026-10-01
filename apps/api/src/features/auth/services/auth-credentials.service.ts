@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { accountStatus, suspendedByAdminError } from '../account-status.util';
 
 /**
  * The only message a failed password login ever returns: identical for an
@@ -48,14 +49,15 @@ export class AuthCredentialsService {
       throw new UnauthorizedException(INVALID_CREDENTIALS_MESSAGE);
     }
 
-    // A self-suspended account (suspendedAt set) signs in and is reactivated
-    // by AuthSessionService.login(); an admin disable stays refused
-    if (user.isDisabled && !user.isAdmin && !user.suspendedAt) {
-      throw new UnauthorizedException('الحساب معطل مؤقتاً');
-    }
-
-    if (user.isBlocked && !user.isAdmin) {
-      throw new UnauthorizedException('الحساب محظور');
+    // Only now, with the password proven, is account state revealed. A
+    // self-deactivated account goes on to AuthSessionService.login(), which
+    // reactivates it; an admin suspension or ban is refused with 403.
+    const status = accountStatus(user);
+    if (
+      !user.isAdmin &&
+      (status === 'suspended_by_admin' || status === 'blocked')
+    ) {
+      throw suspendedByAdminError();
     }
 
     // Never return the password!
