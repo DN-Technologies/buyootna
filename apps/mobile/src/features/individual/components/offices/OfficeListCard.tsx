@@ -11,6 +11,7 @@ import {
 } from '@/assets/icons/home/cards';
 import { PropertiesTabIcon } from '@/assets/icons/tab';
 import { showAlert } from '@/shared/utils/alert';
+import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 export interface OfficeListCardProps {
@@ -61,12 +62,14 @@ export default function OfficeListCard({
     });
   };
 
+  // Starts a chat with the office; screens that need a sign-in check pass
+  // their own onChatPress
   const handleChat = () => {
     if (onChatPress) {
       onChatPress();
       return;
     }
-    router.push(`/office/${id}` as any);
+    openChatWith(router, { recipientId: id });
   };
 
   const displayTags =
@@ -198,6 +201,7 @@ export default function OfficeListCard({
 
         {/* Left in RTL: Chat Button */}
         <TouchableOpacity
+          testID={`office-card-chat-${id}`}
           className="h-11 flex-1 flex-row items-center justify-center rounded-full border border-[#B28648] bg-transparent"
           activeOpacity={0.7}
           onPress={handleChat}

@@ -69,24 +69,28 @@ export const mobileIndividual: DocSection = {
           "A heart tapped on a Home card, in the details sheet or on an office card is still filled after closing and reopening the app, and the item appears in Favorites.",
           "Share on a card and in the details sheet opens the native share sheet.",
           "As a guest, tapping a heart opens the sign-in sheet instead of doing nothing.",
+          "The chat button on an office card opens a chat with that office (not its profile); a guest is asked to sign in.",
         ],
         ar: [
           "القلب المضغوط في بطاقة بالرئيسية أو في نافذة التفاصيل أو في بطاقة مكتب يبقى ممتلئاً بعد إغلاق التطبيق وفتحه، ويظهر العنصر في المفضلة.",
           "المشاركة في البطاقة وفي نافذة التفاصيل تفتح نافذة المشاركة في الجهاز.",
           "كزائر، الضغط على القلب يفتح نافذة تسجيل الدخول بدلاً من عدم فعل شيء.",
+          "زر المحادثة في بطاقة المكتب يفتح محادثة مع المكتب (لا ملفه الشخصي)؛ ويُطلب من الزائر تسجيل الدخول.",
         ],
       },
       testScenarios: {
         en: [
           "Favorite from Card view, List view and the details sheet — all three show in Favorites → عقارات.",
           "Favorite an office on Home → مكاتب عقارية, relaunch — still favorited and listed under Favorites → مكاتب.",
+          "On Home → مكاتب عقارية tap the chat button on an office — the chat with it opens.",
         ],
         ar: [
           "فضّل من عرض البطاقات وعرض القائمة ونافذة التفاصيل — تظهر الثلاثة في المفضلة ← عقارات.",
           "فضّل مكتباً في الرئيسية ← مكاتب عقارية، ثم أعد تشغيل التطبيق — يبقى مفضلاً ويظهر في المفضلة ← مكاتب.",
+          "في الرئيسية ← مكاتب عقارية اضغط زر المحادثة في مكتب — تفتح المحادثة معه.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/office-card-chat",
     },
     {
       id: "mobile-home-tabs-and-view-modes",
