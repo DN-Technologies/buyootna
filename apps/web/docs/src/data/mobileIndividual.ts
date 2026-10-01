@@ -1067,5 +1067,50 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/service-invoices",
     },
+    {
+      id: "mobile-activity-open-ad",
+      title: {
+        en: "Tapping an ad in نشاطي opens it",
+        ar: "الضغط على إعلان في نشاطي يفتحه",
+      },
+      priority: "P0",
+      story: {
+        en: "Regression check for a fixed bug: in نشاطي, tapping a published ad did nothing, so the user couldn't open their own ad. The active ad card had no tap action, only its ⋮ menu. Now tapping anywhere on an active, hidden or featured ad opens تفاصيل الإعلان; archived ads still open with their republish action; tapping a draft opens its preview, like its 'معاينة ونشر الاعلان' button. The ⋮ menu only opens the menu.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: في نشاطي كان الضغط على إعلان منشور لا يفعل شيئاً، فلا يستطيع المستخدم فتح إعلانه. بطاقة الإعلان النشط لم يكن لها أي إجراء عند الضغط، فقط قائمة ⋮. الآن الضغط في أي مكان على إعلان نشط أو مخفي أو مميز يفتح تفاصيل الإعلان؛ والإعلانات المؤرشفة ما زالت تفتح مع إجراء إعادة النشر؛ والضغط على مسودة يفتح معاينتها مثل زر 'معاينة ونشر الاعلان'. وقائمة ⋮ تفتح القائمة فقط.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping the image or the text of an active ad opens تفاصيل الإعلان for that ad.",
+          "Hidden (اعلان مخفي) and featured (إعلان مميز) ads open the same way.",
+          "Tapping ⋮ opens the تعديل / تمييز الإعلان / حذف menu and does not open the ad.",
+          "An archived ad opens its details with the republish action, as before.",
+          "Tapping a draft card opens its preview; its حذف button still only deletes.",
+        ],
+        ar: [
+          "الضغط على صورة أو نص إعلان نشط يفتح تفاصيل الإعلان لهذا الإعلان.",
+          "الإعلانات المخفية (اعلان مخفي) والمميزة (إعلان مميز) تفتح بنفس الطريقة.",
+          "الضغط على ⋮ يفتح قائمة تعديل / تمييز الإعلان / حذف ولا يفتح الإعلان.",
+          "الإعلان المؤرشف يفتح تفاصيله مع إجراء إعادة النشر كما كان.",
+          "الضغط على بطاقة مسودة يفتح معاينتها؛ وزر حذف فيها ما زال يحذف فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open نشاطي, tap an active ad's image, go back, tap its price text — both open تفاصيل الإعلان.",
+          "Hide an ad, then tap it — its details open.",
+          "Tap ⋮ on an ad — only the menu appears.",
+          "Switch to المؤرشفة and tap an ad — details open with إعادة نشر.",
+          "Tap a draft card — its preview sheet opens.",
+        ],
+        ar: [
+          "افتح نشاطي، اضغط على صورة إعلان نشط، ارجع، ثم اضغط على نص السعر — كلاهما يفتح تفاصيل الإعلان.",
+          "أخفِ إعلاناً ثم اضغط عليه — تفتح تفاصيله.",
+          "اضغط على ⋮ في إعلان — تظهر القائمة فقط.",
+          "انتقل إلى المؤرشفة واضغط على إعلان — تفتح التفاصيل مع إعادة نشر.",
+          "اضغط على بطاقة مسودة — تفتح نافذة معاينتها.",
+        ],
+      },
+      updatedIn: "fix/individual-bugs",
+    },
   ],
 };

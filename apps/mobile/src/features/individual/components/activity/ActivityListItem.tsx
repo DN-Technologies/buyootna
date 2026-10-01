@@ -11,7 +11,8 @@ interface ActivityListItemProps {
   onFeaturePress: (propertyId: string) => void;
   onDeletePress: (propertyId: string) => void;
   onPublishDraftPress: (property: ActivityItem) => void;
-  onArchivedPress: (propertyId: string) => void;
+  // Opens the ad's details (active, hidden, featured or archived)
+  onOpenPress: (property: ActivityItem) => void;
 }
 
 export default function ActivityListItem({
@@ -21,7 +22,7 @@ export default function ActivityListItem({
   onFeaturePress,
   onDeletePress,
   onPublishDraftPress,
-  onArchivedPress,
+  onOpenPress,
 }: ActivityListItemProps) {
   if (property.status === 'DRAFT') {
     return (
@@ -41,7 +42,7 @@ export default function ActivityListItem({
     return (
       <ArchivedAdCard
         property={property}
-        onPress={() => onArchivedPress(property.id)}
+        onPress={() => onOpenPress(property)}
       />
     );
   }
@@ -52,6 +53,7 @@ export default function ActivityListItem({
       onEditPress={onEditPress}
       onFeaturePress={onFeaturePress}
       onDeletePress={onDeletePress}
+      onPress={() => onOpenPress(property)}
     />
   );
 }
