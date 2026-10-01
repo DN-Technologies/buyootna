@@ -87,7 +87,9 @@ export const ChangePasswordOtpSheet = forwardRef<
         // sheet in the app.
         keyboardBehavior="extend"
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
+        // No android_keyboardInputMode="adjustResize": with edge-to-edge the
+        // window never resizes, and in that mode the sheet doesn't move either,
+        // so the keyboard covered it. The default lets the sheet rise itself.
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}

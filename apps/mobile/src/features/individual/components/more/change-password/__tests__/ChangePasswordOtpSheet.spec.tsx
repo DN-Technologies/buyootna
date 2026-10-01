@@ -50,7 +50,9 @@ describe('ChangePasswordOtpSheet', () => {
     expect(modalProps?.snapPoints).toEqual(['80%']);
     expect(modalProps?.keyboardBehavior).toBe('extend');
     expect(modalProps?.keyboardBlurBehavior).toBe('restore');
-    expect(modalProps?.android_keyboardInputMode).toBe('adjustResize');
+    // adjustResize would make gorhom skip moving the sheet on Android
+    // (edge-to-edge never resizes the window), leaving it under the keyboard
+    expect(modalProps?.android_keyboardInputMode).toBeUndefined();
     expect(modalProps?.enableDynamicSizing).toBe(false);
   });
 

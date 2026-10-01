@@ -597,5 +597,40 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "mobile-android-keyboard-sheets",
+      title: {
+        en: "Android: the keyboard never covers a bottom sheet's text box",
+        ar: "أندرويد: الكيبورد لا يغطي خانة الكتابة في النوافذ السفلية",
+      },
+      priority: "P1",
+      story: {
+        en: "Regression check for a fixed bug: on Android, typing in a bottom sheet (e.g. the delete-ad reason 'ما سبب حذف الاعلان؟') opened the keyboard on top of the sheet, hiding the text box and the buttons. The app draws edge-to-edge, so Android never shrinks the window for the keyboard, and the sheets were set to wait for that resize. They now lift themselves above the keyboard. Covers: delete ad, deactivate account, change-password OTP, filters, add review, report, and quote request.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: على أندرويد كان الكيبورد يفتح فوق النافذة السفلية عند الكتابة (مثل سبب حذف الإعلان 'ما سبب حذف الاعلان؟') فيخفي خانة الكتابة والأزرار. التطبيق يعرض الشاشة كاملة حتى الحواف، فلا يصغّر أندرويد النافذة عند ظهور الكيبورد، وكانت النوافذ تنتظر هذا التصغير. الآن ترتفع النوافذ بنفسها فوق الكيبورد. يشمل: حذف الإعلان، تعطيل الحساب، رمز تغيير كلمة المرور، الفلاتر، إضافة تقييم، الإبلاغ، وطلب عرض السعر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On Android, tapping the text box in any of these sheets lifts the sheet so the box and its buttons stay above the keyboard.",
+          "Closing the keyboard returns the sheet to its normal height.",
+          "iOS behaves exactly as before.",
+        ],
+        ar: [
+          "على أندرويد، الضغط على خانة الكتابة في أي من هذه النوافذ يرفع النافذة فتبقى الخانة وأزرارها فوق الكيبورد.",
+          "إغلاق الكيبورد يعيد النافذة إلى ارتفاعها الطبيعي.",
+          "يبقى iOS كما هو تماماً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an Android phone: إعلاناتي → delete an ad → choose 'سبب اخر' and type — the text box and the delete button stay visible.",
+          "Repeat in deactivate account, change password (OTP), add review, report and quote request.",
+        ],
+        ar: [
+          "على هاتف أندرويد: إعلاناتي ← حذف إعلان ← اختر 'سبب اخر' واكتب — تبقى خانة الكتابة وزر الحذف ظاهرين.",
+          "كرر ذلك في تعطيل الحساب، تغيير كلمة المرور (الرمز)، إضافة تقييم، الإبلاغ، وطلب عرض السعر.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };
