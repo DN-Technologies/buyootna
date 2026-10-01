@@ -111,15 +111,23 @@ export default function OfficeListCard({
 
           {/* Name & Location */}
           <View className="flex-1">
+            {/* A long name truncates instead of pushing the badge onto the
+                heart */}
             <View className="flex-row items-center gap-1.5">
               <Text
-                className="font-cairo-bold text-base text-[#111111]"
+                testID={`office-card-name-${id}`}
+                className="shrink font-cairo-bold text-base text-[#111111]"
                 numberOfLines={1}
               >
                 {name}
               </Text>
               {isVerified && (
-                <MaterialIcons name="verified" size={16} color="#0284C7" />
+                <MaterialIcons
+                  name="verified"
+                  size={16}
+                  color="#0284C7"
+                  style={{ flexShrink: 0 }}
+                />
               )}
             </View>
 

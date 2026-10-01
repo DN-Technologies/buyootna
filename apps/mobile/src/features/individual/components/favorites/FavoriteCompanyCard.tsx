@@ -57,17 +57,23 @@ export default function FavoriteCompanyCard({
             )}
           </View>
 
-          <View>
+          {/* Shrinks with a long name so the badge never runs onto the heart */}
+          <View className="shrink">
             <View className="flex-row items-center gap-1">
               <Text
-                className="font-cairo-bold text-[15px] text-[#111111]"
+                className="shrink font-cairo-bold text-[15px] text-[#111111]"
                 numberOfLines={1}
-                >
+              >
                 {name}
               </Text>
-                {isVerified && (
-                  <MaterialIcons name="verified" size={16} color="#0284C7" />
-                )}
+              {isVerified && (
+                <MaterialIcons
+                  name="verified"
+                  size={16}
+                  color="#0284C7"
+                  style={{ flexShrink: 0 }}
+                />
+              )}
             </View>
             <Text
               className="font-cairo text-xs text-[#6B6A6A]"
