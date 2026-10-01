@@ -27,6 +27,8 @@ export const BuyootnaLogo = ({
   />
 );
 
+// For light backgrounds: the same logo with the "Buyootna" wordmark in navy
+// (the plain logo's wordmark is white and vanishes on white screens)
 export const BuyootnaLogoDark = ({
   width = 140,
   height = 75,
@@ -34,7 +36,7 @@ export const BuyootnaLogoDark = ({
   resizeMode = 'contain',
 }: LogoProps) => (
   <Image
-    source={require('@/assets/images/buyootna-logo.png')}
+    source={require('@/assets/images/buyootna-logo-on-light.png')}
     style={[{ width, height }, style]}
     contentFit={resizeMode}
   />
@@ -47,7 +49,8 @@ export const CompanyLogo = ({
   resizeMode = 'contain',
 }: LogoProps) => (
   <Image
-    source={require('@/assets/images/buyootna-logo-stacked.png')}
+    // Stacked logo for light backgrounds (navy wordmark)
+    source={require('@/assets/images/buyootna-logo-stacked-on-light.png')}
     style={[{ width, height }, style]}
     contentFit={resizeMode}
   />
