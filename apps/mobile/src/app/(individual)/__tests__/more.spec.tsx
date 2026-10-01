@@ -155,5 +155,15 @@ describe('ProfileDashboardScreen (More tab)', () => {
       const { router: mockRouter } = jest.requireMock('expo-router');
       expect(mockRouter.push).toHaveBeenCalledWith('/edit-profile');
     });
+
+    it('offers only the edit button -- no preview or share', async () => {
+      const { getByText, queryByText } = await render(
+        <ProfileDashboardScreen />,
+      );
+
+      expect(getByText('تعديل')).toBeTruthy();
+      expect(queryByText('معاينة')).toBeNull();
+      expect(queryByText('مشاركة')).toBeNull();
+    });
   });
 });
