@@ -19,7 +19,7 @@ import RequestQuoteAttachments from '@/features/individual/components/request-qu
 import RequestQuoteHeader from '@/features/individual/components/request-quote/RequestQuoteHeader';
 import RequestQuotePriceRange from '@/features/individual/components/request-quote/RequestQuotePriceRange';
 import RequestQuoteSubmitButton from '@/features/individual/components/request-quote/RequestQuoteSubmitButton';
-import { requestQuoteInputStyle } from '@/features/individual/components/request-quote/styles';
+import { PLACEHOLDER_COLOR, requestQuoteInputStyle } from '@/features/individual/components/request-quote/styles';
 import {
   REQUEST_TYPE_OPTIONS,
   SPECIALTY_OPTIONS,
@@ -124,10 +124,11 @@ export default function RequestQuoteScreen() {
               وصف
             </Text>
             <TextInput
+              testID="request-quote-description"
               value={description}
               onChangeText={setDescription}
               placeholder="اشرح تفاصيل الخدمة المطلوبة..."
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={PLACEHOLDER_COLOR}
               multiline
               numberOfLines={4}
               textAlignVertical="top"

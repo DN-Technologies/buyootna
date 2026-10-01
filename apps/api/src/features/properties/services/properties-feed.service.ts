@@ -17,6 +17,18 @@ import { notExpiredWhere, ownerActiveWhere } from './property-expiry.util';
 function listOrder(
   sort: PropertySort,
 ): Prisma.PropertyOrderByWithRelationInput[] {
+  if (sort === 'PRICE_DESC' || sort === 'PRICE_ASC') {
+    return [
+      {
+        price: {
+          sort: sort === 'PRICE_DESC' ? 'desc' : 'asc',
+          nulls: 'last',
+        },
+      },
+      { publishedAt: { sort: 'desc', nulls: 'last' } },
+      { id: 'asc' },
+    ];
+  }
   if (sort === 'NEWEST' || sort === 'OLDEST') {
     return [
       {

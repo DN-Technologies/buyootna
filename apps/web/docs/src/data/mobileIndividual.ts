@@ -822,37 +822,41 @@ export const mobileIndividual: DocSection = {
     {
       id: "mobile-home-sort",
       title: {
-        en: "Home sort: default, newest and oldest",
-        ar: "ترتيب الرئيسية: الافتراضي والأحدث والأقدم",
+        en: "Home sort: default, oldest, newest and price (high→low, low→high)",
+        ar: "ترتيب الرئيسية: الافتراضي والأقدم والأحدث والسعر (من الأعلى والأقل)",
       },
       priority: "P1",
       story: {
-        en: "Verify 'الترتيب' on the listings screen opens the radio sheet and reloads GET /properties with sort=DEFAULT|NEWEST|OLDEST. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; pages never repeat or skip ads with the same date.",
-        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح نافذة الاختيار ويعيد تحميل GET /properties مع sort=DEFAULT|NEWEST|OLDEST. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ ولا تتكرر الصفحات أو تتخطى إعلانات لها نفس التاريخ.",
+        en: "Verify 'الترتيب' on the listings screen opens 'الترتيب حسب' with, in order: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى), and reloads GET /properties with sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; the price orders sort strictly by price, with ads that have no price at the end; pages never repeat or skip ads.",
+        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح 'الترتيب حسب' بالترتيب: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى)، ويعيد تحميل GET /properties مع sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ وترتيبا السعر حسب السعر فقط مع الإعلانات بلا سعر في النهاية؛ ولا تتكرر الصفحات أو تتخطى إعلانات.",
       },
       acceptanceCriteria: {
         en: [
           "The chosen option stays selected when the sheet is reopened.",
           "Newest shows a just-republished ad first; Oldest shows it last.",
+          "Price high→low starts with the most expensive ad; low→high with the cheapest.",
           "Scrolling through several pages shows each ad exactly once.",
         ],
         ar: [
           "يبقى الخيار المختار محدداً عند إعادة فتح النافذة.",
           "الأحدث يعرض الإعلان المعاد نشره للتو أولاً؛ والأقدم يعرضه أخيراً.",
+          "السعر من الأعلى يبدأ بأغلى إعلان؛ ومن الأقل يبدأ بأرخص إعلان.",
           "التمرير عبر عدة صفحات يعرض كل إعلان مرة واحدة فقط.",
         ],
       },
       testScenarios: {
         en: [
-          "Switch between the three sorts and compare the first 5 ads.",
-          "Republish an ad, then choose Newest — it's first.",
+          "Switch between the five sorts and compare the first 5 ads.",
+          "Republish an ad, then choose الأحدث أولاً — it's first.",
+          "Choose each price order on the sale and rent tabs and check the prices go down / up.",
         ],
         ar: [
-          "بدّل بين الترتيبات الثلاثة وقارن أول 5 إعلانات.",
-          "أعد نشر إعلان ثم اختر الأحدث — يظهر أولاً.",
+          "بدّل بين الترتيبات الخمسة وقارن أول 5 إعلانات.",
+          "أعد نشر إعلان ثم اختر الأحدث أولاً — يظهر أولاً.",
+          "اختر كل ترتيب سعر في تبويبي البيع والإيجار وتأكد أن الأسعار تنزل / تصعد.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/home-price-sort",
     },
     {
       id: "mobile-settings",

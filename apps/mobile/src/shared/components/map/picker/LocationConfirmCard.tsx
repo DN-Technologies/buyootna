@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface LocationConfirmCardProps {
   addressLabel: string;
@@ -15,8 +15,12 @@ export function LocationConfirmCard({
   isLoadingAddress,
   onConfirm,
 }: LocationConfirmCardProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView className="absolute bottom-6 left-5 right-5">
+    <View
+      className="absolute left-5 right-5"
+      style={{ bottom: Math.max(insets.bottom, 12) + 8 }}
+    >
       <View className="rounded-3xl border border-gray-100 bg-white p-5 shadow-2xl">
         {/* Card Header */}
         <View className="mb-3 flex-row items-center justify-between">
@@ -74,6 +78,6 @@ export function LocationConfirmCard({
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

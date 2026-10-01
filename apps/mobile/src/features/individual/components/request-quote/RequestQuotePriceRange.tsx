@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Keyboard, Platform, Text, TextInput, View } from 'react-native';
 
-import { requestQuoteInputStyle } from './styles';
+import { PLACEHOLDER_COLOR,requestQuoteInputStyle } from './styles';
 
 export interface RequestQuotePriceRangeProps {
   priceFrom: string;
@@ -35,7 +35,7 @@ export default function RequestQuotePriceRange({
             value={priceTo}
             onChangeText={onPriceToChange}
             placeholder="الى"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="numeric"
             returnKeyType="done"
             onSubmitEditing={() => Keyboard.dismiss()}
@@ -50,7 +50,7 @@ export default function RequestQuotePriceRange({
             value={priceFrom}
             onChangeText={onPriceFromChange}
             placeholder="من"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={PLACEHOLDER_COLOR}
             keyboardType="numeric"
             returnKeyType="done"
             onSubmitEditing={() => Keyboard.dismiss()}

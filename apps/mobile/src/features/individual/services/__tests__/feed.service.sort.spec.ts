@@ -15,12 +15,22 @@ describe('feedService.getProperties sorting', () => {
     mockGet.mockReset().mockResolvedValue({ data: { data: [], meta: {} } });
   });
 
-  it('offers the three orders from the design, الكل first', () => {
+  it('offers the five orders from the design, in its order', () => {
     expect(HOME_SORT_OPTIONS.map((o) => [o.label, o.value])).toEqual([
       ['الكل', 'DEFAULT'],
-      ['الأحدث أولاً', 'NEWEST'],
       ['الأقدم أولاً', 'OLDEST'],
+      ['الأحدث أولاً', 'NEWEST'],
+      ['السعر (من الأعلى للأقل)', 'PRICE_DESC'],
+      ['السعر (من الأقل للأعلى)', 'PRICE_ASC'],
     ]);
+  });
+
+  it('asks the server for a price order', async () => {
+    await feedService.getProperties('RENT', 1, 10, 'PRICE_ASC');
+
+    expect(mockGet).toHaveBeenCalledWith('/properties', {
+      params: { page: 1, limit: 10, type: 'RENT', sort: 'PRICE_ASC' },
+    });
   });
 
   it('sends no sort for the default order', async () => {

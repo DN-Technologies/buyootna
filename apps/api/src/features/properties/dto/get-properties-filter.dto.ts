@@ -9,7 +9,13 @@ import {
 import { Type } from 'class-transformer';
 import { ListingType } from '@prisma/client';
 
-export const PROPERTY_SORTS = ['DEFAULT', 'NEWEST', 'OLDEST'] as const;
+export const PROPERTY_SORTS = [
+  'DEFAULT',
+  'NEWEST',
+  'OLDEST',
+  'PRICE_DESC',
+  'PRICE_ASC',
+] as const;
 export type PropertySort = (typeof PROPERTY_SORTS)[number];
 
 export class GetPropertiesFilterDto {
@@ -35,7 +41,8 @@ export class GetPropertiesFilterDto {
   limit?: number;
 
   // DEFAULT: priority, then featured, then newest. NEWEST/OLDEST: purely
-  // by publish date, so the user sees exactly the order they asked for.
+  // by publish date; PRICE_DESC/PRICE_ASC: purely by price (ads without a
+  // price last) -- so the user sees exactly the order they asked for.
   @IsOptional()
   @IsIn(PROPERTY_SORTS, { message: 'طريقة الترتيب غير صالحة' })
   sort?: PropertySort;

@@ -1,5 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import {
+  BottomSheetFooter,
+  type BottomSheetFooterProps,
   BottomSheetModal,
   BottomSheetScrollView,
   BottomSheetTextInput,
@@ -24,6 +26,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
@@ -63,7 +66,7 @@ const inputStyle: TextStyle = {
   borderColor: '#E5E7EB',
   backgroundColor: '#FFFFFF',
   paddingHorizontal: 16,
-  fontFamily: 'Cairo-Medium',
+  fontFamily: 'Cairo_400Regular',
   fontSize: 13,
   color: '#111111',
   textAlign: 'right',
@@ -202,10 +205,40 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       }
     };
 
+    const insets = useSafeAreaInsets();
+
+    // Pinned to the sheet's bottom, clear of the home indicator (it used to
+    // sit after the scroll view and ended up under it)
+    const renderFooter = (props: BottomSheetFooterProps) => (
+      <BottomSheetFooter {...props}>
+        <View
+          className="border-t border-gray-100 bg-white px-6 pt-3"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        >
+          <TouchableOpacity
+            testID="quote-request-submit"
+            activeOpacity={0.8}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+            className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
+          >
+            {isSubmitting ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text className="font-cairo-bold text-base leading-[24px] text-white">
+                إرسال الطلب
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </BottomSheetFooter>
+    );
+
     return (
       <BottomSheetModal
         ref={internalRef}
         snapPoints={['94%']}
+        footerComponent={renderFooter}
         enablePanDownToClose
         backgroundStyle={{ borderRadius: 24 }}
         keyboardBehavior="interactive"
@@ -230,7 +263,9 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
           contentContainerStyle={{
             paddingHorizontal: 24,
             paddingTop: 16,
-            paddingBottom: 24,
+            // Room for the pinned footer, so the last field can scroll
+            // above it
+            paddingBottom: 120,
           }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -294,7 +329,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
                   value={priceTo}
                   onChangeText={setPriceTo}
                   placeholder="الى"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor="#979797"
                   keyboardType="numeric"
                   returnKeyType="done"
                   onSubmitEditing={() => Keyboard.dismiss()}
@@ -309,7 +344,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
                   value={priceFrom}
                   onChangeText={setPriceFrom}
                   placeholder="من"
-                  placeholderTextColor="#94A3B8"
+                  placeholderTextColor="#979797"
                   keyboardType="numeric"
                   returnKeyType="done"
                   onSubmitEditing={() => Keyboard.dismiss()}
@@ -337,7 +372,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             >
               <Text
                 numberOfLines={1}
-                className={`flex-1 font-cairo text-[14px] ${
+                className={`flex-1 font-cairo text-[13px] ${
                   addressLabel ? 'text-[#111111]' : 'text-[#979797]'
                 }`}
                 style={{ writingDirection: 'rtl' }}
@@ -424,24 +459,6 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             </TouchableOpacity>
           </View>
         </BottomSheetScrollView>
-
-        {/* Submit Button */}
-        <View className="border-t border-gray-100 px-6 pb-8 pt-3">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full items-center justify-center rounded-full bg-[#15304D] py-3.5"
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text className="font-cairo-bold leading-[24px] text-base text-white">
-                إرسال الطلب
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
 
         {Platform.OS === 'ios' && (
           <InputAccessoryView nativeID={keyboardAccessoryId}>
