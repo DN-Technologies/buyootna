@@ -7,8 +7,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DeactivateAccountSheet } from '@/features/individual/components/settings';
 import AccountActions from '@/features/individual/components/settings/AccountActions';
 import AccountSecuritySection from '@/features/individual/components/settings/AccountSecuritySection';
-import LoginMethodSheet from '@/features/individual/components/settings/login-method/LoginMethodSheet';
-import LoginMethodToast from '@/features/individual/components/settings/login-method/LoginMethodToast';
+import {
+  LoginMethodSheet,
+  LoginMethodToast,
+} from '@/features/individual/components/settings/login-method';
 import NotificationsSection from '@/features/individual/components/settings/NotificationsSection';
 import PoliciesSection from '@/features/individual/components/settings/PoliciesSection';
 import PrivacySettingsSection from '@/features/individual/components/settings/PrivacySettingsSection';
