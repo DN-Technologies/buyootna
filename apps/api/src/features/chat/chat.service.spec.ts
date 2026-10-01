@@ -274,6 +274,46 @@ describe('ChatService.findOrCreateConversation', () => {
     expect(result.id).toBe('conv-9');
   });
 
+  it('clears the ad when the chat is opened without one (from a list or profile)', async () => {
+    recipientIs('identity-2', 'user-2');
+    tx.conversation.findMany.mockResolvedValue([
+      { id: 'conv-9', propertyId: 'prop-1', participants: [{}, {}] },
+    ]);
+    tx.conversation.update.mockResolvedValue({
+      id: 'conv-9',
+      propertyId: null,
+      participants: [{}, {}],
+    });
+
+    const result = await service.findOrCreateConversation(
+      'user-1',
+      'identity-me',
+      'identity-2',
+    );
+
+    const [updateArg] = tx.conversation.update.mock.calls[0] as unknown as [
+      { where: { id: string }; data: { propertyId?: string | null } },
+    ];
+    expect(updateArg.where.id).toBe('conv-9');
+    expect(updateArg.data.propertyId).toBeNull();
+    expect(result.propertyId).toBeNull();
+  });
+
+  it('leaves a conversation without an ad untouched when opened without one', async () => {
+    recipientIs('identity-2', 'user-2');
+    tx.conversation.findMany.mockResolvedValue([
+      { id: 'conv-9', propertyId: null, participants: [{}, {}] },
+    ]);
+
+    await service.findOrCreateConversation(
+      'user-1',
+      'identity-me',
+      'identity-2',
+    );
+
+    expect(tx.conversation.update).not.toHaveBeenCalled();
+  });
+
   it('throws before opening the transaction when the recipient does not exist', async () => {
     prisma.identity.findUnique.mockResolvedValue(null);
     prisma.identity.findMany.mockResolvedValue([]);
