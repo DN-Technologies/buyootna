@@ -19,3 +19,5 @@ overrides:
   react-dom: 19.1.0
   react-native: 0.81.5
 
+patchedDependencies:
+  react-native@0.81.5: patches/react-native@0.81.5.patch

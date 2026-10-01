@@ -1,0 +1,33 @@
+diff --git a/Libraries/Text/Text.js b/Libraries/Text/Text.js
+--- a/Libraries/Text/Text.js
++++ b/Libraries/Text/Text.js
+@@ -35,6 +35,13 @@
+  *
+  * @see https://reactnative.dev/docs/text
+  */
++// Android's default "highQuality" line breaking mis-measures custom fonts
++// (Cairo), so a short label like "تسجيل الخروج" wraps its last word onto a
++// clipped second line. "simple" measures them correctly; a Text that sets
++// textBreakStrategy itself still wins (it comes from restProps, spread after).
++const DEFAULT_TEXT_BREAK_STRATEGY =
++  Platform.OS === 'android' ? 'simple' : undefined;
++
+ const TextImpl: component(
+   ref?: React.RefSetter<TextForwardRef>,
+   ...props: TextProps
+@@ -246,6 +253,7 @@
+       <NativePressableText
+         ref={forwardedRef}
+         textProps={{
++          textBreakStrategy: DEFAULT_TEXT_BREAK_STRATEGY,
+           ...restProps,
+           accessibilityLabel: _accessibilityLabel,
+           accessibilityState: _accessibilityState,
+@@ -279,6 +287,7 @@
+   } else {
+     nativeText = (
+       <NativeText
++        textBreakStrategy={DEFAULT_TEXT_BREAK_STRATEGY}
+         {...restProps}
+         accessibilityLabel={_accessibilityLabel}
+         accessibilityState={_accessibilityState}

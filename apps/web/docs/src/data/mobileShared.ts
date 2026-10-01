@@ -562,5 +562,40 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "mobile-android-text-cutoff",
+      title: {
+        en: "Android: button and label text is never cut off",
+        ar: "أندرويد: نصوص الأزرار والعناوين لا تُقص أبداً",
+      },
+      priority: "P1",
+      story: {
+        en: "Regression check for a fixed bug: on Android, short labels in the Cairo font lost their last word — 'تسجيل الخروج' showed as 'تسجيل' in the logout sheet, and the same happened in other buttons. Android's default line breaking mis-measured the font and pushed the last word onto a hidden second line. A patch to React Native's Text (patches/react-native@0.81.5.patch) makes Android use the 'simple' strategy by default; iOS is unchanged.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: على أندرويد كانت العناوين القصيرة بخط Cairo تفقد كلمتها الأخيرة — 'تسجيل الخروج' تظهر 'تسجيل' في نافذة تسجيل الخروج، ويحدث نفس الشيء في أزرار أخرى. كان تقسيم الأسطر الافتراضي في أندرويد يخطئ في قياس الخط فيدفع الكلمة الأخيرة إلى سطر ثانٍ مخفي. تعديل على مكوّن Text في React Native (patches/react-native@0.81.5.patch) يجعل أندرويد يستخدم الطريقة 'simple' افتراضياً؛ ولا يتغير شيء على iOS.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On Android, the logout sheet's red button reads 'تسجيل الخروج' in full.",
+          "No button or label anywhere in the app shows a cut word or a hidden second line.",
+          "iOS looks exactly as before.",
+        ],
+        ar: [
+          "على أندرويد يظهر زر نافذة تسجيل الخروج الأحمر 'تسجيل الخروج' كاملاً.",
+          "لا يظهر في أي مكان بالتطبيق زر أو عنوان بكلمة مقصوصة أو سطر ثانٍ مخفي.",
+          "يبقى iOS كما هو تماماً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an Android phone open المزيد → تسجيل الخروج — both buttons show their full text.",
+          "Walk the main flows on Android (add ad, filters, sheets, settings) and look for cut labels.",
+        ],
+        ar: [
+          "على هاتف أندرويد افتح المزيد ← تسجيل الخروج — يظهر نص الزرين كاملاً.",
+          "تصفّح المسارات الرئيسية على أندرويد (إضافة إعلان، الفلاتر، النوافذ، الإعدادات) وابحث عن عناوين مقصوصة.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };
