@@ -5,6 +5,7 @@ import {
 } from '@/features/company/components/requests/types';
 import apiClient from '@/shared/api/api';
 import { propertiesService } from '@/shared/api/properties.service';
+import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 
 export interface GetCompanyRequestsParams {
   scope: RequestScope;
@@ -18,6 +19,8 @@ export interface CreateCompanyRequestPayload {
   priceRange?: string;
   offerType?: string;
   location: string;
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة from the map picker
+  addressDetails?: AddressDetails;
   latitude?: number;
   longitude?: number;
   description: string;

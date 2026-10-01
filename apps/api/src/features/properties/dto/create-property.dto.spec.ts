@@ -27,7 +27,7 @@ describe('CreatePropertyDto price validation', () => {
   });
 
   it('passes with a valid numeric price', async () => {
-    const dto = buildSaleListing({ price: 50000 as any });
+    const dto = buildSaleListing({ price: 50000 });
     const errors = await validate(dto);
 
     expect(errors.find((e) => e.property === 'price')).toBeUndefined();

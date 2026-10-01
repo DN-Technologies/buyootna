@@ -31,6 +31,14 @@ export interface CompanyRequestItem {
   category?: string;
   priceRange?: string;
   location: string;
+  // القطعة / الشارع / الجادة / المنزل / علامة مميزة from the map picker
+  addressDetails?: {
+    block?: string;
+    street?: string;
+    avenue?: string;
+    building?: string;
+    landmark?: string;
+  } | null;
   attachmentsCount: number;
   publishTime?: string;
   offerType?: string;

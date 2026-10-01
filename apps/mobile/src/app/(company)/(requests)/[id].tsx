@@ -15,6 +15,7 @@ import {
 import { useCompanyRequestDetails } from '@/features/company/hooks/useCompanyRequestDetails';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
+import { formatDetails } from '@/shared/components/map/picker/addressParsing';
 import { showAlert } from '@/shared/utils/alert';
 import { formatTimeAgo } from '@/shared/utils/helpers/time';
 
@@ -169,7 +170,11 @@ export default function CompanyRequestDetailsScreen() {
 
         {/* Location on Map */}
         <RequestDetailsMap
-          location={request.location}
+          location={
+            request.addressDetails
+              ? `${request.location} — ${formatDetails(request.addressDetails)}`
+              : request.location
+          }
           latitude={request.latitude}
           longitude={request.longitude}
         />

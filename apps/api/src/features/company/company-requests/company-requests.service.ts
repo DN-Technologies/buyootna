@@ -13,6 +13,7 @@ import {
   assertApprovedProvider,
   isApprovedProvider,
 } from '../../identities/persona-rules';
+import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
 
 const CLIENT_INCLUDE = {
   user: true,
@@ -80,6 +81,7 @@ export class CompanyRequestsService {
         priceRange: dto.priceRange,
         offerType: dto.offerType,
         location: dto.location,
+        ...addressDetailsWrite(dto.addressDetails),
         latitude: dto.latitude,
         longitude: dto.longitude,
         images: dto.images ?? [],
@@ -340,6 +342,10 @@ export class CompanyRequestsService {
       category: request.category,
       priceRange: request.priceRange,
       location: request.location,
+      addressDetails: (request.addressDetails ?? null) as Record<
+        string,
+        string
+      > | null,
       attachmentsCount: request.images.length,
       offerType: request.offerType,
       images: request.images,

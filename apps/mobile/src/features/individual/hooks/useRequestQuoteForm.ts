@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
+import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 import { showAlert } from '@/shared/utils/alert';
 
 export const SPECIALTY_OPTIONS = COMPANY_CATEGORY_OPTIONS.filter(
@@ -30,6 +31,7 @@ export function useRequestQuoteForm() {
   const [priceTo, setPriceTo] = useState('');
   const [addressLabel, setAddressLabel] = useState('');
   const [addressCoords, setAddressCoords] = useState<AddressCoords | null>(null);
+  const [addressDetails, setAddressDetails] = useState<AddressDetails>();
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
@@ -74,9 +76,15 @@ export function useRequestQuoteForm() {
   }, []);
 
   const handleConfirmAddress = useCallback(
-    (addressName: string, lat: number, lng: number) => {
+    (
+      addressName: string,
+      lat: number,
+      lng: number,
+      details?: AddressDetails,
+    ) => {
       setAddressLabel(addressName);
       setAddressCoords({ lat, lng });
+      setAddressDetails(details);
       setShowMapPicker(false);
     },
     [],
@@ -111,6 +119,7 @@ export function useRequestQuoteForm() {
               ? `${priceFrom || 0} - ${priceTo || 0} د.ك`
               : undefined,
           location: addressLabel,
+          addressDetails,
           latitude: addressCoords?.lat,
           longitude: addressCoords?.lng,
           description,
@@ -135,6 +144,7 @@ export function useRequestQuoteForm() {
       priceTo,
       addressCoords?.lat,
       addressCoords?.lng,
+      addressDetails,
       description,
       attachments,
     ],
@@ -152,6 +162,7 @@ export function useRequestQuoteForm() {
     addressLabel,
     setAddressLabel,
     addressCoords,
+    addressDetails,
     setAddressCoords,
     showMapPicker,
     setShowMapPicker,

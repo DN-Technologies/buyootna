@@ -548,5 +548,40 @@ export const api: DocSection = {
       },
       updatedIn: "feat/service-invoices",
     },
+    {
+      id: "api-location-details",
+      title: {
+        en: "Address details on ads and requests; saved locations",
+        ar: "تفاصيل العنوان في الإعلانات والطلبات؛ المواقع المحفوظة",
+      },
+      priority: "P2",
+      story: {
+        en: "Verify POST/PATCH /properties and POST /company-requests accept an optional addressDetails { block, street, avenue, building, landmark } (each trimmed; 60 chars, landmark 200; empty parts dropped; an empty object clears it on update) and return it. /saved-locations: GET lists the account's places (HOME, WORK, then OTHER), POST saves (HOME/WORK replace the existing one; OTHER needs a name; at most 20), PATCH renames/relabels/moves, DELETE removes; another account's place is 404.",
+        ar: "تحقق من أن POST/PATCH /properties و POST /company-requests تقبل addressDetails اختيارياً { block, street, avenue, building, landmark } (تُقص المسافات؛ 60 حرفاً و200 للعلامة؛ تُحذف الأجزاء الفارغة؛ والكائن الفارغ يمسحها عند التعديل) وتُرجعها. /saved-locations: GET يعرض أماكن الحساب (المنزل ثم العمل ثم الأخرى)، POST يحفظ (المنزل/العمل يستبدلان الموجود؛ الأخرى تحتاج اسماً؛ 20 كحد أقصى)، PATCH يعيد التسمية أو التصنيف أو النقل، DELETE يحذف؛ ومكان حساب آخر → 404.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A 61-character block → 400.",
+          "Saving a second HOME replaces the first (still one HOME).",
+          "OTHER without a name → 400 'اكتب اسماً للموقع'; the 21st place → 400.",
+        ],
+        ar: [
+          "قطعة من 61 حرفاً → 400.",
+          "حفظ منزل ثانٍ يستبدل الأول (يبقى منزل واحد).",
+          "الأخرى دون اسم → 400 'اكتب اسماً للموقع'؛ والمكان رقم 21 → 400.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "POST /company-requests with addressDetails { block: '6', street: '' } → stored as { block: '6' }.",
+          "POST /saved-locations HOME twice, then GET → one HOME with the second address.",
+        ],
+        ar: [
+          "POST /company-requests مع addressDetails { block: '6', street: '' } → تُحفظ { block: '6' }.",
+          "POST /saved-locations للمنزل مرتين ثم GET → منزل واحد بالعنوان الثاني.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };

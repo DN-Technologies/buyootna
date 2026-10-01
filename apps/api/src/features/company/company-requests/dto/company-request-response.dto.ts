@@ -60,6 +60,13 @@ export class CompanyRequestResponseDto {
   @ApiProperty({ type: [String] })
   images: string[];
 
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'block / street / avenue / building / landmark',
+  })
+  addressDetails?: Record<string, string> | null;
+
   @ApiProperty({ required: false, nullable: true })
   latitude?: number | null;
 

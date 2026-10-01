@@ -201,6 +201,28 @@ describe('CompanyRequestsService', () => {
       expect(result.scope).toBe('public');
     });
 
+    it('stores the address details from the location picker', async () => {
+      prisma.companyRequest.create.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+        addressDetails: { block: '6', building: '12' },
+      });
+
+      const result = await service.create('client-1', {
+        ...dto,
+        addressDetails: { block: '6', street: '', building: '12' },
+      });
+
+      expect(prisma.companyRequest.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            addressDetails: { block: '6', building: '12' },
+          }),
+        }),
+      );
+      expect(result.addressDetails).toEqual({ block: '6', building: '12' });
+    });
+
     it('rejects a request directed at a missing or non-company target', async () => {
       prisma.identity.findUnique.mockResolvedValue(null);
 
@@ -241,7 +263,7 @@ describe('CompanyRequestsService', () => {
           location: 'l',
           description: 'd',
           targetIdentityId: 'office-1',
-        } as never),
+        }),
       ).rejects.toThrow(BadRequestException);
       expect(prisma.companyRequest.create).not.toHaveBeenCalled();
     });

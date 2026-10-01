@@ -53,7 +53,9 @@ export class UsersProfileService {
     // The phone is a sign-in identifier, so a new number only lands through
     // the SMS check (POST /users/account/phone/verify). The unchanged number,
     // which the app sends back on every save, is simply left as it is.
-    if (dto.phone !== undefined) {
+    // An empty value is treated as "not sent" -- it never clears a sign-in
+    // identifier (multipart forms send empty strings for untouched fields)
+    if (dto.phone !== undefined && dto.phone.trim() !== '') {
       const current = await this.prisma.user.findUnique({
         where: { id: userId },
         select: { phone: true },

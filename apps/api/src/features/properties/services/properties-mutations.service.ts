@@ -13,6 +13,7 @@ import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
 import { assertApprovedProvider } from '../../identities/persona-rules';
+import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -39,7 +40,7 @@ export class PropertiesMutationsService {
 
   // --- CREATE ---
   async create(identityId: string, dto: CreatePropertyDto) {
-    const { isDraft, planSlotId, ...propertyData } = dto;
+    const { isDraft, planSlotId, addressDetails, ...propertyData } = dto;
     const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
     if (!isDraft) {
@@ -77,6 +78,7 @@ export class PropertiesMutationsService {
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
+            ...addressDetailsWrite(addressDetails),
             referenceNumber,
             status: targetStatus,
             identityId,
@@ -110,6 +112,7 @@ export class PropertiesMutationsService {
       const draftProperty = await this.prisma.property.create({
         data: {
           ...propertyData,
+          ...addressDetailsWrite(addressDetails),
           referenceNumber,
           status: targetStatus,
           identityId,
@@ -128,7 +131,7 @@ export class PropertiesMutationsService {
   // --- UPDATE ---
   async update(identityId: string, propertyId: string, dto: UpdatePropertyDto) {
     const existingProperty = await this.verifyOwnership(identityId, propertyId);
-    const { isDraft, planSlotId, ...updateData } = dto;
+    const { isDraft, planSlotId, addressDetails, ...updateData } = dto;
 
     const isPublishingDraft =
       existingProperty.status === 'DRAFT' && isDraft === false;
@@ -160,6 +163,7 @@ export class PropertiesMutationsService {
           where: { id: propertyId },
           data: {
             ...updateData,
+            ...addressDetailsWrite(addressDetails),
             status: ListingStatus.ACTIVE,
             planSlotId: quota.planSlotId,
             endDate,
@@ -201,6 +205,7 @@ export class PropertiesMutationsService {
       where: { id: propertyId },
       data: {
         ...updateData,
+        ...addressDetailsWrite(addressDetails),
         status: newStatus,
       },
     });

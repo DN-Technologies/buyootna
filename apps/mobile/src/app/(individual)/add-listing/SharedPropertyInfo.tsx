@@ -47,6 +47,7 @@ export default function SharedPropertyInfo() {
     floors,
     mapLocation,
     mapLocationLabel,
+    addressDetails,
     propertyAge,
     requestYear,
     requiredYear,
@@ -122,6 +123,7 @@ export default function SharedPropertyInfo() {
         onClear={() => {
           updateField('mapLocation', null);
           updateField('mapLocationLabel', null);
+          updateField('addressDetails', null);
         }}
       />
 
@@ -184,13 +186,15 @@ export default function SharedPropertyInfo() {
       <MapPickerModal
         visible={showMapPicker}
         onClose={() => setShowMapPicker(false)}
-        onConfirm={(addressName, lat, lng) => {
+        onConfirm={(addressName, lat, lng, details) => {
           updateField('mapLocation', `${lat},${lng}`);
           updateField('mapLocationLabel', addressName);
+          updateField('addressDetails', details ?? null);
         }}
         initialLat={initialLat}
         initialLng={initialLng}
         initialAddressLabel={mapLocationLabel || undefined}
+        initialDetails={addressDetails ?? undefined}
       />
     </View>
   );

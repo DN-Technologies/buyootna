@@ -1,12 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
 
-import { MAPBOX_ACCESS_TOKEN } from './types';
+import { guessDetailsFromFeature } from './addressParsing';
+import { type AddressDetails, MAPBOX_ACCESS_TOKEN } from './types';
 
 export function useMapGeocoding(initialLabel?: string) {
   const [addressLabel, setAddressLabel] = useState<string>(
     initialLabel || 'جاري تحميل الموقع...',
   );
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  // What the map knows about block / street / house at the pin, used to
+  // pre-fill the address details the user hasn't typed themselves
+  const [detailsGuess, setDetailsGuess] = useState<AddressDetails>({});
   const reverseGeoTimerRef = useRef<any>(null);
 
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
@@ -19,6 +23,7 @@ export function useMapGeocoding(initialLabel?: string) {
 
       if (data && data.features && data.features.length > 0) {
         const feature = data.features[0];
+        setDetailsGuess(guessDetailsFromFeature(feature));
         const fullPlace = feature.place_name || feature.text || '';
         const parts = fullPlace.split(',').map((s: string) => s.trim());
         const cleanedLabel =
@@ -26,6 +31,7 @@ export function useMapGeocoding(initialLabel?: string) {
 
         setAddressLabel(cleanedLabel);
       } else {
+        setDetailsGuess({});
         // 2. Fallback to OpenStreetMap Nominatim
         const nomUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=ar`;
         const nomRes = await fetch(nomUrl, {
@@ -73,6 +79,7 @@ export function useMapGeocoding(initialLabel?: string) {
     addressLabel,
     setAddressLabel,
     isLoadingAddress,
+    detailsGuess,
     reverseGeocode,
     triggerDebouncedReverseGeocode,
   };

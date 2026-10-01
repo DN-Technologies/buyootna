@@ -1,0 +1,180 @@
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+
+import { companyRequestsService } from '@/shared/api/companyRequests.service';
+import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
+import { showAlert } from '@/shared/utils/alert';
+
+export interface ServiceItem {
+  id: string;
+  title: string;
+}
+
+const MAX_ATTACHMENTS = 10;
+
+interface Options {
+  companyName: string;
+  services: ServiceItem[];
+  targetIdentityId?: string;
+  // Called after a successful send (the sheet closes itself)
+  onSent: () => void;
+}
+
+/**
+ * The quote popup's form: service, price range, the map-picked address
+ * (with its details), description and photos, then sending the request
+ * to this company.
+ */
+export function useQuoteRequestForm({
+  companyName,
+  services,
+  targetIdentityId,
+  onSent,
+}: Options) {
+  const [serviceId, setServiceId] = useState('');
+  const [priceFrom, setPriceFrom] = useState('');
+  const [priceTo, setPriceTo] = useState('');
+  const [addressLabel, setAddressLabel] = useState('');
+  const [addressCoords, setAddressCoords] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [addressDetails, setAddressDetails] = useState<AddressDetails>();
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [description, setDescription] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const serviceOptions = services.map((svc) => ({
+    id: svc.id,
+    label: svc.title,
+  }));
+
+  const reset = () => {
+    setServiceId('');
+    setPriceFrom('');
+    setPriceTo('');
+    setAddressLabel('');
+    setAddressCoords(null);
+    setAddressDetails(undefined);
+    setDescription('');
+    setAttachments([]);
+  };
+
+  const confirmAddress = (
+    addressName: string,
+    lat: number,
+    lng: number,
+    details?: AddressDetails,
+  ) => {
+    setAddressLabel(addressName);
+    setAddressCoords({ lat, lng });
+    setAddressDetails(details);
+    setShowMapPicker(false);
+  };
+
+  const pickAttachments = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        showAlert('إذن مطلوب', 'نحتاج إلى إذن للوصول إلى معرض الصور الخاص بك!', [
+          { text: 'حسناً' },
+        ]);
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        selectionLimit: MAX_ATTACHMENTS - attachments.length,
+      });
+      if (!result.canceled && result.assets) {
+        setAttachments((prev) => [
+          ...prev,
+          ...result.assets.map((asset) => asset.uri),
+        ]);
+      }
+    } catch (error) {
+      console.error('Attachment picker error:', error);
+      showAlert('خطأ', 'حدث خطأ أثناء اختيار الصور. حاول مرة أخرى.', [
+        { text: 'حسناً' },
+      ]);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const submit = async () => {
+    if (!serviceId) {
+      showAlert('تنبيه', 'يرجى اختيار نوع الطلب');
+      return;
+    }
+    if (!addressLabel) {
+      showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+      return;
+    }
+
+    // The options come from the company's own services; their titles are
+    // the human-readable category
+    const category =
+      services.find((svc) => svc.id === serviceId)?.title || serviceId;
+
+    try {
+      setIsSubmitting(true);
+      await companyRequestsService.create({
+        title: category,
+        category,
+        priceRange:
+          priceFrom || priceTo
+            ? `${priceFrom || 0} - ${priceTo || 0} د.ك`
+            : undefined,
+        offerType: 'عرض مخصص',
+        location: addressLabel,
+        addressDetails,
+        latitude: addressCoords?.lat,
+        longitude: addressCoords?.lng,
+        description,
+        images: attachments,
+        targetIdentityId,
+      });
+      showAlert('تم بنجاح', `تم إرسال طلب عرض السعر إلى ${companyName} بنجاح!`);
+      reset();
+      onSent();
+    } catch (error: any) {
+      const backendMessage = error?.response?.data?.message;
+      const message = Array.isArray(backendMessage)
+        ? backendMessage.join('\n')
+        : backendMessage || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً';
+      showAlert('خطأ', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return {
+    serviceOptions,
+    serviceId,
+    setServiceId,
+    priceFrom,
+    setPriceFrom,
+    priceTo,
+    setPriceTo,
+    addressLabel,
+    addressCoords,
+    addressDetails,
+    showMapPicker,
+    openMapPicker: () => setShowMapPicker(true),
+    closeMapPicker: () => setShowMapPicker(false),
+    confirmAddress,
+    description,
+    setDescription,
+    attachments,
+    pickAttachments,
+    removeAttachment,
+    isSubmitting,
+    submit,
+    reset,
+  };
+}

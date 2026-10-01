@@ -27,6 +27,7 @@ import { MapModule } from './features/map/map.module';
 import { FaqModule } from './features/faq/faq.module';
 import { SettingsModule } from './features/settings/settings.module';
 import { NotificationsModule } from './features/notifications/notifications.module';
+import { SavedLocationsModule } from './features/saved-locations/saved-locations.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { PlansModule } from './features/plans/plans.module';
 import { InvoicesModule } from './features/invoices/invoices.module';
@@ -82,6 +83,7 @@ import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
     FaqModule,
     SettingsModule,
     NotificationsModule,
+    SavedLocationsModule,
     DevicesModule,
     PlansModule,
     InvoicesModule,
