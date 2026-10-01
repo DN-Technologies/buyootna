@@ -675,5 +675,44 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "mobile-ad-map-preview-cached",
+      title: {
+        en: "The ad's map preview shows straight away on every visit",
+        ar: "معاينة الخريطة في الإعلان تظهر فوراً في كل زيارة",
+      },
+      priority: "P2",
+      story: {
+        en: "The 'الموقع على الخريطة' card on تفاصيل الإعلان used a live map that loaded its tiles again each time an ad was opened. It is now a static map image of the same area, kept in the app's memory and disk cache, so it appears immediately when the ad is opened again. Tapping the card still opens the phone's maps app at the ad's location.",
+        ar: "كانت بطاقة 'الموقع على الخريطة' في تفاصيل الإعلان خريطة حية تعيد تحميل أجزائها في كل مرة يُفتح فيها الإعلان. أصبحت الآن صورة خريطة ثابتة لنفس المنطقة، محفوظة في ذاكرة التطبيق وعلى الجهاز، فتظهر فوراً عند فتح الإعلان مرة أخرى. والضغط على البطاقة ما زال يفتح تطبيق الخرائط في الهاتف على موقع الإعلان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Opening an ad shows the map of its area with a pin under the 'الموقع على الخريطة' pill.",
+          "Opening the same ad again shows the map instantly, without it loading.",
+          "Tapping the card opens Apple Maps / Google Maps at the ad's location.",
+          "An ad without a location, or no connection on the first visit, shows the generic map picture instead of an empty box.",
+        ],
+        ar: [
+          "فتح الإعلان يعرض خريطة منطقته مع دبوس تحت شارة 'الموقع على الخريطة'.",
+          "فتح نفس الإعلان مرة أخرى يعرض الخريطة فوراً دون تحميل.",
+          "الضغط على البطاقة يفتح خرائط Apple / Google على موقع الإعلان.",
+          "الإعلان بدون موقع، أو عدم وجود اتصال في أول زيارة، يعرض صورة الخريطة العامة بدلاً من مربع فارغ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an ad, go back, open it again — the map is there at once the second time.",
+          "Turn on airplane mode and reopen an ad you viewed before — its map still shows.",
+          "Tap the map card — the maps app opens at the ad.",
+        ],
+        ar: [
+          "افتح إعلاناً، ارجع، ثم افتحه مجدداً — تظهر الخريطة فوراً في المرة الثانية.",
+          "فعّل وضع الطيران وأعد فتح إعلان شاهدته من قبل — تظهر خريطته.",
+          "اضغط على بطاقة الخريطة — يفتح تطبيق الخرائط على الإعلان.",
+        ],
+      },
+      updatedIn: "fix/individual-bugs",
+    },
   ],
 };
