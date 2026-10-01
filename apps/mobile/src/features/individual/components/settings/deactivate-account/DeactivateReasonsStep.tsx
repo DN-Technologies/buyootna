@@ -83,7 +83,7 @@ export default function DeactivateReasonsStep({
                 numberOfLines={3}
                 style={{
                   textAlign: 'right',
-                  fontFamily: 'Cairo-Regular',
+                  fontFamily: 'Cairo_400Regular',
                   fontSize: 14,
                   minHeight: 64,
                   color: '#111111',

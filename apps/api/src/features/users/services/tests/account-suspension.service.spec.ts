@@ -1,14 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
-import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
-import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
-import { PrismaService } from '../../../core/prisma/prisma.service';
-import { TwilioService } from '../../../core/twilio/twilio.service';
+import { EmailOtpService } from '../../../../core/email-otp/email-otp.service';
+import { OtpRateLimiterService } from '../../../../core/otp-rate-limiter/otp-rate-limiter.service';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { TwilioService } from '../../../../core/twilio/twilio.service';
 import {
   AccountSuspensionService,
   maskEmail,
   maskPhone,
-} from './account-suspension.service';
-import { AccountStateService } from './account-state.service';
+} from '../account-suspension.service';
+import { AccountStateService } from '../account-state.service';
 
 describe('AccountSuspensionService', () => {
   const prisma = {
@@ -126,7 +126,12 @@ describe('AccountSuspensionService', () => {
       expect(update.data.isDisabled).toBe(true);
       expect(update.data.suspendedAt).toBeInstanceOf(Date);
       expect(prisma.accountSuspension.create).toHaveBeenCalledWith({
-        data: { userId: 'u1', reasons: ['temp_break', 'other'], note: 'سفر', until: null },
+        data: {
+          userId: 'u1',
+          reasons: ['temp_break', 'other'],
+          note: 'سفر',
+          until: null,
+        },
       });
       expect(prisma.session.deleteMany).toHaveBeenCalledWith({
         where: { userId: 'u1' },
@@ -177,7 +182,9 @@ describe('AccountSuspensionService', () => {
     expect(days).toBeGreaterThanOrEqual(7);
     expect(days).toBeLessThan(7.01);
     expect(prisma.accountSuspension.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({ until: update.data.suspendedUntil }),
+      data: expect.objectContaining({
+        until: update.data.suspendedUntil,
+      }) as unknown,
     });
     expect(result.suspendedUntil).toEqual(update.data.suspendedUntil);
     expect(result.message).toContain('7 أيام');

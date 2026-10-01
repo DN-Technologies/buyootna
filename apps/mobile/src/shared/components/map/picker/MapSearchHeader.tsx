@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SearchResultItem } from './types';
 
@@ -34,8 +34,12 @@ export function MapSearchHeader({
   searchResults,
   onSelectSearchResult,
 }: MapSearchHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView className="absolute left-4 right-4 top-2">
+    <View
+      className="absolute left-4 right-4"
+      style={{ top: insets.top + 8 }}
+    >
       <View className="flex-row items-center gap-2">
         {/* Back Button */}
         <TouchableOpacity
@@ -112,6 +116,6 @@ export function MapSearchHeader({
           )}
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }

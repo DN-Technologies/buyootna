@@ -3,6 +3,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import type { InvoiceableClient } from '@/shared/api/serviceInvoices.service';
+
+import ClientRequestPicker from './ClientRequestPicker';
 import FieldLabel from './FieldLabel';
 
 const inputClassName =
@@ -18,6 +21,9 @@ const formatKwDate = (date: Date) =>
 interface InvoiceGeneralDataStepProps {
   clientName: string;
   onChangeClientName: (value: string) => void;
+  // The accepted request the invoice is for (its client gets the invoice)
+  requestId: string | null;
+  onSelectClient: (client: InvoiceableClient | null) => void;
   invoiceNo: string;
   title: string;
   onChangeTitle: (value: string) => void;
@@ -30,6 +36,8 @@ interface InvoiceGeneralDataStepProps {
 export default function InvoiceGeneralDataStep({
   clientName,
   onChangeClientName,
+  requestId,
+  onSelectClient,
   invoiceNo,
   title,
   onChangeTitle,
@@ -52,14 +60,31 @@ export default function InvoiceGeneralDataStep({
       <View className="gap-5">
         <View className="gap-1.5">
           <FieldLabel text="العميل" />
-          <TextInput
-            value={clientName}
-            onChangeText={onChangeClientName}
-            placeholder="اسم العميل"
-            placeholderTextColor="#979797"
-            className={inputClassName}
-            style={{ writingDirection: 'rtl' }}
+          <ClientRequestPicker
+            selectedRequestId={requestId}
+            onSelect={onSelectClient}
           />
+          {!requestId && (
+            <>
+              <TextInput
+                testID="invoice-client-name"
+                value={clientName}
+                onChangeText={onChangeClientName}
+                placeholder="أو اكتب اسم عميل من خارج التطبيق"
+                placeholderTextColor="#979797"
+                className={inputClassName}
+                style={{ writingDirection: 'rtl' }}
+              />
+              {!!clientName.trim() && (
+                <Text
+                  className="font-cairo text-[11px] text-[#B97500]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  لن تصل الفاتورة لحساب العميل في التطبيق
+                </Text>
+              )}
+            </>
+          )}
         </View>
 
         <View className="gap-1.5 opacity-60">

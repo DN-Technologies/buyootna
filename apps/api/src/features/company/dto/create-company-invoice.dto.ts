@@ -7,6 +7,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
   Min,
   MinLength,
@@ -31,11 +32,20 @@ export class CreateInvoiceItemDto {
 }
 
 export class CreateCompanyInvoiceDto {
+  // One of the company's accepted requests: the invoice goes to that
+  // client's account (فواتير الخدمات) and their name is used
+  @IsOptional()
+  @IsUUID('4', { message: 'الطلب غير صالح' })
+  requestId?: string;
+
+  // A client outside the app, by name; required (by the service) only
+  // without requestId
+  @IsOptional()
   @Transform(trim)
-  @IsString()
+  @IsString({ message: 'اسم العميل مطلوب' })
   @MinLength(1, { message: 'اسم العميل مطلوب' })
   @MaxLength(100, { message: 'اسم العميل يجب ألا يتجاوز 100 حرف' })
-  clientName: string;
+  clientName?: string;
 
   @Transform(trim)
   @IsString()

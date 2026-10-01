@@ -5,13 +5,15 @@ import { UsersProfileService } from './services/users-profile.service';
 import { UsersDirectoryService } from './services/users-directory.service';
 import { AccountSuspensionService } from './services/account-suspension.service';
 import { AccountStateService } from './services/account-state.service';
+import { LoginMethodService } from './services/login-method.service';
 import { ProviderCardsService } from './services/provider-cards.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
 import { IdentitiesModule } from '../identities/identities.module';
+import { ServiceInvoicesModule } from '../service-invoices/service-invoices.module';
 
 @Module({
-  imports: [IdentitiesModule],
+  imports: [IdentitiesModule, ServiceInvoicesModule],
   // CompanyController / OfficeController declare literal `/users/*` routes
   // (companies, offices, register/company, ...) that must be registered
   // before UsersController's catch-all `GET /:id`, or that route shadows
@@ -27,6 +29,7 @@ import { IdentitiesModule } from '../identities/identities.module';
     UsersDirectoryService,
     AccountSuspensionService,
     AccountStateService,
+    LoginMethodService,
     ProviderCardsService,
   ],
   exports: [

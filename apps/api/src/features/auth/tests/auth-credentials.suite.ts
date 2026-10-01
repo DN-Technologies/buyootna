@@ -97,6 +97,57 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
       ).resolves.toMatchObject({ id: 'user-1' });
     });
 
+    describe('chosen login method', () => {
+      const withPhone = { ...dbUser, phone: '99998888' };
+
+      it.each([
+        ['EMAIL', '99998888', 'البريد الإلكتروني'],
+        ['PHONE', 'a@example.com', 'رقم الهاتف'],
+      ])(
+        'with %s chosen, refuses the other identifier (right password) with 403',
+        async (method, identifier, named) => {
+          ctx.prisma.user.findFirst.mockResolvedValue({
+            ...withPhone,
+            loginMethod: method,
+          });
+
+          const attempt = ctx.service.validateUser(
+            identifier,
+            'correct-password',
+          );
+          await expect(attempt).rejects.toThrow(ForbiddenException);
+          await expect(attempt).rejects.toThrow(named);
+        },
+      );
+
+      it('never reveals the chosen method to a wrong password', async () => {
+        ctx.prisma.user.findFirst.mockResolvedValue({
+          ...withPhone,
+          loginMethod: 'EMAIL',
+        });
+
+        await expect(
+          ctx.service.validateUser('99998888', 'wrong-password'),
+        ).rejects.toThrow(INVALID_CREDENTIALS_MESSAGE);
+      });
+
+      it.each([
+        ['EMAIL', 'a@example.com'],
+        ['PHONE', '99998888'],
+        [null, '99998888'],
+        [null, 'a@example.com'],
+      ])('with %s chosen, lets %s in', async (method, identifier) => {
+        ctx.prisma.user.findFirst.mockResolvedValue({
+          ...withPhone,
+          loginMethod: method,
+        });
+
+        await expect(
+          ctx.service.validateUser(identifier, 'correct-password'),
+        ).resolves.toMatchObject({ id: 'user-1' });
+      });
+    });
+
     it('still lets a disabled or blocked admin in with the right password', async () => {
       ctx.prisma.user.findFirst.mockResolvedValue({
         ...dbUser,

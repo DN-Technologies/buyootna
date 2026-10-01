@@ -52,7 +52,7 @@ export default function MenuItem({
             style={{ backgroundColor: badgeColor }}
             className="h-5 w-5 items-center justify-center rounded-full"
           >
-            <Text className="font-cairo-bold text-[11px] leading-[14px] text-white">
+            <Text className="font-bold text-[10px] leading-[14px] text-white">
               {badgeCount}
             </Text>
           </View>

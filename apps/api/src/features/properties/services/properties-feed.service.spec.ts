@@ -56,8 +56,24 @@ describe('PropertiesFeedService.findAll sorting', () => {
     expect(args.where).toMatchObject({ status: 'ACTIVE', type: 'SALE' });
   });
 
+  it.each([
+    ['PRICE_DESC', 'desc'],
+    ['PRICE_ASC', 'asc'],
+  ] as const)(
+    '%s sorts purely by price, ads without a price last',
+    async (sort, direction) => {
+      await service.findAll({ sort });
+
+      expect(orderUsed()).toEqual([
+        { price: { sort: direction, nulls: 'last' } },
+        { publishedAt: { sort: 'desc', nulls: 'last' } },
+        { id: 'asc' },
+      ]);
+    },
+  );
+
   it('rejects an unknown sort value in the query', async () => {
-    const dto = plainToInstance(GetPropertiesFilterDto, { sort: 'PRICE' });
+    const dto = plainToInstance(GetPropertiesFilterDto, { sort: 'CHEAPEST' });
 
     const errors = await validate(dto);
 

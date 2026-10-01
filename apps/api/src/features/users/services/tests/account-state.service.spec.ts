@@ -1,5 +1,5 @@
-import { PrismaService } from '../../../core/prisma/prisma.service';
-import { AccountStateService } from './account-state.service';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { AccountStateService } from '../account-state.service';
 
 describe('AccountStateService.reactivateExpired', () => {
   const prisma = {

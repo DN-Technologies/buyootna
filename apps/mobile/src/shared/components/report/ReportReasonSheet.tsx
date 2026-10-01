@@ -132,7 +132,7 @@ const ReportReasonSheet = forwardRef<BottomSheetModal, ReportReasonSheetProps>(
               multiline
               textAlignVertical="top"
               style={{
-                fontFamily: 'Cairo-Regular',
+                fontFamily: 'Cairo_400Regular',
                 fontSize: 14,
                 color: '#111111',
                 writingDirection: 'rtl',

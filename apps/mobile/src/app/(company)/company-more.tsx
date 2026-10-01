@@ -162,7 +162,7 @@ export default function CompanyMoreScreen() {
                   title="فواتير الخدمات"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/create-invoice')}
+                  onPress={() => router.push('/company-service-invoices')}
                 />
               </View>
             </View>

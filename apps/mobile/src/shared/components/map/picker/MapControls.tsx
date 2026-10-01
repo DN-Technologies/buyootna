@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { StyleURL } from '@rnmapbox/maps';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface MapControlsProps {
   onUseGps: () => void;
@@ -19,8 +20,13 @@ export function MapControls({
   onZoomIn,
   onZoomOut,
 }: MapControlsProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View className="absolute right-4 top-32 items-center gap-3">
+    // Below the search bar, wherever the notch puts it
+    <View
+      className="absolute right-4 items-center gap-3"
+      style={{ top: insets.top + 76 }}
+    >
       {/* GPS My Location Button */}
       <TouchableOpacity
         activeOpacity={0.8}

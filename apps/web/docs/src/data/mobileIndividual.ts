@@ -822,37 +822,41 @@ export const mobileIndividual: DocSection = {
     {
       id: "mobile-home-sort",
       title: {
-        en: "Home sort: default, newest and oldest",
-        ar: "ترتيب الرئيسية: الافتراضي والأحدث والأقدم",
+        en: "Home sort: default, oldest, newest and price (high→low, low→high)",
+        ar: "ترتيب الرئيسية: الافتراضي والأقدم والأحدث والسعر (من الأعلى والأقل)",
       },
       priority: "P1",
       story: {
-        en: "Verify 'الترتيب' on the listings screen opens the radio sheet and reloads GET /properties with sort=DEFAULT|NEWEST|OLDEST. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; pages never repeat or skip ads with the same date.",
-        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح نافذة الاختيار ويعيد تحميل GET /properties مع sort=DEFAULT|NEWEST|OLDEST. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ ولا تتكرر الصفحات أو تتخطى إعلانات لها نفس التاريخ.",
+        en: "Verify 'الترتيب' on the listings screen opens 'الترتيب حسب' with, in order: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى), and reloads GET /properties with sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; the price orders sort strictly by price, with ads that have no price at the end; pages never repeat or skip ads.",
+        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح 'الترتيب حسب' بالترتيب: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى)، ويعيد تحميل GET /properties مع sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ وترتيبا السعر حسب السعر فقط مع الإعلانات بلا سعر في النهاية؛ ولا تتكرر الصفحات أو تتخطى إعلانات.",
       },
       acceptanceCriteria: {
         en: [
           "The chosen option stays selected when the sheet is reopened.",
           "Newest shows a just-republished ad first; Oldest shows it last.",
+          "Price high→low starts with the most expensive ad; low→high with the cheapest.",
           "Scrolling through several pages shows each ad exactly once.",
         ],
         ar: [
           "يبقى الخيار المختار محدداً عند إعادة فتح النافذة.",
           "الأحدث يعرض الإعلان المعاد نشره للتو أولاً؛ والأقدم يعرضه أخيراً.",
+          "السعر من الأعلى يبدأ بأغلى إعلان؛ ومن الأقل يبدأ بأرخص إعلان.",
           "التمرير عبر عدة صفحات يعرض كل إعلان مرة واحدة فقط.",
         ],
       },
       testScenarios: {
         en: [
-          "Switch between the three sorts and compare the first 5 ads.",
-          "Republish an ad, then choose Newest — it's first.",
+          "Switch between the five sorts and compare the first 5 ads.",
+          "Republish an ad, then choose الأحدث أولاً — it's first.",
+          "Choose each price order on the sale and rent tabs and check the prices go down / up.",
         ],
         ar: [
-          "بدّل بين الترتيبات الثلاثة وقارن أول 5 إعلانات.",
-          "أعد نشر إعلان ثم اختر الأحدث — يظهر أولاً.",
+          "بدّل بين الترتيبات الخمسة وقارن أول 5 إعلانات.",
+          "أعد نشر إعلان ثم اختر الأحدث أولاً — يظهر أولاً.",
+          "اختر كل ترتيب سعر في تبويبي البيع والإيجار وتأكد أن الأسعار تنزل / تصعد.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/home-price-sort",
     },
     {
       id: "mobile-settings",
@@ -929,6 +933,135 @@ export const mobileIndividual: DocSection = {
         ],
       },
       updatedIn: "fix/change-password-flow",
+    },
+    {
+      id: "mobile-more-profile-card",
+      title: {
+        en: "More: the profile card has a single 'تعديل' button",
+        ar: "المزيد: بطاقة الملف الشخصي فيها زر 'تعديل' فقط",
+      },
+      priority: "P2",
+      story: {
+        en: "Verify the profile card at the top of the individual More tab (AccountProfileHeaderCard): avatar, name, email/phone and the persona switcher (فرد ▾), then one full-width 'تعديل' button that opens Edit Profile. The 'معاينة' and 'مشاركة' buttons were removed — they had no action.",
+        ar: "تحقق من بطاقة الملف الشخصي أعلى تبويب المزيد للفرد (AccountProfileHeaderCard): الصورة والاسم والبريد/الهاتف ومبدّل الهوية (فرد ▾)، ثم زر 'تعديل' واحد بعرض البطاقة يفتح تعديل الملف الشخصي. أُزيل زرا 'معاينة' و'مشاركة' — لم يكن لهما أي إجراء.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only 'تعديل' appears under the name, spanning the card's width.",
+          "Tapping it opens Edit Profile.",
+        ],
+        ar: [
+          "يظهر زر 'تعديل' فقط تحت الاسم وبعرض البطاقة.",
+          "الضغط عليه يفتح تعديل الملف الشخصي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open More as a signed-in individual — no 'معاينة' or 'مشاركة' buttons; tap 'تعديل' — Edit Profile opens.",
+        ],
+        ar: [
+          "افتح المزيد كفرد مسجّل — لا يوجد زرا 'معاينة' أو 'مشاركة'؛ اضغط 'تعديل' — يفتح تعديل الملف الشخصي.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
+    {
+      id: "mobile-login-method",
+      title: {
+        en: "Login method: sign in with email, phone, or either — the phone only once verified by SMS",
+        ar: "طريقة تسجيل الدخول: البريد أو الهاتف أو أيهما — والهاتف فقط بعد التحقق منه برمز SMS",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As a user, I want to choose which identifier my account signs in with, so that only the one I trust works with my password.",
+        ar: "بصفتي مستخدماً، أريد اختيار المعرّف الذي يُسجَّل به الدخول إلى حسابي، حتى لا يعمل مع كلمة المرور إلا المعرّف الذي أثق به.",
+      },
+      story: {
+        en: "Verify Settings → الحساب والامان → 'طريقة تسجيل الدخول' opens a sheet with three choices: 'البريد الالكتروني أو رقم الهاتف' (the default for every account), 'البريد الالكتروني' with the address, and 'رقم الهاتف' with the number. A phone that isn't SMS-verified is greyed out; tapping it shows 'يجب التحقق من رقم الهاتف أولاً، يمكنك التحقق من رقم الهاتف من تعديل الملف الشخصي.' حفظ saves (PATCH /users/account/login-method) and shows 'تم تحديث طريقة تسجيل الدخول بنجاح.'; تراجع closes without saving. With email or phone chosen, password login with the other identifier is refused (403) — only after the password is proven. In Edit Profile, a new phone number is texted a code and only saved once the code is right; a saved phone that isn't verified shows 'الرقم غير موثق — تحقق من الرقم'. Google/Apple sign-in and password recovery are unaffected.",
+        ar: "تحقق من الإعدادات ← الحساب والامان ← 'طريقة تسجيل الدخول': تفتح نافذة بثلاثة خيارات: 'البريد الالكتروني أو رقم الهاتف' (الافتراضي لكل الحسابات)، و'البريد الالكتروني' مع العنوان، و'رقم الهاتف' مع الرقم. الهاتف غير الموثق برمز SMS يظهر باهتاً؛ والضغط عليه يعرض 'يجب التحقق من رقم الهاتف أولاً، يمكنك التحقق من رقم الهاتف من تعديل الملف الشخصي.' زر حفظ يحفظ (PATCH /users/account/login-method) ويعرض 'تم تحديث طريقة تسجيل الدخول بنجاح.'؛ وتراجع يغلق دون حفظ. عند اختيار البريد أو الهاتف يُرفض الدخول بكلمة المرور بالمعرّف الآخر (403) — بعد التحقق من كلمة المرور فقط. في تعديل الملف الشخصي يُرسل رمز إلى رقم الهاتف الجديد ولا يُحفظ إلا بعد إدخال الرمز الصحيح؛ والرقم المحفوظ غير الموثق يعرض 'الرقم غير موثق — تحقق من الرقم'. تسجيل الدخول عبر Google/Apple واستعادة كلمة المرور لا يتأثران.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every account starts on 'البريد الالكتروني أو رقم الهاتف'; both identifiers sign in.",
+          "With 'رقم الهاتف' saved, signing in with the email and the right password shows 'طريقة تسجيل الدخول المحددة لحسابك هي رقم الهاتف، يرجى تسجيل الدخول به.'; with a wrong password the usual invalid-credentials message shows.",
+          "With 'البريد الالكتروني' saved, the phone is refused the same way.",
+          "An unverified phone can't be chosen and the warning toast explains why.",
+          "Changing the phone in Edit Profile sends a code to the new number; a wrong code saves nothing; the right code saves the number and the rest of the form.",
+          "A number already on another account is refused ('رقم الهاتف مستخدم في حساب آخر').",
+        ],
+        ar: [
+          "كل الحسابات تبدأ على 'البريد الالكتروني أو رقم الهاتف'؛ والمعرّفان يعملان.",
+          "عند حفظ 'رقم الهاتف'، الدخول بالبريد وكلمة المرور الصحيحة يعرض 'طريقة تسجيل الدخول المحددة لحسابك هي رقم الهاتف، يرجى تسجيل الدخول به.'؛ ومع كلمة مرور خاطئة تظهر رسالة بيانات الدخول المعتادة.",
+          "عند حفظ 'البريد الالكتروني' يُرفض الهاتف بنفس الطريقة.",
+          "لا يمكن اختيار هاتف غير موثق ويشرح التنبيه السبب.",
+          "تغيير الهاتف في تعديل الملف الشخصي يرسل رمزاً للرقم الجديد؛ الرمز الخاطئ لا يحفظ شيئاً؛ والصحيح يحفظ الرقم وبقية النموذج.",
+          "الرقم المستخدم في حساب آخر يُرفض ('رقم الهاتف مستخدم في حساب آخر').",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an email-only account open the sheet: phone is greyed; tap it — warning toast. Add a phone in Edit Profile, enter the SMS code, reopen the sheet — phone is selectable.",
+          "Choose رقم الهاتف, save — success toast. Sign out and sign in with the email — refused with the message; sign in with the phone — works.",
+          "Choose 'البريد الالكتروني أو رقم الهاتف' again — both work.",
+          "In Edit Profile enter a new number, save, type a wrong code — error in the sheet; type the right code — profile saved with the new number.",
+        ],
+        ar: [
+          "على حساب ببريد فقط افتح النافذة: الهاتف باهت؛ اضغطه — يظهر التنبيه. أضف هاتفاً من تعديل الملف الشخصي وأدخل رمز SMS ثم افتح النافذة — يمكن اختيار الهاتف.",
+          "اختر رقم الهاتف واحفظ — يظهر تنبيه النجاح. سجّل الخروج وادخل بالبريد — يُرفض بالرسالة؛ وادخل بالهاتف — يعمل.",
+          "اختر 'البريد الالكتروني أو رقم الهاتف' مجدداً — يعمل الاثنان.",
+          "في تعديل الملف الشخصي أدخل رقماً جديداً واحفظ واكتب رمزاً خاطئاً — خطأ في النافذة؛ ثم الرمز الصحيح — يُحفظ الملف بالرقم الجديد.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
+    {
+      id: "mobile-service-invoices",
+      title: {
+        en: "فواتير الخدمات: invoices companies issued to you — search, sort, details, download, share, delete",
+        ar: "فواتير الخدمات: الفواتير التي أصدرتها الشركات لك — بحث وترتيب وتفاصيل وتحميل ومشاركة وحذف",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As a client, I want every invoice a company issued me in one place, so that I can check what I paid for and keep a copy.",
+        ar: "بصفتي عميلاً، أريد كل فاتورة أصدرتها لي شركة في مكان واحد، حتى أراجع ما دفعت مقابله وأحتفظ بنسخة.",
+      },
+      story: {
+        en: "Verify More → فواتير الخدمات opens the list (it no longer says قريباً). Each card shows the invoice number, the service, the amount, 'تم الدفع في: {date}' (or 'بانتظار الدفع' until the company marks it paid) and تحميل. The search box matches the invoice number, the service or the company name; the sort button opens 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً). Tapping a card opens 'تفاصيل الفاتورة': company logo, name and specialty, invoice number, issue date and time, service, warranty, line items, discount and total, with تحميل / مشاركة (a PDF via the share sheet) and حذف, which asks 'حذف فاتورة الخدمة ؟' and removes it from your list only. The download icon at the top exports the whole list as one PDF. With no invoices the empty state shows 'لا توجد فواتير للخدمات حتى الآن'. A new invoice and its payment also arrive as notifications.",
+        ar: "تحقق من أن المزيد ← فواتير الخدمات يفتح القائمة (لم تعد تظهر قريباً). كل بطاقة تعرض رقم الفاتورة والخدمة والمبلغ و'تم الدفع في: {التاريخ}' (أو 'بانتظار الدفع' حتى تؤكد الشركة الدفع) وزر تحميل. البحث يطابق رقم الفاتورة أو الخدمة أو اسم الشركة؛ وزر الترتيب يفتح 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً). الضغط على بطاقة يفتح 'تفاصيل الفاتورة': شعار الشركة واسمها وتخصصها ورقم الفاتورة وتاريخ ووقت الإصدار والخدمة والكفالة والبنود والخصم والإجمالي، مع تحميل / مشاركة (ملف PDF عبر نافذة المشاركة) وحذف، الذي يسأل 'حذف فاتورة الخدمة ؟' ويزيلها من قائمتك فقط. أيقونة التحميل في الأعلى تصدّر القائمة كاملة كملف PDF واحد. عند عدم وجود فواتير تظهر حالة 'لا توجد فواتير للخدمات حتى الآن'. وتصل الفاتورة الجديدة وتأكيد دفعها كإشعارات أيضاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only invoices addressed to the signed-in persona appear.",
+          "Search and sort change the list; a search with no match shows 'لا توجد نتائج مطابقة'.",
+          "The details total equals the items minus the discount.",
+          "تحميل and مشاركة open the share sheet with a PDF of that invoice; the header icon exports the visible list.",
+          "حذف asks first; after confirming the invoice disappears and stays gone after reopening the screen. تراجع keeps it.",
+          "A card shows 'بانتظار الدفع' until the company marks it paid, then 'تم الدفع في'.",
+        ],
+        ar: [
+          "تظهر فقط الفواتير الموجهة للهوية المسجّل بها الدخول.",
+          "البحث والترتيب يغيّران القائمة؛ والبحث بلا نتائج يعرض 'لا توجد نتائج مطابقة'.",
+          "إجمالي التفاصيل يساوي البنود ناقص الخصم.",
+          "تحميل ومشاركة يفتحان نافذة المشاركة بملف PDF للفاتورة؛ وأيقونة الأعلى تصدّر القائمة الظاهرة.",
+          "حذف يسأل أولاً؛ وبعد التأكيد تختفي الفاتورة وتبقى مختفية بعد إعادة فتح الشاشة. وتراجع يبقيها.",
+          "البطاقة تعرض 'بانتظار الدفع' حتى تؤكد الشركة الدفع، ثم 'تم الدفع في'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual, send a request to a test company; as the company accept it and issue an invoice picking that client. Back as the individual: a notification arrives and the invoice is in فواتير الخدمات with 'بانتظار الدفع'.",
+          "As the company mark it paid — the individual's card shows 'تم الدفع في' with today's date.",
+          "Search by part of the company name and by the invoice number; switch to الأقدم أولاً.",
+          "Open the details, tap تحميل and save to Files; tap مشاركة and send it; delete it and confirm it's gone.",
+        ],
+        ar: [
+          "كفرد أرسل طلباً لشركة اختبار؛ وكشركة اقبله وأصدر فاتورة باختيار ذلك العميل. عد كفرد: يصل إشعار وتظهر الفاتورة في فواتير الخدمات مع 'بانتظار الدفع'.",
+          "كشركة أكّد الدفع — تعرض بطاقة الفرد 'تم الدفع في' بتاريخ اليوم.",
+          "ابحث بجزء من اسم الشركة وبرقم الفاتورة؛ وبدّل إلى الأقدم أولاً.",
+          "افتح التفاصيل واضغط تحميل واحفظ في الملفات؛ واضغط مشاركة وأرسلها؛ ثم احذفها وتأكد أنها اختفت.",
+        ],
+      },
+      updatedIn: "feat/service-invoices",
     },
   ],
 };

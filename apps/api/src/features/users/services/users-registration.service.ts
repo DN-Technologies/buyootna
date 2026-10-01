@@ -162,6 +162,8 @@ export class UsersRegistrationService {
             data: {
               email,
               phone,
+              // Only the SMS-verified registration path passes a phone
+              phoneVerifiedAt: phone ? new Date() : undefined,
               password: hashedPassword,
               role: Role.INDIVIDUAL,
               // Legacy field kept in sync with individualData.name below —

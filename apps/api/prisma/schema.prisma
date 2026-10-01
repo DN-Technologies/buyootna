@@ -30,6 +30,12 @@ model User {
   // no-sid tokens issued before this moment.
   passwordChangedAt DateTime?
 
+  // Set when the phone was proven by an SMS code (registration, or the
+  // Edit Profile phone check); a phone without it can't be the login method
+  phoneVerifiedAt DateTime?
+  // The one identifier password login accepts; null = email or phone
+  loginMethod LoginMethod?
+
   // Relations
   identities       Identity[]
   otpCode          OtpCode?
@@ -195,6 +201,7 @@ enum NotificationType {
   REPORT_RESOLVED
   REPORT_DISMISSED
   NEW_DEVICE_LOGIN
+  SERVICE_INVOICE
 }
 
 model Notification {

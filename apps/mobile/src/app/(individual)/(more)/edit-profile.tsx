@@ -1,79 +1,26 @@
-import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Controller } from 'react-hook-form';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import AvatarPicker from '@/features/individual/components/more/AvatarPicker';
-import { settingsService } from '@/shared/api/settings.service';
-import { useIdentity } from '@/shared/hooks/useIdentity';
-import { useAuthStore } from '@/shared/store/useAuthStore';
-import { showAlert } from '@/shared/utils/alert';
-import { NAME_REGEX, NAME_REGEX_MESSAGE } from '@/shared/utils/nameValidation';
-
-interface ProfileFormData {
-  name: string;
-  email: string;
-  phone: string;
-  whatsapp: string;
-  avatarUrl: string;
-}
+import { ChangePasswordOtpSheet } from '@/features/individual/components/more/change-password';
+import {
+  EditProfileHeader,
+  EditProfileSubmitBar,
+  EmailField,
+  KuwaitPhoneField,
+  NameField,
+  PhoneVerificationHint,
+  useEditProfile,
+} from '@/features/individual/components/more/edit-profile';
 
 export default function EditProfileScreen() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const { activeIdentity, displayName, avatarUrl } = useIdentity();
-
-  const derivedName =
-    activeIdentity?.individualData?.name ||
-    displayName ||
-    (user?.email ? user.email.split('@')[0] : 'غير معروف');
-
-  // Initialize React Hook Form
+  const profile = useEditProfile();
   const {
     control,
-    handleSubmit,
-    formState: { isDirty, isValid, errors },
-  } = useForm<ProfileFormData>({
-    defaultValues: {
-      name: derivedName,
-      email: user?.email || '',
-      phone: user?.phone || '',
-      whatsapp: activeIdentity?.individualData?.whatsapp || user?.phone || '',
-      avatarUrl: avatarUrl || 'https://via.placeholder.com/150',
-    },
-    mode: 'onChange', // Validates on every keystroke to update button state
-  });
-
-  const onSubmit = async (data: ProfileFormData) => {
-    try {
-      await settingsService.updateProfile({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        whatsapp: data.whatsapp,
-        avatarUrl: data.avatarUrl,
-      });
-      await useAuthStore.getState().refreshProfile();
-      showAlert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [
-        { text: 'موافق', onPress: () => router.back() },
-      ]);
-    } catch (error: any) {
-      console.error('Update profile error:', error);
-      showAlert(
-        'خطأ',
-        error.response?.data?.message || 'حدث خطأ أثناء تحديث البيانات',
-      );
-    }
-  };
+    formState: { errors },
+  } = profile.form;
+  const { phoneCheck } = profile;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -81,22 +28,12 @@ export default function EditProfileScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        {/* --- 1. Header --- */}
-        <View className="flex-row items-center justify-between border-b border-gray-50 px-5 py-4">
-          <TouchableOpacity onPress={() => router.back()} className="w-8">
-            <Feather name="chevron-right" size={24} color="#111111" />
-          </TouchableOpacity>
-          <Text className="font-cairo-semibold text-lg leading-[24px] text-[#111111]">
-            تعديل الملف الشخصي
-          </Text>
-          <View className="w-8" />
-        </View>
+        <EditProfileHeader onBack={profile.goBack} />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
         >
-          {/* --- 2. Avatar Section --- */}
           <Controller
             control={control}
             name="avatarUrl"
@@ -108,167 +45,53 @@ export default function EditProfileScreen() {
             )}
           />
 
-          {/* --- 3. Form Inputs --- */}
           <View className="gap-5 px-5">
-            {/* Name Input */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-medium text-xs text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                الاسم
-              </Text>
-              <Controller
-                control={control}
-                name="name"
-                rules={{
-                  required: 'الاسم مطلوب',
-                  maxLength: {
-                    value: 32,
-                    message: 'الاسم يجب ألا يتجاوز 32 حرفاً',
-                  },
-                  pattern: {
-                    value: NAME_REGEX,
-                    message: NAME_REGEX_MESSAGE,
-                  },
-                }}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    className={`border ${errors.name ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    placeholder="أدخل اسمك"
-                    textAlign="right"
-                    maxLength={32}
-                  />
-                )}
+            <NameField control={control} errors={errors} />
+            <EmailField control={control} />
+            <KuwaitPhoneField
+              control={control}
+              errors={errors}
+              name="phone"
+              label="رقم الهاتف"
+              requiredMessage="رقم الهاتف مطلوب"
+            >
+              <PhoneVerificationHint
+                phoneChanged={profile.phoneChanged}
+                needsVerification={profile.needsPhoneVerification}
+                onVerify={profile.verifySavedPhone}
               />
-              {errors.name && (
-                <Text
-                  className="mt-1 font-cairo-medium text-xs text-red-500"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  {errors.name.message}
-                </Text>
-              )}
-            </View>
-
-            {/* Email Input */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-medium text-xs text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                البريد الالكتروني
-              </Text>
-              <Controller
-                control={control}
-                name="email"
-                rules={{
-                  required: 'البريد الالكتروني مطلوب',
-                  pattern: {
-                    value: /\S+@\S+\.\S+/,
-                    message: 'بريد الكتروني غير صالح',
-                  },
-                }}
-                render={({ field: { value } }) => (
-                  <TextInput
-                    className="border border-gray-200 rounded-xl bg-gray-50 px-4 py-3.5 text-right font-cairo-medium text-gray-400"
-                    value={value}
-                    editable={false}
-                    textAlign="right"
-                  />
-                )}
-              />
-            </View>
-
-            {/* Phone Input (Compound) */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-medium text-xs text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                رقم الهاتف
-              </Text>
-              <View className="flex-row gap-2">
-                <Controller
-                  control={control}
-                  name="phone"
-                  rules={{ required: 'رقم الهاتف مطلوب', minLength: 8 }}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      className={`flex-1 border ${errors.phone ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="phone-pad"
-                      textAlign="right"
-                    />
-                  )}
-                />
-                {/* Country Code Dropdown */}
-                <TouchableOpacity className="w-24 flex-row items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
-                  <Text className="font-cairo-medium text-sm leading-[22px] text-[#64748B]">
-                    +965
-                  </Text>
-                  <Feather name="chevron-down" size={16} color="#111111" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* WhatsApp Input (Compound) */}
-            <View>
-              <Text
-                className="mb-2 font-cairo-medium text-xs text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                رقم الواتساب
-              </Text>
-              <View className="flex-row gap-2">
-                <Controller
-                  control={control}
-                  name="whatsapp"
-                  rules={{ required: 'رقم الواتساب مطلوب', minLength: 8 }}
-                  render={({ field: { onChange, onBlur, value } }) => (
-                    <TextInput
-                      className={`flex-1 border ${errors.whatsapp ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      keyboardType="phone-pad"
-                      textAlign="right"
-                    />
-                  )}
-                />
-                {/* Country Code Dropdown */}
-                <TouchableOpacity className="w-24 flex-row items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
-                  <Text className="font-cairo-medium text-sm leading-[22px] text-[#64748B]">
-                    +965
-                  </Text>
-                  <Feather name="chevron-down" size={16} color="#111111" />
-                </TouchableOpacity>
-              </View>
-            </View>
+            </KuwaitPhoneField>
+            <KuwaitPhoneField
+              control={control}
+              errors={errors}
+              name="whatsapp"
+              label="رقم الواتساب"
+              requiredMessage="رقم الواتساب مطلوب"
+            />
           </View>
         </ScrollView>
 
-        {/* --- 4. Dynamic Sticky Submit Button --- */}
-        <View className="border-t border-gray-50 bg-white px-5 py-4">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid}
-            className={`h-[48px] w-full items-center justify-center rounded-[24px] ${
-              isDirty && isValid ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'
-            }`}
-          >
-            <Text className="font-cairo-bold text-[15px] text-white">
-              تعديل البيانات
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <EditProfileSubmitBar
+          enabled={profile.canSubmit}
+          onSubmit={profile.submit}
+        />
       </KeyboardAvoidingView>
+
+      {/* SMS check for a new (or unverified) phone */}
+      <ChangePasswordOtpSheet
+        ref={phoneCheck.sheetRef}
+        otpInputRef={phoneCheck.otpInputRef}
+        otp={phoneCheck.otp}
+        onOtpChange={phoneCheck.setOtp}
+        otpError={phoneCheck.otpError}
+        maskedPhone={phoneCheck.destination}
+        secondsLeft={phoneCheck.secondsLeft}
+        isReady={phoneCheck.isReady}
+        limitReachedMessage={phoneCheck.limitReachedMessage}
+        onResendOtp={phoneCheck.resend}
+        onVerifyOtp={phoneCheck.verify}
+        isSubmitting={phoneCheck.isSubmitting}
+      />
     </SafeAreaView>
   );
 }

@@ -25,8 +25,8 @@ export default function RequestQuoteAddressField({
       >
         <Text
           numberOfLines={1}
-          className={`flex-1 leading-[22px] font-cairo text-sm ${
-            addressLabel ? 'text-[#111111]' : 'text-[#94A3B8]'
+          className={`flex-1 leading-[22px] font-cairo text-[13px] ${
+            addressLabel ? 'text-[#111111]' : 'text-[#979797]'
           }`}
           style={{ writingDirection: 'rtl' }}
         >

@@ -35,10 +35,13 @@ export const companyService = {
   },
 
   /**
-   * Creates a customer invoice for the current company profile.
+   * Issues a service invoice from the current company persona. With
+   * requestId (one of its accepted requests) it reaches that client's
+   * فواتير الخدمات; otherwise clientName names a client outside the app.
    */
   createInvoice: async (data: {
-    clientName: string;
+    requestId?: string;
+    clientName?: string;
     title: string;
     warrantyMonths?: string;
     issueDate: string;

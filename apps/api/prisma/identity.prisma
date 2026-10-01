@@ -42,6 +42,8 @@ model Identity {
   invoices        Invoice[]
   projects        CompanyProject[]
   companyInvoices CompanyInvoice[]
+  // Service invoices a company addressed to this persona (فواتير الخدمات)
+  invoicesReceived CompanyInvoice[] @relation("InvoiceClient")
   reportsFiled    Report[]                  @relation("ReporterIdentityReports")
   reportsAgainst  Report[]                  @relation("TargetIdentityReports")
   alerts          Alert[]
@@ -151,7 +153,19 @@ model CompanyInvoice {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  // The client's persona, set when the company picked one of its accepted
+  // requests; null for a client typed by name (outside the app)
+  clientIdentityId String?
+  clientIdentity   Identity?       @relation("InvoiceClient", fields: [clientIdentityId], references: [id], onDelete: SetNull)
+  requestId        String?
+  request          CompanyRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  // Set when the company marks it paid
+  paidAt           DateTime?
+  // The client removed it from their own list; the company keeps it
+  clientDeletedAt  DateTime?
+
   identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@index([identityId])
+  @@index([clientIdentityId])
 }

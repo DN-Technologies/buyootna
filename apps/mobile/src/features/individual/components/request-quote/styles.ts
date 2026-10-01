@@ -7,8 +7,11 @@ export const requestQuoteInputStyle: TextStyle = {
   borderColor: '#E5E7EB',
   backgroundColor: '#FFFFFF',
   paddingHorizontal: 16,
-  fontFamily: 'Cairo-Medium',
+  fontFamily: 'Cairo_400Regular',
   fontSize: 13,
   color: '#111111',
   textAlign: 'right',
 };
+
+// The app's placeholder grey (same as the dropdowns' and other forms')
+export const PLACEHOLDER_COLOR = '#979797';

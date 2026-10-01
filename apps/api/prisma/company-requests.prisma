@@ -25,6 +25,7 @@ model CompanyRequest {
   description String
 
   status    RequestStatus @default(PENDING)
+  invoices  CompanyInvoice[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 

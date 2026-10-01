@@ -66,8 +66,20 @@ export default function InlineDropdown({
 
       {/* Expanded Options List */}
       {isOpen && (
-        <View className="border-1 mt-1 max-h-64 overflow-hidden rounded-md border border-gray-200 bg-white">
-          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
+        // The shadow sits on an outer view: overflow-hidden (needed for the
+        // rounded corners) would clip it on iOS
+        <View
+          className="mt-1 rounded-md bg-white"
+          style={{
+            shadowColor: '#0F172A',
+            shadowOpacity: 0.12,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 6 },
+            elevation: 6,
+          }}
+        >
+          <View className="max-h-64 overflow-hidden rounded-md border border-gray-200 bg-white">
+            <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
             {options.map((option, index) => (
               <TouchableOpacity
                 key={option.id}
@@ -86,7 +98,8 @@ export default function InlineDropdown({
                 </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+            </ScrollView>
+          </View>
         </View>
       )}
     </View>

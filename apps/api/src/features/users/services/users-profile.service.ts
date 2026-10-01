@@ -11,10 +11,14 @@ import {
   NAME_REGEX_MESSAGE,
 } from '../../../core/validators/name.regex';
 import { StorageService } from 'src/core/storage/storage.service';
-import { CreateCompanyInvoiceDto } from '../../company/dto/create-company-invoice.dto';
 import { CreateProjectDto } from '../../company/dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
+
+// Last 8 digits: "+96599998888", "96599998888" and "99998888" are one number
+function localPhone(phone?: string | null): string {
+  return (phone ?? '').replace(/\D/g, '').slice(-8);
+}
 
 @Injectable()
 export class UsersProfileService {
@@ -46,7 +50,22 @@ export class UsersProfileService {
     // 1. Update basic user fields if provided
     const userUpdateData: Prisma.UserUpdateInput = {};
     if (dto.name !== undefined) userUpdateData.name = dto.name;
-    if (dto.phone !== undefined) userUpdateData.phone = dto.phone;
+    // The phone is a sign-in identifier, so a new number only lands through
+    // the SMS check (POST /users/account/phone/verify). The unchanged number,
+    // which the app sends back on every save, is simply left as it is.
+    if (dto.phone !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { phone: true },
+      });
+      if (localPhone(dto.phone) !== localPhone(current?.phone)) {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: 'PHONE_VERIFICATION_REQUIRED',
+          message: 'لتغيير رقم الهاتف يجب التحقق منه برمز يُرسل إليه.',
+        });
+      }
+    }
     if (dto.email !== undefined) userUpdateData.email = dto.email;
     if (dto.whatsapp !== undefined) userUpdateData.whatsapp = dto.whatsapp;
 
@@ -195,79 +214,6 @@ export class UsersProfileService {
 
     await this.prisma.companyProject.delete({ where: { id: projectId } });
     return { success: true, message: 'تم حذف المشروع بنجاح' };
-  }
-
-  // --- Customer invoices (company accounts only) ---
-  async createInvoice(userId: string, dto: CreateCompanyInvoiceDto) {
-    const identity = await this.prisma.identity.findFirst({
-      where: { userId, type: 'COMPANY' },
-      include: { companyData: true },
-    });
-    if (!identity || !identity.companyData) {
-      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
-    }
-
-    // Server-side totals — the client's numbers are never trusted.
-    const subtotal = dto.items.reduce(
-      (sum, item) => sum + item.price * item.qty,
-      0,
-    );
-    const discount = Math.min(dto.discount ?? 0, subtotal);
-    const total = subtotal - discount;
-
-    const invoiceNo = await this.generateInvoiceNo();
-
-    const invoice = await this.prisma.companyInvoice.create({
-      data: {
-        identityId: identity.id,
-        invoiceNo,
-        clientName: dto.clientName,
-        title: dto.title,
-        warrantyMonths: dto.warrantyMonths,
-        issueDate: new Date(dto.issueDate),
-        items: dto.items as unknown as Prisma.InputJsonValue,
-        subtotal,
-        discount,
-        total,
-      },
-    });
-
-    return { success: true, invoice };
-  }
-
-  async listInvoices(userId: string) {
-    const identity = await this.prisma.identity.findFirst({
-      where: { userId, type: 'COMPANY' },
-    });
-    if (!identity) {
-      throw new NotFoundException('الملف الشخصي للشركة غير موجود');
-    }
-
-    return this.prisma.companyInvoice.findMany({
-      where: { identityId: identity.id },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  /**
-   * Generates a unique INV-YYYY-NNNNNN number based on the count of the
-   * company's existing invoices, retrying on the (unlikely) unique-constraint
-   * collision with concurrent invoices.
-   */
-  private async generateInvoiceNo(): Promise<string> {
-    const year = new Date().getFullYear();
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const count = await this.prisma.companyInvoice.count({
-        where: { invoiceNo: { startsWith: `INV-${year}-` } },
-      });
-      const candidate = `INV-${year}-${String(count + 1).padStart(6, '0')}`;
-      const exists = await this.prisma.companyInvoice.findUnique({
-        where: { invoiceNo: candidate },
-      });
-      if (!exists) return candidate;
-    }
-    // Fall back to a random suffix after repeated collisions.
-    return `INV-${year}-${String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0')}`;
   }
 
   async deleteAccount(userId: string) {

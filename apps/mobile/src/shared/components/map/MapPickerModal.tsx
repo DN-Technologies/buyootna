@@ -2,6 +2,7 @@ import { Camera, MapView, StyleURL } from '@rnmapbox/maps';
 import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
 import { Keyboard, Modal, StyleSheet, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { showAlert } from '@/shared/utils/alert';
 
@@ -202,6 +203,9 @@ export default function MapPickerModal({
       transparent={false}
       onRequestClose={onClose}
     >
+      {/* A Modal renders outside the app's SafeAreaProvider, where insets
+          read 0 -- the search bar then sat under the notch */}
+      <SafeAreaProvider>
       <View style={StyleSheet.absoluteFillObject} className="bg-white">
         {/* 1. Mapbox Map View */}
         <MapView
@@ -262,6 +266,7 @@ export default function MapPickerModal({
           onConfirm={handleConfirm}
         />
       </View>
+      </SafeAreaProvider>
     </Modal>
   );
 }
