@@ -27,8 +27,15 @@ export default function DraftAdCard({
   // Construct label like "شقة للبيع" or "عقار تجاري للبيع"
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
+  // Tapping the card previews the draft, like its "معاينة ونشر" button: a
+  // draft isn't public, so it has no details page to open
   return (
-    <View className="mb-4 overflow-hidden rounded-md border border-gray-100 bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
+    <TouchableOpacity
+      testID={`draft-ad-card-${property.id}`}
+      accessibilityRole="button"
+      activeOpacity={0.85}
+      onPress={onPublishPress}
+      className="mb-4 overflow-hidden rounded-md border border-gray-100 bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
       {/* --- Image Header & Pagination Dots --- */}
       <View className="relative h-[210px] w-full bg-gray-50">
         <Image
@@ -98,6 +105,6 @@ export default function DraftAdCard({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
