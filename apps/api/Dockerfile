@@ -7,6 +7,8 @@ RUN npm install -g pnpm@10
 # --- STAGE 2: Install & Build ---
 FROM base AS build
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# pnpm-workspace.yaml's patchedDependencies point here; install fails without it
+COPY patches ./patches
 COPY apps/api/package.json ./apps/api/
 COPY apps/api/prisma ./apps/api/prisma
 RUN pnpm install --frozen-lockfile
