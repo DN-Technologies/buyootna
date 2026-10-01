@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ListingStatus } from '@prisma/client';
+import { ListingStatus, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { AlertMatchingService } from '../../alerts/alert-matching.service';
 import { CreatePropertyDto } from '../dto/create-property.dto';
@@ -16,6 +16,13 @@ import { assertApprovedProvider } from '../../identities/persona-rules';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2002'
+  );
+}
 
 // Statuses the "مؤرشفة" tab shows, and the only ones that can be republished
 const ARCHIVED_STATUSES: ListingStatus[] = [
@@ -39,7 +46,43 @@ export class PropertiesMutationsService {
   }
 
   // --- CREATE ---
+  // A repeated request with the same submissionKey (a retry after a lost
+  // response, a double tap) gets the ad it already created back instead of
+  // spending the package a second time
   async create(identityId: string, dto: CreatePropertyDto) {
+    const { submissionKey } = dto;
+    if (submissionKey) {
+      const replay = await this.findSubmission(identityId, submissionKey);
+      if (replay) return replay;
+    }
+    try {
+      return await this.createOnce(identityId, dto);
+    } catch (error) {
+      // Two identical requests raced: the loser's transaction (and its
+      // spend) rolled back, so answer it with the winner's ad
+      if (submissionKey && isUniqueViolation(error)) {
+        const replay = await this.findSubmission(identityId, submissionKey);
+        if (replay) return replay;
+      }
+      throw error;
+    }
+  }
+
+  private async findSubmission(identityId: string, submissionKey: string) {
+    const property = await this.prisma.property.findUnique({
+      where: { identityId_submissionKey: { identityId, submissionKey } },
+    });
+    if (!property) return null;
+    return {
+      message:
+        property.status === ListingStatus.DRAFT
+          ? 'تم حفظ الاعلان كمسودة بنجاح.'
+          : 'تم إضافة الاعلان بنجاح!',
+      property,
+    };
+  }
+
+  private async createOnce(identityId: string, dto: CreatePropertyDto) {
     const { isDraft, planSlotId, addressDetails, ...propertyData } = dto;
     const targetStatus = isDraft ? ListingStatus.DRAFT : ListingStatus.ACTIVE;
 
@@ -131,7 +174,15 @@ export class PropertiesMutationsService {
   // --- UPDATE ---
   async update(identityId: string, propertyId: string, dto: UpdatePropertyDto) {
     const existingProperty = await this.verifyOwnership(identityId, propertyId);
-    const { isDraft, planSlotId, addressDetails, ...updateData } = dto;
+    const {
+      isDraft,
+      planSlotId,
+      addressDetails,
+      // submissionKey only identifies a create; an edit never stores one
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      submissionKey,
+      ...updateData
+    } = dto;
 
     const isPublishingDraft =
       existingProperty.status === 'DRAFT' && isDraft === false;
@@ -139,6 +190,21 @@ export class PropertiesMutationsService {
     if (isPublishingDraft) {
       await assertApprovedProvider(this.prisma, identityId);
       const published = await this.prisma.$transaction(async (tx) => {
+        // Claim the draft first: of two publish requests for it, only one
+        // spends a credit; the other finds it already live
+        const claimed = await tx.property.updateMany({
+          where: { id: propertyId, status: ListingStatus.DRAFT },
+          data: { status: ListingStatus.ACTIVE },
+        });
+        if (claimed.count === 0) {
+          return {
+            message: 'تم نشر الإعلان بنجاح!',
+            property: await tx.property.findUniqueOrThrow({
+              where: { id: propertyId },
+            }),
+          };
+        }
+
         const imagesToCheck = updateData.images || existingProperty.images;
         const imagesCount = imagesToCheck?.length || 0;
 

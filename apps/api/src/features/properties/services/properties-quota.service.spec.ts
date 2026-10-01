@@ -18,11 +18,25 @@ describe('PropertiesQuotaService.resolvePublishQuota', () => {
     },
   };
 
-  const makeTx = (slot: typeof silver | null, freeAdsRemaining = 1) => ({
+  // What the slot id points at when it can't be spent (for the message)
+  type StoredSlot = {
+    identityId: string;
+    status: string;
+    adsRemaining: number;
+    identity: { userId: string };
+  } | null;
+
+  const makeTx = (
+    slot: typeof silver | null,
+    freeAdsRemaining = 1,
+    stored: StoredSlot = null,
+  ) => ({
     identity: {
-      findUnique: jest
-        .fn()
-        .mockResolvedValue({ id: 'identity-1', freeAdsRemaining }),
+      findUnique: jest.fn().mockResolvedValue({
+        id: 'identity-1',
+        userId: 'user-1',
+        freeAdsRemaining,
+      }),
       // The conditional free-ad decrement: 1 row when one was left
       updateMany: jest
         .fn()
@@ -31,6 +45,7 @@ describe('PropertiesQuotaService.resolvePublishQuota', () => {
     userPlanSlot: {
       findMany: jest.fn().mockResolvedValue(slot ? [slot] : []),
       findFirst: jest.fn().mockResolvedValue(slot),
+      findUnique: jest.fn().mockResolvedValue(stored),
       update: jest.fn(),
     },
   });
@@ -74,13 +89,60 @@ describe('PropertiesQuotaService.resolvePublishQuota', () => {
     expect(tx.identity.updateMany).not.toHaveBeenCalled();
   });
 
-  it("refuses a credit that isn't this persona's", async () => {
-    const tx = makeTx(null);
+  it("refuses another account's credit without saying it exists", async () => {
+    const tx = makeTx(null, 1, {
+      identityId: 'identity-9',
+      status: 'ACTIVE',
+      adsRemaining: 3,
+      identity: { userId: 'user-9' },
+    });
 
-    await expect(resolve(tx, 'someone-elses-slot')).rejects.toBeInstanceOf(
-      ForbiddenException,
+    const attempt = resolve(tx, 'someone-elses-slot');
+    await expect(attempt).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(attempt).rejects.toThrow(
+      'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.',
     );
     expect(tx.userPlanSlot.update).not.toHaveBeenCalled();
+  });
+
+  it('tells the user a credit belongs to their other persona', async () => {
+    const tx = makeTx(null, 1, {
+      identityId: 'identity-company',
+      status: 'ACTIVE',
+      adsRemaining: 3,
+      identity: { userId: 'user-1' },
+    });
+
+    const attempt = resolve(tx, 'company-slot');
+    await expect(attempt).rejects.toThrow(
+      'هذه الباقة تابعة لحساب آخر لديك (فرد/شركة). بدّل الحساب للنشر منها.',
+    );
+    // Tells the app to offer the packages still available
+    await expect(attempt).rejects.toMatchObject({
+      response: { code: 'PACKAGE_UNUSABLE' },
+    });
+    expect(tx.userPlanSlot.update).not.toHaveBeenCalled();
+  });
+
+  it('tells the user a used-up credit has no ads left', async () => {
+    const tx = makeTx(null, 1, {
+      identityId: 'identity-1',
+      status: 'EXHAUSTED',
+      adsRemaining: 0,
+      identity: { userId: 'user-1' },
+    });
+
+    await expect(resolve(tx, 'slot-silver')).rejects.toThrow(
+      'نفدت إعلانات هذه الباقة.',
+    );
+  });
+
+  it('refuses an unknown credit id', async () => {
+    const tx = makeTx(null);
+
+    await expect(resolve(tx, 'no-such-slot')).rejects.toThrow(
+      'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.',
+    );
   });
 
   it("spends the persona's own free ad for FREE_QUOTA", async () => {

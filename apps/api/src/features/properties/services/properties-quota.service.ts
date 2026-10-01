@@ -7,6 +7,17 @@ import {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
+// The picked package (or free ad) can't be spent. The code tells the app
+// to offer the packages still available rather than a dead-end error, and
+// apart from other 403s such as a company still under review
+function packageUnusable(message: string) {
+  return new ForbiddenException({
+    statusCode: 403,
+    message,
+    code: 'PACKAGE_UNUSABLE',
+  });
+}
+
 export interface ResolvedPublishQuota {
   planSlotId: string | null;
   durationDays: number;
@@ -45,9 +56,7 @@ export class PropertiesQuotaService {
         data: { freeAdsRemaining: { decrement: 1 } },
       });
       if (count === 0) {
-        throw new ForbiddenException(
-          'لقد استنفذت الإعلان المجاني الترحيبي الخاص بك.',
-        );
+        throw packageUnusable('لقد استنفذت الإعلان المجاني الترحيبي الخاص بك.');
       }
 
       return {
@@ -75,7 +84,7 @@ export class PropertiesQuotaService {
       if (activeSlots.length === 1) {
         targetSlotId = activeSlots[0].id;
       } else if (activeSlots.length === 0) {
-        throw new ForbiddenException(
+        throw packageUnusable(
           'ليس لديك رصيد إعلانات نشط. يرجى شراء باقة إعلانات لنشر إعلان جديد.',
         );
       } else {
@@ -96,8 +105,8 @@ export class PropertiesQuotaService {
     });
 
     if (!slot) {
-      throw new ForbiddenException(
-        'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.',
+      throw packageUnusable(
+        await this.unusableSlotMessage(identityId, targetSlotId, tx),
       );
     }
 
@@ -123,5 +132,41 @@ export class PropertiesQuotaService {
       featuredDays: slot.plan.featuredDays,
       prioritySearch: slot.plan.prioritySearch,
     };
+  }
+
+  // Says why a picked package can't be spent, so the user knows what to do
+  // instead of a generic "invalid or empty"
+  private async unusableSlotMessage(
+    identityId: string,
+    slotId: string,
+    tx: Prisma.TransactionClient,
+  ): Promise<string> {
+    const [slot, identity] = await Promise.all([
+      tx.userPlanSlot.findUnique({
+        where: { id: slotId },
+        select: {
+          identityId: true,
+          status: true,
+          adsRemaining: true,
+          identity: { select: { userId: true } },
+        },
+      }),
+      tx.identity.findUnique({
+        where: { id: identityId },
+        select: { userId: true },
+      }),
+    ]);
+
+    // Another account's slot reads as unknown: never confirm it exists
+    if (!slot || !identity || slot.identity?.userId !== identity.userId) {
+      return 'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.';
+    }
+    if (slot.identityId !== identityId) {
+      return 'هذه الباقة تابعة لحساب آخر لديك (فرد/شركة). بدّل الحساب للنشر منها.';
+    }
+    if (slot.status !== 'ACTIVE' || slot.adsRemaining <= 0) {
+      return 'نفدت إعلانات هذه الباقة.';
+    }
+    return 'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات.';
   }
 }

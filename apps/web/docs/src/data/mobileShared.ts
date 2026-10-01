@@ -632,5 +632,48 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "mobile-publish-with-package",
+      title: {
+        en: "Publishing from a bought package spends exactly one ad",
+        ar: "النشر من باقة مشتراة يخصم إعلاناً واحداً فقط",
+      },
+      priority: "P0",
+      story: {
+        en: "Regression check for a fixed bug: a user with an active package could be blocked with 'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات'. The app used to re-send the publish request on its own when the connection dropped, so the server could publish the ad and then reject the repeat (or publish it twice). Now the app never re-sends a publish by itself, every publish attempt carries one key the server uses to recognise a repeat, a double tap sends one request, and if the server refuses the picked package the app offers the packages still available.",
+        ar: "فحص تراجع لخطأ تم إصلاحه: مستخدم لديه باقة نشطة قد يُمنع برسالة 'الباقة المحددة غير صالحة أو غير متبقي فيها إعلانات'. كان التطبيق يعيد إرسال طلب النشر تلقائياً عند انقطاع الاتصال، فينشر الخادم الإعلان ثم يرفض التكرار (أو ينشره مرتين). الآن لا يعيد التطبيق إرسال النشر من تلقاء نفسه، وكل محاولة نشر تحمل مفتاحاً واحداً يتعرّف به الخادم على التكرار، والضغط المزدوج يرسل طلباً واحداً، وإذا رفض الخادم الباقة المختارة يعرض التطبيق الباقات المتبقية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With an active package, publishing a new ad succeeds and رصيد الحساب drops by exactly one ad.",
+          "Tapping نشر twice quickly creates one ad and spends one ad.",
+          "If the connection drops during publish and the user taps نشر again, the result is still one ad and one deduction.",
+          "If the picked package can't be used, the alert explains why (used up, or it belongs to the other persona) and offers 'اختيار باقة أخرى'; with nothing left the out-of-balance sheet appears.",
+          "Saving a draft never spends a package.",
+        ],
+        ar: [
+          "مع وجود باقة نشطة، ينجح نشر إعلان جديد وينقص رصيد الحساب بإعلان واحد بالضبط.",
+          "الضغط على نشر مرتين بسرعة ينشئ إعلاناً واحداً ويخصم إعلاناً واحداً.",
+          "إذا انقطع الاتصال أثناء النشر وضغط المستخدم نشر مرة أخرى، تبقى النتيجة إعلاناً واحداً وخصماً واحداً.",
+          "إذا تعذر استخدام الباقة المختارة، يوضح التنبيه السبب (نفدت، أو تابعة للحساب الآخر) ويعرض 'اختيار باقة أخرى'؛ وإن لم يتبقَّ شيء تظهر نافذة نفاد الرصيد.",
+          "حفظ المسودة لا يخصم من أي باقة أبداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Note رصيد الحساب, add an ad, publish from the package — the ad opens and the balance is one less.",
+          "Publish with a package that has 1 ad left — it succeeds, and the package then shows as used up.",
+          "Tap نشر, switch on airplane mode straight away, switch it off and tap نشر again — check إعلاناتي shows one ad and the balance dropped by one.",
+          "On a company persona's package, switch to the individual persona and try to publish — the message says the package belongs to the other account.",
+        ],
+        ar: [
+          "سجّل رصيد الحساب، أضف إعلاناً، انشره من الباقة — يفتح الإعلان وينقص الرصيد بواحد.",
+          "انشر من باقة متبقٍ فيها إعلان واحد — ينجح النشر ثم تظهر الباقة منتهية.",
+          "اضغط نشر ثم فعّل وضع الطيران فوراً، ألغِه واضغط نشر مجدداً — تأكد أن إعلاناتي تعرض إعلاناً واحداً وأن الرصيد نقص بواحد.",
+          "بباقة تابعة لهوية الشركة، بدّل إلى هوية الفرد وحاول النشر — توضح الرسالة أن الباقة تابعة للحساب الآخر.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };

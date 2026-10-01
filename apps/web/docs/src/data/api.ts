@@ -583,5 +583,50 @@ export const api: DocSection = {
       },
       updatedIn: "feat/map-picker",
     },
+    {
+      id: "api-publish-idempotency",
+      title: {
+        en: "POST /properties never spends a package twice for one publish",
+        ar: "POST /properties لا يخصم من الباقة مرتين لعملية نشر واحدة",
+      },
+      priority: "P0",
+      story: {
+        en: "POST /properties accepts an optional submissionKey (UUID v4) per publish attempt, stored on the property with a unique (identityId, submissionKey) index. A repeat with the same key returns the ad already created, with the same success message, and spends nothing; two concurrent identical requests produce one ad. Publishing a draft claims it first, so two publishes of one draft spend once. Package refusals return 403 with code PACKAGE_UNUSABLE and a specific message: the package belongs to the account's other persona, it is used up, or the generic message for unknown/other-account ids.",
+        ar: "يقبل POST /properties مفتاح submissionKey اختيارياً (UUID v4) لكل محاولة نشر، ويُخزَّن مع العقار بفهرس فريد (identityId, submissionKey). التكرار بنفس المفتاح يعيد الإعلان المُنشأ مسبقاً بنفس رسالة النجاح دون أي خصم؛ وطلبان متطابقان في نفس اللحظة ينتجان إعلاناً واحداً. نشر المسودة يحجزها أولاً، فنشرها مرتين يخصم مرة واحدة. رفض الباقة يعيد 403 مع الرمز PACKAGE_UNUSABLE ورسالة محددة: الباقة تابعة لهوية أخرى في الحساب، أو نفدت، أو الرسالة العامة للمعرّفات غير المعروفة أو التابعة لحساب آخر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Two POST /properties with the same submissionKey create one property and lower adsRemaining by 1; the second response returns the first property.",
+          "A request without submissionKey behaves exactly as before (older app builds).",
+          "submissionKey must be a UUID v4, otherwise 400.",
+          "A slot of the same account's other persona returns 403 PACKAGE_UNUSABLE 'هذه الباقة تابعة لحساب آخر لديك (فرد/شركة). بدّل الحساب للنشر منها.'",
+          "An exhausted slot returns 403 PACKAGE_UNUSABLE 'نفدت إعلانات هذه الباقة.'; another account's slot gets the generic message and isn't confirmed to exist.",
+          "A company under review still gets its own 403 without the PACKAGE_UNUSABLE code.",
+        ],
+        ar: [
+          "طلبا POST /properties بنفس submissionKey ينشئان عقاراً واحداً وينقص adsRemaining بواحد؛ والرد الثاني يعيد العقار الأول.",
+          "الطلب بدون submissionKey يتصرف كما كان تماماً (إصدارات التطبيق القديمة).",
+          "يجب أن يكون submissionKey بصيغة UUID v4، وإلا 400.",
+          "باقة تابعة لهوية أخرى في نفس الحساب تعيد 403 PACKAGE_UNUSABLE 'هذه الباقة تابعة لحساب آخر لديك (فرد/شركة). بدّل الحساب للنشر منها.'",
+          "الباقة المنتهية تعيد 403 PACKAGE_UNUSABLE 'نفدت إعلانات هذه الباقة.'؛ وباقة حساب آخر تحصل على الرسالة العامة دون تأكيد وجودها.",
+          "الشركة قيد المراجعة تحصل على رفض 403 الخاص بها بدون الرمز PACKAGE_UNUSABLE.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Give a persona a slot with 2 ads, POST /properties twice with one submissionKey — one property, adsRemaining 1.",
+          "Send the same two requests at the same moment — still one property and one ad spent.",
+          "Publish from a company persona's slot while on the individual persona — 403 with code PACKAGE_UNUSABLE and the persona message.",
+          "Publish one draft twice at once (PATCH isDraft=false) — one credit spent.",
+        ],
+        ar: [
+          "امنح هوية باقة فيها إعلانان، أرسل POST /properties مرتين بنفس submissionKey — عقار واحد وadsRemaining يساوي 1.",
+          "أرسل الطلبين نفسهما في نفس اللحظة — يبقى عقار واحد وخصم إعلان واحد.",
+          "انشر من باقة هوية الشركة وأنت على هوية الفرد — 403 مع الرمز PACKAGE_UNUSABLE ورسالة الهوية.",
+          "انشر مسودة واحدة مرتين في نفس الوقت (PATCH isDraft=false) — خصم رصيد واحد فقط.",
+        ],
+      },
+      updatedIn: "feat/map-picker",
+    },
   ],
 };

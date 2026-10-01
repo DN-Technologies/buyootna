@@ -92,8 +92,15 @@ apiClient.interceptors.request.use(
 // after the user reads the error) always eventually succeeded. That gap
 // is the tell: the underlying blip outlasts a few seconds. Widened to
 // better match how long a real manual retry ends up waiting.
+//
+// Only reads are retried: a write whose response was lost may already have
+// happened on the server, and sending it again published an ad twice (or
+// failed it as "package empty" on the last credit). A write fails with the
+// usual connection error instead; screens that retry one send their own
+// key so the server can tell it's a repeat.
 const MAX_NETWORK_RETRIES = 4;
 const RETRY_DELAY_MS = 1200;
+const RETRYABLE_METHODS = ['get', 'head', 'options'];
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -112,7 +119,8 @@ apiClient.interceptors.response.use(
     const config = error.config as
       | (typeof error.config & { __retryCount?: number })
       | undefined;
-    if (!error.response && config) {
+    const method = (config?.method ?? 'get').toLowerCase();
+    if (!error.response && config && RETRYABLE_METHODS.includes(method)) {
       const retryCount = (config.__retryCount ?? 0) + 1;
       if (retryCount <= MAX_NETWORK_RETRIES) {
         config.__retryCount = retryCount;

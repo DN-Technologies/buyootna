@@ -204,6 +204,18 @@ describe('apiClient interceptors', () => {
         expect(mockAxiosInstance).not.toHaveBeenCalled();
       });
 
+      it.each(['post', 'PATCH', 'put', 'delete'])(
+        'never re-sends a %s whose response was lost (it may already have happened)',
+        async (method) => {
+          const networkError = { config: { url: '/properties', method } };
+
+          await expect(responseErrorHandler(networkError)).rejects.toBe(
+            networkError,
+          );
+          expect(mockAxiosInstance).not.toHaveBeenCalled();
+        },
+      );
+
       it('does not retry a real HTTP error response from the server', async () => {
         const error = { response: { status: 500 }, config: { url: '/x' } };
 

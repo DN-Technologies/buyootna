@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { AlertMatchingService } from '../../alerts/alert-matching.service';
@@ -374,5 +375,173 @@ describe('PropertiesMutationsService approval gate', () => {
       ForbiddenException,
     );
     expect(property.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+// A publish repeated after a lost response or a double tap must not spend
+// the package twice (QA: "valid package rejected as invalid or empty")
+describe('PropertiesMutationsService repeated publish', () => {
+  let service: PropertiesMutationsService;
+
+  const property = {
+    findUnique: jest.fn(),
+    findUniqueOrThrow: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  };
+  const prisma = {
+    property,
+    identity: {
+      findUnique: jest.fn().mockResolvedValue({ type: 'INDIVIDUAL' }),
+    },
+    $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn({ property })),
+  };
+  const quotaService = { resolvePublishQuota: jest.fn() };
+  const alertMatching = { notifyMatchesForProperty: jest.fn() };
+
+  const key = '0b6f3a52-6a4e-4c39-9f0e-5a1f6a0d2c11';
+  const publish = {
+    images: [],
+    isDraft: false,
+    planSlotId: 'slot-silver',
+    submissionKey: key,
+  } as unknown as CreatePropertyDto;
+
+  const uniqueViolation = () =>
+    new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+      code: 'P2002',
+      clientVersion: 'test',
+    });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    property.findUnique.mockResolvedValue(null);
+    quotaService.resolvePublishQuota.mockResolvedValue({
+      planSlotId: 'slot-silver',
+      durationDays: 30,
+      maxImagesPerAd: 10,
+      featuredDays: 0,
+      prioritySearch: false,
+    });
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PropertiesMutationsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: PropertiesQuotaService, useValue: quotaService },
+        { provide: AlertMatchingService, useValue: alertMatching },
+      ],
+    }).compile();
+    service = module.get(PropertiesMutationsService);
+  });
+
+  it('stores the key with the new ad', async () => {
+    property.create.mockResolvedValue({ id: 'prop-1' });
+
+    await service.create('identity-1', publish);
+
+    const [[args]] = property.create.mock.calls as [
+      { data: { submissionKey?: string } },
+    ][];
+    expect(args.data.submissionKey).toBe(key);
+  });
+
+  it('returns the ad already created for a repeated key, spending nothing', async () => {
+    const existing = { id: 'prop-1', status: 'ACTIVE' };
+    property.findUnique.mockImplementation(
+      (args: { where: { identityId_submissionKey?: unknown } }) =>
+        Promise.resolve(args.where.identityId_submissionKey ? existing : null),
+    );
+
+    const result = await service.create('identity-1', publish);
+
+    expect(result).toEqual({
+      message: 'تم إضافة الاعلان بنجاح!',
+      property: existing,
+    });
+    expect(property.findUnique).toHaveBeenCalledWith({
+      where: {
+        identityId_submissionKey: {
+          identityId: 'identity-1',
+          submissionKey: key,
+        },
+      },
+    });
+    expect(quotaService.resolvePublishQuota).not.toHaveBeenCalled();
+    expect(property.create).not.toHaveBeenCalled();
+  });
+
+  it('answers the loser of two concurrent identical publishes with the winner', async () => {
+    const winner = { id: 'prop-1', status: 'ACTIVE' };
+    let keyLookups = 0;
+    property.findUnique.mockImplementation(
+      (args: { where: { identityId_submissionKey?: unknown } }) => {
+        if (!args.where.identityId_submissionKey) return Promise.resolve(null);
+        // Not there yet on the first look; the winner committed by the retry
+        keyLookups += 1;
+        return Promise.resolve(keyLookups === 1 ? null : winner);
+      },
+    );
+    property.create.mockRejectedValue(uniqueViolation());
+
+    const result = await service.create('identity-1', publish);
+
+    expect(result.property).toBe(winner);
+    expect(alertMatching.notifyMatchesForProperty).not.toHaveBeenCalled();
+  });
+
+  it('does not hide a unique error when no key was sent', async () => {
+    property.create.mockRejectedValue(uniqueViolation());
+
+    await expect(
+      service.create('identity-1', { ...publish, submissionKey: undefined }),
+    ).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
+  });
+
+  it('never stores a key on an edit', async () => {
+    property.findUnique.mockResolvedValue({
+      id: 'prop-1',
+      identityId: 'identity-1',
+      status: 'ACTIVE',
+      images: [],
+    });
+    property.update.mockResolvedValue({ id: 'prop-1' });
+
+    await service.update('identity-1', 'prop-1', {
+      description: 'x',
+      submissionKey: key,
+    });
+
+    const [[args]] = property.update.mock.calls as [
+      { data: { submissionKey?: string } },
+    ][];
+    expect(args.data).not.toHaveProperty('submissionKey');
+  });
+
+  it('spends once when a draft is published twice at the same time', async () => {
+    property.findUnique.mockResolvedValue({
+      id: 'prop-1',
+      identityId: 'identity-1',
+      status: 'DRAFT',
+      images: [],
+    });
+    // The other request already claimed the draft
+    property.updateMany.mockResolvedValue({ count: 0 });
+    property.findUniqueOrThrow.mockResolvedValue({
+      id: 'prop-1',
+      status: 'ACTIVE',
+    });
+
+    const result = await service.update('identity-1', 'prop-1', {
+      isDraft: false,
+    });
+
+    expect(property.updateMany).toHaveBeenCalledWith({
+      where: { id: 'prop-1', status: 'DRAFT' },
+      data: { status: 'ACTIVE' },
+    });
+    expect(quotaService.resolvePublishQuota).not.toHaveBeenCalled();
+    expect(result.property).toEqual({ id: 'prop-1', status: 'ACTIVE' });
   });
 });

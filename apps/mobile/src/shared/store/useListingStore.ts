@@ -4,6 +4,7 @@ import { CreatePropertyPayload, propertiesService } from '@/shared/api/propertie
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
 import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
+import { newSubmissionKey } from '@/shared/utils/submissionKey';
 import type { PropertyDetailsDto } from '@/types/property';
 
 // --- Types & interface ---
@@ -61,6 +62,9 @@ export interface ListingStateData {
   // 6. Submission State
   isSubmitting: boolean;
   submissionError: string | null;
+  // Names the current publish attempt; kept across retries so a repeat
+  // returns the ad already created instead of spending the package again
+  submissionKey: string | null;
 
   // 7. Edit State
   // 7. Edit State
@@ -90,6 +94,8 @@ interface ListingStore extends ListingStateData {
   // Submission
   setSubmitting: (value: boolean) => void;
   setSubmissionError: (error: string | null) => void;
+  ensureSubmissionKey: () => string;
+  clearSubmissionKey: () => void;
 
   // Getters
   getPreviewData: () => ListingStateData;
@@ -158,6 +164,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   images: [],
   isSubmitting: false,
   submissionError: null,
+  submissionKey: null,
   isEdit: false,
   backendFeatures: null,
 };
@@ -200,6 +207,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   // Submission state helpers
   setSubmitting: (value) => set({ isSubmitting: value }),
   setSubmissionError: (error) => set({ submissionError: error }),
+  ensureSubmissionKey: () => {
+    const existing = get().submissionKey;
+    if (existing) return existing;
+    const key = newSubmissionKey();
+    set({ submissionKey: key });
+    return key;
+  },
+  clearSubmissionKey: () => set({ submissionKey: null }),
 
   populateFromProperty: (property) => {
     // Reverse map CATEGORY
@@ -322,6 +337,10 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       isFeatured: state.adLevel === 'premium',
       planSlotId,
     };
+    // Only a publish spends a package; a draft save never sends the key
+    if (!isDraft && state.submissionKey) {
+      payload.submissionKey = state.submissionKey;
+    }
 
     // Optional shared fields
     if (state.propertyAge) {
