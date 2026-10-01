@@ -109,6 +109,11 @@ export function registerSocialAuthTests(ctx: AuthTestContext) {
       // Regression guard for the earlier bug class: registration must create an Identity row,
       // not just a User, or /auth/login breaks immediately after signup.
       expect(tx!.user.create).toHaveBeenCalled();
+      // A social account has an email: it signs in by email by default
+      const [[userArgs]] = tx!.user.create.mock.calls as [
+        { data: { loginMethod?: string } },
+      ][];
+      expect(userArgs.data.loginMethod).toBe('EMAIL');
       expect(tx!.individualProfile.create).toHaveBeenCalled();
       const identityCreateCalls = tx!.identity.create.mock
         .calls as IdentityCreateArgs[][];

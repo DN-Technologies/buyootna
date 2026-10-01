@@ -41,10 +41,11 @@ jest.mock('@/shared/services/socket.service', () => ({
   },
 }));
 
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     back: jest.fn(),
-    push: jest.fn(),
+    push: mockRouterPush,
     replace: jest.fn(),
   }),
 }));
@@ -172,6 +173,13 @@ describe('EditProfileScreen', () => {
   });
 
   it('lets a user who signed up with a phone (no email) save', async () => {
+    // A phone sign-up starts on the PHONE method: the email is optional
+    (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+      loginMethod: 'PHONE',
+      email: null,
+      phone: '+96555100001',
+      phoneVerified: true,
+    });
     useAuthStore.setState({
       user: { id: 'user-3', email: null, phone: '+96555100001' } as any,
       activeIdentity: {
@@ -181,10 +189,15 @@ describe('EditProfileScreen', () => {
       } as any,
       refreshProfile: jest.fn().mockResolvedValue(undefined),
     } as any);
-    const { getByDisplayValue, getByText, queryByTestId } = await render(
-      <EditProfileScreen />,
-    );
+    const { getByDisplayValue, getByText, queryByTestId, findByText } =
+      await render(<EditProfileScreen />);
 
+    expect(
+      await findByText(
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب والبريد الإلكتروني اختياري.',
+      ),
+    ).toBeTruthy();
+    expect(getByText('(اختياري)', { exact: false })).toBeTruthy();
     await fireEvent.changeText(getByDisplayValue('محمد علي'), 'محمد سالم');
     // An empty email needs no code
     expect(queryByTestId('send-email-otp-link')).toBeNull();
@@ -259,6 +272,101 @@ describe('EditProfileScreen', () => {
 
     expect(await findByText('بريد الكتروني غير صالح')).toBeTruthy();
     expect(queryByTestId('send-email-otp-link')).toBeNull();
+  });
+
+  describe('required fields follow the sign-in method', () => {
+    const withMethod = (loginMethod: string) =>
+      (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+        loginMethod,
+        email: 'user@test.com',
+        phone: '+96555100001',
+        phoneVerified: true,
+      });
+
+    it('BOTH: an empty email is refused with a toast, nothing saved', async () => {
+      withMethod('BOTH');
+      signedIn();
+      const { getByTestId, getByText, findByText } = await render(
+        <EditProfileScreen />,
+      );
+      await findByText(
+        'طريقة تسجيل الدخول لديك: البريد الإلكتروني أو رقم الهاتف، لذلك كلاهما مطلوب.',
+      );
+
+      await fireEvent.changeText(getByTestId('edit-profile-email'), '');
+      await fireEvent.press(getByText('تعديل البيانات'));
+
+      expect(
+        await findByText('البريد الإلكتروني مطلوب حسب طريقة تسجيل الدخول لديك.'),
+      ).toBeTruthy();
+      expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    });
+
+    it('EMAIL: the phone is optional -- cleared, it saves with no SMS', async () => {
+      withMethod('EMAIL');
+      signedIn();
+      const { getByDisplayValue, getByText, findByText } = await render(
+        <EditProfileScreen />,
+      );
+      await findByText(
+        'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب ورقم الهاتف اختياري.',
+      );
+
+      await fireEvent.changeText(getByDisplayValue('+96555100001'), '');
+      await fireEvent.press(getByText('تعديل البيانات'));
+
+      await waitFor(() =>
+        expect(settingsService.updateProfile).toHaveBeenCalled(),
+      );
+      expect(settingsService.requestPhoneOtp).not.toHaveBeenCalled();
+    });
+
+    it('PHONE: an empty phone is refused with a toast', async () => {
+      withMethod('PHONE');
+      signedIn();
+      const { getByDisplayValue, getByText, findByText } = await render(
+        <EditProfileScreen />,
+      );
+      await findByText(
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب والبريد الإلكتروني اختياري.',
+      );
+
+      await fireEvent.changeText(getByDisplayValue('+96555100001'), '');
+      await fireEvent.press(getByText('تعديل البيانات'));
+
+      expect(
+        await findByText('رقم الهاتف مطلوب حسب طريقة تسجيل الدخول لديك.'),
+      ).toBeTruthy();
+      expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    });
+
+    it('requires nothing extra when the method could not be loaded', async () => {
+      (settingsService.getLoginMethod as jest.Mock).mockRejectedValue(
+        new Error('offline'),
+      );
+      signedIn();
+      const { getByTestId, getByText, queryByTestId } = await render(
+        <EditProfileScreen />,
+      );
+
+      await fireEvent.changeText(getByTestId('edit-profile-email'), '');
+      await fireEvent.press(getByText('تعديل البيانات'));
+
+      await waitFor(() =>
+        expect(settingsService.updateProfile).toHaveBeenCalled(),
+      );
+      expect(queryByTestId('login-method-note')).toBeNull();
+    });
+
+    it('the note opens Settings to change the method', async () => {
+      withMethod('PHONE');
+      signedIn();
+      const { findByTestId } = await render(<EditProfileScreen />);
+
+      await fireEvent.press(await findByTestId('login-method-note-settings'));
+
+      expect(mockRouterPush).toHaveBeenCalledWith('/settings');
+    });
   });
 
   it('renders individual form inputs matching design', async () => {

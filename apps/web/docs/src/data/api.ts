@@ -485,12 +485,16 @@ export const api: DocSection = {
           "request-otp refuses an invalid number (400) and another account's number (409) without sending anything.",
           "verify with a wrong code changes nothing; with the right code sets phone and phoneVerified: true.",
           "Rate limits apply to both phone endpoints like other OTP endpoints.",
+          "A new account starts on the method it signed up with: a phone sign-up is PHONE, an email (or Google/Apple) sign-up EMAIL; company/office sign-up (both given) and admin-created accounts with both stay BOTH.",
+          "Migration login_method_default moves existing accounts that never chose: phone-only → PHONE, email-only → EMAIL; accounts with both, and any method already chosen, are unchanged.",
         ],
         ar: [
           "PATCH PHONE دون هاتف موثق → 400 PHONE_NOT_VERIFIED؛ و EMAIL دون بريد → 400 NO_EMAIL؛ وأي قيمة أخرى → 400.",
           "request-otp يرفض الرقم غير الصالح (400) ورقم حساب آخر (409) دون إرسال شيء.",
           "verify برمز خاطئ لا يغيّر شيئاً؛ وبالرمز الصحيح يضبط الهاتف و phoneVerified: true.",
           "حدود المعدل تنطبق على نقطتي الهاتف كبقية نقاط OTP.",
+          "يبدأ الحساب الجديد بطريقة تسجيل الدخول التي سجّل بها: التسجيل بالهاتف PHONE، والتسجيل بالبريد (أو Google/Apple) EMAIL؛ وتسجيل الشركة/المكتب (بالاثنين) والحسابات التي ينشئها المسؤول بالاثنين تبقى BOTH.",
+          "الترحيل login_method_default ينقل الحسابات الحالية التي لم تختر: الهاتف فقط ← PHONE، والبريد فقط ← EMAIL؛ والحسابات التي لديها الاثنان أو التي اختارت طريقة من قبل لا تتغير.",
         ],
       },
       testScenarios: {
@@ -505,7 +509,7 @@ export const api: DocSection = {
           "PATCH /users/profile بالرقم نفسه مكتوباً +965… → 200؛ وبرقم جديد → 400 PHONE_VERIFICATION_REQUIRED.",
         ],
       },
-      updatedIn: "feat/account-state",
+      updatedIn: "fix/individual-bugs",
     },
     {
       id: "api-service-invoices",
