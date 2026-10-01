@@ -98,6 +98,18 @@ describe('UsersProfileService', () => {
       expect(prisma.user.update).not.toHaveBeenCalled();
     });
 
+    it('an empty phone means "not sent": no change, no error', async () => {
+      await service.updateProfile('user-1', Role.COMPANY, {
+        phone: '',
+        whatsapp: '99998888',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { whatsapp: '99998888' },
+      });
+    });
+
     it('accepts the unchanged number in another form and leaves it alone', async () => {
       await service.updateProfile('user-1', Role.COMPANY, {
         phone: '99998888',

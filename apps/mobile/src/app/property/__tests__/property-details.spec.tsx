@@ -8,6 +8,11 @@ import { usePropertyDetails } from '@/shared/hooks/usePropertyDetails';
 import PropertyDetailsScreen from '../[id]';
 
 jest.mock('@gorhom/bottom-sheet');
+// The screen loads the republish options; a real request here would still
+// be running after the test ends (Jest then can't exit in CI)
+jest.mock('@/shared/api/plans.service', () => ({
+  plansService: { getPublishOptions: jest.fn().mockResolvedValue(null) },
+}));
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), push: jest.fn() },
   useRouter: () => ({ back: jest.fn(), push: jest.fn() }),
