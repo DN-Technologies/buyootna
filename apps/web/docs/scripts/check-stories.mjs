@@ -1,6 +1,8 @@
 // Checks the QA stories in src/data before they ship: every story id is
-// unique, every text field has both English and Arabic, and every data file
-// is registered in sections.ts. Run: pnpm --filter @buyootna/web-docs check
+// unique, every text field has both English and Arabic, every data file is
+// registered in sections.ts, and every data file parses (a broken merge of
+// these files has failed the docs build twice while this check passed).
+// Run: pnpm --filter @buyootna/web-docs check
 import { readdirSync, readFileSync } from "fs";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
@@ -9,12 +11,23 @@ import ts from "typescript";
 const dataDir = join(dirname(fileURLToPath(import.meta.url)), "../src/data");
 const errors = [];
 
-// Load each data file by transpiling it (they only import types)
+// Load each data file by transpiling it (they only import types). The
+// transpiler tolerates syntax errors, so they are reported here instead of
+// surfacing only in `next build`
 async function load(file) {
   const src = readFileSync(join(dataDir, file), "utf8");
-  const { outputText } = ts.transpileModule(src, {
+  const { outputText, diagnostics = [] } = ts.transpileModule(src, {
+    fileName: file,
+    reportDiagnostics: true,
     compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
   });
+  if (diagnostics.length) {
+    for (const d of diagnostics) {
+      const { line, character } = d.file.getLineAndCharacterOfPosition(d.start);
+      errors.push(`${file}:${line + 1}:${character + 1} ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`);
+    }
+    return {};
+  }
   const url = "data:text/javascript," + encodeURIComponent(outputText.replace(/^import .*$/gm, ""));
   return import(url);
 }

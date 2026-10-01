@@ -1163,6 +1163,5 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/individual-bugs",
     },
-    }
   ],
 };
