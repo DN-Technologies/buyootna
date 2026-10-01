@@ -1,8 +1,24 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { accountStatus, suspendedByAdminError } from '../account-status.util';
+
+function loginMethodMismatchError(method: 'EMAIL' | 'PHONE') {
+  return new ForbiddenException({
+    statusCode: 403,
+    code: 'LOGIN_METHOD_MISMATCH',
+    loginMethod: method,
+    message:
+      method === 'EMAIL'
+        ? 'طريقة تسجيل الدخول المحددة لحسابك هي البريد الإلكتروني، يرجى تسجيل الدخول به.'
+        : 'طريقة تسجيل الدخول المحددة لحسابك هي رقم الهاتف، يرجى تسجيل الدخول به.',
+  });
+}
 
 /**
  * The only message a failed password login ever returns: identical for an
@@ -58,6 +74,16 @@ export class AuthCredentialsService {
       (status === 'suspended_by_admin' || status === 'blocked')
     ) {
       throw suspendedByAdminError();
+    }
+
+    // The user chose one identifier for password login (طريقة تسجيل
+    // الدخول); the other is refused, but only once the password is proven
+    const usedEmail = !!user.email && identifier === user.email;
+    if (
+      (user.loginMethod === 'EMAIL' && !usedEmail) ||
+      (user.loginMethod === 'PHONE' && usedEmail)
+    ) {
+      throw loginMethodMismatchError(user.loginMethod);
     }
 
     // Never return the password!

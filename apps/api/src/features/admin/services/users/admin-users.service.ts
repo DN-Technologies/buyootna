@@ -433,6 +433,8 @@ export class AdminUsersService {
           data: {
             email,
             phone,
+            // An admin-entered number counts as verified
+            phoneVerifiedAt: phone ? new Date() : undefined,
             password: hashedPassword,
             role: Role.INDIVIDUAL,
             name: derivedName,

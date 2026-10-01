@@ -1,5 +1,5 @@
-import { PrismaService } from '../../../core/prisma/prisma.service';
-import { ProviderCardsService } from './provider-cards.service';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { ProviderCardsService } from '../provider-cards.service';
 
 describe('ProviderCardsService', () => {
   const prisma = {

@@ -1,12 +1,14 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeactivateAccountSheet } from '@/features/individual/components/settings';
 import AccountActions from '@/features/individual/components/settings/AccountActions';
 import AccountSecuritySection from '@/features/individual/components/settings/AccountSecuritySection';
+import LoginMethodSheet from '@/features/individual/components/settings/login-method/LoginMethodSheet';
+import LoginMethodToast from '@/features/individual/components/settings/login-method/LoginMethodToast';
 import NotificationsSection from '@/features/individual/components/settings/NotificationsSection';
 import PoliciesSection from '@/features/individual/components/settings/PoliciesSection';
 import PrivacySettingsSection from '@/features/individual/components/settings/PrivacySettingsSection';
@@ -21,6 +23,14 @@ export default function SettingsScreen() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const deactivateSheetRef = useRef<BottomSheetModal>(null);
+  const loginMethodSheetRef = useRef<BottomSheetModal>(null);
+  // "تم تحديث طريقة تسجيل الدخول بنجاح." for a few seconds after saving
+  const [savedToast, setSavedToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!savedToast) return;
+    const timer = setTimeout(() => setSavedToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [savedToast]);
 
   const settings = useUserSettings();
   const handleDeleteAccount = useDeleteAccount();
@@ -43,6 +53,7 @@ export default function SettingsScreen() {
             <AccountSecuritySection
               onChangePassword={() => router.push('/change-password')}
               onDevices={() => router.push('/devices')}
+              onLoginMethod={() => loginMethodSheetRef.current?.present()}
             />
             <PrivacySettingsSection
               showPhone={settings.showPhone}
@@ -70,6 +81,9 @@ export default function SettingsScreen() {
 
       {/* Multi-step deactivation (Figma 1684-60307, 60321, 60354, 60387, 60280) */}
       <DeactivateAccountSheet ref={deactivateSheetRef} userPhone={user?.phone} />
+
+      <LoginMethodSheet ref={loginMethodSheetRef} onSaved={setSavedToast} />
+      {savedToast && <LoginMethodToast kind="success" message={savedToast} />}
     </SafeAreaView>
   );
 }

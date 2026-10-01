@@ -468,5 +468,44 @@ export const api: DocSection = {
       },
       updatedIn: "feat/account-state",
     },
+    {
+      id: "api-login-method",
+      title: {
+        en: "Login method and SMS phone verification endpoints",
+        ar: "نقاط طريقة تسجيل الدخول والتحقق من الهاتف برمز SMS",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify GET/PATCH /users/account/login-method ({ method: BOTH | EMAIL | PHONE }; response loginMethod, email, phone, phoneVerified), POST /users/account/phone/request-otp { phone } and POST /users/account/phone/verify { phone, otp }. User.phoneVerifiedAt is set by SMS registration, admin-created accounts and the verify endpoint; the migration marked every phone already on file as verified. PATCH /users/profile refuses a different phone with 400 PHONE_VERIFICATION_REQUIRED (the unchanged number in any form — 8 digits, 965…, +965… — passes). Password login with the identifier that isn't the chosen one returns 403 LOGIN_METHOD_MISMATCH after the password check.",
+        ar: "تحقق من GET/PATCH /users/account/login-method ({ method: BOTH | EMAIL | PHONE }؛ والاستجابة loginMethod و email و phone و phoneVerified)، و POST /users/account/phone/request-otp { phone } و POST /users/account/phone/verify { phone, otp }. يُضبط User.phoneVerifiedAt عند التسجيل بـ SMS وفي الحسابات التي ينشئها المشرف ومن نقطة التحقق؛ وقد اعتبر الترحيل كل رقم موجود مسبقاً موثقاً. PATCH /users/profile يرفض رقماً مختلفاً بـ 400 PHONE_VERIFICATION_REQUIRED (الرقم نفسه بأي صيغة — 8 أرقام أو 965… أو +965… — يمر). الدخول بكلمة المرور بالمعرّف غير المختار يُرجع 403 LOGIN_METHOD_MISMATCH بعد التحقق من كلمة المرور.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "PATCH PHONE without a verified phone → 400 PHONE_NOT_VERIFIED; EMAIL without an email → 400 NO_EMAIL; any other value → 400.",
+          "request-otp refuses an invalid number (400) and another account's number (409) without sending anything.",
+          "verify with a wrong code changes nothing; with the right code sets phone and phoneVerified: true.",
+          "Rate limits apply to both phone endpoints like other OTP endpoints.",
+        ],
+        ar: [
+          "PATCH PHONE دون هاتف موثق → 400 PHONE_NOT_VERIFIED؛ و EMAIL دون بريد → 400 NO_EMAIL؛ وأي قيمة أخرى → 400.",
+          "request-otp يرفض الرقم غير الصالح (400) ورقم حساب آخر (409) دون إرسال شيء.",
+          "verify برمز خاطئ لا يغيّر شيئاً؛ وبالرمز الصحيح يضبط الهاتف و phoneVerified: true.",
+          "حدود المعدل تنطبق على نقطتي الهاتف كبقية نقاط OTP.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With the API in mock SMS mode: request-otp for a fresh number, read the code from the log, verify it, then PATCH method PHONE → 200.",
+          "POST /auth/login with the email → 403 LOGIN_METHOD_MISMATCH; with the phone → 201; with the email and a wrong password → 401.",
+          "PATCH /users/profile with the same number written as +965… → 200; with a new number → 400 PHONE_VERIFICATION_REQUIRED.",
+        ],
+        ar: [
+          "مع تشغيل الـ API بوضع SMS التجريبي: اطلب رمزاً لرقم جديد واقرأه من السجل وتحقق منه، ثم PATCH method PHONE → 200.",
+          "POST /auth/login بالبريد → 403 LOGIN_METHOD_MISMATCH؛ وبالهاتف → 201؛ وبالبريد وكلمة مرور خاطئة → 401.",
+          "PATCH /users/profile بالرقم نفسه مكتوباً +965… → 200؛ وبرقم جديد → 400 PHONE_VERIFICATION_REQUIRED.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
   ],
 };

@@ -930,5 +930,85 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/change-password-flow",
     },
+    {
+      id: "mobile-more-profile-card",
+      title: {
+        en: "More: the profile card has a single 'تعديل' button",
+        ar: "المزيد: بطاقة الملف الشخصي فيها زر 'تعديل' فقط",
+      },
+      priority: "P2",
+      story: {
+        en: "Verify the profile card at the top of the individual More tab (AccountProfileHeaderCard): avatar, name, email/phone and the persona switcher (فرد ▾), then one full-width 'تعديل' button that opens Edit Profile. The 'معاينة' and 'مشاركة' buttons were removed — they had no action.",
+        ar: "تحقق من بطاقة الملف الشخصي أعلى تبويب المزيد للفرد (AccountProfileHeaderCard): الصورة والاسم والبريد/الهاتف ومبدّل الهوية (فرد ▾)، ثم زر 'تعديل' واحد بعرض البطاقة يفتح تعديل الملف الشخصي. أُزيل زرا 'معاينة' و'مشاركة' — لم يكن لهما أي إجراء.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only 'تعديل' appears under the name, spanning the card's width.",
+          "Tapping it opens Edit Profile.",
+        ],
+        ar: [
+          "يظهر زر 'تعديل' فقط تحت الاسم وبعرض البطاقة.",
+          "الضغط عليه يفتح تعديل الملف الشخصي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open More as a signed-in individual — no 'معاينة' or 'مشاركة' buttons; tap 'تعديل' — Edit Profile opens.",
+        ],
+        ar: [
+          "افتح المزيد كفرد مسجّل — لا يوجد زرا 'معاينة' أو 'مشاركة'؛ اضغط 'تعديل' — يفتح تعديل الملف الشخصي.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
+    {
+      id: "mobile-login-method",
+      title: {
+        en: "Login method: sign in with email, phone, or either — the phone only once verified by SMS",
+        ar: "طريقة تسجيل الدخول: البريد أو الهاتف أو أيهما — والهاتف فقط بعد التحقق منه برمز SMS",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As a user, I want to choose which identifier my account signs in with, so that only the one I trust works with my password.",
+        ar: "بصفتي مستخدماً، أريد اختيار المعرّف الذي يُسجَّل به الدخول إلى حسابي، حتى لا يعمل مع كلمة المرور إلا المعرّف الذي أثق به.",
+      },
+      story: {
+        en: "Verify Settings → الحساب والامان → 'طريقة تسجيل الدخول' opens a sheet with three choices: 'البريد الالكتروني أو رقم الهاتف' (the default for every account), 'البريد الالكتروني' with the address, and 'رقم الهاتف' with the number. A phone that isn't SMS-verified is greyed out; tapping it shows 'يجب التحقق من رقم الهاتف أولاً، يمكنك التحقق من رقم الهاتف من تعديل الملف الشخصي.' حفظ saves (PATCH /users/account/login-method) and shows 'تم تحديث طريقة تسجيل الدخول بنجاح.'; تراجع closes without saving. With email or phone chosen, password login with the other identifier is refused (403) — only after the password is proven. In Edit Profile, a new phone number is texted a code and only saved once the code is right; a saved phone that isn't verified shows 'الرقم غير موثق — تحقق من الرقم'. Google/Apple sign-in and password recovery are unaffected.",
+        ar: "تحقق من الإعدادات ← الحساب والامان ← 'طريقة تسجيل الدخول': تفتح نافذة بثلاثة خيارات: 'البريد الالكتروني أو رقم الهاتف' (الافتراضي لكل الحسابات)، و'البريد الالكتروني' مع العنوان، و'رقم الهاتف' مع الرقم. الهاتف غير الموثق برمز SMS يظهر باهتاً؛ والضغط عليه يعرض 'يجب التحقق من رقم الهاتف أولاً، يمكنك التحقق من رقم الهاتف من تعديل الملف الشخصي.' زر حفظ يحفظ (PATCH /users/account/login-method) ويعرض 'تم تحديث طريقة تسجيل الدخول بنجاح.'؛ وتراجع يغلق دون حفظ. عند اختيار البريد أو الهاتف يُرفض الدخول بكلمة المرور بالمعرّف الآخر (403) — بعد التحقق من كلمة المرور فقط. في تعديل الملف الشخصي يُرسل رمز إلى رقم الهاتف الجديد ولا يُحفظ إلا بعد إدخال الرمز الصحيح؛ والرقم المحفوظ غير الموثق يعرض 'الرقم غير موثق — تحقق من الرقم'. تسجيل الدخول عبر Google/Apple واستعادة كلمة المرور لا يتأثران.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every account starts on 'البريد الالكتروني أو رقم الهاتف'; both identifiers sign in.",
+          "With 'رقم الهاتف' saved, signing in with the email and the right password shows 'طريقة تسجيل الدخول المحددة لحسابك هي رقم الهاتف، يرجى تسجيل الدخول به.'; with a wrong password the usual invalid-credentials message shows.",
+          "With 'البريد الالكتروني' saved, the phone is refused the same way.",
+          "An unverified phone can't be chosen and the warning toast explains why.",
+          "Changing the phone in Edit Profile sends a code to the new number; a wrong code saves nothing; the right code saves the number and the rest of the form.",
+          "A number already on another account is refused ('رقم الهاتف مستخدم في حساب آخر').",
+        ],
+        ar: [
+          "كل الحسابات تبدأ على 'البريد الالكتروني أو رقم الهاتف'؛ والمعرّفان يعملان.",
+          "عند حفظ 'رقم الهاتف'، الدخول بالبريد وكلمة المرور الصحيحة يعرض 'طريقة تسجيل الدخول المحددة لحسابك هي رقم الهاتف، يرجى تسجيل الدخول به.'؛ ومع كلمة مرور خاطئة تظهر رسالة بيانات الدخول المعتادة.",
+          "عند حفظ 'البريد الالكتروني' يُرفض الهاتف بنفس الطريقة.",
+          "لا يمكن اختيار هاتف غير موثق ويشرح التنبيه السبب.",
+          "تغيير الهاتف في تعديل الملف الشخصي يرسل رمزاً للرقم الجديد؛ الرمز الخاطئ لا يحفظ شيئاً؛ والصحيح يحفظ الرقم وبقية النموذج.",
+          "الرقم المستخدم في حساب آخر يُرفض ('رقم الهاتف مستخدم في حساب آخر').",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an email-only account open the sheet: phone is greyed; tap it — warning toast. Add a phone in Edit Profile, enter the SMS code, reopen the sheet — phone is selectable.",
+          "Choose رقم الهاتف, save — success toast. Sign out and sign in with the email — refused with the message; sign in with the phone — works.",
+          "Choose 'البريد الالكتروني أو رقم الهاتف' again — both work.",
+          "In Edit Profile enter a new number, save, type a wrong code — error in the sheet; type the right code — profile saved with the new number.",
+        ],
+        ar: [
+          "على حساب ببريد فقط افتح النافذة: الهاتف باهت؛ اضغطه — يظهر التنبيه. أضف هاتفاً من تعديل الملف الشخصي وأدخل رمز SMS ثم افتح النافذة — يمكن اختيار الهاتف.",
+          "اختر رقم الهاتف واحفظ — يظهر تنبيه النجاح. سجّل الخروج وادخل بالبريد — يُرفض بالرسالة؛ وادخل بالهاتف — يعمل.",
+          "اختر 'البريد الالكتروني أو رقم الهاتف' مجدداً — يعمل الاثنان.",
+          "في تعديل الملف الشخصي أدخل رقماً جديداً واحفظ واكتب رمزاً خاطئاً — خطأ في النافذة؛ ثم الرمز الصحيح — يُحفظ الملف بالرقم الجديد.",
+        ],
+      },
+      updatedIn: "feat/account-state",
+    },
   ],
 };

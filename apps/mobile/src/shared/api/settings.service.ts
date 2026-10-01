@@ -15,6 +15,17 @@ export interface SuspendOtpResponse {
   destination: string;
 }
 
+// Which identifier password login accepts; BOTH = email or phone
+export type LoginMethod = 'BOTH' | 'EMAIL' | 'PHONE';
+
+export interface LoginMethodResponse {
+  loginMethod: LoginMethod;
+  email: string | null;
+  phone: string | null;
+  phoneVerified: boolean;
+  message?: string;
+}
+
 export const settingsService = {
   getSettings: async (): Promise<UserSettingsResponse> => {
     const response = await apiClient.get<UserSettingsResponse>('/settings');
@@ -102,6 +113,42 @@ export const settingsService = {
     services?: string;
   }): Promise<any> => {
     const response = await apiClient.patch('/users/profile', data);
+    return response.data;
+  },
+
+  getLoginMethod: async (): Promise<LoginMethodResponse> => {
+    const response = await apiClient.get<LoginMethodResponse>(
+      '/users/account/login-method',
+    );
+    return response.data;
+  },
+
+  setLoginMethod: async (method: LoginMethod): Promise<LoginMethodResponse> => {
+    const response = await apiClient.patch<LoginMethodResponse>(
+      '/users/account/login-method',
+      { method },
+    );
+    return response.data;
+  },
+
+  /** Texts a code to a phone number the user wants on their account. */
+  requestPhoneOtp: async (phone: string): Promise<{ destination: string }> => {
+    const response = await apiClient.post<{ destination: string }>(
+      '/users/account/phone/request-otp',
+      { phone },
+    );
+    return response.data;
+  },
+
+  /** With the right code the number becomes the account's verified phone. */
+  verifyPhone: async (
+    phone: string,
+    otp: string,
+  ): Promise<LoginMethodResponse> => {
+    const response = await apiClient.post<LoginMethodResponse>(
+      '/users/account/phone/verify',
+      { phone, otp },
+    );
     return response.data;
   },
 };

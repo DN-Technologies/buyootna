@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersRegistrationService } from './users-registration.service';
-import { PrismaService } from '../../../core/prisma/prisma.service';
-import { IdentitiesService } from '../../identities/identities.service';
-import { TwilioService } from '../../../core/twilio/twilio.service';
-import { EmailOtpService } from '../../../core/email-otp/email-otp.service';
-import { PhoneRegistrationPendingService } from '../../../core/phone-registration/phone-registration-pending.service';
-import { OtpRateLimiterService } from '../../../core/otp-rate-limiter/otp-rate-limiter.service';
+import { UsersRegistrationService } from '../users-registration.service';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { IdentitiesService } from '../../../identities/identities.service';
+import { TwilioService } from '../../../../core/twilio/twilio.service';
+import { EmailOtpService } from '../../../../core/email-otp/email-otp.service';
+import { PhoneRegistrationPendingService } from '../../../../core/phone-registration/phone-registration-pending.service';
+import { OtpRateLimiterService } from '../../../../core/otp-rate-limiter/otp-rate-limiter.service';
 import {
   BadRequestException,
   ConflictException,
@@ -175,8 +175,11 @@ describe('UsersRegistrationService', () => {
         'Ali',
         expect.any(String),
       );
-      const [, , hashedPassword] = phonePendingService.save.mock
-        .calls[0] as [string, string, string];
+      const [, , hashedPassword] = phonePendingService.save.mock.calls[0] as [
+        string,
+        string,
+        string,
+      ];
       expect(hashedPassword).not.toBe('password123');
       expect(bcrypt.compareSync('password123', hashedPassword)).toBe(true);
     });

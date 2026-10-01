@@ -16,6 +16,11 @@ import { CreateProjectDto } from '../../company/dto/create-project.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
 
+// Last 8 digits: "+96599998888", "96599998888" and "99998888" are one number
+function localPhone(phone?: string | null): string {
+  return (phone ?? '').replace(/\D/g, '').slice(-8);
+}
+
 @Injectable()
 export class UsersProfileService {
   constructor(
@@ -46,7 +51,22 @@ export class UsersProfileService {
     // 1. Update basic user fields if provided
     const userUpdateData: Prisma.UserUpdateInput = {};
     if (dto.name !== undefined) userUpdateData.name = dto.name;
-    if (dto.phone !== undefined) userUpdateData.phone = dto.phone;
+    // The phone is a sign-in identifier, so a new number only lands through
+    // the SMS check (POST /users/account/phone/verify). The unchanged number,
+    // which the app sends back on every save, is simply left as it is.
+    if (dto.phone !== undefined) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { phone: true },
+      });
+      if (localPhone(dto.phone) !== localPhone(current?.phone)) {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: 'PHONE_VERIFICATION_REQUIRED',
+          message: 'لتغيير رقم الهاتف يجب التحقق منه برمز يُرسل إليه.',
+        });
+      }
+    }
     if (dto.email !== undefined) userUpdateData.email = dto.email;
     if (dto.whatsapp !== undefined) userUpdateData.whatsapp = dto.whatsapp;
 

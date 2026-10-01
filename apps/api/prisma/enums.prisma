@@ -4,6 +4,12 @@ enum Role {
   OFFICE
 }
 
+// Which identifier a password login accepts (User.loginMethod)
+enum LoginMethod {
+  EMAIL
+  PHONE
+}
+
 enum SocialProvider {
   GOOGLE
   APPLE

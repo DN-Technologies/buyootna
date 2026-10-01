@@ -44,6 +44,12 @@ import {
   OtpVerifyRateLimitFromUser,
 } from '../../core/decorators/otp-rate-limit.decorator';
 import { SuspendAccountDto } from './dto/suspend-account.dto';
+import {
+  RequestPhoneOtpDto,
+  SetLoginMethodDto,
+  VerifyPhoneDto,
+} from './dto/login-method.dto';
+import { LoginMethodService } from './services/login-method.service';
 import { AccountSuspensionService } from './services/account-suspension.service';
 
 @ApiTags('Users')
@@ -53,6 +59,7 @@ export class UsersController {
     private readonly registrationService: UsersRegistrationService,
     private readonly profileService: UsersProfileService,
     private readonly suspensionService: AccountSuspensionService,
+    private readonly loginMethodService: LoginMethodService,
   ) {}
 
   @Post('register/individual')
@@ -130,6 +137,70 @@ export class UsersController {
   @ApiCommonErrors()
   async deleteAccount(@CurrentUser() reqUser: RequestUser) {
     return this.profileService.deleteAccount(reqUser.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('account/login-method')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'The identifier password login accepts (BOTH / EMAIL / PHONE), with the email/phone and whether the phone is verified',
+  })
+  @ApiCommonErrors()
+  getLoginMethod(@CurrentUser() reqUser: RequestUser) {
+    return this.loginMethodService.get(reqUser.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('account/login-method')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Choose which identifier password login accepts: BOTH (default), EMAIL or PHONE',
+    description:
+      'PHONE needs an SMS-verified phone (400 PHONE_NOT_VERIFIED otherwise); EMAIL needs an email on the account (400 NO_EMAIL). Google/Apple sign-in and password recovery are unaffected.',
+  })
+  @ApiCommonErrors()
+  setLoginMethod(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: SetLoginMethodDto,
+  ) {
+    return this.loginMethodService.set(reqUser.userId, dto.method);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('account/phone/request-otp')
+  @OtpRequestRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Text a code to the phone number to verify (and set) on the account',
+  })
+  @ApiCommonErrors()
+  requestPhoneOtp(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RequestPhoneOtpDto,
+  ) {
+    return this.loginMethodService.requestPhoneOtp(reqUser.userId, dto.phone);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('account/phone/verify')
+  @OtpVerifyRateLimitFromUser('userId')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Check the code; the number becomes the account's verified phone",
+  })
+  @ApiCommonErrors()
+  verifyPhone(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: VerifyPhoneDto,
+  ) {
+    return this.loginMethodService.verifyPhone(
+      reqUser.userId,
+      dto.phone,
+      dto.otp,
+    );
   }
 
   @UseGuards(AuthGuard('jwt'))

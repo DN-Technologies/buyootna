@@ -159,3 +159,15 @@ export const TermsIcon = ({ color = '#111111', size = 20 }: IconProps) => (
     />
   </Svg>
 );
+
+// Sign-in method (طريقة تسجيل الدخول): arrow into a door (20x20)
+export const LoginIcon = ({ color = '#111111', size = 20 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <Path
+      d="M7.5 6.25V5C7.5 4.0335 8.2835 3.25 9.25 3.25H15C15.9665 3.25 16.75 4.0335 16.75 5V15C16.75 15.9665 15.9665 16.75 15 16.75H9.25C8.2835 16.75 7.5 15.9665 7.5 15V13.75M3.25 10H12.5M12.5 10L10 7.5M12.5 10L10 12.5"
+      stroke={color}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
