@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 
 import apiClient, { setAuthToken, setOnUnauthorized } from '@/shared/api/api';
@@ -18,6 +19,16 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn().mockResolvedValue(undefined),
   getItemAsync: jest.fn().mockResolvedValue(null),
   deleteItemAsync: jest.fn().mockResolvedValue(undefined),
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    // Default to "sentinel present" so existing restore-path tests behave
+    // like a returning install; the fresh-install test overrides this.
+    getItem: jest.fn().mockResolvedValue('1'),
+    setItem: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 
 jest.mock('@/shared/api/api', () => ({
@@ -416,6 +427,49 @@ describe('useAuthStore', () => {
         useAuthStore.getState().loadPersistedAuth(),
       ).resolves.toBeUndefined();
       expect(useAuthStore.getState().isLoading).toBe(false);
+    });
+
+    it('clears a leftover Keychain session on a fresh install (delete + reinstall, QA)', async () => {
+      // No install sentinel → the Keychain entries are leftovers from a
+      // previous install; a stale token sits in them regardless of value.
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+
+      await useAuthStore.getState().loadPersistedAuth();
+
+      // The store never even reads the stale Keychain session...
+      expect(SecureStore.getItemAsync).not.toHaveBeenCalled();
+      // ...it wipes it...
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('auth_token');
+      expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('session_id');
+      // ...the sentinel was written for future boots...
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        '@buyootna/install-sentinel',
+        '1',
+      );
+      // ...and the app boots logged out, without calling /users/me.
+      expect(mockApiClient.get).not.toHaveBeenCalled();
+      const state = useAuthStore.getState();
+      expect(state.token).toBeNull();
+      expect(state.user).toBeNull();
+      expect(state.isLoading).toBe(false);
+    });
+
+    it('restores the session when the install sentinel is present', async () => {
+      // Returning install: sentinel present (default mock) + token stored
+      (SecureStore.getItemAsync as jest.Mock)
+        .mockResolvedValueOnce('tok-1')
+        .mockResolvedValueOnce('session-1');
+      const user = buildUser();
+      const identity = buildIdentity();
+      mockApiClient.get.mockResolvedValueOnce({
+        data: { user, activeIdentity: identity, identities: [identity] },
+      });
+
+      await useAuthStore.getState().loadPersistedAuth();
+
+      expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
+      expect(useAuthStore.getState().token).toBe('tok-1');
+      expect(useAuthStore.getState().user).toEqual(user);
     });
   });
 

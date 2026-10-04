@@ -714,5 +714,44 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/individual-bugs",
     },
+    {
+      id: "mobile-session-cleared-on-reinstall",
+      title: {
+        en: "Deleting and reinstalling the app boots logged out (no Keychain session resurrection)",
+        ar: "حذف التطبيق وإعادة تثبيته يفتح التطبيق مسجّل الخروج (لا تُستعاد الجلسة من Keychain)",
+      },
+      priority: "P0",
+      story: {
+        en: "QA bug fix: the auth token and session id are stored in expo-secure-store (the iOS Keychain), whose items survive app deletion — so after delete + reinstall the app silently restored the old session. On every cold boot loadPersistedAuth checks an install sentinel in AsyncStorage (which IS wiped on uninstall): a missing sentinel means a fresh install, so any leftover Keychain session is deleted and the app boots logged out (onboarding/login); the sentinel is then written. Existing installs with the sentinel keep restoring their session as before. Failure mode is fail-secure: if sentinel handling throws, the app boots logged out. The device_id Keychain entry deliberately survives reinstalls — it identifies the device for push registration and grants no access by itself. (Android was never affected: its SecureStore backing is wiped on uninstall.)",
+        ar: "إصلاح بلاغ QA: كان رمز الدخول ومعرّف الجلسة يُحفظان في expo-secure-store (Keychain على iOS)، وهي بيانات تنجو من حذف التطبيق — لذا كان التطبيق بعد الحذف وإعادة التثبيت يستعيد الجلسة القديمة بصمت. في كل تشغيل بارد يفحص loadPersistedAuth علامة تثبيت في AsyncStorage (وهي تُمحى عند حذف التطبيق): غياب العلامة يعني تثبيتاً جديداً، فيُحذف أي جلسة متبقية في Keychain ويفتح التطبيق مسجّل الخروج (الترحيب/تسجيل الدخول)؛ ثم تُكتب العلامة. والتثبيتات القائمة التي تحمل العلامة تُعيد استعادة جلستها كالسابق. وعند أي فشل يكون السلوك آمناً: يفتح التطبيق مسجّل الخروج. أما معرّف الجهاز (device_id) فيُترك في Keychain عمداً — فهو يعرّف الجهاز لتسجيل الإشعارات ولا يمنح أي وصول بذاته. (أندرويد لم يتأثر: مخزن SecureStore فيه يُمحى عند حذف التطبيق.)",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Delete the app while logged in and reinstall: the first launch shows the onboarding/login screen — no automatic session restore.",
+          "After reinstall, the stale auth_token/session_id are removed from the Keychain and never sent to the API.",
+          "An existing install (sentinel present) still restores its session on cold boot.",
+          "If the sentinel read/write fails, the app boots logged out (fail-secure), never auto-restoring a possibly-stale session.",
+        ],
+        ar: [
+          "احذف التطبيق أثناء تسجيل الدخول ثم أعد تثبيته: التشغيل الأول يعرض شاشة الترحيب/تسجيل الدخول — دون استعادة تلقائية للجلسة.",
+          "بعد إعادة التثبيت يُحذف auth_token/session_id القديمان من Keychain ولا يُرسلان للواجهة البرمجية أبداً.",
+          "التثبيت القائم (العلامة موجودة) يستعيد جلسته عند التشغيل البارد كالسابق.",
+          "عند فشل قراءة/كتابة العلامة يفتح التطبيق مسجّل الخروج (سلوك آمن)، ولا تُستعاد جلسة قد تكون قديمة أبداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Log in on a device, delete the app, reinstall and launch — the login/onboarding screen shows; no /users/me call is made.",
+          "Log in again and force-close + relaunch (no deletion) — the session is restored as usual.",
+          "Simulate sentinel-storage failure — the app boots logged out rather than restoring.",
+        ],
+        ar: [
+          "سجّل الدخول على الجهاز، احذف التطبيق، أعد تثبيته وشغّله — تظهر شاشة الدخول/الترحيب؛ دون استدعاء /users/me.",
+          "سجّل الدخول مجدداً ثم أغلق التطبيق بقوة وأعد فتحه (بدون حذف) — تُستعاد الجلسة كالعادة.",
+          "حاكِ فشل تخزين العلامة — يفتح التطبيق مسجّل الخروج بدلاً من الاستعادة.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };
