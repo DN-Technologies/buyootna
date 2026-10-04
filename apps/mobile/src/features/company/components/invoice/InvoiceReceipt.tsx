@@ -26,6 +26,8 @@ interface InvoiceReceiptProps {
   total: number;
   companyName?: string;
   logoUrl?: string | null;
+  // Optional service warranty (كفالة الخدمة) in months — Figma 4410:167623
+  warrantyMonths?: string;
 }
 
 export default function InvoiceReceipt({
@@ -38,6 +40,7 @@ export default function InvoiceReceipt({
   total,
   companyName,
   logoUrl,
+  warrantyMonths,
 }: InvoiceReceiptProps) {
   return (
     <View className="px-4">
@@ -107,6 +110,21 @@ export default function InvoiceReceipt({
             {title}
           </Text>
         </View>
+
+        {/* Warranty row (only when the invoice carries a كفالة الخدمة) */}
+        {!!warrantyMonths?.trim() && (
+          <View className="mt-2.5 flex-row items-center justify-between">
+            <Text
+              className="font-cairo text-[13px] text-[#6B6A6A]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              كفالة الخدمة (ضمان)
+            </Text>
+            <Text className="text-left font-cairo-semibold text-[12px] text-[#111111]">
+              {warrantyMonths.trim()} شهور
+            </Text>
+          </View>
+        )}
 
         <View className="my-4 h-px bg-[#ECECEC]" />
 

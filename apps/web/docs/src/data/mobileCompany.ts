@@ -213,20 +213,24 @@ export const mobileCompany: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "Verify company More → فواتير الخدمات opens the list of invoices the company issued (same list, search, sort and details as the client) with '+ فاتورة جديدة'. In اصدار فاتورة the العميل field lists the company's accepted requests (client name and request title): picking one sends the invoice to that client's account; typing a name instead is allowed but warns 'لن تصل الفاتورة لحساب العميل في التطبيق'. In the details sheet the company has تحميل / مشاركة and 'تم الدفع' (until paid), which records the payment date and notifies the client.",
-        ar: "تحقق من أن المزيد للشركة ← فواتير الخدمات يفتح قائمة الفواتير التي أصدرتها (نفس القائمة والبحث والترتيب والتفاصيل كالعميل) مع '+ فاتورة جديدة'. في اصدار فاتورة يعرض حقل العميل الطلبات المقبولة للشركة (اسم العميل وعنوان الطلب): اختيار أحدها يرسل الفاتورة لحساب ذلك العميل؛ ويمكن كتابة اسم بدلاً من ذلك مع تنبيه 'لن تصل الفاتورة لحساب العميل في التطبيق'. في نافذة التفاصيل لدى الشركة تحميل / مشاركة و'تم الدفع' (حتى الدفع)، الذي يسجّل تاريخ الدفع ويُشعر العميل.",
+        en: "Verify company More → فواتير الخدمات opens the list of invoices the company issued (same list, search, sort and details as the client) with '+ فاتورة جديدة'. In اصدار فاتورة the العميل pill ('ابحث عن عميل...') opens a bottom sheet listing the company's accepted requests (client name and request title): picking one sends the invoice to that client's account; typing a name instead is allowed but warns 'لن تصل الفاتورة لحساب العميل في التطبيق'. The receipt review shows the optional كفالة الخدمة (ضمان) months row when set. After sending, the success sheet's 'عرض الفواتير' opens the invoices list. In the details sheet the company has تحميل / مشاركة and 'تم الدفع' (until paid), which records the payment date and notifies the client.",
+        ar: "تحقق من أن المزيد للشركة ← فواتير الخدمات يفتح قائمة الفواتير التي أصدرتها (نفس القائمة والبحث والترتيب والتفاصيل كالعميل) مع '+ فاتورة جديدة'. في اصدار فاتورة يفتح حقل العميل ('ابحث عن عميل...') نافذة سفلية تعرض الطلبات المقبولة للشركة (اسم العميل وعنوان الطلب): اختيار أحدها يرسل الفاتورة لحساب ذلك العميل؛ ويمكن كتابة اسم بدلاً من ذلك مع تنبيه 'لن تصل الفاتورة لحساب العميل في التطبيق'. تعرض شاشة المراجعة سطر كفالة الخدمة (ضمان) بالشهور عند إدخاله. بعد الإرسال يفتح زر 'عرض الفواتير' في نافذة النجاح قائمة الفواتير. في نافذة التفاصيل لدى الشركة تحميل / مشاركة و'تم الدفع' (حتى الدفع)، الذي يسجّل تاريخ الدفع ويُشعر العميل.",
       },
       acceptanceCriteria: {
         en: [
-          "Only the company's accepted requests are offered as clients; with none, a hint explains it.",
+          "The العميل pill opens a bottom sheet listing only the company's accepted requests; with none, a hint explains it.",
           "An invoice from a picked request appears in that client's فواتير الخدمات; a typed-name one doesn't.",
+          "The review receipt shows the كفالة الخدمة (ضمان) months row only when it was filled in.",
+          "'عرض الفواتير' on the success sheet opens the company's فواتير الخدمات list.",
           "The card shows who it was billed to (service • client).",
           "'تم الدفع' disappears after use and the card shows 'تم الدفع في'.",
           "The company can't delete issued invoices (no حذف).",
         ],
         ar: [
-          "تُعرض فقط الطلبات المقبولة للشركة كعملاء؛ وإن لم توجد يظهر تلميح يشرح ذلك.",
+          "يفتح حقل العميل نافذة سفلية تعرض فقط الطلبات المقبولة للشركة؛ وإن لم توجد يظهر تلميح يشرح ذلك.",
           "الفاتورة من طلب مختار تظهر في فواتير الخدمات لذلك العميل؛ والمكتوبة باسم لا تظهر.",
+          "تعرض شاشة المراجعة سطر كفالة الخدمة (ضمان) بالشهور فقط عند إدخاله.",
+          "'عرض الفواتير' في نافذة النجاح تفتح قائمة فواتير الخدمات للشركة.",
           "البطاقة تعرض لمن صدرت (الخدمة • العميل).",
           "'تم الدفع' يختفي بعد استخدامه وتعرض البطاقة 'تم الدفع في'.",
           "لا يمكن للشركة حذف الفواتير الصادرة (لا يوجد حذف).",
@@ -234,17 +238,19 @@ export const mobileCompany: DocSection = {
       },
       testScenarios: {
         en: [
-          "Accept a request, then + فاتورة جديدة: the client appears under العميل; pick it, add items, send.",
+          "Accept a request, then + فاتورة جديدة: tap the العميل pill, pick the client from the sheet, add items, review (warranty row shows if months were entered) and send.",
           "Issue one more with a typed name — the warning shows; it's listed for the company only.",
+          "After sending, tap عرض الفواتير — the invoices list opens.",
           "Open the first invoice and tap تم الدفع — the button goes away and the client is notified.",
         ],
         ar: [
-          "اقبل طلباً ثم + فاتورة جديدة: يظهر العميل تحت العميل؛ اختره وأضف البنود وأرسل.",
+          "اقبل طلباً ثم + فاتورة جديدة: اضغط حقل العميل واختر العميل من النافذة، أضف البنود، راجع (يظهر سطر الكفالة إذا أُدخلت الشهور) وأرسل.",
           "أصدر فاتورة أخرى باسم مكتوب — يظهر التنبيه؛ وتظهر للشركة فقط.",
+          "بعد الإرسال اضغط عرض الفواتير — تُفتح قائمة الفواتير.",
           "افتح الفاتورة الأولى واضغط تم الدفع — يختفي الزر ويُشعَر العميل.",
         ],
       },
-      updatedIn: "feat/service-invoices",
+      updatedIn: "feat/company-more-edit-profile",
     },
   ],
 };
