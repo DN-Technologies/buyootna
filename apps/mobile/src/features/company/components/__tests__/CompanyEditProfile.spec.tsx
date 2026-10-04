@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
-import { settingsService } from '@/shared/api/settings.service';
 import apiClient from '@/shared/api/api';
+import { settingsService } from '@/shared/api/settings.service';
 import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 

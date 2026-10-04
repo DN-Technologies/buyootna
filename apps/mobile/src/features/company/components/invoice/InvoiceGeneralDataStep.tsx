@@ -5,7 +5,6 @@ import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 import type { InvoiceableClient } from '@/shared/api/serviceInvoices.service';
 
-import ClientRequestPicker from './ClientRequestPicker';
 import FieldLabel from './FieldLabel';
 
 const inputClassName =
@@ -24,6 +23,8 @@ interface InvoiceGeneralDataStepProps {
   // The accepted request the invoice is for (its client gets the invoice)
   requestId: string | null;
   onSelectClient: (client: InvoiceableClient | null) => void;
+  // Opens the client-picker bottom sheet (ابحث عن عميل...)
+  onOpenClientPicker: () => void;
   invoiceNo: string;
   title: string;
   onChangeTitle: (value: string) => void;
@@ -38,6 +39,7 @@ export default function InvoiceGeneralDataStep({
   onChangeClientName,
   requestId,
   onSelectClient,
+  onOpenClientPicker,
   invoiceNo,
   title,
   onChangeTitle,
@@ -60,10 +62,23 @@ export default function InvoiceGeneralDataStep({
       <View className="gap-5">
         <View className="gap-1.5">
           <FieldLabel text="العميل" />
-          <ClientRequestPicker
-            selectedRequestId={requestId}
-            onSelect={onSelectClient}
-          />
+          {/* Client search pill (Figma 4410:167377): opens the accepted
+              requests picker sheet; shows the picked client once selected */}
+          <TouchableOpacity
+            testID="invoice-client-picker-trigger"
+            activeOpacity={0.7}
+            onPress={onOpenClientPicker}
+            className="h-[42px] w-full flex-row items-center gap-1.5 rounded-full border border-[#ECECEC] bg-[#F9FAFE] px-3"
+          >
+            <Ionicons name="search" size={20} color="#989898" />
+            <Text
+              numberOfLines={1}
+              className={`flex-1 text-right font-cairo text-[13px] ${requestId ? 'text-[#111111]' : 'text-[#989898]'}`}
+              style={{ writingDirection: 'rtl' }}
+            >
+              {requestId ? clientName : 'ابحث عن عميل...'}
+            </Text>
+          </TouchableOpacity>
           {!requestId && (
             <>
               <TextInput

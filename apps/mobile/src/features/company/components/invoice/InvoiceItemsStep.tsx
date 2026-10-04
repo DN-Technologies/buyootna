@@ -36,64 +36,66 @@ export default function InvoiceItemsStep({
           بنود الفاتورة
         </Text>
 
-        {/* Table header */}
-        <View className="h-[38px] flex-row items-center rounded-md bg-[#F9FAFE] px-4">
-          <Text className="w-[100px] text-right font-cairo text-[12px] text-[#6B6A6A]">
+        {/* Table header (Figma 4410:167393) */}
+        <View className="flex-row items-center rounded-[8px] bg-[#F9FAFE] px-4 py-3.5">
+          <Text className="w-[100px] text-right font-cairo text-[14px] text-[#979797]">
             البند
           </Text>
-          <Text className="flex-1 text-center font-cairo text-[12px] text-[#6B6A6A]">
+          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
             السعر
           </Text>
-          <Text className="flex-1 text-center font-cairo text-[12px] text-[#6B6A6A]">
+          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
             الكمية
           </Text>
-          <Text className="flex-1 text-center font-cairo text-[12px] text-[#6B6A6A]">
+          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
             الاجمالي
           </Text>
-          <Text className="w-[34px] text-center font-cairo text-[12px] text-[#6B6A6A]">
+          <Text className="w-[34px] text-center font-cairo text-[14px] text-[#979797]">
             اجراء
           </Text>
         </View>
 
-        {/* Item rows */}
-        {items.map((item, index) => (
-          <View
-            key={`${item.name}-${index}`}
-            className="h-[42px] flex-row items-center border-b border-[#F0F0F0] px-4"
-          >
-            <Text
-              className="w-[100px] text-right font-cairo text-[13px] text-[#111111]"
-              numberOfLines={1}
+        {/* Item rows: individually bordered cards */}
+        <View className="gap-2">
+          {items.map((item, index) => (
+            <View
+              key={`${item.name}-${index}`}
+              className="flex-row items-center rounded-[8px] border border-[#ECECEC] bg-white px-4 py-2.5"
             >
-              {item.name}
-            </Text>
-            <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-              {item.price.toLocaleString('en-US')}
-            </Text>
-            <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-              {item.qty}
-            </Text>
-            <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-              {(item.price * item.qty).toLocaleString('en-US')}
-            </Text>
-            <TouchableOpacity
-              onPress={() => onRemoveItem(index)}
-              className="w-[34px] items-center"
-            >
-              <Ionicons name="trash-outline" size={18} color="#C0392B" />
-            </TouchableOpacity>
-          </View>
-        ))}
+              <Text
+                className="w-[100px] text-right font-cairo text-[13px] text-[#111111]"
+                numberOfLines={1}
+              >
+                {item.name}
+              </Text>
+              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
+                {item.price.toLocaleString('en-US')}
+              </Text>
+              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
+                {item.qty}
+              </Text>
+              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
+                {(item.price * item.qty).toLocaleString('en-US')}
+              </Text>
+              <TouchableOpacity
+                onPress={() => onRemoveItem(index)}
+                className="w-[34px] items-center"
+              >
+                <Ionicons name="trash-outline" size={18} color="#C0392B" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
 
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onOpenAddItemSheet}
-          className="h-11 w-full flex-row items-center justify-center gap-2 rounded-full border border-[#E2E8F0] bg-white"
+          className="h-11 w-full flex-row items-center justify-center gap-1 rounded-full border border-[#15304D] bg-white"
         >
-          <Ionicons name="add" size={16} color="#111111" />
-          <Text className="font-cairo-semibold text-[14px] text-[#111111]">
+          <Text className="font-cairo-semibold text-[14px] text-[#15304D]">
             اضافة بند
           </Text>
+          <Ionicons name="add" size={16} color="#15304D" />
         </TouchableOpacity>
       </View>
 
