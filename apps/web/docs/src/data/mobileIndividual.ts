@@ -1158,11 +1158,47 @@ export const mobileIndividual: DocSection = {
           "سجّل الدخول بحساب هاتف فقط، عدّل الاسم، اضغط تعديل البيانات — يُحفظ.",
           "أضف بريداً، اضغط تعديل البيانات — تنبيه برتقالي؛ اضغط ارسال رمز التحقق وأدخل الرمز المرسل — تنبيه أخضر؛ احفظ — يظهر البريد في الملف.",
           "أدخل رمزاً خاطئاً — يظهر الخطأ وتُفرغ الخانات لإعادة المحاولة.",
-          "غيّر رقم الهاتف واحفظ — تفتح نافذة SMS؛ وبعد الرمز يُحفظ الملف.",
+          "غيّر رقم الهاتف واحفظ — تفتح نافذة رمز SMS؛ وبعد الرمز يُحفظ الملف.",
         ],
       },
       updatedIn: "fix/individual-bugs",
     },
-    }
+    {
+      id: "mobile-plans-wallet-real-balance",
+      title: {
+        en: "Plans wallet section shows the real remaining-ad balance (no hardcoded counters)",
+        ar: "قسم محفظتك الإعلانية في الباقات يعرض رصيد الإعلانات الحقيقي (بدون أرقام ثابتة)",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: the 'الإعلان المجاني الترحيبي' card on الباقات used to hardcode 'متبقي 1 إعلان' regardless of the account's actual balance. It now renders the real freeAdsRemaining ('متبقي إعلان مجاني واحد' for one, 'متبقي N إعلانات' otherwise) and the whole wallet section disappears when the balance is zero and there are no plan slots — matching رصيد الحساب and My Activity.",
+        ar: "إصلاح بلاغ QA: كانت بطاقة 'الإعلان المجاني الترحيبي' في الباقات تعرض 'متبقي 1 إعلان' ثابتة مهما كان الرصيد الفعلي. الآن تعرض freeAdsRemaining الحقيقي ('متبقي إعلان مجاني واحد' لواحد، 'متبقي N إعلانات' لغيره) ويختفي قسم المحفظة بالكامل عند صفر الرصيد وعدم وجود حصص باقات — بما يطابق رصيد الحساب ونشاطي.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The welcome free-ad card shows the account's real remaining count (singular wording for 1, plural otherwise) — never a hardcoded 1.",
+          "With 0 free ads and no plan slots the whole 'محفظتك الإعلانية' section is hidden.",
+          "Plan-tier rows keep rendering each tier's real remaining/total ads.",
+        ],
+        ar: [
+          "بطاقة الإعلان المجاني الترحيبي تعرض العدد الحقيقي المتبقي (صيغة المفرد للواحد والجمع لغيره) — وليس رقماً ثابتاً.",
+          "عند صفر إعلانات مجانية وعدم وجود حصص باقات يختفي قسم 'محفظتك الإعلانية' بالكامل.",
+          "صفوف الباقات تستعرض رصيد كل باقة الحقيقي المتبقي من الإجمالي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With a wallet of 3 free ads, الباقات shows 'متبقي 3 إعلانات' (not 1).",
+          "With 1 free ad it shows 'متبقي إعلان مجاني واحد'.",
+          "With 0 free ads and no slots the wallet section doesn't render at all.",
+        ],
+        ar: [
+          "بمحفظة 3 إعلانات مجانية تعرض الباقات 'متبقي 3 إعلانات' (وليس 1).",
+          "بإعلان مجاني واحد تعرض 'متبقي إعلان مجاني واحد'.",
+          "بصفر إعلانات وبدون حصص لا يُعرض قسم المحفظة إطلاقاً.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

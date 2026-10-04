@@ -212,4 +212,39 @@ describe('PlansScreen', () => {
     // Basic has no packages from the API, so its hardcoded prices remain
     expect(getByText('22.5 د.ك')).toBeTruthy();
   });
+
+  it('wallet section shows the real free-ad balance, not a hardcoded 1 (QA: quota mismatch)', async () => {
+    (plansService.getWallet as jest.Mock).mockResolvedValue({
+      freeAdsRemaining: 3,
+      slots: [],
+    });
+
+    const { getByText, queryByText } = await renderWithClient(<PlansScreen />);
+
+    await waitFor(() => {
+      expect(getByText('متبقي 3 إعلانات')).toBeTruthy();
+    });
+    expect(queryByText('متبقي إعلان مجاني واحد')).toBeNull();
+  });
+
+  it('wallet section uses the singular wording for a single free ad and hides entirely at zero', async () => {
+    (plansService.getWallet as jest.Mock).mockResolvedValue({
+      freeAdsRemaining: 1,
+      slots: [],
+    });
+    const { getByText } = await renderWithClient(<PlansScreen />);
+    await waitFor(() => {
+      expect(getByText('متبقي إعلان مجاني واحد')).toBeTruthy();
+    });
+
+    // Zero balance and no slots: the whole wallet section disappears
+    (plansService.getWallet as jest.Mock).mockResolvedValue({
+      freeAdsRemaining: 0,
+      slots: [],
+    });
+    const { queryByText } = await renderWithClient(<PlansScreen />);
+    await waitFor(() => {
+      expect(queryByText('محفظتك الإعلانية')).toBeNull();
+    });
+  });
 });

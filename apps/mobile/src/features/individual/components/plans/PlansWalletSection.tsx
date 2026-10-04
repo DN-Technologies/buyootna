@@ -33,7 +33,9 @@ export default function PlansWalletSection({
             الإعلان المجاني الترحيبي
           </Text>
           <Text className="font-cairo-bold text-sm text-[#018B1B]">
-            متبقي 1 إعلان
+            {wallet.freeAdsRemaining === 1
+              ? 'متبقي إعلان مجاني واحد'
+              : `متبقي ${wallet.freeAdsRemaining} إعلانات`}
           </Text>
         </View>
       )}

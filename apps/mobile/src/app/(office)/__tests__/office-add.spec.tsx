@@ -1,12 +1,21 @@
-import { act, fireEvent, render } from '@testing-library/react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
+
+import { plansService } from '@/shared/api/plans.service';
 
 import OfficeAddScreen from '../add';
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useRouter: () => jest.requireMock('expo-router').router,
+}));
+
+jest.mock('@/shared/api/plans.service', () => ({
+  plansService: {
+    getWallet: jest.fn(),
+  },
 }));
 
 jest.mock('expo-image-picker', () => ({
@@ -23,14 +32,55 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: any) => children,
 }));
 
+// The quota selector is driven by the office persona's real wallet (QA:
+// no hardcoded counters) — normal 5 + silver 4 = 9 remaining
+function mockWallet(overrides?: Partial<{ normal: number; silver: number; freeAdsRemaining: number }>) {
+  const { normal = 5, silver = 4, freeAdsRemaining = 0 } = overrides ?? {};
+  (plansService.getWallet as jest.Mock).mockResolvedValue({
+    freeAdsRemaining,
+    slots: [
+      {
+        id: 'slot-normal-1',
+        planId: 'plan-normal',
+        planName: 'العادي',
+        planSlug: 'normal',
+        adsRemaining: normal,
+        maxActiveAds: normal,
+        createdAt: '2026-01-01',
+      },
+      {
+        id: 'slot-silver-1',
+        planId: 'plan-silver',
+        planName: 'الفضي',
+        planSlug: 'silver',
+        adsRemaining: silver,
+        maxActiveAds: silver,
+        createdAt: '2026-01-01',
+      },
+    ],
+  });
+}
+
+async function renderWithClient(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return await render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(Alert, 'alert');
+    mockWallet();
   });
 
   it('renders top bar with title "إضافة إعلان" and action buttons', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByText('إضافة إعلان')).toBeTruthy();
     expect(getByTestId('top-back-button')).toBeTruthy();
@@ -38,7 +88,7 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('handles back button press', async () => {
-    const { getByTestId } = await render(<OfficeAddScreen />);
+    const { getByTestId } = await renderWithClient(<OfficeAddScreen />);
 
     await act(async () => {
       fireEvent.press(getByTestId('top-back-button'));
@@ -47,7 +97,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders all listing type options and allows toggling', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByText('نوع الإعلان')).toBeTruthy();
     expect(getByText('بيع')).toBeTruthy();
@@ -66,7 +118,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders property info inputs and steppers', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByText('معلومات العقار')).toBeTruthy();
     expect(getByTestId('input-area')).toBeTruthy();
@@ -81,7 +135,7 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('increments and decrements room counters', async () => {
-    const { getByTestId } = await render(<OfficeAddScreen />);
+    const { getByTestId } = await renderWithClient(<OfficeAddScreen />);
 
     const roomsInc = getByTestId('stepper-rooms-increment');
     const roomsDec = getByTestId('stepper-rooms-decrement');
@@ -99,7 +153,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders price details section with toggle and phone number', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByText('السعر والتفاصيل')).toBeTruthy();
     expect(getByText('تحديد السعر')).toBeTruthy();
@@ -107,11 +163,52 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
     expect(getByTestId('input-phone')).toBeTruthy();
     expect(getByTestId('input-description')).toBeTruthy();
     expect(getByText('+965')).toBeTruthy();
-    expect(getByText('9 إعلانات متبقية في باقتك')).toBeTruthy();
+  });
+
+  it('quota selector reflects the real office wallet, not hardcoded numbers (QA: quota mismatch)', async () => {
+    mockWallet({ normal: 5, silver: 4 });
+    const { getByText } = await renderWithClient(<OfficeAddScreen />);
+
+    // 5 normal + 4 silver = 9 remaining, from the wallet — not a literal
+    await waitFor(() => {
+      expect(getByText('5 عادي')).toBeTruthy();
+      expect(getByText('4 فضي')).toBeTruthy();
+      expect(getByText('9 إعلانات متبقية في باقتك')).toBeTruthy();
+    });
+
+    // A different balance changes what's shown
+    mockWallet({ normal: 1, silver: 2 });
+    const screen = await renderWithClient(<OfficeAddScreen />);
+    await waitFor(() => {
+      expect(screen.getByText('1 عادي')).toBeTruthy();
+      expect(screen.getByText('2 فضي')).toBeTruthy();
+      expect(screen.getByText('3 إعلانات متبقية في باقتك')).toBeTruthy();
+    });
+  });
+
+  it('blocks publishing and warns when the office wallet has no ads left', async () => {
+    mockWallet({ normal: 0, silver: 0 });
+    const { getByTestId, getByText } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
+
+    await waitFor(() => {
+      expect(
+        getByText('لا توجد إعلانات متبقية في باقتك، يرجى شراء باقة إعلانية لنشر عقار جديد.'),
+      ).toBeTruthy();
+    });
+
+    // Fill the required fields; publish stays disabled without credits
+    await act(async () => {
+      fireEvent.changeText(getByTestId('input-area'), 'السالمية');
+    });
+    expect(getByTestId('button-preview-ad').props.accessibilityState?.disabled).toBe(
+      true,
+    );
   });
 
   it('supports property income toggle and input for sell tab (Figma 4494:141833 & 4494:142107)', async () => {
-    const { getByText, getByTestId, queryByTestId } = await render(
+    const { getByText, getByTestId, queryByTestId } = await renderWithClient(
       <OfficeAddScreen />,
     );
 
@@ -132,7 +229,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders rent-specific fields like floors stepper, expenses and conditions (Figma 4494:142372)', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     // Switch to Rent
     await act(async () => {
@@ -164,7 +263,7 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders exchange-specific fields and handles land vs house stepper visibility (Figma 4494:142486 & 4494:142573)', async () => {
-    const { getByText, getByTestId, queryByTestId } = await render(
+    const { getByText, getByTestId, queryByTestId } = await renderWithClient(
       <OfficeAddScreen />,
     );
 
@@ -195,7 +294,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('allows selecting frontage/orientation via OrientationDropdown (Figma 4494:141814 & 4494:142357)', async () => {
-    const { getByTestId, getByText } = await render(<OfficeAddScreen />);
+    const { getByTestId, getByText } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByTestId('orientation-trigger')).toBeTruthy();
     expect(getByText('ما يميز عقارك')).toBeTruthy();
@@ -214,7 +315,7 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('supports choosing between normal and silver plan quotas (Figma 4494:141833)', async () => {
-    const { getByTestId } = await render(<OfficeAddScreen />);
+    const { getByTestId } = await renderWithClient(<OfficeAddScreen />);
 
     expect(getByTestId('office-plan-quota-selector')).toBeTruthy();
     expect(getByTestId('plan-quota-normal')).toBeTruthy();
@@ -226,7 +327,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders image dropzone and handles image pick', async () => {
-    const { getByText, getByTestId } = await render(<OfficeAddScreen />);
+    const { getByText, getByTestId } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     expect(getByText('الصور')).toBeTruthy();
     expect(getByText('اضغط هنا')).toBeTruthy();
@@ -238,7 +341,9 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders preview ad button and triggers alert on valid submit', async () => {
-    const { getByTestId, getByText } = await render(<OfficeAddScreen />);
+    const { getByTestId, getByText } = await renderWithClient(
+      <OfficeAddScreen />,
+    );
 
     // Fill required fields
     await act(async () => {
