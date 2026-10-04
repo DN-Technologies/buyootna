@@ -1,5 +1,6 @@
-import { useOtpVerification } from '@/features/individual/components/more/otp-verification/useOtpVerification';
 import { settingsService } from '@/shared/api/settings.service';
+
+import { useOtpVerification } from './useOtpVerification';
 
 // Last 8 digits: "+96599998888", "96599998888" and "99998888" are one number
 export function localPhone(phone?: string | null): string {

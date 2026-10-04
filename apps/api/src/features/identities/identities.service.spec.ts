@@ -29,8 +29,9 @@ describe('IdentitiesService', () => {
       count: jest.fn(),
       create: jest.fn(),
     },
-    companyIdentityData: { findFirst: jest.fn() },
-    officeIdentityData: { findFirst: jest.fn() },
+    companyIdentityData: { findFirst: jest.fn(), update: jest.fn() },
+    officeIdentityData: { findFirst: jest.fn(), update: jest.fn() },
+    individualIdentityData: { update: jest.fn() },
     reviewRequest: { create: jest.fn() },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
@@ -220,6 +221,122 @@ describe('IdentitiesService', () => {
       expect(reviewRequestData()).toMatchObject({
         officeIdentityDataId: 'od-1',
       });
+    });
+  });
+
+  describe('update', () => {
+    const companyIdentity = {
+      id: 'identity-c',
+      userId: 'user-1',
+      type: IdentityType.COMPANY,
+      companyData: { id: 'cd-1', licenseNumber: '12345' },
+    };
+
+    it('uploads attached logo/license into the company folders and writes the URLs', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockResolvedValue({});
+
+      await service.update(
+        'user-1',
+        'identity-c',
+        { about: 'نبذة' },
+        file,
+        file,
+      );
+
+      expect(mockStorage.uploadFile).toHaveBeenCalledWith(
+        file,
+        'company-logos',
+      );
+      expect(mockStorage.uploadFile).toHaveBeenCalledWith(
+        file,
+        'company-licenses',
+      );
+      expect(mockPrismaService.companyIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { identityId: 'identity-c' },
+          data: expect.objectContaining({
+            about: 'نبذة',
+            logoUrl: 'https://bucket/company-logos/f.png',
+            licenseFileUrl: 'https://bucket/company-licenses/f.png',
+          }),
+        }),
+      );
+      expect(mockStorage.deleteFile).not.toHaveBeenCalled();
+    });
+
+    it('deletes the uploaded files when the update write fails', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockRejectedValue(
+        new Error('db down'),
+      );
+
+      await expect(
+        service.update('user-1', 'identity-c', {}, file, file),
+      ).rejects.toThrow('db down');
+
+      expect(mockStorage.deleteFile).toHaveBeenCalledWith(
+        'https://bucket/company-logos/f.png',
+      );
+      expect(mockStorage.deleteFile).toHaveBeenCalledWith(
+        'https://bucket/company-licenses/f.png',
+      );
+    });
+
+    it('updates from a plain JSON body without touching storage', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockResolvedValue({});
+
+      await service.update('user-1', 'identity-c', {
+        licenseActivity: 'كهرباء',
+      });
+
+      expect(mockStorage.uploadFile).not.toHaveBeenCalled();
+      expect(mockPrismaService.companyIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ licenseActivity: 'كهرباء' }),
+        }),
+      );
+    });
+
+    it('still enforces licence uniqueness on update', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.officeIdentityData.findFirst.mockResolvedValue({
+        id: 'od-other',
+      });
+
+      await expect(
+        service.update('user-1', 'identity-c', { licenseNumber: ' ١٢٣ ٤٥ ' }),
+      ).rejects.toThrow('رقم الترخيص مسجل مسبقاً');
+      expect(mockStorage.uploadFile).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.companyIdentityData.update,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('ignores files for an INDIVIDUAL identity update', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue({
+        id: 'identity-i',
+        userId: 'user-1',
+        type: IdentityType.INDIVIDUAL,
+        individualData: { id: 'id-1' },
+      });
+      mockPrismaService.individualIdentityData.update.mockResolvedValue({});
+
+      await service.update(
+        'user-1',
+        'identity-i',
+        { name: 'علي' },
+        file,
+        file,
+      );
+
+      expect(mockStorage.uploadFile).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.individualIdentityData.update,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { name: 'علي' } }),
+      );
     });
   });
 });

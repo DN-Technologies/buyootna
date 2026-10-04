@@ -6,11 +6,15 @@ import {
   Delete,
   Body,
   Param,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
+  ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiParam,
@@ -98,18 +102,35 @@ export class IdentitiesController {
   // separate controller class per account type, rather than here.
 
   // PATCH /identities/:id - Update identity profile
+  // Accepts JSON or multipart/form-data -- company/office updates may carry
+  // a new logo and/or licence file alongside the fields (mirrors
+  // POST /identities/company; without files the parts are simply absent).
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'license', maxCount: 1 },
+    ]),
+  )
   @ApiOperation({
     summary:
-      "Update one of the current user's identities (shape depends on identity type)",
+      "Update one of the current user's identities (shape depends on identity type; company/office may attach logo/license files)",
   })
   @ApiParam({ name: 'id', description: 'Identity ID' })
+  @ApiConsumes('application/json', 'multipart/form-data')
   @ApiBody({
     schema: {
       oneOf: [
         { $ref: getSchemaPath(UpdateIndividualIdentityDto) },
         { $ref: getSchemaPath(UpdateCompanyIdentityDto) },
         { $ref: getSchemaPath(UpdateOfficeIdentityDto) },
+        {
+          type: 'object',
+          properties: {
+            logo: { type: 'string', format: 'binary' },
+            license: { type: 'string', format: 'binary' },
+          },
+        },
       ],
     },
   })
@@ -123,8 +144,19 @@ export class IdentitiesController {
       | UpdateIndividualIdentityDto
       | UpdateCompanyIdentityDto
       | UpdateOfficeIdentityDto,
+    @UploadedFiles()
+    files?: {
+      logo?: Express.Multer.File[];
+      license?: Express.Multer.File[];
+    },
   ) {
-    return this.identitiesService.update(reqUser.userId, id, dto);
+    return this.identitiesService.update(
+      reqUser.userId,
+      id,
+      dto,
+      files?.logo?.[0],
+      files?.license?.[0],
+    );
   }
 
   // DELETE /identities/:id - Delete identity

@@ -1,10 +1,10 @@
 export { default as EditProfileHeader } from './EditProfileHeader';
 export { default as EditProfileSubmitBar } from './EditProfileSubmitBar';
-export { default as EmailField } from './EmailField';
-export { default as EmailVerificationHint } from './EmailVerificationHint';
-export { default as KuwaitPhoneField } from './KuwaitPhoneField';
 export { default as LoginMethodNote } from './LoginMethodNote';
 export { default as NameField } from './NameField';
-export { default as PhoneVerificationHint } from './PhoneVerificationHint';
-export type { ProfileFormData } from './types';
 export { useEditProfile } from './useEditProfile';
+export { default as EmailField } from '@/shared/components/forms/EmailField';
+export { default as EmailVerificationHint } from '@/shared/components/forms/EmailVerificationHint';
+export { default as KuwaitPhoneField } from '@/shared/components/forms/KuwaitPhoneField';
+export { default as PhoneVerificationHint } from '@/shared/components/forms/PhoneVerificationHint';
+export type { ProfileFormData } from '@/shared/components/forms/types';

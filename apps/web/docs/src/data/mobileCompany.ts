@@ -44,35 +44,92 @@ export const mobileCompany: DocSection = {
     {
       id: "mobile-company-more-actions",
       title: {
-        en: "Company profile: Preview and Share work",
-        ar: "ملف الشركة: المعاينة والمشاركة تعملان",
+        en: "Company More: profile card shows real data with a single edit button (Figma 4410:159562)",
+        ar: "المزيد للشركة: بطاقة الملف تعرض بيانات حقيقية مع زر تعديل واحد (فيجما 4410:159562)",
       },
       priority: "P2",
       story: {
-        en: "Regression check for a fixed gap: on company-more.tsx, 'معاينة' opens the company's public profile (/company/:id) and 'مشاركة' opens the native share sheet; 'تعديل' opens /company-edit-profile.",
-        ar: "فحص تراجع لفجوة تم إصلاحها: في company-more.tsx يفتح 'معاينة' الملف العام للشركة (/company/:id) ويفتح 'مشاركة' نافذة المشاركة في الجهاز، ويفتح 'تعديل' /company-edit-profile.",
+        en: "Implements Figma node 4410:159562: CompanyProfileCard shows the company's real name, verified badge, persona pill, bio and HQ location only when the data exists, with a single full-width 'تعديل' button (preview/share buttons were removed per the design); the chats badge shows the real unread count and is hidden when it's zero; 'تعديل' opens /company-edit-profile.",
+        ar: "تطبيق تصميم فيجما 4410:159562: بطاقة CompanyProfileCard تعرض اسم الشركة الحقيقي وشارة التحقق ومحدد الصفة والنبذة والمقر الرئيسي فقط عند توفر البيانات، مع زر 'تعديل' واحد بعرض كامل (أُزيل زرا المعاينة والمشاركة وفق التصميم)؛ وتُظهر شارة المحادثات عدد غير المقروء الحقيقي وتختفي عند صفر؛ و'تعديل' يفتح /company-edit-profile.",
       },
       acceptanceCriteria: {
         en: [
-          "Preview shows the same profile other users see.",
-          "Share opens the share sheet with the company's link.",
-          "Edit opens the edit form.",
+          "The card renders only the rows that have data — no design-sample fallback text (name/bio/location come from the active identity).",
+          "A single full-width 'تعديل' button opens /company-edit-profile; 'معاينة' and 'مشاركة' no longer appear.",
+          "The chats badge shows the real unread count and disappears when it's zero.",
+          "Unit tests in CompanyProfileCard.spec.tsx and company-more.spec.tsx pass.",
         ],
         ar: [
-          "المعاينة تعرض نفس الملف الذي يراه الآخرون.",
-          "المشاركة تفتح نافذة المشاركة برابط الشركة.",
-          "التعديل يفتح نموذج التعديل.",
+          "تُعرض البطاقة بصفوفها التي لها بيانات فقط — دون نصوص نموذجية بديلة (الاسم والنبذة والموقع من هوية الشركة النشطة).",
+          "زر 'تعديل' واحد بعرض كامل يفتح /company-edit-profile؛ ولا يظهر 'معاينة' أو 'مشاركة'.",
+          "شارة المحادثات تعرض عدد غير المقروء الحقيقي وتختفي عند صفر.",
+          "نجاح اختبارات الوحدة في CompanyProfileCard.spec.tsx و company-more.spec.tsx.",
         ],
       },
       testScenarios: {
         en: [
-          "Tap each of the three buttons on the company More tab.",
+          "Open the company More tab: only 'تعديل' shows on the card; tapping it opens the edit form.",
+          "Clear the company's bio/HQ location in the API and reopen the tab — those rows are hidden, not sample text.",
+          "Read all chats, reopen the tab — the red badge is gone.",
         ],
         ar: [
-          "اضغط كل زر من الأزرار الثلاثة في تبويب المزيد للشركة.",
+          "افتح تبويب المزيد للشركة: يظهر 'تعديل' فقط على البطاقة؛ وضغطه يفتح نموذج التعديل.",
+          "احذف نبذة الشركة/مقرها من الواجهة البرمجية وأعد فتح التبويب — تختفي تلك الصفوف ولا يظهر نص نموذجي.",
+          "اقرأ كل المحادثات وأعد فتح التبويب — تختفي الشارة الحمراء.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-company-edit-profile-figma",
+      title: {
+        en: "Company Edit Profile screen matches Figma 4410:159865 & 4410:162275 with real data and neutral placeholders",
+        ar: "شاشة تعديل الملف الشخصي للشركة تطابق فيجما 4410:159865 و 4410:162275 ببيانات حقيقية وم placeholders محايدة",
+      },
+      priority: "P1",
+      endUserStory: {
+        en: "As a company user, I want a dedicated edit profile screen with sections for company info and commercial licence upload, so that I can keep my company details accurate and verify my account.",
+        ar: "بصفتي مستخدم شركة، أريد شاشة تعديل ملف شخصي مخصصة مع أقسام لمعلومات الشركة ورفع السجل التجاري، حتى أُبقي بيانات شركتي دقيقة وأوثق حسابي.",
+      },
+      story: {
+        en: "Implements Figma nodes 4410:159865 (disabled save) and 4410:162275 (active save): header with back button and title ('تعديل الملف الشخصي'); logo upload with camera button; section 'عن الشركة' (name, email, phone with +965, whatsapp with +965, HQ location with pin, service areas selector, about textarea, working hours with calendar icon); section 'الرخصة' (activity selector, licence number, expiry date with date picker, licence image dropzone with 'صورة الرخصة تؤهلك لتوثيق حسابك'); and sticky bottom 'حفظ التغييرات' button. Fields initialize from real identity data only — design-sample values (fake licence number/expiry, sample bio) were removed and replaced with neutral placeholders. The save is fully wired: a changed phone is proven with an SMS code and a new email with an emailed code BEFORE anything saves (the same rule as the individual edit-profile); user fields then go to PATCH /users/profile and company/licence fields (with any picked logo/licence files) go to PATCH /identities/:id as multipart — the profile endpoint rejects unknown properties with a 400, so licence fields must never go there.",
+        ar: "تطبيق تصميمي فيجما 4410:159865 (حفظ معطل) و 4410:162275 (حفظ نشط): الترويسة مع زر الرجوع والعنوان ('تعديل الملف الشخصي')؛ رفع الشعار مع زر الكاميرا؛ قسم 'عن الشركة' (الاسم، البريد، الهاتف مع +965، الواتساب مع +965، المقر الرئيسي مع أيقونة الموقع، محدد مناطق الخدمة، نبذة، ومواعيد العمل بأيقونة التقويم)؛ قسم 'الرخصة' (محدد النشاط، رقم الرخصة، تاريخ الانتهاء مع محدد التاريخ، منطقة رفع صورة الرخصة مع عبارة 'صورة الرخصة تؤهلك لتوثيق حسابك')؛ وزر 'حفظ التغييرات' الثابت في الأسفل. تُهيأ الحقول من بيانات الهوية الحقيقية فقط — أُزيلت القيم النموذجية (رقم/تاريخ رخصة وهمي، نبذة تجريبية) واستُبدلت بم placeholders محايدة. الحفظ موصول بالكامل: رقم الهاتف الجديد يُثبت برمز SMS والبريد الجديد برمز مُرسل قبل حفظ أي شيء (نفس قاعدة شاشة تعديل الفرد)؛ ثم تُرسل حقول المستخدم إلى PATCH /users/profile وتُرسل حقول الشركة/الرخصة (مع ملفات الشعار/الرخصة المختارة) إلى PATCH /identities/:id كـ multipart — نقطة الملف الشخصي ترفض الخصائص غير المعروفة بخطأ 400، فلا يجوز إرسال حقول الرخصة إليها أبداً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Empty fields show neutral Arabic placeholders (#979797) — never the design's sample data.",
+          "'حفظ التغييرات' is disabled (grey #A6A6A6) when pristine and active (#15304D) once anything changes.",
+          "A changed phone opens the SMS code sheet (request to /users/account/phone/request-otp with the +965 number) and nothing saves until the code verifies; a new email surfaces 'ارسال رمز التحقق' and saving is blocked with an alert until its code verifies.",
+          "Saving calls PATCH /users/profile with user fields only (no licence fields) and PATCH /identities/:id as multipart with the changed company/licence fields and any picked logo/licence files.",
+          "PATCH /identities/:id accepts multipart (logo, license) like POST /identities/company; uploaded files land in company-logos/company-licenses and a failed write deletes them.",
+          "Unit tests in CompanyEditProfile.spec.tsx and identities.service.spec.tsx pass.",
+        ],
+        ar: [
+          "الحقول الفارغة تعرض placeholders عربية محايدة (#979797) — وليس بيانات التصميم النموذجية أبداً.",
+          "'حفظ التغييرات' معطل (رمادي #A6A6A6) عند عدم التغيير ونشط (#15304D) عند تعديل أي حقل.",
+          "تغيير رقم الهاتف يفتح نافذة رمز SMS (طلب إلى /users/account/phone/request-otp بالرقم +965) ولا يُحفظ شيء حتى التحقق؛ والبريد الجديد يظهر رابط 'ارسال رمز التحقق' ويُمنع الحفظ بتنبيه حتى التحقق برمزه.",
+          "الحفظ يستدعي PATCH /users/profile بحقول المستخدم فقط (بدون حقول الرخصة) و PATCH /identities/:id كـ multipart بحقول الشركة/الرخصة المتغيرة وملفات الشعار/الرخصة المختارة.",
+          "نقطة PATCH /identities/:id تقبل multipart (logo، license) مثل POST /identities/company؛ وتُرفع الملفات إلى company-logos/company-licenses وتُحذف إذا فشل الحفظ.",
+          "نجاح اختبارات الوحدة في CompanyEditProfile.spec.tsx و identities.service.spec.tsx.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open /company-edit-profile for a company with empty licence fields — placeholders show and save is disabled.",
+          "Change the licence number and save — the profile PATCH carries no licence fields and /identities/:id receives the change.",
+          "Change the phone number and save — the SMS sheet opens first; enter the code and the save completes.",
+          "Change the email and save — blocked with an alert until 'ارسال رمز التحقق' + code.",
+          "Attach a new logo/licence image and save — the files land on the identity; a forced write failure removes them from storage.",
+        ],
+        ar: [
+          "افتح /company-edit-profile لشركة بحقول رخصة فارغة — تظهر placeholders ويكون الحفظ معطلاً.",
+          "غيّر رقم الرخصة واحفظ — لا تحمل استدعاء الملف الشخصي حقول الرخصة، وتستقبلها نقطة /identities/:id.",
+          "غيّر رقم الهاتف واحفظ — تُفتح نافذة رمز SMS أولاً؛ أدخل الرمز فيكتمل الحفظ.",
+          "غيّر البريد الإلكتروني واحفظ — يُمنع الحفظ بتنبيه حتى 'ارسال رمز التحقق' + الرمز.",
+          "أرفق شعاراً/صورة رخصة جديدة واحفظ — تصل الملفات إلى الهوية؛ وعند إخفاق الكتابة يُحذفان من التخزين.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
     },
     {
       id: "mobile-company-requests",

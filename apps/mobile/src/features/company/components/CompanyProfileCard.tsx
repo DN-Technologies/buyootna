@@ -3,9 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
   EditPencilIcon,
-  EyePreviewIcon,
   LocationPinIcon,
-  ShareArrowIcon,
   VerifyBadgeIcon,
 } from '@/assets/icons/more';
 import Avatar from '@/shared/components/ui/Avatar';
@@ -19,8 +17,6 @@ export interface CompanyProfileCardProps {
   location?: string | null;
   onOpenAccountSelector: () => void;
   onEditPress: () => void;
-  onPreviewPress: () => void;
-  onSharePress: () => void;
 }
 
 export default function CompanyProfileCard({
@@ -32,8 +28,6 @@ export default function CompanyProfileCard({
   location,
   onOpenAccountSelector,
   onEditPress,
-  onPreviewPress,
-  onSharePress,
 }: CompanyProfileCardProps) {
   return (
     <View className="mx-4 mb-6 mt-4 overflow-hidden rounded-[8px] border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
@@ -76,7 +70,7 @@ export default function CompanyProfileCard({
             >
               {displayName}
             </Text>
-            {isVerified && <VerifyBadgeIcon size={14} color="#1791E7" />}
+            {isVerified && <VerifyBadgeIcon size={12} color="#1791E7" />}
           </View>
 
           {/* Left in RTL: Account Type Selector Pill */}
@@ -84,9 +78,9 @@ export default function CompanyProfileCard({
             activeOpacity={0.7}
             onPress={onOpenAccountSelector}
             className="flex-row items-center justify-center gap-1.5 rounded-[12px] bg-[#F9FAFE] px-3 py-1"
-            style={{ minWidth: 72, height: 28 }}
+            style={{ minWidth: 72, height: 29 }}
           >
-            <Text className="font-cairo-semibold text-[13px] tracking-[0.28px] text-[#15304D]">
+            <Text className="font-cairo-semibold text-[14px] tracking-[0.28px] text-[#15304D]">
               {accountTypeLabel}
             </Text>
             <Feather name="chevron-down" size={14} color="#15304D" />
@@ -96,7 +90,7 @@ export default function CompanyProfileCard({
         {/* Description / Bio Text (Right-aligned in RTL) */}
         {description ? (
           <Text
-            className="mt-2 font-cairo-regular text-[13.5px] leading-[20px] text-[#A0A0A0]"
+            className="mt-2 font-cairo-regular text-[14px] leading-[21px] text-[#A0A0A0]"
             style={{ writingDirection: 'rtl' }}
           >
             {description}
@@ -105,10 +99,10 @@ export default function CompanyProfileCard({
 
         {/* Location Row (Right-aligned in RTL) */}
         {location ? (
-          <View className="mt-2 flex-row items-center justify-start gap-1.5">
-            <LocationPinIcon size={13} color="#A0A0A0" />
+          <View className="mt-2 flex-row items-center justify-start gap-0.5">
+            <LocationPinIcon size={14} color="#A0A0A0" />
             <Text
-              className="font-cairo-regular text-[12.5px] text-[#A0A0A0]"
+              className="font-cairo-regular text-[13px] text-[#A0A0A0]"
               style={{ writingDirection: 'rtl' }}
             >
               {location}
@@ -116,44 +110,17 @@ export default function CompanyProfileCard({
           </View>
         ) : null}
 
-        {/* 4. Action Buttons Row (RTL-First: 1st child is RIGHT, 3rd child is LEFT) */}
-        <View className="mt-3.5 flex-row items-center justify-between gap-2">
-          {/* Edit Button (RIGHT in RTL - Primary Action) */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={onEditPress}
-            className="h-9 flex-1 flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#15304D]"
-          >
-            <EditPencilIcon size={14} color="#FFFFFF" />
-            <Text className="font-cairo-semibold text-[13.5px] tracking-[0.28px] text-white">
-              تعديل
-            </Text>
-          </TouchableOpacity>
-
-          {/* Preview Button (MIDDLE in RTL) */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={onPreviewPress}
-            className="h-9 flex-1 flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#F5F7F9]"
-          >
-            <EyePreviewIcon size={14} color="#15304D" />
-            <Text className="font-cairo-semibold text-[13.5px] tracking-[0.28px] text-[#15304D]">
-              معاينة
-            </Text>
-          </TouchableOpacity>
-
-          {/* Share Button (LEFT in RTL) */}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={onSharePress}
-            className="h-9 flex-1 flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#F5F7F9]"
-          >
-            <ShareArrowIcon size={14} color="#15304D" />
-            <Text className="font-cairo-semibold text-[13.5px] tracking-[0.28px] text-[#15304D]">
-              مشاركة
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* 4. Edit Button (single full-width primary action, per design) */}
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onEditPress}
+          className="mt-3.5 h-9 w-full flex-row items-center justify-center gap-1.5 rounded-[24px] bg-[#15304D]"
+        >
+          <EditPencilIcon size={16} color="#FFFFFF" />
+          <Text className="font-cairo-semibold text-[14px] tracking-[0.28px] text-white">
+            تعديل
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

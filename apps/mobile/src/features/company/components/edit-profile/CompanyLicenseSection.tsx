@@ -1,9 +1,10 @@
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as DocumentPicker from 'expo-document-picker';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { CalendarClockIcon, FileUploadDropzoneIcon } from '@/assets/icons/more';
+
+import type { PickedFile } from './useCompanyEditProfile';
 
 interface CompanyLicenseSectionProps {
   licenseActivity: string;
@@ -14,7 +15,7 @@ interface CompanyLicenseSectionProps {
   showDatePicker: boolean;
   setShowDatePicker: (val: boolean) => void;
   onDateChange: (event: any, date?: Date) => void;
-  licenseFile: DocumentPicker.DocumentPickerAsset | null;
+  licenseFile: PickedFile | null;
   existingLicenseUrl?: string | null;
   onPickLicense: () => void;
 }
@@ -60,7 +61,7 @@ export default function CompanyLicenseSection({
               className={`flex-1 font-cairo-regular text-[14px] ${licenseActivity ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl' }}
             >
-              {licenseActivity || 'تشطيبات،بناء،ديكور،كهرباء'}
+              {licenseActivity || 'اختر النشاط'}
             </Text>
             <Feather name="chevron-down" size={16} color="#111111" />
           </TouchableOpacity>
@@ -78,7 +79,7 @@ export default function CompanyLicenseSection({
             <TextInput
               value={licenseNumber}
               onChangeText={setLicenseNumber}
-              placeholder="6743963845"
+              placeholder="أدخل رقم الرخصة"
               placeholderTextColor="#979797"
               keyboardType="numeric"
               className="font-cairo-regular text-[14px] text-[#111111]"
@@ -104,7 +105,7 @@ export default function CompanyLicenseSection({
               className={`flex-1 font-cairo-regular text-[14px] ${licenseExpiry ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl' }}
             >
-              {licenseExpiry || '15 ابريل 2027'}
+              {licenseExpiry || 'اختر تاريخ الانتهاء'}
             </Text>
             <CalendarClockIcon size={18} color="#111111" />
           </TouchableOpacity>

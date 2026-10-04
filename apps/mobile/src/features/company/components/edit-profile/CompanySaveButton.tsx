@@ -14,7 +14,7 @@ export default function CompanySaveButton({
   const isEnabled = isDirty && !isSubmitting;
 
   return (
-    <View className="border-t border-gray-100 bg-white px-4 py-3">
+    <View className="bg-white px-4 py-3">
       <TouchableOpacity
         testID="save-button"
         activeOpacity={isEnabled ? 0.7 : 1}

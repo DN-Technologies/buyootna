@@ -3,23 +3,22 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import {
-  normalizeEmail,
-  useEmailVerification,
-} from '@/features/individual/components/more/email-verification/useEmailVerification';
-import {
-  localPhone,
-  usePhoneVerification,
-} from '@/features/individual/components/more/phone-verification/usePhoneVerification';
-import {
   type LoginMethod,
   settingsService,
 } from '@/shared/api/settings.service';
+import { EMAIL_PATTERN } from '@/shared/components/forms/EmailField';
+import type { ProfileFormData } from '@/shared/components/forms/types';
+import {
+  normalizeEmail,
+  useEmailVerification,
+} from '@/shared/hooks/useEmailVerification';
 import { useIdentity } from '@/shared/hooks/useIdentity';
+import {
+  localPhone,
+  usePhoneVerification,
+} from '@/shared/hooks/usePhoneVerification';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-
-import { EMAIL_PATTERN } from './EmailField';
-import type { ProfileFormData } from './types';
 
 export interface ProfileToast {
   kind: 'success' | 'warning';

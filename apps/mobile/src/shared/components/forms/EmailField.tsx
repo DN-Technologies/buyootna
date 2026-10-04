@@ -7,7 +7,8 @@ import type { ProfileFormData } from './types';
 
 export const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
 
-// Required or optional by the sign-in method (useEditProfile checks it on
+const DEFAULT_INPUT_CLASS =
+  'border border-gray-200 rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]';// Required or optional by the sign-in method (useEditProfile checks it on
 // save, since the method loads after the form). A new address is proven
 // with a code (see the hint passed as children).
 export default function EmailField({
@@ -15,16 +16,29 @@ export default function EmailField({
   errors,
   required = false,
   children,
+  labelClassName,
+  inputClassName,
+  showOptional = true,
 }: {
   control: Control<ProfileFormData>;
   errors: FieldErrors<ProfileFormData>;
   // Set by the sign-in method; shown as "(اختياري)" when false
   required?: boolean;
   children?: ReactNode;
+  // Style overrides for screens with their own input look (e.g. company)
+  labelClassName?: string;
+  inputClassName?: string;
+  // The company edit-profile's design never shows the "(اختياري)" hint
+  showOptional?: boolean;
 }) {
   return (
     <View>
-      <FieldLabel optional={!required}>البريد الالكتروني</FieldLabel>
+      <FieldLabel
+        optional={showOptional && !required}
+        className={labelClassName}
+      >
+        البريد الالكتروني
+      </FieldLabel>
       <Controller
         control={control}
         name="email"
@@ -37,11 +51,14 @@ export default function EmailField({
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             testID="edit-profile-email"
-            className={`border ${errors.email ? 'border-red-500' : 'border-gray-200'} rounded-xl bg-white px-4 py-3.5 text-right font-cairo-medium text-[#111111]`}
+            className={
+              inputClassName ?? DEFAULT_INPUT_CLASS
+            }
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
             placeholder="ادخل البريد الالكتروني"
+            placeholderTextColor="#979797"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
