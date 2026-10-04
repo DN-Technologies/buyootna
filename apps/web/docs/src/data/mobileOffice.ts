@@ -255,7 +255,8 @@ export const mobileOffice: DocSection = {
       },
       acceptanceCriteria: {
         en: [
-          "Figma 4494:141833 & 4494:142107: Sell form includes property income toggle ('مدخول العقار') and OfficePlanQuotaSelector with '2 فضي' and '20 عادي'/'5 عادي'.",
+          "Figma 4494:141833 & 4494:142107: Sell form includes property income toggle ('مدخول العقار') and OfficePlanQuotaSelector driven by the office persona's REAL wallet (GET /plans/wallet): 'لديك N عادي' and 'لديك M فضي' reflect the actual normal/silver slot balances — the Figma values ('2 فضي', '20 عادي', '5 عادي') are sample data, never literals.",
+          "With no ad credits left in the wallet, publishing is blocked and the hint 'لا توجد إعلانات متبقية في باقتك...' shows.",
           "Figma 4494:142357 & 4494:141814: OrientationDropdown provides trigger 'ما يميز عقارك' and options menu with 6 orientation choices.",
           "Figma 4494:142372: Rent tab displays 'الايجار الشهري', floors stepper, additional expenses textarea, and rental conditions textarea.",
           "Figma 4494:142486 & 4494:142573: Exchange tab shows request year ('سنة الطلب') and desired year ('السنة المطلوبة') and allocation status; hides steppers for Land and displays floors/baths/rooms for House.",
@@ -264,7 +265,8 @@ export const mobileOffice: DocSection = {
           "Unit tests verify all 10 states across office-add.spec.tsx, office-preview.spec.tsx, OrientationDropdown.spec.tsx, and OfficePlanQuotaSelector.spec.tsx.",
         ],
         ar: [
-          "فيجما 4494:141833 و 4494:142107: نموذج البيع يشمل مفتاح مدخول العقار ومحدد حصص الباقة '2 فضي' و '20 عادي' / '5 عادي'.",
+          "فيجما 4494:141833 و 4494:142107: نموذج البيع يشمل مفتاح مدخول العقار ومحدد حصص الباقة المربوط بمحفظة المكتب الحقيقية (GET /plans/wallet): 'لديك N عادي' و 'لديك M فضي' تعكسان أرصدة الحصص الفعلية — قيم فيجما ('2 فضي'، '20 عادي'، '5 عادي') بيانات نموذجية وليست أرقاماً ثابتة.",
+          "عند عدم وجود رصيد إعلانات، يُمنع النشر ويظهر تنبيه 'لا توجد إعلانات متبقية في باقتك...'.",
           "فيجما 4494:142357 و 4494:141814: مكوّن OrientationDropdown يوفر زر 'ما يميز عقارك' وقائمة منسدلة بـ 6 خيارات لواجهة العقار.",
           "فيجما 4494:142372: تبويب الإيجار يعرض 'الايجار الشهري'، عدّاد الأدوار، حقل المصاريف الإضافية، وحقل شروط الإيجار.",
           "فيجما 4494:142486 و 4494:142573: تبويب البدل يعرض سنة الطلب والسنة المطلوبة وحالة التخصيص، ويخفي العدّادات للأرض ويعرضها للبيت.",
@@ -278,14 +280,16 @@ export const mobileOffice: DocSection = {
           "Run office-add.spec.tsx and confirm all 10 states pass (Sell, Rent, Exchange Land/House, Income toggle, Orientation dropdown, Quota selector).",
           "Run office-preview.spec.tsx and confirm details card, actions, and success modal wiring pass.",
           "Run OrientationDropdown.spec.tsx and OfficePlanQuotaSelector.spec.tsx to ensure isolated component correctness.",
+          "With a wallet of 5 normal + 4 silver slots, the selector shows '5 عادي', '4 فضي' and '9 إعلانات متبقية في باقتك'; with 0 credits the publish button is disabled and the no-credits hint shows.",
         ],
         ar: [
           "تشغيل office-add.spec.tsx والتأكد من نجاح اختبارات الحالات العشر (بيع، إيجار، بدل أرض/بيت، مفتاح المدخول، قائمة الواجهة، محدد الحصة).",
           "تشغيل office-preview.spec.tsx والتأكد من صحة بطاقة التفاصيل والإجراءات ونافذة النجاح.",
           "تشغيل OrientationDropdown.spec.tsx و OfficePlanQuotaSelector.spec.tsx لضمان صحة المكونات المستقلة.",
+          "بمحفظة 5 عادي + 4 فضي يعرض المحدد '5 عادي' و '4 فضي' و '9 إعلانات متبقية في باقتك'؛ وبرصيد صفر يُعطل زر النشر ويظهر تنبيه عدم وجود رصيد.",
         ],
       },
-      updatedIn: "feat/offices",
+      updatedIn: "feat/company-more-edit-profile",
     },
     {
       id: "mobile-office-more-figma",

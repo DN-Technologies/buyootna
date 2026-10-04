@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
@@ -8,6 +9,12 @@ import { clearIdentityScopedStores } from './identityScopedStores';
 import { useChatStore } from './useChatStore';
 
 export type IdentityType = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+
+// Lives in AsyncStorage, which — unlike the iOS Keychain — is wiped when
+// the app is deleted. Its absence therefore signals a fresh install, and
+// any Keychain session left over from a previous install must be dropped
+// (QA: session survived delete + reinstall).
+const INSTALL_SENTINEL_KEY = '@buyootna/install-sentinel';
 
 export interface IndividualData {
   name: string | null;
@@ -214,6 +221,24 @@ export const useAuthStore = create<AuthState>((set, get) => {
     // Called once when the app cold boots to check if a valid session exists
     loadPersistedAuth: async () => {
       try {
+        // iOS Keychain items survive app deletion, so a reinstall would
+        // otherwise resurrect the previous session. AsyncStorage is wiped
+        // on uninstall: a missing sentinel means this is a fresh install,
+        // and any Keychain session left behind must be dropped. Failure
+        // mode is fail-secure — if sentinel handling throws, we fall into
+        // the outer catch and boot logged out.
+        const installSentinel = await AsyncStorage.getItem(
+          INSTALL_SENTINEL_KEY,
+        );
+        if (!installSentinel) {
+          await SecureStore.deleteItemAsync('auth_token');
+          await SecureStore.deleteItemAsync('session_id');
+          await AsyncStorage.setItem(INSTALL_SENTINEL_KEY, '1');
+          set({ token: null, sessionId: null, isLoading: false });
+          return;
+        }
+        await AsyncStorage.setItem(INSTALL_SENTINEL_KEY, '1');
+
         const token = await SecureStore.getItemAsync('auth_token');
         if (token) {
           const sessionId = await SecureStore.getItemAsync('session_id');
