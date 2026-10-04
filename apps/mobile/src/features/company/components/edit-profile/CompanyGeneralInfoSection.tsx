@@ -1,44 +1,54 @@
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Feather } from '@expo/vector-icons';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
+import EmailField from '@/shared/components/forms/EmailField';
+import EmailVerificationHint from '@/shared/components/forms/EmailVerificationHint';
+import FieldLabel from '@/shared/components/forms/FieldLabel';
+import KuwaitPhoneField from '@/shared/components/forms/KuwaitPhoneField';
+import PhoneVerificationHint from '@/shared/components/forms/PhoneVerificationHint';
+import type { ProfileFormData } from '@/shared/components/forms/types';
+
+import type { CompanyIdentityFields } from './useCompanyEditProfile';
+
+// The Figma input look (4410:159865) -- the shared fields adopt it via
+// their style-override props so both screens stay visually on-design.
+const LABEL_CLASS = 'mb-1.5 font-cairo-medium text-[14px] text-[#111111]';
+const INPUT_CLASS =
+  'h-[46px] rounded-[8px] border border-[#ECECEC] bg-white px-3 text-right font-cairo-regular text-[14px] text-[#111111]';
+const PILL_CLASS =
+  'h-[46px] flex-row items-center justify-center gap-1.5 rounded-[8px] border border-[#ECECEC] bg-white px-3';
+const PILL_TEXT_CLASS = 'font-cairo-regular text-[14px] text-[#979797]';
 
 interface CompanyGeneralInfoSectionProps {
-  name: string;
-  setName: (val: string) => void;
-  email: string;
-  setEmail: (val: string) => void;
-  phone: string;
-  setPhone: (val: string) => void;
-  whatsapp: string;
-  setWhatsapp: (val: string) => void;
-  hqLocation: string;
-  setHqLocation: (val: string) => void;
-  serviceAreas: string;
+  control: Control<ProfileFormData>;
+  errors: FieldErrors<ProfileFormData>;
+  identity: CompanyIdentityFields;
+  setIdentityField: <K extends keyof CompanyIdentityFields>(
+    key: K,
+    value: CompanyIdentityFields[K],
+  ) => void;
   onOpenServiceAreas: () => void;
-  about: string;
-  setAbout: (val: string) => void;
-  services: string;
-  setServices: (val: string) => void;
+  // Verification wiring (new email/phone must be proven before saving)
+  emailNeedsCode: boolean;
+  sendEmailCode: () => void;
+  phoneChanged: boolean;
+  needsPhoneVerification: boolean;
+  verifySavedPhone: () => void;
 }
 
 export default function CompanyGeneralInfoSection({
-  name,
-  setName,
-  email,
-  setEmail,
-  phone,
-  setPhone,
-  whatsapp,
-  setWhatsapp,
-  hqLocation,
-  setHqLocation,
-  serviceAreas,
+  control,
+  errors,
+  identity,
+  setIdentityField,
   onOpenServiceAreas,
-  about,
-  setAbout,
-  services,
-  setServices,
+  emailNeedsCode,
+  sendEmailCode,
+  phoneChanged,
+  needsPhoneVerification,
+  verifySavedPhone,
 }: CompanyGeneralInfoSectionProps) {
   return (
     <View>
@@ -50,181 +60,122 @@ export default function CompanyGeneralInfoSection({
       </Text>
 
       <View className="gap-4">
-        {/* Field: الاسم */}
+        {/* Field: الاسم (company names may contain digits/symbols, so no
+            NAME_REGEX here -- unlike the individual NameField) */}
         <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            الاسم
-          </Text>
-          <View className="h-[46px] rounded-[8px] border border-[#ECECEC] bg-white px-3 justify-center">
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              placeholder="دار العقار الحديث"
-              placeholderTextColor="#979797"
-              textAlign="right"
-              className="font-cairo-regular text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            />
-          </View>
-        </View>
-
-        {/* Field: البريد الالكتروني */}
-        <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            البريد الالكتروني
-          </Text>
-          <View className="h-[46px] rounded-[8px] border border-[#ECECEC] bg-white px-3 justify-center">
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="salemelshekh@gmail.com"
-              placeholderTextColor="#979797"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              textAlign="right"
-              className="font-cairo-regular text-[14px] text-[#111111]"
-              style={{ writingDirection: 'ltr' }}
-            />
-          </View>
-        </View>
-
-        {/* Field: رقم الهاتف (RTL-First: Phone on Right, +965 on Left) */}
-        <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            رقم الهاتف
-          </Text>
-          <View className="flex-row items-center gap-2">
-            {/* Visual Right (Child 0): Phone Number Input */}
-            <View className="h-[46px] flex-1 rounded-[8px] border border-[#ECECEC] bg-white px-3 justify-center">
+          <FieldLabel className={LABEL_CLASS}>الاسم</FieldLabel>
+          <Controller
+            control={control}
+            name="name"
+            render={({ field: { onChange, value } }) => (
               <TextInput
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="58094586"
+                value={value}
+                onChangeText={onChange}
+                placeholder="أدخل اسم الشركة"
                 placeholderTextColor="#979797"
-                keyboardType="phone-pad"
                 textAlign="right"
-                className="font-cairo-regular text-[14px] text-[#111111]"
-                style={{ writingDirection: 'ltr' }}
+                className={INPUT_CLASS}
               />
-            </View>
-
-            {/* Visual Left (Child 1): +965 Country Selector Pill */}
-            <View className="h-[46px] flex-row items-center justify-center gap-1.5 rounded-[8px] border border-[#ECECEC] bg-white px-3">
-              <Text className="font-cairo-regular text-[14px] text-[#979797]">
-                +965
-              </Text>
-              <Feather name="chevron-down" size={14} color="#979797" />
-            </View>
-          </View>
+            )}
+          />
         </View>
 
-        {/* Field: رقم الواتساب (RTL-First: WhatsApp on Right, +965 on Left) */}
-        <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            رقم الواتساب
-          </Text>
-          <View className="flex-row items-center gap-2">
-            {/* Visual Right (Child 0): WhatsApp Number Input */}
-            <View className="h-[46px] flex-1 rounded-[8px] border border-[#ECECEC] bg-white px-3 justify-center">
-              <TextInput
-                value={whatsapp}
-                onChangeText={setWhatsapp}
-                placeholder="60468839"
-                placeholderTextColor="#979797"
-                keyboardType="phone-pad"
-                textAlign="right"
-                className="font-cairo-regular text-[14px] text-[#111111]"
-                style={{ writingDirection: 'ltr' }}
-              />
-            </View>
+        {/* Field: البريد الالكتروني (a new address needs its emailed code) */}
+        <EmailField
+          control={control}
+          errors={errors}
+          labelClassName={LABEL_CLASS}
+          inputClassName={INPUT_CLASS}
+          showOptional={false}
+        >
+          <EmailVerificationHint
+            visible={emailNeedsCode}
+            onSend={sendEmailCode}
+          />
+        </EmailField>
 
-            {/* Visual Left (Child 1): +965 Country Selector Pill */}
-            <View className="h-[46px] flex-row items-center justify-center gap-1.5 rounded-[8px] border border-[#ECECEC] bg-white px-3">
-              <Text className="font-cairo-regular text-[14px] text-[#979797]">
-                +965
-              </Text>
-              <Feather name="chevron-down" size={14} color="#979797" />
-            </View>
-          </View>
-        </View>
+        {/* Field: رقم الهاتف (a new number is proven with an SMS code on save) */}
+        <KuwaitPhoneField
+          control={control}
+          errors={errors}
+          name="phone"
+          label="رقم الهاتف"
+          requiredMessage="رقم الهاتف مطلوب"
+          // Checked on save against the sign-in method instead
+          requiredInForm={false}
+          labelClassName={LABEL_CLASS}
+          inputClassName={INPUT_CLASS}
+          pillClassName={PILL_CLASS}
+          pillTextClassName={PILL_TEXT_CLASS}
+          pillIconColor="#979797"
+        >
+          <PhoneVerificationHint
+            phoneChanged={phoneChanged}
+            needsVerification={needsPhoneVerification}
+            onVerify={verifySavedPhone}
+          />
+        </KuwaitPhoneField>
+
+        {/* Field: رقم الواتساب */}
+        <KuwaitPhoneField
+          control={control}
+          errors={errors}
+          name="whatsapp"
+          label="رقم الواتساب"
+          requiredMessage="رقم الواتساب مطلوب"
+          labelClassName={LABEL_CLASS}
+          inputClassName={INPUT_CLASS}
+          pillClassName={PILL_CLASS}
+          pillTextClassName={PILL_TEXT_CLASS}
+          pillIconColor="#979797"
+        />
 
         {/* Field: المقر الرئيسي */}
         <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            المقر الرئيسي
-          </Text>
+          <FieldLabel className={LABEL_CLASS}>المقر الرئيسي</FieldLabel>
           <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
-            {/* Visual Right (Child 0): Input Text */}
             <TextInput
-              value={hqLocation}
-              onChangeText={setHqLocation}
-              placeholder="السالمية"
+              value={identity.hqLocation}
+              onChangeText={(val) => setIdentityField('hqLocation', val)}
+              placeholder="أدخل المقر الرئيسي"
               placeholderTextColor="#979797"
               textAlign="right"
               className="flex-1 font-cairo-regular text-[14px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
             />
-            {/* Visual Left (Child 1): Location Pin Icon */}
             <LocationPinIcon size={16} color="#15304D" />
           </View>
         </View>
 
         {/* Field: مناطق تقديم الخدمة */}
         <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            مناطق تقديم الخدمة
-          </Text>
+          <FieldLabel className={LABEL_CLASS}>مناطق تقديم الخدمة</FieldLabel>
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={onOpenServiceAreas}
             className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3"
           >
-            {/* Visual Right (Child 0): Text */}
             <Text
               numberOfLines={1}
-              className={`flex-1 font-cairo-regular text-[14px] ${serviceAreas ? 'text-[#111111]' : 'text-[#979797]'}`}
+              className={`flex-1 font-cairo-regular text-[14px] ${identity.serviceAreas ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl', textAlign: 'right' }}
             >
-              {serviceAreas || 'اختر نطاقات الخدمة'}
+              {identity.serviceAreas || 'اختر نطاقات الخدمة'}
             </Text>
-            {/* Visual Left (Child 1): Dropdown Chevron */}
             <Feather name="chevron-down" size={16} color="#111111" />
           </TouchableOpacity>
         </View>
 
         {/* Field: نبذة عن الشركة (Multiline Textarea) */}
         <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            نبذة عن الشركة
-          </Text>
+          <FieldLabel className={LABEL_CLASS}>نبذة عن الشركة</FieldLabel>
           <View className="min-h-[110px] rounded-[8px] border border-[#ECECEC] bg-white p-3">
             <TextInput
-              value={about}
-              onChangeText={setAbout}
+              value={identity.about}
+              onChangeText={(val) => setIdentityField('about', val)}
               multiline
               numberOfLines={4}
-              placeholder="مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة."
+              placeholder="اكتب نبذة عن الشركة"
               placeholderTextColor="#979797"
               textAlign="right"
               className="font-cairo-regular text-[14px] leading-[22px] text-[#111111]"
@@ -239,17 +190,12 @@ export default function CompanyGeneralInfoSection({
 
         {/* Field: مواعيد العمل */}
         <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            مواعيد العمل
-          </Text>
+          <FieldLabel className={LABEL_CLASS}>مواعيد العمل</FieldLabel>
           <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
             <TextInput
-              value={services}
-              onChangeText={setServices}
-              placeholder="من 9 صباحا حتى 5 مساءا"
+              value={identity.services}
+              onChangeText={(val) => setIdentityField('services', val)}
+              placeholder="مثال: من 9 صباحا حتى 5 مساءا"
               placeholderTextColor="#979797"
               textAlign="right"
               className="flex-1 font-cairo-regular text-[14px] text-[#111111]"

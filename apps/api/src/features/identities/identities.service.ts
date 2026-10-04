@@ -349,7 +349,10 @@ export class IdentitiesService {
     return identity;
   }
 
-  // Update identity
+  // Update identity. Company/office updates may attach a new logo and/or
+  // licence file -- they are uploaded first and, if the write fails, deleted
+  // again (the same rule createProviderPersona follows: a failed request
+  // never leaves files behind).
   async update(
     userId: string,
     identityId: string,
@@ -357,6 +360,8 @@ export class IdentitiesService {
       | UpdateIndividualIdentityDto
       | UpdateCompanyIdentityDto
       | UpdateOfficeIdentityDto,
+    logoFile?: Express.Multer.File,
+    licenseFile?: Express.Multer.File,
   ) {
     const identity = await this.findOne(userId, identityId);
 
@@ -371,52 +376,72 @@ export class IdentitiesService {
       await assertLicenseAvailable(this.prisma, licenseNumber, identityId);
     }
 
-    if (identity.type === IdentityType.INDIVIDUAL) {
-      const individualDto = dto as UpdateIndividualIdentityDto;
-      await this.prisma.individualIdentityData.update({
-        where: { identityId },
-        data: {
-          name: individualDto.name,
-          whatsapp: individualDto.whatsapp,
-          avatarUrl: individualDto.avatarUrl,
-        },
-      });
-    } else if (identity.type === IdentityType.COMPANY) {
-      const companyDto = dto as UpdateCompanyIdentityDto;
-      await this.prisma.companyIdentityData.update({
-        where: { identityId },
-        data: {
-          name: companyDto.name,
-          licenseNumber,
-          services: companyDto.services,
-          hqLocation: companyDto.hqLocation,
-          serviceAreas: companyDto.serviceAreas,
-          about: companyDto.about,
-          licenseActivity: companyDto.licenseActivity,
-          licenseExpiry: companyDto.licenseExpiry,
-          logoUrl: companyDto.logoUrl,
-          licenseFileUrl: companyDto.licenseFileUrl,
-          latitude: companyDto.latitude,
-          longitude: companyDto.longitude,
-          specialty: companyDto.specialty,
-        },
-      });
-    } else if (identity.type === IdentityType.OFFICE) {
-      const officeDto = dto as UpdateOfficeIdentityDto;
-      await this.prisma.officeIdentityData.update({
-        where: { identityId },
-        data: {
-          name: officeDto.name,
-          licenseNumber,
-          services: officeDto.services,
-          hqLocation: officeDto.hqLocation,
-          about: officeDto.about,
-          licenseActivity: officeDto.licenseActivity,
-          licenseExpiry: officeDto.licenseExpiry,
-          logoUrl: officeDto.logoUrl,
-          licenseFileUrl: officeDto.licenseFileUrl,
-        },
-      });
+    const hasFiles =
+      identity.type !== IdentityType.INDIVIDUAL && !!(logoFile || licenseFile);
+    const uploaded = hasFiles
+      ? await this.uploadProviderFiles(
+          identity.type as ProviderType,
+          logoFile,
+          licenseFile,
+        )
+      : {};
+    const payload = hasFiles
+      ? ({ ...dto, ...pickDefined(uploaded) } as typeof dto)
+      : dto;
+
+    try {
+      if (identity.type === IdentityType.INDIVIDUAL) {
+        const individualDto = payload as UpdateIndividualIdentityDto;
+        await this.prisma.individualIdentityData.update({
+          where: { identityId },
+          data: {
+            name: individualDto.name,
+            whatsapp: individualDto.whatsapp,
+            avatarUrl: individualDto.avatarUrl,
+          },
+        });
+      } else if (identity.type === IdentityType.COMPANY) {
+        const companyDto = payload as UpdateCompanyIdentityDto;
+        await this.prisma.companyIdentityData.update({
+          where: { identityId },
+          data: {
+            name: companyDto.name,
+            licenseNumber,
+            services: companyDto.services,
+            hqLocation: companyDto.hqLocation,
+            serviceAreas: companyDto.serviceAreas,
+            about: companyDto.about,
+            licenseActivity: companyDto.licenseActivity,
+            licenseExpiry: companyDto.licenseExpiry,
+            logoUrl: companyDto.logoUrl,
+            licenseFileUrl: companyDto.licenseFileUrl,
+            latitude: companyDto.latitude,
+            longitude: companyDto.longitude,
+            specialty: companyDto.specialty,
+          },
+        });
+      } else if (identity.type === IdentityType.OFFICE) {
+        const officeDto = payload as UpdateOfficeIdentityDto;
+        await this.prisma.officeIdentityData.update({
+          where: { identityId },
+          data: {
+            name: officeDto.name,
+            licenseNumber,
+            services: officeDto.services,
+            hqLocation: officeDto.hqLocation,
+            about: officeDto.about,
+            licenseActivity: officeDto.licenseActivity,
+            licenseExpiry: officeDto.licenseExpiry,
+            logoUrl: officeDto.logoUrl,
+            licenseFileUrl: officeDto.licenseFileUrl,
+          },
+        });
+      }
+    } catch (error) {
+      if (uploaded.logoUrl || uploaded.licenseFileUrl) {
+        await this.deleteUploads(uploaded);
+      }
+      throw error;
     }
 
     return this.findOne(userId, identityId);

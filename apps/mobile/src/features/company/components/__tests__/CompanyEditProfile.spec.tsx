@@ -1,9 +1,22 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
+import { settingsService } from '@/shared/api/settings.service';
 import apiClient from '@/shared/api/api';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import CompanyEditProfile from '../CompanyEditProfile';
+
+jest.mock('@/shared/api/settings.service', () => ({
+  settingsService: {
+    updateProfile: jest.fn(),
+    getLoginMethod: jest.fn(),
+    requestPhoneOtp: jest.fn(),
+    verifyPhone: jest.fn(),
+    requestEmailOtp: jest.fn(),
+    verifyEmail: jest.fn(),
+  },
+}));
 
 jest.mock('@/shared/api/api', () => ({
   __esModule: true,
@@ -25,6 +38,33 @@ jest.mock('@/shared/services/socket.service', () => ({
   },
 }));
 
+const mockPresent = jest.fn();
+jest.mock('@gorhom/bottom-sheet', () => {
+  const { View } = require('react-native');
+  const React = require('react');
+  return {
+    __esModule: true,
+    BottomSheetModal: React.forwardRef(function MockSheet(
+      props: any,
+      ref: any,
+    ) {
+      React.useImperativeHandle(ref, () => ({
+        present: mockPresent,
+        dismiss: jest.fn(),
+      }));
+      return <View>{props.children}</View>;
+    }),
+    BottomSheetBackdrop: () => null,
+    BottomSheetView: ({
+      children,
+      testID,
+    }: {
+      children: React.ReactNode;
+      testID?: string;
+    }) => <View testID={testID}>{children}</View>,
+  };
+});
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     back: jest.fn(),
@@ -40,19 +80,16 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
 }));
 
-const mockRefreshProfile = jest.fn();
-
 const mockCompanyIdentity = {
   id: 'identity-123',
   type: 'COMPANY',
   companyData: {
     name: 'دار العقار الحديث',
     hqLocation: 'السالمية',
-    serviceAreas: 'اختر نطاقات الخدمة',
-    about:
-      'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.',
+    serviceAreas: 'العاصمة',
+    about: 'نبذة تجريبية',
     services: 'من 9 صباحا حتى 5 مساءا',
-    licenseActivity: 'تشطيبات،بناء،ديكور،كهرباء',
+    licenseActivity: 'تشطيبات',
     licenseNumber: '6743963845',
     licenseExpiry: '15 ابريل 2027',
     logoUrl: 'https://example.com/logo.jpg',
@@ -63,20 +100,34 @@ const mockCompanyIdentity = {
 describe('CompanyEditProfile', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+      loginMethod: 'BOTH',
+      email: 'salemelshekh@gmail.com',
+      phone: '+96558094586',
+      phoneVerified: true,
+    });
+    (settingsService.updateProfile as jest.Mock).mockResolvedValue({});
+    (settingsService.requestPhoneOtp as jest.Mock).mockResolvedValue({
+      destination: '+965 •••••586',
+    });
+    (settingsService.requestEmailOtp as jest.Mock).mockResolvedValue({
+      destination: 'salemelshekh@gmail.com',
+    });
     useAuthStore.setState({
       user: {
         id: 'user-1',
         email: 'salemelshekh@gmail.com',
-        phone: '58094586',
+        phone: '+96558094586',
+        whatsapp: '+96558094586',
       } as any,
       activeIdentity: mockCompanyIdentity as any,
-      refreshProfile: mockRefreshProfile,
-    });
+      refreshProfile: jest.fn().mockResolvedValue(undefined),
+    } as any);
   });
 
   it('renders all sections and input labels matching Figma 4410:159865', async () => {
     const { getByText, getByPlaceholderText } = await render(
-      <CompanyEditProfile />
+      <CompanyEditProfile />,
     );
 
     // Header & Section titles
@@ -100,51 +151,135 @@ describe('CompanyEditProfile', () => {
     expect(getByText('تاريخ انتهاء')).toBeTruthy();
     expect(getByText('الصورة')).toBeTruthy();
 
-    // Input values
-    expect(getByPlaceholderText('دار العقار الحديث')).toBeTruthy();
-    expect(getByPlaceholderText('salemelshekh@gmail.com')).toBeTruthy();
+    // Input placeholders (neutral, per design typography)
+    expect(getByPlaceholderText('أدخل اسم الشركة')).toBeTruthy();
+    expect(getByPlaceholderText('ادخل البريد الالكتروني')).toBeTruthy();
     expect(getByText('حفظ التغييرات')).toBeTruthy();
   });
 
-  it('Save button starts in disabled state when unmodified (Figma 4410:159865)', async () => {
+  it('Save button stays disabled when unmodified (Figma 4410:159865)', async () => {
     const { getByText } = await render(<CompanyEditProfile />);
 
-    const saveButtonText = getByText('حفظ التغييرات');
-    fireEvent.press(saveButtonText);
+    fireEvent.press(getByText('حفظ التغييرات'));
 
-    // Since form is not dirty, patch should NOT be called
+    // Since nothing changed, neither endpoint should be hit
+    expect(settingsService.updateProfile).not.toHaveBeenCalled();
     expect(apiClient.patch).not.toHaveBeenCalled();
   });
 
-  it('Save button transitions to active state and submits when modified (Figma 4410:162275)', async () => {
-    (apiClient.patch as jest.Mock).mockResolvedValueOnce({
-      data: { success: true },
-    });
-
-    const { getByTestId, getByDisplayValue } = await render(
-      <CompanyEditProfile />
+  it('sends user fields to /users/profile and licence fields to /identities/:id', async () => {
+    const { getByDisplayValue, getByTestId } = await render(
+      <CompanyEditProfile />,
     );
 
-    // Modify the company name
-    const nameInput = getByDisplayValue('دار العقار الحديث');
-    fireEvent.changeText(nameInput, 'دار العقار الجديد');
-
-    // Wait for the button to transition to enabled state
-    await waitFor(() => {
-      const button = getByTestId('save-button');
-      expect(button.props.accessibilityState?.disabled).toBe(false);
-    });
-
-    const saveButton = getByTestId('save-button');
-    fireEvent.press(saveButton);
+    // Modify the company name (a user field) and the licence number (an
+    // identity field) in one save
+    await fireEvent.changeText(
+      getByDisplayValue('دار العقار الحديث'),
+      'دار العقار الجديد',
+    );
+    await fireEvent.changeText(getByDisplayValue('6743963845'), '1234567890');
 
     await waitFor(() => {
-      expect(apiClient.patch).toHaveBeenCalledWith(
-        '/users/profile',
-        expect.objectContaining({
-          name: 'دار العقار الجديد',
-        })
+      expect(getByTestId('save-button').props.accessibilityState?.disabled).toBe(
+        false,
       );
     });
+    await fireEvent.press(getByTestId('save-button'));
+
+    await waitFor(() =>
+      expect(settingsService.updateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'دار العقار الجديد',
+        }),
+      ),
+    );
+
+    // REGRESSION: the licence fields must never reach the profile endpoint --
+    // UpdateProfileDto rejects unknown properties with a 400
+    const userCall = (settingsService.updateProfile as jest.Mock).mock
+      .calls[0][0];
+    expect(userCall.licenseNumber).toBeUndefined();
+    expect(userCall.licenseActivity).toBeUndefined();
+    expect(userCall.licenseExpiry).toBeUndefined();
+
+    // The licence change goes to the identities endpoint (multipart, since
+    // this screen always posts the identity save as a form)
+    await waitFor(() =>
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/identities/identity-123',
+        expect.anything(),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+      ),
+    );
+  });
+
+  it('a changed phone is verified by SMS before anything saves', async () => {
+    const { getByDisplayValue, getAllByDisplayValue, getByTestId } = await render(
+      <CompanyEditProfile />,
+    );
+
+    await fireEvent.changeText(
+      getByDisplayValue('دار العقار الحديث'),
+      'دار العقار الجديد',
+    );
+    // Phone and whatsapp share the same default number -- the phone field
+    // renders first
+    await fireEvent.changeText(
+      getAllByDisplayValue('58094586')[0],
+      '51234567',
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('save-button').props.accessibilityState?.disabled).toBe(
+        false,
+      );
+    });
+    await fireEvent.press(getByTestId('save-button'));
+
+    // The OTP request goes out (formatted international) and the sheet opens;
+    // no profile save happens until the code checks out
+    await waitFor(() =>
+      expect(settingsService.requestPhoneOtp).toHaveBeenCalledWith(
+        '+96551234567',
+      ),
+    );
+    expect(mockPresent).toHaveBeenCalled();
+    expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    expect(apiClient.patch).not.toHaveBeenCalled();
+  });
+
+  it('a new email surfaces the code link and blocks saving until verified', async () => {
+    const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
+    const { getByDisplayValue, getByTestId, queryByTestId } = await render(
+      <CompanyEditProfile />,
+    );
+
+    // A new address surfaces the "ارسال رمز التحقق" link
+    await fireEvent.changeText(
+      getByDisplayValue('salemelshekh@gmail.com'),
+      'new@example.com',
+    );
+    await waitFor(() =>
+      expect(queryByTestId('send-email-otp-link')).toBeTruthy(),
+    );
+
+    // Saving is blocked with an alert -- no endpoint is hit
+    await fireEvent.changeText(
+      getByDisplayValue('دار العقار الحديث'),
+      'شركة جديدة',
+    );
+    await fireEvent.press(getByTestId('save-button'));
+
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        'تنبيه',
+        'يرجى التحقق من البريد الإلكتروني قبل حفظ التغييرات.',
+      ),
+    );
+    expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    expect(apiClient.patch).not.toHaveBeenCalled();
   });
 });

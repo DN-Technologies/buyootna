@@ -1,5 +1,6 @@
-import { useOtpVerification } from '@/features/individual/components/more/otp-verification/useOtpVerification';
 import { settingsService } from '@/shared/api/settings.service';
+
+import { useOtpVerification } from './useOtpVerification';
 
 // "Ali@X.com " and "ali@x.com" are one address
 export function normalizeEmail(email?: string | null): string {

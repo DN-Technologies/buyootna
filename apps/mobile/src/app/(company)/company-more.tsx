@@ -2,7 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef } from 'react';
-import { ScrollView, Share, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -27,7 +27,6 @@ import MenuItem from '@/shared/components/ui/MenuItem';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
-import { showAlert } from '@/shared/utils/alert';
 
 export default function CompanyMoreScreen() {
   const router = useRouter();
@@ -73,39 +72,16 @@ export default function CompanyMoreScreen() {
     router.push('/company-edit-profile');
   };
 
-  const handlePreviewProfile = () => {
-    if (activeIdentity?.id) {
-      router.push(`/company/${activeIdentity.id}`);
-    } else {
-      showAlert('معاينة', 'لا يمكن معاينة الملف الشخصي حالياً');
-    }
-  };
-
-  const handleShareProfile = async () => {
-    try {
-      await Share.share({
-        message: `تعرف على ${displayName || 'المنار للعقارات'} على تطبيق بيوتنا: https://buyootna.com/company/${activeIdentity?.id || ''}`,
-      });
-    } catch {
-      // ignore
-    }
-  };
-
   const activeTypeLabel = activeIdentity
     ? getTypeLabel(activeIdentity.type)
     : 'شركة';
 
-  const companyBio =
-    activeIdentity?.companyData?.about ||
-    'شركة متخصصة في صيانة وتركيب وتعديل كافة الاعمال الكهربائية مع خدمات استشارية متكاملة.';
+  const companyBio = activeIdentity?.companyData?.about;
 
-  const companyLocation =
-    activeIdentity?.companyData?.hqLocation ||
-    activeIdentity?.companyData?.serviceAreas ||
-    'السالمية • شمال غرب صليبيخات';
+  const companyLocation = activeIdentity?.companyData?.hqLocation;
 
   const finalDisplayName =
-    displayName || activeIdentity?.companyData?.name || 'المنار للعقارات';
+    displayName || activeIdentity?.companyData?.name || '';
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -125,8 +101,6 @@ export default function CompanyMoreScreen() {
               location={companyLocation}
               onOpenAccountSelector={() => profileSheetRef.current?.present()}
               onEditPress={handleEditProfile}
-              onPreviewPress={handlePreviewProfile}
-              onSharePress={handleShareProfile}
             />
           ) : (
             <ProfileHeaderCardSkeleton />
@@ -179,7 +153,7 @@ export default function CompanyMoreScreen() {
                 <MenuItem
                   icon={ChatIcon}
                   title="المحادثات"
-                  badgeCount={unreadChatCount > 0 ? unreadChatCount : 3}
+                  badgeCount={unreadChatCount}
                   badgeColor="#9C1E28"
                   compact
                   chevronColor="#6B6A6A"
@@ -282,7 +256,7 @@ export default function CompanyMoreScreen() {
 
             {/* Footer */}
             <Text
-              className="mt-2 text-center font-cairo-medium text-[13px] text-[#A0A0A0]"
+              className="mt-2 text-center font-cairo-medium text-[14px] text-[#A0A0A0]"
               style={{ writingDirection: 'rtl' }}
             >
               تم انشاء وتطوير التطبيق بواسطة دار النخبة

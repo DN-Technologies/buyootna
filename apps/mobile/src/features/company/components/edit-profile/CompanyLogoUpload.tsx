@@ -5,6 +5,8 @@ import Avatar from '@/shared/components/ui/Avatar';
 
 interface CompanyLogoUploadProps {
   avatarUri?: string | null;
+  // The parent owns the actual picking (image/document) and the picked
+  // file -- shared with OfficeEditProfile, which picks with its own flow.
   onPickLogo: () => void;
 }
 

@@ -13,8 +13,6 @@ describe('CompanyProfileCard', () => {
     location: 'السالمية • شمال غرب صليبيخات',
     onOpenAccountSelector: jest.fn(),
     onEditPress: jest.fn(),
-    onPreviewPress: jest.fn(),
-    onSharePress: jest.fn(),
   };
 
   it('renders company details and verified badge correctly', async () => {
@@ -43,27 +41,34 @@ describe('CompanyProfileCard', () => {
     expect(onOpenAccountSelector).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers action buttons (Edit, Preview, Share)', async () => {
+  it('renders a single full-width edit button (per Figma 4410:159562)', async () => {
     const onEditPress = jest.fn();
-    const onPreviewPress = jest.fn();
-    const onSharePress = jest.fn();
-
-    const { getByText } = await render(
-      <CompanyProfileCard
-        {...defaultProps}
-        onEditPress={onEditPress}
-        onPreviewPress={onPreviewPress}
-        onSharePress={onSharePress}
-      />
+    const { getByText, queryByText } = await render(
+      <CompanyProfileCard {...defaultProps} onEditPress={onEditPress} />
     );
 
     fireEvent.press(getByText('تعديل'));
     expect(onEditPress).toHaveBeenCalledTimes(1);
 
-    fireEvent.press(getByText('معاينة'));
-    expect(onPreviewPress).toHaveBeenCalledTimes(1);
+    // Preview/Share buttons were removed from the design
+    expect(queryByText('معاينة')).toBeNull();
+    expect(queryByText('مشاركة')).toBeNull();
+  });
 
-    fireEvent.press(getByText('مشاركة'));
-    expect(onSharePress).toHaveBeenCalledTimes(1);
+  it('hides description and location rows when no data is provided', async () => {
+    const { queryByText } = await render(
+      <CompanyProfileCard
+        {...defaultProps}
+        description={undefined}
+        location={undefined}
+      />
+    );
+
+    expect(
+      queryByText(
+        'شركة متخصصة في صيانة وتركيب وتعديل كافة الاعمال الكهربائية مع خدمات استشارية متكاملة.'
+      )
+    ).toBeNull();
+    expect(queryByText('السالمية • شمال غرب صليبيخات')).toBeNull();
   });
 });

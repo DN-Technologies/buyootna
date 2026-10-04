@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react-native';
 
-import ChangePasswordOtpSheet from '../ChangePasswordOtpSheet';
+import ChangePasswordOtpSheet from '@/shared/components/auth/ChangePasswordOtpSheet';
 
 // Capture the props handed to BottomSheetModal so the keyboard-handling
 // configuration stays pinned (the reported bug was the sheet rendering

@@ -1,10 +1,9 @@
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Text, TextInput, View } from 'react-native';
 
+import FieldLabel from '@/shared/components/forms/FieldLabel';
+import type { ProfileFormData } from '@/shared/components/forms/types';
 import { NAME_REGEX, NAME_REGEX_MESSAGE } from '@/shared/utils/nameValidation';
-
-import FieldLabel from './FieldLabel';
-import type { ProfileFormData } from './types';
 
 export default function NameField({
   control,
