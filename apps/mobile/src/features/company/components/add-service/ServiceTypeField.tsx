@@ -79,7 +79,7 @@ export default function ServiceTypeField({
                     className="h-9 w-full flex-row items-center px-2"
                   >
                     <Text
-                      className="flex-1 text-right font-cairo-medium text-[13px] text-[#111111]"
+                      className="flex-1 font-cairo-medium text-[13px] text-[#111111]"
                       style={{ writingDirection: 'rtl' }}
                       numberOfLines={1}
                     >
