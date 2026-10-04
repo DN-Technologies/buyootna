@@ -50,7 +50,7 @@ export function formatRelativeTime(dateString: string): string {
   if (diffInDays < 30) {
     return `منذ ${diffInDays} أيام`;
   }
-  return date.toLocaleDateString('ar-EG', {
+  return date.toLocaleDateString('ar-KW-u-nu-latn', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

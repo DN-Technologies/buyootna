@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -75,7 +76,7 @@ export default function DraftAdCard({
         <View className="mb-4 flex-row items-center">
           <View className="flex-row items-baseline gap-1">
             <Text className="font-bold text-lg text-[#111111]">
-              {property.price ? property.price.toLocaleString() : '---'}
+              {property.price ? formatNumber(property.price) : '---'}
             </Text>
             <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
               د.ك

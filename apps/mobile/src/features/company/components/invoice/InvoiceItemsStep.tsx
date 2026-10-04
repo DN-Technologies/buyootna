@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface InvoiceItem {
   name: string;
@@ -69,13 +70,13 @@ export default function InvoiceItemsStep({
                 {item.name}
               </Text>
               <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-                {item.price.toLocaleString('en-US')}
+                {formatNumber(item.price)}
               </Text>
               <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
                 {item.qty}
               </Text>
               <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-                {(item.price * item.qty).toLocaleString('en-US')}
+                {formatNumber(item.price * item.qty)}
               </Text>
               <TouchableOpacity
                 onPress={() => onRemoveItem(index)}
@@ -109,7 +110,7 @@ export default function InvoiceItemsStep({
         <View className="overflow-hidden rounded-md border border-[#ECECEC]">
           <View className="flex-row items-center justify-between border-b border-[#ECECEC] bg-white px-3 py-3">
             <Text className="font-cairo-medium text-[14px] text-[#111111]">
-              {subtotal.toLocaleString('en-US')} د.ك
+              {formatNumber(subtotal)} د.ك
             </Text>
             <Text
               className="font-cairo text-[13px] text-[#6B6A6A]"
@@ -124,7 +125,7 @@ export default function InvoiceItemsStep({
           >
             <View className="flex-row items-center gap-2">
               <Text className="font-cairo-medium text-[14px] text-[#111111]">
-                {appliedDiscount.toLocaleString('en-US')}
+                {formatNumber(appliedDiscount)}
               </Text>
               <Ionicons name="pencil" size={16} color="#15304D" />
             </View>
@@ -137,7 +138,7 @@ export default function InvoiceItemsStep({
           </TouchableOpacity>
           <View className="flex-row items-center justify-between bg-[#F9FAFE] px-3 py-3">
             <Text className="font-cairo-medium text-[14px] text-[#111111]">
-              {total.toLocaleString('en-US')} د.ك
+              {formatNumber(total)} د.ك
             </Text>
             <Text
               className="font-cairo text-[13px] text-[#6B6A6A]"

@@ -4,6 +4,7 @@ import {
   OPERATION_OPTIONS,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export const AMENITY_LABELS: Record<string, string> = {
   pool: 'حمام سباحة',
@@ -152,9 +153,9 @@ export function getAlertChips(alert: AlertItem): string[] {
   }
 
   if (alert.rentValue) {
-    chips.push(`حتى ${alert.rentValue.toLocaleString()} د.ك`);
+    chips.push(`حتى ${formatNumber(alert.rentValue)} د.ك`);
   } else if (alert.price) {
-    chips.push(`${alert.price.toLocaleString()} د.ك`);
+    chips.push(`${formatNumber(alert.price)} د.ك`);
   }
   if (alert.rooms) {
     chips.push(`${toArabicNumerals(alert.rooms)} غرف`);

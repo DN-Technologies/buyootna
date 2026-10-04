@@ -11,6 +11,7 @@ import {
   RequestIcon,
 } from '@/assets/icons/home/property';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface PropertyOverviewProps {
   type: 'SALE' | 'RENT' | 'EXCHANGE';
@@ -70,7 +71,7 @@ export default function PropertyOverview({
             <View className="mt-1 items-start">
               <Text className="text-2xl font-semibold text-[#111111]">
                 {typeof price === 'number'
-                  ? price.toLocaleString()
+                  ? formatNumber(price)
                   : 'السعر غير محدد'}{' '}
                 <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
                   د.ك {type === 'RENT' && '/ شهرياً'}

@@ -2,6 +2,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import SafeLinearGradient from '@/shared/components/ui/SafeLinearGradient';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 import { OfficeListing } from '../../types';
 
@@ -23,7 +24,7 @@ export default function OfficeListingCard({
 
   const formattedPrice =
     typeof listing.price === 'number'
-      ? listing.price.toLocaleString()
+      ? formatNumber(listing.price)
       : listing.price;
 
   return (

@@ -15,6 +15,7 @@ import {
 import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
 import { AreaIcon, ShareIcon } from '@/assets/icons/home/property';
 import { HomeIcon, PropertiesTabIcon } from '@/assets/icons/tab';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface PropertyCardProps {
   id: string;
@@ -91,9 +92,9 @@ export default function PropertyCard({
 
   const formattedPrice =
     typeof price === 'number'
-      ? price.toLocaleString()
+      ? formatNumber(price)
       : typeof price === 'string' && !isNaN(Number(price))
-        ? Number(price).toLocaleString()
+        ? formatNumber(Number(price))
         : price;
 
   const displayImages =
@@ -259,7 +260,7 @@ export default function PropertyCard({
               مدخول العقار
             </Text>
             <Text className="font-cairo-bold text-base text-[#10B981]">
-              {propertyIncome.toLocaleString()} د.ك
+              {formatNumber(propertyIncome)} د.ك
             </Text>
           </View>
         )}

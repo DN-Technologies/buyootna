@@ -19,6 +19,7 @@ import {
 } from '@/assets/icons/home/property';
 import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -152,7 +153,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
           <View className="px-6 flex-row items-center justify-between mb-4">
             <View className="flex-row items-baseline gap-1">
               <Text className="font-bold text-2xl text-[#15304D]">
-                {property.price ? property.price.toLocaleString() : '---'}
+                {property.price ? formatNumber(property.price) : '---'}
               </Text>
               <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
                 د.ك

@@ -1,5 +1,6 @@
 import { PropertyContext } from '@/shared/api/chat.service';
 import ChatPinnedContext from '@/shared/components/chat/ChatPinnedContext';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -28,7 +29,7 @@ export default function ChatPinnedPropertyBar({
 
   const price =
     propertyContext.price && propertyContext.price > 0
-      ? `${propertyContext.price.toLocaleString()} د.ك`
+      ? `${formatNumber(propertyContext.price)} د.ك`
       : propertyContext.type === 'EXCHANGE' || propertyContext.type === 'للبدل'
         ? 'للبدل'
         : 'السعر غير معلن';

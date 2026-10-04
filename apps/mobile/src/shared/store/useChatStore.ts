@@ -216,7 +216,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         imageUrl: payload.imageUrl,
         propertyId: payload.propertyId,
         isMine: true,
-        timestamp: new Date().toLocaleTimeString('ar-KW', {
+        timestamp: new Date().toLocaleTimeString('ar-KW-u-nu-latn', {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,

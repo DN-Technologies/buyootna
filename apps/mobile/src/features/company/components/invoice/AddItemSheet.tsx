@@ -8,6 +8,7 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { showAlert } from '@/shared/utils/alert';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 import FieldLabel from './FieldLabel';
 import type { InvoiceItem } from './InvoiceItemsStep';
@@ -151,7 +152,7 @@ const AddItemSheet = forwardRef<BottomSheetModal, AddItemSheetProps>(
                     style={{ writingDirection: 'rtl' }}
                   >
                     {total > 0
-                      ? `${total.toLocaleString('en-US')} د.ك`
+                      ? `${formatNumber(total)} د.ك`
                       : 'السعر الاجمالي للبند'}
                   </Text>
                 </View>

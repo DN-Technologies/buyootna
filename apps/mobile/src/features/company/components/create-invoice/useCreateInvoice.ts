@@ -10,6 +10,7 @@ import { useIdentity } from '@/shared/hooks/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 type WizardStep = 1 | 2 | 3;
 
@@ -120,12 +121,12 @@ export function useCreateInvoice() {
       `العنوان: ${title.trim()}`,
       ...items.map(
         (item) =>
-          `- ${item.name} × ${item.qty}: ${(item.price * item.qty).toLocaleString('en-US')} د.ك`,
+          `- ${item.name} × ${item.qty}: ${formatNumber(item.price * item.qty)} د.ك`,
       ),
       appliedDiscount > 0
-        ? `الخصم: ${appliedDiscount.toLocaleString('en-US')} د.ك`
+        ? `الخصم: ${formatNumber(appliedDiscount)} د.ك`
         : null,
-      `الاجمالي: ${total.toLocaleString('en-US')} د.ك`,
+      `الاجمالي: ${formatNumber(total)} د.ك`,
     ].filter(Boolean);
 
     Share.share({ message: summaryLines.join('\n') });

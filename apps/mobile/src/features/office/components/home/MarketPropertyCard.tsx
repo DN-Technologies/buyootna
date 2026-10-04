@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { AreaIcon, LocationIcon } from '@/assets/icons/home/property';
 import SafeLinearGradient from '@/shared/components/ui/SafeLinearGradient';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 import { MarketProperty } from '../../types';
 
@@ -18,7 +19,7 @@ export default function MarketPropertyCard({
   const isExchange = property.exchangeRequirements !== undefined;
   const formattedPrice =
     typeof property.price === 'number'
-      ? property.price.toLocaleString()
+      ? formatNumber(property.price)
       : property.price;
 
   return (
