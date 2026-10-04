@@ -18,7 +18,10 @@ export default function AddServiceScreen() {
         className="flex-1"
       >
         {/* --- Header --- */}
-        <CompanyEditProfileHeader onBack={service.goBack} />
+        <CompanyEditProfileHeader
+          onBack={service.goBack}
+          title="إضافة خدمة"
+        />
 
         {/* --- Form --- */}
         <ScrollView

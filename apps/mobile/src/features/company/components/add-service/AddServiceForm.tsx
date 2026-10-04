@@ -73,8 +73,8 @@ export default function AddServiceForm({
           style={{ writingDirection: 'rtl' }}
         />
         <Text
-          className="mt-0.5 text-right font-cairo-medium text-[10px] text-[#111111]"
-          style={{ writingDirection: 'rtl', textAlign: 'right' }}
+          className="mt-0.5 font-cairo-medium text-[10px] text-[#111111]"
+          style={{ writingDirection: 'rtl' }}
         >
           يجب أن لا يتخطى الوصف {DESCRIPTION_MAX_LENGTH} حرف.
         </Text>
