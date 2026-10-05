@@ -66,12 +66,14 @@ export const mobileIndividual: DocSection = {
       },
       acceptanceCriteria: {
         en: [
+          "Tapping ANY property card on Home — Card view (with images) or List view — opens the 'عرض تفاصيل' details sheet; the full property page opens from the sheet's عرض العقار button (previously with-image cards skipped the sheet and navigated away).",
           "A heart tapped on a Home card, in the details sheet or on an office card is still filled after closing and reopening the app, and the item appears in Favorites.",
           "Share on a card and in the details sheet opens the native share sheet.",
           "As a guest, tapping a heart opens the sign-in sheet instead of doing nothing.",
           "The chat button on an office card opens a chat with that office (not its profile); a guest is asked to sign in.",
         ],
         ar: [
+          "الضغط على أي بطاقة عقار في الرئيسية — عرض البطاقات (بصور) أو عرض القائمة — يفتح نافذة 'عرض تفاصيل'؛ وتفتح صفحة العقار الكاملة من زر عرض العقار داخل النافذة (سابقاً كانت البطاقات المصورة تتجاوز النافذة وتنتقل للصفحة).",
           "القلب المضغوط في بطاقة بالرئيسية أو في نافذة التفاصيل أو في بطاقة مكتب يبقى ممتلئاً بعد إغلاق التطبيق وفتحه، ويظهر العنصر في المفضلة.",
           "المشاركة في البطاقة وفي نافذة التفاصيل تفتح نافذة المشاركة في الجهاز.",
           "كزائر، الضغط على القلب يفتح نافذة تسجيل الدخول بدلاً من عدم فعل شيء.",
@@ -90,7 +92,7 @@ export const mobileIndividual: DocSection = {
           "في الرئيسية ← مكاتب عقارية اضغط زر المحادثة في مكتب — تفتح المحادثة معه.",
         ],
       },
-      updatedIn: "fix/office-card-chat",
+      updatedIn: "feat/company-more-edit-profile",
     },
     {
       id: "mobile-home-tabs-and-view-modes",

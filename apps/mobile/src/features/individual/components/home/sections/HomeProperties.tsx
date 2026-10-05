@@ -247,6 +247,10 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
                 isFavorited={favoritedIds.includes(item.id)}
                 onFavorite={() => toggleFavorite(item.id)}
                 onShare={() => shareProperty(item)}
+                // Any card tap opens the details sheet — with or without
+                // images, exactly like the list view (QA: with-image cards
+                // used to skip the sheet and navigate to the full page)
+                onPress={() => handleShowDetails(item.id)}
               />
             );
             // FlashList v2 dropped columnWrapperStyle, so the tablet grid's

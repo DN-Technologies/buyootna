@@ -106,6 +106,7 @@ export default function PropertyCard({
     <TouchableOpacity
       activeOpacity={0.9}
       onPress={handlePress}
+      testID={`property-card-${id}`}
       className="mb-5 w-full overflow-hidden rounded-md border border-gray-200/80 bg-white"
       onLayout={(e) => {
         const { width } = e.nativeEvent.layout;

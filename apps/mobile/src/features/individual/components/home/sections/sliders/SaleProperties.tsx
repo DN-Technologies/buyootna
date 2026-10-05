@@ -158,6 +158,7 @@ export default function SaleProperties({
                 }
                 cardWidth={HORIZONTAL_CARD_WIDTH}
                 onShare={() => shareProperty(item)}
+                onPress={() => handleShowDetails(item.id)}
               />
             )}
           </View>
