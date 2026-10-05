@@ -1202,5 +1202,42 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-activity-offers-tab-state",
+      title: {
+        en: "My Activity → عروضي: clean empty state, no auth buttons, and no ads ⋮ menu",
+        ar: "نشاطي ← عروضي: حالة فارغة نظيفة بدون أزرار تسجيل، وبدون قائمة الإعلانات",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: the عروضي (price-quote requests) tab used the shared GuestEmptyState, so it always rendered 'إنشاء حساب' / 'تسجيل الدخول' buttons even though the tab is only reachable signed-in (guests get the ActivityGuestView instead). It now renders a neutral empty state (icon + title + description, no auth actions). Also, the header ⋮ on عروضي used to open the ADS options menu (اخفاء/حذف جميع الاعلانات — the delete-ad flow), which has no meaning for quote requests: the ⋮ button is hidden on عروضي and only appears on إعلاناتي and تنبيهاتي where their dropdown menus apply.",
+        ar: "إصلاح بلاغ QA: كان تبويب عروضي (طلبات عروض السعر) يستخدم GuestEmptyState المشترك، فيعرض دائماً زرّي 'إنشاء حساب' / 'تسجيل الدخول' رغم أن التبويب لا يُفتح إلا مسجلاً (الزائر يرى ActivityGuestView بدلاً منه). الآن يعرض حالة فارغة محايدة (أيقونة + عنوان + وصف بدون أزرار تسجيل). كما أن زر ⋮ في الترويسة على عروضي كان يفتح قائمة الإعلانات (اخفاء/حذف جميع الاعلانات — فلو حذف الإعلان) بلا معنى لطلبات عرض السعر: زر ⋮ مخفي على عروضي ويظهر فقط على إعلاناتي وتنبيهاتي حيث تنطبق قائماهما المنسدلتان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With no submitted requests, عروضي shows the icon, 'لا توجد طلبات بعد' and the description — no إنشاء حساب/تسجيل الدخول buttons (signed-in or otherwise).",
+          "The header ⋮ button is hidden on عروضي; it appears on إعلاناتي (dropdown: اخفاء/اظهار جميع الاعلانات + حذف جميع الاعلانات → confirmation sheet) and تنبيهاتي (its own dropdown).",
+          "The + button on عروضي still routes to add-alert.",
+        ],
+        ar: [
+          "بدون طلبات مرسلة يعرض عروضي الأيقونة و'لا توجد طلبات بعد' والوصف — بدون زرّي إنشاء حساب/تسجيل الدخول (مسجلاً كان أم لا).",
+          "زر ⋮ في الترويسة مخفي على عروضي؛ ويظهر على إعلاناتي (قائمة منسدلة: اخفاء/اظهار جميع الاعلانات + حذف جميع الاعلانات ← نافذة التأكيد) وتنبيهاتي (قائمتها الخاصة).",
+          "زر + على عروضي لا يزال ينقل إلى إضافة تنبيه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Signed-in with no requests, open نشاطي → عروضي — the empty state shows without auth buttons.",
+          "Switch to إعلاناتي — the ⋮ appears and opens the dropdown; switch to عروضي — the ⋮ disappears.",
+          "Tap + on عروضي — the add-alert flow opens.",
+        ],
+        ar: [
+          "مسجلاً وبدون طلبات، افتح نشاطي ← عروضي — تظهر الحالة الفارغة بدون أزرار تسجيل.",
+          "انتقل إلى إعلاناتي — يظهر ⋮ ويفتح القائمة؛ وانتقل إلى عروضي — يختفي ⋮.",
+          "اضغط + على عروضي — يُفتح فلو إضافة تنبيه.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

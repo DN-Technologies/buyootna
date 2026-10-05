@@ -152,7 +152,11 @@ export default function ActivityScreen() {
         onMenuPress={
           isAlertsTab
             ? alertActions.handleOpenOptionsMenu
-            : adActions.handleMenuPress
+            : isOffersTab
+              ? // عروضي has no bulk ads actions — its ⋮ must not open the
+                // ads options menu / delete-all sheet (QA)
+                undefined
+              : adActions.handleMenuPress
         }
       />
 
@@ -229,6 +233,8 @@ export default function ActivityScreen() {
               onAddAlertPress={() => router.push('/add-alert' as any)}
             />
           ) : isOffersTab ? (
+            // عروضي is only reachable signed-in (guests get
+            // ActivityGuestView), so no create-account/sign-in actions here
             <GuestEmptyState
               icon="file-text"
               title="لا توجد طلبات بعد"
@@ -236,6 +242,7 @@ export default function ActivityScreen() {
                 requestsError ||
                 'طلبات عرض السعر التي ترسلها ستظهر هنا لتتابع حالتها.'
               }
+              showAuthActions={false}
             />
           ) : (
             <ActivityEmptyState
