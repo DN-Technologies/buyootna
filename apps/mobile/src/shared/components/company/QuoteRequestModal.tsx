@@ -1,9 +1,17 @@
 import {
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
   type BottomSheetFooterProps,
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
-import { forwardRef, useId, useImperativeHandle, useRef } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useId,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import RequestQuoteAddressField from '@/features/individual/components/request-quote/RequestQuoteAddressField';
@@ -75,6 +83,20 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       },
     });
 
+    // Dimmed backdrop like the app's other sheets: without it the sheet
+    // read as a full screen page instead of a bottom sheet (QA)
+    const renderBackdrop = useCallback(
+      (props: BottomSheetBackdropProps) => (
+        <BottomSheetBackdrop
+          {...props}
+          disappearsOnIndex={-1}
+          appearsOnIndex={0}
+          opacity={0.5}
+        />
+      ),
+      [],
+    );
+
     const renderFooter = (props: BottomSheetFooterProps) => (
       <QuoteSubmitFooter
         {...props}
@@ -87,7 +109,8 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
     return (
       <BottomSheetModal
         ref={internalRef}
-        snapPoints={['94%']}
+        snapPoints={['90%']}
+        backdropComponent={renderBackdrop}
         footerComponent={renderFooter}
         enablePanDownToClose
         backgroundStyle={{ borderRadius: 24 }}

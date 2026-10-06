@@ -1352,5 +1352,46 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-companies-search-filter-sort",
+      title: {
+        en: "شركات tab: search keeps the keyboard, تصفية البحث + الترتيب حسب sheets, dimmed طلب عرض سعر sheet",
+        ar: "تبويب الشركات: البحث لا يغلق الكيبورد، ونافذتا تصفية البحث والترتيب حسب، ونافذة طلب عرض سعر بخلفية داكنة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fixes on the شركات tab: (1) typing in 'ابحث باسم الشركة' closed the keyboard after every letter — the list header was rebuilt as a new component on each keystroke, remounting the input. (2) The row next to the search box now has the two icons from the design: تصفية البحث opens the company category sheet (الكل + categories, عرض النتائج / إعادة التعيين), and الترتيب حسب opens a sort sheet (الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً). Previously the single icon pushed the property search screen full-screen with the property (بيع/ايجار/بدل) filter sheet on top. (3) The طلب عرض سعر sheet now has the same dimmed backdrop as the app's other sheets, so it reads as a bottom sheet. API: GET /users/companies accepts sort=NEWEST|RATING_DESC|RATING_ASC|PROJECTS_DESC (default NEWEST = newest first; rating sorts break ties by review count).",
+        ar: "إصلاح بلاغات QA في تبويب الشركات: (1) الكتابة في 'ابحث باسم الشركة' كانت تغلق الكيبورد بعد كل حرف — كانت ترويسة القائمة تُبنى كمكوّن جديد مع كل ضغطة فيُعاد تركيب الحقل. (2) بجوار خانة البحث أصبحت هناك الأيقونتان حسب التصميم: تصفية البحث تفتح نافذة تصنيفات الشركات (الكل + التصنيفات، عرض النتائج / إعادة التعيين)، والترتيب حسب تفتح نافذة ترتيب (الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً). سابقاً كانت الأيقونة الوحيدة تفتح شاشة بحث العقارات بملء الشاشة وفوقها فلتر العقارات (بيع/ايجار/بدل). (3) نافذة طلب عرض سعر أصبحت بخلفية داكنة مثل باقي النوافذ في التطبيق لتظهر كنافذة سفلية. API: يقبل GET /users/companies المعامل sort=NEWEST|RATING_DESC|RATING_ASC|PROJECTS_DESC (الافتراضي NEWEST = الأحدث أولاً؛ ترتيب التقييم يفصل التعادل بعدد المراجعات).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Typing a full company name in the search box keeps the keyboard open; results update after a short pause.",
+          "The تصفية البحث icon opens the company category sheet (not the property search screen); choosing categories and عرض النتائج filters the list, like the التصنيف row.",
+          "The الترتيب حسب icon opens الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً; each reorders the whole list, also across pages.",
+          "طلب عرض سعر opens as a bottom sheet over a dimmed background.",
+        ],
+        ar: [
+          "كتابة اسم شركة كامل في خانة البحث تُبقي الكيبورد مفتوحاً؛ وتتحدّث النتائج بعد توقف قصير.",
+          "أيقونة تصفية البحث تفتح نافذة تصنيفات الشركات (وليس شاشة بحث العقارات)؛ واختيار التصنيفات ثم عرض النتائج يصفّي القائمة مثل صف التصنيف.",
+          "أيقونة الترتيب حسب تفتح الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً؛ وكل خيار يعيد ترتيب القائمة كاملة عبر الصفحات أيضاً.",
+          "طلب عرض سعر يُفتح كنافذة سفلية فوق خلفية داكنة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On شركات type 'بابل' letter by letter — the keyboard never closes and the list narrows.",
+          "Tap تصفية البحث, pick تشطيب, tap عرض النتائج — only تشطيب companies show; no full-screen search page appears.",
+          "Tap الترتيب حسب → الأعلى تقييماً — highest-rated first; scroll to load more and the order continues; الأكثر مشاريعاً orders by مشاريع مكتملة.",
+          "Tap طلب عرض سعر on a card — the sheet slides up over a darkened list.",
+        ],
+        ar: [
+          "في الشركات اكتب 'بابل' حرفاً حرفاً — لا يُغلق الكيبورد وتضيق القائمة.",
+          "اضغط تصفية البحث، اختر تشطيب، اضغط عرض النتائج — تظهر شركات التشطيب فقط؛ ولا تظهر شاشة بحث بملء الشاشة.",
+          "اضغط الترتيب حسب ← الأعلى تقييماً — الأعلى تقييماً أولاً؛ مرّر لتحميل المزيد ويستمر الترتيب؛ والأكثر مشاريعاً يرتب حسب المشاريع المكتملة.",
+          "اضغط طلب عرض سعر على بطاقة — تظهر النافذة فوق قائمة معتمة.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

@@ -7,6 +7,13 @@ import {
   PropertiesResponse,
 } from '@/types/feed';
 
+// الترتيب حسب on the companies tab (GET /users/companies?sort=)
+export type CompanySort =
+  | 'NEWEST'
+  | 'RATING_DESC'
+  | 'RATING_ASC'
+  | 'PROJECTS_DESC';
+
 export const feedService = {
   /**
    * Fetches the grouped home feed (Sale, Rent, Exchange, and Companies)
@@ -51,6 +58,7 @@ export const feedService = {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    sort?: CompanySort,
   ): Promise<CompaniesResponse> => {
     const params = new URLSearchParams({
       page: String(page),
@@ -61,6 +69,9 @@ export const feedService = {
     }
     if (search) {
       params.set('search', search);
+    }
+    if (sort && sort !== 'NEWEST') {
+      params.set('sort', sort);
     }
     const response = await apiClient.get<CompaniesResponse>(
       `/users/companies?${params.toString()}`,
