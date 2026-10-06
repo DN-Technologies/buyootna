@@ -198,5 +198,33 @@ describe('ActivityScreen', () => {
       expect(getByText('اخفاء جميع الاعلانات')).toBeTruthy();
       expect(getByText('حذف الكل')).toBeTruthy();
     });
+
+    // QA: the filter button used to silently toggle ALL/ACTIVE with no UI
+    it('the filter button opens the تصفية البحث sheet and marks an applied filter', async () => {
+      // present() comes from the bottom-sheet manual mock (not in real typings)
+      const { present } = require('@gorhom/bottom-sheet');
+      const { getByLabelText, getAllByText, queryByTestId, getByTestId } =
+        await render(<ActivityScreen />);
+
+      expect(queryByTestId('activity-filter-active-dot')).toBeNull();
+
+      await fireEvent.press(getByLabelText('تصفية البحث'));
+      expect(present).toHaveBeenCalled();
+
+      // The pills show the same labels; the sheet renders after the list
+      await fireEvent.press(getAllByText('مسودة (0)').at(-1)!);
+      expect(getByTestId('activity-filter-active-dot')).toBeTruthy();
+    });
+
+    it.each(['عروضي', 'تنبيهاتي'])(
+      'hides the filter button on %s (no filters there)',
+      async (tab) => {
+        const { getByText, queryByLabelText } = await render(<ActivityScreen />);
+
+        await fireEvent.press(getByText(tab));
+
+        expect(queryByLabelText('تصفية البحث')).toBeNull();
+      },
+    );
   });
 });

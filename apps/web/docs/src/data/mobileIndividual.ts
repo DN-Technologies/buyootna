@@ -1275,6 +1275,45 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-activity-filter-sheet-autofill",
+      title: {
+        en: "My Activity: تصفية البحث opens a filter sheet; free-text/number fields don't offer email/password autofill",
+        ar: "نشاطي: تصفية البحث تفتح نافذة تصفية؛ وحقول النص/الأرقام لا تقترح البريد/كلمة المرور",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fixes: (1) the تصفية البحث (filter) button next to الترتيب حسب on نشاطي had no UI — it silently toggled between الكل and نشطة. It now opens a 'تصفية البحث' bottom sheet with the ad-status filters (الكل / نشطة / مميزة / مسودة / مؤرشفة with counts, same as the pills); the button shows a dot while a filter other than الكل is applied, and it is hidden on عروضي and تنبيهاتي, which have no filters. (2) The 'سبب اخر' reason box in the delete-ad flow and the price/area inputs in Add Alert opened the OS autofill bar with saved email/password suggestions, as if they were login fields; they're now marked as plain fields so autofill stays out.",
+        ar: "إصلاح بلاغات QA: (1) زر تصفية البحث بجوار الترتيب حسب في نشاطي لم يكن له أي واجهة — كان يبدّل بصمت بين الكل ونشطة. الآن يفتح نافذة 'تصفية البحث' بفلاتر حالة الإعلان (الكل / نشطة / مميزة / مسودة / مؤرشفة مع الأعداد، مثل الأزرار الصغيرة)؛ ويظهر على الزر نقطة عند تطبيق فلتر غير الكل، ويُخفى في عروضي وتنبيهاتي لعدم وجود فلاتر فيهما. (2) خانة 'سبب اخر' في فلو حذف الإعلان وحقول السعر/المساحة في إضافة تنبيه كانت تفتح شريط الملء التلقائي باقتراحات البريد/كلمة المرور المحفوظة كأنها حقول تسجيل دخول؛ الآن معرّفة كحقول عادية فلا يظهر الملء التلقائي.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On اعلاناتي, tapping the filter button opens 'تصفية البحث' with الكل / نشطة / مميزة / مسودة / مؤرشفة (with counts); picking one filters the list and syncs the pills.",
+          "A dot shows on the filter button while the filter isn't الكل.",
+          "The filter button doesn't appear on عروضي or تنبيهاتي.",
+          "Typing a 'سبب اخر' delete reason, or a price/area in Add Alert, shows no email/password autofill suggestions (iOS and Android).",
+        ],
+        ar: [
+          "في اعلاناتي، الضغط على زر التصفية يفتح 'تصفية البحث' بخيارات الكل / نشطة / مميزة / مسودة / مؤرشفة (مع الأعداد)؛ واختيار أحدها يصفّي القائمة ويتزامن مع الأزرار الصغيرة.",
+          "تظهر نقطة على زر التصفية طالما الفلتر ليس الكل.",
+          "زر التصفية لا يظهر في عروضي ولا تنبيهاتي.",
+          "كتابة سبب حذف 'سبب اخر'، أو سعر/مساحة في إضافة تنبيه، لا تُظهر اقتراحات البريد/كلمة المرور (iOS وAndroid).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open نشاطي → اعلاناتي, tap the filter button, pick مسودة — only drafts show, the مسودة pill is selected, and the button has a dot; pick الكل — the dot disappears.",
+          "Switch to عروضي and تنبيهاتي — only the sort button remains.",
+          "Delete an ad → choose سبب اخر → tap the text box — no saved-login suggestions; same for السعر/المساحة in Add Alert.",
+        ],
+        ar: [
+          "افتح نشاطي ← اعلاناتي، اضغط زر التصفية واختر مسودة — تظهر المسودات فقط ويُحدد زر مسودة ويظهر على الزر نقطة؛ اختر الكل — تختفي النقطة.",
+          "انتقل إلى عروضي وتنبيهاتي — يبقى زر الترتيب فقط.",
+          "احذف إعلاناً ← اختر سبب اخر ← اضغط خانة النص — لا تظهر اقتراحات تسجيل الدخول المحفوظة؛ وكذلك السعر/المساحة في إضافة تنبيه.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
       id: "mobile-activity-package-balance",
       title: {
         en: "My Activity shows the remaining ads from purchased packages",

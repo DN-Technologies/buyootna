@@ -51,6 +51,7 @@ export default function ActivityScreen() {
     useState<ActivityFilterType>('ALL');
   const [sortBy, setSortBy] = useState<AdSortBy>('NEWEST');
   const sortSheetRef = useRef<BottomSheetModal>(null);
+  const filterSheetRef = useRef<BottomSheetModal>(null);
 
   const listRef = useRef<FlashListRef<any>>(null);
   useScrollToTop(listRef);
@@ -164,9 +165,12 @@ export default function ActivityScreen() {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        onFilterPress={() =>
-          setActiveFilterId((prev) => (prev === 'ALL' ? 'ACTIVE' : 'ALL'))
+        // تصفية البحث: opens the status filter sheet; only the ads tab
+        // has filters (it used to silently toggle ALL/ACTIVE -- QA)
+        onFilterPress={
+          isAdsTab ? () => filterSheetRef.current?.present() : undefined
         }
+        isFilterActive={isAdsTab && activeFilterId !== 'ALL'}
         onSortPress={() => sortSheetRef.current?.present()}
       />
 
@@ -294,6 +298,10 @@ export default function ActivityScreen() {
         sortSheetRef={sortSheetRef}
         sortBy={sortBy}
         onSortChange={setSortBy}
+        filterSheetRef={filterSheetRef}
+        filterPills={filterPills}
+        activeFilterId={activeFilterId}
+        onFilterChange={setActiveFilterId}
       />
 
       <AlertsOptionsMenu

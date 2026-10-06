@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 export const present = jest.fn();
 export const dismiss = jest.fn();
@@ -29,6 +29,20 @@ export const BottomSheetScrollView = ({ children, ...props }: any) => (
   <View {...props}>{children}</View>
 );
 
+export const BottomSheetFlatList = ({ data = [], renderItem, keyExtractor }: any) => (
+  <View>
+    {data.map((item: any, index: number) => (
+      <React.Fragment key={keyExtractor ? keyExtractor(item, index) : index}>
+        {renderItem({ item, index })}
+      </React.Fragment>
+    ))}
+  </View>
+);
+
+export const BottomSheetFooter = ({ children }: any) => <View>{children}</View>;
+
+export const BottomSheetTextInput = (props: any) => <TextInput {...props} />;
+
 export const BottomSheetBackdrop = () => null;
 
 export const BottomSheetModalProvider = ({ children }: any) => <>{children}</>;
@@ -37,6 +51,9 @@ export default {
   BottomSheetModal,
   BottomSheetView,
   BottomSheetScrollView,
+  BottomSheetFlatList,
+  BottomSheetFooter,
+  BottomSheetTextInput,
   BottomSheetBackdrop,
   BottomSheetModalProvider,
 };
