@@ -2,11 +2,12 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import { forwardRef, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface CompanyActionsSheetProps {
   onClose?: () => void;
@@ -50,7 +51,7 @@ const CompanyActionsSheet = forwardRef<
       }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView>
+      <SafeBottomSheetView>
         <View className="bg-white px-4 pb-10 pt-2">
           {/* --- 1. Header --- */}
           <View className="flex-row items-center justify-between pb-4">
@@ -128,7 +129,7 @@ const CompanyActionsSheet = forwardRef<
             </TouchableOpacity>
           </View>
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

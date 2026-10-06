@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -10,6 +9,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 // Blocks access to the company/office signup, login, and in-app screens
 // while those account types are temporarily unavailable. Renders a
@@ -67,7 +67,7 @@ export default function ComingSoonGate() {
         handleComponent={null}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="flex-1 items-center px-6 pb-8 pt-8">
+        <SafeBottomSheetView className="flex-1 items-center px-6 pb-8 pt-8">
           <View className="mb-5 h-16 w-16 items-center justify-center rounded-full bg-[#F0F5FA]">
             <Feather name="clock" size={26} color="#15304D" />
           </View>
@@ -90,7 +90,7 @@ export default function ComingSoonGate() {
               العودة للرئيسية
             </Text>
           </TouchableOpacity>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     </SafeAreaView>
   );

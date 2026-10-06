@@ -2,11 +2,11 @@ import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import { forwardRef, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface OfficeAddActionSheetProps {
   onClose?: () => void;
@@ -73,7 +73,7 @@ export const OfficeAddActionSheet = forwardRef<
         borderTopRightRadius: 24,
       }}
     >
-      <BottomSheetView>
+      <SafeBottomSheetView>
         <View className="bg-white px-4 pb-10 pt-2" testID="office-add-action-sheet">
           {/* Header */}
           <View className="flex-row items-center justify-between py-1.5 pl-2.5 pr-4">
@@ -134,7 +134,7 @@ export const OfficeAddActionSheet = forwardRef<
             </TouchableOpacity>
           </View>
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

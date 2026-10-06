@@ -30,6 +30,11 @@ export default function LabeledNumberInput({
           placeholder={placeholder}
           placeholderTextColor="#D1D5DB"
           keyboardType="numeric"
+          // Not a credential field: stop OS autofill from offering saved
+          // email/password suggestions on price/area inputs (QA)
+          autoComplete="off"
+          textContentType="none"
+          importantForAutofill="no"
           maxLength={maxLength}
           value={value}
           onChangeText={onChangeText}

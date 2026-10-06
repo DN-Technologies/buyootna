@@ -6,6 +6,7 @@ import {
 import { router } from 'expo-router';
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   AreaIcon,
@@ -37,6 +38,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
   ({ property, onClose, onDeletePress, onEditPress, onPublishPress }, ref) => {
     // Snap points: 85% of screen height provides a comprehensive viewing sheet
     const snapPoints = useMemo(() => ['85%'], []);
+    const insets = useSafeAreaInsets();
 
     // Local toggle state for the publish switch (purely interactive UI placeholder)
     const [isPublished, setIsPublished] = useState(false);
@@ -136,7 +138,11 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
         </View>
 
         {/* --- Scrollable Body Content --- */}
-        <BottomSheetScrollView showsVerticalScrollIndicator={false}>
+        <BottomSheetScrollView
+          showsVerticalScrollIndicator={false}
+          // Keep the action row clear of the home indicator / nav bar
+          contentContainerStyle={{ paddingBottom: insets.bottom }}
+        >
           {/* All uploaded images, swipeable */}
           <View className="px-6 my-4">
             <PropertyImageCarousel

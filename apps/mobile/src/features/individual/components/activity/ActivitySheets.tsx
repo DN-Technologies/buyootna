@@ -2,6 +2,10 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import { RefObject } from 'react';
 
+import type {
+  ActivityFilterType,
+  FilterPill,
+} from '@/features/individual/components/activity/ActivityFilterPills';
 import AlertDetailsSheet from '@/features/individual/components/activity/AlertDetailsSheet';
 import {
   AD_SORT_OPTIONS,
@@ -22,6 +26,10 @@ export interface ActivitySheetsProps {
   sortSheetRef: RefObject<BottomSheetModal | null>;
   sortBy: AdSortBy;
   onSortChange: (sortBy: AdSortBy) => void;
+  filterSheetRef: RefObject<BottomSheetModal | null>;
+  filterPills: FilterPill[];
+  activeFilterId: ActivityFilterType;
+  onFilterChange: (id: ActivityFilterType) => void;
 }
 
 // All bottom sheets of the activity screen
@@ -31,6 +39,10 @@ export default function ActivitySheets({
   sortSheetRef,
   sortBy,
   onSortChange,
+  filterSheetRef,
+  filterPills,
+  activeFilterId,
+  onFilterChange,
 }: ActivitySheetsProps) {
   const { selectedDraft } = adActions;
 
@@ -126,6 +138,19 @@ export default function ActivitySheets({
         selectedValue={sortBy}
         onSelect={(value) => onSortChange(value as AdSortBy)}
         snapPoints={['40%']}
+      />
+
+      {/* --- Filter Ads Bottom Sheet (تصفية البحث) --- */}
+      <RadioSelectionSheet
+        ref={filterSheetRef}
+        title="تصفية البحث"
+        options={filterPills.map((pill) => ({
+          label: pill.label,
+          value: pill.id,
+        }))}
+        selectedValue={activeFilterId}
+        onSelect={(value) => onFilterChange(value as ActivityFilterType)}
+        snapPoints={['50%']}
       />
     </>
   );

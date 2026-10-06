@@ -790,5 +790,38 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-bottom-safe-area-actions",
+      title: {
+        en: "Bottom sheets and bottom action bars stay clear of the home indicator / navigation bar",
+        ar: "النوافذ السفلية وأزرار أسفل الشاشة لا تتداخل مع شريط الهوم / شريط التنقل",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: bottom sheets run edge-to-edge to the bottom of the screen, and most only had a fixed bottom padding, so their action buttons sat on (or under) the iOS home indicator and the Android navigation bar. Every bottom sheet now reserves the device's bottom safe-area inset below its content (SafeBottomSheetView); sheets with a pinned footer (filters, categories, طلب عرض سعر) and fixed bottom bars that ignored the inset (رصيد الحساب, فواتير الخدمات, إضافة تنبيه, طلب عرض سعر) pad the inset plus 16px.",
+        ar: "إصلاح بلاغ QA: النوافذ السفلية تمتد حتى أسفل الشاشة، ومعظمها كان بمسافة سفلية ثابتة فقط، فكانت أزرارها فوق (أو تحت) شريط الهوم في iOS وشريط التنقل في Android. الآن تحجز كل نافذة سفلية مسافة الأمان السفلية للجهاز أسفل محتواها (SafeBottomSheetView)؛ والنوافذ ذات الأزرار المثبتة (الفلاتر، التصنيفات، طلب عرض سعر) وأشرطة الأزرار السفلية التي كانت تتجاهلها (رصيد الحساب، فواتير الخدمات، إضافة تنبيه، طلب عرض سعر) تضيف هذه المسافة مع 16px.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On an iPhone with a home indicator and on Android with gesture or 3-button navigation, no bottom-sheet button touches or sits under the indicator / nav bar.",
+          "Fixed bottom buttons on رصيد الحساب, فواتير الخدمات, إضافة تنبيه and طلب عرض سعر sit above the indicator, and the last list item isn't hidden behind them.",
+        ],
+        ar: [
+          "على iPhone به شريط هوم وعلى Android بتنقل الإيماءات أو الأزرار الثلاثة، لا يلمس أي زر في نافذة سفلية شريط الهوم/التنقل ولا يقع تحته.",
+          "الأزرار الثابتة أسفل رصيد الحساب وفواتير الخدمات وإضافة تنبيه وطلب عرض سعر فوق شريط الهوم، ولا يختفي آخر عنصر في القائمة خلفها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open several sheets (حذف الإعلان, الترتيب حسب, تصفية البحث, طلب عرض سعر, تسجيل الخروج) — bottom buttons have clear space above the indicator.",
+          "On Android switch to 3-button navigation and repeat — buttons are fully above the nav bar.",
+        ],
+        ar: [
+          "افتح عدة نوافذ (حذف الإعلان، الترتيب حسب، تصفية البحث، طلب عرض سعر، تسجيل الخروج) — الأزرار السفلية بمسافة واضحة فوق شريط الهوم.",
+          "على Android فعّل التنقل بالأزرار الثلاثة وكرر — الأزرار بالكامل فوق شريط التنقل.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

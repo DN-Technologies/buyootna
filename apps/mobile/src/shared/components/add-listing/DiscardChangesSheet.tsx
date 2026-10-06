@@ -1,11 +1,11 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface DiscardChangesSheetProps {
   onCancel: () => void; // Continue editing
@@ -50,7 +50,7 @@ const DiscardChangesSheet = forwardRef<BottomSheetModal, DiscardChangesSheetProp
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
+        <SafeBottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
           <View className="items-center w-full">
             {/* Soft yellow circle with alert triangle */}
             <View className="h-[75px] w-[75px] items-center justify-center rounded-full bg-[#FFF9DA] mb-4">
@@ -95,7 +95,7 @@ const DiscardChangesSheet = forwardRef<BottomSheetModal, DiscardChangesSheetProp
               </Text>
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

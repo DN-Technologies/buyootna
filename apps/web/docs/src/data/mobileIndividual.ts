@@ -1274,5 +1274,124 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-activity-filter-sheet-autofill",
+      title: {
+        en: "My Activity: تصفية البحث opens a filter sheet; free-text/number fields don't offer email/password autofill",
+        ar: "نشاطي: تصفية البحث تفتح نافذة تصفية؛ وحقول النص/الأرقام لا تقترح البريد/كلمة المرور",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fixes: (1) the تصفية البحث (filter) button next to الترتيب حسب on نشاطي had no UI — it silently toggled between الكل and نشطة. It now opens a 'تصفية البحث' bottom sheet with the ad-status filters (الكل / نشطة / مميزة / مسودة / مؤرشفة with counts, same as the pills); the button shows a dot while a filter other than الكل is applied, and it is hidden on عروضي and تنبيهاتي, which have no filters. (2) The 'سبب اخر' reason box in the delete-ad flow and the price/area inputs in Add Alert opened the OS autofill bar with saved email/password suggestions, as if they were login fields; they're now marked as plain fields so autofill stays out.",
+        ar: "إصلاح بلاغات QA: (1) زر تصفية البحث بجوار الترتيب حسب في نشاطي لم يكن له أي واجهة — كان يبدّل بصمت بين الكل ونشطة. الآن يفتح نافذة 'تصفية البحث' بفلاتر حالة الإعلان (الكل / نشطة / مميزة / مسودة / مؤرشفة مع الأعداد، مثل الأزرار الصغيرة)؛ ويظهر على الزر نقطة عند تطبيق فلتر غير الكل، ويُخفى في عروضي وتنبيهاتي لعدم وجود فلاتر فيهما. (2) خانة 'سبب اخر' في فلو حذف الإعلان وحقول السعر/المساحة في إضافة تنبيه كانت تفتح شريط الملء التلقائي باقتراحات البريد/كلمة المرور المحفوظة كأنها حقول تسجيل دخول؛ الآن معرّفة كحقول عادية فلا يظهر الملء التلقائي.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On اعلاناتي, tapping the filter button opens 'تصفية البحث' with الكل / نشطة / مميزة / مسودة / مؤرشفة (with counts); picking one filters the list and syncs the pills.",
+          "A dot shows on the filter button while the filter isn't الكل.",
+          "The filter button doesn't appear on عروضي or تنبيهاتي.",
+          "Typing a 'سبب اخر' delete reason, or a price/area in Add Alert, shows no email/password autofill suggestions (iOS and Android).",
+        ],
+        ar: [
+          "في اعلاناتي، الضغط على زر التصفية يفتح 'تصفية البحث' بخيارات الكل / نشطة / مميزة / مسودة / مؤرشفة (مع الأعداد)؛ واختيار أحدها يصفّي القائمة ويتزامن مع الأزرار الصغيرة.",
+          "تظهر نقطة على زر التصفية طالما الفلتر ليس الكل.",
+          "زر التصفية لا يظهر في عروضي ولا تنبيهاتي.",
+          "كتابة سبب حذف 'سبب اخر'، أو سعر/مساحة في إضافة تنبيه، لا تُظهر اقتراحات البريد/كلمة المرور (iOS وAndroid).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open نشاطي → اعلاناتي, tap the filter button, pick مسودة — only drafts show, the مسودة pill is selected, and the button has a dot; pick الكل — the dot disappears.",
+          "Switch to عروضي and تنبيهاتي — only the sort button remains.",
+          "Delete an ad → choose سبب اخر → tap the text box — no saved-login suggestions; same for السعر/المساحة in Add Alert.",
+        ],
+        ar: [
+          "افتح نشاطي ← اعلاناتي، اضغط زر التصفية واختر مسودة — تظهر المسودات فقط ويُحدد زر مسودة ويظهر على الزر نقطة؛ اختر الكل — تختفي النقطة.",
+          "انتقل إلى عروضي وتنبيهاتي — يبقى زر الترتيب فقط.",
+          "احذف إعلاناً ← اختر سبب اخر ← اضغط خانة النص — لا تظهر اقتراحات تسجيل الدخول المحفوظة؛ وكذلك السعر/المساحة في إضافة تنبيه.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-activity-package-balance",
+      title: {
+        en: "My Activity shows the remaining ads from purchased packages",
+        ar: "نشاطي يعرض الإعلانات المتبقية من الباقات المشتراة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after buying an ad package, رصيد الحساب showed the remaining ads but نشاطي → إعلاناتي never did. My Activity decided between the free-quota banner and the عادي / فضي / ذهبي counters from /users/me's hasSubscription/subscription, which the API still returns as a placeholder (hardcoded 5/12/1, only for test emails/company/office). It now reads the real wallet (GET /plans/wallet balanceCounts — the same numbers as رصيد الحساب): with any remaining package ads it shows the three counters with the real per-tier remaining counts; with none it falls back to the free-quota banner. If the wallet request fails the ad list still loads with the free-quota banner. The republish sheet's fallback credit counts use the same real numbers.",
+        ar: "إصلاح بلاغ QA: بعد شراء باقة إعلانات كان رصيد الحساب يعرض الإعلانات المتبقية بينما لم يعرضها نشاطي ← إعلاناتي أبداً. كان نشاطي يختار بين شريط الإعلان المجاني وعدادات عادي / فضي / ذهبي بناءً على hasSubscription/subscription من /users/me، والتي لا تزال الواجهة الخلفية ترجعها كقيمة مؤقتة (5/12/1 ثابتة، لحسابات الاختبار/الشركات/المكاتب فقط). الآن يقرأ المحفظة الحقيقية (GET /plans/wallet balanceCounts — نفس أرقام رصيد الحساب): عند وجود إعلانات متبقية في أي باقة تظهر العدادات الثلاثة بالأرقام الحقيقية لكل فئة؛ وعند عدم وجودها يظهر شريط الإعلان المجاني. وإذا فشل طلب المحفظة تُحمّل قائمة الإعلانات مع شريط الإعلان المجاني. كما تستخدم أعداد الرصيد الاحتياطية في نافذة إعادة النشر نفس الأرقام الحقيقية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With a purchased package that has ads remaining, نشاطي → إعلاناتي shows the عادي / فضي / ذهبي counters, and each equals the same tier's number on رصيد الحساب.",
+          "With no remaining package ads, the free-quota banner shows instead (with the real free-ad count).",
+          "No placeholder numbers (1 / 12 / 5) ever appear.",
+          "Counters update after publishing with a package credit, on returning to نشاطي.",
+        ],
+        ar: [
+          "مع باقة مشتراة بها إعلانات متبقية، يعرض نشاطي ← إعلاناتي عدادات عادي / فضي / ذهبي، وكل منها يساوي رقم نفس الفئة في رصيد الحساب.",
+          "بدون إعلانات متبقية في الباقات يظهر شريط الإعلان المجاني بدلاً منها (بعدد الإعلانات المجانية الحقيقي).",
+          "لا تظهر أبداً أرقام مؤقتة (1 / 12 / 5).",
+          "تتحدّث العدادات بعد النشر برصيد باقة، عند العودة إلى نشاطي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Buy a silver package (or use an account that has one), open رصيد الحساب and note the counts, then open نشاطي — the same counts show.",
+          "Publish an ad with that package, return to نشاطي — the فضي counter dropped by one.",
+          "With an account that has never bought a package — the free-quota banner shows, no counters.",
+        ],
+        ar: [
+          "اشترِ باقة فضية (أو استخدم حساباً لديه واحدة)، افتح رصيد الحساب ودوّن الأرقام، ثم افتح نشاطي — تظهر نفس الأرقام.",
+          "انشر إعلاناً بتلك الباقة وارجع إلى نشاطي — نقص عداد فضي بواحد.",
+          "بحساب لم يشترِ باقة من قبل — يظهر شريط الإعلان المجاني بدون عدادات.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-companies-search-filter-sort",
+      title: {
+        en: "شركات tab: search keeps the keyboard, تصفية البحث + الترتيب حسب sheets, dimmed طلب عرض سعر sheet",
+        ar: "تبويب الشركات: البحث لا يغلق الكيبورد، ونافذتا تصفية البحث والترتيب حسب، ونافذة طلب عرض سعر بخلفية داكنة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fixes on the شركات tab: (1) typing in 'ابحث باسم الشركة' closed the keyboard after every letter — the list header was rebuilt as a new component on each keystroke, remounting the input. (2) The row next to the search box now has the two icons from the design: تصفية البحث opens the company category sheet (الكل + categories, عرض النتائج / إعادة التعيين), and الترتيب حسب opens a sort sheet (الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً). Previously the single icon pushed the property search screen full-screen with the property (بيع/ايجار/بدل) filter sheet on top. (3) The طلب عرض سعر sheet now has the same dimmed backdrop as the app's other sheets, so it reads as a bottom sheet. API: GET /users/companies accepts sort=NEWEST|RATING_DESC|RATING_ASC|PROJECTS_DESC (default NEWEST = newest first; rating sorts break ties by review count).",
+        ar: "إصلاح بلاغات QA في تبويب الشركات: (1) الكتابة في 'ابحث باسم الشركة' كانت تغلق الكيبورد بعد كل حرف — كانت ترويسة القائمة تُبنى كمكوّن جديد مع كل ضغطة فيُعاد تركيب الحقل. (2) بجوار خانة البحث أصبحت هناك الأيقونتان حسب التصميم: تصفية البحث تفتح نافذة تصنيفات الشركات (الكل + التصنيفات، عرض النتائج / إعادة التعيين)، والترتيب حسب تفتح نافذة ترتيب (الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً). سابقاً كانت الأيقونة الوحيدة تفتح شاشة بحث العقارات بملء الشاشة وفوقها فلتر العقارات (بيع/ايجار/بدل). (3) نافذة طلب عرض سعر أصبحت بخلفية داكنة مثل باقي النوافذ في التطبيق لتظهر كنافذة سفلية. API: يقبل GET /users/companies المعامل sort=NEWEST|RATING_DESC|RATING_ASC|PROJECTS_DESC (الافتراضي NEWEST = الأحدث أولاً؛ ترتيب التقييم يفصل التعادل بعدد المراجعات).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Typing a full company name in the search box keeps the keyboard open; results update after a short pause.",
+          "The تصفية البحث icon opens the company category sheet (not the property search screen); choosing categories and عرض النتائج filters the list, like the التصنيف row.",
+          "The الترتيب حسب icon opens الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً; each reorders the whole list, also across pages.",
+          "طلب عرض سعر opens as a bottom sheet over a dimmed background.",
+        ],
+        ar: [
+          "كتابة اسم شركة كامل في خانة البحث تُبقي الكيبورد مفتوحاً؛ وتتحدّث النتائج بعد توقف قصير.",
+          "أيقونة تصفية البحث تفتح نافذة تصنيفات الشركات (وليس شاشة بحث العقارات)؛ واختيار التصنيفات ثم عرض النتائج يصفّي القائمة مثل صف التصنيف.",
+          "أيقونة الترتيب حسب تفتح الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً؛ وكل خيار يعيد ترتيب القائمة كاملة عبر الصفحات أيضاً.",
+          "طلب عرض سعر يُفتح كنافذة سفلية فوق خلفية داكنة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On شركات type 'بابل' letter by letter — the keyboard never closes and the list narrows.",
+          "Tap تصفية البحث, pick تشطيب, tap عرض النتائج — only تشطيب companies show; no full-screen search page appears.",
+          "Tap الترتيب حسب → الأعلى تقييماً — highest-rated first; scroll to load more and the order continues; الأكثر مشاريعاً orders by مشاريع مكتملة.",
+          "Tap طلب عرض سعر on a card — the sheet slides up over a darkened list.",
+        ],
+        ar: [
+          "في الشركات اكتب 'بابل' حرفاً حرفاً — لا يُغلق الكيبورد وتضيق القائمة.",
+          "اضغط تصفية البحث، اختر تشطيب، اضغط عرض النتائج — تظهر شركات التشطيب فقط؛ ولا تظهر شاشة بحث بملء الشاشة.",
+          "اضغط الترتيب حسب ← الأعلى تقييماً — الأعلى تقييماً أولاً؛ مرّر لتحميل المزيد ويستمر الترتيب؛ والأكثر مشاريعاً يرتب حسب المشاريع المكتملة.",
+          "اضغط طلب عرض سعر على بطاقة — تظهر النافذة فوق قائمة معتمة.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

@@ -13,22 +13,41 @@ export function FlashList<T>({
   renderItem,
   keyExtractor,
   ListEmptyComponent,
+  ListHeaderComponent,
 }: {
   data: readonly T[] | null | undefined;
   renderItem: (info: { item: T; index: number }) => React.ReactElement | null;
   keyExtractor?: (item: T, index: number) => string;
   ListEmptyComponent?: React.ComponentType | React.ReactElement | null;
+  ListHeaderComponent?: React.ComponentType | React.ReactElement | null;
   [key: string]: unknown;
 }) {
+  // Rendered like the real list: an element as-is, a component via
+  // createElement -- so a component recreated every render remounts here too
+  const renderSlot = (
+    slot: React.ComponentType | React.ReactElement | null | undefined,
+  ) =>
+    !slot
+      ? null
+      : React.isValidElement(slot)
+        ? slot
+        : React.createElement(slot as React.ComponentType);
+
+  const header = renderSlot(ListHeaderComponent);
+
   if (!data || data.length === 0) {
-    if (!ListEmptyComponent) return null;
-    return React.isValidElement(ListEmptyComponent)
-      ? ListEmptyComponent
-      : React.createElement(ListEmptyComponent as React.ComponentType);
+    if (!header && !ListEmptyComponent) return null;
+    return (
+      <View>
+        {header}
+        {renderSlot(ListEmptyComponent)}
+      </View>
+    );
   }
 
   return (
     <View>
+      {header}
       {data.map((item, index) => (
         <React.Fragment key={keyExtractor ? keyExtractor(item, index) : index}>
           {renderItem({ item, index })}

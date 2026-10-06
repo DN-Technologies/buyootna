@@ -12,7 +12,10 @@ interface ActivityTabsRowProps<T extends string> {
   tabs: ActivityTab<T>[];
   activeTab: T;
   onTabChange: (tab: T) => void;
-  onFilterPress: () => void;
+  // Omit to hide the filter button (tabs without filters)
+  onFilterPress?: () => void;
+  // Shows a dot on the filter button while a non-default filter is applied
+  isFilterActive?: boolean;
   onSortPress: () => void;
 }
 
@@ -21,6 +24,7 @@ export default function ActivityTabsRow<T extends string>({
   activeTab,
   onTabChange,
   onFilterPress,
+  isFilterActive = false,
   onSortPress,
 }: ActivityTabsRowProps<T>) {
   return (
@@ -56,13 +60,22 @@ export default function ActivityTabsRow<T extends string>({
       </View>
 
       {/* Filter Button */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onFilterPress}
-        className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
-      >
-        <FilterHorizontalIcon size={18} color="#111111" />
-      </TouchableOpacity>
+      {onFilterPress && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onFilterPress}
+          accessibilityLabel="تصفية البحث"
+          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
+        >
+          <FilterHorizontalIcon size={18} color="#111111" />
+          {isFilterActive && (
+            <View
+              testID="activity-filter-active-dot"
+              className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#15304D]"
+            />
+          )}
+        </TouchableOpacity>
+      )}
 
       {/* Sort Button */}
       <TouchableOpacity

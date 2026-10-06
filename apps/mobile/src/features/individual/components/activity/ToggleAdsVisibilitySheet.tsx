@@ -1,12 +1,12 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HideEyeIcon, ShowEyeIcon } from '@/assets/icons/activity';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export type AdsVisibilityMode = 'hide' | 'show';
 
@@ -68,7 +68,7 @@ const ToggleAdsVisibilitySheet = forwardRef<
         borderTopRightRadius: 24,
       }}
     >
-      <BottomSheetView className="flex-1 justify-between bg-white px-4 pb-8 pt-2">
+      <SafeBottomSheetView className="flex-1 justify-between bg-white px-4 pb-8 pt-2">
         <View className="items-center">
           {/* Circular Icon Container */}
           <View className="mb-4 h-[75px] w-[75px] items-center justify-center rounded-full bg-[#F9FAFE]">
@@ -121,7 +121,7 @@ const ToggleAdsVisibilitySheet = forwardRef<
             </Text>
           </TouchableOpacity>
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

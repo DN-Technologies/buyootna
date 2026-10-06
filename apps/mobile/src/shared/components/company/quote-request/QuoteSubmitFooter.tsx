@@ -21,7 +21,7 @@ export default function QuoteSubmitFooter({
     <BottomSheetFooter {...footerProps}>
       <View
         className="border-t border-gray-100 bg-white px-6 pt-3"
-        style={{ paddingBottom: Math.max(bottomInset, 16) }}
+        style={{ paddingBottom: bottomInset + 16 }}
       >
         <TouchableOpacity
           testID="quote-request-submit"

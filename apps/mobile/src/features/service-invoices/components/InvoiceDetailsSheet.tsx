@@ -8,6 +8,7 @@ import type { ServiceInvoice } from '@/shared/api/serviceInvoices.service';
 import type { InvoicesMode } from '../types';
 import InvoiceReceipt from './InvoiceReceipt';
 import SheetBackdrop from './SheetBackdrop';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface InvoiceDetailsSheetProps {
   invoice: ServiceInvoice | null;
@@ -88,6 +89,7 @@ const InvoiceDetailsSheet = forwardRef<BottomSheetModal, InvoiceDetailsSheetProp
     ref,
   ) => {
     const snapPoints = useMemo(() => ['88%'], []);
+    const insets = useSafeAreaInsets();
     const dismiss = useCallback(() => {
       if (ref && 'current' in ref) ref.current?.dismiss();
     }, [ref]);
@@ -125,7 +127,11 @@ const InvoiceDetailsSheet = forwardRef<BottomSheetModal, InvoiceDetailsSheetProp
               <InvoiceReceipt invoice={invoice} />
             </BottomSheetScrollView>
 
-            <View className="flex-row gap-2 border-t border-[#F1F1F1] px-5 pb-8 pt-3">
+            {/* Clear of the home indicator / nav bar */}
+            <View
+              className="flex-row gap-2 border-t border-[#F1F1F1] px-5 pt-3"
+              style={{ paddingBottom: insets.bottom + 16 }}
+            >
               <ActionButton
                 testID="invoice-details-download"
                 label="تحميل"

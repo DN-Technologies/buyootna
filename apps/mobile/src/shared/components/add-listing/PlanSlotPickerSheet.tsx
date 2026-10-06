@@ -2,12 +2,12 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { PublishOption } from '@/shared/api/plans.service';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface PlanSlotPickerSheetProps {
   options: PublishOption[];
@@ -52,7 +52,7 @@ const PlanSlotPickerSheet = forwardRef<
       handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView className="flex-1 justify-between px-6 pb-8 pt-4">
+      <SafeBottomSheetView className="flex-1 justify-between px-6 pb-8 pt-4">
         <View>
           <Text className="mb-1 text-center font-cairo-bold text-xl text-[#111111]">
             اختر الباقة لنشر الإعلان
@@ -118,7 +118,7 @@ const PlanSlotPickerSheet = forwardRef<
             متابعة النشر
           </Text>
         </TouchableOpacity>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

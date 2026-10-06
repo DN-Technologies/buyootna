@@ -31,7 +31,8 @@ export default function AccountBalanceScreen() {
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          // Room for the fixed actions + bottom inset below the last row
+          contentContainerStyle={{ paddingBottom: 200 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

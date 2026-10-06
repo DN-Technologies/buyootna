@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import {
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface ChangePasswordOtpSheetProps {
   otpInputRef?: React.RefObject<TextInput | null>;
@@ -102,7 +102,7 @@ export const ChangePasswordOtpSheet = forwardRef<
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView testID={testID} className="flex-1 px-6 pb-8 pt-4">
+        <SafeBottomSheetView testID={testID} className="flex-1 px-6 pb-8 pt-4">
           {/* Close button X */}
           <View className="mb-4 flex-row items-center justify-between">
             <TouchableOpacity onPress={handleClose} className="p-1">
@@ -212,7 +212,7 @@ export const ChangePasswordOtpSheet = forwardRef<
               </Text>
             )}
           </TouchableOpacity>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

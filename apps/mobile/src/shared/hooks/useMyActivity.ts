@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import apiClient from '@/shared/api/api';
+import { plansService, type UserWallet } from '@/shared/api/plans.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export type ActivityListingStatus =
@@ -52,19 +53,47 @@ interface MyActivityData {
 async function fetchMyActivity(
   status?: ActivityListingStatus,
 ): Promise<MyActivityData> {
-  const [activityResponse, userResponse] = await Promise.all([
+  const [activityResponse, userResponse, wallet] = await Promise.all([
     apiClient.get<ActivityItem[]>('/properties/me/activity', {
       params: status ? { status } : undefined,
     }),
     apiClient.get('/users/me'),
+    // A wallet failure must not take down the ad list -- fall back to the
+    // free-quota banner instead.
+    plansService.getWallet().catch(() => null),
   ]);
+
+  const subscription = subscriptionFromWallet(wallet);
 
   return {
     activity: activityResponse.data,
     freeAdsRemaining: userResponse.data?.user?.freeAdsRemaining ?? 0,
-    hasSubscription: userResponse.data?.user?.hasSubscription ?? false,
-    subscription: userResponse.data?.user?.subscription,
+    hasSubscription: !!subscription,
+    subscription,
   };
+}
+
+/**
+ * Remaining paid-package ads per tier, from the real wallet (the same
+ * GET /plans/wallet balanceCounts رصيد الحساب shows). /users/me's
+ * `hasSubscription`/`subscription` are hardcoded placeholders on the API,
+ * so purchased packages never showed up on My Activity (QA).
+ */
+export function subscriptionFromWallet(
+  wallet: UserWallet | null | undefined,
+): SubscriptionInfo | undefined {
+  const counts = wallet?.balanceCounts;
+  if (!counts) return undefined;
+  const subscription: SubscriptionInfo = {
+    goldRemaining: counts.gold ?? 0,
+    silverRemaining: counts.silver ?? 0,
+    normalRemaining: counts.regular ?? 0,
+  };
+  const total =
+    subscription.goldRemaining +
+    subscription.silverRemaining +
+    subscription.normalRemaining;
+  return total > 0 ? subscription : undefined;
 }
 
 export function useMyActivity(status?: ActivityListingStatus) {

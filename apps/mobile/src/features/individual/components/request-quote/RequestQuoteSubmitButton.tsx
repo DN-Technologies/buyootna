@@ -1,4 +1,5 @@
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export interface RequestQuoteSubmitButtonProps {
   isSubmitting: boolean;
@@ -9,8 +10,14 @@ export default function RequestQuoteSubmitButton({
   isSubmitting,
   onSubmit,
 }: RequestQuoteSubmitButtonProps) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View className="border-t border-gray-100 px-5 py-4">
+    // Clear of the home indicator / nav bar (the screen's bottom edge isn't safe)
+    <View
+      className="border-t border-gray-100 px-5 pt-4"
+      style={{ paddingBottom: insets.bottom + 16 }}
+    >
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={onSubmit}

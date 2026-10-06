@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
-import { GetCompaniesFilterDto } from '../../company/dto/get-companies-filter.dto';
+import {
+  CompanySort,
+  GetCompaniesFilterDto,
+} from '../../company/dto/get-companies-filter.dto';
 import { GetOfficesFilterDto } from '../../office/dto/get-offices-filter.dto';
 import {
   OFFICE_LISTING_PROPERTY_SELECT,
@@ -19,7 +22,7 @@ export class UsersDirectoryService {
 
   // --- Find Companies ---
   async findCompanies(filters: GetCompaniesFilterDto) {
-    const { category, search, page = 1, limit = 10 } = filters;
+    const { category, search, sort = 'NEWEST', page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const companyDataWhere: Prisma.CompanyIdentityDataWhereInput = {
@@ -58,19 +61,41 @@ export class UsersDirectoryService {
       user: { isDisabled: false, isBlocked: false },
     };
 
-    const [identities, totalCount] = await Promise.all([
-      this.prisma.identity.findMany({
+    let formattedCompanies: Awaited<
+      ReturnType<ProviderCardsService['formatCompanyCards']>
+    >;
+    let totalCount: number;
+
+    if (sort === 'NEWEST') {
+      const [identities, count] = await Promise.all([
+        this.prisma.identity.findMany({
+          where: whereClause,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          include: { companyData: true, user: true },
+        }),
+        this.prisma.identity.count({ where: whereClause }),
+      ]);
+      formattedCompanies =
+        await this.providerCards.formatCompanyCards(identities);
+      totalCount = count;
+    } else {
+      // Rating and projects are aggregates computed per card (reviews,
+      // properties), not columns, so the DB can't order by them: score
+      // every matching approved company, sort, then page in memory.
+      const identities = await this.prisma.identity.findMany({
         where: whereClause,
-        skip,
-        take: limit,
         orderBy: { createdAt: 'desc' },
         include: { companyData: true, user: true },
-      }),
-      this.prisma.identity.count({ where: whereClause }),
-    ]);
-
-    const formattedCompanies =
-      await this.providerCards.formatCompanyCards(identities);
+      });
+      const all = await this.providerCards.formatCompanyCards(identities);
+      formattedCompanies = sortCompanyCards(all, sort).slice(
+        skip,
+        skip + limit,
+      );
+      totalCount = all.length;
+    }
 
     return {
       data: formattedCompanies,
@@ -296,4 +321,28 @@ export class UsersDirectoryService {
       properties: formatOfficeListings(identity.properties, officeData.name),
     };
   }
+}
+
+type CompanyCard = Awaited<
+  ReturnType<ProviderCardsService['formatCompanyCards']>
+>[number];
+
+// Stable sort, so ties keep the newest-first order they arrive in
+export function sortCompanyCards(
+  cards: CompanyCard[],
+  sort: CompanySort,
+): CompanyCard[] {
+  const byRating = (a: CompanyCard, b: CompanyCard) =>
+    a.rating - b.rating || a.reviewsCount - b.reviewsCount;
+  const compare: Record<
+    CompanySort,
+    ((a: CompanyCard, b: CompanyCard) => number) | null
+  > = {
+    NEWEST: null,
+    RATING_DESC: (a, b) => byRating(b, a),
+    RATING_ASC: byRating,
+    PROJECTS_DESC: (a, b) => Number(b.projectsCount) - Number(a.projectsCount),
+  };
+  const fn = compare[sort];
+  return fn ? [...cards].sort(fn) : cards;
 }

@@ -1,12 +1,12 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useMemo } from 'react';
 
 import { getAlertDetails } from '@/features/individual/utils/alertDetails';
 import { AlertItem } from '@/shared/api/alerts.service';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 import AlertDetailsActions from './alert-details/AlertDetailsActions';
 import AlertDetailsGrid from './alert-details/AlertDetailsGrid';
@@ -57,7 +57,7 @@ const AlertDetailsSheet = forwardRef<BottomSheetModal, AlertDetailsSheetProps>(
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
         handleIndicatorStyle={{ backgroundColor: '#000000', width: 45, height: 5 }}
       >
-        <BottomSheetView className="flex-1 justify-between px-5 pb-6 pt-2">
+        <SafeBottomSheetView className="flex-1 justify-between px-5 pb-6 pt-2">
           <AlertDetailsHeader
             title={title}
             isActive={isActive}
@@ -74,7 +74,7 @@ const AlertDetailsSheet = forwardRef<BottomSheetModal, AlertDetailsSheetProps>(
             onEditPress={() => onEditPress?.(alert)}
             onDeletePress={() => onDeletePress?.(alert)}
           />
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

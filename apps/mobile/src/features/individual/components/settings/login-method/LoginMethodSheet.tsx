@@ -1,7 +1,6 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback } from 'react';
 import { ActivityIndicator, Text } from 'react-native';
@@ -11,6 +10,7 @@ import LoginMethodHeader from './LoginMethodHeader';
 import LoginMethodOptions from './LoginMethodOptions';
 import LoginMethodToast from './LoginMethodToast';
 import { useLoginMethod } from './useLoginMethod';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export { PHONE_NOT_VERIFIED_MESSAGE } from './constants';
 
@@ -55,7 +55,7 @@ const LoginMethodSheet = forwardRef<BottomSheetModal, LoginMethodSheetProps>(
         handleIndicatorStyle={{ backgroundColor: '#111111', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView className="px-4 pb-8 pt-2">
+        <SafeBottomSheetView className="px-4 pb-8 pt-2">
           {method.warning && (
             <LoginMethodToast kind="warning" message={method.warning} inline />
           )}
@@ -84,7 +84,7 @@ const LoginMethodSheet = forwardRef<BottomSheetModal, LoginMethodSheetProps>(
             onSave={method.save}
             onCancel={dismiss}
           />
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

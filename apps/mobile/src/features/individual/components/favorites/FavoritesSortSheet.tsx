@@ -2,10 +2,11 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 import { FavoritesTab } from './FavoritesTabs';
 
@@ -86,7 +87,7 @@ const FavoritesSortSheet = forwardRef<BottomSheetModal, FavoritesSortSheetProps>
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
         enablePanDownToClose
       >
-        <BottomSheetView className="flex-1 px-5 pb-8 pt-1">
+        <SafeBottomSheetView className="flex-1 px-5 pb-8 pt-1">
           {/* Header */}
           <View className="mb-4 flex-row items-center justify-between">
             <Text className="font-cairo-semibold text-lg text-[#111111]">
@@ -141,7 +142,7 @@ const FavoritesSortSheet = forwardRef<BottomSheetModal, FavoritesSortSheetProps>
               );
             })}
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

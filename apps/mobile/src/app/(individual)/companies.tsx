@@ -16,21 +16,38 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SortIcon } from '@/assets/icons';
-import { HomeSearchIcon } from '@/assets/icons/home/header';
+import { SortingIcon } from '@/assets/icons/activity';
+import {
+  FilterHorizontalIcon,
+  HomeSearchIcon,
+} from '@/assets/icons/home/header';
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
-import { feedService } from '@/features/individual/services/feed.service';
+import {
+  type CompanySort,
+  feedService,
+} from '@/features/individual/services/feed.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CategoryFilterSheet, {
   COMPANY_CATEGORY_OPTIONS,
 } from '@/shared/components/filters/CategoryFilterSheet';
+import RadioSelectionSheet, {
+  type RadioOption,
+} from '@/shared/components/profile/RadioSelectionSheet';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
 import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
 import { openChatWith } from '@/shared/utils/openChat';
+
+// الترتيب حسب options (design); الكل is the default newest-first order
+const COMPANY_SORT_OPTIONS: RadioOption[] = [
+  { label: 'الكل', value: 'NEWEST' },
+  { label: 'الأعلى تقييماً', value: 'RATING_DESC' },
+  { label: 'الأقل تقييماً', value: 'RATING_ASC' },
+  { label: 'الأكثر مشاريعاً', value: 'PROJECTS_DESC' },
+];
 
 export default function CompaniesScreen() {
   const router = useRouter();
@@ -38,11 +55,13 @@ export default function CompaniesScreen() {
   const { guardAction, authSheetRef } = useAuthGuard();
   const quoteModalRef = useRef<BottomSheetModal>(null);
   const categorySheetRef = useRef<BottomSheetModal>(null);
+  const sortSheetRef = useRef<BottomSheetModal>(null);
   const listRef = useRef<FlashListRef<any>>(null);
   useScrollToTop(listRef);
 
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebounce(searchText, 400);
+  const [sortBy, setSortBy] = useState<CompanySort>('NEWEST');
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
     'all',
@@ -72,13 +91,14 @@ export default function CompaniesScreen() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['companies', categoryParam, debouncedSearchText.trim()],
+    queryKey: ['companies', categoryParam, debouncedSearchText.trim(), sortBy],
     queryFn: ({ pageParam }) =>
       feedService.getCompanies(
         categoryParam,
         pageParam,
         10,
         debouncedSearchText.trim() || undefined,
+        sortBy,
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -132,7 +152,7 @@ export default function CompaniesScreen() {
         <View className="w-10" />
       </View>
 
-      {/* Filter + Search Row */}
+      {/* Search + Filter + Sort Row (RTL: search on the right) */}
       <View className="mb-3 flex-row items-center gap-2">
         <View className="h-[40px] flex-1 flex-row items-center rounded-full border border-[#ECECEC] bg-[#F9FAFE] px-4">
           <HomeSearchIcon size={18} color="#989898" />
@@ -145,17 +165,23 @@ export default function CompaniesScreen() {
             returnKeyType="search"
           />
         </View>
+        {/* تصفية البحث: the company category sheet. It used to push the
+            property /search screen with its sale/rent filter on top (QA) */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() =>
-            router.push({
-              pathname: '/search',
-              params: { openFilter: 'true' },
-            })
-          }
+          onPress={() => categorySheetRef.current?.present()}
+          accessibilityLabel="تصفية البحث"
           className="h-11 w-11 items-center justify-center rounded-full border border-[#ECECEC] bg-[#F8FAFC]"
         >
-          <SortIcon size={18} color="#111111" />
+          <FilterHorizontalIcon size={18} color="#111111" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => sortSheetRef.current?.present()}
+          accessibilityLabel="الترتيب حسب"
+          className="h-11 w-11 items-center justify-center rounded-full border border-[#ECECEC] bg-[#F8FAFC]"
+        >
+          <SortingIcon size={18} color="#111111" />
         </TouchableOpacity>
       </View>
 
@@ -171,7 +197,7 @@ export default function CompaniesScreen() {
         >
           {categoryLabel}
         </Text>
-        <Feather name="chevron-up" size={16} color="#111111" />
+        <Feather name="chevron-down" size={16} color="#111111" />
       </TouchableOpacity>
     </View>
   );
@@ -209,7 +235,10 @@ export default function CompaniesScreen() {
           ref={listRef}
           data={data}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
+          // An element, not the function: a new component type every
+          // render remounted the search TextInput on each keystroke, closing
+          // the keyboard after every letter (QA)
+          ListHeaderComponent={renderHeader()}
           ListEmptyComponent={renderEmptyComponent}
           contentContainerStyle={{
             paddingHorizontal: 20,
@@ -256,6 +285,14 @@ export default function CompaniesScreen() {
         ref={categorySheetRef}
         selected={selectedCategories}
         onChange={setSelectedCategories}
+      />
+      <RadioSelectionSheet
+        ref={sortSheetRef}
+        title="الترتيب حسب"
+        options={COMPANY_SORT_OPTIONS}
+        selectedValue={sortBy}
+        onSelect={(value) => setSortBy(value as CompanySort)}
+        snapPoints={['45%']}
       />
       <AuthGuardSheet ref={authSheetRef} />
     </SafeAreaView>
