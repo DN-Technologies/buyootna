@@ -731,12 +731,14 @@ export const mobileShared: DocSection = {
           "After reinstall, the stale auth_token/session_id are removed from the Keychain and never sent to the API.",
           "An existing install (sentinel present) still restores its session on cold boot.",
           "If the sentinel read/write fails, the app boots logged out (fail-secure), never auto-restoring a possibly-stale session.",
+          "OTA safety: an older 1.4.0 binary without the AsyncStorage native module (iOS build 10, Android versionCode 4) skips the sentinel check and keeps its session, instead of being logged out on every launch.",
         ],
         ar: [
           "احذف التطبيق أثناء تسجيل الدخول ثم أعد تثبيته: التشغيل الأول يعرض شاشة الترحيب/تسجيل الدخول — دون استعادة تلقائية للجلسة.",
           "بعد إعادة التثبيت يُحذف auth_token/session_id القديمان من Keychain ولا يُرسلان للواجهة البرمجية أبداً.",
           "التثبيت القائم (العلامة موجودة) يستعيد جلسته عند التشغيل البارد كالسابق.",
           "عند فشل قراءة/كتابة العلامة يفتح التطبيق مسجّل الخروج (سلوك آمن)، ولا تُستعاد جلسة قد تكون قديمة أبداً.",
+          "أمان تحديثات OTA: نسخة 1.4.0 أقدم لا تحتوي وحدة AsyncStorage الأصلية (iOS build 10، Android versionCode 4) تتخطى فحص العلامة وتحتفظ بجلستها، بدلاً من تسجيل خروجها مع كل تشغيل.",
         ],
       },
       testScenarios: {
@@ -751,7 +753,7 @@ export const mobileShared: DocSection = {
           "حاكِ فشل تخزين العلامة — يفتح التطبيق مسجّل الخروج بدلاً من الاستعادة.",
         ],
       },
-      updatedIn: "feat/company-more-edit-profile",
+      updatedIn: "fix/ota-asyncstorage-guard",
     },
     {
       id: "mobile-western-numerals",
