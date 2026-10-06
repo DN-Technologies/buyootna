@@ -31,6 +31,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
+// Default: this binary ships the AsyncStorage native module
+jest.mock('../installStorage', () => ({
+  hasInstallStorage: jest.fn(() => true),
+}));
+
 jest.mock('@/shared/api/api', () => ({
   __esModule: true,
   default: {
@@ -470,6 +475,34 @@ describe('useAuthStore', () => {
       expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
       expect(useAuthStore.getState().token).toBe('tok-1');
       expect(useAuthStore.getState().user).toEqual(user);
+    });
+
+    // OTA safety: older 1.4.0 binaries lack the AsyncStorage native module.
+    // There every call throws, and the fail-secure catch would log the user
+    // out on each launch -- they must skip the check and keep the session.
+    it('skips the install check and restores the session when AsyncStorage is missing', async () => {
+      const { hasInstallStorage } = jest.requireMock('../installStorage');
+      (hasInstallStorage as jest.Mock).mockReturnValueOnce(false);
+      (AsyncStorage.getItem as jest.Mock).mockRejectedValue(
+        new Error('Native module is null'),
+      );
+      (SecureStore.getItemAsync as jest.Mock)
+        .mockResolvedValueOnce('tok-1')
+        .mockResolvedValueOnce('session-1');
+      const user = buildUser();
+      const identity = buildIdentity();
+      mockApiClient.get.mockResolvedValueOnce({
+        data: { user, activeIdentity: identity, identities: [identity] },
+      });
+
+      await useAuthStore.getState().loadPersistedAuth();
+
+      expect(AsyncStorage.getItem).not.toHaveBeenCalled();
+      expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
+      expect(useAuthStore.getState().token).toBe('tok-1');
+
+      // clearAllMocks keeps implementations: restore the default sentinel
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue('1');
     });
   });
 

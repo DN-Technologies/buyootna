@@ -6,6 +6,7 @@ import apiClient, { setAuthToken, setOnUnauthorized } from '@/shared/api/api';
 import { socketService } from '@/shared/services/socket.service';
 
 import { clearIdentityScopedStores } from './identityScopedStores';
+import { hasInstallStorage } from './installStorage';
 import { useChatStore } from './useChatStore';
 
 export type IdentityType = 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
@@ -227,17 +228,23 @@ export const useAuthStore = create<AuthState>((set, get) => {
         // and any Keychain session left behind must be dropped. Failure
         // mode is fail-secure — if sentinel handling throws, we fall into
         // the outer catch and boot logged out.
-        const installSentinel = await AsyncStorage.getItem(
-          INSTALL_SENTINEL_KEY,
-        );
-        if (!installSentinel) {
-          await SecureStore.deleteItemAsync('auth_token');
-          await SecureStore.deleteItemAsync('session_id');
+        //
+        // Binaries without the AsyncStorage native module (older 1.4.0
+        // builds reached by OTA) skip the check: there every call throws,
+        // and the fail-secure path would log the user out on every launch.
+        if (hasInstallStorage()) {
+          const installSentinel = await AsyncStorage.getItem(
+            INSTALL_SENTINEL_KEY,
+          );
+          if (!installSentinel) {
+            await SecureStore.deleteItemAsync('auth_token');
+            await SecureStore.deleteItemAsync('session_id');
+            await AsyncStorage.setItem(INSTALL_SENTINEL_KEY, '1');
+            set({ token: null, sessionId: null, isLoading: false });
+            return;
+          }
           await AsyncStorage.setItem(INSTALL_SENTINEL_KEY, '1');
-          set({ token: null, sessionId: null, isLoading: false });
-          return;
         }
-        await AsyncStorage.setItem(INSTALL_SENTINEL_KEY, '1');
 
         const token = await SecureStore.getItemAsync('auth_token');
         if (token) {
