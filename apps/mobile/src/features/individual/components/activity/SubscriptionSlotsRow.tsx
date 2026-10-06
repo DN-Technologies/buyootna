@@ -18,7 +18,7 @@ export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlots
       {/* Normal slot card */}
       <View style={styles.cardNormal}>
         <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111] mb-0.5">
-          {subscription?.normalRemaining ?? 1}
+          {subscription?.normalRemaining ?? 0}
         </Text>
         <Text className="font-cairo text-[13px] leading-[18px] text-[#6B6A6A]">
           عادي
@@ -28,7 +28,7 @@ export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlots
       {/* Silver slot card */}
       <View style={styles.cardNormal}>
         <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111] mb-0.5">
-          {subscription?.silverRemaining ?? 12}
+          {subscription?.silverRemaining ?? 0}
         </Text>
         <Text className="font-cairo text-[13px] leading-[18px] text-[#6B6A6A]">
           فضي
@@ -44,7 +44,7 @@ export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlots
           style={styles.gradient}
         >
           <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111] mb-0.5">
-            {subscription?.goldRemaining ?? 5}
+            {subscription?.goldRemaining ?? 0}
           </Text>
           <Text className="font-cairo-bold text-[13px] leading-[18px] text-[#111111]">
             ذهبي

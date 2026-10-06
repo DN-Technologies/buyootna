@@ -1274,5 +1274,44 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-activity-package-balance",
+      title: {
+        en: "My Activity shows the remaining ads from purchased packages",
+        ar: "نشاطي يعرض الإعلانات المتبقية من الباقات المشتراة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after buying an ad package, رصيد الحساب showed the remaining ads but نشاطي → إعلاناتي never did. My Activity decided between the free-quota banner and the عادي / فضي / ذهبي counters from /users/me's hasSubscription/subscription, which the API still returns as a placeholder (hardcoded 5/12/1, only for test emails/company/office). It now reads the real wallet (GET /plans/wallet balanceCounts — the same numbers as رصيد الحساب): with any remaining package ads it shows the three counters with the real per-tier remaining counts; with none it falls back to the free-quota banner. If the wallet request fails the ad list still loads with the free-quota banner. The republish sheet's fallback credit counts use the same real numbers.",
+        ar: "إصلاح بلاغ QA: بعد شراء باقة إعلانات كان رصيد الحساب يعرض الإعلانات المتبقية بينما لم يعرضها نشاطي ← إعلاناتي أبداً. كان نشاطي يختار بين شريط الإعلان المجاني وعدادات عادي / فضي / ذهبي بناءً على hasSubscription/subscription من /users/me، والتي لا تزال الواجهة الخلفية ترجعها كقيمة مؤقتة (5/12/1 ثابتة، لحسابات الاختبار/الشركات/المكاتب فقط). الآن يقرأ المحفظة الحقيقية (GET /plans/wallet balanceCounts — نفس أرقام رصيد الحساب): عند وجود إعلانات متبقية في أي باقة تظهر العدادات الثلاثة بالأرقام الحقيقية لكل فئة؛ وعند عدم وجودها يظهر شريط الإعلان المجاني. وإذا فشل طلب المحفظة تُحمّل قائمة الإعلانات مع شريط الإعلان المجاني. كما تستخدم أعداد الرصيد الاحتياطية في نافذة إعادة النشر نفس الأرقام الحقيقية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With a purchased package that has ads remaining, نشاطي → إعلاناتي shows the عادي / فضي / ذهبي counters, and each equals the same tier's number on رصيد الحساب.",
+          "With no remaining package ads, the free-quota banner shows instead (with the real free-ad count).",
+          "No placeholder numbers (1 / 12 / 5) ever appear.",
+          "Counters update after publishing with a package credit, on returning to نشاطي.",
+        ],
+        ar: [
+          "مع باقة مشتراة بها إعلانات متبقية، يعرض نشاطي ← إعلاناتي عدادات عادي / فضي / ذهبي، وكل منها يساوي رقم نفس الفئة في رصيد الحساب.",
+          "بدون إعلانات متبقية في الباقات يظهر شريط الإعلان المجاني بدلاً منها (بعدد الإعلانات المجانية الحقيقي).",
+          "لا تظهر أبداً أرقام مؤقتة (1 / 12 / 5).",
+          "تتحدّث العدادات بعد النشر برصيد باقة، عند العودة إلى نشاطي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Buy a silver package (or use an account that has one), open رصيد الحساب and note the counts, then open نشاطي — the same counts show.",
+          "Publish an ad with that package, return to نشاطي — the فضي counter dropped by one.",
+          "With an account that has never bought a package — the free-quota banner shows, no counters.",
+        ],
+        ar: [
+          "اشترِ باقة فضية (أو استخدم حساباً لديه واحدة)، افتح رصيد الحساب ودوّن الأرقام، ثم افتح نشاطي — تظهر نفس الأرقام.",
+          "انشر إعلاناً بتلك الباقة وارجع إلى نشاطي — نقص عداد فضي بواحد.",
+          "بحساب لم يشترِ باقة من قبل — يظهر شريط الإعلان المجاني بدون عدادات.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };
