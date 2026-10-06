@@ -1,11 +1,11 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface DeleteAllAlertsSheetProps {
   onConfirm: () => void;
@@ -68,7 +68,7 @@ const DeleteAllAlertsSheet = forwardRef<
       handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 45 }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-2">
+      <SafeBottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-2">
         {/* Warning Icon Container */}
         <View className="h-[75px] w-[75px] items-center justify-center rounded-full bg-[#FFEBEB]">
           <WarningTriangleIcon size={32} color="#9C1E28" />
@@ -116,7 +116,7 @@ const DeleteAllAlertsSheet = forwardRef<
             </Text>
           </TouchableOpacity>
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

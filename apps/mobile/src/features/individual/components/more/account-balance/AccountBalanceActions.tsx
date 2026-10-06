@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface AccountBalanceActionsProps {
   hasHistory: boolean;
@@ -7,9 +8,14 @@ interface AccountBalanceActionsProps {
 
 export function AccountBalanceActions({ hasHistory }: AccountBalanceActionsProps) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 py-4">
+    <View
+      className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 pt-4"
+      // Clear of the home indicator / nav bar (bottom edge isn't safe)
+      style={{ paddingBottom: insets.bottom + 16 }}
+    >
       {hasHistory ? (
         <View className="gap-3">
           <TouchableOpacity

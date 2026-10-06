@@ -90,7 +90,7 @@ const CategoryFilterSheet = forwardRef<
         <View
           className="w-full border-t border-gray-100 bg-white px-5 pt-3.5 shadow-lg"
           style={{
-            paddingBottom: Math.max(insets.bottom, 16),
+            paddingBottom: insets.bottom + 16,
             elevation: 10,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: -4 },
@@ -164,7 +164,7 @@ const CategoryFilterSheet = forwardRef<
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
             paddingHorizontal: 20,
-            paddingBottom: Math.max(insets.bottom, 16) + 100,
+            paddingBottom: insets.bottom + 116,
             gap: 12,
           }}
           renderItem={({ item }) => {

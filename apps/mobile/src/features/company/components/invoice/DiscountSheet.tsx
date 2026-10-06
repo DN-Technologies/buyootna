@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import { showAlert } from '@/shared/utils/alert';
 
 import FieldLabel from './FieldLabel';
@@ -62,7 +62,7 @@ const DiscountSheet = forwardRef<BottomSheetModal, DiscountSheetProps>(
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView>
+        <SafeBottomSheetView>
           <View className="bg-white px-4 pb-8 pt-1">
             <View className="flex-row items-center justify-between pb-4">
               <TouchableOpacity
@@ -107,7 +107,7 @@ const DiscountSheet = forwardRef<BottomSheetModal, DiscountSheetProps>(
               </TouchableOpacity>
             </View>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

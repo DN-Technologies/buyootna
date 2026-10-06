@@ -2,7 +2,6 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetScrollView,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
@@ -22,6 +21,7 @@ import {
   publishedDate,
 } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface PropertyDetailsSheetProps {
   property: PropertyDetailsDto | null;
@@ -94,7 +94,7 @@ const PropertyDetailsSheet = forwardRef<
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView className="flex-1">
+        <SafeBottomSheetView className="flex-1">
           <PropertyDetailsSheetHeader
             title={displayTitle}
             showActions={Boolean(property)}
@@ -166,7 +166,7 @@ const PropertyDetailsSheet = forwardRef<
               </View>
             </BottomSheetScrollView>
           )}
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

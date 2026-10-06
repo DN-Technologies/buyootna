@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import { forwardRef, useCallback, useState } from 'react';
@@ -20,6 +19,7 @@ import {
 } from '@/assets/icons/add-listing';
 import { plansService } from '@/shared/api/plans.service';
 import { showAlert } from '@/shared/utils/alert';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface PlusActionsSheetProps {
   onClose?: () => void;
@@ -91,7 +91,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView>
+        <SafeBottomSheetView>
           <View className="bg-white px-5 pt-2 pb-10">
             {/* --- 1. Header --- */}
             <View className="flex-row items-center justify-between pb-6">
@@ -159,7 +159,7 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
               </TouchableOpacity>
             </View>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

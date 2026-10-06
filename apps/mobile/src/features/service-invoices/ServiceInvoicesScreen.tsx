@@ -8,7 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import type { ServiceInvoice } from '@/shared/api/serviceInvoices.service';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
@@ -31,6 +34,7 @@ import type { InvoicesMode } from './types';
  */
 export default function ServiceInvoicesScreen({ mode }: { mode: InvoicesMode }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const list = useServiceInvoices(mode);
 
   const sortSheetRef = useRef<BottomSheetModal>(null);
@@ -121,7 +125,11 @@ export default function ServiceInvoicesScreen({ mode }: { mode: InvoicesMode }) 
       )}
 
       {mode === 'company' && (
-        <View className="absolute bottom-0 left-0 right-0 border-t border-[#F1F1F1] bg-white px-5 pb-8 pt-3">
+        <View
+          className="absolute bottom-0 left-0 right-0 border-t border-[#F1F1F1] bg-white px-5 pt-3"
+          // Clear of the home indicator / nav bar (bottom edge isn't safe)
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
           <TouchableOpacity
             testID="service-invoices-new"
             activeOpacity={0.8}

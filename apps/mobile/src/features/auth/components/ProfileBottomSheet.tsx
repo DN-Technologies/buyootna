@@ -2,7 +2,6 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import {
@@ -19,6 +18,7 @@ import { SafeImage as Image } from '@/shared/components/ui/SafeImage';
 import { useIdentity } from '@/shared/hooks/useIdentity';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { Identity, IdentityType } from '@/shared/store/useAuthStore';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface ProfileBottomSheetProps {
   onAddAccount: () => void;
@@ -98,7 +98,7 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
         handleIndicatorStyle={{ backgroundColor: '#111111', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 32 }}
       >
-        <BottomSheetView className="flex-1 px-6 pb-10 pt-2">
+        <SafeBottomSheetView className="flex-1 px-6 pb-10 pt-2">
           {/* Header */}
           <View className="mb-6 flex-row items-start justify-between">
             <View>
@@ -239,7 +239,7 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
               إضافة هوية جديدة
             </Text>
           </TouchableOpacity>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   }

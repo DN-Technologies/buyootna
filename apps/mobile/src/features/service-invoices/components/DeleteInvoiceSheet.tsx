@@ -1,9 +1,12 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetModal,
+} from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import SheetBackdrop from './SheetBackdrop';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface DeleteInvoiceSheetProps {
   onConfirm: () => void;
@@ -25,7 +28,7 @@ const DeleteInvoiceSheet = forwardRef<BottomSheetModal, DeleteInvoiceSheetProps>
         handleIndicatorStyle={{ backgroundColor: '#111111', width: 44 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView className="items-center px-6 pb-8 pt-3">
+        <SafeBottomSheetView className="items-center px-6 pb-8 pt-3">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-[#FFEBEB]">
             <Feather name="trash-2" size={26} color="#9C1E28" />
           </View>
@@ -66,7 +69,7 @@ const DeleteInvoiceSheet = forwardRef<BottomSheetModal, DeleteInvoiceSheetProps>
               </Text>
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

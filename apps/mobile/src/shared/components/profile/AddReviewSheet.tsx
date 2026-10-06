@@ -3,10 +3,10 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetTextInput,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface AddReviewSheetProps {
   onSubmit: (comment: string, rating: number) => void;
@@ -66,7 +66,7 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
         // window never resizes, and in that mode the sheet doesn't move either,
         // so the keyboard covered it. The default lets the sheet rise itself.
       >
-        <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
+        <SafeBottomSheetView className="flex-1 px-6 pb-8 pt-2">
           {/* Header Row */}
           <View className="mb-3 flex-row items-center justify-between">
             <Text className="font-cairo-bold text-lg text-[#111111]">
@@ -130,7 +130,7 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
           >
             <Text className="font-cairo-bold text-base text-white">نشر</Text>
           </TouchableOpacity>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

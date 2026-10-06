@@ -2,13 +2,13 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import SelectionCard from '@/shared/components/ui/SelectionCard';
 import { AccountType } from '@/types';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 // Company option stays hidden unless explicitly enabled via env
 // (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the feat/companies
@@ -58,7 +58,7 @@ const AccountTypeBottomSheet = forwardRef<
       handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
+      <SafeBottomSheetView className="flex-1 px-6 pb-8 pt-2">
         {/* Header Section */}
         <View className="mb-6 flex-row items-start justify-between">
           <Text className="mb-2 mt-3 font-cairo-semibold text-xl text-charcoal">
@@ -102,7 +102,7 @@ const AccountTypeBottomSheet = forwardRef<
             />
           )}
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

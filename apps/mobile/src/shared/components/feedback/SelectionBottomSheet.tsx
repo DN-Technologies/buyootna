@@ -2,10 +2,10 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface SelectionBottomSheetProps {
   title: string;
@@ -47,7 +47,7 @@ const SelectionBottomSheet = forwardRef<
       backdropComponent={renderBackdrop}
       enablePanDownToClose={true}
     >
-      <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
+      <SafeBottomSheetView className="flex-1 px-6 pb-8 pt-2">
         <View className="mb-6 flex-row items-center justify-between">
           <Text className="font-cairo-semibold text-xl text-[#111111]">
             {title}
@@ -89,7 +89,7 @@ const SelectionBottomSheet = forwardRef<
             );
           })}
         </ScrollView>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

@@ -9,7 +9,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import {
@@ -39,6 +42,7 @@ type AlertTab = 'properties' | 'auctions';
 
 export default function AddAlertScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
   const [activeTab, setActiveTab] = useState<AlertTab>('properties');
@@ -226,7 +230,11 @@ export default function AddAlertScreen() {
         </ScrollView>
 
         {/* --- Submit Button --- */}
-        <View className="border-t border-gray-100 px-5 py-4">
+        {/* Clear of the home indicator / nav bar (bottom edge isn't safe) */}
+        <View
+          className="border-t border-gray-100 px-5 pt-4"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleSubmit}

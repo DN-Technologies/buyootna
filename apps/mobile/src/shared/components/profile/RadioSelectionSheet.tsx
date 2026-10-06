@@ -2,10 +2,10 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface RadioOption {
   label: string;
@@ -79,7 +79,7 @@ const RadioSelectionSheet = forwardRef<
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="flex-1 px-6 pb-8 pt-2">
+        <SafeBottomSheetView className="flex-1 px-6 pb-8 pt-2">
           {/* Header Row */}
           <View className="mb-6 flex-row items-center justify-between">
             <Text className="font-cairo-bold text-lg text-[#111111]">
@@ -136,7 +136,7 @@ const RadioSelectionSheet = forwardRef<
               );
             })}
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

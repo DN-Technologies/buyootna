@@ -2,13 +2,13 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { SafeLinearGradient } from '@/shared/components/ui/SafeLinearGradient';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface SuccessBottomSheetProps {
   title: string;
@@ -76,7 +76,7 @@ const SuccessBottomSheet = forwardRef<
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView
+        <SafeBottomSheetView
           accessible={false}
           className="mb-6 flex-1 items-center justify-center px-6 pb-8 pt-4"
         >
@@ -179,7 +179,7 @@ const SuccessBottomSheet = forwardRef<
               {footerText}
             </Text>
           )}
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

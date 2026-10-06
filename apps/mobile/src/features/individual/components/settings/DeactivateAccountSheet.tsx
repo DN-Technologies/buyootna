@@ -1,7 +1,6 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 
@@ -11,6 +10,7 @@ import DeactivateReasonsStep from '@/features/individual/components/settings/dea
 import { maskPhoneNumber } from '@/features/individual/components/settings/deactivate-account/format';
 import { useDeactivateAccountFlow } from '@/features/individual/components/settings/deactivate-account/useDeactivateAccountFlow';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface DeactivateAccountSheetProps {
   userPhone?: string | null;
@@ -74,7 +74,7 @@ const DeactivateAccountSheet = forwardRef<
       // window never resizes, and in that mode the sheet doesn't move either,
       // so the keyboard covered it. The default lets the sheet rise itself.
     >
-      <BottomSheetView className="flex-1 px-4 pb-8 pt-2">
+      <SafeBottomSheetView className="flex-1 px-4 pb-8 pt-2">
         {flow.step === 'intro' && (
           <DeactivateIntroStep
             onContinue={flow.goToReasons}
@@ -112,7 +112,7 @@ const DeactivateAccountSheet = forwardRef<
             onClose={flow.cancel}
           />
         )}
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });

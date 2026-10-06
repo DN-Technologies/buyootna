@@ -1,10 +1,13 @@
 import { Feather } from '@expo/vector-icons';
-import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet';
+import {
+  BottomSheetModal,
+} from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { type InvoiceSortOption, SORT_OPTIONS } from '../types';
 import SheetBackdrop from './SheetBackdrop';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface SortSheetProps {
   selected: InvoiceSortOption;
@@ -26,7 +29,7 @@ const SortSheet = forwardRef<BottomSheetModal, SortSheetProps>(
         handleIndicatorStyle={{ backgroundColor: '#111111', width: 44 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView className="px-5 pb-8 pt-1">
+        <SafeBottomSheetView className="px-5 pb-8 pt-1">
           <View className="mb-4 flex-row items-center justify-between">
             <Text className="font-cairo-semibold text-lg text-[#111111]">
               الترتيب حسب
@@ -74,7 +77,7 @@ const SortSheet = forwardRef<BottomSheetModal, SortSheetProps>(
               );
             })}
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

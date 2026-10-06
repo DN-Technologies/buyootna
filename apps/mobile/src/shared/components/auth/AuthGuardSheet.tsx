@@ -2,11 +2,11 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { useRouter } from 'expo-router';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface AuthGuardSheetProps {
   onClose?: () => void;
@@ -54,7 +54,7 @@ const AuthGuardSheet = forwardRef<BottomSheetModal, AuthGuardSheetProps>(
         handleIndicatorStyle={{ backgroundColor: '#111111', width: 40, height: 4 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="flex-1 items-center px-6 pb-8 pt-4">
+        <SafeBottomSheetView className="flex-1 items-center px-6 pb-8 pt-4">
           {/* Warning Icon Container */}
           <View className="mb-5 h-16 w-16 items-center justify-center rounded-full bg-[#FEF2F2]">
             <Feather name="alert-triangle" size={24} color="#BA0003" />
@@ -105,7 +105,7 @@ const AuthGuardSheet = forwardRef<BottomSheetModal, AuthGuardSheetProps>(
               </Text>
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   }

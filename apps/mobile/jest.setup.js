@@ -23,3 +23,12 @@ jest.mock('@tanstack/react-query', () => {
   }
   return { ...actual, QueryClient: TestQueryClient };
 });
+
+// useSafeAreaInsets() throws without a <SafeAreaProvider> ancestor, and
+// shared bottom sheets / bottom bars read the bottom inset to stay clear of
+// the home indicator. Default it to zero insets for every test (files that
+// need specific insets still jest.mock this module themselves).
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
+}));

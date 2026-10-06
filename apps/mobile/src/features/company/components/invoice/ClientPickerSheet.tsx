@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 import ClientRequestPicker from './ClientRequestPicker';
 
@@ -47,7 +48,7 @@ const ClientPickerSheet = forwardRef<BottomSheetModal, ClientPickerSheetProps>(
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
-        <BottomSheetView>
+        <SafeBottomSheetView>
           <View className="bg-white px-4 pb-8 pt-1">
             <View className="flex-row items-center justify-between pb-4">
               <TouchableOpacity
@@ -76,7 +77,7 @@ const ClientPickerSheet = forwardRef<BottomSheetModal, ClientPickerSheetProps>(
               }}
             />
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

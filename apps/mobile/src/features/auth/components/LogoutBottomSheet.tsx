@@ -2,10 +2,10 @@ import { Feather } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface LogoutBottomSheetProps {
   onLogout: () => void;
@@ -37,7 +37,7 @@ const LogoutBottomSheet = forwardRef<BottomSheetModal, LogoutBottomSheetProps>(
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
       >
-        <BottomSheetView className="flex-1 items-center px-6 pb-8 pt-4">
+        <SafeBottomSheetView className="flex-1 items-center px-6 pb-8 pt-4">
           {/* Circular Icon Container */}
           <View className="mb-5 h-16 w-16 items-center justify-center rounded-full bg-[#F5F7FA]">
             <Feather
@@ -82,7 +82,7 @@ const LogoutBottomSheet = forwardRef<BottomSheetModal, LogoutBottomSheetProps>(
               </Text>
             </TouchableOpacity>
           </View>
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   }

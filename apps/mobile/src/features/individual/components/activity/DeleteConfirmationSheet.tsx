@@ -1,13 +1,13 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, type RefObject, useCallback, useMemo } from 'react';
 
 import DeleteConfirmStep from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmStep';
 import DeleteReasonStep from '@/features/individual/components/activity/delete-confirmation/DeleteReasonStep';
 import { useDeleteReason } from '@/features/individual/components/activity/delete-confirmation/useDeleteReason';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface DeleteConfirmationSheetProps {
   onConfirm: (reason?: string) => void;
@@ -99,7 +99,7 @@ const DeleteConfirmationSheet = forwardRef<
         // window never resizes, and in that mode the sheet doesn't move either,
         // so the keyboard covered it. The default lets the sheet rise itself.
       >
-        <BottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
+        <SafeBottomSheetView className="flex-1 items-center justify-between px-6 pb-8 pt-4">
           {step === 'confirm' ? (
             <DeleteConfirmStep
               title={title}
@@ -119,7 +119,7 @@ const DeleteConfirmationSheet = forwardRef<
               onSubmit={handleSubmitReason}
             />
           )}
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

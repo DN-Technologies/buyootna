@@ -1,7 +1,6 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
@@ -19,6 +18,7 @@ import RepublishSheetActions from '@/features/individual/components/activity/rep
 import RepublishSheetText from '@/features/individual/components/activity/republish-ad/RepublishSheetText';
 import type { PublishOption } from '@/shared/api/plans.service';
 import { SubscriptionInfo } from '@/shared/hooks/useMyActivity';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export type {
   RepublishMode,
@@ -131,7 +131,7 @@ const RepublishAdSheet = forwardRef<BottomSheetModal, RepublishAdSheetProps>(
           borderTopRightRadius: 24,
         }}
       >
-        <BottomSheetView className="flex-1 justify-between bg-white px-4 pb-8 pt-2">
+        <SafeBottomSheetView className="flex-1 justify-between bg-white px-4 pb-8 pt-2">
           <View className="items-center">
             <RepublishSheetText
               mode={credits.mode}
@@ -157,7 +157,7 @@ const RepublishAdSheet = forwardRef<BottomSheetModal, RepublishAdSheetProps>(
             onPrimaryPress={handlePrimaryPress}
             onCancel={handleClose}
           />
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

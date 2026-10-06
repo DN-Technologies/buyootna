@@ -1,7 +1,6 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
@@ -12,6 +11,7 @@ import FeatureAdHeader from '@/features/individual/components/activity/feature-a
 import FeaturePackageList from '@/features/individual/components/activity/feature-ad/FeaturePackageList';
 import { useFeatureAd } from '@/features/individual/hooks/useFeatureAd';
 import { showAlert } from '@/shared/utils/alert';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface FeatureAdSheetProps {
   propertyId?: string;
@@ -73,7 +73,7 @@ const FeatureAdSheet = forwardRef<BottomSheetModal, FeatureAdSheetProps>(
           borderTopRightRadius: 24,
         }}
       >
-        <BottomSheetView className="flex-1 justify-between bg-white px-4 pb-6 pt-2">
+        <SafeBottomSheetView className="flex-1 justify-between bg-white px-4 pb-6 pt-2">
           <View>
             <FeatureAdHeader onClose={handleClose} />
             <FeatureAdBenefitsBanner />
@@ -93,7 +93,7 @@ const FeatureAdSheet = forwardRef<BottomSheetModal, FeatureAdSheetProps>(
             isProcessing={feature.isProcessing}
             onPress={handlePayment}
           />
-        </BottomSheetView>
+        </SafeBottomSheetView>
       </BottomSheetModal>
     );
   },

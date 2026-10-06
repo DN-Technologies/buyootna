@@ -1,13 +1,13 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
-  BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface QuotaExhaustedSheetProps {
   onBrowsePackages?: () => void;
@@ -63,7 +63,7 @@ const QuotaExhaustedSheet = forwardRef<
       handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
-      <BottomSheetView className="mb-6 flex-1 items-center justify-between px-6 pb-8 pt-4">
+      <SafeBottomSheetView className="mb-6 flex-1 items-center justify-between px-6 pb-8 pt-4">
         {/* --- Top content --- */}
         <View className="mt-4 items-center">
           {/* Verified Success Badge */}
@@ -109,7 +109,7 @@ const QuotaExhaustedSheet = forwardRef<
             </Text>
           </TouchableOpacity>
         </View>
-      </BottomSheetView>
+      </SafeBottomSheetView>
     </BottomSheetModal>
   );
 });
