@@ -20,13 +20,23 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
           # The build + backup + migrate + restart script takes ~10 min and
-          # the action's default 10m timeout killed a deploy mid-build.
-          command_timeout: 30m
+          # the action's default 10m timeout killed a deploy mid-build. A
+          # cold rebuild of every image one at a time (below) can take
+          # longer, so allow an hour.
+          command_timeout: 60m
           script: |
             set -e
             cd ${{ secrets.TARGET_DIR }}
             git pull origin main
-            docker compose build
+            # Build images one service at a time. A plain `docker compose
+            # build` (Bake) builds all of them in parallel; after a lockfile
+            # change that's 6 cold Next.js builds + nest at once, which used
+            # all 7.8 GiB of RAM on this box (no swap), froze it and took
+            # production down (2026-10-06). Services without a build section
+            # are no-ops.
+            for service in $(docker compose config --services); do
+              docker compose build "$service"
+            done
             docker compose up -d postgres postgres-backup
             docker compose exec -T postgres-backup /backup.sh
             BASELINE_MIGRATION="20260819132243_sync_schema_baseline"
