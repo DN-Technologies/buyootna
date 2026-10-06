@@ -137,7 +137,7 @@ export default function OfficeEditProfile() {
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate && event.type !== 'dismissed') {
-      const formattedDate = selectedDate.toLocaleDateString('ar-EG', {
+      const formattedDate = selectedDate.toLocaleDateString('ar-KW-u-nu-latn', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',

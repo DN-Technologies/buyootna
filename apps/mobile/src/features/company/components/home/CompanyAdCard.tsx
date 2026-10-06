@@ -8,6 +8,7 @@ import {
 } from '@/assets/icons/home/property';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { type ActivityItem } from '@/shared/hooks/useMyActivity';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -102,7 +103,7 @@ export default function CompanyAdCard({ ad }: CompanyAdCardProps) {
         {/* Price */}
         <View className="mt-1 w-full flex-row items-end justify-end">
           <Text className="font-cairo-semibold text-[22px] leading-[22px] text-[#15304D]">
-            {ad.price != null ? ad.price.toLocaleString('en-US') : '—'}
+            {ad.price != null ? formatNumber(ad.price) : '—'}
           </Text>
           <Text className="ml-1 font-cairo-semibold text-[12px] leading-[18px] text-[#15304D]">
             د.ك

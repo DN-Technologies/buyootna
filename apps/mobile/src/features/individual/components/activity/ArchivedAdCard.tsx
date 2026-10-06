@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   formatArabicDate,
   getArabicCategoryLabel,
@@ -69,7 +70,7 @@ export default function ArchivedAdCard({
         {/* Price Row */}
         <View className="my-1 flex-row items-baseline gap-1">
           <Text className="font-cairo-semibold text-[22px] leading-[26px] text-[#111111]">
-            {property.price ? property.price.toLocaleString() : '---'}
+            {property.price ? formatNumber(property.price) : '---'}
           </Text>
           <Text className="font-cairo-semibold text-[12px] text-[#111111]">
             د.ك

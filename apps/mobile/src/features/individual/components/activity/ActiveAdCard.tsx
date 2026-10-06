@@ -11,6 +11,7 @@ import {
 import { MoreIcon } from '@/assets/icons/activity';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -179,7 +180,7 @@ export default function ActiveAdCard({
         <View className="mb-4 flex-row items-center justify-between">
           <View className="flex-row items-baseline gap-1">
             <Text className="font-cairo-bold text-lg text-[#111111]">
-              {property.price?.toLocaleString()}
+              {formatNumber(property.price ?? 0)}
             </Text>
             <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
               د.ك

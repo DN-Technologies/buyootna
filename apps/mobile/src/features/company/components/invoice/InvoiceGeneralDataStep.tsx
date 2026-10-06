@@ -11,7 +11,7 @@ const inputClassName =
   'h-[46px] w-full rounded-md border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]';
 
 const formatKwDate = (date: Date) =>
-  date.toLocaleDateString('ar-KW', {
+  date.toLocaleDateString('ar-KW-u-nu-latn', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

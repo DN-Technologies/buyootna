@@ -15,7 +15,7 @@ export function formatDayLabel(date: Date): string {
   yesterday.setDate(today.getDate() - 1);
   if (date.toDateString() === today.toDateString()) return 'اليوم';
   if (date.toDateString() === yesterday.toDateString()) return 'أمس';
-  return date.toLocaleDateString('ar-KW', {
+  return date.toLocaleDateString('ar-KW-u-nu-latn', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

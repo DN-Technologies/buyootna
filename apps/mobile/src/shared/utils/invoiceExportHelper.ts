@@ -8,7 +8,7 @@ export async function exportInvoicesToPdf(invoices: InvoiceResponse[]): Promise<
     return false;
   }
 
-  const currentDate = new Date().toLocaleDateString('ar-EG', {
+  const currentDate = new Date().toLocaleDateString('ar-KW-u-nu-latn', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -38,7 +38,7 @@ export async function exportInvoicesToPdf(invoices: InvoiceResponse[]): Promise<
       }
 
       const invDate = inv.createdAt
-        ? new Date(inv.createdAt).toLocaleDateString('ar-EG', {
+        ? new Date(inv.createdAt).toLocaleDateString('ar-KW-u-nu-latn', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',

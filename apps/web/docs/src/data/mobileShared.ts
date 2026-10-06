@@ -753,5 +753,42 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-western-numerals",
+      title: {
+        en: "Numerals stay Western (1,234) regardless of the device language",
+        ar: "الأرقام تبقى بالصيغة الغربية (1,234) بغض النظر عن لغة الجهاز",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: with the device language set to Arabic, prices and counts rendered Eastern Arabic numerals (١٬٢٣٤) because ~20 call sites used bare toLocaleString(), which follows the device locale. All number formatting now goes through a shared formatNumber() helper pinned to en-US, so digits stay 1, 2, 3 everywhere (ad cards, My Ads cards, chat property bubbles, office cards, alerts, invoice totals). Arabic dates keep their Arabic month names but also render Western digits — every ar-KW/ar-EG date format is pinned to ar-KW-u-nu-latn (matching the invoice receipt design 'الأربعاء، 5 يوليو 2026 • 09:30 صباحا').",
+        ar: "إصلاح بلاغ QA: مع ضبط لغة الجهاز على العربية كانت الأسعار والأعداد تُعرض بالأرقام العربية الشرقية (١٬٢٣٤) لأن نحو 20 موضعاً كانت تستخدم toLocaleString() بدون تحديد لغة، فتتبع لغة الجهاز. الآن يمر كل تنسيق أرقام عبر مساعد مشترك formatNumber() مثبّت على en-US، فتبقى الأرقام 1، 2، 3 في كل الشاشات (بطاقات الإعلانات، بطاقات نشاطي، فقاعات العقار في المحادثات، بطاقات المكتب، التنبيهات، إجماليات الفواتير). والتواريخ العربية تحتفظ بأسماء الأشهر العربية لكنها أيضاً تعرض أرقاماً غربية — كل صيغ ar-KW/ar-EG مثبتة على ar-KW-u-nu-latn (مطابقة تصميم إيصال الفاتورة 'الأربعاء، 5 يوليو 2026 • 09:30 صباحا').",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the device language set to Arabic, prices and ad counts on all cards (Home, My Ads, chat, office, alerts) render Western digits with thousands separators (e.g. 1,234 د.ك) — never ١٬٢٣٤.",
+          "Arabic dates (chat timestamps, notifications, invoice dates, license expiry) keep Arabic month names but Western digits, regardless of device language.",
+          "Number formatting is centralized in shared/utils/formatNumber; new code must not call toLocaleString() bare.",
+        ],
+        ar: [
+          "مع ضبط لغة الجهاز على العربية، تعرض الأسعار وأعداد الإعلانات في كل البطاقات (الرئيسية، نشاطي، المحادثات، المكتب، التنبيهات) أرقاماً غربية مع فواصل الآلاف (مثل 1,234 د.ك) — وليس ١٬٢٣٤ أبداً.",
+          "التواريخ العربية (طوابع المحادثة، الإشعارات، تواريخ الفواتير، انتهاء الرخصة) تحتفظ بأسماء الأشهر العربية بأرقام غربية بغض النظر عن لغة الجهاز.",
+          "تنسيق الأرقام مركزي في shared/utils/formatNumber؛ ولا يجوز للكود الجديد استدعاء toLocaleString() بدون تحديد لغة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Set the iOS device language to Arabic and open Home, My Ads and chat — all prices show Western digits (e.g. 150,000 د.ك).",
+          "Open an invoice review — the issue date shows Arabic month names with Western digits (e.g. 5 يوليو 2026).",
+          "Run formatNumber.spec.ts and the card suites — all pass with Western-digit expectations.",
+        ],
+        ar: [
+          "اضبط لغة جهاز iOS على العربية وافتح الرئيسية ونشاطي والمحادثات — كل الأسعار بأرقام غربية (مثل 150,000 د.ك).",
+          "افتح مراجعة فاتورة — يظهر تاريخ الإصدار بأسماء أشهر عربية وأرقام غربية (مثل 5 يوليو 2026).",
+          "شغّل formatNumber.spec.ts واختبارات البطاقات — تنجح جميعها بتوقعات الأرقام الغربية.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

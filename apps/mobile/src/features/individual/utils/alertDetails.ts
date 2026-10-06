@@ -11,6 +11,7 @@ import {
   OPERATION_OPTIONS,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface AlertDetailField {
   key: string;
@@ -54,7 +55,7 @@ function operationText(alert: AlertItem) {
 
 function priceText(alert: AlertItem) {
   const value = alert.operationType === 'RENT' ? alert.rentValue : alert.price;
-  return value ? `${value.toLocaleString()} د.ك` : NOT_SET;
+  return value ? `${formatNumber(value)} د.ك` : NOT_SET;
 }
 
 function dateRangeText(alert: AlertItem) {

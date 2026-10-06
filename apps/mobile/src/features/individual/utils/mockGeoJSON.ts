@@ -1,3 +1,4 @@
+import { formatNumber } from '@/shared/utils/formatNumber';
 // Define the shape of our feature properties based on the UI requirements
 export interface MapFeatureProperties {
   id: string;
@@ -39,7 +40,7 @@ export const generateMockGeoJSON = (): GeoJSON.FeatureCollection => {
 
     if (type === 'sell' || type === 'rent') {
       const price = Math.floor(Math.random() * 850 + 50) * 1000; // 50,000 to 900,000
-      properties.priceLabel = `${price.toLocaleString('en-US')} د.ك`;
+      properties.priceLabel = `${formatNumber(price)} د.ك`;
     } else if (type === 'company') {
       const rating = (Math.random() * 2 + 3).toFixed(1); // 3.0 to 5.0 rating
       properties.rating = `${rating} ★`;

@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon, LocationIcon, RulerIcon } from '@/assets/icons/home/cards';
 import { ShareIcon } from '@/assets/icons/home/property';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface FavoritePropertyCardProps {
   id: string;
@@ -33,12 +34,12 @@ export default function FavoritePropertyCard({
   onShare,
 }: FavoritePropertyCardProps) {
   const formattedPrice =
-    typeof price === 'number' ? price.toLocaleString('en-US') : price;
+    typeof price === 'number' ? formatNumber(price) : price;
 
   const hasIncome = Number(propertyIncome) > 0;
   const formattedIncome =
     typeof propertyIncome === 'number'
-      ? propertyIncome.toLocaleString('en-US')
+      ? formatNumber(propertyIncome)
       : propertyIncome;
 
   const areaText = typeof area === 'number' ? `${area} م2` : area;

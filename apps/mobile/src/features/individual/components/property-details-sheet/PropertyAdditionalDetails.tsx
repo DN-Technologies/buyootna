@@ -2,6 +2,7 @@ import { Text, View } from 'react-native';
 
 import { LocationIcon } from '@/assets/icons/home/cards';
 import { IncomeIcon, LicenseIcon } from '@/assets/icons/home/property';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 interface PropertyAdditionalDetailsProps {
   location?: string;
@@ -51,7 +52,7 @@ export default function PropertyAdditionalDetails({
             مدخول العقار:
           </Text>
           <Text className="font-cairo-bold text-base text-[#018B1B]">
-            {propertyIncome.toLocaleString()}
+            {formatNumber(propertyIncome)}
           </Text>
           <Text className="font-cairo-semibold text-xs text-[#018B1B]">
             د.ك

@@ -6,12 +6,16 @@ interface GuestEmptyStateProps {
   icon: keyof typeof Feather.glyphMap;
   title: string;
   description: string;
+  // Hidden for states that are only reachable signed-in (e.g. the عروضي
+  // tab) — the create-account/sign-in pair is a guest-only affordance
+  showAuthActions?: boolean;
 }
 
 export default function GuestEmptyState({
   icon,
   title,
   description,
+  showAuthActions = true,
 }: GuestEmptyStateProps) {
   return (
     <View className="flex-1 items-center justify-center bg-white px-6 pb-12 pt-6">
@@ -31,29 +35,31 @@ export default function GuestEmptyState({
       </Text>
 
       {/* Actions */}
-      <View className="w-full gap-3">
-        {/* Create Account Button (Primary) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => router.push('/(auth)/selection')}
-          className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
-        >
-          <Text className="font-cairo-bold text-[15px] text-white">
-            إنشاء حساب
-          </Text>
-        </TouchableOpacity>
+      {showAuthActions && (
+        <View className="w-full gap-3">
+          {/* Create Account Button (Primary) */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push('/(auth)/selection')}
+            className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
+          >
+            <Text className="font-cairo-bold text-[15px] text-white">
+              إنشاء حساب
+            </Text>
+          </TouchableOpacity>
 
-        {/* Login Button (Secondary Outlined) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => router.push('/(auth)/individual-auth')}
-          className="h-12 w-full items-center justify-center rounded-full border border-[#15304D] bg-white"
-        >
-          <Text className="font-cairo-bold text-[15px] text-[#15304D]">
-            تسجيل دخول
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Login Button (Secondary Outlined) */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push('/(auth)/individual-auth')}
+            className="h-12 w-full items-center justify-center rounded-full border border-[#15304D] bg-white"
+          >
+            <Text className="font-cairo-bold text-[15px] text-[#15304D]">
+              تسجيل دخول
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

@@ -66,12 +66,14 @@ export const mobileIndividual: DocSection = {
       },
       acceptanceCriteria: {
         en: [
+          "Tapping ANY property card on Home — Card view (with images) or List view — opens the 'عرض تفاصيل' details sheet; the full property page opens from the sheet's عرض العقار button (previously with-image cards skipped the sheet and navigated away).",
           "A heart tapped on a Home card, in the details sheet or on an office card is still filled after closing and reopening the app, and the item appears in Favorites.",
           "Share on a card and in the details sheet opens the native share sheet.",
           "As a guest, tapping a heart opens the sign-in sheet instead of doing nothing.",
           "The chat button on an office card opens a chat with that office (not its profile); a guest is asked to sign in.",
         ],
         ar: [
+          "الضغط على أي بطاقة عقار في الرئيسية — عرض البطاقات (بصور) أو عرض القائمة — يفتح نافذة 'عرض تفاصيل'؛ وتفتح صفحة العقار الكاملة من زر عرض العقار داخل النافذة (سابقاً كانت البطاقات المصورة تتجاوز النافذة وتنتقل للصفحة).",
           "القلب المضغوط في بطاقة بالرئيسية أو في نافذة التفاصيل أو في بطاقة مكتب يبقى ممتلئاً بعد إغلاق التطبيق وفتحه، ويظهر العنصر في المفضلة.",
           "المشاركة في البطاقة وفي نافذة التفاصيل تفتح نافذة المشاركة في الجهاز.",
           "كزائر، الضغط على القلب يفتح نافذة تسجيل الدخول بدلاً من عدم فعل شيء.",
@@ -90,7 +92,7 @@ export const mobileIndividual: DocSection = {
           "في الرئيسية ← مكاتب عقارية اضغط زر المحادثة في مكتب — تفتح المحادثة معه.",
         ],
       },
-      updatedIn: "fix/office-card-chat",
+      updatedIn: "feat/company-more-edit-profile",
     },
     {
       id: "mobile-home-tabs-and-view-modes",
@@ -1196,6 +1198,78 @@ export const mobileIndividual: DocSection = {
           "بمحفظة 3 إعلانات مجانية تعرض الباقات 'متبقي 3 إعلانات' (وليس 1).",
           "بإعلان مجاني واحد تعرض 'متبقي إعلان مجاني واحد'.",
           "بصفر إعلانات وبدون حصص لا يُعرض قسم المحفظة إطلاقاً.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-activity-offers-tab-state",
+      title: {
+        en: "My Activity → عروضي: clean empty state, no auth buttons, and no ads ⋮ menu",
+        ar: "نشاطي ← عروضي: حالة فارغة نظيفة بدون أزرار تسجيل، وبدون قائمة الإعلانات",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: the عروضي (price-quote requests) tab used the shared GuestEmptyState, so it always rendered 'إنشاء حساب' / 'تسجيل الدخول' buttons even though the tab is only reachable signed-in (guests get the ActivityGuestView instead). It now renders a neutral empty state (icon + title + description, no auth actions). Also, the header ⋮ on عروضي used to open the ADS options menu (اخفاء/حذف جميع الاعلانات — the delete-ad flow), which has no meaning for quote requests: the ⋮ button is hidden on عروضي and only appears on إعلاناتي and تنبيهاتي where their dropdown menus apply.",
+        ar: "إصلاح بلاغ QA: كان تبويب عروضي (طلبات عروض السعر) يستخدم GuestEmptyState المشترك، فيعرض دائماً زرّي 'إنشاء حساب' / 'تسجيل الدخول' رغم أن التبويب لا يُفتح إلا مسجلاً (الزائر يرى ActivityGuestView بدلاً منه). الآن يعرض حالة فارغة محايدة (أيقونة + عنوان + وصف بدون أزرار تسجيل). كما أن زر ⋮ في الترويسة على عروضي كان يفتح قائمة الإعلانات (اخفاء/حذف جميع الاعلانات — فلو حذف الإعلان) بلا معنى لطلبات عرض السعر: زر ⋮ مخفي على عروضي ويظهر فقط على إعلاناتي وتنبيهاتي حيث تنطبق قائماهما المنسدلتان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With no submitted requests, عروضي shows the icon, 'لا توجد طلبات بعد' and the description — no إنشاء حساب/تسجيل الدخول buttons (signed-in or otherwise).",
+          "The header ⋮ button is hidden on عروضي; it appears on إعلاناتي (dropdown: اخفاء/اظهار جميع الاعلانات + حذف جميع الاعلانات → confirmation sheet) and تنبيهاتي (its own dropdown).",
+          "The + button on عروضي still routes to add-alert.",
+        ],
+        ar: [
+          "بدون طلبات مرسلة يعرض عروضي الأيقونة و'لا توجد طلبات بعد' والوصف — بدون زرّي إنشاء حساب/تسجيل الدخول (مسجلاً كان أم لا).",
+          "زر ⋮ في الترويسة مخفي على عروضي؛ ويظهر على إعلاناتي (قائمة منسدلة: اخفاء/اظهار جميع الاعلانات + حذف جميع الاعلانات ← نافذة التأكيد) وتنبيهاتي (قائمتها الخاصة).",
+          "زر + على عروضي لا يزال ينقل إلى إضافة تنبيه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Signed-in with no requests, open نشاطي → عروضي — the empty state shows without auth buttons.",
+          "Switch to إعلاناتي — the ⋮ appears and opens the dropdown; switch to عروضي — the ⋮ disappears.",
+          "Tap + on عروضي — the add-alert flow opens.",
+        ],
+        ar: [
+          "مسجلاً وبدون طلبات، افتح نشاطي ← عروضي — تظهر الحالة الفارغة بدون أزرار تسجيل.",
+          "انتقل إلى إعلاناتي — يظهر ⋮ ويفتح القائمة؛ وانتقل إلى عروضي — يختفي ⋮.",
+          "اضغط + على عروضي — يُفتح فلو إضافة تنبيه.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-account-balance-history-rtl",
+      title: {
+        en: "رصيد الحساب → سجل الاعلانات rows are right-aligned (RTL)",
+        ar: "صفوف سجل الاعلانات في رصيد الحساب محاذاة لليمين (RTL)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: the ad-package history on رصيد الحساب (and the full list behind عرض الكل) was laid out as if the screen were LTR — package name, status dot and expiry date sat on the left with the ID on the right, and the section title was on the left with عرض الكل on the right. The app forces RTL, so rows now start from the right: status dot + package name with the expiry date under it on the right, the ID on the left; the section header shows سجل الاعلانات on the right and عرض الكل on the left.",
+        ar: "إصلاح بلاغ QA: كان سجل الباقات في رصيد الحساب (والقائمة الكاملة خلف عرض الكل) مرتباً كأن الشاشة LTR — اسم الباقة ونقطة الحالة وتاريخ الانتهاء على اليسار والمعرّف على اليمين، وعنوان القسم على اليسار وعرض الكل على اليمين. التطبيق يفرض RTL، فأصبحت الصفوف تبدأ من اليمين: نقطة الحالة + اسم الباقة وتحته تاريخ الانتهاء على اليمين، والمعرّف على اليسار؛ وترويسة القسم تعرض سجل الاعلانات على اليمين وعرض الكل على اليسار.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On رصيد الحساب, each history row shows the status dot, package name and expiry date aligned to the right, and the ID (ID:XXXX) on the left.",
+          "The section header shows سجل الاعلانات on the right and عرض الكل on the left.",
+          "عرض الكل → سجل الاعلانات uses the same right-aligned row layout.",
+        ],
+        ar: [
+          "في رصيد الحساب، يعرض كل صف في السجل نقطة الحالة واسم الباقة وتاريخ الانتهاء محاذاة لليمين، والمعرّف (ID:XXXX) على اليسار.",
+          "ترويسة القسم تعرض سجل الاعلانات على اليمين وعرض الكل على اليسار.",
+          "عرض الكل ← سجل الاعلانات يستخدم نفس تخطيط الصفوف المحاذى لليمين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With purchased packages, open المزيد → رصيد الحساب — history rows and the section header read right-to-left.",
+          "Tap عرض الكل — the full list rows are right-aligned too, including after toggling تصفية.",
+        ],
+        ar: [
+          "مع باقات مشتراة، افتح المزيد ← رصيد الحساب — صفوف السجل وترويسة القسم تُقرأ من اليمين لليسار.",
+          "اضغط عرض الكل — صفوف القائمة الكاملة محاذاة لليمين أيضاً، بما في ذلك بعد تبديل تصفية.",
         ],
       },
       updatedIn: "feat/company-more-edit-profile",

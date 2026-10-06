@@ -16,7 +16,7 @@ const appVersion = Constants.expoConfig?.version;
 const otaStatusLabel = Updates.isEmbeddedLaunch
   ? 'النسخة المدمجة بالتطبيق (بدون تحديث OTA)'
   : `تحديث OTA${
-      Updates.createdAt ? ' بتاريخ ' + Updates.createdAt.toLocaleString('ar-EG') : ''
+      Updates.createdAt ? ' بتاريخ ' + Updates.createdAt.toLocaleString('ar-KW-u-nu-latn') : ''
     }`;
 const otaUpdateId = !Updates.isEmbeddedLaunch ? Updates.updateId : null;
 

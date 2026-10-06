@@ -3,7 +3,8 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ActivityHeaderProps {
   onAddPress: () => void;
-  onMenuPress: () => void;
+  // Omitted on tabs with no bulk actions (عروضي) — the ⋮ button is hidden
+  onMenuPress?: () => void;
 }
 
 export default function ActivityHeader({
@@ -30,16 +31,20 @@ export default function ActivityHeader({
       </Text>
 
       {/* More Options Button (Left side in RTL) */}
-      <TouchableOpacity
-        onPress={onMenuPress}
-        testID="activity-menu-btn"
-        accessibilityRole="button"
-        accessibilityLabel="خيارات الإعلانات"
-        className="h-10 w-10 items-center justify-center rounded-full"
-        activeOpacity={0.7}
-      >
-        <Feather name="more-vertical" size={20} color="#111111" />
-      </TouchableOpacity>
+      {onMenuPress ? (
+        <TouchableOpacity
+          onPress={onMenuPress}
+          testID="activity-menu-btn"
+          accessibilityRole="button"
+          accessibilityLabel="خيارات الإعلانات"
+          className="h-10 w-10 items-center justify-center rounded-full"
+          activeOpacity={0.7}
+        >
+          <Feather name="more-vertical" size={20} color="#111111" />
+        </TouchableOpacity>
+      ) : (
+        <View className="h-10 w-10" />
+      )}
     </View>
   );
 }

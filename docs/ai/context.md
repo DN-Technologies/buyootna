@@ -40,7 +40,11 @@ Read extra docs only when relevant — don't load all of them for every task:
    require it. Do not upgrade Jest to v30.
 2. **One lockfile.** Never let a `pnpm-lock.yaml` exist inside a
    sub-package (e.g. `apps/api/pnpm-lock.yaml`). Only the root lockfile is
-   real.
+   real. The root `.npmrc` sets `node-linker=hoisted` so React Native /
+   Expo native modules resolve from a flat `node_modules/` (no
+   `node_modules/.pnpm/...` paths baked into CocoaPods). If the linker
+   ever changes, re-run `pod install` in `apps/mobile/ios` or the iOS
+   build fails with missing-file errors pointing into the old layout.
 3. **Branching.** `main` is production, `dev` is the integration branch.
    Feature work targets `dev`. `main` is never pushed to directly — it's
    blocked by a pre-push hook — and only takes changes via a `dev` → `main`

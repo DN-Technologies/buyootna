@@ -129,7 +129,7 @@ export function useCompanyEditProfile() {
     if (selectedDate) {
       setIdentityField(
         'licenseExpiry',
-        selectedDate.toLocaleDateString('ar-EG', {
+        selectedDate.toLocaleDateString('ar-KW-u-nu-latn', {
           day: 'numeric',
           month: 'long',
           year: 'numeric',

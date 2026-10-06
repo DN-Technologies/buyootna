@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
 import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 interface PropertyContextProps {
   property: {
@@ -131,7 +132,7 @@ export default function PropertyMessageBubble({
               {property.price && property.price > 0 ? (
                 <>
                   <Text className="font-cairo-bold text-2xl text-[#15304D]">
-                    {property.price.toLocaleString()}
+                    {formatNumber(property.price)}
                   </Text>
                   <Text className="font-cairo-bold text-sm text-[#15304D]">
                     د.ك

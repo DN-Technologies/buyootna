@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
 
 import { formatTimeAgo } from '@/shared/utils/helpers/property';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 interface PropertyPriceViewsRowProps {
   price: number;
@@ -20,7 +21,7 @@ export default function PropertyPriceViewsRow({
       <View className="items-start">
         {price > 0 ? (
           <Text className="font-cairo-bold text-2xl text-[#15304D]">
-            {price.toLocaleString()}{' '}
+            {formatNumber(price)}{' '}
             <Text className="font-cairo-semibold text-sm text-[#15304D]">
               د.ك
             </Text>

@@ -1,15 +1,16 @@
 import { Image, Text, View } from 'react-native';
 
 import type { InvoiceItem } from './InvoiceItemsStep';
+import { formatNumber } from '@/shared/utils/formatNumber';
 
 const formatReceiptDate = (date: Date) => {
-  const datePart = date.toLocaleDateString('ar-KW', {
+  const datePart = date.toLocaleDateString('ar-KW-u-nu-latn', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
-  const timePart = date.toLocaleTimeString('ar-KW', {
+  const timePart = date.toLocaleTimeString('ar-KW-u-nu-latn', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -136,7 +137,7 @@ export default function InvoiceReceipt({
               className="flex-row items-center justify-between"
             >
               <Text className="text-left font-cairo text-[13px] text-[#111111]">
-                {(item.price * item.qty).toLocaleString('en-US')} د.ك
+                {formatNumber(item.price * item.qty)} د.ك
               </Text>
               <Text
                 className="font-cairo text-[13px] text-[#111111]"
@@ -148,7 +149,7 @@ export default function InvoiceReceipt({
           ))}
           <View className="flex-row items-center justify-between">
             <Text className="text-left font-cairo text-[13px] text-[#111111]">
-              {appliedDiscount.toLocaleString('en-US')}
+              {formatNumber(appliedDiscount)}
             </Text>
             <Text
               className="font-cairo text-[13px] text-[#111111]"
@@ -163,7 +164,7 @@ export default function InvoiceReceipt({
 
         <View className="flex-row items-center justify-between">
           <Text className="text-left font-cairo-medium text-[14px] text-[#111111]">
-            {total.toLocaleString('en-US')} د.ك
+            {formatNumber(total)} د.ك
           </Text>
           <Text
             className="font-cairo text-[13px] text-[#111111]"
