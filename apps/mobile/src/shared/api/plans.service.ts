@@ -33,9 +33,31 @@ export interface WalletSlot {
   createdAt: string;
 }
 
+export interface PackageHistoryItem {
+  id: string;
+  displayId: string;
+  planName: string;
+  planSlug: string;
+  status: 'ACTIVE' | 'EXPIRED';
+  dateText: string;
+  createdAt: string;
+}
+
+export interface WalletHistoryItem extends PackageHistoryItem {
+  adsRemaining: number;
+}
+
+export interface WalletBalanceCounts {
+  gold: number;
+  silver: number;
+  regular: number;
+}
+
 export interface UserWallet {
   freeAdsRemaining: number;
   slots: WalletSlot[];
+  balanceCounts?: WalletBalanceCounts;
+  history?: WalletHistoryItem[];
 }
 
 export interface PublishOption {

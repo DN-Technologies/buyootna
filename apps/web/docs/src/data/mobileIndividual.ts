@@ -1239,5 +1239,40 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-account-balance-history-rtl",
+      title: {
+        en: "رصيد الحساب → سجل الاعلانات rows are right-aligned (RTL)",
+        ar: "صفوف سجل الاعلانات في رصيد الحساب محاذاة لليمين (RTL)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: the ad-package history on رصيد الحساب (and the full list behind عرض الكل) was laid out as if the screen were LTR — package name, status dot and expiry date sat on the left with the ID on the right, and the section title was on the left with عرض الكل on the right. The app forces RTL, so rows now start from the right: status dot + package name with the expiry date under it on the right, the ID on the left; the section header shows سجل الاعلانات on the right and عرض الكل on the left.",
+        ar: "إصلاح بلاغ QA: كان سجل الباقات في رصيد الحساب (والقائمة الكاملة خلف عرض الكل) مرتباً كأن الشاشة LTR — اسم الباقة ونقطة الحالة وتاريخ الانتهاء على اليسار والمعرّف على اليمين، وعنوان القسم على اليسار وعرض الكل على اليمين. التطبيق يفرض RTL، فأصبحت الصفوف تبدأ من اليمين: نقطة الحالة + اسم الباقة وتحته تاريخ الانتهاء على اليمين، والمعرّف على اليسار؛ وترويسة القسم تعرض سجل الاعلانات على اليمين وعرض الكل على اليسار.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On رصيد الحساب, each history row shows the status dot, package name and expiry date aligned to the right, and the ID (ID:XXXX) on the left.",
+          "The section header shows سجل الاعلانات on the right and عرض الكل on the left.",
+          "عرض الكل → سجل الاعلانات uses the same right-aligned row layout.",
+        ],
+        ar: [
+          "في رصيد الحساب، يعرض كل صف في السجل نقطة الحالة واسم الباقة وتاريخ الانتهاء محاذاة لليمين، والمعرّف (ID:XXXX) على اليسار.",
+          "ترويسة القسم تعرض سجل الاعلانات على اليمين وعرض الكل على اليسار.",
+          "عرض الكل ← سجل الاعلانات يستخدم نفس تخطيط الصفوف المحاذى لليمين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With purchased packages, open المزيد → رصيد الحساب — history rows and the section header read right-to-left.",
+          "Tap عرض الكل — the full list rows are right-aligned too, including after toggling تصفية.",
+        ],
+        ar: [
+          "مع باقات مشتراة، افتح المزيد ← رصيد الحساب — صفوف السجل وترويسة القسم تُقرأ من اليمين لليسار.",
+          "اضغط عرض الكل — صفوف القائمة الكاملة محاذاة لليمين أيضاً، بما في ذلك بعد تبديل تصفية.",
+        ],
+      },
+      updatedIn: "feat/company-more-edit-profile",
+    },
   ],
 };

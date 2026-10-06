@@ -11,19 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PackageHistoryRow } from '@/features/individual/components/more/account-balance';
 import apiClient from '@/shared/api/api';
+import type { PackageHistoryItem } from '@/shared/api/plans.service';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-
-interface HistoryItem {
-  id: string;
-  displayId: string;
-  planName: string;
-  planSlug: string;
-  status: 'ACTIVE' | 'EXPIRED';
-  dateText: string;
-  createdAt: string;
-}
 
 export default function PackageHistoryScreen() {
   const router = useRouter();
@@ -38,7 +30,7 @@ export default function PackageHistoryScreen() {
   } = useQuery({
     queryKey: ['packageHistory'],
     queryFn: async () => {
-      const res = await apiClient.get<HistoryItem[]>('/plans/history');
+      const res = await apiClient.get<PackageHistoryItem[]>('/plans/history');
       return res.data ?? [];
     },
     enabled: !!user?.id,
@@ -124,34 +116,7 @@ export default function PackageHistoryScreen() {
             </View>
           ) : (
             filteredHistory.map((item) => (
-              <View
-                key={item.id}
-                className="mb-3 flex-row items-center justify-between rounded-2xl bg-[#F8F9FA] p-4"
-              >
-                {/* Left side: Display ID */}
-                <Text className="font-cairo text-xs text-[#94A3B8]">
-                  {item.displayId}
-                </Text>
-
-                {/* Right side: Title & Expiry */}
-                <View className="items-end">
-                  <View className="flex-row items-center gap-2">
-                    <Text className="font-cairo-semibold text-sm text-[#111111]">
-                      {item.planName}
-                    </Text>
-                    <View
-                      className={`h-2 w-2 rounded-full ${
-                        item.status === 'ACTIVE'
-                          ? 'bg-[#10B981]'
-                          : 'bg-[#EF4444]'
-                      }`}
-                    />
-                  </View>
-                  <Text className="mt-1 font-cairo text-xs text-[#6B6A6A]">
-                    {item.dateText}
-                  </Text>
-                </View>
-              </View>
+              <PackageHistoryRow key={item.id} item={item} />
             ))
           )}
         </ScrollView>
