@@ -253,10 +253,7 @@ export default function PropertyCard({
 
         {/* Row 3: Property Income (مدخول العقار) */}
         {typeof propertyIncome === 'number' && propertyIncome > 0 && (
-          <View
-            className="mt-2.5 flex-row items-center justify-between border-t border-gray-100 pt-2"
-            style={{ flexDirection: 'row-reverse' }}
-          >
+          <View className="mt-2 flex-row items-center justify-between border-t border-gray-100 pt-2">
             <Text className="font-cairo-bold text-sm text-[#111111]">
               مدخول العقار
             </Text>

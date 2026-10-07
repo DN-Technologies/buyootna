@@ -61,6 +61,7 @@ export class FavoritesService {
                 select: {
                   id: true,
                   type: true,
+                  user: { select: { name: true, avatarUrl: true } },
                   individualData: {
                     select: { name: true, avatarUrl: true },
                   },
@@ -92,11 +93,13 @@ export class FavoritesService {
         identity?.officeData?.name ||
         identity?.companyData?.name ||
         identity?.individualData?.name ||
+        identity?.user?.name ||
         'مستخدم';
       const hostAvatar =
         identity?.officeData?.logoUrl ||
         identity?.companyData?.logoUrl ||
         identity?.individualData?.avatarUrl ||
+        identity?.user?.avatarUrl ||
         'https://via.placeholder.com/150';
 
       return {
