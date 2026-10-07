@@ -47,6 +47,21 @@ export class UsersProfileService {
       throw new BadRequestException(NAME_REGEX_MESSAGE);
     }
 
+    // Every account needs a phone: it's how people reach the advertiser,
+    // whatever the sign-in method. One is added through the SMS check first
+    // (the app runs it before saving), so a save without one is refused
+    const onFile = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { phone: true },
+    });
+    if (!onFile?.phone?.trim()) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'PHONE_REQUIRED',
+        message: 'رقم الهاتف مطلوب. أضفه وتحقق منه برمز يُرسل إليه.',
+      });
+    }
+
     // 1. Update basic user fields if provided
     const userUpdateData: Prisma.UserUpdateInput = {};
     if (dto.name !== undefined) userUpdateData.name = dto.name;
@@ -88,7 +103,11 @@ export class UsersProfileService {
         });
       }
     }
-    if (dto.whatsapp !== undefined) userUpdateData.whatsapp = dto.whatsapp;
+    // Only people have WhatsApp: companies and offices are reached by phone
+    // or in-app chat, so their WhatsApp is ignored
+    if (dto.whatsapp !== undefined && role === Role.INDIVIDUAL) {
+      userUpdateData.whatsapp = dto.whatsapp;
+    }
 
     // 2. Handle file upload if a new logo/avatar is uploaded
     let logoUrl: string | undefined = undefined;

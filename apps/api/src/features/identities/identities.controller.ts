@@ -23,6 +23,16 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { IdentitiesService } from './identities.service';
+import { IdentityContactPhoneService } from './identity-contact-phone.service';
+import { SetUseAccountPhoneDto } from './dto/contact-phone.dto';
+import {
+  RequestPhoneOtpDto,
+  VerifyPhoneDto,
+} from '../users/dto/login-method.dto';
+import {
+  OtpRequestRateLimitFromUser,
+  OtpVerifyRateLimitFromUser,
+} from '../../core/decorators/otp-rate-limit.decorator';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import {
@@ -49,7 +59,10 @@ import {
 @Controller('identities')
 @UseGuards(AuthGuard('jwt'))
 export class IdentitiesController {
-  constructor(private readonly identitiesService: IdentitiesService) {}
+  constructor(
+    private readonly identitiesService: IdentitiesService,
+    private readonly contactPhone: IdentityContactPhoneService,
+  ) {}
 
   // GET /identities - List all user's identities
   @Get()
@@ -69,6 +82,68 @@ export class IdentitiesController {
     return this.identitiesService.findCurrent(
       reqUser.userId,
       reqUser.identityId,
+    );
+  }
+
+  // --- Contact phone of the active persona (رقم التواصل) ---
+  @Get('current/contact-phone')
+  @ApiOperation({
+    summary:
+      "The active persona's contact phone and whether it uses the account's",
+  })
+  @ApiCommonErrors()
+  getContactPhone(@CurrentUser() reqUser: RequestUser) {
+    return this.contactPhone.get(reqUser.userId, reqUser.identityId);
+  }
+
+  @Post('current/contact-phone/request-otp')
+  @OtpRequestRateLimitFromUser('userId')
+  @ApiOperation({
+    summary: "Text a code to the number to use as the active persona's own",
+  })
+  @ApiCommonErrors()
+  requestContactPhoneOtp(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RequestPhoneOtpDto,
+  ) {
+    return this.contactPhone.requestOtp(
+      reqUser.userId,
+      reqUser.identityId,
+      dto.phone,
+    );
+  }
+
+  @Post('current/contact-phone/verify')
+  @OtpVerifyRateLimitFromUser('userId')
+  @ApiOperation({
+    summary: "Check the code; the number becomes the active persona's own",
+  })
+  @ApiCommonErrors()
+  verifyContactPhone(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: VerifyPhoneDto,
+  ) {
+    return this.contactPhone.verify(
+      reqUser.userId,
+      reqUser.identityId,
+      dto.phone,
+      dto.otp,
+    );
+  }
+
+  @Patch('current/contact-phone')
+  @ApiOperation({
+    summary: "Use the account's phone, or the persona's own verified number",
+  })
+  @ApiCommonErrors()
+  setUseAccountPhone(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: SetUseAccountPhoneDto,
+  ) {
+    return this.contactPhone.setUseAccountPhone(
+      reqUser.userId,
+      reqUser.identityId,
+      dto.useAccountPhone,
     );
   }
 

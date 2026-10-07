@@ -58,7 +58,7 @@ const PropertyDetailsSheet = forwardRef<
   ) => {
     const snapPoints = useMemo(() => ['85%'], []);
 
-    const { handleWhatsApp, handleCall, handleChat } =
+    const { canWhatsApp, handleWhatsApp, handleCall, handleChat } =
       usePropertyContactActions({
         property,
         onClose,
@@ -160,7 +160,7 @@ const PropertyDetailsSheet = forwardRef<
 
                 <PropertyContactActionsBar
                   onCall={handleCall}
-                  onWhatsApp={handleWhatsApp}
+                  onWhatsApp={canWhatsApp ? handleWhatsApp : undefined}
                   onChat={handleChat}
                 />
 

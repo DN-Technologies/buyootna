@@ -37,14 +37,16 @@ export default function PropertyActionBar({
         <CallIcon color="#15304D" size={16} />
       </TouchableOpacity>
 
-      {/* WhatsApp Button (Green Outline) */}
-      <TouchableOpacity
-        className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
-        activeOpacity={0.7}
-        onPress={onWhatsapp}
-      >
-        <WhatsappIcon size={20} />
-      </TouchableOpacity>
+      {/* WhatsApp Button (Green Outline); none for companies and offices */}
+      {onWhatsapp && (
+        <TouchableOpacity
+          className="h-11 flex-1 flex-row items-center justify-center rounded-[24px] border border-[#60D669]"
+          activeOpacity={0.7}
+          onPress={onWhatsapp}
+        >
+          <WhatsappIcon size={20} />
+        </TouchableOpacity>
+      )}
 
       {/* Message/Chat Button (Gold Outline) */}
       <TouchableOpacity

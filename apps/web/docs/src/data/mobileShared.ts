@@ -1003,5 +1003,85 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/real-trust-signals",
     },
+    {
+      id: "mobile-identity-contact-phone",
+      title: {
+        en: "Each persona can use the account's phone or its own verified number",
+        ar: "كل هوية تستخدم رقم الحساب أو رقمها الخاص الموثّق",
+      },
+      priority: "P1",
+      story: {
+        en: "In the edit profile of an individual, company or office there's a box 'استخدم رقم هاتف الحساب للتواصل مع هذه الهوية' (ticked by default, today's behaviour). Unticked, the persona gets its own number (e.g. a company's line): it's proven with an SMS code, then becomes what people call on that persona's ads and profile. Ticking it again goes back to the account's number; the verified own number is kept for later. New ads start with the persona's contact number in the phone field (never a made-up number).",
+        ar: "في تعديل الملف الشخصي للفرد أو الشركة أو المكتب يوجد مربع 'استخدم رقم هاتف الحساب للتواصل مع هذه الهوية' (محدد افتراضياً كما الآن). عند إلغاء تحديده تحصل الهوية على رقمها الخاص (مثل خط الشركة): يُوثّق برمز SMS ثم يصبح الرقم الذي يتصل به الناس في إعلانات تلك الهوية وملفها. وتحديده مجدداً يعيدها إلى رقم الحساب مع حفظ الرقم الخاص الموثّق للاحقاً. والإعلانات الجديدة تبدأ برقم تواصل الهوية في حقل الهاتف (وليس رقماً مخترعاً).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The box is ticked by default and shows the account's number.",
+          "Unticked, a new number must pass the SMS code before it's used; until then the account's number stays in use.",
+          "After verifying, the persona's ads and profile call the new number; the account's sign-in phone is unchanged.",
+          "Ticking the box returns to the account's number; unticking again reuses the verified own number with no new code.",
+          "The office and company forms no longer pre-fill made-up numbers (58094586 / 60468839).",
+        ],
+        ar: [
+          "المربع محدد افتراضياً ويعرض رقم الحساب.",
+          "عند إلغاء التحديد يجب أن يجتاز الرقم الجديد رمز SMS قبل استخدامه؛ وحتى ذلك الحين يبقى رقم الحساب مستخدماً.",
+          "بعد التوثيق تتصل إعلانات الهوية وملفها بالرقم الجديد؛ ويبقى رقم تسجيل الدخول للحساب كما هو.",
+          "تحديد المربع يعيد رقم الحساب؛ وإلغاء تحديده مجدداً يستخدم الرقم الخاص الموثّق دون رمز جديد.",
+          "نماذج المكتب والشركة لم تعد تملأ أرقاماً مخترعة مسبقاً (58094586 / 60468839).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company, untick the box, enter a new mobile number, verify the SMS code — the company profile's call button dials it.",
+          "Enter a wrong code — nothing changes; the account's number is still used.",
+          "Tick the box again — the profile calls the account's number.",
+          "Start a new ad as that company — the phone field already holds its contact number.",
+        ],
+        ar: [
+          "كشركة ألغِ تحديد المربع وأدخل رقم جوال جديداً ووثّقه برمز SMS — زر الاتصال في ملف الشركة يتصل به.",
+          "أدخل رمزاً خاطئاً — لا يتغير شيء ويبقى رقم الحساب مستخدماً.",
+          "حدد المربع مجدداً — يتصل الملف برقم الحساب.",
+          "ابدأ إعلاناً جديداً بهذه الشركة — حقل الهاتف يحمل رقم تواصلها مسبقاً.",
+        ],
+      },
+      updatedIn: "feat/identity-contact-phone",
+    },
+    {
+      id: "mobile-no-whatsapp-business",
+      title: {
+        en: "Companies and offices are reached by phone or chat, not WhatsApp",
+        ar: "التواصل مع الشركات والمكاتب بالهاتف أو المحادثة وليس الواتساب",
+      },
+      priority: "P2",
+      story: {
+        en: "Companies and offices have no WhatsApp: their edit profile has no رقم الواتساب field, and their ads (details sheet and full page) show only call and in-app chat. Individuals keep WhatsApp. An ad with no number shows 'لا يوجد رقم هاتف متاح لهذا الإعلان' instead of dialing a made-up number.",
+        ar: "الشركات والمكاتب ليس لها واتساب: لا يوجد حقل رقم الواتساب في تعديل ملفها، وإعلاناتها (النافذة والصفحة الكاملة) تعرض الاتصال والمحادثة داخل التطبيق فقط. ويبقى الواتساب للأفراد. والإعلان بلا رقم يعرض 'لا يوجد رقم هاتف متاح لهذا الإعلان' بدل الاتصال برقم مخترع.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company and office edit profiles have no رقم الواتساب field.",
+          "A company's or office's ad shows call + chat only, in both the details sheet and the full ad page.",
+          "An individual's ad still shows call + WhatsApp + chat.",
+        ],
+        ar: [
+          "لا يوجد حقل رقم الواتساب في تعديل ملف الشركة أو المكتب.",
+          "إعلان الشركة أو المكتب يعرض الاتصال والمحادثة فقط في النافذة وفي صفحة الإعلان الكاملة.",
+          "إعلان الفرد ما زال يعرض الاتصال والواتساب والمحادثة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an office's ad from Home — no WhatsApp button; call and chat work.",
+          "Open an individual's ad — the WhatsApp button is there.",
+          "Open a company's edit profile — no WhatsApp field.",
+        ],
+        ar: [
+          "افتح إعلان مكتب من الرئيسية — لا يوجد زر واتساب؛ والاتصال والمحادثة يعملان.",
+          "افتح إعلان فرد — زر الواتساب موجود.",
+          "افتح تعديل ملف شركة — لا يوجد حقل واتساب.",
+        ],
+      },
+      updatedIn: "feat/identity-contact-phone",
+    },
   ],
 };

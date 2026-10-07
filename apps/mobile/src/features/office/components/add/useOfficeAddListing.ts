@@ -7,6 +7,7 @@ import { Alert } from 'react-native';
 import { groupWalletSlots } from '@/features/individual/utils/planWallet';
 import { OfficeListingType } from '@/features/office/types';
 import { plansService } from '@/shared/api/plans.service';
+import { useContactPhonePrefill } from '@/shared/hooks/useContactPhonePrefill';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 import type { OfficePlanType } from './OfficePlanQuotaSelector';
@@ -76,7 +77,9 @@ export function useOfficeAddListing() {
   const [rentConditions, setRentConditions] = useState('');
 
   // Phone & Description
-  const [phone, setPhone] = useState('58094586');
+  // Starts on the office's contact number (never a made-up one)
+  const [phone, setPhone] = useState('');
+  useContactPhonePrefill(phone, setPhone);
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
 

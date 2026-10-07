@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -21,6 +21,7 @@ import RentPropertyTab from '@/app/(individual)/add-listing/tabs/RentPropertyTab
 import SellPropertyTab from '@/app/(individual)/add-listing/tabs/SellPropertyTab';
 import { plansService } from '@/shared/api/plans.service';
 import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
+import { useContactPhonePrefill } from '@/shared/hooks/useContactPhonePrefill';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 export default function CreateListingScreen() {
@@ -41,7 +42,15 @@ export default function CreateListingScreen() {
     requestYear,
     requiredYear,
     fetchFeatures,
+    updateField,
   } = useListingStore();
+
+  // A new ad's phone starts on your contact number
+  const setPhoneNumber = useCallback(
+    (phone: string) => updateField('phoneNumber', phone),
+    [updateField],
+  );
+  useContactPhonePrefill(phoneNumber, setPhoneNumber);
 
   // The free-ad banner used to be a hardcoded "لديك إعلان مجاني واحد" shown
   // to everyone, contradicting the live balance on My Activity (QA ticket:

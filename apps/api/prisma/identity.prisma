@@ -18,6 +18,13 @@ model Identity {
   // Last time this persona used the app (socket connect/disconnect or an
   // API request); drives the public "نشط الآن / نشط منذ" badge
   lastSeenAt DateTime?
+  // How people reach this persona by phone (calls on its ads and profile).
+  // On by default: the account's own (sign-in) number. Off: this persona's
+  // own number, SMS-verified, e.g. a company's office line. Not unique and
+  // never a sign-in identifier
+  useAccountPhone        Boolean   @default(true)
+  contactPhone           String?
+  contactPhoneVerifiedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

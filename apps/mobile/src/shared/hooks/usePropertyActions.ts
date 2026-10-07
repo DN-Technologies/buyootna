@@ -4,6 +4,7 @@ import { Linking, Share } from 'react-native';
 import { normalizeKuwaitPhone } from '@/shared/hooks/useProfileContact';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -27,11 +28,12 @@ export function usePropertyActions({
   const user = useAuthStore((state) => state.user);
 
   const handleWhatsapp = () => {
-    if (!property?.phoneNumber) {
+    const phone = adContactPhone(property);
+    if (!phone) {
       showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
     }
-    const cleaned = normalizeKuwaitPhone(property.phoneNumber);
+    const cleaned = normalizeKuwaitPhone(phone);
     const url = `whatsapp://send?phone=${cleaned}`;
 
     openUrlThrottled(url).catch(() => {
@@ -43,11 +45,12 @@ export function usePropertyActions({
   };
 
   const handleCall = () => {
-    if (!property?.phoneNumber) {
+    const phone = adContactPhone(property);
+    if (!phone) {
       showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
     }
-    const cleaned = property.phoneNumber.replace(/[^0-9+]/g, '');
+    const cleaned = phone.replace(/[^0-9+]/g, '');
     const url = `tel:${cleaned}`;
 
     openUrlThrottled(url).catch(() => {
@@ -111,6 +114,8 @@ export function usePropertyActions({
   };
 
   return {
+    // Companies and offices have no WhatsApp
+    canWhatsapp: hostHasWhatsapp(property?.host?.role),
     handleWhatsapp,
     handleCall,
     handleChat,

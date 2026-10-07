@@ -48,6 +48,8 @@ export interface PropertyDetailsDto {
     isVerified: boolean;
     rating: number;
     reviewsCount?: number;
+    // The persona's contact number (its own, or the account's)
+    phone?: string | null;
     role?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
   };
 }

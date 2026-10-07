@@ -13,6 +13,7 @@ import {
   formatServiceList,
 } from './profile-formatting.util';
 import { ProviderCardsService } from './provider-cards.service';
+import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 
 @Injectable()
 export class UsersDirectoryService {
@@ -242,8 +243,10 @@ export class UsersDirectoryService {
       projectsCount: formattedProjects.length,
       instagramUrl: null,
       twitterUrl: null,
-      phone: identity.user?.phone,
-      whatsapp: identity.user?.whatsapp || identity.user?.phone,
+      // The persona's contact number (its own, or the account's)
+      phone: contactPhoneOf(identity, identity.user),
+      // Companies and offices are reached by phone or in-app chat only
+      whatsapp: null,
       services: formattedServices,
       projects: formattedProjects,
     };
@@ -300,8 +303,10 @@ export class UsersDirectoryService {
       servicesCount: formattedServices.length,
       instagramUrl: null,
       twitterUrl: null,
-      phone: identity.user?.phone,
-      whatsapp: identity.user?.whatsapp || identity.user?.phone,
+      // The persona's contact number (its own, or the account's)
+      phone: contactPhoneOf(identity, identity.user),
+      // Companies and offices are reached by phone or in-app chat only
+      whatsapp: null,
       workingHours: [],
       services: formattedServices,
       properties: formatOfficeListings(identity.properties, officeData.name),

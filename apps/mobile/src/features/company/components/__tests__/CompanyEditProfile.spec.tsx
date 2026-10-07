@@ -126,7 +126,7 @@ describe('CompanyEditProfile', () => {
   });
 
   it('renders all sections and input labels matching Figma 4410:159865', async () => {
-    const { getByText, getByPlaceholderText } = await render(
+    const { getByText, getByPlaceholderText, queryByText } = await render(
       <CompanyEditProfile />,
     );
 
@@ -139,7 +139,8 @@ describe('CompanyEditProfile', () => {
     expect(getByText('الاسم')).toBeTruthy();
     expect(getByText('البريد الالكتروني')).toBeTruthy();
     expect(getByText('رقم الهاتف')).toBeTruthy();
-    expect(getByText('رقم الواتساب')).toBeTruthy();
+    // No WhatsApp for companies/offices: phone or in-app chat only
+    expect(queryByText('رقم الواتساب')).toBeNull();
     expect(getByText('المقر الرئيسي')).toBeTruthy();
     expect(getByText('مناطق تقديم الخدمة')).toBeTruthy();
     expect(getByText('نبذة عن الشركة')).toBeTruthy();

@@ -72,7 +72,7 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
   });
 
   it('renders all sections and input labels matching Figma 4494:136911', async () => {
-    const { getByText, getByPlaceholderText } = await render(
+    const { getByText, getByPlaceholderText, queryByText } = await render(
       <OfficeEditProfile />
     );
 
@@ -85,7 +85,8 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
     expect(getByText('الاسم')).toBeTruthy();
     expect(getByText('البريد الالكتروني')).toBeTruthy();
     expect(getByText('رقم الهاتف')).toBeTruthy();
-    expect(getByText('رقم الواتساب')).toBeTruthy();
+    // No WhatsApp for companies/offices: phone or in-app chat only
+    expect(queryByText('رقم الواتساب')).toBeNull();
     expect(getByText('المقر الرئيسي')).toBeTruthy();
     expect(getByText('نبذة عن الشركة')).toBeTruthy();
     expect(getByText('مواعيد العمل')).toBeTruthy();
@@ -101,7 +102,6 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
     expect(getByPlaceholderText('المنار')).toBeTruthy();
     expect(getByPlaceholderText('salemelshekh@gmail.com')).toBeTruthy();
     expect(getByPlaceholderText('58094586')).toBeTruthy();
-    expect(getByPlaceholderText('60468839')).toBeTruthy();
     expect(getByPlaceholderText('السالمية')).toBeTruthy();
     expect(getByPlaceholderText('6743963845')).toBeTruthy();
 

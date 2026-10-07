@@ -48,6 +48,11 @@ jest.mock('expo-router', () => ({
     push: mockRouterPush,
     replace: jest.fn(),
   }),
+  // Runs once like a first focus; refocus resets are covered below
+  useFocusEffect: (cb: () => void | (() => void)) => {
+    const { useEffect } = jest.requireActual('react');
+    useEffect(cb, []);
+  },
 }));
 
 const mockPresent = jest.fn();
@@ -189,15 +194,21 @@ describe('EditProfileScreen', () => {
       } as any,
       refreshProfile: jest.fn().mockResolvedValue(undefined),
     } as any);
-    const { getByDisplayValue, getByText, queryByTestId, findByText } =
-      await render(<EditProfileScreen />);
+    const {
+      getByDisplayValue,
+      getByText,
+      getAllByText,
+      queryByTestId,
+      findByText,
+    } = await render(<EditProfileScreen />);
 
     expect(
       await findByText(
-        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب والبريد الإلكتروني اختياري.',
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، والبريد الإلكتروني اختياري. رقم الهاتف مطلوب دائماً للتواصل معك.',
       ),
     ).toBeTruthy();
-    expect(getByText('(اختياري)', { exact: false })).toBeTruthy();
+    // Email (phone sign-in) and WhatsApp (always) are the optional ones
+    expect(getAllByText('(اختياري)', { exact: false })).toHaveLength(2);
     await fireEvent.changeText(getByDisplayValue('محمد علي'), 'محمد سالم');
     // An empty email needs no code
     expect(queryByTestId('send-email-otp-link')).toBeNull();
@@ -302,22 +313,23 @@ describe('EditProfileScreen', () => {
       expect(settingsService.updateProfile).not.toHaveBeenCalled();
     });
 
-    it('EMAIL: the phone is optional -- cleared, it saves with no SMS', async () => {
+    // QA: an EMAIL-sign-in account could save with no phone at all. The
+    // phone is how people reach you, so it's required whatever signs in
+    it('EMAIL: an empty phone is refused too', async () => {
       withMethod('EMAIL');
       signedIn();
       const { getByDisplayValue, getByText, findByText } = await render(
         <EditProfileScreen />,
       );
       await findByText(
-        'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب ورقم الهاتف اختياري.',
+        'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب. ورقم الهاتف مطلوب أيضاً للتواصل معك.',
       );
 
       await fireEvent.changeText(getByDisplayValue('+96555100001'), '');
       await fireEvent.press(getByText('تعديل البيانات'));
 
-      await waitFor(() =>
-        expect(settingsService.updateProfile).toHaveBeenCalled(),
-      );
+      expect(await findByText('رقم الهاتف مطلوب للتواصل معك.')).toBeTruthy();
+      expect(settingsService.updateProfile).not.toHaveBeenCalled();
       expect(settingsService.requestPhoneOtp).not.toHaveBeenCalled();
     });
 
@@ -328,16 +340,35 @@ describe('EditProfileScreen', () => {
         <EditProfileScreen />,
       );
       await findByText(
-        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب والبريد الإلكتروني اختياري.',
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، والبريد الإلكتروني اختياري. رقم الهاتف مطلوب دائماً للتواصل معك.',
       );
 
       await fireEvent.changeText(getByDisplayValue('+96555100001'), '');
       await fireEvent.press(getByText('تعديل البيانات'));
 
       expect(
-        await findByText('رقم الهاتف مطلوب حسب طريقة تسجيل الدخول لديك.'),
+        await findByText('رقم الهاتف مطلوب للتواصل معك.'),
       ).toBeTruthy();
       expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    });
+
+    // QA: clearing WhatsApp blocked saving ("رقم الواتساب مطلوب")
+    it('WhatsApp is optional: cleared, the profile still saves', async () => {
+      withMethod('BOTH');
+      signedIn();
+      const { getByDisplayValue, getByText, queryByText } = await render(
+        <EditProfileScreen />,
+      );
+
+      await fireEvent.changeText(getByDisplayValue('55100001'), '');
+      await fireEvent.press(getByText('تعديل البيانات'));
+
+      await waitFor(() =>
+        expect(settingsService.updateProfile).toHaveBeenCalledWith(
+          expect.objectContaining({ whatsapp: '' }),
+        ),
+      );
+      expect(queryByText('رقم الواتساب مطلوب')).toBeNull();
     });
 
     it('requires nothing extra when the method could not be loaded', async () => {
@@ -386,7 +417,8 @@ describe('EditProfileScreen', () => {
     expect(getByText('الاسم')).toBeTruthy();
     expect(getByText('البريد الالكتروني')).toBeTruthy();
     expect(getByText('رقم الهاتف')).toBeTruthy();
-    expect(getByText('رقم الواتساب')).toBeTruthy();
+    // Optional now, so the label carries '(اختياري)'
+    expect(getByText('رقم الواتساب', { exact: false })).toBeTruthy();
     expect(getByText('تعديل البيانات')).toBeTruthy();
     expect(getByPlaceholderText('أدخل اسمك')).toBeTruthy();
   });

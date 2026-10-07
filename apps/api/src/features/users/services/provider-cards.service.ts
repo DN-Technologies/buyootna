@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
+import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 
 type CompanyIdentity = Identity & {
   companyData: CompanyIdentityData | null;
@@ -88,8 +89,9 @@ export class ProviderCardsService {
           location: i.officeData!.hqLocation || '',
           logoUrl: i.officeData!.logoUrl,
           isVerified: i.officeData!.isVerified,
-          phone: i.user?.phone,
-          whatsapp: i.user?.whatsapp || i.user?.phone,
+          phone: contactPhoneOf(i, i.user),
+          // Offices are reached by phone or in-app chat only
+          whatsapp: null,
           isFavorite: false,
         };
       });

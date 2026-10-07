@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Text, TextInput, View } from 'react-native';
 
 import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
+import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
 
 interface OfficeGeneralInfoSectionProps {
   name: string;
@@ -10,8 +11,6 @@ interface OfficeGeneralInfoSectionProps {
   setEmail: (val: string) => void;
   phone: string;
   setPhone: (val: string) => void;
-  whatsapp: string;
-  setWhatsapp: (val: string) => void;
   hqLocation: string;
   setHqLocation: (val: string) => void;
   about: string;
@@ -27,8 +26,6 @@ export default function OfficeGeneralInfoSection({
   setEmail,
   phone,
   setPhone,
-  whatsapp,
-  setWhatsapp,
   hqLocation,
   setHqLocation,
   about,
@@ -123,38 +120,9 @@ export default function OfficeGeneralInfoSection({
           </View>
         </View>
 
-        {/* Field: رقم الواتساب (RTL-First: WhatsApp on Right, +965 on Left) */}
-        <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            رقم الواتساب
-          </Text>
-          <View className="flex-row items-center gap-2">
-            {/* Visual Right (Child 0): WhatsApp Number Input */}
-            <View className="h-[46px] flex-1 rounded-[8px] border border-[#ECECEC] bg-white px-3 justify-center">
-              <TextInput
-                value={whatsapp}
-                onChangeText={setWhatsapp}
-                placeholder="60468839"
-                placeholderTextColor="#979797"
-                keyboardType="phone-pad"
-                textAlign="right"
-                className="font-cairo-regular text-[14px] text-[#111111]"
-                style={{ writingDirection: 'ltr' }}
-              />
-            </View>
-
-            {/* Visual Left (Child 1): +965 Country Selector Pill */}
-            <View className="h-[46px] flex-row items-center justify-center gap-1.5 rounded-[8px] border border-[#ECECEC] bg-white px-3">
-              <Text className="font-cairo-regular text-[14px] text-[#979797]">
-                +965
-              </Text>
-              <Feather name="chevron-down" size={14} color="#979797" />
-            </View>
-          </View>
-        </View>
+        {/* رقم التواصل: the account's phone or the office's own line.
+            No WhatsApp: offices are reached by phone or in-app chat */}
+        <IdentityContactPhone />
 
         {/* Field: المقر الرئيسي */}
         <View>

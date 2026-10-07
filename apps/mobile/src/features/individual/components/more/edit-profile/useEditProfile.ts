@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import {
@@ -31,7 +31,7 @@ export const EMAIL_VERIFIED_MESSAGE = 'تم التحقق من البريد ال�
 export const EMAIL_REQUIRED_MESSAGE =
   'البريد الإلكتروني مطلوب حسب طريقة تسجيل الدخول لديك.';
 export const PHONE_REQUIRED_MESSAGE =
-  'رقم الهاتف مطلوب حسب طريقة تسجيل الدخول لديك.';
+  'رقم الهاتف مطلوب للتواصل معك.';
 const TOAST_MS = 3000;
 
 /**
@@ -52,16 +52,39 @@ export function useEditProfile() {
     displayName ||
     (user?.email ? user.email.split('@')[0] : 'غير معروف');
 
+  // What's saved on the profile -- the form starts from it every time
+  const savedValues = (): ProfileFormData => ({
+    name: derivedName,
+    email: user?.email || '',
+    phone: user?.phone || '',
+    whatsapp: activeIdentity?.individualData?.whatsapp || user?.phone || '',
+    avatarUrl: avatarUrl || 'https://via.placeholder.com/150',
+  });
+
   const form = useForm<ProfileFormData>({
-    defaultValues: {
-      name: derivedName,
-      email: user?.email || '',
-      phone: user?.phone || '',
-      whatsapp: activeIdentity?.individualData?.whatsapp || user?.phone || '',
-      avatarUrl: avatarUrl || 'https://via.placeholder.com/150',
-    },
+    defaultValues: savedValues(),
     mode: 'onChange', // Validates on every keystroke to update button state
   });
+
+  // The screen can stay mounted after it's closed, which kept unsaved edits
+  // (and their errors) for the next visit (QA). Back on screen after leaving
+  // it, the form starts again from what's saved
+  // (Only on focus changes: a profile refresh mid-edit, e.g. after a code
+  // check, must not wipe what's being typed)
+  const latestSaved = useRef(savedValues);
+  latestSaved.current = savedValues;
+  const leftScreen = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (leftScreen.current) {
+        form.reset(latestSaved.current());
+        leftScreen.current = false;
+      }
+      return () => {
+        leftScreen.current = true;
+      };
+    }, [form]),
+  );
 
   const [toast, setToast] = useState<ProfileToast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -117,7 +140,9 @@ export function useEditProfile() {
       .catch(() => setPhoneVerified(null));
   }, []);
   const emailRequired = loginMethod !== null && loginMethod !== 'PHONE';
-  const phoneRequired = loginMethod !== null && loginMethod !== 'EMAIL';
+  // Always: the phone is how people reach you, whatever the sign-in method
+  // (which only decides what logs in). QA: an EMAIL account saved with none
+  const phoneRequired = true;
 
   // A new number to verify; a cleared one isn't (the API keeps the number
   // on file -- a sign-in identifier is never blanked)

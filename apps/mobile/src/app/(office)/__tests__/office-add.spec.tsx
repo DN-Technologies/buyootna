@@ -18,6 +18,19 @@ jest.mock('@/shared/api/plans.service', () => ({
   },
 }));
 
+// The phone field starts on the office's contact number (no made-up default)
+jest.mock('@/shared/api/contactPhone.service', () => ({
+  contactPhoneService: {
+    get: jest.fn().mockResolvedValue({
+      useAccountPhone: true,
+      accountPhone: '+96599990000',
+      contactPhone: null,
+      contactPhoneVerified: false,
+      effectivePhone: '+96599990000',
+    }),
+  },
+}));
+
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn().mockResolvedValue({
     canceled: false,

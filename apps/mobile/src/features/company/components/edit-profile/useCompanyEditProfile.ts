@@ -217,7 +217,7 @@ export function useCompanyEditProfile() {
         name: data.name,
         email: data.email.trim() || undefined,
         phone: formatKuwaitPhone(data.phone),
-        whatsapp: formatKuwaitPhone(data.whatsapp),
+        // No WhatsApp: companies are reached by phone or in-app chat
       });
 
       // 2. Company/licence fields + picked files (multipart when files attached)
@@ -268,6 +268,11 @@ export function useCompanyEditProfile() {
         'تنبيه',
         'يرجى التحقق من البريد الإلكتروني قبل حفظ التغييرات.',
       );
+      return;
+    }
+    // Always required: it's how people reach the company
+    if (localPhone(data.phone).length !== 8) {
+      showAlert('تنبيه', 'رقم الهاتف مطلوب للتواصل معك.');
       return;
     }
     if (isNewPhone(data.phone)) {
