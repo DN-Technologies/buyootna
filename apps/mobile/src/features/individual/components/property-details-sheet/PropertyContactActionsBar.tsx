@@ -4,7 +4,8 @@ import { CallIcon, ChatIcon, WhatsappIcon } from '@/assets/icons/home/cards';
 
 interface PropertyContactActionsBarProps {
   onCall: () => void;
-  onWhatsApp: () => void;
+  // Left out for companies and offices: they have no WhatsApp
+  onWhatsApp?: () => void;
   onChat: () => void;
 }
 
@@ -25,13 +26,15 @@ export default function PropertyContactActionsBar({
       </TouchableOpacity>
 
       {/* WhatsApp Button (Green Border) */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onWhatsApp}
-        className="h-12 w-20 items-center justify-center rounded-full border border-[#60D669]"
-      >
-        <WhatsappIcon size={20} />
-      </TouchableOpacity>
+      {onWhatsApp && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onWhatsApp}
+          className="h-12 w-20 items-center justify-center rounded-full border border-[#60D669]"
+        >
+          <WhatsappIcon size={20} />
+        </TouchableOpacity>
+      )}
 
       {/* Chat Button (Gold Border) */}
       <TouchableOpacity

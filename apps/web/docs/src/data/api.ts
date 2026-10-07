@@ -718,5 +718,42 @@ export const api: DocSection = {
       },
       updatedIn: "feat/real-trust-signals",
     },
+    {
+      id: "api-identity-contact-phone",
+      title: {
+        en: "Persona contact phone, phone always required, no business WhatsApp",
+        ar: "رقم تواصل الهوية، والهاتف مطلوب دائماً، ولا واتساب للأعمال",
+      },
+      priority: "P1",
+      story: {
+        en: "Identity gains useAccountPhone (default true), contactPhone and contactPhoneVerifiedAt. GET /identities/current/contact-phone returns the active persona's state; POST .../request-otp {phone} texts a code (Twilio Verify, OTP rate limits); POST .../verify {phone, otp} sets the persona's own number and switches to it; PATCH /identities/current/contact-phone {useAccountPhone} switches back (false needs an already verified own number, else 400 CONTACT_PHONE_NOT_VERIFIED). Company/office details, office cards and the ad host return the resolved number; companies and offices return whatsapp: null and PATCH /users/profile ignores their whatsapp. PATCH /users/profile refuses an account with no phone (400 PHONE_REQUIRED).",
+        ar: "تضاف إلى الهوية الحقول useAccountPhone (افتراضياً true) و contactPhone و contactPhoneVerifiedAt. GET /identities/current/contact-phone يعيد حالة الهوية النشطة؛ و POST .../request-otp {phone} يرسل رمزاً (Twilio Verify مع حدود OTP)؛ و POST .../verify {phone, otp} يعيّن رقم الهوية الخاص ويحوّل إليه؛ و PATCH /identities/current/contact-phone {useAccountPhone} يعيدها (false يتطلب رقماً خاصاً موثقاً مسبقاً، وإلا 400 CONTACT_PHONE_NOT_VERIFIED). وتفاصيل الشركة/المكتب وبطاقات المكاتب ومعلن الإعلان تعيد الرقم المحسوم؛ والشركات والمكاتب تعيد whatsapp: null ويتجاهل PATCH /users/profile واتسابها. ويرفض PATCH /users/profile حساباً بلا هاتف (400 PHONE_REQUIRED).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "verify with a wrong code changes nothing; with the right one the persona's number is set and used.",
+          "Only the signed-in account's active persona can be changed.",
+          "Company/office responses have whatsapp: null; an individual's still has one.",
+          "Saving a profile with no phone on the account returns PHONE_REQUIRED.",
+        ],
+        ar: [
+          "التحقق برمز خاطئ لا يغيّر شيئاً؛ وبالرمز الصحيح يُعيّن رقم الهوية ويُستخدم.",
+          "لا يمكن تغيير إلا الهوية النشطة للحساب المسجّل.",
+          "استجابات الشركة/المكتب فيها whatsapp: null؛ واستجابة الفرد ما زال فيها رقم.",
+          "حفظ ملف لحساب بلا هاتف يعيد PHONE_REQUIRED.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company persona: GET contact-phone → useAccountPhone true; PATCH {useAccountPhone:false} → 400 CONTACT_PHONE_NOT_VERIFIED.",
+          "request-otp then verify with the code → GET /users/company/<id> shows the new phone and whatsapp: null.",
+        ],
+        ar: [
+          "بهوية شركة: GET contact-phone ← useAccountPhone true؛ PATCH {useAccountPhone:false} ← 400 CONTACT_PHONE_NOT_VERIFIED.",
+          "request-otp ثم verify بالرمز ← GET /users/company/<id> يعرض الرقم الجديد و whatsapp: null.",
+        ],
+      },
+      updatedIn: "feat/identity-contact-phone",
+    },
   ],
 };

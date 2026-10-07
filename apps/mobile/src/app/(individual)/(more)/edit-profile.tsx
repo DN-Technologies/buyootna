@@ -16,6 +16,7 @@ import {
   useEditProfile,
 } from '@/features/individual/components/more/edit-profile';
 import { LoginMethodToast } from '@/features/individual/components/settings/login-method';
+import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
 
 export default function EditProfileScreen() {
   const profile = useEditProfile();
@@ -72,8 +73,8 @@ export default function EditProfileScreen() {
               name="phone"
               label="رقم الهاتف"
               requiredMessage="رقم الهاتف مطلوب"
-              required={!methodKnown || profile.phoneRequired}
-              // Checked on save against the sign-in method instead
+              // Always required (it's how people reach you); checked on save
+              required
               requiredInForm={false}
             >
               <PhoneVerificationHint
@@ -82,12 +83,15 @@ export default function EditProfileScreen() {
                 onVerify={profile.verifySavedPhone}
               />
             </KuwaitPhoneField>
+            <IdentityContactPhone />
             <KuwaitPhoneField
               control={control}
               errors={errors}
               name="whatsapp"
               label="رقم الواتساب"
               requiredMessage="رقم الواتساب مطلوب"
+              // Optional: buyers can always call or chat in the app
+              required={false}
             />
           </View>
         </ScrollView>

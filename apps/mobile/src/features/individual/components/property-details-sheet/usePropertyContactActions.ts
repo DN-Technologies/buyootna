@@ -3,6 +3,7 @@ import { Linking } from 'react-native';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 import { PropertyDetailsDto } from '@/types/property';
@@ -31,8 +32,11 @@ export function usePropertyContactActions({
       onWhatsAppPress();
       return;
     }
-    const targetPhone =
-      property?.phoneNumber || property?.phone || '96512345678';
+    const targetPhone = adContactPhone(property);
+    if (!targetPhone) {
+      showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
+      return;
+    }
     const cleanPhone = targetPhone.replace(/[^0-9+]/g, '');
     const waUrl = `whatsapp://send?phone=${cleanPhone}`;
     const webUrl = `https://wa.me/${cleanPhone}`;
@@ -46,7 +50,7 @@ export function usePropertyContactActions({
       onCallPress();
       return;
     }
-    const targetPhone = property?.phoneNumber || property?.phone;
+    const targetPhone = adContactPhone(property);
     if (!targetPhone) {
       showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
@@ -77,5 +81,11 @@ export function usePropertyContactActions({
     });
   };
 
-  return { handleWhatsApp, handleCall, handleChat };
+  return {
+    // Companies and offices have no WhatsApp
+    canWhatsApp: hostHasWhatsapp(property?.host?.role),
+    handleWhatsApp,
+    handleCall,
+    handleChat,
+  };
 }

@@ -1,5 +1,5 @@
-import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Feather } from '@expo/vector-icons';
+import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
@@ -9,6 +9,7 @@ import FieldLabel from '@/shared/components/forms/FieldLabel';
 import KuwaitPhoneField from '@/shared/components/forms/KuwaitPhoneField';
 import PhoneVerificationHint from '@/shared/components/forms/PhoneVerificationHint';
 import type { ProfileFormData } from '@/shared/components/forms/types';
+import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
 
 import type { CompanyIdentityFields } from './useCompanyEditProfile';
 
@@ -101,7 +102,7 @@ export default function CompanyGeneralInfoSection({
           name="phone"
           label="رقم الهاتف"
           requiredMessage="رقم الهاتف مطلوب"
-          // Checked on save against the sign-in method instead
+          // Always required (it's how people reach you); checked on save
           requiredInForm={false}
           labelClassName={LABEL_CLASS}
           inputClassName={INPUT_CLASS}
@@ -116,19 +117,9 @@ export default function CompanyGeneralInfoSection({
           />
         </KuwaitPhoneField>
 
-        {/* Field: رقم الواتساب */}
-        <KuwaitPhoneField
-          control={control}
-          errors={errors}
-          name="whatsapp"
-          label="رقم الواتساب"
-          requiredMessage="رقم الواتساب مطلوب"
-          labelClassName={LABEL_CLASS}
-          inputClassName={INPUT_CLASS}
-          pillClassName={PILL_CLASS}
-          pillTextClassName={PILL_TEXT_CLASS}
-          pillIconColor="#979797"
-        />
+        {/* رقم التواصل: the account's phone or the company's own line.
+            No WhatsApp: companies are reached by phone or in-app chat */}
+        <IdentityContactPhone />
 
         {/* Field: المقر الرئيسي */}
         <View>

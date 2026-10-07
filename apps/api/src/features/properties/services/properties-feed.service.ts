@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { IdentityStatsService } from 'src/core/trust-signals/identity-stats.service';
+import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import {
   GetPropertiesFilterDto,
   type PropertySort,
@@ -249,12 +250,15 @@ export class PropertiesFeedService {
             id: true,
             type: true,
             createdAt: true,
+            useAccountPhone: true,
+            contactPhone: true,
             user: {
               select: {
                 isDisabled: true,
                 isBlocked: true,
                 name: true,
                 avatarUrl: true,
+                phone: true,
               },
             },
             individualData: {
@@ -316,6 +320,8 @@ export class PropertiesFeedService {
         isVerified,
         rating: hostStats.rating,
         reviewsCount: hostStats.reviewsCount,
+        // The persona's contact number (its own, or the account's)
+        phone: identity ? contactPhoneOf(identity, identity.user) : null,
         role: identity?.type || 'INDIVIDUAL',
       },
       licenseNumber: identity?.officeData?.licenseNumber || undefined,

@@ -37,8 +37,8 @@ export default function OfficeEditProfile() {
     () => ({
       name: officeData?.name || displayName || 'المنار',
       email: user?.email || '',
-      phone: stripKuwaitPrefix(user?.phone) || '58094586',
-      whatsapp: stripKuwaitPrefix(user?.whatsapp || user?.phone) || '60468839',
+      // Never a made-up number: empty when the account has none
+      phone: stripKuwaitPrefix(user?.phone) || '',
       hqLocation: officeData?.hqLocation || 'السالمية',
       about:
         officeData?.about ||
@@ -56,7 +56,6 @@ export default function OfficeEditProfile() {
   const [name, setName] = useState(initialValues.name);
   const [email, setEmail] = useState(initialValues.email);
   const [phone, setPhone] = useState(initialValues.phone);
-  const [whatsapp, setWhatsapp] = useState(initialValues.whatsapp);
   const [hqLocation, setHqLocation] = useState(initialValues.hqLocation);
   const [about, setAbout] = useState(initialValues.about);
   const [services, setServices] = useState(initialValues.services);
@@ -87,7 +86,6 @@ export default function OfficeEditProfile() {
       name !== initialValues.name ||
       email !== initialValues.email ||
       phone !== initialValues.phone ||
-      whatsapp !== initialValues.whatsapp ||
       hqLocation !== initialValues.hqLocation ||
       about !== initialValues.about ||
       services !== initialValues.services ||
@@ -101,7 +99,6 @@ export default function OfficeEditProfile() {
     name,
     email,
     phone,
-    whatsapp,
     hqLocation,
     about,
     services,
@@ -154,6 +151,11 @@ export default function OfficeEditProfile() {
       showAlert('تنبيه', 'يرجى إدخال اسم المكتب');
       return;
     }
+    // Always required: it's how people reach the office
+    if (phone.replace(/\D/g, '').slice(-8).length !== 8) {
+      showAlert('تنبيه', 'رقم الهاتف مطلوب للتواصل معك.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -204,7 +206,7 @@ export default function OfficeEditProfile() {
           name,
           email,
           phone: formatKuwaitPhone(phone),
-          whatsapp: formatKuwaitPhone(whatsapp),
+          // No WhatsApp: offices are reached by phone or in-app chat
           hqLocation,
           about,
           services,
@@ -255,8 +257,6 @@ export default function OfficeEditProfile() {
             setEmail={setEmail}
             phone={phone}
             setPhone={setPhone}
-            whatsapp={whatsapp}
-            setWhatsapp={setWhatsapp}
             hqLocation={hqLocation}
             setHqLocation={setHqLocation}
             about={about}

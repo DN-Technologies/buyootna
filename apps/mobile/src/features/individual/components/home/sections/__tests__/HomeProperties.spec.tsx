@@ -3,8 +3,8 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { feedService } from '@/features/individual/services/feed.service';
-import { propertiesService } from '@/shared/api/properties.service';
 import { favoritesService } from '@/shared/api/favorites.service';
+import { propertiesService } from '@/shared/api/properties.service';
 
 import HomeProperties from '../HomeProperties';
 

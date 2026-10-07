@@ -101,26 +101,56 @@ describe('UsersProfileService', () => {
     it('an empty phone means "not sent": no change, no error', async () => {
       await service.updateProfile('user-1', Role.COMPANY, {
         phone: '',
-        whatsapp: '99998888',
+        name: 'شركة',
       });
 
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { whatsapp: '99998888' },
+        data: { name: 'شركة' },
       });
     });
 
     it('accepts the unchanged number in another form and leaves it alone', async () => {
       await service.updateProfile('user-1', Role.COMPANY, {
         phone: '99998888',
-        whatsapp: '99998888',
+        name: 'شركة',
       });
 
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'user-1' },
-        data: { whatsapp: '99998888' },
+        data: { name: 'شركة' },
       });
     });
+
+    it('refuses saving an account that has no phone, whatever the sign-in method', async () => {
+      prisma.user.findUnique.mockResolvedValue({ phone: null });
+
+      const attempt = service.updateProfile('user-1', Role.INDIVIDUAL, {
+        name: 'سالم',
+      });
+
+      await expect(attempt).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'PHONE_REQUIRED' }),
+      });
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('WhatsApp (people only)', () => {
+    it.each([Role.COMPANY, Role.OFFICE])(
+      'ignores a WhatsApp number from a %s',
+      async (role) => {
+        await service.updateProfile('user-1', role, {
+          name: 'اسم',
+          whatsapp: '99998888',
+        });
+
+        expect(prisma.user.update).toHaveBeenCalledWith({
+          where: { id: 'user-1' },
+          data: { name: 'اسم' },
+        });
+      },
+    );
   });
 
   describe('email (a sign-in identifier)', () => {

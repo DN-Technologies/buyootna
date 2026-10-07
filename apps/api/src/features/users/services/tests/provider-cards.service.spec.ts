@@ -80,7 +80,8 @@ describe('ProviderCardsService', () => {
       reviewsCount: 0,
       location: 'السالمية',
       phone: '+96599990000',
-      whatsapp: '+96599990000',
+      // Offices have no WhatsApp: phone or in-app chat only
+      whatsapp: null,
     });
   });
 });
