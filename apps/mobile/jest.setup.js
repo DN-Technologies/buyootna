@@ -32,3 +32,25 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 0, left: 0, right: 0 })),
 }));
+
+// The contact-phone block (edit profiles) and the new-ad phone prefill fetch
+// /identities/current/contact-phone on mount. Unmocked, that real request
+// could outlive a test file and fail CI with "import after the Jest
+// environment has been torn down". Default to "uses the account's phone, no
+// number"; files that need specific data jest.mock this module themselves.
+jest.mock('@/shared/api/contactPhone.service', () => ({
+  contactPhoneService: {
+    get: jest.fn(() =>
+      Promise.resolve({
+        useAccountPhone: true,
+        accountPhone: null,
+        contactPhone: null,
+        contactPhoneVerified: false,
+        effectivePhone: null,
+      }),
+    ),
+    requestOtp: jest.fn(() => Promise.resolve({ destination: '' })),
+    verify: jest.fn(),
+    setUseAccountPhone: jest.fn(),
+  },
+}));
