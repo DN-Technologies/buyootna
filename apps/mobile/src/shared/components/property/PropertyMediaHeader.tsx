@@ -80,7 +80,7 @@ export default function PropertyMediaHeader({
           >
             <HeartIcon
               size={18}
-              color={isFavorite ? '#BA0003' : '#94A3B8'}
+              color={isFavorite ? '#DC2626' : '#111111'}
               filled={isFavorite}
             />
           </TouchableOpacity>

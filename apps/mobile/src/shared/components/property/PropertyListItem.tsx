@@ -142,7 +142,7 @@ export default function PropertyListItem({
 
       {/* Row 3: Property Income (مدخول العقار) */}
       {propertyIncome !== undefined && propertyIncome !== null && propertyIncome > 0 && (
-        <View className="mt-2.5 flex-row items-center justify-end gap-1.5">
+        <View className="mt-2.5 flex-row items-center justify-start gap-1.5">
           <Text className="font-cairo-bold text-sm text-[#111111]">
             مدخول العقار
           </Text>
