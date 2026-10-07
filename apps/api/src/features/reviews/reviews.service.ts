@@ -24,6 +24,9 @@ export class ReviewsService {
       throw new BadRequestException('لا يمكنك تقييم حسابك الشخصي');
     }
 
+    // Stars-only reviews store an empty comment (the column is required)
+    const comment = dto.comment?.trim() ?? '';
+
     const reviewerIdentity = await this.prisma.identity.findFirst({
       where: {
         OR: [{ id: reviewerId }, { userId: reviewerId, isActive: true }],
@@ -61,7 +64,7 @@ export class ReviewsService {
         where: { id: existingReview.id },
         data: {
           rating: dto.rating,
-          comment: dto.comment,
+          comment,
         },
       });
     } else {
@@ -72,7 +75,7 @@ export class ReviewsService {
           reviewerId,
           targetUserId,
           rating: dto.rating,
-          comment: dto.comment,
+          comment,
         },
       });
     }

@@ -21,9 +21,11 @@ import ChatListItem from '@/shared/components/chat/ChatListItem';
 import EmptyChatState from '@/shared/components/chat/EmptyChatState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { formatMessageTime } from '@/shared/utils/chatDate';
 import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
 
 export default function ChatsInboxScreen() {
@@ -37,6 +39,9 @@ export default function ChatsInboxScreen() {
   const loadConversations = useChatStore((state) => state.loadConversations);
   const receiveMessage = useChatStore((state) => state.receiveMessage);
   const isLoading = useChatStore((state) => state.isLoadingConversations);
+  const pullToRefresh = usePullToRefresh(
+    useCallback(() => loadConversations(1, true), [loadConversations]),
+  );
 
   // Refetch on every focus (not just first mount) so a conversation started
   // elsewhere (e.g. contacting a company/office from a property page) shows
@@ -220,8 +225,8 @@ export default function ChatsInboxScreen() {
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={{ paddingBottom: 100 }}
                   ListEmptyComponent={EmptyChatState}
-                  refreshing={isLoading}
-                  onRefresh={() => loadConversations(1, true)}
+                  refreshing={pullToRefresh.refreshing}
+                  onRefresh={pullToRefresh.onRefresh}
                   renderItem={({ item }) => {
                     const displayLastMessage = item.lastMessage
                       ? item.lastMessage.type === 'IMAGE'
@@ -231,15 +236,9 @@ export default function ChatsInboxScreen() {
                           : item.lastMessage.content || ''
                       : 'بدء المحادثة';
   
+                    // 24-hour, western digits, the phone's time zone
                     const timestampText = item.lastMessage
-                      ? new Date(item.lastMessage.createdAt).toLocaleTimeString(
-                          'ar-KW',
-                          {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                          },
-                        )
+                      ? formatMessageTime(item.lastMessage.createdAt)
                       : '';
   
                     return (

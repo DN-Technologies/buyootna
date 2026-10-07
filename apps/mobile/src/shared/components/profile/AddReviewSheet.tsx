@@ -4,9 +4,11 @@ import {
   BottomSheetModal,
   BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
-import React, { forwardRef, useCallback, useMemo, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
+import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
 
 interface AddReviewSheetProps {
   onSubmit: (comment: string, rating: number) => void;
@@ -17,7 +19,18 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
   ({ onSubmit, onClose }, ref) => {
     const [commentText, setCommentText] = useState('');
     const [rating, setRating] = useState(5);
-    const snapPoints = useMemo(() => ['62%'], []);
+    // 92% while typing: the sheet rises and its content makes room for the
+    // keyboard (bottom padding = keyboard height), so the text box shrinks
+    // instead of hiding under the keyboard (QA)
+    const snapPoints = useMemo(() => ['62%', '92%'], []);
+    const keyboardHeight = useKeyboardHeight();
+
+    useEffect(() => {
+      if (keyboardHeight > 0) {
+        // @ts-ignore
+        ref.current?.snapToIndex(1);
+      }
+    }, [keyboardHeight, ref]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -37,15 +50,16 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
       if (onClose) onClose();
     };
 
+    // The stars are enough; the comment is optional
     const handlePublish = () => {
-      if (!commentText.trim()) return;
+      if (rating < 1) return;
       onSubmit(commentText.trim(), rating);
       setCommentText('');
       setRating(5);
       handleDismiss();
     };
 
-    const isSubmitActive = commentText.trim().length > 0;
+    const isSubmitActive = rating > 0;
 
     return (
       <BottomSheetModal
@@ -60,13 +74,20 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
           borderRadius: 2,
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 28 }}
-        keyboardBehavior="interactive"
+        // "extend" never translates the sheet, so it can't double up with the
+        // keyboard padding below; it only targets the tallest snap point
+        keyboardBehavior="extend"
+        // Only the two snap points above (index 1 = the typing height)
+        enableDynamicSizing={false}
         keyboardBlurBehavior="restore"
         // No android_keyboardInputMode="adjustResize": with edge-to-edge the
         // window never resizes, and in that mode the sheet doesn't move either,
         // so the keyboard covered it. The default lets the sheet rise itself.
       >
-        <SafeBottomSheetView className="flex-1 px-6 pb-8 pt-2">
+        <SafeBottomSheetView
+          className="flex-1 px-6 pb-8 pt-2"
+          style={keyboardHeight > 0 ? { paddingBottom: keyboardHeight + 12 } : undefined}
+        >
           {/* Header Row */}
           <View className="mb-3 flex-row items-center justify-between">
             <Text className="font-cairo-bold text-lg text-[#111111]">
@@ -104,7 +125,7 @@ const AddReviewSheet = forwardRef<BottomSheetModal, AddReviewSheetProps>(
             <BottomSheetTextInput
               value={commentText}
               onChangeText={setCommentText}
-              placeholder="شاركونا رأيك..."
+              placeholder="شاركونا رأيك (اختياري)..."
               placeholderTextColor="#A0AEC0"
               multiline
               textAlignVertical="top"

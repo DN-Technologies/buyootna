@@ -1,6 +1,5 @@
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ReviewItem } from './types';
@@ -47,13 +46,15 @@ export default function ReviewCardItem({
         </Text>
       </View>
 
-      {/* Comment text */}
-      <Text
-        className="mt-3 font-cairo text-[14px] leading-6 text-[#6B6A6A]"
-        style={{ writingDirection: 'rtl' }}
-      >
-        {item.comment}
-      </Text>
+      {/* Comment text (a stars-only review has none) */}
+      {!!item.comment && (
+        <Text
+          className="mt-3 font-cairo text-[14px] leading-6 text-[#6B6A6A]"
+          style={{ writingDirection: 'rtl' }}
+        >
+          {item.comment}
+        </Text>
+      )}
 
       {/* Helpful / Reaction row */}
       <View className="mt-4 flex-row items-center gap-5 border-t border-slate-50 pt-3">

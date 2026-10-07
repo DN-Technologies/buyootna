@@ -1,12 +1,13 @@
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChatListItem from '@/shared/components/chat/ChatListItem';
 import EmptyChatState from '@/shared/components/chat/EmptyChatState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
+import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
@@ -22,6 +23,9 @@ export default function CompanyChatsScreen() {
   const loadConversations = useChatStore((state) => state.loadConversations);
   const receiveMessage = useChatStore((state) => state.receiveMessage);
   const isLoading = useChatStore((state) => state.isLoadingConversations);
+  const pullToRefresh = usePullToRefresh(
+    useCallback(() => loadConversations(1, true), [loadConversations]),
+  );
 
   useEffect(() => {
     if (token) {
@@ -57,8 +61,8 @@ export default function CompanyChatsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
           ListEmptyComponent={EmptyChatState}
-          refreshing={isLoading}
-          onRefresh={() => loadConversations(1, true)}
+          refreshing={pullToRefresh.refreshing}
+          onRefresh={pullToRefresh.onRefresh}
           renderItem={({ item }) => {
             const displayLastMessage = item.lastMessage
               ? item.lastMessage.type === 'IMAGE'

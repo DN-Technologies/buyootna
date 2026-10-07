@@ -99,7 +99,8 @@ export const mobileShared: DocSection = {
         en: [
           "A sent message appears for the recipient without refreshing, and is still there after reopening the chat (also when the reload is slow or fails: the cached messages stay, with a تعذر تحميل الرسائل · إعادة المحاولة row on failure).",
           "Your own messages sit on the right (light bubble), the other person's on the left (dark bubble), for text, image and property messages.",
-          "Message times are 24-hour with western digits in the phone's time zone (e.g. 00:53, not ٠٠:٥٣).",
+          "Message times are 24-hour with western digits in the phone's time zone (e.g. 00:53, not ٠٠:٥٣), in the chat and in the chats list.",
+          "Going back to the chats list never leaves a stuck loading spinner at the top; the spinner shows only while pulling to refresh.",
           "Two personas of the same account can't message each other ('لا يمكنك بدء محادثة مع نفسك').",
           "The inbox after switching persona lists only that persona's conversations.",
           "Messaging a suspended or blocked account is refused ('هذا الحساب غير متاح حالياً').",
@@ -108,7 +109,8 @@ export const mobileShared: DocSection = {
         ar: [
           "الرسالة المرسلة تظهر للمستلم دون تحديث وتبقى بعد إعادة فتح المحادثة (حتى إذا بطؤ التحميل أو فشل: تبقى الرسائل المحفوظة، مع سطر تعذر تحميل الرسائل · إعادة المحاولة عند الفشل).",
           "رسائلك على اليمين (فقاعة فاتحة) ورسائل الطرف الآخر على اليسار (فقاعة داكنة)، للنص والصور والعقارات.",
-          "أوقات الرسائل بنظام 24 ساعة وبأرقام غربية وبتوقيت الهاتف (مثل 00:53 وليس ٠٠:٥٣).",
+          "أوقات الرسائل بنظام 24 ساعة وبأرقام غربية وبتوقيت الهاتف (مثل 00:53 وليس ٠٠:٥٣)، في المحادثة وفي قائمة المحادثات.",
+          "العودة إلى قائمة المحادثات لا تترك مؤشر تحميل عالقاً في الأعلى؛ يظهر المؤشر فقط أثناء السحب للتحديث.",
           "لا يمكن لهويتين في نفس الحساب مراسلة بعضهما ('لا يمكنك بدء محادثة مع نفسك').",
           "صندوق الوارد بعد تبديل الهوية يعرض محادثات تلك الهوية فقط.",
           "مراسلة حساب معلّق أو محظور تُرفض ('هذا الحساب غير متاح حالياً').",
@@ -927,6 +929,8 @@ export const mobileShared: DocSection = {
           "العقارات المباعة shows the real count (0 for none).",
           "سرعة الرد is hidden until there are 3 answered chats, then shows a bucket, never an invented number.",
           "Company cards and the ad host card hide the star when there are no reviews.",
+          "A review can be just the stars: نشر works with the text box empty, and the review shows without an empty comment line.",
+          "Typing a review keeps the text and نشر above the keyboard (the sheet grows and the box shrinks to fit).",
         ],
         ar: [
           "الملف بلا تقييمات يعرض لا توجد تقييمات بعد، وليس 4.5 أو 214؛ ومع وجود تقييمات يطابق الرأس ملخص التقييم.",
@@ -934,6 +938,8 @@ export const mobileShared: DocSection = {
           "العقارات المباعة تعرض العدد الحقيقي (0 عند عدم وجودها).",
           "سرعة الرد مخفية حتى 3 ردود على محادثات، ثم تعرض فئة، وليس رقماً مخترعاً.",
           "بطاقات الشركات وبطاقة المعلن تخفي النجمة عند عدم وجود تقييمات.",
+          "يمكن أن يكون التقييم بالنجوم فقط: يعمل زر نشر والنص فارغ، ويظهر التقييم دون سطر تعليق فارغ.",
+          "عند كتابة التقييم يبقى النص وزر نشر فوق لوحة المفاتيح (تكبر النافذة ويصغر مربع النص ليتسع).",
         ],
       },
       testScenarios: {

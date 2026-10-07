@@ -332,13 +332,15 @@ export default function ReviewsScreen() {
                   </Text>
                 </View>
 
-                {/* Comment text */}
-                <Text
-                  className="mt-3 font-cairo text-[14px] leading-6 text-[#6B6A6A]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  {item.comment}
-                </Text>
+                {/* Comment text (a stars-only review has none) */}
+                {!!item.comment && (
+                  <Text
+                    className="mt-3 font-cairo text-[14px] leading-6 text-[#6B6A6A]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    {item.comment}
+                  </Text>
+                )}
 
                 {/* Optional Reaction buttons */}
                 {(item.likes !== undefined || item.dislikes !== undefined) && (
