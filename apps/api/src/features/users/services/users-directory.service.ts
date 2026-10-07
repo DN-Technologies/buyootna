@@ -213,6 +213,8 @@ export class UsersDirectoryService {
         description: project.description,
         category: '',
         imageUrl: project.images.length > 0 ? project.images[0] : undefined,
+        // Every photo, for the full-screen viewer (imageUrl stays for older apps)
+        images: project.images,
         completedDate: project.createdAt
           ? project.createdAt.toISOString().slice(0, 7)
           : '',
@@ -222,6 +224,7 @@ export class UsersDirectoryService {
         title: `${p.category || 'مشروع'} - ${p.location || 'الكويت'}`,
         category: String(p.category || ''),
         imageUrl: p.images && p.images.length > 0 ? p.images[0] : undefined,
+        images: p.images ?? [],
         completedDate: p.createdAt ? p.createdAt.toISOString().slice(0, 7) : '',
       })),
     ];

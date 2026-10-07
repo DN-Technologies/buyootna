@@ -1083,5 +1083,48 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/identity-contact-phone",
     },
+    {
+      id: "mobile-image-viewer",
+      title: {
+        en: "Photos open full screen with swipe and zoom",
+        ar: "الصور تفتح بملء الشاشة مع التنقل والتكبير",
+      },
+      priority: "P2",
+      story: {
+        en: "Tapping a photo opens it full screen: on the ad page, in the تفاصيل العقار sheet, on a company's معرض الأعمال project (all of that project's photos) and in chat (all of the conversation's images). Swipe between photos with an 'n / total' counter; pinch (up to 4x) or double-tap to zoom in and out at the touched point, pan while zoomed; swipe down or ✕ (or Android back) to close; tap once to hide the top bar. The company gallery no longer shows stock projects: a company with none shows 'لا توجد أعمال في المعرض بعد'.",
+        ar: "الضغط على صورة يفتحها بملء الشاشة: في صفحة الإعلان، وفي نافذة تفاصيل العقار، وفي مشروع ضمن معرض الأعمال للشركة (كل صور المشروع)، وفي المحادثة (كل صور المحادثة). تنقّل بين الصور مع عدّاد 'n / الإجمالي'؛ قرّب أو بعّد بإصبعين (حتى 4x) أو بالضغط المزدوج عند النقطة الملموسة، وحرّك الصورة أثناء التكبير؛ اسحب للأسفل أو ✕ (أو زر الرجوع في Android) للإغلاق؛ وضغطة واحدة تخفي الشريط العلوي. ولم يعد معرض الشركة يعرض مشاريع وهمية: الشركة بلا مشاريع تعرض 'لا توجد أعمال في المعرض بعد'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping any photo in the four places opens the viewer at that photo, with the right counter.",
+          "Pinch and double-tap zoom in and out; a zoomed photo can be moved but not past its edges; swiping to another photo resets the zoom.",
+          "Swipe down (not zoomed), ✕ or Android back closes the viewer.",
+          "The no-image placeholder doesn't open the viewer.",
+          "The company gallery shows only real projects, or the empty message.",
+        ],
+        ar: [
+          "الضغط على أي صورة في الأماكن الأربعة يفتح العارض عند تلك الصورة بالعدّاد الصحيح.",
+          "التكبير بإصبعين والضغط المزدوج يقرّبان ويبعّدان؛ ويمكن تحريك الصورة المكبّرة دون تجاوز حوافها؛ والانتقال لصورة أخرى يعيد التكبير.",
+          "السحب للأسفل (دون تكبير) أو ✕ أو زر الرجوع في Android يغلق العارض.",
+          "الصورة البديلة عند عدم وجود صور لا تفتح العارض.",
+          "معرض الشركة يعرض المشاريع الحقيقية فقط أو رسالة عدم وجودها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the 250,000 building ad, tap the second photo — full screen at '2 / n'; swipe through; pinch in, pan, double-tap out; swipe down to close.",
+          "From the home feed, open تفاصيل العقار and tap a photo — same viewer.",
+          "Open a company with projects → معرض الأعمال → tap a project with several photos — '1 / n' over that project's photos.",
+          "In a chat with images, tap one — the viewer opens on it and swipes to the conversation's other images.",
+        ],
+        ar: [
+          "افتح إعلان العمارة بـ 250,000 واضغط الصورة الثانية — بملء الشاشة عند '2 / n'؛ تنقّل؛ كبّر بإصبعين وحرّك ثم بعّد بضغط مزدوج؛ واسحب للأسفل للإغلاق.",
+          "من الرئيسية افتح تفاصيل العقار واضغط صورة — نفس العارض.",
+          "افتح شركة لها مشاريع ← معرض الأعمال ← اضغط مشروعاً بعدة صور — '1 / n' لصور ذلك المشروع.",
+          "في محادثة فيها صور اضغط إحداها — يفتح العارض عليها ويتنقّل بين صور المحادثة الأخرى.",
+        ],
+      },
+      updatedIn: "feat/image-viewer",
+    },
   ],
 };

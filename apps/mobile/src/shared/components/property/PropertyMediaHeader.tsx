@@ -11,6 +11,7 @@ import { EdgeInsets } from 'react-native-safe-area-context';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
 import { ArrowBackIcon, ShareIcon } from '@/assets/icons/home/property';
+import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import { SafeImage } from '@/shared/components/ui/SafeImage';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -34,6 +35,8 @@ export default function PropertyMediaHeader({
   onShare,
 }: PropertyMediaHeaderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  // Tap a photo: full screen, swipe, pinch / double-tap to zoom
+  const { open: openViewer, viewer } = useImageViewer();
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
@@ -105,13 +108,21 @@ export default function PropertyMediaHeader({
             scrollEventThrottle={16}
           >
             {images.map((img, index) => (
-              <SafeImage
+              <TouchableOpacity
                 key={index}
-                source={{ uri: img }}
-                style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT, backgroundColor: '#E2E8F0' }}
-                resizeMode="cover"
-                transition={300}
-              />
+                activeOpacity={0.95}
+                testID={`property-media-photo-${index}`}
+                accessibilityRole="imagebutton"
+                accessibilityLabel={`عرض الصورة ${index + 1} بالحجم الكامل`}
+                onPress={() => openViewer(images, index)}
+              >
+                <SafeImage
+                  source={{ uri: img }}
+                  style={{ width: SCREEN_WIDTH, height: HEADER_HEIGHT, backgroundColor: '#E2E8F0' }}
+                  resizeMode="cover"
+                  transition={300}
+                />
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
@@ -133,6 +144,8 @@ export default function PropertyMediaHeader({
           resizeMode="cover"
         />
       )}
+
+      {viewer}
     </View>
   );
 }
