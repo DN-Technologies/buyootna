@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 import {
   CompanySort,
   GetCompaniesFilterDto,
@@ -18,6 +19,7 @@ export class UsersDirectoryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly providerCards: ProviderCardsService,
+    private readonly identityStats: IdentityStatsService,
   ) {}
 
   // --- Find Companies ---
@@ -191,20 +193,10 @@ export class UsersDirectoryService {
 
     const companyData = identity.companyData;
 
-    const reviews = await this.prisma.review.findMany({
-      where: { targetUserId: identity.userId },
-      select: { rating: true },
-    });
-
-    const reviewsCount = reviews.length;
-    const rating =
-      reviewsCount > 0
-        ? Number(
-            (
-              reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount
-            ).toFixed(1),
-          )
-        : 0;
+    const [stats, responseTime] = await Promise.all([
+      this.identityStats.getOne(identity.id),
+      this.identityStats.getResponseTime(identity.id),
+    ]);
 
     const formattedServices = formatServiceList(
       companyData.services,
@@ -239,9 +231,11 @@ export class UsersDirectoryService {
       name: companyData.name,
       logoUrl: companyData.logoUrl,
       isVerified: companyData.isVerified,
-      isActiveNow: true,
-      rating,
-      reviewsCount,
+      isActiveNow: stats.presence.isOnline,
+      lastSeenAt: stats.presence.lastSeenAt,
+      rating: stats.rating,
+      reviewsCount: stats.reviewsCount,
+      responseTime,
       bio: companyData.about,
       location: companyData.hqLocation || companyData.serviceAreas,
       servicesCount: formattedServices.length,
@@ -278,20 +272,10 @@ export class UsersDirectoryService {
 
     const officeData = identity.officeData;
 
-    const reviews = await this.prisma.review.findMany({
-      where: { targetUserId: identity.userId },
-      select: { rating: true },
-    });
-
-    const reviewsCount = reviews.length;
-    const rating =
-      reviewsCount > 0
-        ? Number(
-            (
-              reviews.reduce((sum, r) => sum + r.rating, 0) / reviewsCount
-            ).toFixed(1),
-          )
-        : 0;
+    const [stats, responseTime] = await Promise.all([
+      this.identityStats.getOne(identity.id),
+      this.identityStats.getResponseTime(identity.id),
+    ]);
 
     const formattedServices = formatServiceList(
       officeData.services,
@@ -304,9 +288,11 @@ export class UsersDirectoryService {
       name: officeData.name,
       logoUrl: officeData.logoUrl,
       isVerified: officeData.isVerified,
-      isActiveNow: true,
-      rating,
-      reviewsCount,
+      isActiveNow: stats.presence.isOnline,
+      lastSeenAt: stats.presence.lastSeenAt,
+      rating: stats.rating,
+      reviewsCount: stats.reviewsCount,
+      responseTime,
       bio: officeData.about,
       location: officeData.hqLocation,
       licenseNumber: officeData.licenseNumber,

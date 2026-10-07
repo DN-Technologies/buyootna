@@ -102,7 +102,11 @@ export class CompanySearchStrategy implements SearchStrategy {
         where: whereClause,
         skip,
         take: limit,
-        include: { companyData: true },
+        include: {
+          companyData: true,
+          // Real works count for the card (was a hardcoded "+85")
+          _count: { select: { properties: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.identity.count({ where: whereClause }),

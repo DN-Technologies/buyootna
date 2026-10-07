@@ -97,14 +97,18 @@ export const mobileShared: DocSection = {
       },
       acceptanceCriteria: {
         en: [
-          "A sent message appears for the recipient without refreshing, and is still there after reopening the chat.",
+          "A sent message appears for the recipient without refreshing, and is still there after reopening the chat (also when the reload is slow or fails: the cached messages stay, with a تعذر تحميل الرسائل · إعادة المحاولة row on failure).",
+          "Your own messages sit on the right (light bubble), the other person's on the left (dark bubble), for text, image and property messages.",
+          "Message times are 24-hour with western digits in the phone's time zone (e.g. 00:53, not ٠٠:٥٣).",
           "Two personas of the same account can't message each other ('لا يمكنك بدء محادثة مع نفسك').",
           "The inbox after switching persona lists only that persona's conversations.",
           "Messaging a suspended or blocked account is refused ('هذا الحساب غير متاح حالياً').",
           "The ad banner at the top shows only when the chat was opened from that ad; opening the same chat from an office/company list or profile clears it for both sides, and opening it from an ad again brings that ad back.",
         ],
         ar: [
-          "الرسالة المرسلة تظهر للمستلم دون تحديث وتبقى بعد إعادة فتح المحادثة.",
+          "الرسالة المرسلة تظهر للمستلم دون تحديث وتبقى بعد إعادة فتح المحادثة (حتى إذا بطؤ التحميل أو فشل: تبقى الرسائل المحفوظة، مع سطر تعذر تحميل الرسائل · إعادة المحاولة عند الفشل).",
+          "رسائلك على اليمين (فقاعة فاتحة) ورسائل الطرف الآخر على اليسار (فقاعة داكنة)، للنص والصور والعقارات.",
+          "أوقات الرسائل بنظام 24 ساعة وبأرقام غربية وبتوقيت الهاتف (مثل 00:53 وليس ٠٠:٥٣).",
           "لا يمكن لهويتين في نفس الحساب مراسلة بعضهما ('لا يمكنك بدء محادثة مع نفسك').",
           "صندوق الوارد بعد تبديل الهوية يعرض محادثات تلك الهوية فقط.",
           "مراسلة حساب معلّق أو محظور تُرفض ('هذا الحساب غير متاح حالياً').",
@@ -115,17 +119,19 @@ export const mobileShared: DocSection = {
         en: [
           "Two devices, two accounts: send 5 messages quickly — all arrive in order on the other device.",
           "Double-tap 'Chat' on an ad — only one conversation is created.",
+          "Send one message in a new chat, go back and reopen it 3 times — the message is there each time, on the right, with the correct time.",
           "As Individual open a chat with a company; switch to your own Company persona — that chat isn't in the inbox.",
           "Chat with an office from one of its ads (banner shows the ad), go back, then open the chat from Home → مكاتب عقارية — no banner; the office sees no banner either.",
         ],
         ar: [
           "جهازان وحسابان: أرسل 5 رسائل بسرعة — تصل جميعها بالترتيب على الجهاز الآخر.",
           "اضغط 'محادثة' مرتين على إعلان — تُنشأ محادثة واحدة فقط.",
+          "أرسل رسالة واحدة في محادثة جديدة، ثم ارجع وأعد فتحها 3 مرات — تظهر الرسالة كل مرة على اليمين وبالوقت الصحيح.",
           "كفرد افتح محادثة مع شركة ثم بدّل إلى هوية شركتك — لا تظهر تلك المحادثة في صندوق الوارد.",
           "راسل مكتباً من أحد إعلاناته (يظهر الشريط بالإعلان)، ثم ارجع وافتح المحادثة من الرئيسية ← مكاتب عقارية — لا يظهر الشريط؛ ولا يظهر للمكتب أيضاً.",
         ],
       },
-      updatedIn: "fix/chat-clear-property",
+      updatedIn: "fix/chat-clear-property, feat/real-trust-signals",
     },
     {
       id: "mobile-search",
@@ -902,6 +908,94 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "fix/property-host-avatar",
+    },
+    {
+      id: "mobile-seller-trust-signals",
+      title: {
+        en: "Profiles show real rating, activity, sold count and response speed",
+        ar: "الملفات تعرض تقييماً ونشاطاً وعدد مباع وسرعة رد حقيقية",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: every advertiser profile showed 4.5 stars (214 تقييم), a permanent green نشط الآن, 2 sold and 30 دقيقة response time, even with 0 reviews in the summary below. The individual, company and office profiles, the ad host card and company cards now show only real data: the real rating and count (لا توجد تقييمات بعد when there are none), نشط الآن while the advertiser has the app open, نشط منذ X for up to a week, then nothing, the number of ads deleted as تم البيع, and a response-speed bucket (خلال دقائق / خلال ساعة / خلال ساعات / خلال يوم / أكثر من يوم) once there are at least 3 answered chats.",
+        ar: "بلاغ QA: كان كل ملف معلن يعرض 4.5 نجوم (214 تقييم) ونشط الآن باللون الأخضر دائماً و2 مباع وسرعة رد 30 دقيقة، حتى مع 0 تقييمات في الملخص أسفلها. الآن ملفات الأفراد والشركات والمكاتب وبطاقة المعلن وبطاقات الشركات تعرض بيانات حقيقية فقط: التقييم وعدده الحقيقيان (لا توجد تقييمات بعد عند عدم وجودها)، ونشط الآن ما دام المعلن يفتح التطبيق، ونشط منذ X لمدة أسبوع ثم لا شيء، وعدد الإعلانات المحذوفة بسبب تم البيع، وفئة سرعة الرد (خلال دقائق / خلال ساعة / خلال ساعات / خلال يوم / أكثر من يوم) بعد 3 ردود على الأقل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A profile with no reviews shows لا توجد تقييمات بعد, never 4.5 or 214; with reviews the header matches ملخص التقييم.",
+          "نشط الآن shows only while that advertiser's app is open; otherwise نشط منذ X up to 7 days, then no badge.",
+          "العقارات المباعة shows the real count (0 for none).",
+          "سرعة الرد is hidden until there are 3 answered chats, then shows a bucket, never an invented number.",
+          "Company cards and the ad host card hide the star when there are no reviews.",
+        ],
+        ar: [
+          "الملف بلا تقييمات يعرض لا توجد تقييمات بعد، وليس 4.5 أو 214؛ ومع وجود تقييمات يطابق الرأس ملخص التقييم.",
+          "يظهر نشط الآن فقط ما دام تطبيق المعلن مفتوحاً؛ وإلا نشط منذ X حتى 7 أيام، ثم لا شارة.",
+          "العقارات المباعة تعرض العدد الحقيقي (0 عند عدم وجودها).",
+          "سرعة الرد مخفية حتى 3 ردود على محادثات، ثم تعرض فئة، وليس رقماً مخترعاً.",
+          "بطاقات الشركات وبطاقة المعلن تخفي النجمة عند عدم وجود تقييمات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the profile of a new advertiser — لا توجد تقييمات بعد, no activity badge, sold 0, no response speed.",
+          "On a second device, open the app as that advertiser, then refresh the profile — نشط الآن; close it, wait a few minutes and refresh — نشط منذ X دقيقة.",
+          "Leave a review — the header shows the same rating and count as ملخص التقييم.",
+          "As the advertiser, delete an ad with تم البيع — العقارات المباعة goes up by 1.",
+          "Have the advertiser answer 3 chats within about 10 minutes — سرعة الرد shows خلال دقائق.",
+        ],
+        ar: [
+          "افتح ملف معلن جديد — لا توجد تقييمات بعد، ولا شارة نشاط، والمباعة 0، ولا سرعة رد.",
+          "على جهاز ثانٍ افتح التطبيق بحساب ذلك المعلن ثم حدّث الملف — نشط الآن؛ أغلقه وانتظر بضع دقائق وحدّث — نشط منذ X دقيقة.",
+          "أضف تقييماً — يعرض الرأس نفس التقييم والعدد كما في ملخص التقييم.",
+          "بصفتك المعلن احذف إعلاناً بسبب تم البيع — يزيد العقارات المباعة بواحد.",
+          "اجعل المعلن يرد على 3 محادثات خلال 10 دقائق تقريباً — تظهر سرعة الرد خلال دقائق.",
+        ],
+      },
+      updatedIn: "feat/real-trust-signals",
+    },
+    {
+      id: "mobile-chat-push",
+      title: {
+        en: "A new chat message sends a push notification",
+        ar: "الرسالة الجديدة في المحادثة ترسل إشعاراً",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: sending a chat message notified nobody unless the recipient had the app open. Each new message now pushes to the devices currently using the recipient persona, titled with the sender's name and previewing the text (📷 صورة / 🏠 عقار for images and property cards). Tapping it opens the chat. No push goes to the sender, to someone already looking at that chat, to a device on another persona of the same account, or to an account with app notifications turned off.",
+        ar: "بلاغ QA: إرسال رسالة لم يكن ينبه أحداً إلا إذا كان التطبيق مفتوحاً عند المستلم. الآن كل رسالة جديدة ترسل إشعاراً إلى الأجهزة التي تستخدم هوية المستلم حالياً، بعنوان اسم المرسل ومعاينة للنص (📷 صورة / 🏠 عقار للصور والعقارات). والضغط عليه يفتح المحادثة. لا يُرسل إشعار للمرسل، ولا لمن يشاهد تلك المحادثة الآن، ولا لجهاز على هوية أخرى في نفس الحساب، ولا لحساب أوقف إشعارات التطبيق.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the recipient's app in the background or closed, a new message shows a notification with the sender's name and the message preview.",
+          "Tapping the notification opens that conversation.",
+          "No notification while the recipient has that conversation open.",
+          "The sender never gets a notification for their own message.",
+          "A device using a different persona of the recipient's account gets no notification.",
+        ],
+        ar: [
+          "عندما يكون تطبيق المستلم في الخلفية أو مغلقاً، تظهر رسالة جديدة كإشعار باسم المرسل ومعاينة الرسالة.",
+          "الضغط على الإشعار يفتح تلك المحادثة.",
+          "لا يظهر إشعار ما دام المستلم يفتح تلك المحادثة.",
+          "لا يتلقى المرسل إشعاراً برسالته.",
+          "الجهاز الذي يستخدم هوية أخرى في حساب المستلم لا يتلقى إشعاراً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two devices: put B's app in the background, send 'هاي' from A — B shows 'A's name / هاي'; tap it — the chat opens.",
+          "With the chat open on B, send from A — the message appears, no notification.",
+          "Send an image and a property card — B's notifications say 📷 صورة and 🏠 عقار.",
+          "Turn off app notifications on B's account, send again — no notification.",
+        ],
+        ar: [
+          "جهازان: ضع تطبيق B في الخلفية وأرسل 'هاي' من A — يظهر على B إشعار 'اسم A / هاي'؛ اضغطه — تفتح المحادثة.",
+          "والمحادثة مفتوحة على B، أرسل من A — تظهر الرسالة دون إشعار.",
+          "أرسل صورة وبطاقة عقار — تقول إشعارات B 📷 صورة و 🏠 عقار.",
+          "أوقف إشعارات التطبيق في حساب B وأرسل مجدداً — لا يظهر إشعار.",
+        ],
+      },
+      updatedIn: "feat/real-trust-signals",
     },
   ],
 };

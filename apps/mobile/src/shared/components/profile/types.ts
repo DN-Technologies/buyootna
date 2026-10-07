@@ -1,8 +1,14 @@
+import { IdentityPresence, ResponseTime } from '@/shared/utils/helpers/activity';
+
 export interface UserProfile {
   id: string;
   name: string;
   avatarUrl: string;
   rating: number;
+  reviewsCount: number;
+  soldCount: number;
+  presence: IdentityPresence | null;
+  responseTime: ResponseTime | null;
   phone: string;
   joinedDate: string;
   role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';

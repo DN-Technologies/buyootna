@@ -240,11 +240,15 @@ export class ChatMessagesService {
     return !!participant;
   }
 
-  private formatTime(date: Date): string {
-    return date.toLocaleTimeString('ar-KW', {
+  // Kept for older app builds that show this string as-is; current builds
+  // format createdAt on the device. Western digits and Kuwait time (the
+  // server itself may run in UTC)
+  formatTime(date: Date): string {
+    return date.toLocaleTimeString('ar-KW-u-nu-latn', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false,
+      hourCycle: 'h23',
+      timeZone: 'Asia/Kuwait',
     });
   }
 }

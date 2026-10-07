@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { GetPropertiesFilterDto } from '../dto/get-properties-filter.dto';
 import { PropertiesFeedService } from './properties-feed.service';
+import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 
 describe('PropertiesFeedService.findAll sorting', () => {
   const prisma = {
@@ -13,7 +14,10 @@ describe('PropertiesFeedService.findAll sorting', () => {
       count: jest.fn().mockResolvedValue(0),
     },
   };
-  const service = new PropertiesFeedService(prisma as unknown as PrismaService);
+  const service = new PropertiesFeedService(
+    prisma as unknown as PrismaService,
+    {} as IdentityStatsService,
+  );
 
   const orderUsed = () =>
     (
@@ -83,7 +87,13 @@ describe('PropertiesFeedService.findAll sorting', () => {
 
 describe('PropertiesFeedService.findOne host card', () => {
   const prisma = { property: { findUnique: jest.fn() } };
-  const service = new PropertiesFeedService(prisma as unknown as PrismaService);
+  const identityStats = {
+    getOne: jest.fn().mockResolvedValue({ rating: 4.7, reviewsCount: 3 }),
+  };
+  const service = new PropertiesFeedService(
+    prisma as unknown as PrismaService,
+    identityStats as unknown as IdentityStatsService,
+  );
 
   const withIdentity = (identity: Record<string, unknown>) =>
     prisma.property.findUnique.mockResolvedValue({
@@ -118,6 +128,15 @@ describe('PropertiesFeedService.findOne host card', () => {
 
     expect(host.avatarUrl).toBe('https://cdn/avatars/me.jpg');
     expect(host.name).toBe('Ebrahim');
+  });
+
+  it("shows the host's real rating, not a constant", async () => {
+    withIdentity({ individualData: { name: 'Ebrahim', avatarUrl: null } });
+
+    const { host } = await service.findOne('p1');
+
+    expect(identityStats.getOne).toHaveBeenCalledWith('ident-1');
+    expect(host).toMatchObject({ rating: 4.7, reviewsCount: 3 });
   });
 
   it("prefers the identity's own photo over the user's", async () => {

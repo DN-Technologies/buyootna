@@ -91,7 +91,10 @@ export class SearchService {
         },
         skip,
         take: limit,
-        include: { companyData: true },
+        include: {
+          companyData: true,
+          _count: { select: { properties: true } },
+        },
       }),
       this.prisma.identity.count({
         where: {
@@ -108,7 +111,7 @@ export class SearchService {
       name: ident.companyData?.name || 'شركة غير معروفة',
       category: ident.companyData?.services || '',
       serviceArea: ident.companyData?.serviceAreas || 'يخدم جميع المناطق',
-      projectsCount: '+85',
+      projectsCount: String(ident._count.properties),
       logoUrl: ident.companyData?.logoUrl || 'https://via.placeholder.com/150',
       isFavorite: false,
     }));

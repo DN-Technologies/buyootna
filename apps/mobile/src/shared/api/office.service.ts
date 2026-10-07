@@ -1,6 +1,7 @@
 import apiClient from '@/shared/api/api';
 import { CompanyServiceItemData } from '@/shared/components/company/CompanyServicesTab';
 import { WorkingHourItem } from '@/shared/components/company/CompanyWorkingHours';
+import { ResponseTime } from '@/shared/utils/helpers/activity';
 import { PropertyDto } from '@/types/feed';
 
 export interface OfficeHeaderData {
@@ -11,6 +12,7 @@ export interface OfficeHeaderData {
   coverUrl?: string;
   isVerified?: boolean;
   isActiveNow?: boolean;
+  lastSeenAt?: string | null;
   rating: number;
   reviewsCount: number;
   bio?: string;
@@ -18,7 +20,7 @@ export interface OfficeHeaderData {
   licenseNumber?: string;
   listingsCount: number;
   servicesCount: number;
-  responseTime?: string;
+  responseTime?: ResponseTime | null;
   instagramUrl?: string;
   twitterUrl?: string;
   phone?: string;

@@ -11,6 +11,8 @@ import { ChatService } from './chat.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
+import { PresenceService } from '../../core/trust-signals/presence.service';
+import { ChatPushService } from './services/chat-push.service';
 
 // What a connected socket speaks as (set on connect)
 interface SocketIdentity {
@@ -32,6 +34,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly jwtService: JwtService,
     private readonly chatService: ChatService,
     private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
+    private readonly chatPush: ChatPushService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -62,6 +66,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // The persona's room: inbox updates for this persona only
       client.join(`identity:${payload.ident}`);
+      if (payload.ident) this.presence.socketConnected(payload.ident);
       console.log(`Client connected: identity:${payload.ident} (${client.id})`);
     } catch (error) {
       console.error('Socket connection authentication failed:', error.message);
@@ -70,6 +75,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
+    const { identityId } = (client.data ?? {}) as SocketIdentity;
+    if (identityId) this.presence.socketDisconnected(identityId);
     console.log(`Client disconnected: (${client.id})`);
   }
 
@@ -112,9 +119,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
 
       // Broadcast the message to all participants in this conversation
-      this.server
-        .to(`conversation:${payload.conversationId}`)
-        .emit('new_message', message);
+      const room = `conversation:${payload.conversationId}`;
+      this.server.to(room).emit('new_message', message);
+
+      // Push to recipients who aren't looking at this conversation right now
+      // (fire-and-forget: a push problem never fails the send)
+      void this.server
+        .in(room)
+        .fetchSockets()
+        .then((sockets) =>
+          this.chatPush.notifyRecipients({
+            conversationId: payload.conversationId,
+            senderIdentityId: identityId,
+            message: { type: message.type, content: message.content },
+            viewingIdentityIds: new Set(
+              sockets
+                .map((s) => (s.data as SocketIdentity)?.identityId)
+                .filter((id): id is string => !!id),
+            ),
+          }),
+        )
+        .catch(() => undefined);
 
       // Broadcast an update to all other participants' user rooms (for updating their inbox list)
       const conversation = await this.prisma.conversation.findUnique({

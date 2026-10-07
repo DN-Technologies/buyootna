@@ -19,14 +19,14 @@ export default function ImageMessageBubble({
 }: ImageMessageProps) {
   return (
     <View
-      className={`mb-4 w-full flex-row ${isMine ? 'justify-end' : 'justify-start'}`}
+      className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
     >
-      <View className={`max-w-[75%] ${isMine ? 'items-end' : 'items-start'}`}>
+      <View className={`max-w-[75%] ${isMine ? 'items-start' : 'items-end'}`}>
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={onPressImage}
           className={`overflow-hidden rounded-lg ${
-            isMine ? 'rounded-bl-none bg-[#F9FAFE]' : 'rounded-br-none bg-[#15304D]'
+            isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
           }`}
           style={{
             shadowColor: '#15304D',

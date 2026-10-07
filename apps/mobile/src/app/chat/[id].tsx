@@ -53,6 +53,8 @@ export default function ChatDetailsScreen() {
     otherUserId,
     propertyContext,
     isLoadingMessages,
+    loadFailed,
+    handleRetryLoad,
     handleSendMessage,
     handleLoadMore,
   } = useChatConversation({ conversationId, listRef });
@@ -104,6 +106,8 @@ export default function ChatDetailsScreen() {
             }}
             onPressImage={() => setShowImageOptions(true)}
             isLoading={isStarting || isLoadingMessages}
+            loadFailed={loadFailed}
+            onRetry={handleRetryLoad}
           />
 
           <ChatInputBar

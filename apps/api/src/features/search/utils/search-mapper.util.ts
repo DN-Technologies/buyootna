@@ -16,24 +16,29 @@ export function mapToFrontendCard(
 ): SearchResultItem {
   // --- 1. Company Mapping ---
   if (tab === FilterTab.COMPANIES) {
+    type CompanyFields = {
+      name?: string | null;
+      specialty?: string | null;
+      serviceAreas?: string | null;
+      logoUrl?: string | null;
+    } | null;
     const company = item as {
       id: string;
-      companyProfile?: {
-        name?: string | null;
-        specialty?: string | null;
-        serviceAreas?: string | null;
-        logoUrl?: string | null;
-      } | null;
+      // CompanySearchStrategy returns identities (companyData); companyProfile
+      // is the legacy shape
+      companyData?: CompanyFields;
+      companyProfile?: CompanyFields;
+      _count?: { properties?: number };
     };
+    const profile = company.companyData ?? company.companyProfile;
 
     return {
       id: company.id,
-      name: company.companyProfile?.name || 'Unknown Company',
-      category: company.companyProfile?.specialty || 'General Contracting',
-      serviceArea: company.companyProfile?.serviceAreas || 'All Areas',
-      projectsCount: '+85', // You can dynamically calculate this if you have a projects table
-      logoUrl:
-        company.companyProfile?.logoUrl || 'https://via.placeholder.com/150',
+      name: profile?.name || 'Unknown Company',
+      category: profile?.specialty || 'General Contracting',
+      serviceArea: profile?.serviceAreas || 'All Areas',
+      projectsCount: String(company._count?.properties ?? 0),
+      logoUrl: profile?.logoUrl || 'https://via.placeholder.com/150',
       isFavorite: false,
     };
   }

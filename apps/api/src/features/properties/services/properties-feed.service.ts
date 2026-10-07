@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { IdentityStatsService } from 'src/core/trust-signals/identity-stats.service';
 import {
   GetPropertiesFilterDto,
   type PropertySort,
@@ -50,7 +51,10 @@ function listOrder(
 
 @Injectable()
 export class PropertiesFeedService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly identityStats: IdentityStatsService,
+  ) {}
 
   // --- PUBLIC FEED ---
   async getHomeFeed() {
@@ -155,11 +159,25 @@ export class PropertiesFeedService {
         }),
       ]);
 
+    const companyIds = topCompanies.map((c) => c.id);
+    const [companyStats, companyAds] = await Promise.all([
+      this.identityStats.getStats(companyIds),
+      this.prisma.property.groupBy({
+        by: ['identityId'],
+        where: { identityId: { in: companyIds } },
+        _count: { _all: true },
+      }),
+    ]);
+
     return {
       sale: formatProperties(saleProperties),
       rent: formatProperties(rentProperties),
       exchange: formatProperties(exchangeProperties),
-      companies: formatCompanies(topCompanies),
+      companies: formatCompanies(
+        topCompanies,
+        companyStats,
+        new Map(companyAds.map((a) => [a.identityId ?? '', a._count._all])),
+      ),
     };
   }
 
@@ -266,6 +284,9 @@ export class PropertiesFeedService {
     }
 
     const identity = property.identity;
+    const hostStats = identity
+      ? await this.identityStats.getOne(identity.id)
+      : { rating: 0, reviewsCount: 0 };
     const hostName =
       identity?.officeData?.name ||
       identity?.companyData?.name ||
@@ -293,7 +314,8 @@ export class PropertiesFeedService {
         avatarUrl: hostAvatar,
         joinedDate: identity ? formatDateToMonthYear(identity.createdAt) : '',
         isVerified,
-        rating: 4.5,
+        rating: hostStats.rating,
+        reviewsCount: hostStats.reviewsCount,
         role: identity?.type || 'INDIVIDUAL',
       },
       licenseNumber: identity?.officeData?.licenseNumber || undefined,

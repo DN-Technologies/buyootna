@@ -7,6 +7,7 @@ import * as path from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './core/prisma/prisma.module';
+import { TrustSignalsModule } from './core/trust-signals/trust-signals.module';
 import { UsersModule } from './features/users/users.module';
 import { AuthModule } from './features/auth/auth.module';
 import { RecoveryModule } from './features/recovery/recovery.module';
@@ -58,6 +59,7 @@ import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
       ],
     }),
     PrismaModule,
+    TrustSignalsModule,
     TwilioModule,
     MailModule,
     GeoIpModule,

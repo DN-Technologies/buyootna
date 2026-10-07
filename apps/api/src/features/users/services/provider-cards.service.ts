@@ -6,6 +6,7 @@ import {
   User,
 } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 
 type CompanyIdentity = Identity & {
   companyData: CompanyIdentityData | null;
@@ -22,33 +23,22 @@ type OfficeIdentity = Identity & {
  */
 @Injectable()
 export class ProviderCardsService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  private async reviewStats(userIds: string[]) {
-    const stats = await this.prisma.review.groupBy({
-      by: ['targetUserId'],
-      where: { targetUserId: { in: userIds } },
-      _avg: { rating: true },
-      _count: { _all: true },
-    });
-    return {
-      avgRating: new Map(stats.map((r) => [r.targetUserId, r._avg.rating])),
-      reviewsCount: new Map(stats.map((r) => [r.targetUserId, r._count._all])),
-    };
-  }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly identityStats: IdentityStatsService,
+  ) {}
 
   async formatCompanyCards(identities: CompanyIdentity[]) {
     const identityIds = identities.map((i) => i.id);
-    const userIds = identities.map((i) => i.userId);
 
-    const [propertyStats, reviews] = await Promise.all([
+    const [propertyStats, stats] = await Promise.all([
       this.prisma.property.groupBy({
         by: ['identityId'],
         where: { identityId: { in: identityIds } },
         _count: { _all: true },
         _max: { createdAt: true },
       }),
-      this.reviewStats(userIds),
+      this.identityStats.getStats(identityIds),
     ]);
 
     const projectsCountByIdentity = new Map(
@@ -61,14 +51,14 @@ export class ProviderCardsService {
     return identities
       .filter((i) => i.companyData !== null)
       .map((i) => {
-        const avgRating = reviews.avgRating.get(i.userId);
+        const s = stats.get(i.id);
         return {
           id: i.id,
           userId: i.userId,
           name: i.companyData!.name,
           category: i.companyData!.services || '',
-          rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
-          reviewsCount: reviews.reviewsCount.get(i.userId) ?? 0,
+          rating: s?.rating ?? 0,
+          reviewsCount: s?.reviewsCount ?? 0,
           projectsCount: String(projectsCountByIdentity.get(i.id) ?? 0),
           serviceArea: i.companyData!.serviceAreas,
           logoUrl: i.companyData!.logoUrl,
@@ -81,18 +71,20 @@ export class ProviderCardsService {
   }
 
   async formatOfficeCards(identities: OfficeIdentity[]) {
-    const reviews = await this.reviewStats(identities.map((i) => i.userId));
+    const stats = await this.identityStats.getStats(
+      identities.map((i) => i.id),
+    );
 
     return identities
       .filter((i) => i.officeData !== null)
       .map((i) => {
-        const avgRating = reviews.avgRating.get(i.userId);
+        const s = stats.get(i.id);
         return {
           id: i.id,
           userId: i.userId,
           name: i.officeData!.name,
-          rating: avgRating ? Number(avgRating.toFixed(1)) : 0,
-          reviewsCount: reviews.reviewsCount.get(i.userId) ?? 0,
+          rating: s?.rating ?? 0,
+          reviewsCount: s?.reviewsCount ?? 0,
           location: i.officeData!.hqLocation || '',
           logoUrl: i.officeData!.logoUrl,
           isVerified: i.officeData!.isVerified,

@@ -33,6 +33,8 @@ interface ChatState {
   messagesByConversation: Record<string, ChatMessage[]>;
   paginationByConversation: Record<string, ConversationPagination>;
   loadingConversationIds: Record<string, boolean>;
+  // Last load of a conversation's messages failed (shown with a retry)
+  loadErrorConversationIds: Record<string, boolean>;
   // Which conversation is currently focused on screen. Only used for
   // notification bookkeeping (skip incrementing unread count, mark as
   // read) — it never gates which messages a screen is allowed to render.
@@ -72,6 +74,7 @@ export const useChatStore = create<ChatState>((set, get) => {
     messagesByConversation: {},
     paginationByConversation: {},
     loadingConversationIds: {},
+    loadErrorConversationIds: {},
     activeConversationId: null,
     isLoadingConversations: false,
 
@@ -95,28 +98,20 @@ export const useChatStore = create<ChatState>((set, get) => {
       cursor?: string,
       shouldRefresh = false,
     ) => {
-      // Reset only this conversation's own slice — never touches any other
-      // conversation's cached messages, so a refresh here can't affect (or
-      // be affected by) whatever any other mounted chat screen shows.
-      if (shouldRefresh) {
-        set((state) => ({
-          loadingConversationIds: {
-            ...state.loadingConversationIds,
-            [conversationId]: true,
-          },
-          messagesByConversation: {
-            ...state.messagesByConversation,
-            [conversationId]: [],
-          },
-        }));
-      } else {
-        set((state) => ({
-          loadingConversationIds: {
-            ...state.loadingConversationIds,
-            [conversationId]: true,
-          },
-        }));
-      }
+      // A refresh keeps what's cached on screen until the new page arrives
+      // (and replaces it then): clearing first left reopened chats blank,
+      // and blank for good if the request failed (QA). Only this
+      // conversation's own slice is touched.
+      set((state) => ({
+        loadingConversationIds: {
+          ...state.loadingConversationIds,
+          [conversationId]: true,
+        },
+        loadErrorConversationIds: {
+          ...state.loadErrorConversationIds,
+          [conversationId]: false,
+        },
+      }));
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
 
@@ -185,6 +180,10 @@ export const useChatStore = create<ChatState>((set, get) => {
           loadingConversationIds: {
             ...state.loadingConversationIds,
             [conversationId]: false,
+          },
+          loadErrorConversationIds: {
+            ...state.loadErrorConversationIds,
+            [conversationId]: true,
           },
         }));
       }
@@ -355,6 +354,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         messagesByConversation: {},
         paginationByConversation: {},
         loadingConversationIds: {},
+        loadErrorConversationIds: {},
         activeConversationId: null,
         isLoadingConversations: false,
       });

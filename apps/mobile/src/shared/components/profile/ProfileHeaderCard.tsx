@@ -1,7 +1,11 @@
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import React from 'react';
 import { Text, View } from 'react-native';
+
+import {
+  formatPresence,
+  formatResponseTime,
+} from '@/shared/utils/helpers/activity';
 
 import { UserProfile } from './types';
 
@@ -14,6 +18,9 @@ export default function ProfileHeaderCard({
   userProfile,
   propertiesCount,
 }: ProfileHeaderCardProps) {
+  const activity = formatPresence(userProfile.presence);
+  const responseTime = formatResponseTime(userProfile.responseTime);
+
   return (
     <View className="mb-4">
       {/* Cover Image Placeholder */}
@@ -65,31 +72,47 @@ export default function ProfileHeaderCard({
               style={{ flexDirection: 'row' }}
               className="mt-0.5 items-center gap-1"
             >
-              <FontAwesome
-                name="star"
-                size={14}
-                color="#F59E0B"
-                className="relative -top-1"
-              />
-              <Text className="font-sans text-sm text-[#111111]">
-                {userProfile.rating}
-              </Text>
-              <Text className="mr-1 font-cairo text-xs text-[#6B6A6A]">
-                (214 تقييم)
-              </Text>
+              {userProfile.reviewsCount > 0 ? (
+                <>
+                  <FontAwesome
+                    name="star"
+                    size={14}
+                    color="#F59E0B"
+                    className="relative -top-1"
+                  />
+                  <Text className="font-sans text-sm text-[#111111]">
+                    {userProfile.rating.toFixed(1)}
+                  </Text>
+                  <Text className="mr-1 font-cairo text-xs text-[#6B6A6A]">
+                    ({userProfile.reviewsCount} تقييم)
+                  </Text>
+                </>
+              ) : (
+                <Text className="font-cairo text-xs text-[#6B6A6A]">
+                  لا توجد تقييمات بعد
+                </Text>
+              )}
             </View>
           </View>
 
-          {/* Left side: Active Status Badge */}
-          <View
-            style={{ flexDirection: 'row' }}
-            className="items-center gap-1 rounded-full px-3 py-1"
-          >
-            <View className="h-2 w-2 rounded-full bg-[#15A72B]" />
-            <Text className="font-cairo text-xs leading-[24px] text-[#15A72B]">
-              نشط الآن
-            </Text>
-          </View>
+          {/* Left side: Activity badge (hidden after a week of no activity) */}
+          {activity && (
+            <View
+              style={{ flexDirection: 'row' }}
+              className="items-center gap-1 rounded-full px-3 py-1"
+            >
+              {activity.isOnline && (
+                <View className="h-2 w-2 rounded-full bg-[#15A72B]" />
+              )}
+              <Text
+                className={`font-cairo text-xs leading-[24px] ${
+                  activity.isOnline ? 'text-[#15A72B]' : 'text-[#6B6A6A]'
+                }`}
+              >
+                {activity.label}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Stats Bar Component */}
@@ -108,21 +131,26 @@ export default function ProfileHeaderCard({
           <View className="h-6 w-[1px] bg-slate-200" />
           <View className="flex-1 items-center">
             <Text className="font-sans text-sm font-bold text-[#111111]">
-              2
+              {userProfile.soldCount}
             </Text>
             <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
               العقارات المباعة
             </Text>
           </View>
-          <View className="h-6 w-[1px] bg-slate-200" />
-          <View className="flex-1 items-center">
-            <Text className="font-cairo-bold text-[11px] text-[#111111]">
-              30 دقيقة
-            </Text>
-            <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-              سرعة الرد
-            </Text>
-          </View>
+          {/* Shown once there are enough answered chats to say anything */}
+          {responseTime && (
+            <>
+              <View className="h-6 w-[1px] bg-slate-200" />
+              <View className="flex-1 items-center">
+                <Text className="font-cairo-bold text-[11px] text-[#111111]">
+                  {responseTime}
+                </Text>
+                <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
+                  سرعة الرد
+                </Text>
+              </View>
+            </>
+          )}
         </View>
       </View>
     </View>

@@ -1,4 +1,5 @@
 import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { IdentityStatsService } from '../../../../core/trust-signals/identity-stats.service';
 import { ProviderCardsService } from '../provider-cards.service';
 
 describe('ProviderCardsService', () => {
@@ -12,15 +13,17 @@ describe('ProviderCardsService', () => {
         },
       ]),
     },
-    review: {
-      groupBy: jest
-        .fn()
-        .mockResolvedValue([
-          { targetUserId: 'u1', _avg: { rating: 4.26 }, _count: { _all: 9 } },
-        ]),
-    },
   };
-  const service = new ProviderCardsService(prisma as unknown as PrismaService);
+  // Ratings are keyed by the persona (identity), not the account
+  const identityStats = {
+    getStats: jest
+      .fn()
+      .mockResolvedValue(new Map([['c1', { rating: 4.3, reviewsCount: 9 }]])),
+  };
+  const service = new ProviderCardsService(
+    prisma as unknown as PrismaService,
+    identityStats as unknown as IdentityStatsService,
+  );
 
   it('builds company cards with rating, reviews, projects and last activity', async () => {
     const cards = await service.formatCompanyCards([

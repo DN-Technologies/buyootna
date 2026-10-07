@@ -16,13 +16,13 @@ export default function MessageBubble({
 }: MessageProps) {
   return (
     <View
-      className={`mb-4 w-full flex-row ${isMine ? 'justify-end' : 'justify-start'}`}
+      className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
     >
-      <View className={`max-w-[80%] ${isMine ? 'items-end' : 'items-start'}`}>
-        {/* Bubble — theirs: dark on the right, mine: light on the left */}
+      <View className={`max-w-[80%] ${isMine ? 'items-start' : 'items-end'}`}>
+        {/* Bubble — mine: light on the right (row start in RTL), theirs: dark on the left */}
         <View
           className={`rounded-md px-5 py-3 ${
-            isMine ? 'rounded-bl-none bg-[#F9FAFE]' : 'rounded-br-none bg-[#15304D]'
+            isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
           }`}
           style={{
             shadowColor: '#15304D',

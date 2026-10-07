@@ -120,15 +120,23 @@ export default function CompanyListCard({
         <View className="h-8 w-[1px] bg-gray-100" />
 
         <View className="flex-1 items-center">
-          <View className="flex-row items-center gap-1">
-            <FontAwesome5 name="star" size={11} color="#F59E0B" solid />
-            <Text className="font-cairo text-[12px] text-[#111111]">
-              {rating}
+          {reviewsCount > 0 ? (
+            <>
+              <View className="flex-row items-center gap-1">
+                <FontAwesome5 name="star" size={11} color="#F59E0B" solid />
+                <Text className="font-cairo text-[12px] text-[#111111]">
+                  {rating}
+                </Text>
+              </View>
+              <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
+                {reviewsCount}+ تقييم
+              </Text>
+            </>
+          ) : (
+            <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
+              لا تقييمات
             </Text>
-          </View>
-          <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
-            {reviewsCount}+ تقييم
-          </Text>
+          )}
         </View>
       </View>
 

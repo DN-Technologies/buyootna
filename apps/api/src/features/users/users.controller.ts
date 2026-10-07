@@ -52,6 +52,7 @@ import {
   VerifyPhoneDto,
 } from './dto/login-method.dto';
 import { LoginMethodService } from './services/login-method.service';
+import { IdentityStatsService } from '../../core/trust-signals/identity-stats.service';
 import { AccountSuspensionService } from './services/account-suspension.service';
 
 @ApiTags('Users')
@@ -62,6 +63,7 @@ export class UsersController {
     private readonly profileService: UsersProfileService,
     private readonly suspensionService: AccountSuspensionService,
     private readonly loginMethodService: LoginMethodService,
+    private readonly identityStats: IdentityStatsService,
   ) {}
 
   @Post('register/individual')
@@ -343,6 +345,22 @@ export class UsersController {
     if (!fullUser || fullUser.isDisabled || fullUser.isBlocked) {
       throw new NotFoundException('المستخدم غير موجود');
     }
-    return fullUser;
+
+    // Trust signals for the persona the profile was opened with (ads link
+    // to an identity id), else the account's current persona
+    const statsIdentityId =
+      fullUser.identities.find((i) => i.id === id)?.id ??
+      fullUser.identities.find((i) => i.isActive)?.id ??
+      fullUser.identities[0]?.id;
+    if (!statsIdentityId) return { ...fullUser, stats: null };
+
+    const [stats, responseTime] = await Promise.all([
+      this.identityStats.getOne(statsIdentityId),
+      this.identityStats.getResponseTime(statsIdentityId),
+    ]);
+    return {
+      ...fullUser,
+      stats: { identityId: statsIdentityId, ...stats, responseTime },
+    };
   }
 }

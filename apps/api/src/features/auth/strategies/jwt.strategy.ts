@@ -1,8 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Optional, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { IdentityType, User, Identity } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PresenceService } from '../../../core/trust-signals/presence.service';
 
 export interface JwtPayload {
   sub: string; // userId (auth principal)
@@ -34,7 +35,10 @@ export interface RequestUser {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly presence?: PresenceService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -132,6 +136,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const userWithoutPassword = { ...user };
     delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
       .password;
+
+    // Feeds the public activity badge (throttled, never blocks the request)
+    this.presence?.touch(identity.id);
 
     return {
       userId: user.id,
