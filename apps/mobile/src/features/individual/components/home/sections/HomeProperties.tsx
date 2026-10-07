@@ -1,8 +1,7 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { forwardRef, useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -13,8 +12,8 @@ import {
 
 import type { HomeSort } from '@/features/individual/components/home/homeSort';
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
+import { usePropertyPreviewSheet } from '@/features/individual/components/property-details-sheet/usePropertyPreviewSheet';
 import { feedService } from '@/features/individual/services/feed.service';
-import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
@@ -28,7 +27,6 @@ import {
   publishedDate,
   shareProperty,
 } from '@/shared/utils/helpers/property';
-import { PropertyDetailsDto } from '@/types/property';
 
 interface HomePropertiesProps {
   activeFilter: 'all' | 'sale' | 'rent' | 'exchange';
@@ -57,11 +55,6 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
   const { favoritedIds, toggleFavorite } = useFavorites();
   const token = useAuthStore((state) => state.token);
 
-  // Bottom Sheet Ref & Selected Property State
-  const detailsSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedProperty, setSelectedProperty] =
-    useState<PropertyDetailsDto | null>(null);
-  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
 
   // Helper to map frontent filter strings to backend Prisma Enums
   const getBackendType = (filter: string) => {
@@ -76,6 +69,14 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
         return undefined; // 'all' means no filter
     }
   };
+
+  // Details sheet opens with the card's data, then fills in full details
+  const {
+    sheetRef: detailsSheetRef,
+    property: selectedProperty,
+    isLoadingDetails,
+    openDetails,
+  } = usePropertyPreviewSheet(getBackendType(activeFilter));
 
   const {
     data: infiniteData,
@@ -121,23 +122,6 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
       fetchNextPage().finally(() => {
         isFetchingRef.current = false;
       });
-    }
-  };
-
-  // Handle "عرض تفاصيل" click
-  const handleShowDetails = async (id: string) => {
-    setSelectedProperty(null);
-    detailsSheetRef.current?.present();
-    if (isFetchingDetails) return;
-    setIsFetchingDetails(true);
-    try {
-      const fullDetails = await propertiesService.getPropertyById(id);
-      setSelectedProperty(fullDetails);
-    } catch (error) {
-      console.error('Failed to fetch property details:', error);
-      detailsSheetRef.current?.dismiss();
-    } finally {
-      setIsFetchingDetails(false);
     }
   };
 
@@ -250,7 +234,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
                 // Any card tap opens the details sheet — with or without
                 // images, exactly like the list view (QA: with-image cards
                 // used to skip the sheet and navigate to the full page)
-                onPress={() => handleShowDetails(item.id)}
+                onPress={() => openDetails(item)}
               />
             );
             // FlashList v2 dropped columnWrapperStyle, so the tablet grid's
@@ -267,7 +251,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
-            isLoadingMore || isFetchingDetails ? (
+            isLoadingMore ? (
               <View className="items-center py-4">
                 <ActivityIndicator size="small" color="#15304D" />
               </View>
@@ -310,15 +294,15 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
               propertyIncome={item.propertyIncome}
               isFavorited={favoritedIds.includes(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
-              onPress={() => handleShowDetails(item.id)}
-              onShowDetails={() => handleShowDetails(item.id)}
+              onPress={() => openDetails(item)}
+              onShowDetails={() => openDetails(item)}
               onShare={() => shareProperty(item)}
             />
           )}
           onEndReached={fetchMoreData}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
-            isLoadingMore || isFetchingDetails ? (
+            isLoadingMore ? (
               <View className="items-center py-4">
                 <ActivityIndicator size="small" color="#15304D" />
               </View>
@@ -331,6 +315,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
       <PropertyDetailsSheet
         ref={detailsSheetRef}
         property={selectedProperty}
+        isLoadingDetails={isLoadingDetails}
         isFavorited={
           selectedProperty ? favoritedIds.includes(selectedProperty.id) : false
         }

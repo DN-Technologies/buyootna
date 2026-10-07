@@ -1,7 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -11,9 +10,9 @@ import {
   View,
 } from 'react-native';
 
+import { usePropertyPreviewSheet } from '@/features/individual/components/property-details-sheet/usePropertyPreviewSheet';
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
-import { propertiesService } from '@/shared/api/properties.service';
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import {
@@ -22,7 +21,6 @@ import {
   shareProperty,
 } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
-import { PropertyDetailsDto } from '@/types/property';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const HORIZONTAL_CARD_WIDTH = SCREEN_WIDTH * 0.75;
@@ -49,11 +47,13 @@ export default function ExchangeProperties({
 }: ExchangePropertiesProps) {
   const router = useRouter();
 
-  // Bottom Sheet Ref & Selected Property State
-  const detailsSheetRef = useRef<BottomSheetModal>(null);
-  const [selectedProperty, setSelectedProperty] =
-    useState<PropertyDetailsDto | null>(null);
-  const [isFetchingDetails, setIsFetchingDetails] = useState(false);
+  // Details sheet opens with the card's data, then fills in full details
+  const {
+    sheetRef: detailsSheetRef,
+    property: selectedProperty,
+    isLoadingDetails,
+    openDetails,
+  } = usePropertyPreviewSheet('EXCHANGE');
 
   // Page 1 comes from the parent's home-feed prop; this query only fetches
   // subsequent pages as the user scrolls the horizontal list.
@@ -107,22 +107,6 @@ export default function ExchangeProperties({
     }
   };
 
-  const handleShowDetails = async (id: string) => {
-    setSelectedProperty(null);
-    detailsSheetRef.current?.present();
-    if (isFetchingDetails) return;
-    setIsFetchingDetails(true);
-    try {
-      const fullDetails = await propertiesService.getPropertyById(id);
-      setSelectedProperty(fullDetails);
-    } catch (error) {
-      console.error('Failed to fetch details:', error);
-      detailsSheetRef.current?.dismiss();
-    } finally {
-      setIsFetchingDetails(false);
-    }
-  };
-
   return (
     <View className="justify-center">
       <SectionHeader title="عقارات للبدل" />
@@ -146,8 +130,8 @@ export default function ExchangeProperties({
                 location={item.location}
                 propertyIncome={item.propertyIncome}
                 cardWidth={HORIZONTAL_CARD_WIDTH}
-                onPress={() => handleShowDetails(item.id)}
-                onShowDetails={() => handleShowDetails(item.id)}
+                onPress={() => openDetails(item)}
+                onShowDetails={() => openDetails(item)}
                 onShare={() => shareProperty(item)}
               />
             ) : (
@@ -158,7 +142,7 @@ export default function ExchangeProperties({
                 }
                 cardWidth={HORIZONTAL_CARD_WIDTH}
                 onShare={() => shareProperty(item)}
-                onPress={() => handleShowDetails(item.id)}
+                onPress={() => openDetails(item)}
               />
             )}
           </View>
@@ -166,7 +150,7 @@ export default function ExchangeProperties({
         onEndReached={fetchMoreData}
         onEndReachedThreshold={0.5} // Trigger fetch when halfway through the last card
         ListFooterComponent={
-          isLoadingMore || isFetchingDetails ? (
+          isLoadingMore ? (
             <View className="items-center justify-center px-4">
               <ActivityIndicator size="small" color="#15304D" />
             </View>
@@ -177,6 +161,7 @@ export default function ExchangeProperties({
       <PropertyDetailsSheet
         ref={detailsSheetRef}
         property={selectedProperty}
+        isLoadingDetails={isLoadingDetails}
         onShare={() => selectedProperty && shareProperty(selectedProperty)}
         onClose={() => detailsSheetRef.current?.dismiss()}
         onViewProperty={() => {
