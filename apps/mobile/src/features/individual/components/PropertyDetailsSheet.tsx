@@ -15,16 +15,18 @@ import PropertyPriceViewsRow from '@/features/individual/components/property-det
 import PropertySpecsRow from '@/features/individual/components/property-details-sheet/PropertySpecsRow';
 import { usePropertyContactActions } from '@/features/individual/components/property-details-sheet/usePropertyContactActions';
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
   publishedDate,
 } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
-import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface PropertyDetailsSheetProps {
   property: PropertyDetailsDto | null;
+  // Showing a preview from the feed card while the full details load
+  isLoadingDetails?: boolean;
   isFavorited?: boolean;
   onViewProperty?: () => void;
   onFavorite?: () => void;
@@ -42,6 +44,7 @@ const PropertyDetailsSheet = forwardRef<
   (
     {
       property,
+      isLoadingDetails = false,
       isFavorited = false,
       onViewProperty,
       onFavorite,
@@ -143,9 +146,17 @@ const PropertyDetailsSheet = forwardRef<
                   licenseNumber={property.licenseNumber}
                 />
 
-                <PropertyDescriptionSection
-                  description={property.description}
-                />
+                {isLoadingDetails ? (
+                  <ActivityIndicator
+                    color="#15304D"
+                    className="my-4"
+                    accessibilityLabel="جاري تحميل التفاصيل"
+                  />
+                ) : (
+                  <PropertyDescriptionSection
+                    description={property.description}
+                  />
+                )}
 
                 <PropertyContactActionsBar
                   onCall={handleCall}

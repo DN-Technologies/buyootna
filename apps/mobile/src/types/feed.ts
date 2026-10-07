@@ -12,9 +12,13 @@ export interface PropertyDto {
   baths: number;
   location: string;
   createdAt: string;
+  publishedAt?: string | null;
   phoneNumber?: string | null;
   phone?: string | null;
   propertyIncome?: number | null;
+  // Owning identity (the ad's host)
+  identityId?: string;
+  identityType?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
 }
 
 // --- Company Modal ---

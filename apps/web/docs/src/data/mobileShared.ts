@@ -233,6 +233,7 @@ export const mobileShared: DocSection = {
           "A device that has never signed in opens with the account's last used persona.",
           "After switching, the chat socket reconnects and the inbox shows only the new persona's conversations.",
           "Home, My Activity, Favorites, wallet and invoices all reflect only the active persona.",
+          "In the اختر الهوية sheet the active persona is listed first; the others keep their order below it.",
         ],
         ar: [
           "التبديل على الجهاز A لا يغيّر الهوية التي يستخدمها الجهاز B.",
@@ -240,6 +241,7 @@ export const mobileShared: DocSection = {
           "الجهاز الذي لم يسجّل الدخول من قبل يفتح بآخر هوية مستخدمة في الحساب.",
           "بعد التبديل يُعاد اتصال مقبس المحادثة ويعرض صندوق الوارد محادثات الهوية الجديدة فقط.",
           "الرئيسية ونشاطي والمفضلة والمحفظة والفواتير تعكس الهوية النشطة فقط.",
+          "في نافذة اختر الهوية تظهر الهوية النشطة أولاً، وتبقى بقية الهويات بترتيبها تحتها.",
         ],
       },
       testScenarios: {
@@ -248,15 +250,17 @@ export const mobileShared: DocSection = {
           "On phone A: switch to Company, log out, log in — lands on Company.",
           "Install on a third device and log in — opens with the persona most recently used.",
           "Favorite a property as Individual, switch to Company — the Favorites list doesn't show it.",
+          "With three personas, switch to the last one and reopen اختر الهوية — it is at the top.",
         ],
         ar: [
           "هاتفان على نفس الحساب: بدّل الهاتف A إلى الشركة؛ يبقى الهاتف B على الفرد بعد السحب للتحديث.",
           "على الهاتف A: بدّل إلى الشركة، سجّل الخروج ثم الدخول — يفتح على الشركة.",
           "ثبّت على جهاز ثالث وسجّل الدخول — يفتح بآخر هوية استُخدمت.",
           "فضّل عقاراً كفرد ثم بدّل إلى الشركة — لا يظهر في قائمة المفضلة.",
+          "مع ثلاث هويات، بدّل إلى آخرها وأعد فتح اختر الهوية — تظهر في الأعلى.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/docs-platform, fix/property-host-avatar",
     },
     {
       id: "mobile-payments",
@@ -824,6 +828,80 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "feat/company-more-edit-profile",
+    },
+    {
+      id: "mobile-property-host-avatar",
+      title: {
+        en: "Ad details host card shows the advertiser's photo",
+        ar: "بطاقة المعلن في تفاصيل الإعلان تعرض صورة المعلن",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: on an ad's details screen the host card showed an empty grey circle, while the advertiser's profile showed their photo. Individual identities often have no photo of their own — it's stored on the account — and the ad details and favorites endpoints only looked at the identity. They now fall back to the account's photo (and name), the same way chat already does.",
+        ar: "إصلاح بلاغ QA: في شاشة تفاصيل الإعلان كانت بطاقة المعلن تعرض دائرة رمادية فارغة، بينما يعرض ملف المعلن صورته. الهويات الفردية غالباً بلا صورة خاصة بها — الصورة محفوظة على الحساب — وكانت واجهتا تفاصيل الإعلان والمفضلة تقرآن الهوية فقط. الآن تستخدمان صورة الحساب (واسمه) عند غيابها، كما تفعل المحادثات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "An individual advertiser with a profile photo shows that photo on the host card of every ad they posted.",
+          "A company or office ad still shows the company/office logo, and an individual identity with its own photo shows that photo, not the account's.",
+          "The host photo in the favorites list matches the one on the ad details screen.",
+        ],
+        ar: [
+          "المعلن الفرد الذي لديه صورة ملف شخصي تظهر صورته في بطاقة المعلن في كل إعلاناته.",
+          "إعلانات الشركات والمكاتب ما زالت تعرض شعار الشركة/المكتب، والهوية الفردية التي لها صورة خاصة تعرض صورتها لا صورة الحساب.",
+          "صورة المعلن في قائمة المفضلة مطابقة لصورتها في شاشة تفاصيل الإعلان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an ad posted by an individual who has a profile photo — the host card shows the photo, not a grey circle; tap it and the profile shows the same photo.",
+          "Add that ad to favorites and open المفضلة — the host photo is shown.",
+          "Open a company ad — the host card still shows the company logo.",
+        ],
+        ar: [
+          "افتح إعلاناً نشره فرد لديه صورة ملف شخصي — تظهر الصورة في بطاقة المعلن لا دائرة رمادية؛ اضغط عليها فيظهر الملف بنفس الصورة.",
+          "أضف الإعلان إلى المفضلة وافتح المفضلة — تظهر صورة المعلن.",
+          "افتح إعلان شركة — ما زالت البطاقة تعرض شعار الشركة.",
+        ],
+      },
+      updatedIn: "fix/property-host-avatar",
+    },
+    {
+      id: "mobile-details-sheet-instant",
+      title: {
+        en: "Home feed details sheet opens instantly with the card's data",
+        ar: "نافذة تفاصيل العقار في الرئيسية تفتح فوراً ببيانات البطاقة",
+      },
+      priority: "P2",
+      story: {
+        en: "QA: tapping a home-feed card (or عرض تفاصيل) opened the تفاصيل العقار sheet on a full-screen spinner until the ad was fetched, although the card already had the photos, price and specs. The sheet now opens straight away with the card's data, and the description, views and address details fill in when the full ad arrives. Reopening an ad uses the cached details, which also makes the full ad page open faster.",
+        ar: "بلاغ QA: الضغط على بطاقة في الرئيسية (أو عرض تفاصيل) كان يفتح نافذة تفاصيل العقار على مؤشر تحميل حتى يصل الإعلان، رغم أن البطاقة تحمل الصور والسعر والمواصفات. الآن تفتح النافذة فوراً ببيانات البطاقة، ويكتمل الوصف والمشاهدات وتفاصيل العنوان عند وصول الإعلان كاملاً. وإعادة فتح الإعلان تستخدم التفاصيل المحفوظة، مما يسرّع فتح صفحة الإعلان الكاملة أيضاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The sheet never shows the full-screen جاري تحميل التفاصيل spinner when opened from a home-feed card; photos, price, specs and location show immediately.",
+          "A small loader sits where the description goes until the full ad arrives, then the description and view count appear.",
+          "On the card and list views, مدخول العقار sits at the start (right) of its row, followed by the amount.",
+        ],
+        ar: [
+          "لا تعرض النافذة مؤشر جاري تحميل التفاصيل الكامل عند فتحها من بطاقة في الرئيسية؛ تظهر الصور والسعر والمواصفات والموقع فوراً.",
+          "يظهر مؤشر تحميل صغير مكان الوصف حتى يصل الإعلان كاملاً، ثم يظهر الوصف وعدد المشاهدات.",
+          "في عرض البطاقات والقائمة، يأتي مدخول العقار في بداية السطر (اليمين) يليه المبلغ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On a slow network, tap a card in الرئيسية (all/بيع/إيجار/بدل and the horizontal sliders) — the sheet opens with the card's content right away.",
+          "Close and reopen the same ad — it opens complete with no loader.",
+          "Open an ad with income in both card and list views — the label is on the right and the amount after it.",
+        ],
+        ar: [
+          "على شبكة بطيئة، اضغط بطاقة في الرئيسية (الكل/بيع/إيجار/بدل والقوائم الأفقية) — تفتح النافذة بمحتوى البطاقة فوراً.",
+          "أغلق نفس الإعلان وأعد فتحه — يفتح كاملاً دون مؤشر تحميل.",
+          "افتح إعلاناً له مدخول في عرض البطاقات والقائمة — العنوان على اليمين والمبلغ بعده.",
+        ],
+      },
+      updatedIn: "fix/property-host-avatar",
     },
     {
       id: "mobile-seller-trust-signals",

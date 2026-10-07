@@ -39,6 +39,17 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
       getTypeBadgeColor,
     } = useIdentity();
 
+    // Active identity first; the rest keep their order (sort is stable)
+    const orderedIdentities = useMemo(
+      () =>
+        [...identities].sort(
+          (a, b) =>
+            Number(b.id === activeIdentity?.id) -
+            Number(a.id === activeIdentity?.id),
+        ),
+      [identities, activeIdentity?.id],
+    );
+
     const renderBackdrop = useCallback(
       (props: any) => (
         <BottomSheetBackdrop
@@ -126,7 +137,7 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
             showsVerticalScrollIndicator={false}
             className="mb-6 flex-1"
           >
-            {identities.map((identity) => {
+            {orderedIdentities.map((identity) => {
               const isSelected = identity.id === activeIdentity?.id;
               const isSwitching = switchingId === identity.id;
               const displayName = getDisplayName(identity);
