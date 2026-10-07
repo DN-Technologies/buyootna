@@ -80,3 +80,60 @@ describe('PropertiesFeedService.findAll sorting', () => {
     expect(errors.find((e) => e.property === 'sort')).toBeDefined();
   });
 });
+
+describe('PropertiesFeedService.findOne host card', () => {
+  const prisma = { property: { findUnique: jest.fn() } };
+  const service = new PropertiesFeedService(prisma as unknown as PrismaService);
+
+  const withIdentity = (identity: Record<string, unknown>) =>
+    prisma.property.findUnique.mockResolvedValue({
+      id: 'p1',
+      identity: {
+        id: 'ident-1',
+        type: 'INDIVIDUAL',
+        createdAt: new Date('2026-09-01'),
+        individualData: null,
+        companyData: null,
+        officeData: null,
+        ...identity,
+        user: {
+          isDisabled: false,
+          isBlocked: false,
+          name: null,
+          avatarUrl: null,
+          ...(identity.user as object),
+        },
+      },
+    });
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it("falls back to the user's photo when the individual identity has none", async () => {
+    withIdentity({
+      individualData: { name: 'Ebrahim', avatarUrl: null },
+      user: { name: 'Account name', avatarUrl: 'https://cdn/avatars/me.jpg' },
+    });
+
+    const { host } = await service.findOne('p1');
+
+    expect(host.avatarUrl).toBe('https://cdn/avatars/me.jpg');
+    expect(host.name).toBe('Ebrahim');
+  });
+
+  it("prefers the identity's own photo over the user's", async () => {
+    withIdentity({
+      individualData: { name: 'Ebrahim', avatarUrl: 'https://cdn/ident.jpg' },
+      user: { avatarUrl: 'https://cdn/avatars/me.jpg' },
+    });
+
+    expect((await service.findOne('p1')).host.avatarUrl).toBe(
+      'https://cdn/ident.jpg',
+    );
+  });
+
+  it('uses the user name when the identity has no name', async () => {
+    withIdentity({ user: { name: 'Account name' } });
+
+    expect((await service.findOne('p1')).host.name).toBe('Account name');
+  });
+});

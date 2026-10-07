@@ -231,7 +231,14 @@ export class PropertiesFeedService {
             id: true,
             type: true,
             createdAt: true,
-            user: { select: { isDisabled: true, isBlocked: true } },
+            user: {
+              select: {
+                isDisabled: true,
+                isBlocked: true,
+                name: true,
+                avatarUrl: true,
+              },
+            },
             individualData: {
               select: { name: true, avatarUrl: true },
             },
@@ -263,11 +270,15 @@ export class PropertiesFeedService {
       identity?.officeData?.name ||
       identity?.companyData?.name ||
       identity?.individualData?.name ||
+      identity?.user?.name ||
       'مستخدم';
+    // Individual identities often have no avatar of their own -- the photo
+    // lives on the User row (same fallback as chat and admin reports)
     const hostAvatar =
       identity?.officeData?.logoUrl ||
       identity?.companyData?.logoUrl ||
       identity?.individualData?.avatarUrl ||
+      identity?.user?.avatarUrl ||
       'https://via.placeholder.com/150';
     const isVerified =
       identity?.officeData?.isVerified ||
