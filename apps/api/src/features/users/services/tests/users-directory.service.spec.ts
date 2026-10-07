@@ -5,6 +5,7 @@ import {
 } from '../users-directory.service';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { ProviderCardsService } from '../provider-cards.service';
+import { IdentityStatsService } from '../../../../core/trust-signals/identity-stats.service';
 
 describe('UsersDirectoryService', () => {
   let service: UsersDirectoryService;
@@ -20,6 +21,7 @@ describe('UsersDirectoryService', () => {
         UsersDirectoryService,
         { provide: ProviderCardsService, useValue: providerCards },
         { provide: PrismaService, useValue: prisma },
+        { provide: IdentityStatsService, useValue: {} },
       ],
     }).compile();
 

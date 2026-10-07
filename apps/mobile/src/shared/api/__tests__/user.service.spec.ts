@@ -47,7 +47,12 @@ describe('userService', () => {
         id: 'comp-1',
         name: 'شركة بيوتنا العقارية',
         avatarUrl: 'https://example.com/company-logo.png',
-        rating: 4.5,
+        // No stats from the API: nothing invented
+        rating: 0,
+        reviewsCount: 0,
+        soldCount: 0,
+        presence: null,
+        responseTime: null,
         phone: '+96598765432',
         joinedDate: '4/2025',
         role: 'COMPANY',
@@ -75,10 +80,44 @@ describe('userService', () => {
         id: 'office-1',
         name: 'مكتب النخبة',
         avatarUrl: 'https://example.com/office-logo.png',
-        rating: 4.5,
+        // No stats from the API: nothing invented
+        rating: 0,
+        reviewsCount: 0,
+        soldCount: 0,
+        presence: null,
+        responseTime: null,
         phone: '98765432',
         joinedDate: '11/2024',
         role: 'OFFICE',
+      });
+    });
+
+    it('maps the real trust signals from stats', async () => {
+      mockApiClient.get.mockResolvedValueOnce({
+        data: {
+          id: 'user-7',
+          role: 'INDIVIDUAL',
+          name: 'Ebrahim',
+          createdAt: '2025-04-15T00:00:00.000Z',
+          stats: {
+            identityId: 'ident-7',
+            rating: 4.3,
+            reviewsCount: 3,
+            soldCount: 2,
+            presence: { isOnline: false, lastSeenAt: '2026-10-07T09:00:00Z' },
+            responseTime: { medianSeconds: 600, sampleSize: 4 },
+          },
+        },
+      });
+
+      const profile = await userService.getUserProfile('ident-7');
+
+      expect(profile).toMatchObject({
+        rating: 4.3,
+        reviewsCount: 3,
+        soldCount: 2,
+        presence: { isOnline: false, lastSeenAt: '2026-10-07T09:00:00Z' },
+        responseTime: { medianSeconds: 600, sampleSize: 4 },
       });
     });
 

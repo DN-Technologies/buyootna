@@ -35,11 +35,18 @@ export const userService = {
     const date = new Date(user.createdAt);
     const joinedDate = `${date.getMonth() + 1}/${date.getFullYear()}`;
 
+    // Real trust signals for the persona shown (older APIs omit `stats`)
+    const stats = user.stats;
+
     return {
       id: user.id,
       name,
       avatarUrl,
-      rating: 4.5,
+      rating: stats?.rating ?? 0,
+      reviewsCount: stats?.reviewsCount ?? 0,
+      soldCount: stats?.soldCount ?? 0,
+      presence: stats?.presence ?? null,
+      responseTime: stats?.responseTime ?? null,
       phone: user.phone,
       joinedDate,
       role: user.role,

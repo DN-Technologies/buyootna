@@ -1,3 +1,4 @@
+import { IdentityStatsService } from '../../core/trust-signals/identity-stats.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersRegistrationService } from './services/users-registration.service';
@@ -31,6 +32,7 @@ describe('UsersController', () => {
           useValue: {},
         },
         { provide: LoginMethodService, useValue: {} },
+        { provide: IdentityStatsService, useValue: {} },
         {
           provide: OtpRateLimiterService,
           useValue: {

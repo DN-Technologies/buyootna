@@ -673,5 +673,50 @@ export const api: DocSection = {
       },
       updatedIn: "fix/individual-bugs",
     },
+    {
+      id: "api-identity-stats",
+      title: {
+        en: "Advertiser trust signals come from real data",
+        ar: "مؤشرات الثقة للمعلن من بيانات حقيقية",
+      },
+      priority: "P1",
+      story: {
+        en: "Ratings, activity and response speed used to be hardcoded (4.5 stars, isActiveNow: true, +85 works). GET /users/:id now adds stats {identityId, rating, reviewsCount, soldCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} for the persona the profile shows. /users/company/:id and /users/office/:id return real isActiveNow, lastSeenAt, rating, reviewsCount and responseTime. The ad host card, home and search company cards use real ratings and ads counts. Ratings count the persona's reviews exactly like the reviews summary. Presence: a persona is online while its app holds the chat socket, or was seen within 2 minutes (requests refresh Identity.lastSeenAt at most once a minute). Response speed: median time to answer a chat over 90 days, null under 3 answers. Sold: ads deleted with the تم البيع reason.",
+        ar: "كانت التقييمات والنشاط وسرعة الرد ثابتة في الكود (4.5 نجوم، isActiveNow: true، +85 عمل). الآن يضيف GET /users/:id الحقل stats {identityId, rating, reviewsCount, soldCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} للهوية المعروضة. ويعيد /users/company/:id و /users/office/:id قيماً حقيقية لـ isActiveNow و lastSeenAt و rating و reviewsCount و responseTime. وبطاقة المعلن وبطاقات الشركات في الرئيسية والبحث تستخدم تقييمات وأعداد إعلانات حقيقية. التقييم يحسب تقييمات الهوية تماماً كملخص التقييمات. النشاط: الهوية نشطة ما دام تطبيقها متصلاً بمقبس المحادثة، أو شوهدت خلال دقيقتين (الطلبات تحدّث Identity.lastSeenAt مرة كل دقيقة على الأكثر). سرعة الرد: وسيط زمن الرد على المحادثات خلال 90 يوماً، و null بأقل من 3 ردود. المباعة: الإعلانات المحذوفة بسبب تم البيع.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "No response contains the old constants (rating 4.5, isActiveNow always true, projectsCount +50/+85).",
+          "stats.rating and reviewsCount match GET /users/:id/reviews/summary for the same persona.",
+          "presence.isOnline is true while that persona's app is open and false a couple of minutes after it is closed; lastSeenAt is kept.",
+          "responseTime is null until the persona has answered at least 3 chats in 90 days.",
+          "soldCount equals the persona's ads deleted with reason SOLD.",
+          "Older app builds keep working (fields only added, none removed).",
+        ],
+        ar: [
+          "لا تحتوي أي استجابة على القيم القديمة الثابتة (تقييم 4.5، isActiveNow دائماً true، projectsCount +50/+85).",
+          "stats.rating و reviewsCount يطابقان GET /users/:id/reviews/summary لنفس الهوية.",
+          "presence.isOnline يكون true ما دام تطبيق الهوية مفتوحاً و false بعد دقيقتين تقريباً من إغلاقه؛ ويبقى lastSeenAt.",
+          "responseTime يبقى null حتى ترد الهوية على 3 محادثات على الأقل خلال 90 يوماً.",
+          "soldCount يساوي إعلانات الهوية المحذوفة بسبب SOLD.",
+          "إصدارات التطبيق القديمة تعمل كما هي (الحقول أُضيفت فقط ولم يُحذف شيء).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "GET /users/<identityId> for a persona with no reviews — rating 0, reviewsCount 0, responseTime null.",
+          "Add a 5-star review from another persona — stats shows rating 5, reviewsCount 1, same as the summary.",
+          "Open the app as persona A, call GET /users/<A> from elsewhere — isOnline true; close the app, wait 3 minutes — isOnline false with lastSeenAt set.",
+          "Delete one of A's ads with تم البيع — soldCount goes up by 1.",
+        ],
+        ar: [
+          "GET /users/<identityId> لهوية بلا تقييمات — rating 0 و reviewsCount 0 و responseTime null.",
+          "أضف تقييماً بخمس نجوم من هوية أخرى — يعرض stats التقييم 5 و reviewsCount 1 كما في الملخص.",
+          "افتح التطبيق بالهوية A واطلب GET /users/<A> من مكان آخر — isOnline true؛ أغلق التطبيق وانتظر 3 دقائق — isOnline false مع وجود lastSeenAt.",
+          "احذف أحد إعلانات A بسبب تم البيع — يزيد soldCount بواحد.",
+        ],
+      },
+      updatedIn: "feat/real-trust-signals",
+    },
   ],
 };

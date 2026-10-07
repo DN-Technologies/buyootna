@@ -9,9 +9,9 @@ import PropertyOverview from '@/shared/components/property/PropertyOverview';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import {
   formatTimeAgo,
-  publishedDate,
   getArabicCategoryLabel,
   getArabicTypeLabel,
+  publishedDate,
 } from '@/shared/utils/helpers/property';
 import { PropertyDetailsDto } from '@/types/property';
 
@@ -123,6 +123,7 @@ export default function PropertyDetailsContent({
             name={property.host?.name ?? 'مستخدم'}
             joinedDate={property.host?.joinedDate ?? ''}
             rating={property.host?.rating ?? 0}
+            reviewsCount={property.host?.reviewsCount}
             avatarUrl={property.host?.avatarUrl ?? ''}
             isVerified={property.host?.isVerified}
             onPress={onHostPress}

@@ -5,6 +5,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { GetPropertiesFilterDto } from '../dto/get-properties-filter.dto';
 import { PropertiesFeedService } from './properties-feed.service';
+import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 
 describe('PropertiesFeedService.findAll sorting', () => {
   const prisma = {
@@ -13,7 +14,10 @@ describe('PropertiesFeedService.findAll sorting', () => {
       count: jest.fn().mockResolvedValue(0),
     },
   };
-  const service = new PropertiesFeedService(prisma as unknown as PrismaService);
+  const service = new PropertiesFeedService(
+    prisma as unknown as PrismaService,
+    {} as IdentityStatsService,
+  );
 
   const orderUsed = () =>
     (

@@ -8,6 +8,8 @@ export interface ListerProfileSnippetProps {
   name: string;
   joinedDate: string;
   rating: number;
+  // Hides the star when the host has no reviews yet (older APIs omit it)
+  reviewsCount?: number;
   avatarUrl: string;
   isVerified?: boolean;
   onPress?: () => void;
@@ -17,6 +19,7 @@ export default function ListerProfileSnippet({
   name,
   joinedDate,
   rating,
+  reviewsCount,
   avatarUrl,
   isVerified = true,
   onPress,
@@ -55,12 +58,14 @@ export default function ListerProfileSnippet({
 
       {/* ---  Rating & Chevron --- */}
       <View className="items-end justify-center gap-1">
-        <View className="flex-row items-center gap-1">
-          <FontAwesome name="star" size={12} color="#F59E0B" />
-          <Text className="font-sans text-sm leading-[20px] text-[#111111]">
-            {rating}
-          </Text>
-        </View>
+        {(reviewsCount ?? 0) > 0 && (
+          <View className="flex-row items-center gap-1">
+            <FontAwesome name="star" size={12} color="#F59E0B" />
+            <Text className="font-sans text-sm leading-[20px] text-[#111111]">
+              {rating.toFixed(1)}
+            </Text>
+          </View>
+        )}
         <Feather name="chevron-left" size={20} color="#6B6A6A" />
       </View>
     </TouchableOpacity>

@@ -3,6 +3,11 @@ import { Image as ExpoImage } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { LocationIcon } from '@/assets/icons/home/cards';
+import {
+  formatPresence,
+  formatResponseTime,
+  ResponseTime,
+} from '@/shared/utils/helpers/activity';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 export interface CompanyHeaderData {
@@ -13,13 +18,14 @@ export interface CompanyHeaderData {
   coverUrl?: string;
   isVerified?: boolean;
   isActiveNow?: boolean;
+  lastSeenAt?: string | null;
   rating: number;
   reviewsCount: number;
   bio?: string;
   location?: string;
   servicesCount: number;
   projectsCount: number;
-  responseTime?: string;
+  responseTime?: ResponseTime | null;
   instagramUrl?: string;
   twitterUrl?: string;
   phone?: string;
@@ -31,6 +37,11 @@ interface CompanyHeaderCardProps {
 }
 
 export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
+  const activity = formatPresence({
+    isOnline: !!company.isActiveNow,
+    lastSeenAt: company.lastSeenAt ?? null,
+  });
+  const responseTime = formatResponseTime(company.responseTime);
   const handleOpenLink = (url?: string) => {
     if (url) {
       openUrlThrottled(url).catch(() => {});
@@ -78,27 +89,41 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
 
               {/* Title + Online Badge Row */}
               <View className="flex-row items-center justify-end mb-1">
-                {/* Active Now Badge */}
-                {company.isActiveNow && (
+                {/* Activity Badge (hidden after a week of no activity) */}
+                {activity && (
                   <View className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1">
-                    <View className="h-2 w-2 rounded-full bg-[#22C55E]" />
-                  <Text className="font-cairo-medium text-xs leading-[16px] text-[#15803D]">
-                    نشط الآن
-                  </Text>
-                </View>
-              )}
+                    {activity.isOnline && (
+                      <View className="h-2 w-2 rounded-full bg-[#22C55E]" />
+                    )}
+                    <Text
+                      className={`font-cairo-medium text-xs leading-[16px] ${
+                        activity.isOnline ? 'text-[#15803D]' : 'text-[#6B6A6A]'
+                      }`}
+                    >
+                      {activity.label}
+                    </Text>
+                  </View>
+                )}
           </View>
         </View>
 
         {/* Rating Row */}
         <View className="flex-row items-center gap-1.5 mb-2">
-          <FontAwesome name="star" size={14} color="#F59E0B"/>
-          <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
-            {company.rating.toFixed(1)}
-          </Text>
-          <Text className="font-cairo-regular text-xs text-[#A0A0A0]">
-            ({company.reviewsCount} تقييم)
-          </Text>
+          {company.reviewsCount > 0 ? (
+            <>
+              <FontAwesome name="star" size={14} color="#F59E0B" />
+              <Text className="font-cairo-bold text-sm leading-[22px] text-[#111111]">
+                {company.rating.toFixed(1)}
+              </Text>
+              <Text className="font-cairo-regular text-xs text-[#A0A0A0]">
+                ({company.reviewsCount} تقييم)
+              </Text>
+            </>
+          ) : (
+            <Text className="font-cairo-regular text-xs text-[#A0A0A0]">
+              لا توجد تقييمات بعد
+            </Text>
+          )}
         </View>
 
         {/* Bio / Description */}
@@ -144,14 +169,14 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
             </Text>
           </View>
 
-          {company.responseTime && (
+          {responseTime && (
             <>
               <View className="h-8 w-[1px] bg-gray-200" />
 
               {/* Column 3: Response Time */}
               <View className="flex-1 items-center">
                 <Text className="font-cairo-bold text-base text-[#111111]">
-                  {company.responseTime}
+                  {responseTime}
                 </Text>
                 <Text className="font-cairo-medium text-[13px] text-[#A0A0A0]">
                   سرعة الرد

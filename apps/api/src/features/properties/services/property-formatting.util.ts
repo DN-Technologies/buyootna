@@ -95,15 +95,22 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
   });
 }
 
-export function formatCompanies(identities: CompanyFeedPayload[]) {
+export function formatCompanies(
+  identities: CompanyFeedPayload[],
+  // Real rating/review count per identity (IdentityStatsService)
+  stats: Map<string, { rating: number; reviewsCount: number }>,
+  // Ads each company has posted, shown as its works count
+  adsCount: Map<string, number>,
+) {
   return identities
     .filter((i) => i.companyData !== null)
     .map((i) => ({
       id: i.id,
       name: i.companyData!.name,
       category: i.companyData!.services || '',
-      rating: 4.5,
-      projectsCount: '+50',
+      rating: stats.get(i.id)?.rating ?? 0,
+      reviewsCount: stats.get(i.id)?.reviewsCount ?? 0,
+      projectsCount: String(adsCount.get(i.id) ?? 0),
       serviceArea: i.companyData!.serviceAreas,
       logoUrl: i.companyData!.logoUrl,
       isVerified: i.companyData!.isVerified,

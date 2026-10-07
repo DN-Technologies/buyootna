@@ -11,6 +11,7 @@ import { ChatService } from './chat.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { SendMessageDto } from './dto/send-message.dto';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
+import { PresenceService } from '../../core/trust-signals/presence.service';
 
 // What a connected socket speaks as (set on connect)
 interface SocketIdentity {
@@ -32,6 +33,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly jwtService: JwtService,
     private readonly chatService: ChatService,
     private readonly prisma: PrismaService,
+    private readonly presence: PresenceService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -62,6 +64,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // The persona's room: inbox updates for this persona only
       client.join(`identity:${payload.ident}`);
+      if (payload.ident) this.presence.socketConnected(payload.ident);
       console.log(`Client connected: identity:${payload.ident} (${client.id})`);
     } catch (error) {
       console.error('Socket connection authentication failed:', error.message);
@@ -70,6 +73,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect(client: Socket) {
+    const { identityId } = (client.data ?? {}) as SocketIdentity;
+    if (identityId) this.presence.socketDisconnected(identityId);
     console.log(`Client disconnected: (${client.id})`);
   }
 

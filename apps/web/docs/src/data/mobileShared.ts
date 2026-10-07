@@ -825,5 +825,50 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-seller-trust-signals",
+      title: {
+        en: "Profiles show real rating, activity, sold count and response speed",
+        ar: "الملفات تعرض تقييماً ونشاطاً وعدد مباع وسرعة رد حقيقية",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: every advertiser profile showed 4.5 stars (214 تقييم), a permanent green نشط الآن, 2 sold and 30 دقيقة response time, even with 0 reviews in the summary below. The individual, company and office profiles, the ad host card and company cards now show only real data: the real rating and count (لا توجد تقييمات بعد when there are none), نشط الآن while the advertiser has the app open, نشط منذ X for up to a week, then nothing, the number of ads deleted as تم البيع, and a response-speed bucket (خلال دقائق / خلال ساعة / خلال ساعات / خلال يوم / أكثر من يوم) once there are at least 3 answered chats.",
+        ar: "بلاغ QA: كان كل ملف معلن يعرض 4.5 نجوم (214 تقييم) ونشط الآن باللون الأخضر دائماً و2 مباع وسرعة رد 30 دقيقة، حتى مع 0 تقييمات في الملخص أسفلها. الآن ملفات الأفراد والشركات والمكاتب وبطاقة المعلن وبطاقات الشركات تعرض بيانات حقيقية فقط: التقييم وعدده الحقيقيان (لا توجد تقييمات بعد عند عدم وجودها)، ونشط الآن ما دام المعلن يفتح التطبيق، ونشط منذ X لمدة أسبوع ثم لا شيء، وعدد الإعلانات المحذوفة بسبب تم البيع، وفئة سرعة الرد (خلال دقائق / خلال ساعة / خلال ساعات / خلال يوم / أكثر من يوم) بعد 3 ردود على الأقل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A profile with no reviews shows لا توجد تقييمات بعد, never 4.5 or 214; with reviews the header matches ملخص التقييم.",
+          "نشط الآن shows only while that advertiser's app is open; otherwise نشط منذ X up to 7 days, then no badge.",
+          "العقارات المباعة shows the real count (0 for none).",
+          "سرعة الرد is hidden until there are 3 answered chats, then shows a bucket, never an invented number.",
+          "Company cards and the ad host card hide the star when there are no reviews.",
+        ],
+        ar: [
+          "الملف بلا تقييمات يعرض لا توجد تقييمات بعد، وليس 4.5 أو 214؛ ومع وجود تقييمات يطابق الرأس ملخص التقييم.",
+          "يظهر نشط الآن فقط ما دام تطبيق المعلن مفتوحاً؛ وإلا نشط منذ X حتى 7 أيام، ثم لا شارة.",
+          "العقارات المباعة تعرض العدد الحقيقي (0 عند عدم وجودها).",
+          "سرعة الرد مخفية حتى 3 ردود على محادثات، ثم تعرض فئة، وليس رقماً مخترعاً.",
+          "بطاقات الشركات وبطاقة المعلن تخفي النجمة عند عدم وجود تقييمات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the profile of a new advertiser — لا توجد تقييمات بعد, no activity badge, sold 0, no response speed.",
+          "On a second device, open the app as that advertiser, then refresh the profile — نشط الآن; close it, wait a few minutes and refresh — نشط منذ X دقيقة.",
+          "Leave a review — the header shows the same rating and count as ملخص التقييم.",
+          "As the advertiser, delete an ad with تم البيع — العقارات المباعة goes up by 1.",
+          "Have the advertiser answer 3 chats within about 10 minutes — سرعة الرد shows خلال دقائق.",
+        ],
+        ar: [
+          "افتح ملف معلن جديد — لا توجد تقييمات بعد، ولا شارة نشاط، والمباعة 0، ولا سرعة رد.",
+          "على جهاز ثانٍ افتح التطبيق بحساب ذلك المعلن ثم حدّث الملف — نشط الآن؛ أغلقه وانتظر بضع دقائق وحدّث — نشط منذ X دقيقة.",
+          "أضف تقييماً — يعرض الرأس نفس التقييم والعدد كما في ملخص التقييم.",
+          "بصفتك المعلن احذف إعلاناً بسبب تم البيع — يزيد العقارات المباعة بواحد.",
+          "اجعل المعلن يرد على 3 محادثات خلال 10 دقائق تقريباً — تظهر سرعة الرد خلال دقائق.",
+        ],
+      },
+      updatedIn: "feat/real-trust-signals",
+    },
   ],
 };

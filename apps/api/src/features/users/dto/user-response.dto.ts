@@ -103,9 +103,54 @@ export class MeResponseDto {
   identities: IdentityResponseDto[];
 }
 
+export class IdentityPresenceDto {
+  @ApiProperty({
+    description: 'App open now (live socket or seen < 2 min ago)',
+  })
+  isOnline: boolean;
+
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' })
+  lastSeenAt: string | null;
+}
+
+export class ResponseTimeDto {
+  @ApiProperty({ description: 'Median seconds to answer a chat (90 days)' })
+  medianSeconds: number;
+
+  @ApiProperty({ description: 'Answered chats the median is based on (>= 3)' })
+  sampleSize: number;
+}
+
+export class IdentityStatsDto {
+  @ApiProperty()
+  identityId: string;
+
+  @ApiProperty({ description: 'Average review rating, 0 when none' })
+  rating: number;
+
+  @ApiProperty()
+  reviewsCount: number;
+
+  @ApiProperty({ description: 'Ads deleted with the "تم البيع" reason' })
+  soldCount: number;
+
+  @ApiProperty({ type: IdentityPresenceDto })
+  presence: IdentityPresenceDto;
+
+  @ApiProperty({ type: ResponseTimeDto, nullable: true })
+  responseTime: ResponseTimeDto | null;
+}
+
 export class FindUserResponseDto extends UserSafeDto {
   @ApiProperty({ type: [IdentityResponseDto] })
   identities: IdentityResponseDto[];
+
+  @ApiProperty({
+    type: IdentityStatsDto,
+    nullable: true,
+    description: 'Real trust signals for the persona the profile shows',
+  })
+  stats: IdentityStatsDto | null;
 }
 
 export class SimpleMessageResponseDto {

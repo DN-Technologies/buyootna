@@ -15,6 +15,9 @@ model Identity {
   freeAdsRemaining Int   @default(1)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  // Last time this persona used the app (socket connect/disconnect or an
+  // API request); drives the public "نشط الآن / نشط منذ" badge
+  lastSeenAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

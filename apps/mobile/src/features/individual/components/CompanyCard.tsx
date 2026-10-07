@@ -86,11 +86,13 @@ export default function CompanyCard({
           </View>
         </View>
 
-        {/* Top Left: Rating */}
-        <View className="mt-1 flex-row items-center gap-1">
-          <FontAwesome5 name="star" size={12} color="#F59E0B" solid />
-          <Text className="text-sm font-normal text-[#111111]">{rating}</Text>
-        </View>
+        {/* Top Left: Rating (ratings are 1-5, so 0 means no reviews yet) */}
+        {rating > 0 && (
+          <View className="mt-1 flex-row items-center gap-1">
+            <FontAwesome5 name="star" size={12} color="#F59E0B" solid />
+            <Text className="text-sm font-normal text-[#111111]">{rating}</Text>
+          </View>
+        )}
       </View>
 
       {/* --- 2. Middle Section: Stats & Heart --- */}
