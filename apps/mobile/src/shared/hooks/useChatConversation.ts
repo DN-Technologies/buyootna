@@ -46,6 +46,9 @@ export function useChatConversation({
   const isLoading = useChatStore(
     (state) => state.loadingConversationIds[conversationId] ?? false,
   );
+  const loadFailed = useChatStore(
+    (state) => state.loadErrorConversationIds[conversationId] ?? false,
+  );
 
   const conversation = useChatStore((state) =>
     state.conversations.find((c) => c.id === conversationId),
@@ -117,6 +120,10 @@ export function useChatConversation({
     });
   }, [conversationId, inputText, listRef, sendMessage]);
 
+  const handleRetryLoad = useCallback(() => {
+    if (conversationId) loadMessages(conversationId, undefined, true);
+  }, [conversationId, loadMessages]);
+
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isLoading && nextCursor) {
       loadMessages(conversationId, nextCursor);
@@ -142,6 +149,8 @@ export function useChatConversation({
     propertyContext,
     conversation,
     isLoadingMessages: isLoading,
+    loadFailed,
+    handleRetryLoad,
     handleSendMessage,
     handleLoadMore,
   };

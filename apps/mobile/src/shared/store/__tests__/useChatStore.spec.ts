@@ -224,3 +224,69 @@ describe('useChatStore — conversation isolation', () => {
     expect(useChatStore.getState().activeConversationId).toBeNull();
   });
 });
+
+// QA: closing a chat and opening it again showed an empty chat. A refresh
+// used to clear the cached messages before fetching, so a slow or failed
+// request left the screen blank with no way to retry.
+describe('useChatStore — reopening a chat', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useChatStore.getState().clear();
+  });
+
+  const seed = async () => {
+    mockGetMessages.mockResolvedValueOnce({
+      data: [makeMessage({ id: 'm1', content: 'هاي', isMine: true })],
+      meta: { hasNextPage: false },
+    });
+    await useChatStore.getState().loadMessages('c1', undefined, true);
+  };
+
+  it('keeps the cached messages on screen while a refresh is in flight', async () => {
+    await seed();
+    let resolve!: (value: unknown) => void;
+    mockGetMessages.mockReturnValueOnce(new Promise((r) => (resolve = r)));
+
+    const refresh = useChatStore.getState().loadMessages('c1', undefined, true);
+
+    expect(useChatStore.getState().messagesByConversation.c1).toHaveLength(1);
+    resolve({
+      data: [
+        makeMessage({ id: 'm1', content: 'هاي', isMine: true }),
+        makeMessage({ id: 'm2', content: 'أهلاً' }),
+      ],
+      meta: { hasNextPage: false },
+    });
+    await refresh;
+    expect(
+      useChatStore.getState().messagesByConversation.c1.map((m) => m.id),
+    ).toEqual(['m1', 'm2']);
+  });
+
+  it('keeps the cached messages and flags the error when a refresh fails', async () => {
+    await seed();
+    mockGetMessages.mockRejectedValueOnce(new Error('network'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await useChatStore.getState().loadMessages('c1', undefined, true);
+
+    const state = useChatStore.getState();
+    expect(state.messagesByConversation.c1.map((m) => m.content)).toEqual([
+      'هاي',
+    ]);
+    expect(state.loadErrorConversationIds.c1).toBe(true);
+    expect(state.loadingConversationIds.c1).toBe(false);
+  });
+
+  it('clears the error once a retry succeeds', async () => {
+    mockGetMessages.mockRejectedValueOnce(new Error('network'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    await useChatStore.getState().loadMessages('c1', undefined, true);
+    expect(useChatStore.getState().loadErrorConversationIds.c1).toBe(true);
+
+    await seed();
+
+    expect(useChatStore.getState().loadErrorConversationIds.c1).toBe(false);
+    expect(useChatStore.getState().messagesByConversation.c1).toHaveLength(1);
+  });
+});

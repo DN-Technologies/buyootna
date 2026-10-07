@@ -1,6 +1,10 @@
 import { ChatMessage } from '@/shared/api/chat.service';
 
-import { formatDayLabel, withDateSeparators } from '../chatDate';
+import {
+  formatDayLabel,
+  formatMessageTime,
+  withDateSeparators,
+} from '../chatDate';
 
 describe('chatDate utility', () => {
   describe('formatDayLabel', () => {
@@ -84,5 +88,19 @@ describe('chatDate utility', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toBe(messages[0]);
     });
+  });
+});
+
+describe('formatMessageTime', () => {
+  it('is 24-hour with western digits in the device time zone', () => {
+    const d = new Date(2026, 9, 8, 0, 53);
+    expect(formatMessageTime(d.toISOString())).toBe('00:53');
+    expect(formatMessageTime(new Date(2026, 9, 8, 14, 5).toISOString())).toBe(
+      '14:05',
+    );
+  });
+
+  it('returns an empty string for an invalid date', () => {
+    expect(formatMessageTime('not-a-date')).toBe('');
   });
 });
