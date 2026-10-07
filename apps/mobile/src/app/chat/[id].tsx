@@ -9,6 +9,7 @@ import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ImageDownloadBottomSheet from '@/shared/components/chat/ImageDownloadBottomSheet';
+import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useChatConversation } from '@/shared/hooks/useChatConversation';
@@ -34,6 +35,9 @@ export default function ChatDetailsScreen() {
     propertyId: isNewChat ? params.propertyId : undefined,
   });
   const conversationId = isNewChat ? (startedId ?? '') : routeId;
+
+  // Tap a chat image: full screen, swipe, pinch / double-tap to zoom
+  const { open: openViewer, viewer } = useImageViewer();
 
   const {
     inputText,
@@ -104,7 +108,13 @@ export default function ChatDetailsScreen() {
                 router.push(`/property/${targetId}`);
               }
             }}
-            onPressImage={() => setShowImageOptions(true)}
+            onPressImage={(imageUrl) => {
+              // The conversation's images, oldest first, at the tapped one
+              const urls = displayMessages
+                .filter((m) => m.type === 'IMAGE' && 'imageUrl' in m && !!m.imageUrl)
+                .map((m) => (m as { imageUrl: string }).imageUrl);
+              openViewer(urls, Math.max(0, urls.indexOf(imageUrl)));
+            }}
             isLoading={isStarting || isLoadingMessages}
             loadFailed={loadFailed}
             onRetry={handleRetryLoad}
@@ -121,6 +131,8 @@ export default function ChatDetailsScreen() {
           />
         </KeyboardAvoidingView>
       </ContentContainer>
+
+      {viewer}
 
       <ImageDownloadBottomSheet
         visible={showImageOptions}

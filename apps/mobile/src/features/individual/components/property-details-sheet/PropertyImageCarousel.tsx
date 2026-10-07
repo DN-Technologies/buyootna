@@ -5,9 +5,11 @@ import {
   NativeSyntheticEvent,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 
+import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 
 interface PropertyImageCarouselProps {
@@ -21,6 +23,8 @@ export default function PropertyImageCarousel({
 }: PropertyImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
+  // Tap a photo: full screen, swipe, pinch / double-tap to zoom
+  const { open: openViewer, viewer } = useImageViewer();
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
@@ -48,15 +52,25 @@ export default function PropertyImageCarousel({
         scrollEventThrottle={16}
       >
         {images.map((img, index) => (
-          <Image
+          <TouchableOpacity
             key={index}
-            source={typeof img === 'string' ? { uri: img } : img}
-            style={{
-              width: containerWidth || 330,
-              height: '100%',
-            }}
-            contentFit="cover"
-          />
+            activeOpacity={0.95}
+            // The no-image placeholder (a local asset) has nothing to enlarge
+            disabled={typeof img !== 'string'}
+            testID={`sheet-photo-${index}`}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={`عرض الصورة ${index + 1} بالحجم الكامل`}
+            onPress={() => openViewer(images, index)}
+          >
+            <Image
+              source={typeof img === 'string' ? { uri: img } : img}
+              style={{
+                width: containerWidth || 330,
+                height: '100%',
+              }}
+              contentFit="cover"
+            />
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
@@ -98,6 +112,8 @@ export default function PropertyImageCarousel({
           ))}
         </View>
       )}
+
+      {viewer}
     </View>
   );
 }

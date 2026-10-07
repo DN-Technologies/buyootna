@@ -13,7 +13,8 @@ export interface ChatMessageListProps {
   messages: DisplayMessage[];
   onLoadMore: () => void;
   onPressProperty: (propertyId?: string) => void;
-  onPressImage: () => void;
+  // The tapped image's URL (opens the full-screen viewer)
+  onPressImage: (imageUrl: string) => void;
   // Shows a spinner while there's nothing to show yet
   isLoading?: boolean;
   // The last load failed: shows a retry row instead of a silent blank chat
@@ -76,7 +77,7 @@ export default function ChatMessageList({
               isMine={item.isMine}
               timestamp={timeOf(item)}
               isRead={!item.sending}
-              onPressImage={onPressImage}
+              onPressImage={() => onPressImage(item.imageUrl!)}
             />
           );
         case 'TEXT':

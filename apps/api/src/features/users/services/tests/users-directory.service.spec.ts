@@ -10,7 +10,16 @@ import { IdentityStatsService } from '../../../../core/trust-signals/identity-st
 describe('UsersDirectoryService', () => {
   let service: UsersDirectoryService;
   const prisma = {
-    identity: { findMany: jest.fn(), count: jest.fn() },
+    identity: { findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn() },
+  };
+  const identityStats = {
+    getOne: jest.fn().mockResolvedValue({
+      rating: 0,
+      reviewsCount: 0,
+      soldCount: 0,
+      presence: { isOnline: false, lastSeenAt: null },
+    }),
+    getResponseTime: jest.fn().mockResolvedValue(null),
   };
   const providerCards = { formatCompanyCards: jest.fn() };
 
@@ -21,7 +30,7 @@ describe('UsersDirectoryService', () => {
         UsersDirectoryService,
         { provide: ProviderCardsService, useValue: providerCards },
         { provide: PrismaService, useValue: prisma },
-        { provide: IdentityStatsService, useValue: {} },
+        { provide: IdentityStatsService, useValue: identityStats },
       ],
     }).compile();
 
@@ -99,6 +108,45 @@ describe('UsersDirectoryService', () => {
 
     it('NEWEST keeps the incoming order', () => {
       expect(sortCompanyCards(cards, 'NEWEST')).toBe(cards);
+    });
+  });
+
+  describe('findCompanyDetails gallery', () => {
+    it('returns every photo of each project for the full-screen viewer', async () => {
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'c1',
+        userId: 'u1',
+        type: 'COMPANY',
+        useAccountPhone: true,
+        contactPhone: null,
+        user: { phone: '99990000' },
+        companyData: {
+          name: 'شركة',
+          services: null,
+          logoUrl: null,
+          isVerified: false,
+          about: null,
+          hqLocation: null,
+          serviceAreas: null,
+        },
+        properties: [],
+        projects: [
+          {
+            id: 'p1',
+            title: 'فيلا',
+            description: null,
+            images: ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
+            createdAt: new Date('2026-09-01'),
+          },
+        ],
+      });
+
+      const res = await service.findCompanyDetails('c1');
+
+      expect(res.projects[0]).toMatchObject({
+        imageUrl: 'https://cdn/a.jpg',
+        images: ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
+      });
     });
   });
 });

@@ -1,11 +1,15 @@
 import { Image as ExpoImage } from 'expo-image';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+
+import { useImageViewer } from '@/shared/components/media/ImageViewer';
 
 export interface CompanyProjectItemData {
   id: string;
   title: string;
   category?: string;
   imageUrl?: string;
+  // All of the project's photos (older APIs only send imageUrl)
+  images?: string[];
   completedDate?: string;
 }
 
@@ -13,33 +17,23 @@ interface CompanyGalleryTabProps {
   projects?: CompanyProjectItemData[];
 }
 
-const DEFAULT_PROJECTS: CompanyProjectItemData[] = [
-  {
-    id: '1',
-    title: 'تصميم واجهة قسيمة في خيران',
-    category: 'ديكورات وتصميم',
-    imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800',
-    completedDate: '2026-05',
-  },
-  {
-    id: '2',
-    title: 'تأثيث مكاتب برج العاصمة',
-    category: 'أثاث',
-    imageUrl: 'https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800',
-    completedDate: '2026-04',
-  },
-  {
-    id: '3',
-    title: 'تركيب شبكات إنترنت لشركة حلول',
-    category: 'شبكات نت',
-    imageUrl: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=800',
-    completedDate: '2026-03',
-  },
-];
-
 export default function CompanyGalleryTab({
-  projects = DEFAULT_PROJECTS,
+  projects = [],
 }: CompanyGalleryTabProps) {
+  // Tap a project: its photos full screen, swipe, pinch / double-tap to zoom
+  const { open: openViewer, viewer } = useImageViewer();
+
+  // Real projects only (no stock photos when a company has none yet)
+  if (projects.length === 0) {
+    return (
+      <View testID="company-gallery-empty" className="items-center py-12">
+        <Text className="font-cairo-medium text-sm text-[#6B6A6A]">
+          لا توجد أعمال في المعرض بعد
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 pb-24 space-y-4">
       {projects.map((proj) => (
@@ -48,13 +42,33 @@ export default function CompanyGalleryTab({
           className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden"
         >
           {/* Project Image */}
-          <View className="h-44 w-full bg-slate-100">
+          <TouchableOpacity
+            activeOpacity={0.95}
+            disabled={!proj.imageUrl && !proj.images?.length}
+            testID={`company-project-photo-${proj.id}`}
+            accessibilityRole="imagebutton"
+            accessibilityLabel={`صور ${proj.title}`}
+            onPress={() =>
+              openViewer(
+                proj.images?.length ? proj.images : [proj.imageUrl ?? ''],
+                0,
+              )
+            }
+            className="h-44 w-full bg-slate-100"
+          >
             <ExpoImage
               source={{ uri: proj.imageUrl }}
               className="h-full w-full"
               contentFit="cover"
             />
-          </View>
+            {(proj.images?.length ?? 0) > 1 && (
+              <View className="absolute bottom-2 left-2 rounded-full bg-black/55 px-2 py-0.5">
+                <Text className="font-cairo-semibold text-xs text-white">
+                  {proj.images!.length} صور
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
 
           {/* Details */}
           <View className="p-4">
@@ -69,6 +83,8 @@ export default function CompanyGalleryTab({
           </View>
         </View>
       ))}
+
+      {viewer}
     </View>
   );
 }
