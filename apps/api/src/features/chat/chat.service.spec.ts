@@ -4,6 +4,7 @@ import { ChatConversationsService } from './services/chat-conversations.service'
 import { ChatMessagesService } from './services/chat-messages.service';
 import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { ChatAttachmentsService } from './services/chat-attachments.service';
 
 describe('ChatParticipantDisplayService.resolve', () => {
   let displayService: ChatParticipantDisplayService;
@@ -143,6 +144,7 @@ describe('ChatService.findOrCreateConversation', () => {
         ChatMessagesService,
         ChatService,
         { provide: PrismaService, useValue: prisma },
+        { provide: ChatAttachmentsService, useValue: {} },
       ],
     }).compile();
 
@@ -362,6 +364,7 @@ describe('ChatService.getConversations', () => {
         ChatMessagesService,
         ChatService,
         { provide: PrismaService, useValue: prisma },
+        { provide: ChatAttachmentsService, useValue: {} },
       ],
     }).compile();
 

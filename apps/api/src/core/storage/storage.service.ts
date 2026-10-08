@@ -1,9 +1,11 @@
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
   S3ClientConfig,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
@@ -70,6 +72,68 @@ export class StorageService {
           Bucket: this.bucketName,
           Key: url.slice(prefix.length),
         }),
+      );
+    } catch (error) {
+      console.error('S3 Delete Error:', error);
+    }
+  }
+
+  /**
+   * Uploads a private file (e.g. a chat attachment) and returns its object
+   * key -- never a URL. It's only reachable through signedUrl().
+   */
+  async uploadPrivate(
+    body: Buffer,
+    folder: string,
+    extension: string,
+    contentType: string,
+  ): Promise<string> {
+    const key = `${folder}/${uuidv4()}${extension}`;
+    try {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+          Body: body,
+          ContentType: contentType,
+        }),
+      );
+      return key;
+    } catch (error) {
+      console.error('S3 Private Upload Error:', error);
+      throw new InternalServerErrorException('فشل في رفع الملف');
+    }
+  }
+
+  /**
+   * A short-lived link to a private object. `downloadName` makes browsers /
+   * the OS save it under its real file name.
+   */
+  async signedUrl(
+    key: string,
+    expiresInSeconds = 15 * 60,
+    downloadName?: string,
+  ): Promise<string> {
+    return getSignedUrl(
+      this.s3Client,
+      new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        ...(downloadName
+          ? {
+              ResponseContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent(downloadName)}`,
+            }
+          : {}),
+      }),
+      { expiresIn: expiresInSeconds },
+    );
+  }
+
+  /** Deletes a private object by key (best effort, never throws). */
+  async deleteKey(key: string): Promise<void> {
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({ Bucket: this.bucketName, Key: key }),
       );
     } catch (error) {
       console.error('S3 Delete Error:', error);

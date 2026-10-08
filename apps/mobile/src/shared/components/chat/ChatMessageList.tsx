@@ -2,7 +2,8 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import { ChatMessage } from '@/shared/api/chat.service';
+import { ChatAttachment, ChatMessage } from '@/shared/api/chat.service';
+import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
 import MessageBubble from '@/shared/components/chat/MessageBubble';
@@ -28,6 +29,13 @@ export interface ChatMessageListProps {
   onLongPressMessage?: (message: ChatMessage) => void;
   // Shown on quotes of their messages ("أنت" for mine)
   otherUserName?: string;
+  // Attachments: the photos of a message (opens the viewer), a document,
+  // and retrying a send that failed
+  onOpenPhotos?: (urls: string[], index: number) => void;
+  onOpenFile?: (attachment: ChatAttachment) => void;
+  onRetryAttachments?: (tempId: string) => void;
+  // In-chat search: the current match to scroll to and highlight
+  focusMessageId?: string | null;
 }
 
 // How long a message stays tinted after jumping to it from a quote
@@ -50,6 +58,10 @@ export default function ChatMessageList({
   onReply,
   onLongPressMessage,
   otherUserName = 'الطرف الآخر',
+  onOpenPhotos,
+  onOpenFile,
+  onRetryAttachments,
+  focusMessageId,
 }: ChatMessageListProps) {
   // Tapping a quote scrolls to the original and tints it for a moment
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -75,6 +87,12 @@ export default function ChatMessageList({
     [messages, listRef],
   );
 
+  // In-chat search moved to another match
+  useEffect(() => {
+    if (focusMessageId) jumpTo(focusMessageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusMessageId]);
+
   // Land on the newest message once the history first arrives. The list
   // stays mounted (it's never swapped for the spinner), and the explicit
   // scroll doesn't rely on FlashList 2.0.2's initial bottom positioning,
@@ -99,6 +117,29 @@ export default function ChatMessageList({
           onPress={() => jumpTo(item.replyTo!.id)}
         />
       ) : undefined;
+
+      // Photos / documents (sent, or still uploading from the device)
+      if (item.attachments?.length || item.localAttachments?.length) {
+        const sent = item.attachments ?? [];
+        return (
+          <AttachmentMessageBubble
+            message={item}
+            timestamp={timeOf(item)}
+            quote={quote}
+            onPressPhoto={(index) =>
+              onOpenPhotos?.(
+                sent.filter((a) => a.kind === 'IMAGE').map((a) => a.url),
+                index,
+              )
+            }
+            onPressFile={(index) => {
+              const file = sent.filter((a) => a.kind === 'FILE')[index];
+              if (file) onOpenFile?.(file);
+            }}
+            onRetry={() => onRetryAttachments?.(item.id)}
+          />
+        );
+      }
 
       switch (item.type) {
         case 'PROPERTY':
@@ -141,7 +182,15 @@ export default function ChatMessageList({
           );
       }
     },
-    [onPressImage, onPressProperty, otherUserName, jumpTo],
+    [
+      onPressImage,
+      onPressProperty,
+      otherUserName,
+      jumpTo,
+      onOpenPhotos,
+      onOpenFile,
+      onRetryAttachments,
+    ],
   );
 
   const renderMessage = useCallback(

@@ -9,6 +9,10 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { SendMessageDto } from '../dto/send-message.dto';
+import {
+  ATTACHMENT_SELECT,
+  ChatAttachmentsService,
+} from './chat-attachments.service';
 
 /**
  * Message reading and writing inside a conversation: the cursor-paginated
@@ -35,6 +39,9 @@ type ReplySource = {
 };
 type MessageWithReply = Prisma.MessageGetPayload<object> & {
   replyTo: ReplySource | null;
+  attachments: Prisma.MessageAttachmentGetPayload<{
+    select: typeof ATTACHMENT_SELECT;
+  }>[];
 };
 
 /**
@@ -71,6 +78,7 @@ export class ChatMessagesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly displayService: ChatParticipantDisplayService,
+    private readonly attachments: ChatAttachmentsService,
   ) {}
 
   // Get messages for a single conversation
@@ -120,6 +128,10 @@ export class ChatMessagesService {
             hiddenFor: { where: { identityId }, select: { identityId: true } },
           },
         },
+        attachments: {
+          select: ATTACHMENT_SELECT,
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -140,31 +152,37 @@ export class ChatMessagesService {
       await this.displayService.resolve(otherPart);
 
     return {
-      data: messages.reverse().map((msg) => ({
-        id: msg.id,
-        type: msg.type,
-        content: msg.content,
-        imageUrl: msg.imageUrl,
-        propertyId: msg.propertyId,
-        property:
-          (msg.propertyId || msg.type === 'PROPERTY') && prop
-            ? {
-                id: prop.id,
-                imageUrl: prop.images[0] || '@/assets/images/no-image.png',
-                price: prop.price,
-                title: `${prop.category} ${prop.type}`,
-                type: prop.type,
-                area: prop.areaSize ?? undefined,
-                bedrooms: prop.beds ?? undefined,
-                bathrooms: prop.baths ?? undefined,
-                location: prop.location,
-              }
+      data: await Promise.all(
+        messages.reverse().map(async (msg) => ({
+          id: msg.id,
+          type: msg.type,
+          content: msg.content,
+          imageUrl: msg.imageUrl,
+          propertyId: msg.propertyId,
+          property:
+            (msg.propertyId || msg.type === 'PROPERTY') && prop
+              ? {
+                  id: prop.id,
+                  imageUrl: prop.images[0] || '@/assets/images/no-image.png',
+                  price: prop.price,
+                  title: `${prop.category} ${prop.type}`,
+                  type: prop.type,
+                  area: prop.areaSize ?? undefined,
+                  bedrooms: prop.beds ?? undefined,
+                  bathrooms: prop.baths ?? undefined,
+                  location: prop.location,
+                }
+              : undefined,
+          replyTo: replyPreview(msg.replyToId, msg.replyTo, identityId),
+          // Private files: fresh signed links for this participant
+          attachments: msg.attachments.length
+            ? await this.attachments.present(msg.attachments)
             : undefined,
-        replyTo: replyPreview(msg.replyToId, msg.replyTo, identityId),
-        isMine: msg.senderIdentityId === identityId,
-        timestamp: this.formatTime(msg.createdAt),
-        createdAt: msg.createdAt,
-      })),
+          isMine: msg.senderIdentityId === identityId,
+          timestamp: this.formatTime(msg.createdAt),
+          createdAt: msg.createdAt,
+        })),
+      ),
       meta: {
         nextCursor,
         hasNextPage,
@@ -245,6 +263,30 @@ export class ChatMessagesService {
         },
       });
 
+      // Photos / documents uploaded for this message; all photos -> IMAGE,
+      // any document -> FILE
+      const claimed = dto.attachmentIds?.length
+        ? await this.attachments.claim(
+            tx,
+            sender.identityId,
+            conversationId,
+            dto.attachmentIds,
+            message.id,
+          )
+        : [];
+      if (claimed.length) {
+        const type = claimed.every((a) => a.kind === 'IMAGE')
+          ? 'IMAGE'
+          : 'FILE';
+        if (type !== message.type) {
+          await tx.message.update({
+            where: { id: message.id },
+            data: { type },
+          });
+          message.type = type;
+        }
+      }
+
       let prop: Property | null = null;
       if (dto.propertyId || message.type === 'PROPERTY') {
         const conv = await tx.conversation.findUnique({
@@ -286,6 +328,9 @@ export class ChatMessagesService {
         // Broadcast to both sides: each app works out "you" from
         // replyTo.senderIdentityId
         replyTo: replyPreview(replyTo?.id ?? null, replyTo),
+        attachments: claimed.length
+          ? await this.attachments.present(claimed)
+          : undefined,
         // The app compares senderId with the signed-in account's id
         senderId: sender.userId,
         senderIdentityId: sender.identityId,
@@ -293,6 +338,46 @@ export class ChatMessagesService {
         createdAt: message.createdAt,
       };
     });
+  }
+
+  /**
+   * Search inside one conversation: message text and attachment file
+   * names, skipping what this persona deleted. Newest first; the app jumps
+   * between the matches.
+   */
+  async searchMessages(
+    identityId: string,
+    conversationId: string,
+    rawQuery: string,
+    page = 1,
+    limit = 50,
+  ) {
+    if (!(await this.isParticipant(identityId, conversationId))) {
+      throw new ForbiddenException('ليس لديك صلاحية لعرض هذه المحادثة');
+    }
+    const q = rawQuery?.trim() ?? '';
+    if (!q) return { data: [], meta: { total: 0, page, limit } };
+
+    const contains = { contains: q, mode: 'insensitive' as const };
+    const where: Prisma.MessageWhereInput = {
+      conversationId,
+      hiddenFor: { none: { identityId } },
+      OR: [
+        { content: contains },
+        { attachments: { some: { fileName: contains } } },
+      ],
+    };
+    const [matches, total] = await Promise.all([
+      this.prisma.message.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: { id: true, createdAt: true },
+      }),
+      this.prisma.message.count({ where }),
+    ]);
+    return { data: matches, meta: { total, page, limit } };
   }
 
   /** "حذف لدي": hide a message for this persona only. */

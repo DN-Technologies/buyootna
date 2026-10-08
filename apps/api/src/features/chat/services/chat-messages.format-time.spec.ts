@@ -1,12 +1,14 @@
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ChatMessagesService } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import { ChatAttachmentsService } from './chat-attachments.service';
 
 // The preformatted `timestamp` older app builds show as-is
 describe('ChatMessagesService.formatTime', () => {
   const service = new ChatMessagesService(
     {} as PrismaService,
     {} as ChatParticipantDisplayService,
+    {} as ChatAttachmentsService,
   );
 
   it('uses western digits and Kuwait time, whatever the server zone', () => {

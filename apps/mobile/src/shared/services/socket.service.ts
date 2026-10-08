@@ -119,6 +119,7 @@ class SocketService {
       propertyId?: string;
       tempId?: string;
       replyToId?: string;
+      attachmentIds?: string[];
     },
   ): boolean {
     if (!this.socket) {

@@ -3,7 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ListingType, Prisma, PropertyCategory } from '@prisma/client';
 
+import {
+  LISTING_TYPE_LABELS,
+  PROPERTY_CATEGORY_LABELS,
+} from '../../properties/services/property-formatting.util';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
@@ -13,6 +18,60 @@ import { findDefaultPersonaId } from '../../identities/persona-rules';
  * Conversation lifecycle and listing: finding-or-creating the 1:1
  * conversation between two participants, and the paginated inbox list.
  */
+/**
+ * Chats list search: the other person's name, the ad's Arabic title
+ * ("عمارة", "للبيع"), or text in any message this persona can still see.
+ */
+export function conversationSearchWhere(
+  identityId: string,
+  rawQuery: string,
+): Prisma.ConversationWhereInput {
+  const q = rawQuery.trim();
+  const contains = { contains: q, mode: 'insensitive' as const };
+  const labelMatches = (label: string) =>
+    label.includes(q) || q.includes(label);
+  const categories = Object.entries(PROPERTY_CATEGORY_LABELS)
+    .filter(([, label]) => labelMatches(label))
+    .map(([key]) => key as PropertyCategory);
+  const listingTypes = Object.entries(LISTING_TYPE_LABELS)
+    .filter(([, label]) => labelMatches(label))
+    .map(([key]) => key as ListingType);
+
+  return {
+    OR: [
+      {
+        participants: {
+          some: {
+            identityId: { not: identityId },
+            identity: {
+              OR: [
+                { individualData: { name: contains } },
+                { companyData: { name: contains } },
+                { officeData: { name: contains } },
+                { user: { name: contains } },
+              ],
+            },
+          },
+        },
+      },
+      ...(categories.length
+        ? [{ property: { category: { in: categories } } }]
+        : []),
+      ...(listingTypes.length
+        ? [{ property: { type: { in: listingTypes } } }]
+        : []),
+      {
+        messages: {
+          some: {
+            content: contains,
+            hiddenFor: { none: { identityId } },
+          },
+        },
+      },
+    ],
+  };
+}
+
 @Injectable()
 export class ChatConversationsService {
   constructor(
@@ -135,12 +194,18 @@ export class ChatConversationsService {
   }
 
   // The persona's inbox: other personas of the same account have their own
-  async getConversations(identityId: string, page = 1, limit = 10) {
+  async getConversations(
+    identityId: string,
+    page = 1,
+    limit = 10,
+    query?: string,
+  ) {
     const skip = (page - 1) * limit;
 
     const conversations = await this.prisma.conversation.findMany({
       where: {
         participants: { some: { identityId } },
+        ...(query?.trim() ? conversationSearchWhere(identityId, query) : {}),
         // NOTE: deliberately no `messages: { some: {} }` filter here. A
         // conversation starts empty (created by "contact" taps before any
         // message is sent), and filtering it out made newly initiated chats
@@ -177,6 +242,10 @@ export class ChatConversationsService {
           where: { hiddenFor: { none: { identityId } } },
           orderBy: { createdAt: 'desc' },
           take: 1,
+          include: {
+            // For the preview: "📷 3 صور" / "📎 عقد.pdf"
+            attachments: { select: { fileName: true, kind: true } },
+          },
         },
       },
       orderBy: { updatedAt: 'desc' },
@@ -234,6 +303,8 @@ export class ChatConversationsService {
                 id: lastMessage.id,
                 content: lastMessage.content,
                 type: lastMessage.type,
+                attachmentsCount: lastMessage.attachments.length,
+                attachmentName: lastMessage.attachments[0]?.fileName ?? null,
                 createdAt: lastMessage.createdAt,
                 isMine: lastMessage.senderIdentityId === identityId,
               }

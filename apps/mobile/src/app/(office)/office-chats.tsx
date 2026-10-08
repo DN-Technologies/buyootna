@@ -12,6 +12,7 @@ import { useReloadOnResume } from '@/shared/hooks/useReloadOnResume';
 import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { lastMessagePreview } from '@/shared/utils/chatAttachments';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -67,13 +68,7 @@ export default function OfficeChatsScreen() {
           refreshing={pullToRefresh.refreshing}
           onRefresh={pullToRefresh.onRefresh}
           renderItem={({ item }) => {
-            const displayLastMessage = item.lastMessage
-              ? item.lastMessage.type === 'IMAGE'
-                ? '📷 صورة'
-                : item.lastMessage.type === 'PROPERTY'
-                  ? '🏠 مشاركة عقار'
-                  : item.lastMessage.content || ''
-              : 'بدء المحادثة';
+            const displayLastMessage = lastMessagePreview(item.lastMessage);
 
             return (
               <ChatListItem

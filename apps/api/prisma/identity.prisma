@@ -46,6 +46,7 @@ model Identity {
   conversations   ConversationParticipant[]
   messages        Message[]
   hiddenMessages  MessageHidden[]
+  chatAttachments MessageAttachment[]
   givenReviews    Review[]                  @relation("IdentityGivenReviews")
   receivedReviews Review[]                  @relation("IdentityReceivedReviews")
   reviewReactions ReviewReaction[]
