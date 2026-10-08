@@ -1,5 +1,7 @@
 import { FlashListRef } from '@shopify/flash-list';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AppState } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
@@ -21,6 +23,10 @@ export function useChatConversation({
   listRef,
 }: UseChatConversationParams) {
   const [inputText, setInputText] = useState('');
+  // Replying to this message (swipe right, or رد in the options)
+  const [replyTarget, setReplyTarget] = useState<ChatMessage | null>(null);
+  // The message whose long-press options are open
+  const [optionsFor, setOptionsFor] = useState<ChatMessage | null>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [showImageOptions, setShowImageOptions] = useState(false);
@@ -66,6 +72,26 @@ export function useChatConversation({
   const otherUserId = conversation?.otherUser.id;
   const propertyContext = conversation?.propertyContext;
 
+  // Back from another app, or the socket came back: catch up on what was
+  // sent meanwhile (only delivered as pushes) and mark it read. The cache
+  // stays on screen during the reload (QA: new messages only showed after
+  // reopening the chat)
+  useEffect(() => {
+    if (!conversationId) return;
+    const catchUp = () => {
+      loadMessages(conversationId, undefined, true);
+      useChatStore.getState().markConversationAsRead(conversationId);
+    };
+    const appState = AppState.addEventListener('change', (state) => {
+      if (state === 'active') catchUp();
+    });
+    const unsubscribeReconnect = socketService.onReconnect(catchUp);
+    return () => {
+      appState.remove();
+      unsubscribeReconnect();
+    };
+  }, [conversationId, loadMessages]);
+
   useEffect(() => {
     if (conversationId) {
       // Set active conversation and mark as read
@@ -108,6 +134,7 @@ export function useChatConversation({
     const sent = sendMessage(conversationId, {
       content: inputText.trim(),
       type: 'TEXT',
+      replyTo: replyTarget ?? undefined,
     });
     if (!sent) {
       // No socket exists at all -- keep the user's text in the input
@@ -115,10 +142,32 @@ export function useChatConversation({
       return;
     }
     setInputText('');
+    setReplyTarget(null);
     requestAnimationFrame(() => {
       listRef?.current?.scrollToEnd({ animated: true });
     });
-  }, [conversationId, inputText, listRef, sendMessage]);
+  }, [conversationId, inputText, listRef, sendMessage, replyTarget]);
+
+  /** نسخ: the message text to the clipboard. */
+  const copyMessage = useCallback(async (message: ChatMessage) => {
+    if (!message.content) return;
+    await Clipboard.setStringAsync(message.content);
+    showAlert('تم النسخ', 'تم نسخ الرسالة');
+  }, []);
+
+  /** حذف لدي: gone here at once; back with an error if the server refuses. */
+  const hideMessage = useCallback(
+    async (message: ChatMessage) => {
+      if (!conversationId) return;
+      if (replyTarget?.id === message.id) setReplyTarget(null);
+      try {
+        await useChatStore.getState().hideMessage(conversationId, message.id);
+      } catch {
+        showAlert('خطأ', 'تعذر حذف الرسالة، حاول مرة أخرى');
+      }
+    },
+    [conversationId, replyTarget],
+  );
 
   const handleRetryLoad = useCallback(() => {
     if (conversationId) loadMessages(conversationId, undefined, true);
@@ -149,6 +198,12 @@ export function useChatConversation({
     propertyContext,
     conversation,
     isLoadingMessages: isLoading,
+    replyTarget,
+    setReplyTarget,
+    optionsFor,
+    setOptionsFor,
+    copyMessage,
+    hideMessage,
     loadFailed,
     handleRetryLoad,
     handleSendMessage,

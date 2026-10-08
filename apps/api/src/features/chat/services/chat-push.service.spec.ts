@@ -1,13 +1,20 @@
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PushService } from 'src/core/push/push.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
-import { ChatPushService, chatPushBody } from './chat-push.service';
+import {
+  CHAT_PUSH_CHANNEL,
+  CHAT_PUSH_SOUND,
+  ChatPushService,
+  chatPushBody,
+  propertyTitle,
+} from './chat-push.service';
 
 describe('ChatPushService', () => {
   let prisma: {
     conversationParticipant: { findMany: jest.Mock };
     session: { findMany: jest.Mock };
     identity: { findUnique: jest.Mock };
+    conversation: { findUnique: jest.Mock };
   };
   let push: { sendToTokens: jest.Mock };
   let display: { resolve: jest.Mock };
@@ -39,6 +46,9 @@ describe('ChatPushService', () => {
       identity: {
         findUnique: jest.fn().mockResolvedValue({ userId: 'u-me' }),
       },
+      conversation: {
+        findUnique: jest.fn().mockResolvedValue({ property: null }),
+      },
     };
     push = { sendToTokens: jest.fn().mockResolvedValue(undefined) };
     display = {
@@ -66,8 +76,23 @@ describe('ChatPushService', () => {
     expect(push.sendToTokens).toHaveBeenCalledWith(['ExponentPushToken[a]'], {
       title: 'Ebrahim',
       body: 'هاي',
+      sound: CHAT_PUSH_SOUND,
+      channelId: CHAT_PUSH_CHANNEL,
       data: { type: 'CHAT_MESSAGE', conversationId: 'c1', route: '/chat/c1' },
     });
+  });
+
+  it('names the ad when the chat came from one', async () => {
+    prisma.conversation.findUnique.mockResolvedValue({
+      property: { category: 'BUILDING', type: 'SALE' },
+    });
+
+    await send();
+
+    expect(push.sendToTokens).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ body: 'عمارة للبيع · هاي' }),
+    );
   });
 
   it('skips a recipient who has the conversation open', async () => {
@@ -115,5 +140,29 @@ describe('chatPushBody', () => {
   it('labels images and property cards', () => {
     expect(chatPushBody({ type: 'IMAGE' })).toBe('📷 صورة');
     expect(chatPushBody({ type: 'PROPERTY' })).toBe('🏠 عقار');
+  });
+
+  it('leads with the ad title when there is one', () => {
+    expect(chatPushBody({ type: 'TEXT', content: 'هاي' }, 'عمارة للبيع')).toBe(
+      'عمارة للبيع · هاي',
+    );
+    expect(chatPushBody({ type: 'IMAGE' }, 'شقة للإيجار')).toBe(
+      'شقة للإيجار · 📷 صورة',
+    );
+  });
+});
+
+describe('propertyTitle', () => {
+  it('is the category then the listing type', () => {
+    expect(propertyTitle({ category: 'BUILDING', type: 'SALE' })).toBe(
+      'عمارة للبيع',
+    );
+    expect(propertyTitle({ category: 'APARTMENT', type: 'RENT' })).toBe(
+      'شقة للإيجار',
+    );
+  });
+
+  it('is empty without a property', () => {
+    expect(propertyTitle(null)).toBeNull();
   });
 });

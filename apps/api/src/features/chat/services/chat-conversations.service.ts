@@ -173,6 +173,8 @@ export class ChatConversationsService {
           },
         },
         messages: {
+          // The latest message this persona hasn't deleted on its side
+          where: { hiddenFor: { none: { identityId } } },
           orderBy: { createdAt: 'desc' },
           take: 1,
         },

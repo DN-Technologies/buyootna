@@ -32,6 +32,17 @@ export interface ConversationSummary {
   unreadCount: number;
 }
 
+/** The message a reply quotes (deleted: gone, or hidden on this side). */
+export interface ReplyPreview {
+  id: string;
+  deleted?: boolean;
+  type?: 'TEXT' | 'IMAGE' | 'PROPERTY';
+  content?: string | null;
+  imageUrl?: string | null;
+  senderIdentityId?: string | null;
+  isMine?: boolean;
+}
+
 export interface ChatMessage {
   id: string;
   type: 'TEXT' | 'IMAGE' | 'PROPERTY';
@@ -52,6 +63,8 @@ export interface ChatMessage {
   };
   isMine: boolean;
   senderId?: string;
+  // Set when this message replies to another one
+  replyTo?: ReplyPreview | null;
   timestamp: string;
   createdAt: string;
   sending?: boolean; // For optimistic UI states
@@ -111,6 +124,11 @@ export const chatService = {
       },
     );
     return response.data;
+  },
+
+  /** "حذف لدي": hide a message on this persona's side only. */
+  hideMessage: async (messageId: string): Promise<void> => {
+    await apiClient.post(`/chat/messages/${messageId}/hide`);
   },
 
   // Mark all messages as read

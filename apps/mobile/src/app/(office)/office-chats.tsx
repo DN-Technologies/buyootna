@@ -8,6 +8,7 @@ import ChatListItem from '@/shared/components/chat/ChatListItem';
 import EmptyChatState from '@/shared/components/chat/EmptyChatState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
+import { useReloadOnResume } from '@/shared/hooks/useReloadOnResume';
 import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
@@ -21,6 +22,8 @@ export default function OfficeChatsScreen() {
   const token = useAuthStore((state) => state.token);
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
+  // Back from another app: pick up chats that changed meanwhile
+  useReloadOnResume(() => loadConversations(1));
   const receiveMessage = useChatStore((state) => state.receiveMessage);
   const isLoading = useChatStore((state) => state.isLoadingConversations);
   const pullToRefresh = usePullToRefresh(

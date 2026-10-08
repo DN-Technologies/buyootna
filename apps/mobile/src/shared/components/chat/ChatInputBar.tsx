@@ -20,6 +20,8 @@ interface ChatInputBarProps {
   onAttachImage: () => void;
   // While the conversation is still being created
   sendDisabled?: boolean;
+  // Lets the screen focus the input (e.g. after choosing رد)
+  inputRef?: React.RefObject<TextInput | null>;
 }
 
 export default function ChatInputBar({
@@ -30,6 +32,7 @@ export default function ChatInputBar({
   setShowAttachmentMenu,
   onAttachImage,
   sendDisabled = false,
+  inputRef,
 }: ChatInputBarProps) {
   const insets = useSafeAreaInsets();
 
@@ -148,6 +151,7 @@ export default function ChatInputBar({
       {/* Text Input pill */}
       <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
         <TextInput
+          ref={inputRef}
           className="flex-1 py-2 text-right font-cairo text-[14px] text-[#111111]"
           placeholder="اكتب رسالتك.."
           placeholderTextColor="#979797"

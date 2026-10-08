@@ -44,6 +44,7 @@ jest.mock('@/shared/api/chat.service', () => ({
 
 jest.mock('@/shared/services/socket.service', () => ({
   socketService: {
+    onReconnect: jest.fn(() => jest.fn()),
     connect: jest.fn(),
     disconnect: jest.fn(),
     getSocket: jest.fn(),

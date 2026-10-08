@@ -44,6 +44,21 @@ describe('PushService', () => {
     ]);
   });
 
+  it('passes a custom sound and Android channel through', async () => {
+    fetchMock.mockResolvedValue(ok([{ status: 'ok' }]));
+
+    await service.sendToTokens(['ExponentPushToken[a]'], {
+      ...message,
+      sound: 'buyootna_message.wav',
+      channelId: 'chat-messages',
+    });
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)[0]).toMatchObject({
+      sound: 'buyootna_message.wav',
+      channelId: 'chat-messages',
+    });
+  });
+
   it('batches more than 100 tokens', async () => {
     fetchMock.mockResolvedValue(ok([]));
     const tokens = Array.from(

@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 interface ImageMessageProps {
@@ -7,6 +8,7 @@ interface ImageMessageProps {
   isMine: boolean;
   timestamp: string;
   isRead?: boolean;
+  quote?: ReactNode;
   onPressImage?: () => void;
 }
 
@@ -15,6 +17,7 @@ export default function ImageMessageBubble({
   isMine,
   timestamp,
   isRead,
+  quote,
   onPressImage,
 }: ImageMessageProps) {
   return (
@@ -22,6 +25,8 @@ export default function ImageMessageBubble({
       className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
     >
       <View className={`max-w-[75%] ${isMine ? 'items-start' : 'items-end'}`}>
+        {/* The message this one replies to */}
+        {quote}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={onPressImage}
