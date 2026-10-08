@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ChatMessagesService, replyPreview } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import { ChatAttachmentsService } from './chat-attachments.service';
 
 describe('replyPreview', () => {
   const source = {
@@ -76,6 +77,7 @@ describe('ChatMessagesService replies and hiding', () => {
     service = new ChatMessagesService(
       prisma as unknown as PrismaService,
       {} as ChatParticipantDisplayService,
+      {} as ChatAttachmentsService,
     );
   });
 

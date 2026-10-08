@@ -134,4 +134,55 @@ describe('ChatMessageList', () => {
       expect(getByText('رسالة محذوفة')).toBeTruthy();
     });
   });
+
+  it('shows a sent photo + document message; tapping opens the viewer or the file', async () => {
+    const onOpenPhotos = jest.fn();
+    const onOpenFile = jest.fn();
+    const attachments = [
+      { id: 'a1', kind: 'IMAGE' as const, fileName: '1.jpg', mimeType: 'image/jpeg', size: 10, url: 'https://s/1' },
+      { id: 'a2', kind: 'FILE' as const, fileName: 'عقد.pdf', mimeType: 'application/pdf', size: 2048, url: 'https://s/2' },
+    ];
+    const { getByTestId, getByText } = await setup({
+      messages: [message({ type: 'FILE', content: 'التفاصيل', attachments })],
+      onOpenPhotos,
+      onOpenFile,
+    });
+
+    expect(getByText('عقد.pdf')).toBeTruthy();
+    expect(getByText('التفاصيل')).toBeTruthy();
+    await fireEvent.press(getByTestId('attachment-photo-0'));
+    expect(onOpenPhotos).toHaveBeenCalledWith(['https://s/1'], 0);
+    await fireEvent.press(getByTestId('attachment-file-0'));
+    expect(onOpenFile).toHaveBeenCalledWith(attachments[1]);
+  });
+
+  it('a failed attachment send offers a retry', async () => {
+    const onRetryAttachments = jest.fn();
+    const { getByTestId } = await setup({
+      messages: [
+        message({
+          id: 'temp-1',
+          type: 'IMAGE',
+          content: undefined,
+          failed: true,
+          localAttachments: [
+            { uri: 'file:///1.jpg', name: '1.jpg', mimeType: 'image/jpeg', kind: 'IMAGE' },
+          ],
+        }),
+      ],
+      onRetryAttachments,
+    });
+    await fireEvent.press(getByTestId('attachment-retry'));
+    expect(onRetryAttachments).toHaveBeenCalledWith('temp-1');
+  });
+
+  it('scrolls to the in-chat search match', async () => {
+    const { listRef } = await setup({
+      messages: [message({ id: 'm1' }), message({ id: 'm2', content: 'متاح' })],
+      focusMessageId: 'm2',
+    });
+    expect(listRef.current.scrollToIndex).toHaveBeenCalledWith(
+      expect.objectContaining({ index: 1 }),
+    );
+  });
 });

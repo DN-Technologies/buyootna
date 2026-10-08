@@ -4,12 +4,18 @@ import {
   Keyboard,
   LayoutAnimation,
   Platform,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { LocalAttachment } from '@/shared/api/chat.service';
+import AttachmentPanel from '@/shared/components/chat/AttachmentPanel';
+import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
+
+// Before the keyboard has been opened once, the panel uses this height
+const DEFAULT_PANEL_HEIGHT = 260;
 
 interface ChatInputBarProps {
   inputText: string;
@@ -17,7 +23,8 @@ interface ChatInputBarProps {
   onSend: () => void;
   showAttachmentMenu: boolean;
   setShowAttachmentMenu: (show: boolean) => void;
-  onAttachImage: () => void;
+  // Files picked from the attachment panel, to review before sending
+  onPickedFiles: (files: LocalAttachment[]) => void;
   // While the conversation is still being created
   sendDisabled?: boolean;
   // Lets the screen focus the input (e.g. after choosing رد)
@@ -30,7 +37,7 @@ export default function ChatInputBar({
   onSend,
   showAttachmentMenu,
   setShowAttachmentMenu,
-  onAttachImage,
+  onPickedFiles,
   sendDisabled = false,
   inputRef,
 }: ChatInputBarProps) {
@@ -51,6 +58,23 @@ export default function ChatInputBar({
   // "adjustResize" already resizes the window natively, no JS tracking
   // needed there.
   const [iosKeyboardHeight, setIosKeyboardHeight] = useState(0);
+  // The panel takes the keyboard's place at the keyboard's last height
+  const keyboardHeight = useKeyboardHeight();
+  const lastKeyboardHeight = useRef(0);
+  if (keyboardHeight > 0) lastKeyboardHeight.current = keyboardHeight;
+  const panelHeight =
+    lastKeyboardHeight.current || DEFAULT_PANEL_HEIGHT + insets.bottom;
+
+  const togglePanel = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (showAttachmentMenu) {
+      setShowAttachmentMenu(false);
+      inputRef?.current?.focus();
+    } else {
+      setShowAttachmentMenu(true);
+      Keyboard.dismiss();
+    }
+  };
   const animationConfiguredRef = useRef(false);
 
   useEffect(() => {
@@ -93,6 +117,7 @@ export default function ChatInputBar({
   }, []);
 
   return (
+    <View className="bg-white">
     <View
       className="relative z-50 flex-row items-end bg-white px-4 pt-2.5"
       style={{
@@ -105,8 +130,9 @@ export default function ChatInputBar({
         // read as visually cramped -- a small breathing-room gap looks
         // right without being large enough to re-expose the predictive
         // bar this was fixed for.
-        paddingBottom:
-          Platform.OS === 'ios' && iosKeyboardHeight > 0
+        paddingBottom: showAttachmentMenu
+          ? 10
+          : Platform.OS === 'ios' && iosKeyboardHeight > 0
             ? iosKeyboardHeight + 8
             : Math.max(insets.bottom, 12),
         shadowColor: '#ABACBC',
@@ -116,37 +142,20 @@ export default function ChatInputBar({
         elevation: 6,
       }}
     >
-      {/* Attachment Button & Menu */}
-      <View className="relative">
-        {showAttachmentMenu && (
-          <View className="absolute bottom-full left-[2px] mb-2 w-48 rounded-xl bg-white shadow-md shadow-gray-200">
-            <TouchableOpacity
-              className="px-4 py-2"
-              onPress={() => {
-                onAttachImage();
-                setShowAttachmentMenu(false);
-              }}
-            >
-              <Text
-                className="font-cairo text-sm leading-[22px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                ارفاق صورة
-              </Text>
-            </TouchableOpacity>
-
-            {/* Pointer / Triangle */}
-            <View className="absolute -bottom-1.5 left-4 -z-10 h-4 w-4 rotate-45 rounded-sm bg-white shadow-md shadow-gray-200" />
-          </View>
-        )}
-
-        <TouchableOpacity
-          className="h-8 w-8 items-center justify-center"
-          onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
-        >
-          <Feather name="plus" size={24} color="#111111" />
-        </TouchableOpacity>
-      </View>
+      {/* "+" swaps the keyboard for the attachment panel (and back) */}
+      <TouchableOpacity
+        testID="chat-attach-button"
+        accessibilityLabel={showAttachmentMenu ? 'لوحة المفاتيح' : 'إرفاق'}
+        className="h-8 w-8 items-center justify-center"
+        onPress={togglePanel}
+      >
+        <Feather
+          name={showAttachmentMenu ? 'type' : 'plus'}
+          size={showAttachmentMenu ? 20 : 24}
+          color="#111111"
+          className="relative -top-2.5"
+        />
+      </TouchableOpacity>
 
       {/* Text Input pill */}
       <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
@@ -158,6 +167,8 @@ export default function ChatInputBar({
           multiline
           value={inputText}
           onChangeText={onInputChange}
+          // Typing again: the keyboard replaces the panel
+          onFocus={() => showAttachmentMenu && setShowAttachmentMenu(false)}
           textAlign="right"
         />
       </View>
@@ -173,8 +184,17 @@ export default function ChatInputBar({
           name="send"
           size={24}
           color={inputText.trim() && !sendDisabled ? '#15304D' : '#94A3B8'}
+          className='relative -top-1'
         />
       </TouchableOpacity>
+    </View>
+    {showAttachmentMenu && (
+      <AttachmentPanel
+        height={panelHeight}
+        onPicked={onPickedFiles}
+        onClose={() => setShowAttachmentMenu(false)}
+      />
+    )}
     </View>
   );
 }

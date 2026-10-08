@@ -17,7 +17,11 @@ export const CHAT_PUSH_CHANNEL = 'chat-messages';
 export interface ChatPushInput {
   conversationId: string;
   senderIdentityId: string;
-  message: { type: MessageType | string; content?: string | null };
+  message: {
+    type: MessageType | string;
+    content?: string | null;
+    attachments?: { kind: string; fileName: string }[];
+  };
   // Personas with the conversation open right now: they see it live, so no push
   viewingIdentityIds: Set<string>;
 }
@@ -47,7 +51,11 @@ export function chatPushBody(
   property?: string | null,
 ): string {
   let preview: string;
-  if (message.type === 'IMAGE') preview = '📷 صورة';
+  const files = message.attachments ?? [];
+  const document = files.find((a) => a.kind === 'FILE');
+  if (document) preview = `📎 ${document.fileName}`;
+  else if (files.length > 1) preview = `📷 ${files.length} صور`;
+  else if (message.type === 'IMAGE') preview = '📷 صورة';
   else if (message.type === 'PROPERTY') preview = '🏠 عقار';
   else {
     const text = (message.content ?? '').trim();

@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatConversationsService } from './services/chat-conversations.service';
 import { ChatMessagesService } from './services/chat-messages.service';
+import { ChatAttachmentsService } from './services/chat-attachments.service';
 
 /**
  * Public facade over the chat feature. The real logic lives in the
@@ -14,6 +15,7 @@ import { ChatMessagesService } from './services/chat-messages.service';
 @Injectable()
 export class ChatService {
   constructor(
+    private readonly attachmentsService: ChatAttachmentsService,
     private readonly conversationsService: ChatConversationsService,
     private readonly messagesService: ChatMessagesService,
   ) {}
@@ -35,8 +37,13 @@ export class ChatService {
   }
 
   // The persona's conversations
-  getConversations(identityId: string, page = 1, limit = 10) {
-    return this.conversationsService.getConversations(identityId, page, limit);
+  getConversations(identityId: string, page = 1, limit = 10, query?: string) {
+    return this.conversationsService.getConversations(
+      identityId,
+      page,
+      limit,
+      query,
+    );
   }
 
   // Get messages for a single conversation
@@ -69,6 +76,32 @@ export class ChatService {
   }
 
   // Mark conversation messages as read
+  uploadAttachments(
+    identityId: string,
+    conversationId: string,
+    files: Express.Multer.File[],
+  ) {
+    return this.attachmentsService.upload(identityId, conversationId, files);
+  }
+
+  attachmentUrl(identityId: string, attachmentId: string) {
+    return this.attachmentsService.urlFor(identityId, attachmentId);
+  }
+
+  searchMessages(
+    identityId: string,
+    conversationId: string,
+    query: string,
+    page?: number,
+  ) {
+    return this.messagesService.searchMessages(
+      identityId,
+      conversationId,
+      query,
+      page,
+    );
+  }
+
   hideMessage(identityId: string, messageId: string) {
     return this.messagesService.hideMessage(identityId, messageId);
   }

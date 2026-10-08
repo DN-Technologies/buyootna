@@ -21,11 +21,13 @@ import ChatListItem from '@/shared/components/chat/ChatListItem';
 import EmptyChatState from '@/shared/components/chat/EmptyChatState';
 import ChatListSkeleton from '@/shared/components/skeletons/ChatSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useConversationSearch } from '@/shared/hooks/useConversationSearch';
 import { usePullToRefresh } from '@/shared/hooks/usePullToRefresh';
 import { useReloadOnResume } from '@/shared/hooks/useReloadOnResume';
 import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { lastMessagePreview } from '@/shared/utils/chatAttachments';
 import { formatMessageTime } from '@/shared/utils/chatDate';
 import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
 
@@ -37,6 +39,9 @@ export default function ChatsInboxScreen() {
   const [isSearchActive, setIsSearchActive] = useState(false);
 
   const conversations = useChatStore((state) => state.conversations);
+  // Searched on the server (name, ad title, message text)
+  const { results: searchResults, isSearching } =
+    useConversationSearch(searchQuery);
   const loadConversations = useChatStore((state) => state.loadConversations);
   // Back from another app: pick up chats that changed meanwhile
   useReloadOnResume(() => loadConversations(1));
@@ -99,14 +104,6 @@ export default function ChatsInboxScreen() {
       ? conversations
       : conversations.filter((chat) => (chat.unreadCount ?? 0) > 0);
 
-  // Filter for active list
-  const searchResults = conversations.filter(
-    (chat) =>
-      chat.otherUser.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.propertyContext?.category
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -176,6 +173,16 @@ export default function ChatsInboxScreen() {
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}
+              ListEmptyComponent={
+                searchQuery.trim() && !isSearching ? (
+                  <Text
+                    testID="chat-search-empty"
+                    className="py-8 text-center font-cairo text-[14px] text-[#94A3B8]"
+                  >
+                    لا توجد نتائج
+                  </Text>
+                ) : null
+              }
               renderItem={({ item }) => (
                 <TouchableOpacity
                   onPress={() => router.push(`/chat/${item.id}`)}
@@ -187,9 +194,18 @@ export default function ChatsInboxScreen() {
                       className="h-10 w-10 rounded-full"
                     />
                   </View>
-                  <Text className="font-cairo-bold text-[15px] text-[#111111]">
-                    {item.otherUser.name}
-                  </Text>
+                  <View className="flex-1">
+                    <Text className="font-cairo-bold text-[15px] text-[#111111]">
+                      {item.otherUser.name}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      className="font-cairo text-[13px] text-[#6B6A6A]"
+                      style={{ writingDirection: 'rtl' }}
+                    >
+                      {lastMessagePreview(item.lastMessage)}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               )}
             />
@@ -231,13 +247,7 @@ export default function ChatsInboxScreen() {
                   refreshing={pullToRefresh.refreshing}
                   onRefresh={pullToRefresh.onRefresh}
                   renderItem={({ item }) => {
-                    const displayLastMessage = item.lastMessage
-                      ? item.lastMessage.type === 'IMAGE'
-                        ? '📷 صورة'
-                        : item.lastMessage.type === 'PROPERTY'
-                          ? '🏠 مشاركة عقار'
-                          : item.lastMessage.content || ''
-                      : 'بدء المحادثة';
+                    const displayLastMessage = lastMessagePreview(item.lastMessage);
   
                     // 24-hour, western digits, the phone's time zone
                     const timestampText = item.lastMessage

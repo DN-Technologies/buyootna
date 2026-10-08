@@ -4,6 +4,7 @@ import {
   ChatMessage,
   chatService,
   ConversationSummary,
+  LocalAttachment,
   ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
@@ -63,6 +64,20 @@ interface ChatState {
   /** "حذف لدي": removes it here at once; restored if the server refuses. */
   hideMessage: (conversationId: string, messageId: string) => Promise<void>;
   /**
+   * Photos / documents: shown at once from the device, uploaded (with
+   * progress), then sent. A failed upload stays as a bubble to retry.
+   */
+  sendAttachments: (
+    conversationId: string,
+    payload: {
+      files: LocalAttachment[];
+      caption?: string;
+      replyTo?: ChatMessage;
+    },
+  ) => Promise<void>;
+  /** Tries a failed attachment message again. */
+  retryAttachments: (conversationId: string, tempId: string) => Promise<void>;
+  /**
    * Rolls back the optimistic bubble for a send the server refused to
    * persist (tempId comes back on the socket's message_error event).
    */
@@ -85,6 +100,55 @@ export function quoteOf(message: ChatMessage): ReplyPreview {
 }
 
 export const useChatStore = create<ChatState>((set, get) => {
+  // Updates one pending message in place
+  const patchMessage = (
+    conversationId: string,
+    id: string,
+    patch: Partial<ChatMessage>,
+  ) =>
+    set((state) => ({
+      messagesByConversation: {
+        ...state.messagesByConversation,
+        [conversationId]: (state.messagesByConversation[conversationId] || []).map(
+          (m) => (m.id === id ? { ...m, ...patch } : m),
+        ),
+      },
+    }));
+
+  // Upload the pending message's files, then send it over the socket. The
+  // server's new_message replaces the pending bubble (see receiveMessage)
+  const uploadAndSend = async (
+    conversationId: string,
+    pending: ChatMessage,
+    replyToId?: string,
+  ) => {
+    patchMessage(conversationId, pending.id, {
+      sending: true,
+      failed: false,
+      uploadProgress: 0,
+    });
+    try {
+      const uploaded = await chatService.uploadAttachments(
+        conversationId,
+        pending.localAttachments ?? [],
+        (fraction) =>
+          patchMessage(conversationId, pending.id, { uploadProgress: fraction }),
+      );
+      const sent = socketService.sendMessage(conversationId, {
+        content: pending.content,
+        type: pending.type,
+        attachmentIds: uploaded.map((a) => a.id),
+        replyToId,
+        tempId: pending.id,
+      });
+      if (!sent) throw new Error('no socket');
+      patchMessage(conversationId, pending.id, { uploadProgress: 1 });
+    } catch (error) {
+      console.error('Failed to send attachments:', error);
+      patchMessage(conversationId, pending.id, { sending: false, failed: true });
+    }
+  };
+
   return {
     conversations: [],
     messagesByConversation: {},
@@ -275,6 +339,41 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
+    sendAttachments: async (conversationId, { files, caption, replyTo }) => {
+      const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+      const type = files.every((f) => f.kind === 'IMAGE') ? 'IMAGE' : 'FILE';
+      const pending: ChatMessage = {
+        id: tempId,
+        type,
+        content: caption?.trim() || undefined,
+        localAttachments: files,
+        uploadProgress: 0,
+        replyTo: replyTo ? quoteOf(replyTo) : null,
+        isMine: true,
+        timestamp: '',
+        createdAt: new Date().toISOString(),
+        sending: true,
+      };
+      set((state) => ({
+        messagesByConversation: {
+          ...state.messagesByConversation,
+          [conversationId]: [
+            ...(state.messagesByConversation[conversationId] || []),
+            pending,
+          ],
+        },
+      }));
+      await uploadAndSend(conversationId, pending, replyTo?.id);
+    },
+
+    retryAttachments: async (conversationId, tempId) => {
+      const pending = (get().messagesByConversation[conversationId] || []).find(
+        (m) => m.id === tempId,
+      );
+      if (!pending?.localAttachments) return;
+      await uploadAndSend(conversationId, pending, pending.replyTo?.id);
+    },
+
     messageFailed: (conversationId, tempId) => {
       set((state) => {
         const existing = state.messagesByConversation[conversationId] || [];
@@ -328,9 +427,14 @@ export const useChatStore = create<ChatState>((set, get) => {
       set((state) => {
         const existingCached = state.messagesByConversation[conversationId] || [];
 
-        // Remove optimistic message if exists
+        // Remove the matching pending bubble: same text and the same number
+        // of attachments (a photo sent without a caption has no text)
+        const sameAs = (msg: ChatMessage) =>
+          (msg.content ?? '') === (messageWithIsMine.content ?? '') &&
+          (msg.localAttachments?.length ?? 0) ===
+            (messageWithIsMine.attachments?.length ?? 0);
         const filtered = existingCached.filter(
-          (msg) => msg.content !== messageWithIsMine.content || !msg.sending,
+          (msg) => !msg.sending || !sameAs(msg),
         );
 
         // Check if message is already added

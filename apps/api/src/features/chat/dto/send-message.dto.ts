@@ -1,4 +1,10 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { MessageType } from '@prisma/client';
 
 export class SendMessageDto {
@@ -22,4 +28,11 @@ export class SendMessageDto {
   @IsOptional()
   @IsString()
   replyToId?: string;
+
+  // Uploaded photos / documents to send with it (POST .../attachments)
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  attachmentIds?: string[];
 }

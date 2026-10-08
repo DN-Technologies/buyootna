@@ -263,7 +263,8 @@ export const api: DocSection = {
           "بعد كل نشر: docker compose logs api | grep -i twilio — المتوقع 'initialized successfully'.",
         ],
       },
-      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+      updatedIn:
+        "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "api-media-upload",
@@ -298,7 +299,8 @@ export const api: DocSection = {
           "غيّر الصورة الشخصية في التطبيق — تعمل.",
         ],
       },
-      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+      updatedIn:
+        "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "api-persona-rules",
@@ -754,6 +756,47 @@ export const api: DocSection = {
         ],
       },
       updatedIn: "feat/identity-contact-phone",
+    },
+    {
+      id: "api-chat-attachments-search",
+      title: {
+        en: "Chat attachments are private; search respects personas",
+        ar: "مرفقات المحادثة خاصة، والبحث يحترم الهويات",
+      },
+      priority: "P0",
+      story: {
+        en: "POST /chat/conversations/:id/attachments (multipart files, up to 10) stores files privately under chat/<conversation> in S3 and returns attachment ids; send_message links them with attachmentIds. Messages return attachments with 15-minute signed links; GET /chat/attachments/:id/url renews one. Uploads never sent are deleted after 24 hours. GET /chat/conversations/:id/messages/search?q= and GET /chat/conversations?q= search only what the token persona can see.",
+        ar: "POST /chat/conversations/:id/attachments (ملفات multipart حتى 10) يخزن الملفات بشكل خاص تحت chat/<conversation> في S3 ويعيد معرفات المرفقات؛ و send_message يربطها عبر attachmentIds. تعيد الرسائل المرفقات بروابط موقعة لمدة 15 دقيقة، و GET /chat/attachments/:id/url يجدد الرابط. والمرفوعات التي لم تُرسل تُحذف بعد 24 ساعة. و GET /chat/conversations/:id/messages/search?q= و GET /chat/conversations?q= يبحثان فقط فيما تراه هوية الرمز.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Upload, link renewal and in-chat search are 403 for a persona outside the conversation.",
+          "Types: jpeg/png/webp/heic (HEIC converted to JPEG, 10 MB) and pdf/doc/docx/xls/xlsx (20 MB); others 400.",
+          "attachmentIds must be the sender's own, in the same conversation and not sent yet; otherwise 400 and no message is created.",
+          "Responses never include the storage key; the S3 bucket policy doesn't allow public reads of chat/*.",
+          "Search skips messages hidden for the persona (حذف لدي).",
+        ],
+        ar: [
+          "الرفع وتجديد الرابط والبحث داخل المحادثة تعيد 403 لهوية خارج المحادثة.",
+          "الأنواع: jpeg/png/webp/heic (يُحوّل HEIC إلى JPEG، 10 ميجابايت) و pdf/doc/docx/xls/xlsx (20 ميجابايت)؛ وغيرها 400.",
+          "يجب أن تكون attachmentIds للمرسل نفسه وفي المحادثة نفسها ولم تُرسل بعد؛ وإلا 400 ولا تُنشأ رسالة.",
+          "الاستجابات لا تتضمن مفتاح التخزين أبداً، وسياسة حاوية S3 لا تسمح بالقراءة العامة لـ chat/*.",
+          "البحث يتجاهل الرسائل المخفية لدى الهوية (حذف لدي).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "curl the upload with another account's token — 403; with no token — 401.",
+          "Send with an attachment id from another chat or one already sent — 400.",
+          "Open https://<bucket>.s3.<region>.amazonaws.com/chat/... directly — AccessDenied; the signed link works and stops after 15 minutes.",
+        ],
+        ar: [
+          "نفّذ curl للرفع برمز حساب آخر — 403، وبدون رمز — 401.",
+          "أرسل بمعرف مرفق من محادثة أخرى أو أُرسل مسبقاً — 400.",
+          "افتح https://<bucket>.s3.<region>.amazonaws.com/chat/... مباشرة — AccessDenied؛ والرابط الموقّع يعمل ويتوقف بعد 15 دقيقة.",
+        ],
+      },
+      updatedIn: "feat/chat-attachments-search",
     },
   ],
 };

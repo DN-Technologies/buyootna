@@ -459,7 +459,8 @@ export const mobileShared: DocSection = {
           "امسح الفلاتر — تعود كل الدبابيس.",
         ],
       },
-      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+      updatedIn:
+        "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "mobile-android-input-labels",
@@ -490,7 +491,8 @@ export const mobileShared: DocSection = {
           "Android: افتح المزيد ← تغيير كلمة المرور ثم التسجيل — افحص كل عنوان.",
         ],
       },
-      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+      updatedIn:
+        "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
     },
     {
       id: "mobile-add-identity",
@@ -1168,6 +1170,90 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "feat/chat-reply-resume",
+    },
+    {
+      id: "mobile-chat-attachments",
+      title: {
+        en: "Send photos, camera shots and documents in chat",
+        ar: "إرسال الصور والكاميرا والمستندات في المحادثة",
+      },
+      priority: "P1",
+      story: {
+        en: "In a chat, + swaps the keyboard for an attachment panel of the same height, like WhatsApp (the + becomes a keyboard icon to switch back; tapping the text field also brings the keyboard back): الصور (up to 10 at once) / الكاميرا / مستند (PDF, Word, Excel). A preview shows the picked files to remove any and add an optional caption, then إرسال. The bubble appears at once with upload progress; on failure it shows 'تعذر الإرسال · إعادة المحاولة'. Photos show as one large image or a grid (+N beyond 4) and open in the full-screen viewer; a document shows as a card (type, name, size) and opens the phone's preview/share sheet. Files are private: only the two people in the chat can open them, through links that expire after 15 minutes and are renewed automatically. The chats list and the push show '📷 صورة', '📷 3 صور' or '📎 file name'.",
+        ar: "في المحادثة، + يستبدل لوحة المفاتيح بلوحة مرفقات بنفس الارتفاع مثل الواتساب (يتحول + إلى أيقونة لوحة مفاتيح للرجوع، والضغط على حقل الكتابة يعيد لوحة المفاتيح أيضاً): الصور (حتى 10 مرة واحدة) / الكاميرا / مستند (PDF و Word و Excel). تظهر معاينة للملفات المختارة لإزالة أي منها وإضافة تعليق اختياري، ثم إرسال. تظهر الرسالة فوراً مع نسبة الرفع؛ وعند الفشل تظهر 'تعذر الإرسال · إعادة المحاولة'. تظهر الصور كصورة كبيرة أو شبكة (+N بعد 4) وتفتح في العارض بملء الشاشة؛ ويظهر المستند كبطاقة (النوع والاسم والحجم) ويفتح في معاينة/مشاركة الهاتف. الملفات خاصة: لا يفتحها إلا طرفا المحادثة، عبر روابط تنتهي بعد 15 دقيقة وتُجدد تلقائياً. وتظهر في قائمة المحادثات والإشعار '📷 صورة' أو '📷 3 صور' أو '📎 اسم الملف'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Photos up to 10 MB each and documents up to 20 MB; more than 10 files, a bigger file or another type (zip, video) is refused with a clear message.",
+          "Several photos sent together are one message, shown as a grid on both phones; a caption shows under them.",
+          "A failed upload stays as a bubble with retry; retrying sends it once.",
+          "A chat file's link doesn't open for anyone outside the chat, and the raw storage address is denied.",
+          "Replying to a message while attaching quotes it on the sent attachment.",
+        ],
+        ar: [
+          "الصور حتى 10 ميجابايت لكل صورة والمستندات حتى 20 ميجابايت؛ وأكثر من 10 ملفات أو ملف أكبر أو نوع آخر (zip، فيديو) يُرفض برسالة واضحة.",
+          "الصور المرسلة معاً رسالة واحدة تظهر كشبكة على الهاتفين، والتعليق يظهر تحتها.",
+          "الرفع الفاشل يبقى كرسالة مع إعادة المحاولة، وإعادة المحاولة ترسلها مرة واحدة.",
+          "رابط ملف المحادثة لا يفتح لأي شخص خارجها، وعنوان التخزين المباشر مرفوض.",
+          "الرد على رسالة أثناء الإرفاق يظهر الاقتباس على المرفق المرسل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two devices: on A send 3 gallery photos with a caption — B sees a grid and the caption, gets the push '📷 3 صور'; tap a photo — viewer opens, swipe between them.",
+          "On A send a PDF — B taps the card — the phone's preview opens the file; the chats list shows '📎 name.pdf'.",
+          "Turn off the network on A, send a photo — retry appears; turn it on, tap retry — sent once.",
+          "Wait over 15 minutes in an open chat, then tap a document — it still opens (link renewed).",
+          "Take a photo with the camera and send it (Android: check the camera permission prompt).",
+        ],
+        ar: [
+          "جهازان: على A أرسل 3 صور من المعرض مع تعليق — يرى B شبكة والتعليق ويصله إشعار '📷 3 صور'؛ اضغط صورة — يفتح العارض والتنقل بينها بالسحب.",
+          "على A أرسل ملف PDF — يضغط B البطاقة — تفتح معاينة الهاتف الملف؛ وتظهر قائمة المحادثات '📎 الاسم.pdf'.",
+          "افصل الشبكة على A وأرسل صورة — تظهر إعادة المحاولة؛ أعد الاتصال واضغطها — تُرسل مرة واحدة.",
+          "انتظر أكثر من 15 دقيقة في محادثة مفتوحة ثم اضغط مستنداً — يفتح (تجدد الرابط).",
+          "التقط صورة بالكاميرا وأرسلها (Android: تحقق من طلب إذن الكاميرا).",
+        ],
+      },
+      updatedIn: "feat/chat-attachments-search",
+    },
+    {
+      id: "mobile-chat-search",
+      title: {
+        en: "Search inside a chat and across the chats list",
+        ar: "البحث داخل المحادثة وفي قائمة المحادثات",
+      },
+      priority: "P2",
+      story: {
+        en: "In a chat, 🔍 opens a search bar: matches in message text and file names, newest first, with '2 / 7' and ↑ (older) / ↓ (newer). Each match scrolls into view and is tinted briefly; older messages load automatically until it's there. Messages you deleted on your side (حذف لدي) aren't found. In محادثاتي the search box now searches every chat on the server: the other person's name, the ad title in Arabic (e.g. 'عمارة', 'للبيع'), or any message text.",
+        ar: "في المحادثة، 🔍 يفتح شريط بحث: نتائج في نص الرسائل وأسماء الملفات، الأحدث أولاً، مع '2 / 7' و ↑ (الأقدم) / ↓ (الأحدث). كل نتيجة تُعرض وتلوّن لحظة، وتُحمّل الرسائل الأقدم تلقائياً حتى تظهر. والرسائل التي حذفتها لديك (حذف لدي) لا تظهر في النتائج. وفي محادثاتي يبحث مربع البحث الآن في كل المحادثات على الخادم: اسم الطرف الآخر، أو عنوان الإعلان بالعربية (مثل 'عمارة'، 'للبيع')، أو نص أي رسالة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "In-chat search finds an old message not loaded yet and scrolls to it.",
+          "↑ / ↓ move between matches and the counter follows; no matches shows 'لا نتائج'.",
+          "Closing the bar clears the search.",
+          "Chats list: 'عمارة' finds chats about a building ad; a word from a message finds that chat even if it isn't on the first page; no matches shows 'لا توجد نتائج'.",
+        ],
+        ar: [
+          "البحث داخل المحادثة يجد رسالة قديمة لم تُحمّل بعد وينتقل إليها.",
+          "↑ / ↓ تتنقل بين النتائج ويتبعها العداد، وعند عدم وجود نتائج تظهر 'لا نتائج'.",
+          "إغلاق الشريط يمسح البحث.",
+          "قائمة المحادثات: 'عمارة' تجد محادثات إعلان عمارة، وكلمة من رسالة تجد تلك المحادثة حتى لو لم تكن في الصفحة الأولى، وعند عدم وجود نتائج تظهر 'لا توجد نتائج'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "In a long chat, 🔍 → type a word from the first message — it loads older messages and jumps there.",
+          "Delete a message on your side, search its text — not found.",
+          "محادثاتي: search the other person's name, 'للإيجار', and a word from a message.",
+        ],
+        ar: [
+          "في محادثة طويلة، 🔍 ← اكتب كلمة من أول رسالة — تُحمّل الرسائل الأقدم وينتقل إليها.",
+          "احذف رسالة لديك وابحث عن نصها — لا تظهر.",
+          "محادثاتي: ابحث باسم الطرف الآخر، و'للإيجار'، وكلمة من رسالة.",
+        ],
+      },
+      updatedIn: "feat/chat-attachments-search",
     },
   ],
 };

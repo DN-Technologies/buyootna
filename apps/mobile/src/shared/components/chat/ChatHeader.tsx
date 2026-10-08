@@ -11,6 +11,8 @@ interface ChatHeaderProps {
   onReportUser: () => void;
   showMoreMenu: boolean;
   setShowMoreMenu: (show: boolean) => void;
+  // Opens the in-chat search bar
+  onPressSearch?: () => void;
 }
 
 export default function ChatHeader({
@@ -20,6 +22,7 @@ export default function ChatHeader({
   onReportUser,
   showMoreMenu,
   setShowMoreMenu,
+  onPressSearch,
 }: ChatHeaderProps) {
   const router = useRouter();
 
@@ -59,7 +62,11 @@ export default function ChatHeader({
 
       {/* Left Actions */}
       <View className="flex-row items-center gap-4">
-        <TouchableOpacity>
+        <TouchableOpacity
+          testID="chat-search-button"
+          accessibilityLabel="بحث في المحادثة"
+          onPress={onPressSearch}
+        >
           <Feather name="search" size={20} color="#64748B" />
         </TouchableOpacity>
 

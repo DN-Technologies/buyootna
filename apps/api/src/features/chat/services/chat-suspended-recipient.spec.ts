@@ -3,6 +3,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { ChatConversationsService } from './chat-conversations.service';
 import { ChatMessagesService } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import { ChatAttachmentsService } from './chat-attachments.service';
 
 describe('chat with a suspended or blocked account', () => {
   const display = {} as ChatParticipantDisplayService;
@@ -104,6 +105,7 @@ describe('chat with a suspended or blocked account', () => {
     const service = new ChatMessagesService(
       prisma as unknown as PrismaService,
       display,
+      {} as ChatAttachmentsService,
     );
 
     await expect(

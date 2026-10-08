@@ -6,7 +6,8 @@ import { ReplyPreview } from '@/shared/api/chat.service';
 /** One-line summary of a quoted message. */
 export function quoteText(reply: ReplyPreview): string {
   if (reply.deleted) return 'رسالة محذوفة';
-  if (reply.type === 'IMAGE') return '📷 صورة';
+  if (reply.type === 'IMAGE') return reply.content ? `📷 ${reply.content}` : '📷 صورة';
+  if (reply.type === 'FILE') return reply.content ? `📎 ${reply.content}` : '📎 ملف';
   if (reply.type === 'PROPERTY') return '🏠 عقار';
   return reply.content ?? '';
 }

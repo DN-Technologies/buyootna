@@ -131,7 +131,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           this.chatPush.notifyRecipients({
             conversationId: payload.conversationId,
             senderIdentityId: identityId,
-            message: { type: message.type, content: message.content },
+            message: {
+              type: message.type,
+              content: message.content,
+              attachments: message.attachments,
+            },
             viewingIdentityIds: new Set(
               sockets
                 .map((s) => (s.data as SocketIdentity)?.identityId)

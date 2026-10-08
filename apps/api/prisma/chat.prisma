@@ -8,6 +8,7 @@ model Conversation {
 
   participants ConversationParticipant[]
   messages     Message[]
+  attachments  MessageAttachment[]
 }
 
 model ConversationParticipant {
@@ -58,6 +59,9 @@ model Message {
   // Personas that deleted it on their side only (حذف لدي)
   hiddenFor MessageHidden[]
 
+  // Photos / documents sent with it (private files, see MessageAttachment)
+  attachments MessageAttachment[]
+
   @@index([conversationId, createdAt])
   @@index([senderIdentityId])
 }
@@ -79,4 +83,38 @@ enum MessageType {
   TEXT
   IMAGE
   PROPERTY
+  FILE
+}
+
+enum AttachmentKind {
+  IMAGE
+  FILE
+}
+
+// A photo or document sent in a chat. Stored privately: only the
+// conversation's personas get (short-lived) signed links to it. Uploaded
+// first, then attached to the message it's sent with; unattached uploads
+// are cleaned up after a day.
+model MessageAttachment {
+  id                 String         @id @default(uuid())
+  conversationId     String
+  uploaderIdentityId String
+  messageId          String?
+  kind               AttachmentKind
+  // Private S3 object key (never a public URL)
+  storageKey         String
+  fileName           String
+  mimeType           String
+  size               Int
+  width              Int?
+  height             Int?
+  createdAt          DateTime       @default(now())
+
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  uploaderIdentity Identity     @relation(fields: [uploaderIdentityId], references: [id], onDelete: Cascade)
+  message          Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([conversationId])
+  @@index([messageId, createdAt])
 }

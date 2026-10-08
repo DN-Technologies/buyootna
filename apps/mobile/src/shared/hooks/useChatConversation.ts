@@ -208,5 +208,7 @@ export function useChatConversation({
     handleRetryLoad,
     handleSendMessage,
     handleLoadMore,
+    // Older pages left to load (in-chat search keeps loading until a match is in)
+    hasOlderMessages: !!hasNextPage,
   };
 }
