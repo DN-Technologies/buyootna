@@ -88,3 +88,13 @@ jest.mock('expo-video', () => ({
 jest.mock('expo-video-thumbnails', () => ({
   getThumbnailAsync: jest.fn(async () => ({ uri: 'file:///thumb.jpg' })),
 }));
+
+// Reading a chat / notification schedules an app-icon badge sync ~800ms
+// later. Left real, that timer outlives the test file and fails CI with
+// "Cannot log after tests are done". Default it to a no-op; the badge's own
+// spec unmocks this module.
+jest.mock('@/shared/hooks/useAppBadge', () => ({
+  ...jest.requireActual('@/shared/hooks/useAppBadge'),
+  scheduleAppBadgeSync: jest.fn(),
+  syncAppBadge: jest.fn(async () => {}),
+}));

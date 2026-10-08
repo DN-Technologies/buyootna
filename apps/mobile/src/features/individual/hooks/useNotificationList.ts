@@ -7,6 +7,7 @@ import {
   AppNotification,
   notificationsService,
 } from '@/shared/api/notifications.service';
+import { scheduleAppBadgeSync } from '@/shared/hooks/useAppBadge';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { NotificationTabKey } from '../components/notifications/NotificationTabs';
@@ -92,6 +93,7 @@ export function useNotificationList() {
 
       try {
         await notificationsService.markAsRead(notification.id);
+        scheduleAppBadgeSync();
       } catch (err) {
         console.error('Failed to mark notification as read:', err);
       }
@@ -116,6 +118,7 @@ export function useNotificationList() {
       try {
         if (nextIsRead) {
           await notificationsService.markAsRead(notification.id);
+          scheduleAppBadgeSync();
         } else {
           await notificationsService.markAsUnread(notification.id);
         }
@@ -138,6 +141,7 @@ export function useNotificationList() {
 
     try {
       await notificationsService.markAllAsRead();
+      scheduleAppBadgeSync();
     } catch (err) {
       console.error('Failed to mark all notifications as read:', err);
     }
