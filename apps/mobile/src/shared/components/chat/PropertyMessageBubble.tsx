@@ -1,9 +1,10 @@
-import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
+import MessageTicks from '@/shared/components/chat/MessageTicks';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
 
@@ -24,7 +25,8 @@ interface PropertyContextProps {
   };
   isMine: boolean;
   timestamp: string;
-  isRead?: boolean;
+  // My message: sending / sent / delivered / read ticks
+  status?: MessageStatus | null;
   quote?: React.ReactNode;
   onPressProperty?: () => void;
 }
@@ -33,7 +35,7 @@ export default function PropertyMessageBubble({
   property,
   isMine,
   timestamp,
-  isRead,
+  status,
   quote,
   onPressProperty,
 }: PropertyContextProps) {
@@ -178,13 +180,7 @@ export default function PropertyMessageBubble({
 
         {/* Meta row (Timestamp & Read Receipt) */}
         <View className="mt-1.5 flex-row items-center gap-1">
-          {isMine && (
-            <Feather
-              name="check"
-              size={12}
-              color={isRead ? '#15304D' : '#94A3B8'}
-            />
-          )}
+          <MessageTicks status={status} />
           <Text className="font-cairo-medium text-[10px] text-[#94A3B8]">
             {timestamp}
           </Text>

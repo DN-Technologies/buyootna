@@ -1,12 +1,15 @@
-import { Feather } from '@expo/vector-icons';
 import { ReactNode } from 'react';
 import { Text, View } from 'react-native';
+
+import MessageTicks from '@/shared/components/chat/MessageTicks';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface MessageProps {
   text: string;
   isMine: boolean;
   timestamp: string;
-  isRead?: boolean;
+  // My message: sending / sent / delivered / read ticks
+  status?: MessageStatus | null;
   // The message this one replies to, shown inside the bubble
   quote?: ReactNode;
 }
@@ -15,7 +18,7 @@ export default function MessageBubble({
   text,
   isMine,
   timestamp,
-  isRead,
+  status,
   quote,
 }: MessageProps) {
   return (
@@ -49,13 +52,7 @@ export default function MessageBubble({
 
         {/* Meta row (outside, below the bubble) */}
         <View className="mt-1 flex-row items-center gap-1">
-          {isMine && (
-            <Feather
-              name="check"
-              size={14}
-              color={isRead ? '#15304D' : '#94A3B8'}
-            />
-          )}
+          <MessageTicks status={status} />
           <Text className="font-cairo text-[13px] text-[#6B6A6A]">
             {timestamp}
           </Text>

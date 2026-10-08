@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import {
   ChatAttachment,
   ChatMessage,
+  ChatReceipt,
   chatService,
 } from '@/shared/api/chat.service';
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
@@ -20,6 +21,7 @@ import ReplyQuote from '@/shared/components/chat/ReplyQuote';
 import SwipeableMessage from '@/shared/components/chat/SwipeableMessage';
 import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
 import { DisplayMessage, formatMessageTime } from '@/shared/utils/chatDate';
+import { messageStatus } from '@/shared/utils/chatReceipts';
 
 export interface ChatMessageListProps {
   listRef: React.RefObject<FlashListRef<any> | null>;
@@ -47,6 +49,8 @@ export interface ChatMessageListProps {
   // In-chat search: the current match to scroll to and highlight
   focusMessageId?: string | null;
   // Offers / appointments: answer, or open the counter form
+  // How far the other person has received / read (my ticks)
+  otherReceipt?: ChatReceipt | null;
   onRespondToProposal?: (message: ChatMessage, action: ProposalAction) => void;
   onCounterProposal?: (message: ChatMessage) => void;
 }
@@ -76,6 +80,7 @@ export default function ChatMessageList({
   onOpenVideo,
   onRetryAttachments,
   focusMessageId,
+  otherReceipt,
   onRespondToProposal,
   onCounterProposal,
 }: ChatMessageListProps) {
@@ -124,6 +129,7 @@ export default function ChatMessageList({
 
   const renderBubble = useCallback(
     (item: ChatMessage) => {
+      const status = messageStatus(item, otherReceipt);
       const quote = item.replyTo ? (
         <ReplyQuote
           reply={item.replyTo}
@@ -145,6 +151,7 @@ export default function ChatMessageList({
           const sentVoice = sent.find((a) => a.kind === 'AUDIO');
           return (
             <VoiceMessageBubble
+              tickStatus={status}
               uri={'url' in voice ? voice.url : voice.uri}
               durationMs={voice.durationMs}
               isMine={item.isMine}
@@ -163,6 +170,7 @@ export default function ChatMessageList({
         }
         return (
           <AttachmentMessageBubble
+              status={status}
             message={item}
             timestamp={timeOf(item)}
             quote={quote}
@@ -190,6 +198,7 @@ export default function ChatMessageList({
           if (!item.location) return null;
           return (
             <LocationMessageBubble
+              status={status}
               location={item.location}
               isMine={item.isMine}
               timestamp={timeOf(item)}
@@ -200,6 +209,7 @@ export default function ChatMessageList({
         case 'OFFER':
           return (
             <ProposalCard
+              status={status}
               message={item}
               timestamp={timeOf(item)}
               quote={quote}
@@ -214,7 +224,7 @@ export default function ChatMessageList({
               property={item.property}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
               onPressProperty={() => {
                 const propId = item.propertyId || item.property?.id;
@@ -229,7 +239,7 @@ export default function ChatMessageList({
               imageUrl={item.imageUrl}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
               onPressImage={() => onPressImage(item.imageUrl!)}
             />
@@ -241,7 +251,7 @@ export default function ChatMessageList({
               text={item.content ?? ''}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
             />
           );
@@ -258,6 +268,7 @@ export default function ChatMessageList({
       onRetryAttachments,
       onRespondToProposal,
       onCounterProposal,
+      otherReceipt,
     ],
   );
 
@@ -294,7 +305,8 @@ export default function ChatMessageList({
         keyExtractor={(item) => item.id}
         getItemType={(item) => item.type}
         // Re-render rows when the jumped-to message's tint changes
-        extraData={highlightedId}
+        // Repaint on a jump highlight, and when the ticks change
+        extraData={`${highlightedId}|${otherReceipt?.lastDeliveredAt}|${otherReceipt?.lastReadAt}`}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingVertical: 20,

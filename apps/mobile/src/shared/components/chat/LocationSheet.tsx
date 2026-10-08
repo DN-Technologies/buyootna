@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChatLocation } from '@/shared/api/chat.service';
 import { MAPBOX_ACCESS_TOKEN } from '@/shared/components/map/picker/config';
 import { showAlert } from '@/shared/utils/alert';
+import { RTL_TEXT } from '@/shared/utils/rtlText';
 
 interface LocationSheetProps {
   onClose: () => void;
@@ -101,7 +102,9 @@ export default function LocationSheet({
           style={{ paddingBottom: Math.max(insets.bottom, 16) + 8 }}
         >
           <View className="mb-3 h-1 w-10 self-center rounded-full bg-[#CBD5E1]" />
-          <Text className="mb-2 font-cairo-bold text-base text-[#111111]">إرسال موقع</Text>
+          <Text className="mb-2 font-cairo-bold text-base text-[#111111]" style={RTL_TEXT}>
+            إرسال موقع
+          </Text>
           <TouchableOpacity
             testID="location-current"
             disabled={locating}

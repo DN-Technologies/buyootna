@@ -13,6 +13,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { presentProposal, PROPOSAL_SELECT } from './chat-proposals.service';
+import { receiptOf } from './chat-receipts.service';
 import { findDefaultPersonaId } from '../../identities/persona-rules';
 
 /**
@@ -321,6 +322,9 @@ export class ChatConversationsService {
               }
             : null,
           unreadCount,
+          // How far the other person has received / read (the tick on my
+          // last message)
+          otherReceipt: receiptOf(otherPart),
         };
       }),
     );

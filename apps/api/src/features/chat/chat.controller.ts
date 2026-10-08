@@ -23,6 +23,7 @@ import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { RespondProposalDto } from './dto/respond-proposal.dto';
 import { ChatProposalsService } from './services/chat-proposals.service';
+import { ChatReceiptsService } from './services/chat-receipts.service';
 import {
   MAX_ATTACHMENTS,
   VIDEO_MAX_BYTES,
@@ -61,6 +62,7 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly proposals: ChatProposalsService,
     private readonly gateway: ChatGateway,
+    private readonly receipts: ChatReceiptsService,
   ) {}
 
   @Post('conversations')
@@ -104,6 +106,9 @@ export class ChatController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
+    // Loading the chats list means the app has what was sent to it
+    if (pageNum === 1 && !q)
+      void this.gateway.deliverWaiting(reqUser.identityId);
     return this.chatService.getConversations(
       reqUser.identityId,
       pageNum,
@@ -221,7 +226,13 @@ export class ChatController {
     @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
   ) {
-    return this.chatService.markAsRead(reqUser.identityId, conversationId);
+    // Read (and so delivered) up to now: the sender's ticks turn gold
+    const receipt = await this.receipts.markRead(
+      reqUser.identityId,
+      conversationId,
+    );
+    if (receipt) this.gateway.emitReceipt(receipt);
+    return { success: true };
   }
 
   @Post('messages/:id/hide')

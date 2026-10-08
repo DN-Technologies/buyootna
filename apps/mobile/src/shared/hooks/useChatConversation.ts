@@ -71,6 +71,12 @@ export function useChatConversation({
     conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
   const otherUserId = conversation?.otherUser.id;
   const propertyContext = conversation?.propertyContext;
+  const otherReceipt = useChatStore(
+    (state) =>
+      state.receiptByConversation[conversationId] ??
+      conversation?.otherReceipt ??
+      null,
+  );
 
   // Back from another app, or the socket came back: catch up on what was
   // sent meanwhile (only delivered as pushes) and mark it read. The cache
@@ -106,6 +112,11 @@ export function useChatConversation({
         receiveMessage(conversationId, msg);
       });
 
+      // The other person received / read this chat: my ticks
+      const unsubscribeReceipt = socketService.onConversationReceipt(
+        (receipt) => useChatStore.getState().applyReceipt(receipt),
+      );
+
       // An offer / appointment here was answered (or countered)
       const unsubscribeUpdated = socketService.onMessageUpdated((update) => {
         if (update.conversationId !== conversationId) return;
@@ -129,6 +140,7 @@ export function useChatConversation({
         unsubscribe();
         unsubscribeError();
         unsubscribeUpdated();
+        unsubscribeReceipt();
       };
     }
   }, [
@@ -219,6 +231,8 @@ export function useChatConversation({
     handleRetryLoad,
     handleSendMessage,
     handleLoadMore,
+    // How far the other person has received / read (message ticks)
+    otherReceipt,
     // Older pages left to load (in-chat search keeps loading until a match is in)
     hasOlderMessages: !!hasNextPage,
   };

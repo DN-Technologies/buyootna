@@ -20,6 +20,7 @@ import {
   formatDuration,
   formatFileSize,
 } from '@/shared/utils/chatAttachments';
+import { RTL_TEXT } from '@/shared/utils/rtlText';
 
 interface AttachmentPreviewSheetProps {
   files: LocalAttachment[] | null;
@@ -95,11 +96,15 @@ export default function AttachmentPreviewSheet({
                 </View>
               )}
               <View className="flex-1">
-                <Text numberOfLines={1} className="font-cairo-medium text-sm text-[#111111]">
+                <Text
+                  numberOfLines={1}
+                  className="font-cairo-medium text-sm text-[#111111]"
+                  style={RTL_TEXT}
+                >
                   {item.name}
                 </Text>
                 {(!!item.size || !!item.durationMs) && (
-                  <Text className="font-cairo text-xs text-[#6B6A6A]">
+                  <Text className="font-cairo text-xs text-[#6B6A6A]" style={RTL_TEXT}>
                     {[
                       item.durationMs ? formatDuration(item.durationMs) : '',
                       formatFileSize(item.size),
