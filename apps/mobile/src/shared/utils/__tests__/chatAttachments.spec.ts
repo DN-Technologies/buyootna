@@ -1,8 +1,10 @@
 import {
   attachmentsProblem,
   documentStyle,
+  formatDuration,
   formatFileSize,
   lastMessagePreview,
+  messageTypeFor,
 } from '../chatAttachments';
 
 jest.mock('expo-image-picker', () => ({}));
@@ -45,5 +47,20 @@ describe('chat attachment helpers', () => {
     expect(documentStyle('application/octet-stream', 'a.xlsx').label).toBe('XLS');
     expect(formatFileSize(1536 * 1024)).toBe('1.5 MB');
     expect(formatFileSize(300 * 1024)).toBe('300 KB');
+  });
+
+  it('video and voice: limits, types, lengths and previews', () => {
+    const video = file({ kind: 'VIDEO', mimeType: 'video/mp4', size: 60 * 1024 * 1024, durationMs: 90000 });
+    expect(attachmentsProblem([video])).toBeNull();
+    expect(attachmentsProblem([{ ...video, size: 101 * 1024 * 1024 }])).toContain('100 ميجابايت');
+    expect(attachmentsProblem([{ ...video, durationMs: 200000 }])).toContain('دقيقة');
+    expect(messageTypeFor([{ kind: 'AUDIO' }])).toBe('VOICE');
+    expect(messageTypeFor([{ kind: 'IMAGE' }, { kind: 'VIDEO' }])).toBe('VIDEO');
+    expect(messageTypeFor([{ kind: 'IMAGE' }])).toBe('IMAGE');
+    expect(formatDuration(125000)).toBe('2:05');
+    expect(lastMessagePreview({ type: 'VIDEO', content: null })).toBe('🎥 فيديو');
+    expect(
+      lastMessagePreview({ type: 'VOICE', content: null, attachmentDurationMs: 42000 }),
+    ).toBe('🎤 رسالة صوتية (0:42)');
   });
 });

@@ -771,14 +771,14 @@ export const api: DocSection = {
       acceptanceCriteria: {
         en: [
           "Upload, link renewal and in-chat search are 403 for a persona outside the conversation.",
-          "Types: jpeg/png/webp/heic (HEIC converted to JPEG, 10 MB) and pdf/doc/docx/xls/xlsx (20 MB); others 400.",
+          "Types: jpeg/png/webp/heic (HEIC converted to JPEG, 10 MB), pdf/doc/docx/xls/xlsx (20 MB), video mp4/mov (100 MB, with an optional `thumbnails` still and `durations`), voice m4a/aac/mp3 (10 MB, sent alone); others 400. nginx allows 110 MB bodies on the API host.",
           "attachmentIds must be the sender's own, in the same conversation and not sent yet; otherwise 400 and no message is created.",
           "Responses never include the storage key; the S3 bucket policy doesn't allow public reads of chat/*.",
           "Search skips messages hidden for the persona (حذف لدي).",
         ],
         ar: [
           "الرفع وتجديد الرابط والبحث داخل المحادثة تعيد 403 لهوية خارج المحادثة.",
-          "الأنواع: jpeg/png/webp/heic (يُحوّل HEIC إلى JPEG، 10 ميجابايت) و pdf/doc/docx/xls/xlsx (20 ميجابايت)؛ وغيرها 400.",
+          "الأنواع: jpeg/png/webp/heic (يُحوّل HEIC إلى JPEG، 10 ميجابايت)، و pdf/doc/docx/xls/xlsx (20 ميجابايت)، وفيديو mp4/mov (100 ميجابايت مع صورة مصغرة `thumbnails` ومدة `durations` اختياريتين)، وصوت m4a/aac/mp3 (10 ميجابايت ويُرسل وحده)؛ وغيرها 400. ويسمح nginx بطلبات حتى 110 ميجابايت على خادم الـ API.",
           "يجب أن تكون attachmentIds للمرسل نفسه وفي المحادثة نفسها ولم تُرسل بعد؛ وإلا 400 ولا تُنشأ رسالة.",
           "الاستجابات لا تتضمن مفتاح التخزين أبداً، وسياسة حاوية S3 لا تسمح بالقراءة العامة لـ chat/*.",
           "البحث يتجاهل الرسائل المخفية لدى الهوية (حذف لدي).",
@@ -796,7 +796,7 @@ export const api: DocSection = {
           "افتح https://<bucket>.s3.<region>.amazonaws.com/chat/... مباشرة — AccessDenied؛ والرابط الموقّع يعمل ويتوقف بعد 15 دقيقة.",
         ],
       },
-      updatedIn: "feat/chat-attachments-search",
+      updatedIn: "feat/native-1.5.0-video-voice",
     },
     {
       id: "api-chat-proposals",

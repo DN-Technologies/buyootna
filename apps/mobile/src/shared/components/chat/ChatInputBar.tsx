@@ -4,6 +4,8 @@ import {
   Keyboard,
   LayoutAnimation,
   Platform,
+  Pressable,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -15,6 +17,14 @@ import AttachmentPanel, {
   ChatComposer,
 } from '@/shared/components/chat/AttachmentPanel';
 import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
+import { useVoiceRecorder } from '@/shared/hooks/useVoiceRecorder';
+import { formatDuration } from '@/shared/utils/chatAttachments';
+
+// A press shorter than this locks recording (send / delete buttons)
+const LOCK_TAP_MS = 500;
+// Sliding this far while holding cancels the recording
+const CANCEL_SLIDE_PX = 80;
+const noop = () => {};
 
 // Before the keyboard has been opened once, the panel uses this height
 const DEFAULT_PANEL_HEIGHT = 260;
@@ -29,6 +39,8 @@ interface ChatInputBarProps {
   onPickedFiles: (files: LocalAttachment[]) => void;
   // عقار / الموقع / موعد معاينة / عرض سعر
   onCompose?: (composer: ChatComposer) => void;
+  // 🎤 a recorded voice note; without it the mic isn't shown
+  onSendVoice?: (voice: LocalAttachment) => void;
   // While the conversation is still being created
   sendDisabled?: boolean;
   // Lets the screen focus the input (e.g. after choosing رد)
@@ -43,6 +55,7 @@ export default function ChatInputBar({
   setShowAttachmentMenu,
   onPickedFiles,
   onCompose,
+  onSendVoice,
   sendDisabled = false,
   inputRef,
 }: ChatInputBarProps) {
@@ -69,6 +82,18 @@ export default function ChatInputBar({
   if (keyboardHeight > 0) lastKeyboardHeight.current = keyboardHeight;
   const panelHeight =
     lastKeyboardHeight.current || DEFAULT_PANEL_HEIGHT + insets.bottom;
+
+  // Voice notes: the mic shows instead of "send" while there's no text
+  const voice = useVoiceRecorder(onSendVoice ?? noop);
+  const [voiceLocked, setVoiceLocked] = useState(false);
+  const [voiceCancel, setVoiceCancel] = useState(false);
+  const pressStart = useRef<{ at: number; x: number } | null>(null);
+  const showMic = !!onSendVoice && (voice.isRecording || !inputText.trim());
+  const finishVoice = (send: boolean) => {
+    setVoiceLocked(false);
+    setVoiceCancel(false);
+    void voice.stop(send);
+  };
 
   const togglePanel = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -162,36 +187,104 @@ export default function ChatInputBar({
         />
       </TouchableOpacity>
 
-      {/* Text Input pill */}
-      <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
-        <TextInput
-          ref={inputRef}
-          className="flex-1 py-2 text-right font-cairo text-[14px] text-[#111111]"
-          placeholder="اكتب رسالتك.."
-          placeholderTextColor="#979797"
-          multiline
-          value={inputText}
-          onChangeText={onInputChange}
-          // Typing again: the keyboard replaces the panel
-          onFocus={() => showAttachmentMenu && setShowAttachmentMenu(false)}
-          textAlign="right"
-        />
-      </View>
+      {voice.isRecording ? (
+        // Recording: timer, and (locked) delete instead of the text field
+        <View
+          testID="voice-recording-row"
+          className="mx-3 min-h-[46px] flex-1 flex-row items-center justify-between rounded-[20px] bg-[#FEF2F2] px-4"
+        >
+          <View className="flex-row items-center gap-2">
+            <View className="h-2.5 w-2.5 rounded-full bg-[#DC2626]" />
+            <Text testID="voice-timer" className="font-cairo-semibold text-[14px] text-[#111111]">
+              {formatDuration(voice.elapsedMs)}
+            </Text>
+          </View>
+          {voiceLocked ? (
+            <TouchableOpacity
+              testID="voice-cancel"
+              accessibilityLabel="حذف التسجيل"
+              onPress={() => finishVoice(false)}
+              className="p-1"
+            >
+              <Feather name="trash-2" size={18} color="#DC2626" />
+            </TouchableOpacity>
+          ) : (
+            <Text className="font-cairo text-[12px] text-[#6B6A6A]">
+              {voiceCancel ? 'ارفع إصبعك للإلغاء' : 'اسحب للإلغاء'}
+            </Text>
+          )}
+        </View>
+      ) : (
+        <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
+          <TextInput
+            ref={inputRef}
+            className="flex-1 py-2 text-right font-cairo text-[14px] text-[#111111]"
+            placeholder="اكتب رسالتك.."
+            placeholderTextColor="#979797"
+            multiline
+            value={inputText}
+            onChangeText={onInputChange}
+            // Typing again: the keyboard replaces the panel
+            onFocus={() => showAttachmentMenu && setShowAttachmentMenu(false)}
+            textAlign="right"
+          />
+        </View>
+      )}
 
-      {/* Send Button */}
-      <TouchableOpacity
-        testID="chat-send-button"
-        onPress={onSend}
-        disabled={sendDisabled}
-        className="h-8 w-8 items-center justify-center"
-      >
-        <Feather
-          name="send"
-          size={24}
-          color={inputText.trim() && !sendDisabled ? '#15304D' : '#94A3B8'}
-          className='relative -top-1'
-        />
-      </TouchableOpacity>
+      {showMic ? (
+        // Hold to record and release to send; a quick tap keeps recording
+        // (send / delete buttons); sliding away while holding cancels
+        <Pressable
+          testID="chat-voice-button"
+          accessibilityLabel={voiceLocked ? 'إرسال الرسالة الصوتية' : 'تسجيل رسالة صوتية'}
+          disabled={sendDisabled}
+          onPressIn={(e) => {
+            if (voiceLocked) return;
+            pressStart.current = { at: Date.now(), x: e.nativeEvent.pageX };
+            setVoiceCancel(false);
+            void voice.start();
+          }}
+          onTouchMove={(e) => {
+            if (voiceLocked || !pressStart.current) return;
+            setVoiceCancel(
+              Math.abs(e.nativeEvent.pageX - pressStart.current.x) > CANCEL_SLIDE_PX,
+            );
+          }}
+          onPressOut={() => {
+            if (voiceLocked) {
+              finishVoice(true);
+              return;
+            }
+            const heldMs = Date.now() - (pressStart.current?.at ?? 0);
+            pressStart.current = null;
+            if (voiceCancel) finishVoice(false);
+            else if (heldMs < LOCK_TAP_MS) setVoiceLocked(true);
+            else finishVoice(true);
+          }}
+          className="h-8 w-8 items-center justify-center"
+        >
+          <Feather
+            name={voiceLocked ? 'send' : 'mic'}
+            size={24}
+            color={voice.isRecording ? '#DC2626' : '#15304D'}
+            className="relative -top-1"
+          />
+        </Pressable>
+      ) : (
+        <TouchableOpacity
+          testID="chat-send-button"
+          onPress={onSend}
+          disabled={sendDisabled}
+          className="h-8 w-8 items-center justify-center"
+        >
+          <Feather
+            name="send"
+            size={24}
+            color={inputText.trim() && !sendDisabled ? '#15304D' : '#94A3B8'}
+            className="relative -top-1"
+          />
+        </TouchableOpacity>
+      )}
     </View>
     {showAttachmentMenu && (
       <AttachmentPanel

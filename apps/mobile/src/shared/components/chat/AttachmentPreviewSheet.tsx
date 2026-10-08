@@ -17,6 +17,7 @@ import { LocalAttachment } from '@/shared/api/chat.service';
 import {
   attachmentsProblem,
   documentStyle,
+  formatDuration,
   formatFileSize,
 } from '@/shared/utils/chatAttachments';
 
@@ -74,9 +75,9 @@ export default function AttachmentPreviewSheet({
               testID="attachment-preview-item"
               className="flex-row items-center gap-3 rounded-xl border border-gray-100 p-2"
             >
-              {item.kind === 'IMAGE' ? (
+              {item.kind === 'IMAGE' || (item.kind === 'VIDEO' && item.thumbnailUri) ? (
                 <Image
-                  source={{ uri: item.uri }}
+                  source={{ uri: item.thumbnailUri ?? item.uri }}
                   style={{ width: 64, height: 64, borderRadius: 8 }}
                   contentFit="cover"
                 />
@@ -97,9 +98,14 @@ export default function AttachmentPreviewSheet({
                 <Text numberOfLines={1} className="font-cairo-medium text-sm text-[#111111]">
                   {item.name}
                 </Text>
-                {!!item.size && (
+                {(!!item.size || !!item.durationMs) && (
                   <Text className="font-cairo text-xs text-[#6B6A6A]">
-                    {formatFileSize(item.size)}
+                    {[
+                      item.durationMs ? formatDuration(item.durationMs) : '',
+                      formatFileSize(item.size),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Text>
                 )}
               </View>

@@ -53,7 +53,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna-mobile',
-  version: '1.4.0',
+  version: '1.5.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
@@ -111,6 +111,9 @@ const config: ExpoConfig = {
         // Android status-bar icon must be a white-on-transparent silhouette
         icon: './src/assets/images/android-icon-monochrome.png',
         color: '#15304D',
+        // The chat message tone (pushes name it; Android plays it through
+        // the "chat-messages" channel created in usePushRegistration)
+        sounds: ['./src/assets/sounds/buyootna_message.wav'],
       },
     ],
     './plugins/withPrebuiltDsyms',
@@ -143,8 +146,20 @@ const config: ExpoConfig = {
       'expo-image-picker',
       {
         photosPermission: 'يحتاج التطبيق للوصول إلى صورك لإضافتها إلى إعلانك',
+        cameraPermission:
+          'يحتاج التطبيق إلى الكاميرا لالتقاط صور وإرسالها في المحادثة أو إضافتها إلى إعلانك',
+        microphonePermission:
+          'يحتاج التطبيق إلى الميكروفون لتسجيل الرسائل الصوتية في المحادثة',
       },
     ],
+    [
+      'expo-audio',
+      {
+        microphonePermission:
+          'يحتاج التطبيق إلى الميكروفون لتسجيل الرسائل الصوتية في المحادثة',
+      },
+    ],
+    'expo-video',
     [
       'expo-location',
       {

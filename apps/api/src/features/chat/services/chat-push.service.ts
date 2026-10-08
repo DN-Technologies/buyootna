@@ -23,7 +23,11 @@ export interface ChatPushInput {
   message: {
     type: MessageType | string;
     content?: string | null;
-    attachments?: { kind: string; fileName: string }[];
+    attachments?: {
+      kind: string;
+      fileName: string;
+      durationMs?: number | null;
+    }[];
     location?: { label?: string | null } | null;
     proposal?: ProposalPreview | null;
   };
@@ -47,6 +51,12 @@ export function propertyTitle(
   return type ? `${category} ${type}` : category;
 }
 
+/** "0:42" / "2:05". */
+export function formatDuration(ms: number): string {
+  const total = Math.round(ms / 1000);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
 /**
  * What the notification says about a message, led by the ad's title when
  * the chat came from one: "عمارة للبيع · هاي".
@@ -58,7 +68,13 @@ export function chatPushBody(
   let preview: string;
   const files = message.attachments ?? [];
   const document = files.find((a) => a.kind === 'FILE');
-  if (document) preview = `📎 ${document.fileName}`;
+  const voice = files.find((a) => a.kind === 'AUDIO');
+  if (voice) {
+    preview = voice.durationMs
+      ? `🎤 رسالة صوتية (${formatDuration(voice.durationMs)})`
+      : '🎤 رسالة صوتية';
+  } else if (files.some((a) => a.kind === 'VIDEO')) preview = '🎥 فيديو';
+  else if (document) preview = `📎 ${document.fileName}`;
   else if (files.length > 1) preview = `📷 ${files.length} صور`;
   else if (message.type === 'IMAGE') preview = '📷 صورة';
   else if (message.type === 'PROPERTY') preview = '🏠 عقار';

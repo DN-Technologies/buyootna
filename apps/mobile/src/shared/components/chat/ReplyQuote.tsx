@@ -8,6 +8,8 @@ export function quoteText(reply: ReplyPreview): string {
   if (reply.deleted) return 'رسالة محذوفة';
   if (reply.type === 'IMAGE') return reply.content ? `📷 ${reply.content}` : '📷 صورة';
   if (reply.type === 'FILE') return reply.content ? `📎 ${reply.content}` : '📎 ملف';
+  if (reply.type === 'VIDEO') return reply.content ? `🎥 ${reply.content}` : '🎥 فيديو';
+  if (reply.type === 'VOICE') return '🎤 رسالة صوتية';
   if (reply.type === 'LOCATION') return '📍 موقع';
   if (reply.type === 'APPOINTMENT') return '📅 موعد معاينة';
   if (reply.type === 'OFFER') return '💰 عرض سعر';
