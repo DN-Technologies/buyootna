@@ -11,7 +11,13 @@ jest.mock('@/shared/utils/chatAttachments', () => ({
   pickDocuments: jest.fn(),
 }));
 
-function Harness({ onPickedFiles }: { onPickedFiles: jest.Mock }) {
+function Harness({
+  onPickedFiles,
+  onCompose,
+}: {
+  onPickedFiles: jest.Mock;
+  onCompose?: jest.Mock;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <ChatInputBar
@@ -21,6 +27,7 @@ function Harness({ onPickedFiles }: { onPickedFiles: jest.Mock }) {
       showAttachmentMenu={open}
       setShowAttachmentMenu={setOpen}
       onPickedFiles={onPickedFiles}
+      onCompose={onCompose}
     />
   );
 }
@@ -48,6 +55,22 @@ describe('ChatInputBar — attachment panel', () => {
     await render(<Harness onPickedFiles={jest.fn()} />);
     await fireEvent.press(screen.getByTestId('chat-attach-button'));
     await fireEvent.press(screen.getByTestId('chat-attach-button'));
+    expect(screen.queryByTestId('attachment-panel')).toBeNull();
+  });
+
+  it('عقار / الموقع / موعد معاينة / عرض سعر open their forms', async () => {
+    const onCompose = jest.fn();
+    await render(<Harness onPickedFiles={jest.fn()} onCompose={onCompose} />);
+    for (const key of ['property', 'location', 'appointment', 'offer']) {
+      await fireEvent.press(screen.getByTestId('chat-attach-button'));
+      await fireEvent.press(screen.getByTestId(`attach-${key}`));
+    }
+    expect(onCompose.mock.calls.map((c) => c[0])).toEqual([
+      'property',
+      'location',
+      'appointment',
+      'offer',
+    ]);
     expect(screen.queryByTestId('attachment-panel')).toBeNull();
   });
 });

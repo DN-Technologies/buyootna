@@ -11,7 +11,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LocalAttachment } from '@/shared/api/chat.service';
-import AttachmentPanel from '@/shared/components/chat/AttachmentPanel';
+import AttachmentPanel, {
+  ChatComposer,
+} from '@/shared/components/chat/AttachmentPanel';
 import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
 
 // Before the keyboard has been opened once, the panel uses this height
@@ -25,6 +27,8 @@ interface ChatInputBarProps {
   setShowAttachmentMenu: (show: boolean) => void;
   // Files picked from the attachment panel, to review before sending
   onPickedFiles: (files: LocalAttachment[]) => void;
+  // عقار / الموقع / موعد معاينة / عرض سعر
+  onCompose?: (composer: ChatComposer) => void;
   // While the conversation is still being created
   sendDisabled?: boolean;
   // Lets the screen focus the input (e.g. after choosing رد)
@@ -38,6 +42,7 @@ export default function ChatInputBar({
   showAttachmentMenu,
   setShowAttachmentMenu,
   onPickedFiles,
+  onCompose,
   sendDisabled = false,
   inputRef,
 }: ChatInputBarProps) {
@@ -192,6 +197,7 @@ export default function ChatInputBar({
       <AttachmentPanel
         height={panelHeight}
         onPicked={onPickedFiles}
+        onCompose={onCompose}
         onClose={() => setShowAttachmentMenu(false)}
       />
     )}

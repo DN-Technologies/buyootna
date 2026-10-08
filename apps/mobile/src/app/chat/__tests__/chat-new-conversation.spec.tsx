@@ -54,6 +54,7 @@ jest.mock('@/shared/services/socket.service', () => ({
     onNewMessage: jest.fn(() => jest.fn()),
     onConversationUpdated: jest.fn(() => jest.fn()),
     onMessageError: jest.fn(() => jest.fn()),
+    onMessageUpdated: jest.fn(() => jest.fn()),
   },
 }));
 

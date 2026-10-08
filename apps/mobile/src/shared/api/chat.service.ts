@@ -25,14 +25,66 @@ export interface ConversationSummary {
   lastMessage: {
     id: string;
     content: string | null;
-    type: 'TEXT' | 'IMAGE' | 'PROPERTY' | 'FILE';
+    type: ChatMessageType;
     createdAt: string;
     isMine: boolean;
+    locationLabel?: string | null;
+    proposal?: ChatProposal | null;
     // For the preview: "📷 3 صور" / "📎 file name"
     attachmentsCount?: number;
     attachmentName?: string | null;
   } | null;
   unreadCount: number;
+}
+
+export type ChatMessageType =
+  | 'TEXT'
+  | 'IMAGE'
+  | 'PROPERTY'
+  | 'FILE'
+  | 'LOCATION'
+  | 'APPOINTMENT'
+  | 'OFFER'
+  | 'VIDEO'
+  | 'VOICE';
+
+export type ProposalStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'DECLINED'
+  | 'COUNTERED'
+  | 'CANCELLED';
+export type OfferPeriod = 'TOTAL' | 'MONTHLY' | 'YEARLY';
+
+/** A viewing appointment (موعد معاينة) or a price offer (عرض سعر). */
+export interface ChatProposal {
+  id: string;
+  kind: 'APPOINTMENT' | 'OFFER';
+  status: ProposalStatus;
+  scheduledAt?: string | null;
+  amount?: number | null;
+  currency?: string;
+  period?: OfferPeriod | null;
+  note?: string | null;
+  counterOfId?: string | null;
+  respondedAt?: string | null;
+}
+
+/** What the user fills in to propose (sent with the message). */
+export interface ProposalInput {
+  scheduledAt?: string;
+  amount?: number;
+  period?: OfferPeriod;
+  note?: string;
+  // Answering this proposal (counter-offer / another time)
+  counterOfId?: string;
+}
+
+/** A map pin (LOCATION message). */
+export interface ChatLocation {
+  latitude: number;
+  longitude: number;
+  label?: string | null;
 }
 
 /** A private chat photo / document; `url` is a short-lived signed link. */
@@ -60,7 +112,7 @@ export interface LocalAttachment {
 export interface ReplyPreview {
   id: string;
   deleted?: boolean;
-  type?: 'TEXT' | 'IMAGE' | 'PROPERTY' | 'FILE';
+  type?: ChatMessageType;
   content?: string | null;
   imageUrl?: string | null;
   senderIdentityId?: string | null;
@@ -69,7 +121,7 @@ export interface ReplyPreview {
 
 export interface ChatMessage {
   id: string;
-  type: 'TEXT' | 'IMAGE' | 'PROPERTY' | 'FILE';
+  type: ChatMessageType;
   content?: string;
   imageUrl?: string;
   propertyId?: string;
@@ -84,7 +136,13 @@ export interface ChatMessage {
     bathrooms?: number;
     specs?: string;
     location: string;
+    // The shared ad is no longer on the market
+    unavailable?: boolean;
   };
+  // LOCATION: the pin
+  location?: ChatLocation;
+  // APPOINTMENT / OFFER
+  proposal?: ChatProposal;
   isMine: boolean;
   senderId?: string;
   // Set when this message replies to another one
@@ -173,6 +231,18 @@ export const chatService = {
       },
     );
     return response.data.data;
+  },
+
+  /** قبول / رفض (the other side) or إلغاء (the sender) of a proposal. */
+  respondToProposal: async (
+    proposalId: string,
+    action: 'accept' | 'decline' | 'cancel',
+  ): Promise<{ messageId: string; proposal: ChatProposal }> => {
+    const response = await apiClient.post<{
+      messageId: string;
+      proposal: ChatProposal;
+    }>(`/chat/proposals/${proposalId}/respond`, { action });
+    return response.data;
   },
 
   /** A fresh link once a file's signed link has expired. */

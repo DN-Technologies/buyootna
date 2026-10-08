@@ -798,5 +798,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/chat-attachments-search",
     },
+    {
+      id: "api-chat-proposals",
+      title: {
+        en: "Chat proposals, locations and shared ads are validated server-side",
+        ar: "التحقق من عروض المحادثة والمواقع والإعلانات المشاركة في الخادم",
+      },
+      priority: "P1",
+      story: {
+        en: "send_message accepts LOCATION (latitude, longitude, locationLabel), PROPERTY with any live propertyId, and APPOINTMENT / OFFER with a proposal (scheduledAt, or amount + period, note, counterOfId). The socket path isn't covered by the validation pipe, so ChatProposalsService.parse and the message service check everything. POST /chat/proposals/:id/respond { action: accept | decline | cancel } answers a proposal and emits message_updated to the room. A cron every 10 minutes pushes a reminder within the hour before each accepted appointment, once (remindedAt).",
+        ar: "يقبل send_message الموقع LOCATION (latitude و longitude و locationLabel)، والإعلان PROPERTY بأي propertyId نشط، والموعد والعرض APPOINTMENT / OFFER مع proposal (scheduledAt، أو amount و period، و note و counterOfId). مسار الـ socket لا يمر بالتحقق العام، لذا يتحقق ChatProposalsService.parse وخدمة الرسائل من كل شيء. و POST /chat/proposals/:id/respond { action: accept | decline | cancel } يرد على العرض ويرسل message_updated للغرفة. ومهمة مجدولة كل 10 دقائق ترسل تذكيراً خلال الساعة التي تسبق كل موعد مقبول، مرة واحدة (remindedAt).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Appointments: at least 5 minutes ahead, at most 90 days; offers: amount > 0; otherwise 400.",
+          "accept / decline only by the other participant, cancel only by the sender (403); only PENDING (400); a past appointment can't be accepted (400); outsiders get 404.",
+          "Two simultaneous answers: one wins, the other gets 400.",
+          "A counter must answer a PENDING proposal of the same kind, in the same conversation, from the other side.",
+          "Sharing an ad that doesn't exist or isn't ACTIVE is refused (the chat's own ad is always allowed).",
+        ],
+        ar: [
+          "المواعيد: بعد 5 دقائق على الأقل وخلال 90 يوماً كحد أقصى، والعروض: مبلغ أكبر من صفر، وإلا 400.",
+          "القبول والرفض للطرف الآخر فقط والإلغاء للمرسل فقط (403)، ولحالة PENDING فقط (400)، ولا يُقبل موعد فات وقته (400)، ومن هو خارج المحادثة يحصل على 404.",
+          "ردان في اللحظة نفسها: ينجح واحد ويحصل الآخر على 400.",
+          "العرض المقابل يجب أن يرد على عرض PENDING من النوع نفسه وفي المحادثة نفسها ومن الطرف الآخر.",
+          "مشاركة إعلان غير موجود أو غير ACTIVE مرفوضة (إعلان المحادثة نفسه مسموح دائماً).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "POST /chat/proposals/<id>/respond as the sender with accept — 403; as the other side twice — second 400.",
+          "Send an APPOINTMENT with scheduledAt in the past over the socket — message_error, nothing saved.",
+          "Set an accepted appointment 30 minutes ahead and wait for the cron — one push per device, remindedAt set.",
+        ],
+        ar: [
+          "نفّذ POST /chat/proposals/<id>/respond كمرسل بـ accept — 403، وكطرف آخر مرتين — الثانية 400.",
+          "أرسل APPOINTMENT بموعد في الماضي عبر الـ socket — message_error ولا يُحفظ شيء.",
+          "اضبط موعداً مقبولاً بعد 30 دقيقة وانتظر المهمة المجدولة — إشعار واحد لكل جهاز ويُضبط remindedAt.",
+        ],
+      },
+      updatedIn: "feat/chat-share-location-proposals",
+    },
   ],
 };

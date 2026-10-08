@@ -9,6 +9,7 @@ import { ChatGateway } from './chat.gateway';
 import { ChatConversationsService } from './services/chat-conversations.service';
 import { ChatMessagesService } from './services/chat-messages.service';
 import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
+import { ChatProposalsService } from './services/chat-proposals.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ChatParticipantDisplayService } from './services/chat-participant-displ
     ChatParticipantDisplayService,
     ChatPushService,
     ChatAttachmentsService,
+    ChatProposalsService,
     ChatConversationsService,
     ChatMessagesService,
     ChatService,

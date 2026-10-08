@@ -12,6 +12,7 @@ import {
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import { presentProposal, PROPOSAL_SELECT } from './chat-proposals.service';
 import { findDefaultPersonaId } from '../../identities/persona-rules';
 
 /**
@@ -245,6 +246,8 @@ export class ChatConversationsService {
           include: {
             // For the preview: "📷 3 صور" / "📎 عقد.pdf"
             attachments: { select: { fileName: true, kind: true } },
+            // "📅 موعد معاينة: …" / "💰 عرض سعر: …"
+            proposal: { select: PROPOSAL_SELECT },
           },
         },
       },
@@ -305,6 +308,10 @@ export class ChatConversationsService {
                 type: lastMessage.type,
                 attachmentsCount: lastMessage.attachments.length,
                 attachmentName: lastMessage.attachments[0]?.fileName ?? null,
+                locationLabel: lastMessage.locationLabel,
+                proposal: lastMessage.proposal
+                  ? presentProposal(lastMessage.proposal)
+                  : null,
                 createdAt: lastMessage.createdAt,
                 isMine: lastMessage.senderIdentityId === identityId,
               }

@@ -1,7 +1,8 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 
-import { LocalAttachment } from '@/shared/api/chat.service';
+import { ChatProposal, LocalAttachment } from '@/shared/api/chat.service';
+import { proposalPreview } from '@/shared/utils/chatProposals';
 
 // Same limits as the API (ChatAttachmentsService)
 export const MAX_CHAT_ATTACHMENTS = 10;
@@ -114,9 +115,20 @@ export function lastMessagePreview(
     content: string | null;
     attachmentsCount?: number;
     attachmentName?: string | null;
+    locationLabel?: string | null;
+    // From a live message (socket) the pin comes as `location`
+    location?: { label?: string | null } | null;
+    proposal?: ChatProposal | null;
   } | null,
 ): string {
   if (!last) return 'بدء المحادثة';
+  if (last.type === 'LOCATION') {
+    const label = last.locationLabel ?? last.location?.label;
+    return label ? `📍 ${label}` : '📍 موقع';
+  }
+  if (last.type === 'APPOINTMENT' || last.type === 'OFFER') {
+    return proposalPreview(last.proposal, last.type);
+  }
   const count = last.attachmentsCount ?? 0;
   if (last.type === 'FILE') return `📎 ${last.attachmentName || 'ملف'}`;
   if (last.type === 'IMAGE') return count > 1 ? `📷 ${count} صور` : '📷 صورة';

@@ -106,6 +106,16 @@ export function useChatConversation({
         receiveMessage(conversationId, msg);
       });
 
+      // An offer / appointment here was answered (or countered)
+      const unsubscribeUpdated = socketService.onMessageUpdated((update) => {
+        if (update.conversationId !== conversationId) return;
+        useChatStore
+          .getState()
+          .updateMessage(conversationId, update.messageId, {
+            proposal: update.proposal,
+          });
+      });
+
       // Optimistic bubble rollback on persistence failure
       const unsubscribeError = socketService.onMessageError((data) => {
         if (data.conversationId !== conversationId) return;
@@ -118,6 +128,7 @@ export function useChatConversation({
         socketService.leaveConversation(conversationId);
         unsubscribe();
         unsubscribeError();
+        unsubscribeUpdated();
       };
     }
   }, [

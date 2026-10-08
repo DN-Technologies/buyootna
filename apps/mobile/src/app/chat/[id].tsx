@@ -4,14 +4,23 @@ import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ChatMessage, LocalAttachment } from '@/shared/api/chat.service';
+import {
+  ChatMessage,
+  chatService,
+  LocalAttachment,
+} from '@/shared/api/chat.service';
+import { ChatComposer } from '@/shared/components/chat/AttachmentPanel';
 import AttachmentPreviewSheet from '@/shared/components/chat/AttachmentPreviewSheet';
 import ChatHeader from '@/shared/components/chat/ChatHeader';
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ChatSearchBar from '@/shared/components/chat/ChatSearchBar';
+import LocationSheet from '@/shared/components/chat/LocationSheet';
 import MessageOptionsSheet from '@/shared/components/chat/MessageOptionsSheet';
+import PropertyPickerSheet from '@/shared/components/chat/PropertyPickerSheet';
+import { ProposalAction } from '@/shared/components/chat/ProposalCard';
+import ProposalSheet from '@/shared/components/chat/ProposalSheet';
 import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
 import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
@@ -21,6 +30,8 @@ import { useChatReport } from '@/shared/hooks/useChatReport';
 import { useChatSearch } from '@/shared/hooks/useChatSearch';
 import { useStartConversation } from '@/shared/hooks/useStartConversation';
 import { quoteOf, useChatStore } from '@/shared/store/useChatStore';
+import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { NEW_CHAT_ID } from '@/shared/utils/openChat';
 import { openChatFile } from '@/shared/utils/openChatFile';
 
@@ -87,6 +98,50 @@ export default function ChatDetailsScreen() {
   const [pickedFiles, setPickedFiles] = useState<LocalAttachment[] | null>(
     null,
   );
+
+  // عقار / الموقع / موعد معاينة / عرض سعر from the "+" panel; a counter
+  // (موعد آخر / عرض مقابل) opens the same form for that proposal
+  const [composer, setComposer] = useState<ChatComposer | null>(null);
+  const [counterOf, setCounterOf] = useState<ChatMessage | null>(null);
+  const closeComposer = () => {
+    setComposer(null);
+    setCounterOf(null);
+  };
+  const sendRich = (
+    payload: Parameters<ReturnType<typeof useChatStore.getState>['sendMessage']>[1],
+  ) => {
+    closeComposer();
+    if (!conversationId) return;
+    const sent = useChatStore.getState().sendMessage(conversationId, {
+      ...payload,
+      replyTo: replyTarget ?? undefined,
+    });
+    if (!sent) {
+      showAlert('خطأ', 'تعذر الإرسال، تحقق من الاتصال وحاول مرة أخرى');
+      return;
+    }
+    setReplyTarget(null);
+    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
+  };
+
+  // قبول / رفض / إلغاء on an offer or appointment card
+  const respondToProposal = async (
+    message: ChatMessage,
+    action: ProposalAction,
+  ) => {
+    if (!message.proposal || !conversationId) return;
+    try {
+      const { proposal } = await chatService.respondToProposal(
+        message.proposal.id,
+        action,
+      );
+      useChatStore
+        .getState()
+        .updateMessage(conversationId, message.id, { proposal });
+    } catch (error) {
+      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إرسال الرد'));
+    }
+  };
 
   // Replying (swipe right or رد): show what's quoted and open the keyboard
   const inputRef = useRef<TextInput>(null);
@@ -170,6 +225,13 @@ export default function ChatDetailsScreen() {
             onOpenPhotos={(urls, index) => openViewer(urls, index)}
             onOpenFile={openChatFile}
             focusMessageId={search.focusId}
+            onRespondToProposal={respondToProposal}
+            onCounterProposal={(message) => {
+              setCounterOf(message);
+              setComposer(
+                message.type === 'APPOINTMENT' ? 'appointment' : 'offer',
+              );
+            }}
             onRetryAttachments={(tempId) =>
               conversationId &&
               useChatStore.getState().retryAttachments(conversationId, tempId)
@@ -192,6 +254,7 @@ export default function ChatDetailsScreen() {
             showAttachmentMenu={showAttachmentMenu}
             setShowAttachmentMenu={setShowAttachmentMenu}
             onPickedFiles={setPickedFiles}
+            onCompose={setComposer}
           />
         </KeyboardAvoidingView>
       </ContentContainer>
@@ -206,6 +269,53 @@ export default function ChatDetailsScreen() {
         onCopy={copyMessage}
         onHide={hideMessage}
       />
+
+      {composer === 'property' && (
+        <PropertyPickerSheet
+          onClose={closeComposer}
+          onPick={(p) =>
+            sendRich({
+              type: 'PROPERTY',
+              propertyId: p.id,
+              property: {
+                id: p.id,
+                imageUrl: p.imageUrl,
+                price: p.price,
+                title: p.title,
+                type: p.type,
+                location: p.location,
+              },
+            })
+          }
+        />
+      )}
+      {composer === 'location' && (
+        <LocationSheet
+          onClose={closeComposer}
+          onSend={(loc) =>
+            sendRich({
+              type: 'LOCATION',
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+              locationLabel: loc.label ?? undefined,
+            })
+          }
+        />
+      )}
+      {(composer === 'appointment' || composer === 'offer') && (
+        <ProposalSheet
+          kind={composer === 'appointment' ? 'APPOINTMENT' : 'OFFER'}
+          counterOf={counterOf?.proposal}
+          defaultPeriod={propertyContext?.type === 'RENT' ? 'MONTHLY' : 'TOTAL'}
+          onClose={closeComposer}
+          onSubmit={(proposal) =>
+            sendRich({
+              type: composer === 'appointment' ? 'APPOINTMENT' : 'OFFER',
+              proposal,
+            })
+          }
+        />
+      )}
 
       {/* Picked from the "+" panel: review before sending */}
       <AttachmentPreviewSheet
