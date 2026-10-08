@@ -85,6 +85,7 @@ export default function ChatDetailsScreen() {
     copyMessage,
     hideMessage,
     hasOlderMessages,
+    otherReceipt,
   } = useChatConversation({ conversationId, listRef });
 
   // 🔍 in the header: search this chat, jump between matches
@@ -236,6 +237,7 @@ export default function ChatDetailsScreen() {
               }
             }}
             focusMessageId={search.focusId}
+            otherReceipt={otherReceipt}
             onRespondToProposal={respondToProposal}
             onCounterProposal={(message) => {
               setCounterOf(message);

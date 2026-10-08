@@ -4,11 +4,13 @@ import { ReactNode } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
+import MessageTicks from '@/shared/components/chat/MessageTicks';
 import {
   documentStyle,
   formatDuration,
   formatFileSize,
 } from '@/shared/utils/chatAttachments';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface AttachmentMessageBubbleProps {
   message: ChatMessage;
@@ -19,6 +21,7 @@ interface AttachmentMessageBubbleProps {
   onPressFile: (index: number) => void;
   onPressVideo?: (index: number) => void;
   onRetry?: () => void;
+  status?: MessageStatus | null;
 }
 
 const GRID = 232;
@@ -36,6 +39,7 @@ export default function AttachmentMessageBubble({
   onPressFile,
   onPressVideo,
   onRetry,
+  status,
 }: AttachmentMessageBubbleProps) {
   const isMine = message.isMine;
   const pending = !message.attachments && !!message.localAttachments;
@@ -224,9 +228,10 @@ export default function AttachmentMessageBubble({
           </TouchableOpacity>
         )}
       </View>
-      <Text className="mt-1 self-end px-1 font-cairo text-[13px] text-[#6B6A6A]">
-        {timestamp}
-      </Text>
+      <View className="mt-1 flex-row items-center gap-1 self-end px-1">
+        <MessageTicks status={status} />
+        <Text className="font-cairo text-[13px] text-[#6B6A6A]">{timestamp}</Text>
+      </View>
     </View>
   );
 }

@@ -17,6 +17,8 @@ export interface PropertyContext {
 }
 
 export interface ConversationSummary {
+  // How far the other person has received / read (tick on my last message)
+  otherReceipt?: ChatReceipt | null;
   id: string;
   createdAt: string;
   updatedAt: string;
@@ -79,6 +81,16 @@ export interface ProposalInput {
   note?: string;
   // Answering this proposal (counter-offer / another time)
   counterOfId?: string;
+}
+
+/**
+ * How far a persona has received / read a conversation: a message of mine
+ * is delivered when sent at or before `lastDeliveredAt`, read when at or
+ * before `lastReadAt`.
+ */
+export interface ChatReceipt {
+  lastDeliveredAt?: string | null;
+  lastReadAt?: string | null;
 }
 
 /** A map pin (LOCATION message). */
@@ -183,6 +195,8 @@ export interface GetMessagesResponse {
   meta: {
     nextCursor?: string;
     hasNextPage: boolean;
+    // How far the other person has received / read (my ticks)
+    otherReceipt?: ChatReceipt | null;
     propertyContext?: PropertyContext | null;
     otherUser?: ChatParticipant | null;
   };

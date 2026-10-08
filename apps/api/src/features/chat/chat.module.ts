@@ -10,6 +10,7 @@ import { ChatConversationsService } from './services/chat-conversations.service'
 import { ChatMessagesService } from './services/chat-messages.service';
 import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
 import { ChatProposalsService } from './services/chat-proposals.service';
+import { ChatReceiptsService } from './services/chat-receipts.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ChatProposalsService } from './services/chat-proposals.service';
     ChatPushService,
     ChatAttachmentsService,
     ChatProposalsService,
+    ChatReceiptsService,
     ChatConversationsService,
     ChatMessagesService,
     ChatService,

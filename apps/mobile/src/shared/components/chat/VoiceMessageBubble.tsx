@@ -3,7 +3,9 @@ import { AudioPlayer, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { ReactNode, useEffect, useRef } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
+import MessageTicks from '@/shared/components/chat/MessageTicks';
 import { formatDuration } from '@/shared/utils/chatAttachments';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface VoiceMessageBubbleProps {
   // The note's link (signed), or the local file while it's being sent
@@ -17,6 +19,8 @@ interface VoiceMessageBubbleProps {
   onRetry?: () => void;
   // A fresh link: the signed one expires after 15 minutes
   refreshUri?: () => Promise<string>;
+  // My message: sending / sent / delivered / read ticks
+  tickStatus?: MessageStatus | null;
 }
 
 // Links older than this are renewed before playing
@@ -36,6 +40,7 @@ export default function VoiceMessageBubble({
   failed = false,
   onRetry,
   refreshUri,
+  tickStatus,
 }: VoiceMessageBubbleProps) {
   const player = useAudioPlayer(uri);
   const linkedAt = useRef(Date.now());
@@ -147,7 +152,10 @@ export default function VoiceMessageBubble({
             </TouchableOpacity>
           )}
         </View>
-        <Text className="mt-1 px-1 font-cairo text-[13px] text-[#6B6A6A]">{timestamp}</Text>
+        <View className="mt-1 flex-row items-center gap-1 px-1">
+          <MessageTicks status={tickStatus} />
+          <Text className="font-cairo text-[13px] text-[#6B6A6A]">{timestamp}</Text>
+        </View>
       </View>
     </View>
   );

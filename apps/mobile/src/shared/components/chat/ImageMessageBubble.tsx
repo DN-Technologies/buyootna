@@ -1,13 +1,16 @@
-import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import MessageTicks from '@/shared/components/chat/MessageTicks';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface ImageMessageProps {
   imageUrl: string;
   isMine: boolean;
   timestamp: string;
-  isRead?: boolean;
+  // My message: sending / sent / delivered / read ticks
+  status?: MessageStatus | null;
   quote?: ReactNode;
   onPressImage?: () => void;
 }
@@ -16,7 +19,7 @@ export default function ImageMessageBubble({
   imageUrl,
   isMine,
   timestamp,
-  isRead,
+  status,
   quote,
   onPressImage,
 }: ImageMessageProps) {
@@ -50,13 +53,7 @@ export default function ImageMessageBubble({
 
         {/* Meta row (outside, below the bubble) */}
         <View className="mt-1 flex-row items-center gap-1">
-          {isMine && (
-            <Feather
-              name="check"
-              size={14}
-              color={isRead ? '#15304D' : '#94A3B8'}
-            />
-          )}
+          <MessageTicks status={status} />
           <Text className="font-cairo text-[13px] text-[#6B6A6A]">
             {timestamp}
           </Text>

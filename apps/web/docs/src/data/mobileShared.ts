@@ -1271,11 +1271,13 @@ export const mobileShared: DocSection = {
       acceptanceCriteria: {
         en: [
           "Only live ads are listed under إعلاناتي; hidden ads aren't.",
+          "Each ad's title, price and area start from the right, next to its photo (right-to-left).",
           "The card shows the shared ad, not the chat's own ad.",
           "Sharing an expired favourite fails with a message; nothing is sent.",
         ],
         ar: [
           "تظهر الإعلانات النشطة فقط في إعلاناتي، ولا تظهر الإعلانات المخفية.",
+          "عنوان كل إعلان وسعره ومنطقته تبدأ من اليمين بجانب صورته (من اليمين لليسار).",
           "البطاقة تعرض الإعلان المُشارك وليس إعلان المحادثة.",
           "مشاركة إعلان منتهٍ من المفضلة تفشل برسالة ولا يُرسل شيء.",
         ],
@@ -1290,7 +1292,7 @@ export const mobileShared: DocSection = {
           "أغلق الإعلان B من إعلاناتي — تظهر على بطاقته 'الإعلان غير متاح'.",
         ],
       },
-      updatedIn: "feat/chat-share-location-proposals",
+      updatedIn: "feat/chat-message-ticks",
     },
     {
       id: "mobile-chat-location",
@@ -1550,6 +1552,49 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "feat/app-icon-badge",
+    },
+    {
+      id: "mobile-chat-message-ticks",
+      title: {
+        en: "Message ticks: sent, delivered, read",
+        ar: "علامات الرسائل: أُرسلت، سُلّمت، قُرئت",
+      },
+      priority: "P1",
+      story: {
+        en: "Like WhatsApp, each of my chat messages shows its state next to the time: a clock while sending, one grey tick once sent, two grey ticks once it reached the other person's app (their app was open, or they opened it later), and two gold ticks once they opened the chat. Ticks change live, without reopening the chat, and show on every message type (text, photos, files, video, voice, location, appointment, offer, shared ad). In the chats list the same ticks show beside my last message. There's no setting to turn read receipts off. The API sends the other person's lastDeliveredAt / lastReadAt as otherReceipt and a conversation_receipt socket event.",
+        ar: "مثل الواتساب، تعرض كل رسالة أرسلتها حالتها بجانب الوقت: ساعة أثناء الإرسال، وعلامة رمادية واحدة بعد الإرسال، وعلامتان رماديتان عند وصولها لتطبيق الطرف الآخر (كان تطبيقه مفتوحاً أو فتحه لاحقاً)، وعلامتان ذهبيتان عند فتحه المحادثة. تتغير العلامات مباشرة دون إعادة فتح المحادثة، وتظهر على كل أنواع الرسائل (نص، صور، ملفات، فيديو، صوت، موقع، موعد، عرض، إعلان). وفي قائمة المحادثات تظهر العلامات نفسها بجانب آخر رسالة لي. لا يوجد إعداد لإيقاف إشعارات القراءة. ويرسل الـ API قيم lastDeliveredAt / lastReadAt للطرف الآخر في otherReceipt وحدث conversation_receipt عبر الـ socket.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The other person's app is closed: my message stays on one grey tick.",
+          "They open the app without opening the chat: two grey ticks.",
+          "They open the chat: two gold ticks, on that message and every earlier one.",
+          "Both in the chat: a new message turns gold within a moment.",
+          "Their messages show no ticks; a failed send shows its retry row, not ticks.",
+          "Chats that were already read before this release show two gold ticks, not one.",
+        ],
+        ar: [
+          "تطبيق الطرف الآخر مغلق: تبقى رسالتي بعلامة رمادية واحدة.",
+          "يفتح التطبيق دون فتح المحادثة: علامتان رماديتان.",
+          "يفتح المحادثة: علامتان ذهبيتان على تلك الرسالة وكل ما قبلها.",
+          "الطرفان داخل المحادثة: تتحول الرسالة الجديدة للذهبي خلال لحظة.",
+          "رسائل الطرف الآخر بلا علامات، والإرسال الفاشل يعرض إعادة المحاولة لا العلامات.",
+          "المحادثات المقروءة قبل هذا الإصدار تعرض علامتين ذهبيتين لا علامة واحدة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two devices: force-close the app on B, send from A — one grey tick. Open the app on B (stay on the home tab) — A shows two grey ticks. Open the chat on B — A shows two gold ticks.",
+          "With both in the chat, send a photo, a voice note and an offer from A — each turns gold.",
+          "Check A's chats list: the tick beside the last message matches the one in the chat.",
+        ],
+        ar: [
+          "جهازان: أغلق التطبيق تماماً على B وأرسل من A — علامة رمادية واحدة. افتح التطبيق على B (ابقَ في الرئيسية) — تظهر على A علامتان رماديتان. افتح المحادثة على B — تظهر على A علامتان ذهبيتان.",
+          "والطرفان داخل المحادثة، أرسل من A صورة ورسالة صوتية وعرض سعر — تتحول كل واحدة للذهبي.",
+          "تحقق من قائمة محادثات A: العلامة بجانب آخر رسالة تطابق التي داخل المحادثة.",
+        ],
+      },
+      updatedIn: "feat/chat-message-ticks",
     },
   ],
 };

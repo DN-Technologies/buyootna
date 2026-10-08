@@ -10,6 +10,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { SendMessageDto } from '../dto/send-message.dto';
+import { receiptOf } from './chat-receipts.service';
 import {
   ATTACHMENT_SELECT,
   ChatAttachmentsService,
@@ -245,6 +246,8 @@ export class ChatMessagesService {
       meta: {
         nextCursor,
         hasNextPage,
+        // How far the other person has received / read (my ticks)
+        otherReceipt: receiptOf(otherPart),
         propertyContext: prop
           ? {
               id: prop.id,

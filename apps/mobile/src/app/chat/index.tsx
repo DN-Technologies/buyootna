@@ -29,6 +29,7 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { lastMessagePreview } from '@/shared/utils/chatAttachments';
 import { formatMessageTime } from '@/shared/utils/chatDate';
+import { messageStatus } from '@/shared/utils/chatReceipts';
 import { getArabicCategoryLabel } from '@/shared/utils/helpers/property';
 
 export default function ChatsInboxScreen() {
@@ -70,8 +71,15 @@ export default function ChatsInboxScreen() {
     const unsubscribe = socketService.onConversationUpdated((data) => {
       receiveMessage(data.conversationId, data.lastMessage);
     });
+    // The other person received / read a chat: the tick on my last message
+    const unsubscribeReceipt = socketService.onConversationReceipt((receipt) =>
+      useChatStore.getState().applyReceipt(receipt),
+    );
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      unsubscribeReceipt();
+    };
   }, [token, receiveMessage]);
 
   if (!token) {
@@ -256,6 +264,11 @@ export default function ChatsInboxScreen() {
   
                     return (
                       <ChatListItem
+                status={
+                  item.lastMessage?.isMine
+                    ? messageStatus(item.lastMessage, item.otherReceipt)
+                    : null
+                }
                         id={item.id}
                         user={{
                           name: item.otherUser.name,

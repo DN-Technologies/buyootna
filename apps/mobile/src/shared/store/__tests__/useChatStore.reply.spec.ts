@@ -134,4 +134,32 @@ describe('useChatStore — replies and حذف لدي', () => {
       label: 'السالمية',
     });
   });
+
+  it("keeps the other person's receipt, ignoring my own reads and stale ones", () => {
+    const store = useChatStore.getState();
+    store.applyReceipt({
+      conversationId: 'c1',
+      identityId: 'ident-other',
+      lastDeliveredAt: '2026-10-09T10:05:00.000Z',
+      lastReadAt: '2026-10-09T10:05:00.000Z',
+    });
+    // My own persona reading the chat is not my ticks
+    store.applyReceipt({
+      conversationId: 'c1',
+      identityId: 'ident-me',
+      lastDeliveredAt: '2026-10-09T11:00:00.000Z',
+      lastReadAt: '2026-10-09T11:00:00.000Z',
+    });
+    // An older receipt arriving late doesn't take the ticks back
+    store.applyReceipt({
+      conversationId: 'c1',
+      identityId: 'ident-other',
+      lastDeliveredAt: '2026-10-09T10:01:00.000Z',
+      lastReadAt: null,
+    });
+    expect(useChatStore.getState().receiptByConversation.c1).toEqual({
+      lastDeliveredAt: '2026-10-09T10:05:00.000Z',
+      lastReadAt: '2026-10-09T10:05:00.000Z',
+    });
+  });
 });
