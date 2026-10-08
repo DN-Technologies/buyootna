@@ -1149,12 +1149,14 @@ export const mobileShared: DocSection = {
           "The reply is quoted on both phones, with the right name; tapping the quote jumps to the original.",
           "نسخ copies the text; حذف لدي removes the message on this side only and survives reopening the chat.",
           "A message still sending can't be replied to or deleted yet.",
+          "Under a one-word reply the quote keeps a readable width; the quoted name stays on one line.",
         ],
         ar: [
           "سحب الرسالة لليمين بعد أيقونة الرد يبدأ الرد (مع اهتزاز خفيف)؛ والسحب لليسار أو التمرير لا يبدأه.",
           "يظهر الاقتباس على الهاتفين بالاسم الصحيح؛ والضغط عليه ينتقل إلى الرسالة الأصلية.",
           "نسخ ينسخ النص؛ وحذف لدي يحذف الرسالة من هذه الجهة فقط ويبقى بعد إعادة فتح المحادثة.",
           "الرسالة قيد الإرسال لا يمكن الرد عليها أو حذفها بعد.",
+          "تحت رد من كلمة واحدة يحتفظ الاقتباس بعرض مقروء، ويبقى الاسم المقتبس في سطر واحد.",
         ],
       },
       testScenarios: {
@@ -1169,7 +1171,7 @@ export const mobileShared: DocSection = {
           "اضغط مطولاً على رسالة ← حذف لدي — تختفي على A وتبقى على B؛ أعد فتح المحادثة على A — ما زالت محذوفة.",
         ],
       },
-      updatedIn: "feat/chat-reply-resume",
+      updatedIn: "fix/reply-quote-width",
     },
     {
       id: "mobile-chat-attachments",
