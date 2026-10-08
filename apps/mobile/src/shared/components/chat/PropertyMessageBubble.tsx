@@ -19,6 +19,8 @@ interface PropertyContextProps {
     bathrooms?: number;
     specs?: string; // fallback
     location: string;
+    // Off the market (expired / closed): not opened
+    unavailable?: boolean;
   };
   isMine: boolean;
   timestamp: string;
@@ -113,6 +115,7 @@ export default function PropertyMessageBubble({
         {quote}
         <TouchableOpacity
           activeOpacity={0.9}
+          disabled={property.unavailable}
           onPress={onPressProperty}
           className="w-full overflow-hidden rounded-md border border-[#ECECEC] bg-white shadow-sm shadow-gray-200/50"
         >
@@ -128,6 +131,14 @@ export default function PropertyMessageBubble({
             className="h-48 w-full bg-gray-100"
             contentFit="cover"
           />
+
+          {property.unavailable && (
+            <View className="absolute left-0 right-0 top-0 h-48 items-center justify-center bg-black/50">
+              <Text className="font-cairo-bold text-[15px] text-white">
+                الإعلان غير متاح
+              </Text>
+            </View>
+          )}
 
           {/* Bottom Content - Right-aligned styling to match target design */}
           <View className="p-4">

@@ -100,6 +100,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Socket ${client.id} left conversation:${conversationId}`);
   }
 
+  /**
+   * A message changed after it was sent (an offer / appointment answered):
+   * both phones patch it in place.
+   */
+  emitMessageUpdated(
+    conversationId: string,
+    update: { messageId: string; proposal: unknown },
+  ) {
+    this.server
+      .to(`conversation:${conversationId}`)
+      .emit('message_updated', { conversationId, ...update });
+  }
+
   @SubscribeMessage('send_message')
   async handleSendMessage(
     client: Socket,
@@ -112,7 +125,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     try {
-      const message = await this.chatService.sendMessage(
+      const { countered, ...message } = await this.chatService.sendMessage(
         { userId, identityId },
         payload.conversationId,
         payload,
@@ -121,6 +134,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Broadcast the message to all participants in this conversation
       const room = `conversation:${payload.conversationId}`;
       this.server.to(room).emit('new_message', message);
+      // A counter-offer: the offer it answers is now COUNTERED
+      if (countered) this.emitMessageUpdated(payload.conversationId, countered);
 
       // Push to recipients who aren't looking at this conversation right now
       // (fire-and-forget: a push problem never fails the send)
@@ -135,6 +150,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               type: message.type,
               content: message.content,
               attachments: message.attachments,
+              location: message.location,
+              proposal: message.proposal,
             },
             viewingIdentityIds: new Set(
               sockets

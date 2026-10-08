@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -13,6 +14,11 @@ import {
   ATTACHMENT_SELECT,
   ChatAttachmentsService,
 } from './chat-attachments.service';
+import {
+  ChatProposalsService,
+  presentProposal,
+  PROPOSAL_SELECT,
+} from './chat-proposals.service';
 
 /**
  * Message reading and writing inside a conversation: the cursor-paginated
@@ -42,7 +48,41 @@ type MessageWithReply = Prisma.MessageGetPayload<object> & {
   attachments: Prisma.MessageAttachmentGetPayload<{
     select: typeof ATTACHMENT_SELECT;
   }>[];
+  proposal: Prisma.ChatProposalGetPayload<{
+    select: typeof PROPOSAL_SELECT;
+  }> | null;
 };
+
+/** The ad card in a PROPERTY message; `unavailable` once it's off the market. */
+export function propertyCard(prop: Property) {
+  return {
+    id: prop.id,
+    imageUrl: prop.images[0] || '@/assets/images/no-image.png',
+    price: prop.price,
+    title: `${prop.category} ${prop.type}`,
+    type: prop.type,
+    area: prop.areaSize ?? undefined,
+    bedrooms: prop.beds ?? undefined,
+    bathrooms: prop.baths ?? undefined,
+    location: prop.location,
+    unavailable: prop.status !== 'ACTIVE',
+  };
+}
+
+/** The pin of a LOCATION message. */
+export function locationOf(msg: {
+  latitude: number | null;
+  longitude: number | null;
+  locationLabel: string | null;
+}) {
+  return msg.latitude != null && msg.longitude != null
+    ? {
+        latitude: msg.latitude,
+        longitude: msg.longitude,
+        label: msg.locationLabel,
+      }
+    : undefined;
+}
 
 /**
  * The quoted message under a reply. A quoted message that's gone, or that
@@ -79,6 +119,7 @@ export class ChatMessagesService {
     private readonly prisma: PrismaService,
     private readonly displayService: ChatParticipantDisplayService,
     private readonly attachments: ChatAttachmentsService,
+    private readonly proposals: ChatProposalsService,
   ) {}
 
   // Get messages for a single conversation
@@ -132,6 +173,7 @@ export class ChatMessagesService {
           select: ATTACHMENT_SELECT,
           orderBy: { createdAt: 'asc' },
         },
+        proposal: { select: PROPOSAL_SELECT },
       },
     });
 
@@ -151,6 +193,33 @@ export class ChatMessagesService {
     const { name: otherUserName, avatarUrl: otherUserAvatar } =
       await this.displayService.resolve(otherPart);
 
+    // Ads shared in these messages (other than the chat's own ad)
+    const sharedIds = [
+      ...new Set(
+        messages
+          .map((m) => m.propertyId)
+          .filter((id): id is string => !!id && id !== prop?.id),
+      ),
+    ];
+    const shared = new Map(
+      (sharedIds.length
+        ? await this.prisma.property.findMany({
+            where: { id: { in: sharedIds } },
+          })
+        : []
+      ).map((p) => [p.id, p]),
+    );
+    const cardFor = (msg: MessageWithReply) => {
+      const p = msg.propertyId
+        ? msg.propertyId === prop?.id
+          ? prop
+          : shared.get(msg.propertyId)
+        : msg.type === 'PROPERTY'
+          ? prop
+          : null;
+      return p ? propertyCard(p) : undefined;
+    };
+
     return {
       data: await Promise.all(
         messages.reverse().map(async (msg) => ({
@@ -159,20 +228,9 @@ export class ChatMessagesService {
           content: msg.content,
           imageUrl: msg.imageUrl,
           propertyId: msg.propertyId,
-          property:
-            (msg.propertyId || msg.type === 'PROPERTY') && prop
-              ? {
-                  id: prop.id,
-                  imageUrl: prop.images[0] || '@/assets/images/no-image.png',
-                  price: prop.price,
-                  title: `${prop.category} ${prop.type}`,
-                  type: prop.type,
-                  area: prop.areaSize ?? undefined,
-                  bedrooms: prop.beds ?? undefined,
-                  bathrooms: prop.baths ?? undefined,
-                  location: prop.location,
-                }
-              : undefined,
+          property: cardFor(msg),
+          location: locationOf(msg),
+          proposal: msg.proposal ? presentProposal(msg.proposal) : undefined,
           replyTo: replyPreview(msg.replyToId, msg.replyTo, identityId),
           // Private files: fresh signed links for this participant
           attachments: msg.attachments.length
@@ -240,6 +298,46 @@ export class ChatMessagesService {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
     }
 
+    const type = dto.type || 'TEXT';
+
+    // A map pin needs valid coordinates
+    if (type === 'LOCATION') {
+      const { latitude: lat, longitude: lng } = dto;
+      if (
+        typeof lat !== 'number' ||
+        typeof lng !== 'number' ||
+        Math.abs(lat) > 90 ||
+        Math.abs(lng) > 180
+      ) {
+        throw new BadRequestException('الموقع غير صحيح');
+      }
+    }
+
+    // A shared ad must be live (the chat's own ad is always fine)
+    let sharedProperty: Property | null = null;
+    if (dto.propertyId) {
+      const conversationProperty = await this.prisma.conversation.findUnique({
+        where: { id: conversationId },
+        select: { propertyId: true },
+      });
+      sharedProperty = await this.prisma.property.findUnique({
+        where: { id: dto.propertyId },
+      });
+      if (
+        !sharedProperty ||
+        (sharedProperty.status !== 'ACTIVE' &&
+          sharedProperty.id !== conversationProperty?.propertyId)
+      ) {
+        throw new BadRequestException('الإعلان غير متاح');
+      }
+    }
+
+    // Appointment / offer details
+    const proposalInput =
+      type === 'APPOINTMENT' || type === 'OFFER'
+        ? this.proposals.parse(type, dto.proposal)
+        : null;
+
     // A reply only to a message of this same conversation; anything else is
     // sent as a plain message
     const replyTo = dto.replyToId
@@ -255,13 +353,29 @@ export class ChatMessagesService {
           conversationId,
           senderId: sender.userId,
           senderIdentityId: sender.identityId,
-          type: dto.type || 'TEXT',
+          type,
           content: dto.content || null,
           imageUrl: dto.imageUrl || null,
           propertyId: dto.propertyId || null,
           replyToId: replyTo?.id ?? null,
+          ...(type === 'LOCATION'
+            ? {
+                latitude: dto.latitude,
+                longitude: dto.longitude,
+                locationLabel: dto.locationLabel?.trim().slice(0, 200) || null,
+              }
+            : {}),
         },
       });
+
+      const proposal = proposalInput
+        ? await this.proposals.createFor(tx, {
+            identityId: sender.identityId,
+            conversationId,
+            messageId: message.id,
+            proposal: proposalInput,
+          })
+        : null;
 
       // Photos / documents uploaded for this message; all photos -> IMAGE,
       // any document -> FILE
@@ -287,8 +401,8 @@ export class ChatMessagesService {
         }
       }
 
-      let prop: Property | null = null;
-      if (dto.propertyId || message.type === 'PROPERTY') {
+      let prop: Property | null = sharedProperty;
+      if (!prop && message.type === 'PROPERTY') {
         const conv = await tx.conversation.findUnique({
           where: { id: conversationId },
           include: { property: true },
@@ -312,17 +426,15 @@ export class ChatMessagesService {
         content: message.content,
         imageUrl: message.imageUrl,
         propertyId: message.propertyId,
-        property: prop
+        property: prop ? propertyCard(prop) : undefined,
+        location: locationOf(message),
+        proposal: proposal ? presentProposal(proposal.proposal) : undefined,
+        // The offer this one counters (now COUNTERED): the gateway updates
+        // its card on both phones
+        countered: proposal?.countered
           ? {
-              id: prop.id,
-              imageUrl: prop.images[0] || '@/assets/images/no-image.png',
-              price: prop.price,
-              title: `${prop.category} ${prop.type}`,
-              type: prop.type,
-              area: prop.areaSize ?? undefined,
-              bedrooms: prop.beds ?? undefined,
-              bathrooms: prop.baths ?? undefined,
-              location: prop.location,
+              messageId: proposal.countered.messageId,
+              proposal: presentProposal(proposal.countered.proposal),
             }
           : undefined,
         // Broadcast to both sides: each app works out "you" from

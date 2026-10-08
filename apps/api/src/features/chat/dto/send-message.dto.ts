@@ -1,11 +1,46 @@
+import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsDateString,
   IsEnum,
+  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
 } from 'class-validator';
-import { MessageType } from '@prisma/client';
+import { MessageType, OfferPeriod } from '@prisma/client';
+
+// APPOINTMENT: scheduledAt; OFFER: amount (+ period). The socket path is
+// checked again in ChatProposalsService.parse.
+export class ProposalInputDto {
+  @IsOptional()
+  @IsDateString()
+  scheduledAt?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  amount?: number;
+
+  @IsOptional()
+  @IsEnum(OfferPeriod)
+  period?: OfferPeriod;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+
+  // Answering this proposal (counter-offer / another time)
+  @IsOptional()
+  @IsString()
+  counterOfId?: string;
+}
 
 export class SendMessageDto {
   @IsOptional()
@@ -35,4 +70,28 @@ export class SendMessageDto {
   @ArrayMaxSize(10)
   @IsString({ each: true })
   attachmentIds?: string[];
+
+  // LOCATION: the pin and its address
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  longitude?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  locationLabel?: string;
+
+  // APPOINTMENT / OFFER
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProposalInputDto)
+  proposal?: ProposalInputDto;
 }

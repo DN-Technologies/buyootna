@@ -5,6 +5,7 @@ import { conversationSearchWhere } from './chat-conversations.service';
 import { ChatMessagesService } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { chatPushBody } from './chat-push.service';
+import { ChatProposalsService } from './chat-proposals.service';
 
 describe('conversationSearchWhere (chats list search)', () => {
   it('matches the ad title in Arabic: category and listing type', () => {
@@ -48,6 +49,7 @@ describe('ChatMessagesService.searchMessages (in-chat search)', () => {
     prisma as unknown as PrismaService,
     {} as ChatParticipantDisplayService,
     {} as ChatAttachmentsService,
+    {} as ChatProposalsService,
   );
 
   beforeEach(() => jest.clearAllMocks());

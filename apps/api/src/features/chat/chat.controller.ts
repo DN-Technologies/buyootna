@@ -19,7 +19,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
+import { RespondProposalDto } from './dto/respond-proposal.dto';
+import { ChatProposalsService } from './services/chat-proposals.service';
 import { MAX_ATTACHMENTS } from './services/chat-attachments.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
@@ -37,7 +40,11 @@ import {
 @Controller('chat')
 @UseGuards(AuthGuard('jwt'))
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly proposals: ChatProposalsService,
+    private readonly gateway: ChatGateway,
+  ) {}
 
   @Post('conversations')
   @ApiOperation({
@@ -197,5 +204,29 @@ export class ChatController {
     @Param('id') messageId: string,
   ) {
     return this.chatService.hideMessage(reqUser.identityId, messageId);
+  }
+
+  @Post('proposals/:id/respond')
+  @ApiOperation({
+    summary:
+      'Answer a viewing appointment / price offer: accept or decline (the other side), cancel (the sender); pending only',
+  })
+  @ApiParam({ name: 'id', description: 'Proposal ID' })
+  @ApiCommonErrors()
+  async respondToProposal(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') proposalId: string,
+    @Body() dto: RespondProposalDto,
+  ) {
+    const result = await this.proposals.respond(
+      reqUser.identityId,
+      proposalId,
+      dto.action,
+    );
+    this.gateway.emitMessageUpdated(result.conversationId, {
+      messageId: result.messageId,
+      proposal: result.proposal,
+    });
+    return result;
   }
 }

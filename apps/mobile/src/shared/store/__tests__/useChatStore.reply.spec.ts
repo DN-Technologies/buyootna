@@ -97,4 +97,41 @@ describe('useChatStore — replies and حذف لدي', () => {
     expect(chatService.hideMessage).toHaveBeenCalledWith('m1');
     expect(useChatStore.getState().messagesByConversation.c1).toHaveLength(0);
   });
+
+  it('an offer shows as pending at once, and an answer patches it in place', () => {
+    useChatStore.getState().sendMessage('c1', {
+      type: 'OFFER',
+      proposal: { amount: 240000, period: 'TOTAL', counterOfId: 'o1' },
+    });
+    const [pending] = useChatStore.getState().messagesByConversation.c1;
+    expect(pending.proposal).toMatchObject({ kind: 'OFFER', status: 'PENDING', amount: 240000 });
+    expect(socketService.sendMessage).toHaveBeenCalledWith(
+      'c1',
+      expect.objectContaining({
+        type: 'OFFER',
+        proposal: { amount: 240000, period: 'TOTAL', counterOfId: 'o1' },
+      }),
+    );
+
+    useChatStore.getState().updateMessage('c1', pending.id, {
+      proposal: { ...pending.proposal!, status: 'ACCEPTED' },
+    });
+    expect(useChatStore.getState().messagesByConversation.c1[0].proposal?.status).toBe(
+      'ACCEPTED',
+    );
+  });
+
+  it('a pin is sent with its coordinates and shown at once', () => {
+    useChatStore.getState().sendMessage('c1', {
+      type: 'LOCATION',
+      latitude: 29.33,
+      longitude: 48.07,
+      locationLabel: 'السالمية',
+    });
+    expect(useChatStore.getState().messagesByConversation.c1[0].location).toEqual({
+      latitude: 29.33,
+      longitude: 48.07,
+      label: 'السالمية',
+    });
+  });
 });

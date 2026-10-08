@@ -6,8 +6,12 @@ import { ChatAttachment, ChatMessage } from '@/shared/api/chat.service';
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
+import LocationMessageBubble from '@/shared/components/chat/LocationMessageBubble';
 import MessageBubble from '@/shared/components/chat/MessageBubble';
 import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubble';
+import ProposalCard, {
+  ProposalAction,
+} from '@/shared/components/chat/ProposalCard';
 import ReplyQuote from '@/shared/components/chat/ReplyQuote';
 import SwipeableMessage from '@/shared/components/chat/SwipeableMessage';
 import { DisplayMessage, formatMessageTime } from '@/shared/utils/chatDate';
@@ -36,6 +40,9 @@ export interface ChatMessageListProps {
   onRetryAttachments?: (tempId: string) => void;
   // In-chat search: the current match to scroll to and highlight
   focusMessageId?: string | null;
+  // Offers / appointments: answer, or open the counter form
+  onRespondToProposal?: (message: ChatMessage, action: ProposalAction) => void;
+  onCounterProposal?: (message: ChatMessage) => void;
 }
 
 // How long a message stays tinted after jumping to it from a quote
@@ -62,6 +69,8 @@ export default function ChatMessageList({
   onOpenFile,
   onRetryAttachments,
   focusMessageId,
+  onRespondToProposal,
+  onCounterProposal,
 }: ChatMessageListProps) {
   // Tapping a quote scrolls to the original and tints it for a moment
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
@@ -142,6 +151,27 @@ export default function ChatMessageList({
       }
 
       switch (item.type) {
+        case 'LOCATION':
+          if (!item.location) return null;
+          return (
+            <LocationMessageBubble
+              location={item.location}
+              isMine={item.isMine}
+              timestamp={timeOf(item)}
+              quote={quote}
+            />
+          );
+        case 'APPOINTMENT':
+        case 'OFFER':
+          return (
+            <ProposalCard
+              message={item}
+              timestamp={timeOf(item)}
+              quote={quote}
+              onRespond={(action) => onRespondToProposal?.(item, action)}
+              onCounter={() => onCounterProposal?.(item)}
+            />
+          );
         case 'PROPERTY':
           if (!item.property) return null;
           return (
@@ -190,6 +220,8 @@ export default function ChatMessageList({
       onOpenPhotos,
       onOpenFile,
       onRetryAttachments,
+      onRespondToProposal,
+      onCounterProposal,
     ],
   );
 

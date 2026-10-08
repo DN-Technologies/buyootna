@@ -1255,5 +1255,149 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/chat-attachments-search",
     },
+    {
+      id: "mobile-chat-share-property",
+      title: {
+        en: "Share an ad in chat",
+        ar: "مشاركة إعلان في المحادثة",
+      },
+      priority: "P2",
+      story: {
+        en: "In a chat, + → عقار opens إعلاناتي (my live ads) and المفضلة with a search. Tapping an ad sends it as a card (photo, price, specs, area); tapping the card opens the ad. An ad that later expires or closes shows 'الإعلان غير متاح' on its card and doesn't open.",
+        ar: "في المحادثة، + ← عقار يفتح إعلاناتي (الإعلانات النشطة) والمفضلة مع بحث. الضغط على إعلان يرسله كبطاقة (الصورة والسعر والمواصفات والمنطقة)، والضغط على البطاقة يفتح الإعلان. والإعلان الذي ينتهي أو يُغلق لاحقاً تظهر على بطاقته 'الإعلان غير متاح' ولا يُفتح.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only live ads are listed under إعلاناتي; hidden ads aren't.",
+          "The card shows the shared ad, not the chat's own ad.",
+          "Sharing an expired favourite fails with a message; nothing is sent.",
+        ],
+        ar: [
+          "تظهر الإعلانات النشطة فقط في إعلاناتي، ولا تظهر الإعلانات المخفية.",
+          "البطاقة تعرض الإعلان المُشارك وليس إعلان المحادثة.",
+          "مشاركة إعلان منتهٍ من المفضلة تفشل برسالة ولا يُرسل شيء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "In a chat about ad A, share ad B from إعلاناتي — both phones show B's card; tap it — B opens.",
+          "Close ad B from my ads — its card shows 'الإعلان غير متاح'.",
+        ],
+        ar: [
+          "في محادثة عن الإعلان A، شارك الإعلان B من إعلاناتي — يظهر الإعلان B على الهاتفين، والضغط عليه يفتحه.",
+          "أغلق الإعلان B من إعلاناتي — تظهر على بطاقته 'الإعلان غير متاح'.",
+        ],
+      },
+      updatedIn: "feat/chat-share-location-proposals",
+    },
+    {
+      id: "mobile-chat-location",
+      title: {
+        en: "Send a location in chat",
+        ar: "إرسال موقع في المحادثة",
+      },
+      priority: "P2",
+      story: {
+        en: "+ → الموقع offers موقعي الحالي (GPS, asks permission the first time) or اختر على الخريطة (the app's map picker). The message shows a map preview with the address; tapping it opens Apple Maps or Google Maps (Android: Google Maps). The chats list and the push show '📍 <address>'.",
+        ar: "+ ← الموقع يعرض موقعي الحالي (GPS، ويطلب الإذن أول مرة) أو اختر على الخريطة (منتقي الخريطة في التطبيق). تظهر الرسالة بمعاينة خريطة مع العنوان، والضغط عليها يفتح خرائط Apple أو Google (في Android خرائط Google). وتظهر في قائمة المحادثات والإشعار '📍 العنوان'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The pin opens at the same point that was sent.",
+          "Refusing the location permission shows a message; nothing is sent.",
+          "Coordinates outside the valid range are refused by the server.",
+        ],
+        ar: [
+          "الدبوس يفتح على النقطة نفسها التي أُرسلت.",
+          "رفض إذن الموقع يعرض رسالة ولا يُرسل شيء.",
+          "الإحداثيات خارج النطاق الصحيح يرفضها الخادم.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Send موقعي الحالي — B sees the map and address; tap — Maps opens at that point.",
+          "Pick a point on the map and send — same on both phones.",
+        ],
+        ar: [
+          "أرسل موقعي الحالي — يرى B الخريطة والعنوان، والضغط يفتح الخرائط على النقطة.",
+          "اختر نقطة على الخريطة وأرسلها — تظهر نفسها على الهاتفين.",
+        ],
+      },
+      updatedIn: "feat/chat-share-location-proposals",
+    },
+    {
+      id: "mobile-chat-appointment",
+      title: {
+        en: "Viewing appointments in chat",
+        ar: "مواعيد المعاينة في المحادثة",
+      },
+      priority: "P1",
+      story: {
+        en: "+ → موعد معاينة: pick a day (next 60 days) and a time (8:00 ص–10:00 م, every 30 minutes; times less than 30 minutes ahead are disabled) with an optional note. The card shows the day and time and a status. The other side answers قبول / رفض / موعد آخر (a new proposed time; the old one shows 'تم الرد بعرض مقابل'); the sender can إلغاء while pending. Answers update both phones at once and notify the sender. Both people get a reminder push within the hour before an accepted appointment.",
+        ar: "+ ← موعد معاينة: اختر يوماً (خلال 60 يوماً) ووقتاً (من 8:00 ص إلى 10:00 م كل 30 دقيقة، والأوقات بعد أقل من 30 دقيقة معطلة) مع ملاحظة اختيارية. تعرض البطاقة اليوم والوقت والحالة. يرد الطرف الآخر بقبول / رفض / موعد آخر (وقت مقترح جديد، والقديم يظهر 'تم الرد بعرض مقابل')، ويمكن للمرسل الإلغاء ما دام بانتظار الرد. تتحدث الردود على الهاتفين فوراً ويصل المرسل إشعار. ويصل الطرفين تذكير خلال الساعة التي تسبق الموعد المقبول.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Only the receiver sees قبول / رفض / موعد آخر; only the sender sees إلغاء; no buttons once answered.",
+          "A pending appointment whose time has passed shows 'انتهى الموعد' and can't be accepted.",
+          "The reminder arrives once, within the hour before, on both phones.",
+        ],
+        ar: [
+          "يرى المستلم فقط قبول / رفض / موعد آخر، ويرى المرسل فقط إلغاء، ولا أزرار بعد الرد.",
+          "الموعد المعلّق الذي فات وقته يظهر 'انتهى الموعد' ولا يمكن قبوله.",
+          "يصل التذكير مرة واحدة خلال الساعة التي تسبق الموعد على الهاتفين.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "A proposes tomorrow 4:30 م; B accepts — both cards show مقبول without reopening; A gets the push.",
+          "B taps موعد آخر and picks 6:00 م — A's first card shows 'تم الرد بعرض مقابل', a new card appears.",
+          "Accept an appointment ~70 minutes ahead — both phones get the reminder within the next 20 minutes.",
+        ],
+        ar: [
+          "يقترح A غداً 4:30 م ويقبل B — تظهر البطاقتان مقبول دون إعادة الفتح، ويصل A إشعار.",
+          "يضغط B موعد آخر ويختار 6:00 م — تظهر البطاقة الأولى 'تم الرد بعرض مقابل' وتظهر بطاقة جديدة.",
+          "اقبل موعداً بعد 70 دقيقة تقريباً — يصل التذكير للهاتفين خلال 20 دقيقة.",
+        ],
+      },
+      updatedIn: "feat/chat-share-location-proposals",
+    },
+    {
+      id: "mobile-chat-offer",
+      title: {
+        en: "Price offers in chat",
+        ar: "عروض الأسعار في المحادثة",
+      },
+      priority: "P1",
+      story: {
+        en: "+ → عرض سعر: an amount in KWD (Arabic digits accepted, shown with thousands separators), إجمالي / شهري / سنوي (monthly by default in a rental ad's chat) and an optional note. The other side answers قبول / رفض / عرض مقابل (a new offer; the old one shows 'تم الرد بعرض مقابل'); the sender can إلغاء while pending. The card notes it's a record in the chat, not a binding contract. The chats list and push show '💰 عرض سعر: 250,000 د.ك'.",
+        ar: "+ ← عرض سعر: مبلغ بالدينار (تُقبل الأرقام العربية ويُعرض بفواصل الآلاف)، وإجمالي / شهري / سنوي (شهري افتراضياً في محادثة إعلان إيجار)، وملاحظة اختيارية. يرد الطرف الآخر بقبول / رفض / عرض مقابل (عرض جديد، والقديم يظهر 'تم الرد بعرض مقابل')، ويمكن للمرسل الإلغاء ما دام بانتظار الرد. تذكر البطاقة أنه للتوثيق داخل المحادثة وليس عقداً ملزماً. وتظهر في قائمة المحادثات والإشعار '💰 عرض سعر: 250,000 د.ك'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Zero or empty amounts can't be sent.",
+          "An offer answered on one phone can't be answered again on the other (second answer gets 'تم الرد على هذا العرض مسبقاً').",
+          "A counter-offer can only answer the other side's pending offer.",
+        ],
+        ar: [
+          "لا يمكن إرسال مبلغ صفر أو فارغ.",
+          "العرض الذي رُد عليه في هاتف لا يمكن الرد عليه مرة أخرى في الآخر (الرد الثاني يظهر 'تم الرد على هذا العرض مسبقاً').",
+          "العرض المقابل يرد فقط على عرض معلّق من الطرف الآخر.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "A offers 250,000; B counters 240,000; A accepts — first card 'تم الرد بعرض مقابل', second 'مقبول' on both phones.",
+          "In a rental ad's chat, the period starts at شهري.",
+          "A cancels a pending offer — B's card shows ملغي and no buttons.",
+        ],
+        ar: [
+          "يعرض A مبلغ 250,000 ويرد B بعرض 240,000 ويقبل A — البطاقة الأولى 'تم الرد بعرض مقابل' والثانية 'مقبول' على الهاتفين.",
+          "في محادثة إعلان إيجار تبدأ المدة على شهري.",
+          "يلغي A عرضاً معلّقاً — تظهر بطاقة B ملغي بلا أزرار.",
+        ],
+      },
+      updatedIn: "feat/chat-share-location-proposals",
+    },
   ],
 };

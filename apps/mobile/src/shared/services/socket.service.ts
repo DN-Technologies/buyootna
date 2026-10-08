@@ -2,6 +2,7 @@ import { AppState } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
 import { validateApiUrl } from '@/shared/api/api';
+import type { ChatProposal, ProposalInput } from '@/shared/api/chat.service';
 
 const API_URL = validateApiUrl();
 
@@ -120,6 +121,10 @@ class SocketService {
       tempId?: string;
       replyToId?: string;
       attachmentIds?: string[];
+      latitude?: number;
+      longitude?: number;
+      locationLabel?: string;
+      proposal?: ProposalInput;
     },
   ): boolean {
     if (!this.socket) {
@@ -127,6 +132,20 @@ class SocketService {
     }
     this.socket.emit('send_message', { conversationId, ...payload });
     return true;
+  }
+
+  /** An offer / appointment was answered: patch that message in place. */
+  onMessageUpdated(
+    callback: (update: {
+      conversationId: string;
+      messageId: string;
+      proposal?: ChatProposal;
+    }) => void,
+  ) {
+    this.socket?.on('message_updated', callback);
+    return () => {
+      this.socket?.off('message_updated', callback);
+    };
   }
 
   onNewMessage(callback: (message: any) => void) {

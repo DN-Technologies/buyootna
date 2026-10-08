@@ -3,6 +3,7 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ChatMessagesService, replyPreview } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { ChatAttachmentsService } from './chat-attachments.service';
+import { ChatProposalsService } from './chat-proposals.service';
 
 describe('replyPreview', () => {
   const source = {
@@ -78,6 +79,7 @@ describe('ChatMessagesService replies and hiding', () => {
       prisma as unknown as PrismaService,
       {} as ChatParticipantDisplayService,
       {} as ChatAttachmentsService,
+      {} as ChatProposalsService,
     );
   });
 

@@ -2,9 +2,11 @@ import { create } from 'zustand';
 
 import {
   ChatMessage,
+  ChatMessageType,
   chatService,
   ConversationSummary,
   LocalAttachment,
+  ProposalInput,
   ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
@@ -54,13 +56,27 @@ interface ChatState {
     conversationId: string,
     payload: {
       content?: string;
-      type?: 'TEXT' | 'IMAGE' | 'PROPERTY';
+      type?: ChatMessageType;
       imageUrl?: string;
       propertyId?: string;
+      // The shared ad's card until the server's copy arrives
+      property?: ChatMessage['property'];
+      // LOCATION
+      latitude?: number;
+      longitude?: number;
+      locationLabel?: string;
+      // APPOINTMENT / OFFER
+      proposal?: ProposalInput;
       // Replying to this message (shown quoted on the new bubble)
       replyTo?: ChatMessage;
     },
   ) => boolean;
+  /** Patches one message (an answered offer / appointment). */
+  updateMessage: (
+    conversationId: string,
+    messageId: string,
+    patch: Partial<ChatMessage>,
+  ) => void;
   /** "حذف لدي": removes it here at once; restored if the server refuses. */
   hideMessage: (conversationId: string, messageId: string) => Promise<void>;
   /**
@@ -278,7 +294,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       // 1. Emit via socket. No socket object at all means the emit would be
       // silently dropped -- report the failure instead of showing an
       // optimistic bubble that can never be confirmed.
-      const { replyTo, ...fields } = payload;
+      const { replyTo, property, ...fields } = payload;
       const emitted = socketService.sendMessage(conversationId, {
         ...fields,
         replyToId: replyTo?.id,
@@ -296,6 +312,27 @@ export const useChatStore = create<ChatState>((set, get) => {
         content: payload.content,
         imageUrl: payload.imageUrl,
         propertyId: payload.propertyId,
+        property,
+        location:
+          payload.latitude != null && payload.longitude != null
+            ? {
+                latitude: payload.latitude,
+                longitude: payload.longitude,
+                label: payload.locationLabel,
+              }
+            : undefined,
+        // Shown as pending until the server's copy replaces it
+        proposal: payload.proposal
+          ? {
+              id: tempId,
+              kind: payload.type === 'APPOINTMENT' ? 'APPOINTMENT' : 'OFFER',
+              status: 'PENDING',
+              scheduledAt: payload.proposal.scheduledAt,
+              amount: payload.proposal.amount,
+              period: payload.proposal.period,
+              note: payload.proposal.note,
+            }
+          : undefined,
         replyTo: replyTo ? quoteOf(replyTo) : null,
         isMine: true,
         // Shown via formatMessageTime(createdAt); kept for the type
@@ -316,6 +353,9 @@ export const useChatStore = create<ChatState>((set, get) => {
 
       return true;
     },
+
+    updateMessage: (conversationId, messageId, patch) =>
+      patchMessage(conversationId, messageId, patch),
 
     hideMessage: async (conversationId, messageId) => {
       const before = get().messagesByConversation[conversationId] || [];
@@ -430,6 +470,7 @@ export const useChatStore = create<ChatState>((set, get) => {
         // Remove the matching pending bubble: same text and the same number
         // of attachments (a photo sent without a caption has no text)
         const sameAs = (msg: ChatMessage) =>
+          msg.type === messageWithIsMine.type &&
           (msg.content ?? '') === (messageWithIsMine.content ?? '') &&
           (msg.localAttachments?.length ?? 0) ===
             (messageWithIsMine.attachments?.length ?? 0);
@@ -461,6 +502,12 @@ export const useChatStore = create<ChatState>((set, get) => {
                 type: messageWithIsMine.type,
                 createdAt: messageWithIsMine.createdAt,
                 isMine,
+                // For the preview: photos / file / pin / offer
+                attachmentsCount: messageWithIsMine.attachments?.length ?? 0,
+                attachmentName:
+                  messageWithIsMine.attachments?.[0]?.fileName ?? null,
+                locationLabel: messageWithIsMine.location?.label ?? null,
+                proposal: messageWithIsMine.proposal ?? null,
               },
               unreadCount:
                 state.activeConversationId === conversationId || isMine
