@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { BadgeService } from './badge.service';
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 // Expo accepts at most 100 messages per request
@@ -30,16 +31,55 @@ interface ExpoPushTicket {
 export class PushService {
   private readonly logger = new Logger(PushService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly badges: BadgeService,
+  ) {}
 
   async sendToTokens(tokens: string[], message: PushMessage): Promise<void> {
     const unique = [...new Set(tokens.filter(Boolean))];
+    const badges = await this.badgesFor(unique);
     for (let i = 0; i < unique.length; i += BATCH_SIZE) {
-      await this.sendBatch(unique.slice(i, i + BATCH_SIZE), message);
+      await this.sendBatch(unique.slice(i, i + BATCH_SIZE), message, badges);
     }
   }
 
-  private async sendBatch(tokens: string[], message: PushMessage) {
+  /**
+   * The app-icon number for each device: what its account / active persona
+   * hasn't read (counted after the notification being pushed was saved).
+   * Best effort: a device without a count just keeps its current number.
+   */
+  private async badgesFor(tokens: string[]): Promise<Map<string, number>> {
+    const result = new Map<string, number>();
+    try {
+      const sessions = await this.prisma.session.findMany({
+        where: { pushToken: { in: tokens }, isActive: true },
+        select: { pushToken: true, userId: true, activeIdentityId: true },
+      });
+      const counts = new Map<string, number>();
+      for (const s of sessions) {
+        if (!s.pushToken) continue;
+        const key = `${s.userId}:${s.activeIdentityId ?? ''}`;
+        if (!counts.has(key)) {
+          const { count } = await this.badges.countFor(
+            s.userId,
+            s.activeIdentityId,
+          );
+          counts.set(key, count);
+        }
+        result.set(s.pushToken, counts.get(key)!);
+      }
+    } catch (error) {
+      this.logger.warn(`Badge count failed: ${error}`);
+    }
+    return result;
+  }
+
+  private async sendBatch(
+    tokens: string[],
+    message: PushMessage,
+    badges: Map<string, number> = new Map(),
+  ) {
     try {
       const response = await fetch(EXPO_PUSH_URL, {
         method: 'POST',
@@ -57,6 +97,7 @@ export class PushService {
             body: message.body,
             data: message.data ?? {},
             sound: message.sound ?? 'default',
+            ...(badges.has(to) ? { badge: badges.get(to) } : {}),
             ...(message.channelId ? { channelId: message.channelId } : {}),
           })),
         ),

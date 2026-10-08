@@ -1508,5 +1508,46 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/native-1.5.0-video-voice",
     },
+    {
+      id: "mobile-app-icon-badge",
+      title: {
+        en: "Unread number on the app icon",
+        ar: "عدد غير المقروء على أيقونة التطبيق",
+      },
+      priority: "P2",
+      story: {
+        en: "The app icon shows a red number: unread chat messages for the persona the phone is using, plus the account's unread notifications. Every push carries the new total, so the number grows while the app is closed. The app corrects it when it opens, when it goes to the background, after reading a chat or a notification, and when switching persona; signing out clears it. iOS shows the number on the icon; on Android it depends on the launcher (some show a dot or the notification count instead). GET /notifications/badge returns { count, chats, notifications }.",
+        ar: "تعرض أيقونة التطبيق رقماً أحمر: رسائل المحادثات غير المقروءة للهوية المستخدمة على الهاتف، مع إشعارات الحساب غير المقروءة. كل إشعار يحمل المجموع الجديد، فيزيد الرقم والتطبيق مغلق. ويصححه التطبيق عند فتحه، وعند انتقاله للخلفية، وبعد قراءة محادثة أو إشعار، وعند تبديل الهوية، وتسجيل الخروج يمسحه. يعرض iOS الرقم على الأيقونة، وفي Android يعتمد على الواجهة (بعضها يعرض نقطة أو عدد الإشعارات). و GET /notifications/badge يعيد { count, chats, notifications }.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the app closed, two chat messages arrive: the icon shows 2 (plus any unread notifications).",
+          "Open the chat and read them, go to the home screen: the number drops.",
+          "Messages you sent, and messages you deleted on your side, aren't counted.",
+          "A phone on another persona of the same account doesn't count this persona's chats.",
+          "Sign out: no number.",
+        ],
+        ar: [
+          "والتطبيق مغلق تصل رسالتا محادثة: تعرض الأيقونة 2 (مع أي إشعارات غير مقروءة).",
+          "افتح المحادثة واقرأهما ثم اذهب للشاشة الرئيسية: ينخفض الرقم.",
+          "الرسائل التي أرسلتها أنت والتي حذفتها لديك لا تُحتسب.",
+          "هاتف على هوية أخرى للحساب نفسه لا يحتسب محادثات هذه الهوية.",
+          "سجّل الخروج: لا يظهر رقم.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two devices: close the app on B, send 3 messages from A — B's icon shows 3; open and read — back on the home screen it shows 0.",
+          "Leave one notification unread and receive one message — the icon shows 2.",
+          "Switch persona on B — the number changes to that persona's unread chats.",
+        ],
+        ar: [
+          "جهازان: أغلق التطبيق على B وأرسل 3 رسائل من A — تعرض أيقونة B الرقم 3، افتح واقرأ — عند العودة للشاشة الرئيسية تعرض 0.",
+          "اترك إشعاراً غير مقروء واستقبل رسالة — تعرض الأيقونة 2.",
+          "بدّل الهوية على B — يتغير الرقم إلى محادثات تلك الهوية غير المقروءة.",
+        ],
+      },
+      updatedIn: "feat/app-icon-badge",
+    },
   ],
 };

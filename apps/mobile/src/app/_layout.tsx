@@ -26,6 +26,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
+import { useAppBadge } from '@/shared/hooks/useAppBadge';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/useFavorites';
 import { usePushRegistration } from '@/shared/hooks/usePushRegistration';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
@@ -115,6 +116,8 @@ function RootLayout() {
 
   // Push token for security alerts (e.g. a login from another device)
   usePushRegistration(token);
+  // The unread number on the app icon
+  useAppBadge(token);
   const navigationRef = useNavigationContainerRef();
 
   const [loaded, error] = useFonts({

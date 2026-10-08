@@ -13,7 +13,8 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
     shouldPlaySound: true,
-    shouldSetBadge: false,
+    // The push carries the unread total for the app icon
+    shouldSetBadge: true,
   }),
 });
 

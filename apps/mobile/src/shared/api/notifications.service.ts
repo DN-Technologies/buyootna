@@ -53,6 +53,14 @@ export const notificationsService = {
     return response.data;
   },
 
+  /** The app-icon number: unread chat messages + unread notifications. */
+  getBadge: async (): Promise<number> => {
+    const response = await apiClient.get<{ count: number }>(
+      '/notifications/badge',
+    );
+    return response.data.count;
+  },
+
   getUnreadCount: async (): Promise<number> => {
     const response = await apiClient.get<{ count: number }>(
       '/notifications/unread-count',

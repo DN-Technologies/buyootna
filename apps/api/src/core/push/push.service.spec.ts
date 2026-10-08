@@ -1,12 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
+import { BadgeService } from './badge.service';
 import { PushService } from './push.service';
 
 describe('PushService', () => {
   let service: PushService;
   let fetchMock: jest.Mock;
 
-  const prisma = { session: { updateMany: jest.fn() } };
+  const prisma = {
+    session: {
+      updateMany: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([]),
+    },
+  };
+  const badges = { countFor: jest.fn() };
   const message = { title: 't', body: 'b', data: { route: '/devices' } };
 
   const ok = (tickets: unknown[]) => ({
@@ -21,7 +28,11 @@ describe('PushService', () => {
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PushService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        PushService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: BadgeService, useValue: badges },
+      ],
     }).compile();
     service = module.get(PushService);
     jest.spyOn(service['logger'], 'warn').mockImplementation(() => undefined);
@@ -103,5 +114,66 @@ describe('PushService', () => {
     await expect(
       service.sendToTokens(['ExponentPushToken[a]'], message),
     ).resolves.toBeUndefined();
+  });
+
+  it("sets each device's app-icon number from what its persona hasn't read", async () => {
+    prisma.session.findMany.mockResolvedValueOnce([
+      {
+        pushToken: 'ExponentPushToken[a]',
+        userId: 'u1',
+        activeIdentityId: 'i1',
+      },
+      {
+        pushToken: 'ExponentPushToken[b]',
+        userId: 'u1',
+        activeIdentityId: 'i1',
+      },
+      {
+        pushToken: 'ExponentPushToken[c]',
+        userId: 'u2',
+        activeIdentityId: null,
+      },
+    ]);
+    badges.countFor.mockImplementation((userId: string) =>
+      Promise.resolve({ count: userId === 'u1' ? 7 : 2 }),
+    );
+    fetchMock.mockResolvedValue(
+      ok([
+        { status: 'ok' },
+        { status: 'ok' },
+        { status: 'ok' },
+        { status: 'ok' },
+      ]),
+    );
+
+    await service.sendToTokens(
+      [
+        'ExponentPushToken[a]',
+        'ExponentPushToken[b]',
+        'ExponentPushToken[c]',
+        'ExponentPushToken[x]',
+      ],
+      message,
+    );
+
+    const sent = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(sent.map((m: { badge?: number }) => m.badge)).toEqual([
+      7,
+      7,
+      2,
+      undefined,
+    ]);
+    // One count per account + persona, not per device
+    expect(badges.countFor).toHaveBeenCalledTimes(2);
+    expect(badges.countFor).toHaveBeenCalledWith('u1', 'i1');
+  });
+
+  it('still sends when the count fails', async () => {
+    prisma.session.findMany.mockRejectedValueOnce(new Error('db'));
+    fetchMock.mockResolvedValue(ok([{ status: 'ok' }]));
+    await service.sendToTokens(['ExponentPushToken[a]'], message);
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)[0]).not.toHaveProperty(
+      'badge',
+    );
   });
 });
