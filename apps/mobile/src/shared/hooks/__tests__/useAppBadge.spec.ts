@@ -7,6 +7,8 @@ import { syncAppBadge, useAppBadge } from '@/shared/hooks/useAppBadge';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
+// The real module (jest.setup.js mocks its scheduler for every other file)
+jest.unmock('@/shared/hooks/useAppBadge');
 jest.mock('expo-notifications', () => ({
   setBadgeCountAsync: jest.fn(async () => true),
 }));
