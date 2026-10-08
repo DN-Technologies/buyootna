@@ -16,6 +16,18 @@ export const MAX_ATTACHMENTS = 10;
 const MB = 1024 * 1024;
 const IMAGE_MAX_BYTES = 10 * MB;
 const FILE_MAX_BYTES = 20 * MB;
+export const VIDEO_MAX_BYTES = 100 * MB;
+const AUDIO_MAX_BYTES = 10 * MB;
+const THUMBNAIL_MAX_BYTES = 2 * MB;
+// Generous caps on the reported length (videos up to 2 min, voice 5 min)
+const VIDEO_MAX_MS = 3 * 60 * 1000;
+const AUDIO_MAX_MS = 6 * 60 * 1000;
+const MAX_BYTES: Record<AttachmentKind, number> = {
+  IMAGE: IMAGE_MAX_BYTES,
+  FILE: FILE_MAX_BYTES,
+  VIDEO: VIDEO_MAX_BYTES,
+  AUDIO: AUDIO_MAX_BYTES,
+};
 // Uploaded but never sent: removed after this long
 const ORPHAN_AFTER_MS = 24 * 60 * 60 * 1000;
 
@@ -25,6 +37,14 @@ const IMAGE_TYPES = new Set([
   'image/webp',
   'image/heic',
   'image/heif',
+]);
+const VIDEO_TYPES = new Set(['video/mp4', 'video/quicktime']);
+const AUDIO_TYPES = new Set([
+  'audio/mp4',
+  'audio/m4a',
+  'audio/x-m4a',
+  'audio/aac',
+  'audio/mpeg',
 ]);
 const FILE_TYPES = new Set([
   'application/pdf',
@@ -43,12 +63,37 @@ type StoredAttachment = {
   size: number;
   width: number | null;
   height: number | null;
+  durationMs: number | null;
+  thumbnailKey: string | null;
 };
+
+/** Extra details sent with the upload, in the files' order. */
+export interface UploadExtras {
+  // Video stills, one per video (in the videos' order)
+  thumbnails?: Express.Multer.File[];
+  // Length of each file in ms (null for photos / documents)
+  durations?: (number | null)[];
+}
+
+/** The message type for what's sent together. */
+export function messageTypeFor(kinds: AttachmentKind[]) {
+  if (kinds.includes('AUDIO')) {
+    if (kinds.length > 1) {
+      throw new BadRequestException('الرسالة الصوتية تُرسل وحدها');
+    }
+    return 'VOICE' as const;
+  }
+  if (kinds.includes('VIDEO')) return 'VIDEO' as const;
+  if (kinds.every((k) => k === 'IMAGE')) return 'IMAGE' as const;
+  return 'FILE' as const;
+}
 
 /** The kind of an upload, or null when its type isn't allowed. */
 export function attachmentKind(mimeType: string): AttachmentKind | null {
   if (IMAGE_TYPES.has(mimeType)) return 'IMAGE';
   if (FILE_TYPES.has(mimeType)) return 'FILE';
+  if (VIDEO_TYPES.has(mimeType)) return 'VIDEO';
+  if (AUDIO_TYPES.has(mimeType)) return 'AUDIO';
   return null;
 }
 
@@ -82,6 +127,7 @@ export class ChatAttachmentsService {
     identityId: string,
     conversationId: string,
     files: Express.Multer.File[],
+    extras: UploadExtras = {},
   ) {
     await this.assertParticipant(identityId, conversationId);
     if (!files?.length) throw new BadRequestException('لم يتم إرفاق أي ملف');
@@ -96,10 +142,10 @@ export class ChatAttachmentsService {
       const kind = attachmentKind(file.mimetype);
       if (!kind) {
         throw new BadRequestException(
-          'نوع الملف غير مدعوم. المسموح: الصور و PDF و Word و Excel',
+          'نوع الملف غير مدعوم. المسموح: الصور والفيديو و PDF و Word و Excel',
         );
       }
-      const max = kind === 'IMAGE' ? IMAGE_MAX_BYTES : FILE_MAX_BYTES;
+      const max = MAX_BYTES[kind];
       if (file.size > max) {
         throw new BadRequestException(
           `حجم الملف ${file.originalname} أكبر من ${max / MB} ميجابايت`,
@@ -107,9 +153,23 @@ export class ChatAttachmentsService {
       }
       return { file, kind };
     });
+    // A voice note goes alone
+    messageTypeFor(checked.map((c) => c.kind));
+
+    // Video stills, in the videos' order
+    const thumbnails = extras.thumbnails ?? [];
+    for (const thumb of thumbnails) {
+      if (
+        !IMAGE_TYPES.has(thumb.mimetype) ||
+        thumb.size > THUMBNAIL_MAX_BYTES
+      ) {
+        throw new BadRequestException('صورة الفيديو المصغرة غير صالحة');
+      }
+    }
+    let videoIndex = 0;
 
     const stored: StoredAttachment[] = [];
-    for (const { file, kind } of checked) {
+    for (const [index, { file, kind }] of checked.entries()) {
       let body = file.buffer;
       let mimeType = file.mimetype;
       let fileName = file.originalname || 'file';
@@ -125,13 +185,34 @@ export class ChatAttachmentsService {
         mimeType = 'image/jpeg';
         fileName = fileName.replace(/\.(heic|heif)$/i, '.jpg');
       }
-      const ext = extname(fileName) || (kind === 'IMAGE' ? '.jpg' : '');
+      const ext =
+        extname(fileName) ||
+        { IMAGE: '.jpg', VIDEO: '.mp4', AUDIO: '.m4a', FILE: '' }[kind];
       const storageKey = await this.storage.uploadPrivate(
         body,
         `chat/${conversationId}`,
         ext,
         mimeType,
       );
+
+      // Length (video / voice) and the video's still
+      const maxMs = kind === 'VIDEO' ? VIDEO_MAX_MS : AUDIO_MAX_MS;
+      const reported = Number(extras.durations?.[index]);
+      const durationMs =
+        (kind === 'VIDEO' || kind === 'AUDIO') &&
+        Number.isFinite(reported) &&
+        reported > 0
+          ? Math.min(Math.round(reported), maxMs)
+          : null;
+      const thumbnail = kind === 'VIDEO' ? thumbnails[videoIndex++] : undefined;
+      const thumbnailKey = thumbnail
+        ? await this.storage.uploadPrivate(
+            thumbnail.buffer,
+            `chat/${conversationId}`,
+            '.jpg',
+            thumbnail.mimetype,
+          )
+        : null;
       stored.push(
         await this.prisma.messageAttachment.create({
           data: {
@@ -142,6 +223,8 @@ export class ChatAttachmentsService {
             fileName,
             mimeType,
             size: body.length,
+            durationMs,
+            thumbnailKey,
           },
           select: ATTACHMENT_SELECT,
         }),
@@ -194,7 +277,11 @@ export class ChatAttachmentsService {
         size: a.size,
         width: a.width,
         height: a.height,
+        durationMs: a.durationMs,
         url: await this.storage.signedUrl(a.storageKey, undefined, a.fileName),
+        thumbnailUrl: a.thumbnailKey
+          ? await this.storage.signedUrl(a.thumbnailKey)
+          : null,
       })),
     );
   }
@@ -224,10 +311,12 @@ export class ChatAttachmentsService {
         messageId: null,
         createdAt: { lt: new Date(now.getTime() - ORPHAN_AFTER_MS) },
       },
-      select: { id: true, storageKey: true },
+      select: { id: true, storageKey: true, thumbnailKey: true },
     });
     for (const orphan of orphans) {
       await this.storage.deleteKey(orphan.storageKey);
+      if (orphan.thumbnailKey)
+        await this.storage.deleteKey(orphan.thumbnailKey);
     }
     if (orphans.length) {
       await this.prisma.messageAttachment.deleteMany({
@@ -248,4 +337,6 @@ export const ATTACHMENT_SELECT = {
   size: true,
   width: true,
   height: true,
+  durationMs: true,
+  thumbnailKey: true,
 } as const;

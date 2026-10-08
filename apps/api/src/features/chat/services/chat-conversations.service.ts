@@ -245,7 +245,9 @@ export class ChatConversationsService {
           take: 1,
           include: {
             // For the preview: "📷 3 صور" / "📎 عقد.pdf"
-            attachments: { select: { fileName: true, kind: true } },
+            attachments: {
+              select: { fileName: true, kind: true, durationMs: true },
+            },
             // "📅 موعد معاينة: …" / "💰 عرض سعر: …"
             proposal: { select: PROPOSAL_SELECT },
           },
@@ -308,6 +310,8 @@ export class ChatConversationsService {
                 type: lastMessage.type,
                 attachmentsCount: lastMessage.attachments.length,
                 attachmentName: lastMessage.attachments[0]?.fileName ?? null,
+                attachmentDurationMs:
+                  lastMessage.attachments[0]?.durationMs ?? null,
                 locationLabel: lastMessage.locationLabel,
                 proposal: lastMessage.proposal
                   ? presentProposal(lastMessage.proposal)

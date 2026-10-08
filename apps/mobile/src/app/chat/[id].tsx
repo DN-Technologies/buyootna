@@ -22,6 +22,7 @@ import PropertyPickerSheet from '@/shared/components/chat/PropertyPickerSheet';
 import { ProposalAction } from '@/shared/components/chat/ProposalCard';
 import ProposalSheet from '@/shared/components/chat/ProposalSheet';
 import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
+import VideoPlayerModal from '@/shared/components/chat/VideoPlayerModal';
 import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
@@ -102,6 +103,8 @@ export default function ChatDetailsScreen() {
   // عقار / الموقع / موعد معاينة / عرض سعر from the "+" panel; a counter
   // (موعد آخر / عرض مقابل) opens the same form for that proposal
   const [composer, setComposer] = useState<ChatComposer | null>(null);
+  // The chat video being played full screen
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [counterOf, setCounterOf] = useState<ChatMessage | null>(null);
   const closeComposer = () => {
     setComposer(null);
@@ -224,6 +227,14 @@ export default function ChatDetailsScreen() {
             otherUserName={otherUserName}
             onOpenPhotos={(urls, index) => openViewer(urls, index)}
             onOpenFile={openChatFile}
+            onOpenVideo={async (video) => {
+              // A fresh link: the one in the message may have expired
+              try {
+                setVideoUrl(await chatService.attachmentUrl(video.id));
+              } catch {
+                setVideoUrl(video.url);
+              }
+            }}
             focusMessageId={search.focusId}
             onRespondToProposal={respondToProposal}
             onCounterProposal={(message) => {
@@ -255,6 +266,17 @@ export default function ChatDetailsScreen() {
             setShowAttachmentMenu={setShowAttachmentMenu}
             onPickedFiles={setPickedFiles}
             onCompose={setComposer}
+            onSendVoice={(voice) => {
+              if (!conversationId) return;
+              void useChatStore.getState().sendAttachments(conversationId, {
+                files: [voice],
+                replyTo: replyTarget ?? undefined,
+              });
+              setReplyTarget(null);
+              requestAnimationFrame(() =>
+                listRef.current?.scrollToEnd({ animated: true }),
+              );
+            }}
           />
         </KeyboardAvoidingView>
       </ContentContainer>
@@ -316,6 +338,8 @@ export default function ChatDetailsScreen() {
           }
         />
       )}
+
+      <VideoPlayerModal url={videoUrl} onClose={() => setVideoUrl(null)} />
 
       {/* Picked from the "+" panel: review before sending */}
       <AttachmentPreviewSheet

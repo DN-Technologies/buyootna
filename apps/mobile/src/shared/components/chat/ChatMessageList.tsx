@@ -2,7 +2,11 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import { ChatAttachment, ChatMessage } from '@/shared/api/chat.service';
+import {
+  ChatAttachment,
+  ChatMessage,
+  chatService,
+} from '@/shared/api/chat.service';
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
@@ -14,6 +18,7 @@ import ProposalCard, {
 } from '@/shared/components/chat/ProposalCard';
 import ReplyQuote from '@/shared/components/chat/ReplyQuote';
 import SwipeableMessage from '@/shared/components/chat/SwipeableMessage';
+import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
 import { DisplayMessage, formatMessageTime } from '@/shared/utils/chatDate';
 
 export interface ChatMessageListProps {
@@ -37,6 +42,7 @@ export interface ChatMessageListProps {
   // and retrying a send that failed
   onOpenPhotos?: (urls: string[], index: number) => void;
   onOpenFile?: (attachment: ChatAttachment) => void;
+  onOpenVideo?: (attachment: ChatAttachment) => void;
   onRetryAttachments?: (tempId: string) => void;
   // In-chat search: the current match to scroll to and highlight
   focusMessageId?: string | null;
@@ -67,6 +73,7 @@ export default function ChatMessageList({
   otherUserName = 'الطرف الآخر',
   onOpenPhotos,
   onOpenFile,
+  onOpenVideo,
   onRetryAttachments,
   focusMessageId,
   onRespondToProposal,
@@ -130,6 +137,30 @@ export default function ChatMessageList({
       // Photos / documents (sent, or still uploading from the device)
       if (item.attachments?.length || item.localAttachments?.length) {
         const sent = item.attachments ?? [];
+        // 🎤 a voice note (sent, or still uploading from the device)
+        const voice =
+          sent.find((a) => a.kind === 'AUDIO') ??
+          item.localAttachments?.find((a) => a.kind === 'AUDIO');
+        if (voice) {
+          const sentVoice = sent.find((a) => a.kind === 'AUDIO');
+          return (
+            <VoiceMessageBubble
+              uri={'url' in voice ? voice.url : voice.uri}
+              durationMs={voice.durationMs}
+              isMine={item.isMine}
+              timestamp={timeOf(item)}
+              quote={quote}
+              sending={item.sending}
+              failed={item.failed}
+              onRetry={() => onRetryAttachments?.(item.id)}
+              refreshUri={
+                sentVoice
+                  ? () => chatService.attachmentUrl(sentVoice.id)
+                  : undefined
+              }
+            />
+          );
+        }
         return (
           <AttachmentMessageBubble
             message={item}
@@ -144,6 +175,10 @@ export default function ChatMessageList({
             onPressFile={(index) => {
               const file = sent.filter((a) => a.kind === 'FILE')[index];
               if (file) onOpenFile?.(file);
+            }}
+            onPressVideo={(index) => {
+              const video = sent.filter((a) => a.kind === 'VIDEO')[index];
+              if (video) onOpenVideo?.(video);
             }}
             onRetry={() => onRetryAttachments?.(item.id)}
           />
@@ -219,6 +254,7 @@ export default function ChatMessageList({
       jumpTo,
       onOpenPhotos,
       onOpenFile,
+      onOpenVideo,
       onRetryAttachments,
       onRespondToProposal,
       onCounterProposal,

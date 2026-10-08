@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatConversationsService } from './services/chat-conversations.service';
 import { ChatMessagesService } from './services/chat-messages.service';
-import { ChatAttachmentsService } from './services/chat-attachments.service';
+import {
+  ChatAttachmentsService,
+  UploadExtras,
+} from './services/chat-attachments.service';
 
 /**
  * Public facade over the chat feature. The real logic lives in the
@@ -80,8 +83,14 @@ export class ChatService {
     identityId: string,
     conversationId: string,
     files: Express.Multer.File[],
+    extras?: UploadExtras,
   ) {
-    return this.attachmentsService.upload(identityId, conversationId, files);
+    return this.attachmentsService.upload(
+      identityId,
+      conversationId,
+      files,
+      extras,
+    );
   }
 
   attachmentUrl(identityId: string, attachmentId: string) {

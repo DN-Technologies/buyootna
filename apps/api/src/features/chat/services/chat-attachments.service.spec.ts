@@ -5,7 +5,9 @@ import {
   attachmentKind,
   ChatAttachmentsService,
   MAX_ATTACHMENTS,
+  messageTypeFor,
 } from './chat-attachments.service';
+import { chatPushBody } from './chat-push.service';
 
 const file = (over: Partial<Express.Multer.File> = {}) =>
   ({
@@ -17,7 +19,7 @@ const file = (over: Partial<Express.Multer.File> = {}) =>
   }) as Express.Multer.File;
 
 describe('attachmentKind', () => {
-  it('accepts photos and PDF / Word / Excel, nothing else', () => {
+  it('accepts photos, video, voice and PDF / Word / Excel, nothing else', () => {
     expect(attachmentKind('image/png')).toBe('IMAGE');
     expect(attachmentKind('application/pdf')).toBe('FILE');
     expect(
@@ -26,7 +28,9 @@ describe('attachmentKind', () => {
       ),
     ).toBe('FILE');
     expect(attachmentKind('application/zip')).toBeNull();
-    expect(attachmentKind('video/mp4')).toBeNull();
+    expect(attachmentKind('video/mp4')).toBe('VIDEO');
+    expect(attachmentKind('audio/m4a')).toBe('AUDIO');
+    expect(attachmentKind('video/webm')).toBeNull();
   });
 });
 
@@ -235,6 +239,112 @@ describe('ChatAttachmentsService', () => {
     expect(storage.deleteKey).toHaveBeenCalledWith('chat/c1/o1');
     expect(prisma.messageAttachment.deleteMany).toHaveBeenCalledWith({
       where: { id: { in: ['o1'] } },
+    });
+  });
+
+  describe('video and voice', () => {
+    const video = file({
+      originalname: 'tour.mov',
+      mimetype: 'video/quicktime',
+      size: 60 * 1024 * 1024,
+    });
+    const voice = file({
+      originalname: 'voice.m4a',
+      mimetype: 'audio/m4a',
+      size: 200 * 1024,
+    });
+    const still = file({
+      originalname: 'still.jpg',
+      mimetype: 'image/jpeg',
+      size: 50 * 1024,
+    });
+
+    it('stores a video with its still and length; the link and still are signed', async () => {
+      storage.uploadPrivate
+        .mockResolvedValueOnce('chat/c1/video.mov')
+        .mockResolvedValueOnce('chat/c1/still.jpg');
+
+      const res = await service.upload('me', 'c1', [video], {
+        thumbnails: [still],
+        durations: [42500.4],
+      });
+
+      expect(prisma.messageAttachment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            kind: 'VIDEO',
+            storageKey: 'chat/c1/video.mov',
+            thumbnailKey: 'chat/c1/still.jpg',
+            durationMs: 42500,
+          }),
+        }),
+      );
+      expect(res.data[0]).toMatchObject({
+        kind: 'VIDEO',
+        durationMs: 42500,
+        thumbnailUrl: 'https://signed/url',
+      });
+      expect(res.data[0]).not.toHaveProperty('thumbnailKey');
+    });
+
+    it('refuses a video over 100 MB, a voice note over 10 MB, and a bad still', async () => {
+      await expect(
+        service.upload('me', 'c1', [
+          file({ mimetype: 'video/mp4', size: 101 * 1024 * 1024 }),
+        ]),
+      ).rejects.toThrow('100 ميجابايت');
+      await expect(
+        service.upload('me', 'c1', [
+          file({ mimetype: 'audio/m4a', size: 11 * 1024 * 1024 }),
+        ]),
+      ).rejects.toThrow('10 ميجابايت');
+      await expect(
+        service.upload('me', 'c1', [video], {
+          thumbnails: [file({ mimetype: 'application/pdf' })],
+        }),
+      ).rejects.toThrow('المصغرة');
+      expect(storage.uploadPrivate).not.toHaveBeenCalled();
+    });
+
+    it('a voice note goes alone', async () => {
+      await expect(service.upload('me', 'c1', [voice, file()])).rejects.toThrow(
+        'وحدها',
+      );
+      expect(() => messageTypeFor(['AUDIO', 'IMAGE'])).toThrow();
+    });
+
+    it('caps a reported length and ignores nonsense', async () => {
+      await service.upload('me', 'c1', [voice], {
+        durations: [99 * 60 * 1000],
+      });
+      expect(
+        prisma.messageAttachment.create.mock.calls[0][0].data.durationMs,
+      ).toBe(6 * 60 * 1000);
+      await service.upload('me', 'c1', [voice], { durations: [null] });
+      expect(
+        prisma.messageAttachment.create.mock.calls[1][0].data.durationMs,
+      ).toBeNull();
+    });
+
+    it('message types and previews', () => {
+      expect(messageTypeFor(['AUDIO'])).toBe('VOICE');
+      expect(messageTypeFor(['IMAGE', 'VIDEO'])).toBe('VIDEO');
+      expect(messageTypeFor(['IMAGE', 'IMAGE'])).toBe('IMAGE');
+      expect(messageTypeFor(['IMAGE', 'FILE'])).toBe('FILE');
+      expect(
+        chatPushBody({
+          type: 'VOICE',
+          attachments: [
+            { kind: 'AUDIO', fileName: 'v.m4a', durationMs: 42000 },
+          ],
+        }),
+      ).toBe('🎤 رسالة صوتية (0:42)');
+      expect(
+        chatPushBody({
+          type: 'VIDEO',
+          attachments: [{ kind: 'VIDEO', fileName: 'tour.mov' }],
+        }),
+      ).toBe('🎥 فيديو');
     });
   });
 });

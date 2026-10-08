@@ -3,7 +3,12 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { LocalAttachment } from '@/shared/api/chat.service';
 import { showAlert } from '@/shared/utils/alert';
-import { pickDocuments, pickPhotos, takePhoto } from '@/shared/utils/chatAttachments';
+import {
+  pickDocuments,
+  pickPhotos,
+  pickVideo,
+  takePhoto,
+} from '@/shared/utils/chatAttachments';
 
 export type ChatComposer = 'property' | 'location' | 'appointment' | 'offer';
 
@@ -19,6 +24,7 @@ interface AttachmentPanelProps {
 const OPTIONS = [
   { key: 'photos', label: 'الصور', icon: 'image' as const, color: '#2563EB', pick: () => pickPhotos() },
   { key: 'camera', label: 'الكاميرا', icon: 'camera' as const, color: '#DB2777', pick: takePhoto },
+  { key: 'video', label: 'فيديو', icon: 'video' as const, color: '#DC2626', pick: pickVideo },
   { key: 'file', label: 'مستند', icon: 'file-text' as const, color: '#7C3AED', pick: pickDocuments },
 ];
 

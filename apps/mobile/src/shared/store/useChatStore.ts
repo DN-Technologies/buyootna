@@ -10,6 +10,7 @@ import {
   ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
+import { messageTypeFor } from '@/shared/utils/chatAttachments';
 
 import { useAuthStore } from './useAuthStore';
 
@@ -381,7 +382,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     sendAttachments: async (conversationId, { files, caption, replyTo }) => {
       const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-      const type = files.every((f) => f.kind === 'IMAGE') ? 'IMAGE' : 'FILE';
+      const type = messageTypeFor(files);
       const pending: ChatMessage = {
         id: tempId,
         type,
@@ -506,6 +507,8 @@ export const useChatStore = create<ChatState>((set, get) => {
                 attachmentsCount: messageWithIsMine.attachments?.length ?? 0,
                 attachmentName:
                   messageWithIsMine.attachments?.[0]?.fileName ?? null,
+                attachmentDurationMs:
+                  messageWithIsMine.attachments?.[0]?.durationMs ?? null,
                 locationLabel: messageWithIsMine.location?.label ?? null,
                 proposal: messageWithIsMine.proposal ?? null,
               },

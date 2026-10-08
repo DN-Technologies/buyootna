@@ -4,7 +4,11 @@ import { ReactNode } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
-import { documentStyle, formatFileSize } from '@/shared/utils/chatAttachments';
+import {
+  documentStyle,
+  formatDuration,
+  formatFileSize,
+} from '@/shared/utils/chatAttachments';
 
 interface AttachmentMessageBubbleProps {
   message: ChatMessage;
@@ -13,6 +17,7 @@ interface AttachmentMessageBubbleProps {
   // Opens the viewer over this message's photos, at `index`
   onPressPhoto: (index: number) => void;
   onPressFile: (index: number) => void;
+  onPressVideo?: (index: number) => void;
   onRetry?: () => void;
 }
 
@@ -29,6 +34,7 @@ export default function AttachmentMessageBubble({
   quote,
   onPressPhoto,
   onPressFile,
+  onPressVideo,
   onRetry,
 }: AttachmentMessageBubbleProps) {
   const isMine = message.isMine;
@@ -40,6 +46,8 @@ export default function AttachmentMessageBubble({
         name: a.fileName,
         mimeType: a.mimeType,
         size: a.size,
+        thumbnail: a.thumbnailUrl,
+        durationMs: a.durationMs,
       }))
     : (message.localAttachments ?? []).map((a) => ({
         kind: a.kind,
@@ -47,7 +55,10 @@ export default function AttachmentMessageBubble({
         name: a.name,
         mimeType: a.mimeType,
         size: a.size,
+        thumbnail: a.thumbnailUri,
+        durationMs: a.durationMs,
       }));
+  const videos = items.filter((i) => i.kind === 'VIDEO');
   const photos = items.filter((i) => i.kind === 'IMAGE');
   const files = items.filter((i) => i.kind === 'FILE');
   const shownPhotos = photos.slice(0, 4);
@@ -94,6 +105,36 @@ export default function AttachmentMessageBubble({
             ))}
           </View>
         )}
+
+        {videos.map((v, i) => (
+          <TouchableOpacity
+            key={`${v.uri}-${i}`}
+            testID={`attachment-video-${i}`}
+            activeOpacity={0.9}
+            disabled={pending}
+            onPress={() => onPressVideo?.(i)}
+            style={{ width: GRID, height: 150 }}
+            className="mt-1 items-center justify-center overflow-hidden rounded-md bg-[#0F172A]"
+          >
+            {!!v.thumbnail && (
+              <Image
+                source={{ uri: v.thumbnail }}
+                style={{ position: 'absolute', width: '100%', height: '100%' }}
+                contentFit="cover"
+              />
+            )}
+            <View className="h-12 w-12 items-center justify-center rounded-full bg-black/50">
+              <Feather name="play" size={22} color="#FFFFFF" />
+            </View>
+            {!!v.durationMs && (
+              <View className="absolute bottom-1.5 left-1.5 rounded bg-black/60 px-1.5 py-0.5">
+                <Text className="font-cairo text-[11px] text-white">
+                  {formatDuration(v.durationMs)}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
 
         {files.map((f, i) => {
           const style = documentStyle(f.mimeType, f.name);

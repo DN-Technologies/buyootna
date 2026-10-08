@@ -1399,5 +1399,114 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/chat-share-location-proposals",
     },
+    {
+      id: "mobile-chat-video",
+      title: {
+        en: "Send a video tour in chat (app 1.5.0+)",
+        ar: "إرسال فيديو في المحادثة (التطبيق 1.5.0 وما بعده)",
+      },
+      priority: "P1",
+      story: {
+        en: "+ → فيديو picks one video from the gallery (up to 2 minutes and 100 MB; iOS exports it at 720p). The preview shows its still image, length and size, with an optional caption. The message shows the still with ▶ and the length; tapping it plays the video full screen with the system controls. Videos are private like other chat files. The chats list and push show '🎥 فيديو'. Needs app version 1.5.0 (native build).",
+        ar: "+ ← فيديو يختار فيديو واحداً من المعرض (حتى دقيقتين و100 ميجابايت، ويُصدَّر في iOS بدقة 720p). تعرض المعاينة الصورة المصغرة والمدة والحجم مع تعليق اختياري. تظهر الرسالة بالصورة المصغرة مع ▶ والمدة، والضغط عليها يشغل الفيديو بملء الشاشة بعناصر تحكم النظام. الفيديوهات خاصة مثل بقية ملفات المحادثة. وتظهر في قائمة المحادثات والإشعار '🎥 فيديو'. يتطلب إصدار التطبيق 1.5.0 (بناء أصلي).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A video over 100 MB or longer than 2 minutes is refused with a clear message.",
+          "Upload shows progress; a failed upload offers retry.",
+          "The video still plays after the chat has been open more than 15 minutes (the link is renewed on tap).",
+        ],
+        ar: [
+          "الفيديو الأكبر من 100 ميجابايت أو الأطول من دقيقتين يُرفض برسالة واضحة.",
+          "يظهر تقدم الرفع، والرفع الفاشل يعرض إعادة المحاولة.",
+          "يعمل الفيديو بعد بقاء المحادثة مفتوحة أكثر من 15 دقيقة (يُجدد الرابط عند الضغط).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Send a 30-second video with a caption — B sees the still, 0:30 and the caption; tap — it plays.",
+          "Try a 3-minute video — refused.",
+        ],
+        ar: [
+          "أرسل فيديو 30 ثانية مع تعليق — يرى B الصورة المصغرة و0:30 والتعليق، والضغط يشغله.",
+          "جرّب فيديو 3 دقائق — يُرفض.",
+        ],
+      },
+      updatedIn: "feat/native-1.5.0-video-voice",
+    },
+    {
+      id: "mobile-chat-voice",
+      title: {
+        en: "Voice notes in chat (app 1.5.0+)",
+        ar: "الرسائل الصوتية في المحادثة (التطبيق 1.5.0 وما بعده)",
+      },
+      priority: "P1",
+      story: {
+        en: "While the text field is empty, a mic shows instead of the send button. Hold it to record and release to send; slide away while holding to cancel ('ارفع إصبعك للإلغاء'). A quick tap keeps recording with a delete button and a send button. A timer shows while recording; the limit is 5 minutes (it's sent automatically), and recordings under a second aren't sent. The note shows play / pause, progress and length; only one note plays at a time. The first use asks for the microphone. The chats list and push show '🎤 رسالة صوتية (0:42)'.",
+        ar: "عندما يكون حقل الكتابة فارغاً يظهر ميكروفون بدلاً من زر الإرسال. اضغط مطولاً للتسجيل وارفع إصبعك للإرسال، واسحب بعيداً أثناء الضغط للإلغاء ('ارفع إصبعك للإلغاء'). والضغطة السريعة تُبقي التسجيل مستمراً مع زر حذف وزر إرسال. يظهر مؤقت أثناء التسجيل، والحد 5 دقائق (تُرسل تلقائياً)، والتسجيل الأقل من ثانية لا يُرسل. تعرض الرسالة تشغيل / إيقاف والتقدم والمدة، وتعمل رسالة واحدة فقط في كل مرة. أول استخدام يطلب إذن الميكروفون. وتظهر في قائمة المحادثات والإشعار '🎤 رسالة صوتية (0:42)'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Typing text swaps the mic back to the send button.",
+          "Refusing the microphone shows a message and nothing is recorded.",
+          "Starting a second note pauses the first.",
+          "A voice note is sent alone (never mixed with other files).",
+        ],
+        ar: [
+          "كتابة نص تعيد زر الإرسال مكان الميكروفون.",
+          "رفض إذن الميكروفون يعرض رسالة ولا يُسجَّل شيء.",
+          "تشغيل رسالة ثانية يوقف الأولى مؤقتاً.",
+          "الرسالة الصوتية تُرسل وحدها (لا تُدمج مع ملفات أخرى).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Hold the mic 5 seconds and release — B gets a 0:05 note and the push; play it on B.",
+          "Hold, slide away, release — nothing is sent.",
+          "Tap the mic quickly, speak, tap delete — nothing is sent; repeat and tap send — sent.",
+        ],
+        ar: [
+          "اضغط الميكروفون 5 ثوانٍ وارفع إصبعك — تصل B رسالة 0:05 والإشعار، وشغّلها على B.",
+          "اضغط واسحب بعيداً وارفع إصبعك — لا يُرسل شيء.",
+          "اضغط الميكروفون سريعاً وتحدث واضغط حذف — لا يُرسل شيء، ثم كرر واضغط إرسال — تُرسل.",
+        ],
+      },
+      updatedIn: "feat/native-1.5.0-video-voice",
+    },
+    {
+      id: "mobile-chat-notification-tone",
+      title: {
+        en: "Buyootna tone for chat notifications (app 1.5.0+)",
+        ar: "نغمة بيوتنا لإشعارات المحادثات (التطبيق 1.5.0 وما بعده)",
+      },
+      priority: "P2",
+      story: {
+        en: "Chat message pushes play the Buyootna tone instead of the default sound. On Android the tone belongs to the 'رسائل المحادثات' notification channel, created by app 1.5.0 on first launch; older builds keep the default sound. Other notifications are unchanged.",
+        ar: "إشعارات رسائل المحادثة تشغّل نغمة بيوتنا بدلاً من الصوت الافتراضي. في Android النغمة تابعة لقناة الإشعارات 'رسائل المحادثات' التي ينشئها التطبيق 1.5.0 عند أول تشغيل، والإصدارات الأقدم تبقى على الصوت الافتراضي. وبقية الإشعارات لا تتغير.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "iOS and Android 1.5.0: a chat push with the app in the background plays the Buyootna tone.",
+          "Android: 'رسائل المحادثات' appears under the app's notification settings.",
+          "Camera permission is requested when taking a photo in chat on Android.",
+        ],
+        ar: [
+          "iOS و Android 1.5.0: إشعار محادثة والتطبيق في الخلفية يشغّل نغمة بيوتنا.",
+          "Android: تظهر 'رسائل المحادثات' ضمن إعدادات إشعارات التطبيق.",
+          "يُطلب إذن الكاميرا عند التقاط صورة في المحادثة على Android.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With the app in the background, receive a chat message — the Buyootna tone plays.",
+          "Receive a non-chat notification — the default sound plays.",
+        ],
+        ar: [
+          "والتطبيق في الخلفية استقبل رسالة محادثة — تُشغَّل نغمة بيوتنا.",
+          "استقبل إشعاراً غير المحادثة — يُشغَّل الصوت الافتراضي.",
+        ],
+      },
+      updatedIn: "feat/native-1.5.0-video-voice",
+    },
   ],
 };

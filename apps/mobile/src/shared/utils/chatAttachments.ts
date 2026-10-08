@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 import { ChatProposal, LocalAttachment } from '@/shared/api/chat.service';
 import { proposalPreview } from '@/shared/utils/chatProposals';
@@ -9,6 +10,17 @@ export const MAX_CHAT_ATTACHMENTS = 10;
 const MB = 1024 * 1024;
 export const IMAGE_MAX_BYTES = 10 * MB;
 export const FILE_MAX_BYTES = 20 * MB;
+export const VIDEO_MAX_BYTES = 100 * MB;
+export const AUDIO_MAX_BYTES = 10 * MB;
+// A video tour: up to 2 minutes; a voice note: up to 5
+export const VIDEO_MAX_SECONDS = 120;
+export const VOICE_MAX_MS = 5 * 60 * 1000;
+const MAX_BYTES = {
+  IMAGE: IMAGE_MAX_BYTES,
+  FILE: FILE_MAX_BYTES,
+  VIDEO: VIDEO_MAX_BYTES,
+  AUDIO: AUDIO_MAX_BYTES,
+};
 
 export const DOCUMENT_TYPES = [
   'application/pdf',
@@ -52,6 +64,43 @@ export async function pickPhotos(
   return result.assets.map(fromImageAsset);
 }
 
+/**
+ * Picks one video (up to 2 minutes; iOS exports it as 720p H.264) and makes
+ * its still image.
+ */
+export async function pickVideo(): Promise<LocalAttachment[] | null> {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['videos'],
+    videoMaxDuration: VIDEO_MAX_SECONDS,
+    videoExportPreset: ImagePicker.VideoExportPreset.H264_1280x720,
+    quality: 0.7,
+  });
+  if (result.canceled) return null;
+  const asset = result.assets[0];
+  let thumbnailUri: string | undefined;
+  try {
+    thumbnailUri = (
+      await VideoThumbnails.getThumbnailAsync(asset.uri, {
+        time: 1000,
+        quality: 0.6,
+      })
+    ).uri;
+  } catch {
+    // Sent without a still: the bubble shows a plain play tile
+  }
+  return [
+    {
+      uri: asset.uri,
+      name: asset.fileName || `video-${Date.now()}.mp4`,
+      mimeType: asset.mimeType || 'video/mp4',
+      size: asset.fileSize,
+      kind: 'VIDEO',
+      durationMs: asset.duration ?? undefined,
+      thumbnailUri,
+    },
+  ];
+}
+
 /** Picks PDF / Word / Excel documents. */
 export async function pickDocuments(): Promise<LocalAttachment[] | null> {
   const result = await DocumentPicker.getDocumentAsync({
@@ -75,7 +124,10 @@ export function attachmentsProblem(files: LocalAttachment[]): string | null {
     return `يمكن إرسال ${MAX_CHAT_ATTACHMENTS} ملفات كحد أقصى في المرة الواحدة`;
   }
   for (const f of files) {
-    const max = f.kind === 'IMAGE' ? IMAGE_MAX_BYTES : FILE_MAX_BYTES;
+    const max = MAX_BYTES[f.kind];
+    if (f.kind === 'VIDEO' && (f.durationMs ?? 0) > (VIDEO_MAX_SECONDS + 1) * 1000) {
+      return `مدة الفيديو أطول من ${VIDEO_MAX_SECONDS / 60} دقيقة`;
+    }
     if (f.size && f.size > max) {
       return `حجم ${f.name} أكبر من ${max / MB} ميجابايت`;
     }
@@ -84,6 +136,20 @@ export function attachmentsProblem(files: LocalAttachment[]): string | null {
     }
   }
   return null;
+}
+
+/** "0:42" / "2:05". */
+export function formatDuration(ms?: number | null): string {
+  const total = Math.max(0, Math.round((ms ?? 0) / 1000));
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
+}
+
+/** The message type for files sent together (same rule as the server). */
+export function messageTypeFor(files: { kind: LocalAttachment['kind'] }[]) {
+  if (files.some((f) => f.kind === 'AUDIO')) return 'VOICE' as const;
+  if (files.some((f) => f.kind === 'VIDEO')) return 'VIDEO' as const;
+  if (files.every((f) => f.kind === 'IMAGE')) return 'IMAGE' as const;
+  return 'FILE' as const;
 }
 
 /** "1.2 MB" / "350 KB". */
@@ -105,6 +171,7 @@ export function documentStyle(mimeType: string, fileName = '') {
   if (mimeType.includes('excel') || mimeType.includes('sheet') || /\.xlsx?$/.test(name)) {
     return { label: 'XLS', color: '#16A34A' };
   }
+  if (mimeType.startsWith('video/')) return { label: 'VIDEO', color: '#DC2626' };
   return { label: 'FILE', color: '#64748B' };
 }
 
@@ -115,6 +182,7 @@ export function lastMessagePreview(
     content: string | null;
     attachmentsCount?: number;
     attachmentName?: string | null;
+    attachmentDurationMs?: number | null;
     locationLabel?: string | null;
     // From a live message (socket) the pin comes as `location`
     location?: { label?: string | null } | null;
@@ -128,6 +196,12 @@ export function lastMessagePreview(
   }
   if (last.type === 'APPOINTMENT' || last.type === 'OFFER') {
     return proposalPreview(last.proposal, last.type);
+  }
+  if (last.type === 'VIDEO') return '🎥 فيديو';
+  if (last.type === 'VOICE') {
+    return last.attachmentDurationMs
+      ? `🎤 رسالة صوتية (${formatDuration(last.attachmentDurationMs)})`
+      : '🎤 رسالة صوتية';
   }
   const count = last.attachmentsCount ?? 0;
   if (last.type === 'FILE') return `📎 ${last.attachmentName || 'ملف'}`;
