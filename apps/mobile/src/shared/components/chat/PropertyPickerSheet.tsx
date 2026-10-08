@@ -20,6 +20,7 @@ import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
 } from '@/shared/utils/helpers/property';
+import { RTL_TEXT } from '@/shared/utils/rtlText';
 
 /** What the picked ad's card shows until the server's copy arrives. */
 export interface PickedProperty {
@@ -156,14 +157,24 @@ export default function PropertyPickerSheet({ onClose, onPick }: PropertyPickerS
                   contentFit="cover"
                 />
                 <View className="flex-1">
-                  <Text className="font-cairo-bold text-[14px] text-[#111111]">{item.title}</Text>
+                  <Text
+                    testID="property-picker-title"
+                    className="font-cairo-bold text-[14px] text-[#111111]"
+                    style={RTL_TEXT}
+                  >
+                    {item.title}
+                  </Text>
                   {!!item.price && (
-                    <Text className="font-cairo-semibold text-[13px] text-[#15304D]">
+                    <Text className="font-cairo-semibold text-[13px] text-[#15304D]" style={RTL_TEXT}>
                       {formatNumber(item.price)} د.ك
                     </Text>
                   )}
                   {!!item.location && (
-                    <Text numberOfLines={1} className="font-cairo text-[12px] text-[#6B6A6A]">
+                    <Text
+                      numberOfLines={1}
+                      className="font-cairo text-[12px] text-[#6B6A6A]"
+                      style={RTL_TEXT}
+                    >
                       {item.location}
                     </Text>
                   )}
