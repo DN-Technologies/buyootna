@@ -17,6 +17,8 @@ export interface PropertyContext {
 }
 
 export interface ConversationSummary {
+  // How far the other person has received / read (tick on my last message)
+  otherReceipt?: ChatReceipt | null;
   id: string;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +35,7 @@ export interface ConversationSummary {
     // For the preview: "📷 3 صور" / "📎 file name"
     attachmentsCount?: number;
     attachmentName?: string | null;
+    attachmentDurationMs?: number | null;
   } | null;
   unreadCount: number;
 }
@@ -80,6 +83,16 @@ export interface ProposalInput {
   counterOfId?: string;
 }
 
+/**
+ * How far a persona has received / read a conversation: a message of mine
+ * is delivered when sent at or before `lastDeliveredAt`, read when at or
+ * before `lastReadAt`.
+ */
+export interface ChatReceipt {
+  lastDeliveredAt?: string | null;
+  lastReadAt?: string | null;
+}
+
 /** A map pin (LOCATION message). */
 export interface ChatLocation {
   latitude: number;
@@ -88,15 +101,21 @@ export interface ChatLocation {
 }
 
 /** A private chat photo / document; `url` is a short-lived signed link. */
+export type AttachmentKind = 'IMAGE' | 'FILE' | 'VIDEO' | 'AUDIO';
+
 export interface ChatAttachment {
   id: string;
-  kind: 'IMAGE' | 'FILE';
+  kind: AttachmentKind;
   fileName: string;
   mimeType: string;
   size: number;
   width?: number | null;
   height?: number | null;
+  // Video / voice note length
+  durationMs?: number | null;
   url: string;
+  // Video: a still shown before playing (signed, like `url`)
+  thumbnailUrl?: string | null;
 }
 
 /** A picked file before it's uploaded (from the camera, gallery or files). */
@@ -105,7 +124,10 @@ export interface LocalAttachment {
   name: string;
   mimeType: string;
   size?: number;
-  kind: 'IMAGE' | 'FILE';
+  kind: AttachmentKind;
+  durationMs?: number;
+  // Video: a still made on the phone, uploaded with it
+  thumbnailUri?: string;
 }
 
 /** The message a reply quotes (deleted: gone, or hidden on this side). */
@@ -173,6 +195,8 @@ export interface GetMessagesResponse {
   meta: {
     nextCursor?: string;
     hasNextPage: boolean;
+    // How far the other person has received / read (my ticks)
+    otherReceipt?: ChatReceipt | null;
     propertyContext?: PropertyContext | null;
     otherUser?: ChatParticipant | null;
   };
@@ -218,13 +242,29 @@ export const chatService = {
         type: f.mimeType,
       } as unknown as Blob),
     );
+    // A still per video (in the videos' order) and each file's length
+    files
+      .filter((f) => f.kind === 'VIDEO' && f.thumbnailUri)
+      .forEach((f, i) =>
+        form.append('thumbnails', {
+          uri: f.thumbnailUri,
+          name: `thumbnail-${i}.jpg`,
+          type: 'image/jpeg',
+        } as unknown as Blob),
+      );
+    if (files.some((f) => f.durationMs)) {
+      form.append(
+        'durations',
+        JSON.stringify(files.map((f) => f.durationMs ?? null)),
+      );
+    }
     const response = await apiClient.post<{ data: ChatAttachment[] }>(
       `/chat/conversations/${conversationId}/attachments`,
       form,
       {
         headers: { 'Content-Type': 'multipart/form-data' },
-        // Big documents on slow networks
-        timeout: 120000,
+        // Big documents / videos on slow networks
+        timeout: files.some((f) => f.kind === 'VIDEO') ? 600000 : 120000,
         onUploadProgress: (e) => {
           if (e.total) onProgress?.(e.loaded / e.total);
         },

@@ -185,6 +185,43 @@ describe('ChatMessageList', () => {
       expect.objectContaining({ index: 1 }),
     );
   });
+
+  it('a video shows its still and length; tapping plays it', async () => {
+    const onOpenVideo = jest.fn();
+    const video = {
+      id: 'v1',
+      kind: 'VIDEO' as const,
+      fileName: 'tour.mp4',
+      mimeType: 'video/mp4',
+      size: 1000,
+      durationMs: 65000,
+      url: 'https://s/v',
+      thumbnailUrl: 'https://s/t',
+    };
+    const { getByTestId, getByText } = await setup({
+      messages: [message({ type: 'VIDEO', content: undefined, attachments: [video] })],
+      onOpenVideo,
+    });
+    expect(getByText('1:05')).toBeTruthy();
+    await fireEvent.press(getByTestId('attachment-video-0'));
+    expect(onOpenVideo).toHaveBeenCalledWith(video);
+  });
+
+  it('a voice note renders as a voice bubble', async () => {
+    const { getByTestId } = await setup({
+      messages: [
+        message({
+          type: 'VOICE',
+          content: undefined,
+          attachments: [
+            { id: 'a1', kind: 'AUDIO', fileName: 'v.m4a', mimeType: 'audio/m4a', size: 10, durationMs: 9000, url: 'https://s/a' },
+          ],
+        }),
+      ],
+    });
+    expect(getByTestId('voice-bubble')).toBeTruthy();
+  });
+
   // QA: a one-word reply squeezed the quote to one letter per line
   it('keeps the quote wide enough under a short reply, the name on one line', async () => {
     const { getByTestId } = await setup({

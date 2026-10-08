@@ -2,6 +2,9 @@ import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import MessageTicks from '@/shared/components/chat/MessageTicks';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
+
 export interface ChatItemProps {
   id: string;
   user: {
@@ -13,7 +16,8 @@ export interface ChatItemProps {
   lastMessage: string;
   timestamp: string;
   unreadCount?: number;
-  isRead?: boolean;
+  // The tick on my last message (nothing when the last one is theirs)
+  status?: MessageStatus | null;
   onPress: () => void;
 }
 
@@ -23,7 +27,7 @@ export default function ChatListItem({
   lastMessage,
   timestamp,
   unreadCount = 0,
-  isRead = false,
+  status,
   onPress,
 }: ChatItemProps) {
   return (
@@ -92,11 +96,7 @@ export default function ChatListItem({
                   </Text>
                 </View>
               ) : (
-                <Feather
-                  name="check-circle"
-                  size={16}
-                  color={isRead ? '#15304D' : '#94A3B8'}
-                />
+                <MessageTicks status={status} />
               )}
             </View>
           </View>

@@ -134,6 +134,21 @@ class SocketService {
     return true;
   }
 
+  /** The other person received / read a conversation (my ticks). */
+  onConversationReceipt(
+    callback: (receipt: {
+      conversationId: string;
+      identityId: string;
+      lastDeliveredAt?: string | null;
+      lastReadAt?: string | null;
+    }) => void,
+  ) {
+    this.socket?.on('conversation_receipt', callback);
+    return () => {
+      this.socket?.off('conversation_receipt', callback);
+    };
+  }
+
   /** An offer / appointment was answered: patch that message in place. */
   onMessageUpdated(
     callback: (update: {

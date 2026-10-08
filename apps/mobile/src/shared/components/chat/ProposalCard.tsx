@@ -2,11 +2,13 @@ import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
+import MessageTicks from '@/shared/components/chat/MessageTicks';
 import {
   formatAppointment,
   formatOffer,
   PROPOSAL_STATUS_LABELS,
 } from '@/shared/utils/chatProposals';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 export type ProposalAction = 'accept' | 'decline' | 'cancel';
 
@@ -20,6 +22,7 @@ interface ProposalCardProps {
   onCounter?: () => void;
   // While an answer is being sent
   busy?: boolean;
+  status?: MessageStatus | null;
 }
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
@@ -41,6 +44,7 @@ export default function ProposalCard({
   onRespond,
   onCounter,
   busy = false,
+  status,
 }: ProposalCardProps) {
   const p = message.proposal;
   if (!p) return null;
@@ -141,7 +145,10 @@ export default function ProposalCard({
             </TouchableOpacity>
           )}
         </View>
-        <Text className="mt-1 px-1 font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
+        <View className="mt-1 flex-row items-center gap-1 px-1">
+          <MessageTicks status={status} size={12} />
+          <Text className="font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
+        </View>
       </View>
     </View>
   );

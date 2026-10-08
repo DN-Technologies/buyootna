@@ -54,3 +54,47 @@ jest.mock('@/shared/api/contactPhone.service', () => ({
     setUseAccountPhone: jest.fn(),
   },
 }));
+
+// Native audio / video (chat voice notes and video tours): no native module
+// in Jest. Files that test recording or playback mock these themselves.
+jest.mock('expo-audio', () => ({
+  RecordingPresets: { HIGH_QUALITY: {} },
+  requestRecordingPermissionsAsync: jest.fn(async () => ({ granted: true })),
+  setAudioModeAsync: jest.fn(async () => {}),
+  useAudioRecorder: jest.fn(() => ({
+    prepareToRecordAsync: jest.fn(async () => {}),
+    record: jest.fn(),
+    stop: jest.fn(async () => {}),
+    uri: 'file:///voice.m4a',
+  })),
+  useAudioRecorderState: jest.fn(() => ({ durationMillis: 0, isRecording: false })),
+  useAudioPlayer: jest.fn(() => ({
+    play: jest.fn(),
+    pause: jest.fn(),
+    seekTo: jest.fn(async () => {}),
+    replace: jest.fn(),
+  })),
+  useAudioPlayerStatus: jest.fn(() => ({
+    playing: false,
+    currentTime: 0,
+    duration: 0,
+    didJustFinish: false,
+  })),
+}));
+jest.mock('expo-video', () => ({
+  useVideoPlayer: jest.fn(() => ({ play: jest.fn(), pause: jest.fn() })),
+  VideoView: 'VideoView',
+}));
+jest.mock('expo-video-thumbnails', () => ({
+  getThumbnailAsync: jest.fn(async () => ({ uri: 'file:///thumb.jpg' })),
+}));
+
+// Reading a chat / notification schedules an app-icon badge sync ~800ms
+// later. Left real, that timer outlives the test file and fails CI with
+// "Cannot log after tests are done". Default it to a no-op; the badge's own
+// spec unmocks this module.
+jest.mock('@/shared/hooks/useAppBadge', () => ({
+  ...jest.requireActual('@/shared/hooks/useAppBadge'),
+  scheduleAppBadgeSync: jest.fn(),
+  syncAppBadge: jest.fn(async () => {}),
+}));

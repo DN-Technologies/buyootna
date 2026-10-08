@@ -14,14 +14,14 @@ export const appVersions: AppVersion[] = [
   {
     name: { en: "Mobile App", ar: "تطبيق الجوال" },
     packageName: "buyootna",
-    version: "1.4.0",
+    version: "1.5.0",
     platform: {
       en: "iOS & Android (Expo SDK ~54.0.33)",
       ar: "iOS و Android (Expo SDK ~54.0.33)",
     },
     notes: {
-      en: "The app version lives in apps/mobile/app.config.ts (package.json's is stale). iOS bundle com.constyoussef.buyootna (build 10 on TestFlight); Android package com.constyoussef.buyootna.login (versionCode 4 built on EAS). OTA updates target runtime 1.4.0 — the latest production OTA was published from main (81cec03) on 2026-09-29. Build numbers auto-increment on EAS; check the EAS dashboard for the build tied to a report.",
-      ar: "رقم إصدار التطبيق موجود في apps/mobile/app.config.ts (رقم package.json قديم). معرّف iOS هو com.constyoussef.buyootna (البناء 10 على TestFlight)؛ وحزمة Android هي com.constyoussef.buyootna.login (versionCode 4 مبني على EAS). تحديثات OTA تستهدف الإصدار 1.4.0 — آخر تحديث OTA للإنتاج نُشر من main (81cec03) بتاريخ 2026-09-29. أرقام البناء تزداد تلقائياً على EAS؛ راجع لوحة EAS لمعرفة البناء المرتبط بالبلاغ.",
+      en: "The app version lives in apps/mobile/app.config.ts (package.json's is stale). iOS bundle com.constyoussef.buyootna (build 10 on TestFlight); Android package com.constyoussef.buyootna.login (versionCode 4 built on EAS). 1.5.0 is a native release (video tours, voice notes, the chat notification tone, camera / microphone permissions); its OTA updates target runtime 1.5.0, while builds still on 1.4.0 keep receiving runtime-1.4.0 updates — the latest production OTA was published from main (81cec03) on 2026-09-29. Build numbers auto-increment on EAS; check the EAS dashboard for the build tied to a report.",
+      ar: "رقم إصدار التطبيق موجود في apps/mobile/app.config.ts (رقم package.json قديم). معرّف iOS هو com.constyoussef.buyootna (البناء 10 على TestFlight)؛ وحزمة Android هي com.constyoussef.buyootna.login (versionCode 4 مبني على EAS). الإصدار 1.5.0 إصدار أصلي (فيديو، رسائل صوتية، نغمة إشعارات المحادثة، أذونات الكاميرا والميكروفون)، وتحديثات OTA له تستهدف 1.5.0، بينما تبقى النسخ التي على 1.4.0 تستقبل تحديثات 1.4.0 — آخر تحديث OTA للإنتاج نُشر من main (81cec03) بتاريخ 2026-09-29. أرقام البناء تزداد تلقائياً على EAS؛ راجع لوحة EAS لمعرفة البناء المرتبط بالبلاغ.",
     },
   },
   {

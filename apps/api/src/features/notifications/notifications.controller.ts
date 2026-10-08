@@ -21,13 +21,17 @@ import {
   SuccessResponseDto,
   UnreadCountResponseDto,
 } from './dto/notification-response.dto';
+import { BadgeService } from '../../core/push/badge.service';
 
 @ApiTags('Notifications')
 @ApiAuth()
 @Controller('notifications')
 @UseGuards(AuthGuard('jwt'))
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly badges: BadgeService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: "List all of the current user's notifications" })
@@ -43,6 +47,16 @@ export class NotificationsController {
   @ApiCommonErrors()
   async getUnreadCount(@CurrentUser() reqUser: RequestUser) {
     return this.notificationsService.getUnreadCount(reqUser.userId);
+  }
+
+  @Get('badge')
+  @ApiOperation({
+    summary:
+      "The app-icon number: the token persona's unread chat messages + the account's unread notifications",
+  })
+  @ApiCommonErrors()
+  async getBadge(@CurrentUser() reqUser: RequestUser) {
+    return this.badges.countFor(reqUser.userId, reqUser.identityId);
   }
 
   @Patch('read-all')

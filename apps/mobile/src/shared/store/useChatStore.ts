@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import {
   ChatMessage,
   ChatMessageType,
+  ChatReceipt,
   chatService,
   ConversationSummary,
   LocalAttachment,
@@ -10,6 +11,8 @@ import {
   ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
+import { messageTypeFor } from '@/shared/utils/chatAttachments';
+import { mergeReceipts } from '@/shared/utils/chatReceipts';
 
 import { useAuthStore } from './useAuthStore';
 
@@ -35,6 +38,15 @@ interface ChatState {
   // structurally impossible: each screen only ever reads its own
   // conversation's slice, however many chat screens happen to be mounted.
   messagesByConversation: Record<string, ChatMessage[]>;
+  // How far the other person has received / read each conversation
+  receiptByConversation: Record<string, ChatReceipt>;
+  /** A receipt from the server (ignored when it's my own persona's). */
+  applyReceipt: (receipt: {
+    conversationId: string;
+    identityId?: string;
+    lastDeliveredAt?: string | null;
+    lastReadAt?: string | null;
+  }) => void;
   paginationByConversation: Record<string, ConversationPagination>;
   loadingConversationIds: Record<string, boolean>;
   // Last load of a conversation's messages failed (shown with a retry)
@@ -168,6 +180,7 @@ export const useChatStore = create<ChatState>((set, get) => {
   return {
     conversations: [],
     messagesByConversation: {},
+    receiptByConversation: {},
     paginationByConversation: {},
     loadingConversationIds: {},
     loadErrorConversationIds: {},
@@ -210,6 +223,10 @@ export const useChatStore = create<ChatState>((set, get) => {
       }));
       try {
         const res = await chatService.getMessages(conversationId, cursor, 20);
+        // The other person's receipt (my ticks)
+        if (res.meta.otherReceipt) {
+          get().applyReceipt({ conversationId, ...res.meta.otherReceipt });
+        }
 
         set((state) => {
           let updatedConversations = state.conversations;
@@ -354,6 +371,34 @@ export const useChatStore = create<ChatState>((set, get) => {
       return true;
     },
 
+    applyReceipt: ({ conversationId, identityId, ...receipt }) => {
+      // My own reads come back on the room too: they're not my ticks
+      if (
+        identityId &&
+        identityId === useAuthStore.getState().activeIdentity?.id
+      ) {
+        return;
+      }
+      set((state) => {
+        const merged = mergeReceipts(
+          state.receiptByConversation[conversationId] ??
+            state.conversations.find((c) => c.id === conversationId)
+              ?.otherReceipt,
+          receipt,
+        );
+        if (!merged) return {};
+        return {
+          receiptByConversation: {
+            ...state.receiptByConversation,
+            [conversationId]: merged,
+          },
+          conversations: state.conversations.map((c) =>
+            c.id === conversationId ? { ...c, otherReceipt: merged } : c,
+          ),
+        };
+      });
+    },
+
     updateMessage: (conversationId, messageId, patch) =>
       patchMessage(conversationId, messageId, patch),
 
@@ -381,7 +426,7 @@ export const useChatStore = create<ChatState>((set, get) => {
 
     sendAttachments: async (conversationId, { files, caption, replyTo }) => {
       const tempId = `temp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-      const type = files.every((f) => f.kind === 'IMAGE') ? 'IMAGE' : 'FILE';
+      const type = messageTypeFor(files);
       const pending: ChatMessage = {
         id: tempId,
         type,
@@ -506,6 +551,8 @@ export const useChatStore = create<ChatState>((set, get) => {
                 attachmentsCount: messageWithIsMine.attachments?.length ?? 0,
                 attachmentName:
                   messageWithIsMine.attachments?.[0]?.fileName ?? null,
+                attachmentDurationMs:
+                  messageWithIsMine.attachments?.[0]?.durationMs ?? null,
                 locationLabel: messageWithIsMine.location?.label ?? null,
                 proposal: messageWithIsMine.proposal ?? null,
               },
@@ -555,6 +602,7 @@ export const useChatStore = create<ChatState>((set, get) => {
       set({
         conversations: [],
         messagesByConversation: {},
+        receiptByConversation: {},
         paginationByConversation: {},
         loadingConversationIds: {},
         loadErrorConversationIds: {},

@@ -10,9 +10,11 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { SendMessageDto } from '../dto/send-message.dto';
+import { receiptOf } from './chat-receipts.service';
 import {
   ATTACHMENT_SELECT,
   ChatAttachmentsService,
+  messageTypeFor,
 } from './chat-attachments.service';
 import {
   ChatProposalsService,
@@ -244,6 +246,8 @@ export class ChatMessagesService {
       meta: {
         nextCursor,
         hasNextPage,
+        // How far the other person has received / read (my ticks)
+        otherReceipt: receiptOf(otherPart),
         propertyContext: prop
           ? {
               id: prop.id,
@@ -377,8 +381,8 @@ export class ChatMessagesService {
           })
         : null;
 
-      // Photos / documents uploaded for this message; all photos -> IMAGE,
-      // any document -> FILE
+      // Files uploaded for this message: all photos -> IMAGE, a video ->
+      // VIDEO, a voice note -> VOICE, otherwise FILE
       const claimed = dto.attachmentIds?.length
         ? await this.attachments.claim(
             tx,
@@ -389,9 +393,7 @@ export class ChatMessagesService {
           )
         : [];
       if (claimed.length) {
-        const type = claimed.every((a) => a.kind === 'IMAGE')
-          ? 'IMAGE'
-          : 'FILE';
+        const type = messageTypeFor(claimed.map((a) => a.kind));
         if (type !== message.type) {
           await tx.message.update({
             where: { id: message.id },

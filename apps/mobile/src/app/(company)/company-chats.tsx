@@ -13,6 +13,7 @@ import { socketService } from '@/shared/services/socket.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { lastMessagePreview } from '@/shared/utils/chatAttachments';
+import { messageStatus } from '@/shared/utils/chatReceipts';
 import {
   formatTimeAgo,
   getArabicCategoryLabel,
@@ -39,8 +40,15 @@ export default function CompanyChatsScreen() {
       const unsubscribe = socketService.onConversationUpdated((data) => {
         receiveMessage(data.conversationId, data.lastMessage);
       });
+      // The other person received / read a chat: the tick on my last message
+      const unsubscribeReceipt = socketService.onConversationReceipt((receipt) =>
+        useChatStore.getState().applyReceipt(receipt),
+      );
 
-      return unsubscribe;
+      return () => {
+        unsubscribe();
+        unsubscribeReceipt();
+      };
     }
   }, [token, loadConversations, receiveMessage]);
 
@@ -72,6 +80,11 @@ export default function CompanyChatsScreen() {
 
             return (
               <ChatListItem
+                status={
+                  item.lastMessage?.isMine
+                    ? messageStatus(item.lastMessage, item.otherReceipt)
+                    : null
+                }
                 id={item.id}
                 user={{
                   name: item.otherUser?.name || 'محادثة',

@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import {
   ApiConsumes,
   ApiOperation,
@@ -23,7 +23,25 @@ import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { RespondProposalDto } from './dto/respond-proposal.dto';
 import { ChatProposalsService } from './services/chat-proposals.service';
-import { MAX_ATTACHMENTS } from './services/chat-attachments.service';
+import { ChatReceiptsService } from './services/chat-receipts.service';
+import {
+  MAX_ATTACHMENTS,
+  VIDEO_MAX_BYTES,
+} from './services/chat-attachments.service';
+
+// `durations` form field: a JSON array of numbers (or nulls); anything else
+// is ignored
+function parseDurations(raw?: string): (number | null)[] | undefined {
+  if (!raw) return undefined;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.map((v) => (typeof v === 'number' ? v : null))
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
@@ -44,6 +62,7 @@ export class ChatController {
     private readonly chatService: ChatService,
     private readonly proposals: ChatProposalsService,
     private readonly gateway: ChatGateway,
+    private readonly receipts: ChatReceiptsService,
   ) {}
 
   @Post('conversations')
@@ -87,6 +106,9 @@ export class ChatController {
   ) {
     const pageNum = page ? parseInt(page, 10) : 1;
     const limitNum = limit ? parseInt(limit, 10) : 10;
+    // Loading the chats list means the app has what was sent to it
+    if (pageNum === 1 && !q)
+      void this.gateway.deliverWaiting(reqUser.identityId);
     return this.chatService.getConversations(
       reqUser.identityId,
       pageNum,
@@ -97,26 +119,41 @@ export class ChatController {
 
   @Post('conversations/:id/attachments')
   @UseInterceptors(
-    FilesInterceptor('files', MAX_ATTACHMENTS, {
-      limits: { fileSize: 20 * 1024 * 1024 },
-    }),
+    FileFieldsInterceptor(
+      [
+        { name: 'files', maxCount: MAX_ATTACHMENTS },
+        // A still for each video, in the videos' order
+        { name: 'thumbnails', maxCount: MAX_ATTACHMENTS },
+      ],
+      // Per-kind limits are checked in ChatAttachmentsService
+      { limits: { fileSize: VIDEO_MAX_BYTES } },
+    ),
   )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({
     summary:
-      'Upload up to 10 photos / documents (pdf, Word, Excel) to send in this chat; returns attachment ids',
+      'Upload up to 10 photos / videos / documents (pdf, Word, Excel), or one voice note, to send in this chat; `thumbnails` = a still per video, `durations` = JSON array of lengths in ms; returns attachment ids',
   })
   @ApiParam({ name: 'id', description: 'Conversation ID' })
   @ApiCommonErrors()
   async uploadAttachments(
     @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    uploaded: {
+      files?: Express.Multer.File[];
+      thumbnails?: Express.Multer.File[];
+    },
+    @Body('durations') durations?: string,
   ) {
     return this.chatService.uploadAttachments(
       reqUser.identityId,
       conversationId,
-      files,
+      uploaded?.files ?? [],
+      {
+        thumbnails: uploaded?.thumbnails,
+        durations: parseDurations(durations),
+      },
     );
   }
 
@@ -189,7 +226,13 @@ export class ChatController {
     @CurrentUser() reqUser: RequestUser,
     @Param('id') conversationId: string,
   ) {
-    return this.chatService.markAsRead(reqUser.identityId, conversationId);
+    // Read (and so delivered) up to now: the sender's ticks turn gold
+    const receipt = await this.receipts.markRead(
+      reqUser.identityId,
+      conversationId,
+    );
+    if (receipt) this.gateway.emitReceipt(receipt);
+    return { success: true };
   }
 
   @Post('messages/:id/hide')

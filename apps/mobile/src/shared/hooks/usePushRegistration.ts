@@ -3,6 +3,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 
 import { devicesService } from '@/shared/api/devices.service';
 
@@ -12,9 +13,24 @@ Notifications.setNotificationHandler({
     shouldShowBanner: true,
     shouldShowList: true,
     shouldPlaySound: true,
-    shouldSetBadge: false,
+    // The push carries the unread total for the app icon
+    shouldSetBadge: true,
   }),
 });
+
+// Android plays the chat tone through this channel (the server sends its
+// id with chat pushes). A channel's sound can't be changed once created, so
+// it's only created by builds that bundle the tone (1.5.0+).
+export const CHAT_CHANNEL_ID = 'chat-messages';
+export const CHAT_SOUND = 'buyootna_message.wav';
+if (Platform.OS === 'android') {
+  Notifications.setNotificationChannelAsync(CHAT_CHANNEL_ID, {
+    name: 'رسائل المحادثات',
+    importance: Notifications.AndroidImportance.HIGH,
+    sound: CHAT_SOUND,
+    vibrationPattern: [0, 200, 100, 200],
+  }).catch((e) => console.warn('Chat notification channel failed:', e));
+}
 
 function getProjectId(): string | undefined {
   return (

@@ -2,7 +2,12 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import { ChatAttachment, ChatMessage } from '@/shared/api/chat.service';
+import {
+  ChatAttachment,
+  ChatMessage,
+  ChatReceipt,
+  chatService,
+} from '@/shared/api/chat.service';
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
@@ -14,7 +19,9 @@ import ProposalCard, {
 } from '@/shared/components/chat/ProposalCard';
 import ReplyQuote from '@/shared/components/chat/ReplyQuote';
 import SwipeableMessage from '@/shared/components/chat/SwipeableMessage';
+import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
 import { DisplayMessage, formatMessageTime } from '@/shared/utils/chatDate';
+import { messageStatus } from '@/shared/utils/chatReceipts';
 
 export interface ChatMessageListProps {
   listRef: React.RefObject<FlashListRef<any> | null>;
@@ -37,10 +44,13 @@ export interface ChatMessageListProps {
   // and retrying a send that failed
   onOpenPhotos?: (urls: string[], index: number) => void;
   onOpenFile?: (attachment: ChatAttachment) => void;
+  onOpenVideo?: (attachment: ChatAttachment) => void;
   onRetryAttachments?: (tempId: string) => void;
   // In-chat search: the current match to scroll to and highlight
   focusMessageId?: string | null;
   // Offers / appointments: answer, or open the counter form
+  // How far the other person has received / read (my ticks)
+  otherReceipt?: ChatReceipt | null;
   onRespondToProposal?: (message: ChatMessage, action: ProposalAction) => void;
   onCounterProposal?: (message: ChatMessage) => void;
 }
@@ -67,8 +77,10 @@ export default function ChatMessageList({
   otherUserName = 'الطرف الآخر',
   onOpenPhotos,
   onOpenFile,
+  onOpenVideo,
   onRetryAttachments,
   focusMessageId,
+  otherReceipt,
   onRespondToProposal,
   onCounterProposal,
 }: ChatMessageListProps) {
@@ -117,6 +129,7 @@ export default function ChatMessageList({
 
   const renderBubble = useCallback(
     (item: ChatMessage) => {
+      const status = messageStatus(item, otherReceipt);
       const quote = item.replyTo ? (
         <ReplyQuote
           reply={item.replyTo}
@@ -130,8 +143,34 @@ export default function ChatMessageList({
       // Photos / documents (sent, or still uploading from the device)
       if (item.attachments?.length || item.localAttachments?.length) {
         const sent = item.attachments ?? [];
+        // 🎤 a voice note (sent, or still uploading from the device)
+        const voice =
+          sent.find((a) => a.kind === 'AUDIO') ??
+          item.localAttachments?.find((a) => a.kind === 'AUDIO');
+        if (voice) {
+          const sentVoice = sent.find((a) => a.kind === 'AUDIO');
+          return (
+            <VoiceMessageBubble
+              tickStatus={status}
+              uri={'url' in voice ? voice.url : voice.uri}
+              durationMs={voice.durationMs}
+              isMine={item.isMine}
+              timestamp={timeOf(item)}
+              quote={quote}
+              sending={item.sending}
+              failed={item.failed}
+              onRetry={() => onRetryAttachments?.(item.id)}
+              refreshUri={
+                sentVoice
+                  ? () => chatService.attachmentUrl(sentVoice.id)
+                  : undefined
+              }
+            />
+          );
+        }
         return (
           <AttachmentMessageBubble
+              status={status}
             message={item}
             timestamp={timeOf(item)}
             quote={quote}
@@ -145,6 +184,10 @@ export default function ChatMessageList({
               const file = sent.filter((a) => a.kind === 'FILE')[index];
               if (file) onOpenFile?.(file);
             }}
+            onPressVideo={(index) => {
+              const video = sent.filter((a) => a.kind === 'VIDEO')[index];
+              if (video) onOpenVideo?.(video);
+            }}
             onRetry={() => onRetryAttachments?.(item.id)}
           />
         );
@@ -155,6 +198,7 @@ export default function ChatMessageList({
           if (!item.location) return null;
           return (
             <LocationMessageBubble
+              status={status}
               location={item.location}
               isMine={item.isMine}
               timestamp={timeOf(item)}
@@ -165,6 +209,7 @@ export default function ChatMessageList({
         case 'OFFER':
           return (
             <ProposalCard
+              status={status}
               message={item}
               timestamp={timeOf(item)}
               quote={quote}
@@ -179,7 +224,7 @@ export default function ChatMessageList({
               property={item.property}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
               onPressProperty={() => {
                 const propId = item.propertyId || item.property?.id;
@@ -194,7 +239,7 @@ export default function ChatMessageList({
               imageUrl={item.imageUrl}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
               onPressImage={() => onPressImage(item.imageUrl!)}
             />
@@ -206,7 +251,7 @@ export default function ChatMessageList({
               text={item.content ?? ''}
               isMine={item.isMine}
               timestamp={timeOf(item)}
-              isRead={!item.sending}
+              status={status}
               quote={quote}
             />
           );
@@ -219,9 +264,11 @@ export default function ChatMessageList({
       jumpTo,
       onOpenPhotos,
       onOpenFile,
+      onOpenVideo,
       onRetryAttachments,
       onRespondToProposal,
       onCounterProposal,
+      otherReceipt,
     ],
   );
 
@@ -258,7 +305,8 @@ export default function ChatMessageList({
         keyExtractor={(item) => item.id}
         getItemType={(item) => item.type}
         // Re-render rows when the jumped-to message's tint changes
-        extraData={highlightedId}
+        // Repaint on a jump highlight, and when the ticks change
+        extraData={`${highlightedId}|${otherReceipt?.lastDeliveredAt}|${otherReceipt?.lastReadAt}`}
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingVertical: 20,

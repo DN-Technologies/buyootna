@@ -13,6 +13,10 @@ import { SendMessageDto } from './dto/send-message.dto';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { PresenceService } from '../../core/trust-signals/presence.service';
 import { ChatPushService } from './services/chat-push.service';
+import {
+  ChatReceiptsService,
+  ConversationReceipt,
+} from './services/chat-receipts.service';
 
 // What a connected socket speaks as (set on connect)
 interface SocketIdentity {
@@ -36,6 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly prisma: PrismaService,
     private readonly presence: PresenceService,
     private readonly chatPush: ChatPushService,
+    private readonly receipts: ChatReceiptsService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -67,6 +72,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // The persona's room: inbox updates for this persona only
       client.join(`identity:${payload.ident}`);
       if (payload.ident) this.presence.socketConnected(payload.ident);
+      // The app is online: messages waiting for this persona are delivered
+      if (payload.ident) void this.deliverWaiting(payload.ident);
       console.log(`Client connected: identity:${payload.ident} (${client.id})`);
     } catch (error) {
       console.error('Socket connection authentication failed:', error.message);
@@ -98,6 +105,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleLeaveConversation(client: Socket, conversationId: string) {
     client.leave(`conversation:${conversationId}`);
     console.log(`Socket ${client.id} left conversation:${conversationId}`);
+  }
+
+  /**
+   * Tells the senders how far a persona has received / read a conversation
+   * (their ticks): the open chat and the other participants' chats lists.
+   */
+  emitReceipt(receipt: ConversationReceipt) {
+    const { notifyIdentityIds, ...payload } = receipt;
+    let target = this.server.to(`conversation:${receipt.conversationId}`);
+    for (const id of notifyIdentityIds) target = target.to(`identity:${id}`);
+    target.emit('conversation_receipt', payload);
+  }
+
+  /** Marks what was waiting for this persona as delivered and says so. */
+  async deliverWaiting(identityId: string) {
+    try {
+      const receipts = await this.receipts.markDelivered(identityId);
+      receipts.forEach((r) => this.emitReceipt(r));
+    } catch (error) {
+      console.error('Failed to mark messages delivered:', error);
+    }
   }
 
   /**
@@ -169,6 +197,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
       if (conversation) {
+        // Delivered at once to recipients whose app is connected
+        const recipients = conversation.participants
+          .map((p) => p.identityId)
+          .filter((id) => id !== identityId);
+        const connected: string[] = [];
+        for (const id of recipients) {
+          const sockets = await this.server.in(`identity:${id}`).fetchSockets();
+          if (sockets.length > 0) connected.push(id);
+        }
+        const delivered = await this.receipts.markDeliveredTo(
+          connected,
+          payload.conversationId,
+        );
+        delivered.forEach((r) => this.emitReceipt(r));
+
         for (const participant of conversation.participants) {
           if (participant.identityId !== identityId) {
             this.server

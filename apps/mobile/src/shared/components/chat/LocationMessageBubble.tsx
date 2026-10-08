@@ -4,14 +4,17 @@ import { ReactNode } from 'react';
 import { Alert, Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatLocation } from '@/shared/api/chat.service';
+import MessageTicks from '@/shared/components/chat/MessageTicks';
 import { MAPBOX_ACCESS_TOKEN } from '@/shared/components/map/picker/config';
 import { mapLinks } from '@/shared/utils/chatProposals';
+import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface LocationMessageBubbleProps {
   location: ChatLocation;
   isMine: boolean;
   timestamp: string;
   quote?: ReactNode;
+  status?: MessageStatus | null;
 }
 
 const WIDTH = 260;
@@ -44,6 +47,7 @@ export default function LocationMessageBubble({
   isMine,
   timestamp,
   quote,
+  status,
 }: LocationMessageBubbleProps) {
   return (
     <View className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}>
@@ -73,7 +77,10 @@ export default function LocationMessageBubble({
             </Text>
           </View>
         </TouchableOpacity>
-        <Text className="mt-1 px-1 font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
+        <View className="mt-1 flex-row items-center gap-1 px-1">
+          <MessageTicks status={status} size={12} />
+          <Text className="font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
+        </View>
       </View>
     </View>
   );

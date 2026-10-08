@@ -12,10 +12,13 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  id             String    @id @default(uuid())
-  conversationId String
-  joinedAt       DateTime  @default(now())
-  lastReadAt     DateTime?
+  id              String    @id @default(uuid())
+  conversationId  String
+  joinedAt        DateTime  @default(now())
+  lastReadAt      DateTime?
+  // When this persona's app last received the conversation's messages
+  // (delivered ticks); reading implies it
+  lastDeliveredAt DateTime?
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -125,6 +128,8 @@ model MessageAttachment {
   height             Int?
   // Video / voice note length
   durationMs         Int?
+  // Video: a still image (private, like the file) shown before playing
+  thumbnailKey       String?
   createdAt          DateTime       @default(now())
 
   conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
