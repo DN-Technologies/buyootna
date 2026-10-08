@@ -9,15 +9,17 @@ export interface DateSeparatorItem {
 export type DisplayMessage = ChatMessage | DateSeparatorItem;
 
 /**
- * A message's time on this device, e.g. "14:05": 24-hour, western digits,
- * the device's own time zone. Empty for an unparseable date.
+ * A message's time on this device, e.g. "2:05 م": 12-hour with ص/م, western
+ * digits, the device's own time zone. Empty for an unparseable date.
  */
 export function formatMessageTime(isoDate: string): string {
   const date = new Date(isoDate);
   if (Number.isNaN(date.getTime())) return '';
   // Built by hand: Intl hour-cycle/numbering support varies between engines
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  const hours = date.getHours();
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hour12}:${minutes} ${hours < 12 ? 'ص' : 'م'}`;
 }
 
 /** أمس / اليوم / full date label for the day a message was sent on. */

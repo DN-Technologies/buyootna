@@ -1,3 +1,5 @@
+import 'react-native-gesture-handler/jestSetup';
+
 import { fireEvent, render } from '@testing-library/react-native';
 
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
@@ -19,7 +21,9 @@ describe('ChatMessageList', () => {
     }) as DisplayMessage;
 
   const setup = async (props: Partial<Parameters<typeof ChatMessageList>[0]> = {}) => {
-    const listRef = { current: { scrollToEnd: jest.fn() } } as any;
+    const listRef = {
+      current: { scrollToEnd: jest.fn(), scrollToIndex: jest.fn() },
+    } as any;
     const utils = await render(
       <ChatMessageList
         listRef={listRef}
@@ -72,7 +76,7 @@ describe('ChatMessageList', () => {
   it("shows the time from createdAt with western digits, not the server's string", async () => {
     const { getByText, queryByText } = await setup({ messages: [message()] });
 
-    expect(getByText('00:53')).toBeTruthy();
+    expect(getByText('12:53 ص')).toBeTruthy();
     expect(queryByText('٠٠:٥٣')).toBeNull();
   });
 
@@ -83,5 +87,51 @@ describe('ChatMessageList', () => {
     await fireEvent.press(getByTestId('chat-messages-retry'));
 
     expect(onRetry).toHaveBeenCalled();
+  });
+
+  describe('replies', () => {
+    const original = message({ id: 'm1', content: 'هل العقار متاح؟', isMine: false });
+    const reply = message({
+      id: 'm2',
+      content: 'نعم',
+      isMine: true,
+      replyTo: { id: 'm1', type: 'TEXT', content: 'هل العقار متاح؟', isMine: false },
+    } as Partial<DisplayMessage>);
+
+    it("shows the quoted message with the other person's name", async () => {
+      const { getAllByTestId, getByText } = await setup({
+        messages: [original, reply],
+        otherUserName: 'Ebrahim',
+        onReply: jest.fn(),
+        onLongPressMessage: jest.fn(),
+      });
+
+      expect(getAllByTestId('reply-quote')).toHaveLength(1);
+      expect(getByText('Ebrahim')).toBeTruthy();
+    });
+
+    it('jumps to the original when the quote is tapped', async () => {
+      const { getByTestId, listRef } = await setup({
+        messages: [original, reply],
+        otherUserName: 'Ebrahim',
+        onReply: jest.fn(),
+      });
+
+      await fireEvent.press(getByTestId('reply-quote'));
+
+      expect(listRef.current.scrollToIndex).toHaveBeenCalledWith(
+        expect.objectContaining({ index: 0 }),
+      );
+    });
+
+    it('shows a deleted original as رسالة محذوفة', async () => {
+      const { getByText } = await setup({
+        messages: [
+          message({ id: 'm3', replyTo: { id: 'gone', deleted: true } } as Partial<DisplayMessage>),
+        ],
+      });
+
+      expect(getByText('رسالة محذوفة')).toBeTruthy();
+    });
   });
 });

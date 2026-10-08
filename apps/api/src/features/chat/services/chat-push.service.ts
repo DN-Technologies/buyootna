@@ -3,8 +3,16 @@ import { MessageType } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { PushService } from 'src/core/push/push.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import {
+  LISTING_TYPE_LABELS,
+  PROPERTY_CATEGORY_LABELS,
+} from '../../properties/services/property-formatting.util';
 
 const PREVIEW_MAX_CHARS = 100;
+// The custom Buyootna tone and its Android channel (created by the app);
+// builds without them fall back to the default sound / channel
+export const CHAT_PUSH_SOUND = 'buyootna_message.wav';
+export const CHAT_PUSH_CHANNEL = 'chat-messages';
 
 export interface ChatPushInput {
   conversationId: string;
@@ -14,14 +22,41 @@ export interface ChatPushInput {
   viewingIdentityIds: Set<string>;
 }
 
-/** What the notification says about a message. */
-export function chatPushBody(message: ChatPushInput['message']): string {
-  if (message.type === 'IMAGE') return '📷 صورة';
-  if (message.type === 'PROPERTY') return '🏠 عقار';
-  const text = (message.content ?? '').trim();
-  return text.length > PREVIEW_MAX_CHARS
-    ? `${text.slice(0, PREVIEW_MAX_CHARS)}…`
-    : text;
+/** "عمارة للبيع" for the ad a conversation started from. */
+export function propertyTitle(
+  property?: {
+    category: string;
+    type: string;
+  } | null,
+): string | null {
+  if (!property) return null;
+  const category =
+    PROPERTY_CATEGORY_LABELS[
+      property.category as keyof typeof PROPERTY_CATEGORY_LABELS
+    ] || 'عقار';
+  const type = LISTING_TYPE_LABELS[property.type];
+  return type ? `${category} ${type}` : category;
+}
+
+/**
+ * What the notification says about a message, led by the ad's title when
+ * the chat came from one: "عمارة للبيع · هاي".
+ */
+export function chatPushBody(
+  message: ChatPushInput['message'],
+  property?: string | null,
+): string {
+  let preview: string;
+  if (message.type === 'IMAGE') preview = '📷 صورة';
+  else if (message.type === 'PROPERTY') preview = '🏠 عقار';
+  else {
+    const text = (message.content ?? '').trim();
+    preview =
+      text.length > PREVIEW_MAX_CHARS
+        ? `${text.slice(0, PREVIEW_MAX_CHARS)}…`
+        : text;
+  }
+  return property ? `${property} · ${preview}` : preview;
 }
 
 /**
@@ -88,9 +123,20 @@ export class ChatPushService {
         sender ? { userId: sender.userId, identity: sender } : undefined,
       );
 
+      // Name the ad when the chat came from one
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { id: input.conversationId },
+        select: { property: { select: { category: true, type: true } } },
+      });
+
       await this.push.sendToTokens(tokens, {
         title: name,
-        body: chatPushBody(input.message),
+        body: chatPushBody(
+          input.message,
+          propertyTitle(conversation?.property),
+        ),
+        sound: CHAT_PUSH_SOUND,
+        channelId: CHAT_PUSH_CHANNEL,
         data: {
           type: 'CHAT_MESSAGE',
           conversationId: input.conversationId,

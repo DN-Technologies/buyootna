@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 interface MessageProps {
@@ -6,6 +7,8 @@ interface MessageProps {
   isMine: boolean;
   timestamp: string;
   isRead?: boolean;
+  // The message this one replies to, shown inside the bubble
+  quote?: ReactNode;
 }
 
 export default function MessageBubble({
@@ -13,6 +16,7 @@ export default function MessageBubble({
   isMine,
   timestamp,
   isRead,
+  quote,
 }: MessageProps) {
   return (
     <View
@@ -32,6 +36,7 @@ export default function MessageBubble({
             elevation: 2,
           }}
         >
+          {quote}
           <Text
             className={`text-right font-cairo-medium text-[14px] leading-6 ${
               isMine ? 'text-[#111111]' : 'text-white'

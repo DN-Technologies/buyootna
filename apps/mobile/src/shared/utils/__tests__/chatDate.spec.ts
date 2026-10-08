@@ -92,11 +92,11 @@ describe('chatDate utility', () => {
 });
 
 describe('formatMessageTime', () => {
-  it('is 24-hour with western digits in the device time zone', () => {
+  it('is 12-hour with ص/م and western digits, in the device time zone', () => {
     const d = new Date(2026, 9, 8, 0, 53);
-    expect(formatMessageTime(d.toISOString())).toBe('00:53');
+    expect(formatMessageTime(d.toISOString())).toBe('12:53 ص');
     expect(formatMessageTime(new Date(2026, 9, 8, 14, 5).toISOString())).toBe(
-      '14:05',
+      '2:05 م',
     );
   });
 

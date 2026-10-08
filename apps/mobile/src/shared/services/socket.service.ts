@@ -1,3 +1,4 @@
+import { AppState } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 
 import { validateApiUrl } from '@/shared/api/api';
@@ -6,9 +7,31 @@ const API_URL = validateApiUrl();
 
 class SocketService {
   private socket: Socket | null = null;
+  // Conversation rooms this device should be in. A room belongs to one
+  // socket connection on the server, so every (re)connect -- e.g. after the
+  // OS dropped the socket while the app was in the background -- must join
+  // them again, or the open chat stops receiving messages (QA)
+  private rooms = new Set<string>();
+  private reconnectListeners = new Set<() => void>();
+  private hasConnected = false;
+
+  constructor() {
+    // Back in the foreground: don't wait for the next backoff tick
+    AppState.addEventListener('change', (state) => {
+      if (state === 'active' && this.socket && !this.socket.connected) {
+        this.socket.connect();
+      }
+    });
+  }
 
   connect(token: string) {
-    if (this.socket?.connected) return;
+    // Reuse the socket that dropped: a new one would lose every listener
+    // the screens registered on it. The token is used on its next connect
+    if (this.socket) {
+      this.socket.auth = { token };
+      if (!this.socket.connected) this.socket.connect();
+      return;
+    }
 
     // Connect to the 'chat' namespace
     this.socket = io(`${API_URL}/chat`, {
@@ -16,11 +39,19 @@ class SocketService {
       transports: ['websocket'],
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 10,
+      reconnectionDelayMax: 10000,
+      // Keep trying: a long stay in the background used to exhaust 10 tries
+      reconnectionAttempts: Infinity,
     });
 
     this.socket.on('connect', () => {
       console.log('Socket.IO connected successfully to namespace /chat');
+      this.rooms.forEach((id) => this.socket?.emit('join_conversation', id));
+      if (this.hasConnected) {
+        // A reconnect: messages may have arrived while disconnected
+        this.reconnectListeners.forEach((cb) => cb());
+      }
+      this.hasConnected = true;
     });
 
     this.socket.on('disconnect', (reason) => {
@@ -37,6 +68,16 @@ class SocketService {
       this.socket.disconnect();
       this.socket = null;
     }
+    this.rooms.clear();
+    this.hasConnected = false;
+  }
+
+  /** Called after the socket comes back (not on the first connection). */
+  onReconnect(callback: () => void) {
+    this.reconnectListeners.add(callback);
+    return () => {
+      this.reconnectListeners.delete(callback);
+    };
   }
 
   getSocket() {
@@ -49,13 +90,15 @@ class SocketService {
   }
 
   joinConversation(conversationId: string) {
-    if (this.socket) {
+    this.rooms.add(conversationId);
+    if (this.socket?.connected) {
       this.socket.emit('join_conversation', conversationId);
     }
   }
 
   leaveConversation(conversationId: string) {
-    if (this.socket) {
+    this.rooms.delete(conversationId);
+    if (this.socket?.connected) {
       this.socket.emit('leave_conversation', conversationId);
     }
   }
@@ -75,6 +118,7 @@ class SocketService {
       imageUrl?: string;
       propertyId?: string;
       tempId?: string;
+      replyToId?: string;
     },
   ): boolean {
     if (!this.socket) {

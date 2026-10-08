@@ -69,6 +69,10 @@ export class ChatService {
   }
 
   // Mark conversation messages as read
+  hideMessage(identityId: string, messageId: string) {
+    return this.messagesService.hideMessage(identityId, messageId);
+  }
+
   markAsRead(identityId: string, conversationId: string) {
     return this.messagesService.markAsRead(identityId, conversationId);
   }

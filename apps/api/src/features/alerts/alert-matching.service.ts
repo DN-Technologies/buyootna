@@ -1,15 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { PROPERTY_CATEGORY_LABELS } from '../properties/services/property-formatting.util';
+import {
+  LISTING_TYPE_LABELS,
+  PROPERTY_CATEGORY_LABELS,
+} from '../properties/services/property-formatting.util';
 import { alertListingType, propertyMatchesAlert } from './alert-matching.util';
-
-const LISTING_TYPE_LABELS: Record<string, string> = {
-  SALE: 'للبيع',
-  RENT: 'للإيجار',
-  EXCHANGE: 'للبدل',
-  AUCTION: 'في مزاد',
-};
 
 @Injectable()
 export class AlertMatchingService {

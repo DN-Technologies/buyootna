@@ -4,8 +4,8 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
-import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
 import { formatNumber } from '@/shared/utils/formatNumber';
+import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
 
 interface PropertyContextProps {
   property: {
@@ -23,6 +23,7 @@ interface PropertyContextProps {
   isMine: boolean;
   timestamp: string;
   isRead?: boolean;
+  quote?: React.ReactNode;
   onPressProperty?: () => void;
 }
 
@@ -31,6 +32,7 @@ export default function PropertyMessageBubble({
   isMine,
   timestamp,
   isRead,
+  quote,
   onPressProperty,
 }: PropertyContextProps) {
   // Parsing helper if only `specs` string is provided (fallback)
@@ -107,6 +109,8 @@ export default function PropertyMessageBubble({
       <View
         className={`w-80 max-w-[90%] ${isMine ? 'items-start' : 'items-end'}`}
       >
+        {/* The message this one replies to */}
+        {quote}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={onPressProperty}

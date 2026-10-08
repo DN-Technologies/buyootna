@@ -1,5 +1,13 @@
 import { Prisma, PropertyCategory } from '@prisma/client';
 
+// "عمارة للبيع": the listing type after the category label
+export const LISTING_TYPE_LABELS: Record<string, string> = {
+  SALE: 'للبيع',
+  RENT: 'للإيجار',
+  EXCHANGE: 'للبدل',
+  AUCTION: 'في مزاد',
+};
+
 export const PROPERTY_CATEGORY_LABELS: Record<PropertyCategory, string> = {
   COMMERCIAL: 'تجاري',
   INVESTMENT: 'استثماري',

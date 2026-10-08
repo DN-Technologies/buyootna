@@ -4,6 +4,7 @@ import {
   ChatMessage,
   chatService,
   ConversationSummary,
+  ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
 
@@ -55,8 +56,12 @@ interface ChatState {
       type?: 'TEXT' | 'IMAGE' | 'PROPERTY';
       imageUrl?: string;
       propertyId?: string;
+      // Replying to this message (shown quoted on the new bubble)
+      replyTo?: ChatMessage;
     },
   ) => boolean;
+  /** "حذف لدي": removes it here at once; restored if the server refuses. */
+  hideMessage: (conversationId: string, messageId: string) => Promise<void>;
   /**
    * Rolls back the optimistic bubble for a send the server refused to
    * persist (tempId comes back on the socket's message_error event).
@@ -66,6 +71,17 @@ interface ChatState {
   markConversationAsRead: (conversationId: string) => Promise<void>;
   setActiveConversation: (conversationId: string | null) => void;
   clear: () => void;
+}
+
+/** How a message appears quoted under a reply. */
+export function quoteOf(message: ChatMessage): ReplyPreview {
+  return {
+    id: message.id,
+    type: message.type,
+    content: message.content ?? null,
+    imageUrl: message.imageUrl ?? null,
+    isMine: message.isMine,
+  };
 }
 
 export const useChatStore = create<ChatState>((set, get) => {
@@ -198,8 +214,10 @@ export const useChatStore = create<ChatState>((set, get) => {
       // 1. Emit via socket. No socket object at all means the emit would be
       // silently dropped -- report the failure instead of showing an
       // optimistic bubble that can never be confirmed.
+      const { replyTo, ...fields } = payload;
       const emitted = socketService.sendMessage(conversationId, {
-        ...payload,
+        ...fields,
+        replyToId: replyTo?.id,
         tempId,
       });
       if (!emitted) {
@@ -214,12 +232,10 @@ export const useChatStore = create<ChatState>((set, get) => {
         content: payload.content,
         imageUrl: payload.imageUrl,
         propertyId: payload.propertyId,
+        replyTo: replyTo ? quoteOf(replyTo) : null,
         isMine: true,
-        timestamp: new Date().toLocaleTimeString('ar-KW-u-nu-latn', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false,
-        }),
+        // Shown via formatMessageTime(createdAt); kept for the type
+        timestamp: '',
         createdAt: new Date().toISOString(),
         sending: true,
       };
@@ -235,6 +251,28 @@ export const useChatStore = create<ChatState>((set, get) => {
       }));
 
       return true;
+    },
+
+    hideMessage: async (conversationId, messageId) => {
+      const before = get().messagesByConversation[conversationId] || [];
+      set((state) => ({
+        messagesByConversation: {
+          ...state.messagesByConversation,
+          [conversationId]: before.filter((m) => m.id !== messageId),
+        },
+      }));
+      try {
+        await chatService.hideMessage(messageId);
+      } catch (error) {
+        // Put it back where it was
+        set((state) => ({
+          messagesByConversation: {
+            ...state.messagesByConversation,
+            [conversationId]: before,
+          },
+        }));
+        throw error;
+      }
     },
 
     messageFailed: (conversationId, tempId) => {
@@ -260,13 +298,27 @@ export const useChatStore = create<ChatState>((set, get) => {
     },
 
     receiveMessage: (conversationId, message) => {
-      const currentUserId = useAuthStore.getState().user?.id;
+      const { user, activeIdentity } = useAuthStore.getState();
+      const currentUserId = user?.id;
       const isMine =
         message.isMine ??
         (message.senderId ? message.senderId === currentUserId : false);
 
+      // A live reply is broadcast to both sides: "you" is whoever sent the
+      // quoted message as this persona
+      const replyTo =
+        message.replyTo && !message.replyTo.deleted
+          ? {
+              ...message.replyTo,
+              isMine:
+                message.replyTo.isMine ??
+                message.replyTo.senderIdentityId === activeIdentity?.id,
+            }
+          : message.replyTo;
+
       const messageWithIsMine = {
         ...message,
+        replyTo,
         isMine,
       };
 

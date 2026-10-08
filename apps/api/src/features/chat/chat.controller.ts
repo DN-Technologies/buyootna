@@ -111,4 +111,18 @@ export class ChatController {
   ) {
     return this.chatService.markAsRead(reqUser.identityId, conversationId);
   }
+
+  @Post('messages/:id/hide')
+  @ApiOperation({
+    summary: "Delete a message on the current persona's side only (حذف لدي)",
+  })
+  @ApiParam({ name: 'id', description: 'Message ID' })
+  @ApiResponse({ status: 201, type: ChatSuccessResponseDto })
+  @ApiCommonErrors()
+  async hideMessage(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') messageId: string,
+  ) {
+    return this.chatService.hideMessage(reqUser.identityId, messageId);
+  }
 }

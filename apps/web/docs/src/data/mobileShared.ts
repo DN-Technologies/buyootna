@@ -99,7 +99,8 @@ export const mobileShared: DocSection = {
         en: [
           "A sent message appears for the recipient without refreshing, and is still there after reopening the chat (also when the reload is slow or fails: the cached messages stay, with a تعذر تحميل الرسائل · إعادة المحاولة row on failure).",
           "Your own messages sit on the right (light bubble), the other person's on the left (dark bubble), for text, image and property messages.",
-          "Message times are 24-hour with western digits in the phone's time zone (e.g. 00:53, not ٠٠:٥٣), in the chat and in the chats list.",
+          "Message times are 12-hour with ص/م and western digits in the phone's time zone (e.g. 2:05 م, 12:53 ص), in the chat and in the chats list.",
+          "Switching to another app and back (without closing Buyootna) shows the messages that arrived meanwhile without reopening the chat, and the chats list updates too.",
           "Going back to the chats list never leaves a stuck loading spinner at the top; the spinner shows only while pulling to refresh.",
           "Two personas of the same account can't message each other ('لا يمكنك بدء محادثة مع نفسك').",
           "The inbox after switching persona lists only that persona's conversations.",
@@ -109,7 +110,8 @@ export const mobileShared: DocSection = {
         ar: [
           "الرسالة المرسلة تظهر للمستلم دون تحديث وتبقى بعد إعادة فتح المحادثة (حتى إذا بطؤ التحميل أو فشل: تبقى الرسائل المحفوظة، مع سطر تعذر تحميل الرسائل · إعادة المحاولة عند الفشل).",
           "رسائلك على اليمين (فقاعة فاتحة) ورسائل الطرف الآخر على اليسار (فقاعة داكنة)، للنص والصور والعقارات.",
-          "أوقات الرسائل بنظام 24 ساعة وبأرقام غربية وبتوقيت الهاتف (مثل 00:53 وليس ٠٠:٥٣)، في المحادثة وفي قائمة المحادثات.",
+          "أوقات الرسائل بنظام 12 ساعة مع ص/م وبأرقام غربية وبتوقيت الهاتف (مثل 2:05 م و 12:53 ص)، في المحادثة وفي قائمة المحادثات.",
+          "الانتقال إلى تطبيق آخر ثم العودة (دون إغلاق بيوتنا) يعرض الرسائل التي وصلت في الأثناء دون إعادة فتح المحادثة، وتتحدّث قائمة المحادثات أيضاً.",
           "العودة إلى قائمة المحادثات لا تترك مؤشر تحميل عالقاً في الأعلى؛ يظهر المؤشر فقط أثناء السحب للتحديث.",
           "لا يمكن لهويتين في نفس الحساب مراسلة بعضهما ('لا يمكنك بدء محادثة مع نفسك').",
           "صندوق الوارد بعد تبديل الهوية يعرض محادثات تلك الهوية فقط.",
@@ -975,6 +977,7 @@ export const mobileShared: DocSection = {
         en: [
           "With the recipient's app in the background or closed, a new message shows a notification with the sender's name and the message preview.",
           "Tapping the notification opens that conversation.",
+          "When the chat came from an ad, the notification names it first: 'عمارة للبيع · هاي'.",
           "No notification while the recipient has that conversation open.",
           "The sender never gets a notification for their own message.",
           "A device using a different persona of the recipient's account gets no notification.",
@@ -982,6 +985,7 @@ export const mobileShared: DocSection = {
         ar: [
           "عندما يكون تطبيق المستلم في الخلفية أو مغلقاً، تظهر رسالة جديدة كإشعار باسم المرسل ومعاينة الرسالة.",
           "الضغط على الإشعار يفتح تلك المحادثة.",
+          "إذا بدأت المحادثة من إعلان، يذكره الإشعار أولاً: 'عمارة للبيع · هاي'.",
           "لا يظهر إشعار ما دام المستلم يفتح تلك المحادثة.",
           "لا يتلقى المرسل إشعاراً برسالته.",
           "الجهاز الذي يستخدم هوية أخرى في حساب المستلم لا يتلقى إشعاراً.",
@@ -1125,6 +1129,45 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "feat/image-viewer",
+    },
+    {
+      id: "mobile-chat-reply-and-options",
+      title: {
+        en: "Reply to a message (swipe right) and long-press options",
+        ar: "الرد على رسالة (السحب لليمين) وخيارات الضغط المطوّل",
+      },
+      priority: "P1",
+      story: {
+        en: "Like WhatsApp: swipe a message to the right (or long-press → رد) to reply to it. A 'الرد على …' bar shows above the input with ✕ to cancel; the sent reply shows the quoted message on top (name: أنت or the other person), and tapping the quote jumps to the original and tints it briefly. A quoted message that was deleted shows 'رسالة محذوفة'. Long-pressing a message opens رد / نسخ (text only) / حذف لدي, which removes it on your side only; the other person still sees it.",
+        ar: "مثل الواتساب: اسحب الرسالة لليمين (أو اضغط مطولاً ← رد) للرد عليها. يظهر شريط 'الرد على …' فوق حقل الكتابة مع ✕ للإلغاء؛ ويظهر الرد المرسل وفوقه الرسالة المقتبسة (الاسم: أنت أو الطرف الآخر)، والضغط على الاقتباس ينتقل إلى الرسالة الأصلية ويلوّنها لحظة. والرسالة المقتبسة المحذوفة تظهر 'رسالة محذوفة'. والضغط المطوّل على رسالة يفتح رد / نسخ (للنص فقط) / حذف لدي، الذي يحذفها من جهتك فقط ويبقيها عند الطرف الآخر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Swiping a message to the right past the reply icon starts a reply (with a light vibration); swiping left or scrolling doesn't.",
+          "The reply is quoted on both phones, with the right name; tapping the quote jumps to the original.",
+          "نسخ copies the text; حذف لدي removes the message on this side only and survives reopening the chat.",
+          "A message still sending can't be replied to or deleted yet.",
+        ],
+        ar: [
+          "سحب الرسالة لليمين بعد أيقونة الرد يبدأ الرد (مع اهتزاز خفيف)؛ والسحب لليسار أو التمرير لا يبدأه.",
+          "يظهر الاقتباس على الهاتفين بالاسم الصحيح؛ والضغط عليه ينتقل إلى الرسالة الأصلية.",
+          "نسخ ينسخ النص؛ وحذف لدي يحذف الرسالة من هذه الجهة فقط ويبقى بعد إعادة فتح المحادثة.",
+          "الرسالة قيد الإرسال لا يمكن الرد عليها أو حذفها بعد.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two devices: on A swipe B's message right, type and send — both see the quote; on A tap the quote — it jumps to B's message.",
+          "Long-press your own text message → نسخ, paste elsewhere — same text.",
+          "Long-press a message → حذف لدي — gone on A, still on B; reopen the chat on A — still gone.",
+        ],
+        ar: [
+          "جهازان: على A اسحب رسالة B لليمين واكتب وأرسل — يرى الطرفان الاقتباس؛ وعلى A اضغط الاقتباس — ينتقل إلى رسالة B.",
+          "اضغط مطولاً على رسالتك النصية ← نسخ، والصق في مكان آخر — النص نفسه.",
+          "اضغط مطولاً على رسالة ← حذف لدي — تختفي على A وتبقى على B؛ أعد فتح المحادثة على A — ما زالت محذوفة.",
+        ],
+      },
+      updatedIn: "feat/chat-reply-resume",
     },
   ],
 };

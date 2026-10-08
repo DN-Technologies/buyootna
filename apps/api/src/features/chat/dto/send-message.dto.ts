@@ -17,4 +17,9 @@ export class SendMessageDto {
   @IsOptional()
   @IsString()
   propertyId?: string;
+
+  // Replying to this message (must be in the same conversation)
+  @IsOptional()
+  @IsString()
+  replyToId?: string;
 }

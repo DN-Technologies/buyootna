@@ -1,20 +1,24 @@
 import { FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef } from 'react';
-import { KeyboardAvoidingView, Pressable } from 'react-native';
+import { KeyboardAvoidingView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ChatMessage } from '@/shared/api/chat.service';
 import ChatHeader from '@/shared/components/chat/ChatHeader';
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ImageDownloadBottomSheet from '@/shared/components/chat/ImageDownloadBottomSheet';
+import MessageOptionsSheet from '@/shared/components/chat/MessageOptionsSheet';
+import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
 import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useChatConversation } from '@/shared/hooks/useChatConversation';
 import { useChatReport } from '@/shared/hooks/useChatReport';
 import { useStartConversation } from '@/shared/hooks/useStartConversation';
+import { quoteOf } from '@/shared/store/useChatStore';
 import { NEW_CHAT_ID } from '@/shared/utils/openChat';
 
 export default function ChatDetailsScreen() {
@@ -61,7 +65,20 @@ export default function ChatDetailsScreen() {
     handleRetryLoad,
     handleSendMessage,
     handleLoadMore,
+    replyTarget,
+    setReplyTarget,
+    optionsFor,
+    setOptionsFor,
+    copyMessage,
+    hideMessage,
   } = useChatConversation({ conversationId, listRef });
+
+  // Replying (swipe right or رد): show what's quoted and open the keyboard
+  const inputRef = useRef<TextInput>(null);
+  const startReply = (message: ChatMessage) => {
+    setReplyTarget(message);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
 
   const { reportSheetRef, handleReportUser, handleSubmitReport } =
     useChatReport(otherUserId);
@@ -118,9 +135,20 @@ export default function ChatDetailsScreen() {
             isLoading={isStarting || isLoadingMessages}
             loadFailed={loadFailed}
             onRetry={handleRetryLoad}
+            onReply={startReply}
+            onLongPressMessage={setOptionsFor}
+            otherUserName={otherUserName}
           />
 
+          {replyTarget && (
+            <ReplyComposeBar
+              reply={quoteOf(replyTarget)}
+              otherName={otherUserName}
+              onCancel={() => setReplyTarget(null)}
+            />
+          )}
           <ChatInputBar
+            inputRef={inputRef}
             sendDisabled={!conversationId}
             inputText={inputText}
             onInputChange={setInputText}
@@ -133,6 +161,15 @@ export default function ChatDetailsScreen() {
       </ContentContainer>
 
       {viewer}
+
+      {/* Long-press on a message: رد / نسخ / حذف لدي */}
+      <MessageOptionsSheet
+        message={optionsFor}
+        onClose={() => setOptionsFor(null)}
+        onReply={startReply}
+        onCopy={copyMessage}
+        onHide={hideMessage}
+      />
 
       <ImageDownloadBottomSheet
         visible={showImageOptions}

@@ -10,11 +10,13 @@ describe('ChatMessagesService.formatTime', () => {
   );
 
   it('uses western digits and Kuwait time, whatever the server zone', () => {
-    // 21:53 UTC is 00:53 in Kuwait (UTC+3)
-    expect(service.formatTime(new Date('2026-10-07T21:53:29Z'))).toBe('00:53');
+    // 21:53 UTC is 00:53 in Kuwait (UTC+3): 12:53 ص
+    expect(service.formatTime(new Date('2026-10-07T21:53:29Z'))).toBe(
+      '12:53 ص',
+    );
   });
 
-  it('is 24-hour', () => {
-    expect(service.formatTime(new Date('2026-10-07T11:05:00Z'))).toBe('14:05');
+  it('is 12-hour with ص/م', () => {
+    expect(service.formatTime(new Date('2026-10-07T11:05:00Z'))).toBe('2:05 م');
   });
 });

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma, Property } from '@prisma/client';
 
 import { PrismaService } from 'src/core/prisma/prisma.service';
@@ -11,6 +15,57 @@ import { SendMessageDto } from '../dto/send-message.dto';
  * thread, sending (which bumps the conversation and marks it read for the
  * sender), and the read receipt.
  */
+// What a reply shows of the message it quotes
+const REPLY_SELECT = {
+  id: true,
+  type: true,
+  content: true,
+  imageUrl: true,
+  senderIdentityId: true,
+} as const;
+const REPLY_PREVIEW_CHARS = 120;
+
+type ReplySource = {
+  id: string;
+  type: string;
+  content: string | null;
+  imageUrl: string | null;
+  senderIdentityId: string | null;
+  hiddenFor?: { identityId: string }[];
+};
+type MessageWithReply = Prisma.MessageGetPayload<object> & {
+  replyTo: ReplySource | null;
+};
+
+/**
+ * The quoted message under a reply. A quoted message that's gone, or that
+ * the viewer deleted on their side, shows as deleted.
+ */
+export function replyPreview(
+  replyToId: string | null,
+  source: ReplySource | null,
+  viewerIdentityId?: string,
+) {
+  if (!replyToId) return null;
+  if (!source || (source.hiddenFor?.length ?? 0) > 0) {
+    return { id: replyToId, deleted: true as const };
+  }
+  const content = source.content ?? null;
+  return {
+    id: source.id,
+    type: source.type,
+    content:
+      content && content.length > REPLY_PREVIEW_CHARS
+        ? `${content.slice(0, REPLY_PREVIEW_CHARS)}…`
+        : content,
+    imageUrl: source.imageUrl,
+    senderIdentityId: source.senderIdentityId,
+    ...(viewerIdentityId
+      ? { isMine: source.senderIdentityId === viewerIdentityId }
+      : {}),
+  };
+}
+
 @Injectable()
 export class ChatMessagesService {
   constructor(
@@ -52,18 +107,21 @@ export class ChatMessagesService {
       },
     });
 
-    const queryOptions: Prisma.MessageFindManyArgs = {
-      where: { conversationId },
+    const messages: MessageWithReply[] = await this.prisma.message.findMany({
+      // Not the ones this persona deleted on its side (حذف لدي)
+      where: { conversationId, hiddenFor: { none: { identityId } } },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
-    };
-
-    if (cursor) {
-      queryOptions.cursor = { id: cursor };
-      queryOptions.skip = 1;
-    }
-
-    const messages = await this.prisma.message.findMany(queryOptions);
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      include: {
+        replyTo: {
+          select: {
+            ...REPLY_SELECT,
+            hiddenFor: { where: { identityId }, select: { identityId: true } },
+          },
+        },
+      },
+    });
 
     let nextCursor: string | undefined = undefined;
     const hasNextPage = messages.length > limit;
@@ -102,6 +160,7 @@ export class ChatMessagesService {
                 location: prop.location,
               }
             : undefined,
+        replyTo: replyPreview(msg.replyToId, msg.replyTo, identityId),
         isMine: msg.senderIdentityId === identityId,
         timestamp: this.formatTime(msg.createdAt),
         createdAt: msg.createdAt,
@@ -163,6 +222,15 @@ export class ChatMessagesService {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
     }
 
+    // A reply only to a message of this same conversation; anything else is
+    // sent as a plain message
+    const replyTo = dto.replyToId
+      ? await this.prisma.message.findFirst({
+          where: { id: dto.replyToId, conversationId },
+          select: REPLY_SELECT,
+        })
+      : null;
+
     return await this.prisma.$transaction(async (tx) => {
       const message = await tx.message.create({
         data: {
@@ -173,6 +241,7 @@ export class ChatMessagesService {
           content: dto.content || null,
           imageUrl: dto.imageUrl || null,
           propertyId: dto.propertyId || null,
+          replyToId: replyTo?.id ?? null,
         },
       });
 
@@ -214,6 +283,9 @@ export class ChatMessagesService {
               location: prop.location,
             }
           : undefined,
+        // Broadcast to both sides: each app works out "you" from
+        // replyTo.senderIdentityId
+        replyTo: replyPreview(replyTo?.id ?? null, replyTo),
         // The app compares senderId with the signed-in account's id
         senderId: sender.userId,
         senderIdentityId: sender.identityId,
@@ -221,6 +293,26 @@ export class ChatMessagesService {
         createdAt: message.createdAt,
       };
     });
+  }
+
+  /** "حذف لدي": hide a message for this persona only. */
+  async hideMessage(identityId: string, messageId: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      select: { conversationId: true },
+    });
+    if (
+      !message ||
+      !(await this.isParticipant(identityId, message.conversationId))
+    ) {
+      throw new NotFoundException('الرسالة غير موجودة');
+    }
+    await this.prisma.messageHidden.upsert({
+      where: { messageId_identityId: { messageId, identityId } },
+      create: { messageId, identityId },
+      update: {},
+    });
+    return { success: true };
   }
 
   // Mark conversation messages as read
@@ -241,13 +333,13 @@ export class ChatMessagesService {
   }
 
   // Kept for older app builds that show this string as-is; current builds
-  // format createdAt on the device. Western digits and Kuwait time (the
-  // server itself may run in UTC)
+  // format createdAt on the device. 12-hour with ص/م, western digits, Kuwait
+  // time (the server itself may run in UTC)
   formatTime(date: Date): string {
     return date.toLocaleTimeString('ar-KW-u-nu-latn', {
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
-      hourCycle: 'h23',
+      hour12: true,
       timeZone: 'Asia/Kuwait',
     });
   }

@@ -45,6 +45,7 @@ model Identity {
   favoritedByUsers    ProviderFavorite[] @relation("ProviderFavoriteTarget")
   conversations   ConversationParticipant[]
   messages        Message[]
+  hiddenMessages  MessageHidden[]
   givenReviews    Review[]                  @relation("IdentityGivenReviews")
   receivedReviews Review[]                  @relation("IdentityReceivedReviews")
   reviewReactions ReviewReaction[]

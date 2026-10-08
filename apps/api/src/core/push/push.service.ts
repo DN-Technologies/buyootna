@@ -9,6 +9,10 @@ export interface PushMessage {
   title: string;
   body: string;
   data?: Record<string, unknown>;
+  // A bundled sound file name (iOS plays 'default' if the build lacks it)
+  sound?: string;
+  // Android notification channel (posted to the fallback one if missing)
+  channelId?: string;
 }
 
 interface ExpoPushTicket {
@@ -52,7 +56,8 @@ export class PushService {
             title: message.title,
             body: message.body,
             data: message.data ?? {},
-            sound: 'default',
+            sound: message.sound ?? 'default',
+            ...(message.channelId ? { channelId: message.channelId } : {}),
           })),
         ),
       });
