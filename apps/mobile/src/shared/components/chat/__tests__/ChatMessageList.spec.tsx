@@ -185,4 +185,21 @@ describe('ChatMessageList', () => {
       expect.objectContaining({ index: 1 }),
     );
   });
+  // QA: a one-word reply squeezed the quote to one letter per line
+  it('keeps the quote wide enough under a short reply, the name on one line', async () => {
+    const { getByTestId } = await setup({
+      otherUserName: 'Ebrahim',
+      messages: [
+        message({
+          id: 'm2',
+          content: 'كده؟',
+          replyTo: { id: 'm1', type: 'TEXT', content: 'مرحبا', isMine: false },
+        }),
+      ],
+    });
+    expect(getByTestId('reply-quote').props.style).toEqual(
+      expect.objectContaining({ minWidth: 180 }),
+    );
+    expect(getByTestId('reply-quote-name').props.numberOfLines).toBe(1);
+  });
 });

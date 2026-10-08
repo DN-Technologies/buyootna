@@ -25,6 +25,8 @@ interface ReplyQuoteProps {
 }
 
 /** The quoted message shown on top of a reply (and in the compose bar). */
+const QUOTE_MIN_WIDTH = 180;
+
 export default function ReplyQuote({
   reply,
   otherName,
@@ -41,10 +43,15 @@ export default function ReplyQuote({
       className={`mb-2 flex-row overflow-hidden rounded-md ${
         onDark ? 'bg-white/15' : 'bg-[#15304D]/10'
       }`}
+      // The bubble is as wide as its text: without a minimum, a short reply
+      // ("كده؟") squeezed the quote to one letter per line
+      style={{ minWidth: QUOTE_MIN_WIDTH }}
     >
       <View className="w-1 bg-[#B28648]" />
       <View className="flex-1 px-2.5 py-1.5">
         <Text
+          testID="reply-quote-name"
+          numberOfLines={1}
           className={`font-cairo-semibold text-[12px] ${
             onDark ? 'text-[#F5D9A8]' : 'text-[#B28648]'
           }`}
@@ -62,7 +69,7 @@ export default function ReplyQuote({
           )}
           <Text
             numberOfLines={2}
-            className={`font-cairo text-[12px] ${
+            className={`flex-1 font-cairo text-[12px] ${
               onDark ? 'text-white/80' : 'text-[#6B6A6A]'
             }`}
             style={{ writingDirection: 'rtl' }}
