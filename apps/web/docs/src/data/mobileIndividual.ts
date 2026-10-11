@@ -1316,6 +1316,43 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-package-tiers-normal-gold-only",
+      title: {
+        en: "Package balances show two tiers only: عادي and ذهبي (no فضي)",
+        ar: "أرصدة الباقات تعرض فئتين فقط: عادي وذهبي (بلا فضي)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: رصيد الحساب (and the package counts at the top of نشاطي ← إعلاناتي) showed three cards — عادي, فضي, ذهبي — although only two tiers are sold. Both now show عادي and ذهبي. Credits someone still holds from the retired silver tier are not lost: they are counted under ذهبي (the same featured pool republishing already uses). The office add-listing quota selector is unchanged.",
+        ar: "إصلاح بلاغ QA: كان رصيد الحساب (وعدادات الباقات أعلى نشاطي ← إعلاناتي) يعرض ثلاث بطاقات — عادي وفضي وذهبي — مع أن المباع فئتان فقط. الآن يعرضان عادي وذهبي. والأرصدة التي ما زالت لدى المستخدم من الفئة الفضية الملغاة لا تضيع: تُحتسب ضمن ذهبي (المجموعة المميزة نفسها التي تستخدمها إعادة النشر). ومحدد حصص المكتب عند إضافة إعلان كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "رصيد الحساب shows two cards: عادي and ذهبي; there is no فضي card.",
+          "نشاطي ← إعلاناتي shows the same two package counts.",
+          "An account with 2 gold and 4 leftover silver credits shows 6 under ذهبي.",
+          "The two tiers' regular (عادي) count is unchanged.",
+        ],
+        ar: [
+          "رصيد الحساب يعرض بطاقتين: عادي وذهبي؛ ولا توجد بطاقة فضي.",
+          "نشاطي ← إعلاناتي يعرض عدادي الباقات نفسيهما.",
+          "حساب فيه 2 ذهبي و4 أرصدة فضية متبقية يعرض 6 تحت ذهبي.",
+          "عدد عادي لا يتغير.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open رصيد الحساب and نشاطي — only عادي and ذهبي appear.",
+          "With a wallet holding 2 gold + 4 silver, ذهبي reads 6 on both screens.",
+        ],
+        ar: [
+          "افتح رصيد الحساب ونشاطي — يظهر عادي وذهبي فقط.",
+          "بمحفظة فيها 2 ذهبي + 4 فضي يظهر ذهبي 6 في الشاشتين.",
+        ],
+      },
+      updatedIn: "fix/hide-silver-package",
+    },
+    {
       id: "mobile-activity-filter-sheet-autofill",
       title: {
         en: "My Activity: تصفية البحث opens a filter sheet; free-text/number fields don't offer email/password autofill",
