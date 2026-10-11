@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
@@ -44,6 +44,8 @@ export function useQuoteRequestForm({
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Blocks a quick second tap before isSubmitting has re-rendered
+  const submittingRef = useRef(false);
 
   const serviceOptions = services.map((svc) => ({
     id: svc.id,
@@ -107,6 +109,7 @@ export function useQuoteRequestForm({
   };
 
   const submit = async () => {
+    if (submittingRef.current) return;
     if (!serviceId) {
       showAlert('تنبيه', 'يرجى اختيار نوع الطلب');
       return;
@@ -126,6 +129,7 @@ export function useQuoteRequestForm({
       services.find((svc) => svc.id === serviceId)?.title || serviceId;
 
     try {
+      submittingRef.current = true;
       setIsSubmitting(true);
       await companyRequestsService.create({
         title: category,
@@ -153,6 +157,7 @@ export function useQuoteRequestForm({
         : backendMessage || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً';
       showAlert('خطأ', message);
     } finally {
+      submittingRef.current = false;
       setIsSubmitting(false);
     }
   };

@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
@@ -36,6 +36,22 @@ export function useRequestQuoteForm() {
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // State updates land after the tap, so a quick second tap would still pass
+  // the isSubmitting check; the ref blocks it at once
+  const submittingRef = useRef(false);
+
+  // Back to the empty form (after a request is sent)
+  const reset = useCallback(() => {
+    setSpecialtyId('');
+    setRequestTypeId('');
+    setPriceFrom('');
+    setPriceTo('');
+    setAddressLabel('');
+    setAddressCoords(null);
+    setAddressDetails(undefined);
+    setDescription('');
+    setAttachments([]);
+  }, []);
 
   const handlePickAttachments = useCallback(async () => {
     try {
@@ -92,6 +108,7 @@ export function useRequestQuoteForm() {
 
   const handleSubmit = useCallback(
     async (onSuccess?: () => void) => {
+      if (submittingRef.current) return;
       if (!specialtyId) {
         showAlert('تنبيه', 'يرجى اختيار مجال التخصص');
         return;
@@ -113,6 +130,7 @@ export function useRequestQuoteForm() {
           ?.label || undefined;
 
       try {
+        submittingRef.current = true;
         setIsSubmitting(true);
         await companyRequestsService.create({
           title: specialtyLabel,
@@ -129,6 +147,8 @@ export function useRequestQuoteForm() {
           description,
           images: attachments,
         });
+        // Empty form: the same request can't be sent twice
+        reset();
         onSuccess?.();
       } catch (error: any) {
         const backendMessage = error?.response?.data?.message;
@@ -137,10 +157,12 @@ export function useRequestQuoteForm() {
           : backendMessage || 'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً';
         showAlert('خطأ', message);
       } finally {
+        submittingRef.current = false;
         setIsSubmitting(false);
       }
     },
     [
+      reset,
       specialtyId,
       addressLabel,
       requestTypeId,
@@ -179,5 +201,6 @@ export function useRequestQuoteForm() {
     removeAttachment,
     handleConfirmAddress,
     handleSubmit,
+    reset,
   };
 }

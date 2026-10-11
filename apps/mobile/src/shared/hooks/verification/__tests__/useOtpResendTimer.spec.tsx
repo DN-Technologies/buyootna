@@ -1,5 +1,4 @@
 import { act, cleanup, fireEvent, render } from '@testing-library/react-native';
-import React from 'react';
 import { AppState, Text, TouchableOpacity } from 'react-native';
 
 import { ResendOtpResult, useOtpResendTimer } from '../useOtpResendTimer';

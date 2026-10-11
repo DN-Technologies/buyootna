@@ -1357,6 +1357,45 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-required-optional-field-marks",
+      title: {
+        en: "Add Alert and Request a Quote mark required fields with * and optional ones with (اختياري)",
+        ar: "إضافة تنبيه وطلب عرض سعر: * للحقول الإلزامية و(اختياري) للاختيارية",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: nothing told the user which fields had to be filled before pressing send. Required fields now carry a red * after their label and optional ones '(اختياري)'. Add Alert (real estate and auctions): المحافظة is required; المنطقة, فئة العقار, price / rent / area, rooms / baths / floors, years, المزايا and both dates are optional. Request a Quote (the screen and a company's quote sheet): the service (مجال التخصص / نوع الطلب in the sheet), العنوان and وصف are required; نوع الطلب (screen), نطاق السعر and مرفقات are optional. The description is now checked before sending (the API rejects an empty one), with 'يرجى كتابة وصف الطلب'.",
+        ar: "إصلاح بلاغ QA: لم يكن هناك ما يخبر المستخدم أي الحقول يجب ملؤها قبل الإرسال. الآن تحمل الحقول الإلزامية * أحمر بعد عنوانها والاختيارية '(اختياري)'. إضافة تنبيه (عقارات ومزادات): المحافظة إلزامية؛ والمنطقة وفئة العقار والسعر/الإيجار/المساحة والغرف/الحمامات/الأدوار والسنوات والمزايا والتاريخان اختيارية. طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة (مجال التخصص / نوع الطلب في النافذة) والعنوان والوصف إلزامية؛ ونوع الطلب (في الشاشة) ونطاق السعر والمرفقات اختيارية. والوصف يُفحص قبل الإرسال (الواجهة البرمجية ترفض الوصف الفارغ) برسالة 'يرجى كتابة وصف الطلب'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Add Alert → عقارات: المحافظة shows *; المنطقة, فئة العقار, السعر, المساحة and المزايا show (اختياري); exchange shows the rooms, baths, floors and years as optional.",
+          "Add Alert → مزادات: المحافظة shows *; المنطقة, فئة العقار, التاريخ من and التاريخ الى show (اختياري).",
+          "Request a Quote (screen and company sheet): the service, العنوان and وصف show *; نطاق السعر and مرفقات show (اختياري).",
+          "Sending a quote with an empty description shows 'يرجى كتابة وصف الطلب' and sends nothing.",
+          "Search / listing filters that reuse these fields are unchanged (no marks).",
+        ],
+        ar: [
+          "إضافة تنبيه ← عقارات: المحافظة عليها *؛ والمنطقة وفئة العقار والسعر والمساحة والمزايا عليها (اختياري)؛ وفي التبادل الغرف والحمامات والأدوار والسنوات اختيارية.",
+          "إضافة تنبيه ← مزادات: المحافظة عليها *؛ والمنطقة وفئة العقار والتاريخ من والتاريخ الى عليها (اختياري).",
+          "طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة والعنوان ووصف عليها *؛ ونطاق السعر ومرفقات عليها (اختياري).",
+          "إرسال طلب بوصف فارغ يعرض 'يرجى كتابة وصف الطلب' ولا يرسل شيئاً.",
+          "فلاتر البحث والإعلانات التي تعيد استخدام هذه الحقول لم تتغير (بلا علامات).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open Add Alert on each tab and check the labels as above, then tap create with nothing chosen — the governorate message appears.",
+          "Open Request a Quote, fill everything but the description and send — 'يرجى كتابة وصف الطلب' appears.",
+        ],
+        ar: [
+          "افتح إضافة تنبيه في كل تبويب وافحص العناوين كما أعلاه، ثم اضغط إنشاء دون اختيار — تظهر رسالة المحافظة.",
+          "افتح طلب عرض سعر واملأ كل شيء عدا الوصف وأرسل — تظهر 'يرجى كتابة وصف الطلب'.",
+        ],
+      },
+      updatedIn: "fix/form-required-optional-labels",
+    },
+    {
       id: "mobile-companies-search-filter-sort",
       title: {
         en: "شركات tab: search keeps the keyboard, تصفية البحث + الترتيب حسب sheets, dimmed طلب عرض سعر sheet",
@@ -1433,43 +1472,117 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/alert-success-view-alerts",
     },
     {
-      id: "mobile-required-optional-field-marks",
+      id: "mobile-date-range-field-order",
       title: {
-        en: "Add Alert and Request a Quote mark required fields with * and optional ones with (اختياري)",
-        ar: "إضافة تنبيه وطلب عرض سعر: * للحقول الإلزامية و(اختياري) للاختيارية",
+        en: "Date range fields read من before الى (auction alert and the auction / deal filters)",
+        ar: "حقول التاريخ تُقرأ من قبل الى (تنبيه المزادات وفلاتر المزادات والصفقات)",
       },
       priority: "P2",
       story: {
-        en: "QA bug fix: nothing told the user which fields had to be filled before pressing send. Required fields now carry a red * after their label and optional ones '(اختياري)'. Add Alert (real estate and auctions): المحافظة is required; المنطقة, فئة العقار, price / rent / area, rooms / baths / floors, years, المزايا and both dates are optional. Request a Quote (the screen and a company's quote sheet): the service (مجال التخصص / نوع الطلب in the sheet), العنوان and وصف are required; نوع الطلب (screen), نطاق السعر and مرفقات are optional. The description is now checked before sending (the API rejects an empty one), with 'يرجى كتابة وصف الطلب'.",
-        ar: "إصلاح بلاغ QA: لم يكن هناك ما يخبر المستخدم أي الحقول يجب ملؤها قبل الإرسال. الآن تحمل الحقول الإلزامية * أحمر بعد عنوانها والاختيارية '(اختياري)'. إضافة تنبيه (عقارات ومزادات): المحافظة إلزامية؛ والمنطقة وفئة العقار والسعر/الإيجار/المساحة والغرف/الحمامات/الأدوار والسنوات والمزايا والتاريخان اختيارية. طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة (مجال التخصص / نوع الطلب في النافذة) والعنوان والوصف إلزامية؛ ونوع الطلب (في الشاشة) ونطاق السعر والمرفقات اختيارية. والوصف يُفحص قبل الإرسال (الواجهة البرمجية ترفض الوصف الفارغ) برسالة 'يرجى كتابة وصف الطلب'.",
+        en: "QA bug fix: in the auction alert form (إضافة تنبيه ← مزادات) 'التاريخ الى' came before 'التاريخ من', which is backwards for setting a range. The shared date-range pair now puts 'التاريخ من' first (on the right, reading right-to-left) and 'التاريخ الى' after it. The same pair is used by the auction and deal filter sheets, which are fixed too. Each field still opens its own picker.",
+        ar: "إصلاح بلاغ QA: في نموذج تنبيه المزادات (إضافة تنبيه ← مزادات) كان 'التاريخ الى' قبل 'التاريخ من' وهذا معكوس عند تحديد نطاق. الآن يضع زوج حقول التاريخ المشترك 'التاريخ من' أولاً (على اليمين عند القراءة من اليمين لليسار) ثم 'التاريخ الى'. ويُستخدم الزوج نفسه في نافذتي فلتر المزادات والصفقات وقد صُحّحتا أيضاً. وكل حقل ما زال يفتح منتقيه.",
       },
       acceptanceCriteria: {
         en: [
-          "Add Alert → عقارات: المحافظة shows *; المنطقة, فئة العقار, السعر, المساحة and المزايا show (اختياري); exchange shows the rooms, baths, floors and years as optional.",
-          "Add Alert → مزادات: المحافظة shows *; المنطقة, فئة العقار, التاريخ من and التاريخ الى show (اختياري).",
-          "Request a Quote (screen and company sheet): the service, العنوان and وصف show *; نطاق السعر and مرفقات show (اختياري).",
-          "Sending a quote with an empty description shows 'يرجى كتابة وصف الطلب' and sends nothing.",
-          "Search / listing filters that reuse these fields are unchanged (no marks).",
+          "In إضافة تنبيه ← مزادات, 'التاريخ من' is the first date field and 'التاريخ الى' follows it.",
+          "The auction and deal filter sheets show the same order.",
+          "Tapping each field opens the picker for that date and fills that field only.",
         ],
         ar: [
-          "إضافة تنبيه ← عقارات: المحافظة عليها *؛ والمنطقة وفئة العقار والسعر والمساحة والمزايا عليها (اختياري)؛ وفي التبادل الغرف والحمامات والأدوار والسنوات اختيارية.",
-          "إضافة تنبيه ← مزادات: المحافظة عليها *؛ والمنطقة وفئة العقار والتاريخ من والتاريخ الى عليها (اختياري).",
-          "طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة والعنوان ووصف عليها *؛ ونطاق السعر ومرفقات عليها (اختياري).",
-          "إرسال طلب بوصف فارغ يعرض 'يرجى كتابة وصف الطلب' ولا يرسل شيئاً.",
-          "فلاتر البحث والإعلانات التي تعيد استخدام هذه الحقول لم تتغير (بلا علامات).",
+          "في إضافة تنبيه ← مزادات يكون 'التاريخ من' أول حقل تاريخ ويليه 'التاريخ الى'.",
+          "تظهر نافذتا فلتر المزادات والصفقات بالترتيب نفسه.",
+          "الضغط على كل حقل يفتح منتقي ذلك التاريخ ويملأ ذلك الحقل فقط.",
         ],
       },
       testScenarios: {
         en: [
-          "Open Add Alert on each tab and check the labels as above, then tap create with nothing chosen — the governorate message appears.",
-          "Open Request a Quote, fill everything but the description and send — 'يرجى كتابة وصف الطلب' appears.",
+          "Open an auction alert and look at the date row — من on the right, الى on its left.",
+          "Pick a 'من' date, then an 'الى' date — each lands in its own field.",
         ],
         ar: [
-          "افتح إضافة تنبيه في كل تبويب وافحص العناوين كما أعلاه، ثم اضغط إنشاء دون اختيار — تظهر رسالة المحافظة.",
-          "افتح طلب عرض سعر واملأ كل شيء عدا الوصف وأرسل — تظهر 'يرجى كتابة وصف الطلب'.",
+          "افتح تنبيه مزادات وانظر إلى صف التاريخ — من على اليمين والى على يساره.",
+          "اختر تاريخ 'من' ثم تاريخ 'الى' — كل منهما يظهر في حقله.",
         ],
       },
-      updatedIn: "fix/form-required-optional-labels",
+      updatedIn: "fix/auction-alert-date-order",
+    },
+    {
+      id: "mobile-request-quote-form-reset",
+      title: {
+        en: "Request a Quote: the form is cleared after sending, and can't be sent twice",
+        ar: "طلب عرض سعر: يُفرَّغ النموذج بعد الإرسال ولا يُرسَل مرتين",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after a quote request was sent, the request-a-quote screen (طلب عرض سعر) kept every value, so tapping the send button again sent an identical request and spammed the company. The form now empties as soon as the request is sent (specialty, request type, price range, address, description and photos); a second tap is refused until the user fills it in again, and a failed send keeps what was entered. On both this screen and the company-profile quote sheet the send button also ignores a second tap while the first is still in flight.",
+        ar: "إصلاح بلاغ QA: بعد إرسال طلب عرض سعر كانت شاشة طلب عرض سعر تحتفظ بكل القيم، فيرسل الضغط مجدداً طلباً مطابقاً ويزعج الشركة. الآن يُفرَّغ النموذج فور إرسال الطلب (مجال التخصص ونوع الطلب ونطاق السعر والعنوان والوصف والصور)؛ ويُرفض الضغط الثاني حتى يملأه المستخدم من جديد، وإذا فشل الإرسال يحتفظ بما أُدخل. وفي هذه الشاشة ونافذة عرض السعر في ملف الشركة يتجاهل زر الإرسال الضغطة الثانية ما دامت الأولى قيد التنفيذ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful send, the form is empty (no specialty, type, price, address, description or photos).",
+          "Tapping send again straight away shows 'يرجى اختيار مجال التخصص' and sends nothing.",
+          "A failed send keeps every entered value and shows the error.",
+          "Two quick taps on send create one request, on the screen and on a company profile's quote sheet.",
+        ],
+        ar: [
+          "بعد إرسال ناجح يكون النموذج فارغاً (بلا تخصص أو نوع أو سعر أو عنوان أو وصف أو صور).",
+          "الضغط على إرسال مجدداً مباشرة يعرض 'يرجى اختيار مجال التخصص' ولا يرسل شيئاً.",
+          "الإرسال الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "ضغطتان سريعتان على إرسال تنشئان طلباً واحداً، في الشاشة وفي نافذة عرض السعر بملف الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Fill the request-a-quote form and send; dismiss the popup — the form is empty; tap send — only the specialty message shows.",
+          "Open a company profile, send a quote from its sheet, reopen the sheet — it is empty.",
+          "Turn the network off and send — the error shows and the values stay.",
+        ],
+        ar: [
+          "املأ نموذج طلب عرض سعر وأرسله؛ أغلق النافذة — النموذج فارغ؛ اضغط إرسال — تظهر رسالة التخصص فقط.",
+          "افتح ملف شركة وأرسل عرض سعر من نافذتها ثم افتحها مجدداً — تكون فارغة.",
+          "اقطع الإنترنت وأرسل — يظهر الخطأ وتبقى القيم.",
+        ],
+      },
+      updatedIn: "fix/request-quote-reset-after-submit",
+    },
+    {
+      id: "mobile-add-alert-form-reset",
+      title: {
+        en: "Add Alert: the form is cleared after an alert is created",
+        ar: "إضافة تنبيه: يُفرَّغ النموذج بعد إنشاء التنبيه",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after creating an alert (real estate or auctions) the form kept every value, so tapping the create button again saved an identical alert — duplicate alerts and duplicate push notifications. The form now resets to empty as soon as the alert is created; a second tap is refused with 'يرجى اختيار المحافظة أولاً' until the user fills it in again. If saving fails the form keeps what was entered. Editing an alert is unchanged.",
+        ar: "إصلاح بلاغ QA: بعد إنشاء تنبيه (عقارات أو مزادات) كان النموذج يحتفظ بكل القيم، فيحفظ الضغط مجدداً على زر الإنشاء تنبيهاً مطابقاً — تنبيهات مكررة وإشعارات مكررة. الآن يُفرَّغ النموذج فور إنشاء التنبيه؛ ويُرفض الضغط الثاني برسالة 'يرجى اختيار المحافظة أولاً' حتى يملأه المستخدم من جديد. وإذا فشل الحفظ يحتفظ النموذج بما أُدخل. وتعديل التنبيه كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful create (عقارات or مزادات), dismissing the success popup shows an empty form with no selections.",
+          "Tapping 'إنشاء تنبيه' again without filling it in shows 'يرجى اختيار المحافظة أولاً' and creates nothing.",
+          "A failed create keeps all entered values and shows the error.",
+          "Editing an existing alert still saves it and goes back.",
+        ],
+        ar: [
+          "بعد إنشاء ناجح (عقارات أو مزادات) يظهر النموذج فارغاً بلا اختيارات عند إغلاق نافذة النجاح.",
+          "الضغط على 'إنشاء تنبيه' مجدداً دون ملئه يعرض 'يرجى اختيار المحافظة أولاً' ولا ينشئ شيئاً.",
+          "الإنشاء الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "تعديل تنبيه موجود ما زال يحفظه ويعود للخلف.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create a real-estate alert, dismiss the popup — the form is empty; tap create again — only the governorate message appears.",
+          "Repeat on مزادات.",
+          "Turn the network off, tap create — the error shows and the entered values stay.",
+        ],
+        ar: [
+          "أنشئ تنبيه عقارات وأغلق النافذة — النموذج فارغ؛ اضغط إنشاء مجدداً — تظهر رسالة المحافظة فقط.",
+          "كرّر على المزادات.",
+          "اقطع الإنترنت واضغط إنشاء — يظهر الخطأ وتبقى القيم المدخلة.",
+        ],
+      },
+      updatedIn: "fix/add-alert-reset-after-create",
     },
   ],
 };
