@@ -1453,6 +1453,21 @@ export const mobileIndividual: DocSection = {
           "في إضافة تنبيه ← مزادات يكون 'التاريخ من' أول حقل تاريخ ويليه 'التاريخ الى'.",
           "تظهر نافذتا فلتر المزادات والصفقات بالترتيب نفسه.",
           "الضغط على كل حقل يفتح منتقي ذلك التاريخ ويملأ ذلك الحقل فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an auction alert and look at the date row — من on the right, الى on its left.",
+          "Pick a 'من' date, then an 'الى' date — each lands in its own field.",
+        ],
+        ar: [
+          "افتح تنبيه مزادات وانظر إلى صف التاريخ — من على اليمين والى على يساره.",
+          "اختر تاريخ 'من' ثم تاريخ 'الى' — كل منهما يظهر في حقله.",
+        ],
+      },
+      updatedIn: "fix/auction-alert-date-order",
+    },
+    {
       id: "mobile-request-quote-form-reset",
       title: {
         en: "Request a Quote: the form is cleared after sending, and can't be sent twice",
@@ -1479,15 +1494,6 @@ export const mobileIndividual: DocSection = {
       },
       testScenarios: {
         en: [
-          "Open an auction alert and look at the date row — من on the right, الى on its left.",
-          "Pick a 'من' date, then an 'الى' date — each lands in its own field.",
-        ],
-        ar: [
-          "افتح تنبيه مزادات وانظر إلى صف التاريخ — من على اليمين والى على يساره.",
-          "اختر تاريخ 'من' ثم تاريخ 'الى' — كل منهما يظهر في حقله.",
-        ],
-      },
-      updatedIn: "fix/auction-alert-date-order",
           "Fill the request-a-quote form and send; dismiss the popup — the form is empty; tap send — only the specialty message shows.",
           "Open a company profile, send a quote from its sheet, reopen the sheet — it is empty.",
           "Turn the network off and send — the error shows and the values stay.",
