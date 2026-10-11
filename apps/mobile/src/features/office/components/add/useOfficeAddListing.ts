@@ -7,7 +7,7 @@ import { Alert } from 'react-native';
 import { groupWalletSlots } from '@/features/individual/utils/planWallet';
 import { OfficeListingType } from '@/features/office/types';
 import { plansService } from '@/shared/api/plans.service';
-import { useContactPhonePrefill } from '@/shared/hooks/useContactPhonePrefill';
+import { useContactPhonePrefill } from '@/shared/hooks/auth/useContactPhonePrefill';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 import type { OfficePlanType } from './OfficePlanQuotaSelector';

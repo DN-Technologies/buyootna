@@ -2,7 +2,7 @@ import ActiveAdCard from '@/features/individual/components/activity/ads/ActiveAd
 import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
 import ArchivedAdCard from '@/features/individual/components/activity/ads/ArchivedAdCard';
 import DraftAdCard from '@/features/individual/components/activity/ads/DraftAdCard';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 interface ActivityListItemProps {
   property: ActivityItem;

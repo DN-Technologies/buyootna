@@ -2,7 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
 import { Keyboard, TextInput } from 'react-native';
 
-import { useOtpResendTimer } from '@/shared/hooks/useOtpResendTimer';
+import { useOtpResendTimer } from '@/shared/hooks/verification/useOtpResendTimer';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 

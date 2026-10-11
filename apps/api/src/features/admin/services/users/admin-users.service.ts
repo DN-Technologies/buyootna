@@ -24,6 +24,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { MailService } from '../../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../../core/mail/templates/admin-custom-message.template';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { accountTypeOf, hasAccountType } from './account-type.util';
 import { accountStatus as accountState } from '../../../auth/account-status.util';
 
 @Injectable()
@@ -56,7 +57,7 @@ export class AdminUsersService {
 
     // Role filter
     if (role) {
-      where.role = role;
+      andConditions.push(hasAccountType(role));
     }
 
     // Status filter
@@ -141,7 +142,7 @@ export class AdminUsersService {
     // Role-scoped filter for statistics (excluding admin accounts)
     const roleStatsWhere: Prisma.UserWhereInput = {
       isAdmin: false,
-      ...(role ? { role } : {}),
+      ...(role ? hasAccountType(role) : {}),
     };
 
     const [
@@ -184,32 +185,37 @@ export class AdminUsersService {
         where: { ...roleStatsWhere, isDisabled: true },
       }),
       this.prisma.user.count({
-        where: { role: Role.INDIVIDUAL, isAdmin: false },
+        where: { ...hasAccountType(Role.INDIVIDUAL), isAdmin: false },
       }),
-      this.prisma.user.count({ where: { role: Role.OFFICE, isAdmin: false } }),
-      this.prisma.user.count({ where: { role: Role.COMPANY, isAdmin: false } }),
+      this.prisma.user.count({
+        where: { ...hasAccountType(Role.OFFICE), isAdmin: false },
+      }),
+      this.prisma.user.count({
+        where: { ...hasAccountType(Role.COMPANY), isAdmin: false },
+      }),
     ]);
 
     const formattedUsers = users.map((user) => {
-      let accountType: 'فرد' | 'شركة' | 'مكتب عقاري' = 'فرد';
-      if (user.role === Role.COMPANY) accountType = 'شركة';
-      if (user.role === Role.OFFICE) accountType = 'مكتب عقاري';
+      const accountType = accountTypeOf(user.role, user.identities);
 
       const companyIdent = user.identities.find((i) => i.type === 'COMPANY');
       const officeIdent = user.identities.find((i) => i.type === 'OFFICE');
       const indIdent = user.identities.find((i) => i.type === 'INDIVIDUAL');
 
       let displayName = user.name || 'بدون اسم';
-      if (user.role === Role.COMPANY && companyIdent?.companyData?.name) {
+      if (accountType === 'شركة' && companyIdent?.companyData?.name) {
         displayName = companyIdent.companyData.name;
-      } else if (user.role === Role.OFFICE && officeIdent?.officeData?.name) {
+      } else if (
+        accountType === 'مكتب عقاري' &&
+        officeIdent?.officeData?.name
+      ) {
         displayName = officeIdent.officeData.name;
       } else if (indIdent?.individualData?.name) {
         displayName = indIdent.individualData.name;
       }
 
       let verificationStatus: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—' = '—';
-      if (user.role === Role.COMPANY && companyIdent?.companyData) {
+      if (accountType === 'شركة' && companyIdent?.companyData) {
         if (companyIdent.companyData.status === 'PENDING') {
           verificationStatus = 'قيد الانتظار';
         } else if (
@@ -220,7 +226,7 @@ export class AdminUsersService {
         } else {
           verificationStatus = 'غير موثق';
         }
-      } else if (user.role === Role.OFFICE && officeIdent?.officeData) {
+      } else if (accountType === 'مكتب عقاري' && officeIdent?.officeData) {
         if (officeIdent.officeData.status === 'PENDING') {
           verificationStatus = 'قيد الانتظار';
         } else if (

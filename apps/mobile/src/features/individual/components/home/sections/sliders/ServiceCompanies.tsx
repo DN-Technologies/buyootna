@@ -13,7 +13,7 @@ import {
 import { COMPANIES_DATA } from '@/assets/mock/companiesData';
 import CompanyCard from '@/features/individual/components/CompanyCard';
 import { feedService } from '@/features/individual/services/feed.service';
-import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
+import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { CompanyDto } from '@/types/feed';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;

@@ -3,7 +3,7 @@ import { render } from '@testing-library/react-native';
 jest.mock('expo-router', () => ({ router: { push: jest.fn(), back: jest.fn() } }));
 
 // The account already has an individual persona
-jest.mock('@/shared/hooks/useIdentity', () => ({
+jest.mock('@/shared/hooks/auth/useIdentity', () => ({
   useIdentity: () => ({
     canCreateIdentity: (type: string) => type !== 'INDIVIDUAL',
   }),

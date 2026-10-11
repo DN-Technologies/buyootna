@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import PropertyPickerSheet from '@/shared/components/chat/PropertyPickerSheet';
 
-jest.mock('@/shared/hooks/useMyActivity', () => ({
+jest.mock('@/shared/hooks/properties/useMyActivity', () => ({
   useMyActivity: () => ({
     isLoading: false,
     data: [

@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { companyService } from '@/shared/api/company.service';
 import { propertiesService } from '@/shared/api/properties.service';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';

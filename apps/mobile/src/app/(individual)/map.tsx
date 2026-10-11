@@ -17,7 +17,7 @@ import {
 } from '@/features/individual/services/map.service';
 import type { MapFeatureProperties } from '@/features/individual/utils/mockGeoJSON';
 import type { SelectionItem } from '@/shared/components/filters/SelectionDrawer';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { AREAS } from '@/shared/utils/data/locations';
 
 const EMPTY_GEOJSON: GeoJSON.FeatureCollection<

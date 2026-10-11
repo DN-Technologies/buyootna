@@ -15,9 +15,9 @@ import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useRequestActions } from '@/features/individual/hooks/useRequestActions';
-import { ActivityItem, useMyActivity } from '@/shared/hooks/useMyActivity';
-import { useMyRequests } from '@/shared/hooks/useMyRequests';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { ActivityItem, useMyActivity } from '@/shared/hooks/properties/useMyActivity';
+import { useMyRequests } from '@/shared/hooks/properties/useMyRequests';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const TAB_IDS: ActivityTabId[] = ['ads', 'offers', 'alerts'];

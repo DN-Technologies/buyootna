@@ -16,7 +16,7 @@ import {
 } from '@/features/auth/recoverySchemas';
 import apiClient from '@/shared/api/api';
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
-import { ResendOtpResult } from '@/shared/hooks/useOtpResendTimer';
+import { ResendOtpResult } from '@/shared/hooks/verification/useOtpResendTimer';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 

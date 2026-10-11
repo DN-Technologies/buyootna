@@ -1,4 +1,4 @@
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 export const IMAGE_URLS = [
   'https://bucket.s3.eu-central-1.amazonaws.com/properties/a.jpg',

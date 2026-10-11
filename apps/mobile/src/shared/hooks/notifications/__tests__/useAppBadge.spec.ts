@@ -3,12 +3,12 @@ import * as Notifications from 'expo-notifications';
 import { AppState } from 'react-native';
 
 import { notificationsService } from '@/shared/api/notifications.service';
-import { syncAppBadge, useAppBadge } from '@/shared/hooks/useAppBadge';
+import { syncAppBadge, useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
 // The real module (jest.setup.js mocks its scheduler for every other file)
-jest.unmock('@/shared/hooks/useAppBadge');
+jest.unmock('@/shared/hooks/notifications/useAppBadge');
 jest.mock('expo-notifications', () => ({
   setBadgeCountAsync: jest.fn(async () => true),
 }));

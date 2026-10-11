@@ -8,7 +8,7 @@ import {
   SignupFormValues,
 } from '@/features/auth/authSchemas';
 import apiClient from '@/shared/api/api';
-import { ResendOtpResult } from '@/shared/hooks/useOtpResendTimer';
+import { ResendOtpResult } from '@/shared/hooks/verification/useOtpResendTimer';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, renderHook, waitFor } from '@testing-library/react-native';
 
 import { officeService } from '@/shared/api/office.service';
-import { useOfficeDetails } from '@/shared/hooks/useOfficeDetails';
+import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { showAlert } from '@/shared/utils/alert';
 
 jest.mock('@/shared/api/office.service', () => ({

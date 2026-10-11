@@ -8,7 +8,7 @@ import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import LiveSearchSuggestions from '@/shared/components/search/LiveSearchSuggestions';
 import SearchActiveOverlay from '@/shared/components/search/SearchActiveOverlay';
 import SearchHeader from '@/shared/components/search/SearchHeader';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function SearchScreen() {

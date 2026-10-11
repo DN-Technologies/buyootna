@@ -16,9 +16,9 @@ import CompanyTabsSwitcher, {
 } from '@/shared/components/company/CompanyTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useCompanyDetails } from '@/shared/hooks/useCompanyDetails';
-import { useCompanyReport } from '@/shared/hooks/useCompanyReport';
-import { useCompanyReviews } from '@/shared/hooks/useCompanyReviews';
+import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
+import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
+import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
 
 export default function CompanyProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

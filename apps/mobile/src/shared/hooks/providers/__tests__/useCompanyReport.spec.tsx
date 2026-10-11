@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { reportsService } from '@/shared/api/reports.service';
-import { useCompanyReport } from '@/shared/hooks/useCompanyReport';
+import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
 import { showAlert } from '@/shared/utils/alert';
 
 jest.mock('@/shared/api/reports.service', () => ({

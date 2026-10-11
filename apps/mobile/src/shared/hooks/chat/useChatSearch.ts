@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { chatService } from '@/shared/api/chat.service';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 
 interface UseChatSearchOptions {
   conversationId: string;

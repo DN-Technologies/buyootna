@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
 import { ArrowBackIcon } from '@/assets/icons/home/property';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { IdentityType } from '@/shared/store/useAuthStore';
 
 interface IdentityOption {

@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { ReactElement } from 'react';
 
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
-import { useMyActivity } from '@/shared/hooks/useMyActivity';
+import { useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import ActivityScreen from '../activity';
@@ -29,7 +29,7 @@ jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useMyActivity', () => ({
+jest.mock('@/shared/hooks/properties/useMyActivity', () => ({
   useMyActivity: jest.fn(),
 }));
 
@@ -37,7 +37,7 @@ jest.mock('@/features/individual/hooks/useMyAlerts', () => ({
   useMyAlerts: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useMyRequests', () => ({
+jest.mock('@/shared/hooks/properties/useMyRequests', () => ({
   useMyRequests: jest.fn(() => ({
     data: [],
     isLoading: false,

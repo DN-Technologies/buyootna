@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, renderHook, waitFor } from '@testing-library/react-native';
 
 import { reviewsService } from '@/shared/api/reviews.service';
-import { useOfficeReviews } from '@/shared/hooks/useOfficeReviews';
+import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 
 jest.mock('@/shared/api/reviews.service', () => ({
   reviewsService: {

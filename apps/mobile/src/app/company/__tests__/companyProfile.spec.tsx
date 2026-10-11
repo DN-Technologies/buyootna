@@ -1,9 +1,9 @@
 import { cleanup, fireEvent, render } from '@testing-library/react-native';
 
 import CompanyProfileScreen from '@/app/company/[id]';
-import { useCompanyDetails } from '@/shared/hooks/useCompanyDetails';
-import { useCompanyReport } from '@/shared/hooks/useCompanyReport';
-import { useCompanyReviews } from '@/shared/hooks/useCompanyReviews';
+import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
+import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
+import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
@@ -29,15 +29,15 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock('@/shared/hooks/useCompanyDetails', () => ({
+jest.mock('@/shared/hooks/providers/useCompanyDetails', () => ({
   useCompanyDetails: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useCompanyReviews', () => ({
+jest.mock('@/shared/hooks/providers/useCompanyReviews', () => ({
   useCompanyReviews: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useCompanyReport', () => ({
+jest.mock('@/shared/hooks/providers/useCompanyReport', () => ({
   useCompanyReport: jest.fn(),
 }));
 

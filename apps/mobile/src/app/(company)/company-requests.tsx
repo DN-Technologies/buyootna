@@ -17,7 +17,7 @@ import {
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { showAlert } from '@/shared/utils/alert';
 
 export default function CompanyRequestsScreen() {

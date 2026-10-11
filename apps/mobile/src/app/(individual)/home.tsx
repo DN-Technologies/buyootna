@@ -26,7 +26,7 @@ import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorMo
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { HomeFeedResponse } from '@/types/feed';
 

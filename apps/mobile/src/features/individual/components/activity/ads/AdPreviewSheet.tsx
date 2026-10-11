@@ -20,7 +20,7 @@ import {
 } from '@/assets/icons/home/property';
 import { formatAdDate } from '@/features/individual/components/activity/ads/formatAdDate';
 import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,

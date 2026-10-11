@@ -2,8 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render } from '@testing-library/react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useMyActivity } from '@/shared/hooks/useMyActivity';
-import { usePropertyDetails } from '@/shared/hooks/usePropertyDetails';
+import { useMyActivity } from '@/shared/hooks/properties/useMyActivity';
+import { usePropertyDetails } from '@/shared/hooks/properties/usePropertyDetails';
 
 import PropertyDetailsScreen from '../[id]';
 
@@ -24,30 +24,30 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: jest.fn(() => ({ top: 0, bottom: 20, left: 0, right: 0 })),
 }));
 
-jest.mock('@/shared/hooks/usePropertyDetails', () => ({
+jest.mock('@/shared/hooks/properties/usePropertyDetails', () => ({
   usePropertyDetails: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useMyActivity', () => ({
+jest.mock('@/shared/hooks/properties/useMyActivity', () => ({
   useMyActivity: jest.fn(),
   renewProperty: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useAuthGuard', () => ({
+jest.mock('@/shared/hooks/auth/useAuthGuard', () => ({
   useAuthGuard: jest.fn(() => ({
     guardAction: jest.fn(),
     authSheetRef: { current: null },
   })),
 }));
 
-jest.mock('@/shared/hooks/useFavorites', () => ({
+jest.mock('@/shared/hooks/properties/useFavorites', () => ({
   useFavorites: jest.fn(() => ({
     isFavorited: jest.fn(() => false),
     toggleFavorite: jest.fn(),
   })),
 }));
 
-jest.mock('@/shared/hooks/usePropertyActions', () => ({
+jest.mock('@/shared/hooks/properties/usePropertyActions', () => ({
   usePropertyActions: jest.fn(() => ({
     handleWhatsapp: jest.fn(),
     handleCall: jest.fn(),

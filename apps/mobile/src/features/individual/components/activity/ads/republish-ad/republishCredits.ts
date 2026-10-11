@@ -1,5 +1,5 @@
 import type { PublishOption } from '@/shared/api/plans.service';
-import type { SubscriptionInfo } from '@/shared/hooks/useMyActivity';
+import type { SubscriptionInfo } from '@/shared/hooks/properties/useMyActivity';
 
 export type RepublishMode = 'simple' | 'multi' | 'zero-credit';
 export type RepublishPlanType = 'FEATURED' | 'REGULAR';

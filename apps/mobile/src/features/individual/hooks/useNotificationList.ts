@@ -7,7 +7,7 @@ import {
   AppNotification,
   notificationsService,
 } from '@/shared/api/notifications.service';
-import { scheduleAppBadgeSync } from '@/shared/hooks/useAppBadge';
+import { scheduleAppBadgeSync } from '@/shared/hooks/notifications/useAppBadge';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { NotificationTabKey } from '../components/notifications/NotificationTabs';

@@ -17,7 +17,7 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockToggleFavorite = jest.fn();
-jest.mock('@/shared/hooks/useFavorites', () => ({
+jest.mock('@/shared/hooks/properties/useFavorites', () => ({
   useFavorites: () => ({
     toggleFavorite: mockToggleFavorite,
     isFavorited: jest.fn(() => true),

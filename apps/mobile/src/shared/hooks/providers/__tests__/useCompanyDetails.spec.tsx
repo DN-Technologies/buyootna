@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, renderHook, waitFor } from '@testing-library/react-native';
 
 import { companyService } from '@/shared/api/company.service';
-import { useCompanyDetails } from '@/shared/hooks/useCompanyDetails';
+import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { showAlert } from '@/shared/utils/alert';
 
 jest.mock('@/shared/api/company.service', () => ({

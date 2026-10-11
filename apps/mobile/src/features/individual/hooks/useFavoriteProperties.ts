@@ -12,7 +12,7 @@ import {
 import {
   FAVORITE_IDS_QUERY_KEY,
   useFavorites,
-} from '@/shared/hooks/useFavorites';
+} from '@/shared/hooks/properties/useFavorites';
 import type { PropertyDetailsDto } from '@/types/property';
 
 export const FAVORITES_QUERY_KEY = ['favorites'];

@@ -93,8 +93,8 @@ jest.mock('expo-video-thumbnails', () => ({
 // later. Left real, that timer outlives the test file and fails CI with
 // "Cannot log after tests are done". Default it to a no-op; the badge's own
 // spec unmocks this module.
-jest.mock('@/shared/hooks/useAppBadge', () => ({
-  ...jest.requireActual('@/shared/hooks/useAppBadge'),
+jest.mock('@/shared/hooks/notifications/useAppBadge', () => ({
+  ...jest.requireActual('@/shared/hooks/notifications/useAppBadge'),
   scheduleAppBadgeSync: jest.fn(),
   syncAppBadge: jest.fn(async () => {}),
 }));

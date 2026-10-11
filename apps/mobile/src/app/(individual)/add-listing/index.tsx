@@ -21,7 +21,7 @@ import RentPropertyTab from '@/app/(individual)/add-listing/tabs/RentPropertyTab
 import SellPropertyTab from '@/app/(individual)/add-listing/tabs/SellPropertyTab';
 import { plansService } from '@/shared/api/plans.service';
 import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
-import { useContactPhonePrefill } from '@/shared/hooks/useContactPhonePrefill';
+import { useContactPhonePrefill } from '@/shared/hooks/auth/useContactPhonePrefill';
 import { useListingStore } from '@/shared/store/useListingStore';
 
 export default function CreateListingScreen() {

@@ -6,7 +6,7 @@ import { Share } from 'react-native';
 
 import type { InvoiceItem } from '@/features/company/components/invoice/InvoiceItemsStep';
 import { companyService } from '@/shared/api/company.service';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
