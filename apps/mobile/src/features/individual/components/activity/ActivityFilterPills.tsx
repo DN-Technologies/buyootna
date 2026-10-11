@@ -7,22 +7,61 @@ export type ActivityFilterType =
   | 'PREMIUM'
   | 'ARCHIVED';
 
-export interface FilterPill {
-  id: ActivityFilterType;
+export interface FilterPill<T extends string = ActivityFilterType> {
+  id: T;
   label: string;
 }
 
-interface ActivityFilterPillsProps {
-  filterPills: FilterPill[];
-  activeFilterId: ActivityFilterType;
-  onFilterChange: (id: ActivityFilterType) => void;
+interface ActivityFilterPillsProps<T extends string> {
+  filterPills: FilterPill<T>[];
+  activeFilterId: T;
+  onFilterChange: (id: T) => void;
+  // 'tag': the Figma "tag" chips of عروضي (32px, #F5F7F9, gold border when active)
+  variant?: 'default' | 'tag';
 }
 
-export default function ActivityFilterPills({
+// Shared by the ads filters and the offers (طلبات) status pills
+export default function ActivityFilterPills<T extends string = ActivityFilterType>({
   filterPills,
   activeFilterId,
   onFilterChange,
-}: ActivityFilterPillsProps) {
+  variant = 'default',
+}: ActivityFilterPillsProps<T>) {
+  if (variant === 'tag') {
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 9 }}
+        style={{ marginBottom: 15, flexGrow: 0 }}
+      >
+        {filterPills.map((pill) => {
+          const isActive = activeFilterId === pill.id;
+          return (
+            <TouchableOpacity
+              key={pill.id}
+              testID={`filter-pill-${pill.id}`}
+              onPress={() => onFilterChange(pill.id)}
+              activeOpacity={0.8}
+              className="h-8 items-center justify-center rounded-[16px] bg-[#F5F7F9] px-[14px]"
+              style={{
+                borderWidth: 1.2,
+                borderColor: isActive ? '#B28648' : 'transparent',
+              }}
+            >
+              <Text
+                className="font-cairo text-[14px] text-[#111111]"
+                style={{ letterSpacing: -0.408 }}
+              >
+                {pill.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView
       horizontal

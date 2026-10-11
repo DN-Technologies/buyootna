@@ -22,6 +22,32 @@ export interface RequestClientInfo {
   isVerified?: boolean;
 }
 
+// The company/office a request was sent to, or the one that accepted it
+// (requester-facing, scope=mine)
+export interface RequestProviderInfo {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  specialty: string | null;
+  isVerified: boolean;
+}
+
+// What a company answered a request with
+export interface RequestReply {
+  message?: string | null;
+  notes?: string | null;
+}
+
+// One company's answer to a request (requester-facing)
+export interface RequestOffer {
+  id: string;
+  provider: RequestProviderInfo;
+  // What the company asks for (د.ك)
+  price?: number | null;
+  status?: 'sent' | 'accepted' | 'rejected';
+  reply?: RequestReply | null;
+}
+
 export interface CompanyRequestItem {
   id: string;
   clientIdentityId: string;
@@ -50,5 +76,10 @@ export interface CompanyRequestItem {
   scope: RequestScope;
   createdAt: string;
   client?: RequestClientInfo;
+  provider?: RequestProviderInfo | null;
+  offers?: RequestOffer[];
+  updatedAt?: string;
+  // Quotes received so far (scope=mine)
+  offersCount?: number;
 }
 

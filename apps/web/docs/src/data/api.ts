@@ -839,5 +839,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/chat-share-location-proposals",
     },
+    {
+      id: "api-request-offers",
+      title: {
+        en: "Requests: companies answer with offers; the requester accepts, rejects or deletes",
+        ar: "الطلبات: الشركات تردّ بعروض، وصاحب الطلب يقبل أو يرفض أو يحذف",
+      },
+      priority: "P1",
+      story: {
+        en: "A company answers a request it can see with POST /company-requests/:id/offers {message, notes?, price?} (one offer per company; answering again updates it; a pending request becomes responded; a request sent to another company is 404, a closed one 409). GET /company-requests/me?scope=mine and GET /company-requests/:id return `offers` (company, price, status, reply {message, notes}) and `offersCount`: the requester sees every company's offer, a company only its own. The requester decides with PATCH /company-requests/:id/accept-offer or /reject-offer (body `offerId`, required only when several offers are waiting): accepting makes the request accepted, carried out by that company, and rejects the other offers; rejecting rejects that offer, and the request once none is waiting. The requester can also DELETE /company-requests/:id and DELETE /company-requests/me. All requester routes are 404 for anyone else.",
+        ar: "ترد الشركة على طلب تراه عبر POST /company-requests/:id/offers {message, notes?, price?} (عرض واحد لكل شركة؛ والرد مجدداً يحدّثه؛ والطلب قيد الانتظار يصبح تم الرد؛ والطلب الموجه لشركة أخرى 404 والمغلق 409). ويعيد GET /company-requests/me?scope=mine وGET /company-requests/:id الحقلين `offers` (الشركة والسعر والحالة والرد {message, notes}) و`offersCount`: صاحب الطلب يرى عروض كل الشركات، والشركة ترى عرضها فقط. ويقرر صاحب الطلب عبر PATCH /company-requests/:id/accept-offer أو /reject-offer (الحقل `offerId` مطلوب فقط عند وجود عدة عروض منتظرة): القبول يجعل الطلب مقبولاً بتنفيذ تلك الشركة ويرفض بقية العروض؛ والرفض يرفض ذلك العرض، ثم الطلب عندما لا يبقى عرض منتظر. ويستطيع صاحب الطلب أيضاً DELETE /company-requests/:id وDELETE /company-requests/me. وكل مسارات صاحب الطلب ترجع 404 لغيره.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company's POST creates its offer and moves a pending request to responded; a second POST updates the same offer.",
+          "The requester's request shows every offer; each company only sees its own.",
+          "accept-offer with two offers waiting and no offerId is 400; with offerId it accepts that company and rejects the other offer.",
+          "reject-offer keeps the request responded while another offer is waiting, and rejects it when none is.",
+          "Delete / accept / reject by anyone but the requester is 404; accept or reject on a request that is not responded is 409.",
+        ],
+        ar: [
+          "POST من الشركة ينشئ عرضها ويحوّل الطلب قيد الانتظار إلى تم الرد؛ وPOST ثانٍ يحدّث العرض نفسه.",
+          "طلب صاحبه يعرض كل العروض؛ وكل شركة ترى عرضها فقط.",
+          "accept-offer مع عرضين منتظرين وبدون offerId يعطي 400؛ ومع offerId يقبل تلك الشركة ويرفض العرض الآخر.",
+          "reject-offer يُبقي الطلب تم الرد ما دام عرض آخر منتظراً، ويرفضه عندما لا يبقى أي عرض.",
+          "الحذف/القبول/الرفض من غير صاحب الطلب 404؛ والقبول أو الرفض على طلب لم يتم الرد عليه 409.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As company A POST an offer to a public request, then as company B; as the requester GET it — two offers; as A GET it — only A's.",
+          "As the requester accept-offer without offerId — 400; with B's offerId — request accepted by B, A's offer rejected.",
+          "As another account DELETE the request — 404.",
+        ],
+        ar: [
+          "كشركة A أرسل عرضاً إلى طلب عام ثم كشركة B؛ كصاحب الطلب اجلبه — عرضان؛ وكـ A — عرض A فقط.",
+          "كصاحب الطلب accept-offer بدون offerId — 400؛ ومع offerId للشركة B — الطلب مقبول من B ويُرفض عرض A.",
+          "من حساب آخر DELETE للطلب — 404.",
+        ],
+      },
+      updatedIn: "feat/activity-offers-status-tabs",
+    },
   ],
 };

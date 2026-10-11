@@ -16,6 +16,13 @@ import {
   type AdSortBy,
 } from '@/features/individual/components/activity/constants';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
+import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
+import {
+  OffersFilterSheet,
+  OffersSortSheet,
+} from '@/features/individual/components/activity/offers/OffersPickerSheets';
+import type { useRequestActions } from '@/features/individual/hooks/useRequestActions';
+import { TrashLargeIcon } from '@/assets/icons/activity';
 import type { useAdActions } from '@/features/individual/hooks/useAdActions';
 import type { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
@@ -23,6 +30,7 @@ import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet
 export interface ActivitySheetsProps {
   adActions: ReturnType<typeof useAdActions>;
   alertActions: ReturnType<typeof useAlertActions>;
+  requestActions: ReturnType<typeof useRequestActions>;
   sortSheetRef: RefObject<BottomSheetModal | null>;
   sortBy: AdSortBy;
   onSortChange: (sortBy: AdSortBy) => void;
@@ -36,6 +44,7 @@ export interface ActivitySheetsProps {
 export default function ActivitySheets({
   adActions,
   alertActions,
+  requestActions,
   sortSheetRef,
   sortBy,
   onSortChange,
@@ -136,6 +145,29 @@ export default function ActivitySheets({
           alertActions.handleCloseAlertDetails();
           router.push(`/alert-matches/${alert.id}` as any);
         }}
+      />
+
+      {/* --- عروضي: sort, service filter and delete-all --- */}
+      <OffersSortSheet
+        ref={requestActions.sortSheetRef}
+        value={requestActions.sort}
+        onChange={requestActions.setSort}
+      />
+      <OffersFilterSheet
+        ref={requestActions.filterSheetRef}
+        categories={requestActions.categories}
+        selected={requestActions.selectedCategories}
+        onChange={requestActions.setSelectedCategories}
+      />
+      <ConfirmActionSheet
+        ref={requestActions.deleteAllSheetRef}
+        variant="danger"
+        icon={<TrashLargeIcon />}
+        iconBackground="#FFEBEB"
+        title="هل أنت متأكد من حذف جميع عروضك؟"
+        description="سيتم حذف جميع عروضك،ولن تتمكن الشركات من التواصل."
+        confirmLabel="حذف العروض"
+        onConfirm={requestActions.handleConfirmDeleteAll}
       />
 
       {/* --- Feature Ad Bottom Sheet --- */}

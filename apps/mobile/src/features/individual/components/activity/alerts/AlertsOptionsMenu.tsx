@@ -30,8 +30,15 @@ export default function AlertsOptionsMenu({
       <Pressable className="flex-1" onPress={onClose}>
         {/* Dropdown positioned beneath the top-left 3-dots icon */}
         <View
-          className="absolute right-[30px] top-[105px] w-[180px] rounded-[8px] border border-[#ECECEC] bg-white p-3 shadow-md shadow-black/10"
-          style={{ elevation: 5 }}
+          // Figma "dropdown1": 172px item inside 12px padding, radius 6, Shadow/Low
+          className="absolute right-[22px] top-[105px] w-[196px] rounded-[6px] bg-white p-3"
+          style={{
+            elevation: 3,
+            shadowColor: '#212529',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+          }}
         >
           <TouchableOpacity
             activeOpacity={0.7}
@@ -41,11 +48,11 @@ export default function AlertsOptionsMenu({
             }}
             testID={deleteAllTestID}
             disabled={deleteAllDisabled}
-            className={`h-8 justify-center py-1 ${deleteAllDisabled ? 'opacity-40' : ''}`}
+            className={`h-8 justify-center py-2 ${deleteAllDisabled ? 'opacity-40' : ''}`}
           >
             <Text
-              className="font-cairo-medium text-[14px] leading-[22px] text-[#9C1E28]"
-              style={{ writingDirection: 'rtl' }}
+              className="font-cairo-medium text-[14px] leading-[21px] text-[#9C1E28]"
+              style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
             >
               {deleteAllLabel}
             </Text>

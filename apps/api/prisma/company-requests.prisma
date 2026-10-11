@@ -28,10 +28,34 @@ model CompanyRequest {
 
   status    RequestStatus @default(PENDING)
   invoices  CompanyInvoice[]
+  // The answers companies gave (one per company)
+  offers    RequestOffer[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   @@index([targetIdentityId])
   @@index([clientIdentityId])
   @@index([status])
+}
+
+// A company's answer to a request: what it says, any notes and its price.
+// One per company and request; the requester accepts or rejects it.
+model RequestOffer {
+  id                 String             @id @default(uuid())
+  requestId          String
+  request            CompanyRequest     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  providerIdentityId String
+  provider           Identity           @relation("ProvidedOffers", fields: [providerIdentityId], references: [id], onDelete: Cascade)
+
+  message String?
+  notes   String?
+  // What the company asks for (د.ك)
+  price   Float?
+
+  status    RequestOfferStatus @default(SENT)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@unique([requestId, providerIdentityId])
+  @@index([requestId])
 }

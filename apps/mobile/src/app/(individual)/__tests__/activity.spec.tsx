@@ -216,15 +216,24 @@ describe('ActivityScreen', () => {
       expect(getByTestId('activity-filter-active-dot')).toBeTruthy();
     });
 
-    it.each(['عروضي', 'تنبيهاتي'])(
-      'hides the filter button on %s (no filters there)',
-      async (tab) => {
-        const { getByText, queryByLabelText } = await render(<ActivityScreen />);
+    it('hides the filter button on تنبيهاتي (no filters there)', async () => {
+      const { getByText, queryByLabelText } = await render(<ActivityScreen />);
 
-        await fireEvent.press(getByText(tab));
+      await fireEvent.press(getByText('تنبيهاتي'));
 
-        expect(queryByLabelText('تصفية البحث')).toBeNull();
-      },
-    );
+      expect(queryByLabelText('تصفية البحث')).toBeNull();
+    });
+
+    // Figma: عروضي filters by service category, and has its own sort sheet
+    it('عروضي has its own filter and sort buttons', async () => {
+      const { present } = require('@gorhom/bottom-sheet');
+      present.mockClear();
+      const { getByText, getByLabelText } = await render(<ActivityScreen />);
+
+      await fireEvent.press(getByText('عروضي'));
+
+      await fireEvent.press(getByLabelText('تصفية البحث'));
+      expect(present).toHaveBeenCalledTimes(1);
+    });
   });
 });

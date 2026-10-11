@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import DraftAdCard from '../DraftAdCard';
 import { IMAGE_URLS, makeActivityItem, renderedImages } from '../../__tests__/draftFixture';
+import DraftAdCard from '../DraftAdCard';
 
 jest.mock('expo-image', () => require('../../__tests__/draftFixture').mockExpoImage());
 

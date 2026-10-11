@@ -1,8 +1,8 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { createRef } from 'react';
 
-import AdPreviewSheet from '../AdPreviewSheet';
 import { IMAGE_URLS, makeActivityItem, renderedImages } from '../../__tests__/draftFixture';
+import AdPreviewSheet from '../AdPreviewSheet';
 
 jest.mock('expo-image', () => require('../../__tests__/draftFixture').mockExpoImage());
 

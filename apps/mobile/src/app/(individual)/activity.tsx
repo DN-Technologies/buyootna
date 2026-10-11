@@ -35,6 +35,7 @@ export default function ActivityScreen() {
     ads,
     adActions,
     alertActions,
+    requestActions,
   } = screen;
 
   // Handle redirect to login if unauthenticated. Must stay below every hook.
@@ -50,9 +51,9 @@ export default function ActivityScreen() {
           isAlertsTab
             ? alertActions.handleOpenOptionsMenu
             : isOffersTab
-              ? // عروضي has no bulk ads actions — its ⋮ must not open the
+              ? // عروضي has its own ⋮ menu (delete all offers) — never the
                 // ads options menu / delete-all sheet (QA)
-                undefined
+                requestActions.openMenu
               : adActions.handleMenuPress
         }
       />
@@ -64,10 +65,22 @@ export default function ActivityScreen() {
         // تصفية البحث: opens the status filter sheet; only the ads tab
         // has filters (it used to silently toggle ALL/ACTIVE -- QA)
         onFilterPress={
-          isAdsTab ? () => filterSheetRef.current?.present() : undefined
+          isAdsTab
+            ? () => filterSheetRef.current?.present()
+            : isOffersTab
+              ? () => requestActions.filterSheetRef.current?.present()
+              : undefined
         }
-        isFilterActive={isAdsTab && activeFilterId !== 'ALL'}
-        onSortPress={() => sortSheetRef.current?.present()}
+        isFilterActive={
+          (isAdsTab && activeFilterId !== 'ALL') ||
+          (isOffersTab && requestActions.isFilterActive)
+        }
+        onSortPress={() =>
+          (isOffersTab
+            ? requestActions.sortSheetRef
+            : sortSheetRef
+          ).current?.present()
+        }
       />
 
       <ActivityList screen={screen} />
@@ -75,6 +88,7 @@ export default function ActivityScreen() {
       <ActivitySheets
         adActions={adActions}
         alertActions={alertActions}
+        requestActions={requestActions}
         sortSheetRef={sortSheetRef}
         sortBy={sortBy}
         onSortChange={setSortBy}
@@ -88,6 +102,16 @@ export default function ActivityScreen() {
         visible={alertActions.isOptionsMenuVisible}
         onClose={alertActions.handleCloseOptionsMenu}
         onDeleteAllPress={alertActions.handlePromptDeleteAllAlerts}
+      />
+
+      {/* Header "⋮" on عروضي: delete all offers */}
+      <AlertsOptionsMenu
+        visible={requestActions.isMenuVisible}
+        onClose={requestActions.closeMenu}
+        onDeleteAllPress={requestActions.promptDeleteAll}
+        deleteAllLabel="حذف جميع العروض"
+        deleteAllTestID="delete-all-offers-menu-item"
+        deleteAllDisabled={!requestActions.hasRequests}
       />
 
       {/* Header "⋮" on the ads tab: options menu for ads */}
