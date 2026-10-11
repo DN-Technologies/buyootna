@@ -1115,6 +1115,70 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/activity-card-details-sheet",
     },
     {
+      id: "mobile-profile-listings-favorite-heart",
+      title: {
+        en: "The heart on an advertiser's ads works (profile and office pages)",
+        ar: "قلب المفضلة في إعلانات المعلن يعمل (صفحة الملف الشخصي والمكتب)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: on an advertiser's profile (and an office's page), the heart on their other ads did nothing — no visual change and no request — while the same heart worked on the home feed. The listings there never passed the saved state or the tap handler to the cards. They now use the same favorites as the home feed: the heart fills at once, the ad is added to / removed from المفضلة, and a failed request rolls the heart back. Both the card and the list view are fixed.",
+        ar: "إصلاح بلاغ QA: في ملف المعلن (وصفحة المكتب) كان قلب المفضلة على إعلاناته الأخرى لا يفعل شيئاً — لا تغيّر مرئي ولا طلب — بينما يعمل القلب نفسه في الرئيسية. لم تكن القوائم هناك تمرر حالة الحفظ ولا معالج الضغط إلى البطاقات. الآن تستخدم المفضلة نفسها كما في الرئيسية: يمتلئ القلب فوراً ويُضاف الإعلان إلى المفضلة أو يُزال منها، وإذا فشل الطلب يعود القلب كما كان. وأُصلح عرض البطاقات وعرض القائمة معاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On an advertiser's profile, tapping a heart on one of their ads fills it and the ad appears in المفضلة.",
+          "Tapping it again empties it and removes the ad from المفضلة.",
+          "An ad already saved shows a filled heart when the profile opens.",
+          "The same works in the card view and the list view, and on an office's page.",
+        ],
+        ar: [
+          "في ملف المعلن الضغط على قلب أحد إعلاناته يملؤه ويظهر الإعلان في المفضلة.",
+          "الضغط عليه مجدداً يُفرغه ويزيل الإعلان من المفضلة.",
+          "الإعلان المحفوظ مسبقاً يظهر بقلب ممتلئ عند فتح الملف.",
+          "الأمر نفسه في عرض البطاقات وعرض القائمة وفي صفحة المكتب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an ad → its advertiser → tap a heart on another ad — it fills; open المفضلة — the ad is there.",
+          "Tap the heart again — it empties and the ad leaves المفضلة.",
+        ],
+        ar: [
+          "افتح إعلاناً ← معلنه ← اضغط قلب إعلان آخر — يمتلئ؛ افتح المفضلة — الإعلان موجود.",
+          "اضغط القلب مجدداً — يُفرغ ويخرج الإعلان من المفضلة.",
+        ],
+      },
+      updatedIn: "fix/profile-ad-card-favorite",
+    },
+    {
+      id: "mobile-list-card-price-not-announced",
+      title: {
+        en: "List-view property card: 'السعر غير معلن' instead of a lone currency",
+        ar: "بطاقة العقار في عرض القائمة: 'السعر غير معلن' بدل العملة وحدها",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: in the list view of an advertiser's profile, a listing without a price showed only 'د.ك'. It now says 'السعر غير معلن', like the grid card.",
+        ar: "إصلاح بلاغ QA: في عرض القائمة داخل ملف المعلن كان الإعلان بلا سعر يعرض 'د.ك' فقط. الآن يعرض 'السعر غير معلن' مثل بطاقة الشبكة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A listing without a price shows 'السعر غير معلن' and no lone 'د.ك'.",
+          "A listing with a price still shows the amount and 'د.ك'.",
+        ],
+        ar: [
+          "الإعلان بلا سعر يعرض 'السعر غير معلن' ولا تظهر 'د.ك' وحدها.",
+          "الإعلان ذو السعر يعرض المبلغ و'د.ك' كما كان.",
+        ],
+      },
+      testScenarios: {
+        en: ["Open an advertiser's profile, switch to the list view and check a listing with no price."],
+        ar: ["افتح ملف معلن وبدّل إلى عرض القائمة وتحقق من إعلان بلا سعر."],
+      },
+      updatedIn: "fix/profile-ad-card-favorite",
+    },
+    {
       id: "mobile-edit-profile-verify-contacts",
       title: {
         en: "Edit Profile: a new email or phone is verified with a code, and phone-only accounts can save",

@@ -54,6 +54,8 @@ export default function PropertyListItem({
         ? formatNumber(Number(price))
         : price;
 
+  const hasPrice = Number(price) > 0;
+
   const handleDetailsPress = onShowDetails || onPress;
 
   return (
@@ -73,14 +75,20 @@ export default function PropertyListItem({
       {/* Row 1: Price (Right) & "مميز" Badge (Left) */}
       <View className="flex-row items-center justify-between">
         {/* Right in RTL: Price */}
-        <View className="flex-row items-baseline gap-1">
-          <Text className="font-cairo-bold text-2xl text-[#15304D]">
-            {formattedPrice}
+        {hasPrice ? (
+          <View className="flex-row items-baseline gap-1">
+            <Text className="font-cairo-bold text-2xl text-[#15304D]">
+              {formattedPrice}
+            </Text>
+            <Text className="font-cairo-medium text-sm text-[#15304D]">
+              د.ك
+            </Text>
+          </View>
+        ) : (
+          <Text className="font-cairo-semibold text-lg leading-[22px] text-[#15304D]">
+            السعر غير معلن
           </Text>
-          <Text className="font-cairo-medium text-sm text-[#15304D]">
-            د.ك
-          </Text>
-        </View>
+        )}
 
         {/* Left in RTL: "مميز" Badge */}
         {isFeatured && (

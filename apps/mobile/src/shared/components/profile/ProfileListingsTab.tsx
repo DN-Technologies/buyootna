@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import ProfileEmptyState from '@/shared/components/profile/ProfileEmptyState';
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
@@ -28,6 +29,7 @@ export default function ProfileListingsTab({
   onShare,
 }: ProfileListingsTabProps) {
   const router = useRouter();
+  const { favoritedIds, toggleFavorite } = useFavorites();
 
   const handleShowDetails =
     onShowDetails || ((propertyId: string) => router.push(`/property/${propertyId}`));
@@ -38,7 +40,7 @@ export default function ProfileListingsTab({
       key="listings-list"
       data={properties}
       keyExtractor={(item) => item.id}
-      extraData={viewMode}
+      extraData={`${viewMode}|${favoritedIds.join(',')}`}
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={
         <ProfileEmptyState tab="listings" isLoading={isLoading} />
@@ -60,6 +62,8 @@ export default function ProfileListingsTab({
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
               onShowDetails={() => handleShowDetails(item.id)}
               onShare={() => handleShare(item)}
             />
@@ -77,6 +81,8 @@ export default function ProfileListingsTab({
               beds={item.beds}
               baths={item.baths}
               location={item.location}
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
               onShare={() => handleShare(item)}
             />
           )}
