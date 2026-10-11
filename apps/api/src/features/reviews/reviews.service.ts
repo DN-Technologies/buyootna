@@ -146,7 +146,9 @@ export class ReviewsService {
         ident?.officeData?.logoUrl ||
         ident?.individualData?.avatarUrl ||
         ident?.user?.avatarUrl ||
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
+        // No picture: the app shows its own logo. Never a stock photo -- it
+        // made reviews look like they came from a stranger (QA)
+        null;
 
       const likesCount = r.reactions.filter(
         (rx) => rx.type === ReactionType.LIKE,

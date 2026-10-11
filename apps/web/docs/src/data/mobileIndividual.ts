@@ -1244,6 +1244,43 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-review-avatar-fallback",
+      title: {
+        en: "Reviews: a reviewer without a picture shows the app logo, not a random photo",
+        ar: "التقييمات: المقيِّم بلا صورة تظهر له شعار التطبيق لا صورة عشوائية",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: a review written by someone with no profile picture showed the same stock portrait of a stranger (the API substituted an Unsplash photo), so it looked like a different person wrote it. The reviews list now returns no avatar for such a reviewer and the app shows its own logo placeholder; a reviewer who has a picture (personal photo, or a company / office logo) shows it as before. Applies to the profile reviews tab and the reviews screen.",
+        ar: "إصلاح بلاغ QA: التقييم الذي يكتبه شخص بلا صورة شخصية كان يظهر بصورة شخص غريب نفسها (كانت الواجهة البرمجية تضع صورة Unsplash)، فيبدو كأن شخصاً آخر كتبه. الآن لا ترجع قائمة التقييمات صورة لهذا المقيِّم ويعرض التطبيق شعاره البديل؛ ومن له صورة (صورة شخصية أو شعار شركة/مكتب) تظهر كما كانت. ينطبق على تبويب التقييمات في الملف الشخصي وشاشة التقييمات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A review by an account with no picture shows the Buyootna logo in the avatar circle.",
+          "A review by an account with a personal photo, or a company / office logo, shows that image.",
+          "Two reviewers without pictures never show the same stranger's face.",
+          "GET /reviews returns avatarUrl: null for a reviewer with no picture.",
+        ],
+        ar: [
+          "تقييم من حساب بلا صورة يعرض شعار بيوتنا داخل دائرة الصورة.",
+          "تقييم من حساب له صورة شخصية أو شعار شركة/مكتب يعرض تلك الصورة.",
+          "لا يظهر لمقيِّمين بلا صور وجه الغريب نفسه أبداً.",
+          "GET /reviews يرجع avatarUrl: null للمقيِّم بلا صورة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With an account that has no picture, rate a company and open its reviews — the new review shows the logo.",
+          "Add a profile photo and rate another company — the review shows the photo.",
+        ],
+        ar: [
+          "بحساب بلا صورة قيّم شركة وافتح تقييماتها — يظهر الشعار في التقييم الجديد.",
+          "أضف صورة للملف الشخصي وقيّم شركة أخرى — تظهر الصورة في التقييم.",
+        ],
+      },
+      updatedIn: "fix/review-avatar",
+    },
+    {
       id: "mobile-account-balance-history-rtl",
       title: {
         en: "رصيد الحساب → سجل الاعلانات rows are right-aligned (RTL)",

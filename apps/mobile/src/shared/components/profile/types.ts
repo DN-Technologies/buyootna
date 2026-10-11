@@ -17,7 +17,8 @@ export interface UserProfile {
 export interface ReviewItem {
   id: string;
   userName: string;
-  avatarUrl: string;
+  // null when the reviewer has no picture (the app logo is shown)
+  avatarUrl: string | null;
   timeAgo: string;
   rating: number;
   comment: string;
