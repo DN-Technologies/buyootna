@@ -140,13 +140,13 @@ export const admin: DocSection = {
       },
       acceptanceCriteria: {
         en: [
-          "Switching between all/individual/office/company tabs filters the table to only that role, with correct total counts.",
+          "Switching between all/individual/office/company tabs filters the table to accounts that are, or have added, that persona (an individual who later added a company also appears under شركة, typed شركة, with its approval status), with correct total counts.",
           "Search narrows results by name/email/phone as expected, combined correctly with the active role tab.",
           "Pagination controls move through the full result set without skipping or duplicating rows across pages.",
           "updateUserStatus reflects immediately in the table (and ideally on that user's own next login/session), and deleteUser removes the user everywhere (their listings, chats, etc. handled per business rule, not left dangling).",
         ],
         ar: [
-          "التبديل بين تبويبات الكل/فرد/مكتب عقاري/شركة يفلتر الجدول لعرض ذلك الدور فقط، مع مجاميع إجمالية صحيحة.",
+          "التبديل بين تبويبات الكل/فرد/مكتب عقاري/شركة يفلتر الجدول للحسابات التي هي، أو أضافت، تلك الهوية (الفرد الذي أضاف شركة لاحقاً يظهر أيضاً تحت شركة بنوع شركة وحالة الاعتماد)، مع مجاميع إجمالية صحيحة.",
           "البحث يُضيّق النتائج بالاسم/البريد الإلكتروني/الهاتف كما هو متوقع، ويُدمج بشكل صحيح مع تبويب الدور النشط.",
           "عناصر التحكم في ترقيم الصفحات تتنقل عبر كامل مجموعة النتائج دون تخطي أو تكرار صفوف بين الصفحات.",
           "updateUserStatus ينعكس فوراً في الجدول (ومن الناحية المثالية في جلسة/دخول ذلك المستخدم التالي)، وdeleteUser يحذف المستخدم من كل مكان (إعلاناته، محادثاته، إلخ تُعالَج حسب قاعدة العمل المحددة، لا أن تُترك معلَّقة).",
@@ -158,6 +158,7 @@ export const admin: DocSection = {
           "Apply the 'company' tab filter, then search — confirm results are the intersection, not the search ignoring the tab.",
           "Change a user's status (e.g. disable) and confirm that user is immediately blocked from logging in via mobile/web.",
           "Delete a test user who has active listings/favorites/chats and verify the app doesn't crash for the other party in those relationships (e.g. a chat partner).",
+          "From an individual account in the app add a company (إضافة هوية شركة), then in admin open the 'company' tab — the account is listed as شركة with status قيد الانتظار, and it is also in verifications.",
           "Page through a list of 50+ users and confirm no row appears twice or is skipped across page boundaries.",
         ],
         ar: [
@@ -165,10 +166,11 @@ export const admin: DocSection = {
           "طبّق فلتر تبويب 'شركة'، ثم ابحث — تأكد أن النتائج هي تقاطع الفلترين معاً، لا أن البحث يتجاهل التبويب.",
           "غيّر حالة مستخدم (مثل التعطيل) وتأكد أن ذلك المستخدم يُمنع فوراً من تسجيل الدخول عبر الجوال/الويب.",
           "احذف مستخدم اختبار لديه إعلانات/مفضلة/محادثات نشطة وتحقق أن التطبيق لا يتعطل للطرف الآخر في تلك العلاقات (مثل شريك المحادثة).",
+          "من حساب فردي في التطبيق أضف شركة (إضافة هوية شركة)، ثم افتح تبويب 'شركة' في لوحة المشرف — يظهر الحساب كـ شركة بحالة قيد الانتظار، ويظهر أيضاً في طلبات الاعتماد.",
           "تصفّح قائمة تضم أكثر من 50 مستخدماً وتأكد أن أي صف لا يظهر مرتين أو يُتخطى بين الصفحات.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/admin-users-company-persona",
     },
     {
       id: "admin-user-detail-tabs",

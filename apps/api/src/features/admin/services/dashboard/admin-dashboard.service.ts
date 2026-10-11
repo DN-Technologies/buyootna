@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ApprovalStatus, InvoiceStatus, Role } from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { hasAccountType } from '../users/account-type.util';
 
 // Free/default tier -- matches AdminUsersService.getUsers's exact
 // "regular" plan filter (no paid activePlan means a user is effectively on
@@ -92,10 +93,14 @@ export class AdminDashboardService {
         _sum: { amount: true },
       }),
       this.prisma.user.count({
-        where: { role: Role.INDIVIDUAL, isAdmin: false },
+        where: { ...hasAccountType(Role.INDIVIDUAL), isAdmin: false },
       }),
-      this.prisma.user.count({ where: { role: Role.COMPANY, isAdmin: false } }),
-      this.prisma.user.count({ where: { role: Role.OFFICE, isAdmin: false } }),
+      this.prisma.user.count({
+        where: { ...hasAccountType(Role.COMPANY), isAdmin: false },
+      }),
+      this.prisma.user.count({
+        where: { ...hasAccountType(Role.OFFICE), isAdmin: false },
+      }),
       this.prisma.user.findMany({
         where: { isAdmin: false },
         orderBy: { createdAt: 'desc' },

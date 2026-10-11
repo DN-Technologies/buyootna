@@ -160,6 +160,54 @@ describe('AdminUsersService', () => {
     });
   });
 
+  describe('getUsers - individual who added a company persona', () => {
+    it('lists them under شركة and filters by identity, not just User.role', async () => {
+      prisma.user.findMany.mockResolvedValue([
+        {
+          id: 'user-2',
+          name: 'سارة',
+          email: 'sara@example.com',
+          phone: '+96599992222',
+          role: Role.INDIVIDUAL,
+          isDisabled: false,
+          isBlocked: false,
+          createdAt: new Date('2026-02-01T10:00:00Z'),
+          activePlan: null,
+          identities: [
+            {
+              type: 'INDIVIDUAL',
+              individualData: { name: 'سارة' },
+              _count: { properties: 0 },
+            },
+            {
+              type: 'COMPANY',
+              companyData: { name: 'شركة النور', status: 'PENDING' },
+              _count: { properties: 0 },
+            },
+          ],
+        },
+      ]);
+      prisma.user.count.mockResolvedValue(1);
+
+      const result = await service.getUsers({
+        role: Role.COMPANY,
+        sortOrder: 'desc',
+        page: 1,
+        limit: 10,
+      });
+
+      expect(prisma.user.findMany.mock.calls[0][0].where.AND).toContainEqual({
+        OR: [
+          { role: Role.COMPANY },
+          { identities: { some: { type: 'COMPANY' } } },
+        ],
+      });
+      expect(result.data[0].accountType).toBe('شركة');
+      expect(result.data[0].name).toBe('شركة النور');
+      expect(result.data[0].verificationStatus).toBe('قيد الانتظار');
+    });
+  });
+
   describe('getUserById', () => {
     it('should throw NotFoundException if user is not found', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
