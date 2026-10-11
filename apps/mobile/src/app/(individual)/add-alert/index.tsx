@@ -119,6 +119,9 @@ export default function AddAlertScreen() {
         router.back();
       } else {
         await alertsService.create(payload);
+        // Leave the form empty so the same alert can't be saved twice
+        setPropertiesState(DEFAULT_ALERT_PROPERTIES_STATE);
+        setAuctionsState(DEFAULT_ALERT_AUCTIONS_STATE);
         setShowSuccess(true);
       }
     } catch (err) {

@@ -102,6 +102,78 @@ describe('useRequestQuoteForm', () => {
     expect(hookRef.current.isSubmitting).toBe(false);
   });
 
+  const fill = async () => {
+    await act(async () => {
+      hookRef.current.setSpecialtyId('مقاولين');
+      hookRef.current.setRequestTypeId('quote');
+      hookRef.current.setPriceFrom('200');
+      hookRef.current.setPriceTo('800');
+      hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
+      hookRef.current.setDescription('تفاصيل التشطيب');
+      hookRef.current.setAttachments(['file:///img1.jpg']);
+    });
+  };
+
+  it('empties the form after the request is sent, so it cannot be sent twice', async () => {
+    (companyRequestsService.create as jest.Mock).mockResolvedValue({ id: 'r1' });
+    await setup();
+    await fill();
+
+    await act(async () => {
+      await hookRef.current.handleSubmit();
+    });
+
+    expect(hookRef.current.specialtyId).toBe('');
+    expect(hookRef.current.requestTypeId).toBe('');
+    expect(hookRef.current.priceFrom).toBe('');
+    expect(hookRef.current.priceTo).toBe('');
+    expect(hookRef.current.addressLabel).toBe('');
+    expect(hookRef.current.addressCoords).toBeNull();
+    expect(hookRef.current.description).toBe('');
+    expect(hookRef.current.attachments).toEqual([]);
+
+    // A second tap with nothing filled in is refused
+    await act(async () => {
+      await hookRef.current.handleSubmit();
+    });
+    expect(companyRequestsService.create).toHaveBeenCalledTimes(1);
+    expect(showAlert).toHaveBeenCalledWith('تنبيه', 'يرجى اختيار مجال التخصص');
+  });
+
+  it('keeps what was entered when sending fails', async () => {
+    (companyRequestsService.create as jest.Mock).mockRejectedValueOnce(new Error('x'));
+    await setup();
+    await fill();
+
+    await act(async () => {
+      await hookRef.current.handleSubmit();
+    });
+
+    expect(hookRef.current.specialtyId).toBe('مقاولين');
+    expect(hookRef.current.description).toBe('تفاصيل التشطيب');
+    expect(hookRef.current.attachments).toEqual(['file:///img1.jpg']);
+  });
+
+  it('sends once when the button is tapped twice quickly', async () => {
+    let resolveCreate: (v: unknown) => void = () => undefined;
+    (companyRequestsService.create as jest.Mock).mockReturnValue(
+      new Promise((resolve) => {
+        resolveCreate = resolve;
+      }),
+    );
+    await setup();
+    await fill();
+
+    await act(async () => {
+      const first = hookRef.current.handleSubmit();
+      const second = hookRef.current.handleSubmit();
+      resolveCreate({ id: 'r1' });
+      await Promise.all([first, second]);
+    });
+
+    expect(companyRequestsService.create).toHaveBeenCalledTimes(1);
+  });
+
   it('displays alert on submission error', async () => {
     (companyRequestsService.create as jest.Mock).mockRejectedValueOnce({
       response: { data: { message: 'فشل في حفظ الطلب' } },
