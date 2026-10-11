@@ -93,6 +93,9 @@ const PropertyDetailsSheet = forwardRef<
         ref={ref}
         index={0}
         snapPoints={snapPoints}
+        // A horizontal swipe on the photo carousel must not drag the sheet
+        activeOffsetY={[-12, 12]}
+        failOffsetX={[-12, 12]}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: '#CBD5E1', width: 40 }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
