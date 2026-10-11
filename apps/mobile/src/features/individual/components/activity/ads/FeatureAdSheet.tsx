@@ -5,10 +5,10 @@ import {
 import { forwardRef, useCallback, useMemo } from 'react';
 import { View } from 'react-native';
 
-import FeatureAdBenefitsBanner from '@/features/individual/components/activity/feature-ad/FeatureAdBenefitsBanner';
-import FeatureAdCheckoutButton from '@/features/individual/components/activity/feature-ad/FeatureAdCheckoutButton';
-import FeatureAdHeader from '@/features/individual/components/activity/feature-ad/FeatureAdHeader';
-import FeaturePackageList from '@/features/individual/components/activity/feature-ad/FeaturePackageList';
+import FeatureAdBenefitsBanner from '@/features/individual/components/activity/ads/feature-ad/FeatureAdBenefitsBanner';
+import FeatureAdCheckoutButton from '@/features/individual/components/activity/ads/feature-ad/FeatureAdCheckoutButton';
+import FeatureAdHeader from '@/features/individual/components/activity/ads/feature-ad/FeatureAdHeader';
+import FeaturePackageList from '@/features/individual/components/activity/ads/feature-ad/FeaturePackageList';
 import { useFeatureAd } from '@/features/individual/hooks/useFeatureAd';
 import { showAlert } from '@/shared/utils/alert';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';

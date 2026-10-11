@@ -6,9 +6,9 @@ import CompanyRequestListItem from '@/features/company/components/requests/Compa
 import ActivityEmptyState from '@/features/individual/components/activity/ActivityEmptyState';
 import ActivityListHeader from '@/features/individual/components/activity/ActivityListHeader';
 import ActivityListItem from '@/features/individual/components/activity/ActivityListItem';
-import AlertListItem from '@/features/individual/components/activity/AlertListItem';
-import AlertsEmptyState from '@/features/individual/components/activity/AlertsEmptyState';
-import AlertsListHeader from '@/features/individual/components/activity/AlertsListHeader';
+import AlertListItem from '@/features/individual/components/activity/alerts/AlertListItem';
+import AlertsEmptyState from '@/features/individual/components/activity/alerts/AlertsEmptyState';
+import AlertsListHeader from '@/features/individual/components/activity/alerts/AlertsListHeader';
 import type { ActivityScreenState } from '@/features/individual/hooks/useActivityScreen';
 import { AlertItem } from '@/shared/api/alerts.service';
 import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
@@ -139,10 +139,9 @@ export default function ActivityList({
           <ActivityListItem
             property={item as ActivityItem}
             activeFilterId={activeFilterId}
-            onEditPress={adActions.handleEditAd}
-            onFeaturePress={adActions.handleFeatureAd}
             onDeletePress={adActions.handleDeleteAd}
             onPublishDraftPress={adActions.handlePublishDraft}
+            onOpenAdPress={adActions.handleOpenAd}
             onOpenPress={(property) =>
               router.push({
                 pathname: `/property/${property.id}`,

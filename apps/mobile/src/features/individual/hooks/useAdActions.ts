@@ -7,6 +7,7 @@ import apiClient from '@/shared/api/api';
 import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { shareProperty } from '@/shared/utils/helpers/property';
 
 const MY_ACTIVITY_KEY = ['myActivity'];
 
@@ -36,6 +37,18 @@ export function useAdActions({
     undefined,
   );
 
+  // Active / hidden ad opened from its card. Looked up in the live list so a
+  // visibility change shows up in the open sheet; the snapshot covers the
+  // ad dropping out of the filtered list while the sheet is open
+  const adSheetRef = useRef<BottomSheetModal>(null);
+  const [selectedAdSnapshot, setSelectedAdSnapshot] = useState<
+    ActivityItem | undefined
+  >(undefined);
+  const selectedAd = selectedAdSnapshot
+    ? (listedAds.find((p) => p.id === selectedAdSnapshot.id) ??
+      selectedAdSnapshot)
+    : undefined;
+
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(
     null,
@@ -52,6 +65,21 @@ export function useAdActions({
 
   const allHidden =
     listedAds.length > 0 && listedAds.every((p) => Boolean(p.isHidden));
+
+  const handleOpenAd = (property: ActivityItem) => {
+    setSelectedAdSnapshot(property);
+    adSheetRef.current?.present();
+  };
+
+  const handleShareSelectedAd = () => {
+    if (!selectedAd) return;
+    shareProperty({
+      id: selectedAd.id,
+      price: selectedAd.price ?? 0,
+      location: selectedAd.location ?? '',
+      category: selectedAd.category,
+    });
+  };
 
   const handleEditAd = (propertyId: string) => {
     // The dedicated edit screen: pre-filled, with the fields that can't
@@ -183,6 +211,20 @@ export function useAdActions({
     refetch();
   };
 
+  // The sheet's switch: show or hide just this ad
+  const handleToggleAdVisibility = async (id: string, hide: boolean) => {
+    const restore = updateHiddenInCache([id], hide);
+    try {
+      await apiClient.patch(`/properties/${id}`, { isHidden: hide });
+      triggerToast(hide ? 'تم إخفاء الإعلان بنجاح' : 'تم إظهار الإعلان بنجاح');
+    } catch (err) {
+      restore();
+      showAlert('خطأ', getApiErrorMessage(err, 'فشل في تحديث حالة الإعلان'));
+    } finally {
+      refetch();
+    }
+  };
+
   const handleConfirmToggleVisibility = async () => {
     const ids = listedAds.map((p) => p.id);
     if (ids.length === 0) return;
@@ -240,6 +282,11 @@ export function useAdActions({
   };
 
   return {
+    adSheetRef,
+    selectedAd,
+    handleOpenAd,
+    handleShareSelectedAd,
+    handleToggleAdVisibility,
     draftSheetRef,
     deleteSheetRef,
     deleteAllSheetRef,

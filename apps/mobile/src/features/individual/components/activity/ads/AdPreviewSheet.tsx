@@ -18,36 +18,59 @@ import {
   LocationIcon,
   ShareIcon,
 } from '@/assets/icons/home/property';
+import { formatAdDate } from '@/features/individual/components/activity/ads/formatAdDate';
 import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
 import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
+  publishedDate,
 } from '@/shared/utils/helpers/property';
 
-interface DraftPreviewSheetProps {
+interface AdPreviewSheetProps {
   property?: ActivityItem;
+  // 'draft': the switch publishes it. 'active': the switch shows / hides it
+  variant?: 'draft' | 'active';
   onClose?: () => void;
   onDeletePress?: () => void;
   onEditPress?: () => void;
+  onFeaturePress?: (propertyId: string) => void;
+  onSharePress?: () => void;
+  onToggleVisibility?: (propertyId: string, hide: boolean) => void;
   onPublishPress?: (propertyId: string) => Promise<void>;
 }
 
-const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
-  ({ property, onClose, onDeletePress, onEditPress, onPublishPress }, ref) => {
+const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
+  (
+    {
+      property,
+      variant = 'draft',
+      onClose,
+      onDeletePress,
+      onEditPress,
+      onFeaturePress,
+      onSharePress,
+      onToggleVisibility,
+      onPublishPress,
+    },
+    ref,
+  ) => {
     // Snap points: 85% of screen height provides a comprehensive viewing sheet
     const snapPoints = useMemo(() => ['85%'], []);
     const insets = useSafeAreaInsets();
 
-    // Local toggle state for the publish switch (purely interactive UI placeholder)
+    // The header switch: a draft's "published", an active ad's "visible"
+    const isActiveVariant = variant === 'active';
     const [isPublished, setIsPublished] = useState(false);
 
     useEffect(() => {
       if (property) {
-        setIsPublished(property.status === 'ACTIVE');
+        setIsPublished(
+          isActiveVariant ? !property.isHidden : property.status === 'ACTIVE',
+        );
       }
-    }, [property]);
+    }, [property, isActiveVariant]);
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -72,8 +95,9 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
     // Construct label like "شقة للبيع" or "عقار تجاري للبيع"
     const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
-    // Publication Date formatting
-    const displayDate = '15 مايو 2026';
+    const displayDate = formatAdDate(
+      publishedDate(property) ?? property.updatedAt,
+    );
 
     return (
       <BottomSheetModal
@@ -96,7 +120,10 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={async () => {
-                if (onPublishPress && !isPublished) {
+                if (isActiveVariant) {
+                  setIsPublished(!isPublished);
+                  onToggleVisibility?.(property.id, isPublished);
+                } else if (onPublishPress && !isPublished) {
                   try {
                     await onPublishPress(property.id);
                     handleClose();
@@ -121,6 +148,7 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
 
             <TouchableOpacity
               activeOpacity={0.7}
+              onPress={onSharePress}
               className="h-8 w-8 items-center justify-center rounded-full"
             >
               <ShareIcon size={18} color="#111111" />
@@ -324,6 +352,10 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
             {/* Outline Feature Button (Middle, takes 30% width) */}
             <TouchableOpacity
               activeOpacity={0.8}
+              onPress={() => {
+                handleClose();
+                onFeaturePress?.(property.id);
+              }}
               className="h-[40px] flex-1 items-center justify-center rounded-full border border-[#B28648] bg-white"
             >
               <Text className="font-cairo-semibold text-sm text-[#B28648] leading-[22px]">تمييز</Text>
@@ -347,6 +379,6 @@ const DraftPreviewSheet = forwardRef<BottomSheetModal, DraftPreviewSheetProps>(
   },
 );
 
-DraftPreviewSheet.displayName = 'DraftPreviewSheet';
+AdPreviewSheet.displayName = 'AdPreviewSheet';
 
-export default DraftPreviewSheet;
+export default AdPreviewSheet;

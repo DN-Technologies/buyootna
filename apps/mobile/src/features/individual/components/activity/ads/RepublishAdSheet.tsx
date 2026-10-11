@@ -12,10 +12,10 @@ import {
   planTypeToSpend,
   type RepublishMode,
   type RepublishPlanType,
-} from '@/features/individual/components/activity/republish-ad/republishCredits';
-import RepublishPlanPicker from '@/features/individual/components/activity/republish-ad/RepublishPlanPicker';
-import RepublishSheetActions from '@/features/individual/components/activity/republish-ad/RepublishSheetActions';
-import RepublishSheetText from '@/features/individual/components/activity/republish-ad/RepublishSheetText';
+} from '@/features/individual/components/activity/ads/republish-ad/republishCredits';
+import RepublishPlanPicker from '@/features/individual/components/activity/ads/republish-ad/RepublishPlanPicker';
+import RepublishSheetActions from '@/features/individual/components/activity/ads/republish-ad/RepublishSheetActions';
+import RepublishSheetText from '@/features/individual/components/activity/ads/republish-ad/RepublishSheetText';
 import type { PublishOption } from '@/shared/api/plans.service';
 import { SubscriptionInfo } from '@/shared/hooks/properties/useMyActivity';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
@@ -23,7 +23,7 @@ import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 export type {
   RepublishMode,
   RepublishPlanType,
-} from '@/features/individual/components/activity/republish-ad/republishCredits';
+} from '@/features/individual/components/activity/ads/republish-ad/republishCredits';
 
 export interface RepublishAdSheetProps {
   mode?: RepublishMode;
