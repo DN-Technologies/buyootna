@@ -26,6 +26,48 @@ export class RequestClientInfoDto {
   isVerified?: boolean;
 }
 
+export class RequestProviderInfoDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ nullable: true })
+  logoUrl: string | null;
+
+  @ApiProperty({ nullable: true })
+  specialty: string | null;
+
+  @ApiProperty()
+  isVerified: boolean;
+}
+
+export class RequestOfferReplyDto {
+  @ApiProperty({ nullable: true })
+  message: string | null;
+
+  @ApiProperty({ nullable: true })
+  notes: string | null;
+}
+
+export class RequestOfferResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ type: RequestProviderInfoDto })
+  provider: RequestProviderInfoDto;
+
+  @ApiProperty({ nullable: true })
+  price: number | null;
+
+  @ApiProperty({ enum: ['sent', 'accepted', 'rejected'] })
+  status: 'sent' | 'accepted' | 'rejected';
+
+  @ApiProperty({ type: RequestOfferReplyDto })
+  reply: RequestOfferReplyDto;
+}
+
 export class CompanyRequestResponseDto {
   @ApiProperty()
   id: string;
@@ -85,6 +127,32 @@ export class CompanyRequestResponseDto {
   @ApiProperty()
   createdAt: string;
 
+  @ApiProperty()
+  updatedAt: string;
+
   @ApiProperty({ type: RequestClientInfoDto })
   client: RequestClientInfoDto;
+
+  @ApiProperty({
+    type: RequestProviderInfoDto,
+    required: false,
+    nullable: true,
+    description:
+      'Requester-facing (scope=mine): the company/office it was sent to or that accepted it',
+  })
+  provider?: RequestProviderInfoDto | null;
+
+  @ApiProperty({
+    required: false,
+    description: 'Requester-facing (scope=mine): quotes received so far',
+  })
+  offersCount?: number;
+
+  @ApiProperty({
+    type: [RequestOfferResponseDto],
+    required: false,
+    description:
+      "Companies' answers: all of them for the requester, only its own for a company",
+  })
+  offers?: RequestOfferResponseDto[];
 }

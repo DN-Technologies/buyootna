@@ -76,6 +76,38 @@ export const companyRequestsService = {
     return response.data;
   },
 
+  // Requester actions (the user's own requests)
+  remove: async (id: string): Promise<void> => {
+    await apiClient.delete(`/company-requests/${id}`);
+  },
+
+  removeAllMine: async (): Promise<void> => {
+    await apiClient.delete('/company-requests/me');
+  },
+
+  // offerId is only needed when several companies answered
+  acceptOffer: async (
+    id: string,
+    offerId?: string,
+  ): Promise<CompanyRequestItem> => {
+    const response = await apiClient.patch<CompanyRequestItem>(
+      `/company-requests/${id}/accept-offer`,
+      offerId ? { offerId } : {},
+    );
+    return response.data;
+  },
+
+  rejectOffer: async (
+    id: string,
+    offerId?: string,
+  ): Promise<CompanyRequestItem> => {
+    const response = await apiClient.patch<CompanyRequestItem>(
+      `/company-requests/${id}/reject-offer`,
+      offerId ? { offerId } : {},
+    );
+    return response.data;
+  },
+
   markResponded: async (id: string): Promise<CompanyRequestItem> => {
     const response = await apiClient.patch<CompanyRequestItem>(
       `/company-requests/${id}/mark-responded`,

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -21,6 +22,7 @@ import type {
 } from './company-requests.service';
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
+import { CreateRequestOfferDto } from './dto/create-request-offer.dto';
 
 @ApiTags('Company Requests')
 @ApiAuth()
@@ -76,6 +78,16 @@ export class CompanyRequestsController {
     });
   }
 
+  @Delete('me')
+  @ApiOperation({
+    summary: 'Delete every request this identity submitted (requester)',
+  })
+  @ApiResponse({ status: 200, description: '{ deleted: number }' })
+  @ApiCommonErrors()
+  async removeAllMine(@CurrentUser() reqUser: RequestUser) {
+    return this.companyRequestsService.removeAllMine(reqUser.identityId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a single request visible to this company' })
   @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
@@ -121,5 +133,68 @@ export class CompanyRequestsController {
     @Param('id') id: string,
   ) {
     return this.companyRequestsService.markResponded(id, reqUser.identityId);
+  }
+
+  @Post(':id/offers')
+  @ApiOperation({
+    summary:
+      'A company answers a request with an offer (message, notes, price); answering again updates it',
+  })
+  @ApiResponse({ status: 201, type: CompanyRequestResponseDto })
+  @ApiCommonErrors()
+  async respond(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: CreateRequestOfferDto,
+  ) {
+    return this.companyRequestsService.respond(id, reqUser.identityId, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete a request this identity submitted (requester)',
+  })
+  @ApiResponse({ status: 200, description: '{ deleted: true }' })
+  @ApiCommonErrors()
+  async remove(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
+    return this.companyRequestsService.removeMine(id, reqUser.identityId);
+  }
+
+  @Patch(':id/accept-offer')
+  @ApiOperation({
+    summary:
+      "Requester accepts the company's reply to their request (status responded -> accepted)",
+  })
+  @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
+  @ApiCommonErrors()
+  async acceptOffer(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body('offerId') offerId?: string,
+  ) {
+    return this.companyRequestsService.acceptOffer(
+      id,
+      reqUser.identityId,
+      offerId,
+    );
+  }
+
+  @Patch(':id/reject-offer')
+  @ApiOperation({
+    summary:
+      "Requester rejects the company's reply to their request (status responded -> rejected)",
+  })
+  @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
+  @ApiCommonErrors()
+  async rejectOffer(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body('offerId') offerId?: string,
+  ) {
+    return this.companyRequestsService.rejectOffer(
+      id,
+      reqUser.identityId,
+      offerId,
+    );
   }
 }

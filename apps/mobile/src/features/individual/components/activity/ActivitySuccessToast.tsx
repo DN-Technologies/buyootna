@@ -26,19 +26,24 @@ export default function ActivitySuccessToast({
         bottom: bottomOffset,
         opacity: fadeAnim,
         transform: [{ translateY: slideAnim }],
-        elevation: 5,
+        elevation: 3,
+        // Figma "Shadow/Low"
+        shadowColor: '#212529',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
       }}
-      className="absolute left-[20px] right-[20px] z-[999] flex-row items-center justify-between rounded-xl border border-[#33D679] bg-white px-4 py-3.5 shadow-lg"
+      className="absolute left-4 right-4 z-[999] flex-row items-center justify-between rounded-[8px] border border-[#15A72B] bg-white px-4 py-[10px]"
     >
-      <View className="flex-row items-center gap-2.5">
+      <View className="flex-row items-center gap-2 py-2">
         <Image
           source={require('@/assets/icons/success-icon.svg')}
           style={{ width: 24, height: 24 }}
         />
         <View className="items-start">
           <Text
-            className="font-cairo-semibold text-[14px] leading-[22px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
+            className="font-cairo-semibold text-[14px] leading-[21px] text-[#111111]"
+            style={{ writingDirection: 'rtl', letterSpacing: 0.28 }}
           >
             {message}
           </Text>

@@ -1318,6 +1318,92 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-activity-offers-status-tabs",
+      title: {
+        en: "عروضي: status tabs with counts, and a card per status",
+        ar: "عروضي: تبويبات الحالة بالأعداد وبطاقة لكل حالة",
+      },
+      priority: "P1",
+      story: {
+        en: "The عروضي tab lists the price-quote requests you sent, split by status with pills that show their counts: قيد الانتظار, تم الرد, المقبولة, مرفوضة (قيد الانتظار is the default). A pending / replied / rejected card shows 'طلب رقم #…', the title and either the company it was sent to or '{n} عروض'. An accepted card shows the executing company (logo, name, verified tick, specialty) with a chat button. Under مرفوضة a note says rejected requests disappear after 30 days, and the API stops returning them after that. The cards are no longer the company-side cards with الرد / التفاصيل buttons.",
+        ar: "يعرض تبويب عروضي طلبات عروض السعر التي أرسلتها، مقسّمة حسب الحالة بأزرار تعرض أعدادها: قيد الانتظار، تم الرد، المقبولة، مرفوضة (قيد الانتظار هو الافتراضي). بطاقة الطلب قيد الانتظار / تم الرد / المرفوض تعرض 'طلب رقم #…' والعنوان ثم الشركة المرسل إليها أو '{n} عروض'. وبطاقة المقبول تعرض الشركة المنفذة (الشعار والاسم وعلامة التوثيق والتخصص) مع زر محادثة. وتحت مرفوضة تظهر ملاحظة أن الطلبات المرفوضة تختفي بعد 30 يوم، وتتوقف الواجهة البرمجية عن إرجاعها بعدها. ولم تعد البطاقات هي بطاقات جهة الشركة بزرّي الرد / التفاصيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Four pills show with counts that match the list; tapping one filters the cards to that status.",
+          "A directed request shows the company name under its title; a public one shows '{n} عروض' (0 when none).",
+          "An accepted request shows الشركة المنفذة with the company's logo, name, verified tick and specialty; the chat button opens a conversation with that company.",
+          "Under مرفوضة the note 'الطلبات المرفوضة تختفي بعد 30 يوم' shows, and a request rejected more than 30 days ago is not listed.",
+          "There are no الرد / التفاصيل buttons on these cards.",
+        ],
+        ar: [
+          "تظهر أربعة أزرار بأعداد تطابق القائمة؛ والضغط على أحدها يفلتر البطاقات حسب تلك الحالة.",
+          "الطلب الموجه يعرض اسم الشركة تحت العنوان؛ والعام يعرض '{n} عروض' (0 عند عدم وجودها).",
+          "الطلب المقبول يعرض الشركة المنفذة بشعارها واسمها وعلامة التوثيق وتخصصها؛ وزر المحادثة يفتح محادثة مع تلك الشركة.",
+          "تحت مرفوضة تظهر ملاحظة 'الطلبات المرفوضة تختفي بعد 30 يوم'، ولا يُعرض طلب رُفض منذ أكثر من 30 يوم.",
+          "لا توجد أزرار الرد / التفاصيل في هذه البطاقات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open نشاطي → عروضي with 3 pending, 2 replied, 2 accepted, 2 rejected requests — the pills read (3) (2) (2) (2) and each filters its cards.",
+          "Open المقبولة, tap the chat button on a card — a chat with that company opens.",
+          "Open مرفوضة — the 30-day note is visible.",
+        ],
+        ar: [
+          "افتح نشاطي ← عروضي بوجود 3 قيد الانتظار و2 تم الرد و2 مقبول و2 مرفوض — تظهر الأعداد (3) (2) (2) (2) ويفلتر كل زر بطاقاته.",
+          "افتح المقبولة واضغط زر المحادثة في بطاقة — تفتح محادثة مع تلك الشركة.",
+          "افتح مرفوضة — تظهر ملاحظة الـ 30 يوم.",
+        ],
+      },
+      updatedIn: "feat/activity-offers-status-tabs",
+    },
+    {
+      id: "mobile-activity-offers-actions",
+      title: {
+        en: "عروضي: sort, service filter, delete all, and accept / reject / delete a request",
+        ar: "عروضي: الترتيب وتصفية الخدمة وحذف الكل وقبول/رفض/حذف الطلب",
+      },
+      priority: "P1",
+      story: {
+        en: "On عروضي the sort button opens 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً) and the filter button opens 'تصفية البحث' (الكل, then a checkbox per service the user asked for). The header ⋮ opens a dropdown with 'حذف جميع العروض', which asks 'هل أنت متأكد من حذف جميع عروضك؟' and, on 'حذف العروض', deletes every request the user sent (DELETE /company-requests/me) and shows 'تم حذف جميع عروضك بنجاح.'. In a request's details, the trash icon asks to delete that request (DELETE /company-requests/:id); on a replied request 'قبول العرض' asks 'هل انت متأكد من قبول العرض ؟' and on 'تأكيد القبول' accepts it (PATCH …/accept-offer) with the toast 'تم قبول العرض بنجاح'; 'رفض العرض' asks to confirm and rejects it (PATCH …/reject-offer). Only the requester can do any of these, and accept / reject only work on a replied request that has a company. Toasts now follow the Figma style (green border, 8px radius).",
+        ar: "في عروضي يفتح زر الترتيب 'الترتيب حسب' (الكل / الأحدث أولاً / الأقدم أولاً) ويفتح زر التصفية 'تصفية البحث' (الكل ثم خانة لكل خدمة طلبها المستخدم). ويفتح زر ⋮ في الأعلى قائمة فيها 'حذف جميع العروض' تسأل 'هل أنت متأكد من حذف جميع عروضك؟' وعند 'حذف العروض' تحذف كل الطلبات التي أرسلها المستخدم (DELETE /company-requests/me) وتظهر 'تم حذف جميع عروضك بنجاح.'. وفي تفاصيل الطلب تطلب أيقونة السلة تأكيد حذف الطلب (DELETE /company-requests/:id)؛ وفي الطلب المردود عليه يسأل 'قبول العرض' 'هل انت متأكد من قبول العرض ؟' وعند 'تأكيد القبول' يقبله (PATCH …/accept-offer) مع رسالة 'تم قبول العرض بنجاح'؛ و'رفض العرض' يطلب التأكيد ثم يرفضه (PATCH …/reject-offer). صاحب الطلب فقط يستطيع أياً من هذه، ولا يعمل القبول/الرفض إلا على طلب تم الرد عليه وله شركة. والإشعارات المنبثقة صارت بنمط Figma (حد أخضر وزاوية 8).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Sort الأحدث أولاً / الأقدم أولاً reorders the cards of the active status pill by date; الكل keeps the default order.",
+          "The filter lists only the services present in the user's requests; ticking some shows only those; الكل clears them; the filter button shows the active mark while any is ticked.",
+          "'حذف جميع العروض' → confirm 'حذف العروض' removes every request, the tab becomes empty and the green toast shows; 'تراجع' changes nothing.",
+          "Trash in the details deletes only that request and returns to the list; it is hidden for accepted and rejected requests.",
+          "قبول العرض → تأكيد القبول: the request becomes مقبول and the toast shows; رفض العرض → confirm: it becomes مرفوضة.",
+          "Another account calling these endpoints gets 404; accepting a request that is not replied gets 409.",
+        ],
+        ar: [
+          "ترتيب الأحدث أولاً / الأقدم أولاً يعيد ترتيب بطاقات حالة الزر النشط حسب التاريخ؛ والكل يبقي الترتيب الافتراضي.",
+          "تعرض التصفية الخدمات الموجودة في طلبات المستخدم فقط؛ وتحديد بعضها يعرض طلباتها فقط؛ والكل يمسحها؛ ويظهر على زر التصفية علامة النشاط ما دام شيء محدداً.",
+          "'حذف جميع العروض' ← تأكيد 'حذف العروض' يحذف كل الطلبات ويصبح التبويب فارغاً وتظهر الرسالة الخضراء؛ و'تراجع' لا يغيّر شيئاً.",
+          "السلة في التفاصيل تحذف هذا الطلب فقط وتعود للقائمة؛ وتختفي في الطلبات المقبولة والمرفوضة.",
+          "قبول العرض ← تأكيد القبول: يصبح الطلب مقبولاً وتظهر الرسالة؛ ورفض العرض ← تأكيد: يصبح مرفوضاً.",
+          "حساب آخر يستدعي هذه المسارات يحصل على 404؛ وقبول طلب لم يُرد عليه يعطي 409.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With 3 pending requests of two services, open the filter, tick one service — only its requests remain; clear with الكل.",
+          "Open the ⋮ menu → حذف جميع العروض → حذف العروض — all requests disappear and the toast shows.",
+          "Open a replied directed request → قبول العرض → تأكيد القبول — it moves to المقبولة and the toast shows.",
+          "Open a pending request → trash → تأكيد الحذف — it is gone from the list.",
+        ],
+        ar: [
+          "بوجود 3 طلبات قيد الانتظار من خدمتين افتح التصفية وحدد خدمة — تبقى طلباتها فقط؛ وامسحها بـ الكل.",
+          "افتح قائمة ⋮ ← حذف جميع العروض ← حذف العروض — تختفي كل الطلبات وتظهر الرسالة.",
+          "افتح طلباً موجهاً تم الرد عليه ← قبول العرض ← تأكيد القبول — ينتقل إلى المقبولة وتظهر الرسالة.",
+          "افتح طلباً قيد الانتظار ← السلة ← تأكيد الحذف — يختفي من القائمة.",
+        ],
+      },
+      updatedIn: "feat/activity-offers-status-tabs",
+    },
+    {
       id: "mobile-activity-package-balance",
       title: {
         en: "My Activity shows the remaining ads from purchased packages",

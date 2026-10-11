@@ -70,6 +70,13 @@ enum RequestStatus {
   REJECTED
 }
 
+// One company's answer to a request
+enum RequestOfferStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+}
+
 enum AlertType {
   PROPERTIES
   AUCTIONS

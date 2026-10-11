@@ -1,6 +1,6 @@
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import {
   ChatAttachment,
@@ -9,6 +9,7 @@ import {
   chatService,
 } from '@/shared/api/chat.service';
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
+import ChatMessagesSkeleton from '@/shared/components/skeletons/ChatMessagesSkeleton';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
 import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
 import LocationMessageBubble from '@/shared/components/chat/LocationMessageBubble';
@@ -326,9 +327,9 @@ export default function ChatMessageList({
         <View
           testID="chat-messages-loading"
           pointerEvents="none"
-          className="absolute inset-0 items-center justify-center"
+          className="absolute inset-0"
         >
-          <ActivityIndicator size="large" color="#15304D" />
+          <ChatMessagesSkeleton />
         </View>
       )}
 

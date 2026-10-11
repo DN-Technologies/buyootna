@@ -14,6 +14,7 @@ import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
 import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
+import { useRequestActions } from '@/features/individual/hooks/useRequestActions';
 import { ActivityItem, useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { useMyRequests } from '@/shared/hooks/properties/useMyRequests';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
@@ -126,6 +127,12 @@ export function useActivityScreen() {
     sortBy,
   );
 
+  const requestActions = useRequestActions({
+    requests: myRequests,
+    refetchRequests,
+    triggerToast,
+  });
+
   const adActions = useAdActions({
     refetch,
     triggerToast,
@@ -180,7 +187,8 @@ export function useActivityScreen() {
     },
     alertsError,
     isLoadingAlerts,
-    myRequests,
+    myRequests: requestActions.visibleRequests,
+    requestActions,
     requestsError,
     adActions,
     alertActions,

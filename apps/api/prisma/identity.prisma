@@ -64,6 +64,8 @@ model Identity {
   requestsAsClient CompanyRequest[] @relation("ClientRequests")
   requestsTargeted CompanyRequest[] @relation("TargetedRequests")
   requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
+  // Answers this company/office gave to requests
+  requestOffers    RequestOffer[]   @relation("ProvidedOffers")
 
   // One individual, one company and one office per account
   @@unique([userId, type])
