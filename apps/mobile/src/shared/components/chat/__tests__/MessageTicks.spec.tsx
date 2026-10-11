@@ -19,10 +19,9 @@ describe('MessageTicks', () => {
     await rerender(<MessageTicks status="read" />);
     const read = screen.getByTestId('ticks-read');
     expect(read.props.accessibilityLabel).toBe('تمت القراءة');
-    const colors = (read.props.children as { props: { color: string } }[]).map(
-      (icon) => icon.props.color,
+    expect((read.props.children as { props: { color: string } }).props.color).toBe(
+      READ_COLOR,
     );
-    expect(colors).toEqual([READ_COLOR, READ_COLOR]);
     await rerender(<MessageTicks status={null} />);
     expect(screen.queryByTestId('ticks-read')).toBeNull();
   });

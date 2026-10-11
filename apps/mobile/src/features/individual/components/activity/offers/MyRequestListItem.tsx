@@ -131,7 +131,10 @@ export default function MyRequestListItem({ request }: MyRequestListItemProps) {
                   accessibilityLabel="محادثة مع الشركة"
                   activeOpacity={0.8}
                   onPress={() =>
-                    openChatWith(router, { recipientId: provider.id })
+                    openChatWith(router, {
+                      recipientId: provider.id,
+                      requestId: request.id,
+                    })
                   }
                   className="h-8 w-full items-center justify-center rounded-[24px] border border-[#B28648]"
                 >

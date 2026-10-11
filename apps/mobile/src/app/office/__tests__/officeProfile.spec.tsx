@@ -29,6 +29,11 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+// The listing cards read favourites; no server in this spec
+jest.mock('@/shared/hooks/properties/useFavorites', () => ({
+  useFavorites: () => ({ favoritedIds: [], toggleFavorite: jest.fn() }),
+}));
+
 jest.mock('@/shared/hooks/providers/useOfficeDetails', () => ({
   useOfficeDetails: jest.fn(),
 }));

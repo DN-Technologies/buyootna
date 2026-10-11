@@ -1,5 +1,7 @@
 import { Feather } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+
+import { AttachPlusIcon } from '@/assets/icons/chat';
 
 interface AttachToggleButtonProps {
   panelOpen: boolean;
@@ -18,12 +20,14 @@ export default function AttachToggleButton({
       className="h-8 w-8 items-center justify-center"
       onPress={onPress}
     >
-      <Feather
-        name={panelOpen ? 'type' : 'plus'}
-        size={panelOpen ? 20 : 24}
-        color="#111111"
-        className="relative -top-2.5"
-      />
+      {/* Lifted to the middle of the 46px field the row is bottom-aligned to */}
+      <View className="relative -top-[7px]">
+        {panelOpen ? (
+          <Feather name="type" size={20} color="#111111" />
+        ) : (
+          <AttachPlusIcon />
+        )}
+      </View>
     </TouchableOpacity>
   );
 }

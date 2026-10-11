@@ -52,8 +52,8 @@ export default function ChatMessageBubble({
     <ReplyQuote
       reply={item.replyTo}
       otherName={otherUserName}
-      // Their bubbles are dark
-      onDark={!item.isMine && item.type === 'TEXT'}
+      // My bubbles are navy
+      onDark={item.isMine && item.type === 'TEXT'}
       onPress={() => onJumpTo(item.replyTo!.id)}
     />
   ) : undefined;

@@ -84,6 +84,7 @@ export class ChatController {
       reqUser.identityId,
       dto.recipientId,
       dto.propertyId,
+      dto.requestId,
     );
   }
 

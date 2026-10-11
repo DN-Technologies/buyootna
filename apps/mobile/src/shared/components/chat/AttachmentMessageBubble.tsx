@@ -42,6 +42,8 @@ export default function AttachmentMessageBubble({
   status,
 }: AttachmentMessageBubbleProps) {
   const isMine = message.isMine;
+  // My bubbles are navy, theirs light: colours follow the background
+  const onLight = !isMine;
   const pending = !message.attachments && !!message.localAttachments;
   const items = message.attachments
     ? message.attachments.map((a) => ({
@@ -76,7 +78,7 @@ export default function AttachmentMessageBubble({
       <View
         testID="attachment-bubble"
         className={`max-w-[80%] rounded-md p-1.5 ${
-          isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
+          isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
         }`}
       >
         {quote && <View className="px-1 pt-1">{quote}</View>}
@@ -150,7 +152,7 @@ export default function AttachmentMessageBubble({
               disabled={pending}
               onPress={() => onPressFile(i)}
               className={`mt-1 flex-row items-center gap-2.5 rounded-md px-2.5 py-2 ${
-                isMine ? 'bg-white' : 'bg-white/10'
+                onLight ? 'bg-white' : 'bg-white/10'
               }`}
               style={{ width: GRID }}
             >
@@ -166,7 +168,7 @@ export default function AttachmentMessageBubble({
                 <Text
                   numberOfLines={1}
                   className={`font-cairo-semibold text-[13px] ${
-                    isMine ? 'text-[#111111]' : 'text-white'
+                    onLight ? 'text-[#111111]' : 'text-white'
                   }`}
                 >
                   {f.name}
@@ -174,7 +176,7 @@ export default function AttachmentMessageBubble({
                 {!!f.size && (
                   <Text
                     className={`font-cairo text-[11px] ${
-                      isMine ? 'text-[#6B6A6A]' : 'text-white/70'
+                      onLight ? 'text-[#6B6A6A]' : 'text-white/70'
                     }`}
                   >
                     {formatFileSize(f.size)}
@@ -185,7 +187,7 @@ export default function AttachmentMessageBubble({
                 <Feather
                   name="download"
                   size={16}
-                  color={isMine ? '#15304D' : '#FFFFFF'}
+                  color={onLight ? '#15304D' : '#FFFFFF'}
                 />
               )}
             </TouchableOpacity>
@@ -195,7 +197,7 @@ export default function AttachmentMessageBubble({
         {!!message.content && (
           <Text
             className={`px-2 pt-1.5 text-right font-cairo-medium text-[14px] leading-6 ${
-              isMine ? 'text-[#111111]' : 'text-white'
+              onLight ? 'text-[#111111]' : 'text-white'
             }`}
             style={{ writingDirection: 'rtl' }}
           >
@@ -209,8 +211,8 @@ export default function AttachmentMessageBubble({
             testID="attachment-uploading"
             className="flex-row items-center gap-1.5 px-2 pt-1.5"
           >
-            <ActivityIndicator size="small" color={isMine ? '#15304D' : '#FFFFFF'} />
-            <Text className={`font-cairo text-[12px] ${isMine ? 'text-[#6B6A6A]' : 'text-white/80'}`}>
+            <ActivityIndicator size="small" color={onLight ? '#15304D' : '#FFFFFF'} />
+            <Text className={`font-cairo text-[12px] ${onLight ? 'text-[#6B6A6A]' : 'text-white/80'}`}>
               {`جاري الإرسال ${Math.round((message.uploadProgress ?? 0) * 100)}%`}
             </Text>
           </View>

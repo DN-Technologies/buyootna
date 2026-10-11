@@ -1,5 +1,6 @@
-import { Feather } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+
+import { SendIcon } from '@/assets/icons/chat';
 
 interface SendButtonProps {
   hasText: boolean;
@@ -15,16 +16,15 @@ export default function SendButton({
   return (
     <TouchableOpacity
       testID="chat-send-button"
+      accessibilityLabel="إرسال"
       onPress={onPress}
       disabled={disabled}
       className="h-8 w-8 items-center justify-center"
     >
-      <Feather
-        name="send"
-        size={24}
-        color={hasText && !disabled ? '#15304D' : '#94A3B8'}
-        className="relative -top-1"
-      />
+      {/* The asset points right; under RTL the plane flies left */}
+      <View className="relative -top-[7px]" style={{ transform: [{ scaleX: -1 }] }}>
+        <SendIcon color={hasText && !disabled ? '#15304D' : '#94A3B8'} />
+      </View>
     </TouchableOpacity>
   );
 }

@@ -30,6 +30,8 @@ model CompanyRequest {
   invoices  CompanyInvoice[]
   // The answers companies gave (one per company)
   offers    RequestOffer[]
+  // Chats opened about this request
+  conversations Conversation[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 

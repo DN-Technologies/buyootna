@@ -231,7 +231,11 @@ export const useChatStore = create<ChatState>((set, get) => {
         set((state) => {
           let updatedConversations = state.conversations;
 
-          if (res.meta.otherUser || res.meta.propertyContext) {
+          if (
+            res.meta.otherUser ||
+            res.meta.propertyContext ||
+            res.meta.requestContext
+          ) {
             const existingIndex = state.conversations.findIndex(
               (c) => c.id === conversationId,
             );
@@ -244,6 +248,10 @@ export const useChatStore = create<ChatState>((set, get) => {
                   res.meta.propertyContext !== undefined
                     ? res.meta.propertyContext
                     : updatedConversations[existingIndex].propertyContext,
+                requestContext:
+                  res.meta.requestContext !== undefined
+                    ? res.meta.requestContext
+                    : updatedConversations[existingIndex].requestContext,
                 otherUser:
                   res.meta.otherUser ??
                   updatedConversations[existingIndex].otherUser,
@@ -255,6 +263,7 @@ export const useChatStore = create<ChatState>((set, get) => {
                 updatedAt: new Date().toISOString(),
                 otherUser: res.meta.otherUser,
                 propertyContext: res.meta.propertyContext || null,
+                requestContext: res.meta.requestContext || null,
                 lastMessage: null,
                 unreadCount: 0,
               };

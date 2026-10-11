@@ -4,6 +4,19 @@ export interface ChatParticipant {
   id: string;
   name: string;
   avatarUrl: string;
+  // Whether their app is open right now ("متصل"), as of this response;
+  // live changes arrive on the socket (see useChatLiveStore)
+  isOnline?: boolean;
+  lastSeenAt?: string | null;
+}
+
+// The quote request a chat is about (pinned above the messages)
+export interface RequestContext {
+  id: string;
+  title: string;
+  location: string;
+  priceRange: string | null;
+  status: string;
 }
 
 export interface PropertyContext {
@@ -24,6 +37,7 @@ export interface ConversationSummary {
   updatedAt: string;
   otherUser: ChatParticipant;
   propertyContext: PropertyContext | null;
+  requestContext?: RequestContext | null;
   lastMessage: {
     id: string;
     content: string | null;
@@ -198,6 +212,7 @@ export interface GetMessagesResponse {
     // How far the other person has received / read (my ticks)
     otherReceipt?: ChatReceipt | null;
     propertyContext?: PropertyContext | null;
+    requestContext?: RequestContext | null;
     otherUser?: ChatParticipant | null;
   };
 }
@@ -207,10 +222,13 @@ export const chatService = {
   createConversation: async (
     recipientId: string,
     propertyId?: string,
+    // The quote request the chat is about; it takes the place of an ad
+    requestId?: string,
   ): Promise<{ id: string }> => {
     const response = await apiClient.post<{ id: string }>('/chat/conversations', {
       recipientId,
       propertyId,
+      requestId,
     });
     return response.data;
   },

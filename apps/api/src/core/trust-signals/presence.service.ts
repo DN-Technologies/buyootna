@@ -40,6 +40,11 @@ export class PresenceService {
     this.stamp(identityId, true);
   }
 
+  /** Whether this persona's app has a live socket right now. */
+  isConnected(identityId: string) {
+    return (this.liveSockets.get(identityId) ?? 0) > 0;
+  }
+
   /** An authenticated request from this persona (throttled write). */
   touch(identityId: string) {
     this.stamp(identityId, false);

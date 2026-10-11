@@ -6,9 +6,16 @@ model Conversation {
   propertyId String?
   property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
 
+  // The quote request this chat is about (a company answering it); shown
+  // pinned above the messages instead of an ad
+  requestId String?
+  request   CompanyRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
   participants ConversationParticipant[]
   messages     Message[]
   attachments  MessageAttachment[]
+
+  @@index([requestId])
 }
 
 model ConversationParticipant {

@@ -196,6 +196,43 @@ export const api: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
+      id: "api-chat-presence-typing-request-link",
+      title: {
+        en: "Chat API: online status, typing events and a request link",
+        ar: "واجهة المحادثات: حالة الاتصال وأحداث الكتابة وربط الطلب",
+      },
+      priority: "P1",
+      story: {
+        en: "Three additions to the chat API. Request link: POST /chat/conversations accepts requestId; it is kept only when one of the two personas is that request's requester, and it takes the place of propertyId (a chat is about one thing). Opening the chat again without it clears it, as already happens for the ad. GET /chat/conversations and the messages response now return requestContext { id, title, location, priceRange, status } next to propertyContext. New column Conversation.requestId (nullable, set null when the request is deleted). Online: otherUser now carries isOnline and lastSeenAt; the socket emits 'presence_changed' { identityId, isOnline, lastSeenAt } to everyone a persona chats with when its first socket connects or its last one closes. Typing: the socket accepts 'typing' { conversationId, isTyping } from a participant and relays 'typing' { conversationId, identityId, isTyping } to the other participants, in the conversation room and their inbox rooms. Nothing about typing is stored.",
+        ar: "ثلاث إضافات لواجهة المحادثات. ربط الطلب: POST /chat/conversations يقبل requestId؛ ويُحتفظ به فقط إذا كان أحد الطرفين صاحب ذلك الطلب، ويحل محل propertyId (المحادثة عن موضوع واحد). فتح المحادثة مجدداً بدونه يمسحه كما يحدث للإعلان. GET /chat/conversations واستجابة الرسائل تعيدان الآن requestContext { id, title, location, priceRange, status } بجانب propertyContext. عمود جديد Conversation.requestId (يقبل الفراغ ويُفرَّغ عند حذف الطلب). الاتصال: otherUser يحمل الآن isOnline و lastSeenAt؛ ويرسل المقبس 'presence_changed' { identityId, isOnline, lastSeenAt } لكل من تحادثه الهوية عند اتصال أول مقبس لها أو إغلاق آخر مقبس. الكتابة: يقبل المقبس 'typing' { conversationId, isTyping } من مشارك ويعيد إرسال 'typing' { conversationId, identityId, isTyping } للمشاركين الآخرين في غرفة المحادثة وغرف صناديقهم. لا يُخزَّن شيء عن الكتابة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Creating a conversation with a requestId the caller or the recipient asked for returns a conversation whose requestContext is set and propertyContext is null.",
+          "A requestId that belongs to neither persona is ignored (no error, no link).",
+          "'typing' from a socket that is not a participant of that conversation is dropped.",
+          "A persona with two sockets open stays online when one closes; 'presence_changed' is sent only when the last one closes.",
+          "Existing clients that send neither requestId nor typing keep working unchanged.",
+        ],
+        ar: [
+          "إنشاء محادثة بـ requestId يخص صاحب الطلب (المتصل أو المستلم) يعيد محادثة فيها requestContext و propertyContext فارغ.",
+          "requestId لا يخص أياً من الطرفين يُتجاهل (بلا خطأ وبلا ربط).",
+          "'typing' من مقبس ليس مشاركاً في تلك المحادثة يُهمل.",
+          "الهوية التي لها مقبسان مفتوحان تبقى متصلة عند إغلاق أحدهما؛ ويُرسل 'presence_changed' عند إغلاق الأخير فقط.",
+          "العملاء الحاليون الذين لا يرسلون requestId ولا typing يعملون كما هم.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Connect two sockets as two personas that share a conversation; emit typing from one and check the other receives it, then disconnect one and check presence_changed.",
+        ],
+        ar: [
+          "صِل مقبسين بهويتين تتشاركان محادثة؛ أرسل typing من أحدهما وتحقق من وصوله للآخر، ثم افصل أحدهما وتحقق من presence_changed.",
+        ],
+      },
+      updatedIn: "feat/chat-flow-figma",
+    },
+    {
       id: "api-search-strategies",
       title: {
         en: "Each search strategy (standard/exchange/auction/deal/company) returns correctly-scoped results",

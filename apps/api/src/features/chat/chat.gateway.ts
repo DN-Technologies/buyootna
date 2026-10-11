@@ -71,7 +71,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // The persona's room: inbox updates for this persona only
       client.join(`identity:${payload.ident}`);
-      if (payload.ident) this.presence.socketConnected(payload.ident);
+      if (payload.ident) {
+        const wasOnline = this.presence.isConnected(payload.ident);
+        this.presence.socketConnected(payload.ident);
+        if (!wasOnline) void this.emitPresence(payload.ident, true);
+      }
       // The app is online: messages waiting for this persona are delivered
       if (payload.ident) void this.deliverWaiting(payload.ident);
       console.log(`Client connected: identity:${payload.ident} (${client.id})`);
@@ -83,8 +87,77 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     const { identityId } = (client.data ?? {}) as SocketIdentity;
-    if (identityId) this.presence.socketDisconnected(identityId);
+    if (identityId) {
+      this.presence.socketDisconnected(identityId);
+      // The persona's last socket closed: its app is no longer open
+      if (!this.presence.isConnected(identityId)) {
+        void this.emitPresence(identityId, false);
+      }
+    }
     console.log(`Client disconnected: (${client.id})`);
+  }
+
+  /**
+   * Tells everyone this persona chats with that its app opened or closed
+   * ("متصل" in their chat header and the dot on their chats list).
+   */
+  async emitPresence(identityId: string, isOnline: boolean) {
+    try {
+      const partners = await this.prisma.conversationParticipant.findMany({
+        where: {
+          identityId: { not: identityId },
+          conversation: { participants: { some: { identityId } } },
+        },
+        select: { identityId: true },
+        distinct: ['identityId'],
+      });
+      if (partners.length === 0) return;
+      let target = this.server.to(`identity:${partners[0].identityId}`);
+      for (const partner of partners.slice(1)) {
+        target = target.to(`identity:${partner.identityId}`);
+      }
+      target.emit('presence_changed', {
+        identityId,
+        isOnline,
+        lastSeenAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Failed to broadcast presence:', error);
+    }
+  }
+
+  /**
+   * "يكتب الان...": relayed to the other participants, in the open chat
+   * and on their chats list. Nothing is stored; the receiver clears it on
+   * its own if the "stopped" event never arrives.
+   */
+  @SubscribeMessage('typing')
+  async handleTyping(
+    client: Socket,
+    payload: { conversationId?: string; isTyping?: boolean },
+  ) {
+    const { identityId } = (client.data ?? {}) as SocketIdentity;
+    const conversationId = payload?.conversationId;
+    if (!identityId || typeof conversationId !== 'string') return;
+
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId },
+      select: { identityId: true },
+    });
+    // Only the conversation's own personas may signal in it
+    if (!participants.some((p) => p.identityId === identityId)) return;
+
+    let target = client.to(`conversation:${conversationId}`);
+    for (const participant of participants) {
+      if (participant.identityId !== identityId) {
+        target = target.to(`identity:${participant.identityId}`);
+      }
+    }
+    target.emit('typing', {
+      conversationId,
+      identityId,
+      isTyping: payload.isTyping === true,
+    });
   }
 
   @SubscribeMessage('join_conversation')

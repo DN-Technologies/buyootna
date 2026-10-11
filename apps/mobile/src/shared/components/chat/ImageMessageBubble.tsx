@@ -34,7 +34,7 @@ export default function ImageMessageBubble({
           activeOpacity={0.9}
           onPress={onPressImage}
           className={`overflow-hidden rounded-lg ${
-            isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
+            isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
           }`}
           style={{
             shadowColor: '#15304D',
