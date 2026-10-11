@@ -1432,5 +1432,40 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/alert-success-view-alerts",
     },
+    {
+      id: "mobile-date-range-field-order",
+      title: {
+        en: "Date range fields read من before الى (auction alert and the auction / deal filters)",
+        ar: "حقول التاريخ تُقرأ من قبل الى (تنبيه المزادات وفلاتر المزادات والصفقات)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: in the auction alert form (إضافة تنبيه ← مزادات) 'التاريخ الى' came before 'التاريخ من', which is backwards for setting a range. The shared date-range pair now puts 'التاريخ من' first (on the right, reading right-to-left) and 'التاريخ الى' after it. The same pair is used by the auction and deal filter sheets, which are fixed too. Each field still opens its own picker.",
+        ar: "إصلاح بلاغ QA: في نموذج تنبيه المزادات (إضافة تنبيه ← مزادات) كان 'التاريخ الى' قبل 'التاريخ من' وهذا معكوس عند تحديد نطاق. الآن يضع زوج حقول التاريخ المشترك 'التاريخ من' أولاً (على اليمين عند القراءة من اليمين لليسار) ثم 'التاريخ الى'. ويُستخدم الزوج نفسه في نافذتي فلتر المزادات والصفقات وقد صُحّحتا أيضاً. وكل حقل ما زال يفتح منتقيه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "In إضافة تنبيه ← مزادات, 'التاريخ من' is the first date field and 'التاريخ الى' follows it.",
+          "The auction and deal filter sheets show the same order.",
+          "Tapping each field opens the picker for that date and fills that field only.",
+        ],
+        ar: [
+          "في إضافة تنبيه ← مزادات يكون 'التاريخ من' أول حقل تاريخ ويليه 'التاريخ الى'.",
+          "تظهر نافذتا فلتر المزادات والصفقات بالترتيب نفسه.",
+          "الضغط على كل حقل يفتح منتقي ذلك التاريخ ويملأ ذلك الحقل فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an auction alert and look at the date row — من on the right, الى on its left.",
+          "Pick a 'من' date, then an 'الى' date — each lands in its own field.",
+        ],
+        ar: [
+          "افتح تنبيه مزادات وانظر إلى صف التاريخ — من على اليمين والى على يساره.",
+          "اختر تاريخ 'من' ثم تاريخ 'الى' — كل منهما يظهر في حقله.",
+        ],
+      },
+      updatedIn: "fix/auction-alert-date-order",
+    },
   ],
 };
