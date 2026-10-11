@@ -1,28 +1,22 @@
 import { FlashList, FlashListRef } from '@shopify/flash-list';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { useCallback } from 'react';
+import { View } from 'react-native';
 
 import {
   ChatAttachment,
   ChatMessage,
   ChatReceipt,
-  chatService,
 } from '@/shared/api/chat.service';
-import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
-import ChatMessagesSkeleton from '@/shared/components/skeletons/ChatMessagesSkeleton';
 import DateSeparator from '@/shared/components/chat/DateSeparator';
-import ImageMessageBubble from '@/shared/components/chat/ImageMessageBubble';
-import LocationMessageBubble from '@/shared/components/chat/LocationMessageBubble';
-import MessageBubble from '@/shared/components/chat/MessageBubble';
-import PropertyMessageBubble from '@/shared/components/chat/PropertyMessageBubble';
-import ProposalCard, {
-  ProposalAction,
-} from '@/shared/components/chat/ProposalCard';
-import ReplyQuote from '@/shared/components/chat/ReplyQuote';
+import { ProposalAction } from '@/shared/components/chat/ProposalCard';
 import SwipeableMessage from '@/shared/components/chat/SwipeableMessage';
-import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
-import { DisplayMessage, formatMessageTime } from '@/shared/utils/chatDate';
-import { messageStatus } from '@/shared/utils/chatReceipts';
+import ChatMessagesSkeleton from '@/shared/components/skeletons/ChatMessagesSkeleton';
+import { DisplayMessage } from '@/shared/utils/chatDate';
+
+import ChatMessageBubble from './message-list/ChatMessageBubble';
+import LoadFailedBanner from './message-list/LoadFailedBanner';
+import { useMessageJump } from './message-list/useMessageJump';
+import { useScrollToEndOnFirstLoad } from './message-list/useScrollToEndOnFirstLoad';
 
 export interface ChatMessageListProps {
   listRef: React.RefObject<FlashListRef<any> | null>;
@@ -56,14 +50,6 @@ export interface ChatMessageListProps {
   onCounterProposal?: (message: ChatMessage) => void;
 }
 
-// How long a message stays tinted after jumping to it from a quote
-const HIGHLIGHT_MS = 1200;
-
-// Device-local time with western digits, from the message's createdAt (the
-// server's preformatted `timestamp` is only a fallback for odd dates)
-const timeOf = (item: { createdAt?: string; timestamp?: string }) =>
-  (item.createdAt && formatMessageTime(item.createdAt)) || item.timestamp || '';
-
 export default function ChatMessageList({
   listRef,
   messages,
@@ -86,198 +72,32 @@ export default function ChatMessageList({
   onCounterProposal,
 }: ChatMessageListProps) {
   // Tapping a quote scrolls to the original and tints it for a moment
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (highlightTimer.current) clearTimeout(highlightTimer.current);
-    },
-    [],
+  const { highlightedId, jumpTo } = useMessageJump(
+    messages,
+    listRef,
+    focusMessageId,
   );
-  const jumpTo = useCallback(
-    (messageId: string) => {
-      const index = messages.findIndex((m) => m.id === messageId);
-      if (index < 0) return;
-      listRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
-      setHighlightedId(messageId);
-      if (highlightTimer.current) clearTimeout(highlightTimer.current);
-      highlightTimer.current = setTimeout(
-        () => setHighlightedId(null),
-        HIGHLIGHT_MS,
-      );
-    },
-    [messages, listRef],
-  );
-
-  // In-chat search moved to another match
-  useEffect(() => {
-    if (focusMessageId) jumpTo(focusMessageId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusMessageId]);
-
-  // Land on the newest message once the history first arrives. The list
-  // stays mounted (it's never swapped for the spinner), and the explicit
-  // scroll doesn't rely on FlashList 2.0.2's initial bottom positioning,
-  // which left reopened short chats blank (QA)
-  const hasScrolledToEnd = useRef(false);
-  useEffect(() => {
-    if (hasScrolledToEnd.current || messages.length === 0) return;
-    hasScrolledToEnd.current = true;
-    requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated: false });
-    });
-  }, [messages.length, listRef]);
-
-  const renderBubble = useCallback(
-    (item: ChatMessage) => {
-      const status = messageStatus(item, otherReceipt);
-      const quote = item.replyTo ? (
-        <ReplyQuote
-          reply={item.replyTo}
-          otherName={otherUserName}
-          // Their bubbles are dark
-          onDark={!item.isMine && item.type === 'TEXT'}
-          onPress={() => jumpTo(item.replyTo!.id)}
-        />
-      ) : undefined;
-
-      // Photos / documents (sent, or still uploading from the device)
-      if (item.attachments?.length || item.localAttachments?.length) {
-        const sent = item.attachments ?? [];
-        // 🎤 a voice note (sent, or still uploading from the device)
-        const voice =
-          sent.find((a) => a.kind === 'AUDIO') ??
-          item.localAttachments?.find((a) => a.kind === 'AUDIO');
-        if (voice) {
-          const sentVoice = sent.find((a) => a.kind === 'AUDIO');
-          return (
-            <VoiceMessageBubble
-              tickStatus={status}
-              uri={'url' in voice ? voice.url : voice.uri}
-              durationMs={voice.durationMs}
-              isMine={item.isMine}
-              timestamp={timeOf(item)}
-              quote={quote}
-              sending={item.sending}
-              failed={item.failed}
-              onRetry={() => onRetryAttachments?.(item.id)}
-              refreshUri={
-                sentVoice
-                  ? () => chatService.attachmentUrl(sentVoice.id)
-                  : undefined
-              }
-            />
-          );
-        }
-        return (
-          <AttachmentMessageBubble
-              status={status}
-            message={item}
-            timestamp={timeOf(item)}
-            quote={quote}
-            onPressPhoto={(index) =>
-              onOpenPhotos?.(
-                sent.filter((a) => a.kind === 'IMAGE').map((a) => a.url),
-                index,
-              )
-            }
-            onPressFile={(index) => {
-              const file = sent.filter((a) => a.kind === 'FILE')[index];
-              if (file) onOpenFile?.(file);
-            }}
-            onPressVideo={(index) => {
-              const video = sent.filter((a) => a.kind === 'VIDEO')[index];
-              if (video) onOpenVideo?.(video);
-            }}
-            onRetry={() => onRetryAttachments?.(item.id)}
-          />
-        );
-      }
-
-      switch (item.type) {
-        case 'LOCATION':
-          if (!item.location) return null;
-          return (
-            <LocationMessageBubble
-              status={status}
-              location={item.location}
-              isMine={item.isMine}
-              timestamp={timeOf(item)}
-              quote={quote}
-            />
-          );
-        case 'APPOINTMENT':
-        case 'OFFER':
-          return (
-            <ProposalCard
-              status={status}
-              message={item}
-              timestamp={timeOf(item)}
-              quote={quote}
-              onRespond={(action) => onRespondToProposal?.(item, action)}
-              onCounter={() => onCounterProposal?.(item)}
-            />
-          );
-        case 'PROPERTY':
-          if (!item.property) return null;
-          return (
-            <PropertyMessageBubble
-              property={item.property}
-              isMine={item.isMine}
-              timestamp={timeOf(item)}
-              status={status}
-              quote={quote}
-              onPressProperty={() => {
-                const propId = item.propertyId || item.property?.id;
-                onPressProperty(propId);
-              }}
-            />
-          );
-        case 'IMAGE':
-          if (!item.imageUrl) return null;
-          return (
-            <ImageMessageBubble
-              imageUrl={item.imageUrl}
-              isMine={item.isMine}
-              timestamp={timeOf(item)}
-              status={status}
-              quote={quote}
-              onPressImage={() => onPressImage(item.imageUrl!)}
-            />
-          );
-        case 'TEXT':
-        default:
-          return (
-            <MessageBubble
-              text={item.content ?? ''}
-              isMine={item.isMine}
-              timestamp={timeOf(item)}
-              status={status}
-              quote={quote}
-            />
-          );
-      }
-    },
-    [
-      onPressImage,
-      onPressProperty,
-      otherUserName,
-      jumpTo,
-      onOpenPhotos,
-      onOpenFile,
-      onOpenVideo,
-      onRetryAttachments,
-      onRespondToProposal,
-      onCounterProposal,
-      otherReceipt,
-    ],
-  );
+  useScrollToEndOnFirstLoad(messages.length, listRef);
 
   const renderMessage = useCallback(
     ({ item }: { item: DisplayMessage }) => {
       if (item.type === 'DATE') return <DateSeparator dateText={item.content} />;
-      const bubble = renderBubble(item);
-      if (!bubble) return null;
+      const bubble = (
+        <ChatMessageBubble
+          message={item}
+          otherReceipt={otherReceipt}
+          otherUserName={otherUserName}
+          onJumpTo={jumpTo}
+          onPressProperty={onPressProperty}
+          onPressImage={onPressImage}
+          onOpenPhotos={onOpenPhotos}
+          onOpenFile={onOpenFile}
+          onOpenVideo={onOpenVideo}
+          onRetryAttachments={onRetryAttachments}
+          onRespondToProposal={onRespondToProposal}
+          onCounterProposal={onCounterProposal}
+        />
+      );
       // Not yet on the server: nothing to reply to or act on
       if (!onReply || item.sending || item.id.startsWith('temp-')) {
         return bubble;
@@ -292,7 +112,22 @@ export default function ChatMessageList({
         </SwipeableMessage>
       );
     },
-    [renderBubble, onReply, onLongPressMessage, highlightedId],
+    [
+      otherReceipt,
+      otherUserName,
+      jumpTo,
+      onPressProperty,
+      onPressImage,
+      onOpenPhotos,
+      onOpenFile,
+      onOpenVideo,
+      onRetryAttachments,
+      onRespondToProposal,
+      onCounterProposal,
+      onReply,
+      onLongPressMessage,
+      highlightedId,
+    ],
   );
 
   const showSpinner = isLoading && messages.length === 0;
@@ -305,7 +140,6 @@ export default function ChatMessageList({
         style={{ flex: 1 }}
         keyExtractor={(item) => item.id}
         getItemType={(item) => item.type}
-        // Re-render rows when the jumped-to message's tint changes
         // Repaint on a jump highlight, and when the ticks change
         extraData={`${highlightedId}|${otherReceipt?.lastDeliveredAt}|${otherReceipt?.lastReadAt}`}
         contentContainerStyle={{
@@ -333,18 +167,7 @@ export default function ChatMessageList({
         </View>
       )}
 
-      {loadFailed && !isLoading && (
-        <TouchableOpacity
-          testID="chat-messages-retry"
-          activeOpacity={0.8}
-          onPress={onRetry}
-          className="absolute left-5 right-5 top-3 items-center rounded-xl bg-[#FEF2F2] py-2.5"
-        >
-          <Text className="font-cairo-medium text-[13px] text-[#B91C1C]">
-            تعذر تحميل الرسائل · إعادة المحاولة
-          </Text>
-        </TouchableOpacity>
-      )}
+      {loadFailed && !isLoading && <LoadFailedBanner onRetry={onRetry} />}
     </View>
   );
 }
