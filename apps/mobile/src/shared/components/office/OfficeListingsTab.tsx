@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { shareProperty } from '@/shared/utils/helpers/property';
 import { PropertyDto } from '@/types/feed';
 
@@ -18,6 +19,7 @@ export default function OfficeListingsTab({
   onFilterPress,
 }: OfficeListingsTabProps) {
   const router = useRouter();
+  const { favoritedIds, toggleFavorite } = useFavorites();
   const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
 
   if (properties.length === 0) {
@@ -85,6 +87,8 @@ export default function OfficeListingsTab({
             <PropertyCard
               key={item.id}
               {...item}
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
               onPress={() => router.push(`/property/${item.id}`)}
               onShare={() => shareProperty(item)}
             />
@@ -100,6 +104,8 @@ export default function OfficeListingsTab({
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              isFavorited={favoritedIds.includes(item.id)}
+              onFavorite={() => toggleFavorite(item.id)}
               onPress={() => router.push(`/property/${item.id}`)}
               onShowDetails={() => router.push(`/property/${item.id}`)}
               onShare={() => shareProperty(item)}
