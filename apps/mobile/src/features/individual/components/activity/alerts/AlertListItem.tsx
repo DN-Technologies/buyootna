@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import AlertCardFooter from '@/features/individual/components/activity/alert-card/AlertCardFooter';
-import AlertChips from '@/features/individual/components/activity/alert-card/AlertChips';
-import AlertToggle from '@/features/individual/components/activity/alert-card/AlertToggle';
-import AlertTypeIcon from '@/features/individual/components/activity/alert-card/AlertTypeIcon';
-import CalendarIcon from '@/features/individual/components/activity/alert-card/CalendarIcon';
+import AlertCardFooter from '@/features/individual/components/activity/alerts/alert-card/AlertCardFooter';
+import AlertChips from '@/features/individual/components/activity/alerts/alert-card/AlertChips';
+import AlertToggle from '@/features/individual/components/activity/alerts/alert-card/AlertToggle';
+import AlertTypeIcon from '@/features/individual/components/activity/alerts/alert-card/AlertTypeIcon';
+import CalendarIcon from '@/features/individual/components/activity/alerts/alert-card/CalendarIcon';
 import {
   getAlertChips,
   getAlertTitle,

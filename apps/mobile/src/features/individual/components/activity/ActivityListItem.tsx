@@ -1,27 +1,26 @@
-import ActiveAdCard from '@/features/individual/components/activity/ActiveAdCard';
+import ActiveAdCard from '@/features/individual/components/activity/ads/ActiveAdCard';
 import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
-import ArchivedAdCard from '@/features/individual/components/activity/ArchivedAdCard';
-import DraftAdCard from '@/features/individual/components/activity/DraftAdCard';
+import ArchivedAdCard from '@/features/individual/components/activity/ads/ArchivedAdCard';
+import DraftAdCard from '@/features/individual/components/activity/ads/DraftAdCard';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
 
 interface ActivityListItemProps {
   property: ActivityItem;
   activeFilterId: ActivityFilterType;
-  onEditPress: (propertyId: string) => void;
-  onFeaturePress: (propertyId: string) => void;
   onDeletePress: (propertyId: string) => void;
   onPublishDraftPress: (property: ActivityItem) => void;
-  // Opens the ad's details (active, hidden, featured or archived)
+  // Opens an active / hidden / featured ad's details sheet
+  onOpenAdPress: (property: ActivityItem) => void;
+  // Opens an archived ad's page
   onOpenPress: (property: ActivityItem) => void;
 }
 
 export default function ActivityListItem({
   property,
   activeFilterId,
-  onEditPress,
-  onFeaturePress,
   onDeletePress,
   onPublishDraftPress,
+  onOpenAdPress,
   onOpenPress,
 }: ActivityListItemProps) {
   if (property.status === 'DRAFT') {
@@ -50,10 +49,7 @@ export default function ActivityListItem({
   return (
     <ActiveAdCard
       property={property}
-      onEditPress={onEditPress}
-      onFeaturePress={onFeaturePress}
-      onDeletePress={onDeletePress}
-      onPress={() => onOpenPress(property)}
+      onPress={() => onOpenAdPress(property)}
     />
   );
 }

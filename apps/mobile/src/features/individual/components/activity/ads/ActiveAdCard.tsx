@@ -1,14 +1,6 @@
-import { useRef, useState } from 'react';
-import {
-  Image,
-  Modal,
-  Pressable,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-import { MoreIcon } from '@/assets/icons/activity';
+import { formatAdDate } from '@/features/individual/components/activity/ads/formatAdDate';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { ActivityItem } from '@/shared/hooks/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
@@ -20,61 +12,14 @@ import {
 
 interface ActiveAdCardProps {
   property: ActivityItem;
-  onEditPress: (id: string) => void;
-  onFeaturePress: (id: string) => void;
-  onDeletePress: (id: string) => void;
-  // Opens the ad's details
+  // Opens the ad's details sheet
   onPress?: () => void;
 }
 
-const formatDate = (dateStr: string) => {
-  try {
-    const date = new Date(dateStr);
-    const months = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-  } catch {
-    return '15 مايو 2026';
-  }
-};
-
 export default function ActiveAdCard({
   property,
-  onEditPress,
-  onFeaturePress,
-  onDeletePress,
   onPress,
 }: ActiveAdCardProps) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuTop, setMenuTop] = useState(0);
-  const menuAnchorRef = useRef<View>(null);
-
-  // FlatList content padding (20) + card content padding (16) — matches the
-  // "..." button's fixed horizontal position regardless of RTL measurement quirks.
-  const MENU_RIGHT_OFFSET = 40;
-
-  const openMenu = () => {
-    menuAnchorRef.current?.measureInWindow((_x, y, _width, height) => {
-      setMenuTop(y + height + 8);
-      setShowMenu(true);
-    });
-  };
-
   const coverImage = property.images?.[0];
   const imageSource = coverImage
     ? { uri: coverImage }
@@ -82,10 +27,9 @@ export default function ActiveAdCard({
 
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
-  // The whole card opens the ad; the ⋮ button keeps its own tap. The menu
-  // Modal sits outside the card so its taps never reach the card's onPress
+  // The whole card opens the ad's details sheet (edit / feature / delete live
+  // there)
   return (
-    <>
     <TouchableOpacity
       testID={`active-ad-card-${property.id}`}
       accessibilityRole="button"
@@ -155,26 +99,12 @@ export default function ActiveAdCard({
 
       {/* --- Content Body --- */}
       <View className="relative p-4">
-        {/* Title, Date & Options Trigger */}
-        <View className="z-20 mb-1 flex-row items-center justify-between">
-          {/* Right: Category Label */}
+        {/* Category label */}
+        <View className="mb-1">
           <Text className="font-cairo-bold text-[16px] text-[#111111]">
             {displayLabel}
           </Text>
-
-          {/* Left: 3-Dot Options Trigger */}
-          <View ref={menuAnchorRef} className="relative z-50">
-            <TouchableOpacity
-              testID={`active-ad-menu-${property.id}`}
-              activeOpacity={0.7}
-              onPress={openMenu}
-              className="p-1"
-            >
-              <MoreIcon size={15} color="#64748B" />
-            </TouchableOpacity>
-          </View>
         </View>
-
 
         {/* Price & Publication Date Row */}
         <View className="mb-4 flex-row items-center justify-between">
@@ -187,7 +117,7 @@ export default function ActiveAdCard({
             </Text>
           </View>
           <Text className="font-cairo text-xs text-[#6B6A6A]">
-            تاريخ النشر: {formatDate(publishedDate(property) ?? property.updatedAt)}
+            تاريخ النشر: {formatAdDate(publishedDate(property) ?? property.updatedAt)}
           </Text>
         </View>
 
@@ -231,70 +161,5 @@ export default function ActiveAdCard({
         </View>
       </View>
     </TouchableOpacity>
-
-    <Modal
-      transparent
-      visible={showMenu}
-      animationType="fade"
-      onRequestClose={() => setShowMenu(false)}
-    >
-      <Pressable style={{ flex: 1 }} onPress={() => setShowMenu(false)}>
-        <View
-          style={{
-            position: 'absolute',
-            top: menuTop,
-            right: MENU_RIGHT_OFFSET,
-            width: 196,
-          }}
-          className="rounded-md bg-white shadow-md shadow-gray-200"
-        >
-          <TouchableOpacity
-            onPress={() => {
-              setShowMenu(false);
-              onEditPress(property.id);
-            }}
-            className="px-4 py-3"
-          >
-            <Text
-              className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              تعديل
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              setShowMenu(false);
-              onFeaturePress(property.id);
-            }}
-            className="px-4 py-3"
-          >
-            <Text
-              className="font-cairo text-[14px] leading-[22px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              تمييز الإعلان
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => {
-              setShowMenu(false);
-              onDeletePress(property.id);
-            }}
-            className="px-4 py-3"
-          >
-            <Text
-              className="font-cairo text-[14px] leading-[22px] text-[#9C1E28]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              حذف
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Pressable>
-    </Modal>
-    </>
   );
 }

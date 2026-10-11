@@ -5,10 +5,10 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
+import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
 import RepublishAdSheet, {
   RepublishPlanType,
-} from '@/features/individual/components/activity/RepublishAdSheet';
+} from '@/features/individual/components/activity/ads/RepublishAdSheet';
 import apiClient from '@/shared/api/api';
 import { plansService } from '@/shared/api/plans.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';

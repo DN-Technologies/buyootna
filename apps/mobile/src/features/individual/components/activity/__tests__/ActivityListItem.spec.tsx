@@ -9,10 +9,9 @@ import { makeActivityItem } from './draftFixture';
 jest.mock('expo-image', () => require('./draftFixture').mockExpoImage());
 
 const handlers = () => ({
-  onEditPress: jest.fn(),
-  onFeaturePress: jest.fn(),
   onDeletePress: jest.fn(),
   onPublishDraftPress: jest.fn(),
+  onOpenAdPress: jest.fn(),
   onOpenPress: jest.fn(),
 });
 
@@ -33,25 +32,18 @@ const renderItem = async (
 };
 
 describe('ActivityListItem taps', () => {
-  it('opens an active ad when its card is tapped', async () => {
-    const { getByTestId, h, property } = await renderItem('ACTIVE');
+  it("opens an active ad's details sheet when its card is tapped", async () => {
+    const { getByTestId, queryByTestId, h, property } =
+      await renderItem('ACTIVE');
 
     await act(async () => {
       fireEvent.press(getByTestId('active-ad-card-ad-1'));
     });
 
-    expect(h.onOpenPress).toHaveBeenCalledWith(property);
-  });
-
-  it('does not open the ad when ⋮ is tapped', async () => {
-    const { getByTestId, h } = await renderItem('ACTIVE');
-
-    // The menu itself opens after measuring the button, which Jest can't do
-    await act(async () => {
-      fireEvent.press(getByTestId('active-ad-menu-ad-1'));
-    });
-
+    expect(h.onOpenAdPress).toHaveBeenCalledWith(property);
     expect(h.onOpenPress).not.toHaveBeenCalled();
+    // The ⋮ menu is gone: everything lives in the sheet
+    expect(queryByTestId('active-ad-menu-ad-1')).toBeNull();
   });
 
   it('opens an archived ad', async () => {
@@ -65,6 +57,7 @@ describe('ActivityListItem taps', () => {
     });
 
     expect(h.onOpenPress).toHaveBeenCalledWith(property);
+    expect(h.onOpenAdPress).not.toHaveBeenCalled();
   });
 
   it('previews a draft when its card is tapped; its buttons keep their actions', async () => {

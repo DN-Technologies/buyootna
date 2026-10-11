@@ -6,16 +6,16 @@ import type {
   ActivityFilterType,
   FilterPill,
 } from '@/features/individual/components/activity/ActivityFilterPills';
-import AlertDetailsSheet from '@/features/individual/components/activity/AlertDetailsSheet';
+import AdPreviewSheet from '@/features/individual/components/activity/ads/AdPreviewSheet';
+import FeatureAdSheet from '@/features/individual/components/activity/ads/FeatureAdSheet';
+import ToggleAdsVisibilitySheet from '@/features/individual/components/activity/ads/ToggleAdsVisibilitySheet';
+import AlertDetailsSheet from '@/features/individual/components/activity/alerts/AlertDetailsSheet';
+import DeleteAllAlertsSheet from '@/features/individual/components/activity/alerts/DeleteAllAlertsSheet';
 import {
   AD_SORT_OPTIONS,
   type AdSortBy,
 } from '@/features/individual/components/activity/constants';
-import DeleteAllAlertsSheet from '@/features/individual/components/activity/DeleteAllAlertsSheet';
-import DeleteConfirmationSheet from '@/features/individual/components/activity/DeleteConfirmationSheet';
-import DraftPreviewSheet from '@/features/individual/components/activity/DraftPreviewSheet';
-import FeatureAdSheet from '@/features/individual/components/activity/FeatureAdSheet';
-import ToggleAdsVisibilitySheet from '@/features/individual/components/activity/ToggleAdsVisibilitySheet';
+import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
 import type { useAdActions } from '@/features/individual/hooks/useAdActions';
 import type { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
@@ -49,7 +49,7 @@ export default function ActivitySheets({
   return (
     <>
       {/* --- Property Preview Bottom Sheet --- */}
-      <DraftPreviewSheet
+      <AdPreviewSheet
         ref={adActions.draftSheetRef}
         property={selectedDraft}
         onDeletePress={() =>
@@ -57,6 +57,21 @@ export default function ActivitySheets({
         }
         onPublishPress={adActions.handlePublishDraftAction}
         onEditPress={() => {}}
+      />
+
+      {/* --- Active / hidden ad: details, edit, feature, delete --- */}
+      <AdPreviewSheet
+        ref={adActions.adSheetRef}
+        variant="active"
+        property={adActions.selectedAd}
+        onEditPress={() => {}}
+        onFeaturePress={adActions.handleFeatureAd}
+        onDeletePress={() =>
+          adActions.selectedAd &&
+          adActions.handleDeleteAd(adActions.selectedAd.id)
+        }
+        onSharePress={adActions.handleShareSelectedAd}
+        onToggleVisibility={adActions.handleToggleAdVisibility}
       />
 
       {/* --- Delete Confirmation Bottom Sheet --- */}
