@@ -27,6 +27,7 @@ import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateCompanyInvoiceDto } from './dto/create-company-invoice.dto';
+import { CreateCompanyServiceDto } from './dto/create-company-service.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
@@ -36,6 +37,7 @@ import {
   RegisterCompanyResponseDto,
 } from './dto/company-response.dto';
 import { UsersDirectoryService } from '../users/services/users-directory.service';
+import { CompanyServicesService } from '../users/services/company-services.service';
 import { UsersProfileService } from '../users/services/users-profile.service';
 import { UsersRegistrationService } from '../users/services/users-registration.service';
 import { ListServiceInvoicesDto } from '../service-invoices/dto/list-service-invoices.dto';
@@ -57,6 +59,7 @@ export class CompanyController {
   constructor(
     private readonly registrationService: UsersRegistrationService,
     private readonly profileService: UsersProfileService,
+    private readonly companyServices: CompanyServicesService,
     private readonly directoryService: UsersDirectoryService,
     private readonly companyInvoices: CompanyInvoicesService,
   ) {}
@@ -110,6 +113,48 @@ export class CompanyController {
   @ApiCommonErrors()
   async findCompanyDetails(@Param('id') id: string) {
     return this.directoryService.findCompanyDetails(id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('profile/services')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Add services to the current user's company: one per chosen type. The first one fixes the company's specialty",
+  })
+  @ApiBody({ type: CreateCompanyServiceDto })
+  @ApiCommonErrors()
+  async createService(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: CreateCompanyServiceDto,
+  ) {
+    return this.companyServices.create(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile/services')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "List the current user's company services and its specialty",
+  })
+  @ApiCommonErrors()
+  async listMyServices(@CurrentUser() reqUser: RequestUser) {
+    return this.companyServices.listMine(reqUser.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('profile/services/:id')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Delete one of the current user's company services",
+  })
+  @ApiParam({ name: 'id', description: 'Service ID' })
+  @ApiCommonErrors()
+  async deleteMyService(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.companyServices.deleteMine(reqUser.userId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))

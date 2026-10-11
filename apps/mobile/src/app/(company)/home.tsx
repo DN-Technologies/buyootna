@@ -11,6 +11,7 @@ import {
 } from '@/features/company/components/home';
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
+import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
@@ -43,14 +44,11 @@ export default function CompanyHomeScreen() {
     '',
   );
 
+  const { services, refetch: refetchServices } = useMyCompanyServices();
+
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
-  // "•"-delimited list, e.g. "إدارة أملاك • وساطة عقارية • تقييم عقاري" --
-  // no dedicated services endpoint exists, this is already on the identity.
-  const activeServicesCount = (activeIdentity?.companyData?.services ?? '')
-    .split('•')
-    .map((s) => s.trim())
-    .filter(Boolean).length;
+  const activeServicesCount = services.length;
 
   const unreadMessagesCount = conversations.reduce(
     (sum, c) => sum + (c.unreadCount || 0),
@@ -71,12 +69,14 @@ export default function CompanyHomeScreen() {
     refetchDashboard();
     refetchPrivate();
     refetchPublic();
+    refetchServices();
   }, [
     refreshProfile,
     loadConversations,
     refetchDashboard,
     refetchPrivate,
     refetchPublic,
+    refetchServices,
   ]);
 
   useFocusEffect(

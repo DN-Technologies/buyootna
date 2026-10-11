@@ -1,5 +1,6 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import { EditIcon, PlusIcon, TrashIcon } from '@/assets/icons/company-add';
 import { formatNumber } from '@/shared/utils/formatNumber';
 
 export interface InvoiceItem {
@@ -18,6 +19,16 @@ interface InvoiceItemsStepProps {
   total: number;
 }
 
+const HEAD = 'font-cairo text-[14px] leading-[21px] text-[#979797]';
+const CELL = 'font-cairo text-[13px] leading-[20px] text-[#111111]';
+const SECTION_TITLE = 'font-cairo-semibold text-[16px] leading-[20px] text-black';
+// The last column holds the 22px delete button; its header is "اجراء"
+const ACTION_COLUMN = 'w-[34px] items-center';
+
+/**
+ * Step 2, "بنود الفاتورة" (Figma 4410:167393). Rows are RTL: the item name
+ * sits on the right and the delete button on the left.
+ */
 export default function InvoiceItemsStep({
   items,
   onRemoveItem,
@@ -29,122 +40,129 @@ export default function InvoiceItemsStep({
 }: InvoiceItemsStepProps) {
   return (
     <>
-      <View className="gap-3">
-        <Text
-          className="font-cairo-semibold text-[16px] text-black"
-          style={{ writingDirection: 'rtl' }}
-        >
+      <View className="gap-[14px]">
+        <Text className={SECTION_TITLE} style={{ writingDirection: 'rtl' }}>
           بنود الفاتورة
         </Text>
 
-        {/* Table header (Figma 4410:167393) */}
-        <View className="flex-row items-center rounded-[8px] bg-[#F9FAFE] px-4 py-3.5">
-          <Text className="w-[100px] text-right font-cairo text-[14px] text-[#979797]">
-            البند
-          </Text>
-          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
-            السعر
-          </Text>
-          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
-            الكمية
-          </Text>
-          <Text className="flex-1 text-center font-cairo text-[14px] text-[#979797]">
-            الاجمالي
-          </Text>
-          <Text className="w-[34px] text-center font-cairo text-[14px] text-[#979797]">
-            اجراء
-          </Text>
-        </View>
-
-        {/* Item rows: individually bordered cards */}
-        <View className="gap-2">
-          {items.map((item, index) => (
-            <View
-              key={`${item.name}-${index}`}
-              className="flex-row items-center rounded-[8px] border border-[#ECECEC] bg-white px-4 py-2.5"
-            >
-              <Text
-                className="w-[100px] text-right font-cairo text-[13px] text-[#111111]"
-                numberOfLines={1}
-              >
-                {item.name}
-              </Text>
-              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-                {formatNumber(item.price)}
-              </Text>
-              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-                {item.qty}
-              </Text>
-              <Text className="flex-1 text-center font-cairo text-[13px] text-[#111111]">
-                {formatNumber(item.price * item.qty)}
-              </Text>
-              <TouchableOpacity
-                onPress={() => onRemoveItem(index)}
-                className="w-[34px] items-center"
-              >
-                <Ionicons name="trash-outline" size={18} color="#C0392B" />
-              </TouchableOpacity>
+        <View className="gap-3">
+          <View className="gap-2">
+            <View className="flex-row items-center gap-2 rounded-[8px] bg-[#F9FAFE] px-4 py-[14px]">
+              <Text className={`w-[100px] ${HEAD}`}>البند</Text>
+              <Text className={`flex-1 ${HEAD}`}>السعر</Text>
+              <Text className={`flex-1 ${HEAD}`}>الكمية</Text>
+              <Text className={`flex-1 ${HEAD}`}>الاجمالي</Text>
+              <View className={ACTION_COLUMN}>
+                <Text className={HEAD}>اجراء</Text>
+              </View>
             </View>
-          ))}
-        </View>
 
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={onOpenAddItemSheet}
-          className="h-11 w-full flex-row items-center justify-center gap-1 rounded-full border border-[#15304D] bg-white"
-        >
-          <Text className="font-cairo-semibold text-[14px] text-[#15304D]">
-            اضافة بند
-          </Text>
-          <Ionicons name="add" size={16} color="#15304D" />
-        </TouchableOpacity>
+            {items.map((item, index) => (
+              <View
+                key={`${item.name}-${index}`}
+                testID={`invoice-item-${index}`}
+                className="flex-row items-center gap-2 rounded-[8px] border border-[#ECECEC] bg-white px-4 py-[10px]"
+              >
+                <Text className={`w-[100px] ${CELL}`} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                <Text className={`flex-1 ${CELL}`}>
+                  {formatNumber(item.price)}
+                </Text>
+                <Text className={`flex-1 ${CELL}`}>{item.qty}</Text>
+                <Text className={`flex-1 ${CELL}`}>
+                  {formatNumber(item.price * item.qty)}
+                </Text>
+                <View className={ACTION_COLUMN}>
+                  <TouchableOpacity
+                    testID={`invoice-item-remove-${index}`}
+                    accessibilityLabel="حذف البند"
+                    onPress={() => onRemoveItem(index)}
+                    hitSlop={8}
+                    className="h-[22px] w-[22px] items-center justify-center"
+                  >
+                    <TrashIcon />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            testID="invoice-add-item"
+            activeOpacity={0.7}
+            onPress={onOpenAddItemSheet}
+            className="h-11 w-full flex-row items-center justify-center gap-1 rounded-[24px] border border-[#15304D] bg-white"
+          >
+            <PlusIcon />
+            <Text
+              className="font-cairo-semibold text-[14px] leading-[21px] text-[#15304D]"
+              style={{ letterSpacing: 0.28 }}
+            >
+              اضافة بند
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View className="gap-3">
-        <Text
-          className="font-cairo-semibold text-[16px] text-black"
-          style={{ writingDirection: 'rtl' }}
-        >
+      <View className="gap-[14px]">
+        <Text className={SECTION_TITLE} style={{ writingDirection: 'rtl' }}>
           اجمالي الفاتورة
         </Text>
-        <View className="overflow-hidden rounded-md border border-[#ECECEC]">
-          <View className="flex-row items-center justify-between border-b border-[#ECECEC] bg-white px-3 py-3">
-            <Text className="font-cairo-medium text-[14px] text-[#111111]">
-              {formatNumber(subtotal)} د.ك
-            </Text>
+
+        {/* Labels on the right, amounts on the left */}
+        <View className="overflow-hidden rounded-[6px] border border-[#ECECEC] bg-white">
+          <View className="flex-row items-center gap-2 border-b border-[#ECECEC] px-3 py-[14px]">
             <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
+              className="flex-1 font-cairo text-[14px] leading-[21px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
             >
               الاجمالي
             </Text>
+            <Text
+              testID="invoice-subtotal"
+              className="font-cairo-semibold text-[16px] leading-[24px] text-[#111111]"
+            >
+              {formatNumber(subtotal)} د.ك
+            </Text>
           </View>
-          <TouchableOpacity
-            onPress={onOpenDiscountSheet}
-            className="flex-row items-center justify-between border-b border-[#ECECEC] bg-white px-3 py-3"
-          >
-            <View className="flex-row items-center gap-2">
-              <Text className="font-cairo-medium text-[14px] text-[#111111]">
+
+          <View className="flex-row items-center gap-2 px-3 pb-[10px] pt-[14px]">
+            <Text
+              className="flex-1 font-cairo text-[14px] leading-[21px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              خصم <Text className="text-[12px] text-[#A0A0A0]">(اختياري)</Text>
+            </Text>
+            <TouchableOpacity
+              testID="invoice-discount"
+              accessibilityLabel="تعديل الخصم"
+              activeOpacity={0.7}
+              onPress={onOpenDiscountSheet}
+              hitSlop={8}
+              className="flex-row items-center gap-2"
+            >
+              <Text className="font-cairo-semibold text-[16px] leading-[24px] text-[#111111]">
                 {formatNumber(appliedDiscount)}
               </Text>
-              <Ionicons name="pencil" size={16} color="#15304D" />
-            </View>
+              <View className="h-6 w-6 items-center justify-center">
+                <EditIcon />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-row items-center gap-2 border-t border-[#ECECEC] bg-[#F9FAFE] px-3 py-[14px]">
             <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              خصم (اختياري)
-            </Text>
-          </TouchableOpacity>
-          <View className="flex-row items-center justify-between bg-[#F9FAFE] px-3 py-3">
-            <Text className="font-cairo-medium text-[14px] text-[#111111]">
-              {formatNumber(total)} د.ك
-            </Text>
-            <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
+              className="flex-1 font-cairo-semibold text-[14px] leading-[21px] text-[#111111]"
+              style={{ writingDirection: 'rtl', letterSpacing: 0.28 }}
             >
               الاجمالي النهائي
+            </Text>
+            <Text
+              testID="invoice-total"
+              className="font-cairo-semibold text-[16px] leading-[24px] text-[#111111]"
+            >
+              {formatNumber(total)} د.ك
             </Text>
           </View>
         </View>

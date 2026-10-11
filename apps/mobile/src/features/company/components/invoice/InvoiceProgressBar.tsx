@@ -6,22 +6,28 @@ interface InvoiceProgressBarProps {
   totalSteps?: number;
 }
 
+// Figma "progress": the green part is 229 of the 343px track on step 1
+const STEP_ONE_FILL = 229 / 343;
+
 export default function InvoiceProgressBar({
   step,
   totalSteps = 2,
 }: InvoiceProgressBarProps) {
+  const fill = step >= totalSteps ? 1 : STEP_ONE_FILL;
+
   return (
-    <View className="gap-1">
+    <View className="gap-[5px]">
       <Text
-        className="text-right font-cairo-semibold text-[12px] text-[#6B6A6A]"
+        className="font-cairo-semibold text-[12px] leading-[14px] text-[#6B6A6A]"
         style={{ writingDirection: 'rtl' }}
       >
-        خطوة {step}/{totalSteps}
+        خطوة {totalSteps}/{step}
       </Text>
-      <View className="h-1 w-full overflow-hidden rounded-full bg-[#D7D7D7]">
+      <View className="h-1 w-full overflow-hidden rounded-[4px] bg-[#D7D7D7]">
         <View
-          className="h-full rounded-full bg-[#00A447]"
-          style={{ width: `${(step / totalSteps) * 100}%` }}
+          testID="invoice-progress-fill"
+          className="h-full rounded-[4px] bg-[#00A447]"
+          style={{ width: `${fill * 100}%` }}
         />
       </View>
     </View>

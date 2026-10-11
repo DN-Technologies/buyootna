@@ -430,6 +430,45 @@ export const api: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
+      id: "api-company-services",
+      title: {
+        en: "Company services: POST / GET / DELETE /users/profile/services",
+        ar: "خدمات الشركة: POST / GET / DELETE /users/profile/services",
+      },
+      priority: "P1",
+      story: {
+        en: "A company's services are now rows of their own (table CompanyService) instead of one text field. POST /users/profile/services takes specialty, types[] (1 to 40, unique), title (required when types contains 'اخرى') and an optional description up to 100 characters, and creates one service per type; a type the company already offers is skipped, and the call fails with 400 when nothing is new. The first service sets the company's specialty; a later call with a different specialty is refused with 400. GET returns { specialty, services }. DELETE /users/profile/services/:id removes one of the caller's own services. The legacy services text on the company is kept in step (names joined with '،') so search, the directory and company cards read it unchanged.",
+        ar: "أصبحت خدمات الشركة صفوفاً مستقلة (جدول CompanyService) بدل حقل نصي واحد. POST /users/profile/services يستقبل specialty و types[] (من 1 إلى 40 بلا تكرار) و title (مطلوب إذا احتوت types على 'اخرى') و description اختياري حتى 100 حرف، وينشئ خدمة لكل نوع؛ النوع الموجود مسبقاً يُتجاوز، ويفشل الطلب بـ 400 إن لم يكن هناك جديد. أول خدمة تحدد تخصص الشركة؛ وطلب لاحق بتخصص مختلف يُرفض بـ 400. GET يعيد { specialty, services }. DELETE /users/profile/services/:id يحذف إحدى خدمات صاحب الطلب. يبقى نص الخدمات القديم متوافقاً (الأسماء مفصولة بـ '،') ليقرأه البحث والدليل وبطاقات الشركات كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "POST with two types creates two services and returns created: 2 with the full list.",
+          "POST with 'اخرى' and no title returns 400 'عنوان الخدمة مطلوب عند اختيار اخرى'.",
+          "POST with a specialty different from the company's returns 400 'لا يمكن تغيير تخصص الشركة'.",
+          "POST with only types the company already has returns 400 'هذه الخدمات مضافة مسبقاً'.",
+          "DELETE of another company's service returns 404.",
+          "A caller without a company profile gets 404 on all three.",
+        ],
+        ar: [
+          "POST بنوعين ينشئ خدمتين ويعيد created: 2 مع القائمة كاملة.",
+          "POST بـ 'اخرى' دون عنوان يعيد 400 'عنوان الخدمة مطلوب عند اختيار اخرى'.",
+          "POST بتخصص مختلف عن تخصص الشركة يعيد 400 'لا يمكن تغيير تخصص الشركة'.",
+          "POST بأنواع موجودة كلها مسبقاً يعيد 400 'هذه الخدمات مضافة مسبقاً'.",
+          "DELETE لخدمة شركة أخرى يعيد 404.",
+          "صاحب طلب بلا ملف شركة يحصل على 404 في الثلاثة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create services for a new company, list them, delete one and check the company's public profile still lists the rest.",
+        ],
+        ar: [
+          "أنشئ خدمات لشركة جديدة واعرضها واحذف واحدة وتحقق أن الملف العام للشركة ما زال يعرض الباقي.",
+        ],
+      },
+      updatedIn: "feat/company-add-flows-figma",
+    },
+    {
       id: "api-account-state",
       title: {
         en: "Account state: deactivation periods, the reactivation ticket and admin-suspension errors",

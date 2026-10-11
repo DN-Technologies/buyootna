@@ -81,6 +81,94 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-company-add-service-specialty-types",
+      title: {
+        en: "إضافة خدمة: specialty, service types and saved services",
+        ar: "إضافة خدمة: التخصص وأنواع الخدمة وحفظ الخدمات",
+      },
+      priority: "P1",
+      story: {
+        en: "The company's إضافة خدمة form now follows the design. التخصص is one choice from 32 specialties. نوع الخدمة is a checklist that depends on the specialty: مكتب هندسي has 13 listed types plus الكل and اخرى; every other specialty offers الكل and اخرى. الكل ticks all listed types. Ticking اخرى reveals عنوان الخدمة, which is then required. الوصف is optional, up to 100 characters. Each chosen type is saved as its own service (before, saving replaced the company's whole services text). The company's first service fixes its specialty: from then on التخصص is shown greyed and cannot be changed. The home's خدمات نشطة figure counts the saved services.",
+        ar: "أصبح نموذج إضافة خدمة للشركة مطابقاً للتصميم. التخصص اختيار واحد من 32 تخصصاً. نوع الخدمة قائمة اختيار تعتمد على التخصص: لمكتب هندسي 13 نوعاً مع الكل واخرى؛ ولكل تخصص آخر الكل واخرى فقط. الكل يحدد كل الأنواع المدرجة. تحديد اخرى يُظهر عنوان الخدمة ويصبح مطلوباً. الوصف اختياري حتى 100 حرف. يُحفظ كل نوع مختار كخدمة مستقلة (كان الحفظ سابقاً يستبدل نص خدمات الشركة كله). أول خدمة للشركة تثبّت تخصصها: بعدها يظهر التخصص باهتاً ولا يمكن تغييره. رقم خدمات نشطة في الرئيسية يعدّ الخدمات المحفوظة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "التخصص opens a list of 32 options; choosing one closes it and clears any chosen types.",
+          "For مكتب هندسي, نوع الخدمة lists الكل, 13 types and اخرى with a checkbox on the right of each row; ticked rows turn navy.",
+          "الكل ticks and unticks all listed types; the closed field then reads الكل.",
+          "With اخرى ticked, عنوان الخدمة appears and إضافة الخدمة stays disabled until it is filled.",
+          "إضافة الخدمة is disabled until a specialty and at least one type are chosen.",
+          "After a successful save the sheet 'تمت إضافة الخدمة بنجاح!' offers عرض الخدمة and إضافة خدمة أخرى.",
+          "A company that already has a service sees its التخصص greyed, without a chevron, and cannot open the list.",
+          "Adding a type the company already offers does not duplicate it.",
+        ],
+        ar: [
+          "التخصص يفتح قائمة من 32 خياراً؛ اختيار أحدها يغلقها ويمسح الأنواع المختارة.",
+          "لمكتب هندسي تعرض نوع الخدمة الكل و13 نوعاً واخرى مع مربع اختيار على يمين كل صف؛ والصف المحدد يصبح كحلياً.",
+          "الكل يحدد ويلغي كل الأنواع المدرجة؛ ويقرأ الحقل المغلق عندها الكل.",
+          "عند تحديد اخرى يظهر عنوان الخدمة ويبقى إضافة الخدمة معطلاً حتى يُملأ.",
+          "إضافة الخدمة معطل حتى يُختار تخصص ونوع واحد على الأقل.",
+          "بعد الحفظ تعرض نافذة 'تمت إضافة الخدمة بنجاح!' زرّي عرض الخدمة وإضافة خدمة أخرى.",
+          "الشركة التي لديها خدمة ترى التخصص باهتاً بلا سهم ولا تستطيع فتح القائمة.",
+          "إضافة نوع موجود مسبقاً لدى الشركة لا تكرره.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a new company: + → اضافة خدمة → مكتب هندسي → tick two types → إضافة الخدمة; reopen the form and check التخصص is locked.",
+          "Tick اخرى, leave عنوان الخدمة empty (button disabled), then fill it and save.",
+          "Pick a specialty other than مكتب هندسي and check only الكل and اخرى are offered.",
+        ],
+        ar: [
+          "كشركة جديدة: + ← اضافة خدمة ← مكتب هندسي ← حدد نوعين ← إضافة الخدمة؛ أعد فتح النموذج وتحقق أن التخصص مقفل.",
+          "حدد اخرى واترك عنوان الخدمة فارغاً (الزر معطل) ثم املأه واحفظ.",
+          "اختر تخصصاً غير مكتب هندسي وتحقق أن المعروض الكل واخرى فقط.",
+        ],
+      },
+      updatedIn: "feat/company-add-flows-figma",
+    },
+    {
+      id: "mobile-company-add-flows-figma",
+      title: {
+        en: "Company + sheet, add project and invoice wizard match the design",
+        ar: "نافذة + للشركة وإضافة مشروع ومعالج الفاتورة مطابقة للتصميم",
+      },
+      priority: "P2",
+      story: {
+        en: "Visual pass on the company's three + flows. The إضافة جديد sheet, the اضافة بند and اضافة خصم sheets share one header (title on the right, close on the left) and the design's icons. The form screens share a centred header with the back arrow on the right. اصدار فاتورة: the 'ابحث عن عميل...' pill now sits under the header on step 1 and العميل is a plain field (typing over a picked client unlinks it); the progress label reads خطوة 2/1 then 2/2; on step 2 the columns are right-aligned, the totals box has labels on the right and amounts on the left; the review receipt lists label on the right and value on the left, with the company's specialty under its name and the warranty line only when months were entered. The three success sheets use the same green-rosette sheet sized to its content.",
+        ar: "تحسين بصري لمسارات + الثلاثة للشركة. نافذة إضافة جديد ونافذتا اضافة بند واضافة خصم تشترك في رأس واحد (العنوان يميناً والإغلاق يساراً) وأيقونات التصميم. شاشات النماذج تشترك في رأس متوسط العنوان وسهم الرجوع يميناً. اصدار فاتورة: حقل 'ابحث عن عميل...' أصبح تحت الرأس في الخطوة 1 والعميل حقل عادي (الكتابة فوق عميل مختار تفك ارتباطه)؛ نص التقدم خطوة 2/1 ثم 2/2؛ في الخطوة 2 الأعمدة محاذاة يميناً وصندوق الإجمالي تسمياته يميناً ومبالغه يساراً؛ إيصال المراجعة يعرض التسمية يميناً والقيمة يساراً مع تخصص الشركة تحت اسمها وسطر الكفالة فقط عند إدخال الشهور. نوافذ النجاح الثلاث تستخدم النافذة نفسها بحجم محتواها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "+ opens إضافة جديد with اضافة خدمة (navy), اصدار فاتورة and اضافة مشروع لمعرض الأعمال; each opens its screen.",
+          "Step 1 of اصدار فاتورة shows the search pill above the progress bar; picking a client fills العميل.",
+          "On step 2 the delete icon is on the left of each row and 'اضافة بند' has its + on the right.",
+          "In اضافة بند the quantity + is on the right and − on the left; الاجمالي follows price × quantity.",
+          "The review shows كفالة الخدمة (ضمان) only when a warranty was entered.",
+          "Add project still requires a title, a description and 1 to 3 photos before نشر المشروع enables.",
+        ],
+        ar: [
+          "+ يفتح إضافة جديد وفيها اضافة خدمة (كحلي) واصدار فاتورة واضافة مشروع لمعرض الأعمال؛ وكل منها يفتح شاشته.",
+          "الخطوة 1 من اصدار فاتورة تعرض حقل البحث فوق شريط التقدم؛ واختيار عميل يملأ العميل.",
+          "في الخطوة 2 أيقونة الحذف يسار كل صف و'اضافة بند' علامة + فيه يميناً.",
+          "في اضافة بند زر + يميناً و− يساراً؛ والاجمالي يتبع السعر × الكمية.",
+          "المراجعة تعرض كفالة الخدمة (ضمان) فقط عند إدخال كفالة.",
+          "إضافة مشروع ما زالت تتطلب عنواناً ووصفاً ومن 1 إلى 3 صور قبل تفعيل نشر المشروع.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Issue an invoice end to end with two items, a discount and a 3-month warranty; check each step against the design.",
+          "Publish a portfolio project with three photos.",
+        ],
+        ar: [
+          "أصدر فاتورة كاملة ببندين وخصم وكفالة 3 شهور؛ وقارن كل خطوة بالتصميم.",
+          "انشر مشروعاً في معرض الأعمال بثلاث صور.",
+        ],
+      },
+      updatedIn: "feat/company-add-flows-figma",
+    },
+    {
       id: "mobile-company-edit-profile-figma",
       title: {
         en: "Company Edit Profile screen matches Figma 4410:159865 & 4410:162275 with real data and neutral placeholders",

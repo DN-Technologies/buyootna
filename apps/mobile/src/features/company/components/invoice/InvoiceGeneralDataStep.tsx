@@ -1,14 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import { CalendarIcon } from '@/assets/icons/company-add';
 import type { InvoiceableClient } from '@/shared/api/serviceInvoices.service';
 
 import FieldLabel from './FieldLabel';
 
 const inputClassName =
-  'h-[46px] w-full rounded-md border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]';
+  'h-[46px] w-full rounded-[8px] border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]';
 
 const formatKwDate = (date: Date) =>
   date.toLocaleDateString('ar-KW-u-nu-latn', {
@@ -23,8 +23,6 @@ interface InvoiceGeneralDataStepProps {
   // The accepted request the invoice is for (its client gets the invoice)
   requestId: string | null;
   onSelectClient: (client: InvoiceableClient | null) => void;
-  // Opens the client-picker bottom sheet (ابحث عن عميل...)
-  onOpenClientPicker: () => void;
   invoiceNo: string;
   title: string;
   onChangeTitle: (value: string) => void;
@@ -34,12 +32,16 @@ interface InvoiceGeneralDataStepProps {
   onChangeIssueDate: (date: Date) => void;
 }
 
+/**
+ * Step 1, "بيانات عامة" (Figma 4410:167377). The client is picked from the
+ * search pill above the progress bar, or typed here for someone outside
+ * the app; typing over a picked client unlinks it from its request.
+ */
 export default function InvoiceGeneralDataStep({
   clientName,
   onChangeClientName,
   requestId,
   onSelectClient,
-  onOpenClientPicker,
   invoiceNo,
   title,
   onChangeTitle,
@@ -50,10 +52,15 @@ export default function InvoiceGeneralDataStep({
 }: InvoiceGeneralDataStepProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const handleClientNameChange = (value: string) => {
+    if (requestId) onSelectClient(null);
+    onChangeClientName(value);
+  };
+
   return (
-    <View className="gap-4">
+    <View className="gap-[14px]">
       <Text
-        className="font-cairo-semibold text-[16px] text-black"
+        className="font-cairo-semibold text-[16px] leading-[20px] text-black"
         style={{ writingDirection: 'rtl' }}
       >
         بيانات عامة
@@ -62,53 +69,32 @@ export default function InvoiceGeneralDataStep({
       <View className="gap-5">
         <View className="gap-1.5">
           <FieldLabel text="العميل" />
-          {/* Client search pill (Figma 4410:167377): opens the accepted
-              requests picker sheet; shows the picked client once selected */}
-          <TouchableOpacity
-            testID="invoice-client-picker-trigger"
-            activeOpacity={0.7}
-            onPress={onOpenClientPicker}
-            className="h-[42px] w-full flex-row items-center gap-1.5 rounded-full border border-[#ECECEC] bg-[#F9FAFE] px-3"
-          >
-            <Ionicons name="search" size={20} color="#989898" />
+          <TextInput
+            testID="invoice-client-name"
+            value={clientName}
+            onChangeText={handleClientNameChange}
+            placeholder="اسم العميل"
+            placeholderTextColor="#979797"
+            className={inputClassName}
+            style={{ writingDirection: 'rtl' }}
+          />
+          {!requestId && !!clientName.trim() && (
             <Text
-              numberOfLines={1}
-              className={`flex-1 text-right font-cairo text-[13px] ${requestId ? 'text-[#111111]' : 'text-[#989898]'}`}
+              className="font-cairo text-[11px] text-[#B97500]"
               style={{ writingDirection: 'rtl' }}
             >
-              {requestId ? clientName : 'ابحث عن عميل...'}
+              لن تصل الفاتورة لحساب العميل في التطبيق
             </Text>
-          </TouchableOpacity>
-          {!requestId && (
-            <>
-              <TextInput
-                testID="invoice-client-name"
-                value={clientName}
-                onChangeText={onChangeClientName}
-                placeholder="أو اكتب اسم عميل من خارج التطبيق"
-                placeholderTextColor="#979797"
-                className={inputClassName}
-                style={{ writingDirection: 'rtl' }}
-              />
-              {!!clientName.trim() && (
-                <Text
-                  className="font-cairo text-[11px] text-[#B97500]"
-                  style={{ writingDirection: 'rtl' }}
-                >
-                  لن تصل الفاتورة لحساب العميل في التطبيق
-                </Text>
-              )}
-            </>
           )}
         </View>
 
-        <View className="gap-1.5 opacity-60">
+        <View className="gap-1.5">
           <FieldLabel text="رقم الفاتورة" />
           <TextInput
             value={invoiceNo}
             editable={false}
-            className={inputClassName}
-            style={{ writingDirection: 'ltr', textAlign: 'left' }}
+            className={`${inputClassName} text-[#979797]`}
+            style={{ writingDirection: 'ltr' }}
           />
         </View>
 
@@ -139,18 +125,20 @@ export default function InvoiceGeneralDataStep({
 
         <View className="gap-1.5">
           <FieldLabel text="تاريخ الاصدار" />
+          {/* The date on the right, the calendar on the left */}
           <TouchableOpacity
+            testID="invoice-issue-date"
             activeOpacity={0.7}
             onPress={() => setShowDatePicker(!showDatePicker)}
-            className={`${inputClassName} flex-row items-center justify-between`}
+            className="h-[46px] w-full flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3"
           >
-            <Ionicons name="calendar-outline" size={18} color="#989898" />
             <Text
-              className="font-cairo text-[14px] text-[#979797]"
+              className="flex-1 font-cairo text-[14px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
             >
               {formatKwDate(issueDate)}
             </Text>
+            <CalendarIcon />
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker

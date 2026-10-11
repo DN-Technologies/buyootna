@@ -35,6 +35,31 @@ export const companyService = {
   },
 
   /**
+   * Adds services to the current company: one per chosen type. The first
+   * one fixes the company's specialty.
+   */
+  createService: async (data: {
+    specialty: string;
+    types: string[];
+    title?: string;
+    description?: string;
+  }): Promise<{ success: boolean; created: number }> => {
+    const response = await apiClient.post('/users/profile/services', data);
+    return response.data;
+  },
+
+  /**
+   * The current company's services and its specialty.
+   */
+  getMyServices: async (): Promise<{
+    specialty: string | null;
+    services: { id: string; type: string; title: string | null }[];
+  }> => {
+    const response = await apiClient.get('/users/profile/services');
+    return response.data;
+  },
+
+  /**
    * Issues a service invoice from the current company persona. With
    * requestId (one of its accepted requests) it reaches that client's
    * فواتير الخدمات; otherwise clientName names a client outside the app.

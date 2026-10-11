@@ -15,6 +15,7 @@ export default function CompanySubmitButton({
 }: CompanySubmitButtonProps) {
   return (
     <TouchableOpacity
+      testID="company-submit"
       activeOpacity={0.8}
       onPress={onPress}
       disabled={disabled}

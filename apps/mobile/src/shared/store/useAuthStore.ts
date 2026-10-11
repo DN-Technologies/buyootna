@@ -30,6 +30,8 @@ export interface CompanyData {
   services?: string | null;
   hqLocation?: string | null;
   serviceAreas?: string | null;
+  // التخصص, e.g. "مكتب هندسي"
+  specialty?: string | null;
   about?: string | null;
   licenseActivity?: string | null;
   licenseNumber?: string;

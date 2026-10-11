@@ -8,7 +8,7 @@ import CompanyHomeScreen from '../home';
 
 const mockPush = jest.fn();
 const mockReply = jest.fn();
-let mockServices = 'تشطيب • ديكور • كهرباء';
+let mockServices = [{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }];
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush }),
@@ -35,9 +35,13 @@ jest.mock('@/features/company/hooks/useReplyToRequest', () => ({
   useReplyToRequest: () => mockReply,
 }));
 
+jest.mock('@/features/company/hooks/useMyCompanyServices', () => ({
+  useMyCompanyServices: () => ({ services: mockServices, refetch: jest.fn() }),
+}));
+
 jest.mock('@/shared/hooks/auth/useIdentity', () => ({
   useIdentity: () => ({
-    activeIdentity: { id: 'co-1', companyData: { services: mockServices } },
+    activeIdentity: { id: 'co-1', companyData: {} },
     displayName: 'دار العقار الحديث',
     avatarUrl: 'https://example.com/logo.png',
     isVerified: true,
@@ -94,7 +98,7 @@ const setup = async ({
   billing = BILLING as object | undefined,
   privateRequests = PRIVATE,
   publicRequests = PUBLIC,
-  services = 'تشطيب • ديكور • كهرباء',
+  services = [{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }],
 } = {}) => {
   mockServices = services;
   (useCompanyHome as jest.Mock).mockReturnValue({
@@ -173,7 +177,7 @@ describe('CompanyHomeScreen', () => {
   });
 
   it('offers "اضافة خدمة" to a subscribed company without services', async () => {
-    const { getByTestId, getByText } = await setup({ services: '' });
+    const { getByTestId, getByText } = await setup({ services: [] });
 
     expect(getByTestId('home-banner-add-service')).toBeTruthy();
     await fireEvent.press(getByText('اضافة خدمة'));

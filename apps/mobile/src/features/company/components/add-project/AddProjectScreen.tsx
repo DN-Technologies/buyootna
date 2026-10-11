@@ -1,10 +1,9 @@
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
-
+import CompanyFormHeader from '../CompanyFormHeader';
 import CompanySubmitButton from '../CompanySubmitButton';
-import CompanyEditProfileHeader from '../edit-profile/CompanyEditProfileHeader';
+import CompanySuccessSheet from '../CompanySuccessSheet';
 import AddProjectForm from './AddProjectForm';
 import { useAddProject } from './useAddProject';
 
@@ -18,7 +17,7 @@ export default function AddProjectScreen() {
         className="flex-1"
       >
         {/* --- Header --- */}
-        <CompanyEditProfileHeader
+        <CompanyFormHeader
           onBack={project.goBack}
           title="اضافة مشروع لمعرض الأعمال"
         />
@@ -40,7 +39,7 @@ export default function AddProjectScreen() {
         </ScrollView>
 
         {/* --- Fixed bottom CTA --- */}
-        <View className="px-4 pb-6 pt-3">
+        <View className="px-4 pb-8 pt-3">
           <CompanySubmitButton
             label="نشر المشروع"
             disabled={!project.isValid || project.isSubmitting}
@@ -50,15 +49,14 @@ export default function AddProjectScreen() {
       </KeyboardAvoidingView>
 
       {/* --- Success bottom sheet --- */}
-      <SuccessBottomSheet
+      <CompanySuccessSheet
         ref={project.successSheetRef}
         title="تم نشر المشروع بنجاح!"
         description="أصبح الآن المشروع ظاهرًا في معرض الأعمال."
-        buttonText="عرض المشروع"
-        onPress={project.viewProject}
-        secondaryButtonText="إضافة مشروع آخر"
-        onSecondaryPress={project.addAnother}
-        secondaryButtonVariant="neutral"
+        primaryLabel="عرض المشروع"
+        onPrimary={project.viewProject}
+        secondaryLabel="إضافة مشروع آخر"
+        onSecondary={project.addAnother}
       />
     </SafeAreaView>
   );

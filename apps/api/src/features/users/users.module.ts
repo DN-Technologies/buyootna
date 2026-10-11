@@ -7,6 +7,7 @@ import { AccountSuspensionService } from './services/account-suspension.service'
 import { AccountStateService } from './services/account-state.service';
 import { LoginMethodService } from './services/login-method.service';
 import { ProviderCardsService } from './services/provider-cards.service';
+import { CompanyServicesService } from './services/company-services.service';
 import { CompanyController } from '../company/company.controller';
 import { OfficeController } from '../office/office.controller';
 import { IdentitiesModule } from '../identities/identities.module';
@@ -31,6 +32,7 @@ import { ServiceInvoicesModule } from '../service-invoices/service-invoices.modu
     AccountStateService,
     LoginMethodService,
     ProviderCardsService,
+    CompanyServicesService,
   ],
   exports: [
     AccountStateService,

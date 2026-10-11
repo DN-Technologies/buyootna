@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
+import { FileArrowUpIcon } from '@/assets/icons/company-add';
 import FieldLabel from '@/features/company/components/invoice/FieldLabel';
 
 import { MAX_IMAGES } from './useAddProject';
@@ -49,15 +50,12 @@ export default function ProjectImagesField({
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onPick}
-          className="items-center justify-center rounded border border-dashed border-[#D7D7D7] bg-white px-6 py-4"
+          testID="project-images-dropzone"
+          className="items-center justify-center rounded-[4px] border border-dashed border-[#D7D7D7] bg-white px-6 py-4"
           style={{ borderStyle: 'dashed' }}
         >
           <View className="h-12 w-12 items-center justify-center rounded-full bg-[#F5F7F9]">
-            <Ionicons
-              name="file-tray-full-outline"
-              size={24}
-              color="#15304D"
-            />
+            <FileArrowUpIcon size={24} />
           </View>
           <View className="mt-2 flex-row items-center justify-center">
             <Text className="font-cairo-bold text-[14px] text-[#15304D]">

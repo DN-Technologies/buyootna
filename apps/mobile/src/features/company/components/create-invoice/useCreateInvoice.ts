@@ -9,8 +9,8 @@ import { companyService } from '@/shared/api/company.service';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { formatNumber } from '@/shared/utils/formatNumber';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 type WizardStep = 1 | 2 | 3;
 
@@ -27,7 +27,7 @@ function generateProvisionalInvoiceNo() {
  */
 export function useCreateInvoice() {
   const router = useRouter();
-  const { displayName, avatarUrl } = useIdentity();
+  const { displayName, avatarUrl, activeIdentity } = useIdentity();
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
   const queryClient = useQueryClient();
 
@@ -190,6 +190,7 @@ export function useCreateInvoice() {
     // Step 3 receipt data
     companyName: displayName,
     logoUrl: avatarUrl,
+    companySpecialty: activeIdentity?.companyData?.specialty ?? null,
     // Sheets
     successSheetRef,
     itemSheetRef,
@@ -201,6 +202,6 @@ export function useCreateInvoice() {
     },
     resetAndDismiss: handleReset,
     // Success copy
-    successDescription: `تم ارسال فاتورة "${title}" الى "${clientName}"`,
+    successDescription: `تم ارسال فاتورة ${title.trim()} الى “${clientName.trim()}”`,
   };
 }
