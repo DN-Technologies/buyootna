@@ -80,7 +80,9 @@ export default function ChatListItem({
           {/* Preview + status */}
           <View className="mt-1 flex-row items-center justify-between">
             <Text
-              className={`flex-1 text-right font-cairo text-[13px] ${
+              // No explicit alignment: the text starts on the right, under the
+              // name (text-right flipped it to the left in this RTL app)
+              className={`flex-1 font-cairo text-[13px] ${
                 unreadCount > 0 ? 'text-[#111111]' : 'text-[#ADB5BD]'
               }`}
               numberOfLines={1}

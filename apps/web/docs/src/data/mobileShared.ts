@@ -1090,6 +1090,39 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/identity-contact-phone",
     },
     {
+      id: "mobile-chat-list-preview-alignment",
+      title: {
+        en: "محادثاتي: the last-message preview sits on the right, under the name",
+        ar: "محادثاتي: معاينة آخر رسالة على اليمين تحت الاسم",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: in the chat list the last-message preview ('بدء المحادثة', 'هندسه'…) was pushed to the left edge while the name and the property tag were on the right. It now starts on the right, directly under the name; the time and the read ticks / unread badge stay on the left.",
+        ar: "إصلاح بلاغ QA: في قائمة المحادثات كانت معاينة آخر رسالة ('بدء المحادثة' و'هندسه'…) مدفوعة إلى الحافة اليسرى بينما الاسم ووسم العقار على اليمين. الآن تبدأ من اليمين مباشرة تحت الاسم؛ ويبقى الوقت وعلامات القراءة/شارة غير المقروء على اليسار.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Each row's preview text starts on the right edge, under the name (and the property tag when there is one).",
+          "The time stays on the left of the name line; the ticks or unread badge stay on the left of the preview line.",
+          "Long previews are cut with … on the left side.",
+        ],
+        ar: [
+          "نص المعاينة في كل صف يبدأ من الحافة اليمنى تحت الاسم (ووسم العقار إن وُجد).",
+          "يبقى الوقت يسار سطر الاسم؛ وتبقى العلامات أو شارة غير المقروء يسار سطر المعاينة.",
+          "المعاينات الطويلة تُقطع بـ … من الجهة اليسرى.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open محادثاتي with a chat that has a short message and one with a property tag — both previews line up under the name on the right.",
+        ],
+        ar: [
+          "افتح محادثاتي بمحادثة برسالة قصيرة وأخرى بوسم عقار — تصطف المعاينتان تحت الاسم على اليمين.",
+        ],
+      },
+      updatedIn: "fix/chat-list-preview-direction",
+    },
+    {
       id: "mobile-image-viewer",
       title: {
         en: "Photos open full screen with swipe and zoom",
