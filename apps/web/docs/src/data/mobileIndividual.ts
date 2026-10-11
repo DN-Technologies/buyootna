@@ -1499,6 +1499,48 @@ export const mobileIndividual: DocSection = {
           "الطلب المقبول يعرض الشركة المنفذة بشعارها واسمها وعلامة التوثيق وتخصصها؛ وزر المحادثة يفتح محادثة مع تلك الشركة.",
           "تحت مرفوضة تظهر ملاحظة 'الطلبات المرفوضة تختفي بعد 30 يوم'، ولا يُعرض طلب رُفض منذ أكثر من 30 يوم.",
           "لا توجد أزرار الرد / التفاصيل في هذه البطاقات.",
+      id: "mobile-date-range-field-order",
+      title: {
+        en: "Date range fields read من before الى (auction alert and the auction / deal filters)",
+        ar: "حقول التاريخ تُقرأ من قبل الى (تنبيه المزادات وفلاتر المزادات والصفقات)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: in the auction alert form (إضافة تنبيه ← مزادات) 'التاريخ الى' came before 'التاريخ من', which is backwards for setting a range. The shared date-range pair now puts 'التاريخ من' first (on the right, reading right-to-left) and 'التاريخ الى' after it. The same pair is used by the auction and deal filter sheets, which are fixed too. Each field still opens its own picker.",
+        ar: "إصلاح بلاغ QA: في نموذج تنبيه المزادات (إضافة تنبيه ← مزادات) كان 'التاريخ الى' قبل 'التاريخ من' وهذا معكوس عند تحديد نطاق. الآن يضع زوج حقول التاريخ المشترك 'التاريخ من' أولاً (على اليمين عند القراءة من اليمين لليسار) ثم 'التاريخ الى'. ويُستخدم الزوج نفسه في نافذتي فلتر المزادات والصفقات وقد صُحّحتا أيضاً. وكل حقل ما زال يفتح منتقيه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "In إضافة تنبيه ← مزادات, 'التاريخ من' is the first date field and 'التاريخ الى' follows it.",
+          "The auction and deal filter sheets show the same order.",
+          "Tapping each field opens the picker for that date and fills that field only.",
+        ],
+        ar: [
+          "في إضافة تنبيه ← مزادات يكون 'التاريخ من' أول حقل تاريخ ويليه 'التاريخ الى'.",
+          "تظهر نافذتا فلتر المزادات والصفقات بالترتيب نفسه.",
+          "الضغط على كل حقل يفتح منتقي ذلك التاريخ ويملأ ذلك الحقل فقط.",
+      id: "mobile-request-quote-form-reset",
+      title: {
+        en: "Request a Quote: the form is cleared after sending, and can't be sent twice",
+        ar: "طلب عرض سعر: يُفرَّغ النموذج بعد الإرسال ولا يُرسَل مرتين",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after a quote request was sent, the request-a-quote screen (طلب عرض سعر) kept every value, so tapping the send button again sent an identical request and spammed the company. The form now empties as soon as the request is sent (specialty, request type, price range, address, description and photos); a second tap is refused until the user fills it in again, and a failed send keeps what was entered. On both this screen and the company-profile quote sheet the send button also ignores a second tap while the first is still in flight.",
+        ar: "إصلاح بلاغ QA: بعد إرسال طلب عرض سعر كانت شاشة طلب عرض سعر تحتفظ بكل القيم، فيرسل الضغط مجدداً طلباً مطابقاً ويزعج الشركة. الآن يُفرَّغ النموذج فور إرسال الطلب (مجال التخصص ونوع الطلب ونطاق السعر والعنوان والوصف والصور)؛ ويُرفض الضغط الثاني حتى يملأه المستخدم من جديد، وإذا فشل الإرسال يحتفظ بما أُدخل. وفي هذه الشاشة ونافذة عرض السعر في ملف الشركة يتجاهل زر الإرسال الضغطة الثانية ما دامت الأولى قيد التنفيذ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful send, the form is empty (no specialty, type, price, address, description or photos).",
+          "Tapping send again straight away shows 'يرجى اختيار مجال التخصص' and sends nothing.",
+          "A failed send keeps every entered value and shows the error.",
+          "Two quick taps on send create one request, on the screen and on a company profile's quote sheet.",
+        ],
+        ar: [
+          "بعد إرسال ناجح يكون النموذج فارغاً (بلا تخصص أو نوع أو سعر أو عنوان أو وصف أو صور).",
+          "الضغط على إرسال مجدداً مباشرة يعرض 'يرجى اختيار مجال التخصص' ولا يرسل شيئاً.",
+          "الإرسال الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "ضغطتان سريعتان على إرسال تنشئان طلباً واحداً، في الشاشة وفي نافذة عرض السعر بملف الشركة.",
         ],
       },
       testScenarios: {
@@ -1542,6 +1584,50 @@ export const mobileIndividual: DocSection = {
           "السلة في التفاصيل تحذف هذا الطلب فقط وتعود للقائمة؛ وتختفي في الطلبات المقبولة والمرفوضة.",
           "قبول العرض ← تأكيد القبول: يصبح الطلب مقبولاً وتظهر الرسالة؛ ورفض العرض ← تأكيد: يصبح مرفوضاً.",
           "حساب آخر يستدعي هذه المسارات يحصل على 404؛ وقبول طلب لم يُرد عليه يعطي 409.",
+          "Open an auction alert and look at the date row — من on the right, الى on its left.",
+          "Pick a 'من' date, then an 'الى' date — each lands in its own field.",
+        ],
+        ar: [
+          "افتح تنبيه مزادات وانظر إلى صف التاريخ — من على اليمين والى على يساره.",
+          "اختر تاريخ 'من' ثم تاريخ 'الى' — كل منهما يظهر في حقله.",
+        ],
+      },
+      updatedIn: "fix/auction-alert-date-order",
+          "Fill the request-a-quote form and send; dismiss the popup — the form is empty; tap send — only the specialty message shows.",
+          "Open a company profile, send a quote from its sheet, reopen the sheet — it is empty.",
+          "Turn the network off and send — the error shows and the values stay.",
+        ],
+        ar: [
+          "املأ نموذج طلب عرض سعر وأرسله؛ أغلق النافذة — النموذج فارغ؛ اضغط إرسال — تظهر رسالة التخصص فقط.",
+          "افتح ملف شركة وأرسل عرض سعر من نافذتها ثم افتحها مجدداً — تكون فارغة.",
+          "اقطع الإنترنت وأرسل — يظهر الخطأ وتبقى القيم.",
+        ],
+      },
+      updatedIn: "fix/request-quote-reset-after-submit",
+    },
+    {
+      id: "mobile-add-alert-form-reset",
+      title: {
+        en: "Add Alert: the form is cleared after an alert is created",
+        ar: "إضافة تنبيه: يُفرَّغ النموذج بعد إنشاء التنبيه",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after creating an alert (real estate or auctions) the form kept every value, so tapping the create button again saved an identical alert — duplicate alerts and duplicate push notifications. The form now resets to empty as soon as the alert is created; a second tap is refused with 'يرجى اختيار المحافظة أولاً' until the user fills it in again. If saving fails the form keeps what was entered. Editing an alert is unchanged.",
+        ar: "إصلاح بلاغ QA: بعد إنشاء تنبيه (عقارات أو مزادات) كان النموذج يحتفظ بكل القيم، فيحفظ الضغط مجدداً على زر الإنشاء تنبيهاً مطابقاً — تنبيهات مكررة وإشعارات مكررة. الآن يُفرَّغ النموذج فور إنشاء التنبيه؛ ويُرفض الضغط الثاني برسالة 'يرجى اختيار المحافظة أولاً' حتى يملأه المستخدم من جديد. وإذا فشل الحفظ يحتفظ النموذج بما أُدخل. وتعديل التنبيه كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful create (عقارات or مزادات), dismissing the success popup shows an empty form with no selections.",
+          "Tapping 'إنشاء تنبيه' again without filling it in shows 'يرجى اختيار المحافظة أولاً' and creates nothing.",
+          "A failed create keeps all entered values and shows the error.",
+          "Editing an existing alert still saves it and goes back.",
+        ],
+        ar: [
+          "بعد إنشاء ناجح (عقارات أو مزادات) يظهر النموذج فارغاً بلا اختيارات عند إغلاق نافذة النجاح.",
+          "الضغط على 'إنشاء تنبيه' مجدداً دون ملئه يعرض 'يرجى اختيار المحافظة أولاً' ولا ينشئ شيئاً.",
+          "الإنشاء الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "تعديل تنبيه موجود ما زال يحفظه ويعود للخلف.",
         ],
       },
       testScenarios: {
@@ -1559,6 +1645,17 @@ export const mobileIndividual: DocSection = {
         ],
       },
       updatedIn: "feat/activity-offers-status-tabs",
+          "Create a real-estate alert, dismiss the popup — the form is empty; tap create again — only the governorate message appears.",
+          "Repeat on مزادات.",
+          "Turn the network off, tap create — the error shows and the entered values stay.",
+        ],
+        ar: [
+          "أنشئ تنبيه عقارات وأغلق النافذة — النموذج فارغ؛ اضغط إنشاء مجدداً — تظهر رسالة المحافظة فقط.",
+          "كرّر على المزادات.",
+          "اقطع الإنترنت واضغط إنشاء — يظهر الخطأ وتبقى القيم المدخلة.",
+        ],
+      },
+      updatedIn: "fix/add-alert-reset-after-create",
     },
   ],
 };
