@@ -303,3 +303,46 @@ describe('FavoritesScreen', () => {
     });
   });
 });
+
+// QA: the placeholders were the horizontal slider's 75%-width property cards
+// on every tab, and the header said "nothing saved" while loading
+describe('FavoritesScreen while loading', () => {
+  const renderLoading = async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+    });
+    const never = () => new Promise(() => undefined);
+    (favoritesService.getFavorites as jest.Mock).mockImplementation(never);
+    (favoritesService.getProviderFavorites as jest.Mock).mockImplementation(
+      never,
+    );
+    const utils = await render(
+      <QueryClientProvider client={queryClient}>
+        <FavoritesScreen />
+      </QueryClientProvider>,
+    );
+    return { ...utils, queryClient };
+  };
+
+  it('shows property placeholders and a count placeholder, not "nothing saved"', async () => {
+    const { getAllByTestId, getByTestId, queryByText, queryClient } =
+      await renderLoading();
+
+    expect(getAllByTestId('favorite-property-skeleton').length).toBeGreaterThan(1);
+    expect(getByTestId('favorites-count-skeleton')).toBeTruthy();
+    expect(queryByText('لا توجد عناصر محفوظة')).toBeNull();
+    queryClient.clear();
+  });
+
+  it('shows company-shaped placeholders on the companies tab', async () => {
+    const { getAllByTestId, getByText, queryByTestId, queryClient } =
+      await renderLoading();
+
+    await fireEvent.press(getByText('شركات'));
+
+    expect(getAllByTestId('favorite-company-skeleton').length).toBeGreaterThan(1);
+    expect(queryByTestId('favorite-property-skeleton')).toBeNull();
+    queryClient.clear();
+  });
+});
+

@@ -6,12 +6,15 @@ import { FavoritesTab } from './FavoritesTabs';
 interface FavoritesSubHeaderProps {
   activeTab: FavoritesTab;
   totalCount: number;
+  // The list is still loading: a placeholder instead of "nothing saved"
+  isLoading?: boolean;
   onSortPress: () => void;
 }
 
 export default function FavoritesSubHeader({
   activeTab,
   totalCount,
+  isLoading = false,
   onSortPress,
 }: FavoritesSubHeaderProps) {
   const getCountText = () => {
@@ -44,9 +47,16 @@ export default function FavoritesSubHeader({
           الترتيب حسب
         </Text>
       </TouchableOpacity>
-      <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
-        {getCountText()}
-      </Text>
+      {isLoading ? (
+        <View
+          testID="favorites-count-skeleton"
+          className="h-3.5 w-16 rounded-md bg-slate-100"
+        />
+      ) : (
+        <Text className="font-cairo-medium text-xs text-[#6B6A6A]">
+          {getCountText()}
+        </Text>
+      )}
     </View>
   );
 }
