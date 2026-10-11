@@ -1,11 +1,15 @@
 import { Text, TextInput, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface LabeledNumberInputProps {
   label: string;
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
   maxLength?: number;
+  required?: boolean;
+  optional?: boolean;
 }
 
 // Numeric text field with a label, used for price / rent / area / years
@@ -15,6 +19,8 @@ export default function LabeledNumberInput({
   value,
   onChangeText,
   maxLength,
+  required,
+  optional,
 }: LabeledNumberInputProps) {
   return (
     <View className="flex-1">
@@ -23,6 +29,7 @@ export default function LabeledNumberInput({
         style={{ writingDirection: 'rtl' }}
       >
         {label}
+        <RequirementMark required={required} optional={optional} />
       </Text>
       <View className="h-[40px] justify-center rounded-md border border-[#ECECEC] bg-white px-4">
         <TextInput

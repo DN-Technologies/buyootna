@@ -1,6 +1,7 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { LockIcon } from '@/assets/icons/home/property';
+import RequirementMark from '@/shared/components/ui/RequirementMark';
 
 export interface DrawerTriggerProps {
   label: string;
@@ -8,6 +9,7 @@ export interface DrawerTriggerProps {
   value?: string;
   onPress: () => void;
   required?: boolean;
+  optional?: boolean;
   disabled?: boolean;
   locked?: boolean;
 }
@@ -18,6 +20,7 @@ export default function DrawerTrigger({
   value,
   onPress,
   required,
+  optional,
   disabled,
   locked,
 }: DrawerTriggerProps) {
@@ -30,7 +33,7 @@ export default function DrawerTrigger({
         }}
       >
         {label}
-        {required && <Text className="text-red-500"> *</Text>}
+        <RequirementMark required={required} optional={optional} />
       </Text>
       <TouchableOpacity
         activeOpacity={0.7}

@@ -2,6 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface DropdownOption {
   id: string;
   label: string;
@@ -13,6 +15,9 @@ export interface InlineDropdownProps {
   options: DropdownOption[];
   value: string;
   onChange: (value: string) => void;
+  // Shown after the title: a red * / "(اختياري)"
+  required?: boolean;
+  optional?: boolean;
 }
 
 export default function InlineDropdown({
@@ -21,6 +26,8 @@ export default function InlineDropdown({
   options,
   value,
   onChange,
+  required,
+  optional,
 }: InlineDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -39,6 +46,7 @@ export default function InlineDropdown({
         style={{ writingDirection: 'rtl' }}
       >
         {title}
+        <RequirementMark required={required} optional={optional} />
       </Text>
 
       {/* Dropdown Header/Trigger */}

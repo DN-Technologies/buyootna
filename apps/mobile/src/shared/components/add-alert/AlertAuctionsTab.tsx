@@ -92,12 +92,14 @@ export default function AlertAuctionsTab({
       <View className="mb-2 w-full flex-row gap-3">
         <DrawerTrigger
           label="المحافظة"
+          required
           placeholder="اختر المحافظة"
           value={value.governorate?.label}
           onPress={() => govDrawerRef.current?.present()}
         />
         <DrawerTrigger
           label="المنطقة"
+          optional
           placeholder="اختر المنطقة"
           value={value.area?.label}
           onPress={() => {
@@ -110,6 +112,7 @@ export default function AlertAuctionsTab({
       {/* --- فئة العقار --- */}
       <InlineDropdown
         title="فئة العقار"
+        optional
         placeholder="اختر نوع عقارك"
         options={CATEGORY_OPTIONS.map((c) => ({ id: c.id, label: c.label }))}
         value={value.category?.id || ''}
@@ -123,6 +126,7 @@ export default function AlertAuctionsTab({
 
       {/* --- التاريخ من / التاريخ الى --- */}
       <DatePickerGroup
+        optional
         startDate={value.startDate ? formatDate(value.startDate) : ''}
         endDate={value.endDate ? formatDate(value.endDate) : ''}
         onStartPress={() => setActivePicker('start')}

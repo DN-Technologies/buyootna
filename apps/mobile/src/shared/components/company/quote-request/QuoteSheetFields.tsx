@@ -6,6 +6,7 @@ import {
   PLACEHOLDER_COLOR,
   requestQuoteInputStyle,
 } from '@/features/individual/components/request-quote/styles';
+import RequirementMark from '@/shared/components/ui/RequirementMark';
 
 // The popup's text fields use BottomSheetTextInput, so the sheet moves
 // with the keyboard; they share the quote screen's input style
@@ -34,6 +35,7 @@ export function QuotePriceRangeFields({
           style={{ writingDirection: 'rtl' }}
         >
           نطاق السعر
+          <RequirementMark optional />
         </Text>
         <Feather name="info" size={13} color="#94A3B8" />
       </View>
@@ -87,6 +89,7 @@ export function QuoteDescriptionField({
         style={{ writingDirection: 'rtl' }}
       >
         وصف
+        <RequirementMark required />
       </Text>
       <BottomSheetTextInput
         value={value}

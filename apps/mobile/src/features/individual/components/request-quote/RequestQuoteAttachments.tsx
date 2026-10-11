@@ -1,6 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface RequestQuoteAttachmentsProps {
   attachments: string[];
   onPickAttachments: () => void;
@@ -20,6 +22,7 @@ export default function RequestQuoteAttachments({
           style={{ writingDirection: 'rtl' }}
         >
           مرفقات
+          <RequirementMark optional />
         </Text>
         <Feather name="info" size={13} color="#94A3B8" />
       </View>

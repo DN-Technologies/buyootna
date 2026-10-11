@@ -26,6 +26,7 @@ export default function AmenitiesPicker({ value, onChange }: AmenitiesPickerProp
       <View className="mb-6 w-full">
         <DrawerTrigger
           label="المزايا"
+          optional
           placeholder="اختر ما ترغب في البحث عنه"
           value={label}
           onPress={() => drawerRef.current?.present()}

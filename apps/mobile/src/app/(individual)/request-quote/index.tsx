@@ -28,6 +28,7 @@ import {
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
+import RequirementMark from '@/shared/components/ui/RequirementMark';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -86,6 +87,7 @@ export default function RequestQuoteScreen() {
           {/* --- مجال التخصص --- */}
           <InlineDropdown
             title="مجال التخصص"
+            required
             placeholder="اختر نوع الخدمة أو اسم الشركة.."
             options={SPECIALTY_OPTIONS}
             value={specialtyId}
@@ -95,6 +97,7 @@ export default function RequestQuoteScreen() {
           {/* --- نوع الطلب --- */}
           <InlineDropdown
             title="نوع الطلب"
+            optional
             placeholder="حدد الخدمة اللي ترغب بها"
             options={REQUEST_TYPE_OPTIONS}
             value={requestTypeId}
@@ -123,6 +126,7 @@ export default function RequestQuoteScreen() {
               style={{ writingDirection: 'rtl' }}
             >
               وصف
+              <RequirementMark required />
             </Text>
             <TextInput
               testID="request-quote-description"

@@ -118,6 +118,10 @@ export function useQuoteRequestForm({
       showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
       return;
     }
+    if (!description.trim()) {
+      showAlert('تنبيه', 'يرجى كتابة وصف الطلب');
+      return;
+    }
 
     // The options come from the company's own services; their titles are
     // the human-readable category

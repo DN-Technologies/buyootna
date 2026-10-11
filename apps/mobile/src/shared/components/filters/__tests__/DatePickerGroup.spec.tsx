@@ -20,8 +20,18 @@ describe('DatePickerGroup', () => {
   it('puts التاريخ من before التاريخ الى', async () => {
     const { getAllByText } = await setup();
 
-    const labels = getAllByText(/^التاريخ/).map((n) => n.props.children);
+    // A label's children are its text, then the (empty) requirement mark
+    const labels = getAllByText(/^التاريخ/).map(
+      (n) => [].concat(n.props.children)[0],
+    );
     expect(labels).toEqual(['التاريخ من', 'التاريخ الى']);
+  });
+
+  it('marks both dates (اختياري) when optional', async () => {
+    const { getByText } = await setup({ optional: true });
+
+    expect(getByText(/^التاريخ من \(اختياري\)$/)).toBeTruthy();
+    expect(getByText(/^التاريخ الى \(اختياري\)$/)).toBeTruthy();
   });
 
   it('each field opens its own picker', async () => {

@@ -1,11 +1,15 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface DatePickerGroupProps {
   startDate: string;
   endDate: string;
   onStartPress: () => void;
   onEndPress: () => void;
+  // Both dates are optional in the alert form: shows "(اختياري)" on each
+  optional?: boolean;
 }
 
 export default function DatePickerGroup({
@@ -13,6 +17,7 @@ export default function DatePickerGroup({
   endDate,
   onStartPress,
   onEndPress,
+  optional,
 }: DatePickerGroupProps) {
   return (
     <View className="mb-6 w-full flex-row gap-3">
@@ -24,6 +29,7 @@ export default function DatePickerGroup({
           style={{ writingDirection: 'rtl' }}
         >
           التاريخ من
+          <RequirementMark optional={optional} />
         </Text>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -47,6 +53,7 @@ export default function DatePickerGroup({
           style={{ writingDirection: 'rtl' }}
         >
           التاريخ الى
+          <RequirementMark optional={optional} />
         </Text>
         <TouchableOpacity
           activeOpacity={0.7}

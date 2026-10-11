@@ -1,12 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface StepperInputProps {
   title: string;
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
+  required?: boolean;
+  optional?: boolean;
 }
 
 export default function StepperInput({
@@ -15,6 +19,8 @@ export default function StepperInput({
   onChange,
   min = 1,
   max = 10,
+  required,
+  optional,
 }: StepperInputProps) {
   const handleDecrement = () => {
     if (value > min) {
@@ -40,6 +46,7 @@ export default function StepperInput({
         }}
       >
         {title}
+        <RequirementMark required={required} optional={optional} />
       </Text>
 
       <View className="h-[40px] flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4">
