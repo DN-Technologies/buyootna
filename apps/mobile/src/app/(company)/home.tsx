@@ -1,38 +1,47 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { RefreshControl, ScrollView } from 'react-native';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  COMPANY_REQUESTS_MOCK,
-  CompanyAdsSection,
-  CompanyConversationsSection,
-  CompanyRequestsSection,
-  CompanyServicesSection,
-  HOME_SERVICE_CHIPS_MOCK,
-  HomeBillingBanner,
+  HomeBanner,
   HomeHeader,
+  HomeRequestsSection,
   HomeStatsGrid,
-  PUBLIC_REQUESTS_MOCK,
-  PublicRequestsSection,
 } from '@/features/company/components/home';
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
+import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
-import { useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Company home (Figma 4410:164042 and its states 4410:163244 / 163631 /
+ * 163863): header, four figures, one optional card (trial, no plan, no
+ * services) and the two request lists.
+ */
 export default function CompanyHomeScreen() {
   const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
   const unreadCount = useUnreadNotificationsCount();
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
-  const { data: myAds, refetch: refetchMyAds } = useMyActivity();
   const { data: dashboard, refetch: refetchDashboard } = useCompanyHome();
+  const { data: privateRequests, refetch: refetchPrivate } = useCompanyRequests(
+    'company',
+    'all',
+    '',
+  );
+  const { data: publicRequests, refetch: refetchPublic } = useCompanyRequests(
+    'public',
+    'all',
+    '',
+  );
 
   const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
@@ -48,41 +57,50 @@ export default function CompanyHomeScreen() {
     0,
   );
 
+  const weekAgo = Date.now() - WEEK_MS;
+  const privateRequestsThisWeek = privateRequests.filter(
+    (request) => new Date(request.createdAt).getTime() >= weekAgo,
+  ).length;
+  const acceptedRequestsCount = [...privateRequests, ...publicRequests].filter(
+    (request) => request.status === 'accepted',
+  ).length;
+
+  const refresh = useCallback(() => {
+    refreshProfile();
+    loadConversations(1);
+    refetchDashboard();
+    refetchPrivate();
+    refetchPublic();
+  }, [
+    refreshProfile,
+    loadConversations,
+    refetchDashboard,
+    refetchPrivate,
+    refetchPublic,
+  ]);
+
   useFocusEffect(
     useCallback(() => {
-      if (token) {
-        refreshProfile();
-        loadConversations(1);
-        refetchMyAds();
-        refetchDashboard();
-      }
-    }, [refreshProfile, loadConversations, refetchMyAds, refetchDashboard, token]),
+      if (token) refresh();
+    }, [refresh, token]),
   );
 
   if (!activeIdentity) {
     return (
-      <SafeAreaView className="flex-1 bg-[#F8FAFC]">
+      <SafeAreaView className="flex-1 bg-white">
         <ProfileHomeSkeleton />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8FAFC]">
+    <SafeAreaView className="flex-1 bg-white">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={false}
-            onRefresh={() => {
-              refreshProfile();
-            }}
-          />
-        }
+        refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
       >
-        <ContentContainer className="px-5">
-          {/* Top Header Bar */}
+        <ContentContainer>
           <HomeHeader
             logoUrl={logoUrl}
             displayName={displayName}
@@ -90,31 +108,31 @@ export default function CompanyHomeScreen() {
             unreadNotificationsCount={unreadCount}
           />
 
-          {/* 2x2 Stats Grid */}
-          <HomeStatsGrid
-            requestsCount={COMPANY_REQUESTS_MOCK.length}
-            activeServicesCount={activeServicesCount}
-            totalViews={dashboard?.listings.totalViews ?? 0}
-            unreadMessagesCount={unreadMessagesCount}
-          />
+          <View className="mt-5 gap-6">
+            <HomeStatsGrid
+              privateRequestsThisWeek={privateRequestsThisWeek}
+              activeServicesCount={activeServicesCount}
+              unreadMessagesCount={unreadMessagesCount}
+              acceptedRequestsCount={acceptedRequestsCount}
+            />
 
-          {/* Billing / Subscription Banner */}
-          <HomeBillingBanner billing={dashboard?.billing} />
+            <HomeBanner
+              billing={dashboard?.billing}
+              activeServicesCount={activeServicesCount}
+            />
 
-          {/* Company Requests Section */}
-          <CompanyRequestsSection requests={COMPANY_REQUESTS_MOCK} />
+            <HomeRequestsSection
+              title="طلبات خاصة بالشركة"
+              variant="company"
+              requests={privateRequests}
+            />
 
-          {/* Public Requests Section */}
-          <PublicRequestsSection requests={PUBLIC_REQUESTS_MOCK} />
-
-          {/* Services Section */}
-          <CompanyServicesSection services={HOME_SERVICE_CHIPS_MOCK} />
-
-          {/* Advertisements Section */}
-          <CompanyAdsSection ads={myAds ?? []} />
-
-          {/* Latest Conversations Section */}
-          <CompanyConversationsSection conversations={conversations} />
+            <HomeRequestsSection
+              title="طلبات عامة"
+              variant="public"
+              requests={publicRequests}
+            />
+          </View>
         </ContentContainer>
       </ScrollView>
     </SafeAreaView>

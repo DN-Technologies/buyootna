@@ -132,6 +132,51 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/company-more-edit-profile",
     },
     {
+      id: "mobile-company-home-figma-layout",
+      title: {
+        en: "Company home: layout, figures and cards as in the design",
+        ar: "رئيسية الشركة: التخطيط والأرقام والبطاقات كما في التصميم",
+      },
+      priority: "P1",
+      story: {
+        en: "The company home now follows its Figma frames. Header: logo, 'مرحبا بك!' and the company name with its verified mark on the right, the bell on the left (the search button is gone). Four figures: خدمات نشطة, طلبات خاصة (requests sent to the company in the last 7 days), طلبات مقبولة and الرسائل الجديدة (unread messages). Under them at most one card: an overdue invoice notice, the trial countdown, 'استعرض الباقات' for a company without a plan, or 'اضافة خدمة' for a subscribed company without services; a company with a plan and services sees none. Then طلبات خاصة بالشركة and طلبات عامة as sideways lists of real requests (they were sample data before), up to five each; a list with no requests is not shown. The الخدمات, ads and latest conversations sections are no longer on the home.",
+        ar: "أصبحت رئيسية الشركة مطابقة لتصميم Figma. الرأس: الشعار و'مرحبا بك!' واسم الشركة مع علامة التوثيق على اليمين والجرس على اليسار (أزيل زر البحث). أربعة أرقام: خدمات نشطة، طلبات خاصة (الطلبات المرسلة للشركة خلال آخر 7 أيام)، طلبات مقبولة، الرسائل الجديدة (الرسائل غير المقروءة). تحتها بطاقة واحدة على الأكثر: تنبيه فاتورة متأخرة، أو عدّاد النسخة التجريبية، أو 'استعرض الباقات' لشركة بلا باقة، أو 'اضافة خدمة' لشركة مشتركة بلا خدمات؛ والشركة التي لديها باقة وخدمات لا ترى أي بطاقة. ثم طلبات خاصة بالشركة وطلبات عامة كقائمتين أفقيتين من طلبات حقيقية (كانت بيانات تجريبية)، حتى خمسة في كل قائمة؛ والقائمة بلا طلبات لا تظهر. لم تعد أقسام الخدمات والإعلانات وآخر المحادثات في الرئيسية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The header shows the logo and name on the right and only the bell on the left, with a red dot when there are unread notifications.",
+          "طلبات خاصة shows 'N هذا الأسبوع' for requests received in the last 7 days, or 0.",
+          "A company without a plan sees the grey card with the 'استعرض الباقات' button; one with a plan but no services sees 'اضافة خدمة', which opens the add-service screen.",
+          "A company with a plan and services sees no card between the figures and the requests.",
+          "طلبات خاصة بالشركة is hidden when the company has received no direct requests.",
+          "Each card shows title, client, area, budget ('لم يحدد' when none), two lines of description and the attachments count; the dark button is on the right and التفاصيل on the left.",
+          "Private cards carry their status tag and 'الرد'; public cards carry 'مناسبة لك' and 'ارسال عرض'. Both open a chat with the client; التفاصيل opens the request.",
+        ],
+        ar: [
+          "يعرض الرأس الشعار والاسم على اليمين والجرس فقط على اليسار، مع نقطة حمراء عند وجود إشعارات غير مقروءة.",
+          "طلبات خاصة تعرض 'N هذا الأسبوع' للطلبات الواردة خلال آخر 7 أيام، أو 0.",
+          "الشركة بلا باقة ترى البطاقة الرمادية بزر 'استعرض الباقات'؛ والتي لديها باقة بلا خدمات ترى 'اضافة خدمة' ويفتح شاشة إضافة خدمة.",
+          "الشركة التي لديها باقة وخدمات لا ترى بطاقة بين الأرقام والطلبات.",
+          "يختفي قسم طلبات خاصة بالشركة إذا لم تستقبل الشركة طلبات مباشرة.",
+          "تعرض كل بطاقة العنوان والعميل والمنطقة والميزانية ('لم يحدد' عند غيابها) وسطرين من الوصف وعدد المرفقات؛ الزر الداكن على اليمين والتفاصيل على اليسار.",
+          "بطاقات الطلبات الخاصة تحمل وسم الحالة و'الرد'؛ والعامة تحمل 'مناسبة لك' و'ارسال عرض'. كلاهما يفتح محادثة مع العميل؛ والتفاصيل تفتح الطلب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as a company with a plan, services and requests: no card, both lists shown.",
+          "Sign in as a new company with no plan: the 'استعرض الباقات' card and only طلبات عامة.",
+          "Send the company a quote request from an individual account, then pull to refresh the home: it appears under طلبات خاصة بالشركة and the طلبات خاصة figure goes up.",
+        ],
+        ar: [
+          "سجّل الدخول كشركة لديها باقة وخدمات وطلبات: لا بطاقة وتظهر القائمتان.",
+          "سجّل الدخول كشركة جديدة بلا باقة: بطاقة 'استعرض الباقات' وطلبات عامة فقط.",
+          "أرسل للشركة طلب عرض سعر من حساب فرد ثم اسحب لتحديث الرئيسية: يظهر تحت طلبات خاصة بالشركة ويزيد رقم طلبات خاصة.",
+        ],
+      },
+      updatedIn: "feat/company-home-figma",
+    },
+    {
       id: "mobile-company-requests",
       title: {
         en: "Company Requests list real requests, and nothing while under review",

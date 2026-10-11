@@ -1,159 +1,108 @@
-import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import {
+  HeadsetIcon,
+  StatChatIcon,
+  StatCheckIcon,
+  StatOrderIcon,
+} from '@/assets/icons/company-home';
+
 interface HomeStatsGridProps {
-  requestsCount: number;
+  // Requests sent straight to this company in the last 7 days
+  privateRequestsThisWeek: number;
   activeServicesCount: number;
-  totalViews: number;
   unreadMessagesCount: number;
-  onPressRequests?: () => void;
-  onPressServices?: () => void;
-  onPressMessages?: () => void;
+  acceptedRequestsCount: number;
 }
 
+interface StatCardProps {
+  testID: string;
+  icon: ReactNode;
+  label: string;
+  value: string;
+  onPress?: () => void;
+}
+
+// Figma "Component 43/44/61/62": 32px icon chip, label, green figure
+const StatCard = ({ testID, icon, label, value, onPress }: StatCardProps) => (
+  <TouchableOpacity
+    testID={testID}
+    activeOpacity={0.8}
+    disabled={!onPress}
+    onPress={onPress}
+    style={{ flex: 1, flexBasis: 0 }}
+    className="items-start gap-2 rounded-[6px] border border-[#ECECEC] bg-white px-4 pb-4 pt-3"
+  >
+    <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
+      {icon}
+    </View>
+    <View className="items-start">
+      <Text
+        className="font-cairo-medium text-[14px] leading-[21px] text-[#111111]"
+        style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
+      <Text
+        testID={`${testID}-value`}
+        className="font-cairo-semibold text-[14px] leading-[21px] text-[#15A72B]"
+        style={{ writingDirection: 'rtl', letterSpacing: 0.28 }}
+      >
+        {value}
+      </Text>
+    </View>
+  </TouchableOpacity>
+);
+
+// The row is RTL: the first card of each row sits on the right, as in Figma
 export default function HomeStatsGrid({
-  requestsCount,
+  privateRequestsThisWeek,
   activeServicesCount,
-  totalViews,
   unreadMessagesCount,
-  onPressRequests,
-  onPressServices,
-  onPressMessages,
+  acceptedRequestsCount,
 }: HomeStatsGridProps) {
   const router = useRouter();
-
-  const handleRequestsPress =
-    onPressRequests || (() => router.push('/(company)/company-requests'));
-  const handleServicesPress =
-    onPressServices || (() => router.push('/(company)/company-requests'));
-  const handleMessagesPress =
-    onPressMessages || (() => router.push('/(company)/company-chats'));
+  const openRequests = () => router.push('/(company)/company-requests');
 
   return (
-    <View className="gap-3">
-      {/* Row 1 */}
-      <View className="flex-row gap-3">
-        {/* Requests (Right) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleRequestsPress}
-          style={{ flex: 1, flexBasis: 0 }}
-          className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-        >
-          <View>
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-              <Ionicons
-                name="checkmark-circle-outline"
-                size={22}
-                color="#15304D"
-              />
-            </View>
-          </View>
-          <View>
-            <Text
-              className="font-cairo-medium text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              طلبات
-            </Text>
-            <Text
-              className="font-cairo-semibold text-[14px] text-[#15A72B]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {requestsCount} هذا الأسبوع
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Active Services (Left) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleServicesPress}
-          style={{ flex: 1, flexBasis: 0 }}
-          className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-        >
-          <View>
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-              <Feather name="headphones" size={20} color="#15304D" />
-            </View>
-          </View>
-          <View>
-            <Text
-              className="font-cairo-medium text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              خدمات نشطة
-            </Text>
-            <Text
-              className="font-cairo-semibold text-[14px] text-[#15A72B]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {activeServicesCount}
-            </Text>
-          </View>
-        </TouchableOpacity>
+    <View className="gap-4 px-4">
+      <View className="flex-row gap-4">
+        <StatCard
+          testID="stat-active-services"
+          icon={<HeadsetIcon />}
+          label="خدمات نشطة"
+          value={String(activeServicesCount)}
+        />
+        <StatCard
+          testID="stat-private-requests"
+          icon={<StatOrderIcon />}
+          label="طلبات خاصة"
+          value={
+            privateRequestsThisWeek > 0
+              ? `${privateRequestsThisWeek} هذا الأسبوع`
+              : '0'
+          }
+          onPress={openRequests}
+        />
       </View>
-
-      {/* Row 2 */}
-      <View className="flex-row gap-3">
-        {/* Views (Right) */}
-        <View
-          style={{ flex: 1, flexBasis: 0 }}
-          className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-        >
-          <View>
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-              <Ionicons name="eye-outline" size={20} color="#15304D" />
-            </View>
-          </View>
-          <View>
-            <Text
-              className="font-cairo-medium text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              المشاهدات
-            </Text>
-            <Text
-              className="font-cairo-semibold text-[14px] text-[#15A72B]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              +{totalViews}
-            </Text>
-          </View>
-        </View>
-
-        {/* New Messages (Left) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleMessagesPress}
-          style={{ flex: 1, flexBasis: 0 }}
-          className="min-h-[92px] justify-between rounded-md border border-[#ECECEC] bg-white p-4"
-        >
-          <View>
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F7F9]">
-              <Ionicons
-                name="chatbox-outline"
-                size={20}
-                color="#15304D"
-              />
-            </View>
-          </View>
-          <View>
-            <Text
-              className="font-cairo-medium text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الرسائل غير المقروءة
-            </Text>
-            <Text
-              className="font-cairo-semibold text-[14px] text-[#15A72B]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {unreadMessagesCount}
-            </Text>
-          </View>
-        </TouchableOpacity>
+      <View className="flex-row gap-4">
+        <StatCard
+          testID="stat-accepted-requests"
+          icon={<StatCheckIcon />}
+          label="طلبات مقبولة"
+          value={String(acceptedRequestsCount)}
+          onPress={openRequests}
+        />
+        <StatCard
+          testID="stat-new-messages"
+          icon={<StatChatIcon />}
+          label="الرسائل الجديدة"
+          value={String(unreadMessagesCount)}
+          onPress={() => router.push('/(company)/company-chats')}
+        />
       </View>
     </View>
   );
