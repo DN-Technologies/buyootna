@@ -13,6 +13,11 @@ interface SubscriptionSlotsRowProps {
 }
 
 export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlotsRowProps) {
+  // Two tiers are sold (عادي / ذهبي). Silver is retired: credits someone
+  // still holds count as ذهبي, so no balance disappears.
+  const goldCount =
+    (subscription?.goldRemaining ?? 0) + (subscription?.silverRemaining ?? 0);
+
   return (
     <View style={styles.container}>
       {/* Normal slot card */}
@@ -25,16 +30,6 @@ export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlots
         </Text>
       </View>
 
-      {/* Silver slot card */}
-      <View style={styles.cardNormal}>
-        <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111] mb-0.5">
-          {subscription?.silverRemaining ?? 0}
-        </Text>
-        <Text className="font-cairo text-[13px] leading-[18px] text-[#6B6A6A]">
-          فضي
-        </Text>
-      </View>
-
       {/* Gold slot card (Active highlighted orange/yellow card) */}
       <View style={styles.cardGoldWrapper}>
         <LinearGradient
@@ -44,7 +39,7 @@ export default function SubscriptionSlotsRow({ subscription }: SubscriptionSlots
           style={styles.gradient}
         >
           <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111] mb-0.5">
-            {subscription?.goldRemaining ?? 0}
+            {goldCount}
           </Text>
           <Text className="font-cairo-bold text-[13px] leading-[18px] text-[#111111]">
             ذهبي

@@ -2,8 +2,10 @@ import { Text, View } from 'react-native';
 
 import type { WalletBalanceCounts } from '@/shared/api/plans.service';
 
+// Two tiers are sold: عادي and ذهبي. Silver is retired -- credits someone
+// still holds count as ذهبي (see countOf), so no balance disappears.
 const CARDS: {
-  key: keyof WalletBalanceCounts;
+  key: 'regular' | 'gold';
   label: string;
   cardClass: string;
   labelClass: string;
@@ -11,12 +13,6 @@ const CARDS: {
   {
     key: 'regular',
     label: 'عادي',
-    cardClass: 'bg-[#F8F9FA]',
-    labelClass: 'text-[#6B6A6A]',
-  },
-  {
-    key: 'silver',
-    label: 'فضي',
     cardClass: 'bg-[#F8F9FA]',
     labelClass: 'text-[#6B6A6A]',
   },
@@ -32,6 +28,11 @@ interface BalanceSummaryCardsProps {
   counts: WalletBalanceCounts;
 }
 
+const countOf = (counts: WalletBalanceCounts, key: 'regular' | 'gold') =>
+  key === 'gold'
+    ? (counts.gold ?? 0) + (counts.silver ?? 0)
+    : (counts.regular ?? 0);
+
 export function BalanceSummaryCards({ counts }: BalanceSummaryCardsProps) {
   return (
     <View className="mx-5 mt-4 flex-row items-center gap-3">
@@ -41,7 +42,7 @@ export function BalanceSummaryCards({ counts }: BalanceSummaryCardsProps) {
             className="font-cairo-bold text-2xl text-[#111111]"
             style={{ writingDirection: 'rtl' }}
           >
-            {counts[key] ?? 0}
+            {countOf(counts, key)}
           </Text>
           <Text
             className={`mt-1 font-cairo-semibold text-sm ${labelClass}`}
