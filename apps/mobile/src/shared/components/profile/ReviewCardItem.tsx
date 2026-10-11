@@ -1,6 +1,7 @@
 import { Feather, FontAwesome } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
+
+import Avatar from '@/shared/components/ui/Avatar';
 
 import { ReviewItem } from './types';
 
@@ -20,11 +21,9 @@ export default function ReviewCardItem({
       {/* Top user row */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
-          <Image
-            source={{ uri: item.avatarUrl }}
-            className="h-[48px] w-[48px] rounded-full"
-            contentFit="cover"
-          />
+          <View className="h-[48px] w-[48px] overflow-hidden rounded-full">
+            <Avatar uri={item.avatarUrl} testID={`review-avatar-${item.id}`} />
+          </View>
           <View>
             <Text className="text-right font-cairo-semibold text-[14px] text-[#111111]">
               {item.userName}
