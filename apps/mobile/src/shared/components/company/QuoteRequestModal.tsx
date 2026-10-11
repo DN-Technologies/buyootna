@@ -143,6 +143,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
 
           <InlineDropdown
             title="نوع الطلب"
+            required
             placeholder="حدد الخدمة التي ترغب بها"
             options={form.serviceOptions}
             value={form.serviceId}

@@ -68,6 +68,21 @@ describe('useRequestQuoteForm', () => {
     expect(companyRequestsService.create).not.toHaveBeenCalled();
   });
 
+  it('asks for a description before sending (the API requires one)', async () => {
+    await setup();
+
+    await act(async () => {
+      hookRef.current.setSpecialtyId('مقاولين');
+      hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
+    });
+    await act(async () => {
+      await hookRef.current.handleSubmit();
+    });
+
+    expect(showAlert).toHaveBeenCalledWith('تنبيه', 'يرجى كتابة وصف الطلب');
+    expect(companyRequestsService.create).not.toHaveBeenCalled();
+  });
+
   it('successfully submits valid quote request and triggers onSuccess callback', async () => {
     (companyRequestsService.create as jest.Mock).mockResolvedValueOnce({ id: 'req-1' });
     const onSuccess = jest.fn();
@@ -111,6 +126,7 @@ describe('useRequestQuoteForm', () => {
     await act(async () => {
       hookRef.current.setSpecialtyId('مقاولين');
       hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
+      hookRef.current.setDescription('تفاصيل');
     });
 
     await act(async () => {

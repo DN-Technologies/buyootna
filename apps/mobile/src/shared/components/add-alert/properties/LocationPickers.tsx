@@ -34,12 +34,14 @@ export default function LocationPickers({
       <View className="mb-2 w-full flex-row gap-3">
         <DrawerTrigger
           label="المحافظة"
+          required
           placeholder="اختر المحافظة"
           value={governorate?.label}
           onPress={() => govDrawerRef.current?.present()}
         />
         <DrawerTrigger
           label="المنطقة"
+          optional
           placeholder="اختر المنطقة"
           value={area?.label}
           onPress={() => {

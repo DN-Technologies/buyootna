@@ -50,6 +50,7 @@ export default function AlertPropertiesTab({
       {/* --- فئة العقار --- */}
       <InlineDropdown
         title="فئة العقار"
+        optional
         placeholder="اختر نوع عقارك"
         options={CATEGORY_OPTIONS.map((c) => ({ id: c.id, label: c.label }))}
         value={value.category?.id || ''}

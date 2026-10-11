@@ -1432,5 +1432,44 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/alert-success-view-alerts",
     },
+    {
+      id: "mobile-required-optional-field-marks",
+      title: {
+        en: "Add Alert and Request a Quote mark required fields with * and optional ones with (اختياري)",
+        ar: "إضافة تنبيه وطلب عرض سعر: * للحقول الإلزامية و(اختياري) للاختيارية",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: nothing told the user which fields had to be filled before pressing send. Required fields now carry a red * after their label and optional ones '(اختياري)'. Add Alert (real estate and auctions): المحافظة is required; المنطقة, فئة العقار, price / rent / area, rooms / baths / floors, years, المزايا and both dates are optional. Request a Quote (the screen and a company's quote sheet): the service (مجال التخصص / نوع الطلب in the sheet), العنوان and وصف are required; نوع الطلب (screen), نطاق السعر and مرفقات are optional. The description is now checked before sending (the API rejects an empty one), with 'يرجى كتابة وصف الطلب'.",
+        ar: "إصلاح بلاغ QA: لم يكن هناك ما يخبر المستخدم أي الحقول يجب ملؤها قبل الإرسال. الآن تحمل الحقول الإلزامية * أحمر بعد عنوانها والاختيارية '(اختياري)'. إضافة تنبيه (عقارات ومزادات): المحافظة إلزامية؛ والمنطقة وفئة العقار والسعر/الإيجار/المساحة والغرف/الحمامات/الأدوار والسنوات والمزايا والتاريخان اختيارية. طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة (مجال التخصص / نوع الطلب في النافذة) والعنوان والوصف إلزامية؛ ونوع الطلب (في الشاشة) ونطاق السعر والمرفقات اختيارية. والوصف يُفحص قبل الإرسال (الواجهة البرمجية ترفض الوصف الفارغ) برسالة 'يرجى كتابة وصف الطلب'.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Add Alert → عقارات: المحافظة shows *; المنطقة, فئة العقار, السعر, المساحة and المزايا show (اختياري); exchange shows the rooms, baths, floors and years as optional.",
+          "Add Alert → مزادات: المحافظة shows *; المنطقة, فئة العقار, التاريخ من and التاريخ الى show (اختياري).",
+          "Request a Quote (screen and company sheet): the service, العنوان and وصف show *; نطاق السعر and مرفقات show (اختياري).",
+          "Sending a quote with an empty description shows 'يرجى كتابة وصف الطلب' and sends nothing.",
+          "Search / listing filters that reuse these fields are unchanged (no marks).",
+        ],
+        ar: [
+          "إضافة تنبيه ← عقارات: المحافظة عليها *؛ والمنطقة وفئة العقار والسعر والمساحة والمزايا عليها (اختياري)؛ وفي التبادل الغرف والحمامات والأدوار والسنوات اختيارية.",
+          "إضافة تنبيه ← مزادات: المحافظة عليها *؛ والمنطقة وفئة العقار والتاريخ من والتاريخ الى عليها (اختياري).",
+          "طلب عرض سعر (الشاشة ونافذة الشركة): الخدمة والعنوان ووصف عليها *؛ ونطاق السعر ومرفقات عليها (اختياري).",
+          "إرسال طلب بوصف فارغ يعرض 'يرجى كتابة وصف الطلب' ولا يرسل شيئاً.",
+          "فلاتر البحث والإعلانات التي تعيد استخدام هذه الحقول لم تتغير (بلا علامات).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open Add Alert on each tab and check the labels as above, then tap create with nothing chosen — the governorate message appears.",
+          "Open Request a Quote, fill everything but the description and send — 'يرجى كتابة وصف الطلب' appears.",
+        ],
+        ar: [
+          "افتح إضافة تنبيه في كل تبويب وافحص العناوين كما أعلاه، ثم اضغط إنشاء دون اختيار — تظهر رسالة المحافظة.",
+          "افتح طلب عرض سعر واملأ كل شيء عدا الوصف وأرسل — تظهر 'يرجى كتابة وصف الطلب'.",
+        ],
+      },
+      updatedIn: "fix/form-required-optional-labels",
+    },
   ],
 };

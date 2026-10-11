@@ -1,6 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Keyboard, Platform, Text, TextInput, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 import { PLACEHOLDER_COLOR,requestQuoteInputStyle } from './styles';
 
 export interface RequestQuotePriceRangeProps {
@@ -26,6 +28,7 @@ export default function RequestQuotePriceRange({
           style={{ writingDirection: 'rtl' }}
         >
           نطاق السعر
+          <RequirementMark optional />
         </Text>
         <Feather name="info" size={13} color="#94A3B8" />
       </View>

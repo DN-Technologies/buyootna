@@ -17,12 +17,14 @@ export default function PriceAreaFields({ value, onChange }: PriceAreaFieldsProp
     <View className="mb-6 w-full flex-row gap-3">
       <LabeledNumberInput
         label={isRent ? 'قيمة الايجار' : 'السعر'}
+        optional
         placeholder="200,000 د.ك"
         value={isRent ? value.rentValue : value.price}
         onChangeText={(text) => onChange(isRent ? 'rentValue' : 'price', text)}
       />
       <LabeledNumberInput
         label="المساحة"
+        optional
         placeholder="300 م2"
         value={value.areaSize}
         onChangeText={(text) => onChange('areaSize', text)}

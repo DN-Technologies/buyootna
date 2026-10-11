@@ -36,9 +36,9 @@ describe('AlertPropertiesTab', () => {
     const { getByText, getByPlaceholderText, queryByText, onChange } =
       await renderTab({ operationType: 'sale' });
 
-    expect(getByText('السعر')).toBeTruthy();
-    expect(queryByText('قيمة الايجار')).toBeNull();
-    expect(queryByText('عدد الغرف')).toBeNull();
+    expect(getByText(/^السعر/)).toBeTruthy();
+    expect(queryByText(/^قيمة الايجار/)).toBeNull();
+    expect(queryByText(/^عدد الغرف/)).toBeNull();
 
     await fireEvent.changeText(getByPlaceholderText('200,000 د.ك'), '150000');
     await fireEvent.changeText(getByPlaceholderText('300 م2'), '250');
@@ -51,8 +51,8 @@ describe('AlertPropertiesTab', () => {
     const { getByText, getByPlaceholderText, queryByText, onChange } =
       await renderTab({ operationType: 'rent', rentValue: '450' });
 
-    expect(getByText('قيمة الايجار')).toBeTruthy();
-    expect(queryByText('السعر')).toBeNull();
+    expect(getByText(/^قيمة الايجار/)).toBeTruthy();
+    expect(queryByText(/^السعر/)).toBeNull();
     expect(getByPlaceholderText('200,000 د.ك').props.value).toBe('450');
 
     await fireEvent.changeText(getByPlaceholderText('200,000 د.ك'), '500');
@@ -64,10 +64,10 @@ describe('AlertPropertiesTab', () => {
     const { getByText, getByPlaceholderText, queryByText, onChange } =
       await renderTab({ operationType: 'exchange' });
 
-    expect(getByText('عدد الغرف')).toBeTruthy();
-    expect(getByText('عدد الحمامات')).toBeTruthy();
-    expect(getByText('عدد الادوار')).toBeTruthy();
-    expect(queryByText('السعر')).toBeNull();
+    expect(getByText(/^عدد الغرف/)).toBeTruthy();
+    expect(getByText(/^عدد الحمامات/)).toBeTruthy();
+    expect(getByText(/^عدد الادوار/)).toBeTruthy();
+    expect(queryByText(/^السعر/)).toBeNull();
 
     await fireEvent.changeText(getByPlaceholderText('2019'), '2026');
     await fireEvent.changeText(getByPlaceholderText('2025'), '2027');

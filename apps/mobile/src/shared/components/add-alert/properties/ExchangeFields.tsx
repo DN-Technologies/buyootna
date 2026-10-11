@@ -18,6 +18,7 @@ export default function ExchangeFields({ value, onChange }: ExchangeFieldsProps)
       <View className="mb-6 w-full flex-row gap-3">
         <StepperInput
           title="عدد الغرف"
+          optional
           value={value.rooms}
           onChange={(val) => onChange('rooms', val)}
           min={0}
@@ -25,6 +26,7 @@ export default function ExchangeFields({ value, onChange }: ExchangeFieldsProps)
         />
         <StepperInput
           title="عدد الحمامات"
+          optional
           value={value.baths}
           onChange={(val) => onChange('baths', val)}
           min={0}
@@ -32,6 +34,7 @@ export default function ExchangeFields({ value, onChange }: ExchangeFieldsProps)
         />
         <StepperInput
           title="عدد الادوار"
+          optional
           value={value.floors}
           onChange={(val) => onChange('floors', val)}
           min={0}
@@ -42,6 +45,7 @@ export default function ExchangeFields({ value, onChange }: ExchangeFieldsProps)
       <View className="mb-6 mt-6 w-full flex-row gap-3">
         <LabeledNumberInput
           label="سنة الطلب"
+          optional
           placeholder="2019"
           maxLength={4}
           value={value.requestYear}
@@ -49,6 +53,7 @@ export default function ExchangeFields({ value, onChange }: ExchangeFieldsProps)
         />
         <LabeledNumberInput
           label="السنة المطلوبة"
+          optional
           placeholder="2025"
           maxLength={4}
           value={value.requiredYear}

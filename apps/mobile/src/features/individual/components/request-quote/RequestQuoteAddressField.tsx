@@ -1,6 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import RequirementMark from '@/shared/components/ui/RequirementMark';
+
 export interface RequestQuoteAddressFieldProps {
   addressLabel: string;
   onPress: () => void;
@@ -17,6 +19,7 @@ export default function RequestQuoteAddressField({
         style={{ writingDirection: 'rtl' }}
       >
         العنوان
+        <RequirementMark required />
       </Text>
       <TouchableOpacity
         activeOpacity={0.8}
