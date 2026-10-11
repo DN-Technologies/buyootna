@@ -1433,6 +1433,45 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/alert-success-view-alerts",
     },
     {
+      id: "mobile-request-quote-form-reset",
+      title: {
+        en: "Request a Quote: the form is cleared after sending, and can't be sent twice",
+        ar: "طلب عرض سعر: يُفرَّغ النموذج بعد الإرسال ولا يُرسَل مرتين",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after a quote request was sent, the request-a-quote screen (طلب عرض سعر) kept every value, so tapping the send button again sent an identical request and spammed the company. The form now empties as soon as the request is sent (specialty, request type, price range, address, description and photos); a second tap is refused until the user fills it in again, and a failed send keeps what was entered. On both this screen and the company-profile quote sheet the send button also ignores a second tap while the first is still in flight.",
+        ar: "إصلاح بلاغ QA: بعد إرسال طلب عرض سعر كانت شاشة طلب عرض سعر تحتفظ بكل القيم، فيرسل الضغط مجدداً طلباً مطابقاً ويزعج الشركة. الآن يُفرَّغ النموذج فور إرسال الطلب (مجال التخصص ونوع الطلب ونطاق السعر والعنوان والوصف والصور)؛ ويُرفض الضغط الثاني حتى يملأه المستخدم من جديد، وإذا فشل الإرسال يحتفظ بما أُدخل. وفي هذه الشاشة ونافذة عرض السعر في ملف الشركة يتجاهل زر الإرسال الضغطة الثانية ما دامت الأولى قيد التنفيذ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful send, the form is empty (no specialty, type, price, address, description or photos).",
+          "Tapping send again straight away shows 'يرجى اختيار مجال التخصص' and sends nothing.",
+          "A failed send keeps every entered value and shows the error.",
+          "Two quick taps on send create one request, on the screen and on a company profile's quote sheet.",
+        ],
+        ar: [
+          "بعد إرسال ناجح يكون النموذج فارغاً (بلا تخصص أو نوع أو سعر أو عنوان أو وصف أو صور).",
+          "الضغط على إرسال مجدداً مباشرة يعرض 'يرجى اختيار مجال التخصص' ولا يرسل شيئاً.",
+          "الإرسال الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "ضغطتان سريعتان على إرسال تنشئان طلباً واحداً، في الشاشة وفي نافذة عرض السعر بملف الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Fill the request-a-quote form and send; dismiss the popup — the form is empty; tap send — only the specialty message shows.",
+          "Open a company profile, send a quote from its sheet, reopen the sheet — it is empty.",
+          "Turn the network off and send — the error shows and the values stay.",
+        ],
+        ar: [
+          "املأ نموذج طلب عرض سعر وأرسله؛ أغلق النافذة — النموذج فارغ؛ اضغط إرسال — تظهر رسالة التخصص فقط.",
+          "افتح ملف شركة وأرسل عرض سعر من نافذتها ثم افتحها مجدداً — تكون فارغة.",
+          "اقطع الإنترنت وأرسل — يظهر الخطأ وتبقى القيم.",
+        ],
+      },
+      updatedIn: "fix/request-quote-reset-after-submit",
+    },
+    {
       id: "mobile-add-alert-form-reset",
       title: {
         en: "Add Alert: the form is cleared after an alert is created",
