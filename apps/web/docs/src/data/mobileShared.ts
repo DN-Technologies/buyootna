@@ -1133,6 +1133,41 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/image-viewer",
     },
     {
+      id: "mobile-property-card-price-swipe",
+      title: {
+        en: "Listing card: undisclosed price and swipe-safe photos",
+        ar: "بطاقة العقار: السعر غير معلن وتمرير الصور دون فتح التفاصيل",
+      },
+      priority: "P2",
+      story: {
+        en: "A listing card with no price shows 'السعر غير معلن' instead of a lone 'د.ك'. Swiping the card's photos moves between photos and no longer opens the details sheet; only a tap opens it.",
+        ar: "بطاقة العقار بدون سعر تعرض 'السعر غير معلن' بدل 'د.ك' وحدها. تمرير صور البطاقة ينتقل بين الصور ولا يفتح نافذة التفاصيل؛ الضغط فقط هو ما يفتحها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A card whose price is empty or 0 shows 'السعر غير معلن' and no currency.",
+          "A card with a price still shows the number and 'د.ك'.",
+          "Swiping the photos never opens the details sheet; tapping the card does.",
+        ],
+        ar: [
+          "البطاقة التي سعرها فارغ أو 0 تعرض 'السعر غير معلن' بدون العملة.",
+          "البطاقة التي لها سعر ما زالت تعرض الرقم و'د.ك'.",
+          "تمرير الصور لا يفتح نافذة التفاصيل أبداً، والضغط على البطاقة يفتحها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the home feed, find the ad with no price — it reads 'السعر غير معلن'.",
+          "On a card with several photos, swipe quickly and slowly — photos change and no sheet opens; tap the card — the sheet opens.",
+        ],
+        ar: [
+          "افتح الرئيسية وابحث عن إعلان بلا سعر — يظهر 'السعر غير معلن'.",
+          "على بطاقة بعدة صور مرّر بسرعة وببطء — تتغير الصور ولا تُفتح النافذة؛ اضغط البطاقة — تُفتح النافذة.",
+        ],
+      },
+      updatedIn: "fix/property-card-price-swipe",
+    },
+    {
       id: "mobile-chat-reply-and-options",
       title: {
         en: "Reply to a message (swipe right) and long-press options",

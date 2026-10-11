@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import {
+  I18nManager,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -29,8 +30,11 @@ export default function PropertyImageCarousel({
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     if (slideSize > 0) {
-      const index = event.nativeEvent.contentOffset.x / slideSize;
-      setActiveIndex(Math.round(index));
+      const raw = Math.round(event.nativeEvent.contentOffset.x / slideSize);
+      // In RTL the first photo sits at the largest raw offset
+      const last = images.length - 1;
+      const index = I18nManager.isRTL ? last - raw : raw;
+      setActiveIndex(Math.min(Math.max(index, 0), last));
     }
   };
 
@@ -50,6 +54,9 @@ export default function PropertyImageCarousel({
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        directionalLockEnabled
+        nestedScrollEnabled
+        bounces={false}
       >
         {images.map((img, index) => (
           <TouchableOpacity
@@ -101,7 +108,7 @@ export default function PropertyImageCarousel({
 
       {/* Pagination Dots Overlay */}
       {images.length > 1 && (
-        <View className="absolute bottom-3 w-full flex-row items-center justify-center space-x-1.5 space-x-reverse">
+        <View className="absolute bottom-3 w-full flex-row items-center justify-center gap-1.5">
           {images.map((_, index) => (
             <View
               key={index}
