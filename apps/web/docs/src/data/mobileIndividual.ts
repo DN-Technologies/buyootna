@@ -1397,5 +1397,40 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-alert-success-view-alerts",
+      title: {
+        en: "After creating an alert, 'عرض تنبيهاتي' opens the alerts list",
+        ar: "بعد إنشاء تنبيه، زر 'عرض تنبيهاتي' يفتح قائمة التنبيهات",
+      },
+      priority: "P1",
+      story: {
+        en: "On the success popup after creating an alert, 'عرض تنبيهاتي' closes the popup and opens نشاطي on the تنبيهاتي tab, whichever screen the form was opened from (activity, search results…). It no longer just goes back one screen.",
+        ar: "في نافذة النجاح بعد إنشاء تنبيه، يغلق زر 'عرض تنبيهاتي' النافذة ويفتح نشاطي على تبويب تنبيهاتي، أياً كانت الشاشة التي فُتح منها النموذج (النشاط، نتائج البحث…). ولم يعد يرجع شاشة واحدة فقط.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "From نشاطي → تنبيهاتي → +, create an alert and tap 'عرض تنبيهاتي': the alerts tab is shown with the new alert.",
+          "From search results ('إنشاء تنبيه'), create an alert and tap 'عرض تنبيهاتي': نشاطي opens on تنبيهاتي (not back to the results).",
+          "'العودة للرئيسية' still goes home.",
+        ],
+        ar: [
+          "من نشاطي ← تنبيهاتي ← +، أنشئ تنبيهاً واضغط 'عرض تنبيهاتي': يظهر تبويب تنبيهاتي مع التنبيه الجديد.",
+          "من نتائج البحث ('إنشاء تنبيه') أنشئ تنبيهاً واضغط 'عرض تنبيهاتي': يفتح نشاطي على تنبيهاتي (لا العودة للنتائج).",
+          "'العودة للرئيسية' ما زال يذهب للرئيسية.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create an alert from the search results screen, tap 'عرض تنبيهاتي' — the تنبيهاتي tab lists it.",
+          "Create one from نشاطي, tap it again — same result, no stacked screens (swipe back doesn't return to the form).",
+        ],
+        ar: [
+          "أنشئ تنبيهاً من شاشة نتائج البحث واضغط 'عرض تنبيهاتي' — يظهر في تبويب تنبيهاتي.",
+          "أنشئ آخر من نشاطي واضغط الزر — النتيجة نفسها دون تكدّس شاشات (السحب للخلف لا يعيد إلى النموذج).",
+        ],
+      },
+      updatedIn: "fix/alert-success-view-alerts",
+    },
   ],
 };

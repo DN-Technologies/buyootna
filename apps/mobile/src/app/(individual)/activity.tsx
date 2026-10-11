@@ -61,7 +61,19 @@ export default function ActivityScreen() {
 
   // Toast notification triggered by a query param set on redirect back here
   // (e.g. after saving a listing edit).
-  const params = useLocalSearchParams<{ showUpdateSuccess?: string }>();
+  const params = useLocalSearchParams<{
+    showUpdateSuccess?: string;
+    tab?: string;
+  }>();
+
+  // Deep link to a tab (e.g. "عرض تنبيهاتي" after creating an alert)
+  useEffect(() => {
+    if (params.tab === 'ads' || params.tab === 'offers' || params.tab === 'alerts') {
+      setActiveTab(params.tab);
+      router.setParams({ tab: undefined });
+    }
+  }, [params.tab]);
+
   useEffect(() => {
     if (params.showUpdateSuccess === 'true') {
       const timer = triggerToast('تم تحديث بيانات الإعلان بنجاح.');

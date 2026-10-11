@@ -253,7 +253,13 @@ export default function AddAlertScreen() {
         onClose={() => setShowSuccess(false)}
         onViewAlerts={() => {
           setShowSuccess(false);
-          router.back();
+          // Always land on the alerts list, whichever screen opened the form
+          // (back would return to e.g. search results)
+          if (router.canDismiss()) router.dismissAll();
+          router.replace({
+            pathname: '/(individual)/activity',
+            params: { tab: 'alerts' },
+          });
         }}
         onReturnHome={() => {
           setShowSuccess(false);
