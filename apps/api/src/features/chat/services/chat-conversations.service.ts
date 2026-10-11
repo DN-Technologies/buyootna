@@ -14,6 +14,10 @@ import { PrismaService } from 'src/core/prisma/prisma.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { presentProposal, PROPOSAL_SELECT } from './chat-proposals.service';
 import { receiptOf } from './chat-receipts.service';
+import {
+  presentRequestContext,
+  REQUEST_CONTEXT_SELECT,
+} from './chat-request-context';
 import { findDefaultPersonaId } from '../../identities/persona-rules';
 
 /**
@@ -88,6 +92,7 @@ export class ChatConversationsService {
     identityId: string,
     recipientId: string,
     propertyId?: string,
+    requestId?: string,
   ) {
     // recipientId is normally a persona id (ad host, company, office card);
     // an account id still works and means that account's default persona
@@ -133,6 +138,23 @@ export class ChatConversationsService {
       }
     }
 
+    // A request only counts when one of the two personas is its requester
+    let validRequestId: string | null = null;
+    if (requestId) {
+      const request = await this.prisma.companyRequest.findUnique({
+        where: { id: requestId },
+        select: { id: true, clientIdentityId: true },
+      });
+      if (
+        request &&
+        [identityId, recipient.id].includes(request.clientIdentityId)
+      ) {
+        validRequestId = request.id;
+        // A chat is about one thing: the request takes the ad's place
+        validPropertyId = null;
+      }
+    }
+
     // The find-then-create below is serialized per persona pair with a
     // transaction-scoped Postgres advisory lock: a rapid double-tap on the
     // chat button fires two concurrent requests, and without the lock both
@@ -167,10 +189,18 @@ export class ChatConversationsService {
         // that ad; from a list or profile (no ad) it is cleared for both
         // sides, so an old ad doesn't look like the topic of a new chat
         const nextPropertyId = validPropertyId ?? null;
-        if (conversation.propertyId !== nextPropertyId) {
+        const nextRequestId = validRequestId ?? null;
+        if (
+          conversation.propertyId !== nextPropertyId ||
+          (conversation.requestId ?? null) !== nextRequestId
+        ) {
           conversation = await tx.conversation.update({
             where: { id: conversation.id },
-            data: { propertyId: nextPropertyId, updatedAt: new Date() },
+            data: {
+              propertyId: nextPropertyId,
+              requestId: nextRequestId,
+              updatedAt: new Date(),
+            },
             include: { participants: true },
           });
         }
@@ -178,6 +208,7 @@ export class ChatConversationsService {
         conversation = await tx.conversation.create({
           data: {
             propertyId: validPropertyId,
+            requestId: validRequestId,
             participants: {
               create: [
                 { userId, identityId },
@@ -227,6 +258,7 @@ export class ChatConversationsService {
             location: true,
           },
         },
+        request: { select: REQUEST_CONTEXT_SELECT },
         participants: {
           include: {
             identity: {
@@ -291,7 +323,10 @@ export class ChatConversationsService {
             id: ident?.id || otherPart?.userId || '',
             name: otherUserName,
             avatarUrl: otherUserAvatar,
+            // For "متصل" (ChatService adds isOnline from it)
+            lastSeenAt: ident?.lastSeenAt ?? null,
           },
+          requestContext: presentRequestContext(conv.request),
           propertyContext: conv.property
             ? {
                 id: conv.property.id,

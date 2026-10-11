@@ -27,9 +27,16 @@ import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useChatConversation } from '@/shared/hooks/chat/useChatConversation';
+import {
+  useChatLiveSignals,
+  useIsOnline,
+  useIsTyping,
+} from '@/shared/hooks/chat/useChatLiveSignals';
 import { useChatReport } from '@/shared/hooks/chat/useChatReport';
 import { useChatSearch } from '@/shared/hooks/chat/useChatSearch';
 import { useStartConversation } from '@/shared/hooks/chat/useStartConversation';
+import { useTypingSignal } from '@/shared/hooks/chat/useTypingSignal';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { quoteOf, useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
@@ -42,6 +49,7 @@ export default function ChatDetailsScreen() {
     id: string;
     recipientId?: string;
     propertyId?: string;
+    requestId?: string;
   }>();
   const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const listRef = useRef<FlashListRef<any>>(null);
@@ -52,6 +60,7 @@ export default function ChatDetailsScreen() {
   const { conversationId: startedId, isStarting } = useStartConversation({
     recipientId: isNewChat ? params.recipientId : undefined,
     propertyId: isNewChat ? params.propertyId : undefined,
+    requestId: isNewChat ? params.requestId : undefined,
   });
   const conversationId = isNewChat ? (startedId ?? '') : routeId;
 
@@ -73,6 +82,7 @@ export default function ChatDetailsScreen() {
     otherUserAvatar,
     otherUserId,
     propertyContext,
+    requestContext,
     isLoadingMessages,
     loadFailed,
     handleRetryLoad,
@@ -87,6 +97,12 @@ export default function ChatDetailsScreen() {
     hasOlderMessages,
     otherReceipt,
   } = useChatConversation({ conversationId, listRef });
+
+  // "متصل" / "يكتب الان..." for the other person, and my own typing signal
+  useChatLiveSignals();
+  const isOtherOnline = useIsOnline(otherUserId);
+  const isOtherTyping = useIsTyping(conversationId);
+  useTypingSignal(conversationId, inputText);
 
   // 🔍 in the header: search this chat, jump between matches
   const search = useChatSearch({
@@ -174,7 +190,8 @@ export default function ChatDetailsScreen() {
         <KeyboardAvoidingView style={{ flex: 1 }}>
           <ChatHeader
             userName={otherUserName}
-            isOnline={false}
+            isOnline={isOtherOnline}
+            isTyping={isOtherTyping}
             avatarUrl={otherUserAvatar}
             isLoading={isHeaderLoading}
             onReportUser={handleReportUser}
@@ -198,6 +215,19 @@ export default function ChatDetailsScreen() {
 
           <ChatPinnedPropertyBar
             propertyContext={propertyContext}
+            requestContext={requestContext}
+            // The company opens the request it received; the requester
+            // opens their own request
+            onPressRequest={(requestId) =>
+              router.push(
+                useAuthStore.getState().activeIdentity?.type === 'COMPANY'
+                  ? `/(company)/(requests)/${requestId}`
+                  : ({
+                      pathname: '/request-details/[id]',
+                      params: { id: requestId },
+                    } as never),
+              )
+            }
             visible={showPinnedContext}
             onDismiss={() => setShowPinnedContext(false)}
             onPressProperty={(propId) => router.push(`/property/${propId}`)}

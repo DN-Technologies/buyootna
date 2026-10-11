@@ -1,0 +1,209 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaService } from '../../../../core/prisma/prisma.service';
+import { CompanyServicesService } from '../company-services.service';
+
+describe('CompanyServicesService', () => {
+  let service: CompanyServicesService;
+  let prisma: {
+    identity: { findFirst: jest.Mock };
+    companyService: {
+      findMany: jest.Mock;
+      findUnique: jest.Mock;
+      createMany: jest.Mock;
+      delete: jest.Mock;
+    };
+    companyIdentityData: { update: jest.Mock };
+    $transaction: jest.Mock;
+  };
+
+  const company = (data: {
+    specialty?: string | null;
+    services?: string | null;
+  }) => ({
+    id: 'identity-1',
+    companyData: { specialty: null, services: null, ...data },
+  });
+
+  beforeEach(async () => {
+    prisma = {
+      identity: { findFirst: jest.fn().mockResolvedValue(company({})) },
+      companyService: {
+        findMany: jest.fn().mockResolvedValue([]),
+        findUnique: jest.fn(),
+        createMany: jest.fn((args: unknown) => args),
+        delete: jest.fn((args: unknown) => args),
+      },
+      companyIdentityData: { update: jest.fn((args: unknown) => args) },
+      $transaction: jest.fn((ops: unknown[]) => Promise.resolve(ops)),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CompanyServicesService,
+        { provide: PrismaService, useValue: prisma },
+      ],
+    }).compile();
+
+    service = module.get(CompanyServicesService);
+  });
+
+  describe('create', () => {
+    it('creates one row per type, sets the specialty and extends the legacy list', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        company({ services: 'تشطيب' }),
+      );
+
+      const result = await service.create('user-1', {
+        specialty: 'مكتب هندسي',
+        types: ['تصميم الواجهات', 'مخطط إنشائي'],
+        description: 'وصف',
+      });
+
+      expect(result.created).toBe(2);
+      expect(prisma.companyService.createMany).toHaveBeenCalledWith({
+        data: [
+          {
+            identityId: 'identity-1',
+            specialty: 'مكتب هندسي',
+            type: 'تصميم الواجهات',
+            title: null,
+            description: 'وصف',
+          },
+          {
+            identityId: 'identity-1',
+            specialty: 'مكتب هندسي',
+            type: 'مخطط إنشائي',
+            title: null,
+            description: 'وصف',
+          },
+        ],
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: {
+          specialty: 'مكتب هندسي',
+          services: 'تشطيب، تصميم الواجهات، مخطط إنشائي',
+        },
+      });
+    });
+
+    it('stores "اخرى" under its own title', async () => {
+      await service.create('user-1', {
+        specialty: 'مكتب هندسي',
+        types: ['اخرى'],
+        title: 'تصميم حدائق',
+      });
+
+      expect(prisma.companyService.createMany).toHaveBeenCalledWith({
+        data: [expect.objectContaining({ type: 'اخرى', title: 'تصميم حدائق' })],
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { specialty: 'مكتب هندسي', services: 'تصميم حدائق' },
+        }),
+      );
+    });
+
+    it('rejects "اخرى" without a title', async () => {
+      await expect(
+        service.create('user-1', { specialty: 'مكتب هندسي', types: ['اخرى'] }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('refuses a different specialty once the company has one', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        company({ specialty: 'مكتب هندسي' }),
+      );
+
+      await expect(
+        service.create('user-1', {
+          specialty: 'التكييف',
+          types: ['اخرى'],
+          title: 'x',
+        }),
+      ).rejects.toThrow('لا يمكن تغيير تخصص الشركة');
+    });
+
+    it('skips a type the company already offers, and fails when nothing is new', async () => {
+      prisma.companyService.findMany.mockResolvedValue([
+        { type: 'تصميم الواجهات', title: null },
+      ]);
+
+      const result = await service.create('user-1', {
+        specialty: 'مكتب هندسي',
+        types: ['تصميم الواجهات', 'مخطط إنشائي'],
+      });
+      expect(result.created).toBe(1);
+
+      await expect(
+        service.create('user-1', {
+          specialty: 'مكتب هندسي',
+          types: ['تصميم الواجهات'],
+        }),
+      ).rejects.toThrow('هذه الخدمات مضافة مسبقاً');
+    });
+
+    it('needs a company profile', async () => {
+      prisma.identity.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.create('user-1', { specialty: 'مكتب هندسي', types: ['x'] }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('listMine', () => {
+    it('returns the specialty with the services', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        company({ specialty: 'مكتب هندسي' }),
+      );
+      prisma.companyService.findMany.mockResolvedValue([{ id: 's-1' }]);
+
+      await expect(service.listMine('user-1')).resolves.toEqual({
+        specialty: 'مكتب هندسي',
+        services: [{ id: 's-1' }],
+      });
+    });
+  });
+
+  describe('deleteMine', () => {
+    it('deletes the service and drops it from the legacy list', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        company({ services: 'تشطيب، تصميم الواجهات' }),
+      );
+      prisma.companyService.findUnique.mockResolvedValue({
+        id: 's-1',
+        identityId: 'identity-1',
+        type: 'تصميم الواجهات',
+        title: null,
+      });
+
+      await expect(service.deleteMine('user-1', 's-1')).resolves.toEqual({
+        success: true,
+      });
+      expect(prisma.companyService.delete).toHaveBeenCalledWith({
+        where: { id: 's-1' },
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { services: 'تشطيب' },
+      });
+    });
+
+    it("refuses another company's service", async () => {
+      prisma.companyService.findUnique.mockResolvedValue({
+        id: 's-9',
+        identityId: 'someone-else',
+        type: 'x',
+        title: null,
+      });
+
+      await expect(service.deleteMine('user-1', 's-9')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+});

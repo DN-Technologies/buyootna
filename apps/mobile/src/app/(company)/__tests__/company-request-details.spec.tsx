@@ -196,7 +196,11 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     expect(getByTestId('request-details-client-rating')).toHaveTextContent('3.5');
 
     await fireEvent.press(getByTestId('request-details-chat-button'));
-    expect(chatService.createConversation).toHaveBeenCalledWith('client-1');
+    expect(chatService.createConversation).toHaveBeenCalledWith(
+      'client-1',
+      undefined,
+      'req-1',
+    );
     expect(companyRequestsService.markResponded).toHaveBeenCalledWith('req-1');
     expect(mockPush).toHaveBeenCalledWith('/chat/conv-1');
 

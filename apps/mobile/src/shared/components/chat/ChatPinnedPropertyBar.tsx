@@ -1,4 +1,4 @@
-import { PropertyContext } from '@/shared/api/chat.service';
+import { PropertyContext, RequestContext } from '@/shared/api/chat.service';
 import ChatPinnedContext from '@/shared/components/chat/ChatPinnedContext';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
@@ -8,24 +8,50 @@ import {
 
 export interface ChatPinnedPropertyBarProps {
   propertyContext?: PropertyContext | null;
+  // A chat about a quote request shows that instead of an ad
+  requestContext?: RequestContext | null;
   visible: boolean;
   onDismiss: () => void;
   onPressProperty: (propertyId: string) => void;
+  onPressRequest?: (requestId: string) => void;
 }
 
+const joinDetails = (parts: (string | null | undefined)[]) =>
+  parts.filter(Boolean).join(' • ');
+
+/**
+ * The bar pinned under the chat header: the quote request the chat is
+ * about, or else the ad it was opened from.
+ */
 export default function ChatPinnedPropertyBar({
   propertyContext,
+  requestContext,
   visible,
-  onDismiss,
   onPressProperty,
+  onPressRequest,
 }: ChatPinnedPropertyBarProps) {
-  if (!propertyContext || !visible) return null;
+  if (!visible) return null;
 
-  const title = propertyContext.location
-    ? `${getArabicCategoryLabel(propertyContext.category)} بـ ${propertyContext.location}`
-    : getArabicCategoryLabel(propertyContext.category) || 'عقار';
+  if (requestContext) {
+    return (
+      <ChatPinnedContext
+        testID="chat-pinned-request"
+        title={requestContext.title}
+        subtitle={joinDetails([
+          requestContext.location,
+          requestContext.priceRange,
+        ])}
+        onPress={
+          onPressRequest ? () => onPressRequest(requestContext.id) : undefined
+        }
+      />
+    );
+  }
 
-  const badgeText = getArabicTypeLabel(propertyContext.type);
+  if (!propertyContext) return null;
+
+  const category = getArabicCategoryLabel(propertyContext.category) || 'عقار';
+  const type = getArabicTypeLabel(propertyContext.type);
 
   const price =
     propertyContext.price && propertyContext.price > 0
@@ -34,21 +60,14 @@ export default function ChatPinnedPropertyBar({
         ? 'للبدل'
         : 'السعر غير معلن';
 
-  const area = propertyContext.area ? `${propertyContext.area} م²` : undefined;
-
   return (
     <ChatPinnedContext
-      imageUrl={propertyContext.imageUrl}
-      title={title}
-      badgeText={badgeText}
-      price={price}
-      area={area}
+      testID="chat-pinned-property"
+      title={[category, type].filter(Boolean).join(' ')}
+      subtitle={joinDetails([propertyContext.location, price])}
       onPress={() => {
-        if (propertyContext.id) {
-          onPressProperty(propertyContext.id);
-        }
+        if (propertyContext.id) onPressProperty(propertyContext.id);
       }}
-      onDismiss={onDismiss}
     />
   );
 }

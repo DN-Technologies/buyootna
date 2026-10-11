@@ -6,6 +6,8 @@ export const NEW_CHAT_ID = 'new';
 export interface OpenChatParams {
   recipientId: string;
   propertyId?: string;
+  // The quote request the chat is about (shown pinned instead of an ad)
+  requestId?: string;
 }
 
 /**
@@ -15,7 +17,7 @@ export interface OpenChatParams {
  */
 export function openChatWith(
   router: Pick<Router, 'push'>,
-  { recipientId, propertyId }: OpenChatParams,
+  { recipientId, propertyId, requestId }: OpenChatParams,
 ) {
   router.push({
     pathname: '/chat/[id]',
@@ -23,6 +25,7 @@ export function openChatWith(
       id: NEW_CHAT_ID,
       recipientId,
       ...(propertyId ? { propertyId } : {}),
+      ...(requestId ? { requestId } : {}),
     },
   });
 }

@@ -1,18 +1,51 @@
-import { Feather, Ionicons } from '@expo/vector-icons';
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-} from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
-import { forwardRef, useCallback } from 'react';
+import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet';
+import { type Href, useRouter } from 'expo-router';
+import { forwardRef, type ReactNode, useCallback } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { CollectionsIcon, ReceiptIcon } from '@/assets/icons/company-add';
+import { HeadsetIcon } from '@/assets/icons/company-home';
+import CompanySheetHeader from '@/features/company/components/CompanySheetHeader';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export interface CompanyActionsSheetProps {
   onClose?: () => void;
 }
 
+interface Action {
+  id: string;
+  label: string;
+  href: Href;
+  icon: ReactNode;
+  // The first action is the filled navy one in Figma
+  primary?: boolean;
+}
+
+const ACTIONS: Action[] = [
+  {
+    id: 'add-service',
+    label: 'اضافة خدمة',
+    href: '/add-service',
+    icon: <HeadsetIcon size={20} color="#15304D" strokeWidth={1} />,
+    primary: true,
+  },
+  {
+    id: 'create-invoice',
+    label: 'اصدار فاتورة',
+    href: '/create-invoice',
+    icon: <ReceiptIcon />,
+  },
+  {
+    id: 'add-project',
+    label: 'اضافة مشروع لمعرض الأعمال',
+    href: '/add-project',
+    icon: <CollectionsIcon />,
+  },
+];
+
+/**
+ * "إضافة جديد" (Figma 4410:166537): what the company tab bar's "+" opens.
+ */
 const CompanyActionsSheet = forwardRef<
   BottomSheetModal,
   CompanyActionsSheetProps
@@ -45,88 +78,45 @@ const CompanyActionsSheet = forwardRef<
       backdropComponent={renderBackdrop}
       enablePanDownToClose={true}
       handleIndicatorStyle={{
-        backgroundColor: '#111111',
-        width: 40,
-        height: 4,
+        backgroundColor: '#000000',
+        width: 45,
+        height: 5,
       }}
       backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
     >
       <SafeBottomSheetView>
-        <View className="bg-white px-4 pb-10 pt-2">
-          {/* --- 1. Header --- */}
-          <View className="flex-row items-center justify-between pb-4">
-            <Text
-              className="font-cairo-semibold text-[18px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              إضافة جديد
-            </Text>
-            <TouchableOpacity onPress={handleClose} className="p-2">
-              <Feather name="x" size={20} color="#111111" />
-            </TouchableOpacity>
-          </View>
+        <View className="gap-4 bg-white pb-10 pt-1">
+          <CompanySheetHeader title="إضافة جديد" onClose={handleClose} />
 
-          {/* --- 2. Action Buttons --- */}
-          <View className="gap-3">
-            {/* Action 1: Add Service (Solid Navy) */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                handleClose();
-                router.push('/add-service');
-              }}
-              className="w-full flex-row items-center gap-2 rounded-lg border border-[#15304D] bg-[#15304D] px-4 py-3"
-            >
-              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
-                <Ionicons name="headset-outline" size={20} color="#111111" />
-              </View>
-              <Text
-                className="font-cairo-medium text-[16px] leading-[21px] text-white"
-                style={{ writingDirection: 'rtl' }}
+          <View className="gap-3 px-4">
+            {ACTIONS.map((action) => (
+              <TouchableOpacity
+                key={action.id}
+                testID={`company-action-${action.id}`}
+                activeOpacity={0.8}
+                onPress={() => {
+                  handleClose();
+                  router.push(action.href);
+                }}
+                className={`w-full flex-row items-center gap-2 rounded-[8px] border px-4 py-3 ${
+                  action.primary
+                    ? 'border-[#15304D] bg-[#15304D]'
+                    : 'border-[#D7D7D7] bg-white'
+                }`}
               >
-                اضافة خدمة
-              </Text>
-            </TouchableOpacity>
-
-            {/* Action 2: Issue Invoice (Outlined) */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                handleClose();
-                router.push('/create-invoice');
-              }}
-              className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
-            >
-              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
-                <Ionicons name="receipt-outline" size={20} color="#111111" />
-              </View>
-              <Text
-                className="font-cairo-medium text-[16px] leading-[21px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                اصدار فاتورة
-              </Text>
-            </TouchableOpacity>
-
-            {/* Action 3: Add Portfolio Project (Outlined) */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                handleClose();
-                router.push('/add-project');
-              }}
-              className="w-full flex-row items-center gap-2 rounded-lg border border-[#D7D7D7] bg-white px-4 py-3"
-            >
-              <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
-                <Ionicons name="images-outline" size={20} color="#111111" />
-              </View>
-              <Text
-                className="font-cairo-medium text-[16px] leading-[21px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                اضافة مشروع لمعرض الأعمال
-              </Text>
-            </TouchableOpacity>
+                <View className="h-8 w-8 items-center justify-center rounded-full bg-[#F5F7F9]">
+                  {action.icon}
+                </View>
+                <Text
+                  className={`font-cairo-medium text-[16px] leading-[21px] ${
+                    action.primary ? 'text-white' : 'text-[#111111]'
+                  }`}
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  {action.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       </SafeBottomSheetView>

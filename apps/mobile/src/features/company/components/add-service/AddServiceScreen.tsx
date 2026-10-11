@@ -1,10 +1,9 @@
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
-
+import CompanyFormHeader from '../CompanyFormHeader';
 import CompanySubmitButton from '../CompanySubmitButton';
-import CompanyEditProfileHeader from '../edit-profile/CompanyEditProfileHeader';
+import CompanySuccessSheet from '../CompanySuccessSheet';
 import AddServiceForm from './AddServiceForm';
 import { useAddService } from './useAddService';
 
@@ -17,36 +16,18 @@ export default function AddServiceScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
       >
-        {/* --- Header --- */}
-        <CompanyEditProfileHeader
-          onBack={service.goBack}
-          title="إضافة خدمة"
-        />
+        <CompanyFormHeader onBack={service.goBack} title="إضافة خدمة" />
 
-        {/* --- Form --- */}
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           className="flex-1"
         >
-          <AddServiceForm
-            serviceType={service.serviceType}
-            onServiceTypeChange={service.setServiceType}
-            serviceTypeOptions={service.filteredOptions}
-            isDropdownOpen={service.isDropdownOpen}
-            onToggleDropdown={() =>
-              service.setIsDropdownOpen(!service.isDropdownOpen)
-            }
-            onSelectServiceType={service.selectOption}
-            serviceTitle={service.serviceTitle}
-            onServiceTitleChange={service.setServiceTitle}
-            description={service.description}
-            onDescriptionChange={service.setDescription}
-          />
+          <AddServiceForm service={service} />
         </ScrollView>
 
         {/* --- Fixed bottom CTA --- */}
-        <View className="px-4 pb-6 pt-3">
+        <View className="px-4 pb-8 pt-3">
           <CompanySubmitButton
             label="إضافة الخدمة"
             disabled={!service.isValid || service.isSubmitting}
@@ -55,16 +36,14 @@ export default function AddServiceScreen() {
         </View>
       </KeyboardAvoidingView>
 
-      {/* --- Success bottom sheet --- */}
-      <SuccessBottomSheet
+      <CompanySuccessSheet
         ref={service.successSheetRef}
         title="تمت إضافة الخدمة بنجاح!"
-        description="الخدمة الآن نشطة ومتاحة في ملفك العقاري. يمكن للمستخدمين تصفحها وبدء التواصل معك مباشرة عبر واتساب، الاتصال، أو المحادثات."
-        buttonText="عرض الخدمة"
-        onPress={service.viewService}
-        secondaryButtonText="إضافة خدمة أخرى"
-        onSecondaryPress={service.addAnother}
-        secondaryButtonVariant="neutral"
+        description="الخدمة الآن نشطة ومتاحة في ملفك العقاري. يمكن للمستخدمين تصفحها وبدء التواصل معك مباشرة عبر المحادثات."
+        primaryLabel="عرض الخدمة"
+        onPrimary={service.viewService}
+        secondaryLabel="إضافة خدمة أخرى"
+        onSecondary={service.addAnother}
       />
     </SafeAreaView>
   );

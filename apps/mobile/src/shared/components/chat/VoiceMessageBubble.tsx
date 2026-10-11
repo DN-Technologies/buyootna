@@ -87,7 +87,9 @@ export default function VoiceMessageBubble({
   const totalMs = durationMs || (status.duration ?? 0) * 1000;
   const currentMs = (status.currentTime ?? 0) * 1000;
   const progress = totalMs > 0 ? Math.min(1, currentMs / totalMs) : 0;
-  const fg = isMine ? '#15304D' : '#FFFFFF';
+  // My bubbles are navy, theirs light: colours follow the background
+  const onLight = !isMine;
+  const fg = onLight ? '#15304D' : '#FFFFFF';
 
   return (
     <View className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}>
@@ -95,7 +97,7 @@ export default function VoiceMessageBubble({
         <View
           testID="voice-bubble"
           className={`w-60 rounded-md px-3 py-2.5 ${
-            isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
+            isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
           }`}
         >
           {quote}
@@ -106,22 +108,22 @@ export default function VoiceMessageBubble({
               disabled={sending}
               onPress={toggle}
               className={`h-10 w-10 items-center justify-center rounded-full ${
-                isMine ? 'bg-[#15304D]' : 'bg-white'
+                onLight ? 'bg-[#15304D]' : 'bg-white'
               }`}
             >
               {sending ? (
-                <ActivityIndicator size="small" color={isMine ? '#FFFFFF' : '#15304D'} />
+                <ActivityIndicator size="small" color={onLight ? '#FFFFFF' : '#15304D'} />
               ) : (
                 <Feather
                   name={status.playing ? 'pause' : 'play'}
                   size={18}
-                  color={isMine ? '#FFFFFF' : '#15304D'}
+                  color={onLight ? '#FFFFFF' : '#15304D'}
                 />
               )}
             </TouchableOpacity>
             <View className="flex-1">
               <View
-                className={`h-1 overflow-hidden rounded-full ${isMine ? 'bg-[#CBD5E1]' : 'bg-white/30'}`}
+                className={`h-1 overflow-hidden rounded-full ${onLight ? 'bg-[#CBD5E1]' : 'bg-white/30'}`}
               >
                 <View
                   testID="voice-progress"

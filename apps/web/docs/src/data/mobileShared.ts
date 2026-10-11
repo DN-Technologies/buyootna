@@ -579,6 +579,88 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-chat-figma-list-and-screen",
+      title: {
+        en: "Chat: one chats list for every account, navy bubbles for my messages",
+        ar: "المحادثات: قائمة واحدة لكل الحسابات وفقاعات كحلية لرسائلي",
+      },
+      priority: "P1",
+      story: {
+        en: "The chat follows its Figma frames. Chats list: the company and office tabs now show the same 'محادثاتي' list as individuals, with the search field and the الكل / غير المقروء tabs (before they had only a title). Each row shows the avatar (a coloured initial when there is no photo), the name, the time, a tag for what the chat is about ('طلب عرض سعر' or the ad, e.g. 'شقة السالمية'), the last message, and either the unread count or the ticks on my last message. Chat screen: my messages are now navy with white text on the right and the other person's are light on the left (the colours were the other way round); the ticks and the time sit beside a text bubble; delivered ticks are navy and read ticks gold. The bar pinned under the header shows a title, 'area • price' and a chevron, without a photo. The quoted message in a reply is a white card with a navy bar.",
+        ar: "أصبحت المحادثات مطابقة لتصميم Figma. قائمة المحادثات: تبويبا الشركة والمكتب يعرضان الآن قائمة 'محادثاتي' نفسها التي يراها الأفراد، مع حقل البحث وتبويبي الكل / غير المقروء (كان فيهما عنوان فقط). كل صف يعرض الصورة (حرف ملوّن عند غياب الصورة) والاسم والوقت ووسم موضوع المحادثة ('طلب عرض سعر' أو الإعلان مثل 'شقة السالمية') وآخر رسالة، ثم عدد غير المقروء أو علامات رسالتي الأخيرة. شاشة المحادثة: رسائلي الآن كحلية بنص أبيض على اليمين ورسائل الطرف الآخر فاتحة على اليسار (كانت الألوان معكوسة)؛ العلامات والوقت بجانب فقاعة النص؛ علامتا التسليم كحليتان وعلامتا القراءة ذهبيتان. الشريط المثبت تحت الرأس يعرض عنواناً و'المنطقة • السعر' وسهماً بلا صورة. الرسالة المقتبسة في الرد بطاقة بيضاء بشريط كحلي.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The company and office chats tabs show the search field and the الكل / غير المقروء tabs, with no back arrow.",
+          "غير المقروء lists only chats that have unread messages.",
+          "A chat opened about a quote request is tagged 'طلب عرض سعر' on the list; one opened from an ad is tagged with the ad.",
+          "My text messages are navy on the right with ticks and time on their left; theirs are light on the left with the time on their right.",
+          "Voice notes, photos and files follow the same colours: navy for mine, light for theirs.",
+          "A reply shows the quoted message inside the bubble; tapping it still jumps to the original.",
+        ],
+        ar: [
+          "تبويبا محادثات الشركة والمكتب يعرضان حقل البحث وتبويبي الكل / غير المقروء بلا سهم رجوع.",
+          "غير المقروء يعرض فقط المحادثات التي فيها رسائل غير مقروءة.",
+          "المحادثة المفتوحة عن طلب عرض سعر توسم بـ 'طلب عرض سعر' في القائمة؛ والمفتوحة من إعلان توسم بالإعلان.",
+          "رسائلي النصية كحلية على اليمين والعلامات والوقت على يسارها؛ ورسائل الطرف الآخر فاتحة على اليسار والوقت على يمينها.",
+          "الرسائل الصوتية والصور والملفات بالألوان نفسها: كحلي لرسائلي وفاتح للطرف الآخر.",
+          "الرد يعرض الرسالة المقتبسة داخل الفقاعة؛ والضغط عليها ما زال ينقل إلى الأصل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as a company and open المحادثات: search for a client by name, then switch to غير المقروء.",
+          "Exchange a few messages between two accounts and compare both phones with the design.",
+        ],
+        ar: [
+          "سجّل الدخول كشركة وافتح المحادثات: ابحث عن عميل بالاسم ثم بدّل إلى غير المقروء.",
+          "تبادل بضع رسائل بين حسابين وقارن الهاتفين بالتصميم.",
+        ],
+      },
+      updatedIn: "feat/chat-flow-figma",
+    },
+    {
+      id: "mobile-chat-online-typing-request",
+      title: {
+        en: "Chat: online status, 'يكتب الان...' and the pinned quote request",
+        ar: "المحادثات: حالة الاتصال و'يكتب الان...' وطلب السعر المثبت",
+      },
+      priority: "P1",
+      story: {
+        en: "Three live additions to chat. Online: when the other person's app is open, the chat header shows a green 'متصل' under their name and a green dot on their avatar, and the chats list shows the dot too; it clears when they close the app. Typing: while the other person is writing, 'يكتب الان...' replaces the status in the header and the last message on the chats list; it ends when their message arrives, when they clear the field, after a few seconds without typing, or when they leave the chat. Quote requests: when a company taps الرد on a request (from the home, the requests list or the request details), or the requester opens the chat from their request, the chat is linked to that request: its title, area and budget are pinned under the header, and tapping the bar opens the request.",
+        ar: "ثلاث إضافات حية للمحادثات. الاتصال: عند فتح الطرف الآخر للتطبيق يعرض رأس المحادثة 'متصل' بالأخضر تحت اسمه ونقطة خضراء على صورته، وتظهر النقطة في قائمة المحادثات أيضاً؛ وتختفي عند إغلاقه التطبيق. الكتابة: أثناء كتابة الطرف الآخر يحل 'يكتب الان...' محل الحالة في الرأس ومحل آخر رسالة في القائمة؛ وينتهي عند وصول رسالته أو مسحه الحقل أو بعد ثوانٍ بلا كتابة أو مغادرته المحادثة. طلبات السعر: عند ضغط الشركة على الرد في طلب (من الرئيسية أو قائمة الطلبات أو تفاصيل الطلب)، أو فتح صاحب الطلب المحادثة من طلبه، تُربط المحادثة بذلك الطلب: يُثبَّت عنوانه ومنطقته وميزانيته تحت الرأس، والضغط على الشريط يفتح الطلب.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With both phones in the app, each sees 'متصل' for the other; closing one app removes it on the other within a moment.",
+          "Typing on one phone shows 'يكتب الان...' on the other, in the open chat and on its chats list.",
+          "'يكتب الان...' disappears when the message is sent, when the field is emptied, and by itself after about six seconds if nothing else arrives.",
+          "After a company taps الرد on a request, both sides see the request pinned in that chat.",
+          "The company's tap on the pinned request opens the request it received; the requester's tap opens their own request.",
+          "Opening the same chat later from an ad replaces the pinned request with that ad.",
+        ],
+        ar: [
+          "عند وجود الهاتفين في التطبيق يرى كل طرف 'متصل' للآخر؛ وإغلاق أحدهما يزيلها عند الآخر خلال لحظات.",
+          "الكتابة على هاتف تعرض 'يكتب الان...' على الآخر، في المحادثة المفتوحة وفي قائمة محادثاته.",
+          "'يكتب الان...' يختفي عند إرسال الرسالة وعند إفراغ الحقل، ومن تلقاء نفسه بعد نحو ست ثوانٍ إن لم يصل شيء.",
+          "بعد ضغط الشركة على الرد في طلب يرى الطرفان الطلب مثبتاً في تلك المحادثة.",
+          "ضغط الشركة على الطلب المثبت يفتح الطلب الوارد إليها؛ وضغط صاحب الطلب يفتح طلبه.",
+          "فتح المحادثة نفسها لاحقاً من إعلان يستبدل الطلب المثبت بذلك الإعلان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two phones, two accounts: open the same chat on both and watch the status while one types, sends, and closes the app.",
+          "Send a quote request from an individual to a company, reply as the company, and check the pinned bar on both phones.",
+        ],
+        ar: [
+          "هاتفان بحسابين: افتح المحادثة نفسها عليهما وراقب الحالة أثناء كتابة أحدهما وإرساله وإغلاقه التطبيق.",
+          "أرسل طلب سعر من فرد إلى شركة ثم ردّ كشركة وتحقق من الشريط المثبت على الهاتفين.",
+        ],
+      },
+      updatedIn: "feat/chat-flow-figma",
+    },
+    {
       id: "mobile-android-text-cutoff",
       title: {
         en: "Android: button and label text is never cut off",

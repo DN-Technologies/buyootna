@@ -53,6 +53,7 @@ model Identity {
   planSlots       UserPlanSlot[]
   invoices        Invoice[]
   projects        CompanyProject[]
+  companyServices CompanyService[]
   companyInvoices CompanyInvoice[]
   // Service invoices a company addressed to this persona (فواتير الخدمات)
   invoicesReceived CompanyInvoice[] @relation("InvoiceClient")
@@ -143,6 +144,23 @@ model CompanyProject {
   title       String
   description String
   images      String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId])
+}
+
+// One service a company offers (اضافة خدمة): a type picked from its
+// specialty's list, or "اخرى" with a title of its own
+model CompanyService {
+  id          String   @id @default(uuid())
+  identityId  String
+  specialty   String
+  type        String
+  title       String?
+  description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

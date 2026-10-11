@@ -44,6 +44,9 @@ export default function CompanyRequestsScreen() {
     try {
       const conversation = await chatService.createConversation(
         request.clientIdentityId,
+        undefined,
+        // The chat is about this request: both sides see it pinned
+        request.id,
       );
       await companyRequestsService.markResponded(request.id);
       refetch();

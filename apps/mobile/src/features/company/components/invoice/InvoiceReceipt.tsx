@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { Image, Text, View } from 'react-native';
 
-import type { InvoiceItem } from './InvoiceItemsStep';
 import { formatNumber } from '@/shared/utils/formatNumber';
+
+import type { InvoiceItem } from './InvoiceItemsStep';
 
 const formatReceiptDate = (date: Date) => {
   const datePart = date.toLocaleDateString('ar-KW-u-nu-latn', {
@@ -27,10 +29,55 @@ interface InvoiceReceiptProps {
   total: number;
   companyName?: string;
   logoUrl?: string | null;
+  // The line under the company name, e.g. "للمقاولات والتشطيبات"
+  companySpecialty?: string | null;
   // Optional service warranty (كفالة الخدمة) in months — Figma 4410:167623
   warrantyMonths?: string;
 }
 
+const CARD_SHADOW = {
+  shadowColor: '#919191',
+  shadowOpacity: 0.2,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 3,
+} as const;
+
+interface RowProps {
+  label: string;
+  value: ReactNode;
+  // The total row is a little taller with a 14px amount
+  emphasised?: boolean;
+}
+
+// One receipt line: the label on the right, its value on the left
+const Row = ({ label, value, emphasised }: RowProps) => (
+  <View
+    className={`flex-row items-center gap-2 px-3 ${emphasised ? 'py-[6px]' : 'py-1'}`}
+  >
+    <Text
+      className="flex-1 font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
+      style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+    >
+      {label}
+    </Text>
+    <Text
+      className={`shrink font-cairo-semibold leading-[20px] text-[#111111] ${
+        emphasised ? 'text-[14px]' : 'text-[12px]'
+      }`}
+      style={emphasised ? undefined : { letterSpacing: 0.24 }}
+    >
+      {value}
+    </Text>
+  </View>
+);
+
+const Divider = () => <View className="mx-2 h-px bg-[#ECECEC]" />;
+
+/**
+ * Step 3, "مراجعة الفاتورة" (Figma 4410:167552, and 4410:167623 with the
+ * warranty line): the invoice as the client will get it.
+ */
 export default function InvoiceReceipt({
   invoiceNo,
   clientName,
@@ -41,23 +88,18 @@ export default function InvoiceReceipt({
   total,
   companyName,
   logoUrl,
+  companySpecialty,
   warrantyMonths,
 }: InvoiceReceiptProps) {
   return (
-    <View className="px-4">
+    <View className="pt-4">
       <View
-        className="rounded-t-lg bg-white px-4 pb-6 pt-8"
-        style={{
-          shadowColor: '#919191',
-          shadowOpacity: 0.2,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: 3,
-        }}
+        className="gap-4 rounded-t-[12px] bg-white px-4 pb-4 pt-8"
+        style={CARD_SHADOW}
       >
         {/* Company header */}
-        <View className="items-center">
-          <View className="h-10 w-10 overflow-hidden rounded-md bg-[#F5F7F9]">
+        <View className="items-center gap-2">
+          <View className="h-10 w-10 overflow-hidden rounded-bl-[8px] rounded-tl-[8px] rounded-tr-[8px] bg-[#F5F7F9]">
             {logoUrl ? (
               <Image
                 source={{ uri: logoUrl }}
@@ -66,113 +108,62 @@ export default function InvoiceReceipt({
               />
             ) : null}
           </View>
-          <Text className="mt-2 font-cairo-semibold text-[14px] text-[#111111]">
-            {companyName ?? 'شركة'}
-          </Text>
-        </View>
-
-        <View className="my-4 h-px bg-[#ECECEC]" />
-
-        {/* Meta rows */}
-        <View className="gap-2.5">
-          {[
-            { label: 'رقم الفاتورة', value: invoiceNo },
-            { label: 'موجهة الى', value: clientName },
-            { label: 'تاريخ الاصدار', value: formatReceiptDate(issueDate) },
-          ].map((row) => (
-            <View
-              key={row.label}
-              className="flex-row items-center justify-between"
-            >
-              <Text
-                className="font-cairo text-[13px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                {row.label}
-              </Text>
-              <Text className="text-left font-cairo-medium text-[13px] text-[#111111]">
-                {row.value}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        <View className="my-4 h-px bg-[#ECECEC]" />
-
-        {/* Title row */}
-        <View className="flex-row items-center justify-between">
-          <Text
-            className="font-cairo text-[13px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            الخدمة
-          </Text>
-          <Text className="text-left font-cairo-medium text-[13px] text-[#111111]">
-            {title}
-          </Text>
-        </View>
-
-        {/* Warranty row (only when the invoice carries a كفالة الخدمة) */}
-        {!!warrantyMonths?.trim() && (
-          <View className="mt-2.5 flex-row items-center justify-between">
+          <View className="items-center gap-[2px]">
             <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
+              className="font-cairo-semibold text-[14px] leading-[21px] text-[#111111]"
+              style={{ letterSpacing: 0.28 }}
             >
-              كفالة الخدمة (ضمان)
+              {companyName ?? 'شركة'}
             </Text>
-            <Text className="text-left font-cairo-semibold text-[12px] text-[#111111]">
-              {warrantyMonths.trim()} شهور
-            </Text>
+            {!!companySpecialty && (
+              <Text className="font-cairo-medium text-[12px] leading-[15px] text-[#A0A0A0]">
+                {companySpecialty}
+              </Text>
+            )}
           </View>
-        )}
+        </View>
 
-        <View className="my-4 h-px bg-[#ECECEC]" />
+        <Divider />
 
-        {/* Items */}
-        <View className="gap-2.5">
+        <View className="gap-[6px]">
+          <Row label="رقم الفاتورة" value={invoiceNo} />
+          <Row label="موجهة الى" value={clientName} />
+          <Row label="تاريخ الاصدار" value={formatReceiptDate(issueDate)} />
+        </View>
+
+        <Divider />
+
+        <View className="gap-[6px]">
+          <Row label="الخدمة" value={title} />
+          {/* Only when the invoice carries a كفالة الخدمة */}
+          {!!warrantyMonths?.trim() && (
+            <Row
+              label="كفالة الخدمة (ضمان)"
+              value={`${warrantyMonths.trim()} شهور`}
+            />
+          )}
+        </View>
+
+        <Divider />
+
+        <View className="gap-[6px]">
           {items.map((item, index) => (
-            <View
+            <Row
               key={`${item.name}-${index}`}
-              className="flex-row items-center justify-between"
-            >
-              <Text className="text-left font-cairo text-[13px] text-[#111111]">
-                {formatNumber(item.price * item.qty)} د.ك
-              </Text>
-              <Text
-                className="font-cairo text-[13px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                {item.name}
-              </Text>
-            </View>
+              label={item.name}
+              value={`${formatNumber(item.price * item.qty)} د.ك`}
+            />
           ))}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-left font-cairo text-[13px] text-[#111111]">
-              {formatNumber(appliedDiscount)}
-            </Text>
-            <Text
-              className="font-cairo text-[13px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              الخصم
-            </Text>
-          </View>
+          <Row label="الخصم" value={formatNumber(appliedDiscount)} />
         </View>
 
-        <View className="my-4 h-px bg-[#ECECEC]" />
+        <Divider />
 
-        <View className="flex-row items-center justify-between">
-          <Text className="text-left font-cairo-medium text-[14px] text-[#111111]">
-            {formatNumber(total)} د.ك
-          </Text>
-          <Text
-            className="font-cairo text-[13px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            الاجمالي
-          </Text>
-        </View>
+        <Row
+          emphasised
+          label="الاجمالي"
+          value={`${formatNumber(total)} د.ك`}
+        />
       </View>
 
       {/* Scalloped bottom edge */}
@@ -192,7 +183,10 @@ export default function InvoiceReceipt({
         ))}
       </View>
 
-      <Text className="mt-3 text-center font-cairo-medium text-[13px] text-[#111111]">
+      <Text
+        className="mt-4 text-center font-cairo-medium text-[14px] leading-[21px] text-[#111111]"
+        style={{ letterSpacing: -0.408 }}
+      >
         شكرا لتعاملكم معنا
       </Text>
     </View>

@@ -21,7 +21,7 @@ interface ReplyQuoteProps {
   reply: ReplyPreview;
   // The other person's name ("أنت" when the quoted message is yours)
   otherName: string;
-  // Light text/background on a dark (their) bubble
+  // Light text/background on a dark (my) bubble
   onDark?: boolean;
   onPress?: () => void;
 }
@@ -42,20 +42,21 @@ export default function ReplyQuote({
       activeOpacity={0.8}
       disabled={!onPress || reply.deleted}
       onPress={onPress}
-      className={`mb-2 flex-row overflow-hidden rounded-md ${
-        onDark ? 'bg-white/15' : 'bg-[#15304D]/10'
+      // Figma 4410:168675: a white card with a navy bar on its right
+      className={`flex-row overflow-hidden rounded-[4px] ${
+        onDark ? 'bg-white/15' : 'bg-white'
       }`}
       // The bubble is as wide as its text: without a minimum, a short reply
       // ("كده؟") squeezed the quote to one letter per line
       style={{ minWidth: QUOTE_MIN_WIDTH }}
     >
-      <View className="w-1 bg-[#B28648]" />
-      <View className="flex-1 px-2.5 py-1.5">
+      <View className={`w-1 ${onDark ? 'bg-white' : 'bg-[#15304D]'}`} />
+      <View className="flex-1 p-2">
         <Text
           testID="reply-quote-name"
           numberOfLines={1}
-          className={`font-cairo-semibold text-[12px] ${
-            onDark ? 'text-[#F5D9A8]' : 'text-[#B28648]'
+          className={`font-cairo-semibold text-[12px] leading-[16px] ${
+            onDark ? 'text-white' : 'text-[#15304D]'
           }`}
           style={{ writingDirection: 'rtl' }}
         >
@@ -71,8 +72,8 @@ export default function ReplyQuote({
           )}
           <Text
             numberOfLines={2}
-            className={`flex-1 font-cairo text-[12px] ${
-              onDark ? 'text-white/80' : 'text-[#6B6A6A]'
+            className={`flex-1 font-cairo text-[12px] leading-[15px] ${
+              onDark ? 'text-white/80' : 'text-[#15304D]'
             }`}
             style={{ writingDirection: 'rtl' }}
           >

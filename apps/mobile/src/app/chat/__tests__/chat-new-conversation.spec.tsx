@@ -56,6 +56,9 @@ jest.mock('@/shared/services/socket.service', () => ({
     onMessageError: jest.fn(() => jest.fn()),
     onMessageUpdated: jest.fn(() => jest.fn()),
     onConversationReceipt: jest.fn(() => jest.fn()),
+    onTyping: jest.fn(() => jest.fn()),
+    onPresenceChanged: jest.fn(() => jest.fn()),
+    emitTyping: jest.fn(),
   },
 }));
 
@@ -102,7 +105,8 @@ describe('ChatDetailScreen — opened before the conversation exists', () => {
 
     expect(getByTestId('chat-messages-loading')).toBeTruthy();
     expect(mockCreate).toHaveBeenCalledTimes(1);
-    expect(mockCreate).toHaveBeenCalledWith('company-a', 'prop-1');
+    // No quote request behind this chat
+    expect(mockCreate).toHaveBeenCalledWith('company-a', 'prop-1', undefined);
     // Nothing joined or loaded against a placeholder id
     expect(socketService.joinConversation).not.toHaveBeenCalled();
     expect(mockGetMessages).not.toHaveBeenCalled();

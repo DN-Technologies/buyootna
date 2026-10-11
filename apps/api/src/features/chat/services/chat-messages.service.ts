@@ -12,6 +12,10 @@ import { ChatParticipantDisplayService } from './chat-participant-display.servic
 import { SendMessageDto } from '../dto/send-message.dto';
 import { receiptOf } from './chat-receipts.service';
 import {
+  presentRequestContext,
+  REQUEST_CONTEXT_SELECT,
+} from './chat-request-context';
+import {
   ATTACHMENT_SELECT,
   ChatAttachmentsService,
   messageTypeFor,
@@ -143,6 +147,7 @@ export class ChatMessagesService {
       where: { id: conversationId },
       include: {
         property: true,
+        request: { select: REQUEST_CONTEXT_SELECT },
         participants: {
           include: {
             identity: {
@@ -248,6 +253,7 @@ export class ChatMessagesService {
         hasNextPage,
         // How far the other person has received / read (my ticks)
         otherReceipt: receiptOf(otherPart),
+        requestContext: presentRequestContext(conversation?.request),
         propertyContext: prop
           ? {
               id: prop.id,
@@ -265,6 +271,8 @@ export class ChatMessagesService {
                 id: ident?.id || otherPart?.userId || '',
                 name: otherUserName,
                 avatarUrl: otherUserAvatar,
+                // For "متصل" (ChatService adds isOnline from it)
+                lastSeenAt: ident?.lastSeenAt ?? null,
               }
             : null,
       },

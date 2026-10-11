@@ -71,6 +71,7 @@ export function useChatConversation({
     conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
   const otherUserId = conversation?.otherUser.id;
   const propertyContext = conversation?.propertyContext;
+  const requestContext = conversation?.requestContext ?? null;
   const otherReceipt = useChatStore(
     (state) =>
       state.receiptByConversation[conversationId] ??
@@ -219,6 +220,7 @@ export function useChatConversation({
     otherUserAvatar,
     otherUserId,
     propertyContext,
+    requestContext,
     conversation,
     isLoadingMessages: isLoading,
     replyTarget,

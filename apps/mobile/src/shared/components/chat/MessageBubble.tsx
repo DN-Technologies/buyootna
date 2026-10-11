@@ -14,6 +14,19 @@ interface MessageProps {
   quote?: ReactNode;
 }
 
+const BUBBLE_SHADOW = {
+  shadowColor: '#15304D',
+  shadowOpacity: 0.15,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 2,
+} as const;
+
+/**
+ * A text message (Figma 4410:168628 / 4410:168632). Mine: navy on the
+ * right, the row's start under RTL. Theirs: light on the left. The ticks
+ * and time sit beside the bubble, towards the middle of the screen.
+ */
 export default function MessageBubble({
   text,
   isMine,
@@ -23,41 +36,53 @@ export default function MessageBubble({
 }: MessageProps) {
   return (
     <View
-      className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
+      testID={isMine ? 'message-bubble-mine' : 'message-bubble-theirs'}
+      className={`mb-4 w-full flex-row items-end gap-2 ${
+        isMine ? 'justify-start' : 'justify-end'
+      }`}
     >
-      <View className={`max-w-[80%] ${isMine ? 'items-start' : 'items-end'}`}>
-        {/* Bubble — mine: light on the right (row start in RTL), theirs: dark on the left */}
-        <View
-          className={`rounded-md px-5 py-3 ${
-            isMine ? 'rounded-br-none bg-[#F9FAFE]' : 'rounded-bl-none bg-[#15304D]'
-          }`}
-          style={{
-            shadowColor: '#15304D',
-            shadowOpacity: 0.15,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 2,
-          }}
-        >
-          {quote}
-          <Text
-            className={`text-right font-cairo-medium text-[14px] leading-6 ${
-              isMine ? 'text-[#111111]' : 'text-white'
-            }`}
-            style={{ writingDirection: 'rtl' }}
-          >
-            {text}
-          </Text>
-        </View>
+      {/* Theirs: the time comes first so it lands on the bubble's right */}
+      {!isMine && <Meta timestamp={timestamp} />}
 
-        {/* Meta row (outside, below the bubble) */}
-        <View className="mt-1 flex-row items-center gap-1">
-          <MessageTicks status={status} />
-          <Text className="font-cairo text-[13px] text-[#6B6A6A]">
-            {timestamp}
-          </Text>
-        </View>
+      <View
+        className={`max-w-[72%] gap-[10px] rounded-[6px] px-5 py-3 ${
+          isMine
+            ? 'rounded-br-none bg-[#15304D]'
+            : 'rounded-bl-none bg-[#F9FAFE]'
+        }`}
+        style={BUBBLE_SHADOW}
+      >
+        {quote}
+        <Text
+          className={`font-cairo-medium text-[14px] leading-[21px] ${
+            isMine ? 'text-white' : 'text-[#111111]'
+          }`}
+          style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+        >
+          {text}
+        </Text>
       </View>
+
+      {isMine && <Meta timestamp={timestamp} status={status} />}
     </View>
   );
 }
+
+// Ticks over the time, beside the bubble
+const Meta = ({
+  timestamp,
+  status,
+}: {
+  timestamp: string;
+  status?: MessageStatus | null;
+}) => (
+  <View className="items-start gap-1">
+    <MessageTicks status={status} />
+    <Text
+      className="font-cairo text-[13px] leading-[14px] text-[#6B6A6A]"
+      style={{ letterSpacing: 0.26 }}
+    >
+      {timestamp}
+    </Text>
+  </View>
+);

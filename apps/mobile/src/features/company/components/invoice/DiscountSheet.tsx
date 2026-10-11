@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -6,13 +5,14 @@ import {
 import { forwardRef, useCallback, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import CompanySheetHeader from '@/features/company/components/CompanySheetHeader';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import { showAlert } from '@/shared/utils/alert';
 
 import FieldLabel from './FieldLabel';
 
 const inputClassName =
-  'h-[46px] w-full rounded-md border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]';
+  'h-[46px] w-full rounded-[8px] border border-[#ECECEC] bg-white px-3 text-right font-cairo text-[14px] text-[#111111]';
 
 interface DiscountSheetProps {
   onApply: (value: number) => void;
@@ -56,38 +56,29 @@ const DiscountSheet = forwardRef<BottomSheetModal, DiscountSheetProps>(
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
         handleIndicatorStyle={{
-          backgroundColor: '#111111',
-          width: 40,
-          height: 4,
+          backgroundColor: '#000000',
+          width: 45,
+          height: 5,
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
         <SafeBottomSheetView>
-          <View className="bg-white px-4 pb-8 pt-1">
-            <View className="flex-row items-center justify-between pb-4">
-              <TouchableOpacity
-                onPress={() => {
-                  // @ts-ignore
-                  ref.current?.dismiss();
-                }}
-                className="p-2"
-              >
-                <Ionicons name="close" size={20} color="#111111" />
-              </TouchableOpacity>
-              <Text
-                className="font-cairo-semibold text-[18px] text-[#111111]"
-                style={{ writingDirection: 'rtl' }}
-              >
-                اضافة خصم
-              </Text>
-            </View>
+          <View className="gap-4 bg-white pb-6 pt-1">
+            <CompanySheetHeader
+              title="اضافة خصم"
+              onClose={() => {
+                // @ts-ignore
+                ref.current?.dismiss();
+              }}
+            />
 
-            <View className="gap-4">
+            <View className="gap-4 px-4 pt-2">
               <View className="gap-1.5">
                 <FieldLabel text="اكتب مقدار الخصم" />
                 <TextInput
                   value={value}
                   onChangeText={setValue}
+                  testID="invoice-discount-input"
                   placeholder="بالدينار الكويتي"
                   placeholderTextColor="#979797"
                   keyboardType="decimal-pad"
@@ -98,10 +89,14 @@ const DiscountSheet = forwardRef<BottomSheetModal, DiscountSheetProps>(
 
               <TouchableOpacity
                 activeOpacity={0.8}
+                testID="invoice-discount-submit"
                 onPress={handleApply}
-                className="h-12 w-full items-center justify-center rounded-full bg-[#15304D]"
+                className="mt-2 h-12 w-full items-center justify-center rounded-[24px] border border-[#15304D] bg-[#15304D]"
               >
-                <Text className="font-cairo-semibold text-[14px] text-white">
+                <Text
+                  className="font-cairo-semibold text-[14px] leading-[21px] text-white"
+                  style={{ letterSpacing: 0.28 }}
+                >
                   اضافة
                 </Text>
               </TouchableOpacity>

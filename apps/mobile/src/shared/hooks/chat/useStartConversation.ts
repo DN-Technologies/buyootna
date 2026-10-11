@@ -8,6 +8,8 @@ interface UseStartConversationParams {
   // Only set when the screen was opened as /chat/new
   recipientId?: string;
   propertyId?: string;
+  // The quote request the chat is about
+  requestId?: string;
 }
 
 /**
@@ -17,6 +19,7 @@ interface UseStartConversationParams {
 export function useStartConversation({
   recipientId,
   propertyId,
+  requestId,
 }: UseStartConversationParams) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const startedRef = useRef(false);
@@ -27,7 +30,7 @@ export function useStartConversation({
 
     let cancelled = false;
     chatService
-      .createConversation(recipientId, propertyId)
+      .createConversation(recipientId, propertyId, requestId)
       .then(({ id }) => {
         if (cancelled) return;
         setConversationId(id);
@@ -49,7 +52,7 @@ export function useStartConversation({
       cancelled = true;
     };
     // Module-level router: stable, so re-renders never cancel the request
-  }, [recipientId, propertyId]);
+  }, [recipientId, propertyId, requestId]);
 
   return { conversationId, isStarting: !!recipientId && !conversationId };
 }

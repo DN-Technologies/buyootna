@@ -16,7 +16,7 @@ export default function MessageTextField({
   inputRef,
 }: MessageTextFieldProps) {
   return (
-    <View className="mx-3 min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
+    <View className="mx-[14px] min-h-[46px] max-h-[100px] flex-1 flex-row items-center rounded-[20px] bg-[#F9FAFE] px-4">
       <TextInput
         ref={inputRef}
         className="flex-1 py-2 text-right font-cairo text-[14px] text-[#111111]"

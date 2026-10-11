@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { PresenceService } from '../../core/trust-signals/presence.service';
+
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatConversationsService } from './services/chat-conversations.service';
 import { ChatMessagesService } from './services/chat-messages.service';
@@ -21,7 +23,19 @@ export class ChatService {
     private readonly attachmentsService: ChatAttachmentsService,
     private readonly conversationsService: ChatConversationsService,
     private readonly messagesService: ChatMessagesService,
+    private readonly presence: PresenceService,
   ) {}
+
+  // "متصل": whether the other person's app is open right now
+  private withPresence<T extends { id: string; lastSeenAt: Date | null }>(
+    otherUser: T | null,
+  ) {
+    if (!otherUser) return otherUser;
+    return {
+      ...otherUser,
+      ...this.presence.presenceOf(otherUser.id, otherUser.lastSeenAt),
+    };
+  }
 
   // Find or create a 1:1 conversation with a recipient, optionally scoped
   // to a property (concurrency-safe: see ChatConversationsService).
@@ -30,38 +44,59 @@ export class ChatService {
     identityId: string,
     recipientId: string,
     propertyId?: string,
+    requestId?: string,
   ) {
     return this.conversationsService.findOrCreateConversation(
       userId,
       identityId,
       recipientId,
       propertyId,
+      requestId,
     );
   }
 
   // The persona's conversations
-  getConversations(identityId: string, page = 1, limit = 10, query?: string) {
-    return this.conversationsService.getConversations(
+  async getConversations(
+    identityId: string,
+    page = 1,
+    limit = 10,
+    query?: string,
+  ) {
+    const result = await this.conversationsService.getConversations(
       identityId,
       page,
       limit,
       query,
     );
+    return {
+      ...result,
+      data: result.data.map((conversation) => ({
+        ...conversation,
+        otherUser: this.withPresence(conversation.otherUser),
+      })),
+    };
   }
 
   // Get messages for a single conversation
-  getMessages(
+  async getMessages(
     conversationId: string,
     identityId: string,
     cursor?: string,
     limit = 20,
   ) {
-    return this.messagesService.getMessages(
+    const result = await this.messagesService.getMessages(
       conversationId,
       identityId,
       cursor,
       limit,
     );
+    return {
+      ...result,
+      meta: {
+        ...result.meta,
+        otherUser: this.withPresence(result.meta.otherUser),
+      },
+    };
   }
 
   // Send a message

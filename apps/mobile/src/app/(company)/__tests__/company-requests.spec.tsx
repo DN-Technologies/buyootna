@@ -190,7 +190,11 @@ describe('CompanyRequestsScreen (real data)', () => {
     const replyBtn = getByTestId('company-request-reply-btn-req-1');
     await fireEvent.press(replyBtn);
 
-    expect(chatService.createConversation).toHaveBeenCalledWith('client-1');
+    expect(chatService.createConversation).toHaveBeenCalledWith(
+      'client-1',
+      undefined,
+      'req-1',
+    );
     expect(companyRequestsService.markResponded).toHaveBeenCalledWith('req-1');
     expect(mockPush).toHaveBeenCalledWith('/chat/conv-1');
   });

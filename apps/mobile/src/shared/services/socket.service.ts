@@ -134,6 +134,41 @@ class SocketService {
     return true;
   }
 
+  /** "يكتب الان...": tells the other person I started / stopped typing. */
+  emitTyping(conversationId: string, isTyping: boolean) {
+    if (this.socket?.connected) {
+      this.socket.emit('typing', { conversationId, isTyping });
+    }
+  }
+
+  /** The other person started / stopped typing in a conversation. */
+  onTyping(
+    callback: (data: {
+      conversationId: string;
+      identityId: string;
+      isTyping: boolean;
+    }) => void,
+  ) {
+    this.socket?.on('typing', callback);
+    return () => {
+      this.socket?.off('typing', callback);
+    };
+  }
+
+  /** Someone I chat with opened or closed the app ("متصل"). */
+  onPresenceChanged(
+    callback: (data: {
+      identityId: string;
+      isOnline: boolean;
+      lastSeenAt?: string | null;
+    }) => void,
+  ) {
+    this.socket?.on('presence_changed', callback);
+    return () => {
+      this.socket?.off('presence_changed', callback);
+    };
+  }
+
   /** The other person received / read a conversation (my ticks). */
   onConversationReceipt(
     callback: (receipt: {

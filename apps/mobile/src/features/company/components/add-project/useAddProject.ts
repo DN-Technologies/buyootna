@@ -1,7 +1,7 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 
 import { companyService } from '@/shared/api/company.service';
 import { propertiesService } from '@/shared/api/properties.service';

@@ -3,6 +3,7 @@ import { ChatService } from './chat.service';
 import { ChatConversationsService } from './services/chat-conversations.service';
 import { ChatMessagesService } from './services/chat-messages.service';
 import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
+import { PresenceService } from '../../core/trust-signals/presence.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { ChatAttachmentsService } from './services/chat-attachments.service';
 import { ChatProposalsService } from './services/chat-proposals.service';
@@ -146,6 +147,12 @@ describe('ChatService.findOrCreateConversation', () => {
         ChatService,
         { provide: PrismaService, useValue: prisma },
         { provide: ChatAttachmentsService, useValue: {} },
+        {
+          provide: PresenceService,
+          useValue: {
+            presenceOf: () => ({ isOnline: false, lastSeenAt: null }),
+          },
+        },
         { provide: ChatProposalsService, useValue: {} },
       ],
     }).compile();
@@ -367,6 +374,12 @@ describe('ChatService.getConversations', () => {
         ChatService,
         { provide: PrismaService, useValue: prisma },
         { provide: ChatAttachmentsService, useValue: {} },
+        {
+          provide: PresenceService,
+          useValue: {
+            presenceOf: () => ({ isOnline: false, lastSeenAt: null }),
+          },
+        },
         { provide: ChatProposalsService, useValue: {} },
       ],
     }).compile();

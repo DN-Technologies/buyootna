@@ -39,7 +39,7 @@ export default function RequestDetailsScreen({ id }: { id?: string }) {
   const [decidingOffer, setDecidingOffer] = useState<RequestOffer | undefined>();
 
   const openChat = (providerId: string) =>
-    openChatWith(router, { recipientId: providerId });
+    openChatWith(router, { recipientId: providerId, requestId: request?.id });
 
   const offers = request ? shownOffers(request) : [];
   const singleProvider = offers[0]?.provider ?? request?.provider ?? undefined;

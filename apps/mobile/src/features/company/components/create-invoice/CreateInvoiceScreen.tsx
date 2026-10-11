@@ -4,14 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AddItemSheet from '@/features/company/components/invoice/AddItemSheet';
 import ClientPickerSheet from '@/features/company/components/invoice/ClientPickerSheet';
 import DiscountSheet from '@/features/company/components/invoice/DiscountSheet';
+import InvoiceClientSearch from '@/features/company/components/invoice/InvoiceClientSearch';
 import InvoiceGeneralDataStep from '@/features/company/components/invoice/InvoiceGeneralDataStep';
 import InvoiceItemsStep from '@/features/company/components/invoice/InvoiceItemsStep';
 import InvoiceProgressBar from '@/features/company/components/invoice/InvoiceProgressBar';
 import InvoiceReceipt from '@/features/company/components/invoice/InvoiceReceipt';
-import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 
-import CompanyEditProfileHeader from '../edit-profile/CompanyEditProfileHeader';
+import CompanyFormHeader from '../CompanyFormHeader';
 import CompanySubmitButton from '../CompanySubmitButton';
+import CompanySuccessSheet from '../CompanySuccessSheet';
 import { useCreateInvoice } from './useCreateInvoice';
 
 export default function CreateInvoiceScreen() {
@@ -24,13 +25,22 @@ export default function CreateInvoiceScreen() {
         className="flex-1"
       >
         {/* --- Header --- */}
-        <CompanyEditProfileHeader
+        <CompanyFormHeader
           onBack={wizard.step === 1 ? wizard.goBack : wizard.goToPreviousStep}
           title={wizard.headerTitle}
         />
 
-        <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-          <View className="gap-5 px-4 pb-6 pt-2">
+        {/* --- Client search, step 1 only --- */}
+        {wizard.step === 1 && (
+          <InvoiceClientSearch onPress={wizard.openClientPicker} />
+        )}
+
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          className="flex-1"
+        >
+          <View className="gap-5 px-4 pb-6 pt-3">
             {wizard.step < 3 && (
               <InvoiceProgressBar step={wizard.step} />
             )}
@@ -41,7 +51,6 @@ export default function CreateInvoiceScreen() {
                 onChangeClientName={wizard.setClientName}
                 requestId={wizard.requestId}
                 onSelectClient={wizard.selectClient}
-                onOpenClientPicker={wizard.openClientPicker}
                 invoiceNo={wizard.invoiceNo}
                 title={wizard.title}
                 onChangeTitle={wizard.setTitle}
@@ -75,6 +84,7 @@ export default function CreateInvoiceScreen() {
                 total={wizard.total}
                 companyName={wizard.companyName}
                 logoUrl={wizard.logoUrl}
+                companySpecialty={wizard.companySpecialty}
                 warrantyMonths={wizard.warrantyMonths}
               />
             )}
@@ -82,7 +92,7 @@ export default function CreateInvoiceScreen() {
         </ScrollView>
 
         {/* --- Fixed bottom CTA --- */}
-        <View className="px-4 pb-6 pt-3">
+        <View className="px-4 pb-8 pt-3">
           <CompanySubmitButton
             label={wizard.ctaLabel}
             disabled={wizard.isCtaDisabled}
@@ -105,15 +115,14 @@ export default function CreateInvoiceScreen() {
       <DiscountSheet ref={wizard.discountSheetRef} onApply={wizard.applyDiscount} />
 
       {/* --- Success bottom sheet --- */}
-      <SuccessBottomSheet
+      <CompanySuccessSheet
         ref={wizard.successSheetRef}
         title="تم انشاء وارسال الفاتورة بنجاح!"
         description={wizard.successDescription}
-        buttonText="عرض الفواتير"
-        onPress={wizard.viewInvoices}
-        secondaryButtonText="انشاء فاتورة جديدة"
-        onSecondaryPress={wizard.resetAndDismiss}
-        secondaryButtonVariant="neutral"
+        primaryLabel="عرض الفواتير"
+        onPrimary={wizard.viewInvoices}
+        secondaryLabel="انشاء فاتورة جديدة"
+        onSecondary={wizard.resetAndDismiss}
       />
     </SafeAreaView>
   );
