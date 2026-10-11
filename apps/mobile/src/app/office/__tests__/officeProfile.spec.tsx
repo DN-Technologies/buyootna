@@ -1,9 +1,9 @@
 import { cleanup, fireEvent, render } from '@testing-library/react-native';
 
 import OfficeProfileScreen from '@/app/office/[id]';
-import { useOfficeDetails } from '@/shared/hooks/useOfficeDetails';
-import { useOfficeReport } from '@/shared/hooks/useOfficeReport';
-import { useOfficeReviews } from '@/shared/hooks/useOfficeReviews';
+import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
+import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
+import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
@@ -29,15 +29,15 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-jest.mock('@/shared/hooks/useOfficeDetails', () => ({
+jest.mock('@/shared/hooks/providers/useOfficeDetails', () => ({
   useOfficeDetails: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useOfficeReviews', () => ({
+jest.mock('@/shared/hooks/providers/useOfficeReviews', () => ({
   useOfficeReviews: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useOfficeReport', () => ({
+jest.mock('@/shared/hooks/providers/useOfficeReport', () => ({
   useOfficeReport: jest.fn(),
 }));
 

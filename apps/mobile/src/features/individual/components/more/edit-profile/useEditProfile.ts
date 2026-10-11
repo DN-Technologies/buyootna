@@ -11,12 +11,12 @@ import type { ProfileFormData } from '@/shared/components/forms/types';
 import {
   normalizeEmail,
   useEmailVerification,
-} from '@/shared/hooks/useEmailVerification';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+} from '@/shared/hooks/verification/useEmailVerification';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import {
   localPhone,
   usePhoneVerification,
-} from '@/shared/hooks/usePhoneVerification';
+} from '@/shared/hooks/verification/usePhoneVerification';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 

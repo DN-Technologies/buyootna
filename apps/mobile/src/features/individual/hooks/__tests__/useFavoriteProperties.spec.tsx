@@ -9,7 +9,7 @@ import { useFavoriteProperties } from '../useFavoriteProperties';
 import { useFavoritesUndo } from '../useFavoritesUndo';
 
 const mockToggleFavorite = jest.fn().mockResolvedValue(undefined);
-jest.mock('@/shared/hooks/useFavorites', () => ({
+jest.mock('@/shared/hooks/properties/useFavorites', () => ({
   useFavorites: () => ({ toggleFavorite: mockToggleFavorite }),
 }));
 jest.mock('@/shared/api/favorites.service', () => ({

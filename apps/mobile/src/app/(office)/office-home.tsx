@@ -23,8 +23,8 @@ import {
   OFFICE_STATS_MOCK,
 } from '@/features/office/mockData';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useIdentity } from '@/shared/hooks/useIdentity';
-import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
+import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function OfficeHomeScreen() {

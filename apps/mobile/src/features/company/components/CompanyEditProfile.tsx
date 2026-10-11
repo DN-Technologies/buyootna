@@ -5,7 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChangePasswordOtpSheet from '@/shared/components/auth/ChangePasswordOtpSheet';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { showAlert } from '@/shared/utils/alert';
 
 import {

@@ -7,7 +7,7 @@ import {
   BedIcon,
 } from '@/assets/icons/home/property';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
-import { type ActivityItem } from '@/shared/hooks/useMyActivity';
+import { type ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,

@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { favoritesService } from '@/shared/api/favorites.service';
-import { useMyActivity } from '@/shared/hooks/useMyActivity';
+import { useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,

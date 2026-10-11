@@ -16,9 +16,9 @@ import OfficeTabsSwitcher, {
 } from '@/shared/components/office/OfficeTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useOfficeDetails } from '@/shared/hooks/useOfficeDetails';
-import { useOfficeReport } from '@/shared/hooks/useOfficeReport';
-import { useOfficeReviews } from '@/shared/hooks/useOfficeReviews';
+import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
+import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
+import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 
 export default function OfficeProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

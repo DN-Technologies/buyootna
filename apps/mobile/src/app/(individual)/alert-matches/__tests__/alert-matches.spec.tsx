@@ -22,7 +22,7 @@ jest.mock('@/features/individual/hooks/useMyAlerts', () => ({
   useMyAlerts: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useFavorites', () => ({
+jest.mock('@/shared/hooks/properties/useFavorites', () => ({
   useFavorites: () => ({
     isFavorited: () => false,
     toggleFavorite: jest.fn(),

@@ -3,11 +3,11 @@ import { cleanup, fireEvent, render } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { createRef } from 'react';
 
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 
 import ProfileBottomSheet from '../ProfileBottomSheet';
 
-jest.mock('@/shared/hooks/useIdentity');
+jest.mock('@/shared/hooks/auth/useIdentity');
 
 const mockUseIdentity = useIdentity as jest.Mock;
 

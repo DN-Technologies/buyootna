@@ -16,10 +16,10 @@ import MoreScreenFooter from '@/features/individual/components/more/MoreScreenFo
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useIdentity } from '@/shared/hooks/useIdentity';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
-import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 

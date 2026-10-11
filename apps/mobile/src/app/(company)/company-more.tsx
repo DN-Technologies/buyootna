@@ -24,7 +24,7 @@ import CompanyProfileCard from '@/features/company/components/CompanyProfileCard
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import MenuItem from '@/shared/components/ui/MenuItem';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 

@@ -8,7 +8,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
-import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
+import { useKeyboardHeight } from '@/shared/hooks/device/useKeyboardHeight';
 
 interface AddReviewSheetProps {
   onSubmit: (comment: string, rating: number) => void;

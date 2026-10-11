@@ -12,7 +12,7 @@ import {
   SelectionModal,
 } from '@/features/company/components/edit-profile';
 import apiClient from '@/shared/api/api';
-import { useIdentity } from '@/shared/hooks/useIdentity';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 

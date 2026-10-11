@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   formatTimeAgo,

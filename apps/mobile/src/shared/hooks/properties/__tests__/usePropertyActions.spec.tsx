@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { Share, Text, TouchableOpacity, View } from 'react-native';
 
 import { chatService } from '@/shared/api/chat.service';
-import { usePropertyActions } from '@/shared/hooks/usePropertyActions';
+import { usePropertyActions } from '@/shared/hooks/properties/usePropertyActions';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { openUrlThrottled } from '@/shared/utils/openUrl';

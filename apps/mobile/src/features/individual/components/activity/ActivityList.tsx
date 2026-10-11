@@ -12,7 +12,7 @@ import AlertsListHeader from '@/features/individual/components/activity/alerts/A
 import type { ActivityScreenState } from '@/features/individual/hooks/useActivityScreen';
 import { AlertItem } from '@/shared/api/alerts.service';
 import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 /** The scrolling list of the active نشاطي tab (ads / offers / alerts). */
 export default function ActivityList({

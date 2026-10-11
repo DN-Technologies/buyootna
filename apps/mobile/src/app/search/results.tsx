@@ -19,10 +19,10 @@ import EmptySearchResult from '@/shared/components/search/EmptySearchResult';
 import SearchHeader from '@/shared/components/search/SearchHeader';
 import SuggestionCard from '@/shared/components/search/SuggestionCard';
 import SuggestionCardSkeleton from '@/shared/components/skeletons/SuggestionCardSkeleton';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
+import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 
 // Holds the active advanced filter context for pagination
 interface AdvancedFilterState {

@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ReactNode } from 'react';
 
 import apiClient from '@/shared/api/api';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { showAlert } from '@/shared/utils/alert';
 
 import { useAdActions } from '../useAdActions';

@@ -28,7 +28,7 @@ jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useIdentity', () => ({
+jest.mock('@/shared/hooks/auth/useIdentity', () => ({
   useIdentity: () => ({
     activeIdentity: {
       id: 'off-1',
@@ -45,7 +45,7 @@ jest.mock('@/shared/hooks/useIdentity', () => ({
   }),
 }));
 
-jest.mock('@/shared/hooks/useUnreadNotificationsCount', () => ({
+jest.mock('@/shared/hooks/notifications/useUnreadNotificationsCount', () => ({
   useUnreadNotificationsCount: () => 2,
 }));
 

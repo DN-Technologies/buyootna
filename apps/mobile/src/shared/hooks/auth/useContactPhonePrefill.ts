@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 import { contactPhoneService } from '@/shared/api/contactPhone.service';
-import { localPhone } from '@/shared/hooks/usePhoneVerification';
+import { localPhone } from '@/shared/hooks/verification/usePhoneVerification';
 
 /**
  * Starts a new ad's phone field on the active persona's contact number (its

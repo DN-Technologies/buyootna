@@ -13,8 +13,8 @@ import {
   contactPhoneService,
   ContactPhoneState,
 } from '@/shared/api/contactPhone.service';
-import { useOtpVerification } from '@/shared/hooks/useOtpVerification';
-import { localPhone } from '@/shared/hooks/usePhoneVerification';
+import { useOtpVerification } from '@/shared/hooks/verification/useOtpVerification';
+import { localPhone } from '@/shared/hooks/verification/usePhoneVerification';
 import { showAlert } from '@/shared/utils/alert';
 
 /**

@@ -9,7 +9,7 @@ import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { getAlertTitle } from '@/features/individual/utils/alertCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
-import { useFavorites } from '@/shared/hooks/useFavorites';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 
 export default function AlertMatchesScreen() {
   const router = useRouter();

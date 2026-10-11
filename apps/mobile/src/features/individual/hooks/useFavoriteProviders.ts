@@ -15,7 +15,7 @@ import {
 import {
   PROVIDER_FAVORITE_IDS_QUERY_KEY,
   PROVIDER_FAVORITES_QUERY_KEY,
-} from '@/shared/hooks/providerFavoritesKeys';
+} from '@/shared/hooks/providers/providerFavoritesKeys';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 type Provider<T extends ProviderType> = T extends 'COMPANY'

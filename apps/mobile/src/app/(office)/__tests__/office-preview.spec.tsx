@@ -18,7 +18,7 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: ({ children }: any) => children,
 }));
 
-jest.mock('@/shared/hooks/useSubmitListing', () => ({
+jest.mock('@/shared/hooks/properties/useSubmitListing', () => ({
   useSubmitListing: () => ({
     draftData: {
       listingType: 'sell',
