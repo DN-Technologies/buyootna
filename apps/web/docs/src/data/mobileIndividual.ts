@@ -1432,5 +1432,44 @@ export const mobileIndividual: DocSection = {
       },
       updatedIn: "fix/alert-success-view-alerts",
     },
+    {
+      id: "mobile-add-alert-form-reset",
+      title: {
+        en: "Add Alert: the form is cleared after an alert is created",
+        ar: "إضافة تنبيه: يُفرَّغ النموذج بعد إنشاء التنبيه",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug fix: after creating an alert (real estate or auctions) the form kept every value, so tapping the create button again saved an identical alert — duplicate alerts and duplicate push notifications. The form now resets to empty as soon as the alert is created; a second tap is refused with 'يرجى اختيار المحافظة أولاً' until the user fills it in again. If saving fails the form keeps what was entered. Editing an alert is unchanged.",
+        ar: "إصلاح بلاغ QA: بعد إنشاء تنبيه (عقارات أو مزادات) كان النموذج يحتفظ بكل القيم، فيحفظ الضغط مجدداً على زر الإنشاء تنبيهاً مطابقاً — تنبيهات مكررة وإشعارات مكررة. الآن يُفرَّغ النموذج فور إنشاء التنبيه؛ ويُرفض الضغط الثاني برسالة 'يرجى اختيار المحافظة أولاً' حتى يملأه المستخدم من جديد. وإذا فشل الحفظ يحتفظ النموذج بما أُدخل. وتعديل التنبيه كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After a successful create (عقارات or مزادات), dismissing the success popup shows an empty form with no selections.",
+          "Tapping 'إنشاء تنبيه' again without filling it in shows 'يرجى اختيار المحافظة أولاً' and creates nothing.",
+          "A failed create keeps all entered values and shows the error.",
+          "Editing an existing alert still saves it and goes back.",
+        ],
+        ar: [
+          "بعد إنشاء ناجح (عقارات أو مزادات) يظهر النموذج فارغاً بلا اختيارات عند إغلاق نافذة النجاح.",
+          "الضغط على 'إنشاء تنبيه' مجدداً دون ملئه يعرض 'يرجى اختيار المحافظة أولاً' ولا ينشئ شيئاً.",
+          "الإنشاء الفاشل يحتفظ بكل القيم ويعرض الخطأ.",
+          "تعديل تنبيه موجود ما زال يحفظه ويعود للخلف.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Create a real-estate alert, dismiss the popup — the form is empty; tap create again — only the governorate message appears.",
+          "Repeat on مزادات.",
+          "Turn the network off, tap create — the error shows and the entered values stay.",
+        ],
+        ar: [
+          "أنشئ تنبيه عقارات وأغلق النافذة — النموذج فارغ؛ اضغط إنشاء مجدداً — تظهر رسالة المحافظة فقط.",
+          "كرّر على المزادات.",
+          "اقطع الإنترنت واضغط إنشاء — يظهر الخطأ وتبقى القيم المدخلة.",
+        ],
+      },
+      updatedIn: "fix/add-alert-reset-after-create",
+    },
   ],
 };
