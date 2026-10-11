@@ -2,9 +2,9 @@ import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import ArchivedAdCard from '../ArchivedAdCard';
-import { IMAGE_URLS, makeActivityItem, renderedImages } from './draftFixture';
+import { IMAGE_URLS, makeActivityItem, renderedImages } from '../../__tests__/draftFixture';
 
-jest.mock('expo-image', () => require('./draftFixture').mockExpoImage());
+jest.mock('expo-image', () => require('../../__tests__/draftFixture').mockExpoImage());
 
 beforeEach(() => {
   renderedImages.length = 0;

@@ -7,9 +7,9 @@ import ActivityList from '@/features/individual/components/activity/ActivityList
 import ActivitySheets from '@/features/individual/components/activity/ActivitySheets';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ActivityTabsRow from '@/features/individual/components/activity/ActivityTabsRow';
-import AdsOptionsMenu from '@/features/individual/components/activity/AdsOptionsMenu';
-import AlertDeleteToast from '@/features/individual/components/activity/AlertDeleteToast';
-import AlertsOptionsMenu from '@/features/individual/components/activity/AlertsOptionsMenu';
+import AdsOptionsMenu from '@/features/individual/components/activity/ads/AdsOptionsMenu';
+import AlertDeleteToast from '@/features/individual/components/activity/alerts/AlertDeleteToast';
+import AlertsOptionsMenu from '@/features/individual/components/activity/alerts/AlertsOptionsMenu';
 import {
   ADD_ROUTE_BY_TAB,
   TABS,

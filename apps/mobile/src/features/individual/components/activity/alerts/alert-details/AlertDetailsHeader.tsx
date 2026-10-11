@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import AlertToggle from '@/features/individual/components/activity/alert-card/AlertToggle';
+import AlertToggle from '@/features/individual/components/activity/alerts/alert-card/AlertToggle';
 
 export interface AlertDetailsHeaderProps {
   title: string;

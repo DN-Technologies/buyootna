@@ -4,8 +4,8 @@ import ActivityFilterPills, {
   ActivityFilterType,
   FilterPill,
 } from '@/features/individual/components/activity/ActivityFilterPills';
-import FreeQuotaBanner from '@/features/individual/components/activity/FreeQuotaBanner';
-import SubscriptionSlotsRow from '@/features/individual/components/activity/SubscriptionSlotsRow';
+import FreeQuotaBanner from '@/features/individual/components/activity/ads/FreeQuotaBanner';
+import SubscriptionSlotsRow from '@/features/individual/components/activity/ads/SubscriptionSlotsRow';
 import { SubscriptionInfo } from '@/shared/hooks/useMyActivity';
 
 interface ActivityListHeaderProps {
