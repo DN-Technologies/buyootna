@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 
 import apiClient from '@/shared/api/api';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 

@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Linking, Share } from 'react-native';
 
-import { normalizeKuwaitPhone } from '@/shared/hooks/useProfileContact';
+import { normalizeKuwaitPhone } from '@/shared/hooks/providers/useProfileContact';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';

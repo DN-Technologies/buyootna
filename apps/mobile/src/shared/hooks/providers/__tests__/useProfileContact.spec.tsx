@@ -7,7 +7,7 @@ import { UserProfile } from '@/shared/components/profile/types';
 import {
   normalizeKuwaitPhone,
   useProfileContact,
-} from '@/shared/hooks/useProfileContact';
+} from '@/shared/hooks/providers/useProfileContact';
 import { showAlert } from '@/shared/utils/alert';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 

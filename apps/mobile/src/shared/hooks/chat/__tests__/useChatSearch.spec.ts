@@ -1,13 +1,13 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { chatService } from '@/shared/api/chat.service';
-import { useChatSearch } from '@/shared/hooks/useChatSearch';
+import { useChatSearch } from '@/shared/hooks/chat/useChatSearch';
 
 jest.mock('@/shared/api/chat.service', () => ({
   chatService: { searchMessages: jest.fn() },
 }));
 // No waiting on the debounce
-jest.mock('@/shared/hooks/useDebounce', () => ({ useDebounce: (v: unknown) => v }));
+jest.mock('@/shared/hooks/device/useDebounce', () => ({ useDebounce: (v: unknown) => v }));
 
 describe('useChatSearch', () => {
   beforeEach(() => jest.clearAllMocks());

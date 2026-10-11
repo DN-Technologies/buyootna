@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { chatService } from '@/shared/api/chat.service';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
 
 /**
  * Chats list search on the server: the other person's name, the ad title

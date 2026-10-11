@@ -17,7 +17,7 @@ import RepublishPlanPicker from '@/features/individual/components/activity/repub
 import RepublishSheetActions from '@/features/individual/components/activity/republish-ad/RepublishSheetActions';
 import RepublishSheetText from '@/features/individual/components/activity/republish-ad/RepublishSheetText';
 import type { PublishOption } from '@/shared/api/plans.service';
-import { SubscriptionInfo } from '@/shared/hooks/useMyActivity';
+import { SubscriptionInfo } from '@/shared/hooks/properties/useMyActivity';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 export type {

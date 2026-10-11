@@ -11,7 +11,7 @@ import {
 import {
   ResendOtpResult,
   useOtpResendTimer,
-} from '@/shared/hooks/useOtpResendTimer';
+} from '@/shared/hooks/verification/useOtpResendTimer';
 
 interface ForgotPasswordStep2Props {
   identifier: string;

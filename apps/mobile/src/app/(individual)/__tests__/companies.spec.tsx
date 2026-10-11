@@ -26,14 +26,14 @@ jest.mock('@/features/individual/services/feed.service', () => ({
   feedService: { getCompanies: jest.fn() },
 }));
 
-jest.mock('@/shared/hooks/useProviderFavorites', () => ({
+jest.mock('@/shared/hooks/providers/useProviderFavorites', () => ({
   useProviderFavorites: () => ({
     isFavorited: () => false,
     toggleFavorite: jest.fn(),
   }),
 }));
 
-jest.mock('@/shared/hooks/useAuthGuard', () => ({
+jest.mock('@/shared/hooks/auth/useAuthGuard', () => ({
   useAuthGuard: () => ({ guardAction: jest.fn(), authSheetRef: { current: null } }),
 }));
 

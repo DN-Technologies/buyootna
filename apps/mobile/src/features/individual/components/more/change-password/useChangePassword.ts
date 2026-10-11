@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { Keyboard, TextInput } from 'react-native';
 
 import { settingsService } from '@/shared/api/settings.service';
-import { useOtpResendTimer } from '@/shared/hooks/useOtpResendTimer';
+import { useOtpResendTimer } from '@/shared/hooks/verification/useOtpResendTimer';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';

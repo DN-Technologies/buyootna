@@ -19,7 +19,7 @@ import {
   ShareIcon,
 } from '@/assets/icons/home/property';
 import PropertyImageCarousel from '@/features/individual/components/property-details-sheet/PropertyImageCarousel';
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   getArabicCategoryLabel,

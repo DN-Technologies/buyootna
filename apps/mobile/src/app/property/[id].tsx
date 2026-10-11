@@ -18,11 +18,11 @@ import PropertyDetailsContent from '@/shared/components/property/PropertyDetails
 import PropertyErrorState from '@/shared/components/property/PropertyErrorState';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useFavorites } from '@/shared/hooks/useFavorites';
-import { renewProperty, useMyActivity } from '@/shared/hooks/useMyActivity';
-import { usePropertyActions } from '@/shared/hooks/usePropertyActions';
-import { usePropertyDetails } from '@/shared/hooks/usePropertyDetails';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
+import { renewProperty, useMyActivity } from '@/shared/hooks/properties/useMyActivity';
+import { usePropertyActions } from '@/shared/hooks/properties/usePropertyActions';
+import { usePropertyDetails } from '@/shared/hooks/properties/usePropertyDetails';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 

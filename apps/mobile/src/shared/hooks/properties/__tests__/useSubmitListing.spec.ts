@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { plansService, PublishOption } from '@/shared/api/plans.service';
 import { propertiesService } from '@/shared/api/properties.service';
-import { useSubmitListing } from '@/shared/hooks/useSubmitListing';
+import { useSubmitListing } from '@/shared/hooks/properties/useSubmitListing';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
 

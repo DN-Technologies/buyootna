@@ -18,9 +18,9 @@ import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
-import { useFavorites } from '@/shared/hooks/useFavorites';
-import { useResponsiveLayout } from '@/shared/hooks/useResponsiveLayout';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
+import { useResponsiveLayout } from '@/shared/hooks/device/useResponsiveLayout';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import {
   formatTimeAgo,

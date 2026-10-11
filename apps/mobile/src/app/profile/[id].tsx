@@ -15,8 +15,8 @@ import ProfileNavBar from '@/shared/components/profile/ProfileNavBar';
 import ProfileReviewsTab from '@/shared/components/profile/ProfileReviewsTab';
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useProfileContact } from '@/shared/hooks/useProfileContact';
-import { useUserProfile } from '@/shared/hooks/useUserProfile';
+import { useProfileContact } from '@/shared/hooks/providers/useProfileContact';
+import { useUserProfile } from '@/shared/hooks/auth/useUserProfile';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();

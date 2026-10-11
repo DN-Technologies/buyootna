@@ -11,7 +11,7 @@ import PreviewDetailsCard from '@/shared/components/add-listing/PreviewDetailsCa
 import PreviewImageGallery from '@/shared/components/add-listing/PreviewImageGallery';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import SuccessModal from '@/shared/components/add-listing/SuccessModal';
-import { useSubmitListing } from '@/shared/hooks/useSubmitListing';
+import { useSubmitListing } from '@/shared/hooks/properties/useSubmitListing';
 
 export default function OfficeAdPreviewScreen() {
   const router = useRouter();

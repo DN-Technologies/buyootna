@@ -1,7 +1,7 @@
 import { useScrollToTop } from '@react-navigation/native';
 import { fireEvent, render } from '@testing-library/react-native';
 
-import { useUnreadNotificationsCount } from '@/shared/hooks/useUnreadNotificationsCount';
+import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -43,7 +43,7 @@ jest.mock('@/shared/store/useChatStore', () => ({
   useChatStore: jest.fn(),
 }));
 
-jest.mock('@/shared/hooks/useUnreadNotificationsCount', () => ({
+jest.mock('@/shared/hooks/notifications/useUnreadNotificationsCount', () => ({
   useUnreadNotificationsCount: jest.fn(),
 }));
 

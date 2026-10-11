@@ -16,8 +16,8 @@ import { LocalAttachment } from '@/shared/api/chat.service';
 import AttachmentPanel, {
   ChatComposer,
 } from '@/shared/components/chat/AttachmentPanel';
-import { useKeyboardHeight } from '@/shared/hooks/useKeyboardHeight';
-import { useVoiceRecorder } from '@/shared/hooks/useVoiceRecorder';
+import { useKeyboardHeight } from '@/shared/hooks/device/useKeyboardHeight';
+import { useVoiceRecorder } from '@/shared/hooks/chat/useVoiceRecorder';
 import { formatDuration } from '@/shared/utils/chatAttachments';
 
 // A press shorter than this locks recording (send / delete buttons)

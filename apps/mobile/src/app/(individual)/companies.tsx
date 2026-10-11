@@ -35,10 +35,10 @@ import RadioSelectionSheet, {
   type RadioOption,
 } from '@/shared/components/profile/RadioSelectionSheet';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
-import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useDebounce } from '@/shared/hooks/useDebounce';
-import { useProviderFavorites } from '@/shared/hooks/useProviderFavorites';
-import { useTabBarHeight } from '@/shared/hooks/useTabBarHeight';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
+import { useDebounce } from '@/shared/hooks/device/useDebounce';
+import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { openChatWith } from '@/shared/utils/openChat';
 
 // الترتيب حسب options (design); الكل is the default newest-first order

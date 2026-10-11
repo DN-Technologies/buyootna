@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
 
-import { ActivityItem } from '@/shared/hooks/useMyActivity';
+import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 import { useActivityFilters } from '../useActivityFilters';
 
