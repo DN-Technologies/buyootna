@@ -26,17 +26,18 @@ import {
   sortByRating,
   sortFavoriteProperties,
 } from '@/features/individual/utils/favoritesSort';
-import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
+import FavoriteCompanySkeleton from '@/shared/components/skeletons/FavoriteCompanySkeleton';
+import FavoritePropertySkeleton from '@/shared/components/skeletons/FavoritePropertySkeleton';
+import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
 import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
 import { openChatWith } from '@/shared/utils/openChat';
 
-function PropertiesLoading() {
+// Each tab's placeholders look like its own cards
+function ListLoading({ card: Card }: { card: React.ComponentType }) {
   return (
     <View>
-      {[1, 2, 3].map((key) => (
-        <View key={key} className="mb-4">
-          <PropertySkeleton />
-        </View>
+      {[1, 2, 3, 4].map((key) => (
+        <Card key={key} />
       ))}
     </View>
   );
@@ -72,6 +73,12 @@ export default function FavoritesScreen() {
     properties: sortedProperties.length,
     companies: sortedCompanies.length,
     offices: sortedOffices.length,
+  };
+
+  const loadingByTab: Record<FavoritesTab, boolean> = {
+    properties: favorites.isLoading,
+    companies: favoriteCompanies.isLoading,
+    offices: favoriteOffices.isLoading,
   };
 
   const handleClearAll = async () => {
@@ -110,6 +117,7 @@ export default function FavoritesScreen() {
       <FavoritesSubHeader
         activeTab={activeTab}
         totalCount={countByTab[activeTab]}
+        isLoading={loadingByTab[activeTab]}
         onSortPress={() => sortSheetRef.current?.present()}
       />
 
@@ -121,7 +129,11 @@ export default function FavoritesScreen() {
             onRefresh={favorites.refresh}
             onEndReached={favorites.loadMore}
             emptyComponent={
-              favorites.isLoading ? <PropertiesLoading /> : emptyState
+              favorites.isLoading ? (
+                <ListLoading card={FavoritePropertySkeleton} />
+              ) : (
+                emptyState
+              )
             }
             renderItem={({ item }) => (
               <FavoritePropertyCard
@@ -149,7 +161,11 @@ export default function FavoritesScreen() {
             onRefresh={favoriteCompanies.refresh}
             onEndReached={favoriteCompanies.loadMore}
             emptyComponent={
-              favoriteCompanies.isLoading ? <PropertiesLoading /> : emptyState
+              favoriteCompanies.isLoading ? (
+                <ListLoading card={FavoriteCompanySkeleton} />
+              ) : (
+                emptyState
+              )
             }
             renderItem={({ item }) => (
               <FavoriteCompanyCard
@@ -184,7 +200,11 @@ export default function FavoritesScreen() {
             onRefresh={favoriteOffices.refresh}
             onEndReached={favoriteOffices.loadMore}
             emptyComponent={
-              favoriteOffices.isLoading ? <PropertiesLoading /> : emptyState
+              favoriteOffices.isLoading ? (
+                <ListLoading card={OfficeListSkeleton} />
+              ) : (
+                emptyState
+              )
             }
             renderItem={({ item }) => (
               <OfficeListCard

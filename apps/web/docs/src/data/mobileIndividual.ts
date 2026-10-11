@@ -1542,6 +1542,39 @@ export const mobileIndividual: DocSection = {
       updatedIn: "feat/activity-offers-status-tabs",
     },
     {
+      id: "mobile-favorites-loading-skeleton",
+      title: {
+        en: "المفضلة: loading placeholders match each tab's cards",
+        ar: "المفضلة: عناصر التحميل تشبه بطاقات كل تبويب",
+      },
+      priority: "P2",
+      story: {
+        en: "QA bug fix: while المفضلة loaded, its placeholders were the home slider's property cards (75% of the screen wide, pushed off to one side) on every tab, and the header already said 'لا توجد عناصر محفوظة'. Now each tab shows full-width placeholders shaped like its own cards — the compact property card, the company card, the office card — and the header shows a small placeholder instead of a count until the list has loaded.",
+        ar: "إصلاح بلاغ QA: أثناء تحميل المفضلة كانت عناصر التحميل بطاقات عقارات سلايدر الرئيسية (بعرض 75% من الشاشة ومنحرفة إلى جانب) في كل تبويب، وكان العنوان يقول 'لا توجد عناصر محفوظة' من البداية. الآن يعرض كل تبويب عناصر تحميل بعرض كامل على شكل بطاقاته — بطاقة العقار المدمجة وبطاقة الشركة وبطاقة المكتب — ويعرض العنوان عنصراً صغيراً بدل العدد حتى تُحمَّل القائمة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On عقارات, شركات and مكاتب the placeholders span the list's full width and look like that tab's cards.",
+          "While loading, the line next to الترتيب حسب shows a placeholder, never 'لا توجد عناصر محفوظة'.",
+          "Once loaded, the real cards (or the empty state) replace the placeholders and the count appears.",
+        ],
+        ar: [
+          "في عقارات وشركات ومكاتب تمتد عناصر التحميل بعرض القائمة كله وتشبه بطاقات ذلك التبويب.",
+          "أثناء التحميل يظهر بجانب الترتيب حسب عنصر تحميل ولا تظهر 'لا توجد عناصر محفوظة' أبداً.",
+          "بعد التحميل تحل البطاقات الحقيقية (أو الحالة الفارغة) محل العناصر ويظهر العدد.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open المفضلة on a slow connection and switch between the three tabs — each shows full-width placeholders of its own shape.",
+        ],
+        ar: [
+          "افتح المفضلة باتصال بطيء وبدّل بين التبويبات الثلاثة — يعرض كل منها عناصر تحميل بعرض كامل وبشكله.",
+        ],
+      },
+      updatedIn: "fix/favorites-skeleton",
+    },
+    {
       id: "mobile-activity-package-balance",
       title: {
         en: "My Activity shows the remaining ads from purchased packages",
