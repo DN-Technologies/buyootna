@@ -93,3 +93,33 @@ export function categoriesFor(type?: ListingType) {
       )
     : PROPERTY_CATEGORIES
 }
+
+// Every category an ad can carry, including ones no longer offered for new
+// ads. Mirrors the API's PROPERTY_CATEGORY_LABELS.
+export const CATEGORY_LABELS: Record<string, string> = {
+  COMMERCIAL: 'تجاري',
+  INVESTMENT: 'استثماري',
+  INDUSTRIAL: 'صناعي',
+  COASTAL: 'ساحلي',
+  OFFICE: 'مكتب',
+  PRIVATE: 'خاص',
+  HOUSE: 'بيت',
+  APARTMENT: 'شقة',
+  VILLA: 'فيلا',
+  BUILDING: 'عمارة',
+  LAND: 'أرض',
+  CHALET: 'شاليه',
+  RESIDENTIAL: 'سكني',
+  FARM: 'مزرعة',
+}
+
+// Which counts a category has: land and farms have none, and only flats and
+// buildings count floors. Mirrors the API's property-category-fields.ts.
+const NO_COUNTS = ['LAND', 'FARM']
+const WITH_FLOORS = ['APARTMENT', 'BUILDING']
+
+export const categoryCounts = (category: string) => ({
+  rooms: !NO_COUNTS.includes(category),
+  baths: !NO_COUNTS.includes(category),
+  floors: WITH_FLOORS.includes(category),
+})

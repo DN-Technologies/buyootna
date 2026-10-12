@@ -1,4 +1,11 @@
-import type { Company, ListingType, Office, Page, Property } from './types'
+import type {
+  Company,
+  ListingType,
+  Office,
+  Page,
+  Property,
+  PropertyDetails,
+} from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.buyootna.cloud'
 // The public lists change slowly; a few minutes of caching keeps the site fast
@@ -85,3 +92,21 @@ export interface OfficeQuery {
 
 export const getOffices = (query: OfficeQuery = {}) =>
   getPage<Office>('/users/offices', { ...query })
+
+/**
+ * One ad with its advertiser, or null when it doesn't exist, was removed,
+ * or isn't live. Refreshed every minute so views and edits show up soon.
+ */
+export async function getProperty(id: string): Promise<PropertyDetails | null> {
+  try {
+    const response = await fetch(
+      `${API_URL}/properties/${encodeURIComponent(id)}`,
+      { next: { revalidate: 60 } },
+    )
+    if (!response.ok) return null
+    const property = (await response.json()) as PropertyDetails
+    return property.status === 'ACTIVE' && !property.isHidden ? property : null
+  } catch {
+    return null
+  }
+}

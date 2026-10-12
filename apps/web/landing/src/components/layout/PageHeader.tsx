@@ -1,19 +1,31 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Fragment } from 'react'
 
 import SiteNav from '@/components/layout/SiteNav'
 
 interface PageHeaderProps {
-  title: string
+  // Omit when the page shows its own title below the band
+  title?: string
   // The page's name in the trail, when it differs from the title
   crumb?: string
+  // Pages between the home page and this one
+  trail?: { label: string; href: string }[]
 }
+
+const chevron = (
+  <Image src="/landing/crumb-chevron.svg" alt="" width={12} height={12} />
+)
 
 /**
  * The top of an inner page: the hero's backdrop as a short band, the nav,
  * the trail back to the home page and the page title.
  */
-export default function PageHeader({ title, crumb = title }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  crumb = title,
+  trail = [],
+}: PageHeaderProps) {
   return (
     // Above the content, so the nav's menus can hang over it
     <div className="relative z-10 bg-[#F9F9F9] pt-6 pb-8 md:pt-12 md:pb-10">
@@ -49,19 +61,27 @@ export default function PageHeader({ title, crumb = title }: PageHeaderProps) {
             <Link href="/" className="text-[#A0A0A0] transition hover:text-ink">
               الرئيسية
             </Link>
-            <Image
-              src="/landing/crumb-chevron.svg"
-              alt=""
-              width={12}
-              height={12}
-            />
-            <span aria-current="page" className="text-ink">
+            {trail.map((step) => (
+              <Fragment key={step.href}>
+                {chevron}
+                <Link
+                  href={step.href}
+                  className="text-[#A0A0A0] transition hover:text-ink"
+                >
+                  {step.label}
+                </Link>
+              </Fragment>
+            ))}
+            {chevron}
+            <span aria-current="page" className="truncate text-ink">
               {crumb}
             </span>
           </nav>
-          <h1 className="text-center text-[28px] leading-normal font-bold tracking-[-0.72px] text-ink md:text-4xl">
-            {title}
-          </h1>
+          {title && (
+            <h1 className="text-center text-[28px] leading-normal font-bold tracking-[-0.72px] text-ink md:text-4xl">
+              {title}
+            </h1>
+          )}
         </div>
       </div>
     </div>

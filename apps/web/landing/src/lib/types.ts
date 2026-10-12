@@ -59,3 +59,56 @@ export interface Page<T> {
   data: T[]
   meta: PageMeta
 }
+
+// GET /properties/:id, as the ad page uses it
+export interface PropertyDetails {
+  id: string
+  referenceNumber: number
+  type: ListingType
+  // The API's PropertyCategory value, e.g. "APARTMENT"
+  category: string
+  status: string
+  isHidden: boolean
+  isFeatured: boolean
+  price: number | null
+  location: string
+  governorateId: string | null
+  areaId: string | null
+  areaSize: number | null
+  description: string
+  images: string[]
+  views: number
+  createdAt: string
+  publishedAt: string | null
+  beds: number | null
+  baths: number | null
+  floors: number | null
+  // مزايا العقار, as the app saved them
+  features: ({ id?: string; label?: string } | string)[] | null
+  propertyIncome: number | null
+  // Rent ads
+  rentConditions: string | null
+  additionalExpenses: string | null
+  // Exchange ads
+  requestYear: number | null
+  requiredYear: number | null
+  allocationStatus: string | null
+  latitude: number | null
+  longitude: number | null
+  // The ad's own contact number, when it has one
+  phoneNumber: string | null
+  // An office's licence number
+  licenseNumber?: string | null
+  host: {
+    id?: string
+    name: string
+    avatarUrl: string
+    // "06/2026"
+    joinedDate: string
+    isVerified: boolean
+    rating: number
+    reviewsCount: number
+    phone: string | null
+    role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE'
+  }
+}

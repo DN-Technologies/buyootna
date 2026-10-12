@@ -1,10 +1,12 @@
 /* eslint-disable @next/next/no-img-element -- listing photos are uploaded by
    advertisers to storage hosts the image optimizer isn't configured for */
-import { ClipboardList, Heart } from 'lucide-react'
+import { ClipboardList, Forward, Heart } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 import AccountAction from '@/components/ui/AccountAction'
 import InitialTile from '@/components/ui/InitialTile'
+import ShareButton from '@/components/ui/ShareButton'
 import { LISTING_TYPES } from '@/lib/categories'
 import { formatNumber, timeAgo } from '@/lib/format'
 import type { Property } from '@/lib/types'
@@ -32,7 +34,8 @@ function SaveButton({ className = '' }: { className?: string }) {
 
 /**
  * One ad: what it is and for which kind of deal, price, place and size,
- * income (or an exchange ad's two years) and the advertiser.
+ * income (or an exchange ad's two years) and the advertiser. Its photo and
+ * title open the ad's page.
  */
 export default function PropertyCard({
   property,
@@ -50,21 +53,36 @@ export default function PropertyCard({
     ? `${property.categoryLabel} ${dealLabel}`
     : property.categoryLabel
   const published = property.publishedAt ?? property.createdAt
+  const href = `/properties/${property.id}`
+  const share = (className: string) => (
+    <ShareButton
+      path={href}
+      title={title}
+      className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${className}`}
+    >
+      <Forward className="h-3.75 w-3.75 text-ink" strokeWidth={1.5} />
+    </ShareButton>
+  )
 
   return (
     <article className="flex h-full w-full flex-col overflow-hidden rounded-md border border-line bg-white shadow-[0_2px_2px_rgba(33,37,41,0.06),0_0_1px_rgba(33,37,41,0.08)]">
       {!compact && (
         <div className="relative h-40.75 w-full shrink-0 bg-tag">
-          {photo && (
-            <img
-              src={photo}
-              alt={`${title} في ${property.location}`}
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          )}
-          <div className="absolute inset-x-3 top-2 flex items-center justify-between">
-            <SaveButton className="bg-white/95" />
+          <Link href={href} aria-label={title} className="absolute inset-0">
+            {photo && (
+              <img
+                src={photo}
+                alt={`${title} في ${property.location}`}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
+          </Link>
+          <div className="pointer-events-none absolute inset-x-3 top-2 flex items-center justify-between *:pointer-events-auto">
+            <span className="flex items-center gap-2">
+              <SaveButton className="bg-white/95" />
+              {share('bg-white/95')}
+            </span>
             {property.isFeatured && <span className={FEATURED_TAG}>مميز</span>}
           </div>
         </div>
@@ -74,15 +92,12 @@ export default function PropertyCard({
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between gap-2">
             <h3 className="truncate text-[15px] font-semibold tracking-[0.3px] text-ink">
-              {title}
+              <Link href={href} className="transition hover:text-brand">
+                {title}
+              </Link>
             </h3>
             {compact ? (
-              <span className="flex items-center gap-2">
-                <SaveButton />
-                {property.isFeatured && (
-                  <span className={FEATURED_TAG}>مميز</span>
-                )}
-              </span>
+              property.isFeatured && <span className={FEATURED_TAG}>مميز</span>
             ) : (
               <time
                 dateTime={published}
@@ -190,6 +205,19 @@ export default function PropertyCard({
             />
           </AccountAction>
         </div>
+
+        {compact && (
+          <div className="flex items-center gap-3 border-t border-line pt-4">
+            <Link
+              href={href}
+              className="flex h-8 flex-1 items-center justify-center rounded-2xl bg-surface text-sm font-medium text-brand transition hover:bg-tag"
+            >
+              عرض تفاصيل
+            </Link>
+            {share('')}
+            <SaveButton />
+          </div>
+        )}
       </div>
     </article>
   )

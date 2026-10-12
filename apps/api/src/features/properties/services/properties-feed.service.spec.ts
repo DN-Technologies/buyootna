@@ -107,7 +107,7 @@ describe('PropertiesFeedService.findAll sorting', () => {
     }
   });
 
-  it("filters exchange ads by their request year and the year they want", async () => {
+  it('filters exchange ads by their request year and the year they want', async () => {
     await service.findAll({
       type: 'EXCHANGE',
       requestYear: 2021,
