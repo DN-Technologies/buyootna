@@ -60,6 +60,45 @@ describe('PropertiesFeedService.findAll sorting', () => {
     expect(args.where).toMatchObject({ status: 'ACTIVE', type: 'SALE' });
   });
 
+  const whereUsed = () =>
+    (
+      prisma.property.findMany.mock.calls as [Prisma.PropertyFindManyArgs][]
+    )[0][0].where;
+
+  it('narrows by governorate, area, category and a price range', async () => {
+    await service.findAll({
+      type: 'SALE',
+      governorateId: 'capital',
+      areaId: 'dasma',
+      category: 'APARTMENT',
+      minPrice: 50000,
+      maxPrice: 150000,
+    });
+
+    expect(whereUsed()).toMatchObject({
+      status: 'ACTIVE',
+      type: 'SALE',
+      governorateId: 'capital',
+      areaId: 'dasma',
+      category: 'APARTMENT',
+      price: { gte: 50000, lte: 150000 },
+    });
+    // The count has to describe the same filtered set
+    expect(prisma.property.count).toHaveBeenCalledWith({ where: whereUsed() });
+  });
+
+  it('takes a one-sided price range, and none of the filters by default', async () => {
+    await service.findAll({ maxPrice: 900 });
+    expect(whereUsed()).toMatchObject({ price: { lte: 900 } });
+
+    jest.clearAllMocks();
+    await service.findAll({});
+    const where = whereUsed() as Record<string, unknown>;
+    for (const key of ['governorateId', 'areaId', 'category', 'price']) {
+      expect(where).not.toHaveProperty(key);
+    }
+  });
+
   it.each([
     ['PRICE_DESC', 'desc'],
     ['PRICE_ASC', 'asc'],

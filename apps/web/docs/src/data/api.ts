@@ -1044,5 +1044,42 @@ export const api: DocSection = {
       },
       updatedIn: "feat/company-subscriptions",
     },
+    {
+      id: "api-properties-search-filters",
+      title: {
+        en: "Properties list: filter by governorate, area, category and price",
+        ar: "قائمة العقارات: التصفية بالمحافظة والمنطقة والفئة والسعر",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /properties accepts five more optional query parameters, combined with AND alongside `type`: `governorateId`, `areaId`, `category` (a PropertyCategory value), `minPrice` and `maxPrice`. An ad with no price shown never matches a price range. `meta.total` counts the filtered set. Requests without them behave as before.",
+        ar: "يقبل GET /properties خمسة معاملات اختيارية إضافية تُجمع بـ AND مع `type`: `governorateId` و`areaId` و`category` (قيمة من PropertyCategory) و`minPrice` و`maxPrice`. الإعلان بلا سعر معلن لا يطابق أي نطاق سعري. و`meta.total` يحصي النتائج بعد التصفية. والطلبات بدونها تعمل كما كانت.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "?type=SALE&category=APARTMENT&maxPrice=100000 returns only sale apartments priced up to 100,000, and meta.total matches.",
+          "?governorateId=capital&areaId=<id> returns only ads in that area.",
+          "An unknown category is 400; a non-numeric or negative price is 400.",
+          "minPrice alone and maxPrice alone each work.",
+        ],
+        ar: [
+          "?type=SALE&category=APARTMENT&maxPrice=100000 يعيد شقق البيع حتى 100,000 فقط، وmeta.total مطابق.",
+          "?governorateId=capital&areaId=<id> يعيد إعلانات تلك المنطقة فقط.",
+          "الفئة غير المعروفة 400؛ والسعر غير الرقمي أو السالب 400.",
+          "minPrice وحده وmaxPrice وحده يعملان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "GET /properties?type=SALE&category=APARTMENT&maxPrice=100000 and check every item.",
+          "GET /properties?category=NOPE: 400.",
+        ],
+        ar: [
+          "اطلب /properties?type=SALE&category=APARTMENT&maxPrice=100000 وتحقق من كل عنصر.",
+          "اطلب /properties?category=NOPE: الرد 400.",
+        ],
+      },
+      updatedIn: "feat/landing-home-figma",
+    },
   ],
 };

@@ -1,14 +1,19 @@
-@import "tailwindcss";
-@import "@fontsource/cairo/300.css";
-@import "@fontsource/cairo/400.css";
-@import "@fontsource/cairo/500.css";
-@import "@fontsource/cairo/600.css";
-@import "@fontsource/cairo/700.css";
-@import "@fontsource/inter/300.css";
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
+@import 'tailwindcss';
+/* The sign-in forms live in the shared UI package. Tailwind doesn't scan
+   workspace packages on its own, so their classes are named here; until now
+   they only worked because the old home page happened to use the same ones. */
+@source '../../../../../packages/ui/src';
+@import '@fontsource/cairo/300.css';
+@import '@fontsource/cairo/400.css';
+@import '@fontsource/cairo/500.css';
+@import '@fontsource/cairo/600.css';
+@import '@fontsource/cairo/700.css';
+@import '@fontsource/cairo/800.css';
+@import '@fontsource/inter/300.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
 
 :root {
   --font-cairo: 'Cairo', sans-serif;
@@ -18,17 +23,33 @@
 @theme {
   --font-sans: var(--font-cairo), var(--font-inter), sans-serif;
   --font-mono: var(--font-inter), monospace;
-  
-  --color-primary: #0F1E2E;
-  --color-primary-dark: #070D14;
-  --color-accent: #C5A880;
-  --color-accent-light: #DFCDAB;
+
+  --color-primary: #0f1e2e;
+  --color-primary-dark: #070d14;
+  --color-accent: #c5a880;
+  --color-accent-light: #dfcdab;
+
+  /* The public site (Figma "Byoutna Web - Landing") */
+  --color-brand: #15304d;
+  --color-brand-dark: #0d243d;
+  --color-ink: #111111;
+  --color-muted: #6b6a6a;
+  --color-line: #ececec;
+  --color-surface: #f9fafe;
+  --color-tag: #f5f7f9;
+  --color-success: #018b1b;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #0A1118;
-  color: #ECEFF2;
+}
+
+/* A horizontally scrolling row of cards with no visible scrollbar */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom scrollbar styling */
@@ -36,12 +57,12 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A1118;
+  background: #0a1118;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1B2936;
+  background: #1b2936;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C5A880;
+  background: #c5a880;
 }
