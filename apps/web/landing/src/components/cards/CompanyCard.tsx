@@ -1,12 +1,11 @@
 /* eslint-disable @next/next/no-img-element -- company logos are uploaded to
    storage hosts the image optimizer isn't configured for */
 import Image from 'next/image'
-import Link from 'next/link'
 
 import InitialTile from '@/components/ui/InitialTile'
 import { splitServices } from '@/lib/format'
-import { LOGIN_PATH } from '@/lib/siteLinks'
 import type { Company } from '@/lib/types'
+import AccountAction from '@/components/ui/AccountAction'
 
 /** A service company: logo, services, rating, projects and the quote CTA. */
 export default function CompanyCard({ company }: { company: Company }) {
@@ -65,18 +64,14 @@ export default function CompanyCard({ company }: { company: Company }) {
           </div>
         </div>
 
-        <Link
-          href={LOGIN_PATH}
-          aria-label="أضف إلى المفضلة"
-          className="shrink-0 pt-2.5"
-        >
+        <AccountAction aria-label="أضف إلى المفضلة" className="shrink-0 pt-2.5">
           <Image
             src="/landing/company-heart.svg"
             alt=""
             width={24}
             height={24}
           />
-        </Link>
+        </AccountAction>
       </div>
 
       <dl className="mt-auto flex items-stretch justify-between border-t border-line px-2 pt-4 text-center font-medium">
@@ -95,14 +90,10 @@ export default function CompanyCard({ company }: { company: Company }) {
 
       <div className="flex items-center gap-2">
         {/* Both need an account */}
-        <Link
-          href={LOGIN_PATH}
-          className="flex h-11 flex-1 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white transition hover:bg-brand-dark"
-        >
+        <AccountAction className="flex h-11 flex-1 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white transition hover:bg-brand-dark">
           طلب عرض سعر
-        </Link>
-        <Link
-          href={LOGIN_PATH}
+        </AccountAction>
+        <AccountAction
           aria-label="محادثة"
           className="flex h-11 flex-1 items-center justify-center rounded-full border border-[#E2E8F0] bg-white transition hover:bg-tag"
         >
@@ -112,7 +103,7 @@ export default function CompanyCard({ company }: { company: Company }) {
             width={20}
             height={20}
           />
-        </Link>
+        </AccountAction>
       </div>
     </article>
   )

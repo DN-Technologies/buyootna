@@ -5,13 +5,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 
+import AccountAction from '@/components/ui/AccountAction'
 import { LOGIN_PATH } from '@/lib/siteLinks'
 import { useDismiss } from '@/lib/useDismiss'
 
 const PANEL_SHADOW =
   'shadow-[0_8px_24px_rgba(33,37,41,0.16),0_0_1px_rgba(33,37,41,0.2)]'
 
-// "اجراءات": the things an account can do; all need signing in
+// "اجراءات": the things an account can do; a visitor gets the sign-in dialog
 export const ACTIONS = [
   {
     label: 'اضافة اعلان',
@@ -60,10 +61,10 @@ export function ActionsMenu() {
           className={`absolute top-full right-0 z-30 mt-1 flex flex-col gap-1.5 rounded-md bg-white px-2.5 py-3 ${PANEL_SHADOW}`}
         >
           {ACTIONS.map((action) => (
-            <Link
+            <AccountAction
               key={action.label}
               role="menuitem"
-              href={LOGIN_PATH}
+              onBeforeOpen={close}
               className="flex h-10 w-43 items-center gap-2 rounded-xl px-2 text-sm font-medium whitespace-nowrap text-ink transition hover:bg-surface"
             >
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tag">
@@ -75,7 +76,7 @@ export function ActionsMenu() {
                 />
               </span>
               {action.label}
-            </Link>
+            </AccountAction>
           ))}
         </div>
       )}

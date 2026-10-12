@@ -1,8 +1,7 @@
 import Image from 'next/image'
-import Link from 'next/link'
 
 import Section from '@/components/ui/Section'
-import { LOGIN_PATH } from '@/lib/siteLinks'
+import AccountAction from '@/components/ui/AccountAction'
 
 const STEPS = [
   {
@@ -68,8 +67,7 @@ export default function NextSteps() {
               </div>
             </div>
             {/* Each of these needs an account */}
-            <Link
-              href={LOGIN_PATH}
+            <AccountAction
               className={`flex h-12 items-center justify-center rounded-full text-sm font-bold transition ${
                 step.primary
                   ? 'bg-brand text-white hover:bg-brand-dark'
@@ -77,7 +75,7 @@ export default function NextSteps() {
               }`}
             >
               {step.action}
-            </Link>
+            </AccountAction>
           </article>
         ))}
       </div>

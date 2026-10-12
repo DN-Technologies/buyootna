@@ -1,7 +1,5 @@
 import Image from 'next/image'
-import Link from 'next/link'
-
-import { LOGIN_PATH } from '@/lib/siteLinks'
+import AccountAction from '@/components/ui/AccountAction'
 
 /** "اعرض عقارك أو خدمتك على بيوتنا الان": the dark band with the house photo. */
 export default function ListWithUsBanner() {
@@ -18,18 +16,12 @@ export default function ListWithUsBanner() {
           </p>
         </div>
         <div className="flex flex-wrap gap-5">
-          <Link
-            href={LOGIN_PATH}
-            className="flex h-12 items-center rounded-full border-[1.4px] border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface"
-          >
+          <AccountAction className="flex h-12 items-center rounded-full border-[1.4px] border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface">
             اعلن عن عقارك
-          </Link>
-          <Link
-            href={LOGIN_PATH}
-            className="flex h-12 items-center rounded-full border-[1.2px] border-white px-8 text-[15px] font-bold text-white transition hover:bg-white/10"
-          >
+          </AccountAction>
+          <AccountAction className="flex h-12 items-center rounded-full border-[1.2px] border-white px-8 text-[15px] font-bold text-white transition hover:bg-white/10">
             اعرض خدمتك
-          </Link>
+          </AccountAction>
         </div>
       </div>
 
