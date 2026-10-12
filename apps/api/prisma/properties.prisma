@@ -42,6 +42,10 @@ model Property {
   additionalExpenses String?
   automatedNumber    String?
   phoneNumber        String?
+  // Per-ad WhatsApp contact; the ad's WhatsApp button uses it when set
+  whatsappNumber     String?
+  // حالة التخصيص, free text on exchange ads
+  allocationStatus   String?
   rentConditions     String?
   planSlotId         String?
   planSlot           UserPlanSlot?    @relation(fields: [planSlotId], references: [id])

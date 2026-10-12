@@ -37,6 +37,7 @@ enum PropertyCategory {
   LAND
   CHALET
   RESIDENTIAL
+  FARM
 }
 
 enum PropertyStatus {

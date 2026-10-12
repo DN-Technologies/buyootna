@@ -23,9 +23,10 @@ export interface PropertyOverviewProps {
   area: number;
   location: string;
   // Sale/Rent specific
-  floor?: number;
-  beds?: number;
-  baths?: number;
+  // null/undefined: the category has none (land, farm), so it isn't shown
+  floor?: number | null;
+  beds?: number | null;
+  baths?: number | null;
   // Exchange specific
   requestYear?: string;
   requiredYear?: string;

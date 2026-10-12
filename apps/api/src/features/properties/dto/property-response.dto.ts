@@ -268,6 +268,12 @@ export class PropertyDto {
   phoneNumber: string | null;
 
   @ApiProperty({ nullable: true })
+  whatsappNumber: string | null;
+
+  @ApiProperty({ nullable: true })
+  allocationStatus: string | null;
+
+  @ApiProperty({ nullable: true })
   rentConditions: string | null;
 
   @ApiProperty({ nullable: true })

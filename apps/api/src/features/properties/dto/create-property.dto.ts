@@ -38,13 +38,17 @@ export class CreatePropertyDto {
   @IsNumber({}, { message: 'المساحة يجب أن تكون رقماً' })
   areaSize: number;
 
+  // Rooms and baths are omitted for categories that have none (land, farm);
+  // see property-category-fields.ts
+  @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'عدد الغرف يجب أن يكون رقماً' })
-  beds: number;
+  beds?: number;
 
+  @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'عدد الحمامات يجب أن يكون رقماً' })
-  baths: number;
+  baths?: number;
 
   @IsString()
   @IsNotEmpty({ message: 'الموقع مطلوب' })
@@ -121,6 +125,15 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsString({ message: 'رقم الهاتف يجب أن يكون نصاً' })
   phoneNumber?: string;
+
+  @IsOptional()
+  @IsString({ message: 'رقم الواتساب يجب أن يكون نصاً' })
+  whatsappNumber?: string;
+
+  @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.EXCHANGE)
+  @IsOptional()
+  @IsString({ message: 'حالة التخصيص يجب أن تكون نصاً' })
+  allocationStatus?: string;
 
   @IsOptional()
   @IsString({ message: 'الرقم الآلي يجب أن يكون نصاً' })

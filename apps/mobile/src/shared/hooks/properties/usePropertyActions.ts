@@ -28,7 +28,8 @@ export function usePropertyActions({
   const user = useAuthStore((state) => state.user);
 
   const handleWhatsapp = () => {
-    const phone = adContactPhone(property);
+    // The ad's own WhatsApp number when the advertiser gave one
+    const phone = property?.whatsappNumber || adContactPhone(property);
     if (!phone) {
       showAlert('تنبيه', 'لا يوجد رقم هاتف متاح لهذا الإعلان');
       return;
@@ -114,8 +115,9 @@ export function usePropertyActions({
   };
 
   return {
-    // Companies and offices have no WhatsApp
-    canWhatsapp: hostHasWhatsapp(property?.host?.role),
+    // Companies and offices have no WhatsApp, unless the ad carries one
+    canWhatsapp:
+      !!property?.whatsappNumber || hostHasWhatsapp(property?.host?.role),
     handleWhatsapp,
     handleCall,
     handleChat,

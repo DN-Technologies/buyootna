@@ -10,7 +10,7 @@ export default function PreviewImageGallery({
   return (
     <View className="w-full">
       <Text
-        className="pb-2 font-cairo-medium text-[13px] text-[#A0A0A0]"
+        className="pb-2 font-cairo-medium text-xs text-[#979797]"
         style={{ writingDirection: 'rtl' }}
       >
         الصور

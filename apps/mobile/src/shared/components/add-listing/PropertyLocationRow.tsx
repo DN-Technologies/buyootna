@@ -24,13 +24,14 @@ export default function PropertyLocationRow({
   onPressArea,
 }: PropertyLocationRowProps) {
   return (
-    <View className="mb-2 w-full flex-row gap-3" style={{ gap: 12 }}>
+    <View className="w-full flex-row" style={{ gap: 8 }}>
       <DrawerTrigger
         label="المحافظة"
         placeholder="اختر المحافظة"
         value={governorate?.label}
         onPress={onPressGovernorate}
         required={true}
+        size="lg"
         disabled={isEdit && !!governorate}
         locked={isEdit && !!governorate}
       />
@@ -48,6 +49,7 @@ export default function PropertyLocationRow({
           onPressArea();
         }}
         required={true}
+        size="lg"
         disabled={isEdit && !!area}
         locked={isEdit && !!area}
       />

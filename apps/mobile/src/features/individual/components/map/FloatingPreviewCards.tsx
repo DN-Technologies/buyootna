@@ -89,23 +89,30 @@ export function PropertyPreviewCard({
             </Text>
           </View>
 
-          <View className="h-3 w-[1px] bg-[#111111]" />
+          {/* Land and farms have no rooms or baths */}
+          {property.beds != null && (
+            <>
+              <View className="h-3 w-[1px] bg-[#111111]" />
+              <View className="flex-row items-center gap-1.5">
+                <BedIcon color="#111111" size={16} />
+                <Text className="text-sm font-normal text-[#111111]">
+                  {property.beds}
+                </Text>
+              </View>
+            </>
+          )}
 
-          <View className="flex-row items-center gap-1.5">
-            <BedIcon color="#111111" size={16} />
-            <Text className="text-sm font-normal text-[#111111]">
-              {property.beds ?? 3}
-            </Text>
-          </View>
-
-          <View className="h-3 w-[1px] bg-[#111111]" />
-
-          <View className="flex-row items-center gap-1.5">
-            <BathIcon color="#111111" size={16} />
-            <Text className="text-sm font-normal text-[#111111]">
-              {property.baths ?? 2}
-            </Text>
-          </View>
+          {property.baths != null && (
+            <>
+              <View className="h-3 w-[1px] bg-[#111111]" />
+              <View className="flex-row items-center gap-1.5">
+                <BathIcon color="#111111" size={16} />
+                <Text className="text-sm font-normal text-[#111111]">
+                  {property.baths}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Bottom Row: Location (Styled like PropertyCard.tsx) */}

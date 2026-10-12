@@ -6,9 +6,9 @@ import { AreaIcon, FloorIcon } from '@/assets/icons/home/property';
 interface PropertySpecsRowProps {
   areaSize?: number | null;
   area: number;
-  floors?: number;
-  beds: number;
-  baths: number;
+  floors?: number | null;
+  beds?: number | null;
+  baths?: number | null;
 }
 
 export default function PropertySpecsRow({
@@ -41,7 +41,7 @@ export default function PropertySpecsRow({
       </View>,
     );
   }
-  if (beds !== undefined && beds > 0) {
+  if (beds != null && beds > 0) {
     specs.push(
       <View key="beds" className="flex-row items-center gap-1.5">
         <BedIcon color="#15304D" size={16} />
@@ -51,7 +51,7 @@ export default function PropertySpecsRow({
       </View>,
     );
   }
-  if (baths !== undefined && baths > 0) {
+  if (baths != null && baths > 0) {
     specs.push(
       <View key="baths" className="flex-row items-center gap-1.5">
         <BathIcon color="#15304D" size={16} />

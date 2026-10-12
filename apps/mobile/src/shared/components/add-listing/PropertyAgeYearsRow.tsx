@@ -1,11 +1,19 @@
 import { Image } from 'expo-image';
-import { Text, TextInput, View } from 'react-native';
+import { View } from 'react-native';
 
+import FormField, {
+  BoxTextInput,
+  INPUT_BOX_CLASS,
+} from '@/shared/components/add-listing/FormField';
 import type { ListingType } from '@/shared/store/useListingStore';
 import { toWesternDigits } from '@/shared/utils/arabicNumerals';
 
 interface PropertyAgeYearsRowProps {
   listingType: ListingType;
+  // Land and farms have no age
+  showPropertyAge: boolean;
+  // Ads published before these became required can be edited without them
+  required: boolean;
   requestYear: string;
   onChangeRequestYear: (value: string) => void;
   requiredYear: string;
@@ -16,8 +24,45 @@ interface PropertyAgeYearsRowProps {
   onChangeAutomatedNumber: (value: string) => void;
 }
 
+interface NumberFieldProps {
+  label: string;
+  required: boolean;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+  testID: string;
+  trailing?: React.ReactNode;
+}
+
+function NumberField({
+  label,
+  required,
+  placeholder,
+  value,
+  onChange,
+  testID,
+  trailing,
+}: NumberFieldProps) {
+  return (
+    <FormField label={label} required={required} flex>
+      <View className={INPUT_BOX_CLASS} style={{ gap: 8 }}>
+        <BoxTextInput
+          testID={testID}
+          placeholder={placeholder}
+          keyboardType="numeric"
+          value={value}
+          onChangeText={(text) => onChange(toWesternDigits(text))}
+        />
+        {trailing}
+      </View>
+    </FormField>
+  );
+}
+
 export default function PropertyAgeYearsRow({
   listingType,
+  showPropertyAge,
+  required,
   requestYear,
   onChangeRequestYear,
   requiredYear,
@@ -29,112 +74,54 @@ export default function PropertyAgeYearsRow({
 }: PropertyAgeYearsRowProps) {
   if (listingType === 'exchange') {
     return (
-      <View className="mb-4 w-full flex-row gap-3" style={{ gap: 12 }}>
-        {/* Request Year */}
-        <View className="flex-1" style={{ flex: 1 }}>
-          <Text
-            className="mb-1 font-cairo-medium text-sm text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            سنة الطلب <Text className="text-red-500">*</Text>
-          </Text>
-          <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-            style={{ width: '100%' }}
-          >
-            <TextInput
-              className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-              style={{ flex: 1, textAlign: 'right' }}
-              placeholder="2019"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              value={requestYear}
-              onChangeText={(text) => onChangeRequestYear(toWesternDigits(text))}
-            />
-          </View>
-        </View>
-
-        {/* Desired Year */}
-        <View className="flex-1" style={{ flex: 1 }}>
-          <Text
-            className="mb-1 font-cairo-medium text-sm text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            السنة المطلوبة <Text className="text-red-500">*</Text>
-          </Text>
-          <View
-            className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-            style={{ width: '100%' }}
-          >
-            <TextInput
-              className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-              style={{ flex: 1, textAlign: 'right' }}
-              placeholder="2025"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              value={requiredYear}
-              onChangeText={(text) => onChangeRequiredYear(toWesternDigits(text))}
-            />
-          </View>
-        </View>
+      <View className="w-full flex-row" style={{ gap: 8 }}>
+        <NumberField
+          label="سنة الطلب"
+          required
+          placeholder="2019"
+          value={requestYear}
+          onChange={onChangeRequestYear}
+          testID="input-request-year"
+        />
+        <NumberField
+          label="السنة المطلوبة"
+          required
+          placeholder="2025"
+          value={requiredYear}
+          onChange={onChangeRequiredYear}
+          testID="input-required-year"
+        />
       </View>
     );
   }
 
   return (
-    <View className="mb-4 w-full flex-row gap-3" style={{ gap: 12 }}>
-      {/* Property Age */}
-      <View className="flex-1" style={{ flex: 1 }}>
-        <Text
-          className="mb-1 font-cairo-medium text-sm text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          عمر العقار
-        </Text>
-        <View
-          className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-          style={{ width: '100%' }}
-        >
-          <TextInput
-            className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-            style={{ flex: 1, textAlign: 'right' }}
-            placeholder="السنين"
-            placeholderTextColor="#94A3B8"
-            keyboardType="numeric"
-            value={propertyAge}
-            onChangeText={(text) => onChangePropertyAge(toWesternDigits(text))}
-          />
-        </View>
-      </View>
-
-      {/* Automated Number (PACI) */}
-      <View className="flex-1" style={{ flex: 1 }}>
-        <Text
-          className="mb-1 font-cairo-medium text-sm text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          الرقم الالي للعقار
-        </Text>
-        <View
-          className="h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-          style={{ width: '100%' }}
-        >
-          <TextInput
-            className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-            style={{ flex: 1, textAlign: 'right' }}
-            placeholder="768954093"
-            placeholderTextColor="#94A3B8"
-            keyboardType="numeric"
-            value={automatedNumber}
-            onChangeText={(text) => onChangeAutomatedNumber(toWesternDigits(text))}
-          />
+    <View className="w-full flex-row" style={{ gap: 8 }}>
+      {showPropertyAge && (
+        <NumberField
+          label="عمر العقار"
+          required={required}
+          placeholder="السنين"
+          value={propertyAge}
+          onChange={onChangePropertyAge}
+          testID="input-property-age"
+        />
+      )}
+      <NumberField
+        label="الرقم الالي للعقار"
+        required={required}
+        placeholder="768954093"
+        value={automatedNumber}
+        onChange={onChangeAutomatedNumber}
+        testID="input-automated-number"
+        trailing={
           <Image
             source={require('@/assets/icons/add-listing/automated-number.png')}
             style={{ width: 17, height: 16 }}
             contentFit="contain"
           />
-        </View>
-      </View>
+        }
+      />
     </View>
   );
 }

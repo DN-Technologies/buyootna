@@ -6,8 +6,8 @@ import { Image } from 'expo-image';
 import { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { useAuthStore } from '@/shared/store/useAuthStore';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 interface QuotaExhaustedSheetProps {
   onBrowsePackages?: () => void;

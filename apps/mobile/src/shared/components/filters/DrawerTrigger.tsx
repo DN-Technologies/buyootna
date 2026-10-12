@@ -12,6 +12,8 @@ export interface DrawerTriggerProps {
   optional?: boolean;
   disabled?: boolean;
   locked?: boolean;
+  // 'lg' is the add-ad form's field: 46px tall, spaced by its parent
+  size?: 'md' | 'lg';
 }
 
 export default function DrawerTrigger({
@@ -23,11 +25,13 @@ export default function DrawerTrigger({
   optional,
   disabled,
   locked,
+  size = 'md',
 }: DrawerTriggerProps) {
+  const isLarge = size === 'lg';
   return (
-    <View className="mb-6 flex-1" style={{ flex: 1 }}>
+    <View className={isLarge ? 'flex-1' : 'mb-6 flex-1'} style={{ flex: 1 }}>
       <Text
-        className="mb-1 font-cairo-medium text-sm text-[#111111]"
+        className={`font-cairo-medium text-sm text-[#111111] ${isLarge ? 'mb-3' : 'mb-1'}`}
         style={{
           writingDirection: 'rtl',
         }}
@@ -39,7 +43,7 @@ export default function DrawerTrigger({
         activeOpacity={0.7}
         onPress={onPress}
         disabled={disabled}
-        className={`h-[40px] w-full justify-center rounded-md border border-[#ECECEC] px-4 ${disabled ? 'bg-gray-50' : 'bg-white'}`}
+        className={`w-full justify-center rounded-md border border-[#ECECEC] ${isLarge ? 'h-[46px] px-3' : 'h-[40px] px-4'} ${disabled ? 'bg-gray-50' : 'bg-white'}`}
         style={{ width: '100%' }}
       >
         <View className="flex-row items-center justify-between gap-2 w-full">

@@ -10,8 +10,9 @@ export interface CreatePropertyPayload {
   type: 'SALE' | 'RENT' | 'EXCHANGE';
   category: string;
   areaSize: number;
-  beds: number;
-  baths: number;
+  // Omitted for categories that have none (land, farm)
+  beds?: number;
+  baths?: number;
   location: string;
   description: string;
   images: string[];
@@ -25,7 +26,10 @@ export interface CreatePropertyPayload {
   requiredYear?: number;
   exchangeStatus?: string;
   isFeatured?: boolean;
-  phoneNumber?: string;
+  // null clears the number on an edit
+  phoneNumber?: string | null;
+  whatsappNumber?: string | null;
+  allocationStatus?: string;
   automatedNumber?: string;
   features?: { id: string; label: string }[];
   floors?: number;

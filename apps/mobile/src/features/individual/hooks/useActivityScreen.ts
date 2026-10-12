@@ -15,9 +15,9 @@ import { useAdActions } from '@/features/individual/hooks/useAdActions';
 import { useAlertActions } from '@/features/individual/hooks/useAlertActions';
 import { useMyAlerts } from '@/features/individual/hooks/useMyAlerts';
 import { useRequestActions } from '@/features/individual/hooks/useRequestActions';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { ActivityItem, useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { useMyRequests } from '@/shared/hooks/properties/useMyRequests';
-import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const TAB_IDS: ActivityTabId[] = ['ads', 'offers', 'alerts'];
@@ -52,6 +52,7 @@ export function useActivityScreen() {
 
   const params = useLocalSearchParams<{
     showUpdateSuccess?: string;
+    draftSaved?: string;
     tab?: string;
   }>();
 
@@ -73,6 +74,17 @@ export function useActivityScreen() {
       return () => clearTimeout(timer);
     }
   }, [params.showUpdateSuccess, triggerToast]);
+
+  // A draft just saved from the add-ad preview: show it under مسودة
+  useEffect(() => {
+    if (params.draftSaved === 'true') {
+      setActiveTab('ads');
+      setActiveFilterId('DRAFT');
+      const timer = triggerToast('تم حفظ الاعلان كمسودة بنجاح.');
+      router.setParams({ draftSaved: undefined });
+      return () => clearTimeout(timer);
+    }
+  }, [params.draftSaved, triggerToast]);
 
   // We fetch all listings and filter on the client side to compute dynamic
   // counts

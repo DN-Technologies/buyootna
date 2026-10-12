@@ -15,6 +15,7 @@ const PROPERTY_CATEGORY_LABELS: Record<PropertyCategory, string> = {
   PRIVATE: 'استثماري',
   BUILDING: 'استثماري',
   LAND: 'استثماري',
+  FARM: 'استثماري',
 };
 
 export function mapPropertyCategoryToType(category: PropertyCategory): string {
@@ -36,6 +37,7 @@ const PROPERTY_CATEGORY_FULL_LABELS: Record<PropertyCategory, string> = {
   LAND: 'أرض',
   CHALET: 'شاليه',
   RESIDENTIAL: 'سكني',
+  FARM: 'مزرعة',
 };
 
 export function mapPropertyCategoryToLabel(category: PropertyCategory): string {

@@ -1,58 +1,41 @@
 import { Feather } from '@expo/vector-icons';
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
+
+import {
+  BoxTextInput,
+  INPUT_BOX_CLASS,
+} from '@/shared/components/add-listing/FormField';
+import { toWesternDigits } from '@/shared/utils/arabicNumerals';
 
 interface PhoneInputFieldProps {
   value: string;
   onChangeText: (text: string) => void;
-  required?: boolean;
+  testID?: string;
 }
 
+/** A Kuwait number with its +965 box; the label comes from the toggle row. */
 export default function PhoneInputField({
   value,
   onChangeText,
-  required = true,
+  testID,
 }: PhoneInputFieldProps) {
   return (
-    <View className="mb-6 w-full">
-      <Text
-        className="mb-1 font-cairo-medium text-sm text-[#111111]"
-        style={{ writingDirection: 'rtl' }}
-      >
-        رقم الهاتف {required && <Text className="text-red-500">*</Text>}
-      </Text>
+    <View className="w-full flex-row items-center" style={{ gap: 8 }}>
+      <View className={INPUT_BOX_CLASS} style={{ flex: 1, width: undefined }}>
+        <BoxTextInput
+          testID={testID}
+          placeholder="58094586"
+          keyboardType="phone-pad"
+          value={value}
+          onChangeText={(text) => onChangeText(toWesternDigits(text))}
+        />
+      </View>
       <View
-        className="h-[40px] flex-row items-center gap-2"
+        className="h-[46px] flex-row items-center justify-center rounded-lg border border-[#ECECEC] bg-white px-3"
         style={{ gap: 8 }}
       >
-        {/* Phone Input */}
-        <View
-          className="h-[40px] flex-1 flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4 py-3"
-          style={{ height: 40, flex: 1 }}
-        >
-          <TextInput
-            className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-            style={{ flex: 1, textAlign: 'right' }}
-            placeholder="58094586"
-            placeholderTextColor="#979797"
-            keyboardType="phone-pad"
-            value={value}
-            onChangeText={onChangeText}
-          />
-        </View>
-        {/* Country Code */}
-        <View
-          className="h-[40px] flex-row items-center justify-center rounded-md border border-[#ECECEC] bg-white px-3"
-          style={{ height: 40 }}
-        >
-          <Feather
-            name="chevron-down"
-            size={16}
-            color="#64748B"
-            className="mr-1"
-          />
-          <Text className="font-cairo-semibold text-[#111111]">+965</Text>
-        </View>
-
+        <Text className="font-cairo text-[14px] text-[#979797]">+965</Text>
+        <Feather name="chevron-down" size={14} color="#111111" />
       </View>
     </View>
   );

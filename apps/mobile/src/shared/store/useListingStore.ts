@@ -4,6 +4,12 @@ import { CreatePropertyPayload, propertiesService } from '@/shared/api/propertie
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
 import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
+import {
+  findCategory,
+  findCategoryByApiValue,
+  getCategoryFields,
+  isCategoryOffered,
+} from '@/shared/utils/data/propertyCategories';
 import { newSubmissionKey } from '@/shared/utils/submissionKey';
 import type { PropertyDetailsDto } from '@/types/property';
 
@@ -53,7 +59,11 @@ export interface ListingStateData {
   // 4. Details & Contact
   rentConditions: string; // شروط الايجار
   adDetails: string; // تفاصيل الاعلان
+  // Each contact number is sent only while its toggle is on
+  showPhone: boolean;
   phoneNumber: string;
+  showWhatsapp: boolean;
+  whatsappNumber: string;
 
   // 5. Meta
   adLevel: AdLevel;
@@ -116,23 +126,6 @@ const LISTING_TYPE_MAP: Record<ListingType, 'SALE' | 'RENT' | 'EXCHANGE'> = {
   exchange: 'EXCHANGE',
 };
 
-/** Maps frontend category IDs → backend PropertyCategory enum */
-const CATEGORY_MAP: Record<string, string> = {
-  apartment: 'APARTMENT',
-  house: 'HOUSE',
-  villa: 'VILLA',
-  commercial: 'COMMERCIAL',
-  investment: 'INVESTMENT',
-  residential: 'RESIDENTIAL',
-  industrial: 'INDUSTRIAL',
-  coastal: 'COASTAL',
-  office: 'OFFICE',
-  private: 'PRIVATE',
-  building: 'BUILDING',
-  land: 'LAND',
-  chalet: 'CHALET',
-};
-
 // --- Initial State ---
 const initialState: Omit<ListingStateData, 'listingType'> = {
   governorate: null,
@@ -140,8 +133,8 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   propertyCategory: null,
   areaSize: '',
   automatedNumber: '',
-  rooms: 0,
-  baths: 0,
+  rooms: 1,
+  baths: 1,
   floors: 0,
   features: [],
   mapLocation: null,
@@ -159,8 +152,11 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   allocationState: '',
   rentConditions: '',
   adDetails: '',
+  showPhone: true,
   phoneNumber: '',
-  adLevel: 'premium',
+  showWhatsapp: false,
+  whatsappNumber: '',
+  adLevel: 'normal',
   images: [],
   isSubmitting: false,
   submissionError: null,
@@ -175,7 +171,14 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   ...initialState,
 
   // Change the top-level radio button (Sell/Rent/Exchange)
-  setListingType: (type) => set({ listingType: type }),
+  // A category the new type doesn't offer (e.g. شقة under بدل) is dropped
+  setListingType: (type) =>
+    set((state) => ({
+      listingType: type,
+      propertyCategory: isCategoryOffered(state.propertyCategory?.id, type)
+        ? state.propertyCategory
+        : null,
+    })),
 
   // Generic field updater ensuring type safety
   updateField: (field, value) => set({ [field]: value }),
@@ -217,26 +220,8 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   clearSubmissionKey: () => set({ submissionKey: null }),
 
   populateFromProperty: (property) => {
-    // Reverse map CATEGORY
-    const categoryId = Object.keys(CATEGORY_MAP).find(
-      (key) => CATEGORY_MAP[key] === property.category,
-    ) || 'residential';
-    
-    const categoryLabel = {
-      apartment: 'شقة',
-      house: 'بيت',
-      villa: 'فيلا',
-      commercial: 'تجاري',
-      investment: 'استثماري',
-      residential: 'سكني',
-      industrial: 'صناعي',
-      coastal: 'ساحلي',
-      office: 'مكتب',
-      private: 'خاص',
-      building: 'عمارة',
-      land: 'أرض',
-      chalet: 'شاليه',
-    }[categoryId] || 'سكني';
+    const category =
+      findCategoryByApiValue(property.category) ?? findCategory('residential')!;
 
     // Lookup governorate and area from locations
     let governorate = GOVERNORATES.find(g => g.id === property.governorateId) || null;
@@ -282,7 +267,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       listingType: property.type === 'SALE' ? 'sell' : property.type === 'RENT' ? 'rent' : 'exchange',
       governorate,
       area,
-      propertyCategory: { id: categoryId, label: categoryLabel },
+      propertyCategory: { id: category.id, label: category.label },
       areaSize: property.areaSize ? property.areaSize.toString() : '',
       automatedNumber: property.automatedNumber || '',
       rooms: property.beds ?? 0,
@@ -301,8 +286,12 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         : '',
       requestYear: property.requestYear ? property.requestYear.toString() : '',
       requiredYear: property.requiredYear ? property.requiredYear.toString() : '',
+      allocationState: property.allocationStatus || '',
       adDetails: property.description || '',
+      showPhone: !!property.phoneNumber,
       phoneNumber: property.phoneNumber || '',
+      showWhatsapp: !!property.whatsappNumber,
+      whatsappNumber: property.whatsappNumber || '',
       images: property.images || [],
       adLevel: property.isFeatured ? 'premium' : 'normal',
     });
@@ -325,10 +314,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     const payload: CreatePropertyPayload = {
       isDraft,
       type: apiType,
-      category: CATEGORY_MAP[state.propertyCategory?.id ?? ''] ?? 'RESIDENTIAL',
+      category:
+        findCategory(state.propertyCategory?.id)?.apiValue ?? 'RESIDENTIAL',
       areaSize: parseFloat(state.areaSize) || 0,
-      beds: state.rooms,
-      baths: state.baths,
       location: [state.governorate?.label, state.area?.label]
         .filter(Boolean)
         .join(' - '),
@@ -342,18 +330,29 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       payload.submissionKey = state.submissionKey;
     }
 
-    // Optional shared fields
-    if (state.propertyAge) {
+    // Counts the category has; land and farms send none of them
+    const fields = getCategoryFields(state.propertyCategory?.id);
+    if (fields.rooms) payload.beds = state.rooms;
+    if (fields.baths) payload.baths = state.baths;
+    if (fields.floors) payload.floors = state.floors;
+    if (fields.propertyAge && state.propertyAge) {
       payload.propertyAge = parseInt(state.propertyAge, 10);
     }
-    if (state.phoneNumber) {
+
+    // A contact number is sent while its toggle is on; an edit that turns
+    // one off has to clear what the ad was published with
+    if (state.showPhone && state.phoneNumber) {
       payload.phoneNumber = state.phoneNumber;
+    } else if (state.isEdit) {
+      payload.phoneNumber = null;
+    }
+    if (state.showWhatsapp && state.whatsappNumber) {
+      payload.whatsappNumber = state.whatsappNumber;
+    } else if (state.isEdit) {
+      payload.whatsappNumber = null;
     }
     if (state.automatedNumber) {
       payload.automatedNumber = state.automatedNumber;
-    }
-    if (state.propertyCategory?.id !== 'apartment') {
-      payload.floors = state.floors;
     }
 
     // Map latitude and longitude from mapLocation
@@ -412,6 +411,9 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       if (state.requiredYear) {
         payload.requiredYear = parseInt(state.requiredYear, 10);
       }
+      if (state.allocationState) {
+        payload.allocationStatus = state.allocationState;
+      }
       // Price is optional for exchange
       if (state.showPrice && state.price) {
         payload.price = parseFloat(state.price);
@@ -421,3 +423,40 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     return payload;
   },
 }));
+
+/**
+ * Whether the add/edit form can go on to preview or save: every field the
+ * form currently shows as required is filled.
+ */
+export function isListingFormValid(state: ListingStateData): boolean {
+  const fields = getCategoryFields(state.propertyCategory?.id);
+  const isExchange = state.listingType === 'exchange';
+
+  if (
+    !state.governorate ||
+    !state.area ||
+    !state.propertyCategory ||
+    !state.areaSize ||
+    !state.adDetails
+  ) {
+    return false;
+  }
+  if (state.showPhone && !state.phoneNumber) return false;
+  if (state.showWhatsapp && !state.whatsappNumber) return false;
+
+  if (isExchange) {
+    if (!state.requestYear || !state.requiredYear) return false;
+  } else if (!state.isEdit) {
+    // Ads published before these became required can still be edited
+    if (!state.automatedNumber) return false;
+    if (fields.propertyAge && !state.propertyAge) return false;
+  }
+
+  const shownPrice =
+    state.listingType === 'rent' ? state.monthlyRent : state.price;
+  if (state.showPrice && !shownPrice) return false;
+  if (state.listingType === 'sell' && state.showIncome && !state.propertyIncome)
+    return false;
+
+  return true;
+}

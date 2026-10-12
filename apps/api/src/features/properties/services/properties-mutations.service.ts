@@ -14,6 +14,7 @@ import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
 import { assertApprovedProvider } from '../../identities/persona-rules';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
+import { categoryFieldOverrides } from '../property-category-fields';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -121,6 +122,7 @@ export class PropertiesMutationsService {
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
+            ...categoryFieldOverrides(propertyData.category),
             ...addressDetailsWrite(addressDetails),
             referenceNumber,
             status: targetStatus,
@@ -155,6 +157,7 @@ export class PropertiesMutationsService {
       const draftProperty = await this.prisma.property.create({
         data: {
           ...propertyData,
+          ...categoryFieldOverrides(propertyData.category),
           ...addressDetailsWrite(addressDetails),
           referenceNumber,
           status: targetStatus,
@@ -183,6 +186,11 @@ export class PropertiesMutationsService {
       submissionKey,
       ...updateData
     } = dto;
+
+    // The category decides which counts an ad has; an edit keeps them clear
+    const fieldOverrides = categoryFieldOverrides(
+      updateData.category ?? existingProperty.category,
+    );
 
     const isPublishingDraft =
       existingProperty.status === 'DRAFT' && isDraft === false;
@@ -229,6 +237,7 @@ export class PropertiesMutationsService {
           where: { id: propertyId },
           data: {
             ...updateData,
+            ...fieldOverrides,
             ...addressDetailsWrite(addressDetails),
             status: ListingStatus.ACTIVE,
             planSlotId: quota.planSlotId,
@@ -271,6 +280,7 @@ export class PropertiesMutationsService {
       where: { id: propertyId },
       data: {
         ...updateData,
+        ...fieldOverrides,
         ...addressDetailsWrite(addressDetails),
         status: newStatus,
       },

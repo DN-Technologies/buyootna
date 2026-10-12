@@ -1,4 +1,4 @@
-import { useListingStore } from '../useListingStore';
+import { isListingFormValid, useListingStore } from '../useListingStore';
 
 describe('useListingStore addImages', () => {
   beforeEach(() => {
@@ -68,5 +68,193 @@ describe('useListingStore property income', () => {
     const state = useListingStore.getState();
     expect(state.showIncome).toBe(false);
     expect(state.propertyIncome).toBe('');
+  });
+});
+
+describe('useListingStore category-driven fields', () => {
+  beforeEach(() => {
+    useListingStore.getState().resetForm();
+  });
+
+  const pick = (id: string, label: string) =>
+    useListingStore.getState().updateField('propertyCategory', { id, label });
+
+  it('sends no rooms, baths, floors or age for land', () => {
+    const { updateField } = useListingStore.getState();
+    pick('land', 'أرض');
+    updateField('rooms', 3);
+    updateField('baths', 2);
+    updateField('floors', 1);
+    updateField('propertyAge', '5');
+
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+
+    expect(payload.category).toBe('LAND');
+    expect(payload).not.toHaveProperty('beds');
+    expect(payload).not.toHaveProperty('baths');
+    expect(payload).not.toHaveProperty('floors');
+    expect(payload).not.toHaveProperty('propertyAge');
+  });
+
+  it('sends rooms and baths but no floors for a house', () => {
+    const { updateField } = useListingStore.getState();
+    pick('house', 'بيت');
+    updateField('rooms', 4);
+    updateField('baths', 3);
+    updateField('floors', 2);
+
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+
+    expect(payload).toMatchObject({ category: 'HOUSE', beds: 4, baths: 3 });
+    expect(payload).not.toHaveProperty('floors');
+  });
+
+  it('sends floors for an apartment and a building', () => {
+    const { updateField } = useListingStore.getState();
+    updateField('floors', 6);
+
+    pick('apartment', 'شقة');
+    expect(useListingStore.getState().buildApiPayload(false, []).floors).toBe(6);
+    pick('building', 'عمارة');
+    expect(useListingStore.getState().buildApiPayload(false, []).floors).toBe(6);
+  });
+
+  it('maps a farm to the new FARM category', () => {
+    pick('farm', 'مزرعة');
+    expect(useListingStore.getState().buildApiPayload(false, []).category).toBe(
+      'FARM',
+    );
+  });
+
+  it('drops a category the new listing type does not offer', () => {
+    pick('apartment', 'شقة');
+    useListingStore.getState().setListingType('exchange');
+    expect(useListingStore.getState().propertyCategory).toBeNull();
+
+    pick('land', 'أرض');
+    useListingStore.getState().setListingType('sell');
+    expect(useListingStore.getState().propertyCategory?.id).toBe('land');
+  });
+
+  it('keeps a legacy category when editing an old ad', () => {
+    useListingStore.getState().populateFromProperty({
+      type: 'SALE',
+      category: 'RESIDENTIAL',
+      beds: null,
+      baths: null,
+    } as unknown as Parameters<
+      ReturnType<typeof useListingStore.getState>['populateFromProperty']
+    >[0]);
+
+    const state = useListingStore.getState();
+    expect(state.propertyCategory).toEqual({ id: 'residential', label: 'سكني' });
+    expect(state.buildApiPayload(false, []).category).toBe('RESIDENTIAL');
+  });
+});
+
+describe('useListingStore contact numbers', () => {
+  beforeEach(() => {
+    useListingStore.getState().resetForm();
+  });
+
+  it('sends each number only while its toggle is on', () => {
+    const { updateField } = useListingStore.getState();
+    updateField('phoneNumber', '58094586');
+    updateField('whatsappNumber', '66001122');
+
+    let payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload.phoneNumber).toBe('58094586');
+    expect(payload).not.toHaveProperty('whatsappNumber');
+
+    updateField('showPhone', false);
+    updateField('showWhatsapp', true);
+    payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload).not.toHaveProperty('phoneNumber');
+    expect(payload.whatsappNumber).toBe('66001122');
+  });
+
+  it('clears a number that an edit turned off', () => {
+    useListingStore.getState().populateFromProperty({
+      type: 'SALE',
+      category: 'HOUSE',
+      phoneNumber: '58094586',
+      whatsappNumber: '66001122',
+    } as unknown as Parameters<
+      ReturnType<typeof useListingStore.getState>['populateFromProperty']
+    >[0]);
+    expect(useListingStore.getState().showWhatsapp).toBe(true);
+
+    useListingStore.getState().updateField('showWhatsapp', false);
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+
+    expect(payload.phoneNumber).toBe('58094586');
+    expect(payload.whatsappNumber).toBeNull();
+  });
+
+  it('saves the allocation status of an exchange ad', () => {
+    const { updateField, setListingType } = useListingStore.getState();
+    setListingType('exchange');
+    updateField('allocationState', 'مخصصة');
+
+    expect(
+      useListingStore.getState().buildApiPayload(false, []).allocationStatus,
+    ).toBe('مخصصة');
+  });
+});
+
+describe('isListingFormValid', () => {
+  beforeEach(() => {
+    useListingStore.getState().resetForm();
+  });
+
+  const fillBase = (categoryId: string) => {
+    const { updateField } = useListingStore.getState();
+    updateField('governorate', { id: 'g', label: 'العاصمة' });
+    updateField('area', { id: 'a', label: 'الدسمة' });
+    updateField('propertyCategory', { id: categoryId, label: categoryId });
+    updateField('areaSize', '300');
+    updateField('adDetails', 'تفاصيل');
+    updateField('automatedNumber', '768954093');
+    updateField('phoneNumber', '58094586');
+    updateField('price', '150000');
+  };
+  const valid = () => isListingFormValid(useListingStore.getState());
+
+  it('needs the property age for a house but not for land', () => {
+    fillBase('house');
+    expect(valid()).toBe(false);
+    useListingStore.getState().updateField('propertyAge', '5');
+    expect(valid()).toBe(true);
+
+    useListingStore.getState().resetForm();
+    fillBase('land');
+    expect(valid()).toBe(true);
+  });
+
+  it('needs a number only for a contact toggle that is on', () => {
+    fillBase('land');
+    const { updateField } = useListingStore.getState();
+
+    updateField('showWhatsapp', true);
+    expect(valid()).toBe(false);
+    updateField('whatsappNumber', '66001122');
+    expect(valid()).toBe(true);
+
+    updateField('phoneNumber', '');
+    expect(valid()).toBe(false);
+    updateField('showPhone', false);
+    expect(valid()).toBe(true);
+  });
+
+  it('needs both years on an exchange ad', () => {
+    fillBase('land');
+    const { updateField, setListingType } = useListingStore.getState();
+    setListingType('exchange');
+    updateField('showPrice', false);
+    expect(valid()).toBe(false);
+
+    updateField('requestYear', '2019');
+    updateField('requiredYear', '2025');
+    expect(valid()).toBe(true);
   });
 });
