@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import SectionTitle from '@/shared/components/add-listing/SectionTitle';
 import { SafeImage } from '@/shared/components/ui/SafeImage';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -63,17 +65,12 @@ export default function ImageUploadZone() {
   };
 
   return (
-    <View className="mb-2 w-full">
-      <Text
-        className="mb-3 font-cairo-semibold text-lg text-[#111111]"
-        style={{ writingDirection: 'rtl' }}
-      >
-        الصور
-      </Text>
+    <View className="w-full" style={{ gap: 16 }}>
+      <SectionTitle>الصور</SectionTitle>
 
       {/* --- Selected Images Previews --- */}
       {images.length > 0 && (
-        <View className="mb-4 flex-row flex-wrap justify-end gap-3">
+        <View className="flex-row flex-wrap gap-3">
           {images.map((uri, index) => (
             <View
               key={index}
@@ -100,24 +97,31 @@ export default function ImageUploadZone() {
 
       {/* --- Dashed Upload Card --- */}
       {hasReachedLimit ? (
-        <View className="w-full items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-6 px-4">
+        <View className="w-full items-center justify-center rounded border border-dashed border-[#D7D7D7] bg-gray-50 px-6 py-4">
           <Text className="text-center font-cairo-medium text-[13px] text-[#94A3B8]">
             الحد الأقصى للصور هو 10 صور
           </Text>
         </View>
       ) : (
         <TouchableOpacity
+          testID="image-dropzone"
           activeOpacity={0.75}
           onPress={handlePickImages}
-          className="w-full items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white py-8 px-4"
+          className="w-full items-center justify-center rounded border border-dashed border-[#D7D7D7] bg-white px-6 py-4"
+          style={{ gap: 8 }}
         >
-          <View className="mb-3 h-14 w-14 items-center justify-center rounded-full bg-[#F4F8FB]">
-            <Feather name="file-plus" size={26} color="#15304D" />
+          <View className="h-12 w-12 items-center justify-center rounded-full bg-[#F5F7F9]">
+            <Image
+              source={require('@/assets/icons/add-listing/file-arrow-up.svg')}
+              style={{ width: 24, height: 24 }}
+              contentFit="contain"
+            />
           </View>
-          <Text className="mb-1 text-center font-cairo-medium text-[15px] text-[#111111]">
-            اضغط <Text className="font-cairo-bold text-[#15304D]">هنا</Text> لرفع صورة
+          <Text className="text-center font-cairo-medium text-sm text-[#111111]">
+            <Text className="font-cairo-bold text-[#15304D]">اضغط هنا</Text> لرفع
+            صورة
           </Text>
-          <Text className="px-4 text-center font-cairo-medium text-[11px] leading-5 text-[#94A3B8]">
+          <Text className="text-center font-cairo-medium text-xs text-[#6B6A6A]">
             الصيغ المدعومة: SVG, JPG, PNG (بحد أقصى 10 ميجا لكل ملف)
           </Text>
         </TouchableOpacity>

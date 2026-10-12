@@ -5,6 +5,7 @@ import {
 import React, { forwardRef, useCallback, useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 
 interface DiscardChangesSheetProps {

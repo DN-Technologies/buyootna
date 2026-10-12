@@ -50,18 +50,18 @@ export default function AdPreviewScreen() {
       )}
 
       {/* --- 1. Header --- */}
-      <View className="flex-row items-center justify-between border-b border-gray-50 px-5 py-3">
+      <View className="h-[52px] flex-row items-center justify-between px-4">
         <TouchableOpacity
           onPress={() => router.back()}
-          className="h-10 w-10 items-center justify-center rounded-full"
+          className="h-8 w-8 items-center justify-center rounded-full"
           activeOpacity={0.7}
         >
-          <Feather name="chevron-right" size={24} color="#111111" />
+          <Feather name="chevron-right" size={22} color="#111111" />
         </TouchableOpacity>
-        <Text className="font-cairo-bold text-lg text-[#111111]">
+        <Text className="font-cairo-semibold text-lg text-[#111111]">
           معاينة الاعلان
         </Text>
-        <View className="w-10" />
+        <View className="w-8" />
       </View>
 
       <ScrollView
@@ -69,16 +69,16 @@ export default function AdPreviewScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 160 }}
       >
-        <View className="px-5 pt-4">
+        <View className="px-4 pt-3">
           {/* Subtitle */}
           <Text
-            className="mb-4 font-cairo-medium text-[13px] text-[#8C8C8C]"
+            className="mb-5 font-cairo-medium text-xs text-[#979797]"
             style={{ writingDirection: 'rtl' }}
           >
             هذه معاينة لكيف سيظهر إعلانك للمستخدمين
           </Text>
 
-          {/* --- 2. Details Card matching Figma 619:17698 --- */}
+          {/* --- 2. Details --- */}
           <PreviewDetailsCard draftData={draftData} />
 
           {/* --- 3. Image Preview --- */}
@@ -86,23 +86,24 @@ export default function AdPreviewScreen() {
         </View>
       </ScrollView>
 
-      {/* --- 4. Sticky Footer Actions matching Figma 619:17698 --- */}
+      {/* --- 4. Sticky Footer Actions --- */}
       <View
-        className="absolute bottom-0 left-0 right-0 border-t border-gray-100 bg-white px-5 pt-3"
+        className="absolute bottom-0 left-0 right-0 bg-white px-4 pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
         <View className="flex-row gap-3">
           {/* Solid Publish Button */}
           <TouchableOpacity
             activeOpacity={0.85}
+            testID="button-publish"
             onPress={handleSubmit}
             disabled={isSubmitting}
-            style={{ flex: 1.3 }}
-            className={`h-[50px] items-center justify-center rounded-full ${
+            style={{ flex: 1.5 }}
+            className={`h-12 items-center justify-center rounded-full ${
               isSubmitting ? 'bg-[#15304D]/60' : 'bg-[#15304D]'
             }`}
           >
-            <Text className="font-cairo-bold text-[15px] text-white">
+            <Text className="font-cairo-semibold text-sm text-white">
               إضافة الاعلان
             </Text>
           </TouchableOpacity>
@@ -110,14 +111,15 @@ export default function AdPreviewScreen() {
           {/* Outlined Save as Draft Button */}
           <TouchableOpacity
             activeOpacity={0.85}
+            testID="button-save-draft"
             onPress={handleSaveDraft}
             disabled={isSubmitting}
             style={{ flex: 1 }}
-            className={`h-[50px] items-center justify-center rounded-full border border-[#D1D5DB] ${
+            className={`h-12 items-center justify-center rounded-full border border-[#D7D7D7] ${
               isSubmitting ? 'bg-gray-100' : 'bg-white'
             }`}
           >
-            <Text className="font-cairo-bold text-[15px] text-[#111111]">
+            <Text className="font-cairo-semibold text-sm text-[#111111]">
               حفظ كمسودة
             </Text>
           </TouchableOpacity>

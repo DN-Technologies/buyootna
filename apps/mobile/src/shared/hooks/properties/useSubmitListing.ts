@@ -186,7 +186,11 @@ export function useSubmitListing() {
 
   const handleSaveDraft = async () => {
     const res = await submitListing(true);
-    if (res.success) {
+    if (res.success && activeIdentity?.type === 'INDIVIDUAL') {
+      // Lands on نشاطي -> مسودة, which confirms with its toast
+      resetForm();
+      router.replace({ pathname: '/activity', params: { draftSaved: 'true' } });
+    } else if (res.success) {
       showAlert('تم الحفظ', 'تم حفظ الإعلان كمسودة بنجاح', [
         {
           text: 'حسناً',

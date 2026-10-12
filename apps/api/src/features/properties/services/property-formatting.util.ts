@@ -22,6 +22,7 @@ export const PROPERTY_CATEGORY_LABELS: Record<PropertyCategory, string> = {
   LAND: 'أرض',
   CHALET: 'شاليه',
   RESIDENTIAL: 'سكني',
+  FARM: 'مزرعة',
 };
 
 export const propertyFeedPayload =
@@ -97,6 +98,7 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
       createdAt: p.createdAt,
       publishedAt: p.publishedAt,
       phoneNumber: p.phoneNumber,
+      whatsappNumber: p.whatsappNumber,
       identityId: identity?.id,
       identityType: identity?.type,
     };

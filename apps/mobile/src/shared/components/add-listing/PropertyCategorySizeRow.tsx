@@ -1,6 +1,10 @@
-import { Text, TextInput, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { LockIcon } from '@/assets/icons/home/property';
+import FormField, {
+  BoxTextInput,
+  INPUT_BOX_CLASS,
+} from '@/shared/components/add-listing/FormField';
 import DrawerTrigger from '@/shared/components/filters/DrawerTrigger';
 import { toWesternDigits } from '@/shared/utils/arabicNumerals';
 
@@ -24,46 +28,40 @@ export default function PropertyCategorySizeRow({
   areaSize,
   onChangeAreaSize,
 }: PropertyCategorySizeRowProps) {
+  const sizeLocked = isEdit && !!areaSize;
+
   return (
-    <View className="mb-2 w-full flex-row gap-3" style={{ gap: 12 }}>
+    <View className="w-full flex-row" style={{ gap: 8 }}>
       <DrawerTrigger
         label="فئة العقار"
         placeholder="اختر نوع عقارك"
         value={propertyCategory?.label}
         onPress={onPressCategory}
         required={true}
+        size="lg"
         disabled={isEdit && !!propertyCategory}
         locked={isEdit && !!propertyCategory}
       />
 
-      {/* Area Size */}
-      <View className="mb-6 flex-1" style={{ flex: 1 }}>
-        <Text
-          className="mb-1 font-cairo-medium text-sm text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          المساحة <Text className="text-red-500">*</Text>
-        </Text>
+      <FormField label="المساحة" required flex>
         <View
-          className={`h-[40px] w-full flex-row items-center justify-between rounded-md border border-[#ECECEC] px-4 py-3 ${isEdit ? 'bg-gray-50' : 'bg-white'}`}
-          style={{ width: '100%', gap: 8 }}
+          className={`${INPUT_BOX_CLASS} ${isEdit ? 'bg-gray-50' : ''}`}
+          style={{ gap: 8 }}
         >
-          <TextInput
-            className="h-6 flex-1 text-right font-cairo-semibold text-[#111111]"
-            style={{ flex: 1, textAlign: 'right' }}
+          <BoxTextInput
+            testID="input-area-size"
             placeholder="300 م2"
-            placeholderTextColor="#94A3B8"
             keyboardType="numeric"
             value={areaSize}
             onChangeText={(text) => onChangeAreaSize(toWesternDigits(text))}
-            editable={!isEdit || !areaSize}
+            editable={!sizeLocked}
           />
-          <View className="flex-row items-center gap-1.5">
-            <Text className="font-cairo-medium text-xs text-[#94A3B8]">م²</Text>
-            {isEdit && !!areaSize && <LockIcon size={14} color="#94A3B8" />}
-          </View>
+          {!!areaSize && (
+            <Text className="font-cairo text-[14px] text-[#979797]">م2</Text>
+          )}
+          {sizeLocked && <LockIcon size={14} color="#94A3B8" />}
         </View>
-      </View>
+      </FormField>
     </View>
   );
 }

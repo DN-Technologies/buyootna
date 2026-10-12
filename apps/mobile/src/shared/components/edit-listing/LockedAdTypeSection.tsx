@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text, View } from 'react-native';
 
 import { LockIcon } from '@/assets/icons/home/property';
@@ -12,7 +11,7 @@ export default function LockedAdTypeSection({
   listingType,
 }: LockedAdTypeSectionProps) {
   return (
-    <View className="mb-8">
+    <View>
       <Text
         className="mb-4 font-cairo-semibold text-lg text-[#111111]"
         style={{ writingDirection: 'rtl' }}

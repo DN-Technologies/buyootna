@@ -1,29 +1,22 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 
 import PropertyAgeYearsRow from '@/shared/components/add-listing/PropertyAgeYearsRow';
-import PropertyAmenitiesChips from '@/shared/components/add-listing/PropertyAmenitiesChips';
 import PropertyCategorySizeRow from '@/shared/components/add-listing/PropertyCategorySizeRow';
+import PropertyFeaturesField from '@/shared/components/add-listing/PropertyFeaturesField';
 import PropertyLocationRow from '@/shared/components/add-listing/PropertyLocationRow';
 import PropertyMapField from '@/shared/components/add-listing/PropertyMapField';
 import PropertyStepperRow from '@/shared/components/add-listing/PropertyStepperRow';
+import SectionTitle from '@/shared/components/add-listing/SectionTitle';
 import SelectionDrawer from '@/shared/components/filters/SelectionDrawer';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
-
-const CATEGORY_OPTIONS = [
-  { id: 'residential', label: 'سكني' },
-  { id: 'commercial', label: 'تجاري' },
-  { id: 'investment', label: 'استثماري' },
-  { id: 'apartment', label: 'شقة' },
-  { id: 'house', label: 'بيت' },
-  { id: 'villa', label: 'فيلا' },
-  { id: 'land', label: 'أرض' },
-  { id: 'building', label: 'عمارة' },
-  { id: 'chalet', label: 'شاليه' },
-];
+import {
+  categoryOptionsFor,
+  getCategoryFields,
+} from '@/shared/utils/data/propertyCategories';
 
 const DEFAULT_MOCK_FEATURES = [
   { id: '1', label: 'حمام سباحة' },
@@ -64,6 +57,9 @@ export default function SharedPropertyInfo() {
   const areaDrawerRef = useRef<BottomSheetModal>(null);
   const categoryDrawerRef = useRef<BottomSheetModal>(null);
 
+  // What the picked category has: land shows no rooms, baths or floors
+  const fields = getCategoryFields(propertyCategory?.id);
+
   // Dynamic area list based on selected governorate
   const filteredAreas = governorate ? AREAS[governorate.id] || [] : [];
 
@@ -80,16 +76,6 @@ export default function SharedPropertyInfo() {
     updateField('area', null);
   };
 
-  const handleToggleFeature = (label: string) => {
-    const currentFeatures = features || [];
-    updateField(
-      'features',
-      currentFeatures.includes(label)
-        ? currentFeatures.filter((f) => f !== label)
-        : [...currentFeatures, label],
-    );
-  };
-
   let initialLat: number | undefined;
   let initialLng: number | undefined;
   if (mapLocation && mapLocation.includes(',')) {
@@ -99,14 +85,8 @@ export default function SharedPropertyInfo() {
   }
 
   return (
-    <View className="mb-6">
-      {/* --- Section Title --- */}
-      <Text
-        className="mb-4 font-cairo-semibold text-lg text-[#111111]"
-        style={{ writingDirection: 'rtl' }}
-      >
-        معلومات العقار
-      </Text>
+    <View className="w-full" style={{ gap: 20 }}>
+      <SectionTitle>معلومات العقار</SectionTitle>
 
       <PropertyLocationRow
         governorate={governorate}
@@ -137,6 +117,8 @@ export default function SharedPropertyInfo() {
 
       <PropertyAgeYearsRow
         listingType={listingType}
+        showPropertyAge={fields.propertyAge}
+        required={!isEdit}
         requestYear={requestYear}
         onChangeRequestYear={(value) => updateField('requestYear', value)}
         requiredYear={requiredYear}
@@ -148,7 +130,7 @@ export default function SharedPropertyInfo() {
       />
 
       <PropertyStepperRow
-        listingType={listingType}
+        fields={fields}
         floors={floors}
         onChangeFloors={(value) => updateField('floors', value)}
         baths={baths}
@@ -157,10 +139,10 @@ export default function SharedPropertyInfo() {
         onChangeRooms={(value) => updateField('rooms', value)}
       />
 
-      <PropertyAmenitiesChips
-        activeFeatures={activeFeatures}
-        selectedFeatures={features}
-        onToggleFeature={handleToggleFeature}
+      <PropertyFeaturesField
+        options={activeFeatures}
+        selected={features}
+        onChange={(labels) => updateField('features', labels)}
       />
 
       {/* --- Drawers --- */}
@@ -178,8 +160,8 @@ export default function SharedPropertyInfo() {
       />
       <SelectionDrawer
         ref={categoryDrawerRef}
-        title="اختر فئة العقار"
-        data={CATEGORY_OPTIONS}
+        title="فئة العقار"
+        data={categoryOptionsFor(listingType)}
         onSelect={(item) => updateField('propertyCategory', item)}
       />
 

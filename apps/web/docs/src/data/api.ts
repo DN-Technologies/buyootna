@@ -956,5 +956,46 @@ export const api: DocSection = {
       },
       updatedIn: "feat/activity-offers-status-tabs",
     },
+    {
+      id: "api-property-category-fields",
+      title: {
+        en: "Properties: counts follow the category; FARM, WhatsApp number and allocation status",
+        ar: "العقارات: العدّادات تتبع الفئة؛ فئة مزرعة ورقم الواتساب وحالة التخصيص",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /properties and PATCH /properties/:id accept the new category `FARM`, an optional `whatsappNumber`, and `allocationStatus` (free text, exchange ads). `beds` and `baths` are now optional. The category decides which counts are stored: LAND and FARM store `beds`, `baths`, `floors` and `propertyAge` as null; HOUSE, CHALET, OFFICE, COMMERCIAL and the older categories store `floors` as null; APARTMENT and BUILDING keep all of them. This applies whatever the client sends, on create, draft and edit. Property responses include `whatsappNumber` and `allocationStatus`.",
+        ar: "يقبل POST /properties وPATCH /properties/:id الفئة الجديدة `FARM`، والحقل الاختياري `whatsappNumber`، و`allocationStatus` (نص حر لإعلانات البدل). والحقلان `beds` و`baths` أصبحا اختياريين. الفئة تحدد العدّادات المخزّنة: LAND وFARM تُخزَّن فيهما `beds` و`baths` و`floors` و`propertyAge` بقيمة null؛ وHOUSE وCHALET وOFFICE وCOMMERCIAL والفئات الأقدم يُخزَّن فيها `floors` بقيمة null؛ وAPARTMENT وBUILDING تحتفظان بالجميع. يُطبَّق ذلك مهما أرسل العميل، عند الإنشاء والمسودة والتعديل. وردود العقار تتضمن `whatsappNumber` و`allocationStatus`.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Creating LAND with beds/baths/floors/propertyAge in the body stores all four as null.",
+          "Creating a property without beds and baths is accepted; a non-numeric beds is still 400.",
+          "category FARM is accepted; an unknown category is 400.",
+          "whatsappNumber and allocationStatus are saved and returned; PATCH with null clears a number.",
+          "Requests from app versions that still send beds/baths and older categories keep working.",
+        ],
+        ar: [
+          "إنشاء LAND مع beds/baths/floors/propertyAge في الطلب يخزّن الأربعة null.",
+          "إنشاء عقار بدون beds وbaths مقبول؛ وbeds غير الرقمي ما زال 400.",
+          "الفئة FARM مقبولة؛ والفئة غير المعروفة 400.",
+          "whatsappNumber وallocationStatus يُحفظان ويُعادان؛ وPATCH بقيمة null يمسح الرقم.",
+          "طلبات إصدارات التطبيق التي ما زالت ترسل beds/baths والفئات الأقدم تعمل كما هي.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "POST a LAND draft with beds: 3, then GET it: beds, baths, floors, propertyAge are null.",
+          "POST an EXCHANGE draft with allocationStatus and whatsappNumber, then GET it: both returned.",
+          "PATCH a FARM ad with beds: 4: beds stays null.",
+        ],
+        ar: [
+          "أنشئ مسودة LAND مع beds: 3 ثم اجلبها: beds وbaths وfloors وpropertyAge بقيمة null.",
+          "أنشئ مسودة EXCHANGE مع allocationStatus وwhatsappNumber ثم اجلبها: يُعاد الحقلان.",
+          "عدّل إعلان FARM مع beds: 4: يبقى beds بقيمة null.",
+        ],
+      },
+      updatedIn: "feat/add-ad-flow-figma",
+    },
   ],
 };

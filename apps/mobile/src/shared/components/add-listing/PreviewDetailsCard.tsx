@@ -1,23 +1,114 @@
 import { Text, View } from 'react-native';
 
 import type { ListingStateData } from '@/shared/store/useListingStore';
+import { getCategoryFields } from '@/shared/utils/data/propertyCategories';
 
-const PreviewItem = ({
-  label,
-  value,
-}: {
+interface PreviewEntry {
   label: string;
-  value: string | number | undefined | null;
-}) => (
-  <View className="flex-1 items-start">
-    <Text className="text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
-      {label}
-    </Text>
-    <Text className="text-right font-cairo-bold text-[14px] text-[#15304D]">
-      {value || '-'}
+  value: string | number;
+}
+
+const PreviewItem = ({ label, value }: PreviewEntry) => (
+  <View className="flex-1 items-start" style={{ gap: 4 }}>
+    <Text className="font-cairo-medium text-xs text-[#979797]">{label}</Text>
+    <Text
+      className="font-cairo-bold text-sm text-[#15304D]"
+      style={{ writingDirection: 'rtl' }}
+    >
+      {value === '' ? '-' : value}
     </Text>
   </View>
 );
+
+const LISTING_TYPE_LABELS = { sell: 'بيع', rent: 'إيجار', exchange: 'بدل' };
+
+/** The two-per-row facts of the ad; a field the category lacks is left out. */
+function pairedEntries(draft: ListingStateData): PreviewEntry[] {
+  const fields = getCategoryFields(draft.propertyCategory?.id);
+  const entries: PreviewEntry[] = [
+    { label: 'فئة العقار', value: draft.propertyCategory?.label ?? '' },
+    { label: 'المساحة', value: draft.areaSize ? `${draft.areaSize} م²` : '' },
+  ];
+
+  if (draft.listingType === 'exchange') {
+    entries.push(
+      { label: 'سنة الطلب', value: draft.requestYear },
+      { label: 'السنة المطلوبة', value: draft.requiredYear },
+    );
+  } else {
+    if (fields.propertyAge) {
+      entries.push({
+        label: 'عمر العقار',
+        value: draft.propertyAge ? `${draft.propertyAge} سنوات` : '',
+      });
+    }
+    entries.push({ label: 'الرقم الالي للعقار', value: draft.automatedNumber });
+  }
+
+  if (fields.baths) entries.push({ label: 'عدد الحمامات', value: draft.baths });
+  if (fields.rooms) entries.push({ label: 'عدد الغرف', value: draft.rooms });
+  if (fields.floors) entries.push({ label: 'عدد الادوار', value: draft.floors });
+
+  entries.push({ label: 'المزايا', value: draft.features?.join('، ') ?? '' });
+  if (draft.showPhone) {
+    entries.push({ label: 'رقم الهاتف', value: draft.phoneNumber });
+  }
+  if (draft.showWhatsapp) {
+    entries.push({ label: 'رقم الواتساب', value: draft.whatsappNumber });
+  }
+
+  const isRent = draft.listingType === 'rent';
+  const price = isRent ? draft.monthlyRent : draft.price;
+  if (draft.showPrice && price) {
+    entries.push({
+      label: isRent ? 'الايجار الشهري' : 'السعر',
+      value: `${price} د.ك`,
+    });
+  }
+  if (draft.listingType === 'sell' && draft.showIncome && draft.propertyIncome) {
+    entries.push({
+      label: 'مدخول العقار',
+      value: `${draft.propertyIncome} د.ك`,
+    });
+  }
+  return entries;
+}
+
+/** The full-width text blocks under the paired facts. */
+function wideEntries(draft: ListingStateData): PreviewEntry[] {
+  const entries: PreviewEntry[] = [
+    {
+      label: 'الموقع',
+      value:
+        draft.mapLocationLabel ||
+        [draft.governorate?.label, draft.area?.label]
+          .filter(Boolean)
+          .join(' - '),
+    },
+  ];
+  if (draft.listingType === 'rent') {
+    if (draft.additionalExpenses) {
+      entries.push({
+        label: 'المصاريف الاضافية',
+        value: draft.additionalExpenses,
+      });
+    }
+    if (draft.rentConditions) {
+      entries.push({ label: 'شروط الايجار', value: draft.rentConditions });
+    }
+  }
+  if (draft.listingType === 'exchange' && draft.allocationState) {
+    entries.push({ label: 'حالة التخصيص', value: draft.allocationState });
+  }
+  entries.push(
+    { label: 'تفاصيل الاعلان', value: draft.adDetails || 'لا يوجد تفاصيل.' },
+    {
+      label: 'نوع الاعلان',
+      value: draft.adLevel === 'premium' ? 'اعلان مميز' : 'اعلان عادي',
+    },
+  );
+  return entries;
+}
 
 interface PreviewDetailsCardProps {
   draftData: ListingStateData;
@@ -26,145 +117,34 @@ interface PreviewDetailsCardProps {
 export default function PreviewDetailsCard({
   draftData,
 }: PreviewDetailsCardProps) {
-  const listingTypeLabel =
-    draftData.listingType === 'sell'
-      ? 'بيع'
-      : draftData.listingType === 'rent'
-        ? 'إيجار'
-        : 'بدل';
-
-  const adLevelLabel =
-    draftData.adLevel === 'premium' ? 'إعلان مميز' : 'إعلان عادي';
+  const paired = pairedEntries(draftData);
+  const rows: PreviewEntry[][] = [];
+  for (let i = 0; i < paired.length; i += 2) rows.push(paired.slice(i, i + 2));
 
   return (
-    <View className="mb-6 rounded-xl border border-gray-100 bg-[#FAFAFA] p-4">
-      {/* Row 1: نوع الاعلان */}
-      <View className="mb-4 flex-row">
-        <PreviewItem label="نوع الاعلان" value={listingTypeLabel} />
-      </View>
-
-      {/* Row 2: فئة العقار & المساحة */}
-      <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
+    <View className="mb-5 w-full" style={{ gap: 20 }}>
+      <View className="flex-row">
         <PreviewItem
-          label="فئة العقار"
-          value={draftData.propertyCategory?.label}
-        />
-        <PreviewItem
-          label="المساحة"
-          value={draftData.areaSize ? `${draftData.areaSize} م²` : '-'}
+          label="نوع الاعلان"
+          value={LISTING_TYPE_LABELS[draftData.listingType]}
         />
       </View>
 
-      {/* Row 3: عمر العقار / سنة الطلب */}
-      {draftData.listingType === 'exchange' ? (
-        <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-          <PreviewItem label="سنة الطلب" value={draftData.requestYear} />
-          <PreviewItem label="السنة المطلوبة" value={draftData.requiredYear} />
+      {rows.map((row) => (
+        <View key={row[0].label} className="flex-row" style={{ gap: 16 }}>
+          {row.map((entry) => (
+            <PreviewItem key={entry.label} {...entry} />
+          ))}
+          {/* Keep a lone last fact in its own half */}
+          {row.length === 1 && <View className="flex-1" />}
         </View>
-      ) : (
-        <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-          <PreviewItem
-            label="عمر العقار"
-            value={
-              draftData.propertyAge ? `${draftData.propertyAge} سنوات` : '-'
-            }
-          />
-          <PreviewItem
-            label="الرقم الالي للعقار"
-            value={draftData.automatedNumber}
-          />
+      ))}
+
+      {wideEntries(draftData).map((entry) => (
+        <View key={entry.label} className="flex-row">
+          <PreviewItem {...entry} />
         </View>
-      )}
-
-      {/* Row 4: الحمامات & الغرف & الأدوار */}
-      <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-        {draftData.listingType !== 'sell' && (
-          <PreviewItem label="عدد الادوار" value={draftData.floors} />
-        )}
-        <PreviewItem label="عدد الحمامات" value={draftData.baths} />
-        <PreviewItem label="عدد الغرف" value={draftData.rooms} />
-      </View>
-
-      {/* Row 5: المزايا & رقم الهاتف */}
-      <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-        <PreviewItem
-          label="المزايا"
-          value={draftData.features?.join('، ') || '-'}
-        />
-        <PreviewItem label="رقم الهاتف" value={draftData.phoneNumber} />
-      </View>
-
-      {/* Row 6: Pricing / Rent / Allocation Details */}
-      {draftData.listingType === 'rent' ? (
-        <View className="mb-4 flex-row gap-4" style={{ gap: 16 }}>
-          <PreviewItem
-            label="الايجار الشهري"
-            value={
-              draftData.monthlyRent
-                ? `${draftData.monthlyRent} د.ك`
-                : 'غير محدد'
-            }
-          />
-          {draftData.additionalExpenses ? (
-            <PreviewItem
-              label="المصاريف الاضافية"
-              value={draftData.additionalExpenses}
-            />
-          ) : null}
-        </View>
-      ) : draftData.listingType === 'exchange' ? (
-        draftData.allocationState ? (
-          <View className="mb-4 items-start">
-            <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
-              حالة التخصيص
-            </Text>
-            <Text className="text-right font-cairo-bold text-[14px] text-[#15304D]">
-              {draftData.allocationState}
-            </Text>
-          </View>
-        ) : null
-      ) : draftData.showPrice && draftData.price ? (
-        <View className="mb-4 flex-row">
-          <PreviewItem label="السعر" value={`${draftData.price} د.ك`} />
-        </View>
-      ) : null}
-
-      {/* Row 7: الموقع */}
-      <View className="mb-4 items-start">
-        <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
-          الموقع
-        </Text>
-        <Text className="font-cairo-semibold text-[14px] text-[#15304D]"
-          style={{ writingDirection: "rtl" }}
-        >
-          {draftData.mapLocationLabel
-            ? draftData.mapLocationLabel
-            : `${draftData.governorate?.label || ''} - ${draftData.area?.label || ''}`}
-        </Text>
-      </View>
-
-      {/* Row 8: تفاصيل الاعلان */}
-      <View className="mb-4 w-full items-start">
-        <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
-          تفاصيل الاعلان
-        </Text>
-        <Text
-          className="font-cairo-semibold text-[13px] leading-6 text-[#15304D]"
-          style={{ writingDirection: 'rtl' }}
-        >
-          {draftData.adDetails || 'لا يوجد تفاصيل.'}
-        </Text>
-      </View>
-
-      {/* Row 9: نوع الاعلان */}
-      <View className="items-start">
-        <Text className="mb-1 text-right font-cairo-medium text-[12px] text-[#A0A0A0]">
-          نوع الاعلان
-        </Text>
-        <Text className="text-right font-cairo-bold text-[14px] text-[#15304D]">
-          {adLevelLabel}
-        </Text>
-      </View>
+      ))}
     </View>
   );
 }

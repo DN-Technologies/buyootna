@@ -7,128 +7,109 @@ import { AdLevel } from '@/shared/store/useListingStore';
 interface AdLevelSelectorProps {
   value: AdLevel;
   onChange: (level: AdLevel) => void;
+  // Ads left to publish at each level, from the user's packages
+  normalCount: number;
+  featuredCount: number;
 }
 
+interface LevelCardContentProps {
+  title: string;
+  count: number;
+  titleColor: string;
+  icon: number;
+}
+
+function LevelCardContent({
+  title,
+  count,
+  titleColor,
+  icon,
+}: LevelCardContentProps) {
+  return (
+    <View
+      className="flex-1 flex-row items-center p-3"
+      style={{ gap: 12 }}
+    >
+      <Image
+        source={icon}
+        style={{ width: 24, height: 24 }}
+        contentFit="contain"
+      />
+      <View className="flex-1 items-start py-1.5" style={{ gap: 6 }}>
+        <Text
+          className="font-cairo-semibold text-[13px]"
+          style={{ color: titleColor }}
+        >
+          {title}
+        </Text>
+        <Text className="font-cairo-bold text-[15px] text-[#111111]">
+          {count}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+/** اختر نوع اعلانك: a normal or a featured ad, with what's left of each. */
 export default function AdLevelSelector({
   value,
   onChange,
+  normalCount,
+  featuredCount,
 }: AdLevelSelectorProps) {
   const isPremium = value === 'premium';
-  const isNormal = value === 'normal';
 
   return (
-    <View className="mb-6 w-full">
+    <View className="w-full">
       <Text
-        className="mb-3 font-cairo-semibold text-base text-[#111111]"
+        className="mb-3 font-cairo-medium text-sm text-[#111111]"
         style={{ writingDirection: 'rtl' }}
       >
         اختر نوع اعلانك
       </Text>
 
-      <View className="h-[72px] flex-row gap-3" style={{ gap: 12 }}>
-        {/* Regular Ad Option (إعلان عادي) - Placed first so in RTL it renders on the right matching Figma */}
+      <View className="flex-row" style={{ gap: 8 }}>
+        {/* First so that it renders on the right in RTL, as in Figma */}
         <TouchableOpacity
+          testID="ad-level-normal"
           activeOpacity={0.85}
           onPress={() => onChange('normal')}
-          className="flex-1"
+          className="flex-1 overflow-hidden rounded-lg bg-[#F5F7F9]"
           style={{
-            height: 72,
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: isNormal ? '#15304D' : '#ECECEC',
-            backgroundColor: isNormal ? '#F4F8FB' : '#FFFFFF',
-            opacity: isNormal ? 1 : 0.8,
-            overflow: 'hidden',
+            borderWidth: 1.5,
+            borderColor: isPremium ? 'transparent' : '#15304D',
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              width: '100%',
-              height: '100%',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 12,
-            }}
-          >
-            <View className="flex-row items-center gap-3">
-              <Image
-                source={require('@/assets/icons/add-listing/normal-icon.svg')}
-                style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: isNormal ? '#15304D' : '#64748B',
-                }}
-                contentFit="contain"
-              />
-              <View className="items-start">
-                <Text
-                  className={`font-cairo-semibold text-[14px] ${
-                    isNormal ? 'text-[#15304D]' : 'text-[#111111]'
-                  }`}
-                >
-                  إعلان عادي
-                </Text>
-                <Text
-                  className={`font-cairo-medium text-[12px] ${
-                    isNormal ? 'text-[#15304D]/70' : 'text-[#64748B]'
-                  }`}
-                >
-                  يظهر ضمن القائمة
-                </Text>
-              </View>
-            </View>
-          </View>
+          <LevelCardContent
+            title="إعلان عادي"
+            count={normalCount}
+            titleColor="#15304D"
+            icon={require('@/assets/icons/add-listing/normal-icon.svg')}
+          />
         </TouchableOpacity>
 
-        {/* Premium Ad Option (إعلان مميز) - Gradient background: linear-gradient(90deg, #FF8D28 0%, #FACC15 100%) */}
         <TouchableOpacity
+          testID="ad-level-premium"
           activeOpacity={0.85}
           onPress={() => onChange('premium')}
-          className="flex-1"
+          className="flex-1 overflow-hidden rounded-lg"
           style={{
-            height: 72,
-            borderRadius: 8,
-            borderWidth: 2,
+            borderWidth: 1.5,
             borderColor: isPremium ? '#15304D' : 'transparent',
-            opacity: isPremium ? 1 : 0.85,
-            overflow: 'hidden',
           }}
         >
           <LinearGradient
             colors={['#FF8D28', '#FACC15']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={{
-              flex: 1,
-              width: '100%',
-              height: '100%',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingHorizontal: 12,
-            }}
+            style={{ flex: 1 }}
           >
-            <View className="flex-row items-center gap-3">
-              <Image
-                source={require('@/assets/icons/add-listing/premium-icon.svg')}
-                style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: '#111111',
-                }}
-                contentFit="contain"
-              />
-              <View className="items-start">
-                <Text className="font-cairo-semibold text-[14px] text-[#111111]">
-                  إعلان مميز
-                </Text>
-                <Text className="font-cairo-medium text-[12px] text-[#111111]">
-                  يظهر أعلى القائمة
-                </Text>
-              </View>
-            </View>
+            <LevelCardContent
+              title="إعلان مميز"
+              count={featuredCount}
+              titleColor="#111111"
+              icon={require('@/assets/icons/add-listing/premium-icon.svg')}
+            />
           </LinearGradient>
         </TouchableOpacity>
       </View>

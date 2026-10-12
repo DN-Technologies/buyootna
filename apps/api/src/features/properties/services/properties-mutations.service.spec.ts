@@ -106,6 +106,69 @@ describe('PropertiesMutationsService alert matching', () => {
     expect(alertMatching.notifyMatchesForProperty).not.toHaveBeenCalled();
   });
 
+  it('stores no room, bath, floor or age for land, whatever was sent', async () => {
+    property.create.mockResolvedValue({ id: 'prop-1' });
+    const land = {
+      ...dto,
+      category: 'LAND',
+      beds: 3,
+      baths: 2,
+      floors: 1,
+      propertyAge: 5,
+    } as CreatePropertyDto;
+
+    await service.create('identity-1', { ...land, isDraft: true });
+    await service.create('identity-1', { ...land, isDraft: false });
+
+    for (const [args] of property.create.mock.calls as [
+      { data: Record<string, unknown> },
+    ][]) {
+      expect(args.data).toMatchObject({
+        category: 'LAND',
+        beds: null,
+        baths: null,
+        floors: null,
+        propertyAge: null,
+      });
+    }
+  });
+
+  it("keeps an apartment's counts", async () => {
+    property.create.mockResolvedValue({ id: 'prop-1' });
+
+    await service.create('identity-1', {
+      ...dto,
+      category: 'APARTMENT',
+      beds: 3,
+      baths: 2,
+      floors: 4,
+      isDraft: true,
+    });
+
+    const [[args]] = property.create.mock.calls as [
+      { data: Record<string, unknown> },
+    ][];
+    expect(args.data).toMatchObject({ beds: 3, baths: 2, floors: 4 });
+  });
+
+  it('clears counts on an edit of an ad whose category has none', async () => {
+    property.findUnique.mockResolvedValue({
+      id: 'prop-1',
+      identityId: 'identity-1',
+      status: 'ACTIVE',
+      category: 'FARM',
+      images: [],
+    });
+    property.update.mockResolvedValue({ id: 'prop-1' });
+
+    await service.update('identity-1', 'prop-1', { beds: 4 });
+
+    const [[args]] = property.update.mock.calls as [
+      { data: Record<string, unknown> },
+    ][];
+    expect(args.data).toMatchObject({ beds: null, baths: null, floors: null });
+  });
+
   it('notifies after publishing a draft', async () => {
     owned('DRAFT');
     property.update.mockResolvedValue({ id: 'prop-1' });

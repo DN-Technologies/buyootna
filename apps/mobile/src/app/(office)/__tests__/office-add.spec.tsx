@@ -241,8 +241,8 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
     expect(getByTestId('input-income').props.value).toBe('1,200');
   });
 
-  it('renders rent-specific fields like floors stepper, expenses and conditions (Figma 4494:142372)', async () => {
-    const { getByText, getByTestId } = await renderWithClient(
+  it('renders rent-specific fields, with the floors stepper only for categories that have floors', async () => {
+    const { getByText, getByTestId, queryByTestId } = await renderWithClient(
       <OfficeAddScreen />,
     );
 
@@ -252,6 +252,14 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
     });
 
     expect(getByText('الايجار الشهري')).toBeTruthy();
+    // Floors follow the category, not the listing type
+    expect(queryByTestId('stepper-floors')).toBeNull();
+    await act(async () => {
+      fireEvent.press(getByTestId('picker-category'));
+    });
+    await act(async () => {
+      fireEvent.press(getByText('شقة'));
+    });
     expect(getByTestId('stepper-floors')).toBeTruthy();
     expect(getByTestId('input-additional-expenses')).toBeTruthy();
     expect(getByTestId('input-rent-conditions')).toBeTruthy();
@@ -276,7 +284,8 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
   });
 
   it('renders exchange-specific fields and handles land vs house stepper visibility (Figma 4494:142486 & 4494:142573)', async () => {
-    const { getByText, getByTestId, queryByTestId } = await renderWithClient(
+    const { getByText, getByTestId, queryByTestId, queryByText } =
+      await renderWithClient(
       <OfficeAddScreen />,
     );
 
@@ -293,12 +302,13 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
     expect(getByTestId('stepper-rooms')).toBeTruthy();
     expect(getByTestId('stepper-bathrooms')).toBeTruthy();
 
-    // Switch Category to Land (أرض سكنية) -> Steppers should be hidden (Figma 4494:142486)
+    // Exchange offers only land and house; land has no steppers and no age
     await act(async () => {
       fireEvent.press(getByTestId('picker-category'));
     });
+    expect(queryByText('شقة')).toBeNull();
     await act(async () => {
-      fireEvent.press(getByText('أرض سكنية'));
+      fireEvent.press(getByText('أرض'));
     });
 
     expect(queryByTestId('stepper-rooms')).toBeNull();

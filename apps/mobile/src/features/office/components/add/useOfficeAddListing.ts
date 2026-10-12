@@ -9,6 +9,10 @@ import { OfficeListingType } from '@/features/office/types';
 import { plansService } from '@/shared/api/plans.service';
 import { useContactPhonePrefill } from '@/shared/hooks/auth/useContactPhonePrefill';
 import { useListingStore } from '@/shared/store/useListingStore';
+import {
+  categoryOptionsFor,
+  getCategoryFields,
+} from '@/shared/utils/data/propertyCategories';
 
 import type { OfficePlanType } from './OfficePlanQuotaSelector';
 
@@ -19,16 +23,6 @@ export const OFFICE_GOVERNORATES = [
   'الأحمدي',
   'الجهراء',
   'مبارك الكبير',
-];
-
-export const OFFICE_CATEGORIES = [
-  'شقة سكني',
-  'بيت / فيلا',
-  'أرض سكنية',
-  'عمارة استثمارية',
-  'شاليه',
-  'مكتب تجاري',
-  'محل / معرض',
 ];
 
 export type OfficePickerKey = 'governorate' | 'category' | null;
@@ -44,7 +38,8 @@ export function useOfficeAddListing() {
   const updateField = useListingStore((state) => state.updateField);
 
   // Form State
-  const [listingType, setListingType] = useState<OfficeListingType>('sell');
+  const [listingType, setListingTypeState] =
+    useState<OfficeListingType>('sell');
   const [governorate, setGovernorate] = useState('');
   const [area, setArea] = useState('');
   const [mapLocation, setMapLocation] = useState('الكويت، شارع الخليج العربي');
@@ -107,9 +102,19 @@ export function useOfficeAddListing() {
     walletTiers.find((tier) => tier.planSlug === 'silver')?.adsRemaining ?? 0;
   const totalQuota = normalQuota + silverQuota;
 
-  // Helpers
-  const isLandCategory =
-    category === 'أرض سكنية' || category === 'أرض' || category.includes('أرض');
+  // The same categories and per-category fields as the individual flow
+  const categoryOptions = categoryOptionsFor(listingType);
+  const selectedCategory =
+    categoryOptions.find((option) => option.label === category) ?? null;
+  const categoryFields = getCategoryFields(selectedCategory?.id);
+
+  // A category the new type doesn't offer (e.g. شقة under بدل) is dropped
+  const setListingType = (type: OfficeListingType) => {
+    setListingTypeState(type);
+    if (!categoryOptionsFor(type).some((option) => option.label === category)) {
+      setCategory('');
+    }
+  };
 
   const isFormValid =
     Boolean(governorate || area) &&
@@ -145,7 +150,9 @@ export function useOfficeAddListing() {
     updateField('area', area ? { id: area, label: area } : null);
     updateField(
       'propertyCategory',
-      category ? { id: category, label: category } : null,
+      selectedCategory
+        ? { id: selectedCategory.id, label: selectedCategory.label }
+        : null,
     );
     updateField('areaSize', space.replace(/[^\d.]/g, '') || '300');
     updateField('propertyAge', propertyAge);
@@ -238,7 +245,7 @@ export function useOfficeAddListing() {
     setBathroomsCount,
     floorsCount,
     setFloorsCount,
-    isLandCategory,
+    categoryFields,
     // Price & income
     isPriceActive,
     setIsPriceActive,
@@ -274,11 +281,14 @@ export function useOfficeAddListing() {
     selectPickerItem,
     pickerOptions: activePicker === 'governorate'
       ? OFFICE_GOVERNORATES
-      : OFFICE_CATEGORIES,
+      : categoryOptions.map((option) => option.label),
     pickerTitle:
-      activePicker === 'governorate' ? 'اختر المحافظة' : 'اختر فئة العقار',
+      activePicker === 'governorate' ? 'اختر المحافظة' : 'فئة العقار',
     // Submit
     isFormValid,
     handlePreviewAd,
   };
 }
+
+/** Everything the office إضافة إعلان sections read and change. */
+export type OfficeAddListing = ReturnType<typeof useOfficeAddListing>;

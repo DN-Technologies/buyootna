@@ -11,6 +11,8 @@ export interface StepperInputProps {
   max?: number;
   required?: boolean;
   optional?: boolean;
+  // 'lg' is the add-ad form's field: 46px tall
+  size?: 'md' | 'lg';
 }
 
 export default function StepperInput({
@@ -21,7 +23,9 @@ export default function StepperInput({
   max = 10,
   required,
   optional,
+  size = 'md',
 }: StepperInputProps) {
+  const isLarge = size === 'lg';
   const handleDecrement = () => {
     if (value > min) {
       onChange(value - 1);
@@ -40,7 +44,7 @@ export default function StepperInput({
   return (
     <View className="flex-1">
       <Text
-        className="mb-1 font-cairo-medium text-sm text-[#111111]"
+        className={`font-cairo-medium text-sm text-[#111111] ${isLarge ? 'mb-3' : 'mb-1'}`}
         style={{
           writingDirection: 'rtl',
         }}
@@ -49,7 +53,9 @@ export default function StepperInput({
         <RequirementMark required={required} optional={optional} />
       </Text>
 
-      <View className="h-[40px] flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white px-4">
+      <View
+        className={`flex-row items-center justify-between rounded-md border border-[#ECECEC] bg-white ${isLarge ? 'h-[46px] px-3' : 'h-[40px] px-4'}`}
+      >
         <TouchableOpacity
           onPress={handleIncrement}
           disabled={isAtMax}

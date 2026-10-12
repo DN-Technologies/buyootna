@@ -46,3 +46,45 @@ describe('CreatePropertyDto price validation', () => {
     );
   });
 });
+
+describe('CreatePropertyDto category-dependent fields', () => {
+  it('accepts land with no rooms or baths', async () => {
+    const dto = buildSaleListing({
+      category: 'LAND',
+      beds: undefined,
+      baths: undefined,
+    });
+
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('accepts a farm, with a WhatsApp number and no phone', async () => {
+    const dto = buildSaleListing({
+      category: 'FARM',
+      beds: undefined,
+      baths: undefined,
+      whatsappNumber: '58094586',
+    });
+
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('accepts an allocation status on an exchange ad', async () => {
+    const dto = buildSaleListing({
+      type: 'EXCHANGE',
+      category: 'LAND',
+      requestYear: 2019,
+      requiredYear: 2025,
+      allocationStatus: 'مخصصة',
+    });
+
+    expect(await validate(dto)).toEqual([]);
+  });
+
+  it('still rejects a non-numeric room count', async () => {
+    const dto = buildSaleListing({ beds: 'three' as any });
+    const errors = await validate(dto);
+
+    expect(errors.find((e) => e.property === 'beds')).toBeDefined();
+  });
+});
