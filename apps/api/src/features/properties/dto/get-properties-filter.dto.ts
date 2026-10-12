@@ -1,13 +1,14 @@
 import {
   IsEnum,
   IsIn,
+  IsNumber,
   IsOptional,
   IsInt,
   Min,
   IsString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ListingType } from '@prisma/client';
+import { ListingType, PropertyCategory } from '@prisma/client';
 
 export const PROPERTY_SORTS = [
   'DEFAULT',
@@ -26,6 +27,33 @@ export class GetPropertiesFilterDto {
   @IsOptional()
   @IsString()
   identityId?: string;
+
+  // Search filters (the web landing's hero search). All optional and
+  // combined with AND.
+  @IsOptional()
+  @IsString()
+  governorateId?: string;
+
+  @IsOptional()
+  @IsString()
+  areaId?: string;
+
+  @IsOptional()
+  @IsEnum(PropertyCategory, { message: 'فئة العقار غير صالحة' })
+  category?: PropertyCategory;
+
+  // An ad with no price shown never matches a price range
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'أقل سعر يجب أن يكون رقماً' })
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'أعلى سعر يجب أن يكون رقماً' })
+  @Min(0)
+  maxPrice?: number;
 
   // The @Type decorator ensures the URL query string "?page=2" is converted to a number
   @IsOptional()

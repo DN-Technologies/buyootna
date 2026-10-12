@@ -189,6 +189,11 @@ export class PropertiesFeedService {
       page = 1,
       limit = 10,
       identityId,
+      governorateId,
+      areaId,
+      category,
+      minPrice,
+      maxPrice,
       sort = 'DEFAULT',
     } = filters;
 
@@ -205,6 +210,15 @@ export class PropertiesFeedService {
     }
     if (identityId) {
       whereClause.identityId = identityId;
+    }
+    if (governorateId) whereClause.governorateId = governorateId;
+    if (areaId) whereClause.areaId = areaId;
+    if (category) whereClause.category = category;
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      whereClause.price = {
+        ...(minPrice !== undefined ? { gte: minPrice } : {}),
+        ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+      };
     }
 
     const [properties, totalCount] = await Promise.all([
