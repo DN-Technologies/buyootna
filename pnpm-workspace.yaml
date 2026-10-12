@@ -52,6 +52,7 @@ overrides:
   'proxy-addr@^2.0.0': 2.0.8
   'source-map-js@^1.0.0': 1.2.2
   'compression@^1.0.0': 1.8.2
+  'handlebars@^4.0.0': 4.7.10
 
 patchedDependencies:
   react-native@0.81.5: patches/react-native@0.81.5.patch
