@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { HeadsetIcon, PartyPopperIcon } from '@/assets/icons/company-home';
 import type { CompanyDashboardData } from '@/features/company/hooks/useCompanyHome';
@@ -141,7 +141,12 @@ export default function HomeBanner({
     content = (
       <Promo
         testID="home-banner-plans"
-        subtitle="قم بالاشتراك في باقة وأضف خدماتك لزيادة فرص ظهورك للعملاء واستقبال الطلبات."
+        // No call to subscribe on iOS (App Store rules)
+        subtitle={
+          Platform.OS === 'ios'
+            ? 'أضف خدماتك لزيادة فرص ظهورك للعملاء واستقبال الطلبات.'
+            : 'قم بالاشتراك في باقة وأضف خدماتك لزيادة فرص ظهورك للعملاء واستقبال الطلبات.'
+        }
         actionLabel="استعرض الباقات"
         onPress={openPlans}
       />

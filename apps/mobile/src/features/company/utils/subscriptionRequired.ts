@@ -1,4 +1,5 @@
 import type { Router } from 'expo-router';
+import { Platform } from 'react-native';
 
 import { showAlert } from '@/shared/utils/alert';
 
@@ -11,11 +12,27 @@ export function isSubscriptionRequired(error: unknown): boolean {
   return code === 'SUBSCRIPTION_REQUIRED';
 }
 
+// On iOS the app never asks anyone to subscribe or buy (App Store rules),
+// so the prompt only says why the action is unavailable
+const promptText = () =>
+  Platform.OS === 'ios'
+    ? {
+        title: 'انتهت باقة شركتك',
+        message:
+          'لا يمكن حالياً إضافة الخدمات والمشاريع، أو الرد على الطلبات، أو إصدار الفواتير.',
+      }
+    : {
+        title: 'اشترك للمتابعة',
+        message:
+          'انتهى اشتراك شركتك. اشترك في إحدى الباقات لتستمر في إضافة الخدمات والمشاريع، والرد على الطلبات، وإصدار الفواتير.',
+      };
+
 /** Tells the company why, with a way to the plans. */
 export function promptSubscription(router: Router) {
+  const { title, message } = promptText();
   showAlert(
-    'اشترك للمتابعة',
-    'انتهى اشتراك شركتك. اشترك في إحدى الباقات لتستمر في إضافة الخدمات والمشاريع، والرد على الطلبات، وإصدار الفواتير.',
+    title,
+    message,
     [
       { text: 'إلغاء', style: 'cancel' },
       {

@@ -185,7 +185,8 @@ describe('handleSubscriptionRequired', () => {
       string,
       { text: string; onPress?: () => void }[],
     ];
-    expect(title).toBe('اشترك للمتابعة');
+    // Jest runs as iOS, where the prompt doesn't ask anyone to subscribe
+    expect(title).toBe('انتهت باقة شركتك');
     buttons.find((b) => b.text === 'عرض الباقات')?.onPress?.();
     expect(mockPush).toHaveBeenCalledWith('/company-plans');
   });
