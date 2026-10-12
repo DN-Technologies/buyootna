@@ -18,6 +18,17 @@ export class GetCompaniesFilterDto {
   @IsString()
   search?: string;
 
+  // التخصص, e.g. "مكتب هندسي"; several separated by commas match any
+  @IsOptional()
+  @IsString()
+  specialty?: string;
+
+  // Governorate or area names ("حولي,السالمية"), matched against where
+  // the company is based and the areas it serves
+  @IsOptional()
+  @IsString()
+  location?: string;
+
   // الترتيب حسب; NEWEST (the default) keeps the plain createdAt order
   @IsOptional()
   @IsIn(COMPANY_SORTS)

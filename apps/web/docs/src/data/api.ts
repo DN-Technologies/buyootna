@@ -1047,24 +1047,28 @@ export const api: DocSection = {
     {
       id: "api-properties-search-filters",
       title: {
-        en: "Properties list: filter by governorate, area, category and price",
-        ar: "قائمة العقارات: التصفية بالمحافظة والمنطقة والفئة والسعر",
+        en: "Search filters: properties by governorate, area, category and price; companies and offices by location",
+        ar: "فلاتر البحث: العقارات بالمحافظة والمنطقة والفئة والسعر؛ والشركات والمكاتب بالموقع",
       },
       priority: "P1",
       story: {
-        en: "GET /properties accepts five more optional query parameters, combined with AND alongside `type`: `governorateId`, `areaId`, `category` (a PropertyCategory value), `minPrice` and `maxPrice`. An ad with no price shown never matches a price range. `meta.total` counts the filtered set. Requests without them behave as before.",
-        ar: "يقبل GET /properties خمسة معاملات اختيارية إضافية تُجمع بـ AND مع `type`: `governorateId` و`areaId` و`category` (قيمة من PropertyCategory) و`minPrice` و`maxPrice`. الإعلان بلا سعر معلن لا يطابق أي نطاق سعري. و`meta.total` يحصي النتائج بعد التصفية. والطلبات بدونها تعمل كما كانت.",
+        en: "GET /properties accepts five more optional query parameters, combined with AND alongside `type`: `governorateId`, `areaId`, `category` (a PropertyCategory value), `minPrice` and `maxPrice`. The first three each take one value or several separated by commas (`governorateId=capital,hawally`), matching any of them. An ad with no price shown never matches a price range. `meta.total` counts the filtered set. GET /users/companies gains `specialty` (one or several التخصص names, exact match) and `location` (one or several governorate or area names, matched as text inside the company's address or service areas); GET /users/offices gains `location` (matched inside the office's address). A company that lists its service area only as all of Kuwait is not matched by a specific governorate. Requests without them behave as before.",
+        ar: "يقبل GET /properties خمسة معاملات اختيارية إضافية تُجمع بـ AND مع `type`: `governorateId` و`areaId` و`category` (قيمة من PropertyCategory) و`minPrice` و`maxPrice`. والثلاثة الأولى تقبل قيمة واحدة أو عدة قيم مفصولة بفواصل (`governorateId=capital,hawally`) وتطابق أياً منها. الإعلان بلا سعر معلن لا يطابق أي نطاق سعري. و`meta.total` يحصي النتائج بعد التصفية. ويضاف إلى GET /users/companies المعاملان `specialty` (اسم تخصص أو أكثر، مطابقة تامة) و`location` (اسم محافظة أو منطقة أو أكثر، يُطابق كنص ضمن عنوان الشركة أو مناطق خدمتها)؛ وإلى GET /users/offices المعامل `location` (يُطابق ضمن عنوان المكتب). والشركة التي تذكر منطقة خدمتها كجميع مناطق الكويت فقط لا تطابق محافظة محددة. والطلبات بدونها تعمل كما كانت.",
       },
       acceptanceCriteria: {
         en: [
           "?type=SALE&category=APARTMENT&maxPrice=100000 returns only sale apartments priced up to 100,000, and meta.total matches.",
           "?governorateId=capital&areaId=<id> returns only ads in that area.",
+          "?governorateId=capital,hawally returns ads from both, and its total is the sum of the two single-governorate totals; ?category=APARTMENT,HOUSE likewise.",
+          "GET /users/companies?location=<name> and ?specialty=<name> return only matching companies, combined with AND with each other and with category and search; GET /users/offices?location=<name> likewise.",
           "An unknown category is 400; a non-numeric or negative price is 400.",
           "minPrice alone and maxPrice alone each work.",
         ],
         ar: [
           "?type=SALE&category=APARTMENT&maxPrice=100000 يعيد شقق البيع حتى 100,000 فقط، وmeta.total مطابق.",
           "?governorateId=capital&areaId=<id> يعيد إعلانات تلك المنطقة فقط.",
+          "?governorateId=capital,hawally يعيد إعلانات المحافظتين ومجموعه يساوي مجموع كل محافظة منفردة؛ وكذلك ?category=APARTMENT,HOUSE.",
+          "GET /users/companies?location=<اسم> و?specialty=<اسم> يعيدان الشركات المطابقة فقط، مجموعين بـ AND مع بعضهما ومع category وsearch؛ وكذلك GET /users/offices?location=<اسم>.",
           "الفئة غير المعروفة 400؛ والسعر غير الرقمي أو السالب 400.",
           "minPrice وحده وmaxPrice وحده يعملان.",
         ],
@@ -1073,10 +1077,14 @@ export const api: DocSection = {
         en: [
           "GET /properties?type=SALE&category=APARTMENT&maxPrice=100000 and check every item.",
           "GET /properties?category=NOPE: 400.",
+          "GET /properties?governorateId=capital, then hawally, then capital,hawally: the third total is the sum.",
+          "GET /users/offices?location=العاصمة and ?location=حولي against known offices.",
         ],
         ar: [
           "اطلب /properties?type=SALE&category=APARTMENT&maxPrice=100000 وتحقق من كل عنصر.",
           "اطلب /properties?category=NOPE: الرد 400.",
+          "اطلب /properties?governorateId=capital ثم hawally ثم capital,hawally: المجموع الثالث يساوي مجموعهما.",
+          "اطلب /users/offices?location=العاصمة و?location=حولي مقابل مكاتب معروفة.",
         ],
       },
       updatedIn: "feat/landing-home-figma",

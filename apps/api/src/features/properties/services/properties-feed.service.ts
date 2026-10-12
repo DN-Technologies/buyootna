@@ -6,6 +6,7 @@ import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import {
   GetPropertiesFilterDto,
   type PropertySort,
+  splitList,
 } from '../dto/get-properties-filter.dto';
 import {
   formatCompanies,
@@ -211,9 +212,11 @@ export class PropertiesFeedService {
     if (identityId) {
       whereClause.identityId = identityId;
     }
-    if (governorateId) whereClause.governorateId = governorateId;
-    if (areaId) whereClause.areaId = areaId;
-    if (category) whereClause.category = category;
+    const governorateIds = splitList(governorateId);
+    const areaIds = splitList(areaId);
+    if (governorateIds) whereClause.governorateId = { in: governorateIds };
+    if (areaIds) whereClause.areaId = { in: areaIds };
+    if (category?.length) whereClause.category = { in: category };
     if (minPrice !== undefined || maxPrice !== undefined) {
       whereClause.price = {
         ...(minPrice !== undefined ? { gte: minPrice } : {}),

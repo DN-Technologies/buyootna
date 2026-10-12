@@ -63,6 +63,9 @@ export const getProperties = (query: PropertyQuery = {}) =>
 export interface CompanyQuery {
   category?: string
   search?: string
+  // Comma-separated, as the search box sends them
+  specialty?: string
+  location?: string
   page?: number
   limit?: number
 }
@@ -72,6 +75,7 @@ export const getCompanies = (query: CompanyQuery = {}) =>
 
 export interface OfficeQuery {
   search?: string
+  location?: string
   page?: number
   limit?: number
 }

@@ -7,8 +7,16 @@ import {
   Min,
   IsString,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ListingType, PropertyCategory } from '@prisma/client';
+
+/** "a, b ,c" (or an already-split value) → ['a', 'b', 'c']; empty → undefined. */
+export function splitList(value: unknown): string[] | undefined {
+  const parts = (Array.isArray(value) ? value : String(value ?? '').split(','))
+    .map((part) => String(part).trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : undefined;
+}
 
 export const PROPERTY_SORTS = [
   'DEFAULT',
@@ -29,7 +37,8 @@ export class GetPropertiesFilterDto {
   identityId?: string;
 
   // Search filters (the web landing's hero search). All optional and
-  // combined with AND.
+  // combined with AND. The first three take one value or several separated
+  // by commas ("capital,hawally"), matching any of them.
   @IsOptional()
   @IsString()
   governorateId?: string;
@@ -39,8 +48,9 @@ export class GetPropertiesFilterDto {
   areaId?: string;
 
   @IsOptional()
-  @IsEnum(PropertyCategory, { message: 'فئة العقار غير صالحة' })
-  category?: PropertyCategory;
+  @Transform(({ value }: { value: unknown }) => splitList(value))
+  @IsEnum(PropertyCategory, { each: true, message: 'فئة العقار غير صالحة' })
+  category?: PropertyCategory[];
 
   // An ad with no price shown never matches a price range
   @IsOptional()

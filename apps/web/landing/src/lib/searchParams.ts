@@ -27,3 +27,11 @@ export function hrefWith(
   const text = query.toString()
   return text ? `${path}?${text}` : path
 }
+
+/** A comma-separated query parameter as a list ("a,b" → ["a", "b"]). */
+export function listParam(params: RawSearchParams, key: string): string[] {
+  return (param(params, key) ?? '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+}
