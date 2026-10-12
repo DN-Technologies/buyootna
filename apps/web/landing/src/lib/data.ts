@@ -52,7 +52,7 @@ export interface PropertyQuery {
   category?: string
   minPrice?: number
   maxPrice?: number
-  sort?: 'DEFAULT' | 'NEWEST'
+  sort?: 'DEFAULT' | 'NEWEST' | 'OLDEST' | 'PRICE_DESC' | 'PRICE_ASC'
   page?: number
   limit?: number
 }

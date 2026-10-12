@@ -12,6 +12,7 @@ import {
   ActionsMenu,
   GuestNotifications,
 } from '@/components/layout/NavPopovers'
+import AccountAction from '@/components/ui/AccountAction'
 import { LOGIN_PATH } from '@/lib/siteLinks'
 
 const LINKS = [
@@ -19,8 +20,7 @@ const LINKS = [
   { href: '/properties', label: 'العقارات' },
   { href: '/companies', label: 'الشركات' },
   { href: '/offices', label: 'المكاتب' },
-  // Signed-in area: sends the visitor to sign in for now
-  { href: LOGIN_PATH, label: 'نشاطي' },
+  { href: '/activity', label: 'نشاطي' },
 ]
 
 /** The rounded top bar: logo, sections, actions menu and account icons. */
@@ -65,6 +65,14 @@ export default function SiteNav() {
         </nav>
 
         <div className="flex items-center gap-0.5">
+          <GuestNotifications />
+          <Link
+            href="/chats"
+            aria-label="المحادثات"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
+          >
+            <MessageSquare className="h-4.5 w-4.5" strokeWidth={1.5} />
+          </Link>
           {/* Not signed in: the account icon opens the guest menu */}
           <button
             type="button"
@@ -76,14 +84,6 @@ export default function SiteNav() {
           >
             <User className="h-4.5 w-4.5" strokeWidth={1.5} />
           </button>
-          <Link
-            href={LOGIN_PATH}
-            aria-label="المحادثات"
-            className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
-          >
-            <MessageSquare className="h-4.5 w-4.5" strokeWidth={1.5} />
-          </Link>
-          <GuestNotifications />
           <button
             type="button"
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
@@ -121,13 +121,13 @@ export default function SiteNav() {
           ))}
           <div className="my-1 h-px bg-line" />
           {ACTIONS.map((action) => (
-            <Link
+            <AccountAction
               key={action.label}
-              href={LOGIN_PATH}
-              className="rounded-xl px-4 py-3 text-base font-medium text-ink"
+              onBeforeOpen={() => setMenuOpen(false)}
+              className="rounded-xl px-4 py-3 text-right text-base font-medium text-ink"
             >
               {action.label}
-            </Link>
+            </AccountAction>
           ))}
           <Link
             href={LOGIN_PATH}

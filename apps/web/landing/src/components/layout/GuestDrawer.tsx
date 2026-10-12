@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
-import { CONTACT, LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
+import { LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
 
 interface DrawerLink {
   label: string
@@ -14,15 +14,13 @@ interface DrawerLink {
   icon: string | LucideIcon
 }
 
-// TODO(content): the about and policy pages don't exist on the web yet
 const SECTIONS: { title: string; links: DrawerLink[] }[] = [
   {
     title: 'النشاط',
     links: [
-      // Saved ads need an account
       {
         label: 'المحفوظات',
-        href: LOGIN_PATH,
+        href: '/favorites',
         icon: '/landing/drawer-heart.svg',
       },
     ],
@@ -30,10 +28,10 @@ const SECTIONS: { title: string; links: DrawerLink[] }[] = [
   {
     title: 'الدعم والمساعدة',
     links: [
-      { label: 'عن بيوتنا', href: '#', icon: Info },
+      { label: 'عن بيوتنا', href: '/about', icon: Info },
       {
         label: 'تواصل معنا',
-        href: `mailto:${CONTACT.email}`,
+        href: '/contact',
         icon: '/landing/drawer-phone.svg',
       },
     ],
@@ -43,10 +41,10 @@ const SECTIONS: { title: string; links: DrawerLink[] }[] = [
     links: [
       {
         label: 'سياسة الخصوصية',
-        href: '#',
+        href: '/privacy',
         icon: '/landing/drawer-shield.svg',
       },
-      { label: 'الشروط والأحكام', href: '#', icon: ScrollText },
+      { label: 'الشروط والأحكام', href: '/terms', icon: ScrollText },
     ],
   },
 ]
@@ -141,9 +139,17 @@ export default function GuestDrawer({
                     <span className="flex items-center gap-2">
                       <span className="flex h-5 w-5 items-center justify-center">
                         {typeof link.icon === 'string' ? (
-                          <Image src={link.icon} alt="" width={18} height={18} />
+                          <Image
+                            src={link.icon}
+                            alt=""
+                            width={18}
+                            height={18}
+                          />
                         ) : (
-                          <link.icon className="h-4.5 w-4.5" strokeWidth={1.25} />
+                          <link.icon
+                            className="h-4.5 w-4.5"
+                            strokeWidth={1.25}
+                          />
                         )}
                       </span>
                       <span className="text-[15px] font-medium tracking-[-0.408px] whitespace-nowrap text-ink">

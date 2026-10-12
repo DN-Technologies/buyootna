@@ -23,16 +23,16 @@ const COLUMNS = [
     links: [
       { label: 'تسجيل الدخول', href: LOGIN_PATH },
       { label: 'إنشاء حساب', href: SIGNUP_PATH },
+      { label: 'المفضلة', href: '/favorites' },
     ],
   },
   {
     title: 'المساعدة',
-    // TODO(content): these pages don't exist on the web yet
     links: [
-      { label: 'سياسة الخصوصية', href: '#' },
-      { label: 'الشروط والأحكام', href: '#' },
-      { label: 'عن بيوتنا', href: '#' },
-      { label: 'تواصل معنا', href: `mailto:${CONTACT.email}` },
+      { label: 'سياسة الخصوصية', href: '/privacy' },
+      { label: 'الشروط والأحكام', href: '/terms' },
+      { label: 'عن بيوتنا', href: '/about' },
+      { label: 'تواصل معنا', href: '/contact' },
     ],
   },
 ]

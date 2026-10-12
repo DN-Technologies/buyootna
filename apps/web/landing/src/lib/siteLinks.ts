@@ -16,6 +16,8 @@ export const CONTACT = {
   phone: '99507399',
   whatsapp: '99507399',
   email: 'Dar-alnokhba@hotmail.com',
+  // The support inbox, the same one the mobile app's contact screen shows
+  supportEmail: 'buyootna@hotmail.com',
 }
 
 // Anything that needs an account sends the visitor to sign in

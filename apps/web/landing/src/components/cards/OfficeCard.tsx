@@ -1,11 +1,10 @@
 /* eslint-disable @next/next/no-img-element -- office logos are uploaded to
    storage hosts the image optimizer isn't configured for */
 import Image from 'next/image'
-import Link from 'next/link'
 
 import InitialTile from '@/components/ui/InitialTile'
-import { LOGIN_PATH } from '@/lib/siteLinks'
 import type { Office } from '@/lib/types'
+import AccountAction from '@/components/ui/AccountAction'
 
 /** A real-estate office: logo, name, location, rating and contact buttons. */
 export default function OfficeCard({ office }: { office: Office }) {
@@ -50,18 +49,14 @@ export default function OfficeCard({ office }: { office: Office }) {
           )}
         </div>
 
-        <Link
-          href={LOGIN_PATH}
-          aria-label="أضف إلى المفضلة"
-          className="shrink-0"
-        >
+        <AccountAction aria-label="أضف إلى المفضلة" className="shrink-0">
           <Image
             src="/landing/company-heart.svg"
             alt=""
             width={24}
             height={24}
           />
-        </Link>
+        </AccountAction>
       </div>
 
       <div className="mt-auto flex items-center justify-between border-t border-[#F1F5F9] pt-3">
@@ -87,8 +82,7 @@ export default function OfficeCard({ office }: { office: Office }) {
               />
             </a>
           )}
-          <Link
-            href={LOGIN_PATH}
+          <AccountAction
             aria-label="محادثة"
             className="flex h-7.5 w-10 items-center justify-center rounded-full border border-[#B28648] transition hover:bg-tag"
           >
@@ -98,7 +92,7 @@ export default function OfficeCard({ office }: { office: Office }) {
               width={16}
               height={16}
             />
-          </Link>
+          </AccountAction>
         </div>
       </div>
     </article>
