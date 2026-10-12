@@ -8,4 +8,4 @@ export const SORTS = [
 ] as const
 export type SortId = (typeof SORTS)[number]['id']
 
-export type ViewId = 'cards' | 'list'
+export type ViewId = 'cards' | 'list' | 'map'

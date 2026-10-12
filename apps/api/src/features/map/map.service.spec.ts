@@ -105,4 +105,35 @@ describe('MapService location filter', () => {
     expect(propertyWhere()).not.toHaveProperty('governorateId');
     expect(propertyWhere()).not.toHaveProperty('areaId');
   });
+
+  it('narrows property pins by category, price and exchange years', async () => {
+    const dto = plainToInstance(GetMapBoundsDto, {
+      ...bounds,
+      type: 'exchange',
+      category: 'LAND,HOUSE',
+      minPrice: '1000',
+      maxPrice: '90000',
+      requestYear: '2020',
+      requiredYear: '2017',
+    });
+    expect(validateSync(dto)).toEqual([]);
+
+    await service.discover(dto);
+    expect(propertyWhere()).toMatchObject({
+      category: { in: ['LAND', 'HOUSE'] },
+      price: { gte: 1000, lte: 90000 },
+      requestYear: 2020,
+      requiredYear: 2017,
+    });
+  });
+
+  it('refuses a category that does not exist, and adds none of these by default', async () => {
+    const bad = plainToInstance(GetMapBoundsDto, { ...bounds, category: 'NOPE' });
+    expect(validateSync(bad)).not.toEqual([]);
+
+    await service.discover({ ...bounds, type: 'sell' });
+    for (const key of ['category', 'price', 'requestYear', 'requiredYear']) {
+      expect(propertyWhere()).not.toHaveProperty(key);
+    }
+  });
 });

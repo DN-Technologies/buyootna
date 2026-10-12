@@ -6,6 +6,7 @@ import PageHeader from '@/components/layout/PageHeader'
 import ActiveFilters, {
   type FilterChip,
 } from '@/components/properties/ActiveFilters'
+import PropertiesMap from '@/components/properties/PropertiesMap'
 import PropertiesToolbar from '@/components/properties/PropertiesToolbar'
 import PropertyFilters from '@/components/properties/PropertyFilters'
 import Pagination from '@/components/ui/Pagination'
@@ -73,7 +74,11 @@ export default async function PropertiesPage({
     type === 'EXCHANGE' ? yearParam(params, 'requiredYear') : undefined
   const sort: SortId =
     SORTS.find((option) => option.id === param(params, 'sort'))?.id ?? 'DEFAULT'
-  const view: ViewId = param(params, 'view') === 'list' ? 'list' : 'cards'
+  const requestedView = param(params, 'view')
+  const view: ViewId =
+    requestedView === 'list' || requestedView === 'map'
+      ? requestedView
+      : 'cards'
   const page = pageParam(params)
 
   const filters = {
@@ -194,7 +199,24 @@ export default async function PropertiesPage({
             countLabel={`${formatNumber(meta.total)} عقار`}
           />
 
-          {data.length > 0 ? (
+          {view === 'map' ? (
+            <PropertiesMap
+              filters={{
+                type,
+                governorateIds,
+                areaIds,
+                categories,
+                minPrice,
+                maxPrice,
+                requestYear,
+                requiredYear,
+              }}
+              closeHref={hrefWith('/properties', {
+                ...filters,
+                sort: display.sort,
+              })}
+            />
+          ) : data.length > 0 ? (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {data.map((property) => (
                 <PropertyCard
@@ -208,13 +230,19 @@ export default async function PropertiesPage({
             <EmptyResults message="لا توجد عقارات مطابقة لبحثك. جرّب تغيير خيارات التصفية." />
           )}
 
-          <Pagination
-            current={meta.current || page}
-            totalPages={meta.totalPages}
-            hrefFor={(target) =>
-              hrefWith('/properties', { ...filters, ...display, page: target })
-            }
-          />
+          {view !== 'map' && (
+            <Pagination
+              current={meta.current || page}
+              totalPages={meta.totalPages}
+              hrefFor={(target) =>
+                hrefWith('/properties', {
+                  ...filters,
+                  ...display,
+                  page: target,
+                })
+              }
+            />
+          )}
         </div>
       </div>
     </>

@@ -77,6 +77,16 @@ export class MapService {
       ];
     }
 
+    if (dto.category?.length) where.category = { in: dto.category };
+    if (dto.minPrice !== undefined || dto.maxPrice !== undefined) {
+      where.price = {
+        ...(dto.minPrice !== undefined ? { gte: dto.minPrice } : {}),
+        ...(dto.maxPrice !== undefined ? { lte: dto.maxPrice } : {}),
+      };
+    }
+    if (dto.requestYear !== undefined) where.requestYear = dto.requestYear;
+    if (dto.requiredYear !== undefined) where.requiredYear = dto.requiredYear;
+
     const rows = await this.prisma.property.findMany({
       where,
       select: {
