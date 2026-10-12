@@ -23,6 +23,18 @@ export class PropertyCardDto {
   @ApiProperty()
   categoryLabel: string;
 
+  @ApiProperty({ enum: ['SALE', 'RENT', 'EXCHANGE'] })
+  listingType: string;
+
+  @ApiProperty({ nullable: true, description: 'سنة الطلب, on exchange ads' })
+  requestYear: number | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'السنة المطلوبة, on exchange ads',
+  })
+  requiredYear: number | null;
+
   @ApiProperty({ nullable: true })
   area: number | null;
 

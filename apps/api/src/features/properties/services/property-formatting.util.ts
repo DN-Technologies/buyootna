@@ -89,6 +89,11 @@ export function formatProperties(properties: PropertyFeedPayload[]) {
             ? 'تجاري'
             : 'استثماري',
       categoryLabel: PROPERTY_CATEGORY_LABELS[p.category] || p.category,
+      // SALE / RENT / EXCHANGE (`type` above is the older category group)
+      listingType: p.type,
+      // سنة الطلب and السنة المطلوبة, set on exchange ads
+      requestYear: p.requestYear,
+      requiredYear: p.requiredYear,
       area: p.areaSize,
       // Shown on the cards as 'مدخول العقار' (only when above 0)
       propertyIncome: p.propertyIncome,

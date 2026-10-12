@@ -81,3 +81,15 @@ export const COMPANY_SPECIALTIES: string[] = [
   'المسابح',
   'تنسيق الحدائق',
 ]
+
+// An exchange ad is only ever land or a house, so its filter offers just those
+const EXCHANGE_CATEGORY_IDS = ['LAND', 'HOUSE']
+
+/** The categories the filter offers for a listing type. */
+export function categoriesFor(type?: ListingType) {
+  return type === 'EXCHANGE'
+    ? EXCHANGE_CATEGORY_IDS.map((id) =>
+        PROPERTY_CATEGORIES.find((category) => category.id === id)!,
+      )
+    : PROPERTY_CATEGORIES
+}

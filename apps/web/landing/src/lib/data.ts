@@ -52,6 +52,9 @@ export interface PropertyQuery {
   category?: string
   minPrice?: number
   maxPrice?: number
+  // Exchange ads only
+  requestYear?: number
+  requiredYear?: number
   sort?: 'DEFAULT' | 'NEWEST' | 'OLDEST' | 'PRICE_DESC' | 'PRICE_ASC'
   page?: number
   limit?: number

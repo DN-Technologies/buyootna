@@ -32,4 +32,15 @@ describe('formatProperties', () => {
     const [card] = formatProperties([property({ propertyIncome: null })]);
     expect(card.propertyIncome).toBeNull();
   });
+
+  it('returns the listing type and, for an exchange ad, its two years', () => {
+    const [card] = formatProperties([
+      property({ type: 'EXCHANGE', requestYear: 2021, requiredYear: 2023 }),
+    ]);
+    expect(card).toMatchObject({
+      listingType: 'EXCHANGE',
+      requestYear: 2021,
+      requiredYear: 2023,
+    });
+  });
 });

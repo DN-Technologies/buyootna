@@ -1,11 +1,12 @@
 import {
   IsEnum,
   IsIn,
+  IsInt,
   IsNumber,
   IsOptional,
-  IsInt,
-  Min,
   IsString,
+  Max,
+  Min,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ListingType, PropertyCategory } from '@prisma/client';
@@ -64,6 +65,21 @@ export class GetPropertiesFilterDto {
   @IsNumber({}, { message: 'أعلى سعر يجب أن يكون رقماً' })
   @Min(0)
   maxPrice?: number;
+
+  // Exchange ads: سنة الطلب and السنة المطلوبة, each matched exactly
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'سنة الطلب يجب أن تكون رقماً صحيحاً' })
+  @Min(1900)
+  @Max(2100)
+  requestYear?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'السنة المطلوبة يجب أن تكون رقماً صحيحاً' })
+  @Min(1900)
+  @Max(2100)
+  requiredYear?: number;
 
   // The @Type decorator ensures the URL query string "?page=2" is converted to a number
   @IsOptional()

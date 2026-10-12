@@ -11,6 +11,11 @@ export interface Property {
   isFeatured: boolean
   // e.g. "عمارة", "شقة"
   categoryLabel: string
+  // What the ad offers the property for
+  listingType?: ListingType
+  // Exchange ads: سنة الطلب and السنة المطلوبة
+  requestYear?: number | null
+  requiredYear?: number | null
   area: number | null
   propertyIncome: number | null
   location: string

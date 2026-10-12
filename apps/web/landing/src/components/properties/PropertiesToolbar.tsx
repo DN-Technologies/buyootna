@@ -84,7 +84,7 @@ export default function PropertiesToolbar({
         {sortOpen && (
           <div
             role="menu"
-            className="absolute top-full right-0 z-20 mt-2 flex w-48 flex-col gap-1 rounded-lg bg-white p-2 shadow-[0_8px_24px_rgba(33,37,41,0.16),0_0_1px_rgba(33,37,41,0.2)]"
+            className="absolute top-full right-0 z-20 mt-2 flex w-50.75 flex-col gap-0.5 rounded-lg bg-white px-2.5 py-3 shadow-[0_4px_6px_rgba(33,37,41,0.2),0_0_1px_rgba(33,37,41,0.32)]"
           >
             {SORTS.map((option) => (
               <Link
@@ -94,10 +94,10 @@ export default function PropertiesToolbar({
                 href={href({ sort: option.id })}
                 scroll={false}
                 onClick={closeSort}
-                className={`flex h-10 items-center rounded-lg px-3 text-sm ${
+                className={`flex h-10 items-center rounded-xl px-3 text-sm tracking-[-0.408px] whitespace-nowrap text-ink ${
                   option.id === sort
-                    ? 'bg-surface font-bold text-brand'
-                    : 'font-medium text-ink hover:bg-surface'
+                    ? 'bg-surface font-bold'
+                    : 'font-medium hover:bg-surface'
                 }`}
               >
                 {option.label}

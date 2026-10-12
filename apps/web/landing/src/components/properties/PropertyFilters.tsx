@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ReactNode } from 'react'
 
-import { LISTING_TYPES, PROPERTY_CATEGORIES } from '@/lib/categories'
+import { categoriesFor, LISTING_TYPES } from '@/lib/categories'
 import { AREAS, GOVERNORATES } from '@/lib/locations'
 import { hrefWith } from '@/lib/searchParams'
 import type { ListingType } from '@/lib/types'
@@ -17,6 +17,9 @@ export interface PropertyFilterValues {
   categories: string[]
   minPrice?: string
   maxPrice?: string
+  // Exchange ads only: سنة الطلب and السنة المطلوبة
+  requestYear?: string
+  requiredYear?: string
 }
 
 interface PropertyFiltersProps {
@@ -110,7 +113,8 @@ function Option({
   )
 }
 
-function PriceInput({
+/** A number box applied on Enter or on leaving it. */
+function NumberInput({
   label,
   placeholder,
   value,
@@ -142,6 +146,10 @@ function PriceInput({
   )
 }
 
+// Anything that isn't a plausible four-digit year clears the filter
+const asYear = (text: string) =>
+  /^(19|20)\d{2}$/.test(text) ? text : undefined
+
 const toggled = (list: string[], id: string) =>
   list.includes(id) ? list.filter((value) => value !== id) : [...list, id]
 
@@ -164,13 +172,19 @@ export default function PropertyFilters({
     const offered = new Set(
       next.governorateIds.flatMap((id) => (AREAS[id] ?? []).map((a) => a.id)),
     )
+    // A category the new listing type doesn't offer is dropped, and the
+    // years belong to exchange ads only
+    const allowed = categoriesFor(next.type).map((category) => category.id)
+    const exchange = next.type === 'EXCHANGE'
     const href = hrefWith('/properties', {
       type: next.type,
       governorateId: next.governorateIds.join(','),
       areaId: next.areaIds.filter((id) => offered.has(id)).join(','),
-      category: next.categories.join(','),
+      category: next.categories.filter((id) => allowed.includes(id)).join(','),
       minPrice: next.minPrice,
       maxPrice: next.maxPrice,
+      requestYear: exchange ? next.requestYear : undefined,
+      requiredYear: exchange ? next.requiredYear : undefined,
       sort,
       view,
     })
@@ -184,7 +198,9 @@ export default function PropertyFilters({
     values.areaIds.length +
     values.categories.length +
     (values.minPrice ? 1 : 0) +
-    (values.maxPrice ? 1 : 0)
+    (values.maxPrice ? 1 : 0) +
+    (values.requestYear ? 1 : 0) +
+    (values.requiredYear ? 1 : 0)
 
   return (
     <aside
@@ -206,16 +222,6 @@ export default function PropertyFilters({
               ({activeCount})
             </span>
           )}
-        </button>
-        <button
-          type="button"
-          disabled={activeCount === 0}
-          onClick={() =>
-            apply({ governorateIds: [], areaIds: [], categories: [] })
-          }
-          className="flex h-8 items-center rounded-3xl px-3 text-sm font-bold text-brand disabled:opacity-40"
-        >
-          مسح الكل
         </button>
       </div>
 
@@ -287,7 +293,7 @@ export default function PropertyFilters({
         </Section>
 
         <Section title="الفئة">
-          {PROPERTY_CATEGORIES.map((category) => (
+          {categoriesFor(values.type).map((category) => (
             <Option
               key={category.id}
               label={category.label}
@@ -302,13 +308,39 @@ export default function PropertyFilters({
           ))}
         </Section>
 
+        {values.type === 'EXCHANGE' && (
+          <Section title="السنة">
+            <div
+              key={`${values.requestYear ?? ''}-${values.requiredYear ?? ''}`}
+              className="flex items-center gap-2 pt-1"
+            >
+              <NumberInput
+                label="سنة الطلب"
+                placeholder="الطلب"
+                value={values.requestYear ?? ''}
+                onCommit={(year) =>
+                  apply({ ...values, requestYear: asYear(year) })
+                }
+              />
+              <NumberInput
+                label="السنة المطلوبة"
+                placeholder="المطلوبة"
+                value={values.requiredYear ?? ''}
+                onCommit={(year) =>
+                  apply({ ...values, requiredYear: asYear(year) })
+                }
+              />
+            </div>
+          </Section>
+        )}
+
         <Section title="السعر">
           {/* Remount with the URL so a cleared filter empties the boxes */}
           <div
             key={`${values.minPrice ?? ''}-${values.maxPrice ?? ''}`}
             className="flex items-center gap-2 pt-1"
           >
-            <PriceInput
+            <NumberInput
               label="السعر من"
               placeholder="من"
               value={values.minPrice ?? ''}
@@ -316,7 +348,7 @@ export default function PropertyFilters({
                 apply({ ...values, minPrice: minPrice || undefined })
               }
             />
-            <PriceInput
+            <NumberInput
               label="السعر إلى"
               placeholder="إلى"
               value={values.maxPrice ?? ''}
