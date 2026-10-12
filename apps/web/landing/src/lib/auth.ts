@@ -30,6 +30,7 @@ export function saveSession(session: Session, remember = true) {
   store.setItem('user', JSON.stringify(session.user))
   store.setItem('activeIdentity', JSON.stringify(session.activeIdentity))
   store.setItem('identities', JSON.stringify(session.identities ?? []))
+  announce()
 }
 
 export function clearSession() {
@@ -38,6 +39,16 @@ export function clearSession() {
     sessionStorage.removeItem(key)
   }
 }
+
+/** Signs out on this browser. */
+export function signOut() {
+  clearSession()
+  announce()
+}
+
+// Lets the page react to signing in or out without a reload
+export const SESSION_EVENT = 'buyootna:session'
+const announce = () => window.dispatchEvent(new Event(SESSION_EVENT))
 
 /** The profiles of the account last remembered on this browser, if any. */
 export function savedProfiles(): {

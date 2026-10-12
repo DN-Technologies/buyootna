@@ -95,9 +95,30 @@ describe('PropertiesFeedService.findAll sorting', () => {
     jest.clearAllMocks();
     await service.findAll({});
     const where = whereUsed() as Record<string, unknown>;
-    for (const key of ['governorateId', 'areaId', 'category', 'price']) {
+    for (const key of [
+      'governorateId',
+      'areaId',
+      'category',
+      'price',
+      'requestYear',
+      'requiredYear',
+    ]) {
       expect(where).not.toHaveProperty(key);
     }
+  });
+
+  it('filters exchange ads by their request year and the year they want', async () => {
+    await service.findAll({
+      type: 'EXCHANGE',
+      requestYear: 2021,
+      requiredYear: 2023,
+    });
+
+    expect(whereUsed()).toMatchObject({
+      type: 'EXCHANGE',
+      requestYear: 2021,
+      requiredYear: 2023,
+    });
   });
 
   it.each([

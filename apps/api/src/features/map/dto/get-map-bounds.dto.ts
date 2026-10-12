@@ -2,13 +2,18 @@ import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsEnum,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
   MinLength,
 } from 'class-validator';
+import { PropertyCategory } from '@prisma/client';
 
 function toIdList(value: unknown): string[] | undefined {
   if (value === undefined || value === null || value === '') return undefined;
@@ -73,4 +78,41 @@ export class GetMapBoundsDto {
   @IsString()
   @MinLength(1)
   searchQuery?: string;
+
+  // The rest narrow property pins the way GET /properties does, so a map
+  // can show the same search as a list; company pins ignore them
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => toIdList(value))
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsEnum(PropertyCategory, { each: true, message: 'فئة العقار غير صالحة' })
+  category?: PropertyCategory[];
+
+  // An ad with no price shown never matches a price range
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minPrice?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxPrice?: number;
+
+  // Exchange ads: سنة الطلب and السنة المطلوبة, each matched exactly
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1900)
+  @Max(2100)
+  requestYear?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1900)
+  @Max(2100)
+  requiredYear?: number;
 }

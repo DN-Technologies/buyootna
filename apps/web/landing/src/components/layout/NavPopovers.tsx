@@ -6,28 +6,34 @@ import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 
 import AccountAction from '@/components/ui/AccountAction'
+import InitialTile from '@/components/ui/InitialTile'
+import { signOut } from '@/lib/auth'
 import { LOGIN_PATH } from '@/lib/siteLinks'
 import { useDismiss } from '@/lib/useDismiss'
 
 const PANEL_SHADOW =
   'shadow-[0_8px_24px_rgba(33,37,41,0.16),0_0_1px_rgba(33,37,41,0.2)]'
 
-// "اجراءات": the things an account can do; a visitor gets the sign-in dialog
+// "اجراءات": what an account can do. A visitor gets the sign-in dialog;
+// an account goes to the form
 export const ACTIONS = [
   {
     label: 'اضافة اعلان',
+    href: '/ads/new',
     icon: '/landing/action-add.svg',
     width: 18.67,
     height: 18.67,
   },
   {
     label: 'اضافة تنبيه',
+    href: '/alerts/new',
     icon: '/landing/action-alert.svg',
     width: 15.81,
     height: 16.1,
   },
   {
     label: 'طلب عرض سعر',
+    href: '/quotes/new',
     icon: '/landing/action-quote.svg',
     width: 14.58,
     height: 16.1,
@@ -64,6 +70,7 @@ export function ActionsMenu() {
             <AccountAction
               key={action.label}
               role="menuitem"
+              href={action.href}
               onBeforeOpen={close}
               className="flex h-10 w-43 items-center gap-2 rounded-xl px-2 text-sm font-medium whitespace-nowrap text-ink transition hover:bg-surface"
             >
@@ -147,6 +154,50 @@ export function GuestNotifications() {
               تسجيل دخول
             </Link>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** A signed-in account's avatar, opening its name and the way out. */
+export function AccountMenu({ name }: { name: string }) {
+  const [open, setOpen] = useState(false)
+  const container = useRef<HTMLDivElement>(null)
+  const close = useCallback(() => setOpen(false), [])
+  useDismiss(container, open, close)
+
+  return (
+    <div ref={container} className="relative hidden sm:block">
+      <button
+        type="button"
+        aria-label="حسابي"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex h-10 w-10 items-center justify-center"
+      >
+        <InitialTile name={name || 'ب'} size={36} className="rounded-full" />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className={`absolute top-full left-0 z-30 mt-2 flex w-56 flex-col gap-1 rounded-lg bg-white px-2.5 py-3 ${PANEL_SHADOW}`}
+        >
+          <p className="truncate px-2 pb-2 text-sm font-bold text-ink">
+            {name || 'حسابي'}
+          </p>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              signOut()
+              close()
+            }}
+            className="flex h-10 items-center rounded-xl px-2 text-sm font-medium text-[#9C1E28] transition hover:bg-surface"
+          >
+            تسجيل الخروج
+          </button>
         </div>
       )}
     </div>

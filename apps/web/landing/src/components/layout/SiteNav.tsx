@@ -9,10 +9,12 @@ import { useCallback, useState } from 'react'
 import GuestDrawer from '@/components/layout/GuestDrawer'
 import {
   ACTIONS,
+  AccountMenu,
   ActionsMenu,
   GuestNotifications,
 } from '@/components/layout/NavPopovers'
 import AccountAction from '@/components/ui/AccountAction'
+import { useSession } from '@/lib/session'
 import { LOGIN_PATH } from '@/lib/siteLinks'
 
 const LINKS = [
@@ -27,6 +29,7 @@ const LINKS = [
 export default function SiteNav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const { signedIn, name } = useSession()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
@@ -73,17 +76,20 @@ export default function SiteNav() {
           >
             <MessageSquare className="h-4.5 w-4.5" strokeWidth={1.5} />
           </Link>
-          {/* Not signed in: the account icon opens the guest menu */}
-          <button
-            type="button"
-            aria-label="حسابي"
-            aria-haspopup="dialog"
-            aria-expanded={drawerOpen}
-            onClick={() => setDrawerOpen(true)}
-            className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
-          >
-            <User className="h-4.5 w-4.5" strokeWidth={1.5} />
-          </button>
+          {signedIn ? (
+            <AccountMenu name={name} />
+          ) : (
+            <button
+              type="button"
+              aria-label="حسابي"
+              aria-haspopup="dialog"
+              aria-expanded={drawerOpen}
+              onClick={() => setDrawerOpen(true)}
+              className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
+            >
+              <User className="h-4.5 w-4.5" strokeWidth={1.5} />
+            </button>
+          )}
           <button
             type="button"
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
@@ -123,18 +129,21 @@ export default function SiteNav() {
           {ACTIONS.map((action) => (
             <AccountAction
               key={action.label}
+              href={action.href}
               onBeforeOpen={() => setMenuOpen(false)}
               className="rounded-xl px-4 py-3 text-right text-base font-medium text-ink"
             >
               {action.label}
             </AccountAction>
           ))}
-          <Link
-            href={LOGIN_PATH}
-            className="mt-1 flex h-12 items-center justify-center rounded-full bg-brand text-sm font-bold text-white"
-          >
-            تسجيل الدخول
-          </Link>
+          {!signedIn && (
+            <Link
+              href={LOGIN_PATH}
+              className="mt-1 flex h-12 items-center justify-center rounded-full bg-brand text-sm font-bold text-white"
+            >
+              تسجيل الدخول
+            </Link>
+          )}
         </nav>
       )}
 

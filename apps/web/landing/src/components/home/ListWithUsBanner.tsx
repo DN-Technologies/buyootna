@@ -16,7 +16,10 @@ export default function ListWithUsBanner() {
           </p>
         </div>
         <div className="flex flex-wrap gap-5">
-          <AccountAction className="flex h-12 items-center rounded-full border-[1.4px] border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface">
+          <AccountAction
+            href="/ads/new"
+            className="flex h-12 items-center rounded-full border-[1.4px] border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface"
+          >
             اعلن عن عقارك
           </AccountAction>
           <AccountAction className="flex h-12 items-center rounded-full border-[1.2px] border-white px-8 text-[15px] font-bold text-white transition hover:bg-white/10">

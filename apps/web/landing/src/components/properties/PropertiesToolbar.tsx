@@ -1,5 +1,6 @@
 'use client'
 
+import { Map as MapIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
@@ -63,48 +64,64 @@ export default function PropertiesToolbar({
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <div ref={sortMenu} className="relative">
-        <button
-          type="button"
-          aria-haspopup="menu"
-          aria-expanded={sortOpen}
-          onClick={() => setSortOpen((value) => !value)}
-          className="flex h-10.5 items-center gap-1.5 rounded-3xl border border-line bg-white px-4 text-[13px] font-medium tracking-[-0.408px] text-ink"
-        >
-          <Image
-            src="/landing/toolbar-sort.svg"
-            alt=""
-            width={18}
-            height={18}
-          />
-          {sort === 'DEFAULT'
-            ? 'الترتيب حسب'
-            : SORTS.find((option) => option.id === sort)?.label}
-        </button>
-        {sortOpen && (
-          <div
-            role="menu"
-            className="absolute top-full right-0 z-20 mt-2 flex w-48 flex-col gap-1 rounded-lg bg-white p-2 shadow-[0_8px_24px_rgba(33,37,41,0.16),0_0_1px_rgba(33,37,41,0.2)]"
+      <div className="flex items-center gap-2">
+        <div ref={sortMenu} className="relative">
+          <button
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded={sortOpen}
+            onClick={() => setSortOpen((value) => !value)}
+            className="flex h-10.5 items-center gap-1.5 rounded-3xl border border-line bg-white px-4 text-[13px] font-medium tracking-[-0.408px] text-ink"
           >
-            {SORTS.map((option) => (
-              <Link
-                key={option.id}
-                role="menuitemradio"
-                aria-checked={option.id === sort}
-                href={href({ sort: option.id })}
-                scroll={false}
-                onClick={closeSort}
-                className={`flex h-10 items-center rounded-lg px-3 text-sm ${
-                  option.id === sort
-                    ? 'bg-surface font-bold text-brand'
-                    : 'font-medium text-ink hover:bg-surface'
-                }`}
-              >
-                {option.label}
-              </Link>
-            ))}
-          </div>
-        )}
+            <Image
+              src="/landing/toolbar-sort.svg"
+              alt=""
+              width={18}
+              height={18}
+            />
+            {sort === 'DEFAULT'
+              ? 'الترتيب حسب'
+              : SORTS.find((option) => option.id === sort)?.label}
+          </button>
+          {sortOpen && (
+            <div
+              role="menu"
+              className="absolute top-full right-0 z-20 mt-2 flex w-50.75 flex-col gap-0.5 rounded-lg bg-white px-2.5 py-3 shadow-[0_4px_6px_rgba(33,37,41,0.2),0_0_1px_rgba(33,37,41,0.32)]"
+            >
+              {SORTS.map((option) => (
+                <Link
+                  key={option.id}
+                  role="menuitemradio"
+                  aria-checked={option.id === sort}
+                  href={href({ sort: option.id })}
+                  scroll={false}
+                  onClick={closeSort}
+                  className={`flex h-10 items-center rounded-xl px-3 text-sm tracking-[-0.408px] whitespace-nowrap text-ink ${
+                    option.id === sort
+                      ? 'bg-surface font-bold'
+                      : 'font-medium hover:bg-surface'
+                  }`}
+                >
+                  {option.label}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* On the map this button leads back to the list */}
+        <Link
+          href={href({ view: view === 'map' ? 'cards' : 'map' })}
+          scroll={false}
+          className="flex h-10.5 items-center gap-2 rounded-[64px] border border-line bg-white px-4 text-sm font-medium tracking-[-0.408px] text-ink"
+        >
+          {view === 'map' ? (
+            <Image src="/landing/view-list.svg" alt="" width={20} height={20} />
+          ) : (
+            <MapIcon className="h-5 w-5" strokeWidth={1.5} />
+          )}
+          {view === 'map' ? 'القائمة' : 'الخريطة'}
+        </Link>
       </div>
 
       <div className="flex h-10.5 items-center gap-0.5 rounded-4xl border border-[#E2E8F0] bg-white p-1">

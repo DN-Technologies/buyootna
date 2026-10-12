@@ -11,12 +11,15 @@ export default function SuccessDialog({
   text,
   action,
   onAction,
+  secondary,
 }: {
   open: boolean
   title: string
   text: string
   action: string
   onAction: () => void
+  // A second, quieter way on, e.g. "العودة للرئيسية"
+  secondary?: { label: string; onAction: () => void }
 }) {
   return (
     <Modal open={open} labelledBy="success-title" className="max-w-124">
@@ -40,14 +43,25 @@ export default function SuccessDialog({
             </p>
           </div>
         </div>
-        <button
+        <div className="flex w-full gap-3">
+          <button
           type="button"
           autoFocus
           onClick={onAction}
-          className="flex h-12 w-full items-center justify-center rounded-3xl bg-brand text-sm font-bold tracking-[-0.408px] text-white transition hover:bg-brand-dark"
+          className="flex h-12 flex-1 items-center justify-center rounded-3xl bg-brand text-sm font-bold tracking-[-0.408px] text-white transition hover:bg-brand-dark"
         >
           {action}
-        </button>
+          </button>
+          {secondary && (
+            <button
+              type="button"
+              onClick={secondary.onAction}
+              className="flex h-12 flex-1 items-center justify-center rounded-3xl border border-[#E2E8F0] bg-white text-sm font-bold text-ink transition hover:bg-surface"
+            >
+              {secondary.label}
+            </button>
+          )}
+        </div>
       </div>
     </Modal>
   )

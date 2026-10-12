@@ -3,10 +3,14 @@ import type { Metadata } from 'next'
 import PropertyCard from '@/components/cards/PropertyCard'
 import { EmptyResults } from '@/components/layout/ListingShell'
 import PageHeader from '@/components/layout/PageHeader'
+import ActiveFilters, {
+  type FilterChip,
+} from '@/components/properties/ActiveFilters'
+import PropertiesMap from '@/components/properties/PropertiesMap'
 import PropertiesToolbar from '@/components/properties/PropertiesToolbar'
 import PropertyFilters from '@/components/properties/PropertyFilters'
 import Pagination from '@/components/ui/Pagination'
-import { LISTING_TYPES, PROPERTY_CATEGORIES } from '@/lib/categories'
+import { categoriesFor, LISTING_TYPES } from '@/lib/categories'
 import { getProperties } from '@/lib/data'
 import { formatNumber } from '@/lib/format'
 import { AREAS, GOVERNORATES } from '@/lib/locations'
@@ -27,11 +31,18 @@ export const metadata: Metadata = {
 
 const PAGE_SIZE = 12
 
-/** A price from the URL as digits, or undefined for anything else. */
-const priceParam = (params: RawSearchParams, key: string) => {
+/** A number from the URL as digits, or undefined for anything else. */
+const digitsParam = (params: RawSearchParams, key: string) => {
   const text = param(params, key)
   return text && /^\d+$/.test(text) ? text : undefined
 }
+const yearParam = (params: RawSearchParams, key: string) => {
+  const text = param(params, key)
+  return text && /^(19|20)\d{2}$/.test(text) ? text : undefined
+}
+
+const without = (list: string[], id: string) =>
+  list.filter((value) => value !== id).join(',') || undefined
 
 export default async function PropertiesPage({
   searchParams,
@@ -46,20 +57,28 @@ export default async function PropertiesPage({
   const governorateIds = listParam(params, 'governorateId').filter((id) =>
     GOVERNORATES.some((g) => g.id === id),
   )
-  const offeredAreas = new Set(
-    governorateIds.flatMap((id) => (AREAS[id] ?? []).map((area) => area.id)),
-  )
+  const areaOptions = governorateIds.flatMap((id) => AREAS[id] ?? [])
   const areaIds = listParam(params, 'areaId').filter((id) =>
-    offeredAreas.has(id),
+    areaOptions.some((area) => area.id === id),
   )
+  const categoryOptions = categoriesFor(type)
   const categories = listParam(params, 'category').filter((id) =>
-    PROPERTY_CATEGORIES.some((c) => c.id === id),
+    categoryOptions.some((c) => c.id === id),
   )
-  const minPrice = priceParam(params, 'minPrice')
-  const maxPrice = priceParam(params, 'maxPrice')
+  const minPrice = digitsParam(params, 'minPrice')
+  const maxPrice = digitsParam(params, 'maxPrice')
+  // The two years describe exchange ads only
+  const requestYear =
+    type === 'EXCHANGE' ? yearParam(params, 'requestYear') : undefined
+  const requiredYear =
+    type === 'EXCHANGE' ? yearParam(params, 'requiredYear') : undefined
   const sort: SortId =
     SORTS.find((option) => option.id === param(params, 'sort'))?.id ?? 'DEFAULT'
-  const view: ViewId = param(params, 'view') === 'list' ? 'list' : 'cards'
+  const requestedView = param(params, 'view')
+  const view: ViewId =
+    requestedView === 'list' || requestedView === 'map'
+      ? requestedView
+      : 'cards'
   const page = pageParam(params)
 
   const filters = {
@@ -69,6 +88,8 @@ export default async function PropertiesPage({
     category: categories.join(',') || undefined,
     minPrice,
     maxPrice,
+    requestYear,
+    requiredYear,
   }
   // Defaults stay out of the URL
   const display = {
@@ -79,6 +100,8 @@ export default async function PropertiesPage({
     ...filters,
     minPrice: minPrice ? Number(minPrice) : undefined,
     maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    requestYear: requestYear ? Number(requestYear) : undefined,
+    requiredYear: requiredYear ? Number(requiredYear) : undefined,
     sort,
     page,
     limit: PAGE_SIZE,
@@ -86,6 +109,63 @@ export default async function PropertiesPage({
 
   const typeTab = LISTING_TYPES.find((t) => t.id === type)?.tab
   const heading = typeTab ? `عقارات ${typeTab}` : 'كل العقارات'
+
+  // One chip per applied filter; its link is this search without it
+  const hrefWithout = (changes: Partial<typeof filters>) =>
+    hrefWith('/properties', { ...filters, ...display, ...changes })
+  const chips: FilterChip[] = [
+    ...governorateIds.map((id) => ({
+      label: GOVERNORATES.find((g) => g.id === id)!.label,
+      href: hrefWithout({
+        governorateId: without(governorateIds, id),
+        // Its areas go with it
+        areaId:
+          areaIds
+            .filter((areaId) => !(AREAS[id] ?? []).some((a) => a.id === areaId))
+            .join(',') || undefined,
+      }),
+    })),
+    ...areaIds.map((id) => ({
+      label: areaOptions.find((area) => area.id === id)!.label,
+      href: hrefWithout({ areaId: without(areaIds, id) }),
+    })),
+    ...categories.map((id) => ({
+      label: categoryOptions.find((c) => c.id === id)!.label,
+      href: hrefWithout({ category: without(categories, id) }),
+    })),
+    ...(requestYear
+      ? [
+          {
+            label: `طلب ${requestYear}`,
+            href: hrefWithout({ requestYear: undefined }),
+          },
+        ]
+      : []),
+    ...(requiredYear
+      ? [
+          {
+            label: `المطلوبة ${requiredYear}`,
+            href: hrefWithout({ requiredYear: undefined }),
+          },
+        ]
+      : []),
+    ...(minPrice
+      ? [
+          {
+            label: `من ${formatNumber(Number(minPrice))} د.ك`,
+            href: hrefWithout({ minPrice: undefined }),
+          },
+        ]
+      : []),
+    ...(maxPrice
+      ? [
+          {
+            label: `إلى ${formatNumber(Number(maxPrice))} د.ك`,
+            href: hrefWithout({ maxPrice: undefined }),
+          },
+        ]
+      : []),
+  ]
 
   return (
     <>
@@ -99,38 +179,50 @@ export default async function PropertiesPage({
             categories,
             minPrice,
             maxPrice,
+            requestYear,
+            requiredYear,
           }}
           sort={display.sort}
           view={display.view}
         />
 
         <div className="flex w-full min-w-0 flex-1 flex-col gap-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-[26px] leading-normal font-bold tracking-[-0.52px] text-ink">
-              {heading}
-            </h2>
-            {meta.total > 0 && (
-              <p className="shrink-0 text-sm font-medium text-muted">
-                {formatNumber(meta.total)} إعلان
-              </p>
-            )}
-          </div>
+          <h2 className="text-[26px] leading-normal font-bold tracking-[-0.52px] text-ink">
+            {heading}
+          </h2>
           <div className="h-px w-full bg-line" />
           <PropertiesToolbar filters={filters} sort={sort} view={view} />
+          <ActiveFilters
+            chips={chips}
+            // The listing type stays: it is the page's heading, not a chip
+            clearHref={hrefWith('/properties', { type, ...display })}
+            countLabel={`${formatNumber(meta.total)} عقار`}
+          />
 
-          {data.length > 0 ? (
-            <div
-              className={
-                view === 'list'
-                  ? 'flex flex-col gap-5'
-                  : 'grid gap-5 sm:grid-cols-2 xl:grid-cols-3'
-              }
-            >
+          {view === 'map' ? (
+            <PropertiesMap
+              filters={{
+                type,
+                governorateIds,
+                areaIds,
+                categories,
+                minPrice,
+                maxPrice,
+                requestYear,
+                requiredYear,
+              }}
+              closeHref={hrefWith('/properties', {
+                ...filters,
+                sort: display.sort,
+              })}
+            />
+          ) : data.length > 0 ? (
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {data.map((property) => (
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  layout={view === 'list' ? 'row' : 'card'}
+                  layout={view === 'list' ? 'compact' : 'card'}
                 />
               ))}
             </div>
@@ -138,13 +230,19 @@ export default async function PropertiesPage({
             <EmptyResults message="لا توجد عقارات مطابقة لبحثك. جرّب تغيير خيارات التصفية." />
           )}
 
-          <Pagination
-            current={meta.current || page}
-            totalPages={meta.totalPages}
-            hrefFor={(target) =>
-              hrefWith('/properties', { ...filters, ...display, page: target })
-            }
-          />
+          {view !== 'map' && (
+            <Pagination
+              current={meta.current || page}
+              totalPages={meta.totalPages}
+              hrefFor={(target) =>
+                hrefWith('/properties', {
+                  ...filters,
+                  ...display,
+                  page: target,
+                })
+              }
+            />
+          )}
         </div>
       </div>
     </>

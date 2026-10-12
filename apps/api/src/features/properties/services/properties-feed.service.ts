@@ -195,6 +195,8 @@ export class PropertiesFeedService {
       category,
       minPrice,
       maxPrice,
+      requestYear,
+      requiredYear,
       sort = 'DEFAULT',
     } = filters;
 
@@ -223,6 +225,9 @@ export class PropertiesFeedService {
         ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
       };
     }
+
+    if (requestYear !== undefined) whereClause.requestYear = requestYear;
+    if (requiredYear !== undefined) whereClause.requiredYear = requiredYear;
 
     const [properties, totalCount] = await Promise.all([
       this.prisma.property.findMany({
