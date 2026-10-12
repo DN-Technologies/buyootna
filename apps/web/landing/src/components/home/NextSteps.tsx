@@ -8,6 +8,7 @@ const STEPS = [
     icon: '/landing/feature-building.svg',
     iconSize: 28,
     title: 'أضف إعلانك',
+    href: '/ads/new',
     body: 'اعرض عقارك أمام الباحثين عن فرص مناسبة للبيع أو الإيجار أو البدل، وأدر إعلانك بسهولة.',
     action: 'أضف إعلانك',
     primary: true,
@@ -16,6 +17,7 @@ const STEPS = [
     icon: '/landing/feature-alert.svg',
     iconSize: 24,
     title: 'أنشئ تنبيهًا',
+    href: '/alerts/new',
     body: 'حدد ما تبحث عنه وسنساعدك على متابعة العقارات التي تطابق احتياجاتك لتصل إلى الفرص المناسبة.',
     action: 'أنشئ تنبيهًا',
     primary: false,
@@ -24,6 +26,7 @@ const STEPS = [
     icon: '/landing/feature-quote.svg',
     iconSize: 21,
     title: 'اطلب عرض سعر',
+    href: '/quotes/new',
     body: 'أرسل طلبك إلى الشركات المتخصصة، واستقبل العروض المناسبة للخدمة التي تبحث عنها.',
     action: 'طلب عرض سعر',
     primary: false,
@@ -68,6 +71,7 @@ export default function NextSteps() {
             </div>
             {/* Each of these needs an account */}
             <AccountAction
+              href={step.href}
               className={`flex h-12 items-center justify-center rounded-full text-sm font-bold transition ${
                 step.primary
                   ? 'bg-brand text-white hover:bg-brand-dark'

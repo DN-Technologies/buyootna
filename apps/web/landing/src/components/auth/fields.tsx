@@ -32,13 +32,15 @@ export function Field({
 }) {
   return (
     <div className="flex w-full flex-col gap-3">
-      <label
-        htmlFor={htmlFor}
-        className="text-sm leading-none font-medium tracking-[-0.408px] text-ink"
-      >
-        {label}
-        {required && <span className="text-[#D12121]">*</span>}
-      </label>
+      {label && (
+        <label
+          htmlFor={htmlFor}
+          className="text-sm leading-none font-medium tracking-[-0.408px] text-ink"
+        >
+          {label}
+          {required && <span className="text-[#D12121]">*</span>}
+        </label>
+      )}
       {children}
       {error && (
         <p role="alert" className="-mt-1 text-xs font-medium text-[#D12121]">

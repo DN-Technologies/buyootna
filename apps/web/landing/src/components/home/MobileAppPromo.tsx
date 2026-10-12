@@ -25,7 +25,7 @@ function Phone({ screen, className }: { screen: string; className: string }) {
 /** "تجربتك العقارية أسهل على تطبيق بيوتنا": the app promo with store buttons. */
 export default function MobileAppPromo() {
   return (
-    <div className="relative overflow-hidden bg-[#F7F8FA]">
+    <div id="app" className="relative overflow-hidden bg-[#F7F8FA]">
       <Image
         src="/landing/app-pattern.png"
         alt=""
