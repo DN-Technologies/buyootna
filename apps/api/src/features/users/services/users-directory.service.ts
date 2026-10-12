@@ -15,6 +15,7 @@ import {
 import { ProviderCardsService } from './provider-cards.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import { hasActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
+import { splitList } from '../../properties/dto/get-properties-filter.dto';
 
 @Injectable()
 export class UsersDirectoryService {
@@ -26,7 +27,15 @@ export class UsersDirectoryService {
 
   // --- Find Companies ---
   async findCompanies(filters: GetCompaniesFilterDto) {
-    const { category, search, sort = 'NEWEST', page = 1, limit = 10 } = filters;
+    const {
+      category,
+      search,
+      specialty,
+      location,
+      sort = 'NEWEST',
+      page = 1,
+      limit = 10,
+    } = filters;
     const skip = (page - 1) * limit;
 
     const companyDataWhere: Prisma.CompanyIdentityDataWhereInput = {
@@ -57,6 +66,21 @@ export class UsersDirectoryService {
         mode: 'insensitive',
       };
     }
+
+    // Each of these narrows further (AND); inside one, any value matches
+    const narrowing: Prisma.CompanyIdentityDataWhereInput[] = [];
+    const specialties = splitList(specialty);
+    if (specialties) narrowing.push({ specialty: { in: specialties } });
+    const places = splitList(location);
+    if (places) {
+      narrowing.push({
+        OR: places.flatMap((place) => [
+          { hqLocation: { contains: place, mode: 'insensitive' as const } },
+          { serviceAreas: { contains: place, mode: 'insensitive' as const } },
+        ]),
+      });
+    }
+    if (narrowing.length > 0) companyDataWhere.AND = narrowing;
 
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'COMPANY',
@@ -115,7 +139,7 @@ export class UsersDirectoryService {
 
   // --- Find Offices ---
   async findOffices(filters: GetOfficesFilterDto) {
-    const { search, page = 1, limit = 10 } = filters;
+    const { search, location, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
     const officeDataWhere: Prisma.OfficeIdentityDataWhereInput = {
@@ -127,6 +151,12 @@ export class UsersDirectoryService {
         contains: search,
         mode: 'insensitive',
       };
+    }
+    const places = splitList(location);
+    if (places) {
+      officeDataWhere.OR = places.map((place) => ({
+        hqLocation: { contains: place, mode: 'insensitive' as const },
+      }));
     }
 
     const whereClause: Prisma.IdentityWhereInput = {

@@ -6,9 +6,13 @@ import SiteNav from '@/components/layout/SiteNav'
 /** The opening screen: backdrop, the floating nav, headline and the search. */
 export default function Hero() {
   return (
-    <div className="relative overflow-hidden bg-[#F9F9F9]">
+    // Above the sections that follow, so the search panels can hang over them
+    <div className="relative z-10 bg-[#F9F9F9]">
       {/* Backdrop: a faint skyline photo fading to white, under a soft pattern */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
         <Image
           src="/landing/hero-photo.jpg"
           alt=""

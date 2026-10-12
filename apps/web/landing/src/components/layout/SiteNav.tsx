@@ -1,11 +1,17 @@
 'use client'
 
-import { Bell, ChevronDown, Menu, MessageSquare, User, X } from 'lucide-react'
+import { Menu, MessageSquare, User, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import GuestDrawer from '@/components/layout/GuestDrawer'
+import {
+  ACTIONS,
+  ActionsMenu,
+  GuestNotifications,
+} from '@/components/layout/NavPopovers'
 import { LOGIN_PATH } from '@/lib/siteLinks'
 
 const LINKS = [
@@ -17,20 +23,12 @@ const LINKS = [
   { href: LOGIN_PATH, label: 'نشاطي' },
 ]
 
-// "اجراءات": the things an account can do; all need signing in
-const ACTIONS = ['أضف إعلانك', 'أنشئ تنبيهًا', 'اطلب عرض سعر']
-
-const ICON_LINKS = [
-  { label: 'حسابي', Icon: User },
-  { label: 'المحادثات', Icon: MessageSquare },
-  { label: 'الإشعارات', Icon: Bell },
-]
-
 /** The rounded top bar: logo, sections, actions menu and account icons. */
 export default function SiteNav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [actionsOpen, setActionsOpen] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const closeDrawer = useCallback(() => setDrawerOpen(false), [])
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -63,51 +61,29 @@ export default function SiteNav() {
               {link.label}
             </Link>
           ))}
-          <div className="relative">
-            <button
-              type="button"
-              aria-expanded={actionsOpen}
-              aria-haspopup="menu"
-              onClick={() => setActionsOpen((open) => !open)}
-              onBlur={() => setActionsOpen(false)}
-              className="flex h-11.5 items-center gap-2 px-3.5 text-base font-medium text-ink transition hover:text-brand"
-            >
-              اجراءات
-              <ChevronDown className="h-4 w-4" />
-            </button>
-            {actionsOpen && (
-              <div
-                role="menu"
-                className="absolute top-full right-0 mt-1 w-44 rounded-xl border border-line bg-white p-1.5 shadow-lg"
-              >
-                {ACTIONS.map((action) => (
-                  <Link
-                    key={action}
-                    role="menuitem"
-                    href={LOGIN_PATH}
-                    // Keep the click from being lost to the button's blur
-                    onMouseDown={(event) => event.preventDefault()}
-                    className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-tag"
-                  >
-                    {action}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          <ActionsMenu />
         </nav>
 
         <div className="flex items-center gap-0.5">
-          {ICON_LINKS.map(({ label, Icon }) => (
-            <Link
-              key={label}
-              href={LOGIN_PATH}
-              aria-label={label}
-              className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
-            >
-              <Icon className="h-4.5 w-4.5" strokeWidth={1.5} />
-            </Link>
-          ))}
+          {/* Not signed in: the account icon opens the guest menu */}
+          <button
+            type="button"
+            aria-label="حسابي"
+            aria-haspopup="dialog"
+            aria-expanded={drawerOpen}
+            onClick={() => setDrawerOpen(true)}
+            className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
+          >
+            <User className="h-4.5 w-4.5" strokeWidth={1.5} />
+          </button>
+          <Link
+            href={LOGIN_PATH}
+            aria-label="المحادثات"
+            className="hidden h-10 w-10 items-center justify-center rounded-xl text-ink transition hover:bg-white/70 sm:flex"
+          >
+            <MessageSquare className="h-4.5 w-4.5" strokeWidth={1.5} />
+          </Link>
+          <GuestNotifications />
           <button
             type="button"
             aria-label={menuOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
@@ -146,11 +122,11 @@ export default function SiteNav() {
           <div className="my-1 h-px bg-line" />
           {ACTIONS.map((action) => (
             <Link
-              key={action}
+              key={action.label}
               href={LOGIN_PATH}
               className="rounded-xl px-4 py-3 text-base font-medium text-ink"
             >
-              {action}
+              {action.label}
             </Link>
           ))}
           <Link
@@ -161,6 +137,8 @@ export default function SiteNav() {
           </Link>
         </nav>
       )}
+
+      <GuestDrawer open={drawerOpen} onClose={closeDrawer} />
     </header>
   )
 }

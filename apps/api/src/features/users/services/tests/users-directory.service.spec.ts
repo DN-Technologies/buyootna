@@ -97,6 +97,46 @@ describe('UsersDirectoryService', () => {
     });
   });
 
+  describe('search filters', () => {
+    const companyWhere = () =>
+      (
+        prisma.identity.findMany.mock.calls[0] as [
+          { where: { companyData: Record<string, unknown> } },
+        ]
+      )[0].where.companyData;
+
+    it('narrows companies by specialty and by where they are or work', async () => {
+      prisma.identity.findMany.mockResolvedValue([]);
+      prisma.identity.count.mockResolvedValue(0);
+      providerCards.formatCompanyCards.mockResolvedValue([]);
+
+      await service.findCompanies({
+        specialty: 'مكتب هندسي, التكييف',
+        location: 'حولي',
+      });
+
+      expect(companyWhere().AND).toEqual([
+        { specialty: { in: ['مكتب هندسي', 'التكييف'] } },
+        {
+          OR: [
+            { hqLocation: { contains: 'حولي', mode: 'insensitive' } },
+            { serviceAreas: { contains: 'حولي', mode: 'insensitive' } },
+          ],
+        },
+      ]);
+    });
+
+    it('leaves companies unnarrowed without those filters', async () => {
+      prisma.identity.findMany.mockResolvedValue([]);
+      prisma.identity.count.mockResolvedValue(0);
+      providerCards.formatCompanyCards.mockResolvedValue([]);
+
+      await service.findCompanies({});
+
+      expect(companyWhere()).not.toHaveProperty('AND');
+    });
+  });
+
   describe('sortCompanyCards', () => {
     const cards = [card('a', 4, 2, 1), card('b', 4, 9, 5), card('c', 2, 5)];
 

@@ -7,27 +7,19 @@ export const LISTING_TYPES: { id: ListingType; label: string; tab: string }[] =
     { id: 'EXCHANGE', label: 'بدل', tab: 'للبدل' },
   ]
 
-// The property categories new ads can be listed under (API PropertyCategory)
+// What a search can narrow by (API PropertyCategory): the design's list,
+// plus land and farms, which ads can also be listed under
 export const PROPERTY_CATEGORIES: { id: string; label: string }[] = [
+  { id: 'INVESTMENT', label: 'استثماري' },
   { id: 'HOUSE', label: 'بيت' },
   { id: 'APARTMENT', label: 'شقة' },
   { id: 'COMMERCIAL', label: 'تجاري' },
   { id: 'BUILDING', label: 'عمارة' },
   { id: 'OFFICE', label: 'مكتب' },
   { id: 'CHALET', label: 'شاليه' },
-  { id: 'FARM', label: 'مزرعة' },
+  { id: 'RESIDENTIAL', label: 'سكني' },
   { id: 'LAND', label: 'أرض' },
-]
-
-// Upper price bounds offered by the search, in KWD
-export const PRICE_CEILINGS: { id: string; label: string }[] = [
-  { id: '500', label: 'حتى 500 د.ك' },
-  { id: '1000', label: 'حتى 1,000 د.ك' },
-  { id: '50000', label: 'حتى 50,000 د.ك' },
-  { id: '100000', label: 'حتى 100,000 د.ك' },
-  { id: '250000', label: 'حتى 250,000 د.ك' },
-  { id: '500000', label: 'حتى 500,000 د.ك' },
-  { id: '1000000', label: 'حتى 1,000,000 د.ك' },
+  { id: 'FARM', label: 'مزرعة' },
 ]
 
 // Service-company categories, the same list the mobile app filters by
@@ -52,4 +44,40 @@ export const COMPANY_CATEGORIES: string[] = [
   'شركات الاصباغ',
   'المساح والحدائق الخارجية',
   'شركات البلاط',
+]
+
+// التخصص of a service company, the same list the mobile app registers with
+export const COMPANY_SPECIALTIES: string[] = [
+  'مكتب هندسي',
+  'دار استشارية',
+  'التثمين العقاري',
+  'مقاول عام / مقاول بناء',
+  'مقاول ترميم وإضافة',
+  'الهدم',
+  'العوازل',
+  'التشطيب',
+  'التصميم الداخلي',
+  'الديكور والجبس بورد',
+  'الأصباغ (الصبغ)',
+  'الأرضيات',
+  'البلاط والانترلوك',
+  'النجارة والأبواب',
+  'المطابخ',
+  'الألمنيوم والزجاج',
+  'الحدادة والمظلات',
+  'الستائر والتنجيد',
+  'التكييف',
+  'التهوية والشفط المركزي',
+  'الأعمال الكهربائية',
+  'الأعمال الصحية والسباكة',
+  'المصاعد (اصنصيرات)',
+  'أنظمة الإطفاء والإنذار',
+  'الأنظمة الذكية والمراقبة',
+  'إدارة الاملاك',
+  'صيانة المباني',
+  'التنظيف',
+  'نقل العفش',
+  'مكافحة الحشرات',
+  'المسابح',
+  'تنسيق الحدائق',
 ]

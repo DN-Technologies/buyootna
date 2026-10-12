@@ -68,19 +68,20 @@ describe('PropertiesFeedService.findAll sorting', () => {
   it('narrows by governorate, area, category and a price range', async () => {
     await service.findAll({
       type: 'SALE',
-      governorateId: 'capital',
+      governorateId: 'capital, hawally',
       areaId: 'dasma',
-      category: 'APARTMENT',
+      category: ['APARTMENT', 'HOUSE'],
       minPrice: 50000,
       maxPrice: 150000,
     });
 
+    // Several governorates or categories match any of them
     expect(whereUsed()).toMatchObject({
       status: 'ACTIVE',
       type: 'SALE',
-      governorateId: 'capital',
-      areaId: 'dasma',
-      category: 'APARTMENT',
+      governorateId: { in: ['capital', 'hawally'] },
+      areaId: { in: ['dasma'] },
+      category: { in: ['APARTMENT', 'HOUSE'] },
       price: { gte: 50000, lte: 150000 },
     });
     // The count has to describe the same filtered set

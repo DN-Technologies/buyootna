@@ -6,6 +6,12 @@ export class GetOfficesFilterDto {
   @IsString()
   search?: string;
 
+  // Governorate or area names ("حولي,السالمية"), matched against the
+  // office's location; several match any
+  @IsOptional()
+  @IsString()
+  location?: string;
+
   @IsOptional()
   @Type(() => Number)
   @IsInt()
