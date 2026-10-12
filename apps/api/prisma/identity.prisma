@@ -52,6 +52,7 @@ model Identity {
   reviewReactions ReviewReaction[]
   planSlots       UserPlanSlot[]
   invoices        Invoice[]
+  companySubscriptions CompanySubscription[]
   projects        CompanyProject[]
   companyServices CompanyService[]
   companyInvoices CompanyInvoice[]

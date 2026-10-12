@@ -31,6 +31,7 @@ import { NotificationsModule } from './features/notifications/notifications.modu
 import { SavedLocationsModule } from './features/saved-locations/saved-locations.module';
 import { DevicesModule } from './features/devices/devices.module';
 import { PlansModule } from './features/plans/plans.module';
+import { CompanySubscriptionsModule } from './features/company-subscriptions/company-subscriptions.module';
 import { InvoicesModule } from './features/invoices/invoices.module';
 import { PaymentsModule } from './features/payments/payments.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
@@ -88,6 +89,7 @@ import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
     SavedLocationsModule,
     DevicesModule,
     PlansModule,
+    CompanySubscriptionsModule,
     InvoicesModule,
     PaymentsModule,
     ReviewsModule,

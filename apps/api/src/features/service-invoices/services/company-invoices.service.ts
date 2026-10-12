@@ -6,6 +6,7 @@ import {
 import { Prisma, RequestStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { CreateCompanyInvoiceDto } from '../../company/dto/create-company-invoice.dto';
+import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { assertApprovedProvider } from '../../identities/persona-rules';
 import { ListServiceInvoicesDto } from '../dto/list-service-invoices.dto';
 import { INVOICE_INCLUDE, toInvoiceView } from '../service-invoice.view';
@@ -85,6 +86,7 @@ export class CompanyInvoicesService {
   async create(identityId: string, dto: CreateCompanyInvoiceDto) {
     const company = await this.companyOf(identityId);
     await assertApprovedProvider(this.prisma, identityId);
+    await assertActiveCompanySubscription(this.prisma, identityId);
 
     let clientIdentityId: string | null = null;
     let clientName = dto.clientName?.trim() ?? '';

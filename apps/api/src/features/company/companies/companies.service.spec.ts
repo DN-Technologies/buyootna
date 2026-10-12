@@ -8,6 +8,7 @@ describe('CompaniesService', () => {
     property: { count: jest.Mock; aggregate: jest.Mock };
     userPlanSlot: { findMany: jest.Mock };
     invoice: { findFirst: jest.Mock };
+    companySubscription: { findMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -18,6 +19,7 @@ describe('CompaniesService', () => {
       },
       userPlanSlot: { findMany: jest.fn().mockResolvedValue([]) },
       invoice: { findFirst: jest.fn().mockResolvedValue(null) },
+      companySubscription: { findMany: jest.fn().mockResolvedValue([]) },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -42,6 +44,8 @@ describe('CompaniesService', () => {
       activePlanName: null,
       adsRemaining: 0,
       hasOverdueInvoice: false,
+      subscriptionStatus: 'NONE',
+      trialDaysLeft: null,
     });
   });
 
@@ -58,6 +62,8 @@ describe('CompaniesService', () => {
       activePlanName: 'الباقة الذهبية',
       adsRemaining: 5,
       hasOverdueInvoice: false,
+      subscriptionStatus: 'NONE',
+      trialDaysLeft: null,
     });
   });
 
@@ -101,5 +107,41 @@ describe('CompaniesService', () => {
         where: expect.objectContaining({ identityId: 'identity-42' }),
       }),
     );
+  });
+
+  it('reports the trial countdown while the free period is running', async () => {
+    prisma.companySubscription.findMany.mockResolvedValue([
+      {
+        kind: 'TRIAL',
+        companyPlanId: null,
+        endsAt: new Date(Date.now() + 9.5 * 24 * 60 * 60 * 1000),
+      },
+    ]);
+
+    const result = await service.getDashboard('identity-1');
+
+    expect(result.billing).toMatchObject({
+      hasActivePlan: false,
+      subscriptionStatus: 'TRIAL',
+      trialDaysLeft: 10,
+    });
+  });
+
+  it('counts a paid subscription as the active plan', async () => {
+    prisma.companySubscription.findMany.mockResolvedValue([
+      {
+        kind: 'PAID',
+        companyPlanId: 'annual',
+        endsAt: new Date(Date.now() + 100 * 24 * 60 * 60 * 1000),
+      },
+    ]);
+
+    const result = await service.getDashboard('identity-1');
+
+    expect(result.billing).toMatchObject({
+      hasActivePlan: true,
+      subscriptionStatus: 'ACTIVE',
+      trialDaysLeft: null,
+    });
   });
 });

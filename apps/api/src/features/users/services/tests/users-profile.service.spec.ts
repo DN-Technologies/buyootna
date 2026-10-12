@@ -6,6 +6,19 @@ import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { StorageService } from '../../../../core/storage/storage.service';
 import { AccountStateService } from '../account-state.service';
 
+// The subscription gate has its own spec; here every company is subscribed
+jest.mock(
+  'src/features/company-subscriptions/company-subscription.rules',
+  () => ({
+    ...jest.requireActual(
+      'src/features/company-subscriptions/company-subscription.rules',
+    ),
+    assertActiveCompanySubscription: jest.fn().mockResolvedValue(undefined),
+    hasActiveCompanySubscription: jest.fn().mockResolvedValue(true),
+    grantTrialIfNew: jest.fn().mockResolvedValue(undefined),
+  }),
+);
+
 describe('UsersProfileService', () => {
   let service: UsersProfileService;
   let prisma: any;

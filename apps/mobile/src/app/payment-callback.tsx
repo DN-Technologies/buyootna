@@ -18,16 +18,24 @@ export default function PaymentCallbackScreen() {
 
     if (!status) return;
 
-    // "Feature this ad" payments return to My Activity, plans to /plans
+    // "Feature this ad" payments return to My Activity, a company
+    // subscription to the company plans, ad packages to /plans
     const isFeature = purpose === 'feature';
-    const returnTo = isFeature ? '/activity' : '/plans';
+    const isSubscription = purpose === 'subscription';
+    const returnTo = isFeature
+      ? '/activity'
+      : isSubscription
+        ? '/company-plans'
+        : '/plans';
 
     if (status === 'success') {
       showAlert(
         'نجاح',
         isFeature
           ? 'تم الدفع وتمييز إعلانك بنجاح!'
-          : 'تمت عملية الدفع وتفعيل الباقة بنجاح!',
+          : isSubscription
+            ? 'تم الدفع وتفعيل اشتراك شركتك بنجاح!'
+            : 'تمت عملية الدفع وتفعيل الباقة بنجاح!',
         [
           {
             text: 'موافق',

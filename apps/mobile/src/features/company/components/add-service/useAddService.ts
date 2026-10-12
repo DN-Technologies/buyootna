@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { companyService } from '@/shared/api/company.service';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -115,6 +116,7 @@ export function useAddService() {
       successSheetRef.current?.present();
     } catch (error) {
       setIsSubmitting(false);
+      if (handleSubscriptionRequired(error, router)) return;
       showAlert(
         'فشل إضافة الخدمة',
         getApiErrorMessage(error, 'حدث خطأ، حاول مرة أخرى'),

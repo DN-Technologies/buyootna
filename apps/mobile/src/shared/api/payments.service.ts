@@ -54,6 +54,18 @@ export const paymentsService = {
     return response.data;
   },
 
+  /** A company subscribing to a plan from GET /company-plans. */
+  createSubscriptionCharge: async (
+    companyPlanId: string,
+    appRedirectUrl: string,
+  ): Promise<ChargeResponse> => {
+    const response = await apiClient.post<ChargeResponse>(
+      '/payments/subscription-charge',
+      { companyPlanId, appRedirectUrl },
+    );
+    return response.data;
+  },
+
   getPaymentStatus: async (
     invoiceId: string,
   ): Promise<PaymentStatusResponse> => {

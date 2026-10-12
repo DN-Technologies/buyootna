@@ -14,6 +14,7 @@ import {
 } from './profile-formatting.util';
 import { ProviderCardsService } from './provider-cards.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
+import { hasActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 
 @Injectable()
 export class UsersDirectoryService {
@@ -194,9 +195,11 @@ export class UsersDirectoryService {
 
     const companyData = identity.companyData;
 
-    const [stats, responseTime] = await Promise.all([
+    const [stats, responseTime, acceptsRequests] = await Promise.all([
       this.identityStats.getOne(identity.id),
       this.identityStats.getResponseTime(identity.id),
+      // Private requests reach a company only while it is subscribed
+      hasActiveCompanySubscription(this.prisma, identity.id),
     ]);
 
     const formattedServices = formatServiceList(
@@ -235,6 +238,7 @@ export class UsersDirectoryService {
       name: companyData.name,
       logoUrl: companyData.logoUrl,
       isVerified: companyData.isVerified,
+      acceptsRequests,
       isActiveNow: stats.presence.isOnline,
       lastSeenAt: stats.presence.lastSeenAt,
       rating: stats.rating,

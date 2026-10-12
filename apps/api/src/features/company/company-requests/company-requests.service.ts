@@ -15,6 +15,10 @@ import {
   isApprovedProvider,
 } from '../../identities/persona-rules';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
+import {
+  assertActiveCompanySubscription,
+  hasActiveCompanySubscription,
+} from '../../company-subscriptions/company-subscription.rules';
 
 const CLIENT_INCLUDE = {
   user: true,
@@ -133,6 +137,12 @@ export class CompanyRequestsService {
       }
       if (target.id === clientIdentityId) {
         throw new BadRequestException('لا يمكن إرسال طلب إلى نفسك');
+      }
+      // Receiving private requests is part of a company's subscription
+      if (!(await hasActiveCompanySubscription(this.prisma, target.id))) {
+        throw new BadRequestException(
+          'هذه الجهة غير متاحة لاستقبال الطلبات حالياً',
+        );
       }
       targetIdentityId = target.id;
     }
@@ -321,6 +331,7 @@ export class CompanyRequestsService {
     identityId: string,
   ): Promise<CompanyRequestResponseDto> {
     await assertApprovedProvider(this.prisma, identityId);
+    await assertActiveCompanySubscription(this.prisma, identityId);
     const request = await this.getVisibleRequestOrThrow(id, identityId);
 
     if (request.targetIdentityId && request.targetIdentityId !== identityId) {
@@ -369,10 +380,7 @@ export class CompanyRequestsService {
   }
 
   /** The requester deletes one of their own requests. */
-  async removeMine(
-    id: string,
-    identityId: string,
-  ): Promise<{ deleted: true }> {
+  async removeMine(id: string, identityId: string): Promise<{ deleted: true }> {
     const { count } = await this.prisma.companyRequest.deleteMany({
       where: { id, clientIdentityId: identityId },
     });
@@ -399,6 +407,7 @@ export class CompanyRequestsService {
     dto: CreateRequestOfferDto,
   ): Promise<CompanyRequestResponseDto> {
     await assertApprovedProvider(this.prisma, identityId);
+    await assertActiveCompanySubscription(this.prisma, identityId);
     const request = await this.getVisibleRequestOrThrow(id, identityId);
 
     if (request.targetIdentityId && request.targetIdentityId !== identityId) {

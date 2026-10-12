@@ -11,6 +11,19 @@ type QueryArgs = {
 };
 const firstArg = (mock: jest.Mock) => (mock.mock.calls as [QueryArgs][])[0][0];
 
+// The subscription gate has its own spec; here every company is subscribed
+jest.mock(
+  'src/features/company-subscriptions/company-subscription.rules',
+  () => ({
+    ...jest.requireActual(
+      'src/features/company-subscriptions/company-subscription.rules',
+    ),
+    assertActiveCompanySubscription: jest.fn().mockResolvedValue(undefined),
+    hasActiveCompanySubscription: jest.fn().mockResolvedValue(true),
+    grantTrialIfNew: jest.fn().mockResolvedValue(undefined),
+  }),
+);
+
 describe('CompanyInvoicesService', () => {
   const company = {
     id: 'co-1',

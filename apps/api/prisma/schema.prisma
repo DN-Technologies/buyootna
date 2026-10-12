@@ -203,6 +203,7 @@ enum NotificationType {
   REPORT_DISMISSED
   NEW_DEVICE_LOGIN
   SERVICE_INVOICE
+  SUBSCRIPTION_EXPIRING
 }
 
 model Notification {
@@ -341,6 +342,11 @@ model Invoice {
   propertyId       String?
   property         Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   featureDays      Int?
+
+  // Set for a company subscription purchase (الباقات)
+  companyPlanId       String?
+  companyPlan         CompanyPlan?         @relation(fields: [companyPlanId], references: [id], onDelete: SetNull)
+  companySubscription CompanySubscription?
 
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt

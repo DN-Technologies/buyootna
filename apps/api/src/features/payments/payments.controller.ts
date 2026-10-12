@@ -129,6 +129,44 @@ export class PaymentsController {
     );
   }
 
+  @Post('subscription-charge')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Create a Tap Payments charge for a company subscription plan (company personas only)',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['companyPlanId', 'appRedirectUrl'],
+      properties: {
+        companyPlanId: {
+          type: 'string',
+          description: 'A plan id from GET /company-plans',
+        },
+        appRedirectUrl: { type: 'string' },
+        sourceId: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, type: CreateChargeResponseDto })
+  @ApiCommonErrors()
+  async createSubscriptionCharge(
+    @CurrentUser() reqUser: RequestUser,
+    @Body('companyPlanId') companyPlanId: string,
+    @Body('appRedirectUrl') appRedirectUrl: string,
+    @Body('sourceId') sourceId?: string,
+  ) {
+    return this.paymentsService.createSubscriptionCharge(
+      reqUser.userId,
+      reqUser.identityId,
+      companyPlanId,
+      appRedirectUrl,
+      sourceId,
+    );
+  }
+
   @Get('redirect')
   @ApiOperation({
     summary:
@@ -137,7 +175,11 @@ export class PaymentsController {
   @ApiQuery({ name: 'tap_id', required: true })
   @ApiQuery({ name: 'invoiceId', required: true })
   @ApiQuery({ name: 'appRedirectUrl', required: true })
-  @ApiQuery({ name: 'purpose', required: false, enum: ['feature'] })
+  @ApiQuery({
+    name: 'purpose',
+    required: false,
+    enum: ['feature', 'subscription'],
+  })
   @ApiResponse({ status: 302, description: 'Redirects to appRedirectUrl' })
   async verifyAndRedirect(
     @Query('tap_id') tapId: string,

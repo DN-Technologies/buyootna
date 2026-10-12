@@ -23,6 +23,15 @@ export class CompanyDashboardBillingDto {
 
   @ApiProperty()
   hasOverdueInvoice: boolean;
+
+  @ApiProperty({ enum: ['TRIAL', 'ACTIVE', 'EXPIRED', 'NONE'] })
+  subscriptionStatus: string;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Days left of the free trial; null outside a trial',
+  })
+  trialDaysLeft: number | null;
 }
 
 export class CompanyDashboardResponseDto {

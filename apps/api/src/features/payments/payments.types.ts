@@ -1,5 +1,7 @@
 /** What a charge pays for, when it isn't a plan (carried through Tap's redirect). */
-export type PaymentPurpose = 'feature';
+export type PaymentPurpose = 'feature' | 'subscription';
+
+export const PAYMENT_PURPOSES: readonly string[] = ['feature', 'subscription'];
 
 export interface TapPhonePayload {
   country_code: string;

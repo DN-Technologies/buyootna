@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Invoice, PlanPackage, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { addMonths } from '../../company-subscriptions/company-subscription.rules';
 import { DAY_MS } from '../payments.types';
 
 /**
- * Grants whatever a paid invoice bought -- plan ads or a featured ad -- and
+ * Grants whatever a paid invoice bought -- plan ads, a featured ad or a
+ * company subscription period -- and
  * marks it PAID. Safe to call more than once for the same invoice (Tap's
  * redirect and webhook both arrive): only the call that flips the invoice
  * from unpaid to PAID grants anything.
@@ -23,7 +25,9 @@ export class PaymentFulfillmentService {
       return;
     }
 
-    if (invoice.featurePackageId || invoice.propertyId) {
+    if (invoice.companyPlanId) {
+      await this.fulfillSubscription(invoice);
+    } else if (invoice.featurePackageId || invoice.propertyId) {
       await this.fulfillFeature(invoice);
     } else {
       await this.fulfillPlan(invoice);
@@ -113,6 +117,48 @@ export class PaymentFulfillmentService {
     if (fulfilled) {
       console.log(
         `Payment Fulfilled: Invoice ${invoice.invoiceNo} featured property ${invoice.propertyId} for ${days} day(s).`,
+      );
+    }
+  }
+
+  /**
+   * Adds the paid period to the company's subscription. It starts where the
+   * company's current cover ends, so renewing early loses nothing.
+   */
+  private async fulfillSubscription(invoice: Invoice) {
+    const plan = await this.prisma.companyPlan.findUnique({
+      where: { id: invoice.companyPlanId! },
+    });
+
+    const fulfilled = await this.prisma.$transaction(async (tx) => {
+      if (!(await this.markPaid(tx, invoice.id))) return false;
+      // The plan was deleted after paying: the paid invoice stays as a record
+      if (!plan) return true;
+
+      const latest = await tx.companySubscription.findFirst({
+        where: { identityId: invoice.identityId },
+        orderBy: { endsAt: 'desc' },
+        select: { endsAt: true },
+      });
+      const startsAt = new Date(
+        Math.max(Date.now(), latest?.endsAt.getTime() ?? 0),
+      );
+      await tx.companySubscription.create({
+        data: {
+          identityId: invoice.identityId,
+          kind: 'PAID',
+          companyPlanId: plan.id,
+          startsAt,
+          endsAt: addMonths(startsAt, plan.durationMonths),
+          invoiceId: invoice.id,
+        },
+      });
+      return true;
+    });
+
+    if (fulfilled) {
+      console.log(
+        `Payment Fulfilled: Invoice ${invoice.invoiceNo} subscribed company ${invoice.identityId} to ${plan?.name ?? invoice.planDetails}.`,
       );
     }
   }

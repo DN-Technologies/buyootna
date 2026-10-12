@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import {
   CreateCompanyServiceDto,
   OTHER_SERVICE_TYPE,
@@ -45,6 +46,7 @@ export class CompanyServicesService {
 
   async create(userId: string, dto: CreateCompanyServiceDto) {
     const { identity, companyData } = await this.findCompany(userId);
+    await assertActiveCompanySubscription(this.prisma, identity.id);
 
     if (companyData.specialty && companyData.specialty !== dto.specialty) {
       throw new BadRequestException('لا يمكن تغيير تخصص الشركة');

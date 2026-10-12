@@ -4,6 +4,7 @@ import { TapChargeResponse } from './payments.types';
 import { FeatureCheckoutService } from './services/feature-checkout.service';
 import { PaymentFulfillmentService } from './services/payment-fulfillment.service';
 import { PlanCheckoutService } from './services/plan-checkout.service';
+import { SubscriptionCheckoutService } from './services/subscription-checkout.service';
 import { TapGatewayService } from './services/tap-gateway.service';
 
 export type {
@@ -24,6 +25,7 @@ export class PaymentsService {
     private readonly fulfillment: PaymentFulfillmentService,
     private readonly planCheckout: PlanCheckoutService,
     private readonly featureCheckout: FeatureCheckoutService,
+    private readonly subscriptionCheckout: SubscriptionCheckoutService,
   ) {}
 
   // --- CHECKOUT ---
@@ -62,6 +64,22 @@ export class PaymentsService {
       identityId,
       propertyId,
       featurePackageId,
+      appRedirectUrl,
+      sourceId,
+    );
+  }
+
+  createSubscriptionCharge(
+    userId: string,
+    identityId: string,
+    companyPlanId: string,
+    appRedirectUrl: string,
+    sourceId?: string,
+  ) {
+    return this.subscriptionCheckout.createCharge(
+      userId,
+      identityId,
+      companyPlanId,
       appRedirectUrl,
       sourceId,
     );

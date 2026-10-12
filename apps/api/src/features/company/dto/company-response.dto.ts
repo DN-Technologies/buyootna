@@ -114,6 +114,11 @@ export class CompanyDetailsResponseDto {
   @ApiProperty()
   isVerified: boolean;
 
+  @ApiProperty({
+    description: 'False while the company has no active subscription',
+  })
+  acceptsRequests: boolean;
+
   @ApiProperty()
   isActiveNow: boolean;
 

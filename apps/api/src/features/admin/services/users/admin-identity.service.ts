@@ -5,13 +5,17 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
-import { MailService, SendMailOptions } from '../../../../core/mail/mail.service';
+import {
+  MailService,
+  SendMailOptions,
+} from '../../../../core/mail/mail.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { AdminUpdateIdentityStatusDto } from '../../dto/admin-update-identity-status.dto';
 import { AdminRequestIdentityEditDto } from '../../dto/admin-request-identity-edit.dto';
 import { identityVerificationDecisionTemplate } from '../../../../core/mail/templates/identity-verification-decision.template';
 import { identityEditRequestedTemplate } from '../../../../core/mail/templates/identity-edit-requested.template';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { grantTrialIfNew } from '../../../company-subscriptions/company-subscription.rules';
 
 @Injectable()
 export class AdminIdentityService {
@@ -62,6 +66,10 @@ export class AdminIdentityService {
         data: { status: dto.status, isVerified },
       });
       identityLabel = 'الشركة';
+      // An approved company starts on its free trial (once)
+      if (dto.status === 'APPROVED') {
+        await grantTrialIfNew(this.prisma, identityId);
+      }
 
       if (dto.status === 'REJECTED' && dto.reason) {
         await this.prisma.reviewRequest.create({

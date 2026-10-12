@@ -29,6 +29,19 @@ interface MockMailService {
   sendMail: jest.Mock;
 }
 
+// The subscription gate has its own spec; here every company is subscribed
+jest.mock(
+  'src/features/company-subscriptions/company-subscription.rules',
+  () => ({
+    ...jest.requireActual(
+      'src/features/company-subscriptions/company-subscription.rules',
+    ),
+    assertActiveCompanySubscription: jest.fn().mockResolvedValue(undefined),
+    hasActiveCompanySubscription: jest.fn().mockResolvedValue(true),
+    grantTrialIfNew: jest.fn().mockResolvedValue(undefined),
+  }),
+);
+
 describe('AdminIdentityService', () => {
   let service: AdminIdentityService;
   let prisma: MockPrismaService;

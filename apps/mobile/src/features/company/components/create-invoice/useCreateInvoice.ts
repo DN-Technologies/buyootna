@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Share } from 'react-native';
 
 import type { InvoiceItem } from '@/features/company/components/invoice/InvoiceItemsStep';
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { companyService } from '@/shared/api/company.service';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -105,6 +106,7 @@ export function useCreateInvoice() {
       successSheetRef.current?.present();
     } catch (error) {
       setIsSubmitting(false);
+      if (handleSubscriptionRequired(error, router)) return;
       showAlert(
         'فشل انشاء الفاتورة',
         getApiErrorMessage(error, 'حدث خطأ، حاول مرة أخرى'),

@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HeadsetIcon, PartyPopperIcon } from '@/assets/icons/company-home';
 import type { CompanyDashboardData } from '@/features/company/hooks/useCompanyHome';
+import { COMPANY_PLANS_ROUTE } from '@/features/company/utils/subscriptionRequired';
 
 interface HomeBannerProps {
   billing?: CompanyDashboardData['billing'];
@@ -109,7 +110,7 @@ export default function HomeBanner({
   activeServicesCount,
 }: HomeBannerProps) {
   const router = useRouter();
-  const openPlans = () => router.push('/plans');
+  const openPlans = () => router.push(COMPANY_PLANS_ROUTE as never);
 
   // Still loading: don't flash "no plan" at a subscribed company
   if (!billing) return null;
