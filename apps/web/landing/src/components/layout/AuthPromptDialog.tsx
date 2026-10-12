@@ -9,7 +9,8 @@ import {
   isAuthPromptOpen,
   subscribeAuthPrompt,
 } from '@/lib/authPrompt'
-import { LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
+import SignupLink from '@/components/auth/SignupLink'
+import { LOGIN_PATH } from '@/lib/siteLinks'
 
 /** "سجل حسابك للمتابعة": shown when a visitor tries something that needs an account. */
 export default function AuthPromptDialog() {
@@ -85,13 +86,12 @@ export default function AuthPromptDialog() {
         </p>
 
         <div className="mt-8 flex gap-3">
-          <Link
-            href={SIGNUP_PATH}
-            onClick={closeAuthPrompt}
+          <SignupLink
+            onBeforeOpen={closeAuthPrompt}
             className="flex h-12 flex-1 items-center justify-center rounded-3xl border border-brand bg-brand text-sm font-semibold tracking-[0.28px] text-white transition hover:bg-brand-dark"
           >
             إنشاء حساب
-          </Link>
+          </SignupLink>
           <Link
             href={LOGIN_PATH}
             onClick={closeAuthPrompt}

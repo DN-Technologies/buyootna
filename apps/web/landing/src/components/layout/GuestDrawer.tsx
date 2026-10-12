@@ -5,7 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
-import { LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
+import SignupLink from '@/components/auth/SignupLink'
+import { LOGIN_PATH } from '@/lib/siteLinks'
 
 interface DrawerLink {
   label: string
@@ -114,12 +115,12 @@ export default function GuestDrawer({
           <p className="mt-1 text-sm font-medium tracking-[-0.408px] text-[#A0A0A0]">
             أنشئ حسابك للوصول إلى جميع المميزات
           </p>
-          <Link
-            href={SIGNUP_PATH}
+          <SignupLink
+            onBeforeOpen={onClose}
             className="mt-3 flex h-10 items-center text-sm font-bold text-brand"
           >
             إنشاء حساب
-          </Link>
+          </SignupLink>
         </div>
 
         <div className="flex flex-col gap-5 pt-5">
