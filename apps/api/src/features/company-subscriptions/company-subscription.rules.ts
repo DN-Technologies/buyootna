@@ -9,13 +9,33 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type CompanySubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'NONE';
 
+/** The plan a period was bought on, as the account screens show it. */
+export interface SubscribedPlan {
+  id: string;
+  name: string;
+  price: number;
+  durationMonths: number;
+  features: string[];
+}
+
 export interface CompanySubscriptionState {
   status: CompanySubscriptionStatus;
   // The plan of the latest paid period; null on a trial or with none
   currentPlanId: string | null;
+  // The plan the company last paid for, running or expired; null if it
+  // only ever had the trial
+  plan: SubscribedPlan | null;
   endsAt: Date | null;
   daysLeft: number;
 }
+
+const PLAN_SELECT = {
+  id: true,
+  name: true,
+  price: true,
+  durationMonths: true,
+  features: true,
+} as const;
 
 /**
  * `months` calendar months after `from`. A day the target month lacks (the
@@ -41,17 +61,31 @@ export async function getCompanySubscriptionState(
   const periods = await db.companySubscription.findMany({
     where: { identityId },
     orderBy: { endsAt: 'desc' },
-    select: { kind: true, companyPlanId: true, endsAt: true },
+    select: {
+      kind: true,
+      companyPlanId: true,
+      endsAt: true,
+      companyPlan: { select: PLAN_SELECT },
+    },
   });
   if (periods.length === 0) {
-    return { status: 'NONE', currentPlanId: null, endsAt: null, daysLeft: 0 };
+    return {
+      status: 'NONE',
+      currentPlanId: null,
+      plan: null,
+      endsAt: null,
+      daysLeft: 0,
+    };
   }
 
   const latest = periods[0];
+  // Newest first, so this is the plan the company paid for last
+  const plan = periods.find((p) => p.kind === 'PAID')?.companyPlan ?? null;
   if (latest.endsAt <= now) {
     return {
       status: 'EXPIRED',
       currentPlanId: null,
+      plan,
       endsAt: latest.endsAt,
       daysLeft: 0,
     };
@@ -61,6 +95,7 @@ export async function getCompanySubscriptionState(
   return {
     status: paid ? 'ACTIVE' : 'TRIAL',
     currentPlanId: paid?.companyPlanId ?? null,
+    plan,
     endsAt: latest.endsAt,
     daysLeft: Math.ceil((latest.endsAt.getTime() - now.getTime()) / DAY_MS),
   };

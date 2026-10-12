@@ -11,6 +11,13 @@ import {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const now = new Date('2026-10-12T09:00:00Z');
 const inDays = (days: number) => new Date(now.getTime() + days * DAY_MS);
+const annual = {
+  id: 'annual',
+  name: 'السنوية',
+  price: 100,
+  durationMonths: 12,
+  features: ['اصدار الفواتير.'],
+};
 
 describe('company subscription rules', () => {
   const companySubscription = {
@@ -33,6 +40,7 @@ describe('company subscription rules', () => {
       expect(await getCompanySubscriptionState(db, 'c1', now)).toEqual({
         status: 'NONE',
         currentPlanId: null,
+        plan: null,
         endsAt: null,
         daysLeft: 0,
       });
@@ -52,7 +60,12 @@ describe('company subscription rules', () => {
 
     it('is ACTIVE on the latest paid plan, covered until the last period ends', async () => {
       companySubscription.findMany.mockResolvedValue([
-        { kind: 'PAID', companyPlanId: 'annual', endsAt: inDays(400) },
+        {
+          kind: 'PAID',
+          companyPlanId: 'annual',
+          endsAt: inDays(400),
+          companyPlan: annual,
+        },
         { kind: 'PAID', companyPlanId: 'quarterly', endsAt: inDays(35) },
         { kind: 'TRIAL', companyPlanId: null, endsAt: inDays(-10) },
       ]);
@@ -60,6 +73,7 @@ describe('company subscription rules', () => {
       expect(await getCompanySubscriptionState(db, 'c1', now)).toEqual({
         status: 'ACTIVE',
         currentPlanId: 'annual',
+        plan: annual,
         endsAt: inDays(400),
         daysLeft: 400,
       });
@@ -67,13 +81,31 @@ describe('company subscription rules', () => {
 
     it('is EXPIRED once the last period has ended', async () => {
       companySubscription.findMany.mockResolvedValue([
-        { kind: 'PAID', companyPlanId: 'quarterly', endsAt: inDays(-1) },
+        {
+          kind: 'PAID',
+          companyPlanId: 'annual',
+          endsAt: inDays(-1),
+          companyPlan: annual,
+        },
+      ]);
+
+      // The plan it was on stays known, to offer renewing it
+      expect(await getCompanySubscriptionState(db, 'c1', now)).toMatchObject({
+        status: 'EXPIRED',
+        currentPlanId: null,
+        plan: annual,
+        daysLeft: 0,
+      });
+    });
+
+    it('has no plan when only the trial ever ran', async () => {
+      companySubscription.findMany.mockResolvedValue([
+        { kind: 'TRIAL', companyPlanId: null, endsAt: inDays(-3) },
       ]);
 
       expect(await getCompanySubscriptionState(db, 'c1', now)).toMatchObject({
         status: 'EXPIRED',
-        currentPlanId: null,
-        daysLeft: 0,
+        plan: null,
       });
     });
   });

@@ -209,7 +209,9 @@ export default function CompanyMoreScreen() {
                   title="رصيد الحساب"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/account-balance')}
+                  onPress={() =>
+                    router.push('/company-account-balance' as never)
+                  }
                 />
                 <MenuItem
                   icon={BillIcon}

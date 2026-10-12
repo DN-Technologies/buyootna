@@ -23,6 +23,43 @@ export class CompanyPlanDto {
   badge: string | null;
 }
 
+export class SubscribedPlanDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  price: number;
+
+  @ApiProperty()
+  durationMonths: number;
+
+  @ApiProperty({ type: [String] })
+  features: string[];
+}
+
+export class CompanySubscriptionHistoryItemDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ example: 'ID:1A2B3C4D' })
+  displayId: string;
+
+  @ApiProperty()
+  planName: string;
+
+  @ApiProperty()
+  startsAt: Date;
+
+  @ApiProperty()
+  endsAt: Date;
+
+  @ApiProperty({ enum: ['ACTIVE', 'EXPIRED'] })
+  status: string;
+}
+
 export class CompanySubscriptionStateDto {
   @ApiProperty({ enum: ['TRIAL', 'ACTIVE', 'EXPIRED', 'NONE'] })
   status: string;
@@ -32,6 +69,13 @@ export class CompanySubscriptionStateDto {
     description: 'Plan of the latest paid period; null on a trial',
   })
   currentPlanId: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    type: SubscribedPlanDto,
+    description: 'The plan last paid for, running or expired',
+  })
+  plan: SubscribedPlanDto | null;
 
   @ApiProperty({ nullable: true })
   endsAt: Date | null;

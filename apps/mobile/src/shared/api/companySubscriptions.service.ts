@@ -13,10 +13,31 @@ export interface CompanyPlan {
   badge: string | null;
 }
 
+export interface SubscribedPlan {
+  id: string;
+  name: string;
+  price: number;
+  durationMonths: number;
+  features: string[];
+}
+
+/** One paid period in سجل الباقات. */
+export interface CompanySubscriptionHistoryItem {
+  id: string;
+  displayId: string;
+  planName: string;
+  startsAt: string;
+  endsAt: string;
+  status: 'ACTIVE' | 'EXPIRED';
+}
+
 export interface CompanySubscriptionState {
   status: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'NONE';
   // The plan of the latest paid period; null on a trial or with none
   currentPlanId: string | null;
+  // The plan last paid for, running or expired; null if only the trial ran.
+  // Older APIs omit it.
+  plan?: SubscribedPlan | null;
   endsAt: string | null;
   daysLeft: number;
 }
@@ -30,6 +51,13 @@ export const companySubscriptionsService = {
   getMine: async (): Promise<CompanySubscriptionState> => {
     const response = await apiClient.get<CompanySubscriptionState>(
       '/company-subscriptions/me',
+    );
+    return response.data;
+  },
+
+  getHistory: async (): Promise<CompanySubscriptionHistoryItem[]> => {
+    const response = await apiClient.get<CompanySubscriptionHistoryItem[]>(
+      '/company-subscriptions/history',
     );
     return response.data;
   },

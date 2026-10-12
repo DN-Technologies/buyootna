@@ -83,6 +83,8 @@ export function useCompanyPlans() {
   return {
     plans: plansQuery.data ?? [],
     subscription: subscriptionQuery.data ?? null,
+    isSubscriptionLoading: subscriptionQuery.isLoading,
+    isSubscriptionError: subscriptionQuery.isError,
     isLoading: plansQuery.isLoading,
     isError: plansQuery.isError,
     refetch: () => {

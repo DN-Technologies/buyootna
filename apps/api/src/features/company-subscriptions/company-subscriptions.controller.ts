@@ -6,7 +6,11 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CompanySubscriptionsService } from './company-subscriptions.service';
-import { CompanyPlanDto, CompanySubscriptionStateDto } from './dto';
+import {
+  CompanyPlanDto,
+  CompanySubscriptionHistoryItemDto,
+  CompanySubscriptionStateDto,
+} from './dto';
 
 @ApiTags('Company subscriptions')
 @Controller()
@@ -32,5 +36,20 @@ export class CompanySubscriptionsController {
   @ApiCommonErrors()
   getMine(@CurrentUser() reqUser: RequestUser) {
     return this.subscriptions.getMine(reqUser.identityId, reqUser.identityType);
+  }
+
+  @Get('company-subscriptions/history')
+  @UseGuards(JwtAuthGuard)
+  @ApiAuth()
+  @ApiOperation({
+    summary: "The current company persona's paid periods, newest first",
+  })
+  @ApiResponse({ status: 200, type: [CompanySubscriptionHistoryItemDto] })
+  @ApiCommonErrors()
+  getHistory(@CurrentUser() reqUser: RequestUser) {
+    return this.subscriptions.getHistory(
+      reqUser.identityId,
+      reqUser.identityType,
+    );
   }
 }
