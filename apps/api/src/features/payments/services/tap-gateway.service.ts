@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import {
   ChargeResult,
+  PAYMENT_PURPOSES,
   PaymentPurpose,
   TapChargeResponse,
   TapPhonePayload,
@@ -179,7 +180,9 @@ export class TapGatewayService {
     purpose?: string,
   ) {
     const params = new URLSearchParams({ status, invoiceId });
-    if (purpose === 'feature') params.set('purpose', 'feature');
+    if (purpose && PAYMENT_PURPOSES.includes(purpose)) {
+      params.set('purpose', purpose);
+    }
     const separator = appRedirectUrl.includes('?') ? '&' : '?';
     return `${appRedirectUrl}${separator}${params.toString()}`;
   }

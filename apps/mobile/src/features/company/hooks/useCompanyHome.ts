@@ -13,8 +13,9 @@ export interface CompanyDashboardData {
     activePlanName: string | null;
     adsRemaining: number;
     hasOverdueInvoice: boolean;
-    // Days left of a trial plan. The API doesn't send it yet: the trial
-    // notice on the home stays hidden until it does.
+    // Where the company's subscription stands; older APIs omit both
+    subscriptionStatus?: 'TRIAL' | 'ACTIVE' | 'EXPIRED' | 'NONE';
+    // Days left of the free trial, null outside one
     trialDaysLeft?: number | null;
   };
 }

@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { companyService } from '@/shared/api/company.service';
 import { propertiesService } from '@/shared/api/properties.service';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
@@ -84,6 +85,7 @@ export function useAddProject() {
       successSheetRef.current?.present();
     } catch (error) {
       setIsSubmitting(false);
+      if (handleSubscriptionRequired(error, router)) return;
       showAlert(
         'فشل نشر المشروع',
         getApiErrorMessage(error, 'حدث خطأ، حاول مرة أخرى'),

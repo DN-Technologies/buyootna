@@ -112,10 +112,13 @@ export default function CompanyProfileScreen() {
           </ScrollView>
         )}
 
-        {/* Fixed Bottom Quote Request Action Bar */}
-        <CompanyBottomBar
-          onRequestQuote={() => quoteModalRef.current?.present()}
-        />
+        {/* Fixed Bottom Quote Request Action Bar; a company without an
+            active subscription can't receive requests */}
+        {company?.acceptsRequests !== false && (
+          <CompanyBottomBar
+            onRequestQuote={() => quoteModalRef.current?.present()}
+          />
+        )}
 
         {/* Coordinated Modals & Bottom Sheets */}
         <CompanyModals

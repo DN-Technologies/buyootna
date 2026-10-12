@@ -17,6 +17,8 @@ export interface CompanyHeaderData {
   logoUrl?: string;
   coverUrl?: string;
   isVerified?: boolean;
+  // False while the company has no active subscription; older APIs omit it
+  acceptsRequests?: boolean;
   isActiveNow?: boolean;
   lastSeenAt?: string | null;
   rating: number;

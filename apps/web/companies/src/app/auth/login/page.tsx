@@ -11,7 +11,8 @@ export default function LoginPage() {
 
   const handleLogin = async (data: { identifier: string; password: string }) => {
     await auth.login(data.identifier, data.password);
-    router.push("/");
+    // The portal's signed-in home: the company's subscription
+    router.push("/plans");
   };
 
   return (

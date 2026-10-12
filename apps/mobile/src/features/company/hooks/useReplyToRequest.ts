@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { showAlert } from '@/shared/utils/alert';
@@ -27,6 +28,7 @@ export function useReplyToRequest() {
       queryClient.invalidateQueries({ queryKey: ['companyRequests'] });
       router.push(`/chat/${conversation.id}` as any);
     } catch (error: any) {
+      if (handleSubscriptionRequired(error, router)) return;
       const backendMsg = error?.response?.data?.message;
       const msg = Array.isArray(backendMsg)
         ? backendMsg.join('\n')

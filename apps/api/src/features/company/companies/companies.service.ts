@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InvoiceStatus, ListingStatus, SlotStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { getCompanySubscriptionState } from '../../company-subscriptions/company-subscription.rules';
 import { CompanyDashboardResponseDto } from './dto/company-dashboard-response.dto';
 
 @Injectable()
@@ -8,7 +9,7 @@ export class CompaniesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getDashboard(identityId: string): Promise<CompanyDashboardResponseDto> {
-    const [activeCount, viewsAgg, activeSlots, overdueInvoice] =
+    const [activeCount, viewsAgg, activeSlots, overdueInvoice, subscription] =
       await Promise.all([
         this.prisma.property.count({
           where: { identityId, status: ListingStatus.ACTIVE },
@@ -32,12 +33,15 @@ export class CompaniesService {
         this.prisma.invoice.findFirst({
           where: {
             identityId,
+            // An abandoned subscription checkout is not a debt
+            companyPlanId: null,
             OR: [
               { status: InvoiceStatus.OVERDUE },
               { status: InvoiceStatus.PENDING, dueDate: { lt: new Date() } },
             ],
           },
         }),
+        getCompanySubscriptionState(this.prisma, identityId),
       ]);
 
     const adsRemaining = activeSlots.reduce(
@@ -51,10 +55,16 @@ export class CompaniesService {
         totalViews: viewsAgg._sum.views ?? 0,
       },
       billing: {
-        hasActivePlan: activeSlots.length > 0,
+        // A company's plan is its subscription; ad packages still count
+        // for the personas that buy them
+        hasActivePlan:
+          subscription.status === 'ACTIVE' || activeSlots.length > 0,
         activePlanName: activeSlots[0]?.plan.name ?? null,
         adsRemaining,
         hasOverdueInvoice: !!overdueInvoice,
+        subscriptionStatus: subscription.status,
+        trialDaysLeft:
+          subscription.status === 'TRIAL' ? subscription.daysLeft : null,
       },
     };
   }

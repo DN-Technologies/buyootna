@@ -1,0 +1,44 @@
+// A subscription period a company can buy (الباقات). Unlike individual
+// plans, which sell ad credits, a company pays for time.
+model CompanyPlan {
+  id             String   @id @default(uuid())
+  slug           String   @unique // 'quarterly', 'half-year', 'annual'
+  name           String // 'ثلاث شهور', '6 شهور', 'السنوية'
+  durationMonths Int
+  price          Float
+  features       String[]
+  badge          String? // e.g. 'الأكثر طلبا'
+  sortOrder      Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subscriptions CompanySubscription[]
+  invoices      Invoice[]
+}
+
+enum CompanySubscriptionKind {
+  TRIAL
+  PAID
+}
+
+// One period a company is entitled for: its free trial, or a paid plan.
+// A company is subscribed while any of its rows has endsAt in the future;
+// buying again adds a row that starts where the last one ends.
+model CompanySubscription {
+  id            String                  @id @default(uuid())
+  identityId    String
+  kind          CompanySubscriptionKind
+  companyPlanId String?
+  startsAt      DateTime
+  endsAt        DateTime
+  // The paid invoice that bought it; one period per invoice
+  invoiceId     String?                 @unique
+  createdAt     DateTime                @default(now())
+
+  identity    Identity     @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  companyPlan CompanyPlan? @relation(fields: [companyPlanId], references: [id], onDelete: SetNull)
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([identityId, endsAt])
+}

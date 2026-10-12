@@ -173,7 +173,7 @@ describe('CompanyHomeScreen', () => {
 
     expect(getByTestId('home-banner-plans')).toBeTruthy();
     await fireEvent.press(getByText('استعرض الباقات'));
-    expect(mockPush).toHaveBeenCalledWith('/plans');
+    expect(mockPush).toHaveBeenCalledWith('/company-plans');
   });
 
   it('offers "اضافة خدمة" to a subscribed company without services', async () => {

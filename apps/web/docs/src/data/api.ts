@@ -997,5 +997,52 @@ export const api: DocSection = {
       },
       updatedIn: "feat/add-ad-flow-figma",
     },
+    {
+      id: "api-company-subscriptions",
+      title: {
+        en: "Company subscriptions: plans, status, checkout, trial and gated actions",
+        ar: "اشتراكات الشركات: الباقات والحالة والدفع والفترة التجريبية والإجراءات المقيّدة",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /company-plans lists the active plans (name, durationMonths, price, features, badge); public. GET /company-subscriptions/me returns the active company persona's `{status: TRIAL|ACTIVE|EXPIRED|NONE, currentPlanId, endsAt, daysLeft}` (403 for other personas). POST /payments/subscription-charge `{companyPlanId, appRedirectUrl}` creates a Tap charge priced from the plan row and returns `{checkoutUrl, invoiceId, status}`; company personas only. When Tap confirms the charge (redirect or webhook, whichever arrives first) a paid period is added, starting where the company's cover currently ends. A company gets a 30-day trial once, when an admin approves it. Without a running period these return 403 with `code: SUBSCRIPTION_REQUIRED`: POST /users/profile/services, /users/profile/projects, /users/profile/invoices, POST /company-requests/:id/offers and marking a request responded. POST /company-requests aimed at an unsubscribed company is 400, and GET /users/companies/:id returns `acceptsRequests`. The dashboard's `billing` gains `subscriptionStatus` and `trialDaysLeft`. A notification is created 7 days and 1 day before a company's cover ends.",
+        ar: "يعيد GET /company-plans الباقات النشطة (الاسم، durationMonths، السعر، المزايا، الشارة) وهو عام. ويعيد GET /company-subscriptions/me لحساب الشركة النشط `{status: TRIAL|ACTIVE|EXPIRED|NONE, currentPlanId, endsAt, daysLeft}` (403 لغير الشركات). وينشئ POST /payments/subscription-charge `{companyPlanId, appRedirectUrl}` عملية دفع Tap بسعر الباقة من قاعدة البيانات ويعيد `{checkoutUrl, invoiceId, status}`؛ لحسابات الشركات فقط. وعند تأكيد Tap للعملية (إعادة التوجيه أو الويب هوك، أيهما يصل أولاً) تُضاف فترة مدفوعة تبدأ من نهاية التغطية الحالية للشركة. وتحصل الشركة على فترة تجريبية 30 يوماً مرة واحدة عند اعتمادها من الإدارة. وبدون فترة سارية تعيد هذه المسارات 403 مع `code: SUBSCRIPTION_REQUIRED`: POST /users/profile/services و/users/profile/projects و/users/profile/invoices وPOST /company-requests/:id/offers وتعليم الطلب بأنه تم الرد. وPOST /company-requests الموجّه لشركة غير مشتركة يعيد 400، وGET /users/companies/:id يعيد `acceptsRequests`. ويضاف إلى `billing` في لوحة الشركة `subscriptionStatus` و`trialDaysLeft`. ويُنشأ إشعار قبل انتهاء تغطية الشركة بـ7 أيام وبيوم واحد.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "GET /company-plans returns the three seeded plans in order without a token.",
+          "subscription-charge ignores any client price: the Tap amount equals the plan's price; a non-company persona is 403; an unknown plan is 404.",
+          "Redirect and webhook for the same charge add exactly one period.",
+          "A second purchase starts at the previous endsAt, not today.",
+          "An expired company gets 403 SUBSCRIPTION_REQUIRED on each gated action; an office or individual is never gated.",
+          "Approving a company twice does not grant a second trial.",
+          "An abandoned subscription checkout never shows as an overdue invoice on the dashboard.",
+        ],
+        ar: [
+          "GET /company-plans يعيد الباقات الثلاث بالترتيب بدون توكن.",
+          "subscription-charge يتجاهل أي سعر من العميل: مبلغ Tap يساوي سعر الباقة؛ وغير الشركة 403؛ والباقة غير المعروفة 404.",
+          "إعادة التوجيه والويب هوك للعملية نفسها يضيفان فترة واحدة فقط.",
+          "الشراء الثاني يبدأ من endsAt السابق لا من اليوم.",
+          "الشركة منتهية الاشتراك تحصل على 403 SUBSCRIPTION_REQUIRED في كل إجراء مقيّد؛ والمكتب والفرد لا يُقيَّدان أبداً.",
+          "اعتماد الشركة مرتين لا يمنح فترة تجريبية ثانية.",
+          "عملية اشتراك لم تكتمل لا تظهر كفاتورة متأخرة في لوحة الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company on trial GET /company-subscriptions/me: TRIAL with daysLeft; POST a service: 201.",
+          "Set the company's periods to the past: /me is EXPIRED and POST /users/profile/services is 403 SUBSCRIPTION_REQUIRED.",
+          "Pay a 3-month plan in Tap test mode, then replay the webhook: one PAID period; /me is ACTIVE with that plan.",
+          "Send a private request to the expired company: 400.",
+        ],
+        ar: [
+          "كشركة في الفترة التجريبية اجلب /company-subscriptions/me: TRIAL مع daysLeft؛ وأضف خدمة: 201.",
+          "اجعل فترات الشركة في الماضي: /me يعيد EXPIRED وإضافة خدمة تعيد 403 SUBSCRIPTION_REQUIRED.",
+          "ادفع باقة 3 شهور في وضع اختبار Tap ثم أعد إرسال الويب هوك: فترة PAID واحدة؛ و/me يعيد ACTIVE بتلك الباقة.",
+          "أرسل طلباً خاصاً للشركة المنتهية: 400.",
+        ],
+      },
+      updatedIn: "feat/company-subscriptions",
+    },
   ],
 };

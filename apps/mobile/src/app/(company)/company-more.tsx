@@ -202,7 +202,7 @@ export default function CompanyMoreScreen() {
                   title="الباقات"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/plans')}
+                  onPress={() => router.push('/company-plans' as never)}
                 />
                 <MenuItem
                   icon={MoneyIcon}

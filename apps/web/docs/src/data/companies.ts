@@ -152,5 +152,48 @@ export const companies: DocSection = {
       },
       updatedIn: "feat/docs-platform",
     },
+    {
+      id: "companies-subscription-plans",
+      title: {
+        en: "Companies portal: subscribe to a plan and pay on the web",
+        ar: "بوابة الشركات: الاشتراك في باقة والدفع عبر الموقع",
+      },
+      priority: "P1",
+      story: {
+        en: "After signing in, the companies portal opens /plans: the three company plans, where the company's subscription stands (trial, active with days left, expired) and 'باقتك الحالية' on the current plan. اشترك الان sends the browser to the payment gateway and back to /plans/callback, which reports success or failure. The portal makes the account's company persona the active one first; an account with no company persona sees a message instead of plans. This is where iOS users subscribe.",
+        ar: "بعد تسجيل الدخول تفتح بوابة الشركات صفحة /plans: باقات الشركات الثلاث، وحالة اشتراك الشركة (تجريبي، فعّال مع الأيام المتبقية، منتهٍ) و'باقتك الحالية' على الباقة الحالية. زر اشترك الان ينقل المتصفح إلى بوابة الدفع ثم إلى /plans/callback التي تعرض النجاح أو الفشل. وتجعل البوابة حساب الشركة هو الحساب النشط أولاً؛ والحساب الذي لا يملك حساب شركة يرى رسالة بدل الباقات. وهنا يشترك مستخدمو iOS.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Opening /plans signed out redirects to /auth/login; signing in lands on /plans.",
+          "The page shows the three plans and a status line matching the company's subscription.",
+          "اشترك الان opens the payment gateway; a paid charge returns to /plans/callback?status=success and the plan is then marked current on /plans and in the app.",
+          "A cancelled or failed payment returns to /plans/callback with the failure message and nothing changes.",
+          "The current plan's button is disabled.",
+          "An account without a company persona sees 'الاشتراكات متاحة للشركات فقط'.",
+        ],
+        ar: [
+          "فتح /plans بدون تسجيل دخول يحوّل إلى /auth/login؛ وتسجيل الدخول ينقل إلى /plans.",
+          "الصفحة تعرض الباقات الثلاث وسطر حالة يطابق اشتراك الشركة.",
+          "اشترك الان يفتح بوابة الدفع؛ والدفع الناجح يعود إلى /plans/callback?status=success ثم تظهر الباقة حالية في /plans وفي التطبيق.",
+          "الدفع الملغى أو الفاشل يعود إلى /plans/callback برسالة الفشل ولا يتغير شيء.",
+          "زر الباقة الحالية معطل.",
+          "الحساب الذي لا يملك حساب شركة يرى 'الاشتراكات متاحة للشركات فقط'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as a company, subscribe with a test card: the callback shows success; /plans marks the plan current; the iOS app shows the same.",
+          "Start a payment and cancel it: the callback shows the failure message.",
+          "Sign in with an individual-only account: the companies-only message shows.",
+        ],
+        ar: [
+          "سجّل الدخول كشركة واشترك ببطاقة اختبار: صفحة العودة تعرض النجاح؛ و/plans تميّز الباقة الحالية؛ وتطبيق iOS يعرض الشيء نفسه.",
+          "ابدأ عملية دفع وألغها: صفحة العودة تعرض رسالة الفشل.",
+          "سجّل الدخول بحساب فرد فقط: تظهر رسالة أن الاشتراكات للشركات فقط.",
+        ],
+      },
+      updatedIn: "feat/company-subscriptions",
+    },
   ],
 };

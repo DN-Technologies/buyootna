@@ -1,7 +1,21 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { CompanyServicesService } from '../company-services.service';
+
+import * as subscriptionRules from 'src/features/company-subscriptions/company-subscription.rules';
+// The subscription gate has its own spec; here every company is subscribed
+jest.mock(
+  'src/features/company-subscriptions/company-subscription.rules',
+  () => ({
+    ...jest.requireActual(
+      'src/features/company-subscriptions/company-subscription.rules',
+    ),
+    assertActiveCompanySubscription: jest.fn().mockResolvedValue(undefined),
+    hasActiveCompanySubscription: jest.fn().mockResolvedValue(true),
+    grantTrialIfNew: jest.fn().mockResolvedValue(undefined),
+  }),
+);
 
 describe('CompanyServicesService', () => {
   let service: CompanyServicesService;
@@ -103,6 +117,19 @@ describe('CompanyServicesService', () => {
           data: { specialty: 'مكتب هندسي', services: 'تصميم حدائق' },
         }),
       );
+    });
+
+    it('refuses a company with no active subscription', async () => {
+      jest
+        .mocked(subscriptionRules.assertActiveCompanySubscription)
+        .mockRejectedValueOnce(
+          new ForbiddenException({ code: 'SUBSCRIPTION_REQUIRED' }),
+        );
+
+      await expect(
+        service.create('user-1', { specialty: 'مكتب هندسي', types: ['تصميم'] }),
+      ).rejects.toThrow(ForbiddenException);
+      expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
     it('rejects "اخرى" without a title', async () => {

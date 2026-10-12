@@ -55,4 +55,18 @@ describe('PaymentCallbackScreen', () => {
     expect(mockShowAlert.mock.calls[0][0]).toBe('خطأ');
     expect(okDestination()).toBe('/activity');
   });
+
+  it('confirms a company subscription and returns to the company plans', async () => {
+    mockParams = {
+      status: 'success',
+      invoiceId: 'inv-1',
+      purpose: 'subscription',
+    };
+    await render(<PaymentCallbackScreen />);
+
+    expect(mockShowAlert.mock.calls[0][1]).toBe(
+      'تم الدفع وتفعيل اشتراك شركتك بنجاح!',
+    );
+    expect(okDestination()).toBe('/company-plans');
+  });
 });

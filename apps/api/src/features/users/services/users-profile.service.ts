@@ -12,6 +12,7 @@ import {
 } from '../../../core/validators/name.regex';
 import { StorageService } from 'src/core/storage/storage.service';
 import { CreateProjectDto } from '../../company/dto/create-project.dto';
+import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
 
@@ -209,6 +210,7 @@ export class UsersProfileService {
     if (!identity || !identity.companyData) {
       throw new NotFoundException('الملف الشخصي للشركة غير موجود');
     }
+    await assertActiveCompanySubscription(this.prisma, identity.id);
 
     const project = await this.prisma.companyProject.create({
       data: {

@@ -385,5 +385,58 @@ export const mobileCompany: DocSection = {
       },
       updatedIn: "feat/company-more-edit-profile",
     },
+    {
+      id: "mobile-company-subscription-plans",
+      title: {
+        en: "Company plans: subscription periods, bought in the app on Android only",
+        ar: "باقات الشركات: فترات اشتراك تُشترى من التطبيق في أندرويد فقط",
+      },
+      priority: "P1",
+      story: {
+        en: "الباقات in a company's More menu opens the company plans, not the individual ad packages. Three plans come from the API (ثلاث شهور 35, 6 شهور 60, السنوية 100 دينار كويتي), each listing what a subscription includes; a plan with a badge (الأكثر طلبا) has the orange border and tag, and the plan the company is on shows 'باقتك الحالية' with a grey disabled button. Tapping اشترك الان on Android opens the payment gateway and returns to this screen. On iOS the plans are shown without prices or a subscribe button, with one line saying that subscribing or renewing isn't possible in the app and, while covered, the date the subscription runs until; the app never says where else to subscribe (App Store rules). A company starts on a 30-day free trial. Without a running subscription or trial, adding a service or project, answering a request and issuing an invoice show 'اشترك للمتابعة' with a button to the plans.",
+        ar: "خيار الباقات في قائمة المزيد للشركة يفتح باقات الشركات لا باقات إعلانات الأفراد. تأتي ثلاث باقات من الخادم (ثلاث شهور 35، 6 شهور 60، السنوية 100 دينار كويتي) وكل منها يعرض ما يشمله الاشتراك؛ الباقة التي لها شارة (الأكثر طلبا) لها إطار وشارة برتقاليان، والباقة الحالية للشركة تعرض 'باقتك الحالية' مع زر رمادي معطل. الضغط على اشترك الان في أندرويد يفتح بوابة الدفع ثم يعود إلى هذه الشاشة. في iOS تُعرض الباقات بلا أسعار ولا زر اشتراك، مع سطر واحد يفيد بأنه لا يمكن الاشتراك أو التجديد من داخل التطبيق، وتاريخ انتهاء الاشتراك ما دام سارياً؛ ولا يذكر التطبيق أين يمكن الاشتراك (قواعد متجر التطبيقات). تبدأ الشركة بفترة تجريبية مجانية 30 يوماً. وبدون اشتراك أو فترة تجريبية سارية، إضافة خدمة أو مشروع والرد على طلب وإصدار فاتورة تُظهر 'اشترك للمتابعة' مع زر يفتح الباقات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "More > الباقات for a company opens the company plans screen with the three plans, prices and feature lists from GET /company-plans.",
+          "السنوية has the orange border and the 'الأكثر طلبا' tag.",
+          "On a trial no plan carries 'باقتك الحالية'; after paying, the paid plan carries it and its button is grey and disabled.",
+          "Android: اشترك الان opens the payment page; after a successful payment the app shows the success message and returns to the plans with the plan marked current.",
+          "iOS: no prices and no اشترك الان button; the line 'لا يمكن الاشتراك أو تجديد الباقة من داخل التطبيق.' shows, with 'اشتراكك الحالي سارٍ حتى <date>' while covered. No text mentions a website or browser, and no payment request is made.",
+          "Buying another plan while subscribed adds its period after the current end date.",
+          "With an expired subscription, adding a service, adding a project, answering a request and creating an invoice show 'اشترك للمتابعة'; 'عرض الباقات' opens the plans.",
+          "The company home shows the trial countdown during the trial and the 'استعرض الباقات' card with no subscription; both open the company plans.",
+        ],
+        ar: [
+          "المزيد > الباقات للشركة يفتح شاشة باقات الشركات بالباقات الثلاث وأسعارها ومزاياها من GET /company-plans.",
+          "باقة السنوية لها الإطار البرتقالي وشارة 'الأكثر طلبا'.",
+          "في الفترة التجريبية لا تحمل أي باقة 'باقتك الحالية'؛ وبعد الدفع تحملها الباقة المدفوعة وزرها رمادي معطل.",
+          "أندرويد: اشترك الان يفتح صفحة الدفع؛ وبعد نجاح الدفع تظهر رسالة النجاح ويعود التطبيق إلى الباقات مع تمييز الباقة الحالية.",
+          "iOS: بلا أسعار وبلا زر اشترك الان؛ يظهر السطر 'لا يمكن الاشتراك أو تجديد الباقة من داخل التطبيق.' مع 'اشتراكك الحالي سارٍ حتى <التاريخ>' ما دام الاشتراك سارياً. ولا يذكر أي نص موقعاً أو متصفحاً، ولا يُرسل أي طلب دفع.",
+          "شراء باقة أخرى أثناء الاشتراك يضيف مدتها بعد تاريخ الانتهاء الحالي.",
+          "مع اشتراك منتهٍ، إضافة خدمة وإضافة مشروع والرد على طلب وإنشاء فاتورة تعرض 'اشترك للمتابعة'؛ و'عرض الباقات' يفتح الباقات.",
+          "رئيسية الشركة تعرض عدّاد الفترة التجريبية خلالها وبطاقة 'استعرض الباقات' بلا اشتراك؛ وكلاهما يفتح باقات الشركات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company on Android, subscribe to ثلاث شهور with a test card: back on the plans, ثلاث شهور shows 'باقتك الحالية'.",
+          "As the same company, subscribe to السنوية: the tag moves to السنوية and the end date is the old end date plus 12 months.",
+          "On an iPhone open الباقات: plan names and features only, the cannot-subscribe-in-app line, and the current plan tag for a subscribed company.",
+          "With an expired company, try إضافة خدمة: 'اشترك للمتابعة' shows; 'عرض الباقات' opens the plans.",
+        ],
+        ar: [
+          "كشركة على أندرويد، اشترك في ثلاث شهور ببطاقة اختبار: عند العودة تحمل ثلاث شهور 'باقتك الحالية'.",
+          "بالشركة نفسها اشترك في السنوية: تنتقل الشارة إلى السنوية وتاريخ الانتهاء هو القديم زائد 12 شهراً.",
+          "على آيفون افتح الباقات: أسماء الباقات ومزاياها فقط، وسطر تعذر الاشتراك من التطبيق، وشارة الباقة الحالية للشركة المشتركة.",
+          "بشركة منتهية الاشتراك جرّب إضافة خدمة: تظهر 'اشترك للمتابعة'؛ و'عرض الباقات' يفتح الباقات.",
+        ],
+      },
+      figmaFrameUrls: [
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=4410-170162", label: { en: "Plans", ar: "الباقات" } },
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=8601-131497", label: { en: "Current plan", ar: "الباقة الحالية" } },
+      ],
+      updatedIn: "feat/company-subscriptions",
+    },
   ],
 };

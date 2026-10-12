@@ -41,6 +41,20 @@ const baseRequest = {
   offers: [],
 };
 
+import * as subscriptionRules from 'src/features/company-subscriptions/company-subscription.rules';
+// The subscription gate has its own spec; here every company is subscribed
+jest.mock(
+  'src/features/company-subscriptions/company-subscription.rules',
+  () => ({
+    ...jest.requireActual(
+      'src/features/company-subscriptions/company-subscription.rules',
+    ),
+    assertActiveCompanySubscription: jest.fn().mockResolvedValue(undefined),
+    hasActiveCompanySubscription: jest.fn().mockResolvedValue(true),
+    grantTrialIfNew: jest.fn().mockResolvedValue(undefined),
+  }),
+);
+
 describe('CompanyRequestsService', () => {
   let service: CompanyRequestsService;
   let prisma: {
@@ -293,6 +307,17 @@ describe('CompanyRequestsService', () => {
         }),
       );
       expect(result.id).toBe('req-1');
+    });
+
+    it('refuses a private request to a company with no active subscription', async () => {
+      jest
+        .mocked(subscriptionRules.hasActiveCompanySubscription)
+        .mockResolvedValueOnce(false);
+
+      await expect(
+        service.create('client-1', { ...dto, targetIdentityId: 'company-1' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.companyRequest.create).not.toHaveBeenCalled();
     });
 
     it('creates a public request when no target identity is given', async () => {

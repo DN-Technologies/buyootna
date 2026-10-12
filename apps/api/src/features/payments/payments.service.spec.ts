@@ -9,6 +9,7 @@ import { PrismaService } from '../../core/prisma/prisma.service';
 import { FeatureCheckoutService } from './services/feature-checkout.service';
 import { PaymentFulfillmentService } from './services/payment-fulfillment.service';
 import { PlanCheckoutService } from './services/plan-checkout.service';
+import { SubscriptionCheckoutService } from './services/subscription-checkout.service';
 import { TapGatewayService } from './services/tap-gateway.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -26,6 +27,7 @@ describe('PaymentsService', () => {
     userPlanSlot: { create: jest.fn() },
     user: { update: jest.fn() },
     property: { findUnique: jest.fn(), update: jest.fn() },
+    companySubscription: { findFirst: jest.fn(), create: jest.fn() },
   };
 
   const prisma = {
@@ -34,6 +36,8 @@ describe('PaymentsService', () => {
     planPackage: { findFirst: jest.fn() },
     featurePackage: { findMany: jest.fn(), findFirst: jest.fn() },
     property: { findUnique: jest.fn() },
+    identity: { findUnique: jest.fn() },
+    companyPlan: { findFirst: jest.fn(), findUnique: jest.fn() },
     invoice: { create: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn() },
     $transaction: jest.fn((fn: (t: typeof tx) => Promise<unknown>) => fn(tx)),
   };
@@ -100,6 +104,7 @@ describe('PaymentsService', () => {
         PaymentFulfillmentService,
         PlanCheckoutService,
         FeatureCheckoutService,
+        SubscriptionCheckoutService,
         { provide: PrismaService, useValue: prisma },
       ],
     }).compile();
@@ -619,6 +624,147 @@ describe('PaymentsService', () => {
         'exp://192.168.1.2:8081/--/payment-callback?x=1&status=failed&invoiceId=inv-1',
       );
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('company subscription', () => {
+    const annual = {
+      id: 'plan-annual',
+      name: 'السنوية',
+      durationMonths: 12,
+      price: 100,
+      isActive: true,
+    };
+    const subscribe = () =>
+      service.createSubscriptionCharge(
+        'user-1',
+        'company-1',
+        'plan-annual',
+        'https://companies.example.test/plans/callback',
+      );
+
+    beforeEach(() => {
+      prisma.identity.findUnique.mockResolvedValue({ type: 'COMPANY' });
+      prisma.companyPlan.findFirst.mockResolvedValue(annual);
+      prisma.companyPlan.findUnique.mockResolvedValue(annual);
+      prisma.invoice.create.mockResolvedValue({
+        id: 'inv-sub',
+        invoiceNo: 'INV-SUB',
+      });
+    });
+
+    it('charges the plan price from the DB and records the plan on the invoice', async () => {
+      tapCreatesCharge();
+
+      const result = await subscribe();
+
+      expect(result.checkoutUrl).toBe('https://tap/checkout');
+      expect(tapBody().amount).toBe(100);
+      expect(tapBody().redirect.url).toContain('purpose=subscription');
+      expect(prisma.invoice.create).toHaveBeenCalledWith({
+        data: containing({
+          amount: 100,
+          companyPlanId: 'plan-annual',
+          identityId: 'company-1',
+          status: 'PENDING',
+        }),
+      });
+    });
+
+    it('refuses a persona that is not a company', async () => {
+      prisma.identity.findUnique.mockResolvedValue({ type: 'INDIVIDUAL' });
+
+      await expect(subscribe()).rejects.toBeInstanceOf(ForbiddenException);
+      expect(prisma.invoice.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses an unknown or inactive plan', async () => {
+      prisma.companyPlan.findFirst.mockResolvedValue(null);
+
+      await expect(subscribe()).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    const paidInvoice = {
+      id: 'inv-sub',
+      invoiceNo: 'INV-SUB',
+      status: 'PENDING',
+      identityId: 'company-1',
+      companyPlanId: 'plan-annual',
+      planPackage: null,
+    };
+    const webhook = () =>
+      service.handleWebhook({
+        id: 'chg_1',
+        status: 'CAPTURED',
+        reference: { transaction: 'inv-sub' },
+      });
+    const createdPeriod = () =>
+      (
+        tx.companySubscription.create.mock.calls[0] as [
+          { data: { startsAt: Date; endsAt: Date; kind: string } },
+        ]
+      )[0].data;
+
+    it('starts the paid period now when the company has no cover left', async () => {
+      tapReportsCharge('CAPTURED', 'inv-sub');
+      prisma.invoice.findUnique.mockResolvedValue(paidInvoice);
+      tx.invoice.updateMany.mockResolvedValue({ count: 1 });
+      tx.companySubscription.findFirst.mockResolvedValue(null);
+
+      await webhook();
+
+      const period = createdPeriod();
+      expect(period.kind).toBe('PAID');
+      expect(Math.abs(period.startsAt.getTime() - Date.now())).toBeLessThan(
+        5000,
+      );
+      expect(period.endsAt.getFullYear()).toBe(
+        period.startsAt.getFullYear() + 1,
+      );
+    });
+
+    it('adds the period after the current cover instead of replacing it', async () => {
+      const coveredUntil = new Date(Date.now() + 20 * DAY_MS);
+      tapReportsCharge('CAPTURED', 'inv-sub');
+      prisma.invoice.findUnique.mockResolvedValue(paidInvoice);
+      tx.invoice.updateMany.mockResolvedValue({ count: 1 });
+      tx.companySubscription.findFirst.mockResolvedValue({
+        endsAt: coveredUntil,
+      });
+
+      await webhook();
+
+      expect(createdPeriod().startsAt).toEqual(coveredUntil);
+    });
+
+    it('grants nothing when the redirect already fulfilled the invoice', async () => {
+      tapReportsCharge('CAPTURED', 'inv-sub');
+      prisma.invoice.findUnique.mockResolvedValue(paidInvoice);
+      // The other call flipped the invoice to PAID first
+      tx.invoice.updateMany.mockResolvedValue({ count: 0 });
+
+      await webhook();
+
+      expect(tx.companySubscription.create).not.toHaveBeenCalled();
+    });
+
+    it('sends the app back with the subscription purpose', async () => {
+      tapReportsCharge('CAPTURED', 'inv-sub');
+      prisma.invoice.findUnique.mockResolvedValue({
+        ...paidInvoice,
+        status: 'PAID',
+      });
+
+      const url = await service.verifyChargeAndRedirect(
+        'chg_1',
+        'inv-sub',
+        'buyootna://payment-callback',
+        'subscription',
+      );
+
+      expect(url).toBe(
+        'buyootna://payment-callback?status=success&invoiceId=inv-sub&purpose=subscription',
+      );
     });
   });
 });
