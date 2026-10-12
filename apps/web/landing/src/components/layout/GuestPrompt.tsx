@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
+import SignupLink from '@/components/auth/SignupLink'
+import { LOGIN_PATH } from '@/lib/siteLinks'
 
 interface GuestPromptProps {
   icon: ReactNode
@@ -27,12 +28,9 @@ export default function GuestPrompt({ icon, title, text }: GuestPromptProps) {
           </div>
         </div>
         <div className="flex w-full gap-2">
-          <Link
-            href={SIGNUP_PATH}
-            className="flex h-12 flex-1 items-center justify-center rounded-3xl bg-brand text-sm font-bold text-white transition hover:bg-brand-dark"
-          >
+          <SignupLink className="flex h-12 flex-1 items-center justify-center rounded-3xl bg-brand text-sm font-bold text-white transition hover:bg-brand-dark">
             انشاء حساب
-          </Link>
+          </SignupLink>
           <Link
             href={LOGIN_PATH}
             className="flex h-12 flex-1 items-center justify-center rounded-3xl border border-brand text-sm font-bold text-brand transition hover:bg-surface"

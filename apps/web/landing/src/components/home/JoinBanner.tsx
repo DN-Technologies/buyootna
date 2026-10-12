@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
-import { LOGIN_PATH, SIGNUP_PATH } from '@/lib/siteLinks'
+import SignupLink from '@/components/auth/SignupLink'
+import { LOGIN_PATH } from '@/lib/siteLinks'
 
 /** "انضم إلى بيوتنا وابدأ تجربتك": the closing call to sign up. */
 export default function JoinBanner() {
@@ -18,12 +19,9 @@ export default function JoinBanner() {
           </p>
         </div>
         <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            href={SIGNUP_PATH}
-            className="flex h-12 items-center rounded-full border border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface"
-          >
+          <SignupLink className="flex h-12 items-center rounded-full border border-[#E2E8F0] bg-white px-8 text-sm font-bold text-ink transition hover:bg-surface">
             ابدأ تجربتك الان
-          </Link>
+          </SignupLink>
           <Link
             href={LOGIN_PATH}
             className="flex h-12 items-center rounded-full border-[1.2px] border-white px-8 text-[15px] font-bold text-white transition hover:bg-white/10"

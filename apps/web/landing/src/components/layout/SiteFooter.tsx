@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import SignupLink from '@/components/auth/SignupLink'
 import {
   CONTACT,
   LOGIN_PATH,
@@ -116,12 +117,18 @@ export default function SiteFooter() {
                 <ul className="flex flex-col gap-2.5">
                   {column.links.map((link) => (
                     <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="block py-1 text-sm font-medium text-white/45 transition hover:text-white"
-                      >
-                        {link.label}
-                      </Link>
+                      {link.href === SIGNUP_PATH ? (
+                        <SignupLink className="block py-1 text-sm font-medium text-white/45 transition hover:text-white">
+                          {link.label}
+                        </SignupLink>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="block py-1 text-sm font-medium text-white/45 transition hover:text-white"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
