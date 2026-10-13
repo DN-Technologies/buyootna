@@ -29,7 +29,11 @@ import {
 import FavoriteCompanySkeleton from '@/shared/components/skeletons/FavoriteCompanySkeleton';
 import FavoritePropertySkeleton from '@/shared/components/skeletons/FavoritePropertySkeleton';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
-import { formatTimeAgo, shareProperty } from '@/shared/utils/helpers/property';
+import {
+  formatTimeAgo,
+  getArabicCategoryLabel,
+  shareProperty,
+} from '@/shared/utils/helpers/property';
 import { openChatWith } from '@/shared/utils/openChat';
 
 // Each tab's placeholders look like its own cards
@@ -139,7 +143,8 @@ export default function FavoritesScreen() {
               <FavoritePropertyCard
                 id={item.id}
                 price={item.price}
-                categoryLabel={item.category || 'عمارة'}
+                // The API sends the category's code (VILLA): shown in Arabic
+                categoryLabel={getArabicCategoryLabel(item.category) || 'عقار'}
                 location={item.location || 'شمال غرب صليبيخات'}
                 area={item.area || 200}
                 propertyIncome={item.propertyIncome ?? 0}

@@ -72,6 +72,12 @@ export const getArabicCategoryLabel = (cat?: string | null): string => {
       return 'عقار تجاري';
     case 'INVESTMENT':
       return 'عقار استثماري';
+    case 'INDUSTRIAL':
+      return 'عقار صناعي';
+    case 'COASTAL':
+      return 'عقار ساحلي';
+    case 'PRIVATE':
+      return 'سكن خاص';
     default:
       return cat;
   }

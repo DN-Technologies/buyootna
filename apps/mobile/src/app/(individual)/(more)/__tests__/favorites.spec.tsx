@@ -218,6 +218,25 @@ describe('FavoritesScreen', () => {
     expect(getByText('مكاتب')).toBeTruthy();
   });
 
+  // QA: the badge on a favourite ad said "VILLA" / "apartment", the API's
+  // own code for the category, in an Arabic app
+  it('shows the property type badge in Arabic', async () => {
+    (favoritesService.getFavorites as jest.Mock).mockResolvedValue({
+      data: [
+        { ...mockPropertiesData[0], id: 'prop-villa', category: 'VILLA' },
+        { ...mockPropertiesData[0], id: 'prop-flat', category: 'APARTMENT' },
+        { ...mockPropertiesData[0], id: 'prop-coast', category: 'COASTAL' },
+      ],
+      meta: { total: 3, page: 1, limit: 10, hasNextPage: false },
+    });
+    const { findByText, getByText, queryByText } = await renderComponent();
+
+    expect(await findByText('فيلا')).toBeTruthy();
+    expect(getByText('شقة')).toBeTruthy();
+    expect(getByText('عقار ساحلي')).toBeTruthy();
+    expect(queryByText(/villa|apartment|coastal/i)).toBeNull();
+  });
+
   it('switches between tabs and displays relevant subheader and items', async () => {
     const { getByText, getAllByText } = await renderComponent();
 

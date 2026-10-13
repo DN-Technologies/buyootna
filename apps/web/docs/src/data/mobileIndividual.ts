@@ -29,12 +29,14 @@ export const mobileIndividual: DocSection = {
           'Each tab lists exactly what the persona saved, with pagination and pull-to-refresh.',
           "'مسح الكل' empties only the current tab; 'تراجع' within the toast restores the same items.",
           "Ads from suspended or blocked owners don't appear in Favorites.",
+          "The type badge on a favourite ad is in Arabic for every category (فيلا, شقة, بيت, عمارة, أرض, مكتب, شاليه, مزرعة, عقار سكني / تجاري / استثماري / صناعي / ساحلي, سكن خاص), never the English code (VILLA, apartment).",
         ],
         ar: [
           'تبديل القلب يتحدّث فوراً ويطابق الخادم بعد التحديث، في بطاقات الإعلانات والشركات والمكاتب.',
           'كل تبويب يعرض بالضبط ما حفظته الهوية، مع التصفح والسحب للتحديث.',
           "'مسح الكل' يفرغ التبويب الحالي فقط؛ و'تراجع' خلال الإشعار يعيد نفس العناصر.",
           'إعلانات المالكين المعلّقين أو المحظورين لا تظهر في المفضلة.',
+          "شارة النوع على الإعلان المفضل بالعربية لكل فئة (فيلا، شقة، بيت، عمارة، أرض، مكتب، شاليه، مزرعة، عقار سكني / تجاري / استثماري / صناعي / ساحلي، سكن خاص)، وليست الرمز الإنجليزي (VILLA، apartment).",
         ],
       },
       testScenarios: {
@@ -51,7 +53,7 @@ export const mobileIndividual: DocSection = {
           'احفظ أكثر من 15 عقاراً — القائمة تتصفح دون تكرار.',
         ],
       },
-      updatedIn: 'feat/docs-platform',
+      updatedIn: 'fix/favorites-category-arabic',
     },
     {
       id: 'mobile-home-feed-actions',
