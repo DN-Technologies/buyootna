@@ -9,6 +9,7 @@ import {
   documentStyle,
   formatDuration,
   formatFileSize,
+  readableFileName,
 } from '@/shared/utils/chatAttachments';
 import { cachedImageSource, stableMediaKey } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
@@ -177,7 +178,7 @@ export default function AttachmentMessageBubble({
                     onLight ? 'text-[#111111]' : 'text-white'
                   }`}
                 >
-                  {f.name}
+                  {readableFileName(f.name)}
                 </Text>
                 {!!f.size && (
                   <Text

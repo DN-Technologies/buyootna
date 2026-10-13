@@ -103,6 +103,24 @@ describe('ChatHeader status', () => {
   });
 });
 
+// QA (iOS): the first and last letters of a message were cut at the edges
+// of its bubble, and the time beside it lost its top
+describe('MessageBubble text fits its bubble', () => {
+  it.each([[true], [false]])('has no letter spacing and a tall enough line (mine: %s)', async (isMine) => {
+    const { getByTestId } = await render(
+      <MessageBubble text="للبيع البيت؟" isMine={isMine} timestamp="10:20 م" />,
+    );
+    const text = getByTestId('message-bubble-text');
+
+    expect(text.props.style).toEqual({ writingDirection: 'rtl' });
+    expect(text.props.style.letterSpacing).toBeUndefined();
+    expect(String(text.props.className)).toContain('leading-[24px]');
+    expect(String(getByTestId('message-bubble-time').props.className)).toContain(
+      'leading-[20px]',
+    );
+  });
+});
+
 describe('MessageBubble colours', () => {
   it('mine is navy with white text, theirs light with dark text', async () => {
     const mine = await render(

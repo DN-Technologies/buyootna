@@ -53,11 +53,16 @@ export default function MessageBubble({
         style={BUBBLE_SHADOW}
       >
         {quote}
+        {/* No letter spacing: with a negative one iOS sized the bubble
+            narrower than the Arabic text it drew, and the first and last
+            letters were cut at the bubble's edges (QA). The line is tall
+            enough for Cairo's marks above and below. */}
         <Text
-          className={`font-cairo-medium text-[14px] leading-[21px] ${
+          testID="message-bubble-text"
+          className={`font-cairo-medium text-[14px] leading-[24px] ${
             isMine ? 'text-white' : 'text-[#111111]'
           }`}
-          style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+          style={{ writingDirection: 'rtl' }}
         >
           {text}
         </Text>
@@ -79,7 +84,9 @@ const Meta = ({
   <View className="items-start gap-1">
     <MessageTicks status={status} />
     <Text
-      className="font-cairo text-[13px] leading-[14px] text-[#6B6A6A]"
+      testID="message-bubble-time"
+      // A 14px line cut the top of the Cairo digits on iOS
+      className="font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
       style={{ letterSpacing: 0.26 }}
     >
       {timestamp}
