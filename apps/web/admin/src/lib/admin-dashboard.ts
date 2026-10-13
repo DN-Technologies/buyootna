@@ -23,7 +23,9 @@ export interface AdminDashboardRevenueMonth {
 }
 
 export interface AdminDashboardRecentRegistration {
+  // The profile this row is about; `userId` is the account it belongs to
   id: string;
+  userId?: string;
   name: string;
   email: string;
   accountType: 'فرد' | 'شركة' | 'مكتب عقاري';

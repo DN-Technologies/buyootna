@@ -105,12 +105,14 @@ export const admin: DocSection = {
           "RevenueChart and UsersDonutChart update when the underlying data changes (new registration, new payment) within an expected refresh window.",
           "RecentRegistrationsTable shows the most recent signups in correct order, matching /users sorted by creation date.",
           "VerificationRequestsCard counts match the actual number of pending verification requests.",
+          "أحدث التسجيلات lists the newest profiles, not only new accounts: a company or office added from the app to an existing individual account appears there at once, named as the company or office and typed شركة / مكتب عقاري, with the time it was added.",
         ],
         ar: [
           "مجاميع MetricsGrid (مثل عدد المستخدمين) تطابق ما يظهر بشكل مستقل في جدول /users لنفس الفترة.",
           "RevenueChart وUsersDonutChart يتحدثان عند تغيّر البيانات الأساسية (تسجيل جديد، دفعة جديدة) ضمن نافذة تحديث معقولة.",
           "RecentRegistrationsTable يعرض أحدث التسجيلات بالترتيب الصحيح، مطابقاً لـ /users مرتبة حسب تاريخ الإنشاء.",
           "أعداد VerificationRequestsCard تطابق العدد الفعلي لطلبات التوثيق المعلَّقة.",
+          "قائمة أحدث التسجيلات تعرض أحدث الملفات لا الحسابات الجديدة فقط: الشركة أو المكتب المضاف من التطبيق إلى حساب فرد قائم يظهر فيها فوراً، باسم الشركة أو المكتب ونوع شركة / مكتب عقاري، وبوقت إضافته.",
         ],
       },
       testScenarios: {
@@ -118,14 +120,16 @@ export const admin: DocSection = {
           "Register a new test user, then confirm they appear in RecentRegistrationsTable and the relevant MetricsGrid count increments.",
           "Cross-check a date range on RevenueChart against invoice data for the same range.",
           "With zero data (fresh/empty environment), confirm every chart/card shows a sane empty/zero state rather than an error or NaN.",
+          "From an individual account created earlier, add a company in the app, then open the admin home — the company is the first row of أحدث التسجيلات.",
         ],
         ar: [
           "سجّل مستخدم اختبار جديداً، ثم تأكد من ظهوره في RecentRegistrationsTable وزيادة العدّاد المرتبط في MetricsGrid.",
           "قارن نطاق تاريخ في RevenueChart ببيانات الفواتير لنفس النطاق.",
           "في بيئة فارغة تماماً (بلا بيانات)، تأكد أن كل رسم/بطاقة تعرض حالة فارغة/صفرية منطقية، لا خطأ أو قيمة NaN.",
+          "من حساب فرد أُنشئ سابقاً أضف شركة من التطبيق ثم افتح رئيسية الإدارة — الشركة هي أول صف في أحدث التسجيلات.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/added-company-admin-and-switch",
     },
     {
       id: "admin-users-table",
@@ -144,12 +148,14 @@ export const admin: DocSection = {
           "Search narrows results by name/email/phone as expected, combined correctly with the active role tab.",
           "Pagination controls move through the full result set without skipping or duplicating rows across pages.",
           "updateUserStatus reflects immediately in the table (and ideally on that user's own next login/session), and deleteUser removes the user everywhere (their listings, chats, etc. handled per business rule, not left dangling).",
+          "With the default order (newest first) the list is ordered by each account's newest profile, so an account that just added a company or office moves to the top of its tab; sorting by name is unchanged.",
         ],
         ar: [
           "التبديل بين تبويبات الكل/فرد/مكتب عقاري/شركة يفلتر الجدول للحسابات التي هي، أو أضافت، تلك الهوية (الفرد الذي أضاف شركة لاحقاً يظهر أيضاً تحت شركة بنوع شركة وحالة الاعتماد)، مع مجاميع إجمالية صحيحة.",
           "البحث يُضيّق النتائج بالاسم/البريد الإلكتروني/الهاتف كما هو متوقع، ويُدمج بشكل صحيح مع تبويب الدور النشط.",
           "عناصر التحكم في ترقيم الصفحات تتنقل عبر كامل مجموعة النتائج دون تخطي أو تكرار صفوف بين الصفحات.",
           "updateUserStatus ينعكس فوراً في الجدول (ومن الناحية المثالية في جلسة/دخول ذلك المستخدم التالي)، وdeleteUser يحذف المستخدم من كل مكان (إعلاناته، محادثاته، إلخ تُعالَج حسب قاعدة العمل المحددة، لا أن تُترك معلَّقة).",
+          "بالترتيب الافتراضي (الأحدث أولاً) تُرتَّب القائمة حسب أحدث ملف في كل حساب، فالحساب الذي أضاف شركة أو مكتباً للتو ينتقل إلى أعلى تبويبه؛ والترتيب بالاسم لم يتغير.",
         ],
       },
       testScenarios: {
@@ -160,6 +166,7 @@ export const admin: DocSection = {
           "Delete a test user who has active listings/favorites/chats and verify the app doesn't crash for the other party in those relationships (e.g. a chat partner).",
           "From an individual account in the app add a company (إضافة هوية شركة), then in admin open the 'company' tab — the account is listed as شركة with status قيد الانتظار, and it is also in verifications.",
           "Page through a list of 50+ users and confirm no row appears twice or is skipped across page boundaries.",
+          "Add a company to an older individual account, open المستخدمون → شركات — that account is the first row, shown under the company's name.",
         ],
         ar: [
           "ابحث عن مستخدم معروف بجزء من الاسم وبالبريد الإلكتروني الكامل، وتأكد أن كلا البحثين يجد نفس السجل.",
@@ -168,9 +175,10 @@ export const admin: DocSection = {
           "احذف مستخدم اختبار لديه إعلانات/مفضلة/محادثات نشطة وتحقق أن التطبيق لا يتعطل للطرف الآخر في تلك العلاقات (مثل شريك المحادثة).",
           "من حساب فردي في التطبيق أضف شركة (إضافة هوية شركة)، ثم افتح تبويب 'شركة' في لوحة المشرف — يظهر الحساب كـ شركة بحالة قيد الانتظار، ويظهر أيضاً في طلبات الاعتماد.",
           "تصفّح قائمة تضم أكثر من 50 مستخدماً وتأكد أن أي صف لا يظهر مرتين أو يُتخطى بين الصفحات.",
+          "أضف شركة إلى حساب فرد قديم وافتح المستخدمون ← شركات — ذلك الحساب أول صف، باسم الشركة.",
         ],
       },
-      updatedIn: "fix/admin-users-company-persona",
+      updatedIn: "fix/added-company-admin-and-switch",
     },
     {
       id: "admin-user-detail-tabs",

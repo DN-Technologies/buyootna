@@ -101,11 +101,19 @@ export class AdminDashboardService {
       this.prisma.user.count({
         where: { ...hasAccountType(Role.OFFICE), isAdmin: false },
       }),
-      this.prisma.user.findMany({
-        where: { isAdmin: false },
+      // The newest profiles, not the newest accounts: a company or office
+      // added to an existing account is a registration too, and by account
+      // it never showed here (QA: "missing from the admin dashboard")
+      this.prisma.identity.findMany({
+        where: { user: { isAdmin: false } },
         orderBy: { createdAt: 'desc' },
         take: 6,
-        include: { activePlan: true },
+        include: {
+          individualData: { select: { name: true } },
+          companyData: { select: { name: true } },
+          officeData: { select: { name: true } },
+          user: { include: { activePlan: true } },
+        },
       }),
       this.prisma.companyIdentityData.findMany({
         where: { status: ApprovalStatus.PENDING },
@@ -169,18 +177,28 @@ export class AdminDashboardService {
       },
     );
 
-    const recentRegistrations = recentUsers.map((user) => {
+    const recentRegistrations = recentUsers.map((profile) => {
+      const { user } = profile;
       let accountType: 'فرد' | 'شركة' | 'مكتب عقاري' = 'فرد';
-      if (user.role === Role.COMPANY) accountType = 'شركة';
-      if (user.role === Role.OFFICE) accountType = 'مكتب عقاري';
+      if (profile.type === 'COMPANY') accountType = 'شركة';
+      if (profile.type === 'OFFICE') accountType = 'مكتب عقاري';
 
       return {
-        id: user.id,
-        name: user.name || user.email || user.phone || 'بدون اسم',
+        // One row per profile; `userId` is the account it belongs to
+        id: profile.id,
+        userId: user.id,
+        name:
+          profile.companyData?.name ||
+          profile.officeData?.name ||
+          profile.individualData?.name ||
+          user.name ||
+          user.email ||
+          user.phone ||
+          'بدون اسم',
         email: user.email || user.phone || '—',
         accountType,
         planName: user.activePlan?.name ?? null,
-        createdAt: user.createdAt,
+        createdAt: profile.createdAt,
       };
     });
 
