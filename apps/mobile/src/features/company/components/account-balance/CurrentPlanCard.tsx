@@ -88,11 +88,15 @@ export default function CurrentPlanCard({
           >
             <Text className="font-cairo text-xs text-[#9C1E28]">منتهية</Text>
           </View>
-        ) : (
-          <Text className="font-cairo-bold text-lg text-[#15304D]">
+        ) : // No prices where the app can't sell (iOS)
+        canPurchase ? (
+          <Text
+            testID="balance-plan-price"
+            className="font-cairo-bold text-lg text-[#15304D]"
+          >
             {plan.price} د.ك
           </Text>
-        )}
+        ) : null}
       </View>
 
       {expired ? (

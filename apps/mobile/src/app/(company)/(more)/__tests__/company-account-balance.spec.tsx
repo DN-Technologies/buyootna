@@ -216,6 +216,24 @@ describe('CompanyAccountBalanceScreen', () => {
     expect(mockCharge).toHaveBeenCalledWith('p3', 'buyootna://payment-callback');
   });
 
+  it('with an active plan on iOS shows the plan without its price', async () => {
+    setPlatform('ios');
+    mockMine.mockResolvedValue({
+      status: 'ACTIVE',
+      currentPlanId: 'p3',
+      plan: quarterly,
+      endsAt: '2027-07-12T09:00:00Z',
+      daysLeft: 80,
+    });
+
+    const { getByText, queryByTestId, queryByText } =
+      await renderScreen('balance-plan-card');
+
+    expect(getByText('الباقة الحالية')).toBeTruthy();
+    expect(queryByTestId('balance-plan-price')).toBeNull();
+    expect(queryByText(/د\.ك/)).toBeNull();
+  });
+
   it('with an expired plan on iOS shows no renew button and no purchase wording', async () => {
     setPlatform('ios');
     mockMine.mockResolvedValue(expired);
