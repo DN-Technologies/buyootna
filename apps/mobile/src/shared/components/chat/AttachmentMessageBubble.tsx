@@ -154,7 +154,8 @@ export default function AttachmentMessageBubble({
               key={`${stableMediaKey(f.uri)}-${i}`}
               testID={`attachment-file-${i}`}
               activeOpacity={0.8}
-              disabled={pending}
+              // Never disabled: while it uploads, the sender opens the copy
+              // on their own phone (QA: a sent file could not be opened)
               onPress={() => onPressFile(i)}
               className={`mt-1 flex-row items-center gap-2.5 rounded-md px-2.5 py-2 ${
                 onLight ? 'bg-white' : 'bg-white/10'
@@ -188,8 +189,11 @@ export default function AttachmentMessageBubble({
                   </Text>
                 )}
               </View>
-              {!pending && (
+              {/* Only on a file that was received: the sender already has
+                  theirs (QA: their own file showed a download icon) */}
+              {!pending && !isMine && (
                 <Feather
+                  testID={`attachment-file-download-${i}`}
                   name="download"
                   size={16}
                   color={onLight ? '#15304D' : '#FFFFFF'}
