@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as ExpoAudio from 'expo-audio';
 
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 
 jest.mock('@/shared/utils/chatAttachments', () => ({
   ...jest.requireActual('@/shared/utils/chatAttachments'),
@@ -151,5 +152,10 @@ describe('ChatInputBar — voice notes', () => {
     });
     expect(recorder.record).not.toHaveBeenCalled();
     expect(screen.queryByTestId('voice-recording-row')).toBeNull();
+    // ...and says so, with a way to the settings
+    const alert = useAlertStore.getState();
+    expect(alert.visible).toBe(true);
+    expect(alert.message).toContain('الميكروفون');
+    expect(alert.buttons[0].text).toBe('فتح الإعدادات');
   });
 });

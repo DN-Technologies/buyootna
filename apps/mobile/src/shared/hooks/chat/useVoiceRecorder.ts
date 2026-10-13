@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { LocalAttachment } from '@/shared/api/chat.service';
 import { showAlert } from '@/shared/utils/alert';
 import { VOICE_MAX_MS } from '@/shared/utils/chatAttachments';
+import { showPermissionDenied } from '@/shared/utils/permissionDenied';
 
 // Shorter than this is a slip of the finger, not a message
 const MIN_VOICE_MS = 1000;
@@ -62,10 +63,7 @@ export function useVoiceRecorder(onRecorded: (voice: LocalAttachment) => void) {
     try {
       const { granted } = await requestRecordingPermissionsAsync();
       if (!granted) {
-        showAlert(
-          'الإذن مطلوب',
-          'يرجى السماح باستخدام الميكروفون من الإعدادات لتسجيل رسالة صوتية.',
-        );
+        showPermissionDenied('microphone');
         return;
       }
       await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
