@@ -112,6 +112,19 @@ export async function pickVideo(): Promise<LocalAttachment[] | null> {
   ];
 }
 
+/**
+ * "Buyootna QA.pdf", not "Buyootna%20QA.pdf": the iOS document picker can
+ * hand names over still URL-encoded, and they were shown and sent that way.
+ */
+export function readableFileName(name: string): string {
+  if (!/%[0-9A-Fa-f]{2}/.test(name)) return name;
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+}
+
 /** Picks PDF / Word / Excel documents. */
 export async function pickDocuments(): Promise<LocalAttachment[] | null> {
   const result = await DocumentPicker.getDocumentAsync({
@@ -122,7 +135,7 @@ export async function pickDocuments(): Promise<LocalAttachment[] | null> {
   if (result.canceled) return null;
   return result.assets.map((a) => ({
     uri: a.uri,
-    name: a.name,
+    name: readableFileName(a.name),
     mimeType: a.mimeType || 'application/octet-stream',
     size: a.size,
     kind: 'FILE',

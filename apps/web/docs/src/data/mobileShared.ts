@@ -1901,5 +1901,42 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/chat-message-ticks",
     },
+    {
+      id: "mobile-chat-bubble-text-fits",
+      title: {
+        en: "Chat message text is fully visible inside its bubble",
+        ar: "نص رسالة المحادثة ظاهر كاملاً داخل فقاعته",
+      },
+      priority: "P1",
+      story: {
+        en: "QA (iPhone): the first and last letters of a message were cut at the edges of its bubble ('للبيع البيت؟' lost its first letter), and the time beside the bubble lost its top. The message text had a negative letter spacing, which made iOS size the bubble narrower than the Arabic text it drew; the time had a line shorter than the font needs. The text now has no letter spacing and a taller line, and the time a full line. A sent document also shows its readable name ('Buyootna QA.pdf'), not the URL-encoded one the iOS picker can return ('Buyootna%20QA.pdf').",
+        ar: "بلاغ QA (iPhone): كان أول حرف وآخر حرف من الرسالة يُقطعان عند حافتي الفقاعة ('للبيع البيت؟' فقدت حرفها الأول)، والوقت بجانب الفقاعة يفقد أعلاه. كان لنص الرسالة تباعد أحرف سالب جعل iOS يحسب الفقاعة أضيق من النص العربي المرسوم؛ وللوقت سطر أقصر مما يحتاجه الخط. الآن النص بلا تباعد أحرف وبسطر أطول، وللوقت سطر كامل. والمستند المرسل يعرض اسمه المقروء ('Buyootna QA.pdf') لا الاسم المرمَّز الذي قد يعيده منتقي iOS ('Buyootna%20QA.pdf').",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Short and long messages, mine and theirs, Arabic, English and mixed: every letter is inside the bubble with space on both sides, on iPhone and Android.",
+          "A message of several lines wraps inside the bubble, and no line is cut at the top or bottom.",
+          "The time and the ticks beside the bubble are fully visible and do not overlap.",
+          "A document picked on iPhone with spaces or Arabic in its name shows that name as written, in the preview and in the bubble.",
+        ],
+        ar: [
+          "رسائل قصيرة وطويلة، لي وله، بالعربية والإنجليزية ومختلطة: كل حرف داخل الفقاعة مع مسافة من الجانبين، في iPhone و Android.",
+          "الرسالة متعددة الأسطر تلتف داخل الفقاعة ولا يُقطع سطر من أعلاه أو أسفله.",
+          "الوقت والعلامات بجانب الفقاعة ظاهرة كاملة ولا تتداخل.",
+          "المستند المختار في iPhone وفي اسمه مسافات أو حروف عربية يعرض الاسم كما كُتب، في المعاينة وفي الفقاعة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "iPhone: send 'للبيع البيت؟', 'لا', a long sentence and an English one — compare the first and last letters with what was typed.",
+          "Send a PDF named 'Buyootna QA (v2).pdf' — the bubble shows that name.",
+        ],
+        ar: [
+          "iPhone: أرسل 'للبيع البيت؟' و'لا' وجملة طويلة وجملة إنجليزية — وقارن أول حرف وآخر حرف بما كُتب.",
+          "أرسل ملف PDF باسم 'Buyootna QA (v2).pdf' — تعرض الفقاعة هذا الاسم.",
+        ],
+      },
+      updatedIn: "fix/chat-bubble-text-clipped",
+    },
   ],
 };
