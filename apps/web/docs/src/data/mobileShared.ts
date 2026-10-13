@@ -1410,6 +1410,7 @@ export const mobileShared: DocSection = {
           "Turn off the network on A, send a photo — retry appears; turn it on, tap retry — sent once.",
           "Wait over 15 minutes in an open chat, then tap a document — it still opens (link renewed).",
           "Take a photo with the camera and send it (Android: check the camera permission prompt).",
+          "Refuse the camera, then press الكاميرا again — 'الإذن مطلوب' shows with فتح الإعدادات; press it — the app's settings page opens; allow the camera and come back — it opens.",
         ],
         ar: [
           "جهازان: على A أرسل 3 صور من المعرض مع تعليق — يرى B شبكة والتعليق ويصله إشعار '📷 3 صور'؛ اضغط صورة — يفتح العارض والتنقل بينها بالسحب.",
@@ -1417,9 +1418,10 @@ export const mobileShared: DocSection = {
           "افصل الشبكة على A وأرسل صورة — تظهر إعادة المحاولة؛ أعد الاتصال واضغطها — تُرسل مرة واحدة.",
           "انتظر أكثر من 15 دقيقة في محادثة مفتوحة ثم اضغط مستنداً — يفتح (تجدد الرابط).",
           "التقط صورة بالكاميرا وأرسلها (Android: تحقق من طلب إذن الكاميرا).",
+          "ارفض الكاميرا ثم اضغط الكاميرا مجدداً — يظهر 'الإذن مطلوب' مع فتح الإعدادات؛ اضغطه — تُفتح صفحة إعدادات التطبيق؛ اسمح بالكاميرا وعُد — تُفتح.",
         ],
       },
-      updatedIn: "feat/chat-attachments-search",
+      updatedIn: "fix/chat-camera-mic-denied",
     },
     {
       id: "mobile-chat-search",
@@ -1663,13 +1665,13 @@ export const mobileShared: DocSection = {
       acceptanceCriteria: {
         en: [
           "Typing text swaps the mic back to the send button.",
-          "Refusing the microphone shows a message and nothing is recorded.",
+          "Refusing the microphone shows 'الإذن مطلوب' with فتح الإعدادات (opens the app's settings page) and إلغاء, every time the mic is pressed while it is refused; nothing is recorded.",
           "Starting a second note pauses the first.",
           "A voice note is sent alone (never mixed with other files).",
         ],
         ar: [
           "كتابة نص تعيد زر الإرسال مكان الميكروفون.",
-          "رفض إذن الميكروفون يعرض رسالة ولا يُسجَّل شيء.",
+          "رفض إذن الميكروفون يعرض 'الإذن مطلوب' مع فتح الإعدادات (يفتح صفحة إعدادات التطبيق) وإلغاء، في كل ضغطة على الميكروفون ما دام مرفوضاً؛ ولا يُسجَّل شيء.",
           "تشغيل رسالة ثانية يوقف الأولى مؤقتاً.",
           "الرسالة الصوتية تُرسل وحدها (لا تُدمج مع ملفات أخرى).",
         ],
@@ -1686,7 +1688,7 @@ export const mobileShared: DocSection = {
           "اضغط الميكروفون سريعاً وتحدث واضغط حذف — لا يُرسل شيء، ثم كرر واضغط إرسال — تُرسل.",
         ],
       },
-      updatedIn: "feat/native-1.5.0-video-voice",
+      updatedIn: "fix/chat-camera-mic-denied",
     },
     {
       id: "mobile-chat-notification-tone",

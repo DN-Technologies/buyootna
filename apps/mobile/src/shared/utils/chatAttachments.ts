@@ -4,6 +4,7 @@ import * as VideoThumbnails from 'expo-video-thumbnails';
 
 import { ChatProposal, LocalAttachment } from '@/shared/api/chat.service';
 import { proposalPreview } from '@/shared/utils/chatProposals';
+import { showPermissionDenied } from '@/shared/utils/permissionDenied';
 
 // Same limits as the API (ChatAttachmentsService)
 export const MAX_CHAT_ATTACHMENTS = 10;
@@ -38,10 +39,16 @@ const fromImageAsset = (a: ImagePicker.ImagePickerAsset): LocalAttachment => ({
   kind: 'IMAGE',
 });
 
-/** Opens the camera; null when cancelled or not allowed. */
+/**
+ * Opens the camera; null when cancelled or not allowed. Not allowed says so
+ * and offers Settings: it used to do nothing at all (QA).
+ */
 export async function takePhoto(): Promise<LocalAttachment[] | null> {
   const permission = await ImagePicker.requestCameraPermissionsAsync();
-  if (!permission.granted) return null;
+  if (!permission.granted) {
+    showPermissionDenied('camera');
+    return null;
+  }
   const result = await ImagePicker.launchCameraAsync({
     mediaTypes: ['images'],
     quality: 0.8,
