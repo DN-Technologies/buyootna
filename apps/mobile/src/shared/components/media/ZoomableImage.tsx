@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   runOnJS,
@@ -60,6 +61,9 @@ export default function ZoomableImage({
   // Pan-to-move only while zoomed; at 1x a vertical drag closes instead and
   // horizontal swipes page the list
   const [zoomed, setZoomed] = useState(false);
+  // A spinner until the photo is in (or has failed), so a slow full-size
+  // download is never just a black screen
+  const [loading, setLoading] = useState(true);
 
   const reportZoom = (next: boolean) => {
     setZoomed(next);
@@ -200,7 +204,19 @@ export default function ZoomableImage({
           style={{ width, height }}
           contentFit="contain"
           accessibilityIgnoresInvertColors
+          onLoad={() => setLoading(false)}
+          onError={() => setLoading(false)}
         />
+        {loading && (
+          <View
+            testID="zoomable-image-loading"
+            pointerEvents="none"
+            style={{ position: 'absolute', width, height }}
+            className="items-center justify-center"
+          >
+            <ActivityIndicator size="large" color="#FFFFFF" />
+          </View>
+        )}
       </Animated.View>
     </GestureDetector>
   );

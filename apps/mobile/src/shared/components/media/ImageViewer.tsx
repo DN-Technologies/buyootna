@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Modal,
+  Platform,
   StatusBar,
   Text,
   TouchableOpacity,
@@ -39,6 +40,13 @@ export default function ImageViewer({
   const [zoomed, setZoomed] = useState(false);
   const [chromeVisible, setChromeVisible] = useState(true);
   const [backdrop, setBackdrop] = useState(1);
+  // QA (iOS): the viewer opened black and the photo only appeared after
+  // swiping away and back, i.e. once the page was drawn again. The photos
+  // are drawn afresh as soon as the modal is fully on screen.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!visible) setShown(false);
+  }, [visible]);
 
   // Each time it opens, start at the tapped photo (the viewer stays mounted,
   // hidden, between openings)
@@ -71,6 +79,8 @@ export default function ImageViewer({
       animationType="fade"
       statusBarTranslucent
       onRequestClose={close}
+      testID="image-viewer-modal"
+      onShow={() => setShown(true)}
     >
       <StatusBar barStyle="light-content" />
       <GestureHandlerRootView
@@ -89,11 +99,13 @@ export default function ImageViewer({
           getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
           keyExtractor={(uri, i) => `${i}-${uri}`}
           showsHorizontalScrollIndicator={false}
+          extraData={shown}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
           renderItem={({ item, index: i }) => (
             <View style={{ width, height }} className="items-center justify-center">
               <ZoomableImage
+                key={Platform.OS === 'ios' && shown ? 'shown' : 'opening'}
                 uri={item}
                 width={width}
                 height={height}
