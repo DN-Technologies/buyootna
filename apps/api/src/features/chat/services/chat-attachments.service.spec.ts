@@ -6,6 +6,7 @@ import {
   ChatAttachmentsService,
   MAX_ATTACHMENTS,
   messageTypeFor,
+  readableFileName,
 } from './chat-attachments.service';
 import { chatPushBody } from './chat-push.service';
 
@@ -105,6 +106,26 @@ describe('ChatAttachmentsService', () => {
       });
       // Never the storage key
       expect(res.data[0]).not.toHaveProperty('storageKey');
+    });
+
+    // QA (iOS): a sent PDF was named "عقد%20بيع%20نهائي.pdf"
+    it('stores a URL-encoded file name decoded', async () => {
+      await service.upload('me', 'c1', [
+        file({
+          originalname: '%D8%B9%D9%82%D8%AF%20%D8%A8%D9%8A%D8%B9.pdf',
+          mimetype: 'application/pdf',
+        }),
+      ]);
+
+      expect(prisma.messageAttachment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ fileName: 'عقد بيع.pdf' }),
+        }),
+      );
+      expect(readableFileName('My%20Document.pdf')).toBe('My Document.pdf');
+      // Not valid encoding: kept as it is
+      expect(readableFileName('عقد 100%.pdf')).toBe('عقد 100%.pdf');
+      expect(readableFileName('report%ZZ%20.pdf')).toBe('report%ZZ%20.pdf');
     });
 
     it('refuses a non-participant', async () => {

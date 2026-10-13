@@ -109,4 +109,15 @@ describe('chat attachment helpers', () => {
     expect(readableFileName('report%ZZ%20.pdf')).toBe('report%ZZ%20.pdf');
     expect(readableFileName('50%25 off.pdf')).toBe('50% off.pdf');
   });
+
+  it('shows a readable file name in the chats list preview too', () => {
+    expect(
+      lastMessagePreview({
+        type: 'FILE',
+        content: null,
+        attachmentName: '%D8%B9%D9%82%D8%AF%20%D8%A8%D9%8A%D8%B9.pdf',
+      }),
+    ).toBe('📎 عقد بيع.pdf');
+    expect(lastMessagePreview({ type: 'FILE', content: null })).toBe('📎 ملف');
+  });
 });

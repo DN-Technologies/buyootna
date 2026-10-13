@@ -264,7 +264,9 @@ export function lastMessagePreview(
       : '🎤 رسالة صوتية';
   }
   const count = last.attachmentsCount ?? 0;
-  if (last.type === 'FILE') return `📎 ${last.attachmentName || 'ملف'}`;
+  if (last.type === 'FILE') {
+    return `📎 ${last.attachmentName ? readableFileName(last.attachmentName) : 'ملف'}`;
+  }
   if (last.type === 'IMAGE') return count > 1 ? `📷 ${count} صور` : '📷 صورة';
   if (last.type === 'PROPERTY') return '🏠 مشاركة عقار';
   return last.content || '';

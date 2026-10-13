@@ -1917,13 +1917,13 @@ export const mobileShared: DocSection = {
           "Short and long messages, mine and theirs, Arabic, English and mixed: every letter is inside the bubble with space on both sides, on iPhone and Android.",
           "A message of several lines wraps inside the bubble, and no line is cut at the top or bottom.",
           "The time and the ticks beside the bubble are fully visible and do not overlap.",
-          "A document picked on iPhone with spaces or Arabic in its name shows that name as written, in the preview and in the bubble.",
+          "A document picked on iPhone with spaces or Arabic in its name shows that name as written: in the preview, in the bubble, and after '📎' in the chats list. Documents sent earlier under an encoded name show decoded too.",
         ],
         ar: [
           "رسائل قصيرة وطويلة، لي وله، بالعربية والإنجليزية ومختلطة: كل حرف داخل الفقاعة مع مسافة من الجانبين، في iPhone و Android.",
           "الرسالة متعددة الأسطر تلتف داخل الفقاعة ولا يُقطع سطر من أعلاه أو أسفله.",
           "الوقت والعلامات بجانب الفقاعة ظاهرة كاملة ولا تتداخل.",
-          "المستند المختار في iPhone وفي اسمه مسافات أو حروف عربية يعرض الاسم كما كُتب، في المعاينة وفي الفقاعة.",
+          "المستند المختار في iPhone وفي اسمه مسافات أو حروف عربية يعرض الاسم كما كُتب: في المعاينة وفي الفقاعة وبعد '📎' في قائمة المحادثات. والمستندات المرسلة سابقاً باسم مرمَّز تظهر مفكوكة الترميز أيضاً.",
         ],
       },
       testScenarios: {
@@ -1936,7 +1936,7 @@ export const mobileShared: DocSection = {
           "أرسل ملف PDF باسم 'Buyootna QA (v2).pdf' — تعرض الفقاعة هذا الاسم.",
         ],
       },
-      updatedIn: "fix/chat-bubble-text-clipped",
+      updatedIn: "fix/chat-file-name-decoded",
     },
   ],
 };
