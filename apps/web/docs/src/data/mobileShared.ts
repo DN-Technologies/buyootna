@@ -1061,6 +1061,7 @@ export const mobileShared: DocSection = {
         en: [
           "With the recipient's app in the background or closed, a new message shows a notification with the sender's name and the message preview.",
           "Tapping the notification opens that conversation.",
+          "With the app fully closed, tapping the notification starts the app, shows the launch screen, then opens the conversation on top of the home screen; Back returns to home and the user is still signed in.",
           "When the chat came from an ad, the notification names it first: 'عمارة للبيع · هاي'.",
           "No notification while the recipient has that conversation open.",
           "The sender never gets a notification for their own message.",
@@ -1069,6 +1070,7 @@ export const mobileShared: DocSection = {
         ar: [
           "عندما يكون تطبيق المستلم في الخلفية أو مغلقاً، تظهر رسالة جديدة كإشعار باسم المرسل ومعاينة الرسالة.",
           "الضغط على الإشعار يفتح تلك المحادثة.",
+          "والتطبيق مغلق تماماً: الضغط على الإشعار يشغّل التطبيق ويعرض شاشة البدء ثم يفتح المحادثة فوق الشاشة الرئيسية؛ والرجوع يعيد إلى الرئيسية والمستخدم ما زال مسجلاً.",
           "إذا بدأت المحادثة من إعلان، يذكره الإشعار أولاً: 'عمارة للبيع · هاي'.",
           "لا يظهر إشعار ما دام المستلم يفتح تلك المحادثة.",
           "لا يتلقى المرسل إشعاراً برسالته.",
@@ -1079,17 +1081,19 @@ export const mobileShared: DocSection = {
         en: [
           "Two devices: put B's app in the background, send 'هاي' from A — B shows 'A's name / هاي'; tap it — the chat opens.",
           "With the chat open on B, send from A — the message appears, no notification.",
+          "iPhone: swipe the app away, send from A, tap the notification on B — the chat opens with its messages; press Back — home, signed in; close and reopen the app — still signed in.",
           "Send an image and a property card — B's notifications say 📷 صورة and 🏠 عقار.",
           "Turn off app notifications on B's account, send again — no notification.",
         ],
         ar: [
           "جهازان: ضع تطبيق B في الخلفية وأرسل 'هاي' من A — يظهر على B إشعار 'اسم A / هاي'؛ اضغطه — تفتح المحادثة.",
           "والمحادثة مفتوحة على B، أرسل من A — تظهر الرسالة دون إشعار.",
+          "iPhone: أغلق التطبيق بالسحب، وأرسل من A، واضغط الإشعار على B — تُفتح المحادثة برسائلها؛ اضغط رجوع — الرئيسية وأنت مسجل؛ أغلق التطبيق وافتحه — ما زلت مسجلاً.",
           "أرسل صورة وبطاقة عقار — تقول إشعارات B 📷 صورة و 🏠 عقار.",
           "أوقف إشعارات التطبيق في حساب B وأرسل مجدداً — لا يظهر إشعار.",
         ],
       },
-      updatedIn: "feat/real-trust-signals",
+      updatedIn: "fix/push-cold-start-logout",
     },
     {
       id: "mobile-identity-contact-phone",

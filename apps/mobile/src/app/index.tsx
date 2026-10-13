@@ -12,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import AppLogo from '@/shared/components/ui/AppLogo';
+import { finishLaunch } from '@/shared/hooks/notifications/usePushRegistration';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -152,6 +153,9 @@ function InitialSplashSequence() {
   useEffect(() => {
     if (animationDone && !isLoading) {
       router.replace(getIdentityHomeRoute(activeIdentity?.type));
+      // A push that started the app opens now, on top of home. Not cleared
+      // on unmount: the replace above is what unmounts this screen
+      setTimeout(finishLaunch, 0);
     }
   }, [animationDone, isLoading, activeIdentity]);
 

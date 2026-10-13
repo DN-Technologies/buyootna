@@ -146,6 +146,44 @@ describe('apiClient interceptors', () => {
       expect(onUnauthorized).toHaveBeenCalledTimes(1);
     });
 
+    it('signs out on a 401 for a request sent with the current token', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken('tok-1');
+      const error = {
+        response: { status: 401 },
+        config: { headers: { Authorization: 'Bearer tok-1' } },
+      };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).toHaveBeenCalledTimes(1);
+    });
+
+    // QA (iOS): a screen opened at launch sent requests before the saved
+    // sign-in was loaded; their 401s arrived after it and signed the user out
+    it('does not sign out on a 401 for a request sent before the token was loaded', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken('tok-1');
+      const error = { response: { status: 401 }, config: { headers: {} } };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).not.toHaveBeenCalled();
+    });
+
+    it('does not sign out on a 401 for a request sent with an earlier token', async () => {
+      const onUnauthorized = jest.fn();
+      setOnUnauthorized(onUnauthorized);
+      setAuthToken('tok-2');
+      const error = {
+        response: { status: 401 },
+        config: { headers: { Authorization: 'Bearer tok-1' } },
+      };
+
+      await expect(responseErrorHandler(error)).rejects.toBe(error);
+      expect(onUnauthorized).not.toHaveBeenCalled();
+    });
+
     it('does not invoke the unauthorized callback on a 401 when there is no token', async () => {
       const onUnauthorized = jest.fn();
       setOnUnauthorized(onUnauthorized);
