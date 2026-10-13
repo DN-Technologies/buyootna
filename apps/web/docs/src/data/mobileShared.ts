@@ -1195,22 +1195,26 @@ export const mobileShared: DocSection = {
           "Each row's preview text starts on the right edge, under the name (and the property tag when there is one).",
           "The time stays on the left of the name line; the ticks or unread badge stay on the left of the preview line.",
           "Long previews are cut with … on the left side.",
+          "The unread number sits in the middle of its red circle, fully visible (1, 2, 9+), on iPhone and Android; the circle touches neither the name nor the preview, and a long name is cut with … on its own line.",
         ],
         ar: [
           "نص المعاينة في كل صف يبدأ من الحافة اليمنى تحت الاسم (ووسم العقار إن وُجد).",
           "يبقى الوقت يسار سطر الاسم؛ وتبقى العلامات أو شارة غير المقروء يسار سطر المعاينة.",
           "المعاينات الطويلة تُقطع بـ … من الجهة اليسرى.",
+          "رقم غير المقروء في منتصف دائرته الحمراء وظاهر كاملاً (1، 2، 9+) في iPhone و Android؛ والدائرة لا تلامس الاسم ولا المعاينة، والاسم الطويل يُقطع بـ … في سطره.",
         ],
       },
       testScenarios: {
         en: [
           "Open محادثاتي with a chat that has a short message and one with a property tag — both previews line up under the name on the right.",
+          "iPhone: receive 2 messages, then more than 9, in a chat whose other person has a long name — the badge shows 2 then 9+, centred, and the name is not covered.",
         ],
         ar: [
           "افتح محادثاتي بمحادثة برسالة قصيرة وأخرى بوسم عقار — تصطف المعاينتان تحت الاسم على اليمين.",
+          "iPhone: استقبل رسالتين ثم أكثر من 9 في محادثة مع شخص اسمه طويل — تعرض الشارة 2 ثم 9+ في المنتصف، والاسم غير مغطى.",
         ],
       },
-      updatedIn: "fix/chat-list-preview-direction",
+      updatedIn: "fix/chat-list-unread-badge",
     },
     {
       id: "mobile-image-viewer",
