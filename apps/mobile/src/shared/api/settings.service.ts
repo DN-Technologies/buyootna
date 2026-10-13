@@ -42,6 +42,14 @@ export const settingsService = {
     return response.data;
   },
 
+  /** Removes one profile (company, office or individual), not the account. */
+  deleteIdentity: async (identityId: string): Promise<{ message: string }> => {
+    const response = await apiClient.delete<{ message: string }>(
+      `/identities/${identityId}`,
+    );
+    return response.data;
+  },
+
   deleteAccount: async (): Promise<{ success: boolean; message: string }> => {
     const response = await apiClient.delete<{
       success: boolean;
