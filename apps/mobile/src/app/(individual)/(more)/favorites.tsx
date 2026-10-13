@@ -143,6 +143,7 @@ export default function FavoritesScreen() {
               <FavoritePropertyCard
                 id={item.id}
                 price={item.price}
+                listingType={item.type}
                 // The API sends the category's code (VILLA): shown in Arabic
                 categoryLabel={getArabicCategoryLabel(item.category) || 'عقار'}
                 location={item.location || 'شمال غرب صليبيخات'}

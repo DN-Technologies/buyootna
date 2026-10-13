@@ -30,6 +30,8 @@ export const mobileIndividual: DocSection = {
           "'مسح الكل' empties only the current tab; 'تراجع' within the toast restores the same items.",
           "Ads from suspended or blocked owners don't appear in Favorites.",
           "The type badge on a favourite ad is in Arabic for every category (فيلا, شقة, بيت, عمارة, أرض, مكتب, شاليه, مزرعة, عقار سكني / تجاري / استثماري / صناعي / ساحلي, سكن خاص), never the English code (VILLA, apartment).",
+          "Nothing runs out of a favourite ad card: a long place is cut with … on its line, and the type badge and the size stay fully inside the card, on a small iPhone too.",
+          "An exchange ad shows 'للبدل' where the price would be, and an ad with no price 'السعر غير محدد'; neither shows a lone 'د.ك'.",
         ],
         ar: [
           'تبديل القلب يتحدّث فوراً ويطابق الخادم بعد التحديث، في بطاقات الإعلانات والشركات والمكاتب.',
@@ -37,6 +39,8 @@ export const mobileIndividual: DocSection = {
           "'مسح الكل' يفرغ التبويب الحالي فقط؛ و'تراجع' خلال الإشعار يعيد نفس العناصر.",
           'إعلانات المالكين المعلّقين أو المحظورين لا تظهر في المفضلة.',
           "شارة النوع على الإعلان المفضل بالعربية لكل فئة (فيلا، شقة، بيت، عمارة، أرض، مكتب، شاليه، مزرعة، عقار سكني / تجاري / استثماري / صناعي / ساحلي، سكن خاص)، وليست الرمز الإنجليزي (VILLA، apartment).",
+          "لا شيء يخرج عن بطاقة الإعلان المفضل: الموقع الطويل يُقطع بـ … في سطره، وشارة النوع والمساحة تبقيان كاملتين داخل البطاقة، حتى على iPhone صغير.",
+          "إعلان البدل يعرض 'للبدل' مكان السعر، والإعلان بلا سعر يعرض 'السعر غير محدد'؛ ولا يظهر 'د.ك' وحده في أي منهما.",
         ],
       },
       testScenarios: {
@@ -53,7 +57,7 @@ export const mobileIndividual: DocSection = {
           'احفظ أكثر من 15 عقاراً — القائمة تتصفح دون تكرار.',
         ],
       },
-      updatedIn: 'fix/favorites-category-arabic',
+      updatedIn: 'fix/favorites-card-overflow',
     },
     {
       id: 'mobile-home-feed-actions',
