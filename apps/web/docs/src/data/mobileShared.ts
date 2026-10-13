@@ -1217,6 +1217,43 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/chat-list-unread-badge",
     },
     {
+      id: "mobile-status-bar-icons",
+      title: {
+        en: "The clock and system icons stay visible at the top of every screen",
+        ar: "الساعة وأيقونات النظام تبقى ظاهرة أعلى كل شاشة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA (Samsung A36): the status bar was white with white time, battery and signal icons, so they could not be seen. The app's screens are light whatever the phone's theme, but with the phone in dark mode Android drew light icons. The app now asks for dark icons everywhere; the dark screens (the launch screen and the full-screen photo viewer) ask for light icons while they are open.",
+        ar: "بلاغ QA (Samsung A36): كان شريط الحالة أبيض وأيقونات الوقت والبطارية والإشارة بيضاء فلا تُرى. شاشات التطبيق فاتحة أياً كان مظهر الهاتف، لكن مع الوضع الداكن في الهاتف كان Android يرسم أيقونات فاتحة. يطلب التطبيق الآن أيقونات داكنة في كل مكان؛ والشاشات الداكنة (شاشة البدء وعارض الصور بملء الشاشة) تطلب أيقونات فاتحة ما دامت مفتوحة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the phone in dark mode and in light mode, the time, battery and signal icons are dark and readable on the home, chats, activity, more, ad details and settings screens, on Android and iPhone.",
+          "On the dark-blue launch screen and in the full-screen photo viewer the icons are light; closing the viewer brings back dark icons.",
+          "Nothing else about the top of the screens changes: headers keep their place below the status bar.",
+        ],
+        ar: [
+          "مع الوضع الداكن والوضع الفاتح في الهاتف تكون أيقونات الوقت والبطارية والإشارة داكنة ومقروءة في الرئيسية والمحادثات ونشاطي والمزيد وتفاصيل الإعلان والإعدادات، في Android و iPhone.",
+          "في شاشة البدء الكحلية وفي عارض الصور بملء الشاشة تكون الأيقونات فاتحة؛ وإغلاق العارض يعيد الأيقونات الداكنة.",
+          "لا يتغير شيء آخر أعلى الشاشات: تبقى الترويسات في مكانها تحت شريط الحالة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Android, phone set to dark mode: open the app and walk through the tabs — the clock is readable on every screen.",
+          "Open an ad's photo full screen, then close it — light icons over the photo, dark icons after.",
+          "Repeat with the phone in light mode, and on an iPhone in dark mode.",
+        ],
+        ar: [
+          "Android والهاتف في الوضع الداكن: افتح التطبيق وتنقّل بين التبويبات — الساعة مقروءة في كل شاشة.",
+          "افتح صورة إعلان بملء الشاشة ثم أغلقها — أيقونات فاتحة فوق الصورة وداكنة بعدها.",
+          "كرّر والهاتف في الوضع الفاتح، وعلى iPhone في الوضع الداكن.",
+        ],
+      },
+      updatedIn: "fix/android-status-bar-icons",
+    },
+    {
       id: "mobile-image-viewer",
       title: {
         en: "Photos open full screen with swipe and zoom",

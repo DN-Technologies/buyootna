@@ -18,6 +18,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import * as Sentry from '@sentry/react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SplashScreen, Stack, useNavigationContainerRef } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { Component, ReactNode, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -27,8 +28,8 @@ import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
 import { useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
-import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/properties/useFavorites';
 import { usePushRegistration } from '@/shared/hooks/notifications/usePushRegistration';
+import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/properties/useFavorites';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ensureRtlDirection } from '@/shared/utils/rtl';
@@ -185,6 +186,11 @@ function RootLayout() {
                   <Stack.Screen name="property/[id]" />
                 </Stack>
                 <AppAlertModal />
+                {/* The app is light everywhere, whatever the phone's theme:
+                    with the phone in dark mode Android drew white clock and
+                    battery icons on the white screens (QA). Dark screens
+                    (launch, photo viewer) ask for light icons themselves. */}
+                <StatusBar style="dark" />
               </SafeAreaProvider>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>
