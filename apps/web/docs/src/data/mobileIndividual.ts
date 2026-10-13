@@ -1283,6 +1283,7 @@ export const mobileIndividual: DocSection = {
       acceptanceCriteria: {
         en: [
           'A user who signed up with a phone number (no email) can change their name and save.',
+          'A phone sign-in user who has an email can clear the field and save: the email is removed, and the field is empty when the screen is reopened (individual and company profiles). With EMAIL or BOTH sign-in the email cannot be cleared, and the app says why.',
           "Typing a new valid email shows 'ارسال رمز التحقق' under the field; an invalid one shows 'بريد الكتروني غير صالح' and no link.",
           'Tapping the link sends a code to that email and opens the sheet showing the full address.',
           'Pressing تعديل البيانات before verifying shows the amber toast and saves nothing.',
@@ -1296,6 +1297,7 @@ export const mobileIndividual: DocSection = {
         ],
         ar: [
           'المستخدم الذي سجّل برقم هاتف (بدون بريد) يستطيع تغيير اسمه والحفظ.',
+          'مستخدم تسجيل الدخول بالهاتف الذي لديه بريد يستطيع إفراغ الحقل والحفظ: يُحذف البريد، ويظهر الحقل فارغاً عند إعادة فتح الشاشة (في ملف الفرد وملف الشركة). ومع تسجيل الدخول بالبريد أو بالاثنين لا يمكن إفراغ البريد، ويذكر التطبيق السبب.',
           "كتابة بريد جديد صحيح تُظهر 'ارسال رمز التحقق' تحت الحقل؛ والبريد غير الصحيح يُظهر 'بريد الكتروني غير صالح' بدون الرابط.",
           'الضغط على الرابط يرسل رمزاً إلى ذلك البريد ويفتح النافذة مع العنوان كاملاً.',
           'الضغط على تعديل البيانات قبل التحقق يُظهر التنبيه البرتقالي ولا يحفظ شيئاً.',
@@ -1322,7 +1324,7 @@ export const mobileIndividual: DocSection = {
           'غيّر رقم الهاتف واحفظ — تفتح نافذة رمز SMS؛ وبعد الرمز يُحفظ الملف.',
         ],
       },
-      updatedIn: 'fix/individual-bugs, feat/identity-contact-phone',
+      updatedIn: 'fix/profile-clear-email',
     },
     {
       id: 'mobile-plans-wallet-real-balance',

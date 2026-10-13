@@ -115,7 +115,8 @@ export const settingsService = {
   updateProfile: async (data: {
     name?: string;
     phone?: string;
-    email?: string;
+    // null removes the address on file (phone sign-in accounts only)
+    email?: string | null;
     whatsapp?: string;
     avatarUrl?: string;
     services?: string;

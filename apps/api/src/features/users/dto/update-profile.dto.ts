@@ -40,9 +40,11 @@ export class UpdateProfileDto {
   @IsOptional()
   phone?: string;
 
+  // A string keeps or (once verified) changes the address; an explicit
+  // null removes it, allowed only for an account that signs in by phone
   @IsString()
   @IsOptional()
-  email?: string;
+  email?: string | null;
 
   @IsString()
   @IsOptional()

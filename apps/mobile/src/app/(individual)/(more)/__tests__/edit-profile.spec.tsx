@@ -221,6 +221,38 @@ describe('EditProfileScreen', () => {
     );
   });
 
+  // QA: clearing the email saved "successfully" and the address came back
+  it('removes the email when a phone sign-in user clears the field', async () => {
+    (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+      loginMethod: 'PHONE',
+      email: 'old@mail.com',
+      phone: '+96555100001',
+      phoneVerified: true,
+    });
+    useAuthStore.setState({
+      user: { id: 'user-3', email: 'old@mail.com', phone: '+96555100001' } as any,
+      activeIdentity: {
+        id: 'id-ind-3',
+        type: 'INDIVIDUAL',
+        individualData: { name: 'محمد علي', whatsapp: '55100001' },
+      } as any,
+      refreshProfile: jest.fn().mockResolvedValue(undefined),
+    } as any);
+    const { getByDisplayValue, getByText, findByText } = await render(
+      <EditProfileScreen />,
+    );
+    await findByText('(اختياري)', { exact: false }).catch(() => undefined);
+
+    await fireEvent.changeText(getByDisplayValue('old@mail.com'), '');
+    await fireEvent.press(getByText('تعديل البيانات'));
+
+    await waitFor(() =>
+      expect(settingsService.updateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ email: null }),
+      ),
+    );
+  });
+
   it('a new email must be verified with its code before saving', async () => {
     signedIn();
     const { getByTestId, getByText, findByText, queryByTestId } = await render(

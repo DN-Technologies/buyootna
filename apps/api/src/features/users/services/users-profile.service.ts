@@ -88,7 +88,25 @@ export class UsersProfileService {
     // the emailed code (POST /users/account/email/verify). The unchanged one
     // passes through, and an empty value is "not sent" -- it never clears or
     // blanks the address (a blank one also collided on the unique index)
-    if (dto.email !== undefined && dto.email.trim() !== '') {
+    //
+    // Removing it is asked for explicitly, with null, and only an account
+    // that signs in by phone may: for EMAIL or email-or-phone the address is
+    // what logs the user in.
+    if (dto.email === null) {
+      const current = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { loginMethod: true },
+      });
+      if (current?.loginMethod !== 'PHONE') {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: 'EMAIL_REQUIRED',
+          message:
+            'البريد الإلكتروني مستخدم لتسجيل الدخول ولا يمكن حذفه. غيّر طريقة تسجيل الدخول إلى رقم الهاتف أولاً.',
+        });
+      }
+      userUpdateData.email = null;
+    } else if (dto.email !== undefined && dto.email.trim() !== '') {
       const current = await this.prisma.user.findUnique({
         where: { id: userId },
         select: { email: true },
