@@ -342,45 +342,45 @@ export const api: DocSection = {
     {
       id: "api-persona-rules",
       title: {
-        en: "Persona rules: one of each type, unique licence, approval before going live",
-        ar: "قواعد الهويات: واحدة من كل نوع، ترخيص فريد، واعتماد قبل النشر",
+        en: "Persona rules: one of each type, unique licence, companies live at once, offices after approval",
+        ar: "قواعد الهويات: واحدة من كل نوع، ترخيص فريد، والشركة تعمل فوراً والمكتب بعد الاعتماد",
       },
       priority: "P0",
       story: {
-        en: "Verify the shared persona creation path used by both direct signup (POST /users/register/company|office) and in-app onboarding (POST /identities/company|office, /identities/individual): an account has at most one individual, one company and one office (409 'لديك حساب شركة بالفعل'); a licence number (spaces removed, Arabic digits made Western) is unique across all companies and offices (409 'رقم الترخيص مسجل مسبقاً'); files are uploaded only after validation and deleted if saving fails; every new company/office opens an admin approval request. Until approved, it can save drafts but can't publish, renew, receive, list or accept requests.",
-        ar: "تحقق من مسار إنشاء الهويات المشترك بين التسجيل المباشر (POST /users/register/company|office) والإضافة من داخل التطبيق (POST /identities/company|office و /identities/individual): للحساب فرد واحد وشركة واحدة ومكتب واحد كحد أقصى (409 'لديك حساب شركة بالفعل')؛ رقم الترخيص (بعد حذف المسافات وتحويل الأرقام العربية) فريد بين كل الشركات والمكاتب (409 'رقم الترخيص مسجل مسبقاً')؛ لا تُرفع الملفات إلا بعد التحقق وتُحذف إذا فشل الحفظ؛ وكل شركة/مكتب جديد يفتح طلب اعتماد للإدارة. قبل الاعتماد يمكنه حفظ المسودات ولا يمكنه النشر أو إعادة النشر أو استقبال الطلبات أو عرضها أو قبولها.",
+        en: "Verify the shared persona creation path used by both direct signup (POST /users/register/company|office) and in-app onboarding (POST /identities/company|office, /identities/individual): an account has at most one individual, one company and one office (409 'لديك حساب شركة بالفعل'); a licence number (spaces removed, Arabic digits made Western) is unique across all companies and offices (409 'رقم الترخيص مسجل مسبقاً'); files are uploaded only after validation and deleted if saving fails; a new company is created APPROVED with its 30-day free trial and no approval request, so it is listed in the directory, search and map and can publish and take requests at once (its verified badge stays off until an admin approves it); a new office still opens an admin approval request and, until approved, can save drafts but can't publish or renew. An admin can still reject a company, which blocks it as before.",
+        ar: "تحقق من مسار إنشاء الهويات المشترك بين التسجيل المباشر (POST /users/register/company|office) والإضافة من داخل التطبيق (POST /identities/company|office و /identities/individual): للحساب فرد واحد وشركة واحدة ومكتب واحد كحد أقصى (409 'لديك حساب شركة بالفعل')؛ رقم الترخيص (بعد حذف المسافات وتحويل الأرقام العربية) فريد بين كل الشركات والمكاتب (409 'رقم الترخيص مسجل مسبقاً')؛ لا تُرفع الملفات إلا بعد التحقق وتُحذف إذا فشل الحفظ؛ والشركة الجديدة تُنشأ بحالة APPROVED مع تجربتها المجانية 30 يوماً ودون طلب اعتماد، فتظهر في الدليل والبحث والخريطة وتنشر وتستقبل الطلبات فوراً (وشارة التوثيق تبقى مطفأة حتى يعتمدها مسؤول)؛ والمكتب الجديد ما زال يفتح طلب اعتماد للإدارة، وقبل الاعتماد يمكنه حفظ المسودات ولا يمكنه النشر أو إعادة النشر. ويستطيع المسؤول رفض شركة فتُمنع كما كان.",
       },
       acceptanceCriteria: {
         en: [
           "A second company for the same account → 409, and no file was uploaded.",
           "A licence already used by an office, typed with extra spaces or Arabic digits → 409.",
           "Two simultaneous creations with the same new licence → one 201, one 409.",
-          "Pending company: POST /properties (non-draft), draft publish and /renew → 403 'حسابك قيد المراجعة…'; GET /company-requests/me (company/public) → []; accept → 403; a request aimed at it → 400.",
-          "After an admin approves it, publishing and leads work.",
+          "New company: `status` is APPROVED in the response, GET /users/companies?search=<name> returns it straight away, GET /company-subscriptions/me is TRIAL, and no review request is created. Pending office: POST /properties (non-draft), draft publish and /renew → 403 'حسابك قيد المراجعة…'.",
+          "After an admin approves the office, publishing works.",
         ],
         ar: [
           "شركة ثانية لنفس الحساب ← 409، ولم يُرفع أي ملف.",
           "ترخيص مستخدم لمكتب، مكتوب بمسافات إضافية أو أرقام عربية ← 409.",
           "إنشاءان متزامنان بنفس الترخيص الجديد ← 201 واحد و 409 واحد.",
-          "شركة قيد المراجعة: POST /properties (غير مسودة) ونشر المسودة و /renew ← 403 'حسابك قيد المراجعة…'؛ GET /company-requests/me (company/public) ← []؛ القبول ← 403؛ طلب موجّه إليها ← 400.",
-          "بعد اعتماد الإدارة يعمل النشر والطلبات.",
+          "شركة جديدة: `status` في الرد APPROVED، و GET /users/companies?search=<الاسم> يعيدها فوراً، و GET /company-subscriptions/me يعيد TRIAL، ولا يُنشأ طلب اعتماد. مكتب قيد المراجعة: POST /properties (غير مسودة) ونشر المسودة و /renew ← 403 'حسابك قيد المراجعة…'.",
+          "بعد اعتماد الإدارة للمكتب يعمل النشر.",
         ],
       },
       testScenarios: {
         en: [
           "Register a company with licence 'LIC 123', then an office with '١٢٣' after 'LIC' — refused.",
           "Add a company in-app to an account that already has one — refused.",
-          "As a pending company, publish an ad — 403; save it as draft — OK.",
+          "Register a company and search for it by name at once — it is listed. As a pending office, publish an ad — 403; save it as draft — OK.",
           "Approve it from the admin portal and publish again — 201.",
         ],
         ar: [
           "سجّل شركة بترخيص 'LIC 123' ثم مكتباً بـ 'LIC١٢٣' — يُرفض.",
           "أضف شركة من التطبيق لحساب لديه شركة — يُرفض.",
-          "كشركة قيد المراجعة انشر إعلاناً — 403؛ احفظه كمسودة — ينجح.",
+          "سجّل شركة وابحث عنها بالاسم فوراً — تظهر. وكمكتب قيد المراجعة انشر إعلاناً — 403؛ احفظه كمسودة — ينجح.",
           "اعتمدها من بوابة الإدارة وانشر مجدداً — 201.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/company-auto-approve",
     },
     {
       id: "api-docs-portal-access",

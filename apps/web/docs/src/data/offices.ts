@@ -58,13 +58,13 @@ export const offices: DocSection = {
         en: [
           "A registered user signs in and lands on the portal home.",
           "Individual signup shows the code step; a wrong code is refused; the right one signs in.",
-          "Company/office signup without a licence is refused; with one it signs in (as pending approval).",
+          "Company/office signup without a licence is refused; with one it signs in (a company approved at once, an office pending approval).",
           "A taken licence number is refused with 'رقم الترخيص مسجل مسبقاً'.",
         ],
         ar: [
           "المستخدم المسجّل يدخل ويصل إلى الصفحة الرئيسية للبوابة.",
           "تسجيل الفرد يعرض خطوة الرمز؛ والرمز الخاطئ يُرفض والصحيح يسجّل الدخول.",
-          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (قيد المراجعة).",
+          "تسجيل الشركة/المكتب دون ترخيص يُرفض؛ ومعه يدخل مباشرة (الشركة معتمدة فوراً، والمكتب قيد المراجعة).",
           "رقم الترخيص المستخدم يُرفض برسالة 'رقم الترخيص مسجل مسبقاً'.",
         ],
       },
@@ -76,7 +76,7 @@ export const offices: DocSection = {
           "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
-      updatedIn: "fix/map-multi-location, fix/android-label-wrap, fix/review-findings",
+      updatedIn: "feat/company-auto-approve",
     },
     {
       id: "offices-shared-form-parity",

@@ -13,8 +13,14 @@ interface IdentityCreateArgs {
     individualData?: {
       create: { name?: string; whatsapp?: string; avatarUrl?: string };
     };
-    companyData?: { create: { licenseNumber: string; logoUrl: string | null } };
-    officeData?: { create: { licenseNumber: string } };
+    companyData?: {
+      create: {
+        licenseNumber: string;
+        logoUrl: string | null;
+        status?: string;
+      };
+    };
+    officeData?: { create: { licenseNumber: string; status?: string } };
   };
 }
 
@@ -33,6 +39,7 @@ describe('IdentitiesService', () => {
     officeIdentityData: { findFirst: jest.fn(), update: jest.fn() },
     individualIdentityData: { update: jest.fn() },
     reviewRequest: { create: jest.fn() },
+    companySubscription: { findFirst: jest.fn(), create: jest.fn() },
     $executeRaw: jest.fn(),
     $transaction: jest.fn(),
   };
@@ -148,7 +155,7 @@ describe('IdentitiesService', () => {
       );
     });
 
-    it('stores the normalised licence and opens an approval request', async () => {
+    it('stores the normalised licence and approves the company at once, on its trial', async () => {
       await service.createCompany('user-1', companyDto, file);
 
       const data = createCalls()[0][0].data;
@@ -157,10 +164,14 @@ describe('IdentitiesService', () => {
       expect(data.companyData?.create.logoUrl).toBe(
         'https://bucket/company-logos/f.png',
       );
-      expect(reviewRequestData()).toMatchObject({
-        status: 'PENDING',
-        companyIdentityDataId: 'cd-1',
-      });
+      // No admin wait: listed straight away, with no approval request
+      expect(data.companyData?.create.status).toBe('APPROVED');
+      expect(mockPrismaService.reviewRequest.create).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.companySubscription.create.mock.calls,
+      ).toMatchObject([
+        [{ data: { identityId: 'identity-c', kind: 'TRIAL' } }],
+      ]);
       // Locked on both the persona slot and the licence
       expect(mockPrismaService.$executeRaw).toHaveBeenCalledTimes(2);
     });
@@ -219,8 +230,16 @@ describe('IdentitiesService', () => {
         '12345',
       );
       expect(reviewRequestData()).toMatchObject({
+        status: 'PENDING',
         officeIdentityDataId: 'od-1',
       });
+      // An office still waits for an admin, and has no company trial
+      expect(
+        createCalls()[0][0].data.officeData?.create.status,
+      ).toBeUndefined();
+      expect(
+        mockPrismaService.companySubscription.create,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -323,13 +342,7 @@ describe('IdentitiesService', () => {
       });
       mockPrismaService.individualIdentityData.update.mockResolvedValue({});
 
-      await service.update(
-        'user-1',
-        'identity-i',
-        { name: 'علي' },
-        file,
-        file,
-      );
+      await service.update('user-1', 'identity-i', { name: 'علي' }, file, file);
 
       expect(mockStorage.uploadFile).not.toHaveBeenCalled();
       expect(

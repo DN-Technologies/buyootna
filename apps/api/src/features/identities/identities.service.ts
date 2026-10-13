@@ -6,6 +6,7 @@ import {
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { IdentityType, Prisma } from '@prisma/client';
 import { StorageService } from 'src/core/storage/storage.service';
+import { grantTrialIfNew } from '../company-subscriptions/company-subscription.rules';
 import {
   CreateIndividualIdentityDto,
   CreateCompanyIdentityDto,
@@ -278,7 +279,9 @@ export class IdentitiesService {
    * THE one place a company/office persona is created -- used by in-app
    * onboarding above and by direct signup (UsersRegistrationService) inside
    * its own transaction. Enforces one-per-type and platform-wide licence
-   * uniqueness under per-key locks, and opens the approval request.
+   * uniqueness under per-key locks. A company is approved from the start
+   * (listed and usable at once, on its free trial); an office still waits
+   * for an admin, so it opens the approval request.
    */
   async createProviderPersonaInTx(
     tx: Prisma.TransactionClient,
@@ -314,6 +317,9 @@ export class IdentitiesService {
               companyData: {
                 create: {
                   ...common,
+                  // No admin wait for companies. `isVerified` (the badge)
+                  // stays off until an admin has checked the licence
+                  status: 'APPROVED',
                   serviceAreas: data.serviceAreas,
                   specialty: data.specialty,
                   latitude:
@@ -332,17 +338,17 @@ export class IdentitiesService {
       include: IDENTITY_INCLUDE,
     });
 
-    // Opens the admin approval request (new companies/offices start PENDING)
+    if (type === IdentityType.COMPANY) {
+      await grantTrialIfNew(tx, identity.id);
+      return identity;
+    }
+
+    // Opens the admin approval request (a new office starts PENDING)
     await tx.reviewRequest.create({
       data: {
         status: 'PENDING',
-        notes:
-          type === IdentityType.COMPANY
-            ? 'طلب تسجيل شركة جديدة'
-            : 'طلب تسجيل مكتب عقاري جديد',
-        ...(type === IdentityType.COMPANY
-          ? { companyIdentityDataId: identity.companyData!.id }
-          : { officeIdentityDataId: identity.officeData!.id }),
+        notes: 'طلب تسجيل مكتب عقاري جديد',
+        officeIdentityDataId: identity.officeData!.id,
       },
     });
 
