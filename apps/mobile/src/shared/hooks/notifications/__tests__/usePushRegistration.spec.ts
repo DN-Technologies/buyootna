@@ -4,7 +4,12 @@ import { router } from 'expo-router';
 
 import { devicesService } from '@/shared/api/devices.service';
 
-import { openPushRoute, usePushRegistration } from '../usePushRegistration';
+import {
+  finishLaunch,
+  openPushRoute,
+  resetLaunchForTests,
+  usePushRegistration,
+} from '../usePushRegistration';
 
 const mockDevice = { isDevice: true };
 
@@ -114,17 +119,54 @@ describe('openPushRoute', () => {
   const response = (data: Record<string, unknown>) =>
     ({ notification: { request: { content: { data } } } }) as any;
 
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    resetLaunchForTests();
+  });
+  afterEach(() => jest.useRealTimers());
 
-  it('opens the route a push points at', () => {
+  it('opens the route a push points at once the app is running', () => {
+    finishLaunch();
     openPushRoute(response({ route: '/devices' }));
     expect(router.push).toHaveBeenCalledWith('/devices');
+  });
+
+  // QA (iOS): a chat opened from a push that started the app sat on the
+  // launch screen, loaded before the saved sign-in, and Back signed out
+  it('holds a push that started the app until launch has reached home', () => {
+    openPushRoute(response({ route: '/chat/c1' }));
+    expect(router.push).not.toHaveBeenCalled();
+
+    finishLaunch();
+    expect(router.push).toHaveBeenCalledTimes(1);
+    expect(router.push).toHaveBeenCalledWith('/chat/c1');
+
+    // nothing left over for a second call
+    finishLaunch();
+    expect(router.push).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens a held push once even when it is reported twice at launch', () => {
+    openPushRoute(response({ route: '/chat/c1' }));
+    openPushRoute(response({ route: '/chat/c1' }));
+    finishLaunch();
+    expect(router.push).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens a held push anyway when launch never reaches home', () => {
+    jest.useFakeTimers();
+    openPushRoute(response({ route: '/chat/c1' }));
+    jest.advanceTimersByTime(29000);
+    expect(router.push).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1000);
+    expect(router.push).toHaveBeenCalledWith('/chat/c1');
   });
 
   it('ignores pushes without an in-app route', () => {
     openPushRoute(response({ route: 'https://evil.example' }));
     openPushRoute(response({}));
     openPushRoute(null);
+    finishLaunch();
     expect(router.push).not.toHaveBeenCalled();
   });
 });

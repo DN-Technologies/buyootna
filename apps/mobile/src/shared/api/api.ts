@@ -106,13 +106,30 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function sentWithCurrentToken(config: any): boolean {
+  if (!config) return true;
+  const sent = config.headers?.Authorization ?? config.headers?.get?.('Authorization');
+  return sent === `Bearer ${_authToken}`;
+}
+
 // --- Response Interceptor ---
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     // Only trigger a logout if a token was actually present — prevents a
     // phantom logout loop when a call is made before the user is signed in.
-    if (error.response && error.response.status === 401 && _authToken) {
+    //
+    // And only when the refused request carried that same token. A screen
+    // opened at launch (a tapped push) can send requests before the saved
+    // sign-in is loaded; their 401s come back after it is, and used to sign
+    // the user out of a perfectly good session. The same goes for a reply
+    // to a request sent with the token from before a profile switch.
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      _authToken &&
+      sentWithCurrentToken(error.config)
+    ) {
       _onUnauthorized?.();
     }
 
