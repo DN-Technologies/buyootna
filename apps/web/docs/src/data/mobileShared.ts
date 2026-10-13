@@ -1573,24 +1573,28 @@ export const mobileShared: DocSection = {
           "A video over 100 MB or longer than 2 minutes is refused with a clear message.",
           "Upload shows progress; a failed upload offers retry.",
           "The video still plays after the chat has been open more than 15 minutes (the link is renewed on tap).",
+          "While the video waits on the network a spinner shows over it, and playback carries on by itself once data arrives; on iPhone a wait that drags on is restarted automatically, with no need to press pause then play. A video the user paused stays paused.",
         ],
         ar: [
           "الفيديو الأكبر من 100 ميجابايت أو الأطول من دقيقتين يُرفض برسالة واضحة.",
           "يظهر تقدم الرفع، والرفع الفاشل يعرض إعادة المحاولة.",
           "يعمل الفيديو بعد بقاء المحادثة مفتوحة أكثر من 15 دقيقة (يُجدد الرابط عند الضغط).",
+          "أثناء انتظار الفيديو للشبكة يظهر مؤشر تحميل فوقه، ويستمر التشغيل تلقائياً عند وصول البيانات؛ وفي iPhone يُعاد تشغيل الانتظار الطويل تلقائياً دون الحاجة إلى ضغط إيقاف ثم تشغيل. والفيديو الذي أوقفه المستخدم يبقى متوقفاً.",
         ],
       },
       testScenarios: {
         en: [
           "Send a 30-second video with a caption — B sees the still, 0:30 and the caption; tap — it plays.",
           "Try a 3-minute video — refused.",
+          "iPhone on a slow or throttled connection: play a long video to the end without touching it — it may wait with a spinner but never stays frozen; pause it yourself — it stays paused.",
         ],
         ar: [
           "أرسل فيديو 30 ثانية مع تعليق — يرى B الصورة المصغرة و0:30 والتعليق، والضغط يشغله.",
           "جرّب فيديو 3 دقائق — يُرفض.",
+          "iPhone على اتصال بطيء أو مقيَّد: شغّل فيديو طويلاً حتى نهايته دون لمسه — قد ينتظر مع مؤشر تحميل لكنه لا يبقى متجمداً؛ وأوقفه بنفسك — يبقى متوقفاً.",
         ],
       },
-      updatedIn: "feat/native-1.5.0-video-voice",
+      updatedIn: "feat/landing-home-figma",
     },
     {
       id: "mobile-chat-voice",
