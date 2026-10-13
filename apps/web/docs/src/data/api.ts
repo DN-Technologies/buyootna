@@ -380,7 +380,7 @@ export const api: DocSection = {
           "اعتمدها من بوابة الإدارة وانشر مجدداً — 201.",
         ],
       },
-      updatedIn: "feat/landing-home-figma",
+      updatedIn: "feat/company-auto-approve",
     },
     {
       id: "api-docs-portal-access",

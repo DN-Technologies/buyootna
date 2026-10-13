@@ -76,7 +76,7 @@ export const offices: DocSection = {
           "سجّل بكل دور في هذه البوابة ثم اخرج وادخل مجدداً.",
         ],
       },
-      updatedIn: "feat/landing-home-figma",
+      updatedIn: "feat/company-auto-approve",
     },
     {
       id: "offices-shared-form-parity",

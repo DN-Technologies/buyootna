@@ -388,7 +388,7 @@ export const admin: DocSection = {
           "أضف مكتباً من التطبيق واعتمده في /verifications ثم انشر إعلاناً منه.",
         ],
       },
-      updatedIn: "feat/landing-home-figma",
+      updatedIn: "feat/company-auto-approve",
     },
     {
       id: "admin-feature-packages-api-only",
