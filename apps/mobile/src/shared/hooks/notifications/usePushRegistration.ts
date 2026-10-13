@@ -38,13 +38,54 @@ function getProjectId(): string | undefined {
   );
 }
 
+// A push tapped while the app was closed is held until the launch screen
+// has loaded the saved sign-in and moved to the home screen. Opened straight
+// away, the screen sat on top of the launch screen: it loaded without the
+// sign-in, and Back led to the launch screen instead of home.
+let launching = true;
+let heldRoute: string | null = null;
+let heldTimer: ReturnType<typeof setTimeout> | null = null;
+// A launch that never reaches home (e.g. opened by a link) still opens it
+const HELD_ROUTE_MAX_MS = 30000;
+
+function openHeldRoute() {
+  if (heldTimer) clearTimeout(heldTimer);
+  heldTimer = null;
+  const route = heldRoute;
+  heldRoute = null;
+  if (route) router.push(route as any);
+}
+
+/** Called once the launch screen has routed to the home screen. */
+export function finishLaunch() {
+  launching = false;
+  openHeldRoute();
+}
+
+/** Test aid: back to the state of a freshly started app. */
+export function resetLaunchForTests() {
+  if (heldTimer) clearTimeout(heldTimer);
+  heldTimer = null;
+  heldRoute = null;
+  launching = true;
+}
+
 /** Opens the screen a push points at, e.g. { route: '/devices' }. */
 export function openPushRoute(
   response: Notifications.NotificationResponse | null,
 ) {
   const route = response?.notification.request.content.data?.route;
-  if (typeof route === 'string' && route.startsWith('/')) {
+  if (typeof route !== 'string' || !route.startsWith('/')) return;
+  if (!launching) {
     router.push(route as any);
+    return;
+  }
+  heldRoute = route;
+  if (!heldTimer) {
+    heldTimer = setTimeout(() => {
+      launching = false;
+      openHeldRoute();
+    }, HELD_ROUTE_MAX_MS);
   }
 }
 
