@@ -1,7 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import * as ExpoAudio from 'expo-audio';
 
 import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
+import { cachedVoiceFile, keepVoiceFile } from '@/shared/utils/chatMediaCache';
+
+jest.mock('@/shared/utils/chatMediaCache', () => ({
+  cachedVoiceFile: jest.fn(async () => null),
+  keepVoiceFile: jest.fn(async () => {}),
+}));
 
 const player = () => ({
   play: jest.fn(),
@@ -50,5 +56,49 @@ describe('VoiceMessageBubble', () => {
     );
     await fireEvent.press(screen.getByTestId('voice-retry'));
     expect(onRetry).toHaveBeenCalled();
+  });
+
+  // QA: voice notes were fetched again every time the chat was reopened
+  it('keeps its player when the server sends a newly signed link', async () => {
+    const p = player();
+    (ExpoAudio.useAudioPlayer as jest.Mock).mockClear().mockReturnValue(p);
+    const { rerender } = await render(
+      <VoiceMessageBubble uri="https://s/v.m4a?sig=1" isMine timestamp="" />,
+    );
+    await rerender(<VoiceMessageBubble uri="https://s/v.m4a?sig=2" isMine timestamp="" />);
+
+    const sources = (ExpoAudio.useAudioPlayer as jest.Mock).mock.calls.map((c) => c[0]);
+    expect(new Set(sources)).toEqual(new Set(['https://s/v.m4a?sig=1']));
+  });
+
+  it('plays the copy kept on the phone when there is one, without a new link', async () => {
+    (keepVoiceFile as jest.Mock).mockClear();
+    (cachedVoiceFile as jest.Mock).mockResolvedValueOnce('file:///cache/chat-voice-v.m4a');
+    const p = player();
+    (ExpoAudio.useAudioPlayer as jest.Mock).mockReturnValue(p);
+    const refreshUri = jest.fn();
+    await render(
+      <VoiceMessageBubble uri="https://s/v.m4a?sig=1" isMine timestamp="" refreshUri={refreshUri} />,
+    );
+    await waitFor(() =>
+      expect(p.replace).toHaveBeenCalledWith('file:///cache/chat-voice-v.m4a'),
+    );
+
+    await fireEvent.press(screen.getByTestId('voice-play'));
+
+    expect(p.play).toHaveBeenCalled();
+    expect(refreshUri).not.toHaveBeenCalled();
+    expect(keepVoiceFile).not.toHaveBeenCalled();
+  });
+
+  it('keeps a note on the phone the first time it is played', async () => {
+    (keepVoiceFile as jest.Mock).mockClear();
+    const p = player();
+    (ExpoAudio.useAudioPlayer as jest.Mock).mockReturnValue(p);
+    await render(<VoiceMessageBubble uri="https://s/v.m4a?sig=1" isMine timestamp="" />);
+
+    await fireEvent.press(screen.getByTestId('voice-play'));
+
+    expect(keepVoiceFile).toHaveBeenCalledWith('https://s/v.m4a?sig=1');
   });
 });

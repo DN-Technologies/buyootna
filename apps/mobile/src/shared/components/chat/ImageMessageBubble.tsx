@@ -3,6 +3,7 @@ import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import MessageTicks from '@/shared/components/chat/MessageTicks';
+import { cachedImageSource } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface ImageMessageProps {
@@ -45,7 +46,8 @@ export default function ImageMessageBubble({
           }}
         >
           <Image
-            source={{ uri: imageUrl }}
+            source={cachedImageSource(imageUrl)}
+            cachePolicy="memory-disk"
             className="h-40 w-56"
             contentFit="cover"
           />
