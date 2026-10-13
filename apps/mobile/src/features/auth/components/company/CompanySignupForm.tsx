@@ -111,7 +111,8 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   const successMessage =
     type === 'office'
       ? 'يقوم فريقنا حالياً بمراجعة بيانات المكتب والمستندات وسيتم إشعارك فور تفعيل الحساب.'
-      : 'يقوم فريقنا حالياً بمراجعة بيانات الشركة والمستندات وسيتم إشعارك فور تفعيل الحساب.';
+      : // A company is live at once; only an office waits for review
+        'تم تفعيل حساب شركتك، ويمكنك الآن إضافة خدماتك والظهور للعملاء.';
 
   return (
     <View className="flex-1">
@@ -241,12 +242,12 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
       <SuccessBottomSheet
         ref={successSheetRef}
-        title="تم إرسال طلبك بنجاح"
+        title={type === 'office' ? 'تم إرسال طلبك بنجاح' : 'تم إنشاء حساب شركتك بنجاح'}
         description={successMessage}
         buttonText="العودة الى الرئيسية"
         onPress={closeSuccessModal}
-        iconType="document-search"
-        footerText="مدة المراجعة المتوقعة: خلال 24 ساعة"
+        iconType={type === 'office' ? 'document-search' : 'check'}
+        footerText={type === 'office' ? 'مدة المراجعة المتوقعة: خلال 24 ساعة' : undefined}
       />
     </View>
   );
