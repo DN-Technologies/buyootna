@@ -942,6 +942,53 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/settings-missing-items',
     },
     {
+      id: "mobile-delete-profile",
+      title: {
+        en: "Delete account: one profile only, or the whole account",
+        ar: "حذف الحساب: ملف واحد فقط، أو الحساب بالكامل",
+      },
+      priority: "P0",
+      story: {
+        en: "اعدادات الحساب → حذف الحساب. An account with a single profile gets the final confirmation and, on حذف, the whole account is deleted and the app signs out (DELETE /users/account), as before. An account with more than one profile (personal, company, office) is first asked which: 'حذف هذا الملف فقط' names the profile in use (e.g. ملف الشركة «البنيان») and, after a second confirmation, removes only that profile (DELETE /identities/:id); the app stays signed in and lands on the personal profile when there is one, otherwise on another remaining profile. 'حذف الحساب بالكامل' leads to the same final confirmation as before and removes every profile. A profile that still has ads is refused by the server, and the app shows that reason and stays on the profile.",
+        ar: "اعدادات الحساب ← حذف الحساب. الحساب الذي له ملف واحد يرى التأكيد النهائي، وعند حذف يُحذف الحساب كله ويخرج التطبيق (DELETE /users/account) كما كان. والحساب الذي له أكثر من ملف (شخصي، شركة، مكتب) يُسأل أولاً أيهما: 'حذف هذا الملف فقط' يسمّي الملف المستخدم (مثل ملف الشركة «البنيان») وبعد تأكيد ثانٍ يحذف هذا الملف وحده (DELETE /identities/:id)؛ ويبقى التطبيق مسجلاً ويفتح الملف الشخصي إن وُجد، وإلا ملفاً آخر باقياً. و'حذف الحساب بالكامل' يقود إلى التأكيد النهائي نفسه ويحذف كل الملفات. والملف الذي ما زالت له إعلانات يرفضه الخادم، فيعرض التطبيق السبب ويبقى على الملف.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "One profile: حذف الحساب shows 'حذف الحساب نهائياً' directly, with no profile choice.",
+          "Several profiles: the first dialog offers حذف هذا الملف فقط, حذف الحساب بالكامل and إلغاء, and names the profile in use.",
+          "Deleting the company profile only: the personal and office profiles remain, with their ads, chats and favourites; the same login still works; the deleted company is gone from the profile switcher and from the companies directory.",
+          "After deleting one profile the app is still signed in, on the home of a remaining profile.",
+          "A profile with ads: refused with the server's message ('لا يمكن حذف هذه الهوية لأنها تحتوي على … عقار'), and the app is back on that profile with nothing deleted.",
+          "حذف الحساب بالكامل then حذف removes everything and signs out, as before.",
+          "إلغاء at either step deletes nothing.",
+        ],
+        ar: [
+          "ملف واحد: حذف الحساب يعرض 'حذف الحساب نهائياً' مباشرة دون اختيار ملف.",
+          "عدة ملفات: النافذة الأولى تعرض حذف هذا الملف فقط وحذف الحساب بالكامل وإلغاء، وتسمّي الملف المستخدم.",
+          "حذف ملف الشركة فقط: يبقى الملف الشخصي وملف المكتب بإعلاناتهما ومحادثاتهما ومفضلتهما؛ ويعمل تسجيل الدخول نفسه؛ وتختفي الشركة المحذوفة من مبدّل الملفات ومن دليل الشركات.",
+          "بعد حذف ملف واحد يبقى التطبيق مسجلاً، على رئيسية ملف باقٍ.",
+          "ملف له إعلانات: يُرفض برسالة الخادم ('لا يمكن حذف هذه الهوية لأنها تحتوي على … عقار')، ويعود التطبيق إلى ذلك الملف دون حذف شيء.",
+          "حذف الحساب بالكامل ثم حذف يزيل كل شيء ويخرج من الحساب كما كان.",
+          "إلغاء في أي خطوة لا يحذف شيئاً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Account with personal, company and office profiles: switch to the company, delete this profile only, then sign out and in again — personal and office are still there.",
+          "Same account, on the office profile that has an ad: try to delete this profile only — refused; delete the ad and try again — removed.",
+          "Account with one profile: delete account — signed out, and the login no longer works.",
+          "Account with two profiles: choose حذف الحساب بالكامل — both are gone.",
+        ],
+        ar: [
+          "حساب له ملف شخصي وشركة ومكتب: انتقل إلى الشركة واحذف هذا الملف فقط، ثم اخرج وادخل من جديد — الشخصي والمكتب ما زالا موجودين.",
+          "الحساب نفسه على ملف المكتب وله إعلان: حاول حذف هذا الملف فقط — يُرفض؛ احذف الإعلان وحاول مجدداً — يُحذف.",
+          "حساب له ملف واحد: احذف الحساب — يخرج، ولا يعمل تسجيل الدخول بعدها.",
+          "حساب له ملفان: اختر حذف الحساب بالكامل — يُحذف الاثنان.",
+        ],
+      },
+      updatedIn: "fix/delete-profile-not-account",
+    },
+    {
       id: 'mobile-change-password',
       title: {
         en: 'Change password with an SMS code',
