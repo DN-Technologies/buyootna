@@ -3,6 +3,7 @@ import * as Location from 'expo-location';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Modal,
   Pressable,
   Text,
@@ -13,7 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ChatLocation } from '@/shared/api/chat.service';
 import { MAPBOX_ACCESS_TOKEN } from '@/shared/components/map/picker/config';
-import { showAlert } from '@/shared/utils/alert';
 import { RTL_TEXT } from '@/shared/utils/rtlText';
 
 interface LocationSheetProps {
@@ -50,13 +50,17 @@ export default function LocationSheet({
   const insets = useSafeAreaInsets();
   const [locating, setLocating] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  // Shown inside the sheet: the app alert is a second Modal, and on iOS one
+  // raised over this sheet never appears and then blocks every touch
+  const [problem, setProblem] = useState<'denied' | 'failed' | null>(null);
 
   const sendCurrent = async () => {
     try {
       setLocating(true);
+      setProblem(null);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        showAlert('الإذن مطلوب', 'يرجى تفعيل صلاحية الوصول للموقع من الإعدادات.');
+        setProblem('denied');
         return;
       }
       const { coords } = await Location.getCurrentPositionAsync({
@@ -70,7 +74,7 @@ export default function LocationSheet({
       });
     } catch (error) {
       console.error('Current location failed:', error);
-      showAlert('خطأ', 'تعذر تحديد موقعك، حاول مرة أخرى');
+      setProblem('failed');
     } finally {
       setLocating(false);
     }
@@ -131,6 +135,24 @@ export default function LocationSheet({
             </View>
             <Text className="font-cairo-semibold text-[15px] text-[#111111]">اختر على الخريطة</Text>
           </TouchableOpacity>
+          {problem && (
+            <View testID="location-problem" className="mt-2 rounded-2xl bg-[#FEF2F2] px-4 py-3">
+              <Text className="font-cairo-medium text-[13px] text-[#B91C1C]" style={RTL_TEXT}>
+                {problem === 'denied'
+                  ? 'صلاحية الوصول للموقع غير مفعّلة. فعّلها من الإعدادات أو اختر الموقع على الخريطة.'
+                  : 'تعذر تحديد موقعك، حاول مرة أخرى أو اختر الموقع على الخريطة.'}
+              </Text>
+              {problem === 'denied' && (
+                <TouchableOpacity
+                  testID="location-open-settings"
+                  onPress={() => void Linking.openSettings()}
+                  className="mt-2 self-start"
+                >
+                  <Text className="font-cairo-bold text-[13px] text-[#15304D]">فتح الإعدادات</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </Pressable>
       </Pressable>
     </Modal>

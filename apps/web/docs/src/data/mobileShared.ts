@@ -1458,12 +1458,14 @@ export const mobileShared: DocSection = {
       acceptanceCriteria: {
         en: [
           "The pin opens at the same point that was sent.",
-          "Refusing the location permission shows a message; nothing is sent.",
+          "Refusing the location permission shows a notice inside the sheet with فتح الإعدادات; nothing is sent, and the sheet, the map option and the chat stay usable.",
+          "When the position cannot be read, the sheet says so and offers the map; no app alert opens over the sheet.",
           "Coordinates outside the valid range are refused by the server.",
         ],
         ar: [
           "الدبوس يفتح على النقطة نفسها التي أُرسلت.",
-          "رفض إذن الموقع يعرض رسالة ولا يُرسل شيء.",
+          "رفض إذن الموقع يعرض تنبيهاً داخل الورقة مع فتح الإعدادات؛ ولا يُرسل شيء، وتبقى الورقة وخيار الخريطة والمحادثة قابلة للاستخدام.",
+          "حين يتعذر تحديد الموقع تذكر الورقة ذلك وتقترح الخريطة؛ ولا يُفتح تنبيه التطبيق فوق الورقة.",
           "الإحداثيات خارج النطاق الصحيح يرفضها الخادم.",
         ],
       },
@@ -1471,13 +1473,15 @@ export const mobileShared: DocSection = {
         en: [
           "Send موقعي الحالي — B sees the map and address; tap — Maps opens at that point.",
           "Pick a point on the map and send — same on both phones.",
+          "iPhone, location denied: press موقعي الحالي twice, close the sheet, type a message, go back to the chats list — nothing freezes. Press فتح الإعدادات — the app's settings page opens.",
         ],
         ar: [
           "أرسل موقعي الحالي — يرى B الخريطة والعنوان، والضغط يفتح الخرائط على النقطة.",
           "اختر نقطة على الخريطة وأرسلها — تظهر نفسها على الهاتفين.",
+          "iPhone والموقع مرفوض: اضغط موقعي الحالي مرتين، وأغلق الورقة، واكتب رسالة، وعُد إلى قائمة المحادثات — لا شيء يتجمد. واضغط فتح الإعدادات — تُفتح صفحة إعدادات التطبيق.",
         ],
       },
-      updatedIn: "feat/chat-share-location-proposals",
+      updatedIn: "fix/chat-location-freeze-ios",
     },
     {
       id: "mobile-chat-appointment",
