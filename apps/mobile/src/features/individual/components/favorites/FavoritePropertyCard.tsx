@@ -9,6 +9,8 @@ import { formatNumber } from '@/shared/utils/formatNumber';
 export interface FavoritePropertyCardProps {
   id: string;
   price: number | string;
+  // SALE / RENT / EXCHANGE: an exchange ad has no price
+  listingType?: string;
   categoryLabel?: string;
   location?: string;
   area?: number | string;
@@ -23,6 +25,7 @@ export interface FavoritePropertyCardProps {
 export default function FavoritePropertyCard({
   id: _id,
   price,
+  listingType,
   categoryLabel = 'عمارة',
   location = 'شمال غرب صليبيخات',
   area = 200,
@@ -35,6 +38,10 @@ export default function FavoritePropertyCard({
 }: FavoritePropertyCardProps) {
   const formattedPrice =
     typeof price === 'number' ? formatNumber(price) : price;
+  // No price (an exchange ad): say so, not a lone "د.ك" (QA screenshot)
+  const hasPrice = Number(price) > 0;
+  const noPriceLabel =
+    listingType?.toUpperCase() === 'EXCHANGE' ? 'للبدل' : 'السعر غير محدد';
 
   const hasIncome = Number(propertyIncome) > 0;
   const formattedIncome =
@@ -51,19 +58,22 @@ export default function FavoritePropertyCard({
         {/* Right: Price */}
         <View className="flex-row items-baseline gap-1">
           <Text
+            testID="favorite-card-price"
             className={`font-cairo-semibold text-[22px] leading-tight ${
               isExpired ? 'text-[#A0AEC0]' : 'text-[#15304D]'
             }`}
           >
-            {formattedPrice}
+            {hasPrice ? formattedPrice : noPriceLabel}
           </Text>
-          <Text
-            className={`font-cairo-bold text-xs ${
-              isExpired ? 'text-[#A0AEC0]' : 'text-[#15304D]'
-            }`}
-          >
-            د.ك
-          </Text>
+          {hasPrice && (
+            <Text
+              className={`font-cairo-bold text-xs ${
+                isExpired ? 'text-[#A0AEC0]' : 'text-[#15304D]'
+              }`}
+            >
+              د.ك
+            </Text>
+          )}
         </View>
 
         {/* Left: Featured Badge */}
@@ -90,11 +100,13 @@ export default function FavoritePropertyCard({
         {!isFeatured && <View />}
       </View>
 
-      {/* Middle Section: Details Chips */}
+      {/* Middle Section: Details Chips. The type and the size keep their
+          width; the place takes what is left and is cut with … (QA: a long
+          place pushed itself and the size out of the card) */}
       <View className="flex-row items-center gap-3.5 py-1.5">
         {/* Building Category Chip */}
         <View
-          className={`flex-row items-center gap-1 rounded-[6px] px-2 py-0.5 ${
+          className={`shrink-0 flex-row items-center gap-1 rounded-[6px] px-2 py-0.5 ${
             isExpired ? 'bg-[#E2E8F0]' : 'bg-[#F5F7F9]'
           }`}
         >
@@ -113,23 +125,30 @@ export default function FavoritePropertyCard({
         </View>
 
         {/* Location */}
-        <View className="flex-row items-center gap-1">
+        <View
+          testID="favorite-card-location"
+          className="min-w-0 flex-1 shrink flex-row items-center gap-1"
+        >
           <LocationIcon
             size={14}
             color={isExpired ? '#A0AEC0' : '#111111'}
           />
           <Text
-            className={`font-cairo text-sm leading-[22px] ${
+            className={`shrink font-cairo text-sm leading-[22px] ${
               isExpired ? 'text-[#A0AEC0]' : 'text-[#111111]'
             }`}
             numberOfLines={1}
+            ellipsizeMode="tail"
           >
             {location}
           </Text>
         </View>
 
         {/* Area */}
-        <View className="flex-row items-center gap-1">
+        <View
+          testID="favorite-card-area"
+          className="shrink-0 flex-row items-center gap-1"
+        >
           <RulerIcon
             size={14}
             color={isExpired ? '#A0AEC0' : '#111111'}
