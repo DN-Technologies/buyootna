@@ -8,12 +8,14 @@ import { Platform } from 'react-native';
 import { ChatAttachment, chatService } from '@/shared/api/chat.service';
 import { showAlert } from '@/shared/utils/alert';
 
-import { openChatFile } from '../openChatFile';
+import { openChatFile, openLocalChatFile } from '../openChatFile';
 
 jest.mock('expo', () => ({ requireOptionalNativeModule: jest.fn() }));
 jest.mock('expo-file-system/legacy', () => ({
   cacheDirectory: 'file:///cache/',
   downloadAsync: jest.fn(),
+  getInfoAsync: jest.fn(async () => ({ exists: false })),
+  deleteAsync: jest.fn(async () => {}),
   getContentUriAsync: jest.fn(async () => 'content://files/doc'),
 }));
 jest.mock('expo-intent-launcher', () => ({ startActivityAsync: jest.fn(async () => ({})) }));
@@ -59,6 +61,7 @@ describe('openChatFile', () => {
     });
     (chatService.attachmentUrl as jest.Mock).mockResolvedValue('https://s3/doc.pdf?sig=new');
     (Sharing.isAvailableAsync as jest.Mock).mockResolvedValue(true);
+    (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: false });
   });
   afterAll(() => setPlatform(originalOS as 'ios' | 'android'));
 
@@ -159,6 +162,50 @@ describe('openChatFile', () => {
       await openChatFile(pdf);
 
       expect(showAlert).toHaveBeenCalledWith('خطأ', 'تعذر فتح الملف، حاول مرة أخرى');
+    });
+  });
+
+  it('opens a document fetched before from the phone, without downloading again', async () => {
+    setPlatform('ios');
+    hasViewerModule(false);
+    (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 1000 });
+
+    await openChatFile(pdf);
+
+    expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
+    expect(Sharing.shareAsync).toHaveBeenCalledWith(
+      expect.stringContaining('a1-'),
+      expect.anything(),
+    );
+  });
+
+  // QA (Android): the sender could not open the file they had just sent
+  describe('the sender\'s own copy, while it uploads', () => {
+    const local = { uri: 'file:///cache/picked.pdf', name: 'عقد.pdf', mimeType: 'application/pdf' };
+
+    it('opens in the phone\'s viewer on a build that has it', async () => {
+      setPlatform('android');
+      hasViewerModule(true);
+
+      await openLocalChatFile(local);
+
+      expect(FileSystem.getContentUriAsync).toHaveBeenCalledWith('file:///cache/picked.pdf');
+      expect(IntentLauncher.startActivityAsync).toHaveBeenCalled();
+      expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
+    });
+
+    it('opens through the system sheet otherwise, with no download', async () => {
+      setPlatform('android');
+      hasViewerModule(false);
+
+      await openLocalChatFile(local);
+
+      expect(Sharing.shareAsync).toHaveBeenCalledWith(
+        'file:///cache/picked.pdf',
+        expect.objectContaining({ mimeType: 'application/pdf' }),
+      );
+      expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
+      expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
     });
   });
 });

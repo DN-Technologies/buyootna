@@ -40,6 +40,44 @@ async function openInAndroidViewer(fileUri: string, mimeType: string) {
   }
 }
 
+/**
+ * Opens a file that is already on this phone: the sender's own document
+ * while it uploads. The phone's viewer where the build has it, otherwise
+ * the system sheet.
+ */
+export async function openLocalChatFile(file: {
+  uri: string;
+  name: string;
+  mimeType: string;
+}) {
+  try {
+    if (hasAndroidViewer() && (await openInAndroidViewer(file.uri, file.mimeType))) {
+      return;
+    }
+    if (!(await Sharing.isAvailableAsync())) {
+      showAlert('تنبيه', 'لا يمكن فتح الملف على هذا الجهاز');
+      return;
+    }
+    await Sharing.shareAsync(file.uri, {
+      mimeType: file.mimeType,
+      dialogTitle: file.name,
+      UTI: file.mimeType === 'application/pdf' ? 'com.adobe.pdf' : undefined,
+    });
+  } catch (error) {
+    console.error('Failed to open local chat file:', error);
+    showAlert('خطأ', 'تعذر فتح الملف، حاول مرة أخرى');
+  }
+}
+
+async function alreadyOnPhone(fileUri: string) {
+  try {
+    const info = await FileSystem.getInfoAsync(fileUri);
+    return info.exists && (info.size ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
 // A link signed moments ago: the one in the message may have expired
 async function freshLink(attachment: ChatAttachment) {
   try {
@@ -76,12 +114,21 @@ export async function openChatFile(attachment: ChatAttachment) {
     }
 
     const target = `${FileSystem.cacheDirectory}${attachment.id}-${safeName(attachment.fileName)}`;
-    let result = await FileSystem.downloadAsync(attachment.url, target);
+    // Opened before: the copy already on the phone, with no new download
+    let result: { status: number; uri: string } = (await alreadyOnPhone(target))
+      ? { status: 200, uri: target }
+      : await FileSystem.downloadAsync(attachment.url, target);
     if (result.status === 403) {
       const fresh = await chatService.attachmentUrl(attachment.id);
       result = await FileSystem.downloadAsync(fresh, target);
     }
-    if (result.status !== 200) throw new Error(`status ${result.status}`);
+    if (result.status !== 200) {
+      // Never leave a failed download behind to be "opened" next time
+      await FileSystem.deleteAsync(target, { idempotent: true }).catch(
+        () => undefined,
+      );
+      throw new Error(`status ${result.status}`);
+    }
 
     if (viewer && (await openInAndroidViewer(result.uri, attachment.mimeType))) {
       return;

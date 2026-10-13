@@ -6,6 +6,7 @@ import {
 import AttachmentMessageBubble from '@/shared/components/chat/AttachmentMessageBubble';
 import VoiceMessageBubble from '@/shared/components/chat/VoiceMessageBubble';
 import type { MessageStatus } from '@/shared/utils/chatReceipts';
+import { openLocalChatFile } from '@/shared/utils/openChatFile';
 
 import { timeOf } from './timeOf';
 
@@ -70,7 +71,15 @@ export default function AttachmentBubble({
       }
       onPressFile={(index) => {
         const file = sent.filter((a) => a.kind === 'FILE')[index];
-        if (file) onOpenFile?.(file);
+        if (file) {
+          onOpenFile?.(file);
+          return;
+        }
+        // Still uploading (or failed): the sender's own copy on the phone
+        const local = (message.localAttachments ?? []).filter(
+          (a) => a.kind === 'FILE',
+        )[index];
+        if (local) void openLocalChatFile(local);
       }}
       onPressVideo={(index) => {
         const video = sent.filter((a) => a.kind === 'VIDEO')[index];
