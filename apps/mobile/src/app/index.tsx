@@ -1,4 +1,5 @@
 import { router } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
 import { verifyInstallation } from 'nativewind';
 import { useCallback, useEffect, useState } from 'react';
@@ -179,6 +180,9 @@ function InitialSplashSequence() {
         animatedBackground,
       ]}
     >
+      {/* Light icons over the dark-blue launch screen */}
+      <StatusBar style="light" />
+
       {/* Initial Dot */}
       <Animated.View
         className="absolute h-3 w-3 rounded-full bg-slate-800"
