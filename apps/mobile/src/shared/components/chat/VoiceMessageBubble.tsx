@@ -1,10 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import { AudioPlayer, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import MessageTicks from '@/shared/components/chat/MessageTicks';
 import { formatDuration } from '@/shared/utils/chatAttachments';
+import { cachedVoiceFile, keepVoiceFile } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface VoiceMessageBubbleProps {
@@ -42,9 +43,31 @@ export default function VoiceMessageBubble({
   refreshUri,
   tickStatus,
 }: VoiceMessageBubbleProps) {
-  const player = useAudioPlayer(uri);
+  // The link the bubble opened with. The server re-signs links on every
+  // load of the messages, and following each new one rebuilt the player --
+  // and fetched the note again -- every time the chat was reopened (QA)
+  const [source] = useState(uri);
+  const player = useAudioPlayer(source);
   const linkedAt = useRef(Date.now());
   const status = useAudioPlayerStatus(player);
+
+  // Played before: use the copy kept on the phone, with no network at all
+  const local = useRef(false);
+  useEffect(() => {
+    let cancelled = false;
+    void cachedVoiceFile(source).then((file) => {
+      if (cancelled || !file) return;
+      try {
+        player.replace(file);
+        local.current = true;
+      } catch {
+        // Released meanwhile: the link still plays
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [player, source]);
 
   // Back to the start once it finishes
   useEffect(() => {
@@ -65,7 +88,11 @@ export default function VoiceMessageBubble({
       player.pause();
       return;
     }
-    if (refreshUri && Date.now() - linkedAt.current > LINK_FRESH_MS) {
+    if (
+      !local.current &&
+      refreshUri &&
+      Date.now() - linkedAt.current > LINK_FRESH_MS
+    ) {
       try {
         player.replace(await refreshUri());
         linkedAt.current = Date.now();
@@ -73,6 +100,9 @@ export default function VoiceMessageBubble({
         // Try with the link we have
       }
     }
+    // Kept on the phone for the next time this chat is opened (the newest
+    // link: the one the bubble opened with may have expired)
+    if (!local.current && !sending) void keepVoiceFile(uri);
     if (playing && playing !== player) {
       try {
         playing.pause();

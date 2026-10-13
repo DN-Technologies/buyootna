@@ -1463,6 +1463,47 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/chat-camera-mic-denied",
     },
     {
+      id: "mobile-chat-media-cache",
+      title: {
+        en: "Chat photos and voice notes are kept on the phone, not downloaded on every visit",
+        ar: "صور المحادثة ورسائلها الصوتية تُحفظ على الهاتف ولا تُنزَّل في كل زيارة",
+      },
+      priority: "P2",
+      story: {
+        en: "QA: every time a chat was reopened its photos, video stills and voice notes loaded again. Chat files are private, so the server signs a new link for each one on every load of the messages, and the app cached by the whole link. Photos and video stills are now cached by the file itself, in memory and on disk, so a reopened chat shows them at once; the full-screen viewer uses the same cache. A voice note keeps the player it opened with when the links change, and once played it is kept on the phone and plays from there the next time, with no network.",
+        ar: "بلاغ QA: في كل مرة تُفتح المحادثة كانت صورها ولقطات فيديوهاتها ورسائلها الصوتية تُحمَّل من جديد. ملفات المحادثة خاصة، فيوقّع الخادم رابطاً جديداً لكل ملف عند كل تحميل للرسائل، وكان التطبيق يخزّن حسب الرابط كاملاً. الآن تُخزَّن الصور ولقطات الفيديو حسب الملف نفسه، في الذاكرة وعلى القرص، فتظهر فوراً عند إعادة فتح المحادثة؛ وعارض الصور بملء الشاشة يستخدم التخزين نفسه. والرسالة الصوتية تحتفظ بمشغّلها عند تغيّر الروابط، وبعد تشغيلها مرة تُحفظ على الهاتف وتُشغَّل منه في المرة التالية دون شبكة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Open a chat with photos, go back, open it again: the photos are there at once, with no grey tiles or flicker.",
+          "The same after closing the app fully and opening it again (disk cache), and with the phone offline.",
+          "A photo opened full screen from the chat appears at once the second time.",
+          "A voice note played once plays again after reopening the chat with the phone offline.",
+          "A voice note never played still plays from the network, and after 15 minutes in the chat (its link is renewed).",
+          "Sending a new photo or voice note works as before.",
+        ],
+        ar: [
+          "افتح محادثة فيها صور، وعُد، وافتحها مجدداً: الصور ظاهرة فوراً دون مربعات رمادية أو وميض.",
+          "وكذلك بعد إغلاق التطبيق تماماً وفتحه (تخزين القرص)، والهاتف دون اتصال.",
+          "الصورة المفتوحة بملء الشاشة من المحادثة تظهر فوراً في المرة الثانية.",
+          "الرسالة الصوتية التي شُغّلت مرة تعمل بعد إعادة فتح المحادثة والهاتف دون اتصال.",
+          "الرسالة الصوتية التي لم تُشغَّل تعمل من الشبكة، وبعد 15 دقيقة داخل المحادثة (يُجدَّد رابطها).",
+          "إرسال صورة أو رسالة صوتية جديدة يعمل كما كان.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "iPhone: open a chat with several photos and two voice notes, play one note, go back and reopen three times — nothing reloads.",
+          "Turn on flight mode and reopen the chat — photos show and the played note plays; the other note does not.",
+        ],
+        ar: [
+          "iPhone: افتح محادثة فيها عدة صور ورسالتان صوتيتان، وشغّل إحداهما، وعُد وأعد الفتح ثلاث مرات — لا شيء يُعاد تحميله.",
+          "فعّل وضع الطيران وأعد فتح المحادثة — تظهر الصور وتعمل الرسالة التي شُغّلت؛ والأخرى لا تعمل.",
+        ],
+      },
+      updatedIn: "fix/chat-media-cache",
+    },
+    {
       id: "mobile-chat-search",
       title: {
         en: "Search inside a chat and across the chats list",

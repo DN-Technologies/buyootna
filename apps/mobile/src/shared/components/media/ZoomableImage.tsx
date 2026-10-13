@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { SafeImage } from '@/shared/components/ui/SafeImage';
+import { cachedImageSource } from '@/shared/utils/chatMediaCache';
 
 import {
   clampScale,
@@ -200,7 +201,7 @@ export default function ZoomableImage({
     <GestureDetector gesture={gesture}>
       <Animated.View style={[{ width, height }, style]}>
         <SafeImage
-          source={{ uri }}
+          source={cachedImageSource(uri)}
           style={{ width, height }}
           contentFit="contain"
           accessibilityIgnoresInvertColors

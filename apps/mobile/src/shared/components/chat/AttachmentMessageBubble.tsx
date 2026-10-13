@@ -10,6 +10,7 @@ import {
   formatDuration,
   formatFileSize,
 } from '@/shared/utils/chatAttachments';
+import { cachedImageSource, stableMediaKey } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
 
 interface AttachmentMessageBubbleProps {
@@ -87,7 +88,9 @@ export default function AttachmentMessageBubble({
           <View className="flex-row flex-wrap gap-1" style={{ width: GRID }}>
             {shownPhotos.map((p, i) => (
               <TouchableOpacity
-                key={`${p.uri}-${i}`}
+                // Not the link itself: it is re-signed on every load, and a
+                // changing key redrew every photo
+                key={`${stableMediaKey(p.uri)}-${i}`}
                 testID={`attachment-photo-${i}`}
                 activeOpacity={0.9}
                 disabled={pending}
@@ -96,9 +99,10 @@ export default function AttachmentMessageBubble({
                 className="overflow-hidden rounded-md bg-gray-200"
               >
                 <Image
-                  source={{ uri: p.uri }}
+                  source={cachedImageSource(p.uri)}
                   style={{ width: '100%', height: '100%' }}
                   contentFit="cover"
+                  cachePolicy="memory-disk"
                 />
                 {i === shownPhotos.length - 1 && extra > 0 && (
                   <View className="absolute inset-0 items-center justify-center bg-black/50">
@@ -114,7 +118,7 @@ export default function AttachmentMessageBubble({
 
         {videos.map((v, i) => (
           <TouchableOpacity
-            key={`${v.uri}-${i}`}
+            key={`${stableMediaKey(v.uri)}-${i}`}
             testID={`attachment-video-${i}`}
             activeOpacity={0.9}
             disabled={pending}
@@ -124,9 +128,10 @@ export default function AttachmentMessageBubble({
           >
             {!!v.thumbnail && (
               <Image
-                source={{ uri: v.thumbnail }}
+                source={cachedImageSource(v.thumbnail)}
                 style={{ position: 'absolute', width: '100%', height: '100%' }}
                 contentFit="cover"
+                cachePolicy="memory-disk"
               />
             )}
             <View className="h-12 w-12 items-center justify-center rounded-full bg-black/50">
@@ -146,7 +151,7 @@ export default function AttachmentMessageBubble({
           const style = documentStyle(f.mimeType, f.name);
           return (
             <TouchableOpacity
-              key={`${f.uri}-${i}`}
+              key={`${stableMediaKey(f.uri)}-${i}`}
               testID={`attachment-file-${i}`}
               activeOpacity={0.8}
               disabled={pending}
