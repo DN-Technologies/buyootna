@@ -1594,7 +1594,7 @@ export const mobileShared: DocSection = {
           "iPhone على اتصال بطيء أو مقيَّد: شغّل فيديو طويلاً حتى نهايته دون لمسه — قد ينتظر مع مؤشر تحميل لكنه لا يبقى متجمداً؛ وأوقفه بنفسك — يبقى متوقفاً.",
         ],
       },
-      updatedIn: "feat/landing-home-figma",
+      updatedIn: "fix/chat-video-stall-ios",
     },
     {
       id: "mobile-chat-voice",
