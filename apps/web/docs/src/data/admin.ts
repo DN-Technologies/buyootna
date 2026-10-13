@@ -365,30 +365,30 @@ export const admin: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "Verify /verifications lists companies and offices waiting for approval (GET /admin/verifications) — from both direct signup and in-app onboarding — and that approving or rejecting (PATCH /admin/identities/:id/status) takes effect in the app: an approved company can publish and receive requests; a rejected one sees 'تم رفض طلب اعتماد حسابك…' when it tries.",
-        ar: "تحقق من أن /verifications تعرض الشركات والمكاتب المنتظرة للاعتماد (GET /admin/verifications) — من التسجيل المباشر والإضافة من داخل التطبيق — وأن القبول أو الرفض (PATCH /admin/identities/:id/status) ينعكس في التطبيق: الشركة المقبولة تستطيع النشر واستقبال الطلبات؛ والمرفوضة ترى 'تم رفض طلب اعتماد حسابك…' عند المحاولة.",
+        en: "New companies are approved automatically when created, so only offices (and companies an admin set back) wait here. Verify /verifications lists companies and offices waiting for approval (GET /admin/verifications) — from both direct signup and in-app onboarding — and that approving or rejecting (PATCH /admin/identities/:id/status) takes effect in the app: an approved company can publish and receive requests; a rejected one sees 'تم رفض طلب اعتماد حسابك…' when it tries.",
+        ar: "الشركات الجديدة تُعتمد تلقائياً عند إنشائها، فلا ينتظر هنا إلا المكاتب (والشركات التي أعادها مسؤول). تحقق من أن /verifications تعرض الشركات والمكاتب المنتظرة للاعتماد (GET /admin/verifications) — من التسجيل المباشر والإضافة من داخل التطبيق — وأن القبول أو الرفض (PATCH /admin/identities/:id/status) ينعكس في التطبيق: الشركة المقبولة تستطيع النشر واستقبال الطلبات؛ والمرفوضة ترى 'تم رفض طلب اعتماد حسابك…' عند المحاولة.",
       },
       acceptanceCriteria: {
         en: [
-          "A company added from the app appears in the list as pending.",
+          "An office added from the app appears in the list as pending; a new company does not, and is already listed in the directory.",
           "Approving it lets it publish; its listing on the directory and map appears.",
           "Rejecting it with a reason blocks publishing with the rejection message.",
         ],
         ar: [
-          "الشركة المضافة من التطبيق تظهر في القائمة كقيد المراجعة.",
+          "المكتب المضاف من التطبيق يظهر في القائمة كقيد المراجعة؛ والشركة الجديدة لا تظهر فيها وهي معروضة في الدليل مباشرة.",
           "قبولها يسمح لها بالنشر؛ ويظهر في الدليل والخريطة.",
           "رفضها مع سبب يمنع النشر مع رسالة الرفض.",
         ],
       },
       testScenarios: {
         en: [
-          "Add a company in-app, approve it in /verifications, publish an ad from it.",
+          "Add an office in-app, approve it in /verifications, publish an ad from it.",
         ],
         ar: [
-          "أضف شركة من التطبيق واعتمدها في /verifications ثم انشر إعلاناً منها.",
+          "أضف مكتباً من التطبيق واعتمده في /verifications ثم انشر إعلاناً منه.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "feat/landing-home-figma",
     },
     {
       id: "admin-feature-packages-api-only",
