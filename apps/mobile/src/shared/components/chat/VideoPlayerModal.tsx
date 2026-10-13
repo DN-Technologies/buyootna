@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { Modal, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Modal, Platform, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface VideoPlayerModalProps {
@@ -9,18 +10,63 @@ interface VideoPlayerModalProps {
   onClose: () => void;
 }
 
+// How often playback is checked, and how long a wait lasts before a nudge
+const STALL_CHECK_MS = 1000;
+const NUDGE_AFTER_CHECKS = 3;
+const NUDGE_ANYWAY_AFTER_CHECKS = 10;
+
 function Player({ url }: { url: string }) {
   const player = useVideoPlayer(url, (p) => {
     p.play();
   });
+  const [buffering, setBuffering] = useState(false);
+
+  // QA (iOS): the picture froze mid-video while the controls still showed
+  // "playing", until pause then play was pressed. The system player was
+  // waiting on the network and did not always start again by itself, so a
+  // wait shows a spinner and, once it drags on, gets the same pause / play.
+  useEffect(() => {
+    let waited = 0;
+    const timer = setInterval(() => {
+      try {
+        const waiting = player.status === 'loading' && !player.playing;
+        setBuffering(waiting);
+        waited = waiting ? waited + 1 : 0;
+        if (!waiting || Platform.OS !== 'ios') return;
+        const hasVideoAhead = player.bufferedPosition - player.currentTime >= 1;
+        if (
+          (hasVideoAhead && waited % NUDGE_AFTER_CHECKS === 0) ||
+          waited % NUDGE_ANYWAY_AFTER_CHECKS === 0
+        ) {
+          player.pause();
+          player.play();
+        }
+      } catch {
+        // The player was released while the modal closes
+      }
+    }, STALL_CHECK_MS);
+    return () => clearInterval(timer);
+  }, [player]);
+
   return (
-    <VideoView
-      testID="video-player"
-      player={player}
-      style={{ flex: 1 }}
-      contentFit="contain"
-      nativeControls
-    />
+    <View className="flex-1">
+      <VideoView
+        testID="video-player"
+        player={player}
+        style={{ flex: 1 }}
+        contentFit="contain"
+        nativeControls
+      />
+      {buffering && (
+        <View
+          testID="video-player-buffering"
+          pointerEvents="none"
+          className="absolute inset-0 items-center justify-center"
+        >
+          <ActivityIndicator size="large" color="#FFFFFF" />
+        </View>
+      )}
+    </View>
   );
 }
 
