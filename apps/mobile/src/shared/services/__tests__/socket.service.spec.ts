@@ -44,6 +44,8 @@ describe('socketService', () => {
     socketService.disconnect();
     mockSocket.connected = false;
     mockSocket.handlers = {};
+    appStateListener?.('active');
+    jest.clearAllMocks();
   });
 
   it('joins remembered rooms again on every reconnect', () => {
@@ -90,6 +92,52 @@ describe('socketService', () => {
     appStateListener?.('active');
 
     expect(mockSocket.connect).toHaveBeenCalled();
+  });
+
+  // QA (Android): with a chat open and the app sent to the background, the
+  // socket stayed alive and in the chat's room, so the server sent no push
+  it('steps out of its rooms in the background and back in on return', () => {
+    socketService.connect('token');
+    socketService.joinConversation('c1');
+    mockSocket.connected = true;
+    mockSocket.emit.mockClear();
+
+    appStateListener?.('background');
+    expect(mockSocket.emit).toHaveBeenCalledWith('leave_conversation', 'c1');
+
+    mockSocket.emit.mockClear();
+    appStateListener?.('active');
+    expect(mockSocket.emit).toHaveBeenCalledWith('join_conversation', 'c1');
+    expect(mockSocket.connect).not.toHaveBeenCalled();
+  });
+
+  it('stays out of its rooms when the socket reconnects in the background', () => {
+    socketService.connect('token');
+    socketService.joinConversation('c1');
+    mockSocket.connected = true;
+    appStateListener?.('background');
+    mockSocket.emit.mockClear();
+
+    fire('connect');
+    socketService.joinConversation('c2');
+    expect(mockSocket.emit).not.toHaveBeenCalledWith('join_conversation', 'c1');
+    expect(mockSocket.emit).not.toHaveBeenCalledWith('join_conversation', 'c2');
+
+    appStateListener?.('active');
+    expect(mockSocket.emit).toHaveBeenCalledWith('join_conversation', 'c1');
+    expect(mockSocket.emit).toHaveBeenCalledWith('join_conversation', 'c2');
+  });
+
+  it('keeps its rooms through a brief inactive state (a system dialog)', () => {
+    socketService.connect('token');
+    socketService.joinConversation('c1');
+    mockSocket.connected = true;
+    mockSocket.emit.mockClear();
+
+    appStateListener?.('inactive');
+    appStateListener?.('active');
+
+    expect(mockSocket.emit).not.toHaveBeenCalled();
   });
 
   it('forgets a room after leaving it', () => {

@@ -15,12 +15,32 @@ class SocketService {
   private rooms = new Set<string>();
   private reconnectListeners = new Set<() => void>();
   private hasConnected = false;
+  // The server sends no push to a device that is "in" a conversation's room.
+  // Android keeps the socket alive long after the app leaves the screen, so
+  // a chat left open got no notifications at all (QA). In the background
+  // the device steps out of its rooms, and back in on return.
+  private inBackground = false;
 
   constructor() {
-    // Back in the foreground: don't wait for the next backoff tick
     AppState.addEventListener('change', (state) => {
-      if (state === 'active' && this.socket && !this.socket.connected) {
+      if (state === 'background') {
+        this.inBackground = true;
+        if (this.socket?.connected) {
+          this.rooms.forEach((id) =>
+            this.socket?.emit('leave_conversation', id),
+          );
+        }
+        return;
+      }
+      if (state !== 'active') return;
+      const wasInBackground = this.inBackground;
+      this.inBackground = false;
+      if (!this.socket) return;
+      if (!this.socket.connected) {
+        // Back in the foreground: don't wait for the next backoff tick
         this.socket.connect();
+      } else if (wasInBackground) {
+        this.rooms.forEach((id) => this.socket?.emit('join_conversation', id));
       }
     });
   }
@@ -47,7 +67,9 @@ class SocketService {
 
     this.socket.on('connect', () => {
       console.log('Socket.IO connected successfully to namespace /chat');
-      this.rooms.forEach((id) => this.socket?.emit('join_conversation', id));
+      if (!this.inBackground) {
+        this.rooms.forEach((id) => this.socket?.emit('join_conversation', id));
+      }
       if (this.hasConnected) {
         // A reconnect: messages may have arrived while disconnected
         this.reconnectListeners.forEach((cb) => cb());
@@ -92,7 +114,7 @@ class SocketService {
 
   joinConversation(conversationId: string) {
     this.rooms.add(conversationId);
-    if (this.socket?.connected) {
+    if (this.socket?.connected && !this.inBackground) {
       this.socket.emit('join_conversation', conversationId);
     }
   }
