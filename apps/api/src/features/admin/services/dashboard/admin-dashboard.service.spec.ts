@@ -20,6 +20,9 @@ describe('AdminDashboardService', () => {
     officeIdentityData: {
       findMany: jest.Mock;
     };
+    identity: {
+      findMany: jest.Mock;
+    };
   };
 
   beforeEach(async () => {
@@ -36,6 +39,9 @@ describe('AdminDashboardService', () => {
         findMany: jest.fn().mockResolvedValue([]),
       },
       officeIdentityData: {
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      identity: {
         findMany: jest.fn().mockResolvedValue([]),
       },
     };
@@ -75,15 +81,26 @@ describe('AdminDashboardService', () => {
         .mockResolvedValueOnce({ _sum: { amount: 500 } }) // this month
         .mockResolvedValueOnce({ _sum: { amount: 250 } }); // last month
 
-      prisma.user.findMany.mockResolvedValue([
+      // The newest profiles. QA: a company added to an older individual
+      // account never showed in the dashboard's recent registrations
+      prisma.identity.findMany.mockResolvedValue([
         {
-          id: 'u-1',
-          name: 'سالم الكندري',
-          email: 'salem@example.com',
-          phone: null,
-          role: Role.COMPANY,
-          createdAt: new Date('2026-02-01T00:00:00Z'),
-          activePlan: { name: 'الفضية' },
+          id: 'identity-company-1',
+          type: 'COMPANY',
+          createdAt: new Date('2026-10-12T00:00:00Z'),
+          companyData: { name: 'شركة النور' },
+          officeData: null,
+          individualData: null,
+          user: {
+            id: 'u-1',
+            name: 'سالم الكندري',
+            email: 'salem@example.com',
+            phone: null,
+            // The account began as an individual, months earlier
+            role: Role.INDIVIDUAL,
+            createdAt: new Date('2026-02-01T00:00:00Z'),
+            activePlan: { name: 'الفضية' },
+          },
         },
       ]);
 
@@ -108,9 +125,23 @@ describe('AdminDashboardService', () => {
         office: 10,
       });
 
-      expect(result.recentRegistrations).toHaveLength(1);
-      expect(result.recentRegistrations[0].accountType).toBe('شركة');
-      expect(result.recentRegistrations[0].planName).toBe('الفضية');
+      expect(result.recentRegistrations).toEqual([
+        {
+          id: 'identity-company-1',
+          userId: 'u-1',
+          name: 'شركة النور',
+          email: 'salem@example.com',
+          accountType: 'شركة',
+          planName: 'الفضية',
+          createdAt: new Date('2026-10-12T00:00:00Z'),
+        },
+      ]);
+      expect(prisma.identity.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { user: { isAdmin: false } },
+          orderBy: { createdAt: 'desc' },
+        }),
+      );
 
       expect(result.pendingVerifications).toEqual([
         { identityId: 'company-identity-1', name: 'شركة الاختبار', type: 'شركة' },

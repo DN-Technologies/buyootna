@@ -43,8 +43,11 @@ class AdminDashboardRevenueMonthDto {
 }
 
 class AdminDashboardRecentRegistrationDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'The profile (identity) this row is about' })
   id: string;
+
+  @ApiProperty({ description: 'The account the profile belongs to' })
+  userId: string;
 
   @ApiProperty()
   name: string;

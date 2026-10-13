@@ -36,6 +36,55 @@ export class AdminUsersService {
     private readonly auditLog: AdminAuditLogService,
   ) {}
 
+  /**
+   * One page of users ordered by their newest profile, not by when the
+   * account was created. A company or office added to an existing account
+   * is a new entry for the admin: by account date it landed pages deep,
+   * among accounts of the same age, and looked missing (QA).
+   *
+   * Accounts with no profile at all (legacy; none are expected) come last,
+   * by account date, so the pages still add up to the total.
+   */
+  private async usersByNewestProfile<I extends Prisma.UserInclude>(
+    where: Prisma.UserWhereInput,
+    direction: Prisma.SortOrder,
+    skip: number,
+    take: number,
+    include: I,
+  ) {
+    const newest = await this.prisma.identity.groupBy({
+      by: ['userId'],
+      where: { user: where },
+      _max: { createdAt: true },
+      orderBy: [{ _max: { createdAt: direction } }, { userId: 'asc' }],
+      skip,
+      take,
+    });
+    const ids = newest.map((row) => row.userId);
+    const found = await this.prisma.user.findMany({
+      where: { id: { in: ids } },
+      include,
+    });
+    const byId = new Map(found.map((user) => [user.id, user]));
+    const page = ids.flatMap((id) => {
+      const user = byId.get(id);
+      return user ? [user] : [];
+    });
+    if (page.length >= take) return page;
+
+    const withProfile = await this.prisma.user.count({
+      where: { AND: [where, { identities: { some: {} } }] },
+    });
+    const rest = await this.prisma.user.findMany({
+      where: { AND: [where, { identities: { none: {} } }] },
+      orderBy: { createdAt: direction },
+      skip: Math.max(0, skip - withProfile),
+      take: take - page.length,
+      include,
+    });
+    return [...page, ...rest];
+  }
+
   async getUsers(filters: AdminUsersFilterDto) {
     const {
       search,
@@ -145,6 +194,20 @@ export class AdminUsersService {
       ...(role ? hasAccountType(role) : {}),
     };
 
+    const userInclude = {
+      identities: {
+        include: {
+          individualData: true,
+          companyData: true,
+          officeData: true,
+          _count: {
+            select: { properties: true },
+          },
+        },
+      },
+      activePlan: true,
+    } satisfies Prisma.UserInclude;
+
     const [
       users,
       totalCount,
@@ -156,25 +219,21 @@ export class AdminUsersService {
       countOffice,
       countCompany,
     ] = await Promise.all([
-      this.prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy,
-        include: {
-          identities: {
-            include: {
-              individualData: true,
-              companyData: true,
-              officeData: true,
-              _count: {
-                select: { properties: true },
-              },
-            },
-          },
-          activePlan: true,
-        },
-      }),
+      sortField === 'createdAt'
+        ? this.usersByNewestProfile(
+            where,
+            sortDirection,
+            skip,
+            limit,
+            userInclude,
+          )
+        : this.prisma.user.findMany({
+            where,
+            skip,
+            take: limit,
+            orderBy,
+            include: userInclude,
+          }),
       this.prisma.user.count({ where }),
       this.prisma.user.count({ where: roleStatsWhere }),
       this.prisma.user.count({

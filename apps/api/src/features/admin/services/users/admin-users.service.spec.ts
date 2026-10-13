@@ -25,6 +25,7 @@ interface MockPrismaService {
   identity: {
     findUnique: jest.Mock;
     create: jest.Mock;
+    groupBy: jest.Mock;
   };
   $transaction: jest.Mock;
 }
@@ -62,6 +63,7 @@ describe('AdminUsersService', () => {
       identity: {
         findUnique: jest.fn(),
         create: jest.fn(),
+        groupBy: jest.fn().mockResolvedValue([]),
       },
       $transaction: jest.fn(
         (callback: (tx: MockPrismaService) => Promise<unknown>) =>
@@ -131,8 +133,14 @@ describe('AdminUsersService', () => {
         },
       ];
 
-      prisma.user.findMany.mockResolvedValue(mockUsers);
+      // The page is the accounts with the newest profiles, then (none here)
+      // accounts without a profile
+      prisma.identity.groupBy.mockResolvedValue([{ userId: 'user-1' }]);
+      prisma.user.findMany
+        .mockResolvedValueOnce(mockUsers)
+        .mockResolvedValueOnce([]);
       prisma.user.count
+        .mockResolvedValue(1)
         .mockResolvedValueOnce(1) // where
         .mockResolvedValueOnce(1) // total role
         .mockResolvedValueOnce(1) // active role
@@ -162,7 +170,9 @@ describe('AdminUsersService', () => {
 
   describe('getUsers - individual who added a company persona', () => {
     it('lists them under شركة and filters by identity, not just User.role', async () => {
-      prisma.user.findMany.mockResolvedValue([
+      prisma.identity.groupBy.mockResolvedValue([{ userId: 'user-2' }]);
+      prisma.user.findMany.mockReset();
+      prisma.user.findMany.mockResolvedValueOnce([
         {
           id: 'user-2',
           name: 'سارة',
@@ -187,6 +197,7 @@ describe('AdminUsersService', () => {
           ],
         },
       ]);
+      prisma.user.findMany.mockResolvedValueOnce([]);
       prisma.user.count.mockResolvedValue(1);
 
       const result = await service.getUsers({
@@ -196,7 +207,10 @@ describe('AdminUsersService', () => {
         limit: 10,
       });
 
-      expect(prisma.user.findMany.mock.calls[0][0].where.AND).toContainEqual({
+      // The filter picks the accounts whose profiles are ranked
+      expect(
+        prisma.identity.groupBy.mock.calls[0][0].where.user.AND,
+      ).toContainEqual({
         OR: [
           { role: Role.COMPANY },
           { identities: { some: { type: 'COMPANY' } } },
@@ -205,6 +219,99 @@ describe('AdminUsersService', () => {
       expect(result.data[0].accountType).toBe('شركة');
       expect(result.data[0].name).toBe('شركة النور');
       expect(result.data[0].verificationStatus).toBe('قيد الانتظار');
+    });
+  });
+
+  // QA: a company added to an older account was "missing" from the admin
+  // list -- it sat pages deep, at its account's original date
+  describe('getUsers - ordered by the newest profile', () => {
+    const user = (id: string, createdAt: string) => ({
+      id,
+      name: id,
+      email: `${id}@example.com`,
+      phone: null,
+      role: Role.INDIVIDUAL,
+      isDisabled: false,
+      isBlocked: false,
+      createdAt: new Date(createdAt),
+      activePlan: null,
+      identities: [
+        {
+          type: 'INDIVIDUAL',
+          individualData: { name: id },
+          _count: { properties: 0 },
+        },
+      ],
+    });
+
+    it('lists an old account that just added a company before newer accounts', async () => {
+      // Ranked by newest profile: the September account added a company today
+      prisma.identity.groupBy.mockResolvedValue([
+        { userId: 'old-account' },
+        { userId: 'new-account' },
+      ]);
+      // The database returns them in its own order
+      prisma.user.findMany.mockReset();
+      prisma.user.findMany.mockResolvedValueOnce([
+        user('new-account', '2026-10-10T00:00:00Z'),
+        user('old-account', '2026-09-20T00:00:00Z'),
+      ]);
+      prisma.user.count.mockResolvedValue(2);
+
+      const result = await service.getUsers({ page: 1, limit: 2 });
+
+      expect(result.data.map((u: { id: string }) => u.id)).toEqual([
+        'old-account',
+        'new-account',
+      ]);
+      expect(prisma.identity.groupBy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          by: ['userId'],
+          orderBy: [{ _max: { createdAt: 'desc' } }, { userId: 'asc' }],
+          skip: 0,
+          take: 2,
+        }),
+      );
+      // A full page: no second query
+      expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
+    });
+
+    it('puts accounts with no profile last, so the pages add up', async () => {
+      prisma.identity.groupBy.mockResolvedValue([{ userId: 'with-profile' }]);
+      prisma.user.findMany.mockReset();
+      prisma.user.findMany
+        .mockResolvedValueOnce([user('with-profile', '2026-10-01T00:00:00Z')])
+        .mockResolvedValueOnce([
+          { ...user('no-profile', '2026-08-01T00:00:00Z'), identities: [] },
+        ]);
+      prisma.user.count.mockResolvedValue(1);
+
+      const result = await service.getUsers({ page: 1, limit: 10 });
+
+      expect(result.data.map((u: { id: string }) => u.id)).toEqual([
+        'with-profile',
+        'no-profile',
+      ]);
+      expect(prisma.user.findMany.mock.calls[1][0]).toMatchObject({
+        orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 9,
+      });
+    });
+
+    it('keeps sorting by name as it was', async () => {
+      prisma.user.findMany.mockReset();
+      prisma.user.findMany.mockResolvedValueOnce([
+        user('a', '2026-10-01T00:00:00Z'),
+      ]);
+      prisma.user.count.mockResolvedValue(1);
+
+      await service.getUsers({ sortBy: 'name', sortOrder: 'asc' });
+
+      expect(prisma.identity.groupBy).not.toHaveBeenCalled();
+      expect(prisma.user.findMany.mock.calls[0][0].orderBy).toEqual({
+        name: 'asc',
+      });
     });
   });
 
