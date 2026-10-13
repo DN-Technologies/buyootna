@@ -39,6 +39,7 @@ import { useTypingSignal } from '@/shared/hooks/chat/useTypingSignal';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { quoteOf, useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
+import { refusedOutright } from '@/shared/utils/chatAttachments';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { NEW_CHAT_ID } from '@/shared/utils/openChat';
 import { openChatFile } from '@/shared/utils/openChatFile';
@@ -116,6 +117,18 @@ export default function ChatDetailsScreen() {
   const [pickedFiles, setPickedFiles] = useState<LocalAttachment[] | null>(
     null,
   );
+  // A single file over a limit (a video too large or too long) is refused
+  // here, with the reason: it used to open a preview that could not send,
+  // with only a small line saying why (QA). The short wait lets the system
+  // picker finish closing before the alert opens.
+  const handlePickedFiles = (files: LocalAttachment[]) => {
+    const refused = refusedOutright(files);
+    if (refused) {
+      setTimeout(() => showAlert('تعذر إرسال المرفق', refused), 400);
+      return;
+    }
+    setPickedFiles(files);
+  };
 
   // عقار / الموقع / موعد معاينة / عرض سعر from the "+" panel; a counter
   // (موعد آخر / عرض مقابل) opens the same form for that proposal
@@ -296,7 +309,7 @@ export default function ChatDetailsScreen() {
             onSend={handleSendMessage}
             showAttachmentMenu={showAttachmentMenu}
             setShowAttachmentMenu={setShowAttachmentMenu}
-            onPickedFiles={setPickedFiles}
+            onPickedFiles={handlePickedFiles}
             onCompose={setComposer}
             onSendVoice={(voice) => {
               if (!conversationId) return;

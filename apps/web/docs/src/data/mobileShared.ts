@@ -1625,13 +1625,15 @@ export const mobileShared: DocSection = {
       },
       acceptanceCriteria: {
         en: [
-          "A video over 100 MB or longer than 2 minutes is refused with a clear message.",
+          "A video over 100 MB or longer than 2 minutes is refused at once with an alert 'تعذر إرسال المرفق' that names the limit ('حجم الفيديو يتجاوز الحد المسموح به (الحد الأقصى 100 ميجابايت)' / 'مدة الفيديو أطول من الحد المسموح به (2 دقيقة)'); no preview opens and nothing is sent.",
+          "If the server refuses an upload (too large, wrong type), the failed bubble comes with an alert giving the reason; a lost connection only shows the failed bubble with retry.",
           "Upload shows progress; a failed upload offers retry.",
           "The video still plays after the chat has been open more than 15 minutes (the link is renewed on tap).",
           "While the video waits on the network a spinner shows over it, and playback carries on by itself once data arrives; on iPhone a wait that drags on is restarted automatically, with no need to press pause then play. A video the user paused stays paused.",
         ],
         ar: [
-          "الفيديو الأكبر من 100 ميجابايت أو الأطول من دقيقتين يُرفض برسالة واضحة.",
+          "الفيديو الأكبر من 100 ميجابايت أو الأطول من دقيقتين يُرفض فوراً بتنبيه 'تعذر إرسال المرفق' يذكر الحد ('حجم الفيديو يتجاوز الحد المسموح به (الحد الأقصى 100 ميجابايت)' / 'مدة الفيديو أطول من الحد المسموح به (2 دقيقة)')؛ ولا تُفتح المعاينة ولا يُرسل شيء.",
+          "إذا رفض الخادم الرفع (حجم زائد أو نوع غير مسموح) يظهر مع الرسالة الفاشلة تنبيه بالسبب؛ وانقطاع الاتصال يعرض الرسالة الفاشلة مع إعادة المحاولة فقط.",
           "يظهر تقدم الرفع، والرفع الفاشل يعرض إعادة المحاولة.",
           "يعمل الفيديو بعد بقاء المحادثة مفتوحة أكثر من 15 دقيقة (يُجدد الرابط عند الضغط).",
           "أثناء انتظار الفيديو للشبكة يظهر مؤشر تحميل فوقه، ويستمر التشغيل تلقائياً عند وصول البيانات؛ وفي iPhone يُعاد تشغيل الانتظار الطويل تلقائياً دون الحاجة إلى ضغط إيقاف ثم تشغيل. والفيديو الذي أوقفه المستخدم يبقى متوقفاً.",
@@ -1640,16 +1642,16 @@ export const mobileShared: DocSection = {
       testScenarios: {
         en: [
           "Send a 30-second video with a caption — B sees the still, 0:30 and the caption; tap — it plays.",
-          "Try a 3-minute video — refused.",
+          "Try a 3-minute video — refused with the alert naming the 2-minute limit; try one that is still over 100 MB after iOS shrinks it to 720p — refused with the alert naming 100 MB.",
           "iPhone on a slow or throttled connection: play a long video to the end without touching it — it may wait with a spinner but never stays frozen; pause it yourself — it stays paused.",
         ],
         ar: [
           "أرسل فيديو 30 ثانية مع تعليق — يرى B الصورة المصغرة و0:30 والتعليق، والضغط يشغله.",
-          "جرّب فيديو 3 دقائق — يُرفض.",
+          "جرّب فيديو 3 دقائق — يُرفض بتنبيه يذكر حد الدقيقتين؛ وجرّب فيديو يبقى أكبر من 100 ميجابايت بعد تصغير iOS له إلى 720p — يُرفض بتنبيه يذكر 100 ميجابايت.",
           "iPhone على اتصال بطيء أو مقيَّد: شغّل فيديو طويلاً حتى نهايته دون لمسه — قد ينتظر مع مؤشر تحميل لكنه لا يبقى متجمداً؛ وأوقفه بنفسك — يبقى متوقفاً.",
         ],
       },
-      updatedIn: "fix/chat-video-stall-ios",
+      updatedIn: "fix/chat-video-too-large-message",
     },
     {
       id: "mobile-chat-voice",

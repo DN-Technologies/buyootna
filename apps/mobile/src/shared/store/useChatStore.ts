@@ -11,7 +11,8 @@ import {
   ReplyPreview,
 } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
-import { messageTypeFor } from '@/shared/utils/chatAttachments';
+import { showAlert } from '@/shared/utils/alert';
+import { messageTypeFor, uploadRefusal } from '@/shared/utils/chatAttachments';
 import { mergeReceipts } from '@/shared/utils/chatReceipts';
 
 import { useAuthStore } from './useAuthStore';
@@ -174,6 +175,11 @@ export const useChatStore = create<ChatState>((set, get) => {
     } catch (error) {
       console.error('Failed to send attachments:', error);
       patchMessage(conversationId, pending.id, { sending: false, failed: true });
+      // Refused by the server (too large, wrong type): say why, since
+      // retrying the same file can't succeed
+      const refusal = uploadRefusal(error);
+      // (after the preview sheet has finished closing)
+      if (refusal) setTimeout(() => showAlert('تعذر إرسال المرفق', refusal), 500);
     }
   };
 
