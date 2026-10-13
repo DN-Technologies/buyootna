@@ -1,50 +1,46 @@
 import { FlashListRef } from '@shopify/flash-list';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
+import { useRef } from 'react';
 import { KeyboardAvoidingView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  ChatMessage,
-  chatService,
-  LocalAttachment,
-} from '@/shared/api/chat.service';
-import { ChatComposer } from '@/shared/components/chat/AttachmentPanel';
+import { ChatMessage } from '@/shared/api/chat.service';
 import AttachmentPreviewSheet from '@/shared/components/chat/AttachmentPreviewSheet';
+import ChatComposerSheets from '@/shared/components/chat/ChatComposerSheets';
 import ChatHeader from '@/shared/components/chat/ChatHeader';
 import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ChatSearchBar from '@/shared/components/chat/ChatSearchBar';
-import LocationSheet from '@/shared/components/chat/LocationSheet';
 import MessageOptionsSheet from '@/shared/components/chat/MessageOptionsSheet';
-import PropertyPickerSheet from '@/shared/components/chat/PropertyPickerSheet';
-import { ProposalAction } from '@/shared/components/chat/ProposalCard';
-import ProposalSheet from '@/shared/components/chat/ProposalSheet';
 import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
 import VideoPlayerModal from '@/shared/components/chat/VideoPlayerModal';
-import { useImageViewer } from '@/shared/components/media/ImageViewer';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useChatComposer } from '@/shared/hooks/chat/useChatComposer';
 import { useChatConversation } from '@/shared/hooks/chat/useChatConversation';
 import {
   useChatLiveSignals,
   useIsOnline,
   useIsTyping,
 } from '@/shared/hooks/chat/useChatLiveSignals';
+import { useChatMedia } from '@/shared/hooks/chat/useChatMedia';
+import { useChatNavigation } from '@/shared/hooks/chat/useChatNavigation';
 import { useChatReport } from '@/shared/hooks/chat/useChatReport';
 import { useChatSearch } from '@/shared/hooks/chat/useChatSearch';
 import { useStartConversation } from '@/shared/hooks/chat/useStartConversation';
 import { useTypingSignal } from '@/shared/hooks/chat/useTypingSignal';
-import { useAuthStore } from '@/shared/store/useAuthStore';
-import { quoteOf, useChatStore } from '@/shared/store/useChatStore';
-import { showAlert } from '@/shared/utils/alert';
-import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { quoteOf } from '@/shared/store/useChatStore';
 import { NEW_CHAT_ID } from '@/shared/utils/openChat';
 import { openChatFile } from '@/shared/utils/openChatFile';
 
+/**
+ * One conversation. The screen only lays the parts out; what they do lives
+ * in the chat hooks: useChatConversation (messages, text, reply, options),
+ * useChatComposer (the "+" sheets, files, voice, offers), useChatMedia
+ * (photos and videos), useChatSearch, useChatReport and useChatNavigation.
+ */
 export default function ChatDetailsScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams<{
     id: string;
     recipientId?: string;
@@ -53,6 +49,7 @@ export default function ChatDetailsScreen() {
   }>();
   const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const listRef = useRef<FlashListRef<any>>(null);
+  const inputRef = useRef<TextInput>(null);
 
   // Opened as /chat/new: the screen shows right away and the conversation
   // is created here, instead of the tap waiting for it
@@ -64,124 +61,48 @@ export default function ChatDetailsScreen() {
   });
   const conversationId = isNewChat ? (startedId ?? '') : routeId;
 
-  // Tap a chat image: full screen, swipe, pinch / double-tap to zoom
-  const { open: openViewer, viewer } = useImageViewer();
-
-  const {
-    inputText,
-    setInputText,
-    showAttachmentMenu,
-    setShowAttachmentMenu,
-    showMoreMenu,
-    setShowMoreMenu,
-    showPinnedContext,
-    setShowPinnedContext,
-    displayMessages,
-    isHeaderLoading,
-    otherUserName,
-    otherUserAvatar,
-    otherUserId,
-    propertyContext,
-    requestContext,
-    isLoadingMessages,
-    loadFailed,
-    handleRetryLoad,
-    handleSendMessage,
-    handleLoadMore,
-    replyTarget,
-    setReplyTarget,
-    optionsFor,
-    setOptionsFor,
-    copyMessage,
-    hideMessage,
-    hasOlderMessages,
-    otherReceipt,
-  } = useChatConversation({ conversationId, listRef });
+  const chat = useChatConversation({ conversationId, listRef });
 
   // "متصل" / "يكتب الان..." for the other person, and my own typing signal
   useChatLiveSignals();
-  const isOtherOnline = useIsOnline(otherUserId);
+  const isOtherOnline = useIsOnline(chat.otherUserId);
   const isOtherTyping = useIsTyping(conversationId);
-  useTypingSignal(conversationId, inputText);
+  useTypingSignal(conversationId, chat.inputText);
 
   // 🔍 in the header: search this chat, jump between matches
   const search = useChatSearch({
     conversationId,
-    messages: displayMessages,
-    hasOlderMessages,
-    loadOlder: handleLoadMore,
+    messages: chat.displayMessages,
+    hasOlderMessages: chat.hasOlderMessages,
+    loadOlder: chat.handleLoadMore,
   });
 
-  // Files picked from the attach menu, waiting in the preview to be sent
-  const [pickedFiles, setPickedFiles] = useState<LocalAttachment[] | null>(
-    null,
-  );
-
-  // عقار / الموقع / موعد معاينة / عرض سعر from the "+" panel; a counter
-  // (موعد آخر / عرض مقابل) opens the same form for that proposal
-  const [composer, setComposer] = useState<ChatComposer | null>(null);
-  // The chat video being played full screen
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [counterOf, setCounterOf] = useState<ChatMessage | null>(null);
-  const closeComposer = () => {
-    setComposer(null);
-    setCounterOf(null);
-  };
-  const sendRich = (
-    payload: Parameters<ReturnType<typeof useChatStore.getState>['sendMessage']>[1],
-  ) => {
-    closeComposer();
-    if (!conversationId) return;
-    const sent = useChatStore.getState().sendMessage(conversationId, {
-      ...payload,
-      replyTo: replyTarget ?? undefined,
-    });
-    if (!sent) {
-      showAlert('خطأ', 'تعذر الإرسال، تحقق من الاتصال وحاول مرة أخرى');
-      return;
-    }
-    setReplyTarget(null);
-    requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
-  };
-
-  // قبول / رفض / إلغاء on an offer or appointment card
-  const respondToProposal = async (
-    message: ChatMessage,
-    action: ProposalAction,
-  ) => {
-    if (!message.proposal || !conversationId) return;
-    try {
-      const { proposal } = await chatService.respondToProposal(
-        message.proposal.id,
-        action,
-      );
-      useChatStore
-        .getState()
-        .updateMessage(conversationId, message.id, { proposal });
-    } catch (error) {
-      showAlert('خطأ', getApiErrorMessage(error, 'تعذر إرسال الرد'));
-    }
-  };
+  const composer = useChatComposer({
+    conversationId,
+    replyTarget: chat.replyTarget,
+    setReplyTarget: chat.setReplyTarget,
+    listRef,
+  });
+  const media = useChatMedia(chat.displayMessages);
+  const navigation = useChatNavigation(chat.propertyContext?.id);
+  const { reportSheetRef, handleReportUser, handleSubmitReport } =
+    useChatReport(chat.otherUserId);
 
   // Replying (swipe right or رد): show what's quoted and open the keyboard
-  const inputRef = useRef<TextInput>(null);
   const startReply = (message: ChatMessage) => {
-    setReplyTarget(message);
+    chat.setReplyTarget(message);
     requestAnimationFrame(() => inputRef.current?.focus());
   };
-
-  const { reportSheetRef, handleReportUser, handleSubmitReport } =
-    useChatReport(otherUserId);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       {/* Invisible Overlay to Close Dropdowns */}
-      {showMoreMenu && (
+      {chat.showMoreMenu && (
         <Pressable
           className="absolute inset-0 z-40 bg-transparent"
           onPress={() => {
-            setShowAttachmentMenu(false);
-            setShowMoreMenu(false);
+            chat.setShowAttachmentMenu(false);
+            chat.setShowMoreMenu(false);
           }}
         />
       )}
@@ -189,14 +110,14 @@ export default function ChatDetailsScreen() {
       <ContentContainer className="flex-1">
         <KeyboardAvoidingView style={{ flex: 1 }}>
           <ChatHeader
-            userName={otherUserName}
+            userName={chat.otherUserName}
             isOnline={isOtherOnline}
             isTyping={isOtherTyping}
-            avatarUrl={otherUserAvatar}
-            isLoading={isHeaderLoading}
+            avatarUrl={chat.otherUserAvatar}
+            isLoading={chat.isHeaderLoading}
             onReportUser={handleReportUser}
-            showMoreMenu={showMoreMenu}
-            setShowMoreMenu={setShowMoreMenu}
+            showMoreMenu={chat.showMoreMenu}
+            setShowMoreMenu={chat.setShowMoreMenu}
             onPressSearch={search.open}
           />
 
@@ -214,182 +135,84 @@ export default function ChatDetailsScreen() {
           )}
 
           <ChatPinnedPropertyBar
-            propertyContext={propertyContext}
-            requestContext={requestContext}
-            // The company opens the request it received; the requester
-            // opens their own request
-            onPressRequest={(requestId) =>
-              router.push(
-                useAuthStore.getState().activeIdentity?.type === 'COMPANY'
-                  ? `/(company)/(requests)/${requestId}`
-                  : ({
-                      pathname: '/request-details/[id]',
-                      params: { id: requestId },
-                    } as never),
-              )
-            }
-            visible={showPinnedContext}
-            onDismiss={() => setShowPinnedContext(false)}
-            onPressProperty={(propId) => router.push(`/property/${propId}`)}
+            propertyContext={chat.propertyContext}
+            requestContext={chat.requestContext}
+            onPressRequest={navigation.openRequest}
+            visible={chat.showPinnedContext}
+            onDismiss={() => chat.setShowPinnedContext(false)}
+            onPressProperty={navigation.openProperty}
           />
 
           <ChatMessageList
             listRef={listRef}
-            messages={displayMessages}
-            onLoadMore={handleLoadMore}
-            onPressProperty={(propId) => {
-              const targetId = propId || propertyContext?.id;
-              if (targetId) {
-                router.push(`/property/${targetId}`);
-              }
-            }}
-            onPressImage={(imageUrl) => {
-              // The conversation's images, oldest first, at the tapped one
-              const urls = displayMessages
-                .filter((m) => m.type === 'IMAGE' && 'imageUrl' in m && !!m.imageUrl)
-                .map((m) => (m as { imageUrl: string }).imageUrl);
-              openViewer(urls, Math.max(0, urls.indexOf(imageUrl)));
-            }}
-            isLoading={isStarting || isLoadingMessages}
-            loadFailed={loadFailed}
-            onRetry={handleRetryLoad}
+            messages={chat.displayMessages}
+            onLoadMore={chat.handleLoadMore}
+            onPressProperty={navigation.openMessageProperty}
+            onPressImage={media.openImage}
+            isLoading={isStarting || chat.isLoadingMessages}
+            loadFailed={chat.loadFailed}
+            onRetry={chat.handleRetryLoad}
             onReply={startReply}
-            onLongPressMessage={setOptionsFor}
-            otherUserName={otherUserName}
-            onOpenPhotos={(urls, index) => openViewer(urls, index)}
+            onLongPressMessage={chat.setOptionsFor}
+            otherUserName={chat.otherUserName}
+            onOpenPhotos={media.openPhotos}
             onOpenFile={openChatFile}
-            onOpenVideo={async (video) => {
-              // A fresh link: the one in the message may have expired
-              try {
-                setVideoUrl(await chatService.attachmentUrl(video.id));
-              } catch {
-                setVideoUrl(video.url);
-              }
-            }}
+            onOpenVideo={media.openVideo}
             focusMessageId={search.focusId}
-            otherReceipt={otherReceipt}
-            onRespondToProposal={respondToProposal}
-            onCounterProposal={(message) => {
-              setCounterOf(message);
-              setComposer(
-                message.type === 'APPOINTMENT' ? 'appointment' : 'offer',
-              );
-            }}
-            onRetryAttachments={(tempId) =>
-              conversationId &&
-              useChatStore.getState().retryAttachments(conversationId, tempId)
-            }
+            otherReceipt={chat.otherReceipt}
+            onRespondToProposal={composer.respondToProposal}
+            onCounterProposal={composer.startCounter}
+            onRetryAttachments={composer.retryAttachments}
           />
 
-          {replyTarget && (
+          {chat.replyTarget && (
             <ReplyComposeBar
-              reply={quoteOf(replyTarget)}
-              otherName={otherUserName}
-              onCancel={() => setReplyTarget(null)}
+              reply={quoteOf(chat.replyTarget)}
+              otherName={chat.otherUserName}
+              onCancel={() => chat.setReplyTarget(null)}
             />
           )}
           <ChatInputBar
             inputRef={inputRef}
             sendDisabled={!conversationId}
-            inputText={inputText}
-            onInputChange={setInputText}
-            onSend={handleSendMessage}
-            showAttachmentMenu={showAttachmentMenu}
-            setShowAttachmentMenu={setShowAttachmentMenu}
-            onPickedFiles={setPickedFiles}
-            onCompose={setComposer}
-            onSendVoice={(voice) => {
-              if (!conversationId) return;
-              void useChatStore.getState().sendAttachments(conversationId, {
-                files: [voice],
-                replyTo: replyTarget ?? undefined,
-              });
-              setReplyTarget(null);
-              requestAnimationFrame(() =>
-                listRef.current?.scrollToEnd({ animated: true }),
-              );
-            }}
+            inputText={chat.inputText}
+            onInputChange={chat.setInputText}
+            onSend={chat.handleSendMessage}
+            showAttachmentMenu={chat.showAttachmentMenu}
+            setShowAttachmentMenu={chat.setShowAttachmentMenu}
+            onPickedFiles={composer.handlePickedFiles}
+            onCompose={composer.setComposer}
+            onSendVoice={composer.sendVoice}
           />
         </KeyboardAvoidingView>
       </ContentContainer>
 
-      {viewer}
+      {media.viewer}
 
       {/* Long-press on a message: رد / نسخ / حذف لدي */}
       <MessageOptionsSheet
-        message={optionsFor}
-        onClose={() => setOptionsFor(null)}
+        message={chat.optionsFor}
+        onClose={() => chat.setOptionsFor(null)}
         onReply={startReply}
-        onCopy={copyMessage}
-        onHide={hideMessage}
+        onCopy={chat.copyMessage}
+        onHide={chat.hideMessage}
       />
 
-      {composer === 'property' && (
-        <PropertyPickerSheet
-          onClose={closeComposer}
-          onPick={(p) =>
-            sendRich({
-              type: 'PROPERTY',
-              propertyId: p.id,
-              property: {
-                id: p.id,
-                imageUrl: p.imageUrl,
-                price: p.price,
-                title: p.title,
-                type: p.type,
-                location: p.location,
-              },
-            })
-          }
-        />
-      )}
-      {composer === 'location' && (
-        <LocationSheet
-          onClose={closeComposer}
-          onSend={(loc) =>
-            sendRich({
-              type: 'LOCATION',
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-              locationLabel: loc.label ?? undefined,
-            })
-          }
-        />
-      )}
-      {(composer === 'appointment' || composer === 'offer') && (
-        <ProposalSheet
-          kind={composer === 'appointment' ? 'APPOINTMENT' : 'OFFER'}
-          counterOf={counterOf?.proposal}
-          defaultPeriod={propertyContext?.type === 'RENT' ? 'MONTHLY' : 'TOTAL'}
-          onClose={closeComposer}
-          onSubmit={(proposal) =>
-            sendRich({
-              type: composer === 'appointment' ? 'APPOINTMENT' : 'OFFER',
-              proposal,
-            })
-          }
-        />
-      )}
+      <ChatComposerSheets
+        composer={composer.composer}
+        counterOf={composer.counterOf}
+        isRent={chat.propertyContext?.type === 'RENT'}
+        onClose={composer.closeComposer}
+        onSend={composer.sendRich}
+      />
 
-      <VideoPlayerModal url={videoUrl} onClose={() => setVideoUrl(null)} />
+      <VideoPlayerModal url={media.videoUrl} onClose={media.closeVideo} />
 
       {/* Picked from the "+" panel: review before sending */}
       <AttachmentPreviewSheet
-        files={pickedFiles}
-        onClose={() => setPickedFiles(null)}
-        onSend={(files, caption) => {
-          setPickedFiles(null);
-          if (!conversationId) return;
-          void useChatStore.getState().sendAttachments(conversationId, {
-            files,
-            caption,
-            replyTo: replyTarget ?? undefined,
-          });
-          setReplyTarget(null);
-          requestAnimationFrame(() =>
-            listRef.current?.scrollToEnd({ animated: true }),
-          );
-        }}
+        files={composer.pickedFiles}
+        onClose={composer.discardPickedFiles}
+        onSend={composer.sendPickedFiles}
       />
 
       <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />

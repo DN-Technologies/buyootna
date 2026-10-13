@@ -1,4 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 
@@ -84,6 +85,9 @@ export async function pickVideo(): Promise<LocalAttachment[] | null> {
   });
   if (result.canceled) return null;
   const asset = result.assets[0];
+  // The picker doesn't always report an exported video's size, and without
+  // it the 100 MB limit was only found out by a failed upload
+  const size = asset.fileSize ?? (await sizeOnDisk(asset.uri));
   let thumbnailUri: string | undefined;
   try {
     thumbnailUri = (
@@ -100,7 +104,7 @@ export async function pickVideo(): Promise<LocalAttachment[] | null> {
       uri: asset.uri,
       name: asset.fileName || `video-${Date.now()}.mp4`,
       mimeType: asset.mimeType || 'video/mp4',
-      size: asset.fileSize,
+      size,
       kind: 'VIDEO',
       durationMs: asset.duration ?? undefined,
       thumbnailUri,
@@ -125,6 +129,40 @@ export async function pickDocuments(): Promise<LocalAttachment[] | null> {
   }));
 }
 
+async function sizeOnDisk(uri: string): Promise<number | undefined> {
+  try {
+    const info = await FileSystem.getInfoAsync(uri);
+    return info.exists ? info.size : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * A single picked file that can't be sent: the reason, to be shown at once.
+ * With several files the preview opens instead, so the one at fault can be
+ * removed there.
+ */
+export function refusedOutright(files: LocalAttachment[]): string | null {
+  return files.length === 1 ? attachmentsProblem(files) : null;
+}
+
+/**
+ * Why the server refused an upload, or null when it failed for another
+ * reason (no connection: the bubble offers retry).
+ */
+export function uploadRefusal(error: unknown): string | null {
+  const response = (error as { response?: { status?: number; data?: { message?: unknown } } })
+    ?.response;
+  if (!response) return null;
+  if (response.status === 413) {
+    return `حجم الملف أكبر من الحد المسموح به (${VIDEO_MAX_BYTES / MB} ميجابايت للفيديو)`;
+  }
+  const message = response.data?.message;
+  if (response.status === 400 && typeof message === 'string' && message) return message;
+  return null;
+}
+
 /** Why these files can't be sent, or null when they're fine. */
 export function attachmentsProblem(files: LocalAttachment[]): string | null {
   if (files.length > MAX_CHAT_ATTACHMENTS) {
@@ -133,10 +171,12 @@ export function attachmentsProblem(files: LocalAttachment[]): string | null {
   for (const f of files) {
     const max = MAX_BYTES[f.kind];
     if (f.kind === 'VIDEO' && (f.durationMs ?? 0) > (VIDEO_MAX_SECONDS + 1) * 1000) {
-      return `مدة الفيديو أطول من ${VIDEO_MAX_SECONDS / 60} دقيقة`;
+      return `مدة الفيديو أطول من الحد المسموح به (${VIDEO_MAX_SECONDS / 60} دقيقة)`;
     }
     if (f.size && f.size > max) {
-      return `حجم ${f.name} أكبر من ${max / MB} ميجابايت`;
+      return f.kind === 'VIDEO'
+        ? `حجم الفيديو يتجاوز الحد المسموح به (الحد الأقصى ${max / MB} ميجابايت)`
+        : `حجم ${f.name} أكبر من ${max / MB} ميجابايت`;
     }
     if (f.kind === 'FILE' && !DOCUMENT_TYPES.includes(f.mimeType)) {
       return 'نوع الملف غير مدعوم. المسموح: PDF و Word و Excel';

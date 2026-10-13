@@ -5,10 +5,13 @@ import {
   formatFileSize,
   lastMessagePreview,
   messageTypeFor,
+  refusedOutright,
+  uploadRefusal,
 } from '../chatAttachments';
 
 jest.mock('expo-image-picker', () => ({}));
 jest.mock('expo-document-picker', () => ({}));
+jest.mock('expo-file-system/legacy', () => ({ getInfoAsync: jest.fn() }));
 
 const file = (over = {}) => ({
   uri: 'file:///x',
@@ -62,5 +65,37 @@ describe('chat attachment helpers', () => {
     expect(
       lastMessagePreview({ type: 'VOICE', content: null, attachmentDurationMs: 42000 }),
     ).toBe('🎤 رسالة صوتية (0:42)');
+  });
+
+  // QA (iOS): a video over the limit was refused with no message
+  it('names the limit for a video that is too large or too long', () => {
+    const video = (over = {}) =>
+      file({ kind: 'VIDEO', mimeType: 'video/mp4', name: 'tour.mov', ...over });
+
+    expect(attachmentsProblem([video({ size: 120 * 1024 * 1024 })])).toBe(
+      'حجم الفيديو يتجاوز الحد المسموح به (الحد الأقصى 100 ميجابايت)',
+    );
+    expect(attachmentsProblem([video({ durationMs: 200_000 })])).toBe(
+      'مدة الفيديو أطول من الحد المسموح به (2 دقيقة)',
+    );
+    expect(attachmentsProblem([video({ size: 60 * 1024 * 1024, durationMs: 90_000 })])).toBeNull();
+  });
+
+  it('refuses a single file at once, but lets several through to the preview', () => {
+    const big = file({ kind: 'VIDEO', mimeType: 'video/mp4', size: 120 * 1024 * 1024 });
+
+    expect(refusedOutright([big])).toContain('100 ميجابايت');
+    expect(refusedOutright([file()])).toBeNull();
+    // One of several: the preview shows the reason and lets it be removed
+    expect(refusedOutright([file(), file({ size: 30 * 1024 * 1024 })])).toBeNull();
+  });
+
+  it('explains an upload the server refused, and nothing for a lost connection', () => {
+    expect(uploadRefusal({ response: { status: 413 } })).toContain('100 ميجابايت');
+    expect(
+      uploadRefusal({ response: { status: 400, data: { message: 'حجم الملف x أكبر من 20 ميجابايت' } } }),
+    ).toBe('حجم الملف x أكبر من 20 ميجابايت');
+    expect(uploadRefusal({ response: { status: 500 } })).toBeNull();
+    expect(uploadRefusal(new Error('Network Error'))).toBeNull();
   });
 });
