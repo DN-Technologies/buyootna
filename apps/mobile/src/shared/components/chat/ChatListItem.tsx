@@ -129,9 +129,17 @@ export default function ChatListItem({
               {unreadCount > 0 ? (
                 <View
                   testID="chat-unread-badge"
-                  className="h-5 min-w-[20px] items-center justify-center rounded-full bg-[#9C1E28] px-1"
+                  className="h-5 min-w-[20px] items-center justify-center rounded-full bg-[#9C1E28] px-[5px]"
                 >
-                  <Text className="font-cairo-semibold text-[12px] leading-[14px] text-white">
+                  {/* The line is as tall as the badge: Cairo needs about
+                      1.9x its size, and a 14px line pushed the digit up
+                      out of the circle on iOS (QA) */}
+                  <Text
+                    testID="chat-unread-count"
+                    className="text-center font-cairo-semibold text-[11px] leading-[20px] text-white"
+                    style={{ includeFontPadding: false }}
+                    numberOfLines={1}
+                  >
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Text>
                 </View>

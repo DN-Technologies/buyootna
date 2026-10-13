@@ -37,4 +37,28 @@ describe('ChatListItem', () => {
       expect(getByText(t)).toBeTruthy();
     }
   });
+
+  // QA (iOS): the unread number sat high in its circle, half cut off: the
+  // Cairo digit had a 14px line inside a 20px badge
+  it('centres the unread number on a line as tall as its badge', async () => {
+    const { getByTestId } = await setup({ unreadCount: 2 });
+
+    expect(String(getByTestId('chat-unread-badge').props.className)).toContain('h-5');
+    const count = getByTestId('chat-unread-count');
+    expect(count.props.children).toBe(2);
+    expect(String(count.props.className)).toContain('leading-[20px]');
+    expect(String(count.props.className)).not.toContain('leading-[14px]');
+  });
+
+  it('caps the unread number at 9+ and keeps a long name on one line', async () => {
+    const { getByTestId, getByText } = await setup({
+      unreadCount: 27,
+      user: { name: 'أحمد محمد عبدالله العبدالله الكويتي', avatarUrl: '', isOnline: false },
+    });
+
+    expect(getByTestId('chat-unread-count').props.children).toBe('9+');
+    const name = getByText('أحمد محمد عبدالله العبدالله الكويتي');
+    expect(name.props.numberOfLines).toBe(1);
+    expect(String(name.props.className)).toContain('shrink');
+  });
 });
