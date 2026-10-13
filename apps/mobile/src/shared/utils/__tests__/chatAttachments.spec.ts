@@ -5,6 +5,7 @@ import {
   formatFileSize,
   lastMessagePreview,
   messageTypeFor,
+  readableFileName,
   refusedOutright,
   uploadRefusal,
 } from '../chatAttachments';
@@ -97,5 +98,15 @@ describe('chat attachment helpers', () => {
     ).toBe('حجم الملف x أكبر من 20 ميجابايت');
     expect(uploadRefusal({ response: { status: 500 } })).toBeNull();
     expect(uploadRefusal(new Error('Network Error'))).toBeNull();
+  });
+
+  // QA screenshot (iOS): a sent PDF was named "Buyootna%20QA%20_%2..."
+  it('shows a picked file under its readable name', () => {
+    expect(readableFileName('Buyootna%20QA%20_%28v2%29.pdf')).toBe('Buyootna QA _(v2).pdf');
+    expect(readableFileName('%D8%B9%D9%82%D8%AF.pdf')).toBe('عقد.pdf');
+    expect(readableFileName('عقد 100%.pdf')).toBe('عقد 100%.pdf');
+    // Not valid encoding: left as it is
+    expect(readableFileName('report%ZZ%20.pdf')).toBe('report%ZZ%20.pdf');
+    expect(readableFileName('50%25 off.pdf')).toBe('50% off.pdf');
   });
 });
