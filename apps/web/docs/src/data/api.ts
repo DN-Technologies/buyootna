@@ -163,6 +163,41 @@ export const api: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
+      id: "api-chat-other-available",
+      title: {
+        en: "Chat: otherUser.isAvailable, and no messages to a deleted account",
+        ar: "المحادثة: otherUser.isAvailable، ولا رسائل إلى حساب محذوف",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /chat/conversations and GET /chat/conversations/:id/messages return `otherUser.isAvailable`: true for a live account; false when the other account is suspended (by its owner or an admin), blocked, or deleted. For a deleted account the messages `meta.otherUser` is an object with an empty id and `isAvailable: false` (it used to be null). An unavailable otherUser is always `isOnline: false` with `lastSeenAt: null`. Sending (socket send_message) into a conversation whose other account is deleted is refused with 403 'هذا المستخدم لم يعد متاحاً'; suspended or blocked stays 403 'هذا الحساب غير متاح حالياً'. Additive: clients that ignore the field behave as before.",
+        ar: "يعيد GET /chat/conversations و GET /chat/conversations/:id/messages الحقل `otherUser.isAvailable`: true للحساب الفعّال؛ و false حين يكون حساب الطرف الآخر معلّقاً (من صاحبه أو من الإدارة) أو محظوراً أو محذوفاً. وللحساب المحذوف يكون `meta.otherUser` في الرسائل كائناً بمعرّف فارغ و`isAvailable: false` (كان null). والطرف غير المتاح دائماً `isOnline: false` و`lastSeenAt: null`. والإرسال (send_message عبر السوكت) إلى محادثة حُذف حساب طرفها الآخر يُرفض بـ 403 'هذا المستخدم لم يعد متاحاً'؛ والمعلّق أو المحظور يبقى 403 'هذا الحساب غير متاح حالياً'. إضافة فقط: العملاء الذين يتجاهلون الحقل يعملون كما كانوا.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Live other account: isAvailable true in the list and in the messages meta.",
+          "Suspended or blocked: isAvailable false, isOnline false, lastSeenAt null.",
+          "Deleted: the conversation is still listed, isAvailable false; send_message → message_error with 'هذا المستخدم لم يعد متاحاً' and nothing is stored.",
+        ],
+        ar: [
+          "حساب الطرف الآخر فعّال: isAvailable true في القائمة وفي meta الرسائل.",
+          "معلّق أو محظور: isAvailable false و isOnline false و lastSeenAt null.",
+          "محذوف: المحادثة ما زالت في القائمة و isAvailable false؛ و send_message ← message_error بـ 'هذا المستخدم لم يعد متاحاً' ولا يُخزَّن شيء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Block a user, then GET the other side's conversations — that row has isAvailable false.",
+          "Delete a user, then send into the conversation from the other side — refused.",
+        ],
+        ar: [
+          "احظر مستخدماً ثم اطلب محادثات الطرف الآخر — ذلك الصف فيه isAvailable false.",
+          "احذف مستخدماً ثم أرسل في المحادثة من الطرف الآخر — يُرفض.",
+        ],
+      },
+      updatedIn: "feat/chat-unavailable-user",
+    },
+    {
       id: "api-payments-webhook",
       title: {
         en: "Tap webhook can't be forged and fulfils each invoice once",

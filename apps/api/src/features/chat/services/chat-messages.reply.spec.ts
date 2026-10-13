@@ -68,7 +68,12 @@ describe('ChatMessagesService replies and hiding', () => {
     prisma = {
       conversationParticipant: {
         findFirst: jest.fn().mockResolvedValue({ id: 'p' }),
-        findMany: jest.fn().mockResolvedValue([]),
+        // The other participant, with a live account
+        findMany: jest
+          .fn()
+          .mockResolvedValue([
+            { identity: { user: { isDisabled: false, isBlocked: false } } },
+          ]),
       },
       message: { findFirst: jest.fn(), findUnique: jest.fn() },
       messageHidden: { upsert: jest.fn().mockResolvedValue({}) },

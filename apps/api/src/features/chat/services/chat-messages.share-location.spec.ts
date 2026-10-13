@@ -36,7 +36,12 @@ describe('ChatMessagesService — location, shared ads, proposals', () => {
     prisma = {
       conversationParticipant: {
         findFirst: jest.fn().mockResolvedValue({ id: 'p' }),
-        findMany: jest.fn().mockResolvedValue([]),
+        // The other participant, with a live account
+        findMany: jest
+          .fn()
+          .mockResolvedValue([
+            { identity: { user: { isDisabled: false, isBlocked: false } } },
+          ]),
       },
       conversation: {
         findUnique: jest.fn().mockResolvedValue({ propertyId: 'chat-ad' }),

@@ -2,7 +2,10 @@ import { ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { ChatConversationsService } from './chat-conversations.service';
 import { ChatMessagesService } from './chat-messages.service';
-import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import {
+  ChatParticipantDisplayService,
+  isOtherAvailable,
+} from './chat-participant-display.service';
 import { ChatAttachmentsService } from './chat-attachments.service';
 import { ChatProposalsService } from './chat-proposals.service';
 
@@ -117,5 +120,51 @@ describe('chat with a suspended or blocked account', () => {
       }),
     ).rejects.toThrow(new ForbiddenException('هذا الحساب غير متاح حالياً'));
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  // QA: the other account was deleted; messages went into the void
+  it('refuses new messages once the other account is gone', async () => {
+    const prisma = {
+      conversationParticipant: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'p1' }),
+        // Deleting an account removes its participant rows
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      $transaction: jest.fn(),
+    };
+    const service = new ChatMessagesService(
+      prisma as unknown as PrismaService,
+      display,
+      {} as ChatAttachmentsService,
+      {} as ChatProposalsService,
+    );
+
+    await expect(
+      service.sendMessage({ userId: 'u1', identityId: 'i1' }, 'c1', {
+        content: 'مرحبا',
+        type: 'TEXT',
+      }),
+    ).rejects.toThrow(new ForbiddenException('هذا المستخدم لم يعد متاحاً'));
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('tells the app whether the other side can still be written to', () => {
+    const live = {
+      identity: { user: { isDisabled: false, isBlocked: false } },
+    };
+    expect(isOtherAvailable(live)).toBe(true);
+    expect(
+      isOtherAvailable({
+        identity: { user: { isDisabled: true, isBlocked: false } },
+      }),
+    ).toBe(false);
+    expect(
+      isOtherAvailable({
+        identity: { user: { isDisabled: false, isBlocked: true } },
+      }),
+    ).toBe(false);
+    // Deleted: no participant left
+    expect(isOtherAvailable(undefined)).toBe(false);
+    expect(isOtherAvailable(null)).toBe(false);
   });
 });

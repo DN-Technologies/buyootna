@@ -12,6 +12,7 @@ import ChatInputBar from '@/shared/components/chat/ChatInputBar';
 import ChatMessageList from '@/shared/components/chat/ChatMessageList';
 import ChatPinnedPropertyBar from '@/shared/components/chat/ChatPinnedPropertyBar';
 import ChatSearchBar from '@/shared/components/chat/ChatSearchBar';
+import ChatUnavailableNotice from '@/shared/components/chat/ChatUnavailableNotice';
 import MessageOptionsSheet from '@/shared/components/chat/MessageOptionsSheet';
 import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
 import VideoPlayerModal from '@/shared/components/chat/VideoPlayerModal';
@@ -111,8 +112,8 @@ export default function ChatDetailsScreen() {
         <KeyboardAvoidingView style={{ flex: 1 }}>
           <ChatHeader
             userName={chat.otherUserName}
-            isOnline={isOtherOnline}
-            isTyping={isOtherTyping}
+            isOnline={isOtherOnline && !chat.otherUnavailable}
+            isTyping={isOtherTyping && !chat.otherUnavailable}
             avatarUrl={chat.otherUserAvatar}
             isLoading={chat.isHeaderLoading}
             onReportUser={handleReportUser}
@@ -165,25 +166,32 @@ export default function ChatDetailsScreen() {
             onRetryAttachments={composer.retryAttachments}
           />
 
-          {chat.replyTarget && (
+          {chat.replyTarget && !chat.otherUnavailable && (
             <ReplyComposeBar
               reply={quoteOf(chat.replyTarget)}
               otherName={chat.otherUserName}
               onCancel={() => chat.setReplyTarget(null)}
             />
           )}
-          <ChatInputBar
-            inputRef={inputRef}
-            sendDisabled={!conversationId}
-            inputText={chat.inputText}
-            onInputChange={chat.setInputText}
-            onSend={chat.handleSendMessage}
-            showAttachmentMenu={chat.showAttachmentMenu}
-            setShowAttachmentMenu={chat.setShowAttachmentMenu}
-            onPickedFiles={composer.handlePickedFiles}
-            onCompose={composer.setComposer}
-            onSendVoice={composer.sendVoice}
-          />
+          {/* Their account is deleted, suspended or blocked: say so where
+              the message field was (QA: the chat looked normal and messages
+              went nowhere) */}
+          {chat.otherUnavailable ? (
+            <ChatUnavailableNotice />
+          ) : (
+            <ChatInputBar
+              inputRef={inputRef}
+              sendDisabled={!conversationId}
+              inputText={chat.inputText}
+              onInputChange={chat.setInputText}
+              onSend={chat.handleSendMessage}
+              showAttachmentMenu={chat.showAttachmentMenu}
+              setShowAttachmentMenu={chat.setShowAttachmentMenu}
+              onPickedFiles={composer.handlePickedFiles}
+              onCompose={composer.setComposer}
+              onSendVoice={composer.sendVoice}
+            />
+          )}
         </KeyboardAvoidingView>
       </ContentContainer>
 

@@ -16,6 +16,23 @@ export interface OtherParticipantLike {
 }
 
 /**
+ * Whether the other side of a conversation can still be written to: their
+ * account exists (a deleted account leaves the conversation without them)
+ * and is neither suspended nor blocked. One answer for all three, so the
+ * app never says which.
+ */
+export function isOtherAvailable(
+  otherPart?: {
+    identity?: {
+      user?: { isDisabled?: boolean; isBlocked?: boolean } | null;
+    } | null;
+  } | null,
+): boolean {
+  const user = otherPart?.identity?.user;
+  return !!user && !user.isDisabled && !user.isBlocked;
+}
+
+/**
  * Resolves how a conversation's other participant should be displayed
  * (name + avatar). Shared by the conversation list and the message thread.
  */

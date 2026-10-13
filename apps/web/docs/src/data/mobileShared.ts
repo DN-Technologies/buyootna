@@ -1100,6 +1100,45 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/chat-push-while-backgrounded",
     },
     {
+      id: "mobile-chat-unavailable-user",
+      title: {
+        en: "A chat with a deleted, suspended or blocked account is read-only",
+        ar: "المحادثة مع حساب محذوف أو معلّق أو محظور للقراءة فقط",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: when the other person's account was deleted, deactivated or banned, the chat looked normal and messages could still be typed; they failed or went nowhere. The chat now says so: in place of the message field a notice reads 'هذا المستخدم لم يعد متاحاً' with 'لا يمكن إرسال رسائل جديدة في هذه المحادثة.' The earlier messages stay readable, the header shows no 'متصل' or 'يكتب الان...', and there is no +, microphone or send button. The notice is the same for all three cases, so it never says which. It comes from the server's `otherUser.isAvailable`; the notice appears once the API with that field is deployed.",
+        ar: "بلاغ QA: حين يُحذف حساب الطرف الآخر أو يُعطَّل أو يُحظر كانت المحادثة تبدو عادية ويمكن كتابة الرسائل، فتفشل أو لا تصل لأحد. الآن تذكر المحادثة ذلك: مكان حقل الرسالة يظهر تنبيه 'هذا المستخدم لم يعد متاحاً' مع 'لا يمكن إرسال رسائل جديدة في هذه المحادثة.' وتبقى الرسائل السابقة مقروءة، ولا تعرض الترويسة 'متصل' ولا 'يكتب الان...'، ولا يوجد زر + ولا ميكروفون ولا إرسال. التنبيه واحد للحالات الثلاث فلا يذكر أيها. ومصدره `otherUser.isAvailable` من الخادم؛ ويظهر التنبيه بعد نشر الـ API الذي يحمل هذا الحقل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Other account deleted: the chat opens with its history and the notice; nothing can be typed or attached.",
+          "Other account suspended by its owner or by an admin, or blocked: same notice.",
+          "When a suspended account comes back, reopening the chat shows the message field again.",
+          "An available account: the chat is unchanged, with its message field.",
+        ],
+        ar: [
+          "حساب الطرف الآخر محذوف: تُفتح المحادثة بسجلها والتنبيه؛ ولا يمكن الكتابة ولا الإرفاق.",
+          "حساب الطرف الآخر معلّق من صاحبه أو من الإدارة، أو محظور: التنبيه نفسه.",
+          "حين يعود الحساب المعلّق تعرض المحادثة حقل الرسالة من جديد عند فتحها.",
+          "الحساب المتاح: المحادثة كما هي بحقل الرسالة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "A and B chat; block B from the admin portal; A opens the chat — notice, no field. Unblock B; A reopens — the field is back.",
+          "B deactivates their own account; A opens the chat — notice.",
+          "B deletes their account; A opens the chat — the old messages and the notice.",
+        ],
+        ar: [
+          "A و B يتحادثان؛ احظر B من بوابة الإدارة؛ يفتح A المحادثة — تنبيه بلا حقل. ألغِ الحظر؛ يعيد A الفتح — يعود الحقل.",
+          "B يعطّل حسابه بنفسه؛ يفتح A المحادثة — تنبيه.",
+          "B يحذف حسابه؛ يفتح A المحادثة — الرسائل القديمة والتنبيه.",
+        ],
+      },
+      updatedIn: "feat/chat-unavailable-user",
+    },
+    {
       id: "mobile-identity-contact-phone",
       title: {
         en: "Each persona can use the account's phone or its own verified number",

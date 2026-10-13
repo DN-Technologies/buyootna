@@ -8,6 +8,9 @@ export interface ChatParticipant {
   // live changes arrive on the socket (see useChatLiveStore)
   isOnline?: boolean;
   lastSeenAt?: string | null;
+  // False once their account is deleted, suspended or blocked: the chat
+  // can be read but not written to. Absent from older servers (= available)
+  isAvailable?: boolean;
 }
 
 // The quote request a chat is about (pinned above the messages)
