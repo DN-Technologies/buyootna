@@ -9,11 +9,11 @@ import {
 } from '@/shared/api/settings.service';
 import { EMAIL_PATTERN } from '@/shared/components/forms/EmailField';
 import type { ProfileFormData } from '@/shared/components/forms/types';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import {
   normalizeEmail,
   useEmailVerification,
 } from '@/shared/hooks/verification/useEmailVerification';
-import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import {
   localPhone,
   usePhoneVerification,
@@ -21,6 +21,7 @@ import {
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { emailForSave } from '@/shared/utils/profileEmail';
 
 // Minimal shape both expo pickers satisfy (DocumentPicker asset, and the
 // ImagePicker asset the logo picker returns)
@@ -215,7 +216,8 @@ export function useCompanyEditProfile() {
       //    UpdateProfileDto rejects unknown properties with a 400.
       await settingsService.updateProfile({
         name: data.name,
-        email: data.email.trim() || undefined,
+        // Cleared: removes the address on file; never had one: left out
+        email: emailForSave(data.email, user?.email),
         phone: formatKuwaitPhone(data.phone),
         // No WhatsApp: companies are reached by phone or in-app chat
       });
@@ -261,6 +263,19 @@ export function useCompanyEditProfile() {
   const onSubmit = async (data: ProfileFormData) => {
     if (!data.name.trim()) {
       showAlert('تنبيه', 'يرجى إدخال اسم الشركة');
+      return;
+    }
+    // The address signs the account in unless the method is phone only
+    if (
+      !data.email.trim() &&
+      !!user?.email &&
+      loginMethod !== null &&
+      loginMethod !== 'PHONE'
+    ) {
+      showAlert(
+        'تنبيه',
+        'البريد الإلكتروني مستخدم لتسجيل الدخول ولا يمكن حذفه. غيّر طريقة تسجيل الدخول إلى رقم الهاتف أولاً.',
+      );
       return;
     }
     if (isEmailUnverified(data.email)) {

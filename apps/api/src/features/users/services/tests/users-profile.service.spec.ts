@@ -222,6 +222,64 @@ describe('UsersProfileService', () => {
         data: { name: 'سالم', whatsapp: '99998888' },
       });
     });
+
+    // QA: clearing the email in Edit Profile saved "successfully" and the
+    // old address came back
+    it('removes the address on an explicit null for a phone sign-in account', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        phone: '+96599998888',
+        email: 'salem@mail.com',
+        loginMethod: 'PHONE',
+      });
+
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        name: 'سالم',
+        email: null,
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'سالم', email: null },
+      });
+    });
+
+    it.each([['EMAIL'], [null]])(
+      'refuses to remove it when the account signs in with it (method %s)',
+      async (loginMethod) => {
+        prisma.user.findUnique.mockResolvedValue({
+          phone: '+96599998888',
+          email: 'salem@mail.com',
+          loginMethod,
+        });
+
+        const attempt = service.updateProfile('user-1', Role.INDIVIDUAL, {
+          email: null,
+        });
+
+        await expect(attempt).rejects.toMatchObject({
+          response: { code: 'EMAIL_REQUIRED' },
+        });
+        expect(prisma.user.update).not.toHaveBeenCalled();
+      },
+    );
+
+    it('still treats an empty string as "not sent", never as a removal', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        phone: '+96599998888',
+        email: 'salem@mail.com',
+        loginMethod: 'PHONE',
+      });
+
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        name: 'سالم',
+        email: '',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'سالم' },
+      });
+    });
   });
 
   describe('listMyProjects / deleteMyProject', () => {

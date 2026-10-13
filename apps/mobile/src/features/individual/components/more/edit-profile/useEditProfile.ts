@@ -8,17 +8,18 @@ import {
 } from '@/shared/api/settings.service';
 import { EMAIL_PATTERN } from '@/shared/components/forms/EmailField';
 import type { ProfileFormData } from '@/shared/components/forms/types';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import {
   normalizeEmail,
   useEmailVerification,
 } from '@/shared/hooks/verification/useEmailVerification';
-import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import {
   localPhone,
   usePhoneVerification,
 } from '@/shared/hooks/verification/usePhoneVerification';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { emailForSave } from '@/shared/utils/profileEmail';
 
 export interface ProfileToast {
   kind: 'success' | 'warning';
@@ -102,11 +103,10 @@ export function useEditProfile() {
 
   const saveProfile = async (data: ProfileFormData) => {
     try {
-      const email = data.email.trim();
       await settingsService.updateProfile({
         name: data.name,
-        // Left out when empty: a phone-only account has no email to send
-        email: email || undefined,
+        // Cleared: removes the address on file; never had one: left out
+        email: emailForSave(data.email, user?.email),
         phone: data.phone,
         whatsapp: data.whatsapp,
         avatarUrl: data.avatarUrl,
