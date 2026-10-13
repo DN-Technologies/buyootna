@@ -11,7 +11,10 @@ import {
 } from '../../properties/services/property-formatting.util';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
-import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import {
+  ChatParticipantDisplayService,
+  isOtherAvailable,
+} from './chat-participant-display.service';
 import { presentProposal, PROPOSAL_SELECT } from './chat-proposals.service';
 import { receiptOf } from './chat-receipts.service';
 import {
@@ -325,6 +328,8 @@ export class ChatConversationsService {
             avatarUrl: otherUserAvatar,
             // For "متصل" (ChatService adds isOnline from it)
             lastSeenAt: ident?.lastSeenAt ?? null,
+            // False once they are deleted, suspended or blocked
+            isAvailable: isOtherAvailable(otherPart),
           },
           requestContext: presentRequestContext(conv.request),
           propertyContext: conv.property

@@ -8,7 +8,10 @@ import { Prisma, Property } from '@prisma/client';
 
 import { PrismaService } from 'src/core/prisma/prisma.service';
 
-import { ChatParticipantDisplayService } from './chat-participant-display.service';
+import {
+  ChatParticipantDisplayService,
+  isOtherAvailable,
+} from './chat-participant-display.service';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { receiptOf } from './chat-receipts.service';
 import {
@@ -273,8 +276,16 @@ export class ChatMessagesService {
                 avatarUrl: otherUserAvatar,
                 // For "متصل" (ChatService adds isOnline from it)
                 lastSeenAt: ident?.lastSeenAt ?? null,
+                isAvailable: isOtherAvailable(otherPart),
               }
-            : null,
+            : // Their account was deleted: nobody is left to write to
+              {
+                id: '',
+                name: otherUserName,
+                avatarUrl: otherUserAvatar,
+                lastSeenAt: null,
+                isAvailable: false,
+              },
       },
     };
   }
@@ -308,6 +319,10 @@ export class ChatMessagesService {
     );
     if (unavailable) {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
+    }
+    // Their account was deleted: the message would reach nobody
+    if (others.length === 0) {
+      throw new ForbiddenException('هذا المستخدم لم يعد متاحاً');
     }
 
     const type = dto.type || 'TEXT';

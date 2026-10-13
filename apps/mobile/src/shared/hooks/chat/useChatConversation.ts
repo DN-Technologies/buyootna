@@ -70,6 +70,8 @@ export function useChatConversation({
   const otherUserAvatar =
     conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
   const otherUserId = conversation?.otherUser.id;
+  // Deleted, suspended or blocked: read-only chat
+  const otherUnavailable = conversation?.otherUser.isAvailable === false;
   const propertyContext = conversation?.propertyContext;
   const requestContext = conversation?.requestContext ?? null;
   const otherReceipt = useChatStore(
@@ -219,6 +221,7 @@ export function useChatConversation({
     otherUserName,
     otherUserAvatar,
     otherUserId,
+    otherUnavailable,
     propertyContext,
     requestContext,
     conversation,

@@ -27,10 +27,14 @@ export class ChatService {
   ) {}
 
   // "متصل": whether the other person's app is open right now
-  private withPresence<T extends { id: string; lastSeenAt: Date | null }>(
-    otherUser: T | null,
-  ) {
+  private withPresence<
+    T extends { id: string; lastSeenAt: Date | null; isAvailable?: boolean },
+  >(otherUser: T | null) {
     if (!otherUser) return otherUser;
+    // A deleted, suspended or blocked account is never shown as online
+    if (otherUser.isAvailable === false) {
+      return { ...otherUser, isOnline: false, lastSeenAt: null };
+    }
     return {
       ...otherUser,
       ...this.presence.presenceOf(otherUser.id, otherUser.lastSeenAt),
