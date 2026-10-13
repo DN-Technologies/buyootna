@@ -131,15 +131,31 @@ describe('openChatFile', () => {
       hasViewerModule(false);
     });
 
-    it('keeps the system sheet, which previews the document', async () => {
+    // QA: tapping a document only offered sharing; it could not be read
+    it('opens a PDF, Word or Excel file in the in-app Safari sheet', async () => {
+      await openChatFile(pdf);
+      await openChatFile(word);
+
+      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledTimes(2);
+      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith('https://s3/doc.pdf?sig=new');
+      expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
+      expect(Sharing.shareAsync).not.toHaveBeenCalled();
+      expect(IntentLauncher.startActivityAsync).not.toHaveBeenCalled();
+    });
+
+    it('says so when the document cannot be opened', async () => {
+      (WebBrowser.openBrowserAsync as jest.Mock).mockRejectedValueOnce(new Error('no'));
+
       await openChatFile(pdf);
 
-      expect(Sharing.shareAsync).toHaveBeenCalledWith(
-        'file:///cache/a1-doc.pdf',
-        expect.objectContaining({ UTI: 'com.adobe.pdf' }),
-      );
-      expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
-      expect(IntentLauncher.startActivityAsync).not.toHaveBeenCalled();
+      expect(showAlert).toHaveBeenCalledWith('خطأ', 'تعذر فتح الملف، حاول مرة أخرى');
+    });
+  });
+
+  describe('downloading (Android with the viewer)', () => {
+    beforeEach(() => {
+      setPlatform('android');
+      hasViewerModule(true);
     });
 
     it('re-signs an expired link once', async () => {
@@ -153,7 +169,7 @@ describe('openChatFile', () => {
         'https://s3/doc.pdf?sig=new',
         expect.any(String),
       );
-      expect(Sharing.shareAsync).toHaveBeenCalled();
+      expect(IntentLauncher.startActivityAsync).toHaveBeenCalled();
     });
 
     it('says so when the file cannot be fetched', async () => {
@@ -163,20 +179,15 @@ describe('openChatFile', () => {
 
       expect(showAlert).toHaveBeenCalledWith('خطأ', 'تعذر فتح الملف، حاول مرة أخرى');
     });
-  });
 
-  it('opens a document fetched before from the phone, without downloading again', async () => {
-    setPlatform('ios');
-    hasViewerModule(false);
-    (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 1000 });
+    it('opens a document fetched before from the phone, without downloading again', async () => {
+      (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 1000 });
 
-    await openChatFile(pdf);
+      await openChatFile(pdf);
 
-    expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
-    expect(Sharing.shareAsync).toHaveBeenCalledWith(
-      expect.stringContaining('a1-'),
-      expect.anything(),
-    );
+      expect(FileSystem.downloadAsync).not.toHaveBeenCalled();
+      expect(IntentLauncher.startActivityAsync).toHaveBeenCalled();
+    });
   });
 
   // QA (Android): the sender could not open the file they had just sent

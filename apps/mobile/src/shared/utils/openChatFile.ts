@@ -96,7 +96,8 @@ async function freshLink(attachment: ChatAttachment) {
  *  - a build without it (released before the module) shows a PDF in the
  *    in-app browser tab, from its signed link;
  *  - anything left falls back to the share sheet, as before.
- * iOS keeps the system sheet, which previews the document.
+ * iOS, QA: the share sheet is not a viewer either. A document now opens in
+ * the in-app Safari sheet, which displays it.
  *
  * Signed links expire after 15 minutes: an expired one is re-signed once
  * and retried.
@@ -104,10 +105,14 @@ async function freshLink(attachment: ChatAttachment) {
 export async function openChatFile(attachment: ChatAttachment) {
   try {
     const viewer = hasAndroidViewer();
+    // iOS: the in-app Safari sheet reads PDF, Word and Excel itself, and
+    // has the share button for saving. Android without the viewer module:
+    // the in-app browser tab, which reads PDFs only.
     if (
-      Platform.OS === 'android' &&
-      !viewer &&
-      attachment.mimeType === 'application/pdf'
+      Platform.OS === 'ios' ||
+      (Platform.OS === 'android' &&
+        !viewer &&
+        attachment.mimeType === 'application/pdf')
     ) {
       await WebBrowser.openBrowserAsync(await freshLink(attachment));
       return;
