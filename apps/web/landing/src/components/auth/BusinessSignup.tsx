@@ -451,7 +451,11 @@ export default function BusinessSignup({ kind }: { kind: Kind }) {
       <SuccessDialog
         open={done}
         title="تم إنشاء حسابك بنجاح!"
-        text="أهلاً بك في بيوتنا. حسابك الآن قيد المراجعة، وسنبلغك فور اعتماده."
+        text={
+          kind === 'company'
+            ? 'أهلاً بك في بيوتنا. حساب شركتك مفعّل، ويمكنك البدء الآن.'
+            : 'أهلاً بك في بيوتنا. حسابك الآن قيد المراجعة، وسنبلغك فور اعتماده.'
+        }
         action="ابدأ الاستكشاف"
         onAction={() => router.push('/')}
       />
