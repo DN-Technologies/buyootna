@@ -8,9 +8,14 @@ import ImageViewer, { useImageViewer } from '../ImageViewer';
 
 // The gesture/zoom layer needs native Reanimated; its maths is covered in
 // zoom.spec.ts. Here each photo is a plain element.
+const mockPhotoMounts = { count: 0 };
 jest.mock('../ZoomableImage', () => {
   const { Text: RNText } = jest.requireActual('react-native');
+  const { useEffect } = jest.requireActual('react');
   return function MockZoomableImage({ uri }: { uri: string }) {
+    useEffect(() => {
+      mockPhotoMounts.count += 1;
+    }, []);
     return <RNText testID="zoomable-photo">{uri}</RNText>;
   };
 });
@@ -18,6 +23,10 @@ jest.mock('../ZoomableImage', () => {
 const images = ['https://cdn/a.jpg', 'https://cdn/b.jpg', 'https://cdn/c.jpg'];
 
 describe('ImageViewer', () => {
+  beforeEach(() => {
+    mockPhotoMounts.count = 0;
+  });
+
   it('shows every photo with an "n / total" counter from the tapped one', async () => {
     const { getAllByTestId, getByTestId } = await render(
       <ImageViewer images={images} initialIndex={1} visible onClose={jest.fn()} />,
@@ -25,6 +34,21 @@ describe('ImageViewer', () => {
 
     expect(getAllByTestId('zoomable-photo').length).toBeGreaterThan(0);
     expect(getByTestId('image-viewer-counter').props.children).toBe('2 / 3');
+  });
+
+  // QA (iOS): opened black until the page was drawn again by a swipe
+  it('draws the photos afresh once the modal is fully on screen', async () => {
+    const { getByTestId, getAllByTestId } = await render(
+      <ImageViewer images={images} initialIndex={0} visible onClose={jest.fn()} />,
+    );
+    const firstDraw = mockPhotoMounts.count;
+    expect(firstDraw).toBeGreaterThan(0);
+
+    await fireEvent(getByTestId('image-viewer-modal'), 'show');
+
+    expect(mockPhotoMounts.count).toBe(firstDraw * 2);
+    expect(getAllByTestId('zoomable-photo').length).toBeGreaterThan(0);
+    expect(getByTestId('image-viewer-counter').props.children).toBe('1 / 3');
   });
 
   it('closes with ✕', async () => {
