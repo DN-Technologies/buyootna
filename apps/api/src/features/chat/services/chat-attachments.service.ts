@@ -103,6 +103,20 @@ export function attachmentKind(mimeType: string): AttachmentKind | null {
  * conversation's personas. Uploaded first, then attached to the message
  * they're sent with.
  */
+/**
+ * "Buyootna QA.pdf", not "Buyootna%20QA.pdf": the iOS document picker can
+ * send names still URL-encoded, and they were stored and shown that way.
+ * A name that isn't valid encoding ("عقد 100%.pdf") is kept as it is.
+ */
+export function readableFileName(name: string): string {
+  if (!/%[0-9A-Fa-f]{2}/.test(name)) return name;
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+}
+
 @Injectable()
 export class ChatAttachmentsService {
   private readonly logger = new Logger(ChatAttachmentsService.name);
@@ -172,7 +186,7 @@ export class ChatAttachmentsService {
     for (const [index, { file, kind }] of checked.entries()) {
       let body = file.buffer;
       let mimeType = file.mimetype;
-      let fileName = file.originalname || 'file';
+      let fileName = readableFileName(file.originalname || 'file');
       // iPhone photos: HEIC isn't viewable everywhere, store JPEG
       if (mimeType === 'image/heic' || mimeType === 'image/heif') {
         body = Buffer.from(

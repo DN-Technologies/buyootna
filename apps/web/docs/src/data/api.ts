@@ -888,6 +888,7 @@ export const api: DocSection = {
           "attachmentIds must be the sender's own, in the same conversation and not sent yet; otherwise 400 and no message is created.",
           "Responses never include the storage key; the S3 bucket policy doesn't allow public reads of chat/*.",
           "Search skips messages hidden for the persona (حذف لدي).",
+          "An uploaded file whose name arrives URL-encoded ('My%20Document.pdf', as the iOS picker can send it) is stored and returned decoded ('My Document.pdf'); a name that is not valid encoding is kept as sent.",
         ],
         ar: [
           "الرفع وتجديد الرابط والبحث داخل المحادثة تعيد 403 لهوية خارج المحادثة.",
@@ -895,6 +896,7 @@ export const api: DocSection = {
           "يجب أن تكون attachmentIds للمرسل نفسه وفي المحادثة نفسها ولم تُرسل بعد؛ وإلا 400 ولا تُنشأ رسالة.",
           "الاستجابات لا تتضمن مفتاح التخزين أبداً، وسياسة حاوية S3 لا تسمح بالقراءة العامة لـ chat/*.",
           "البحث يتجاهل الرسائل المخفية لدى الهوية (حذف لدي).",
+          "الملف المرفوع الذي يصل اسمه مرمَّزاً ('My%20Document.pdf' كما قد يرسله منتقي iOS) يُخزَّن ويُعاد مفكوك الترميز ('My Document.pdf')؛ والاسم الذي ليس ترميزاً صالحاً يبقى كما أُرسل.",
         ],
       },
       testScenarios: {
@@ -909,7 +911,7 @@ export const api: DocSection = {
           "افتح https://<bucket>.s3.<region>.amazonaws.com/chat/... مباشرة — AccessDenied؛ والرابط الموقّع يعمل ويتوقف بعد 15 دقيقة.",
         ],
       },
-      updatedIn: "feat/native-1.5.0-video-voice",
+      updatedIn: "fix/chat-file-name-decoded",
     },
     {
       id: "api-chat-proposals",
