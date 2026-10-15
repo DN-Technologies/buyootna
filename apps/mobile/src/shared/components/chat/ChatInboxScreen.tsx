@@ -272,15 +272,20 @@ export default function ChatInboxScreen({
                       accessibilityRole="tab"
                       accessibilityState={{ selected: isActive }}
                       onPress={() => setActiveTab(tab.id)}
-                      className="h-11 items-center justify-between pt-[14px]"
+                      className="h-11 shrink-0 items-center justify-between pt-[12px]"
                     >
+                      {/* One line, as wide as it needs. A negative letter
+                          spacing made Android measure the label narrower
+                          than it drew it, so 'غير المقروء' wrapped onto two
+                          lines, and the 18px line cut the second (QA) */}
                       <Text
-                        className={`text-[15px] leading-[18px] ${
+                        testID={`chat-inbox-tab-label-${tab.id}`}
+                        numberOfLines={1}
+                        className={`text-[15px] leading-[22px] ${
                           isActive
                             ? 'font-almarai-bold text-[#15304D]'
                             : 'font-almarai-regular text-[#6B6A6A]'
                         }`}
-                        style={{ letterSpacing: -0.408 }}
                       >
                         {tab.label}
                       </Text>

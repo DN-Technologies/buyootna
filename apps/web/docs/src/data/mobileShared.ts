@@ -598,6 +598,7 @@ export const mobileShared: DocSection = {
           "Voice notes, photos and files follow the same colours: navy for mine, light for theirs.",
           "A reply shows the quoted message inside the bubble; tapping it still jumps to the original.",
           "The time (with my ticks) is under every bubble, at the bubble's own edge, the same size for text, photos, files, voice notes, ads, locations and offers, received or sent; scrolling a mixed chat the times line up.",
+          "The الكل and غير المقروء tabs each show their label on one line, fully visible, on Android and iPhone.",
         ],
         ar: [
           "تبويبا محادثات الشركة والمكتب يعرضان حقل البحث وتبويبي الكل / غير المقروء بلا سهم رجوع.",
@@ -607,6 +608,7 @@ export const mobileShared: DocSection = {
           "الرسائل الصوتية والصور والملفات بالألوان نفسها: كحلي لرسائلي وفاتح للطرف الآخر.",
           "الرد يعرض الرسالة المقتبسة داخل الفقاعة؛ والضغط عليها ما زال ينقل إلى الأصل.",
           "الوقت (مع علاماتي) تحت كل فقاعة، عند حافتها، وبالحجم نفسه للنص والصور والملفات والرسائل الصوتية والإعلانات والمواقع والعروض، مستلمة أو مرسلة؛ وعند التمرير في محادثة مختلطة تصطف الأوقات.",
+          "يعرض تبويبا الكل وغير المقروء اسميهما في سطر واحد ظاهر كاملاً، في Android و iPhone.",
         ],
       },
       testScenarios: {
@@ -619,7 +621,7 @@ export const mobileShared: DocSection = {
           "تبادل بضع رسائل بين حسابين وقارن الهاتفين بالتصميم.",
         ],
       },
-      updatedIn: "fix/chat-time-under-every-bubble",
+      updatedIn: "fix/chat-filter-tabs-one-line",
     },
     {
       id: "mobile-chat-online-typing-request",
