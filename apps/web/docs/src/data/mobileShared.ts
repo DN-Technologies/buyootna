@@ -1681,11 +1681,13 @@ export const mobileShared: DocSection = {
           "Zero or empty amounts can't be sent.",
           "An offer answered on one phone can't be answered again on the other (second answer gets 'تم الرد على هذا العرض مسبقاً').",
           "A counter-offer can only answer the other side's pending offer.",
+          "The line 'العرض للتوثيق داخل المحادثة وليس عقداً ملزماً' at the bottom of an offer card starts at the same right edge as the title, the amount and the note above it.",
         ],
         ar: [
           "لا يمكن إرسال مبلغ صفر أو فارغ.",
           "العرض الذي رُد عليه في هاتف لا يمكن الرد عليه مرة أخرى في الآخر (الرد الثاني يظهر 'تم الرد على هذا العرض مسبقاً').",
           "العرض المقابل يرد فقط على عرض معلّق من الطرف الآخر.",
+          "سطر 'العرض للتوثيق داخل المحادثة وليس عقداً ملزماً' أسفل بطاقة العرض يبدأ من الحافة اليمنى نفسها التي يبدأ منها العنوان والمبلغ والملاحظة فوقه.",
         ],
       },
       testScenarios: {
@@ -1700,7 +1702,7 @@ export const mobileShared: DocSection = {
           "يلغي A عرضاً معلّقاً — تظهر بطاقة B ملغي بلا أزرار.",
         ],
       },
-      updatedIn: "feat/chat-share-location-proposals",
+      updatedIn: "fix/offer-card-disclaimer-align",
     },
     {
       id: "mobile-chat-video",
