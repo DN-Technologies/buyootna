@@ -146,6 +146,20 @@ describe('ChatInboxScreen (Figma 4410:167991)', () => {
     expect(getByText('سالم')).toBeTruthy();
   });
 
+  // QA (Galaxy A36): 'غير المقروء' wrapped onto two lines and was cut
+  it.each([
+    ['ALL', 'الكل'],
+    ['UNREAD', 'غير المقروء'],
+  ])('keeps the %s tab label on one full-height line', async (id, label) => {
+    const { getByTestId } = await render(<ChatInboxScreen />);
+
+    const text = getByTestId(`chat-inbox-tab-label-${id}`);
+    expect(text.props.children).toBe(label);
+    expect(text.props.numberOfLines).toBe(1);
+    expect(text.props.style?.letterSpacing).toBeUndefined();
+    expect(String(text.props.className)).toContain('leading-[22px]');
+  });
+
   it('shows who is online and who is typing', async () => {
     useChatLiveStore.getState().setOnline('p2', true);
     useChatLiveStore.getState().setTyping('c-request', true);
