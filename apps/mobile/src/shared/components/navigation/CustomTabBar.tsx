@@ -1,12 +1,5 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import {
-  Platform,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import {
@@ -58,9 +51,8 @@ export default function CustomTabBar({
   navigation,
   onOpenPlusSheet,
 }: CustomTabBarProps) {
-  const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
-  const { tabBarHeight: BAR_HEIGHT } = useTabBarHeight();
+  const { tabBarHeight: BAR_HEIGHT, bottomInset } = useTabBarHeight();
 
   // See KNOWN_TAB_ROUTE_NAMES above for why this check exists at all.
   const activeRouteName = state.routes[state.index]?.name;
@@ -126,7 +118,8 @@ export default function CustomTabBar({
           flexDirection: 'row',
           alignItems: 'center',
           paddingTop: 10,
-          paddingBottom: Platform.OS === 'ios' ? insets.bottom : 16,
+          // Clear of the system's navigation bar (see useTabBarHeight)
+          paddingBottom: bottomInset,
         }}
       >
         {state.routes.map((route: any, index: number) => {
