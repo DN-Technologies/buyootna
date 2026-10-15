@@ -1,8 +1,8 @@
 import { Image } from 'expo-image';
 import { ReactNode } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import { cachedImageSource } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
 
@@ -53,13 +53,7 @@ export default function ImageMessageBubble({
           />
         </TouchableOpacity>
 
-        {/* Meta row (outside, below the bubble) */}
-        <View className="mt-1 flex-row items-center gap-1">
-          <MessageTicks status={status} />
-          <Text className="font-cairo text-[13px] text-[#6B6A6A]">
-            {timestamp}
-          </Text>
-        </View>
+        <MessageMeta timestamp={timestamp} status={status} />
       </View>
     </View>
   );

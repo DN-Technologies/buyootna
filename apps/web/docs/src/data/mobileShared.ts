@@ -586,8 +586,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "The chat follows its Figma frames. Chats list: the company and office tabs now show the same 'محادثاتي' list as individuals, with the search field and the الكل / غير المقروء tabs (before they had only a title). Each row shows the avatar (a coloured initial when there is no photo), the name, the time, a tag for what the chat is about ('طلب عرض سعر' or the ad, e.g. 'شقة السالمية'), the last message, and either the unread count or the ticks on my last message. Chat screen: my messages are now navy with white text on the right and the other person's are light on the left (the colours were the other way round); the ticks and the time sit beside a text bubble; delivered ticks are navy and read ticks gold. The bar pinned under the header shows a title, 'area • price' and a chevron, without a photo. The quoted message in a reply is a white card with a navy bar.",
-        ar: "أصبحت المحادثات مطابقة لتصميم Figma. قائمة المحادثات: تبويبا الشركة والمكتب يعرضان الآن قائمة 'محادثاتي' نفسها التي يراها الأفراد، مع حقل البحث وتبويبي الكل / غير المقروء (كان فيهما عنوان فقط). كل صف يعرض الصورة (حرف ملوّن عند غياب الصورة) والاسم والوقت ووسم موضوع المحادثة ('طلب عرض سعر' أو الإعلان مثل 'شقة السالمية') وآخر رسالة، ثم عدد غير المقروء أو علامات رسالتي الأخيرة. شاشة المحادثة: رسائلي الآن كحلية بنص أبيض على اليمين ورسائل الطرف الآخر فاتحة على اليسار (كانت الألوان معكوسة)؛ العلامات والوقت بجانب فقاعة النص؛ علامتا التسليم كحليتان وعلامتا القراءة ذهبيتان. الشريط المثبت تحت الرأس يعرض عنواناً و'المنطقة • السعر' وسهماً بلا صورة. الرسالة المقتبسة في الرد بطاقة بيضاء بشريط كحلي.",
+        en: "The chat follows its Figma frames. Chats list: the company and office tabs now show the same 'محادثاتي' list as individuals, with the search field and the الكل / غير المقروء tabs (before they had only a title). Each row shows the avatar (a coloured initial when there is no photo), the name, the time, a tag for what the chat is about ('طلب عرض سعر' or the ad, e.g. 'شقة السالمية'), the last message, and either the unread count or the ticks on my last message. Chat screen: my messages are now navy with white text on the right and the other person's are light on the left (the colours were the other way round); the time and the ticks sit under every bubble (text, photo, file, voice note, ad, location, offer), on the bubble's own side and in one size, so the times line up down the chat; delivered ticks are navy and read ticks gold. The bar pinned under the header shows a title, 'area • price' and a chevron, without a photo. The quoted message in a reply is a white card with a navy bar.",
+        ar: "أصبحت المحادثات مطابقة لتصميم Figma. قائمة المحادثات: تبويبا الشركة والمكتب يعرضان الآن قائمة 'محادثاتي' نفسها التي يراها الأفراد، مع حقل البحث وتبويبي الكل / غير المقروء (كان فيهما عنوان فقط). كل صف يعرض الصورة (حرف ملوّن عند غياب الصورة) والاسم والوقت ووسم موضوع المحادثة ('طلب عرض سعر' أو الإعلان مثل 'شقة السالمية') وآخر رسالة، ثم عدد غير المقروء أو علامات رسالتي الأخيرة. شاشة المحادثة: رسائلي الآن كحلية بنص أبيض على اليمين ورسائل الطرف الآخر فاتحة على اليسار (كانت الألوان معكوسة)؛ الوقت والعلامات تحت كل فقاعة (نص، صورة، ملف، رسالة صوتية، إعلان، موقع، عرض)، عند حافة الفقاعة وبحجم واحد، فتصطف الأوقات في المحادثة؛ علامتا التسليم كحليتان وعلامتا القراءة ذهبيتان. الشريط المثبت تحت الرأس يعرض عنواناً و'المنطقة • السعر' وسهماً بلا صورة. الرسالة المقتبسة في الرد بطاقة بيضاء بشريط كحلي.",
       },
       acceptanceCriteria: {
         en: [
@@ -597,6 +597,7 @@ export const mobileShared: DocSection = {
           "My text messages are navy on the right with ticks and time on their left; theirs are light on the left with the time on their right.",
           "Voice notes, photos and files follow the same colours: navy for mine, light for theirs.",
           "A reply shows the quoted message inside the bubble; tapping it still jumps to the original.",
+          "The time (with my ticks) is under every bubble, at the bubble's own edge, the same size for text, photos, files, voice notes, ads, locations and offers, received or sent; scrolling a mixed chat the times line up.",
         ],
         ar: [
           "تبويبا محادثات الشركة والمكتب يعرضان حقل البحث وتبويبي الكل / غير المقروء بلا سهم رجوع.",
@@ -605,6 +606,7 @@ export const mobileShared: DocSection = {
           "رسائلي النصية كحلية على اليمين والعلامات والوقت على يسارها؛ ورسائل الطرف الآخر فاتحة على اليسار والوقت على يمينها.",
           "الرسائل الصوتية والصور والملفات بالألوان نفسها: كحلي لرسائلي وفاتح للطرف الآخر.",
           "الرد يعرض الرسالة المقتبسة داخل الفقاعة؛ والضغط عليها ما زال ينقل إلى الأصل.",
+          "الوقت (مع علاماتي) تحت كل فقاعة، عند حافتها، وبالحجم نفسه للنص والصور والملفات والرسائل الصوتية والإعلانات والمواقع والعروض، مستلمة أو مرسلة؛ وعند التمرير في محادثة مختلطة تصطف الأوقات.",
         ],
       },
       testScenarios: {
@@ -617,7 +619,7 @@ export const mobileShared: DocSection = {
           "تبادل بضع رسائل بين حسابين وقارن الهاتفين بالتصميم.",
         ],
       },
-      updatedIn: "feat/chat-flow-figma",
+      updatedIn: "fix/chat-time-under-every-bubble",
     },
     {
       id: "mobile-chat-online-typing-request",
@@ -1922,13 +1924,13 @@ export const mobileShared: DocSection = {
         en: [
           "Short and long messages, mine and theirs, Arabic, English and mixed: every letter is inside the bubble with space on both sides, on iPhone and Android.",
           "A message of several lines wraps inside the bubble, and no line is cut at the top or bottom.",
-          "The time and the ticks beside the bubble are fully visible and do not overlap.",
+          "The time and the ticks under the bubble are fully visible and do not overlap.",
           "A document picked on iPhone with spaces or Arabic in its name shows that name as written: in the preview, in the bubble, and after '📎' in the chats list. Documents sent earlier under an encoded name show decoded too.",
         ],
         ar: [
           "رسائل قصيرة وطويلة، لي وله، بالعربية والإنجليزية ومختلطة: كل حرف داخل الفقاعة مع مسافة من الجانبين، في iPhone و Android.",
           "الرسالة متعددة الأسطر تلتف داخل الفقاعة ولا يُقطع سطر من أعلاه أو أسفله.",
-          "الوقت والعلامات بجانب الفقاعة ظاهرة كاملة ولا تتداخل.",
+          "الوقت والعلامات تحت الفقاعة ظاهرة كاملة ولا تتداخل.",
           "المستند المختار في iPhone وفي اسمه مسافات أو حروف عربية يعرض الاسم كما كُتب: في المعاينة وفي الفقاعة وبعد '📎' في قائمة المحادثات. والمستندات المرسلة سابقاً باسم مرمَّز تظهر مفكوكة الترميز أيضاً.",
         ],
       },

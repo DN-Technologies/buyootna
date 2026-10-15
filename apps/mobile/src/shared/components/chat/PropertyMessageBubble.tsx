@@ -3,7 +3,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BathIcon, BedIcon, LocationIcon } from '@/assets/icons/home/property';
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
 import { formatNumber } from '@/shared/utils/formatNumber';
 import { getArabicTypeLabel } from '@/shared/utils/helpers/property';
@@ -178,13 +178,7 @@ export default function PropertyMessageBubble({
           </View>
         </TouchableOpacity>
 
-        {/* Meta row (Timestamp & Read Receipt) */}
-        <View className="mt-1.5 flex-row items-center gap-1">
-          <MessageTicks status={status} />
-          <Text className="font-cairo-medium text-[10px] text-[#94A3B8]">
-            {timestamp}
-          </Text>
-        </View>
+        <MessageMeta timestamp={timestamp} status={status} />
       </View>
     </View>
   );

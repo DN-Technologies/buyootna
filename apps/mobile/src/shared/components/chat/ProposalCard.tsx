@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import {
   formatAppointment,
   formatOffer,
@@ -151,10 +151,7 @@ export default function ProposalCard({
             </TouchableOpacity>
           )}
         </View>
-        <View className="mt-1 flex-row items-center gap-1 px-1">
-          <MessageTicks status={status} size={12} />
-          <Text className="font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
-        </View>
+        <MessageMeta timestamp={timestamp} status={status} />
       </View>
     </View>
   );
