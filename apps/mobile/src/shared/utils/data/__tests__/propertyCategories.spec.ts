@@ -6,10 +6,13 @@ import {
 } from '../propertyCategories';
 
 describe('property categories', () => {
-  it('offers the Figma list for sale and rent', () => {
-    const labels = ['بيت', 'شقة', 'تجاري', 'عمارة', 'مكتب', 'شاليه', 'مزرعة', 'أرض'];
+  // The requirements document's eight categories; مكتب is no longer offered
+  it('offers the requirements list for sale and rent', () => {
+    const labels = ['بيت', 'شقة', 'عمارة', 'أرض', 'تجاري', 'استثماري', 'شاليه', 'مزرعة'];
     expect(categoryOptionsFor('sell').map((c) => c.label)).toEqual(labels);
     expect(categoryOptionsFor('rent').map((c) => c.label)).toEqual(labels);
+    expect(isCategoryOffered('office', 'sell')).toBe(false);
+    expect(findCategoryByApiValue('OFFICE')?.label).toBe('مكتب');
   });
 
   it('offers only land and house for exchange', () => {
@@ -27,34 +30,29 @@ describe('property categories', () => {
   });
 
   // The same table as the API's property-category-fields.spec.ts
-  it.each([
-    ['land', false, false, false, false],
-    ['farm', false, false, false, false],
-    ['apartment', true, true, true, true],
-    ['building', true, true, true, true],
-    ['house', true, true, false, true],
-    ['chalet', true, true, false, true],
-    ['office', true, true, false, true],
-    ['commercial', true, true, false, true],
-    ['residential', true, true, false, true],
-  ])(
-    '%s: rooms %s, baths %s, floors %s, age %s',
-    (id, rooms, baths, floors, propertyAge) => {
-      expect(getCategoryFields(id)).toEqual({
-        rooms,
-        baths,
-        floors,
-        propertyAge,
-      });
-    },
-  );
+  // (requirements doc, المتغير حسب الفئة): which fields each one shows
+  const shown = (id: string | null) =>
+    Object.entries(getCategoryFields(id))
+      .filter(([, on]) => on)
+      .map(([field]) => field);
 
-  it('shows rooms and baths before a category is picked', () => {
-    expect(getCategoryFields(null)).toEqual({
-      rooms: true,
-      baths: true,
-      floors: false,
-      propertyAge: true,
-    });
+  it.each<[string, string[]]>([
+    ['house', ['rooms', 'baths', 'floors', 'propertyAge']],
+    ['apartment', ['rooms', 'baths', 'floorNumber', 'propertyAge']],
+    ['building', ['floors', 'propertyAge', 'apartments']],
+    ['land', ['landUse']],
+    ['commercial', ['propertyAge', 'units']],
+    ['investment', ['propertyAge', 'units']],
+    ['chalet', ['rooms', 'baths', 'propertyAge']],
+    ['farm', ['farm']],
+    // No longer offered: as they were
+    ['office', ['rooms', 'baths', 'propertyAge']],
+    ['residential', ['rooms', 'baths', 'propertyAge']],
+  ])('%s shows %j', (id, fields) => {
+    expect(shown(id)).toEqual(fields);
+  });
+
+  it('shows rooms, baths and age before a category is picked', () => {
+    expect(shown(null)).toEqual(['rooms', 'baths', 'propertyAge']);
   });
 });

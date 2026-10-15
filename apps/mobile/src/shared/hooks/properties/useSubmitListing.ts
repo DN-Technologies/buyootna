@@ -8,6 +8,10 @@ import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
+import {
+  PRICE_QUALIFIER_MESSAGE,
+  qualifiesPrice,
+} from '@/shared/utils/clearPrice';
 
 /**
  * Encapsulates the submit/publish/draft flow for the Add Ad preview screen:
@@ -148,6 +152,21 @@ export function useSubmitListing() {
 
   const handleSubmit = async () => {
     if (publishingRef.current) return;
+    // Ministry of Commerce (December 2024): a clear, fixed price, and an
+    // owner who says so. Checked here so it's heard before anything is
+    // spent; the server checks again
+    const { adDetails, isOwner } = useListingStore.getState();
+    if (qualifiesPrice(adDetails)) {
+      showAlert('السعر غير واضح', PRICE_QUALIFIER_MESSAGE);
+      return;
+    }
+    if (activeIdentity?.type === 'INDIVIDUAL' && !isOwner) {
+      showAlert(
+        'أكّد ملكية العقار',
+        'يرجى تأكيد أنك مالك العقار قبل النشر، وفق قرار وزارة التجارة.',
+      );
+      return;
+    }
     publishingRef.current = true;
     setSubmitting(true);
     try {

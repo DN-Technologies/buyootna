@@ -20,13 +20,17 @@ function PriceFields({ office }: SectionProps) {
   const isRent = office.listingType === 'rent';
   return (
     <>
-      <OfficeToggleRow
-        label={isRent ? 'الايجار الشهري' : 'تحديد السعر'}
-        value={office.isPriceActive}
-        onValueChange={office.setIsPriceActive}
-        testID="toggle-price-active"
-      />
-      {office.isPriceActive && (
+      {/* Sale and rent ads always state a price (Ministry of Commerce,
+          December 2024): no switch to hide it there */}
+      {!office.priceRequired && (
+        <OfficeToggleRow
+          label={isRent ? 'الايجار الشهري' : 'تحديد السعر'}
+          value={office.isPriceActive}
+          onValueChange={office.setIsPriceActive}
+          testID="toggle-price-active"
+        />
+      )}
+      {(office.isPriceActive || office.priceRequired) && (
         <OfficeTextField
           label={isRent ? 'الايجار الشهري (بالدينار الكويتي) *' : 'السعر (د.ك) *'}
           value={office.price}

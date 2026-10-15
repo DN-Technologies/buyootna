@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import CategoryDetailsFields from '@/shared/components/add-listing/CategoryDetailsFields';
+
 import { NumberStepper } from './NumberStepper';
 import {
   OfficeField,
@@ -178,6 +180,9 @@ export default function OfficePropertyInfoSection({ office }: SectionProps) {
       <YearsOrAgeRow office={office} />
 
       <CountSteppers office={office} />
+
+      {/* What the category adds (the same block as the individual form) */}
+      <CategoryDetailsFields />
 
       {/* Frontage / Orientation Dropdown (Figma 4494:141814 & 4494:142357) */}
       <View className="w-full">

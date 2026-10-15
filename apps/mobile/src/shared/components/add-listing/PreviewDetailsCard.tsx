@@ -1,6 +1,7 @@
 import { Text, View } from 'react-native';
 
 import type { ListingStateData } from '@/shared/store/useListingStore';
+import { categoryDetailEntries } from '@/shared/utils/categoryDetails';
 import { getCategoryFields } from '@/shared/utils/data/propertyCategories';
 
 interface PreviewEntry {
@@ -48,6 +49,17 @@ function pairedEntries(draft: ListingStateData): PreviewEntry[] {
   if (fields.baths) entries.push({ label: 'عدد الحمامات', value: draft.baths });
   if (fields.rooms) entries.push({ label: 'عدد الغرف', value: draft.rooms });
   if (fields.floors) entries.push({ label: 'عدد الادوار', value: draft.floors });
+  // What the category adds (requirements doc)
+  entries.push(
+    ...categoryDetailEntries(fields, {
+      ...draft,
+      allocationStatus: draft.allocationState,
+    }),
+  );
+  // مدخول العقار of a building on a rent / exchange ad (a sale's is below)
+  if (fields.apartments && draft.listingType !== 'sell' && draft.propertyIncome) {
+    entries.push({ label: 'مدخول العقار', value: `${draft.propertyIncome} د.ك` });
+  }
 
   entries.push({ label: 'المزايا', value: draft.features?.join('، ') ?? '' });
   if (draft.showPhone) {
@@ -76,6 +88,7 @@ function pairedEntries(draft: ListingStateData): PreviewEntry[] {
 
 /** The full-width text blocks under the paired facts. */
 function wideEntries(draft: ListingStateData): PreviewEntry[] {
+  const fields = getCategoryFields(draft.propertyCategory?.id);
   const entries: PreviewEntry[] = [
     {
       label: 'الموقع',
@@ -97,7 +110,12 @@ function wideEntries(draft: ListingStateData): PreviewEntry[] {
       entries.push({ label: 'شروط الايجار', value: draft.rentConditions });
     }
   }
-  if (draft.listingType === 'exchange' && draft.allocationState) {
+  // Land shows its حالة التخصيص with the category's facts above
+  if (
+    draft.listingType === 'exchange' &&
+    draft.allocationState &&
+    !fields.landUse
+  ) {
     entries.push({ label: 'حالة التخصيص', value: draft.allocationState });
   }
   entries.push(

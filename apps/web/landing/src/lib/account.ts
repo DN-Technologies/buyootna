@@ -75,6 +75,16 @@ export interface AdPayload {
   baths?: number
   floors?: number
   propertyAge?: number
+  floorNumber?: number
+  apartmentsCount?: number
+  rentalStatus?: string
+  landUse?: string
+  unitsCount?: number
+  monthlyIncome?: number
+  isCultivated?: boolean
+  isBuilt?: boolean
+  // An individual's «أنا مالك العقار»
+  isOwner?: boolean
   automatedNumber?: string
   features: FeatureOption[]
   price?: number

@@ -13,7 +13,8 @@ import StickySummary from '@/components/property/StickySummary'
 import ViewCounter from '@/components/property/ViewCounter'
 import {
   CATEGORY_LABELS,
-  categoryCounts,
+  categoryFields,
+  landUseLabel,
   LISTING_TYPES,
 } from '@/lib/categories'
 import { getProperty } from '@/lib/data'
@@ -105,7 +106,7 @@ export default async function PropertyPage({ params }: PageProps) {
   const title = titleOf(property)
   const path = `/properties/${property.id}`
   const published = timeAgo(property.publishedAt ?? property.createdAt)
-  const counts = categoryCounts(property.category)
+  const counts = categoryFields(property.category)
   const features = (property.features ?? [])
     .map((feature) => (typeof feature === 'string' ? feature : feature?.label))
     .filter((label): label is string => !!label)
@@ -139,6 +140,44 @@ export default async function PropertyPage({ params }: PageProps) {
         text: `${property.baths} حمام`,
       },
   ].filter((item): item is { icon: string; text: string } => !!item)
+
+  // What the category adds (requirements doc), as label and value
+  const yesNo = (value?: boolean | null) => (value ? 'نعم' : 'لا')
+  const categoryFacts = [
+    counts.floorNumber &&
+      property.floorNumber != null && {
+        label: 'رقم الدور',
+        value:
+          property.floorNumber === 0 ? 'الأرضي' : String(property.floorNumber),
+      },
+    counts.apartments &&
+      !!property.apartmentsCount && {
+        label: 'عدد الشقق',
+        value: String(property.apartmentsCount),
+      },
+    counts.apartments &&
+      property.rentalStatus && {
+        label: 'حالة التأجير',
+        value: property.rentalStatus,
+      },
+    counts.landUse &&
+      landUseLabel(property.landUse) && {
+        label: 'نوع التخصيص',
+        value: landUseLabel(property.landUse)!,
+      },
+    counts.units &&
+      !!property.unitsCount && {
+        label: 'عدد الوحدات أو المحلات',
+        value: String(property.unitsCount),
+      },
+    counts.units &&
+      !!property.monthlyIncome && {
+        label: 'الدخل الشهري',
+        value: `${formatNumber(property.monthlyIncome)} د.ك`,
+      },
+    counts.farm && { label: 'مزروعة', value: yesNo(property.isCultivated) },
+    counts.farm && { label: 'مبنية', value: yesNo(property.isBuilt) },
+  ].filter((item): item is { label: string; value: string } => !!item)
 
   // Title, price and the line of facts under them; `compact` is the copy
   // that stays at the top of the window
@@ -255,6 +294,29 @@ export default async function PropertyPage({ params }: PageProps) {
                 {rooms.length > 0 && (
                   <Block>
                     <Facts items={rooms} />
+                  </Block>
+                )}
+                {categoryFacts.length > 0 && (
+                  <Block>
+                    <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                      {categoryFacts.map((fact) => (
+                        <div key={fact.label} className="flex flex-col gap-1">
+                          <dt className="text-sm font-medium text-muted">
+                            {fact.label}
+                          </dt>
+                          <dd className="text-[15px] font-bold text-ink">
+                            {fact.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </Block>
+                )}
+                {property.isOwner && (
+                  <Block>
+                    <span className="flex h-7 w-fit items-center rounded-2xl bg-tag px-3 text-[15px] font-semibold text-brand">
+                      المعلن هو المالك
+                    </span>
                   </Block>
                 )}
                 {features.length > 0 && (

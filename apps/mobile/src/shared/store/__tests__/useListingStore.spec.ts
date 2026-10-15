@@ -96,7 +96,8 @@ describe('useListingStore category-driven fields', () => {
     expect(payload).not.toHaveProperty('propertyAge');
   });
 
-  it('sends rooms and baths but no floors for a house', () => {
+  // Requirements doc: a house has floors; a flat its floor number instead
+  it('sends rooms, baths and floors for a house', () => {
     const { updateField } = useListingStore.getState();
     pick('house', 'بيت');
     updateField('rooms', 4);
@@ -105,18 +106,81 @@ describe('useListingStore category-driven fields', () => {
 
     const payload = useListingStore.getState().buildApiPayload(false, []);
 
-    expect(payload).toMatchObject({ category: 'HOUSE', beds: 4, baths: 3 });
+    expect(payload).toMatchObject({ category: 'HOUSE', beds: 4, baths: 3, floors: 2 });
+    expect(payload).not.toHaveProperty('floorNumber');
+  });
+
+  it("sends a flat's floor number, not a floors count", () => {
+    const { updateField } = useListingStore.getState();
+    updateField('floors', 6);
+    updateField('floorNumber', 3);
+    pick('apartment', 'شقة');
+
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload).toMatchObject({ floorNumber: 3, beds: 1, baths: 1 });
     expect(payload).not.toHaveProperty('floors');
   });
 
-  it('sends floors for an apartment and a building', () => {
+  it("sends a building's floors, flats, rental status and income, without rooms", () => {
     const { updateField } = useListingStore.getState();
-    updateField('floors', 6);
-
-    pick('apartment', 'شقة');
-    expect(useListingStore.getState().buildApiPayload(false, []).floors).toBe(6);
+    useListingStore.getState().setListingType('rent');
     pick('building', 'عمارة');
-    expect(useListingStore.getState().buildApiPayload(false, []).floors).toBe(6);
+    updateField('floors', 5);
+    updateField('apartmentsCount', 10);
+    updateField('rentalStatus', 'مؤجرة جزئياً');
+    updateField('propertyIncome', '2500');
+
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload).toMatchObject({
+      floors: 5,
+      apartmentsCount: 10,
+      rentalStatus: 'مؤجرة جزئياً',
+      propertyIncome: 2500,
+    });
+    expect(payload).not.toHaveProperty('beds');
+    expect(payload).not.toHaveProperty('baths');
+  });
+
+  it("sends land's use and allocation, and nothing else of the category's", () => {
+    const { updateField } = useListingStore.getState();
+    pick('land', 'أرض');
+    updateField('landUse', 'CRAFT');
+    updateField('allocationState', 'مخصصة');
+    updateField('unitsCount', 4);
+
+    const payload = useListingStore.getState().buildApiPayload(false, []);
+    expect(payload).toMatchObject({ landUse: 'CRAFT', allocationStatus: 'مخصصة' });
+    expect(payload).not.toHaveProperty('unitsCount');
+    expect(payload).not.toHaveProperty('propertyAge');
+  });
+
+  it('sends units and monthly income for commercial and investment property', () => {
+    const { updateField } = useListingStore.getState();
+    updateField('unitsCount', 6);
+    updateField('monthlyIncome', '1800');
+    for (const [id, label] of [
+      ['commercial', 'تجاري'],
+      ['investment', 'استثماري'],
+    ]) {
+      pick(id, label);
+      expect(useListingStore.getState().buildApiPayload(false, [])).toMatchObject({
+        unitsCount: 6,
+        monthlyIncome: 1800,
+      });
+    }
+  });
+
+  it("sends a farm's مزروعة / مبنية and the owner's declaration", () => {
+    const { updateField } = useListingStore.getState();
+    pick('farm', 'مزرعة');
+    updateField('isCultivated', true);
+    updateField('isOwner', true);
+
+    expect(useListingStore.getState().buildApiPayload(false, [])).toMatchObject({
+      isCultivated: true,
+      isBuilt: false,
+      isOwner: true,
+    });
   });
 
   it('maps a farm to the new FARM category', () => {

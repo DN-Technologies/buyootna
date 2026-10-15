@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ListingStatus, Prisma } from '@prisma/client';
+import { ListingStatus, ListingType, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { AlertMatchingService } from '../../alerts/alert-matching.service';
 import { CreatePropertyDto } from '../dto/create-property.dto';
@@ -14,7 +14,11 @@ import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
 import { assertApprovedProvider } from '../../identities/persona-rules';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
-import { categoryFieldOverrides } from '../property-category-fields';
+import {
+  categoryFieldOverrides,
+  PRICE_QUALIFIER_MESSAGE,
+  qualifiesPrice,
+} from '../property-category-fields';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -69,6 +73,43 @@ export class PropertiesMutationsService {
     }
   }
 
+  /**
+   * The price must be clear and fixed (Ministry of Commerce, December 2024):
+   * a company's or office's sale / rent ad has a price, and no ad qualifies
+   * its price with «حد», «سوم» or «مراجعة». Checked whenever an ad goes or
+   * stays live; drafts are free.
+   */
+  private async assertClearPrice(
+    identityId: string,
+    ad: {
+      type?: ListingType | null;
+      price?: number | null;
+      description?: string | null;
+    },
+  ) {
+    if (qualifiesPrice(ad.description)) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'PRICE_NOT_CLEAR',
+        message: PRICE_QUALIFIER_MESSAGE,
+      });
+    }
+    if (ad.type !== ListingType.SALE && ad.type !== ListingType.RENT) return;
+    if ((ad.price ?? 0) > 0) return;
+    const identity = await this.prisma.identity.findUnique({
+      where: { id: identityId },
+      select: { type: true },
+    });
+    if (identity?.type === 'COMPANY' || identity?.type === 'OFFICE') {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'PRICE_REQUIRED',
+        message:
+          'يجب أن يكون السعر واضحاً ومحدداً: أدخل سعر العقار قبل النشر (قرار وزارة التجارة، ديسمبر 2024).',
+      });
+    }
+  }
+
   private async findSubmission(identityId: string, submissionKey: string) {
     const property = await this.prisma.property.findUnique({
       where: { identityId_submissionKey: { identityId, submissionKey } },
@@ -90,6 +131,7 @@ export class PropertiesMutationsService {
     if (!isDraft) {
       // A company/office under review may save drafts but not publish
       await assertApprovedProvider(this.prisma, identityId);
+      await this.assertClearPrice(identityId, propertyData);
       const created = await this.prisma.$transaction(async (tx) => {
         const imagesCount = propertyData.images?.length || 0;
         const quota = await this.quotaService.resolvePublishQuota(
@@ -122,7 +164,7 @@ export class PropertiesMutationsService {
         const newProperty = await tx.property.create({
           data: {
             ...propertyData,
-            ...categoryFieldOverrides(propertyData.category),
+            ...categoryFieldOverrides(propertyData.category, propertyData.type),
             ...addressDetailsWrite(addressDetails),
             referenceNumber,
             status: targetStatus,
@@ -157,7 +199,7 @@ export class PropertiesMutationsService {
       const draftProperty = await this.prisma.property.create({
         data: {
           ...propertyData,
-          ...categoryFieldOverrides(propertyData.category),
+          ...categoryFieldOverrides(propertyData.category, propertyData.type),
           ...addressDetailsWrite(addressDetails),
           referenceNumber,
           status: targetStatus,
@@ -187,9 +229,10 @@ export class PropertiesMutationsService {
       ...updateData
     } = dto;
 
-    // The category decides which counts an ad has; an edit keeps them clear
+    // The category decides which fields an ad has; an edit keeps them clear
     const fieldOverrides = categoryFieldOverrides(
       updateData.category ?? existingProperty.category,
+      updateData.type ?? existingProperty.type,
     );
 
     const isPublishingDraft =
@@ -197,6 +240,10 @@ export class PropertiesMutationsService {
 
     if (isPublishingDraft) {
       await assertApprovedProvider(this.prisma, identityId);
+      await this.assertClearPrice(identityId, {
+        ...existingProperty,
+        ...updateData,
+      });
       const published = await this.prisma.$transaction(async (tx) => {
         // Claim the draft first: of two publish requests for it, only one
         // spends a credit; the other finds it already live
@@ -275,6 +322,13 @@ export class PropertiesMutationsService {
     ) {
       await assertApprovedProvider(this.prisma, identityId);
     }
+    // A live ad stays within the price rule when it is edited
+    if (newStatus === ListingStatus.ACTIVE) {
+      await this.assertClearPrice(identityId, {
+        ...existingProperty,
+        ...updateData,
+      });
+    }
 
     const updatedProperty = await this.prisma.property.update({
       where: { id: propertyId },
@@ -347,6 +401,8 @@ export class PropertiesMutationsService {
       throw new BadRequestException('يمكن إعادة نشر الإعلانات المؤرشفة فقط');
     }
     await assertApprovedProvider(this.prisma, identityId);
+    // Going live again: within today's price rule
+    await this.assertClearPrice(identityId, property);
     const imagesCount = property.images?.length || 0;
 
     const renewed = await this.prisma.$transaction(async (tx) => {

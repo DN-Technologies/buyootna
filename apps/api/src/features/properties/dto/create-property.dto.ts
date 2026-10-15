@@ -2,6 +2,8 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsInt,
+  Min,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -11,7 +13,12 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ListingType, PropertyCategory, PropertyStatus } from '@prisma/client';
+import {
+  LandUse,
+  ListingType,
+  PropertyCategory,
+  PropertyStatus,
+} from '@prisma/client';
 import { AddressDetailsDto } from '../../../core/dto/address-details.dto';
 
 export class CreatePropertyDto {
@@ -93,8 +100,11 @@ export class CreatePropertyDto {
   @IsNumber({}, { message: 'السعر يجب أن يكون رقماً' })
   price?: number;
 
-  // Property Income is optional, but only makes sense for SALE
-  @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.SALE)
+  // مدخول العقار: a sale ad, or a building (any deal type)
+  @ValidateIf(
+    (o: CreatePropertyDto) =>
+      o.type === ListingType.SALE || o.category === PropertyCategory.BUILDING,
+  )
   @IsOptional()
   @Type(() => Number)
   @IsNumber({}, { message: 'مدخول العقار يجب أن يكون رقماً' })
@@ -130,7 +140,11 @@ export class CreatePropertyDto {
   @IsString({ message: 'رقم الواتساب يجب أن يكون نصاً' })
   whatsappNumber?: string;
 
-  @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.EXCHANGE)
+  // حالة التخصيص: an exchange ad, or land (any deal type)
+  @ValidateIf(
+    (o: CreatePropertyDto) =>
+      o.type === ListingType.EXCHANGE || o.category === PropertyCategory.LAND,
+  )
   @IsOptional()
   @IsString({ message: 'حالة التخصيص يجب أن تكون نصاً' })
   allocationStatus?: string;
@@ -155,6 +169,62 @@ export class CreatePropertyDto {
   @IsOptional()
   @IsString({ message: 'معرّف المنطقة يجب أن يكون نصاً' })
   areaId?: string;
+
+  // --- Per-category fields (requirements doc). Which category keeps which
+  // is decided by categoryFieldOverrides; the rest are dropped there ---
+
+  // شقة: رقم الدور (0 = ground floor)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'رقم الدور يجب أن يكون رقماً صحيحاً' })
+  @Min(0, { message: 'رقم الدور غير صالح' })
+  floorNumber?: number;
+
+  // عمارة: عدد الشقق
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'عدد الشقق يجب أن يكون رقماً صحيحاً' })
+  @Min(0, { message: 'عدد الشقق غير صالح' })
+  apartmentsCount?: number;
+
+  // عمارة: حالة التأجير
+  @IsOptional()
+  @IsString({ message: 'حالة التأجير يجب أن تكون نصاً' })
+  rentalStatus?: string;
+
+  // أرض: نوع التخصيص
+  @IsOptional()
+  @IsEnum(LandUse, { message: 'نوع التخصيص غير صالح' })
+  landUse?: LandUse;
+
+  // تجاري / استثماري: عدد الوحدات أو المحلات
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt({ message: 'عدد الوحدات يجب أن يكون رقماً صحيحاً' })
+  @Min(0, { message: 'عدد الوحدات غير صالح' })
+  unitsCount?: number;
+
+  // تجاري / استثماري: الدخل الشهري
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({}, { message: 'الدخل الشهري يجب أن يكون رقماً' })
+  @Min(0, { message: 'الدخل الشهري غير صالح' })
+  monthlyIncome?: number;
+
+  // مزرعة: مزروعة / مبنية
+  @IsOptional()
+  @IsBoolean({ message: 'مزروعة يجب أن تكون قيمة منطقية' })
+  isCultivated?: boolean;
+
+  @IsOptional()
+  @IsBoolean({ message: 'مبنية يجب أن تكون قيمة منطقية' })
+  isBuilt?: boolean;
+
+  // «أنا مالك العقار»: an individual declares they own it (Ministry of
+  // Commerce, December 2024); shown on the ad
+  @IsOptional()
+  @IsBoolean({ message: 'إقرار الملكية يجب أن يكون قيمة منطقية' })
+  isOwner?: boolean;
 
   // Rent-specific text fields
   @ValidateIf((o: CreatePropertyDto) => o.type === ListingType.RENT)

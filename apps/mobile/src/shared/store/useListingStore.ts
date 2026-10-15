@@ -42,6 +42,19 @@ export interface ListingStateData {
   addressDetails: AddressDetails | null;
   propertyAge: string;
 
+  // Per-category fields (requirements doc); which category has which is
+  // getCategoryFields
+  floorNumber: number; // شقة: رقم الدور
+  apartmentsCount: number; // عمارة: عدد الشقق
+  rentalStatus: string; // عمارة: حالة التأجير
+  landUse: string | null; // أرض: نوع التخصيص (LandUse)
+  unitsCount: number; // تجاري / استثماري: عدد الوحدات أو المحلات
+  monthlyIncome: string; // تجاري / استثماري: الدخل الشهري
+  isCultivated: boolean; // مزرعة: مزروعة
+  isBuilt: boolean; // مزرعة: مبنية
+  // «أنا مالك العقار» (an individual's ad, Ministry of Commerce rule)
+  isOwner: boolean;
+
   showPrice: boolean; // Toggle state
   showIncome: boolean; // Toggle state
   propertyIncome: string; // The text input value
@@ -99,6 +112,8 @@ interface ListingStore extends ListingStateData {
   addImages: (uris: string[]) => void;
   removeImage: (index: number) => void;
   resetForm: () => void;
+  /** Clears the per-category fields (a form that keeps its own state). */
+  resetCategoryDetails: () => void;
   fetchFeatures: () => Promise<void>;
 
   // Submission
@@ -141,6 +156,15 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   mapLocationLabel: null,
   addressDetails: null,
   propertyAge: '',
+  floorNumber: 0,
+  apartmentsCount: 0,
+  rentalStatus: '',
+  landUse: null,
+  unitsCount: 0,
+  monthlyIncome: '',
+  isCultivated: false,
+  isBuilt: false,
+  isOwner: false,
   showPrice: true,
   showIncome: false,
   propertyIncome: '',
@@ -197,6 +221,20 @@ export const useListingStore = create<ListingStore>((set, get) => ({
 
   // Reset the entire form back to default
   resetForm: () => set({ listingType: 'sell', ...initialState }),
+
+  resetCategoryDetails: () =>
+    set({
+      floorNumber: initialState.floorNumber,
+      apartmentsCount: initialState.apartmentsCount,
+      rentalStatus: initialState.rentalStatus,
+      landUse: initialState.landUse,
+      unitsCount: initialState.unitsCount,
+      monthlyIncome: initialState.monthlyIncome,
+      isCultivated: initialState.isCultivated,
+      isBuilt: initialState.isBuilt,
+      propertyIncome: initialState.propertyIncome,
+      allocationState: initialState.allocationState,
+    }),
 
   fetchFeatures: async () => {
     try {
@@ -277,6 +315,17 @@ export const useListingStore = create<ListingStore>((set, get) => ({
         ? (property.features as any[]).map((f: any) => f.label || f)
         : [],
       propertyAge: property.propertyAge ? property.propertyAge.toString() : '',
+      floorNumber: property.floorNumber ?? 0,
+      apartmentsCount: property.apartmentsCount ?? 0,
+      rentalStatus: property.rentalStatus || '',
+      landUse: property.landUse ?? null,
+      unitsCount: property.unitsCount ?? 0,
+      monthlyIncome: property.monthlyIncome
+        ? property.monthlyIncome.toString()
+        : '',
+      isCultivated: !!property.isCultivated,
+      isBuilt: !!property.isBuilt,
+      isOwner: !!property.isOwner,
       showPrice: property.price !== null && property.price !== undefined,
       price: property.price ? property.price.toString() : '',
       monthlyRent: property.price ? property.price.toString() : '',
@@ -338,6 +387,33 @@ export const useListingStore = create<ListingStore>((set, get) => ({
     if (fields.propertyAge && state.propertyAge) {
       payload.propertyAge = parseInt(state.propertyAge, 10);
     }
+    if (fields.floorNumber) payload.floorNumber = state.floorNumber;
+    if (fields.apartments) {
+      payload.apartmentsCount = state.apartmentsCount;
+      if (state.rentalStatus) payload.rentalStatus = state.rentalStatus;
+      // مدخول العقار on a building, whatever the deal (a sale also has the
+      // income toggle below)
+      if (apiType !== 'SALE' && state.propertyIncome) {
+        payload.propertyIncome = parseFloat(state.propertyIncome);
+      }
+    }
+    if (fields.landUse) {
+      if (state.landUse) payload.landUse = state.landUse;
+      if (state.allocationState) {
+        payload.allocationStatus = state.allocationState;
+      }
+    }
+    if (fields.units) {
+      payload.unitsCount = state.unitsCount;
+      if (state.monthlyIncome) {
+        payload.monthlyIncome = parseFloat(state.monthlyIncome);
+      }
+    }
+    if (fields.farm) {
+      payload.isCultivated = state.isCultivated;
+      payload.isBuilt = state.isBuilt;
+    }
+    if (state.isOwner) payload.isOwner = true;
 
     // A contact number is sent while its toggle is on; an edit that turns
     // one off has to clear what the ad was published with
