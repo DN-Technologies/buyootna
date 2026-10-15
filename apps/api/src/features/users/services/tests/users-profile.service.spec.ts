@@ -135,17 +135,42 @@ describe('UsersProfileService', () => {
       });
     });
 
-    it('refuses saving an account that has no phone, whatever the sign-in method', async () => {
-      prisma.user.findUnique.mockResolvedValue({ phone: null });
+    it.each([['PHONE'], [null]])(
+      'refuses saving an account that signs in by phone (%s) with no phone',
+      async (loginMethod) => {
+        prisma.user.findUnique.mockResolvedValue({ phone: null, loginMethod });
 
-      const attempt = service.updateProfile('user-1', Role.INDIVIDUAL, {
-        name: 'سالم',
-      });
+        const attempt = service.updateProfile('user-1', Role.INDIVIDUAL, {
+          name: 'سالم',
+        });
 
-      await expect(attempt).rejects.toMatchObject({
-        response: expect.objectContaining({ code: 'PHONE_REQUIRED' }),
+        await expect(attempt).rejects.toMatchObject({
+          response: expect.objectContaining({ code: 'PHONE_REQUIRED' }),
+        });
+        expect(prisma.user.update).not.toHaveBeenCalled();
+      },
+    );
+
+    // QA: an account registered with an email only could not save its name
+    it('saves an email sign-in account that has no phone', async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        phone: null,
+        loginMethod: 'EMAIL',
       });
-      expect(prisma.user.update).not.toHaveBeenCalled();
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'identity-1',
+        individualData: { name: 'سالم', whatsapp: null, avatarUrl: null },
+      });
+      prisma.individualIdentityData = {
+        update: jest.fn().mockResolvedValue({}),
+      };
+
+      await service.updateProfile('user-1', Role.INDIVIDUAL, { name: 'سالم' });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'سالم' },
+      });
     });
   });
 

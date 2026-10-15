@@ -204,7 +204,7 @@ describe('EditProfileScreen', () => {
 
     expect(
       await findByText(
-        'طريقة تسجيل الدخول لديك: رقم الهاتف، والبريد الإلكتروني اختياري. رقم الهاتف مطلوب دائماً للتواصل معك.',
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب، والبريد الإلكتروني اختياري.',
       ),
     ).toBeTruthy();
     // Email (phone sign-in) and WhatsApp (always) are the optional ones
@@ -345,23 +345,39 @@ describe('EditProfileScreen', () => {
       expect(settingsService.updateProfile).not.toHaveBeenCalled();
     });
 
-    // QA: an EMAIL-sign-in account could save with no phone at all. The
-    // phone is how people reach you, so it's required whatever signs in
-    it('EMAIL: an empty phone is refused too', async () => {
-      withMethod('EMAIL');
-      signedIn();
-      const { getByDisplayValue, getByText, findByText } = await render(
-        <EditProfileScreen />,
-      );
+    // QA: an account registered with an email only could not save its name
+    // until it added a phone. Signing in by email, the phone is optional
+    it('EMAIL: the phone is optional; an account without one saves its name', async () => {
+      (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+        loginMethod: 'EMAIL',
+        email: 'user@test.com',
+        phone: null,
+        phoneVerified: false,
+      });
+      useAuthStore.setState({
+        user: { id: 'user-4', email: 'user@test.com', phone: null } as any,
+        activeIdentity: {
+          id: 'id-ind-4',
+          type: 'INDIVIDUAL',
+          individualData: { name: 'محمد علي', whatsapp: null },
+        } as any,
+        refreshProfile: jest.fn().mockResolvedValue(undefined),
+      } as any);
+      const { getByDisplayValue, getByText, findByText, queryByText } =
+        await render(<EditProfileScreen />);
       await findByText(
-        'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب. ورقم الهاتف مطلوب أيضاً للتواصل معك.',
+        'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب، ورقم الهاتف اختياري.',
       );
 
-      await fireEvent.changeText(getByDisplayValue('+96555100001'), '');
+      await fireEvent.changeText(getByDisplayValue('محمد علي'), 'محمد سالم');
       await fireEvent.press(getByText('تعديل البيانات'));
 
-      expect(await findByText('رقم الهاتف مطلوب للتواصل معك.')).toBeTruthy();
-      expect(settingsService.updateProfile).not.toHaveBeenCalled();
+      await waitFor(() =>
+        expect(settingsService.updateProfile).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'محمد سالم' }),
+        ),
+      );
+      expect(queryByText('رقم الهاتف مطلوب للتواصل معك.')).toBeNull();
       expect(settingsService.requestPhoneOtp).not.toHaveBeenCalled();
     });
 
@@ -372,7 +388,7 @@ describe('EditProfileScreen', () => {
         <EditProfileScreen />,
       );
       await findByText(
-        'طريقة تسجيل الدخول لديك: رقم الهاتف، والبريد الإلكتروني اختياري. رقم الهاتف مطلوب دائماً للتواصل معك.',
+        'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب، والبريد الإلكتروني اختياري.',
       );
 
       await fireEvent.changeText(getByDisplayValue('+96555100001'), '');

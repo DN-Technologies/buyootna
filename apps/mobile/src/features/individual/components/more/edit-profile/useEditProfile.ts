@@ -140,9 +140,9 @@ export function useEditProfile() {
       .catch(() => setPhoneVerified(null));
   }, []);
   const emailRequired = loginMethod !== null && loginMethod !== 'PHONE';
-  // Always: the phone is how people reach you, whatever the sign-in method
-  // (which only decides what logs in). QA: an EMAIL account saved with none
-  const phoneRequired = true;
+  // Required unless the account signs in by email: an email-only account
+  // registered without a phone and must be able to save its profile (QA)
+  const phoneRequired = loginMethod !== null && loginMethod !== 'EMAIL';
 
   // A new number to verify; a cleared one isn't (the API keeps the number
   // on file -- a sign-in identifier is never blanked)
