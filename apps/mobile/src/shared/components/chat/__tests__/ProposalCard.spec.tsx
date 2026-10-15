@@ -70,4 +70,25 @@ describe('ProposalCard', () => {
     expect(screen.getByText('انتهى الموعد')).toBeTruthy();
     expect(screen.queryByTestId('proposal-accept')).toBeNull();
   });
+
+  // QA: the disclaimer under an offer started away from the card's right
+  // edge, unlike the lines above it
+  it('lines the disclaimer up with the offer above it, from the right', async () => {
+    await render(<ProposalCard message={offer()} timestamp="" />);
+
+    const disclaimer = screen.getByTestId('proposal-disclaimer');
+    expect(disclaimer.props.children).toBe('العرض للتوثيق داخل المحادثة وليس عقداً ملزماً');
+    expect(disclaimer.props.style).toEqual(screen.getByTestId('proposal-detail').props.style);
+    expect(disclaimer.props.style).toEqual({ writingDirection: 'rtl' });
+  });
+
+  it('shows no disclaimer on an appointment', async () => {
+    await render(
+      <ProposalCard
+        message={offer({ type: 'APPOINTMENT' }, { kind: 'APPOINTMENT', scheduledAt: '2026-10-20T09:00:00.000Z' })}
+        timestamp=""
+      />,
+    );
+    expect(screen.queryByTestId('proposal-disclaimer')).toBeNull();
+  });
 });

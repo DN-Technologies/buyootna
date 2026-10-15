@@ -98,7 +98,13 @@ export default function ProposalCard({
               </Text>
             )}
             {!isAppointment && (
-              <Text className="mt-1.5 font-cairo text-[10px] text-[#94A3B8]">
+              // Same right edge as the lines above it: without an explicit
+              // direction this line was laid out from the left (QA)
+              <Text
+                testID="proposal-disclaimer"
+                className="mt-1.5 font-cairo text-[10px] text-[#94A3B8]"
+                style={{ writingDirection: 'rtl' }}
+              >
                 العرض للتوثيق داخل المحادثة وليس عقداً ملزماً
               </Text>
             )}
