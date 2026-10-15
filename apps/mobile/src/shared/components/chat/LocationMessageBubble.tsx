@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { Alert, Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatLocation } from '@/shared/api/chat.service';
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import { MAPBOX_ACCESS_TOKEN } from '@/shared/components/map/picker/config';
 import { mapLinks } from '@/shared/utils/chatProposals';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
@@ -77,10 +77,7 @@ export default function LocationMessageBubble({
             </Text>
           </View>
         </TouchableOpacity>
-        <View className="mt-1 flex-row items-center gap-1 px-1">
-          <MessageTicks status={status} size={12} />
-          <Text className="font-cairo text-[11px] text-[#94A3B8]">{timestamp}</Text>
-        </View>
+        <MessageMeta timestamp={timestamp} status={status} />
       </View>
     </View>
   );

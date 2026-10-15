@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatMessage } from '@/shared/api/chat.service';
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import {
   documentStyle,
   formatDuration,
@@ -77,9 +77,10 @@ export default function AttachmentMessageBubble({
     <View
       className={`mb-4 w-full flex-row ${isMine ? 'justify-start' : 'justify-end'}`}
     >
+      <View className={`max-w-[80%] ${isMine ? 'items-start' : 'items-end'}`}>
       <View
         testID="attachment-bubble"
-        className={`max-w-[80%] rounded-md p-1.5 ${
+        className={`rounded-md p-1.5 ${
           isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
         }`}
       >
@@ -240,9 +241,8 @@ export default function AttachmentMessageBubble({
           </TouchableOpacity>
         )}
       </View>
-      <View className="mt-1 flex-row items-center gap-1 self-end px-1">
-        <MessageTicks status={status} />
-        <Text className="font-cairo text-[13px] text-[#6B6A6A]">{timestamp}</Text>
+      {/* Under the bubble, on its side (it sat beside it, at the bottom) */}
+      <MessageMeta timestamp={timestamp} status={status} />
       </View>
     </View>
   );

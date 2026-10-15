@@ -3,7 +3,7 @@ import { AudioPlayer, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import MessageTicks from '@/shared/components/chat/MessageTicks';
+import MessageMeta from '@/shared/components/chat/MessageMeta';
 import { formatDuration } from '@/shared/utils/chatAttachments';
 import { cachedVoiceFile, keepVoiceFile } from '@/shared/utils/chatMediaCache';
 import { MessageStatus } from '@/shared/utils/chatReceipts';
@@ -184,10 +184,7 @@ export default function VoiceMessageBubble({
             </TouchableOpacity>
           )}
         </View>
-        <View className="mt-1 flex-row items-center gap-1 px-1">
-          <MessageTicks status={tickStatus} />
-          <Text className="font-cairo text-[13px] text-[#6B6A6A]">{timestamp}</Text>
-        </View>
+        <MessageMeta timestamp={timestamp} status={tickStatus} />
       </View>
     </View>
   );
