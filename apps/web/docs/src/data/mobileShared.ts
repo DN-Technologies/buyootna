@@ -1297,6 +1297,39 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/android-status-bar-icons",
     },
     {
+      id: "mobile-tab-bar-above-system-bar",
+      title: {
+        en: "The bottom tab bar sits above Android's navigation bar",
+        ar: "شريط التبويبات السفلي فوق شريط التنقل في Android",
+      },
+      priority: "P1",
+      story: {
+        en: "QA (Galaxy A36): Android's own navigation bar (the gesture line or the 3 buttons) drew over the app's bottom tabs. The app draws edge to edge, and the tab bar kept a fixed 16px under its tabs. It now keeps the navigation bar's real height there (at least 16px), so the tabs and the + button sit above it; the navy bar still runs to the bottom edge behind it. Lists on the tab screens leave the same extra room so their last item isn't hidden.",
+        ar: "بلاغ QA (Galaxy A36): كان شريط التنقل الخاص بـ Android (خط الإيماءات أو الأزرار الثلاثة) يُرسم فوق تبويبات التطبيق السفلية. التطبيق يُرسم على كامل الشاشة، وكان شريط التبويبات يترك 16px ثابتة تحت التبويبات. الآن يترك الارتفاع الحقيقي لشريط التنقل (16px على الأقل)، فتكون التبويبات وزر + فوقه؛ ويبقى الشريط الكحلي ممتداً إلى أسفل الشاشة خلفه. والقوائم في شاشات التبويبات تترك المسافة نفسها كي لا يختفي آخر عنصر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Android with 3-button navigation and with gesture navigation: the tab icons, their labels and the + button are fully above the system bar and can be tapped; nothing overlaps.",
+          "The last item of the home, activity, chats and more screens can be scrolled into view above the tab bar.",
+          "iPhone is unchanged.",
+        ],
+        ar: [
+          "Android بأزرار التنقل الثلاثة وبالإيماءات: أيقونات التبويبات وأسماؤها وزر + فوق شريط النظام كاملة ويمكن الضغط عليها؛ ولا يوجد تداخل.",
+          "يمكن تمرير آخر عنصر في الرئيسية ونشاطي والمحادثات والمزيد ليظهر فوق شريط التبويبات.",
+          "لا تغيير في iPhone.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Galaxy A36: switch the phone between gesture navigation and the 3 buttons (Settings > Display > Navigation bar) and look at the tab bar on the individual, company and office accounts.",
+        ],
+        ar: [
+          "Galaxy A36: بدّل الهاتف بين التنقل بالإيماءات والأزرار الثلاثة (الإعدادات > الشاشة > شريط التنقل) وانظر إلى شريط التبويبات في حسابات الفرد والشركة والمكتب.",
+        ],
+      },
+      updatedIn: "fix/android-tab-bar-insets",
+    },
+    {
       id: "mobile-image-viewer",
       title: {
         en: "Photos open full screen with swipe and zoom",

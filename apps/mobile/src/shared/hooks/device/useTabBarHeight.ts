@@ -12,10 +12,17 @@ const CONTENT_BOTTOM_MARGIN = 40;
  */
 export function useTabBarHeight() {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = 60 + (Platform.OS === 'ios' ? insets.bottom : 16);
+  // Room under the tabs for the system's own bar. Android draws the app edge
+  // to edge, so its navigation bar (gesture line or 3 buttons) sits over the
+  // app: a fixed 16px let it cover the tabs (QA, Galaxy A36). Its real height
+  // is used now, never less than the 16px the design keeps under the tabs.
+  const bottomInset =
+    Platform.OS === 'ios' ? insets.bottom : Math.max(insets.bottom, 16);
+  const tabBarHeight = 60 + bottomInset;
 
   return {
     tabBarHeight,
+    bottomInset,
     scrollContentBottomPadding: tabBarHeight + CONTENT_BOTTOM_MARGIN,
   };
 }
