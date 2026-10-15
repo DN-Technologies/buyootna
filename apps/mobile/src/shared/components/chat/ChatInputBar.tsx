@@ -78,21 +78,29 @@ export default function ChatInputBar({
   return (
     <View className="bg-white">
       <View
+        testID="chat-input-row"
         className="relative z-50 flex-row items-end bg-white px-4 pt-2.5"
         style={{
           // The parent screen no longer applies KeyboardAvoidingView's
           // 'padding' behavior on iOS (see chat/[id].tsx) -- the directly
           // measured keyboard height is the sole source of bottom spacing
-          // there now. Android still relies on adjustResize, so it keeps
-          // using the static home-indicator inset unconditionally.
-          // +8 on iOS: sitting exactly flush against the keyboard read as
-          // visually cramped -- a small breathing-room gap looks right
-          // without re-exposing the predictive bar this was fixed for.
+          // there now.
+          // Android: the app draws edge to edge (edgeToEdgeEnabled), and
+          // then adjustResize no longer shrinks the window, so the keyboard
+          // covered the field (QA, Galaxy A36). The bar lifts itself by the
+          // keyboard height too; React Native reports it without the
+          // navigation bar (ime - systemBars), which the safe-area inset
+          // adds back.
+          // +8: sitting exactly flush against the keyboard read as visually
+          // cramped -- a small breathing-room gap looks right without
+          // re-exposing the predictive bar this was fixed for.
           paddingBottom: showAttachmentMenu
             ? 10
             : Platform.OS === 'ios' && iosKeyboardHeight > 0
               ? iosKeyboardHeight + 8
-              : Math.max(insets.bottom, 12),
+              : Platform.OS === 'android' && keyboardHeight > 0
+                ? keyboardHeight + insets.bottom + 8
+                : Math.max(insets.bottom, 12),
           shadowColor: '#ABACBC',
           shadowOpacity: 0.25,
           shadowRadius: 8,

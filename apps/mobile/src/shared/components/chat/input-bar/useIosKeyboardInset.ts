@@ -14,8 +14,8 @@ import { Keyboard, LayoutAnimation, Platform } from 'react-native';
  * only to kick off a synced LayoutAnimation, so the resize still tracks the
  * keyboard's own slide instead of jump-cutting at the end.
  *
- * Android is untouched: AndroidManifest's windowSoftInputMode "adjustResize"
- * already resizes the window natively.
+ * Android uses useKeyboardHeight instead (see ChatInputBar): drawing edge to
+ * edge, its window is no longer resized for the keyboard.
  */
 export function useIosKeyboardInset(): number {
   const [iosKeyboardHeight, setIosKeyboardHeight] = useState(0);
