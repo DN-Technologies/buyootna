@@ -148,12 +148,14 @@ export const mobileIndividual: DocSection = {
           'AC2: switching to مكاتب عقارية swaps to HomeOffices entirely and HomeFilterPills correctly returns null, hiding the Sale/Rent/Exchange pills — confirm no orphaned filter state bleeds back in when returning to عقارات.',
           "AC3: toggling Card ↔ List view preserves the currently active Sale/Rent/Exchange filter and the already-loaded dataset rather than silently resetting to page 1 of 'all'.",
           'AC4: infinite scroll (onEndReached, page-based, deduplicated by item.id) continues to respect whichever filter is active after a filter change mid-scroll — no cross-filter duplicate or missing items.',
+          "The بيع / إيجار / بدل pills show each word in full on one line ('إيجار', not 'ايجا'), on Android too.",
         ],
         ar: [
           'AC1: التبديل بين بيع/إيجار/بدل يُفعّل جلباً جديداً للبيانات (مرئياً عبر هيكل التحميل) وتستبدل القائمة نتائج الفلتر السابق بالكامل — لا تُضيف إليها أبداً.',
           'AC2: التبديل إلى مكاتب عقارية يستبدل المحتوى بالكامل بـ HomeOffices، ويُعيد HomeFilterPills القيمة null بشكل صحيح مخفياً فلاتر بيع/إيجار/بدل — تأكد من عدم تسرّب حالة فلتر يتيمة عند العودة إلى عقارات.',
           "AC3: التبديل بين عرض البطاقات وعرض القائمة يحافظ على فلتر بيع/إيجار/بدل النشط حالياً وعلى مجموعة البيانات المُحمّلة مسبقاً، بدلاً من إعادة التعيين الصامتة إلى الصفحة 1 من 'الكل'.",
           'AC4: التمرير اللانهائي (onEndReached، بنظام الصفحات، مع إزالة التكرار حسب item.id) يستمر باحترام الفلتر النشط بعد أي تغيير للفلتر أثناء التمرير — دون عناصر مكررة أو مفقودة بين الفلاتر.',
+          "أزرار بيع / إيجار / بدل تعرض كل كلمة كاملة في سطر واحد ('إيجار' لا 'ايجا')، في Android أيضاً.",
         ],
       },
       testScenarios: {
@@ -170,7 +172,7 @@ export const mobileIndividual: DocSection = {
           'TC4: حمّل أكثر من 20 عنصراً في عرض البطاقات، بدّل إلى عرض القائمة أثناء التمرير، وتأكد أن نفس البيانات تُعرض فوراً في عرض القائمة دون طلب شبكة إضافي أو ظهور مؤقت لحالة فارغة.',
         ],
       },
-      updatedIn: 'feat/docs-platform',
+      updatedIn: 'fix/rent-label-cut',
     },
     {
       id: 'mobile-property-details-rent-price-suffix',
@@ -1961,6 +1963,7 @@ export const mobileIndividual: DocSection = {
           'اختر نوع اعلانك appears only when the user has package ads, with the remaining normal and featured counts; with only the free ad the banner shows and the ad is normal.',
           "حفظ كمسودة opens نشاطي on the مسودة filter with the toast 'تم حفظ الاعلان كمسودة بنجاح.'",
           'Editing an older ad in a category no longer offered (e.g. سكني) keeps its category and can be saved without الرقم الالي or عمر العقار.',
+          "نوع الإعلان shows بيع, إيجار and بدل in full ('إيجار', not 'ايجا'), on Android too.",
         ],
         ar: [
           'اختيار أرض أو مزرعة يخفي صف الغرف/الحمامات/الأدوار وحقل عمر العقار؛ واختيار شقة أو عمارة يُظهر ثلاثة عدّادات؛ وأي فئة أخرى تُظهر الغرف والحمامات فقط.',
@@ -1971,6 +1974,7 @@ export const mobileIndividual: DocSection = {
           'قسم اختر نوع اعلانك يظهر فقط لمن لديه إعلانات باقات، مع عدد المتبقي من العادي والمميز؛ ومع الإعلان المجاني فقط يظهر الشريط ويكون الإعلان عادياً.',
           "حفظ كمسودة يفتح نشاطي على تصفية مسودة مع الإشعار 'تم حفظ الاعلان كمسودة بنجاح.'",
           'تعديل إعلان قديم بفئة لم تعد متاحة (مثل سكني) يُبقي فئته ويمكن حفظه بدون الرقم الالي أو عمر العقار.',
+          "نوع الإعلان يعرض بيع وإيجار وبدل كاملة ('إيجار' لا 'ايجا')، في Android أيضاً.",
         ],
       },
       testScenarios: {
@@ -2019,7 +2023,7 @@ export const mobileIndividual: DocSection = {
           label: { en: 'Draft saved', ar: 'حفظ المسودة' },
         },
       ],
-      updatedIn: 'feat/add-ad-flow-figma',
+      updatedIn: 'fix/rent-label-cut',
     },
   ],
 }
