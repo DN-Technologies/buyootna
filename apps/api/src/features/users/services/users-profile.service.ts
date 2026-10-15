@@ -48,14 +48,16 @@ export class UsersProfileService {
       throw new BadRequestException(NAME_REGEX_MESSAGE);
     }
 
-    // Every account needs a phone: it's how people reach the advertiser,
-    // whatever the sign-in method. One is added through the SMS check first
-    // (the app runs it before saving), so a save without one is refused
+    // An account that signs in by phone needs one on file. An account that
+    // signs in by email may have none: it registered without a phone, and
+    // refusing every save until it added one locked it out of its own
+    // profile (QA). A phone is added through the SMS check first (the app
+    // runs it before saving)
     const onFile = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { phone: true },
+      select: { phone: true, loginMethod: true },
     });
-    if (!onFile?.phone?.trim()) {
+    if (onFile?.loginMethod !== 'EMAIL' && !onFile?.phone?.trim()) {
       throw new BadRequestException({
         statusCode: 400,
         code: 'PHONE_REQUIRED',

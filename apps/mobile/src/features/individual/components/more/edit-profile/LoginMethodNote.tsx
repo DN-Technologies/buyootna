@@ -5,13 +5,13 @@ import type { LoginMethod } from '@/shared/api/settings.service';
 
 const NOTE: Record<LoginMethod, string> = {
   PHONE:
-    'طريقة تسجيل الدخول لديك: رقم الهاتف، والبريد الإلكتروني اختياري. رقم الهاتف مطلوب دائماً للتواصل معك.',
+    'طريقة تسجيل الدخول لديك: رقم الهاتف، لذلك الرقم مطلوب، والبريد الإلكتروني اختياري.',
   EMAIL:
-    'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب. ورقم الهاتف مطلوب أيضاً للتواصل معك.',
+    'طريقة تسجيل الدخول لديك: البريد الإلكتروني، لذلك البريد مطلوب، ورقم الهاتف اختياري.',
   BOTH: 'طريقة تسجيل الدخول لديك: البريد الإلكتروني أو رقم الهاتف، لذلك كلاهما مطلوب.',
 };
 
-// Above the fields: what signs in, and that the phone is always required
+// Above the fields: what signs in, and so which of email / phone is required
 export default function LoginMethodNote({
   method,
   onChange,

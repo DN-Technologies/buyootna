@@ -73,8 +73,8 @@ export default function EditProfileScreen() {
               name="phone"
               label="رقم الهاتف"
               requiredMessage="رقم الهاتف مطلوب"
-              // Always required (it's how people reach you); checked on save
-              required
+              // Optional for an account that signs in by email; checked on save
+              required={!methodKnown || profile.phoneRequired}
               requiredInForm={false}
             >
               <PhoneVerificationHint

@@ -849,13 +849,13 @@ export const api: DocSection = {
           "verify with a wrong code changes nothing; with the right one the persona's number is set and used.",
           "Only the signed-in account's active persona can be changed.",
           "Company/office responses have whatsapp: null; an individual's still has one.",
-          "Saving a profile with no phone on the account returns PHONE_REQUIRED.",
+          "Saving a profile with no phone on the account returns PHONE_REQUIRED, unless the account signs in by email (loginMethod EMAIL): then it saves without one.",
         ],
         ar: [
           "التحقق برمز خاطئ لا يغيّر شيئاً؛ وبالرمز الصحيح يُعيّن رقم الهوية ويُستخدم.",
           "لا يمكن تغيير إلا الهوية النشطة للحساب المسجّل.",
           "استجابات الشركة/المكتب فيها whatsapp: null؛ واستجابة الفرد ما زال فيها رقم.",
-          "حفظ ملف لحساب بلا هاتف يعيد PHONE_REQUIRED.",
+          "حفظ ملف لحساب بلا هاتف يعيد PHONE_REQUIRED، إلا إذا كان الحساب يسجّل الدخول بالبريد (loginMethod EMAIL) فيُحفظ دونه.",
         ],
       },
       testScenarios: {
@@ -868,7 +868,7 @@ export const api: DocSection = {
           "request-otp ثم verify بالرمز ← GET /users/company/<id> يعرض الرقم الجديد و whatsapp: null.",
         ],
       },
-      updatedIn: "feat/identity-contact-phone",
+      updatedIn: "fix/phone-optional-email-accounts",
     },
     {
       id: "api-chat-attachments-search",
