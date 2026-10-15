@@ -1938,5 +1938,42 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/chat-file-name-decoded",
     },
+    {
+      id: "mobile-chat-keyboard-android",
+      title: {
+        en: "The chat's message field stays above the keyboard on Android",
+        ar: "حقل الرسالة في المحادثة يبقى فوق لوحة المفاتيح في Android",
+      },
+      priority: "P0",
+      story: {
+        en: "QA (Galaxy A36): opening the keyboard in a chat covered the message field, so the user typed blind. The app draws edge to edge on Android, and then the system no longer shrinks the window for the keyboard. The input bar now lifts itself by the keyboard's height plus the navigation bar, as it already did on iPhone, and drops back when the keyboard closes; the messages above make room.",
+        ar: "بلاغ QA (Galaxy A36): فتح لوحة المفاتيح في المحادثة كان يغطي حقل الرسالة فيكتب المستخدم دون أن يرى. التطبيق يُرسم على كامل الشاشة في Android، وعندها لا يصغّر النظام النافذة للوحة المفاتيح. الآن يرتفع شريط الكتابة بمقدار ارتفاع لوحة المفاتيح وشريط التنقل، كما يحدث في iPhone، ويعود عند إغلاقها؛ وتفسح الرسائل فوقه المكان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Android: tapping the message field opens the keyboard with the field and its buttons fully visible just above it; what is typed is visible.",
+          "Closing the keyboard (back, or sending) puts the bar back on the navigation bar with no gap.",
+          "The newest messages stay visible above the bar while the keyboard is open.",
+          "The + panel, the voice button and the reply bar behave as before; iPhone is unchanged.",
+        ],
+        ar: [
+          "Android: الضغط على حقل الرسالة يفتح لوحة المفاتيح والحقل وأزراره ظاهرة كاملة فوقها مباشرة؛ وما يُكتب ظاهر.",
+          "إغلاق لوحة المفاتيح (رجوع أو إرسال) يعيد الشريط فوق شريط التنقل دون فراغ.",
+          "تبقى أحدث الرسائل ظاهرة فوق الشريط ولوحة المفاتيح مفتوحة.",
+          "لوحة + وزر الصوت وشريط الرد تعمل كما كانت؛ ولا تغيير في iPhone.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Galaxy A36 and one phone with 3-button navigation: open a chat, tap the field, type a long message, send, open the keyboard again, close it with back.",
+          "Open the + panel, then tap the field — the keyboard replaces the panel and the field stays visible.",
+        ],
+        ar: [
+          "Galaxy A36 وهاتف بأزرار تنقل ثلاثة: افتح محادثة واضغط الحقل واكتب رسالة طويلة وأرسلها، وافتح لوحة المفاتيح مجدداً وأغلقها بزر الرجوع.",
+          "افتح لوحة + ثم اضغط الحقل — تحل لوحة المفاتيح محل اللوحة ويبقى الحقل ظاهراً.",
+        ],
+      },
+      updatedIn: "fix/android-chat-keyboard",
+    },
   ],
 };
