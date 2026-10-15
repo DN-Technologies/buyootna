@@ -46,7 +46,14 @@ export default function ListingTypeRadios({
                   <View className="h-2.5 w-2.5 rounded-full bg-[#15304D]" />
                 )}
               </View>
-              <Text className="font-cairo-medium text-sm text-[#111111]">
+              {/* Android cut the last letter ('إيجار' showed as 'ايجا', QA):
+                  its default measuring under-sizes Cairo's last glyph */}
+              <Text
+                testID={`listing-type-label-${option.id}`}
+                numberOfLines={1}
+                textBreakStrategy="simple"
+                className="px-0.5 font-cairo-medium text-sm leading-[22px] text-[#111111]"
+              >
                 {option.label}
               </Text>
             </TouchableOpacity>

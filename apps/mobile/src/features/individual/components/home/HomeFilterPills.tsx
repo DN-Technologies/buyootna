@@ -105,12 +105,18 @@ export default function HomeFilterPills({
                   : 'border-gray-100 bg-[#F8FAFC]'
               }`}
             >
+              {/* Android cut the last letter ('إيجار' showed as 'ايجا', QA):
+                  its default measuring under-sizes Cairo's last glyph. The
+                  simple strategy, one line and a hair of side room fix it */}
               <Text
+                testID={`home-filter-label-${filter.id}`}
+                numberOfLines={1}
+                textBreakStrategy="simple"
                 className={`${
                   isActive
                     ? 'font-cairo-bold text-[#111111]'
                     : 'font-cairo-medium text-[#6B6A6A]'
-                } text-sm leading-[18px]`}
+                } px-0.5 text-sm leading-[22px]`}
               >
                 {filter.label}
               </Text>
