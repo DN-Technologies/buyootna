@@ -1433,6 +1433,8 @@ export const mobileShared: DocSection = {
           "A failed upload stays as a bubble with retry; retrying sends it once.",
           "A chat file's link doesn't open for anyone outside the chat, and the raw storage address is denied.",
           "Replying to a message while attaching quotes it on the sent attachment.",
+          "A sent file's bubble appears at once with its progress and stays on screen until it is sent: it never disappears in between, also when the chat reloads after coming back from the file picker (Android), and it turns into the sent message in place, without a flicker.",
+          "A failed send keeps its bubble with retry when the chat reloads.",
         ],
         ar: [
           "الصور حتى 10 ميجابايت لكل صورة والمستندات حتى 20 ميجابايت؛ وأكثر من 10 ملفات أو ملف أكبر أو نوع آخر (zip، فيديو) يُرفض برسالة واضحة.",
@@ -1440,6 +1442,8 @@ export const mobileShared: DocSection = {
           "الرفع الفاشل يبقى كرسالة مع إعادة المحاولة، وإعادة المحاولة ترسلها مرة واحدة.",
           "رابط ملف المحادثة لا يفتح لأي شخص خارجها، وعنوان التخزين المباشر مرفوض.",
           "الرد على رسالة أثناء الإرفاق يظهر الاقتباس على المرفق المرسل.",
+          "فقاعة الملف المرسل تظهر فوراً بتقدّم الرفع وتبقى على الشاشة حتى يُرسل: لا تختفي في الأثناء، حتى حين تُعاد تحميل المحادثة بعد العودة من منتقي الملفات (Android)، وتتحول إلى الرسالة المرسلة في مكانها دون وميض.",
+          "الإرسال الفاشل يحتفظ بفقاعته مع إعادة المحاولة عند إعادة تحميل المحادثة.",
         ],
       },
       testScenarios: {
@@ -1470,7 +1474,7 @@ export const mobileShared: DocSection = {
           "ارفض الكاميرا ثم اضغط الكاميرا مجدداً — يظهر 'الإذن مطلوب' مع فتح الإعدادات؛ اضغطه — تُفتح صفحة إعدادات التطبيق؛ اسمح بالكاميرا وعُد — تُفتح.",
         ],
       },
-      updatedIn: "fix/chat-sent-file-open",
+      updatedIn: "fix/chat-sent-file-flicker",
     },
     {
       id: "mobile-chat-media-cache",
