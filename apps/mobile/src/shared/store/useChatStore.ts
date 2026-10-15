@@ -278,10 +278,24 @@ export const useChatStore = create<ChatState>((set, get) => {
           }
 
           const existingCached = state.messagesByConversation[conversationId] || [];
+          // A reload must not drop what is still being sent (or failed): it
+          // isn't on the server yet. QA (Android): picking a file leaves the
+          // app, coming back reloads the chat, and that reload landing after
+          // the send removed the new bubble until the server's copy arrived
+          const unsent = existingCached.filter((m) => m.id.startsWith('temp-'));
+          // And rows keep the key they had (see receiveMessage)
+          const keyOf = new Map(
+            existingCached
+              .filter((m) => m.clientKey)
+              .map((m) => [m.id, m.clientKey as string]),
+          );
+          const fresh = res.data.map((m) =>
+            keyOf.has(m.id) ? { ...m, clientKey: keyOf.get(m.id) } : m,
+          );
           const mergedMessages =
             cursor && !shouldRefresh
-              ? [...res.data, ...existingCached]
-              : res.data;
+              ? [...fresh, ...existingCached]
+              : [...fresh, ...unsent];
 
           return {
             conversations: updatedConversations,
@@ -527,20 +541,36 @@ export const useChatStore = create<ChatState>((set, get) => {
       set((state) => {
         const existingCached = state.messagesByConversation[conversationId] || [];
 
-        // Remove the matching pending bubble: same text and the same number
-        // of attachments (a photo sent without a caption has no text)
+        // The matching sending bubble: same text and the same number of
+        // attachments (a photo sent without a caption has no text)
         const sameAs = (msg: ChatMessage) =>
           msg.type === messageWithIsMine.type &&
           (msg.content ?? '') === (messageWithIsMine.content ?? '') &&
           (msg.localAttachments?.length ?? 0) ===
             (messageWithIsMine.attachments?.length ?? 0);
-        const filtered = existingCached.filter(
-          (msg) => !msg.sending || !sameAs(msg),
+        const pendingIndex = existingCached.findIndex(
+          (msg) => !!msg.sending && sameAs(msg),
         );
 
-        // Check if message is already added
-        const exists = filtered.some((m) => m.id === messageWithIsMine.id);
-        const updatedCached = exists ? filtered : [...filtered, messageWithIsMine];
+        let updatedCached: ChatMessage[];
+        if (existingCached.some((m) => m.id === messageWithIsMine.id)) {
+          // Already here (e.g. a reload got it first): drop the bubble only
+          updatedCached =
+            pendingIndex > -1
+              ? existingCached.filter((_, i) => i !== pendingIndex)
+              : existingCached;
+        } else if (pendingIndex > -1) {
+          // Replaced in place, under the bubble's key: the row is updated,
+          // not removed and added again (which made it flicker on Android)
+          const pending = existingCached[pendingIndex];
+          updatedCached = [...existingCached];
+          updatedCached[pendingIndex] = {
+            ...messageWithIsMine,
+            clientKey: pending.clientKey ?? pending.id,
+          };
+        } else {
+          updatedCached = [...existingCached, messageWithIsMine];
+        }
 
         return {
           messagesByConversation: {

@@ -160,6 +160,9 @@ export interface ReplyPreview {
 
 export interface ChatMessage {
   id: string;
+  // The id of the sending bubble this message replaced: the list keeps it as
+  // the row's key, so the row isn't torn down and rebuilt at that moment
+  clientKey?: string;
   type: ChatMessageType;
   content?: string;
   imageUrl?: string;

@@ -138,7 +138,8 @@ export default function ChatMessageList({
         ref={listRef}
         data={messages}
         style={{ flex: 1 }}
-        keyExtractor={(item) => item.id}
+        // A sent message keeps its sending bubble's key (see receiveMessage)
+        keyExtractor={(item) => ('clientKey' in item && item.clientKey) || item.id}
         getItemType={(item) => item.type}
         // Repaint on a jump highlight, and when the ticks change
         extraData={`${highlightedId}|${otherReceipt?.lastDeliveredAt}|${otherReceipt?.lastReadAt}`}
