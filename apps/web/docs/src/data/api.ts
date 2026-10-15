@@ -998,43 +998,44 @@ export const api: DocSection = {
     {
       id: "api-property-category-fields",
       title: {
-        en: "Properties: counts follow the category; FARM, WhatsApp number and allocation status",
-        ar: "العقارات: العدّادات تتبع الفئة؛ فئة مزرعة ورقم الواتساب وحالة التخصيص",
+        en: "Properties: the fields follow the category (requirements document)",
+        ar: "العقارات: الحقول تتبع الفئة (وثيقة المتطلبات)",
       },
       priority: "P1",
       story: {
-        en: "POST /properties and PATCH /properties/:id accept the new category `FARM`, an optional `whatsappNumber`, and `allocationStatus` (free text, exchange ads). `beds` and `baths` are now optional. The category decides which counts are stored: LAND and FARM store `beds`, `baths`, `floors` and `propertyAge` as null; HOUSE, CHALET, OFFICE, COMMERCIAL and the older categories store `floors` as null; APARTMENT and BUILDING keep all of them. This applies whatever the client sends, on create, draft and edit. Property responses include `whatsappNumber` and `allocationStatus`.",
-        ar: "يقبل POST /properties وPATCH /properties/:id الفئة الجديدة `FARM`، والحقل الاختياري `whatsappNumber`، و`allocationStatus` (نص حر لإعلانات البدل). والحقلان `beds` و`baths` أصبحا اختياريين. الفئة تحدد العدّادات المخزّنة: LAND وFARM تُخزَّن فيهما `beds` و`baths` و`floors` و`propertyAge` بقيمة null؛ وHOUSE وCHALET وOFFICE وCOMMERCIAL والفئات الأقدم يُخزَّن فيها `floors` بقيمة null؛ وAPARTMENT وBUILDING تحتفظان بالجميع. يُطبَّق ذلك مهما أرسل العميل، عند الإنشاء والمسودة والتعديل. وردود العقار تتضمن `whatsappNumber` و`allocationStatus`.",
+        en: "POST /properties and PATCH /properties/:id accept, besides the existing fields (`whatsappNumber`, `allocationStatus`, optional `beds` / `baths`), the per-category fields of the client's requirements document: `floorNumber` (int ≥ 0), `apartmentsCount`, `rentalStatus` (text), `landUse` (RESIDENTIAL | INVESTMENT | COMMERCIAL | CRAFT), `unitsCount`, `monthlyIncome`, `isCultivated`, `isBuilt`, and `isOwner` (boolean). The category decides what is stored, whatever the client sends, on create, draft and edit: بيت: عمر العقار، الغرف، الحمامات، عدد الأدوار. شقة: عمر العقار، الغرف، الحمامات، رقم الدور (0 shows as الأرضي) instead of a floors count. عمارة: عمر العقار، عدد الأدوار، عدد الشقق، حالة التأجير (مؤجرة بالكامل / مؤجرة جزئياً / غير مؤجرة) and مدخول العقار; no rooms or baths. أرض: نوع التخصيص (سكني / استثماري / تجاري / حرفي) and حالة التخصيص. تجاري and استثماري: عمر العقار، عدد الوحدات أو المحلات، الدخل الشهري; no rooms or baths. شاليه: عمر العقار، الغرف، الحمامات. مزرعة: مزروعة and مبنية (yes / no). Every other field of the category is stored as null. `allocationStatus` is kept on land and on every exchange ad; `propertyIncome` on a sale ad and on a building. The categories no longer offered for new ads (OFFICE, VILLA, RESIDENTIAL, INDUSTRIAL, COASTAL, PRIVATE) keep rooms, baths and age. GET /properties/:id returns all of these. Migration 20261015090000_category_fields adds the columns and the LandUse enum (all nullable).",
+        ar: "يقبل POST /properties وPATCH /properties/:id، إلى جانب الحقول الحالية (`whatsappNumber` و`allocationStatus` و`beds` / `baths` الاختياريين)، حقول كل فئة من وثيقة متطلبات العميل: `floorNumber` (عدد صحيح ≥ 0) و`apartmentsCount` و`rentalStatus` (نص) و`landUse` (RESIDENTIAL | INVESTMENT | COMMERCIAL | CRAFT) و`unitsCount` و`monthlyIncome` و`isCultivated` و`isBuilt` و`isOwner` (قيمة منطقية). الفئة تحدد ما يُخزَّن مهما أرسل العميل، عند الإنشاء والمسودة والتعديل: بيت: عمر العقار، الغرف، الحمامات، عدد الأدوار. شقة: عمر العقار، الغرف، الحمامات، رقم الدور (0 يظهر «الأرضي») بدل عدد الأدوار. عمارة: عمر العقار، عدد الأدوار، عدد الشقق، حالة التأجير (مؤجرة بالكامل / مؤجرة جزئياً / غير مؤجرة) ومدخول العقار؛ بلا غرف أو حمامات. أرض: نوع التخصيص (سكني / استثماري / تجاري / حرفي) وحالة التخصيص. تجاري واستثماري: عمر العقار، عدد الوحدات أو المحلات، الدخل الشهري؛ بلا غرف أو حمامات. شاليه: عمر العقار، الغرف، الحمامات. مزرعة: مزروعة ومبنية (نعم / لا). وكل حقل آخر يُخزَّن null. و`allocationStatus` يبقى في الأرض وفي كل إعلان بدل؛ و`propertyIncome` في إعلان البيع وفي العمارة. والفئات التي لم تعد متاحة للإعلانات الجديدة (OFFICE وVILLA وRESIDENTIAL وINDUSTRIAL وCOASTAL وPRIVATE) تحتفظ بالغرف والحمامات والعمر. ويعيد GET /properties/:id كل ذلك. والترحيل 20261015090000_category_fields يضيف الأعمدة والنوع LandUse (كلها تقبل null).",
       },
       acceptanceCriteria: {
-        en: [
-          "Creating LAND with beds/baths/floors/propertyAge in the body stores all four as null.",
-          "Creating a property without beds and baths is accepted; a non-numeric beds is still 400.",
-          "category FARM is accepted; an unknown category is 400.",
-          "whatsappNumber and allocationStatus are saved and returned; PATCH with null clears a number.",
-          "Requests from app versions that still send beds/baths and older categories keep working.",
-        ],
-        ar: [
-          "إنشاء LAND مع beds/baths/floors/propertyAge في الطلب يخزّن الأربعة null.",
-          "إنشاء عقار بدون beds وbaths مقبول؛ وbeds غير الرقمي ما زال 400.",
-          "الفئة FARM مقبولة؛ والفئة غير المعروفة 400.",
-          "whatsappNumber وallocationStatus يُحفظان ويُعادان؛ وPATCH بقيمة null يمسح الرقم.",
-          "طلبات إصدارات التطبيق التي ما زالت ترسل beds/baths والفئات الأقدم تعمل كما هي.",
-        ],
+        en: ["A LAND sale with beds, floors, propertyAge and unitsCount in the body stores them as null and keeps landUse and allocationStatus.", "An APARTMENT keeps floorNumber and stores floors as null; a HOUSE keeps floors and stores floorNumber as null.", "A BUILDING rent ad keeps apartmentsCount, rentalStatus and propertyIncome; a HOUSE rent ad stores propertyIncome as null.", "landUse other than the four values is 400; a negative floorNumber is 400.", "Changing an ad's category in PATCH nulls the old category's fields.", "Requests from app versions that don't send the new fields keep working."],
+        ar: ["إعلان بيع LAND مع beds وfloors وpropertyAge وunitsCount في الطلب يخزّنها null ويحتفظ بـ landUse وallocationStatus.", "APARTMENT تحتفظ بـ floorNumber وتخزّن floors بقيمة null؛ وHOUSE تحتفظ بـ floors وتخزّن floorNumber بقيمة null.", "إعلان إيجار BUILDING يحتفظ بـ apartmentsCount وrentalStatus وpropertyIncome؛ وإعلان إيجار HOUSE يخزّن propertyIncome بقيمة null.", "landUse خارج القيم الأربع 400؛ وfloorNumber السالب 400.", "تغيير فئة الإعلان في PATCH يجعل حقول الفئة القديمة null.", "طلبات إصدارات التطبيق التي لا ترسل الحقول الجديدة تعمل كما هي."],
       },
       testScenarios: {
-        en: [
-          "POST a LAND draft with beds: 3, then GET it: beds, baths, floors, propertyAge are null.",
-          "POST an EXCHANGE draft with allocationStatus and whatsappNumber, then GET it: both returned.",
-          "PATCH a FARM ad with beds: 4: beds stays null.",
-        ],
-        ar: [
-          "أنشئ مسودة LAND مع beds: 3 ثم اجلبها: beds وbaths وfloors وpropertyAge بقيمة null.",
-          "أنشئ مسودة EXCHANGE مع allocationStatus وwhatsappNumber ثم اجلبها: يُعاد الحقلان.",
-          "عدّل إعلان FARM مع beds: 4: يبقى beds بقيمة null.",
-        ],
+        en: ["POST a LAND draft with beds: 3 and landUse: COMMERCIAL, then GET it: beds is null, landUse COMMERCIAL.", "POST a FARM draft with isCultivated: true, then PATCH it to HOUSE: isCultivated becomes null.", "Run property-category-fields.spec.ts."],
+        ar: ["أنشئ مسودة LAND مع beds: 3 وlandUse: COMMERCIAL ثم اجلبها: beds بقيمة null وlandUse هو COMMERCIAL.", "أنشئ مسودة FARM مع isCultivated: true ثم عدّلها إلى HOUSE: يصبح isCultivated بقيمة null.", "شغّل property-category-fields.spec.ts."],
       },
-      updatedIn: "feat/add-ad-flow-figma",
+      updatedIn: "feat/add-ad-category-fields",
+    },
+    {
+      id: "api-property-clear-price",
+      title: {
+        en: "Properties: a clear price (Ministry of Commerce, December 2024)",
+        ar: "العقارات: سعر واضح (قرار وزارة التجارة، ديسمبر 2024)",
+      },
+      priority: "P0",
+      story: {
+        en: "An ad whose description qualifies its price with «حد», «سوم» or «مراجعة» (with or without the article or a preposition, and only within a few words of «سعر», a currency, «ألف» or a number, so «الحد الشمالي» of a plot is allowed) is refused with 400 `code: PRICE_NOT_CLEAR` and the rule as the message. A company's or office's sale or rent ad without a price above 0 is refused with 400 `code: PRICE_REQUIRED`; an individual's may still hide its price, and exchange ads need none. The check runs when an ad goes live: publishing a new ad, publishing a draft, editing a live ad and renewing one; saving a draft is not checked. `isOwner` is stored as sent; requiring it from individuals is the clients' job.",
+        ar: "الإعلان الذي يقيّد سعره في وصفه بكلمة «حد» أو «سوم» أو «مراجعة» (مع أداة التعريف أو حرف الجر أو دونهما، وفقط ضمن كلمات قليلة من «سعر» أو العملة أو «ألف» أو رقم، فيُسمح بـ«الحد الشمالي» للقسيمة) يُرفض بـ 400 و`code: PRICE_NOT_CLEAR` ونص القاعدة رسالةً. وإعلان البيع أو الإيجار من شركة أو مكتب بلا سعر أكبر من 0 يُرفض بـ 400 و`code: PRICE_REQUIRED`؛ أما الفرد فما زال يستطيع إخفاء السعر، والبدل لا يحتاج سعراً. يجري الفحص عند ظهور الإعلان: نشر إعلان جديد، ونشر مسودة، وتعديل إعلان منشور، وتجديده؛ وحفظ المسودة لا يُفحص. و`isOwner` يُخزَّن كما أُرسل، وإلزام الفرد به مسؤولية التطبيق والموقع.",
+      },
+      acceptanceCriteria: {
+        en: ["«السعر حد 120 ألف», «السعر على السوم», «السعر مراجعه» in the description: 400 PRICE_NOT_CLEAR.", "«الحد الشمالي للقسيمة شارع رئيسي» and «بعد مراجعة البلدية» are accepted.", "An office SALE or RENT ad without price: 400 PRICE_REQUIRED; with price 450: published. An individual without price: published.", "A draft with «السوم» saves; publishing it is 400."],
+        ar: ["«السعر حد 120 ألف» و«السعر على السوم» و«السعر مراجعه» في الوصف: 400 PRICE_NOT_CLEAR.", "«الحد الشمالي للقسيمة شارع رئيسي» و«بعد مراجعة البلدية» مقبولان.", "إعلان بيع أو إيجار من مكتب بلا سعر: 400 PRICE_REQUIRED؛ وبسعر 450: يُنشر. والفرد بلا سعر: يُنشر.", "مسودة فيها «السوم» تُحفظ، ونشرها 400."],
+      },
+      testScenarios: {
+        en: ["As an office, POST /properties a RENT ad with «السعر مراجعة»: 400 PRICE_NOT_CLEAR.", "Run the «clear price» cases in properties-mutations.service.spec.ts."],
+        ar: ["كمكتب أرسل POST /properties لإعلان إيجار فيه «السعر مراجعة»: 400 PRICE_NOT_CLEAR.", "شغّل حالات «clear price» في properties-mutations.service.spec.ts."],
+      },
+      updatedIn: "feat/add-ad-category-fields",
     },
     {
       id: "api-company-subscriptions",

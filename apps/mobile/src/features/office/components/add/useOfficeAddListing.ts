@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { groupWalletSlots } from '@/features/individual/utils/planWallet';
@@ -36,6 +36,14 @@ export type OfficePickerKey = 'governorate' | 'category' | null;
 export function useOfficeAddListing() {
   const router = useRouter();
   const updateField = useListingStore((state) => state.updateField);
+  // The per-category block writes straight to the shared store: start it
+  // clear rather than with another form's leftovers
+  const resetCategoryDetails = useListingStore(
+    (state) => state.resetCategoryDetails,
+  );
+  useEffect(() => {
+    resetCategoryDetails();
+  }, [resetCategoryDetails]);
 
   // Form State
   const [listingType, setListingTypeState] =
@@ -116,10 +124,13 @@ export function useOfficeAddListing() {
     }
   };
 
+  // An office's sale or rent ad must state its price (Ministry of Commerce,
+  // December 2024): the price toggle can't skip it there
+  const priceRequired = listingType !== 'exchange';
   const isFormValid =
     Boolean(governorate || area) &&
     Boolean(phone) &&
-    (isPriceActive ? Boolean(price) : true) &&
+    (isPriceActive || priceRequired ? Boolean(price) : true) &&
     // Publishing requires ad credits; unknown (still loading) doesn't block
     (isWalletLoading ? true : totalQuota > 0);
 
@@ -161,16 +172,21 @@ export function useOfficeAddListing() {
     updateField('baths', bathroomsCount);
     updateField('floors', floorsCount);
     updateField('features', features ? [features] : []);
-    updateField('showPrice', isPriceActive);
+    updateField('showPrice', priceRequired || isPriceActive);
     updateField('price', price);
     updateField('showIncome', isIncomeActive);
-    updateField('propertyIncome', income);
+    // A building's income on a rent / exchange ad comes from the category
+    // block (already in the store); a sale's from the income toggle here
+    if (listingType === 'sell') updateField('propertyIncome', income);
     updateField('monthlyRent', price);
     updateField('additionalExpenses', additionalExpenses);
     updateField('rentConditions', rentConditions);
     updateField('requestYear', requestYear);
     updateField('requiredYear', requiredYear);
-    updateField('allocationState', allocationState);
+    // Land keeps its حالة التخصيص from the category block
+    if (listingType === 'exchange') {
+      updateField('allocationState', allocationState);
+    }
     updateField('phoneNumber', phone);
     updateField('adDetails', description);
     updateField('images', images);
@@ -247,6 +263,7 @@ export function useOfficeAddListing() {
     setFloorsCount,
     categoryFields,
     // Price & income
+    priceRequired,
     isPriceActive,
     setIsPriceActive,
     price,

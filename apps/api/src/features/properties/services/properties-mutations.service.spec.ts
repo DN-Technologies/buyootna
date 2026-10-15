@@ -133,7 +133,8 @@ describe('PropertiesMutationsService alert matching', () => {
     }
   });
 
-  it("keeps an apartment's counts", async () => {
+  // A flat has its floor number, not a floors count (requirements doc)
+  it("keeps an apartment's rooms, baths and floor number", async () => {
     property.create.mockResolvedValue({ id: 'prop-1' });
 
     await service.create('identity-1', {
@@ -142,13 +143,19 @@ describe('PropertiesMutationsService alert matching', () => {
       beds: 3,
       baths: 2,
       floors: 4,
+      floorNumber: 2,
       isDraft: true,
     });
 
     const [[args]] = property.create.mock.calls as [
       { data: Record<string, unknown> },
     ][];
-    expect(args.data).toMatchObject({ beds: 3, baths: 2, floors: 4 });
+    expect(args.data).toMatchObject({
+      beds: 3,
+      baths: 2,
+      floorNumber: 2,
+      floors: null,
+    });
   });
 
   it('clears counts on an edit of an ad whose category has none', async () => {
@@ -606,5 +613,161 @@ describe('PropertiesMutationsService repeated publish', () => {
     });
     expect(quotaService.resolvePublishQuota).not.toHaveBeenCalled();
     expect(result.property).toEqual({ id: 'prop-1', status: 'ACTIVE' });
+  });
+});
+
+// Ministry of Commerce, December 2024: an advertised price is clear and
+// fixed -- no «حد» / «سوم» / «مراجعة», and companies and offices give one
+describe('PropertiesMutationsService clear price', () => {
+  const property = {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+  };
+  const identity = { findUnique: jest.fn() };
+  const prisma = {
+    property,
+    identity,
+    $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn({ property })),
+  };
+  const quotaService = {
+    resolvePublishQuota: jest.fn().mockResolvedValue({
+      planSlotId: null,
+      durationDays: 10,
+      maxImagesPerAd: 5,
+      featuredDays: 0,
+      prioritySearch: false,
+    }),
+  };
+  let service: PropertiesMutationsService;
+
+  const as = (type: string) =>
+    identity.findUnique.mockResolvedValue({
+      type,
+      companyData: type === 'COMPANY' ? { status: 'APPROVED' } : null,
+      officeData: type === 'OFFICE' ? { status: 'APPROVED' } : null,
+    });
+  const ad = (over: Record<string, unknown>) =>
+    ({
+      images: [],
+      type: 'RENT',
+      category: 'APARTMENT',
+      price: 450,
+      description: 'شقة ثلاث غرف',
+      isDraft: false,
+      ...over,
+    }) as unknown as CreatePropertyDto;
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    as('OFFICE');
+    property.findUnique.mockResolvedValue(null);
+    property.create.mockResolvedValue({ id: 'p1', status: 'ACTIVE' });
+    property.updateMany.mockResolvedValue({ count: 1 });
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        PropertiesMutationsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: PropertiesQuotaService, useValue: quotaService },
+        {
+          provide: AlertMatchingService,
+          useValue: { notifyMatchesForProperty: jest.fn() },
+        },
+      ],
+    }).compile();
+    service = module.get(PropertiesMutationsService);
+  });
+
+  it('refuses an ad that qualifies its price, before spending anything', async () => {
+    await expect(
+      service.create('office-1', ad({ description: 'السعر على السوم' })),
+    ).rejects.toMatchObject({ response: { code: 'PRICE_NOT_CLEAR' } });
+    expect(quotaService.resolvePublishQuota).not.toHaveBeenCalled();
+    expect(property.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses an office's rent ad with no price", async () => {
+    await expect(
+      service.create('office-1', ad({ price: undefined })),
+    ).rejects.toMatchObject({ response: { code: 'PRICE_REQUIRED' } });
+  });
+
+  it('lets an individual owner advertise without a price, and an exchange ad', async () => {
+    as('INDIVIDUAL');
+    await expect(
+      service.create('person-1', ad({ price: undefined, isOwner: true })),
+    ).resolves.toBeDefined();
+    as('OFFICE');
+    await expect(
+      service.create('office-1', ad({ type: 'EXCHANGE', price: undefined })),
+    ).resolves.toBeDefined();
+  });
+
+  it('lets a draft hold anything until it goes live', async () => {
+    property.create.mockResolvedValue({ id: 'd1', status: 'DRAFT' });
+    await expect(
+      service.create(
+        'office-1',
+        ad({
+          isDraft: true,
+          price: undefined,
+          description: 'السعر حد 120 ألف',
+        }),
+      ),
+    ).resolves.toBeDefined();
+  });
+
+  it('refuses publishing a draft or republishing an ad that breaks the rule', async () => {
+    property.findUnique.mockResolvedValue({
+      id: 'p1',
+      identityId: 'office-1',
+      status: 'DRAFT',
+      type: 'SALE',
+      price: 0,
+      description: 'شقة',
+      images: [],
+    });
+    await expect(
+      service.update('office-1', 'p1', { isDraft: false }),
+    ).rejects.toMatchObject({ response: { code: 'PRICE_REQUIRED' } });
+
+    property.findUnique.mockResolvedValue({
+      id: 'p1',
+      identityId: 'office-1',
+      status: 'EXPIRED',
+      type: 'SALE',
+      price: 90000,
+      description: 'السعر مراجعة 90 ألف',
+      images: [],
+    });
+    await expect(service.renew('office-1', 'p1')).rejects.toMatchObject({
+      response: { code: 'PRICE_NOT_CLEAR' },
+    });
+  });
+
+  it('stores the new per-category fields and the owner declaration', async () => {
+    as('INDIVIDUAL');
+    await service.create(
+      'person-1',
+      ad({
+        type: 'SALE',
+        category: 'LAND',
+        landUse: 'COMMERCIAL',
+        allocationStatus: 'مخصص',
+        beds: 3,
+        isOwner: true,
+      }),
+    );
+    const [[args]] = property.create.mock.calls as [
+      { data: Record<string, unknown> },
+    ][];
+    expect(args.data).toMatchObject({
+      landUse: 'COMMERCIAL',
+      allocationStatus: 'مخصص',
+      isOwner: true,
+      beds: null,
+    });
   });
 });

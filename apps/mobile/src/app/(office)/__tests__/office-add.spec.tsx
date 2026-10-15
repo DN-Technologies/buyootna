@@ -165,14 +165,15 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
     expect(roomsValue.props.children).toBe(1);
   });
 
-  it('renders price details section with toggle and phone number', async () => {
-    const { getByText, getByTestId } = await renderWithClient(
+  it('renders price details section with the price and phone number', async () => {
+    const { getByText, getByTestId, queryByTestId } = await renderWithClient(
       <OfficeAddScreen />,
     );
 
     expect(getByText('السعر والتفاصيل')).toBeTruthy();
-    expect(getByText('تحديد السعر')).toBeTruthy();
-    expect(getByTestId('toggle-price-active')).toBeTruthy();
+    // A sale ad always states its price (Ministry of Commerce): no switch
+    expect(queryByTestId('toggle-price-active')).toBeNull();
+    expect(getByTestId('input-price')).toBeTruthy();
     expect(getByTestId('input-phone')).toBeTruthy();
     expect(getByTestId('input-description')).toBeTruthy();
     expect(getByText('+965')).toBeTruthy();
@@ -251,14 +252,16 @@ describe('OfficeAddScreen (All 10 Figma States & Features)', () => {
       fireEvent.press(getByTestId('listing-type-rent'));
     });
 
-    expect(getByText('الايجار الشهري')).toBeTruthy();
+    // A rent ad always states its monthly rent: the box shows, no switch
+    expect(getByText('الايجار الشهري (بالدينار الكويتي) *')).toBeTruthy();
+    expect(queryByTestId('toggle-price-active')).toBeNull();
     // Floors follow the category, not the listing type
     expect(queryByTestId('stepper-floors')).toBeNull();
     await act(async () => {
       fireEvent.press(getByTestId('picker-category'));
     });
     await act(async () => {
-      fireEvent.press(getByText('شقة'));
+      fireEvent.press(getByText('عمارة'));
     });
     expect(getByTestId('stepper-floors')).toBeTruthy();
     expect(getByTestId('input-additional-expenses')).toBeTruthy();

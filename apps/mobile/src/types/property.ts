@@ -16,6 +16,16 @@ export interface PropertyDetailsDto {
   // When the ad last went live (publish or republish); older APIs omit it
   publishedAt?: string | null;
   floors?: number | null;
+  // Per-category fields (requirements doc)
+  floorNumber?: number | null;
+  apartmentsCount?: number | null;
+  rentalStatus?: string | null;
+  landUse?: string | null;
+  unitsCount?: number | null;
+  monthlyIncome?: number | null;
+  isCultivated?: boolean | null;
+  isBuilt?: boolean | null;
+  isOwner?: boolean | null;
   requestYear?: number;
   requiredYear?: number;
   licenseNumber?: string;

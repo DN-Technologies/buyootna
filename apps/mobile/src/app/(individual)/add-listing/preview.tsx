@@ -6,6 +6,7 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
+import OwnerDeclaration from '@/shared/components/add-listing/OwnerDeclaration';
 import PlanSlotPickerSheet from '@/shared/components/add-listing/PlanSlotPickerSheet';
 import PreviewDetailsCard from '@/shared/components/add-listing/PreviewDetailsCard';
 import PreviewImageGallery from '@/shared/components/add-listing/PreviewImageGallery';
@@ -83,6 +84,9 @@ export default function AdPreviewScreen() {
 
           {/* --- 3. Image Preview --- */}
           <PreviewImageGallery images={draftData.images} />
+
+          {/* --- 4. The owner's declaration (required to publish) --- */}
+          <OwnerDeclaration />
         </View>
       </ScrollView>
 

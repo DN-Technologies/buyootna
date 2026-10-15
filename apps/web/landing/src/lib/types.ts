@@ -83,6 +83,19 @@ export interface PropertyDetails {
   beds: number | null
   baths: number | null
   floors: number | null
+  // What the category adds (requirements doc): a flat's floor, a building's
+  // flats and rental status, land's use, commercial / investment units and
+  // monthly income, a farm's مزروعة / مبنية
+  floorNumber?: number | null
+  apartmentsCount?: number | null
+  rentalStatus?: string | null
+  landUse?: string | null
+  unitsCount?: number | null
+  monthlyIncome?: number | null
+  isCultivated?: boolean | null
+  isBuilt?: boolean | null
+  // An individual who confirmed they own the property
+  isOwner?: boolean | null
   // مزايا العقار, as the app saved them
   features: ({ id?: string; label?: string } | string)[] | null
   propertyIncome: number | null

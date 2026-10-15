@@ -7,82 +7,10 @@ export const roadmap: DocSection = {
   slug: "roadmap",
   title: { en: "Planned features", ar: "الميزات المخطط لها" },
   summary: {
-    en: "Features from the client's requirements document, not built yet: the add-ad form's fields per category, clear prices, and five tools for offices and companies. Each story says what is planned and how it will be checked once built.",
-    ar: "ميزات من وثيقة متطلبات العميل لم تُبنَ بعد: حقول نموذج إضافة الإعلان حسب الفئة، والسعر الواضح، وخمس أدوات للمكاتب والشركات. كل قصة توضح ما هو مخطط وكيف سيُختبر بعد بنائه.",
+    en: "Features from the client's requirements document, not built yet: five tools for offices and companies (the add-ad fields per category and the clear-price rule are built; see the app, website and API sections). Each story says what is planned and how it will be checked once built.",
+    ar: "ميزات من وثيقة متطلبات العميل لم تُبنَ بعد: خمس أدوات للمكاتب والشركات (حقول إضافة الإعلان حسب الفئة وقاعدة السعر الواضح بُنيت؛ انظر أقسام التطبيق والموقع والـ API). كل قصة توضح ما هو مخطط وكيف سيُختبر بعد بنائه.",
   },
   stories: [
-    {
-      id: "roadmap-add-ad-category-fields",
-      title: {
-        en: "Planned · Add-ad form: fields follow the property category",
-        ar: "مخطط · نموذج إضافة الإعلان: الحقول تتبع فئة العقار",
-      },
-      priority: "P0",
-      story: {
-        en: "Planned, not built. From the client's requirements document. Every ad keeps the common fields (المحافظة، المنطقة، الموقع، فئة العقار، الرقم الآلي، المساحة، رقم الهاتف، تفاصيل الإعلان، نوع الإعلان، الصور) and the deal-type fields it has today (sale: price; rent: monthly rent, extra costs, rent terms; exchange: request year, required year, allocation status). What changes is the per-category set. بيت gains عدد الأدوار. شقة shows رقم الدور (the floor it is on) in place of a floors count. عمارة hides rooms and baths and gains عدد الشقق and حالة التأجير. أرض gains نوع التخصيص (سكني / استثماري / تجاري / حرفي) and حالة التخصيص. تجاري and استثماري hide rooms and baths and gain عدد الوحدات أو المحلات and الدخل الشهري; استثماري is offered again for new ads. شاليه keeps عمر العقار، الغرف، الحمامات. مزرعة gains مزروعة and مبنية. Needs a database migration (approval first), then the app by OTA and the website.",
-        ar: "مخطط، لم يُبنَ. من وثيقة متطلبات العميل. يحتفظ كل إعلان بالحقول الثابتة (المحافظة، المنطقة، الموقع، فئة العقار، الرقم الآلي، المساحة، رقم الهاتف، تفاصيل الإعلان، نوع الإعلان، الصور) وبحقول نوع العملية الحالية (بيع: السعر؛ إيجار: الإيجار الشهري والمصاريف الإضافية وشروط الإيجار؛ بدل: سنة الطلب والسنة المطلوبة وحالة التخصيص). ما يتغير هو حقول كل فئة. بيت: يضاف عدد الأدوار. شقة: رقم الدور مكان عدد الأدوار. عمارة: تُخفى الغرف والحمامات ويضاف عدد الشقق وحالة التأجير. أرض: يضاف نوع التخصيص (سكني / استثماري / تجاري / حرفي) وحالة التخصيص. تجاري واستثماري: تُخفى الغرف والحمامات ويضاف عدد الوحدات أو المحلات والدخل الشهري، ويعود استثماري متاحاً للإعلانات الجديدة. شاليه: عمر العقار والغرف والحمامات. مزرعة: يضاف مزروعة ومبنية. يتطلب ترحيلاً لقاعدة البيانات (بعد الموافقة) ثم التطبيق عبر OTA والموقع.",
-      },
-      acceptanceCriteria: {
-        en: [
-          "Each category shows exactly the fields in the requirements table, and none of the hidden ones.",
-          "Fields a category doesn't have are not saved, even if an older app sends them.",
-          "The ad page and the preview show every new field that has a value.",
-          "Changing the category while editing drops the fields the new category doesn't have.",
-        ],
-        ar: [
-          "كل فئة تعرض الحقول الواردة في جدول المتطلبات فقط، ولا شيء من الحقول المخفية.",
-          "الحقول التي ليست للفئة لا تُحفظ، حتى لو أرسلها تطبيق قديم.",
-          "صفحة الإعلان والمعاينة تعرضان كل حقل جديد له قيمة.",
-          "تغيير الفئة أثناء التعديل يُسقط الحقول التي ليست للفئة الجديدة.",
-        ],
-      },
-      testScenarios: {
-        en: [
-          "For each of the eight categories, open إضافة إعلان and compare the fields with the table.",
-          "Publish a land ad with نوع التخصيص تجاري and a farm marked مزروعة; check the ad page.",
-        ],
-        ar: [
-          "لكل فئة من الفئات الثماني افتح إضافة إعلان وقارن الحقول بالجدول.",
-          "انشر إعلان أرض بنوع تخصيص تجاري وإعلان مزرعة مزروعة؛ وتحقق من صفحة الإعلان.",
-        ],
-      },
-      updatedIn: "docs/future-features-plan",
-    },
-    {
-      id: "roadmap-clear-price-and-owner",
-      title: {
-        en: "Planned · A clear price, and the owner says so",
-        ar: "مخطط · سعر واضح، والمالك يصرّح بذلك",
-      },
-      priority: "P0",
-      story: {
-        en: "Planned, not built. A Ministry of Commerce decision (December 2024) requires an advertised price to be clear and fixed: words such as «حد», «سوم» and «مراجعة» may not be added to it. It applies to real-estate companies and licensed offices; an owner may advertise if they follow the rules and state that they are the owner. Planned: sale and rent ads from companies and offices must have a price; an ad whose description qualifies the price with those words is refused with a clear message; an individual confirms «أنا مالك العقار» when publishing, and the ad page shows «المعلن هو المالك».",
-        ar: "مخطط، لم يُبنَ. قرار وزارة التجارة (ديسمبر 2024) يشترط أن يكون السعر المعلن واضحاً ومحدداً، ويمنع إضافة كلمات مثل «حد» و«سوم» و«مراجعة» إليه. القرار يخص الشركات العقارية والمكاتب المرخصة، ويسمح للمالك بالإعلان بشرط الالتزام بالأحكام وتوضيح أنه المالك. المخطط: إعلانات البيع والإيجار من الشركات والمكاتب تتطلب سعراً؛ والإعلان الذي يقيّد السعر بتلك الكلمات في وصفه يُرفض برسالة واضحة؛ والفرد يؤكد «أنا مالك العقار» عند النشر، وتعرض صفحة الإعلان «المعلن هو المالك».",
-      },
-      acceptanceCriteria: {
-        en: [
-          "A company or office sale / rent ad without a price can't be published.",
-          "A description such as «السعر حد 120 ألف» or «السعر على السوم» is refused with a message naming the rule.",
-          "An individual can't publish without ticking أنا مالك العقار; the ad page then shows it.",
-        ],
-        ar: [
-          "إعلان بيع أو إيجار من شركة أو مكتب بلا سعر لا يُنشر.",
-          "وصف مثل «السعر حد 120 ألف» أو «السعر على السوم» يُرفض برسالة تذكر القاعدة.",
-          "لا يستطيع الفرد النشر دون تحديد أنا مالك العقار، وتعرضه صفحة الإعلان بعدها.",
-        ],
-      },
-      testScenarios: {
-        en: [
-          "As an office, publish a rent ad with «السعر مراجعة» in the description — refused.",
-          "As an individual, publish with and without the owner box ticked.",
-        ],
-        ar: [
-          "كمكتب انشر إعلان إيجار وفي وصفه «السعر مراجعة» — يُرفض.",
-          "كفرد انشر مع تحديد خانة المالك ودونها.",
-        ],
-      },
-      updatedIn: "docs/future-features-plan",
-    },
     {
       id: "roadmap-owner-confirms-listing",
       title: {

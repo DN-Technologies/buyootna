@@ -2,6 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
 
+import CategoryDetailsFields from '@/shared/components/add-listing/CategoryDetailsFields';
 import PropertyAgeYearsRow from '@/shared/components/add-listing/PropertyAgeYearsRow';
 import PropertyCategorySizeRow from '@/shared/components/add-listing/PropertyCategorySizeRow';
 import PropertyFeaturesField from '@/shared/components/add-listing/PropertyFeaturesField';
@@ -57,7 +58,8 @@ export default function SharedPropertyInfo() {
   const areaDrawerRef = useRef<BottomSheetModal>(null);
   const categoryDrawerRef = useRef<BottomSheetModal>(null);
 
-  // What the picked category has: land shows no rooms, baths or floors
+  // What the picked category has (requirements doc): land shows no rooms,
+  // baths or floors; a flat its floor number
   const fields = getCategoryFields(propertyCategory?.id);
 
   // Dynamic area list based on selected governorate
@@ -138,6 +140,9 @@ export default function SharedPropertyInfo() {
         rooms={rooms}
         onChangeRooms={(value) => updateField('rooms', value)}
       />
+
+      {/* What the category adds: floor number, flats, land use, units... */}
+      <CategoryDetailsFields />
 
       <PropertyFeaturesField
         options={activeFeatures}

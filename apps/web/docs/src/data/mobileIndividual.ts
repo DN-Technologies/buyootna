@@ -1943,55 +1943,23 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/add-alert-reset-after-create',
     },
     {
-      id: 'mobile-add-ad-category-fields',
+      id: "mobile-add-ad-category-fields",
       title: {
-        en: 'Add ad: fields follow the property category, with phone and WhatsApp toggles',
-        ar: 'إضافة إعلان: الحقول تتبع فئة العقار، مع مفاتيح رقم الهاتف والواتساب',
+        en: "Add ad: fields follow the property category (requirements document), with phone and WhatsApp toggles",
+        ar: "إضافة إعلان: الحقول تتبع فئة العقار (وثيقة المتطلبات)، مع مفاتيح رقم الهاتف والواتساب",
       },
-      priority: 'P1',
+      priority: "P1",
       story: {
-        en: 'The إضافة إعلان form, its preview and the edit screen follow the Figma frames. Which counts show depends on the property category, not the listing type: أرض and مزرعة have no rooms, baths, floors or property age; شقة and عمارة have rooms, baths and floors; بيت، شاليه، مكتب، تجاري have rooms and baths. بيع and إيجار offer بيت، شقة، تجاري، عمارة، مكتب، شاليه، مزرعة، أرض; بدل offers أرض and بيت only. السعر، مدخول العقار، رقم الهاتف and رقم الواتساب are switches that reveal their input; a number is on the ad only while its switch is on. المزايا is a dropdown with a multi-select sheet. Package holders choose إعلان عادي or إعلان مميز on cards that show how many of each are left. Saving a draft lands on نشاطي > مسودة with a green toast.',
-        ar: 'نموذج إضافة إعلان ومعاينته وشاشة التعديل تتبع إطارات فيجما. العدّادات الظاهرة تعتمد على فئة العقار لا على نوع الإعلان: الأرض والمزرعة بلا غرف أو حمامات أو أدوار أو عمر عقار؛ الشقة والعمارة لها غرف وحمامات وأدوار؛ البيت والشاليه والمكتب والتجاري لها غرف وحمامات. البيع والإيجار يعرضان: بيت، شقة، تجاري، عمارة، مكتب، شاليه، مزرعة، أرض؛ والبدل يعرض أرض وبيت فقط. السعر ومدخول العقار ورقم الهاتف ورقم الواتساب مفاتيح تُظهر حقلها؛ والرقم يظهر في الإعلان فقط ما دام مفتاحه مفعّلاً. المزايا قائمة منسدلة باختيار متعدد. أصحاب الباقات يختارون إعلان عادي أو إعلان مميز من بطاقتين تعرضان المتبقي من كل نوع. حفظ المسودة ينقل إلى نشاطي ثم مسودة مع إشعار أخضر.',
+        en: "The إضافة إعلان form, its preview and the edit screen follow the Figma frames, and which fields show depends on the property category, per the client's requirements document: بيت: عمر العقار، الغرف، الحمامات، عدد الأدوار. شقة: عمر العقار، الغرف، الحمامات، رقم الدور (0 shows as الأرضي) instead of a floors count. عمارة: عمر العقار، عدد الأدوار، عدد الشقق، حالة التأجير (مؤجرة بالكامل / مؤجرة جزئياً / غير مؤجرة) and مدخول العقار; no rooms or baths. أرض: نوع التخصيص (سكني / استثماري / تجاري / حرفي) and حالة التخصيص. تجاري and استثماري: عمر العقار، عدد الوحدات أو المحلات، الدخل الشهري; no rooms or baths. شاليه: عمر العقار، الغرف، الحمامات. مزرعة: مزروعة and مبنية (yes / no). بيع and إيجار offer بيت، شقة، عمارة، أرض، تجاري، استثماري، شاليه، مزرعة (مكتب is no longer offered; an older ad keeps it); بدل offers أرض and بيت only. حالة التخصيص of an exchange ad stays in its own section. السعر، مدخول العقار، رقم الهاتف and رقم الواتساب are switches that reveal their input; a number is on the ad only while its switch is on. المزايا is a dropdown with a multi-select sheet. Package holders choose إعلان عادي or إعلان مميز. Saving a draft lands on نشاطي > مسودة with a green toast. The ad page shows the category's facts that have a value.",
+        ar: "نموذج إضافة إعلان ومعاينته وشاشة التعديل تتبع إطارات فيجما، والحقول الظاهرة تعتمد على فئة العقار وفق وثيقة متطلبات العميل: بيت: عمر العقار، الغرف، الحمامات، عدد الأدوار. شقة: عمر العقار، الغرف، الحمامات، رقم الدور (0 يظهر «الأرضي») بدل عدد الأدوار. عمارة: عمر العقار، عدد الأدوار، عدد الشقق، حالة التأجير (مؤجرة بالكامل / مؤجرة جزئياً / غير مؤجرة) ومدخول العقار؛ بلا غرف أو حمامات. أرض: نوع التخصيص (سكني / استثماري / تجاري / حرفي) وحالة التخصيص. تجاري واستثماري: عمر العقار، عدد الوحدات أو المحلات، الدخل الشهري؛ بلا غرف أو حمامات. شاليه: عمر العقار، الغرف، الحمامات. مزرعة: مزروعة ومبنية (نعم / لا). البيع والإيجار يعرضان: بيت، شقة، عمارة، أرض، تجاري، استثماري، شاليه، مزرعة (لم يعد مكتب متاحاً، والإعلان القديم يحتفظ به)؛ والبدل يعرض أرض وبيت فقط. وحالة التخصيص لإعلان البدل تبقى في قسمها. السعر ومدخول العقار ورقم الهاتف ورقم الواتساب مفاتيح تُظهر حقلها؛ والرقم يظهر في الإعلان فقط ما دام مفتاحه مفعّلاً. المزايا قائمة منسدلة باختيار متعدد. أصحاب الباقات يختارون إعلان عادي أو إعلان مميز. حفظ المسودة ينقل إلى نشاطي ثم مسودة مع إشعار أخضر. وصفحة الإعلان تعرض حقائق الفئة التي لها قيمة.",
       },
       acceptanceCriteria: {
-        en: [
-          'Picking أرض or مزرعة hides the rooms/baths/floors row and عمر العقار; picking شقة or عمارة shows three steppers; any other category shows rooms and baths only.',
-          'Switching to بدل clears a category that بدل does not offer; the category sheet lists only أرض and بيت.',
-          'The preview lists only the fields the category has, and only the contact numbers that are switched on.',
-          'معاينة الاعلان is enabled once the shown required fields are filled: governorate, area, category, area size, details, الرقم الالي, عمر العقار (when shown), and the input of every switch that is on; بدل needs سنة الطلب and السنة المطلوبة instead of age and الرقم الالي.',
-          'With both contact switches off the ad is published with no phone or WhatsApp number.',
-          'اختر نوع اعلانك appears only when the user has package ads, with the remaining normal and featured counts; with only the free ad the banner shows and the ad is normal.',
-          "حفظ كمسودة opens نشاطي on the مسودة filter with the toast 'تم حفظ الاعلان كمسودة بنجاح.'",
-          'Editing an older ad in a category no longer offered (e.g. سكني) keeps its category and can be saved without الرقم الالي or عمر العقار.',
-          "نوع الإعلان shows بيع, إيجار and بدل in full ('إيجار', not 'ايجا'), on Android too.",
-        ],
-        ar: [
-          'اختيار أرض أو مزرعة يخفي صف الغرف/الحمامات/الأدوار وحقل عمر العقار؛ واختيار شقة أو عمارة يُظهر ثلاثة عدّادات؛ وأي فئة أخرى تُظهر الغرف والحمامات فقط.',
-          'التحويل إلى بدل يمسح الفئة غير المتاحة للبدل؛ وقائمة الفئات تعرض أرض وبيت فقط.',
-          'المعاينة تعرض فقط الحقول التي تملكها الفئة، وأرقام التواصل المفعّلة فقط.',
-          'زر معاينة الاعلان يتفعّل عند تعبئة الحقول المطلوبة الظاهرة: المحافظة، المنطقة، الفئة، المساحة، التفاصيل، الرقم الالي، عمر العقار (إن ظهر)، وحقل كل مفتاح مفعّل؛ والبدل يتطلب سنة الطلب والسنة المطلوبة بدل العمر والرقم الالي.',
-          'عند إيقاف مفتاحي التواصل يُنشر الإعلان بلا رقم هاتف أو واتساب.',
-          'قسم اختر نوع اعلانك يظهر فقط لمن لديه إعلانات باقات، مع عدد المتبقي من العادي والمميز؛ ومع الإعلان المجاني فقط يظهر الشريط ويكون الإعلان عادياً.',
-          "حفظ كمسودة يفتح نشاطي على تصفية مسودة مع الإشعار 'تم حفظ الاعلان كمسودة بنجاح.'",
-          'تعديل إعلان قديم بفئة لم تعد متاحة (مثل سكني) يُبقي فئته ويمكن حفظه بدون الرقم الالي أو عمر العقار.',
-          "نوع الإعلان يعرض بيع وإيجار وبدل كاملة ('إيجار' لا 'ايجا')، في Android أيضاً.",
-        ],
+        en: ["Each of the eight categories shows exactly its fields from the table and none of the others.", "شقة shows رقم الدور and no عدد الأدوار; the preview shows «الأرضي» for floor 0.", "عمارة on a rent ad shows مدخول العقار in the category block; on a sale ad it is the مدخول العقار switch in the price section.", "Switching category drops what the old one had: the published ad carries only the new category's fields.", "Switching to بدل clears a category that بدل does not offer; the category sheet lists only أرض and بيت.", "With both contact switches off the ad is published with no phone or WhatsApp number.", "حفظ كمسودة opens نشاطي on the مسودة filter with the toast 'تم حفظ الاعلان كمسودة بنجاح.'", "Editing an older ad in a category no longer offered (e.g. مكتب or سكني) keeps its category.", "The ad page lists رقم الدور، عدد الشقق، حالة التأجير، نوع التخصيص، عدد الوحدات، الدخل الشهري، مزروعة / مبنية where the ad has them."],
+        ar: ["كل فئة من الفئات الثماني تعرض حقولها من الجدول فقط ولا شيء غيرها.", "الشقة تعرض رقم الدور دون عدد الأدوار؛ والمعاينة تعرض «الأرضي» للدور 0.", "العمارة في إعلان الإيجار تعرض مدخول العقار ضمن حقول الفئة؛ وفي البيع يبقى مفتاح مدخول العقار في قسم السعر.", "تغيير الفئة يُسقط حقول الفئة السابقة: الإعلان المنشور يحمل حقول الفئة الجديدة فقط.", "التحويل إلى بدل يمسح الفئة غير المتاحة للبدل؛ وقائمة الفئات تعرض أرض وبيت فقط.", "عند إيقاف مفتاحي التواصل يُنشر الإعلان بلا رقم هاتف أو واتساب.", "حفظ كمسودة يفتح نشاطي على تصفية مسودة مع الإشعار 'تم حفظ الاعلان كمسودة بنجاح.'", "تعديل إعلان قديم بفئة لم تعد متاحة (مثل مكتب أو سكني) يُبقي فئته.", "صفحة الإعلان تعرض رقم الدور وعدد الشقق وحالة التأجير ونوع التخصيص وعدد الوحدات والدخل الشهري ومزروعة / مبنية حيث وُجدت."],
       },
       testScenarios: {
-        en: [
-          'Sale, then أرض: no steppers, no age; fill the rest and preview: no room/bath/floor rows.',
-          'Sale, then شقة: three steppers; preview shows عدد الادوار.',
-          'Pick شقة, switch to بدل: the category is empty and the sheet shows أرض and بيت.',
-          'Turn رقم الهاتف off and رقم الواتساب on with a number; publish; open the ad: WhatsApp opens that number.',
-          'Save a draft from the preview: نشاطي opens on مسودة with the toast and the draft is listed.',
-        ],
-        ar: [
-          'بيع ثم أرض: لا عدّادات ولا عمر؛ أكمل الباقي وافتح المعاينة: لا صفوف للغرف/الحمامات/الأدوار.',
-          'بيع ثم شقة: ثلاثة عدّادات؛ والمعاينة تعرض عدد الادوار.',
-          'اختر شقة ثم حوّل إلى بدل: الفئة تُمسح والقائمة تعرض أرض وبيت.',
-          'أوقف رقم الهاتف وفعّل رقم الواتساب برقم؛ انشر؛ افتح الإعلان: الواتساب يفتح ذلك الرقم.',
-          'احفظ مسودة من المعاينة: تُفتح نشاطي على مسودة مع الإشعار وتظهر المسودة.',
-        ],
+        en: ["For each of the eight categories, open إضافة إعلان and compare the fields with the table.", "Publish a land ad with نوع التخصيص تجاري and a farm marked مزروعة; open each ad: the facts show.", "Pick عمارة, fill عدد الشقق, switch to شقة: عدد الشقق is gone and رقم الدور shows.", "Pick شقة, switch to بدل: the category is empty and the sheet shows أرض and بيت."],
+        ar: ["لكل فئة من الفئات الثماني افتح إضافة إعلان وقارن الحقول بالجدول.", "انشر إعلان أرض بنوع تخصيص تجاري وإعلان مزرعة مزروعة؛ افتح كل إعلان: تظهر الحقائق.", "اختر عمارة واملأ عدد الشقق ثم حوّل إلى شقة: يختفي عدد الشقق ويظهر رقم الدور.", "اختر شقة ثم حوّل إلى بدل: الفئة تُمسح والقائمة تعرض أرض وبيت."],
       },
       figmaFrameUrls: [
         {
@@ -2023,7 +1991,28 @@ export const mobileIndividual: DocSection = {
           label: { en: 'Draft saved', ar: 'حفظ المسودة' },
         },
       ],
-      updatedIn: 'fix/rent-label-cut',
+      updatedIn: "feat/add-ad-category-fields",
+    },
+    {
+      id: "mobile-add-ad-clear-price-owner",
+      title: {
+        en: "Add ad: a clear price, and the individual confirms they own the property",
+        ar: "إضافة إعلان: سعر واضح، والفرد يؤكد ملكيته للعقار",
+      },
+      priority: "P0",
+      story: {
+        en: "Per the Ministry of Commerce decision (December 2024) an advertised price must be clear and fixed. Publishing an ad whose تفاصيل الاعلان qualifies the price with «حد», «سوم» or «مراجعة» stops with «السعر غير واضح» and the rule; the server refuses it too. An individual's preview has a «أنا مالك العقار» box (I declare I own this property and the price is clear); publishing without it ticked stops with «أكّد ملكية العقار». The published ad's page shows «المعلن هو المالك». Saving a draft is not blocked by either.",
+        ar: "وفق قرار وزارة التجارة (ديسمبر 2024) يجب أن يكون السعر المعلن واضحاً ومحدداً. نشر إعلان في تفاصيله «حد» أو «سوم» أو «مراجعة» بجانب السعر يتوقف برسالة «السعر غير واضح» ونص القاعدة؛ والخادم يرفضه أيضاً. وفي معاينة الفرد خانة «أنا مالك العقار» (أقرّ بأنني مالك العقار وأن السعر واضح)؛ والنشر دون تحديدها يتوقف برسالة «أكّد ملكية العقار». وصفحة الإعلان المنشور تعرض «المعلن هو المالك». وحفظ المسودة لا يمنعه أيٌّ منهما.",
+      },
+      acceptanceCriteria: {
+        en: ["«السعر على السوم» in the details blocks publishing with the rule's message; «الحد الشمالي شارع» does not.", "Without the owner box ticked, publishing shows «أكّد ملكية العقار»; ticked, it publishes and the ad shows «المعلن هو المالك».", "حفظ كمسودة works with neither."],
+        ar: ["«السعر على السوم» في التفاصيل يمنع النشر برسالة القاعدة؛ و«الحد الشمالي شارع» لا يمنعه.", "دون تحديد خانة المالك يظهر «أكّد ملكية العقار» عند النشر؛ ومع تحديدها يُنشر ويعرض الإعلان «المعلن هو المالك».", "حفظ كمسودة يعمل دون أيٍّ منهما."],
+      },
+      testScenarios: {
+        en: ["Write «السعر حد 120 ألف» in the details and press نشر: refused with the message.", "Remove it, leave the owner box empty, press نشر: «أكّد ملكية العقار»; tick it and publish."],
+        ar: ["اكتب «السعر حد 120 ألف» في التفاصيل واضغط نشر: يُرفض مع الرسالة.", "احذفها واترك خانة المالك فارغة واضغط نشر: «أكّد ملكية العقار»؛ حدّدها وانشر."],
+      },
+      updatedIn: "feat/add-ad-category-fields",
     },
   ],
 }

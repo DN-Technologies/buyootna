@@ -3,6 +3,7 @@ import { EdgeInsets } from 'react-native-safe-area-context';
 
 import MapPreview from '@/shared/components/map/MapPreview';
 import ListerProfileSnippet from '@/shared/components/property/ListerProfileSnippet';
+import PropertyCategoryFacts from '@/shared/components/property/PropertyCategoryFacts';
 import PropertyDetailsBody from '@/shared/components/property/PropertyDetailsBody';
 import PropertyMediaHeader from '@/shared/components/property/PropertyMediaHeader';
 import PropertyOverview from '@/shared/components/property/PropertyOverview';
@@ -77,6 +78,25 @@ export default function PropertyDetailsContent({
           requiredYear={property.requiredYear?.toString()}
           licenseNumber={property.licenseNumber}
         />
+
+        {/* What the category adds, and the owner's declaration */}
+        <View className="mt-4">
+          <PropertyCategoryFacts
+            category={property.category}
+            type={property.type}
+            propertyIncome={property.propertyIncome}
+            floorNumber={property.floorNumber}
+            apartmentsCount={property.apartmentsCount}
+            rentalStatus={property.rentalStatus}
+            landUse={property.landUse}
+            allocationStatus={property.allocationStatus}
+            unitsCount={property.unitsCount}
+            monthlyIncome={property.monthlyIncome}
+            isCultivated={property.isCultivated}
+            isBuilt={property.isBuilt}
+            isOwner={property.isOwner}
+          />
+        </View>
 
         {/* --- Card 2: Dynamic Details Sections (Description, Requirements, Features, Rental Terms) --- */}
         <View className="mt-4">

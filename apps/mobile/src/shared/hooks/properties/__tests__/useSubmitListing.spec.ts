@@ -191,3 +191,55 @@ describe('useSubmitListing publish', () => {
     expect(mockAlert).toHaveBeenCalledWith('خطأ', 'الحساب قيد المراجعة');
   });
 });
+
+// Ministry of Commerce, December 2024: a clear, fixed price, and an owner
+// who says so -- told before anything is checked or spent
+describe('useSubmitListing clear price and owner', () => {
+  const { useAuthStore } = jest.requireActual('@/shared/store/useAuthStore');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useListingStore.getState().resetForm();
+    useListingStore.setState({ adLevel: 'normal', images: [] });
+    mockGetOptions.mockResolvedValue({ canPublish: true, options: [option('slot-a')] });
+    mockCreate.mockResolvedValue({ property: { id: 'prop-1' } });
+  });
+  afterEach(() => useAuthStore.setState({ activeIdentity: null }));
+
+  it('refuses a description that qualifies the price, before checking packages', async () => {
+    useListingStore.setState({ adDetails: 'شقة للإيجار، السعر على السوم' });
+    const { result } = await setup();
+
+    await act(() => result.current.handleSubmit());
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'السعر غير واضح',
+      expect.stringContaining('وزارة التجارة'),
+    );
+    expect(mockGetOptions).not.toHaveBeenCalled();
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('asks an individual to declare they own the property', async () => {
+    useAuthStore.setState({ activeIdentity: { id: 'i1', type: 'INDIVIDUAL' } });
+    const { result } = await setup();
+
+    await act(() => result.current.handleSubmit());
+    expect(mockAlert).toHaveBeenCalledWith('أكّد ملكية العقار', expect.any(String));
+    expect(mockCreate).not.toHaveBeenCalled();
+
+    useListingStore.setState({ isOwner: true });
+    await act(() => result.current.handleSubmit());
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+    expect(mockCreate.mock.calls[0][0]).toMatchObject({ isOwner: true });
+  });
+
+  it('does not ask an office for the owner declaration', async () => {
+    useAuthStore.setState({ activeIdentity: { id: 'o1', type: 'OFFICE' } });
+    const { result } = await setup();
+
+    await act(() => result.current.handleSubmit());
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+  });
+});

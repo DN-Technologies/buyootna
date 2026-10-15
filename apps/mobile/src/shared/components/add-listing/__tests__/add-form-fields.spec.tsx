@@ -42,16 +42,19 @@ describe('PropertyStepperRow', () => {
     expect((await stepperRow('farm')).queryByTestId('stepper-row')).toBeNull();
   });
 
-  it('shows rooms and baths, without floors, for a house', async () => {
-    const { getByText, queryByText } = await stepperRow('house');
+  it('shows rooms, baths and floors for a house', async () => {
+    const { getByText } = await stepperRow('house');
     expect(getByText('عدد الغرف')).toBeTruthy();
     expect(getByText('عدد الحمامات')).toBeTruthy();
-    expect(queryByText('عدد الادوار')).toBeNull();
+    expect(getByText('عدد الادوار')).toBeTruthy();
   });
 
-  it('adds floors for an apartment and a building', async () => {
-    expect((await stepperRow('apartment')).getByText('عدد الادوار')).toBeTruthy();
-    expect((await stepperRow('building')).getByText('عدد الادوار')).toBeTruthy();
+  it('has no floors count on a flat, and only floors on a building', async () => {
+    expect((await stepperRow('apartment')).queryByText('عدد الادوار')).toBeNull();
+    const building = await stepperRow('building');
+    expect(building.getByText('عدد الادوار')).toBeTruthy();
+    expect(building.queryByText('عدد الغرف')).toBeNull();
+    expect(building.queryByText('عدد الحمامات')).toBeNull();
   });
 });
 
@@ -76,15 +79,32 @@ describe('PreviewDetailsCard', () => {
     expect(queryByText('عمر العقار')).toBeNull();
   });
 
-  it('shows the counts an apartment has', async () => {
+  it("shows what a flat has: rooms, baths and its floor number", async () => {
     const { updateField } = useListingStore.getState();
     updateField('propertyCategory', { id: 'apartment', label: 'شقة' });
+    updateField('floorNumber', 3);
 
-    const { getByText } = await preview();
+    const { getByText, queryByText } = await preview();
 
     expect(getByText('عدد الغرف')).toBeTruthy();
     expect(getByText('عدد الحمامات')).toBeTruthy();
-    expect(getByText('عدد الادوار')).toBeTruthy();
+    expect(getByText('رقم الدور')).toBeTruthy();
+    expect(queryByText('عدد الادوار')).toBeNull();
+  });
+
+  it("shows land's use and a farm's مزروعة / مبنية", async () => {
+    const { updateField } = useListingStore.getState();
+    updateField('propertyCategory', { id: 'land', label: 'أرض' });
+    updateField('landUse', 'COMMERCIAL');
+    const land = await preview();
+    expect(land.getByText('نوع التخصيص')).toBeTruthy();
+    expect(land.getAllByText('تجاري').length).toBeGreaterThan(0);
+
+    updateField('propertyCategory', { id: 'farm', label: 'مزرعة' });
+    updateField('isBuilt', true);
+    const farm = await preview();
+    expect(farm.getByText('مزروعة')).toBeTruthy();
+    expect(farm.getByText('مبنية')).toBeTruthy();
   });
 
   it('shows only the contact numbers that are switched on', async () => {

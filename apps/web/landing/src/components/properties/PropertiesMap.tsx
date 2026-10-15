@@ -14,7 +14,7 @@ import AccountAction from '@/components/ui/AccountAction'
 import { api } from '@/lib/api'
 import {
   CATEGORY_LABELS,
-  categoryCounts,
+  categoryFields,
   LISTING_TYPES,
 } from '@/lib/categories'
 import { formatNumber } from '@/lib/format'
@@ -90,7 +90,7 @@ function PinCard({
 }) {
   const category = CATEGORY_LABELS[property.category] ?? 'عقار'
   const deal = LISTING_TYPES.find((type) => type.id === property.type)?.tab
-  const counts = categoryCounts(property.category)
+  const counts = categoryFields(property.category)
 
   return (
     <div className="flex flex-col items-center gap-1.5">

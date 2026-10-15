@@ -33,6 +33,17 @@ export interface CreatePropertyPayload {
   automatedNumber?: string;
   features?: { id: string; label: string }[];
   floors?: number;
+  // Per-category fields (requirements doc)
+  floorNumber?: number;
+  apartmentsCount?: number;
+  rentalStatus?: string;
+  landUse?: string;
+  unitsCount?: number;
+  monthlyIncome?: number;
+  isCultivated?: boolean;
+  isBuilt?: boolean;
+  // «أنا مالك العقار»
+  isOwner?: boolean;
   governorateId?: string;
   areaId?: string;
   additionalExpenses?: string;

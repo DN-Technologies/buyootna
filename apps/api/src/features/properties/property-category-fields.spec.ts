@@ -1,54 +1,113 @@
-import { PropertyCategory } from '@prisma/client';
+import { ListingType, PropertyCategory } from '@prisma/client';
+
 import {
-  CATEGORY_FIELDS,
   categoryFieldOverrides,
+  CATEGORY_FIELDS,
+  qualifiesPrice,
 } from './property-category-fields';
 
-describe('property category fields', () => {
-  it('covers every category', () => {
-    expect(Object.keys(CATEGORY_FIELDS).sort()).toEqual(
-      Object.values(PropertyCategory).sort(),
-    );
+const ALL_FIELDS = [
+  'beds',
+  'baths',
+  'floors',
+  'floorNumber',
+  'propertyAge',
+  'apartmentsCount',
+  'rentalStatus',
+  'landUse',
+  'allocationStatus',
+  'unitsCount',
+  'monthlyIncome',
+  'isCultivated',
+  'isBuilt',
+  'propertyIncome',
+];
+
+// What an ad of this category and deal type keeps of everything it may send
+const kept = (
+  category: PropertyCategory,
+  type: ListingType = ListingType.SALE,
+) => {
+  const nulled = Object.keys(categoryFieldOverrides(category, type));
+  return ALL_FIELDS.filter((f) => !nulled.includes(f));
+};
+
+describe('category fields (requirements doc, المتغير حسب الفئة)', () => {
+  it.each<[PropertyCategory, string[]]>([
+    ['HOUSE', ['beds', 'baths', 'floors', 'propertyAge', 'propertyIncome']],
+    [
+      'APARTMENT',
+      ['beds', 'baths', 'floorNumber', 'propertyAge', 'propertyIncome'],
+    ],
+    [
+      'BUILDING',
+      [
+        'floors',
+        'propertyAge',
+        'apartmentsCount',
+        'rentalStatus',
+        'propertyIncome',
+      ],
+    ],
+    ['LAND', ['landUse', 'allocationStatus', 'propertyIncome']],
+    [
+      'COMMERCIAL',
+      ['propertyAge', 'unitsCount', 'monthlyIncome', 'propertyIncome'],
+    ],
+    [
+      'INVESTMENT',
+      ['propertyAge', 'unitsCount', 'monthlyIncome', 'propertyIncome'],
+    ],
+    ['CHALET', ['beds', 'baths', 'propertyAge', 'propertyIncome']],
+    ['FARM', ['isCultivated', 'isBuilt', 'propertyIncome']],
+  ])('a %s sale ad keeps only its own fields', (category, fields) => {
+    expect(kept(category)).toEqual(fields);
   });
 
-  // The same table as the mobile app's propertyCategories.spec.ts
-  it.each([
-    ['LAND', false, false, false, false],
-    ['FARM', false, false, false, false],
-    ['APARTMENT', true, true, true, true],
-    ['BUILDING', true, true, true, true],
-    ['HOUSE', true, true, false, true],
-    ['CHALET', true, true, false, true],
-    ['OFFICE', true, true, false, true],
-    ['COMMERCIAL', true, true, false, true],
-    ['RESIDENTIAL', true, true, false, true],
-  ] as const)(
-    '%s: rooms %s, baths %s, floors %s, age %s',
-    (category, rooms, baths, floors, propertyAge) => {
-      expect(CATEGORY_FIELDS[category]).toEqual({
-        rooms,
-        baths,
-        floors,
-        propertyAge,
-      });
-    },
-  );
+  it('keeps حالة التخصيص on every exchange ad, and مدخول العقار only on a sale or a building', () => {
+    expect(kept('HOUSE', ListingType.EXCHANGE)).toContain('allocationStatus');
+    expect(kept('HOUSE', ListingType.RENT)).not.toContain('allocationStatus');
+    expect(kept('HOUSE', ListingType.RENT)).not.toContain('propertyIncome');
+    expect(kept('BUILDING', ListingType.RENT)).toContain('propertyIncome');
+  });
 
-  it('nulls every count for land', () => {
-    expect(categoryFieldOverrides('LAND')).toEqual({
-      beds: null,
-      baths: null,
-      floors: null,
-      propertyAge: null,
+  it('leaves the categories no longer offered as they were', () => {
+    expect(CATEGORY_FIELDS.OFFICE).toMatchObject({
+      rooms: true,
+      baths: true,
+      propertyAge: true,
     });
+    expect(kept('VILLA')).toEqual([
+      'beds',
+      'baths',
+      'propertyAge',
+      'propertyIncome',
+    ]);
+  });
+});
+
+describe('a clear price (Ministry of Commerce, December 2024)', () => {
+  it.each([
+    'السعر حد 120 ألف',
+    'السعر على السوم',
+    'السعر: بالسوم',
+    'السعر مراجعه',
+    'السعر عند المراجعة',
+    'سعر الحد 450 د.ك',
+    'السـوم واصل 300 الف',
+    'حده 95,000',
+  ])('refuses «%s»', (text) => {
+    expect(qualifiesPrice(text)).toBe(true);
   });
 
-  it('only nulls floors for a house', () => {
-    expect(categoryFieldOverrides('HOUSE')).toEqual({ floors: null });
-  });
-
-  it('leaves an apartment and a missing category untouched', () => {
-    expect(categoryFieldOverrides('APARTMENT')).toEqual({});
-    expect(categoryFieldOverrides(undefined)).toEqual({});
+  it.each([
+    'شقة ثلاث غرف قريبة من الخدمات',
+    'الحد الشمالي للقسيمة شارع رئيسي',
+    'بعد مراجعة البلدية تم اعتماد المخطط',
+    'لا حدود لإطلالة البحر',
+    'السعر 450 د.ك شامل',
+    '',
+  ])('accepts «%s»', (text) => {
+    expect(qualifiesPrice(text)).toBe(false);
   });
 });

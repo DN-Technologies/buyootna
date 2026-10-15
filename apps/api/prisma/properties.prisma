@@ -47,6 +47,23 @@ model Property {
   // حالة التخصيص, free text on exchange ads
   allocationStatus   String?
   rentConditions     String?
+  // Per-category fields (requirements doc "اضافات في المستقبل"); which
+  // category has which is in property-category-fields.ts
+  // شقة: the floor the flat is on
+  floorNumber        Int?
+  // عمارة: how many flats, and its rental status (text)
+  apartmentsCount    Int?
+  rentalStatus       String?
+  // أرض: نوع التخصيص
+  landUse            LandUse?
+  // تجاري / استثماري: units or shops, and monthly income
+  unitsCount         Int?
+  monthlyIncome      Float?
+  // مزرعة: مزروعة / مبنية
+  isCultivated       Boolean?
+  isBuilt            Boolean?
+  // An individual declared they own the property (Ministry of Commerce rule)
+  isOwner            Boolean?
   planSlotId         String?
   planSlot           UserPlanSlot?    @relation(fields: [planSlotId], references: [id])
   // One per publish attempt, sent by the app: a repeated request with the

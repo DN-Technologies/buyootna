@@ -45,6 +45,14 @@ enum PropertyStatus {
   LAND
 }
 
+// نوع التخصيص of a land ad
+enum LandUse {
+  RESIDENTIAL // سكني
+  INVESTMENT // استثماري
+  COMMERCIAL // تجاري
+  CRAFT // حرفي
+}
+
 enum AuctionStatus {
   STARTS_SOON
   ACTIVE
