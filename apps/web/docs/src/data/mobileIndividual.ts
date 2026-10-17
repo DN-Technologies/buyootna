@@ -1943,6 +1943,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/add-alert-reset-after-create',
     },
     {
+      id: "mobile-request-details-info-card-android",
+      title: {
+        en: "Request details: نوع الخدمة and نطاق السعر side by side on Android",
+        ar: "تفاصيل العرض: نوع الخدمة ونطاق السعر جنباً إلى جنب في Android",
+      },
+      priority: "P2",
+      story: {
+        en: "On a quote request's details (تفاصيل العرض), the card's second row shows نوع الخدمة and نطاق السعر in two columns, the same as رقم الطلب and تاريخ الطلب above them. On Android the price cell took the whole row, so نوع الخدمة showed only its icon and the card had a tall empty gap.",
+        ar: "في تفاصيل طلب عرض السعر (تفاصيل العرض) يعرض الصف الثاني من البطاقة نوع الخدمة ونطاق السعر في عمودين، مثل رقم الطلب وتاريخ الطلب فوقهما. وكانت خلية السعر في Android تأخذ الصف كاملاً فلا يظهر من نوع الخدمة سوى أيقونته وتظهر مساحة فارغة طويلة في البطاقة.",
+      },
+      acceptanceCriteria: {
+        en: ["نوع الخدمة shows its label and value beside نطاق السعر, on Android and iOS.", "The row is as tall as its text, with no empty gap; نطاق السعر lines up under تاريخ الطلب."],
+        ar: ["نوع الخدمة يعرض عنوانه وقيمته بجانب نطاق السعر في Android وiOS.", "ارتفاع الصف بقدر نصه بلا فراغ؛ ونطاق السعر محاذٍ لتاريخ الطلب."],
+      },
+      testScenarios: {
+        en: ["On Android, open نشاطي > عروضي and a request with a service and a price range: both show in one compact row."],
+        ar: ["في Android افتح نشاطي ثم عروضي وطلباً فيه نوع خدمة ونطاق سعر: يظهران في صف واحد مضغوط."],
+      },
+      updatedIn: "fix/request-details-android-row",
+    },
+    {
       id: "mobile-add-ad-category-fields",
       title: {
         en: "Add ad: fields follow the property category (requirements document), with phone and WhatsApp toggles",
