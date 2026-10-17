@@ -48,7 +48,9 @@ export default function AlertsOptionsMenu({
             }}
             testID={deleteAllTestID}
             disabled={deleteAllDisabled}
-            className={`h-8 justify-center py-2 ${deleteAllDisabled ? 'opacity-40' : ''}`}
+            // py-2 inside a fixed h-8 left 16px for a 21px line: Android cut
+            // the text in half. At least 32px, and room for the whole line
+            className={`min-h-8 justify-center py-1 ${deleteAllDisabled ? 'opacity-40' : ''}`}
           >
             <Text
               className="font-cairo-medium text-[14px] leading-[21px] text-[#9C1E28]"

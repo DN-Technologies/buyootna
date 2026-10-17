@@ -1943,6 +1943,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/add-alert-reset-after-create',
     },
     {
+      id: "mobile-activity-menu-text-android",
+      title: {
+        en: "نشاطي: the ⋮ menu's «حذف جميع العروض» / «حذف جميع التنبيهات» shows in full on Android",
+        ar: "نشاطي: «حذف جميع العروض» و«حذف جميع التنبيهات» في قائمة ⋮ تظهر كاملة في Android",
+      },
+      priority: "P2",
+      story: {
+        en: "On عروضي and تنبيهاتي the header ⋮ opens a one-item menu (حذف جميع العروض / حذف جميع التنبيهات). On Android the lower half of the red text was cut off: the row was fixed at 32px with 8px padding top and bottom, leaving 16px for a 21px line. The row is now at least 32px with 4px padding, like the اعلاناتي menu, so the whole line shows.",
+        ar: "في عروضي وتنبيهاتي يفتح زر ⋮ قائمة بعنصر واحد (حذف جميع العروض / حذف جميع التنبيهات). وفي Android كان النصف السفلي من النص الأحمر مقصوصاً: ارتفاع الصف ثابت 32px مع حشوة 8px أعلى وأسفل فيبقى 16px لسطر ارتفاعه 21px. الآن الصف 32px على الأقل بحشوة 4px مثل قائمة اعلاناتي، فيظهر السطر كاملاً.",
+      },
+      acceptanceCriteria: {
+        en: ["On Android and iOS, «حذف جميع العروض» and «حذف جميع التنبيهات» show in full, with no cut letters.", "Tapping the item still opens its delete-all confirmation; on عروضي with no requests it stays dimmed."],
+        ar: ["في Android وiOS يظهر «حذف جميع العروض» و«حذف جميع التنبيهات» كاملين دون حروف مقصوصة.", "الضغط على العنصر ما زال يفتح تأكيد الحذف؛ وفي عروضي بلا طلبات يبقى باهتاً."],
+      },
+      testScenarios: {
+        en: ["On Android open نشاطي › عروضي › ⋮, then تنبيهاتي › ⋮: both labels are whole."],
+        ar: ["في Android افتح نشاطي ثم عروضي ثم ⋮، ثم تنبيهاتي ثم ⋮: النصان كاملان."],
+      },
+      updatedIn: "fix/activity-menu-text-clipped",
+    },
+    {
       id: "mobile-request-details-info-card-android",
       title: {
         en: "Request details: نوع الخدمة and نطاق السعر side by side on Android",
