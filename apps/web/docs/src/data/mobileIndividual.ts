@@ -1985,6 +1985,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-auctions-deals-hidden",
+      title: {
+        en: "Auctions and deals are hidden until they're built",
+        ar: "المزادات والصفقات مخفية حتى تُبنى",
+      },
+      priority: "P1",
+      story: {
+        en: "Auctions (المزادات) and deals (الصفقات) aren't offered yet, so the app no longer shows them anywhere: the More menu (signed in and guest) has no الخدمات section with الصفقات and المزادات rows, إضافة تنبيه has no عقارات / مزادات tabs and opens straight on the property alert, and its intro and the empty تنبيهاتي text no longer mention auctions. Everything is behind one switch, shared/config/features.ts (auctions, deals), so turning a feature on brings its entry points back. An auctions alert saved earlier still shows in تنبيهاتي and still opens its own form when edited.",
+        ar: "المزادات والصفقات غير متاحة بعد، فلم يعد التطبيق يعرضها في أي مكان: قائمة المزيد (للمسجّل والزائر) بلا قسم الخدمات وصفّي الصفقات والمزادات، وإضافة تنبيه بلا تبويبي عقارات / مزادات وتفتح مباشرة على تنبيه العقارات، ونصها التعريفي ونص تنبيهاتي الفارغة لم يعودا يذكران المزادات. كل ذلك خلف مفتاح واحد في shared/config/features.ts (auctions وdeals)، فتفعيل الميزة يعيد مداخلها. وتنبيه المزادات المحفوظ سابقاً ما زال يظهر في تنبيهاتي ويفتح نموذجه عند التعديل.",
+      },
+      acceptanceCriteria: {
+        en: ["The More menu shows no الصفقات or المزادات, signed in or as a guest.", "إضافة تنبيه has no tabs; the property form shows directly and the intro reads «تابع العقارات والخدمات التي تهمك…».", "The empty تنبيهاتي text mentions properties only.", "Editing an existing auctions alert still opens the auctions form."],
+        ar: ["قائمة المزيد لا تعرض الصفقات ولا المزادات، للمسجّل أو الزائر.", "إضافة تنبيه بلا تبويبات؛ ويظهر نموذج العقارات مباشرة ونصه «تابع العقارات والخدمات التي تهمك…».", "نص تنبيهاتي الفارغة يذكر العقارات فقط.", "تعديل تنبيه مزادات موجود ما زال يفتح نموذج المزادات."],
+      },
+      testScenarios: {
+        en: ["Open المزيد signed in and signed out: no الخدمات section.", "Open إضافة تنبيه from نشاطي: no مزادات tab."],
+        ar: ["افتح المزيد مسجلاً ثم زائراً: لا قسم للخدمات.", "افتح إضافة تنبيه من نشاطي: لا يوجد تبويب مزادات."],
+      },
+      updatedIn: "feat/hide-auctions-deals",
+    },
+    {
       id: "mobile-office-public-profile",
       title: {
         en: "Office profile: عن المكتب / الخدمات / الاعلانات by governorate, with ابدأ المحادثة and اتصال",

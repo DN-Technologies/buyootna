@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import ActivityCardSkeleton from '@/shared/components/skeletons/ActivityCardSkeleton';
+import { FEATURES } from '@/shared/config/features';
 
 export interface AlertsEmptyStateProps {
   isLoading: boolean;
@@ -104,8 +105,9 @@ export default function AlertsEmptyState({
           لا توجد تنبيهات حاليا
         </Text>
         <Text className="mt-2 font-cairo-semibold text-center text-sm leading-6 tracking-[0.28px] text-[#6B6A6A]">
-          أنشئ تنبيهك المخصص الآن للعقارات أو المزادات، وسنقوم بإرسال إشعار فوري
-          لهاتفك بمجرد توفر أي عقار يطابق مواصفاتك تماماً.
+          {FEATURES.auctions
+            ? 'أنشئ تنبيهك المخصص الآن للعقارات أو المزادات، وسنقوم بإرسال إشعار فوري لهاتفك بمجرد توفر أي عقار يطابق مواصفاتك تماماً.'
+            : 'أنشئ تنبيهك المخصص الآن للعقارات، وسنقوم بإرسال إشعار فوري لهاتفك بمجرد توفر أي عقار يطابق مواصفاتك تماماً.'}
         </Text>
       </View>
 

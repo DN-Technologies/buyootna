@@ -13,6 +13,7 @@ import {
   StarIcon,
 } from '@/assets/icons/more';
 import MenuItem from '@/shared/components/ui/MenuItem';
+import { FEATURES } from '@/shared/config/features';
 import { showAlert } from '@/shared/utils/alert';
 
 import MenuSection from './MenuSection';
@@ -52,22 +53,29 @@ export default function IndividualMenuSections({
         />
       </MenuSection>
 
-      <MenuSection title="الخدمات">
-        <MenuItem
-          icon={DealsIcon}
-          title="الصفقات"
-          onPress={() =>
-            showAlert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
-          }
-        />
-        <MenuItem
-          icon={AuctionsIcon}
-          title="المزادات"
-          onPress={() =>
-            showAlert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
-          }
-        />
-      </MenuSection>
+      {/* الصفقات and المزادات come later (shared/config/features.ts) */}
+      {(FEATURES.deals || FEATURES.auctions) && (
+        <MenuSection title="الخدمات">
+          {FEATURES.deals && (
+            <MenuItem
+              icon={DealsIcon}
+              title="الصفقات"
+              onPress={() =>
+                showAlert('قريباً', 'ميزة الصفقات ستكون متوفرة قريباً')
+              }
+            />
+          )}
+          {FEATURES.auctions && (
+            <MenuItem
+              icon={AuctionsIcon}
+              title="المزادات"
+              onPress={() =>
+                showAlert('قريباً', 'ميزة المزادات ستكون متوفرة قريباً')
+              }
+            />
+          )}
+        </MenuSection>
+      )}
 
       <MenuSection title="التقييمات">
         <MenuItem

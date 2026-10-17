@@ -33,6 +33,7 @@ import AlertPropertiesTab, {
   DEFAULT_ALERT_PROPERTIES_STATE,
 } from '@/shared/components/add-alert/AlertPropertiesTab';
 import AlertSuccessModal from '@/shared/components/add-alert/AlertSuccessModal';
+import { FEATURES } from '@/shared/config/features';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -158,47 +159,50 @@ export default function AddAlertScreen() {
           <View className="w-8" />
         </View>
 
-        {/* --- Tabs --- */}
-        <View className="flex-row items-center border-b border-gray-200 px-5">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setActiveTab('properties')}
-            className={`flex-1 items-center border-b-2 pb-3 ${
-              activeTab === 'properties'
-                ? 'border-[#15304D]'
-                : 'border-transparent'
-            }`}
-          >
-            <Text
-              className={
+        {/* --- Tabs --- (مزادات comes later: with it off, only an auctions
+            alert being edited still opens its own form) */}
+        {FEATURES.auctions && (
+          <View className="flex-row items-center border-b border-gray-200 px-5">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setActiveTab('properties')}
+              className={`flex-1 items-center border-b-2 pb-3 ${
                 activeTab === 'properties'
-                  ? 'font-cairo-bold text-[#15304D]'
-                  : 'font-cairo text-[#6B6A6A]'
-              }
+                  ? 'border-[#15304D]'
+                  : 'border-transparent'
+              }`}
             >
-              عقارات
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => setActiveTab('auctions')}
-            className={`flex-1 items-center border-b-2 pb-3 ${
-              activeTab === 'auctions'
-                ? 'border-[#15304D]'
-                : 'border-transparent'
-            }`}
-          >
-            <Text
-              className={
+              <Text
+                className={
+                  activeTab === 'properties'
+                    ? 'font-cairo-bold text-[#15304D]'
+                    : 'font-cairo text-[#6B6A6A]'
+                }
+              >
+                عقارات
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setActiveTab('auctions')}
+              className={`flex-1 items-center border-b-2 pb-3 ${
                 activeTab === 'auctions'
-                  ? 'font-cairo-bold text-[#15304D]'
-                  : 'font-cairo text-[#6B6A6A]'
-              }
+                  ? 'border-[#15304D]'
+                  : 'border-transparent'
+              }`}
             >
-              مزادات
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text
+                className={
+                  activeTab === 'auctions'
+                    ? 'font-cairo-bold text-[#15304D]'
+                    : 'font-cairo text-[#6B6A6A]'
+                }
+              >
+                مزادات
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         <ScrollView
           className="flex-1"
@@ -215,8 +219,9 @@ export default function AddAlertScreen() {
             className="mb-6 text-center font-cairo-medium text-xs leading-5 text-[#6B6A6A]"
             style={{ writingDirection: 'rtl' }}
           >
-            تابع العقارات والخدمات والمزادات التي تهمك ليصلك اشعار في حاله
-            توافر الطلب.
+            {FEATURES.auctions
+              ? 'تابع العقارات والخدمات والمزادات التي تهمك ليصلك اشعار في حاله توافر الطلب.'
+              : 'تابع العقارات والخدمات التي تهمك ليصلك اشعار في حاله توافر الطلب.'}
           </Text>
 
           {activeTab === 'properties' ? (
