@@ -62,6 +62,8 @@ export default function ProfileListingsTab({
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              requestYear={item.requestYear}
+              requiredYear={item.requiredYear}
               isFavorited={favoritedIds.includes(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               onShowDetails={() => handleShowDetails(item.id)}
@@ -77,6 +79,8 @@ export default function ProfileListingsTab({
               type={item.type}
               categoryLabel={item.categoryLabel}
               propertyIncome={item.propertyIncome}
+              requestYear={item.requestYear}
+              requiredYear={item.requiredYear}
               area={item.area}
               beds={item.beds}
               baths={item.baths}

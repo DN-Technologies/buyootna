@@ -1,4 +1,3 @@
-import { Feather } from '@expo/vector-icons';
 import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
@@ -6,6 +5,8 @@ import { AreaIcon, ShareIcon } from '@/assets/icons/home/property';
 import { HomeIcon, PropertiesTabIcon } from '@/assets/icons/tab';
 import { SafeLinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { formatNumber } from '@/shared/utils/formatNumber';
+
+import ExchangeYears, { hasExchangeYears } from './ExchangeYears';
 
 export interface PropertyListItemProps {
   id?: string;
@@ -61,6 +62,7 @@ export default function PropertyListItem({
         : price;
 
   const hasPrice = Number(price) > 0;
+  const hasYears = hasExchangeYears(requestYear, requiredYear);
 
   const handleDetailsPress = onShowDetails || onPress;
 
@@ -89,6 +91,11 @@ export default function PropertyListItem({
             <Text className="font-cairo-medium text-sm text-[#15304D]">
               د.ك
             </Text>
+          </View>
+        ) : hasYears ? (
+          // An exchange has no price: its two years take the price's place
+          <View className="min-w-0 flex-1">
+            <ExchangeYears requestYear={requestYear} requiredYear={requiredYear} />
           </View>
         ) : (
           <Text className="font-cairo-semibold text-lg leading-[22px] text-[#15304D]">
@@ -169,19 +176,13 @@ export default function PropertyListItem({
         </View>
       )}
 
-      {/* Exchange: the year it was requested with the year wanted */}
-      {!!requestYear && !!requiredYear && (
-        <View className="mt-2.5 flex-row items-center justify-start gap-1.5">
-          <Feather name="calendar" size={14} color="#111111" />
-          <Text className="font-cairo-medium text-sm text-[#111111]">
-            طلب {requestYear}
-          </Text>
-          <Text className="font-cairo-medium text-sm text-[#111111]">مع</Text>
-          <Feather name="calendar" size={14} color="#111111" />
-          <Text className="font-cairo-medium text-sm text-[#111111]">
-            {requiredYear}
-          </Text>
-        </View>
+      {/* Exchange with a price too: its years under the facts */}
+      {hasPrice && (
+        <ExchangeYears
+          className="mt-2.5"
+          requestYear={requestYear}
+          requiredYear={requiredYear}
+        />
       )}
 
       {/* Row 4: Actions ("عرض تفاصيل" Button & Share/Heart Icons) */}

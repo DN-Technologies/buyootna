@@ -129,6 +129,8 @@ export default function ExchangeProperties({
                 area={item.area}
                 location={item.location}
                 propertyIncome={item.propertyIncome}
+                requestYear={item.requestYear}
+                requiredYear={item.requiredYear}
                 cardWidth={HORIZONTAL_CARD_WIDTH}
                 onPress={() => openDetails(item)}
                 onShowDetails={() => openDetails(item)}

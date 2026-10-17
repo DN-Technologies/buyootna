@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 
+import ExchangeYears, { hasExchangeYears } from './ExchangeYears';
 import PropertyCardImageCarousel from './property-card/PropertyCardImageCarousel';
 import PropertyCardIncomeRow from './property-card/PropertyCardIncomeRow';
 import PropertyCardInfoRow from './property-card/PropertyCardInfoRow';
@@ -27,6 +28,9 @@ export interface PropertyCardProps {
   location: string;
   timeAgo?: string;
   propertyIncome?: number | null;
+  // An exchange ad's سنة الطلب and السنة المطلوبة
+  requestYear?: number | null;
+  requiredYear?: number | null;
   cardWidth?: DimensionValue;
   isFavorited?: boolean;
   onPress?: () => void;
@@ -46,6 +50,8 @@ export default function PropertyCard({
   location,
   timeAgo = 'منذ ساعتين',
   propertyIncome,
+  requestYear,
+  requiredYear,
   cardWidth = '100%',
   isFavorited = false,
   onPress,
@@ -109,13 +115,29 @@ export default function PropertyCard({
         testID={`property-card-${id}`}
         className="px-4 py-3"
       >
-        <PropertyCardPriceRow price={price} timeAgo={timeAgo} />
+        <PropertyCardPriceRow
+          price={price}
+          timeAgo={timeAgo}
+          // An exchange has no price: its two years take the price's place
+          noPriceContent={
+            hasExchangeYears(requestYear, requiredYear) ? (
+              <ExchangeYears requestYear={requestYear} requiredYear={requiredYear} />
+            ) : undefined
+          }
+        />
         <PropertyCardInfoRow
           categoryLabel={categoryLabel || category || type || 'عقار'}
           location={location}
           area={area}
         />
         <PropertyCardIncomeRow propertyIncome={propertyIncome} />
+        {Number(price) > 0 && (
+          <ExchangeYears
+            className="mt-2"
+            requestYear={requestYear}
+            requiredYear={requiredYear}
+          />
+        )}
       </TouchableOpacity>
     </View>
   );

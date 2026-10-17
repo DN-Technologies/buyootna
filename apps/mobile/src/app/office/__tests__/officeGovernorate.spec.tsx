@@ -68,6 +68,7 @@ describe('OfficeGovernorateScreen', () => {
     await fireEvent.press(getByTestId('office-deal-EXCHANGE'));
 
     expect(getByTestId('office-governorate-count').props.children).toEqual([1, ' عقارات']);
-    expect(getByText('طلب 2021')).toBeTruthy();
+    expect(getByText('سنة الطلب')).toBeTruthy();
+    expect(getByText('2021')).toBeTruthy();
   });
 });

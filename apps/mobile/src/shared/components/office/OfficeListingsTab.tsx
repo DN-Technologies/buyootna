@@ -125,6 +125,8 @@ export default function OfficeListingsTab({
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              requestYear={item.requestYear}
+              requiredYear={item.requiredYear}
               isFavorited={favoritedIds.includes(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               onPress={() => router.push(`/property/${item.id}`)}
