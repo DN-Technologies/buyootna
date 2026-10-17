@@ -28,17 +28,19 @@ import {
 } from '@/features/individual/services/feed.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
-import CategoryFilterSheet, {
-  COMPANY_CATEGORY_OPTIONS,
-} from '@/shared/components/filters/CategoryFilterSheet';
+import CompanyFilterSheet, {
+  companyFilterCount,
+  type CompanyFilters,
+  EMPTY_COMPANY_FILTERS,
+} from '@/shared/components/filters/CompanyFilterSheet';
 import RadioSelectionSheet, {
   type RadioOption,
 } from '@/shared/components/profile/RadioSelectionSheet';
 import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
-import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { openChatWith } from '@/shared/utils/openChat';
 
 // الترتيب حسب options (design); الكل is the default newest-first order
@@ -54,7 +56,7 @@ export default function CompaniesScreen() {
   const { scrollContentBottomPadding } = useTabBarHeight();
   const { guardAction, authSheetRef } = useAuthGuard();
   const quoteModalRef = useRef<BottomSheetModal>(null);
-  const categorySheetRef = useRef<BottomSheetModal>(null);
+  const filterSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const listRef = useRef<FlashListRef<any>>(null);
   useScrollToTop(listRef);
@@ -63,22 +65,25 @@ export default function CompaniesScreen() {
   const debouncedSearchText = useDebounce(searchText, 400);
   const [sortBy, setSortBy] = useState<CompanySort>('NEWEST');
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([
-    'all',
-  ]);
-  const categoryParam = selectedCategories.includes('all')
-    ? undefined
-    : selectedCategories.join(',');
-  const categoryLabel =
-    selectedCategories.includes('all') || selectedCategories.length === 0
-      ? 'التصنيف'
-      : selectedCategories.length === 1
-        ? (COMPANY_CATEGORY_OPTIONS.find(
-            (c) => c.id === selectedCategories[0],
-          )?.label ?? 'التصنيف')
-        : `${COMPANY_CATEGORY_OPTIONS.find((c) => c.id === selectedCategories[0])?.label} +${
-            selectedCategories.length - 1
-          }`;
+  // تصفية البحث: التخصص, نوع الخدمة, المحافظة and المنطقة
+  const [filters, setFilters] = useState<CompanyFilters>(EMPTY_COMPANY_FILTERS);
+  const categoryParam = filters.categories.length
+    ? filters.categories.map((c) => c.id).join(',')
+    : undefined;
+  const specialtyParam = filters.specialties.length
+    ? filters.specialties.map((s) => s.label).join(',')
+    : undefined;
+  // Areas narrow further than their governorates, so they win when picked
+  const locationItems = filters.areas.length ? filters.areas : filters.govs;
+  const locationParam = locationItems.length
+    ? locationItems.map((l) => l.label).join(',')
+    : undefined;
+  const activeFilters = companyFilterCount(filters);
+  const categoryLabel = !filters.categories.length
+    ? 'التصنيف'
+    : filters.categories.length === 1
+      ? filters.categories[0].label
+      : `${filters.categories[0].label} +${filters.categories.length - 1}`;
 
   const providerFavorites = useProviderFavorites();
   const [selectedCompanyName, setSelectedCompanyName] = useState('الشركة');
@@ -91,7 +96,14 @@ export default function CompaniesScreen() {
     hasNextPage,
     fetchNextPage,
   } = useInfiniteQuery({
-    queryKey: ['companies', categoryParam, debouncedSearchText.trim(), sortBy],
+    queryKey: [
+      'companies',
+      categoryParam,
+      specialtyParam,
+      locationParam,
+      debouncedSearchText.trim(),
+      sortBy,
+    ],
     queryFn: ({ pageParam }) =>
       feedService.getCompanies(
         categoryParam,
@@ -99,6 +111,7 @@ export default function CompaniesScreen() {
         10,
         debouncedSearchText.trim() || undefined,
         sortBy,
+        { specialty: specialtyParam, location: locationParam },
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
@@ -165,15 +178,21 @@ export default function CompaniesScreen() {
             returnKeyType="search"
           />
         </View>
-        {/* تصفية البحث: the company category sheet. It used to push the
-            property /search screen with its sale/rent filter on top (QA) */}
+        {/* تصفية البحث: التخصص, نوع الخدمة, المحافظة and المنطقة (Figma
+            "services filters"); a dot while any of them is applied */}
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => categorySheetRef.current?.present()}
+          onPress={() => filterSheetRef.current?.present()}
           accessibilityLabel="تصفية البحث"
           className="h-11 w-11 items-center justify-center rounded-full border border-[#ECECEC] bg-[#F8FAFC]"
         >
           <FilterHorizontalIcon size={18} color="#111111" />
+          {activeFilters > 0 && (
+            <View
+              testID="companies-filter-active-dot"
+              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#15304D]"
+            />
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -188,7 +207,7 @@ export default function CompaniesScreen() {
       {/* Category Filter Trigger */}
       <TouchableOpacity
         activeOpacity={0.7}
-        onPress={() => categorySheetRef.current?.present()}
+        onPress={() => filterSheetRef.current?.present()}
         className="h-11 flex-row items-center justify-between rounded-2xl bg-[#F8FAFC] px-4"
       >
         <Text
@@ -281,10 +300,10 @@ export default function CompaniesScreen() {
         ref={quoteModalRef}
         companyName={selectedCompanyName}
       />
-      <CategoryFilterSheet
-        ref={categorySheetRef}
-        selected={selectedCategories}
-        onChange={setSelectedCategories}
+      <CompanyFilterSheet
+        ref={filterSheetRef}
+        value={filters}
+        onApply={setFilters}
       />
       <RadioSelectionSheet
         ref={sortSheetRef}
