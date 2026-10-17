@@ -75,6 +75,11 @@ const officeListingProperty = Prisma.validator<Prisma.PropertyDefaultArgs>()({
     publishedAt: true,
     phoneNumber: true,
     propertyIncome: true,
+    // The profile's الاعلانات tab groups by governorate, then by deal type
+    type: true,
+    governorateId: true,
+    requestYear: true,
+    requiredYear: true,
   },
 });
 export type OfficeListingProperty = Prisma.PropertyGetPayload<
@@ -104,5 +109,10 @@ export function formatOfficeListings(
     phoneNumber: p.phoneNumber,
     phone: p.phoneNumber,
     propertyIncome: p.propertyIncome,
+    // `type` above is the category group; this is SALE / RENT / EXCHANGE
+    listingType: p.type,
+    governorateId: p.governorateId,
+    requestYear: p.requestYear,
+    requiredYear: p.requiredYear,
   }));
 }

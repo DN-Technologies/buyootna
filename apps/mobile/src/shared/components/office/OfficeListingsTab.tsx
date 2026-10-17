@@ -3,20 +3,25 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import OfficeGovernorateCard from '@/shared/components/office/OfficeGovernorateCard';
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { shareProperty } from '@/shared/utils/helpers/property';
+import { groupByGovernorate } from '@/shared/utils/office/officeListings';
 import { PropertyDto } from '@/types/feed';
 
 interface OfficeListingsTabProps {
   properties?: PropertyDto[];
   onFilterPress?: () => void;
+  // Opens one governorate's ads (Figma: الاعلانات groups by governorate)
+  onOpenGovernorate?: (governorateId: string) => void;
 }
 
 export default function OfficeListingsTab({
   properties = [],
   onFilterPress,
+  onOpenGovernorate,
 }: OfficeListingsTabProps) {
   const router = useRouter();
   const { favoritedIds, toggleFavorite } = useFavorites();
@@ -29,6 +34,22 @@ export default function OfficeListingsTab({
         <Text className="mt-3 font-cairo-semibold text-sm text-[#94A3B8]">
           لا توجد إعلانات حالياً لهذا المكتب
         </Text>
+      </View>
+    );
+  }
+
+  // One card per governorate (Figma 1258:120961). An API that doesn't send
+  // the deal type yet gets the plain list below.
+  if (onOpenGovernorate && properties.some((item) => item.listingType)) {
+    return (
+      <View className="flex-1 pb-24" style={{ gap: 8 }}>
+        {groupByGovernorate(properties).map((group) => (
+          <OfficeGovernorateCard
+            key={group.governorateId}
+            group={group}
+            onPress={() => onOpenGovernorate(group.governorateId)}
+          />
+        ))}
       </View>
     );
   }

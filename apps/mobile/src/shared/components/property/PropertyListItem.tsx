@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { DimensionValue, Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon, LocationIcon } from '@/assets/icons/home/cards';
@@ -18,6 +19,9 @@ export interface PropertyListItemProps {
   area: number;
   location: string;
   propertyIncome?: number | null;
+  // An exchange ad's two years: «طلب 2021 مع 2023»
+  requestYear?: number | null;
+  requiredYear?: number | null;
   isFavorited?: boolean;
   onPress?: () => void;
   onFavorite?: () => void;
@@ -36,6 +40,8 @@ export default function PropertyListItem({
   area,
   location,
   propertyIncome,
+  requestYear,
+  requiredYear,
   isFavorited = false,
   onPress,
   onFavorite,
@@ -156,6 +162,21 @@ export default function PropertyListItem({
           </Text>
           <Text className="font-cairo-bold text-base text-[#10B981]">
             {formatNumber(propertyIncome)} د.ك
+          </Text>
+        </View>
+      )}
+
+      {/* Exchange: the year it was requested with the year wanted */}
+      {!!requestYear && !!requiredYear && (
+        <View className="mt-2.5 flex-row items-center justify-start gap-1.5">
+          <Feather name="calendar" size={14} color="#111111" />
+          <Text className="font-cairo-medium text-sm text-[#111111]">
+            طلب {requestYear}
+          </Text>
+          <Text className="font-cairo-medium text-sm text-[#111111]">مع</Text>
+          <Feather name="calendar" size={14} color="#111111" />
+          <Text className="font-cairo-medium text-sm text-[#111111]">
+            {requiredYear}
           </Text>
         </View>
       )}

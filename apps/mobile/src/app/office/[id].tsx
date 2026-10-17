@@ -19,6 +19,10 @@ import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
+import { useAuthStore } from '@/shared/store/useAuthStore';
+import { showAlert } from '@/shared/utils/alert';
+import { openChatWith } from '@/shared/utils/openChat';
+import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 export default function OfficeProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,6 +65,22 @@ export default function OfficeProfileScreen() {
 
   const { reportSheetRef, handleOpenReport, handleSubmitReport } =
     useOfficeReport(targetUserId);
+
+  const token = useAuthStore((state) => state.token);
+  const handleChat = () => {
+    if (!office) return;
+    if (!token) {
+      showAlert('تنبيه', 'يجب تسجيل الدخول لمراسلة المكتب');
+      return;
+    }
+    openChatWith(router, { recipientId: office.id });
+  };
+  const handleCall = () => {
+    if (!office?.phone) return;
+    openUrlThrottled(`tel:${office.phone.replace(/[^0-9+]/g, '')}`).catch(() =>
+      showAlert('خطأ', 'تعذر إجراء المكالمة الهاتفية'),
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
@@ -120,16 +140,26 @@ export default function OfficeProfileScreen() {
                 <OfficeListingsTab
                   properties={properties}
                   onFilterPress={() => filterSheetRef.current?.present()}
+                  onOpenGovernorate={(governorateId) =>
+                    router.push({
+                      pathname: '/office/governorate',
+                      params: { officeId: office.id, governorateId },
+                    } as any)
+                  }
                 />
               )}
             </View>
           </ScrollView>
         )}
 
-        {/* Fixed Bottom Quote Request Action Bar */}
-        <OfficeBottomBar
-          onRequestQuote={() => quoteModalRef.current?.present()}
-        />
+        {/* ابدأ المحادثة, and اتصال when the office has a number */}
+        {office && (
+          <OfficeBottomBar
+            phone={office.phone}
+            onCall={handleCall}
+            onChat={handleChat}
+          />
+        )}
 
         {/* Coordinated Modals & Bottom Sheets */}
         <OfficeModals

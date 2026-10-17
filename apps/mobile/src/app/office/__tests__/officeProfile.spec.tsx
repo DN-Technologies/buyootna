@@ -5,10 +5,11 @@ import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
     back: jest.fn(),
-    push: jest.fn(),
+    push: mockPush,
   })),
   useLocalSearchParams: jest.fn(() => ({ id: 'off-1' })),
 }));
@@ -168,7 +169,7 @@ describe('OfficeProfileScreen', () => {
     expect(getByText('مكتب الرواد العقاري')).toBeTruthy();
     expect(getByText('عن المكتب')).toBeTruthy();
     expect(getAllByText('الخدمات').length).toBe(2);
-    expect(getAllByText('الإعلانات').length).toBe(2);
+    expect(getAllByText('الاعلانات').length).toBe(2);
 
     // Default tab is About - shows working hours and reviews
     expect(getByText('التقييمات')).toBeTruthy();
@@ -179,8 +180,107 @@ describe('OfficeProfileScreen', () => {
     expect(await findByText('تسويق عقاري')).toBeTruthy();
 
     // Switch to Listings tab (index 1 is in the tab switcher)
-    const listingsTab = getAllByText('الإعلانات')[1];
+    const listingsTab = getAllByText('الاعلانات')[1];
     fireEvent.press(listingsTab);
     expect(await findByText('150,000')).toBeTruthy();
+  });
+
+  describe('Figma office profile', () => {
+    const office = (overrides: Record<string, unknown> = {}) => ({
+      id: 'off-1',
+      name: 'مكتب الرواد العقاري',
+      rating: 4.7,
+      reviewsCount: 10,
+      servicesCount: 1,
+      listingsCount: 3,
+      licenseNumber: 'LIC-9988',
+      services: [{ id: 's-1', title: 'البحث عن عقار للايجار', description: 'وصف' }],
+      properties: [],
+      userId: 'user-off-1',
+      ...overrides,
+    });
+    const mockOffice = (data: ReturnType<typeof office>) =>
+      mockUseOfficeDetails.mockReturnValue({
+        office: data,
+        isLoading: false,
+        isError: false,
+        services: data.services,
+        properties: data.properties,
+        workingHours: [],
+        targetUserId: 'user-off-1',
+      });
+
+    it('shows اتصال beside ابدأ المحادثة when the office has a number', async () => {
+      mockOffice(office({ phone: '99990000' }));
+      const { getByTestId } = await render(<OfficeProfileScreen />);
+
+      expect(getByTestId('office-start-chat')).toBeTruthy();
+      expect(getByTestId('office-call')).toBeTruthy();
+    });
+
+    // Figma note: no number (or a hidden one) leaves only the chat button
+    it('shows only ابدأ المحادثة without a number', async () => {
+      mockOffice(office({ phone: null }));
+      const { getByTestId, queryByTestId, queryByText } = await render(
+        <OfficeProfileScreen />,
+      );
+
+      expect(getByTestId('office-start-chat')).toBeTruthy();
+      expect(queryByTestId('office-call')).toBeNull();
+      expect(queryByText('طلب عرض سعر')).toBeNull();
+    });
+
+    it('lists the ads as one card per governorate that opens its ads', async () => {
+      mockPush.mockClear();
+      const ad = (id: string, governorateId: string, categoryLabel: string) => ({
+        id,
+        images: [],
+        price: 1000,
+        companyName: 'مكتب',
+        isFeatured: false,
+        type: 'سكني',
+        categoryLabel,
+        area: 300,
+        beds: 3,
+        baths: 2,
+        location: 'x',
+        createdAt: '2026-10-01T00:00:00.000Z',
+        listingType: 'SALE',
+        governorateId,
+      });
+      mockOffice(
+        office({
+          properties: [
+            ad('p1', 'hawally', 'شقة'),
+            ad('p2', 'capital', 'بيت'),
+            ad('p3', 'capital', 'أرض'),
+          ],
+        }),
+      );
+      const { getAllByText, getByTestId, getByText } = await render(
+        <OfficeProfileScreen />,
+      );
+
+      await fireEvent.press(getAllByText('الاعلانات')[1]);
+
+      expect(getByText('محافظة العاصمة')).toBeTruthy();
+      expect(getByText('محافظة حولي')).toBeTruthy();
+      expect(getByText('2 عقارات')).toBeTruthy();
+
+      await fireEvent.press(getByTestId('office-governorate-capital'));
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/office/governorate',
+        params: { officeId: 'off-1', governorateId: 'capital' },
+      });
+    });
+
+    it('puts the round icon on each service card', async () => {
+      mockOffice(office());
+      const { getAllByText, getByTestId } = await render(<OfficeProfileScreen />);
+
+      await fireEvent.press(getAllByText('الخدمات')[1]);
+
+      expect(getByTestId('office-service-s-1')).toBeTruthy();
+    });
   });
 });

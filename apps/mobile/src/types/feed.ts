@@ -19,6 +19,12 @@ export interface PropertyDto {
   // Owning identity (the ad's host)
   identityId?: string;
   identityType?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+  // An office profile's listings: the deal (`type` above is the category
+  // group), the governorate, and an exchange's two years
+  listingType?: 'SALE' | 'RENT' | 'EXCHANGE';
+  governorateId?: string | null;
+  requestYear?: number | null;
+  requiredYear?: number | null;
 }
 
 // --- Company Modal ---
