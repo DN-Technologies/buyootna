@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { ActivityFilterType, FilterPill } from '@/features/individual/components/activity/ActivityFilterPills';
+import type { AdDealFilter } from '@/features/individual/components/activity/constants';
 import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 export type ActivitySortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
@@ -13,10 +14,20 @@ export type ActivitySortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
  * independently of the FlashList/UI wiring.
  */
 export function useActivityFilters(
-  data: ActivityItem[],
+  allData: ActivityItem[],
   activeFilterId: ActivityFilterType,
   sortBy: ActivitySortBy,
+  dealFilter: AdDealFilter = 'ALL',
 ) {
+  // The deal type (تصفية البحث) narrows everything, the chip counts too
+  const data = useMemo(
+    () =>
+      dealFilter === 'ALL'
+        ? allData
+        : allData.filter((item) => item.type === dealFilter),
+    [allData, dealFilter],
+  );
+
   const filterPills: FilterPill[] = useMemo(() => {
     const allCount = data.length;
     const activeCount = data.filter((item) => item.status === 'ACTIVE').length;

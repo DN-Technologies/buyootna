@@ -98,4 +98,37 @@ describe('useActivityFilters', () => {
       400, 300, 200, 100, 50,
     ]);
   });
+
+  // تصفية البحث: the deal type, as GET /properties/me/activity labels it
+  it('narrows the list and the chip counts to the picked deal type', async () => {
+    const mixed: ActivityItem[] = [
+      buildItem({ id: 'sale-1', type: 'بيع', status: 'ACTIVE' }),
+      buildItem({ id: 'rent-1', type: 'إيجار', status: 'ACTIVE' }),
+      buildItem({ id: 'rent-2', type: 'إيجار', status: 'EXPIRED' }),
+      buildItem({ id: 'swap-1', type: 'بدل', status: 'DRAFT' }),
+    ];
+    const { result } = await renderHook(() =>
+      useActivityFilters(mixed, 'ALL', 'NEWEST', 'إيجار'),
+    );
+
+    expect(result.current.sortedAndFilteredData.map((i) => i.id).sort()).toEqual([
+      'rent-1',
+      'rent-2',
+    ]);
+    expect(result.current.filterPills[0]).toEqual({ id: 'ALL', label: 'الكل (2)' });
+    expect(result.current.filterPills[4]).toEqual({ id: 'ARCHIVED', label: 'مؤرشفة (1)' });
+  });
+
+  it('combines the deal type with a status chip', async () => {
+    const mixed: ActivityItem[] = [
+      buildItem({ id: 'rent-1', type: 'إيجار', status: 'ACTIVE' }),
+      buildItem({ id: 'rent-2', type: 'إيجار', status: 'EXPIRED' }),
+      buildItem({ id: 'sale-1', type: 'بيع', status: 'EXPIRED' }),
+    ];
+    const { result } = await renderHook(() =>
+      useActivityFilters(mixed, 'ARCHIVED', 'NEWEST', 'إيجار'),
+    );
+
+    expect(result.current.sortedAndFilteredData.map((i) => i.id)).toEqual(['rent-2']);
+  });
 });

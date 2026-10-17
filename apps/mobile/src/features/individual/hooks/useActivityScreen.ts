@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityFilterType } from '@/features/individual/components/activity/ActivityFilterPills';
 import {
   type ActivityTabId,
+  type AdDealFilter,
   type AdSortBy,
 } from '@/features/individual/components/activity/constants';
 import { useActivityFilters } from '@/features/individual/hooks/useActivityFilters';
@@ -35,6 +36,7 @@ export function useActivityScreen() {
   const [activeFilterId, setActiveFilterId] =
     useState<ActivityFilterType>('ALL');
   const [sortBy, setSortBy] = useState<AdSortBy>('NEWEST');
+  const [dealFilter, setDealFilter] = useState<AdDealFilter>('ALL');
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetRef = useRef<BottomSheetModal>(null);
 
@@ -137,6 +139,7 @@ export function useActivityScreen() {
     data,
     activeFilterId,
     sortBy,
+    dealFilter,
   );
 
   const requestActions = useRequestActions({
@@ -175,6 +178,8 @@ export function useActivityScreen() {
     setActiveFilterId,
     sortBy,
     setSortBy,
+    dealFilter,
+    setDealFilter,
     sortSheetRef,
     filterSheetRef,
     listRef,

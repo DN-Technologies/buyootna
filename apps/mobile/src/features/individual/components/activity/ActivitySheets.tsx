@@ -2,17 +2,16 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { router } from 'expo-router';
 import { RefObject } from 'react';
 
-import type {
-  ActivityFilterType,
-  FilterPill,
-} from '@/features/individual/components/activity/ActivityFilterPills';
+import { TrashLargeIcon } from '@/assets/icons/activity';
 import AdPreviewSheet from '@/features/individual/components/activity/ads/AdPreviewSheet';
 import FeatureAdSheet from '@/features/individual/components/activity/ads/FeatureAdSheet';
 import ToggleAdsVisibilitySheet from '@/features/individual/components/activity/ads/ToggleAdsVisibilitySheet';
 import AlertDetailsSheet from '@/features/individual/components/activity/alerts/AlertDetailsSheet';
 import DeleteAllAlertsSheet from '@/features/individual/components/activity/alerts/DeleteAllAlertsSheet';
 import {
+  AD_DEAL_OPTIONS,
   AD_SORT_OPTIONS,
+  type AdDealFilter,
   type AdSortBy,
 } from '@/features/individual/components/activity/constants';
 import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
@@ -21,10 +20,9 @@ import {
   OffersFilterSheet,
   OffersSortSheet,
 } from '@/features/individual/components/activity/offers/OffersPickerSheets';
-import type { useRequestActions } from '@/features/individual/hooks/useRequestActions';
-import { TrashLargeIcon } from '@/assets/icons/activity';
 import type { useAdActions } from '@/features/individual/hooks/useAdActions';
 import type { useAlertActions } from '@/features/individual/hooks/useAlertActions';
+import type { useRequestActions } from '@/features/individual/hooks/useRequestActions';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 
 export interface ActivitySheetsProps {
@@ -35,9 +33,8 @@ export interface ActivitySheetsProps {
   sortBy: AdSortBy;
   onSortChange: (sortBy: AdSortBy) => void;
   filterSheetRef: RefObject<BottomSheetModal | null>;
-  filterPills: FilterPill[];
-  activeFilterId: ActivityFilterType;
-  onFilterChange: (id: ActivityFilterType) => void;
+  dealFilter: AdDealFilter;
+  onDealFilterChange: (deal: AdDealFilter) => void;
 }
 
 // All bottom sheets of the activity screen
@@ -49,9 +46,8 @@ export default function ActivitySheets({
   sortBy,
   onSortChange,
   filterSheetRef,
-  filterPills,
-  activeFilterId,
-  onFilterChange,
+  dealFilter,
+  onDealFilterChange,
 }: ActivitySheetsProps) {
   const { selectedDraft } = adActions;
 
@@ -187,16 +183,14 @@ export default function ActivitySheets({
         snapPoints={['40%']}
       />
 
-      {/* --- Filter Ads Bottom Sheet (تصفية البحث) --- */}
+      {/* --- Filter Ads Bottom Sheet (تصفية البحث): the deal type, per the
+          Figma sheet; the status chips stay on the screen --- */}
       <RadioSelectionSheet
         ref={filterSheetRef}
         title="تصفية البحث"
-        options={filterPills.map((pill) => ({
-          label: pill.label,
-          value: pill.id,
-        }))}
-        selectedValue={activeFilterId}
-        onSelect={(value) => onFilterChange(value as ActivityFilterType)}
+        options={AD_DEAL_OPTIONS}
+        selectedValue={dealFilter}
+        onSelect={(value) => onDealFilterChange(value as AdDealFilter)}
         snapPoints={['50%']}
       />
     </>
