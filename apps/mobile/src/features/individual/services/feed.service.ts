@@ -59,6 +59,8 @@ export const feedService = {
     limit: number = 10,
     search?: string,
     sort?: CompanySort,
+    // تصفية البحث: التخصص names, and governorate or area names, comma-separated
+    narrow?: { specialty?: string; location?: string },
   ): Promise<CompaniesResponse> => {
     const params = new URLSearchParams({
       page: String(page),
@@ -73,6 +75,8 @@ export const feedService = {
     if (sort && sort !== 'NEWEST') {
       params.set('sort', sort);
     }
+    if (narrow?.specialty) params.set('specialty', narrow.specialty);
+    if (narrow?.location) params.set('location', narrow.location);
     const response = await apiClient.get<CompaniesResponse>(
       `/users/companies?${params.toString()}`,
     );

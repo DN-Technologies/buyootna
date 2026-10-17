@@ -5,7 +5,25 @@ import { feedService } from '@/features/individual/services/feed.service';
 
 import CompaniesScreen from '../companies';
 
-jest.mock('@gorhom/bottom-sheet');
+// The shared mock leaves out sheet footers; the filter sheet's buttons live
+// in one, so this one renders it under the sheet's content
+jest.mock('@gorhom/bottom-sheet', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const mock = jest.requireActual('../../../../__mocks__/@gorhom/bottom-sheet');
+  const BottomSheetModal = React.forwardRef(
+    ({ footerComponent, children, ...props }: any, ref: any) => (
+      <mock.BottomSheetModal {...props} ref={ref}>
+        <View>
+          {children}
+          {footerComponent?.({})}
+        </View>
+      </mock.BottomSheetModal>
+    ),
+  );
+  BottomSheetModal.displayName = 'BottomSheetModal';
+  return { __esModule: true, ...mock, default: BottomSheetModal, BottomSheetModal };
+});
 jest.mock('@shopify/flash-list');
 
 const mockPush = jest.fn();
@@ -101,7 +119,64 @@ describe('CompaniesScreen', () => {
         10,
         undefined,
         'RATING_DESC',
+        { specialty: undefined, location: undefined },
       ),
     );
+  });
+
+  // Figma "services filters": التخصص, نوع الخدمة, المحافظة, المنطقة
+  describe('تصفية البحث', () => {
+    it('shows the four fields, with عرض النتائج off until something changes', async () => {
+      const { getByText, getByTestId } = await renderScreen();
+
+      expect(getByText('اختر التخصص أو المجال')).toBeTruthy();
+      expect(getByText('اختر نوع الخدمة التي تبحث عنها')).toBeTruthy();
+      expect(getByText('اختر المحافظة')).toBeTruthy();
+      expect(getByText('اختر المنطقة')).toBeTruthy();
+      expect(getByTestId('company-filter-apply').props.accessibilityState).toMatchObject({
+        disabled: true,
+      });
+    });
+
+    it('applies التخصص, نوع الخدمة and the governorate to the request', async () => {
+      const { getByText, getByTestId, getAllByText, queryByTestId } =
+        await renderScreen();
+
+      expect(queryByTestId('companies-filter-active-dot')).toBeNull();
+
+      await fireEvent.press(getByText('اختر التخصص أو المجال'));
+      await fireEvent.press(getAllByText('التشطيب').at(-1)!);
+      await fireEvent.press(getByText('اختر نوع الخدمة التي تبحث عنها'));
+      await fireEvent.press(getAllByText('ديكورات').at(-1)!);
+      await fireEvent.press(getByText('اختر المحافظة'));
+      await fireEvent.press(getAllByText('حولي').at(-1)!);
+
+      await fireEvent.press(getByTestId('company-filter-apply'));
+
+      await waitFor(() =>
+        expect(feedService.getCompanies).toHaveBeenLastCalledWith(
+          'ديكورات',
+          1,
+          10,
+          undefined,
+          'NEWEST',
+          { specialty: 'التشطيب', location: 'حولي' },
+        ),
+      );
+      expect(getByTestId('companies-filter-active-dot')).toBeTruthy();
+    });
+
+    it('clears the picks with إعادة التعيين', async () => {
+      const { getByText, getByTestId, getAllByText } = await renderScreen();
+
+      await fireEvent.press(getByText('اختر التخصص أو المجال'));
+      await fireEvent.press(getAllByText('التشطيب').at(-1)!);
+      await fireEvent.press(getByTestId('company-filter-reset'));
+
+      expect(getByText('اختر التخصص أو المجال')).toBeTruthy();
+      expect(getByTestId('company-filter-apply').props.accessibilityState).toMatchObject({
+        disabled: true,
+      });
+    });
   });
 });
