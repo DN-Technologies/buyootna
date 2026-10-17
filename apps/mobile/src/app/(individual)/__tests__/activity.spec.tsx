@@ -203,7 +203,7 @@ describe('ActivityScreen', () => {
     it('the filter button opens the تصفية البحث sheet and marks an applied filter', async () => {
       // present() comes from the bottom-sheet manual mock (not in real typings)
       const { present } = require('@gorhom/bottom-sheet');
-      const { getByLabelText, getAllByText, queryByTestId, getByTestId } =
+      const { getByLabelText, getByText, queryByTestId, getByTestId } =
         await render(<ActivityScreen />);
 
       expect(queryByTestId('activity-filter-active-dot')).toBeNull();
@@ -211,8 +211,10 @@ describe('ActivityScreen', () => {
       await fireEvent.press(getByLabelText('تصفية البحث'));
       expect(present).toHaveBeenCalled();
 
-      // The pills show the same labels; the sheet renders after the list
-      await fireEvent.press(getAllByText('مسودة (0)').at(-1)!);
+      // Figma: the sheet filters by deal type, not the status chips
+      expect(getByText('البيع')).toBeTruthy();
+      expect(getByText('الايجار')).toBeTruthy();
+      await fireEvent.press(getByText('البدل'));
       expect(getByTestId('activity-filter-active-dot')).toBeTruthy();
     });
 

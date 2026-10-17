@@ -16,6 +16,18 @@ export const ADD_ROUTE_BY_TAB: Record<ActivityTabId, string> = {
   alerts: '/add-alert',
 };
 
+// تصفية البحث on اعلاناتي: the deal type (Figma bottom sheet). The status
+// chips (نشطة، مسودة...) stay on the screen and combine with it. Values are
+// the labels GET /properties/me/activity sends in `type`.
+export type AdDealFilter = 'ALL' | 'بيع' | 'إيجار' | 'بدل';
+
+export const AD_DEAL_OPTIONS: RadioOption[] = [
+  { label: 'الكل', value: 'ALL' },
+  { label: 'البيع', value: 'بيع' },
+  { label: 'الايجار', value: 'إيجار' },
+  { label: 'البدل', value: 'بدل' },
+];
+
 export type AdSortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
 
 export const AD_SORT_OPTIONS: RadioOption[] = [

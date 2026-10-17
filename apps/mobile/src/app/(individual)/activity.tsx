@@ -25,14 +25,13 @@ export default function ActivityScreen() {
     isAdsTab,
     isOffersTab,
     isAlertsTab,
-    activeFilterId,
-    setActiveFilterId,
     sortBy,
     setSortBy,
+    dealFilter,
+    setDealFilter,
     sortSheetRef,
     filterSheetRef,
     toast,
-    ads,
     adActions,
     alertActions,
     requestActions,
@@ -62,8 +61,8 @@ export default function ActivityScreen() {
         tabs={TABS}
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        // تصفية البحث: opens the status filter sheet; only the ads tab
-        // has filters (it used to silently toggle ALL/ACTIVE -- QA)
+        // تصفية البحث: the ads tab filters by deal type (the status chips
+        // are on the screen), عروضي by service
         onFilterPress={
           isAdsTab
             ? () => filterSheetRef.current?.present()
@@ -72,7 +71,7 @@ export default function ActivityScreen() {
               : undefined
         }
         isFilterActive={
-          (isAdsTab && activeFilterId !== 'ALL') ||
+          (isAdsTab && dealFilter !== 'ALL') ||
           (isOffersTab && requestActions.isFilterActive)
         }
         onSortPress={() =>
@@ -93,9 +92,8 @@ export default function ActivityScreen() {
         sortBy={sortBy}
         onSortChange={setSortBy}
         filterSheetRef={filterSheetRef}
-        filterPills={ads.filterPills}
-        activeFilterId={activeFilterId}
-        onFilterChange={setActiveFilterId}
+        dealFilter={dealFilter}
+        onDealFilterChange={setDealFilter}
       />
 
       <AlertsOptionsMenu
