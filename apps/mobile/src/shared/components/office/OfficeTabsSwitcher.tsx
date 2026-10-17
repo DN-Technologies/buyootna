@@ -10,7 +10,7 @@ interface OfficeTabsSwitcherProps {
 const TABS: { id: OfficeTab; label: string }[] = [
   { id: 'about', label: 'عن المكتب' },
   { id: 'services', label: 'الخدمات' },
-  { id: 'listings', label: 'الإعلانات' },
+  { id: 'listings', label: 'الاعلانات' },
 ];
 
 export default function OfficeTabsSwitcher({
@@ -31,8 +31,11 @@ export default function OfficeTabsSwitcher({
             }`}
           >
             <Text
-              className={`font-cairo-bold text-base ${
-                isActive ? 'text-[#15304D]' : 'text-[#6B6A6A]'
+              // Figma "company tabs": Almarai 14, bold when active
+              className={`text-[14px] leading-[20px] ${
+                isActive
+                  ? 'font-almarai-bold text-[#15304D]'
+                  : 'font-almarai text-[#6B6A6A]'
               }`}
             >
               {tab.label}

@@ -996,6 +996,27 @@ export const api: DocSection = {
       updatedIn: "feat/activity-offers-status-tabs",
     },
     {
+      id: "api-office-details-live-listings",
+      title: {
+        en: "GET /users/office/:id: live ads only, with governorate and deal type",
+        ar: "GET /users/office/:id: الإعلانات المنشورة فقط، مع المحافظة ونوع الإعلان",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /users/office/:id used to return the office's first 20 ads of any status, drafts and expired ones included, and counted them in listingsCount. It now returns only live ads (status ACTIVE, not hidden), newest first (publishedAt, then createdAt), up to 200, and listingsCount counts those. Each item of `properties` also carries `listingType` (SALE, RENT or EXCHANGE; the older `type` is the category group), `governorateId`, `requestYear` and `requiredYear`. No migration.",
+        ar: "كان GET /users/office/:id يعيد أول 20 إعلاناً للمكتب بأي حالة، ومنها المسودات والمنتهية، ويحسبها في listingsCount. الآن يعيد الإعلانات المنشورة فقط (الحالة ACTIVE وغير مخفية)، الأحدث أولاً (publishedAt ثم createdAt)، حتى 200، وlistingsCount يحسبها. وكل عنصر في `properties` يحمل أيضاً `listingType` (SALE أو RENT أو EXCHANGE؛ و`type` الأقدم هو مجموعة الفئة) و`governorateId` و`requestYear` و`requiredYear`. بلا ترحيل.",
+      },
+      acceptanceCriteria: {
+        en: ["A draft, an expired and a hidden ad of the office are not in `properties` and not in listingsCount.", "Each item has listingType, governorateId and, for exchange ads, requestYear and requiredYear.", "Items are newest first."],
+        ar: ["المسودة والإعلان المنتهي والمخفي لا تظهر في `properties` ولا في listingsCount.", "كل عنصر فيه listingType وgovernorateId، وفي البدل requestYear وrequiredYear.", "العناصر من الأحدث."],
+      },
+      testScenarios: {
+        en: ["GET /users/office/<id> for an office with a draft and two live ads: properties has 2, listingsCount 2.", "Run users-directory.service.spec.ts (findOfficeDetails listings)."],
+        ar: ["اطلب /users/office/<id> لمكتب له مسودة وإعلانان منشوران: properties فيها 2 وlistingsCount هو 2.", "شغّل users-directory.service.spec.ts (findOfficeDetails listings)."],
+      },
+      updatedIn: "feat/office-profile-figma",
+    },
+    {
       id: "api-property-category-fields",
       title: {
         en: "Properties: the fields follow the category (requirements document)",

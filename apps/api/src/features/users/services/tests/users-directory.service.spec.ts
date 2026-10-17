@@ -202,4 +202,82 @@ describe('UsersDirectoryService', () => {
       });
     });
   });
+
+  describe('findOfficeDetails listings', () => {
+    const office = (properties: unknown[]) => ({
+      id: 'office-1',
+      userId: 'user-1',
+      type: 'OFFICE',
+      useAccountPhone: true,
+      user: { phone: '+96599990000' },
+      officeData: {
+        name: 'المنار',
+        logoUrl: null,
+        isVerified: true,
+        about: null,
+        hqLocation: null,
+        licenseNumber: '1',
+        services: null,
+      },
+      properties,
+    });
+
+    it('asks only for live ads, newest first', async () => {
+      prisma.identity.findFirst.mockResolvedValue(office([]));
+
+      await service.findOfficeDetails('office-1');
+
+      const args = (
+        prisma.identity.findFirst.mock.calls as {
+          include: {
+            properties: { where: unknown; orderBy: unknown[] };
+          };
+        }[][]
+      )[0][0];
+      expect(args.include.properties.where).toEqual({
+        status: 'ACTIVE',
+        isHidden: false,
+      });
+      expect(args.include.properties.orderBy[0]).toEqual({
+        publishedAt: 'desc',
+      });
+    });
+
+    // The الاعلانات tab groups by governorate, then by deal type
+    it('sends each listing its governorate, deal type and exchange years', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        office([
+          {
+            id: 'p1',
+            images: [],
+            price: 450,
+            isFeatured: false,
+            category: 'HOUSE',
+            location: 'العاصمة - الشامية',
+            areaSize: 400,
+            beds: 3,
+            baths: 2,
+            createdAt: new Date(),
+            publishedAt: new Date(),
+            phoneNumber: null,
+            propertyIncome: null,
+            type: 'EXCHANGE',
+            governorateId: 'capital',
+            requestYear: 2021,
+            requiredYear: 2023,
+          },
+        ]),
+      );
+
+      const result = await service.findOfficeDetails('office-1');
+
+      expect(result.properties[0]).toMatchObject({
+        listingType: 'EXCHANGE',
+        governorateId: 'capital',
+        requestYear: 2021,
+        requiredYear: 2023,
+      });
+      expect(result.listingsCount).toBe(1);
+    });
+  });
 });

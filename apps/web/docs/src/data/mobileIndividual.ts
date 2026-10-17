@@ -1985,6 +1985,33 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-office-public-profile",
+      title: {
+        en: "Office profile: عن المكتب / الخدمات / الاعلانات by governorate, with ابدأ المحادثة and اتصال",
+        ar: "ملف المكتب: عن المكتب / الخدمات / الاعلانات حسب المحافظة، مع ابدأ المحادثة واتصال",
+      },
+      priority: "P1",
+      story: {
+        en: "An office's public profile (/office/<id>) follows the Figma frames. The bottom bar has ابدأ المحادثة (opens a chat with the office; a guest is asked to sign in) and اتصال (calls the office's contact number). An office with no contact number, or one it hides, shows ابدأ المحادثة alone; the old طلب عرض سعر button is gone. The tabs read عن المكتب / الخدمات / الاعلانات in Almarai 14. الخدمات shows each service as a card with a round navy icon above its title and description. الاعلانات shows one card per governorate where the office has live ads: the governorate, the categories it lists there (five, then +N), how many ads, and when the newest went up. A card opens that governorate's screen: its name as the title, بيع / ايجار / بدل tabs, the number of ads, and the office's ads there as list cards; an exchange ad shows «طلب <year> مع <year>». Only live ads count: drafts, expired and hidden ads no longer appear on the profile or in its الاعلانات number.",
+        ar: "ملف المكتب العام (/office/<id>) يتبع إطارات فيجما. الشريط السفلي فيه ابدأ المحادثة (يفتح محادثة مع المكتب، ويُطلب من الزائر تسجيل الدخول) واتصال (يتصل برقم المكتب). المكتب الذي لا رقم له أو يخفي رقمه يظهر له ابدأ المحادثة وحده، وأُزيل زر طلب عرض سعر القديم. التبويبات عن المكتب / الخدمات / الاعلانات بخط المراعي 14. الخدمات تعرض كل خدمة في بطاقة فوق عنوانها ووصفها أيقونة دائرية كحلية. الاعلانات تعرض بطاقة لكل محافظة فيها إعلانات منشورة للمكتب: اسم المحافظة، والفئات التي يعلن عنها هناك (خمس ثم +N)، وعدد الإعلانات، ومتى نُشر أحدثها. البطاقة تفتح شاشة المحافظة: اسمها عنواناً، وتبويبات بيع / ايجار / بدل، وعدد الإعلانات، وإعلانات المكتب هناك كبطاقات قائمة؛ وإعلان البدل يعرض «طلب <سنة> مع <سنة>». تُحسب الإعلانات المنشورة فقط: المسودات والمنتهية والمخفية لم تعد تظهر في الملف ولا في عدد الاعلانات.",
+      },
+      acceptanceCriteria: {
+        en: ["With a contact number the bar shows ابدأ المحادثة and اتصال; without one only ابدأ المحادثة.", "اتصال dials the office's number; ابدأ المحادثة opens the chat, or asks a guest to sign in.", "Each service card has the round navy icon, then the title and description.", "الاعلانات lists one card per governorate with its categories, ad count and last-ad time; a card opens that governorate.", "The governorate screen's بيع / ايجار / بدل tabs show only that deal's ads there, with the count; exchange cards show both years.", "Draft, expired and hidden ads don't appear anywhere on the profile."],
+        ar: ["مع رقم تواصل يعرض الشريط ابدأ المحادثة واتصال؛ ودونه ابدأ المحادثة فقط.", "اتصال يطلب رقم المكتب؛ وابدأ المحادثة يفتح المحادثة أو يطلب من الزائر تسجيل الدخول.", "كل بطاقة خدمة فيها الأيقونة الدائرية الكحلية ثم العنوان والوصف.", "الاعلانات تعرض بطاقة لكل محافظة بفئاتها وعدد إعلاناتها ووقت آخر إعلان؛ والبطاقة تفتح المحافظة.", "تبويبات بيع / ايجار / بدل في شاشة المحافظة تعرض إعلانات ذلك النوع هناك فقط مع العدد؛ وبطاقات البدل تعرض السنتين.", "المسودات والإعلانات المنتهية والمخفية لا تظهر في أي مكان من الملف."],
+      },
+      testScenarios: {
+        en: ["Open an office with a number and one without: compare the bottom bars.", "Open الاعلانات on an office with ads in two governorates; open one, switch to ايجار and بدل."],
+        ar: ["افتح مكتباً له رقم وآخر بلا رقم: قارن الشريط السفلي.", "افتح الاعلانات لمكتب له إعلانات في محافظتين؛ افتح إحداهما وبدّل إلى ايجار ثم بدل."],
+      },
+      figmaFrameUrls: [
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1326-43048", label: { en: "About tab", ar: "عن المكتب" } },
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-120465", label: { en: "Services, no phone", ar: "الخدمات بلا رقم" } },
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-120961", label: { en: "Ads by governorate", ar: "الاعلانات حسب المحافظة" } },
+        { url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=1258-121320", label: { en: "Governorate ads", ar: "إعلانات المحافظة" } },
+      ],
+      updatedIn: "feat/office-profile-figma",
+    },
+    {
       id: "mobile-add-ad-category-fields",
       title: {
         en: "Add ad: fields follow the property category (requirements document), with phone and WhatsApp toggles",

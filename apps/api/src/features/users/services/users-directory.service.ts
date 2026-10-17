@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ListingStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 import {
@@ -299,8 +299,12 @@ export class UsersDirectoryService {
       include: {
         officeData: true,
         user: true,
+        // Only the office's live ads (it was every status, drafts too),
+        // newest first, enough for the tab's per-governorate cards
         properties: {
-          take: 20,
+          where: { status: ListingStatus.ACTIVE, isHidden: false },
+          orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+          take: 200,
           select: OFFICE_LISTING_PROPERTY_SELECT,
         },
       },

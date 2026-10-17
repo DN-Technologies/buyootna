@@ -129,7 +129,7 @@ export default function OfficeHeaderCard({ office }: OfficeHeaderCardProps) {
               {office.listingsCount}
             </Text>
             <Text className="font-cairo-medium text-[13px] text-[#A0A0A0]">
-              الإعلانات
+              الاعلانات
             </Text>
           </View>
 
