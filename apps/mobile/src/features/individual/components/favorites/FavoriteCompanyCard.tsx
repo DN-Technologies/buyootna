@@ -42,8 +42,10 @@ export default function FavoriteCompanyCard({
     >
       {/* Top Section */}
       <View className="flex-row items-start justify-between">
-        {/* Company Info & Logo on Right */}
-        <View className="flex-row items-center gap-3 pl-2">
+        {/* Company Info & Logo on Right: takes the room the heart leaves.
+            Unshrinkable, a long category line pushed the heart out of the
+            card on Android */}
+        <View className="min-w-0 flex-1 flex-row items-center gap-3 pl-2">
           {/* Logo */}
           <View className="h-[64px] w-[64px] items-center justify-center overflow-hidden rounded-sm bg-[#111111]">
             {logoUrl ? (
@@ -58,7 +60,7 @@ export default function FavoriteCompanyCard({
           </View>
 
           {/* Shrinks with a long name so the badge never runs onto the heart */}
-          <View className="shrink">
+          <View className="min-w-0 flex-1">
             <View className="flex-row items-center gap-1">
               <Text
                 className="shrink font-cairo-bold text-[15px] text-[#111111]"
@@ -87,9 +89,10 @@ export default function FavoriteCompanyCard({
 
         {/* Heart Icon Button on Left */}
         <TouchableOpacity
+          testID="favorite-company-heart"
           activeOpacity={0.7}
           onPress={onFavoriteToggle}
-          className="p-1"
+          className="shrink-0 p-1"
         >
           <HeartIcon size={20} color="#BA0003" filled={true} />
         </TouchableOpacity>

@@ -137,9 +137,12 @@ export default function PropertyListItem({
         {/* Middle: Location */}
         <View className="flex-1 flex-row items-center justify-center gap-1 px-1">
           <LocationIcon color="#6B6A6A" size={14} />
+          {/* Shrinks to the space left: unshrinkable, a long location ran
+              past the card's edge on Android */}
           <Text
             className="font-cairo-medium text-xs leading-[18px] text-[#111111]"
             numberOfLines={1}
+            style={{ flexShrink: 1 }}
           >
             {location}
           </Text>

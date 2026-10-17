@@ -67,8 +67,9 @@ export default function CompanyCard({
           </View>
           <View className="ml-3 mr-1 flex-1">
             <Text
-              className="flex-1 font-cairo-semibold text-base leading-[28px] text-[#111111]"
+              className="font-cairo-semibold text-base leading-[28px] text-[#111111]"
               style={{ writingDirection: 'rtl' }}
+              numberOfLines={2}
             >
               {name}{' '}
               {isVerified && (
@@ -76,10 +77,11 @@ export default function CompanyCard({
               )}
             </Text>
             <Text
-              className="w-full font-cairo-semibold text-[11px] text-[#6B6A6A]"
+              className="w-full font-cairo-semibold text-[11px] leading-[18px] text-[#6B6A6A]"
               style={{
                 writingDirection: 'rtl',
               }}
+              numberOfLines={2}
             >
               {category}
             </Text>
@@ -95,33 +97,34 @@ export default function CompanyCard({
         )}
       </View>
 
-      {/* --- 2. Middle Section: Stats & Heart --- */}
-      <View className="mb-4 flex-row items-center justify-between px-1">
-        <View className="w-full flex-row gap-4 pr-2">
-          <View className="items-start">
-            <Text className="font-cairo-bold text-xs text-[#111111]">
-              {serviceArea}
-            </Text>
-            <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
-              النطاق
-            </Text>
-          </View>
+      {/* --- 2. Middle Section: Stats ---
+          النطاق takes the room left and cuts a long list of areas short;
+          before, a w-full row plus padding and an unshrinkable area text
+          ran out of the card on Android */}
+      <View className="mb-4 flex-row items-center px-1">
+        <View className="flex-1 items-start">
+          <Text
+            className="font-cairo-bold text-xs leading-[18px] text-[#111111]"
+            numberOfLines={1}
+            style={{ flexShrink: 1 }}
+          >
+            {serviceArea}
+          </Text>
+          <Text className="font-cairo-medium text-[10px] leading-[16px] text-[#6B6A6A]">
+            النطاق
+          </Text>
+        </View>
 
-          {/* Vertical Divider */}
-          <View className="flex-1 items-center justify-center">
-            <View className="mx-2 h-8 w-[1px] max-w-[1px] bg-[#6B6A6A]" />
-          </View>
+        {/* Vertical Divider */}
+        <View className="mx-4 h-8 w-[1px] bg-[#6B6A6A]" />
 
-          <View className="items-end">
-            <View className="items-start">
-              <Text className="font-cairo-bold text-xs text-[#111111]">
-                {projectsCount}
-              </Text>
-              <Text className="font-cairo-medium text-[10px] text-[#6B6A6A]">
-                مشاريع مكتملة
-              </Text>
-            </View>
-          </View>
+        <View className="items-start">
+          <Text className="font-cairo-bold text-xs leading-[18px] text-[#111111]">
+            {projectsCount}
+          </Text>
+          <Text className="font-cairo-medium text-[10px] leading-[16px] text-[#6B6A6A]">
+            مشاريع مكتملة
+          </Text>
         </View>
       </View>
 

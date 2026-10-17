@@ -1985,6 +1985,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-cards-text-overflow-android",
+      title: {
+        en: "Property and company cards keep their text inside the card on Android",
+        ar: "بطاقات العقارات والشركات تُبقي نصها داخل البطاقة في Android",
+      },
+      priority: "P1",
+      story: {
+        en: "On Android, text ran past the edge of property and company cards. On property cards (the home sliders, PropertyCard; and the list cards, PropertyListItem) the location in the middle row couldn't shrink, so a long location pushed out of the card instead of ending in «…». On the home's service-company card the النطاق value had no limit and sat in a full-width row with extra padding, so a long list of areas ran out of the card. The location now shrinks to the room left and ends in «…»; النطاق takes the room beside مشاريع مكتملة and ends in «…»; the company name and its categories wrap to at most two lines. On المفضلة > شركات a long category line made the company's name block take the whole width and pushed the heart outside the card; the block now takes only the room the heart leaves.",
+        ar: "في Android كان النص يخرج عن حافة بطاقات العقارات والشركات. في بطاقات العقارات (سلايدرات الرئيسية PropertyCard، وبطاقات القائمة PropertyListItem) لم يكن الموقع في الصف الأوسط قابلاً للانكماش، فيخرج الموقع الطويل من البطاقة بدل أن ينتهي بـ«…». وفي بطاقة شركة الخدمات في الرئيسية لم يكن لقيمة النطاق حد، وكانت في صف بعرض كامل مع حشوة إضافية، فتخرج قائمة المناطق الطويلة من البطاقة. الآن ينكمش الموقع إلى المساحة المتبقية وينتهي بـ«…»؛ والنطاق يأخذ المساحة بجانب مشاريع مكتملة وينتهي بـ«…»؛ واسم الشركة وتصنيفاتها يلتفّان في سطرين على الأكثر. وفي المفضلة > شركات كان سطر التصنيفات الطويل يجعل كتلة اسم الشركة تأخذ العرض كله ويدفع القلب خارج البطاقة؛ الآن تأخذ الكتلة المساحة التي يتركها القلب فقط.",
+      },
+      acceptanceCriteria: {
+        en: ["A property with a long location shows it in one line ending in «…», inside the card, on Android and iOS.", "A company serving many areas shows النطاق in one line ending in «…»; مشاريع مكتملة stays visible beside it.", "A long company name or category list wraps to two lines at most and stays inside the card.", "On المفضلة > شركات the heart stays inside the card's top corner whatever the category line's length."],
+        ar: ["العقار ذو الموقع الطويل يعرضه في سطر واحد ينتهي بـ«…» داخل البطاقة في Android وiOS.", "الشركة التي تخدم مناطق كثيرة تعرض النطاق في سطر واحد ينتهي بـ«…»، وتبقى مشاريع مكتملة ظاهرة بجانبه.", "اسم الشركة الطويل أو قائمة التصنيفات الطويلة يلتفّان في سطرين على الأكثر ويبقيان داخل البطاقة.", "في المفضلة > شركات يبقى القلب داخل زاوية البطاقة مهما طال سطر التصنيفات."],
+      },
+      testScenarios: {
+        en: ["On Android scroll the home's property sliders and شركات الخدمات: no text crosses a card's edge.", "Open a governorate list on an office profile: the list cards keep the location inside."],
+        ar: ["في Android مرّر سلايدرات العقارات وشركات الخدمات في الرئيسية: لا نص يتجاوز حافة البطاقة.", "افتح قائمة محافظة في ملف مكتب: بطاقات القائمة تُبقي الموقع داخلها."],
+      },
+      updatedIn: "fix/cards-text-overflow-android",
+    },
+    {
       id: "mobile-auctions-deals-hidden",
       title: {
         en: "Auctions and deals are hidden until they're built",
