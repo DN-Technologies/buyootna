@@ -57,6 +57,14 @@ describe('AddAlertScreen after creating an alert', () => {
     (alertsService.create as jest.Mock).mockResolvedValue({ id: 'new' });
   });
 
+  // Auctions come later: the screen is the property alert only
+  it('has no مزادات tab', async () => {
+    const { queryByText, getByText } = await render(<AddAlertScreen />);
+
+    expect(queryByText('مزادات')).toBeNull();
+    expect(getByText('تابع العقارات والخدمات التي تهمك ليصلك اشعار في حاله توافر الطلب.')).toBeTruthy();
+  });
+
   it('clears the form, so the same alert cannot be saved twice', async () => {
     const { getByTestId, getByText } = await render(<AddAlertScreen />);
 

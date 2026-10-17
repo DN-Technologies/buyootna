@@ -165,5 +165,13 @@ describe('ProfileDashboardScreen (More tab)', () => {
       expect(queryByText('معاينة')).toBeNull();
       expect(queryByText('مشاركة')).toBeNull();
     });
+
+    // Auctions and deals come later (shared/config/features.ts)
+    it('has no الصفقات or المزادات rows', async () => {
+      const { queryByText } = await render(<ProfileDashboardScreen />);
+
+      expect(queryByText('الصفقات')).toBeNull();
+      expect(queryByText('المزادات')).toBeNull();
+    });
   });
 });

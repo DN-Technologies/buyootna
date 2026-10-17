@@ -38,7 +38,7 @@ describe('AlertsEmptyState', () => {
 
     expect(getByText('لا توجد تنبيهات حاليا')).toBeTruthy();
     expect(
-      getByText(/أنشئ تنبيهك المخصص الآن للعقارات أو المزادات/),
+      getByText(/أنشئ تنبيهك المخصص الآن للعقارات، /),
     ).toBeTruthy();
     expect(getByText('أنشئ تنبيهك الأول الآن')).toBeTruthy();
     expect(getByText('0')).toBeTruthy();
