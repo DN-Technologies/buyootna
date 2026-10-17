@@ -100,12 +100,16 @@ export default function RequestInfoCard({
             icon={<BuildOutlineIcon />}
           />
         </View>
-        <InfoCell
-          label="نطاق السعر"
-          value={priceRange || '-'}
-          muted={muted}
-          icon={<OrderOutlineIcon size={12.13} />}
-        />
+        {/* The same fixed column as تاريخ الطلب: unboxed, its flex-1 text
+            took the whole row on Android and squeezed نوع الخدمة to nothing */}
+        <View className="w-[157px]">
+          <InfoCell
+            label="نطاق السعر"
+            value={priceRange || '-'}
+            muted={muted}
+            icon={<OrderOutlineIcon size={12.13} />}
+          />
+        </View>
       </View>
 
       <CardDivider />
