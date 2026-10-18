@@ -95,6 +95,21 @@ describe('ProfileDashboardScreen (More tab)', () => {
       expect(queryByText('تسجيل الخروج')).toBeNull();
     });
 
+    it('puts إنشاء حساب and تسجيل الدخول side by side in the card, with no second login button', async () => {
+      const { getAllByText, getByTestId } = await render(
+        <ProfileDashboardScreen />,
+      );
+      const { router: mockRouter } = jest.requireMock('expo-router');
+
+      expect(getAllByText('تسجيل الدخول')).toHaveLength(1);
+
+      await fireEvent.press(getByTestId('guest-create-account'));
+      expect(mockRouter.push).toHaveBeenCalledWith('/(auth)/selection');
+
+      await fireEvent.press(getByTestId('guest-login'));
+      expect(mockRouter.push).toHaveBeenCalledWith('/(auth)/individual-auth');
+    });
+
     // Regression coverage for the reported bug: tapping the already-active
     // bottom tab did nothing because no screen ever wired up
     // useScrollToTop, so the tabPress event the tab bar already emits had
