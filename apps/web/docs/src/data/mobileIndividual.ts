@@ -2004,6 +2004,8 @@ export const mobileIndividual: DocSection = {
         ar: ["افتح التطبيق واضغط + ثم اضافة اعلان: يفتح النموذج فوراً.", "استهلك الإعلان المجاني ثم اضغط اضافة اعلان: تظهر نافذة نفاد الرصيد."],
       },
       updatedIn: "fix/add-ad-opens-instantly",
+    },
+    {
       id: "mobile-price-emphasis",
       title: {
         en: "Prices stand out: bold amount, light currency; price under the title on the ad page",
