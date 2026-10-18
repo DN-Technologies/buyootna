@@ -59,6 +59,28 @@ export default function PropertyOverview({
           <Text className="font-cairo-semibold text-base text-[#111111]">
             {title}
           </Text>
+          {/*  Price, right under the title (Hidden for Exchange) */}
+          {type !== 'EXCHANGE' ? (
+            <View className="mt-1 items-start">
+              {price > 0 ? (
+                <Text
+                  testID="property-overview-price"
+                  className="font-cairo-bold text-[26px] leading-[38px] text-[#15304D]"
+                >
+                  {formatNumber(price)}{' '}
+                  <Text className="font-cairo text-sm text-[#6B6A6A]">
+                    د.ك {type === 'RENT' && '/ شهرياً'}
+                  </Text>
+                </Text>
+              ) : (
+                <Text className="font-cairo-bold text-xl leading-[30px] text-[#15304D]">
+                  السعر غير معلن
+                </Text>
+              )}
+            </View>
+          ) : (
+            <View />
+          )}
           {licenseNumber && (
             <View className="mt-1 flex-row items-center gap-1.5">
               <LicenseIcon color="#15304D" size={16} />
@@ -66,21 +88,6 @@ export default function PropertyOverview({
                 رقم الرخصة {licenseNumber}
               </Text>
             </View>
-          )}
-          {/*  Price (Hidden for Exchange usually, but handles 0 gracefully) */}
-          {type !== 'EXCHANGE' ? (
-            <View className="mt-1 items-start">
-              <Text className="text-2xl font-semibold text-[#111111]">
-                {typeof price === 'number'
-                  ? formatNumber(price)
-                  : 'السعر غير محدد'}{' '}
-                <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
-                  د.ك {type === 'RENT' && '/ شهرياً'}
-                </Text>
-              </Text>
-            </View>
-          ) : (
-            <View />
           )}
         </View>
 

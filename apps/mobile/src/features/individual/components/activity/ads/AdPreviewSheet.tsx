@@ -186,10 +186,10 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
           {/* Price & Date Row */}
           <View className="px-6 flex-row items-center justify-between mb-4">
             <View className="flex-row items-baseline gap-1">
-              <Text className="font-bold text-2xl text-[#15304D]">
+              <Text className="font-cairo-bold text-2xl text-[#15304D]">
                 {property.price ? formatNumber(property.price) : '---'}
               </Text>
-              <Text className="font-cairo-semibold text-sm text-[#6B6A6A]">
+              <Text className="font-cairo text-sm text-[#6B6A6A]">
                 د.ك
               </Text>
             </View>

@@ -1985,6 +1985,46 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-add-ad-opens-instantly",
+      title: {
+        en: "«اضافة اعلان» opens the form at once",
+        ar: "«اضافة اعلان» يفتح النموذج فوراً",
+      },
+      priority: "P1",
+      story: {
+        en: "Tapping اضافة اعلان in the + sheet showed a spinner and waited for GET /plans/wallet/publish-options before opening the form, which felt slow on a weak connection. The sheet (mounted with the tabs) now fetches that answer ahead for a signed-in user and keeps it in the shared ['publishOptions'] cache. A tap opens the form immediately when the user is known to have credit or the answer isn't in yet, and refreshes it in the background; publishing still checks the credit on submit. Only when the cache says there's no credit does the tap check again (a plan may have just been bought) before showing the quota sheet.",
+        ar: "كان الضغط على اضافة اعلان في نافذة + يعرض مؤشر تحميل وينتظر GET /plans/wallet/publish-options قبل فتح النموذج، فيبدو بطيئاً على اتصال ضعيف. الآن تجلب النافذة (المحمّلة مع التبويبات) هذه المعلومة مسبقاً للمستخدم المسجّل وتحفظها في ['publishOptions'] المشتركة. فيفتح الضغط النموذج فوراً إذا كان للمستخدم رصيد أو لم تصل المعلومة بعد، ويحدّثها في الخلفية؛ ويبقى التحقق من الرصيد عند النشر. وفقط إذا كانت المعلومة المحفوظة تقول لا رصيد يتحقق الضغط مجدداً (فقد تكون باقة اشتُريت للتو) قبل عرض نافذة نفاد الرصيد.",
+      },
+      acceptanceCriteria: {
+        en: ["With credit, tapping اضافة اعلان opens the form with no spinner.", "With no credit, the quota sheet still appears instead of the form.", "Right after buying a plan, اضافة اعلان opens the form, not the quota sheet."],
+        ar: ["مع وجود رصيد، يفتح اضافة اعلان النموذج دون مؤشر تحميل.", "بلا رصيد، تظهر نافذة نفاد الرصيد بدل النموذج.", "بعد شراء باقة مباشرة، يفتح اضافة اعلان النموذج وليس نافذة نفاد الرصيد."],
+      },
+      testScenarios: {
+        en: ["Open the app, tap + then اضافة اعلان: the form opens at once.", "Use up the free ad, then tap اضافة اعلان: the quota sheet shows."],
+        ar: ["افتح التطبيق واضغط + ثم اضافة اعلان: يفتح النموذج فوراً.", "استهلك الإعلان المجاني ثم اضغط اضافة اعلان: تظهر نافذة نفاد الرصيد."],
+      },
+      updatedIn: "fix/add-ad-opens-instantly",
+      id: "mobile-price-emphasis",
+      title: {
+        en: "Prices stand out: bold amount, light currency; price under the title on the ad page",
+        ar: "الأسعار أوضح: رقم عريض وعملة خفيفة، والسعر تحت العنوان في صفحة الإعلان",
+      },
+      priority: "P2",
+      story: {
+        en: "Prices were hard to read: on the ad page the amount used the system font at semibold (thin on Android) and sat below the licence number, and across the cards the amount and «د.ك» had nearly the same weight and colour. Every property price now uses one style: the amount in Cairo Bold, «د.ك» smaller in Cairo Regular and grey (#6B6A6A), so the number carries the weight. On the ad page (PropertyOverview) the price moves right under the title and رقم الرخصة follows it; with no price it reads «السعر غير معلن» instead of «0 د.ك». Applied to the home cards (photo and list), the details sheet, المفضلة, the map preview, نشاطي ad cards and preview, the chat property bubble, and the office and company home cards.",
+        ar: "كانت الأسعار صعبة القراءة: في صفحة الإعلان كان الرقم بخط النظام وبوزن متوسط (رفيع في Android) وتحت رقم الرخصة، وفي البطاقات كان للرقم و«د.ك» الوزن واللون نفسيهما تقريباً. الآن كل أسعار العقارات بنمط واحد: الرقم بخط Cairo العريض، و«د.ك» أصغر بخط Cairo العادي وبالرمادي (#6B6A6A)، فيبرز الرقم. وفي صفحة الإعلان (PropertyOverview) ينتقل السعر تحت العنوان مباشرة ويليه رقم الرخصة؛ وإذا لم يكن هناك سعر يظهر «السعر غير معلن» بدل «0 د.ك». يشمل ذلك بطاقات الرئيسية (بالصور والقائمة)، ونافذة التفاصيل، والمفضلة، ومعاينة الخريطة، وبطاقات إعلانات نشاطي ومعاينتها، وفقاعة العقار في المحادثة، وبطاقات الرئيسية للمكتب والشركة.",
+      },
+      acceptanceCriteria: {
+        en: ["On an ad page the price is the line right under the title; رقم الرخصة comes after it.", "Everywhere a property price shows, the amount is bold and «د.ك» is visibly lighter and grey.", "An ad page with no price reads «السعر غير معلن», never «0 د.ك»."],
+        ar: ["في صفحة الإعلان يكون السعر هو السطر التالي للعنوان مباشرة، ويأتي رقم الرخصة بعده.", "في كل مكان يظهر فيه سعر عقار يكون الرقم عريضاً و«د.ك» أخف وأصغر وبالرمادي.", "صفحة إعلان بلا سعر تعرض «السعر غير معلن» وليس «0 د.ك»."],
+      },
+      testScenarios: {
+        en: ["On Android open an office ad with a licence: price under the title, licence below, the amount clearly bolder than «د.ك».", "Scroll the home cards, المفضلة and نشاطي: the same price style on every card."],
+        ar: ["في Android افتح إعلان مكتب له رخصة: السعر تحت العنوان والرخصة تحته، والرقم أعرض بوضوح من «د.ك».", "مرّر بطاقات الرئيسية والمفضلة ونشاطي: نمط السعر نفسه في كل بطاقة."],
+      },
+      updatedIn: "fix/price-emphasis",
+    },
+    {
       id: "mobile-cards-text-overflow-android",
       title: {
         en: "Property and company cards keep their text inside the card on Android",

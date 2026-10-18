@@ -71,13 +71,13 @@ export default function MarketPropertyCard({
           ) : (
             <View className="flex-row items-baseline justify-end gap-1">
               <Text
-                className="font-cairo-semibold text-[22px] leading-[26px] text-[#15304D]"
+                className="font-cairo-bold text-[22px] leading-[30px] text-[#15304D]"
                 style={{ writingDirection: 'rtl' }}
               >
                 {formattedPrice}
               </Text>
               <Text
-                className="font-cairo-bold text-[12px] text-[#15304D]"
+                className="font-cairo text-[12px] text-[#6B6A6A]"
                 style={{ writingDirection: 'rtl' }}
               >
                 {property.currency || 'د.ك'}

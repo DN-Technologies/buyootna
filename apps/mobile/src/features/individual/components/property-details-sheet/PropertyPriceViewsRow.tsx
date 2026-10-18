@@ -22,7 +22,7 @@ export default function PropertyPriceViewsRow({
         {price > 0 ? (
           <Text className="font-cairo-bold text-2xl text-[#15304D]">
             {formatNumber(price)}{' '}
-            <Text className="font-cairo-semibold text-sm text-[#15304D]">
+            <Text className="font-cairo text-sm text-[#6B6A6A]">
               د.ك
             </Text>
           </Text>

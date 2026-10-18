@@ -59,7 +59,7 @@ export default function FavoritePropertyCard({
         <View className="flex-row items-baseline gap-1">
           <Text
             testID="favorite-card-price"
-            className={`font-cairo-semibold text-[22px] leading-tight ${
+            className={`font-cairo-bold text-[22px] leading-[30px] ${
               isExpired ? 'text-[#A0AEC0]' : 'text-[#15304D]'
             }`}
           >
@@ -67,8 +67,8 @@ export default function FavoritePropertyCard({
           </Text>
           {hasPrice && (
             <Text
-              className={`font-cairo-bold text-xs ${
-                isExpired ? 'text-[#A0AEC0]' : 'text-[#15304D]'
+              className={`font-cairo text-xs ${
+                isExpired ? 'text-[#A0AEC0]' : 'text-[#6B6A6A]'
               }`}
             >
               د.ك
@@ -182,7 +182,7 @@ export default function FavoritePropertyCard({
               {formattedIncome}
             </Text>
             <Text
-              className={`font-cairo-semibold text-xs ${
+              className={`font-cairo text-xs ${
                 isExpired ? 'text-[#A0AEC0]' : 'text-[#018B1B]'
               }`}
             >
