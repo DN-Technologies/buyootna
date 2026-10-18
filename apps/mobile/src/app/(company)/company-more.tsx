@@ -25,6 +25,7 @@ import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHead
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import MenuItem from '@/shared/components/ui/MenuItem';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -63,9 +64,12 @@ export default function CompanyMoreScreen() {
     logoutSheetRef.current?.present();
   };
 
-  const handleConfirmLogout = () => {
+  // Signed out, a company/office tab has nothing to load (it stayed on its
+  // skeleton), so leave for the guest home the way the individual tabs show
+  const handleConfirmLogout = async () => {
     logoutSheetRef.current?.dismiss();
-    logout();
+    await logout();
+    resetToIdentityHome(null);
   };
 
   const handleEditProfile = () => {
