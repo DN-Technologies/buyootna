@@ -2090,6 +2090,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/price-emphasis",
     },
     {
+      id: "mobile-company-office-logout",
+      title: {
+        en: "Signing out of a company or office account leaves for the guest home",
+        ar: "تسجيل الخروج من حساب شركة أو مكتب ينقل إلى الرئيسية كزائر",
+      },
+      priority: "P1",
+      story: {
+        en: "Signing out from المزيد on a company or office account cleared the session but stayed on that account's tabs. With no identity, the header card and menu had nothing to load, so the screen stayed on its loading skeleton for good. The individual tabs don't have this problem, because they switch to the guest view. The company and office sign-out now waits for the session to clear, then resets navigation to the guest home (the individual tabs), the same place a guest opens the app on.",
+        ar: "كان تسجيل الخروج من المزيد في حساب شركة أو مكتب يمسح الجلسة لكنه يبقى على تبويبات ذلك الحساب. ودون هوية لم يكن لبطاقة الرأس والقائمة ما تحمّله، فتبقى الشاشة على هيكل التحميل دائماً. تبويبات الفرد لا تعاني من ذلك لأنها تتحول إلى عرض الزائر. الآن ينتظر تسجيل الخروج في الشركة والمكتب مسح الجلسة ثم ينقل إلى الرئيسية كزائر (تبويبات الفرد)، المكان نفسه الذي يفتح عليه الزائر التطبيق.",
+      },
+      acceptanceCriteria: {
+        en: ["Signing out of a company account opens the guest home, never a skeleton.", "The same for an office account.", "Back doesn't return to the company or office tabs."],
+        ar: ["تسجيل الخروج من حساب شركة يفتح الرئيسية كزائر وليس هيكل تحميل.", "وكذلك لحساب مكتب.", "الرجوع لا يعيد إلى تبويبات الشركة أو المكتب."],
+      },
+      testScenarios: {
+        en: ["Sign in as a company, open المزيد › تسجيل الخروج › confirm: the guest home shows.", "Repeat as an office."],
+        ar: ["سجّل الدخول كشركة وافتح المزيد ثم تسجيل الخروج وأكّد: تظهر الرئيسية كزائر.", "كرّر كمكتب."],
+      },
+      updatedIn: "fix/company-logout-stuck",
+    },
+    {
       id: "mobile-cards-text-overflow-android",
       title: {
         en: "Property and company cards keep their text inside the card on Android",
