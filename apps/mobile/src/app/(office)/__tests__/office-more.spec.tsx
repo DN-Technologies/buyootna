@@ -1,4 +1,9 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+} from '@testing-library/react-native';
 import { router } from 'expo-router';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -13,6 +18,19 @@ jest.mock('expo-router', () => ({
   useRouter: () => jest.requireMock('expo-router').router,
   useLocalSearchParams: () => ({}),
 }));
+
+// The sign-out sheet, reduced to the props the screen gives it
+let mockLogoutSheetProps: { onLogout: () => void | Promise<void> };
+jest.mock('@/features/auth/components/LogoutBottomSheet', () => {
+  const { forwardRef } = jest.requireActual('react');
+  return {
+    __esModule: true,
+    default: forwardRef((props: typeof mockLogoutSheetProps, _ref: unknown) => {
+      mockLogoutSheetProps = props;
+      return null;
+    }),
+  };
+});
 
 jest.mock('@/shared/store/useAuthStore', () => ({
   ...jest.requireActual('@/shared/store/useAuthStore'),
@@ -118,34 +136,56 @@ describe('OfficeMoreScreen (Figma Design Implementation 4494:136610)', () => {
   it('navigates when pressing menu items and edit profile', async () => {
     const { getByText } = await render(<OfficeMoreScreen />);
 
-    fireEvent.press(getByText('تعديل'));
+    await fireEvent.press(getByText('تعديل'));
     expect(router.push).toHaveBeenCalledWith('/office-edit-profile');
 
-    fireEvent.press(getByText('الاعلانات'));
+    await fireEvent.press(getByText('الاعلانات'));
     expect(router.push).toHaveBeenCalledWith('/(office)/office-properties');
 
-    fireEvent.press(getByText('الخدمات'));
+    await fireEvent.press(getByText('الخدمات'));
     expect(router.push).toHaveBeenCalledWith('/add-service');
 
-    fireEvent.press(getByText('المحادثات'));
+    await fireEvent.press(getByText('المحادثات'));
     expect(router.push).toHaveBeenCalledWith('/(office)/office-chats');
 
-    fireEvent.press(getByText('المفضلة'));
+    await fireEvent.press(getByText('المفضلة'));
     expect(router.push).toHaveBeenCalledWith('/favorites');
 
-    fireEvent.press(getByText('التقييمات والمراجعات'));
+    await fireEvent.press(getByText('التقييمات والمراجعات'));
     expect(router.push).toHaveBeenCalledWith('/reviews');
 
-    fireEvent.press(getByText('الباقات'));
+    await fireEvent.press(getByText('الباقات'));
     expect(router.push).toHaveBeenCalledWith('/plans');
 
-    fireEvent.press(getByText('رصيد الحساب'));
+    await fireEvent.press(getByText('رصيد الحساب'));
     expect(router.push).toHaveBeenCalledWith('/account-balance');
 
-    fireEvent.press(getByText('الفواتير'));
+    await fireEvent.press(getByText('الفواتير'));
     expect(router.push).toHaveBeenCalledWith('/invoices');
 
-    fireEvent.press(getByText('اعدادات الحساب'));
+    await fireEvent.press(getByText('اعدادات الحساب'));
     expect(router.push).toHaveBeenCalledWith('/settings');
+  });
+
+  it('signs out to the guest home instead of staying on its skeleton', async () => {
+    const logout = jest.fn().mockResolvedValue(undefined);
+    mockUseAuthStore.mockReturnValue({
+      user: { id: 'u1', email: 'test@example.com' },
+      activeIdentity: mockIdentity,
+      identities: [mockIdentity],
+      token: 'jwt-token',
+      refreshProfile: jest.fn(),
+      logout,
+    });
+    const { findAllByText } = await render(<OfficeMoreScreen />);
+    await findAllByText('تسجيل الخروج');
+
+    // Confirm in the «تسجيل الخروج» sheet
+    await act(() => mockLogoutSheetProps.onLogout());
+
+    await waitFor(() =>
+      expect(router.replace).toHaveBeenCalledWith('/(individual)/home'),
+    );
+    expect(logout).toHaveBeenCalled();
   });
 });
