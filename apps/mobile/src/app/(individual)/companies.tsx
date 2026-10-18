@@ -41,6 +41,7 @@ import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { openChatWith } from '@/shared/utils/openChat';
 
 // الترتيب حسب options (design); الكل is the default newest-first order
@@ -137,6 +138,10 @@ export default function CompaniesScreen() {
       });
     }
   };
+
+  // A company of this account (any of its personas) can't be messaged or
+  // asked for a quote by the account itself
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   const handleQuotePress = (companyName: string) => {
     setSelectedCompanyName(companyName);
@@ -282,6 +287,7 @@ export default function CompaniesScreen() {
               }
               onChatPress={() => handleChatPress(item.userId)}
               onQuotePress={() => handleQuotePress(item.name)}
+              isOwn={!!currentUserId && item.userId === currentUserId}
             />
           )}
           onEndReached={fetchMoreData}

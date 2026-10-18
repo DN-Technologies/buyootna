@@ -19,6 +19,7 @@ import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
 import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function CompanyProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +37,8 @@ export default function CompanyProfileScreen() {
   // Data & Business Logic Hooks (Separation of Concerns)
   const { company, isLoading, services, projects, targetUserId } =
     useCompanyDetails(companyId);
+  // The account's own company: its quote button doesn't respond
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   const {
     reviewSummary,
@@ -117,6 +120,7 @@ export default function CompanyProfileScreen() {
         {company?.acceptsRequests !== false && (
           <CompanyBottomBar
             onRequestQuote={() => quoteModalRef.current?.present()}
+            disabled={!!currentUserId && company?.userId === currentUserId}
           />
         )}
 
