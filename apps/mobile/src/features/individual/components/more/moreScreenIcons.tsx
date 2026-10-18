@@ -1,4 +1,6 @@
 import { Feather } from '@expo/vector-icons';
+import type { ComponentProps } from 'react';
+import { View } from 'react-native';
 
 import { NotificationIcon } from '@/assets/icons/home/header';
 
@@ -10,21 +12,31 @@ interface IconProps {
   size?: number;
 }
 
-export const InfoIcon = ({ color, size }: IconProps) => (
-  <Feather name="info" color={color} size={size} />
-);
-export const HelpIcon = ({ color, size }: IconProps) => (
-  <Feather name="help-circle" color={color} size={size} />
-);
-export const PhoneIcon = ({ color, size }: IconProps) => (
-  <Feather name="phone" color={color} size={size} />
-);
-export const ShieldIcon = ({ color, size }: IconProps) => (
-  <Feather name="shield" color={color} size={size} />
-);
-export const FileIcon = ({ color, size }: IconProps) => (
-  <Feather name="file-text" color={color} size={size} />
-);
+// A Feather glyph is text, and text is cut at its box: MenuItem's icon box
+// (20pt) is smaller than its icon size (22), so the glyph's edge was clipped
+// (the SVG icons just overflow). A box of the glyph's own size holds it whole.
+const featherIcon = (name: ComponentProps<typeof Feather>['name']) => {
+  const Icon = ({ color, size = 22 }: IconProps) => (
+    <View
+      style={{
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Feather name={name} color={color} size={size} />
+    </View>
+  );
+  Icon.displayName = `FeatherIcon(${name})`;
+  return Icon;
+};
+
+export const InfoIcon = featherIcon('info');
+export const HelpIcon = featherIcon('help-circle');
+export const PhoneIcon = featherIcon('phone');
+export const ShieldIcon = featherIcon('shield');
+export const FileIcon = featherIcon('file-text');
 export const BellIcon = ({ color, size }: IconProps) => (
   <NotificationIcon size={size} color={color} />
 );
