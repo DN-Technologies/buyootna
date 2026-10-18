@@ -1985,6 +1985,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-number-fields-start-right",
+      title: {
+        en: "Number fields (رقم الواتساب) start from the right",
+        ar: "حقول الأرقام (رقم الواتساب) تبدأ من اليمين",
+      },
+      priority: "P2",
+      story: {
+        en: "On إضافة هوية فردية the empty رقم الواتساب field showed its placeholder «مثال: 96512345678» at the left on iOS, while every other field starts at the right. FormInput forced both right alignment and an RTL writing direction; on a phone-pad field with a mixed Arabic-and-digits placeholder that put the text on the left. Number fields in FormInput (phone, number, decimal keyboards) now keep only the right alignment, the same as the add-ad phone box, and the placeholder is the digits alone (96512345678), like the app's other phone fields.",
+        ar: "في إضافة هوية فردية كان حقل رقم الواتساب الفارغ يعرض نصه التوضيحي «مثال: 96512345678» على اليسار في iOS، بينما تبدأ بقية الحقول من اليمين. كان FormInput يفرض المحاذاة لليمين واتجاه الكتابة من اليمين لليسار معاً؛ وفي حقل أرقام هاتف بنص توضيحي يجمع العربية والأرقام وضع ذلك النص على اليسار. الآن تُبقي حقول الأرقام في FormInput (لوحات الهاتف والأرقام والكسور) المحاذاة لليمين فقط، مثل حقل الهاتف في إضافة إعلان، والنص التوضيحي أرقام فقط (96512345678) مثل حقول الهاتف الأخرى في التطبيق.",
+      },
+      acceptanceCriteria: {
+        en: ["On إضافة هوية فردية the empty رقم الواتساب field shows 96512345678 at the right.", "A typed number also starts at the right.", "Text fields (الاسم الكامل) are unchanged."],
+        ar: ["في إضافة هوية فردية يعرض حقل رقم الواتساب الفارغ 96512345678 على اليمين.", "والرقم المكتوب يبدأ من اليمين كذلك.", "حقول النص (الاسم الكامل) دون تغيير."],
+      },
+      testScenarios: {
+        en: ["On iOS open المزيد › add an individual identity: the WhatsApp field's placeholder and typed digits sit at the right."],
+        ar: ["في iOS افتح المزيد ثم إضافة هوية فردية: النص التوضيحي لحقل الواتساب والأرقام المكتوبة على اليمين."],
+      },
+      updatedIn: "fix/whatsapp-input-rtl",
+    },
+    {
       id: "mobile-guest-menu-icons-clipped",
       title: {
         en: "Guest المزيد: support and policy icons show whole",
