@@ -4,6 +4,7 @@ import { Share, Text, TouchableOpacity, View } from 'react-native';
 
 import { chatService } from '@/shared/api/chat.service';
 import { usePropertyActions } from '@/shared/hooks/properties/usePropertyActions';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
@@ -19,6 +20,10 @@ jest.mock('@/shared/api/chat.service', () => ({
   },
 }));
 
+jest.mock('@/shared/navigation/getIdentityHomeRoute', () => ({
+  resetToIdentityHome: jest.fn(),
+}));
+
 jest.mock('@/shared/utils/alert', () => ({
   showAlert: jest.fn(),
 }));
@@ -32,6 +37,7 @@ jest.spyOn(Share, 'share').mockImplementation(mockShare as any);
 
 const mockRouterPush = jest.fn();
 const mockRouterBack = jest.fn();
+const mockCanGoBack = jest.fn(() => true);
 const mockToggleFavorite = jest.fn();
 const mockGuardAction = jest.fn(async (action: () => void | Promise<void>) => {
   await action();
@@ -126,7 +132,9 @@ describe('usePropertyActions', () => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockRouterPush,
       back: mockRouterBack,
+      canGoBack: mockCanGoBack,
     });
+    mockCanGoBack.mockReturnValue(true);
     useAuthStore.setState({ user: null });
   });
 
@@ -284,6 +292,16 @@ describe('usePropertyActions', () => {
       await press('btn-back');
 
       expect(mockRouterBack).toHaveBeenCalled();
+    });
+
+    it('goes home when the ad page was opened first (nothing to go back to)', async () => {
+      mockCanGoBack.mockReturnValue(false);
+      useAuthStore.setState({ activeIdentity: { type: 'COMPANY' } as never });
+      const { press } = await renderActions(baseProperty);
+      await press('btn-back');
+
+      expect(mockRouterBack).not.toHaveBeenCalled();
+      expect(resetToIdentityHome).toHaveBeenCalledWith('COMPANY');
     });
   });
 });

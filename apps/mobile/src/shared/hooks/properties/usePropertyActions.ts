@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { Linking, Share } from 'react-native';
 
 import { normalizeKuwaitPhone } from '@/shared/hooks/providers/useProfileContact';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';
@@ -110,8 +111,14 @@ export function usePropertyActions({
     }
   };
 
+  // Opened first (a notification, a shared link, a chat card) the ad page
+  // has nothing under it, and router.back() silently did nothing: go home
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      resetToIdentityHome(useAuthStore.getState().activeIdentity?.type);
+    }
   };
 
   return {
