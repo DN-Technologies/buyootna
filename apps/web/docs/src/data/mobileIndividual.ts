@@ -2006,6 +2006,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/whatsapp-input-rtl",
     },
     {
+      id: "mobile-guest-menu-icons-clipped",
+      title: {
+        en: "Guest المزيد: support and policy icons show whole",
+        ar: "المزيد للزائر: أيقونات الدعم والسياسات تظهر كاملة",
+      },
+      priority: "P2",
+      story: {
+        en: "Signed out, the المزيد screen cut off the right edge of the عن بيوتنا, الأسئلة الشائعة, تواصل معنا, سياسة الخصوصية and الشروط والأحكام icons. They are Feather font glyphs, and MenuItem draws its icon at 22pt inside a 20pt box: an SVG icon overflows that box unharmed, but a glyph is text and gets clipped at its box. Each glyph now sits in a box of its own size (moreScreenIcons.tsx), so it shows whole at the same size as the other menu icons.",
+        ar: "عند تسجيل الخروج كانت شاشة المزيد تقص الحافة اليمنى لأيقونات عن بيوتنا والأسئلة الشائعة وتواصل معنا وسياسة الخصوصية والشروط والأحكام. هذه الأيقونات حروف من خط Feather، وMenuItem يرسم الأيقونة بحجم 22 داخل مربع 20: أيقونة SVG تتجاوز المربع دون ضرر، أما الحرف فهو نص فيُقص عند حدود مربعه. الآن يوضع كل حرف في مربع بحجمه (moreScreenIcons.tsx) فيظهر كاملاً بحجم أيقونات القائمة الأخرى نفسه.",
+      },
+      acceptanceCriteria: {
+        en: ["Signed out, the five support and policy icons on المزيد show whole, on iOS and Android.", "They line up with the نشاطي icons above them."],
+        ar: ["عند تسجيل الخروج تظهر أيقونات الدعم والسياسات الخمس في المزيد كاملة في iOS وAndroid.", "وتصطف مع أيقونات نشاطي فوقها."],
+      },
+      testScenarios: {
+        en: ["Sign out, open المزيد and scroll to الدعم والمساعدة and السياسات: no icon is cut."],
+        ar: ["سجّل الخروج وافتح المزيد ومرّر إلى الدعم والمساعدة والسياسات: لا أيقونة مقصوصة."],
+      },
+      updatedIn: "fix/guest-menu-icons",
+    },
+    {
       id: "mobile-add-ad-opens-instantly",
       title: {
         en: "«اضافة اعلان» opens the form at once",
