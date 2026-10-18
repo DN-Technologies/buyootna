@@ -10,6 +10,14 @@ import {
   View,
 } from 'react-native';
 
+// Keyboards for digits-only fields (phone numbers, amounts)
+const NUMBER_KEYBOARDS: TextInputProps['keyboardType'][] = [
+  'phone-pad',
+  'number-pad',
+  'numeric',
+  'decimal-pad',
+];
+
 interface FormInputProps<T extends FieldValues> extends TextInputProps {
   control: Control<T>;
   name: Path<T>;
@@ -58,6 +66,10 @@ export default function FormInput<T extends FieldValues>({
           borderColorClass = 'border-primary';
         }
 
+        const isNumberField = NUMBER_KEYBOARDS.includes(
+          textInputProps.keyboardType ?? 'default',
+        );
+
         return (
           <View className="mb-4 w-full">
             {/* Label */}
@@ -91,7 +103,10 @@ export default function FormInput<T extends FieldValues>({
                 textAlignVertical={textInputProps.multiline ? 'top' : 'center'}
                 style={[
                   {
-                    writingDirection: 'rtl',
+                    // A number field (e.g. رقم الواتساب) keeps only the
+                    // right alignment, like the add-ad phone box: forcing
+                    // RTL there put its placeholder at the left on iOS
+                    ...(isNumberField ? {} : { writingDirection: 'rtl' as const }),
                     textAlign: 'right',
                     // Fix for Cairo font vertical offset on iOS
                     paddingTop: Platform.OS === 'ios' ? 4 : 0,

@@ -52,7 +52,7 @@ checkApiUrl();
 
 const config: ExpoConfig = {
   name: 'Buyootna',
-  slug: 'buyootna-mobile',
+  slug: 'buyootna',
   version: '1.5.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
@@ -61,7 +61,7 @@ const config: ExpoConfig = {
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.constyoussef.buyootna',
+    bundleIdentifier: 'com.buyootna.app',
     usesAppleSignIn: true,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
@@ -176,7 +176,7 @@ const config: ExpoConfig = {
     policy: 'appVersion',
   },
   updates: {
-    url: 'https://u.expo.dev/71d0c9e9-aa9f-4abc-a04e-c8b0733ad738',
+    url: 'https://u.expo.dev/8c909bc9-87c4-4996-bf82-12f7759cc30a',
     // The app already drives its own update check/fetch in src/app/index.tsx
     // (with tight timeouts and visible-only-when-a-real-update-exists UI) --
     // disabling the native module's own automatic check here avoids a
@@ -186,7 +186,7 @@ const config: ExpoConfig = {
   extra: {
     router: {},
     eas: {
-      projectId: '71d0c9e9-aa9f-4abc-a04e-c8b0733ad738',
+      projectId: '8c909bc9-87c4-4996-bf82-12f7759cc30a',
     },
   },
 };

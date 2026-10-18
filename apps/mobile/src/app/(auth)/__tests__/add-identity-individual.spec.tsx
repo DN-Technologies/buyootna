@@ -51,7 +51,7 @@ describe('AddIdentityIndividualScreen', () => {
     );
     if (overrides.whatsapp !== undefined) {
       await fireEvent.changeText(
-        getByPlaceholderText('مثال: 96512345678'),
+        getByPlaceholderText('96512345678'),
         overrides.whatsapp,
       );
     }

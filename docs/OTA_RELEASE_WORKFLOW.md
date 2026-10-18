@@ -1,7 +1,7 @@
 # Mobile OTA Release Workflow
 
 This document explains how over-the-air (OTA) updates work for `apps/mobile`
-(EAS project `buyootna-mobile`, ID `71d0c9e9-aa9f-4abc-a04e-c8b0733ad738`),
+(EAS project `buyootna`, ID `8c909bc9-87c4-4996-bf82-12f7759cc30a`),
 what can ship as an OTA update vs. what requires a new native build, and how
 the Git pre-push analysis works.
 
@@ -15,7 +15,7 @@ The app uses `expo-updates` with:
 
 ```ts
 runtimeVersion: { policy: 'appVersion' }
-updates: { url: 'https://u.expo.dev/71d0c9e9-aa9f-4abc-a04e-c8b0733ad738' }
+updates: { url: 'https://u.expo.dev/8c909bc9-87c4-4996-bf82-12f7759cc30a' }
 ```
 
 `runtimeVersion` is derived automatically from the app's `version` field in

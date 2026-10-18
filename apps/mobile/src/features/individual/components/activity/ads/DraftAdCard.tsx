@@ -75,10 +75,10 @@ export default function DraftAdCard({
         {/* Price Row */}
         <View className="mb-4 flex-row items-center">
           <View className="flex-row items-baseline gap-1">
-            <Text className="font-bold text-lg text-[#111111]">
+            <Text className="font-cairo-bold text-lg text-[#111111]">
               {property.price ? formatNumber(property.price) : '---'}
             </Text>
-            <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
+            <Text className="font-cairo text-xs text-[#6B6A6A]">
               د.ك
             </Text>
           </View>

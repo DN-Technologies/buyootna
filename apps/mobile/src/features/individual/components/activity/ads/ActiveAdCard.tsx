@@ -112,7 +112,7 @@ export default function ActiveAdCard({
             <Text className="font-cairo-bold text-lg text-[#111111]">
               {formatNumber(property.price ?? 0)}
             </Text>
-            <Text className="font-cairo-semibold text-xs text-[#6B6A6A]">
+            <Text className="font-cairo text-xs text-[#6B6A6A]">
               د.ك
             </Text>
           </View>

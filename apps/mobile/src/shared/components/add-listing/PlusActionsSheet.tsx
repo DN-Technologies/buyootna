@@ -3,6 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
 } from '@gorhom/bottom-sheet';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { forwardRef, useCallback, useState } from 'react';
 import {
@@ -17,8 +18,12 @@ import {
   AlarmIcon,
   RequestPriceIcon,
 } from '@/assets/icons/add-listing';
-import { plansService } from '@/shared/api/plans.service';
+import {
+  plansService,
+  type PublishOptionsResponse,
+} from '@/shared/api/plans.service';
 import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 
 export interface PlusActionsSheetProps {
@@ -29,9 +34,18 @@ export interface PlusActionsSheetProps {
 const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
   ({ onClose, onQuotaExhausted }, ref) => {
     const router = useRouter();
+    const queryClient = useQueryClient();
+    const token = useAuthStore((state) => state.token);
     const [isCheckingQuota, setIsCheckingQuota] = useState(false);
 
-
+    // Whether the user can publish, fetched ahead (this sheet is mounted
+    // with the tabs), so اضافة اعلان opens the form at once instead of
+    // waiting on the network. Publishing checks it again on submit.
+    useQuery({
+      queryKey: ['publishOptions'],
+      queryFn: () => plansService.getPublishOptions(),
+      enabled: !!token,
+    });
 
     const renderBackdrop = useCallback(
       (props: any) => (
@@ -51,20 +65,41 @@ const PlusActionsSheet = forwardRef<BottomSheetModal, PlusActionsSheetProps>(
       if (onClose) onClose();
     };
 
+    const openForm = () => {
+      handleClose();
+      router.push('/add-listing');
+    };
+
     const handleAddAd = async () => {
       if (isCheckingQuota) return;
 
+      const known = queryClient.getQueryData<PublishOptionsResponse>([
+        'publishOptions',
+      ]);
+      // Known to have credit, or not known yet: open right away and refresh
+      // the answer in the background
+      if (known?.canPublish !== false) {
+        openForm();
+        queryClient.invalidateQueries({ queryKey: ['publishOptions'] });
+        return;
+      }
+
+      // Known to be out of credit: confirm first (a plan may have just been
+      // bought) before showing the quota sheet
       try {
         setIsCheckingQuota(true);
-        const publishOptions = await plansService.getPublishOptions();
+        const publishOptions = await queryClient.fetchQuery({
+          queryKey: ['publishOptions'],
+          queryFn: () => plansService.getPublishOptions(),
+          staleTime: 0,
+        });
         setIsCheckingQuota(false);
 
         if (!publishOptions.canPublish) {
           handleClose();
           onQuotaExhausted();
         } else {
-          handleClose();
-          router.push('/add-listing');
+          openForm();
         }
       } catch (error) {
         setIsCheckingQuota(false);
