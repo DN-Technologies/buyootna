@@ -106,6 +106,7 @@ describe('IndividualAuthScreen', () => {
         expect(mockApiClient.post).toHaveBeenCalledWith('/auth/login', {
           identifier: 'ali@example.com',
           password: 'password123',
+          identityType: 'INDIVIDUAL',
         });
       });
       await waitFor(() =>

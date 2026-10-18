@@ -89,6 +89,26 @@ export class AuthIdentitiesService {
     return this.findById(session.activeIdentityId, userId);
   }
 
+  /**
+   * The account's persona of one type, for a login that names it (the
+   * login screen's فرد / مكتب / شركة). An account can hold more than one of
+   * a type, so prefer the one this device used, then the account's last
+   * used, then the most recently updated.
+   */
+  async findByType(
+    userId: string,
+    type: IdentityType,
+    deviceId?: string,
+  ): Promise<IdentityWithData | null> {
+    const onDevice = await this.findForDevice(userId, deviceId);
+    if (onDevice?.type === type) return onDevice;
+    return this.prisma.identity.findFirst({
+      where: { userId, type },
+      orderBy: [{ isActive: 'desc' }, { updatedAt: 'desc' }],
+      include: IDENTITY_INCLUDE,
+    });
+  }
+
   listAll(userId: string): Promise<IdentityWithData[]> {
     return this.prisma.identity.findMany({
       where: { userId },

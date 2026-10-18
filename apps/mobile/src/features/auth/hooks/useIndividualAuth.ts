@@ -13,13 +13,9 @@ import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
-import { notifyIfReactivated } from '@/shared/utils/reactivationNotice';
-import {
-  isReactivationDeclined,
-  withReactivationPrompt,
-} from '@/shared/utils/scheduledDeactivation';
 import { AccountType } from '@/types';
 
+import { loginAs } from '../utils/loginAs';
 import { useSocialAuth } from './useSocialAuth';
 
 export type IndividualAuthMode = 'login' | 'signup';
@@ -63,33 +59,14 @@ export function useIndividualAuth() {
     }
   };
 
+  // Signs in to the individual persona of the account (فرد picked above)
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
     setIsFormLoading(true);
     try {
-      const response = await withReactivationPrompt(
-        apiClient.post('/auth/login', {
-          identifier: data.identifier,
-          password: data.password,
-        }),
-      );
-
-      // Save token to Secure Store and update global state
-      await setAuth(
-        response.data.user,
-        response.data.activeIdentity,
-        response.data.identities,
-        response.data.access_token,
-        response.data.sessionId,
-      );
-      notifyIfReactivated(response.data);
-
-      resetToIdentityHome(response.data.activeIdentity?.type);
-    } catch (error: any) {
-      // "No" to reactivating early: stay on the login screen, no error
-      if (isReactivationDeclined(error)) return;
-      showAlert(
-        'فشل تسجيل الدخول',
-        getApiErrorMessage(error, 'حدث خطأ في الاتصال'),
+      await loginAs(
+        { identifier: data.identifier, password: data.password },
+        'INDIVIDUAL',
+        setAuth,
       );
     } finally {
       setIsFormLoading(false);

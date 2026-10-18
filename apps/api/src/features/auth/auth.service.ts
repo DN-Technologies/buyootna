@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User, SocialProvider } from '@prisma/client';
+import { IdentityType, User, SocialProvider } from '@prisma/client';
 import { VerifiedSocialProfile } from './services/google-auth.service';
 import type { DeviceCtx } from '../devices/sessions.service';
 import { AuthCredentialsService } from './services/auth-credentials.service';
@@ -34,8 +34,9 @@ export class AuthService {
     user: Omit<User, 'password'>,
     identityId?: string,
     deviceCtx: DeviceCtx = {},
+    opts: { identityType?: IdentityType } = {},
   ) {
-    return this.sessionService.login(user, identityId, deviceCtx);
+    return this.sessionService.login(user, identityId, deviceCtx, opts);
   }
 
   // 2.1. Finish a sign-in paused at "reactivate your account now?"

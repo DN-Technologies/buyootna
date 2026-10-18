@@ -82,7 +82,7 @@ export interface User {
   freeAdsRemaining?: number | null;
 }
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   activeIdentity: Identity | null;
   identities: Identity[];

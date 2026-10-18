@@ -40,6 +40,96 @@ export function registerLoginAuthTests(ctx: AuthTestContext) {
       });
     });
 
+    describe('with the persona picked on the login screen (identityType)', () => {
+      it('opens that persona directly: its id and type go in the JWT', async () => {
+        const office = buildIdentity({
+          id: 'identity-office',
+          type: IdentityType.OFFICE,
+          isActive: false,
+        });
+        ctx.identities.findByType.mockResolvedValueOnce(office);
+        ctx.identities.findById.mockResolvedValueOnce(office);
+
+        const result = await ctx.service.login(
+          user,
+          undefined,
+          { deviceId: 'device-1' },
+          { identityType: IdentityType.OFFICE },
+        );
+
+        expect(ctx.identities.findByType).toHaveBeenCalledWith(
+          'user-1',
+          IdentityType.OFFICE,
+          'device-1',
+        );
+        // Resolved through the same owner-scoped lookup as an explicit id
+        expect(ctx.identities.findById).toHaveBeenCalledWith(
+          'identity-office',
+          'user-1',
+        );
+        expect(result.activeIdentity).toMatchObject({
+          id: 'identity-office',
+          type: IdentityType.OFFICE,
+        });
+        expect(ctx.jwt.sign).toHaveBeenCalledWith({
+          sub: 'user-1',
+          ident: 'identity-office',
+          type: IdentityType.OFFICE,
+          sid: 'session-1',
+        });
+        // The device and the account remember it for the next plain login
+        expect(ctx.identities.markLastUsed).toHaveBeenCalledWith(
+          'user-1',
+          'identity-office',
+        );
+      });
+
+      it("refuses a type the account doesn't have, listing the ones it does", async () => {
+        ctx.identities.findByType.mockResolvedValueOnce(null);
+        ctx.identities.listAll.mockResolvedValueOnce([
+          buildIdentity({ type: IdentityType.INDIVIDUAL }),
+          buildIdentity({ id: 'identity-c', type: IdentityType.COMPANY }),
+        ]);
+
+        const attempt = ctx.service.login(
+          user,
+          undefined,
+          {},
+          {
+            identityType: IdentityType.OFFICE,
+          },
+        );
+
+        await expect(attempt).rejects.toBeInstanceOf(ForbiddenException);
+        await attempt.catch((error: ForbiddenException) => {
+          expect(error.getResponse()).toMatchObject({
+            code: 'IDENTITY_TYPE_NOT_FOUND',
+            requestedType: IdentityType.OFFICE,
+            availableTypes: [IdentityType.INDIVIDUAL, IdentityType.COMPANY],
+          });
+        });
+        // No session and no token for a persona that wasn't opened
+        expect(ctx.sessions.upsertSession).not.toHaveBeenCalled();
+        expect(ctx.jwt.sign).not.toHaveBeenCalled();
+      });
+
+      it('still refuses a blocked account before looking at the type', async () => {
+        const blocked = { ...user, isBlocked: true } as typeof user;
+
+        await expect(
+          ctx.service.login(
+            blocked,
+            undefined,
+            {},
+            {
+              identityType: IdentityType.COMPANY,
+            },
+          ),
+        ).rejects.toBeInstanceOf(ForbiddenException);
+        expect(ctx.identities.findByType).not.toHaveBeenCalled();
+      });
+    });
+
     it('sends the new-login alert when the session is on a new device', async () => {
       ctx.identities.findActive.mockResolvedValueOnce(buildIdentity());
       ctx.sessions.upsertSession.mockResolvedValueOnce({
