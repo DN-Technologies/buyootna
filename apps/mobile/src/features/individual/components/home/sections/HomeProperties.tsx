@@ -216,6 +216,8 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
                 type={item.type}
                 categoryLabel={item.categoryLabel}
                 propertyIncome={item.propertyIncome}
+                requestYear={item.requestYear}
+                requiredYear={item.requiredYear}
                 area={item.area}
                 beds={item.beds}
                 baths={item.baths}
@@ -292,6 +294,8 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              requestYear={item.requestYear}
+              requiredYear={item.requiredYear}
               isFavorited={favoritedIds.includes(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               onPress={() => openDetails(item)}

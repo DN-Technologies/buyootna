@@ -80,6 +80,8 @@ export default function AlertMatchesScreen() {
               area={item.area}
               location={item.location}
               propertyIncome={item.propertyIncome}
+              requestYear={item.requestYear}
+              requiredYear={item.requiredYear}
               isFavorited={isFavorited(item.id)}
               onFavorite={() => toggleFavorite(item.id)}
               onPress={() => router.push(`/property/${item.id}` as any)}

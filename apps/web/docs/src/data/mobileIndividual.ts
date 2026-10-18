@@ -1985,6 +1985,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-exchange-card-years",
+      title: {
+        en: "Exchange cards show سنة الطلب and السنة المطلوبة",
+        ar: "بطاقات البدل تعرض سنة الطلب والسنة المطلوبة",
+      },
+      priority: "P1",
+      story: {
+        en: "An exchange (بدل) ad has no price; what matters is its two years. The home's بدل tab, the exchange slider, the office and profile listings and the alert matches showed these cards with an empty price («د.ك» alone or «السعر غير معلن») and no years. The API already sends requestYear and requiredYear; both card styles (PropertyCard with images, PropertyListItem in the list) now show «سنة الطلب 2019» and «السنة المطلوبة 2025» in the price's place. An exchange that also has a price keeps the price and shows the years under the facts. An ad without both years shows nothing extra.",
+        ar: "إعلان البدل بلا سعر؛ والمهم فيه سنتاه. كانت تبويبة بدل في الرئيسية وسلايدر البدل وإعلانات المكتب والملف الشخصي ونتائج التنبيه تعرض هذه البطاقات بسعر فارغ («د.ك» وحدها أو «السعر غير معلن») ودون السنتين. الـAPI يرسل requestYear وrequiredYear أصلاً؛ والآن يعرض نوعا البطاقة (PropertyCard بالصور وPropertyListItem في القائمة) «سنة الطلب 2019» و«السنة المطلوبة 2025» مكان السعر. وإعلان البدل الذي له سعر أيضاً يبقي السعر ويعرض السنتين تحت البيانات. والإعلان الذي لا يحمل السنتين لا يعرض شيئاً إضافياً.",
+      },
+      acceptanceCriteria: {
+        en: ["On الرئيسية › بدل, in the card and list views, an exchange card shows سنة الطلب and السنة المطلوبة with their years where the price was.", "No exchange card shows a lone «د.ك» or «السعر غير معلن» when it has its years.", "An exchange with a price shows the price and, below the facts, the two years.", "Sale and rent cards are unchanged."],
+        ar: ["في الرئيسية › بدل، بعرض البطاقات والقائمة، تعرض بطاقة البدل سنة الطلب والسنة المطلوبة بسنتيهما مكان السعر.", "لا تعرض بطاقة بدل «د.ك» وحدها أو «السعر غير معلن» إذا كانت لها السنتان.", "البدل الذي له سعر يعرض السعر، وتحت البيانات السنتين.", "بطاقات البيع والإيجار دون تغيير."],
+      },
+      testScenarios: {
+        en: ["Open الرئيسية › بدل and switch between the two views: each exchange card shows its two years.", "Open an office profile's governorate list on بدل: the cards show the same two years."],
+        ar: ["افتح الرئيسية › بدل وبدّل بين العرضين: كل بطاقة بدل تعرض سنتيها.", "افتح قائمة محافظة في ملف مكتب على بدل: البطاقات تعرض السنتين نفسيهما."],
+      },
+      updatedIn: "fix/exchange-card-years",
+    },
+    {
       id: "mobile-number-fields-start-right",
       title: {
         en: "Number fields (رقم الواتساب) start from the right",
