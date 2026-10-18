@@ -151,7 +151,7 @@ export default function PropertyMessageBubble({
                   <Text className="font-cairo-bold text-2xl text-[#15304D]">
                     {formatNumber(property.price)}
                   </Text>
-                  <Text className="font-cairo-bold text-sm text-[#15304D]">
+                  <Text className="font-cairo text-sm text-[#6B6A6A]">
                     د.ك
                   </Text>
                 </>

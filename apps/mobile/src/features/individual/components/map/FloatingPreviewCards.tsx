@@ -58,12 +58,12 @@ export function PropertyPreviewCard({
         {/* Top Row: Price & Favorite */}
         <View className="w-full flex-row items-center justify-between">
           <View className="flex-row items-baseline gap-1">
-            <Text className="font-cairo-semibold text-[22px] text-[#15304D]">
+            <Text className="font-cairo-bold text-[22px] text-[#15304D]">
               {property.priceLabel
                 ? property.priceLabel.replace(' د.ك', '')
                 : '150,000'}
             </Text>
-            <Text className="font-cairo-bold text-xs text-[#15304D]">د.ك</Text>
+            <Text className="font-cairo text-xs text-[#6B6A6A]">د.ك</Text>
           </View>
           <TouchableOpacity onPress={onClose} className="p-1">
             <HeartIcon color="#15304D" size={20} />
