@@ -3,10 +3,12 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 interface GuestProfileGreetingCardProps {
   onCreateAccount: () => void;
+  onLogin: () => void;
 }
 
 export default function GuestProfileGreetingCard({
   onCreateAccount,
+  onLogin,
 }: GuestProfileGreetingCardProps) {
   return (
     <View className="mx-5 mb-8 mt-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm shadow-gray-200/50">
@@ -30,15 +32,29 @@ export default function GuestProfileGreetingCard({
           </Text>
         </View>
 
-        {/* Create Account Link */}
-        <TouchableOpacity
-          onPress={onCreateAccount}
-          className="w-full flex-row items-center justify-center rounded-[24px] bg-[#15304D] py-2.5"
-        >
-          <Text className="font-cairo-bold text-sm leading-[22px] text-white">
-            إنشاء حساب
-          </Text>
-        </TouchableOpacity>
+        {/* إنشاء حساب and تسجيل الدخول side by side (RTL: create first) */}
+        <View className="w-full flex-row gap-3">
+          <TouchableOpacity
+            testID="guest-create-account"
+            activeOpacity={0.8}
+            onPress={onCreateAccount}
+            className="flex-1 items-center justify-center rounded-[24px] border border-[#15304D] bg-[#15304D] py-2.5"
+          >
+            <Text className="font-cairo-bold text-sm leading-[22px] text-white">
+              إنشاء حساب
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            testID="guest-login"
+            activeOpacity={0.8}
+            onPress={onLogin}
+            className="flex-1 items-center justify-center rounded-[24px] border border-[#15304D] bg-white py-2.5"
+          >
+            <Text className="font-cairo-bold text-sm leading-[22px] text-[#15304D]">
+              تسجيل الدخول
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

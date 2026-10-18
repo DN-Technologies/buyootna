@@ -65,21 +65,10 @@ export default function ProfileDashboardScreen() {
           <ContentContainer>
             <GuestProfileGreetingCard
               onCreateAccount={() => router.push('/(auth)/selection')}
+              onLogin={() => router.push('/(auth)/individual-auth')}
             />
 
             <GuestMenuSections guardAction={guardAction} />
-
-            {/* Login Button */}
-            <View className="mt-8 px-5">
-              <TouchableOpacity
-                onPress={() => router.push('/(auth)/individual-auth')}
-                className="flex-row items-center justify-center gap-2 rounded-full border border-[#15304D] bg-white py-4"
-              >
-                <Text className="font-cairo-bold text-[15px] leading-[24px] text-[#15304D]">
-                  تسجيل الدخول
-                </Text>
-              </TouchableOpacity>
-            </View>
 
             <MoreScreenFooter />
           </ContentContainer>
