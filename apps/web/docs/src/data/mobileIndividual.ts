@@ -2090,6 +2090,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/price-emphasis",
     },
     {
+      id: "mobile-guest-more-auth-buttons",
+      title: {
+        en: "Guest المزيد: إنشاء حساب and تسجيل الدخول side by side in the welcome card",
+        ar: "المزيد للزائر: إنشاء حساب وتسجيل الدخول متجاوران في بطاقة الترحيب",
+      },
+      priority: "P2",
+      story: {
+        en: "Signed out, المزيد had إنشاء حساب in the welcome card at the top and تسجيل الدخول as a separate full-width button at the very bottom, under every menu section. Both now sit side by side in the welcome card: إنشاء حساب (filled, opens the account-type selection) on the right and تسجيل الدخول (outlined, opens the individual sign-in) on the left. The bottom button is gone.",
+        ar: "عند تسجيل الخروج كان في المزيد زر إنشاء حساب في بطاقة الترحيب أعلى الشاشة، وزر تسجيل الدخول منفصلاً بعرض كامل في أسفلها تحت كل أقسام القائمة. الآن الزران متجاوران في بطاقة الترحيب: إنشاء حساب (ممتلئ، يفتح اختيار نوع الحساب) على اليمين، وتسجيل الدخول (بإطار، يفتح دخول الفرد) على اليسار. وأُزيل الزر السفلي.",
+      },
+      acceptanceCriteria: {
+        en: ["Signed out, the welcome card shows إنشاء حساب and تسجيل الدخول in one row.", "There is no تسجيل الدخول button at the bottom of المزيد.", "Each button opens the same screen as before."],
+        ar: ["عند تسجيل الخروج تعرض بطاقة الترحيب إنشاء حساب وتسجيل الدخول في صف واحد.", "لا يوجد زر تسجيل الدخول في أسفل المزيد.", "كل زر يفتح الشاشة نفسها كما كان."],
+      },
+      testScenarios: {
+        en: ["Sign out and open المزيد: both buttons in the card; tap each and check where it goes."],
+        ar: ["سجّل الخروج وافتح المزيد: الزران في البطاقة؛ اضغط كلاً منهما وتحقق من وجهته."],
+      },
+      updatedIn: "feat/guest-more-auth-buttons",
+    },
+    {
       id: "mobile-cards-text-overflow-android",
       title: {
         en: "Property and company cards keep their text inside the card on Android",
