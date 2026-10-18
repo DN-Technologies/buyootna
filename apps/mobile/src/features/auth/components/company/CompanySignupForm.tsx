@@ -30,6 +30,9 @@ interface CompanySignupFormProps {
   // False when adding an identity to an already logged-in account — that
   // account already has an email/phone/password, so skip collecting them.
   includeAccountFields?: boolean;
+  // «العودة الى الرئيسية» on the success sheet; defaults to the guest /
+  // individual home (a new sign-up)
+  onSuccessDone?: () => void;
 }
 
 export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
@@ -41,6 +44,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
   pickLicense,
   isLoading = false,
   includeAccountFields = true,
+  onSuccessDone,
 }) => {
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -105,7 +109,8 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
   const closeSuccessModal = () => {
     successSheetRef.current?.dismiss();
-    resetToIdentityHome(null);
+    if (onSuccessDone) onSuccessDone();
+    else resetToIdentityHome(null);
   };
 
   const successMessage =
