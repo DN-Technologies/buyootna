@@ -85,13 +85,13 @@ export default function OfficeListingCard({
         {/* Price Row */}
         <View className="mt-1 flex-row items-baseline justify-end gap-1">
           <Text
-            className="font-cairo-semibold text-[20px] leading-[26px] text-[#15304D]"
+            className="font-cairo-bold text-[20px] leading-[28px] text-[#15304D]"
             style={{ writingDirection: 'rtl' }}
           >
             {formattedPrice}
           </Text>
           <Text
-            className="font-cairo-bold text-[12px] text-[#15304D]"
+            className="font-cairo text-[12px] text-[#6B6A6A]"
             style={{ writingDirection: 'rtl' }}
           >
             {listing.currency || 'د.ك'}

@@ -69,10 +69,10 @@ export default function ArchivedAdCard({
 
         {/* Price Row */}
         <View className="my-1 flex-row items-baseline gap-1">
-          <Text className="font-cairo-semibold text-[22px] leading-[26px] text-[#111111]">
+          <Text className="font-cairo-bold text-[22px] leading-[30px] text-[#111111]">
             {property.price ? formatNumber(property.price) : '---'}
           </Text>
-          <Text className="font-cairo-semibold text-[12px] text-[#111111]">
+          <Text className="font-cairo text-[12px] text-[#6B6A6A]">
             د.ك
           </Text>
         </View>
