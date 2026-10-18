@@ -259,6 +259,35 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/login-profile-type",
     },
     {
+      id: "mobile-new-company-opens-company-home",
+      title: {
+        en: "After adding a company, «العودة الى الرئيسية» opens the company home",
+        ar: "بعد إضافة شركة، «العودة الى الرئيسية» يفتح رئيسية الشركة",
+      },
+      priority: "P1",
+      story: {
+        en: "Adding a company from المزيد (add-identity-company) created it, but the success sheet's «العودة الى الرئيسية» always opened the individual home: the account stayed on its individual persona and the button reset to the default home. The screen now keeps the id the server returns for the new company; the button switches the session to it (switchIdentity, which issues a token for that persona) and opens the company home. If the switch fails, an alert says so and the app returns to the home it was on; the company can still be opened from المزيد. A new business sign-up keeps its old behaviour (the form's onSuccessDone is optional).",
+        ar: "كانت إضافة شركة من المزيد (add-identity-company) تنشئها، لكن زر «العودة الى الرئيسية» في نافذة النجاح كان يفتح دائماً رئيسية الفرد: يبقى الحساب على هوية الفرد ويعود الزر إلى الرئيسية الافتراضية. الآن تحتفظ الشاشة بمعرّف الشركة الجديدة الذي يعيده الخادم، ويبدّل الزر الجلسة إليها (switchIdentity الذي يصدر رمزاً لتلك الهوية) ويفتح رئيسية الشركة. وإذا فشل التبديل يظهر تنبيه بذلك ويعود التطبيق إلى الرئيسية التي كان عليها، ويمكن فتح الشركة من المزيد. والتسجيل الجديد لنشاط تجاري يبقى كما كان (onSuccessDone في النموذج اختياري).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Signed in as an individual, add a company: «العودة الى الرئيسية» opens the company home, with the company as the active account.",
+          "المزيد then shows the company's menu, not the individual one.",
+          "If the switch fails, an alert explains and the individual home opens.",
+        ],
+        ar: [
+          "مسجّلاً كفرد، أضف شركة: «العودة الى الرئيسية» يفتح رئيسية الشركة والشركة هي الحساب النشط.",
+          "ثم تعرض المزيد قائمة الشركة لا قائمة الفرد.",
+          "إذا فشل التبديل يظهر تنبيه توضيحي وتفتح رئيسية الفرد.",
+        ],
+      },
+      testScenarios: {
+        en: ["Sign in as an individual, المزيد › إضافة حساب › شركة, fill it in and submit; tap «العودة الى الرئيسية»: the company home opens."],
+        ar: ["سجّل الدخول كفرد، المزيد ثم إضافة حساب ثم شركة، املأ البيانات وأرسلها؛ اضغط «العودة الى الرئيسية»: تفتح رئيسية الشركة."],
+      },
+      updatedIn: "fix/new-company-goes-home",
+    },
+    {
       id: "mobile-identity-switch",
       title: {
         en: "Switching persona is per device, with no data bleed",

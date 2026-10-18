@@ -2,19 +2,20 @@ import { useRouter } from 'expo-router';
 import { View } from 'react-native';
 
 import { AuctionsIcon, ChatIcon, DealsIcon, SavedIcon } from '@/assets/icons/more';
+// The same icons as the signed-in settings (الدعم والمساعدة, السياسات)
+import {
+  CallIcon,
+  InfoIcon,
+  PrivacyIcon,
+  ShowIcon,
+  TermsIcon,
+} from '@/assets/icons/settings';
 import MenuItem from '@/shared/components/ui/MenuItem';
 import { FEATURES } from '@/shared/config/features';
 import { showAlert } from '@/shared/utils/alert';
 
 import MenuSection from './MenuSection';
-import {
-  BellIcon,
-  FileIcon,
-  HelpIcon,
-  InfoIcon,
-  PhoneIcon,
-  ShieldIcon,
-} from './moreScreenIcons';
+import { BellIcon } from './moreScreenIcons';
 
 interface GuestMenuSectionsProps {
   guardAction: (action: () => void) => void;
@@ -81,12 +82,12 @@ export default function GuestMenuSections({
           onPress={() => router.push('/about')}
         />
         <MenuItem
-          icon={HelpIcon}
+          icon={ShowIcon}
           title="الأسئلة الشائعة"
           onPress={() => router.push('/faq')}
         />
         <MenuItem
-          icon={PhoneIcon}
+          icon={CallIcon}
           title="تواصل معنا"
           onPress={() => router.push('/contact')}
         />
@@ -94,12 +95,12 @@ export default function GuestMenuSections({
 
       <MenuSection title="السياسات">
         <MenuItem
-          icon={ShieldIcon}
+          icon={PrivacyIcon}
           title="سياسة الخصوصية"
           onPress={() => router.push('/privacy')}
         />
         <MenuItem
-          icon={FileIcon}
+          icon={TermsIcon}
           title="الشروط والأحكام"
           onPress={() => router.push('/terms')}
         />
