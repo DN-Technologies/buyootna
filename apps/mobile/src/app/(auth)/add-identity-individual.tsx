@@ -112,7 +112,7 @@ export default function AddIdentityIndividualScreen() {
             control={control}
             name="whatsapp"
             label="رقم الواتساب (اختياري)"
-            placeholder="مثال: 96512345678"
+            placeholder="96512345678"
             keyboardType="phone-pad"
             isRequired={false}
           />
