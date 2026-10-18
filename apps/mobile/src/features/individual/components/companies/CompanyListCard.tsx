@@ -20,6 +20,8 @@ export interface CompanyListCardProps {
   onToggleFavorite?: () => void;
   onChatPress?: () => void;
   onQuotePress?: () => void;
+  // The viewer's own company: no quote request or chat with yourself
+  isOwn?: boolean;
 }
 
 export default function CompanyListCard({
@@ -36,6 +38,7 @@ export default function CompanyListCard({
   onToggleFavorite,
   onChatPress,
   onQuotePress,
+  isOwn = false,
 }: CompanyListCardProps) {
   return (
     <TouchableOpacity
@@ -143,9 +146,14 @@ export default function CompanyListCard({
       {/* --- 3. Actions --- */}
       <View className="flex-row items-center gap-3 border-t border-gray-100 pt-3">
         <TouchableOpacity
+          testID="company-quote"
           activeOpacity={0.8}
           onPress={onQuotePress}
-          className="flex-row flex-1 items-center h-[40px] justify-center rounded-full bg-[#15304D] py-2.5"
+          disabled={isOwn}
+          accessibilityState={{ disabled: isOwn }}
+          className={`flex-row flex-1 items-center h-[40px] justify-center rounded-full bg-[#15304D] py-2.5 ${
+            isOwn ? 'opacity-40' : ''
+          }`}
         >
           <Text className="font-cairo-semibold leading-[22px] text-[14px] text-white">
             طلب عرض سعر
@@ -153,9 +161,14 @@ export default function CompanyListCard({
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID="company-chat"
           activeOpacity={0.8}
           onPress={onChatPress}
-          className="items-center flex-1 h-[40px] justify-center rounded-full border border-gray-200 bg-white"
+          disabled={isOwn}
+          accessibilityState={{ disabled: isOwn }}
+          className={`items-center flex-1 h-[40px] justify-center rounded-full border border-gray-200 bg-white ${
+            isOwn ? 'opacity-40' : ''
+          }`}
         >
           <Feather name="message-square" size={20} color="#111111" />
         </TouchableOpacity>

@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { feedService } from '@/features/individual/services/feed.service';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import CompaniesScreen from '../companies';
 
@@ -74,6 +75,48 @@ describe('CompaniesScreen', () => {
       data: [],
       meta: { hasNextPage: false, current: 1 },
     });
+  });
+
+  it("disables طلب عرض سعر and chat on the account's own company only", async () => {
+    useAuthStore.setState({ user: { id: 'me' } as never });
+    (feedService.getCompanies as jest.Mock).mockResolvedValue({
+      data: [
+      {
+        id: 'c-own',
+        userId: 'me',
+        name: 'البنيان',
+        category: '',
+        rating: 0,
+        reviewsCount: 0,
+        projectsCount: '0',
+        lastActivityAt: new Date().toISOString(),
+        logoUrl: '',
+      },
+      {
+        id: 'c-other',
+        userId: 'someone',
+        name: 'الرائد للهندسة',
+        category: '',
+        rating: 0,
+        reviewsCount: 0,
+        projectsCount: '0',
+        lastActivityAt: new Date().toISOString(),
+        logoUrl: '',
+      },
+      ],
+      meta: { hasNextPage: false, current: 1 },
+    });
+    const { findByText, getAllByTestId } = await renderScreen();
+    await findByText('البنيان');
+
+    const [ownQuote, otherQuote] = getAllByTestId('company-quote');
+    const [ownChat, otherChat] = getAllByTestId('company-chat');
+    expect(ownQuote).toBeDisabled();
+    expect(ownChat).toBeDisabled();
+    expect(otherQuote).not.toBeDisabled();
+    expect(otherChat).not.toBeDisabled();
+
+    useAuthStore.setState({ user: null });
   });
 
   // QA: the keyboard closed after every letter because the list header was
