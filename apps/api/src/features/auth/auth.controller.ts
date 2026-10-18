@@ -68,16 +68,17 @@ export class AuthController {
   @ApiOperation({
     summary:
       'Log in with email/phone + password, returns a JWT and identity info',
+    description:
+      "identityType (INDIVIDUAL / COMPANY / OFFICE) opens that persona of the account directly; without it, the one this device or account used last. A type the account doesn't have: 403 IDENTITY_TYPE_NOT_FOUND with availableTypes.",
   })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiCommonErrors()
-  login(
-    @Req() req: RequestWithUser,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    @Body() loginDto: LoginDto,
-  ) {
-    // req.user is populated by the LocalStrategy if successful
-    return this.authService.login(req.user, undefined, extractDeviceCtx(req));
+  login(@Req() req: RequestWithUser, @Body() loginDto: LoginDto) {
+    // req.user is populated by the LocalStrategy if successful; the persona
+    // it opens is the one picked on the login screen, if any
+    return this.authService.login(req.user, undefined, extractDeviceCtx(req), {
+      identityType: loginDto.identityType,
+    });
   }
 
   @Post('reactivate')

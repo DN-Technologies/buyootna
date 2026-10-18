@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/core/prisma/prisma.service';
-import { User } from '@prisma/client';
+import { IdentityType, User } from '@prisma/client';
 import { JwtPayload } from '../strategies/jwt.strategy';
 import {
   AuthIdentitiesService,
@@ -20,6 +20,7 @@ import {
   accountStatus,
   arabicDays,
   daysUntil,
+  identityTypeNotFoundError,
   suspendedByAdminError,
 } from '../account-status.util';
 
@@ -53,7 +54,7 @@ export class AuthSessionService {
     user: Omit<User, 'password'>,
     identityId?: string,
     deviceCtx: DeviceCtx = {},
-    opts: { confirmReactivation?: boolean } = {},
+    opts: { confirmReactivation?: boolean; identityType?: IdentityType } = {},
   ) {
     // Every sign-in path (password, OTP, registration, Google, Apple) comes
     // through here, so account status is enforced once for all of them
@@ -63,6 +64,30 @@ export class AuthSessionService {
       if (status === 'blocked' || status === 'suspended_by_admin') {
         throw suspendedByAdminError();
       }
+    }
+
+    // The login screen's فرد / مكتب / شركة choice: open that persona of the
+    // account directly. Resolved here, before the reactivation ticket below,
+    // so a sign-in paused there resumes on the same persona. Only reached
+    // with the password (or OTP / social token) already proven, so saying
+    // which personas exist reveals nothing to a stranger.
+    if (!identityId && opts.identityType) {
+      const chosen = await this.identities.findByType(
+        user.id,
+        opts.identityType,
+        deviceCtx.deviceId,
+      );
+      if (!chosen) {
+        const available = await this.identities.listAll(user.id);
+        throw identityTypeNotFoundError(opts.identityType, [
+          ...new Set(available.map((i) => i.type)),
+        ]);
+      }
+      identityId = chosen.id;
+    }
+
+    if (!user.isAdmin) {
+      const status = accountStatus(user);
       if (status === 'deactivated_by_user') {
         // A timed deactivation still running: ask before ending it early.
         // The app answers "yes" through POST /auth/reactivate with the ticket.

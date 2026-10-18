@@ -75,7 +75,7 @@ describe('AuthController', () => {
     userAgent: 'test-agent',
   };
 
-  it('login() delegates to authService.login with req.user and the extracted device context, ignoring the DTO body', () => {
+  it('login() delegates to authService.login with req.user and the extracted device context; credentials stay with the LocalStrategy', () => {
     const req = makeReq({ user: { id: 'user-1' } });
     mockAuthService.login.mockReturnValue('login-result');
 
@@ -88,8 +88,26 @@ describe('AuthController', () => {
       req.user,
       undefined,
       expectedDeviceCtx,
+      { identityType: undefined },
     );
     expect(result).toBe('login-result');
+  });
+
+  it('login() passes the persona picked on the login screen (identityType)', () => {
+    const req = makeReq({ user: { id: 'user-1' } });
+
+    controller.login(req, {
+      identifier: 'a@example.com',
+      password: 'secret1',
+      identityType: 'COMPANY',
+    });
+
+    expect(mockAuthService.login).toHaveBeenCalledWith(
+      req.user,
+      undefined,
+      expectedDeviceCtx,
+      { identityType: 'COMPANY' },
+    );
   });
 
   it('googleLogin() verifies the ID token then delegates to loginOrRegisterWithSocial with GOOGLE and the device context', async () => {

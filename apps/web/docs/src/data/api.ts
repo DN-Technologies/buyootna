@@ -541,6 +541,45 @@ export const api: DocSection = {
       updatedIn: "feat/company-add-flows-figma",
     },
     {
+      id: "api-login-identity-type",
+      title: {
+        en: "POST /auth/login opens the persona picked on the login screen (identityType)",
+        ar: "POST /auth/login يفتح نوع الحساب المختار في شاشة الدخول (identityType)",
+      },
+      priority: "P1",
+      story: {
+        en: "One account can hold an individual, a company and an office persona (Identity). POST /auth/login now takes an optional identityType (INDIVIDUAL, COMPANY or OFFICE). The LocalStrategy proves the password first; only then does AuthSessionService.login pick that persona of the account (AuthIdentitiesService.findByType: this device's persona if it is of that type, else the account's last used one of that type, else the most recently updated) and open the session on it. The JWT is signed with { sub, ident, type, sid } for that persona, the device's Session row and Identity.isActive remember it, and the response's activeIdentity is that persona, so the app routes straight to its home. A type the account doesn't have returns 403 IDENTITY_TYPE_NOT_FOUND with requestedType and availableTypes, and no session or token is created. A blocked or admin-suspended account still gets 403 ACCOUNT_SUSPENDED_BY_ADMIN before the type is looked at. A sign-in paused by a timed self-deactivation (409) carries the chosen persona's id in its reactivation ticket, so POST /auth/reactivate resumes on that persona. Without identityType, login behaves as before (this device's persona, then the account's last used). Every request's role comes from the database, not the token: JwtStrategy reloads the identity by (ident, sub), sets req.user.identityType from the stored row and checks the session (sid) still exists, so a token edited to claim another type or another user's persona is refused.",
+        ar: "يمكن أن يحمل الحساب الواحد هوية فرد وشركة ومكتب (Identity). أصبح POST /auth/login يقبل identityType اختيارياً (INDIVIDUAL أو COMPANY أو OFFICE). تتحقق LocalStrategy من كلمة المرور أولاً، وبعدها فقط يختار AuthSessionService.login تلك الهوية من الحساب (AuthIdentitiesService.findByType: هوية هذا الجهاز إن كانت من هذا النوع، وإلا آخر هوية مستخدمة من هذا النوع، وإلا الأحدث تحديثاً) ويفتح الجلسة عليها. يُوقّع JWT بـ { sub, ident, type, sid } لتلك الهوية، ويتذكرها سجل Session للجهاز وIdentity.isActive، ويكون activeIdentity في الرد هو تلك الهوية، فيوجّه التطبيق مباشرة إلى رئيسيتها. النوع غير الموجود في الحساب يعيد 403 IDENTITY_TYPE_NOT_FOUND مع requestedType وavailableTypes، دون إنشاء جلسة أو رمز. والحساب المحظور أو الموقوف من المسؤول يحصل على 403 ACCOUNT_SUSPENDED_BY_ADMIN قبل النظر في النوع. وتسجيل الدخول المتوقف بسبب تعطيل مؤقت (409) يحمل معرّف الهوية المختارة في تذكرة إعادة التفعيل، فيُكمل POST /auth/reactivate على الهوية نفسها. ودون identityType يبقى الدخول كما كان (هوية هذا الجهاز ثم آخر هوية مستخدمة). ودور كل طلب يأتي من قاعدة البيانات لا من الرمز: يعيد JwtStrategy تحميل الهوية بـ (ident, sub) ويضبط req.user.identityType من السجل المخزن ويتحقق من بقاء الجلسة (sid)، فيُرفض أي رمز معدّل يدّعي نوعاً آخر أو هوية مستخدم آخر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "An account with individual + office: identityType OFFICE returns activeIdentity.type OFFICE and a JWT whose ident is the office identity.",
+          "identityType COMPANY on an account with no company: 403 IDENTITY_TYPE_NOT_FOUND, availableTypes lists the account's types, no session row is created.",
+          "A wrong password with any identityType: 401, nothing about the account's personas is revealed.",
+          "No identityType: the same persona as before this change (device's, then last used).",
+          "A JWT edited to a different type or another user's identity id is rejected (401).",
+        ],
+        ar: [
+          "حساب فيه فرد ومكتب: identityType OFFICE يعيد activeIdentity.type OFFICE ورمز JWT قيمة ident فيه هوية المكتب.",
+          "identityType COMPANY على حساب بلا شركة: 403 IDENTITY_TYPE_NOT_FOUND، وavailableTypes يذكر أنواع الحساب، ولا يُنشأ سجل جلسة.",
+          "كلمة مرور خاطئة مع أي identityType: 401، ولا يُكشف شيء عن هويات الحساب.",
+          "دون identityType: الهوية نفسها كما قبل هذا التغيير (هوية الجهاز ثم آخر مستخدمة).",
+          "رمز JWT معدّل إلى نوع آخر أو معرّف هوية مستخدم آخر يُرفض (401).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Register an individual, add an office from المزيد, log out; POST /auth/login with identityType OFFICE returns the office persona; then INDIVIDUAL returns the individual one.",
+          "POST /auth/login with identityType COMPANY on that account returns 403 IDENTITY_TYPE_NOT_FOUND with availableTypes [INDIVIDUAL, OFFICE].",
+        ],
+        ar: [
+          "سجّل فرداً وأضف مكتباً من المزيد ثم سجّل الخروج؛ POST /auth/login مع identityType OFFICE يعيد هوية المكتب، ثم INDIVIDUAL يعيد هوية الفرد.",
+          "POST /auth/login مع identityType COMPANY على ذلك الحساب يعيد 403 IDENTITY_TYPE_NOT_FOUND مع availableTypes [INDIVIDUAL, OFFICE].",
+        ],
+      },
+      updatedIn: "feat/login-profile-type",
+    },
+    {
       id: "api-account-state",
       title: {
         en: "Account state: deactivation periods, the reactivation ticket and admin-suspension errors",

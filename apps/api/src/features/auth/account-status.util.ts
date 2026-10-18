@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import type { User } from '@prisma/client';
+import type { IdentityType, User } from '@prisma/client';
 
 /**
  * The account's state, derived from the stored flags:
@@ -30,6 +30,29 @@ export function suspendedByAdminError() {
     statusCode: 403,
     code: 'ACCOUNT_SUSPENDED_BY_ADMIN',
     message: SUSPENDED_BY_ADMIN_MESSAGE,
+  });
+}
+
+const IDENTITY_TYPE_LABELS: Record<IdentityType, string> = {
+  INDIVIDUAL: 'فرد',
+  COMPANY: 'شركة',
+  OFFICE: 'مكتب',
+};
+
+/**
+ * The login screen asked for a persona (فرد / مكتب / شركة) this account
+ * doesn't have. `availableTypes` lets the app offer the ones it does.
+ */
+export function identityTypeNotFoundError(
+  requested: IdentityType,
+  availableTypes: IdentityType[],
+) {
+  return new ForbiddenException({
+    statusCode: 403,
+    code: 'IDENTITY_TYPE_NOT_FOUND',
+    message: `لا يوجد حساب ${IDENTITY_TYPE_LABELS[requested]} مرتبط بهذا الحساب. اختر نوع حساب آخر أو أضف هذا الحساب من المزيد بعد تسجيل الدخول.`,
+    requestedType: requested,
+    availableTypes,
   });
 }
 

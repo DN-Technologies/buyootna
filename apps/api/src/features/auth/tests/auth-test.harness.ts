@@ -117,6 +117,7 @@ export interface AuthTestContext {
     findActive: jest.Mock;
     findEarliest: jest.Mock;
     findForDevice: jest.Mock;
+    findByType: jest.Mock;
     markLastUsed: jest.Mock;
     listAll: jest.Mock;
     createDefaultForOrphanedUser: jest.Mock;
@@ -189,6 +190,7 @@ export function createAuthTestContext(): AuthTestContext {
     findEarliest: jest.fn(),
     // No persona remembered for the device unless a test says so
     findForDevice: jest.fn().mockResolvedValue(null),
+    findByType: jest.fn().mockResolvedValue(null),
     markLastUsed: jest.fn(),
     listAll: jest.fn().mockResolvedValue([]),
     createDefaultForOrphanedUser: jest.fn(),

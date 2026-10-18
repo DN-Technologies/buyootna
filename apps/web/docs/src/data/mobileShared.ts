@@ -222,6 +222,43 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/property-income",
     },
     {
+      id: "mobile-login-profile-type",
+      title: {
+        en: "Login: pick فرد / مكتب / شركة and land straight on that dashboard",
+        ar: "تسجيل الدخول: اختر فرد / مكتب / شركة وادخل مباشرة إلى لوحته",
+      },
+      priority: "P1",
+      story: {
+        en: "A user who registered as an individual and later added an office or company from المزيد used to sign back in on whichever persona the device last used, then switch by hand. The login screen's account-type dropdown now decides it: signing in on فرد (individual-auth) sends identityType INDIVIDUAL, on مكتب or شركة (business-auth) OFFICE or COMPANY. The server opens that persona and the app routes from the persona it returns (resetToIdentityHome), so an office login lands on the office dashboard without passing through the individual home. Both screens share one sign-in function (features/auth/utils/loginAs.ts). If the account has no persona of the type picked, an alert says so and offers a «الدخول كـ…» button for each persona the account does have.",
+        ar: "المستخدم الذي سجّل كفرد ثم أضاف مكتباً أو شركة من المزيد كان يعود عند تسجيل الدخول إلى آخر هوية استخدمها الجهاز، ثم يبدّل يدوياً. الآن تحدد القائمة المنسدلة لنوع الحساب في شاشة الدخول ذلك: الدخول على فرد (individual-auth) يرسل identityType INDIVIDUAL، وعلى مكتب أو شركة (business-auth) يرسل OFFICE أو COMPANY. يفتح الخادم تلك الهوية ويوجّه التطبيق حسب الهوية التي يعيدها (resetToIdentityHome)، فيدخل حساب المكتب مباشرة إلى لوحة المكتب دون المرور برئيسية الفرد. الشاشتان تستخدمان دالة دخول واحدة (features/auth/utils/loginAs.ts). وإذا لم يكن في الحساب هوية من النوع المختار يظهر تنبيه بذلك مع زر «الدخول كـ…» لكل هوية موجودة في الحساب.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Account with individual + office, logged out: picking مكتب and signing in opens the office dashboard directly.",
+          "Picking فرد opens the individual home; picking شركة on an account with a company opens the company dashboard.",
+          "Picking شركة on an account without one shows «لا يوجد هذا الحساب» with buttons for the personas it has; tapping one signs in there.",
+          "The individual home is never shown on the way to an office or company dashboard.",
+        ],
+        ar: [
+          "حساب فيه فرد ومكتب بعد تسجيل الخروج: اختيار مكتب وتسجيل الدخول يفتح لوحة المكتب مباشرة.",
+          "اختيار فرد يفتح رئيسية الفرد، واختيار شركة في حساب فيه شركة يفتح لوحة الشركة.",
+          "اختيار شركة في حساب بلا شركة يعرض «لا يوجد هذا الحساب» مع أزرار للهويات الموجودة، والضغط على أحدها يدخل إليها.",
+          "لا تظهر رئيسية الفرد أبداً في الطريق إلى لوحة المكتب أو الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Register an individual, add an office (المزيد › إضافة حساب), log out. On the login screen pick مكتب and sign in: office dashboard. Log out, pick فرد: individual home.",
+          "On the same account pick شركة: the alert offers الدخول كـفرد and الدخول كـمكتب.",
+        ],
+        ar: [
+          "سجّل فرداً وأضف مكتباً (المزيد ثم إضافة حساب) ثم سجّل الخروج. في شاشة الدخول اختر مكتب وسجّل الدخول: لوحة المكتب. سجّل الخروج واختر فرد: رئيسية الفرد.",
+          "على الحساب نفسه اختر شركة: يعرض التنبيه الدخول كـفرد والدخول كـمكتب.",
+        ],
+      },
+      updatedIn: "feat/login-profile-type",
+    },
+    {
       id: "mobile-new-company-opens-company-home",
       title: {
         en: "After adding a company, «العودة الى الرئيسية» opens the company home",
