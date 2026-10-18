@@ -48,55 +48,6 @@ export default function PropertyMediaHeader({
     <View
       style={{ height: HEADER_HEIGHT, width: '100%', position: 'relative' }}
     >
-      {/* Header Action Buttons */}
-      <View
-        className="absolute top-0 z-10 w-full flex-row justify-between px-5"
-        style={{
-          paddingTop: Math.max(insets.top, 20) + 10,
-        }}
-      >
-        {/* Right Action: Back */}
-        <TouchableOpacity activeOpacity={0.8} onPress={onBack}>
-          <View
-            style={{
-              height: 32,
-              minWidth: 32,
-              paddingHorizontal: 10,
-              backgroundColor: 'rgba(255, 255, 255, 0.4)',
-              borderTopLeftRadius: 8,
-              borderTopRightRadius: 8,
-              borderBottomRightRadius: 8,
-              borderBottomLeftRadius: 8,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <ArrowBackIcon color="#15304D" size={14} />
-          </View>
-        </TouchableOpacity>
-        {/* Left Actions: Share & Heart */}
-        <View className="flex-row gap-3">
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onFavorite}
-            className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
-          >
-            <HeartIcon
-              size={18}
-              color={isFavorite ? '#DC2626' : '#111111'}
-              filled={isFavorite}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={onShare}
-            className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
-          >
-            <ShareIcon color="#111111" size={17} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* Media Content Carousel or Fallback */}
       {images.length > 0 ? (
         <>
@@ -144,6 +95,64 @@ export default function PropertyMediaHeader({
           resizeMode="cover"
         />
       )}
+
+      {/* Header Action Buttons: after the photos so they sit above them
+          and get the taps (zIndex alone didn't on Android) */}
+      <View
+        className="absolute top-0 z-10 w-full flex-row justify-between px-5"
+        style={{
+          elevation: 10,
+          paddingTop: Math.max(insets.top, 20) + 10,
+        }}
+      >
+        {/* Right Action: Back (a 32pt box: the slop makes it easy to hit) */}
+        <TouchableOpacity
+          testID="property-back"
+          accessibilityRole="button"
+          accessibilityLabel="رجوع"
+          activeOpacity={0.8}
+          onPress={onBack}
+          hitSlop={12}
+        >
+          <View
+            style={{
+              height: 32,
+              minWidth: 32,
+              paddingHorizontal: 10,
+              backgroundColor: 'rgba(255, 255, 255, 0.4)',
+              borderTopLeftRadius: 8,
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+              borderBottomLeftRadius: 8,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ArrowBackIcon color="#15304D" size={14} />
+          </View>
+        </TouchableOpacity>
+        {/* Left Actions: Share & Heart */}
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={onFavorite}
+            className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
+          >
+            <HeartIcon
+              size={18}
+              color={isFavorite ? '#DC2626' : '#111111'}
+              filled={isFavorite}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={onShare}
+            className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
+          >
+            <ShareIcon color="#111111" size={17} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {viewer}
     </View>
