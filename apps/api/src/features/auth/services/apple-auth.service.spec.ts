@@ -46,7 +46,21 @@ describe('AppleAuthService', () => {
       email: 'user@example.com',
     });
     expect(appleSignin.verifyIdToken).toHaveBeenCalledWith('valid-token', {
-      audience: 'com.example.app',
+      audience: ['com.example.app'],
+    });
+  });
+
+  it('accepts tokens for every bundle ID listed in APPLE_CLIENT_ID', async () => {
+    process.env.APPLE_CLIENT_ID = 'com.new.app, com.old.app';
+    (appleSignin.verifyIdToken as jest.Mock).mockResolvedValue({
+      sub: 'apple-sub-123',
+      email: 'user@example.com',
+    });
+
+    await new AppleAuthService().verifyIdentityToken('valid-token');
+
+    expect(appleSignin.verifyIdToken).toHaveBeenCalledWith('valid-token', {
+      audience: ['com.new.app', 'com.old.app'],
     });
   });
 
