@@ -2132,6 +2132,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/company-logout-stuck",
     },
     {
+      id: "mobile-property-back-arrow",
+      title: {
+        en: "The ad page's back arrow always responds",
+        ar: "سهم الرجوع في صفحة الإعلان يستجيب دائماً",
+      },
+      priority: "P1",
+      story: {
+        en: "The back arrow at the top of an ad page sometimes did nothing. Opened as the first screen (a notification, a shared link, a chat card) the page had nothing under it, and router.back() silently did nothing; it now goes to the user's home instead (usePropertyActions.handleBack). The arrow's box is also small (32pt) and the photos were drawn after the buttons, which on Android can take the tap: the buttons are now drawn last with elevation, and the arrow gets a 12pt hit slop.",
+        ar: "كان سهم الرجوع أعلى صفحة الإعلان أحياناً لا يفعل شيئاً. فعند فتح الصفحة كأول شاشة (من إشعار أو رابط مشاركة أو بطاقة في المحادثة) لم يكن تحتها شيء، فلا يفعل router.back() شيئاً بصمت؛ الآن ينتقل إلى الرئيسية بدلاً من ذلك (usePropertyActions.handleBack). كما أن مربع السهم صغير (32 نقطة) وكانت الصور تُرسم بعد الأزرار، وهو ما قد يأخذ اللمسة في Android: الآن تُرسم الأزرار أخيراً مع elevation، ويحصل السهم على مساحة لمس إضافية 12 نقطة.",
+      },
+      acceptanceCriteria: {
+        en: ["From a list, the back arrow returns to that list.", "Opened from a notification or link, the back arrow goes to home.", "The arrow responds on ads with and without photos, on iOS and Android."],
+        ar: ["من القائمة يعيد سهم الرجوع إلى تلك القائمة.", "عند الفتح من إشعار أو رابط ينقل سهم الرجوع إلى الرئيسية.", "يستجيب السهم في الإعلانات بصور ودون صور، في iOS وAndroid."],
+      },
+      testScenarios: {
+        en: ["Open an ad without photos from home and tap back.", "Open an ad from a chat card or shared link and tap back: home opens."],
+        ar: ["افتح إعلاناً دون صور من الرئيسية واضغط رجوع.", "افتح إعلاناً من بطاقة محادثة أو رابط مشاركة واضغط رجوع: تفتح الرئيسية."],
+      },
+      updatedIn: "fix/property-back-arrow",
+    },
+    {
       id: "mobile-cards-text-overflow-android",
       title: {
         en: "Property and company cards keep their text inside the card on Android",
