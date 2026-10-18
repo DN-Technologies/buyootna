@@ -1985,6 +1985,27 @@ export const mobileIndividual: DocSection = {
       updatedIn: "fix/request-details-android-row",
     },
     {
+      id: "mobile-add-ad-opens-instantly",
+      title: {
+        en: "«اضافة اعلان» opens the form at once",
+        ar: "«اضافة اعلان» يفتح النموذج فوراً",
+      },
+      priority: "P1",
+      story: {
+        en: "Tapping اضافة اعلان in the + sheet showed a spinner and waited for GET /plans/wallet/publish-options before opening the form, which felt slow on a weak connection. The sheet (mounted with the tabs) now fetches that answer ahead for a signed-in user and keeps it in the shared ['publishOptions'] cache. A tap opens the form immediately when the user is known to have credit or the answer isn't in yet, and refreshes it in the background; publishing still checks the credit on submit. Only when the cache says there's no credit does the tap check again (a plan may have just been bought) before showing the quota sheet.",
+        ar: "كان الضغط على اضافة اعلان في نافذة + يعرض مؤشر تحميل وينتظر GET /plans/wallet/publish-options قبل فتح النموذج، فيبدو بطيئاً على اتصال ضعيف. الآن تجلب النافذة (المحمّلة مع التبويبات) هذه المعلومة مسبقاً للمستخدم المسجّل وتحفظها في ['publishOptions'] المشتركة. فيفتح الضغط النموذج فوراً إذا كان للمستخدم رصيد أو لم تصل المعلومة بعد، ويحدّثها في الخلفية؛ ويبقى التحقق من الرصيد عند النشر. وفقط إذا كانت المعلومة المحفوظة تقول لا رصيد يتحقق الضغط مجدداً (فقد تكون باقة اشتُريت للتو) قبل عرض نافذة نفاد الرصيد.",
+      },
+      acceptanceCriteria: {
+        en: ["With credit, tapping اضافة اعلان opens the form with no spinner.", "With no credit, the quota sheet still appears instead of the form.", "Right after buying a plan, اضافة اعلان opens the form, not the quota sheet."],
+        ar: ["مع وجود رصيد، يفتح اضافة اعلان النموذج دون مؤشر تحميل.", "بلا رصيد، تظهر نافذة نفاد الرصيد بدل النموذج.", "بعد شراء باقة مباشرة، يفتح اضافة اعلان النموذج وليس نافذة نفاد الرصيد."],
+      },
+      testScenarios: {
+        en: ["Open the app, tap + then اضافة اعلان: the form opens at once.", "Use up the free ad, then tap اضافة اعلان: the quota sheet shows."],
+        ar: ["افتح التطبيق واضغط + ثم اضافة اعلان: يفتح النموذج فوراً.", "استهلك الإعلان المجاني ثم اضغط اضافة اعلان: تظهر نافذة نفاد الرصيد."],
+      },
+      updatedIn: "fix/add-ad-opens-instantly",
+    },
+    {
       id: "mobile-cards-text-overflow-android",
       title: {
         en: "Property and company cards keep their text inside the card on Android",
