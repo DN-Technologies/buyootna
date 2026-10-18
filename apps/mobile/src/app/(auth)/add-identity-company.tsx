@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,12 +15,17 @@ import { ArrowBackIcon } from '@/assets/icons/home/property';
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import { CompanySignupForm } from '@/features/auth/components/company/CompanySignupForm';
 import apiClient from '@/shared/api/api';
+import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
 export default function AddIdentityCompanyScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
+  const switchIdentity = useAuthStore((state) => state.switchIdentity);
+  // The company just created, opened by the success sheet's button
+  const createdIdentityId = useRef<string | null>(null);
 
   const [logoFile, setLogoFile] =
     useState<DocumentPicker.DocumentPickerAsset | null>(null);
@@ -76,12 +81,13 @@ export default function AddIdentityCompanyScreen() {
         } as any);
       }
 
-      await apiClient.post('/identities/company', formData, {
+      const response = await apiClient.post('/identities/company', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
+      createdIdentityId.current = response.data?.id ?? null;
       await refreshProfile();
       return true;
     } catch (error: any) {
@@ -94,6 +100,26 @@ export default function AddIdentityCompanyScreen() {
       return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // «العودة الى الرئيسية»: switch to the new company and open its home,
+  // not the individual one the account was on
+  const openCompanyHome = async () => {
+    const identityId = createdIdentityId.current;
+    if (!identityId) {
+      resetToIdentityHome(null);
+      return;
+    }
+    try {
+      await switchIdentity(identityId);
+      resetToIdentityHome('COMPANY');
+    } catch (error) {
+      showAlert(
+        'خطأ',
+        getApiErrorMessage(error, 'تعذر فتح حساب الشركة، بدّل إليه من المزيد'),
+      );
+      resetToIdentityHome(null);
     }
   };
 
@@ -128,6 +154,7 @@ export default function AddIdentityCompanyScreen() {
           <CompanySignupForm
             type="company"
             onSubmit={onSubmit}
+            onSuccessDone={openCompanyHome}
             logoFile={logoFile}
             pickLogo={pickLogo}
             licenseFile={licenseFile}
