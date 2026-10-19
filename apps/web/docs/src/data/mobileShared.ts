@@ -363,8 +363,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "On a company or office account, the forms opened from the + sheet and المزيد (إضافة خدمة, إضافة مشروع, إصدار فاتورة…) live in a stack nested in the tabs ((more)/_layout.tsx). A stack can't pop its last screen, so a form left with back stayed underneath: opening إضافة خدمة after an earlier إضافة مشروع stacked on top of it, and back opened the project form. The stack now forgets its screens whenever its tab is left (useResetStackOnBlur), so each visit starts from the screen asked for. Moving between screens inside it (e.g. الباقات › سجل الاشتراك) keeps its back as before.",
-        ar: "في حساب الشركة أو المكتب تعيش النماذج التي تُفتح من نافذة + ومن المزيد (إضافة خدمة، إضافة مشروع، إصدار فاتورة…) في مكدس داخل التبويبات ((more)/_layout.tsx). ولا يستطيع المكدس إزالة آخر شاشة فيه، فيبقى النموذج الذي خرج منه المستخدم بالرجوع تحت غيره: فتح إضافة خدمة بعد إضافة مشروع سابق يضعها فوقه، والرجوع يفتح نموذج المشروع. الآن ينسى المكدس شاشاته كلما غادر المستخدم تبويبه (useResetStackOnBlur)، فتبدأ كل زيارة من الشاشة المطلوبة. والتنقل بين شاشاته (مثل الباقات › سجل الاشتراك) يبقى رجوعه كما كان.",
+        en: "On a company or office account, the forms opened from the + sheet and المزيد (إضافة خدمة, إضافة مشروع, إصدار فاتورة…) live in a stack nested in the tabs ((more)/_layout.tsx). A stack can't pop its last screen, so a form left with back stayed underneath: opening إضافة خدمة after an earlier إضافة مشروع stacked on top of it, and back opened the project form. The stack now keeps only the screen just opened whenever it is entered, and forgets its screens whenever it is left (useResetStackOnBlur; the leaving guard alone wasn't enough on device, e.g. saving تعديل الملف still returned to إضافة مشروع), so each visit starts from the screen asked for. Moving between screens inside it (e.g. الباقات › سجل الاشتراك) keeps its back as before.",
+        ar: "في حساب الشركة أو المكتب تعيش النماذج التي تُفتح من نافذة + ومن المزيد (إضافة خدمة، إضافة مشروع، إصدار فاتورة…) في مكدس داخل التبويبات ((more)/_layout.tsx). ولا يستطيع المكدس إزالة آخر شاشة فيه، فيبقى النموذج الذي خرج منه المستخدم بالرجوع تحت غيره: فتح إضافة خدمة بعد إضافة مشروع سابق يضعها فوقه، والرجوع يفتح نموذج المشروع. الآن يُبقي المكدس الشاشة المفتوحة للتو فقط كلما دخله المستخدم، وينسى شاشاته كلما غادره (useResetStackOnBlur؛ لم يكن حارس المغادرة وحده كافياً على الجهاز، فمثلاً كان حفظ تعديل الملف يعيد إلى إضافة مشروع)، فتبدأ كل زيارة من الشاشة المطلوبة. والتنقل بين شاشاته (مثل الباقات › سجل الاشتراك) يبقى رجوعه كما كان.",
       },
       acceptanceCriteria: {
         en: [
@@ -377,10 +377,10 @@ export const mobileShared: DocSection = {
         ],
       },
       testScenarios: {
-        en: ["As a company: + › إضافة مشروع › back; + › إضافة خدمة › back: the home shows."],
-        ar: ["كشركة: + › إضافة مشروع › رجوع؛ ثم + › إضافة خدمة › رجوع: تظهر الرئيسية."],
+        en: ["As a company: + › إضافة مشروع › back; + › إضافة خدمة › back: the home shows.", "As a company: + › إضافة مشروع › back; المزيد › تعديل › حفظ التغييرات: المزيد shows, not إضافة مشروع."],
+        ar: ["كشركة: + › إضافة مشروع › رجوع؛ ثم + › إضافة خدمة › رجوع: تظهر الرئيسية.", "كشركة: + › إضافة مشروع › رجوع؛ ثم المزيد › تعديل › حفظ التغييرات: تظهر المزيد لا إضافة مشروع."],
       },
-      updatedIn: "feat/add-service-second-time",
+      updatedIn: "fix/more-stack-back-again",
     },
     {
       id: "mobile-quote-gov-area",
