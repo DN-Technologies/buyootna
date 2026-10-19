@@ -324,19 +324,19 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "The specialties and their service types now come from the client's Buyootna_RFQ_2Level_Classification_v1.0.xlsx (sheet «التصنيف النهائي»): 31 specialties and 257 types, in shared/data/serviceCatalog.ts. «مكتب هندسي» and «دار استشارية» are one specialty, «مكتب هندسي / دار استشارية» (29 types), and «إدارة الأملاك» is spelled with the hamza. The «Potential» sheet is not in yet. إضافة خدمة: every specialty has its own checklist with الكل and اخرى. طلب عرض سعر (public): مجال التخصص lists the 31 specialties; نوع الطلب lists the chosen specialty's types plus اخرى, stays disabled («اختر مجال التخصص أولاً») until a specialty is picked and clears when it changes; the request is sent with category = the specialty and title = the request type (or the specialty). The old generic request types (عرض سعر، استشارة…) are gone. شركات › تصفية البحث: نوع الخدمة lists the types of the picked specialties, waits for one («اختر التخصص أولاً»), and drops types that no longer belong when the specialties change.",
-        ar: "أصبحت التخصصات وأنواع خدماتها من ملف العميل Buyootna_RFQ_2Level_Classification_v1.0.xlsx (ورقة «التصنيف النهائي»): 31 تخصصاً و257 نوعاً في shared/data/serviceCatalog.ts. صار «مكتب هندسي» و«دار استشارية» تخصصاً واحداً هو «مكتب هندسي / دار استشارية» (29 نوعاً)، وتُكتب «إدارة الأملاك» بالهمزة. وورقة «Potential» لم تُضف بعد. إضافة خدمة: لكل تخصص قائمته الخاصة مع الكل واخرى. طلب عرض سعر (العام): مجال التخصص يعرض الـ31 تخصصاً، ونوع الطلب يعرض أنواع التخصص المختار مع اخرى، ويبقى معطلاً («اختر مجال التخصص أولاً») حتى يُختار تخصص ويُمسح عند تغييره؛ ويُرسل الطلب مع category = التخصص وtitle = نوع الطلب (أو التخصص). وأُزيلت الأنواع العامة القديمة (عرض سعر، استشارة…). شركات › تصفية البحث: نوع الخدمة يعرض أنواع التخصصات المختارة وينتظر اختيار تخصص («اختر التخصص أولاً») ويحذف الأنواع التي لم تعد تنتمي عند تغيير التخصصات.",
+        en: "The specialties and their service types now come from the client's Buyootna_RFQ_2Level_Classification_v1.0.xlsx (sheet «التصنيف النهائي»): 33 specialties, in shared/data/serviceCatalog.ts. The sheet pairs «مكتب هندسي / دار استشارية» and «مقاول عام / مقاول بناء»; in the app each is its own specialty with the pair's types (29 and 8), and «إدارة الأملاك» is spelled with the hamza. The «Potential» sheet is not in yet. إضافة خدمة: every specialty has its own checklist with الكل and اخرى. طلب عرض سعر (public): مجال التخصص lists the 33 specialties; نوع الطلب lists the chosen specialty's types plus اخرى, stays disabled («اختر مجال التخصص أولاً») until a specialty is picked and clears when it changes; the request is sent with category = the specialty and title = the request type (or the specialty). The old generic request types (عرض سعر، استشارة…) are gone. شركات › تصفية البحث: نوع الخدمة lists the types of the picked specialties, waits for one («اختر التخصص أولاً»), and drops types that no longer belong when the specialties change.",
+        ar: "أصبحت التخصصات وأنواع خدماتها من ملف العميل Buyootna_RFQ_2Level_Classification_v1.0.xlsx (ورقة «التصنيف النهائي»): 33 تخصصاً في shared/data/serviceCatalog.ts. يجمع الملف «مكتب هندسي / دار استشارية» و«مقاول عام / مقاول بناء»؛ وفي التطبيق كل منها تخصص مستقل بأنواع الزوج (29 و8)، وتُكتب «إدارة الأملاك» بالهمزة. وورقة «Potential» لم تُضف بعد. إضافة خدمة: لكل تخصص قائمته الخاصة مع الكل واخرى. طلب عرض سعر (العام): مجال التخصص يعرض الـ33 تخصصاً، ونوع الطلب يعرض أنواع التخصص المختار مع اخرى، ويبقى معطلاً («اختر مجال التخصص أولاً») حتى يُختار تخصص ويُمسح عند تغييره؛ ويُرسل الطلب مع category = التخصص وtitle = نوع الطلب (أو التخصص). وأُزيلت الأنواع العامة القديمة (عرض سعر، استشارة…). شركات › تصفية البحث: نوع الخدمة يعرض أنواع التخصصات المختارة وينتظر اختيار تخصص («اختر التخصص أولاً») ويحذف الأنواع التي لم تعد تنتمي عند تغيير التخصصات.",
       },
       acceptanceCriteria: {
         en: [
-          "إضافة خدمة lists 31 specialties; picking any shows its own types with الكل and اخرى.",
+          "إضافة خدمة lists 33 specialties (مكتب هندسي, دار استشارية, مقاول عام and مقاول بناء separate); picking any shows its own types with الكل and اخرى.",
           "طلب عرض سعر: نوع الطلب is disabled until مجال التخصص is chosen, then lists that specialty's types and اخرى.",
           "Changing مجال التخصص clears نوع الطلب.",
           "A sent request carries the specialty as its category and the request type as its title.",
           "شركات filter: نوع الخدمة lists only the picked specialties' types.",
         ],
         ar: [
-          "إضافة خدمة تعرض 31 تخصصاً، واختيار أي منها يعرض أنواعه مع الكل واخرى.",
+          "إضافة خدمة تعرض 33 تخصصاً (مكتب هندسي ودار استشارية ومقاول عام ومقاول بناء منفصلة)، واختيار أي منها يعرض أنواعه مع الكل واخرى.",
           "طلب عرض سعر: نوع الطلب معطل حتى يُختار مجال التخصص، ثم يعرض أنواع ذلك التخصص مع اخرى.",
           "تغيير مجال التخصص يمسح نوع الطلب.",
           "الطلب المرسل يحمل التخصص كفئة ونوع الطلب كعنوان.",
@@ -353,7 +353,7 @@ export const mobileShared: DocSection = {
           "كشركة، إضافة خدمة › التشطيب: تظهر أنواعه العشرة.",
         ],
       },
-      updatedIn: "feat/add-service-second-time",
+      updatedIn: "feat/split-specialties",
     },
     {
       id: "mobile-more-stack-back",
