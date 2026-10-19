@@ -9,6 +9,47 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-stories-views-reports",
+      title: {
+        en: "Stories (phase 2, not released): views, the author's viewer list, and reporting a story",
+        ar: "القصص (المرحلة 2، غير منشورة): المشاهدات، وقائمة المشاهدين للناشر، والإبلاغ عن قصة",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /stories/views { storyIds: 1–50 distinct ids } records that the current profile watched those stories, answering 204. A view counts once per profile and story (the first is kept; repeats, even simultaneous ones, change nothing). Only live stories of approved authors whose account is neither disabled nor blocked are recorded, and never stories from the viewer's own account (any of its profiles); anything else in the batch is skipped without an error. GET /stories/:id/viewers?cursor&limit (≤ 50) is for the author only (anyone else, or a story that is not published, gets 404): viewer profiles newest first, with name, photo or logo, type and when they first viewed, plus a total; viewers whose account is disabled or blocked are left out of both the list and the total, and every view count (GET /stories/me, publish) uses the same rule. The list lasts as long as the story's row, then goes with it. POST /stories/:id/reports { reason, description? } files a report through the existing report system: a USER report against the story's author, linked to the story, with a snapshot of it (caption, type, publish time) because the story is deleted within about a day; when it is purged the link is cleared and the report stays. One report per profile and story, enforced by a unique key: a repeat, even a simultaneous one, returns the first report. The author's own account cannot report it (400), and a story that is not live cannot be reported (404). Migration 20261020120000_story_views_reports (Report.targetStoryId / targetStorySnapshot, the unique key, the viewer-list index); existing reports are unaffected.",
+        ar: "POST /stories/views { storyIds: من 1 إلى 50 معرّفاً مختلفاً } يسجل أن الهوية الحالية شاهدت تلك القصص، ويجيب 204. المشاهدة تُحتسب مرة واحدة لكل هوية وقصة (تُحفظ الأولى؛ والتكرار، ولو متزامناً، لا يغيّر شيئاً). تُسجَّل فقط القصص الحية لناشرين معتمدين حساباتهم غير معطلة وغير محظورة، ولا تُسجَّل أبداً قصص حساب المشاهد نفسه (أي من هوياته)؛ وأي شيء آخر في الدفعة يُتجاوز دون خطأ. GET /stories/:id/viewers?cursor&limit (حتى 50) للناشر فقط (غيره، أو القصة غير المنشورة ← 404): هويات المشاهدين الأحدث أولاً، بالاسم والصورة أو الشعار والنوع ووقت أول مشاهدة، مع المجموع؛ ويُستبعد المشاهدون ذوو الحسابات المعطلة أو المحظورة من القائمة ومن المجموع، وكل عدد مشاهدات (GET /stories/me والنشر) يتبع القاعدة نفسها. تبقى القائمة ما بقي صف القصة ثم تُحذف معه. POST /stories/:id/reports { reason، description اختياري } يقدّم بلاغاً عبر نظام البلاغات الحالي: بلاغ USER ضد ناشر القصة، مرتبط بالقصة، مع لقطة منها (الوصف والنوع ووقت النشر) لأن القصة تُحذف خلال يوم تقريباً؛ وعند حذفها نهائياً يُمسح الرابط ويبقى البلاغ. بلاغ واحد لكل هوية وقصة، يفرضه مفتاح فريد: التكرار، ولو متزامناً، يعيد البلاغ الأول. لا يمكن لحساب الناشر نفسه الإبلاغ عنها (400)، ولا يمكن الإبلاغ عن قصة غير حية (404). الترحيل 20261020120000_story_views_reports (Report.targetStoryId وtargetStorySnapshot، والمفتاح الفريد، وفهرس قائمة المشاهدين)؛ البلاغات الحالية لا تتأثر.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Viewing a story twice, or from two devices at once, counts one view.",
+          "A profile's own account's stories, expired and deleted stories are never recorded as viewed.",
+          "Only the author sees the viewer list; a disabled or blocked viewer is in neither the list nor any count.",
+          "Reporting a story creates one report against its author; repeating it returns the same report.",
+          "The report stays, with its snapshot, after the story is deleted.",
+        ],
+        ar: [
+          "مشاهدة القصة مرتين، أو من جهازين في الوقت نفسه، تُحتسب مشاهدة واحدة.",
+          "لا تُسجَّل أبداً مشاهدة قصص حساب الهوية نفسه، ولا القصص المنتهية أو المحذوفة.",
+          "قائمة المشاهدين للناشر فقط؛ والمشاهد المعطل أو المحظور لا يظهر في القائمة ولا في أي عدد.",
+          "الإبلاغ عن قصة ينشئ بلاغاً واحداً ضد ناشرها؛ وتكراره يعيد البلاغ نفسه.",
+          "يبقى البلاغ مع لقطته بعد حذف القصة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "As a viewer: POST /stories/views twice with the same id; as the author: GET /stories/:id/viewers shows one entry and total 1.",
+          "As a viewer: POST /stories/:id/reports twice → the same report; it appears in the admin reports list against the author.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "كمشاهد: POST /stories/views مرتين بالمعرّف نفسه؛ وكناشر: GET /stories/:id/viewers يعرض مدخلاً واحداً ومجموعاً 1.",
+          "كمشاهد: POST /stories/:id/reports مرتين ← البلاغ نفسه؛ ويظهر في قائمة بلاغات المشرف ضد الناشر.",
+        ],
+      },
+      updatedIn: "feat/stories-phase2",
+    },
+    {
       id: "api-stories-foundation",
       title: {
         en: "Stories (phase 1, not released): photo upload slots, publish after a server check, 24-hour expiry, the feed and cleanup",

@@ -50,6 +50,7 @@ model Story {
   mediaDeletedAt   DateTime?
   failureReason    String?
   views            StoryView[]
+  reports          Report[]
 
   // Feed + cleanup
   @@index([status, expiresAt])
@@ -67,4 +68,6 @@ model StoryView {
 
   @@id([storyId, viewerIdentityId])
   @@index([viewerIdentityId])
+  // The author's viewer list, newest first
+  @@index([storyId, viewedAt])
 }

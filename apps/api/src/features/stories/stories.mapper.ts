@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 
 import type {
   StoryAuthorDto,
+  StoryViewerDto,
   StoryPropertyLinkDto,
   ViewerStoryDto,
 } from './dto/story-response.dto';
@@ -120,4 +121,36 @@ export function toViewerStoryDto(
 export function firstUnseenIndex(stories: { viewed: boolean }[]): number {
   const index = stories.findIndex((s) => !s.viewed);
   return index === -1 ? 0 : index;
+}
+
+/**
+ * Views that count: from profiles whose account is neither disabled nor
+ * blocked. The viewer list and every view count use this, so they agree.
+ */
+export const COUNTED_VIEW_WHERE = {
+  viewer: { user: { isDisabled: false, isBlocked: false } },
+} satisfies Prisma.StoryViewWhereInput;
+
+export const VIEWER_SELECT = {
+  id: true,
+  type: true,
+  individualData: { select: { name: true, avatarUrl: true } },
+  companyData: { select: { name: true, logoUrl: true, isVerified: true } },
+  officeData: { select: { name: true, logoUrl: true, isVerified: true } },
+} satisfies Prisma.IdentitySelect;
+
+export type ViewerRow = Prisma.IdentityGetPayload<{
+  select: typeof VIEWER_SELECT;
+}>;
+
+export function toViewerDto(viewer: ViewerRow, viewedAt: Date): StoryViewerDto {
+  const provider = viewer.companyData ?? viewer.officeData;
+  return {
+    identityId: viewer.id,
+    type: viewer.type,
+    name: provider?.name ?? viewer.individualData?.name ?? 'مستخدم',
+    avatarUrl: provider?.logoUrl ?? viewer.individualData?.avatarUrl ?? null,
+    isVerified: provider?.isVerified ?? false,
+    viewedAt: viewedAt.toISOString(),
+  };
 }

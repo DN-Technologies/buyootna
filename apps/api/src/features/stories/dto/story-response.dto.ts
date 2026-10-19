@@ -151,3 +151,37 @@ export class MyStoriesDto {
   @ApiProperty({ type: [AuthorStoryDto] })
   stories: AuthorStoryDto[];
 }
+
+export class StoryViewerDto {
+  @ApiProperty()
+  identityId: string;
+
+  @ApiProperty({ enum: ['INDIVIDUAL', 'COMPANY', 'OFFICE'] })
+  type: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty({ nullable: true })
+  avatarUrl: string | null;
+
+  @ApiProperty()
+  isVerified: boolean;
+
+  @ApiProperty({ description: 'When this profile first viewed the story' })
+  viewedAt: string;
+}
+
+export class StoryViewersDto {
+  @ApiProperty({
+    description:
+      'Distinct viewer profiles, without disabled or blocked accounts',
+  })
+  total: number;
+
+  @ApiProperty({ type: [StoryViewerDto], description: 'Newest first' })
+  viewers: StoryViewerDto[];
+
+  @ApiPropertyOptional({ nullable: true })
+  nextCursor: string | null;
+}

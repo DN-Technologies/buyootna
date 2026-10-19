@@ -20,11 +20,14 @@ import { assertActiveCompanySubscription } from '../company-subscriptions/compan
 import { assertApprovedProvider, lockKeys } from '../identities/persona-rules';
 import { CreateStoryUploadDto } from './dto/create-story-upload.dto';
 import { PublishStoryDto } from './dto/publish-story.dto';
+import { RecordStoryViewsDto } from './dto/record-story-views.dto';
+import { StoryViewersQueryDto } from './dto/story-viewers-query.dto';
 import type {
   AuthorStoryDto,
   MyStoriesDto,
   StoryAuthorStoriesDto,
   StoryUploadSlotDto,
+  StoryViewersDto,
 } from './dto/story-response.dto';
 import { StoriesMediaService } from './stories-media.service';
 import {
@@ -33,16 +36,24 @@ import {
   STORY_LIFETIME_MS,
   STORY_PUT_TTL_SECONDS,
   STORY_UPLOAD_WINDOW_MS,
+  STORY_VIEWERS_DEFAULT_LIMIT,
 } from './stories.constants';
 import {
   AUTHOR_SELECT,
+  COUNTED_VIEW_WHERE,
   firstUnseenIndex,
   liveStoryWhere,
   STORY_SELECT,
   toAuthorDto,
+  toViewerDto,
   toViewerStoryDto,
+  VIEWER_SELECT,
   VISIBLE_AUTHOR_WHERE,
 } from './stories.mapper';
+import {
+  decodeViewersCursor,
+  encodeViewersCursor,
+} from './utils/viewers-cursor';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -298,7 +309,10 @@ export class StoriesService {
     const counts = rows.length
       ? await this.prisma.storyView.groupBy({
           by: ['storyId'],
-          where: { storyId: { in: rows.map((r) => r.id) } },
+          where: {
+            storyId: { in: rows.map((r) => r.id) },
+            ...COUNTED_VIEW_WHERE,
+          },
           _count: { _all: true },
         })
       : [];
@@ -371,6 +385,101 @@ export class StoriesService {
     };
   }
 
+  /**
+   * Records that the viewing profile watched these stories. One view per
+   * profile and story (the first is kept), so repeating it changes nothing.
+   * Only live stories of authors the viewer may see count, and never the
+   * viewer's own account's stories (any of its profiles). Anything else in
+   * the batch is skipped without an error.
+   */
+  async recordViews(
+    viewer: { identityId: string; userId: string },
+    dto: RecordStoryViewsDto,
+    now = new Date(),
+  ): Promise<void> {
+    const stories = await this.prisma.story.findMany({
+      where: {
+        id: { in: dto.storyIds },
+        ...liveStoryWhere(now),
+        identity: { ...VISIBLE_AUTHOR_WHERE, userId: { not: viewer.userId } },
+      },
+      select: { id: true },
+    });
+    if (stories.length === 0) return;
+    await this.prisma.storyView.createMany({
+      data: stories.map((s) => ({
+        storyId: s.id,
+        viewerIdentityId: viewer.identityId,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  /**
+   * Who viewed one of the author's stories, newest first. The author only
+   * (anyone else gets 404); viewers whose account is disabled or blocked
+   * are left out of the list and the total. Kept while the story's row
+   * exists, then deleted with it.
+   */
+  async viewers(
+    id: string,
+    identityId: string,
+    query: StoryViewersQueryDto,
+  ): Promise<StoryViewersDto> {
+    const story = await this.prisma.story.findUnique({
+      where: { id },
+      select: { identityId: true, status: true },
+    });
+    if (
+      !story ||
+      story.identityId !== identityId ||
+      story.status !== 'ACTIVE'
+    ) {
+      throw new NotFoundException('القصة غير موجودة');
+    }
+
+    const limit = query.limit ?? STORY_VIEWERS_DEFAULT_LIMIT;
+    const cursor = query.cursor ? decodeViewersCursor(query.cursor) : null;
+    const [rows, total] = await Promise.all([
+      this.prisma.storyView.findMany({
+        where: {
+          storyId: id,
+          ...COUNTED_VIEW_WHERE,
+          ...(cursor
+            ? {
+                OR: [
+                  { viewedAt: { lt: cursor.viewedAt } },
+                  {
+                    viewedAt: cursor.viewedAt,
+                    viewerIdentityId: { gt: cursor.viewerIdentityId },
+                  },
+                ],
+              }
+            : {}),
+        },
+        orderBy: [{ viewedAt: 'desc' }, { viewerIdentityId: 'asc' }],
+        take: limit + 1,
+        select: { viewedAt: true, viewer: { select: VIEWER_SELECT } },
+      }),
+      this.prisma.storyView.count({
+        where: { storyId: id, ...COUNTED_VIEW_WHERE },
+      }),
+    ]);
+    const page = rows.slice(0, limit);
+    const last = page[page.length - 1];
+    return {
+      total,
+      viewers: page.map((r) => toViewerDto(r.viewer, r.viewedAt)),
+      nextCursor:
+        rows.length > limit && last
+          ? encodeViewersCursor({
+              viewedAt: last.viewedAt,
+              viewerIdentityId: last.viewer.id,
+            })
+          : null,
+    };
+  }
+
   /** The author's view of one of its stories. */
   private async authorView(id: string, now: Date): Promise<AuthorStoryDto> {
     const row = await this.prisma.story.findUniqueOrThrow({
@@ -378,7 +487,7 @@ export class StoriesService {
       select: STORY_SELECT,
     });
     const viewCount = await this.prisma.storyView.count({
-      where: { storyId: id },
+      where: { storyId: id, ...COUNTED_VIEW_WHERE },
     });
     return {
       ...toViewerStoryDto(row, await this.media.linksFor(row, now), true),
