@@ -20,7 +20,8 @@ interface StatusConfig {
   textClass: string;
 }
 
-const STATUS_CONFIGS: Record<RequestStatus, StatusConfig> = {
+// The status chip's label and colours (also on the reply sheet's summary)
+export const STATUS_CONFIGS: Record<RequestStatus, StatusConfig> = {
   pending: {
     label: 'قيد الانتظار',
     bgClass: 'bg-[#FFF9DA]',

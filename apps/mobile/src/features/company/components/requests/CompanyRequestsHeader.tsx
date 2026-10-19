@@ -7,6 +7,8 @@ export interface CompanyRequestsHeaderProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onFilterPress?: () => void;
+  // تصفية البحث narrows the list: a dot on the button
+  filterActive?: boolean;
 }
 
 export default function CompanyRequestsHeader({
@@ -14,6 +16,7 @@ export default function CompanyRequestsHeader({
   searchQuery,
   onSearchChange,
   onFilterPress,
+  filterActive = false,
 }: CompanyRequestsHeaderProps) {
   return (
     <View className="bg-white pb-3 pt-2">
@@ -55,6 +58,12 @@ export default function CompanyRequestsHeader({
           accessibilityLabel="تصفية الطلبات"
         >
           <FilterSlidersIcon size={20} color="#111111" />
+          {filterActive && (
+            <View
+              testID="company-requests-filter-active-dot"
+              className="absolute right-2 top-2 size-2 rounded-full bg-[#15304D]"
+            />
+          )}
         </TouchableOpacity>
       </View>
     </View>

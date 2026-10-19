@@ -1,15 +1,20 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CompanyRequestsService } from './company-requests.service';
+import {
+  CompanyRequestsService,
+  parsePriceRange,
+} from './company-requests.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PushService } from '../../../core/push/push.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 
 const baseClientIdentity = {
   id: 'client-1',
+  userId: 'user-client',
   createdAt: new Date('2026-01-01T00:00:00.000Z'),
   user: { phone: '+96590000000', whatsapp: '+96590000000' },
   individualData: { name: 'نواف الجارحي', avatarUrl: 'https://x/a.jpg' },
@@ -55,6 +60,9 @@ jest.mock(
   }),
 );
 
+const mockNotifications = { create: jest.fn().mockResolvedValue({}) };
+const mockPush = { sendToTokens: jest.fn().mockResolvedValue(undefined) };
+
 describe('CompanyRequestsService', () => {
   let service: CompanyRequestsService;
   let prisma: {
@@ -77,6 +85,9 @@ describe('CompanyRequestsService', () => {
     $transaction: jest.Mock;
     identity: { findUnique: jest.Mock };
     companyIdentityData: { findUnique: jest.Mock };
+    requestDismissal: { upsert: jest.Mock };
+    requestBookmark: { upsert: jest.Mock; deleteMany: jest.Mock };
+    session: { findMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -99,6 +110,12 @@ describe('CompanyRequestsService', () => {
       },
       $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
       // The provider's specialty: none unless a test sets one
+      requestDismissal: { upsert: jest.fn().mockResolvedValue({}) },
+      requestBookmark: {
+        upsert: jest.fn().mockResolvedValue({}),
+        deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      },
+      session: { findMany: jest.fn().mockResolvedValue([]) },
       companyIdentityData: {
         findUnique: jest.fn().mockResolvedValue({ specialty: null }),
       },
@@ -117,6 +134,8 @@ describe('CompanyRequestsService', () => {
       providers: [
         CompanyRequestsService,
         { provide: PrismaService, useValue: prisma },
+        { provide: NotificationsService, useValue: mockNotifications },
+        { provide: PushService, useValue: mockPush },
       ],
     }).compile();
 
@@ -519,14 +538,34 @@ describe('CompanyRequestsService', () => {
       });
     });
 
-    it('forbids rejecting a public (untargeted) request', async () => {
+    it('rejecting a public request hides it for this company only', async () => {
       prisma.companyRequest.findUnique.mockResolvedValue({
         ...baseRequest,
         targetIdentityId: null,
       });
 
+      await service.reject('req-1', 'company-1');
+
+      expect(prisma.requestDismissal.upsert).toHaveBeenCalledWith({
+        where: {
+          requestId_identityId: { requestId: 'req-1', identityId: 'company-1' },
+        },
+        create: { requestId: 'req-1', identityId: 'company-1' },
+        update: {},
+      });
+      // The shared status (other companies, the client) is untouched
+      expect(prisma.companyRequest.update).not.toHaveBeenCalled();
+    });
+
+    it("can't reject a request sent to another company", async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-other',
+        acceptedByIdentityId: 'company-1',
+      });
+
       await expect(service.reject('req-1', 'company-1')).rejects.toThrow(
-        ForbiddenException,
+        NotFoundException,
       );
     });
   });
@@ -816,6 +855,164 @@ describe('CompanyRequestsService', () => {
           },
         }),
       );
+    });
+  });
+
+  describe('public list: dismissed, saved and تصفية البحث', () => {
+    const whereOf = () =>
+      (
+        prisma.companyRequest.findMany.mock.calls as {
+          where: Record<string, unknown>;
+        }[][]
+      )[0][0].where;
+
+    it('leaves out the public requests this company rejected', async () => {
+      await service.findMine('company-1', { scope: 'public' });
+
+      expect(whereOf().dismissals).toEqual({
+        none: { identityId: 'company-1' },
+      });
+    });
+
+    it('lists them under مرفوضة, whatever their shared status', async () => {
+      await service.findMine('company-1', {
+        scope: 'public',
+        status: 'rejected',
+      });
+
+      const where = whereOf();
+      expect(where.dismissals).toEqual({ some: { identityId: 'company-1' } });
+      expect(where.status).toBeUndefined();
+    });
+
+    it('applies the filters and المفضلة', async () => {
+      await service.findMine('company-1', {
+        scope: 'company',
+        specialty: 'التشطيب',
+        type: 'تشطيب شقة',
+        priceFrom: 1000,
+        priceTo: 5000,
+        location: 'حولي',
+        saved: true,
+      });
+
+      expect(whereOf().AND).toEqual(
+        expect.arrayContaining([
+          { category: 'التشطيب' },
+          { title: 'تشطيب شقة' },
+          { priceMax: { gte: 1000 } },
+          { priceMin: { lte: 5000 } },
+          { location: { contains: 'حولي', mode: 'insensitive' } },
+          { bookmarks: { some: { identityId: 'company-1' } } },
+        ]),
+      );
+    });
+  });
+
+  describe('bookmarks (اضافة الى المفضلة)', () => {
+    it('saves a request the company can see', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+      });
+
+      await expect(service.bookmark('req-1', 'company-1')).resolves.toEqual({
+        saved: true,
+      });
+      expect(prisma.requestBookmark.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: { requestId: 'req-1', identityId: 'company-1' },
+        }),
+      );
+    });
+
+    it("can't save a request it can't see", async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-other',
+      });
+
+      await expect(service.bookmark('req-1', 'company-1')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('removes a saved request', async () => {
+      await expect(service.unbookmark('req-1', 'company-1')).resolves.toEqual({
+        saved: false,
+      });
+      expect(prisma.requestBookmark.deleteMany).toHaveBeenCalledWith({
+        where: { requestId: 'req-1', identityId: 'company-1' },
+      });
+    });
+  });
+
+  describe('respond: the reply sheet', () => {
+    beforeEach(() => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-1',
+      });
+    });
+
+    it('accepts notes alone (both fields are optional)', async () => {
+      await service.respond('req-1', 'company-1', { notes: 'يشمل المواد' });
+
+      expect(prisma.requestOffer.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            message: null,
+            notes: 'يشمل المواد',
+          }),
+        }),
+      );
+    });
+
+    it('refuses an empty reply', async () => {
+      await expect(
+        service.respond('req-1', 'company-1', { message: '  ', notes: '' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(prisma.requestOffer.upsert).not.toHaveBeenCalled();
+    });
+
+    it('notifies the client on their persona', async () => {
+      await service.respond('req-1', 'company-1', { message: 'مرحبا' });
+
+      expect(mockNotifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-client',
+          type: 'REQUEST_REPLY',
+          identityId: 'client-1',
+          data: { requestId: 'req-1' },
+        }),
+      );
+    });
+
+    it("a failed notice doesn't fail the reply", async () => {
+      mockNotifications.create.mockRejectedValueOnce(new Error('down'));
+
+      await expect(
+        service.respond('req-1', 'company-1', { message: 'مرحبا' }),
+      ).resolves.toBeDefined();
+    });
+  });
+});
+
+describe('parsePriceRange', () => {
+  it.each([
+    ['200 - 800 د.ك', 200, 800],
+    ['15,000 - 22,000 د.ك', 15000, 22000],
+    ['٣٠٠ - ٩٠٠ د.ك', 300, 900],
+    ['0 - 500 د.ك', 0, 500],
+  ])('%s', (text, min, max) => {
+    expect(parsePriceRange(text)).toEqual({ priceMin: min, priceMax: max });
+  });
+
+  it('no range: nothing', () => {
+    expect(parsePriceRange(null)).toEqual({ priceMin: null, priceMax: null });
+    expect(parsePriceRange('غير محدد')).toEqual({
+      priceMin: null,
+      priceMax: null,
     });
   });
 });

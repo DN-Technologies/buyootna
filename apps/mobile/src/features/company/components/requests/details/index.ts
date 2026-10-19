@@ -15,3 +15,5 @@ export type { RequestDetailsMapProps } from './RequestDetailsMap';
 export { default as RequestDetailsMap } from './RequestDetailsMap';
 export type { RequestDetailsTitleCardProps } from './RequestDetailsTitleCard';
 export { default as RequestDetailsTitleCard } from './RequestDetailsTitleCard';
+export type { RequestOptionsMenuProps } from './RequestOptionsMenu';
+export { default as RequestOptionsMenu } from './RequestOptionsMenu';

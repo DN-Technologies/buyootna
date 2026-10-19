@@ -1,14 +1,14 @@
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
-import { RequestStatusFilter } from './types';
+import { RequestListTab } from './types';
 
 export interface CompanyRequestsFilterPillsProps {
-  activeFilter: RequestStatusFilter;
-  onFilterChange: (filter: RequestStatusFilter) => void;
+  activeFilter: RequestListTab;
+  onFilterChange: (filter: RequestListTab) => void;
 }
 
 interface FilterOption {
-  key: RequestStatusFilter;
+  key: RequestListTab;
   label: string;
 }
 
@@ -17,6 +17,9 @@ const FILTER_OPTIONS: FilterOption[] = [
   { key: 'pending', label: 'قيد الانتظار' },
   { key: 'accepted', label: 'مقبولة' },
   { key: 'responded', label: 'تم الرد' },
+  { key: 'rejected', label: 'مرفوضة' },
+  // The requests this company saved from ⋮ › اضافة الى المفضلة
+  { key: 'saved', label: 'المفضلة' },
 ];
 
 export default function CompanyRequestsFilterPills({

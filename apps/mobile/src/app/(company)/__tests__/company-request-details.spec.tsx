@@ -1,13 +1,16 @@
-import { fireEvent, render } from '@testing-library/react-native';
-import { Alert, Linking } from 'react-native';
+/* eslint-disable @typescript-eslint/no-require-imports */
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 
 import { CompanyRequestItem } from '@/features/company/components/requests';
 import { useCompanyRequestDetails } from '@/features/company/hooks/useCompanyRequestDetails';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
+import { reportsService } from '@/shared/api/reports.service';
 import { resetLinkThrottle } from '@/shared/utils/openUrl';
 
-import CompanyRequestDetailsScreen from '../(requests)/[id]';
+import RequestDetailsScreen from '../(requests)/[id]';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -34,10 +37,26 @@ jest.mock('@/shared/api/companyRequests.service', () => ({
     accept: jest.fn(),
     reject: jest.fn(),
     markResponded: jest.fn(),
+    bookmark: jest.fn(),
+    unbookmark: jest.fn(),
   },
 }));
 
-jest.spyOn(Alert, 'alert');
+jest.mock('@/shared/api/reports.service', () => ({
+  reportsService: { submitReport: jest.fn() },
+}));
+
+jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+
+// The screen invalidates the request lists after acting
+function CompanyRequestDetailsScreen() {
+  const [client] = require('react').useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={client}>
+      <RequestDetailsScreen />
+    </QueryClientProvider>
+  );
+}
 jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never);
 
 const mockUseCompanyRequestDetails = useCompanyRequestDetails as jest.Mock;
@@ -64,7 +83,9 @@ const BASE_REQUEST: CompanyRequestItem = {
   status: 'pending',
   scope: 'company',
   createdAt: '2026-06-01T00:00:00.000Z',
+  offersCount: 2,
   client: {
+    userId: 'user-client-1',
     name: 'نواف الجارحي',
     joinedDate: '2026-06-15T00:00:00.000Z',
     previousOffers: 5,
@@ -141,8 +162,9 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     expect(getByTestId('request-details-publish-time-val')).toBeTruthy();
 
     expect(getByText('العروض')).toBeTruthy();
+    // العروض: how many offers, not the offer type
     expect(getByTestId('request-details-offer-type-val')).toHaveTextContent(
-      'عرض مخصص',
+      '2 عروض',
     );
   });
 
@@ -216,37 +238,102 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     expect(Linking.openURL).toHaveBeenCalledWith('https://wa.me/+96590000000');
   });
 
-  it('accepts a request via the real endpoint on confirmation', async () => {
+  it('accepts a request after the confirmation sheet', async () => {
     (companyRequestsService.accept as jest.Mock).mockResolvedValue({});
+    const { present } = require('@gorhom/bottom-sheet');
 
-    const { getByTestId } = await render(<CompanyRequestDetailsScreen />);
+    const { getByTestId, getByText } = await render(<CompanyRequestDetailsScreen />);
 
     await fireEvent.press(getByTestId('request-details-accept-button'));
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'قبول الطلب',
-      expect.stringContaining('هل أنت متأكد من رغبتك في قبول طلب:'),
-      expect.any(Array),
-    );
+    expect(present).toHaveBeenCalled();
+    expect(getByText('هل أنت متأكد من قبول هذا الطلب؟')).toBeTruthy();
 
-    const confirmAction = (Alert.alert as jest.Mock).mock.calls[0][2][1];
-    await confirmAction.onPress();
-    expect(companyRequestsService.accept).toHaveBeenCalledWith('req-1');
+    await fireEvent.press(getByText('تأكيد القبول'));
+    await waitFor(() =>
+      expect(companyRequestsService.accept).toHaveBeenCalledWith('req-1'),
+    );
   });
 
-  it('rejects a request via the real endpoint on confirmation, only for company-scoped requests', async () => {
+  it('rejects after «هل أنت متأكد من رفض هذا الطلب؟», then goes back; public requests too', async () => {
     (companyRequestsService.reject as jest.Mock).mockResolvedValue({});
+    mockDetails({ scope: 'public' });
 
-    const { getByTestId, queryByTestId, rerender } = await render(
+    const { getByTestId, getByText } = await render(<CompanyRequestDetailsScreen />);
+
+    // Rejecting a public request hides it for this company only
+    expect(getByTestId('request-details-reject-button')).toBeTruthy();
+    await fireEvent.press(getByTestId('request-details-reject-button'));
+    expect(getByText('هل أنت متأكد من رفض هذا الطلب؟')).toBeTruthy();
+    expect(getByText('لن يظهر مرة أخرى ضمن طلباتك.')).toBeTruthy();
+
+    await fireEvent.press(getByText('تأكيد الرفض'));
+    await waitFor(() =>
+      expect(companyRequestsService.reject).toHaveBeenCalledWith('req-1'),
+    );
+    expect(mockBack).toHaveBeenCalled();
+  });
+
+  it('no قبول / رفض once the request is closed', async () => {
+    mockDetails({ status: 'rejected' });
+    const { queryByTestId } = await render(<CompanyRequestDetailsScreen />);
+
+    expect(queryByTestId('request-details-accept-button')).toBeNull();
+    expect(queryByTestId('request-details-reject-button')).toBeNull();
+  });
+
+  it('⋮ › اضافة الى المفضلة saves the request; once saved it offers إزالة', async () => {
+    (companyRequestsService.bookmark as jest.Mock).mockResolvedValue(undefined);
+    (companyRequestsService.unbookmark as jest.Mock).mockResolvedValue(undefined);
+
+    const { getByTestId, queryByTestId } = await render(
       <CompanyRequestDetailsScreen />,
     );
 
-    await fireEvent.press(getByTestId('request-details-reject-button'));
-    const confirmAction = (Alert.alert as jest.Mock).mock.calls[0][2][1];
-    await confirmAction.onPress();
-    expect(companyRequestsService.reject).toHaveBeenCalledWith('req-1');
+    expect(queryByTestId('request-options-save')).toBeNull();
+    await fireEvent.press(getByTestId('request-details-options-button'));
+    expect(getByTestId('request-options-save')).toHaveTextContent(
+      'اضافة الى المفضلة',
+    );
+    await fireEvent.press(getByTestId('request-options-save'));
+    expect(companyRequestsService.bookmark).toHaveBeenCalledWith('req-1');
 
-    mockDetails({ scope: 'public' });
-    await rerender(<CompanyRequestDetailsScreen />);
-    expect(queryByTestId('request-details-reject-button')).toBeNull();
+    await fireEvent.press(getByTestId('request-details-options-button'));
+    expect(getByTestId('request-options-save')).toHaveTextContent(
+      'إزالة من المفضلة',
+    );
+    await fireEvent.press(getByTestId('request-options-save'));
+    expect(companyRequestsService.unbookmark).toHaveBeenCalledWith('req-1');
+  });
+
+  it('⋮ › الإبلاغ عن المستخدم reports the client', async () => {
+    (reportsService.submitReport as jest.Mock).mockResolvedValue(undefined);
+    const { getByTestId, getByText } = await render(<CompanyRequestDetailsScreen />);
+
+    await fireEvent.press(getByTestId('request-details-options-button'));
+    await fireEvent.press(getByTestId('request-options-report'));
+
+    await fireEvent.press(getByText('احتيال أو نصب'));
+    await fireEvent.press(getByText('إرسال البلاغ'));
+    await waitFor(() =>
+      expect(reportsService.submitReport).toHaveBeenCalledWith(
+        'user-client-1',
+        'احتيال أو نصب',
+        undefined,
+      ),
+    );
+  });
+
+  it('a client without a rating or a photo still renders', async () => {
+    mockDetails({
+      client: { ...BASE_REQUEST.client!, rating: null, avatarUrl: undefined },
+    });
+    const { getByTestId, queryByTestId } = await render(
+      <CompanyRequestDetailsScreen />,
+    );
+
+    expect(getByTestId('request-details-client-name')).toHaveTextContent(
+      'نواف الجارحي',
+    );
+    expect(queryByTestId('request-details-client-rating')).toBeNull();
   });
 });

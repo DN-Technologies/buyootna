@@ -16,13 +16,17 @@ export type NotificationType =
   | 'ALERT_MATCH'
   | 'REPORT_RESOLVED'
   | 'REPORT_DISMISSED'
-  | 'NEW_DEVICE_LOGIN';
+  | 'NEW_DEVICE_LOGIN'
+  // A company answered the user's quote request
+  | 'REQUEST_REPLY';
 
 // What a notification points at, e.g. the matched listing for ALERT_MATCH
 export interface NotificationData {
   propertyId?: string;
   // NEW_DEVICE_LOGIN: the session that just signed in
   sessionId?: string;
+  // REQUEST_REPLY: the request that was answered
+  requestId?: string;
 }
 
 export interface AppNotification {

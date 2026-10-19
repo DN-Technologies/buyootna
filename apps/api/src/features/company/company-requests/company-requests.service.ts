@@ -1,12 +1,14 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, RequestOfferStatus, RequestStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { PushService } from '../../../core/push/push.service';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CreateRequestOfferDto } from './dto/create-request-offer.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
@@ -96,13 +98,55 @@ type RequestWithClient = Prisma.CompanyRequestGetPayload<{
   include: { clientIdentity: { include: typeof CLIENT_INCLUDE } };
 }>;
 
+/**
+ * A request's price range text («200 - 800 د.ك», Arabic or Latin digits,
+ * thousands commas) as two numbers, for the price filter.
+ */
+export function parsePriceRange(text?: string | null): {
+  priceMin: number | null;
+  priceMax: number | null;
+} {
+  const toNumber = (part?: string) => {
+    if (!part) return null;
+    const latin = part
+      .replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+      .replace(/[^0-9.]/g, '');
+    if (!latin) return null;
+    const n = Number(latin);
+    return Number.isFinite(n) ? n : null;
+  };
+  if (!text || !text.includes('-')) return { priceMin: null, priceMax: null };
+  const [from, to] = text.split('-');
+  return { priceMin: toNumber(from), priceMax: toNumber(to) };
+}
+
+/** The filters of the company's requests list (تصفية البحث). */
+export interface RequestListFilters {
+  // التخصص: the request's category; نوع الخدمة: its title (request type)
+  specialty?: string;
+  type?: string;
+  // نطاق السعر: requests whose range overlaps it
+  priceFrom?: number;
+  priceTo?: number;
+  // العنوان: a governorate or area name in the request's location
+  location?: string;
+  // المفضلة: only the requests this company saved
+  saved?: boolean;
+}
+
 export type RequestScopeFilter = 'company' | 'public' | 'mine';
 export type RequestStatusFilter =
   'all' | 'pending' | 'accepted' | 'responded' | 'rejected';
 
 @Injectable()
 export class CompanyRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(CompanyRequestsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+    private readonly push: PushService,
+  ) {}
 
   /**
    * Submits a price-quote request as the current identity. Omitting
@@ -154,6 +198,7 @@ export class CompanyRequestsService {
         title: dto.title,
         category: dto.category,
         priceRange: dto.priceRange,
+        ...parsePriceRange(dto.priceRange),
         offerType: dto.offerType,
         location: dto.location,
         ...addressDetailsWrite(dto.addressDetails),
@@ -175,7 +220,7 @@ export class CompanyRequestsService {
       scope: RequestScopeFilter;
       status?: RequestStatusFilter;
       search?: string;
-    },
+    } & RequestListFilters,
   ): Promise<CompanyRequestResponseDto[]> {
     // Leads (directed or marketplace) reach approved companies/offices only;
     // a provider's own submissions ("mine") stay visible either way
@@ -201,7 +246,17 @@ export class CompanyRequestsService {
               ],
             };
 
-    if (params.status && params.status !== 'all') {
+    // A public request this company rejected left only its own lists: it
+    // shows under مرفوضة (whatever its shared status) and nowhere else
+    const publicRejected =
+      params.scope === 'public' && params.status === 'rejected';
+    if (params.scope === 'public') {
+      where.dismissals = publicRejected
+        ? { some: { identityId } }
+        : { none: { identityId } };
+    }
+
+    if (params.status && params.status !== 'all' && !publicRejected) {
       where.status = params.status.toUpperCase() as RequestStatus;
     }
 
@@ -237,6 +292,21 @@ export class CompanyRequestsService {
         });
       }
     }
+    // تصفية البحث and المفضلة
+    if (params.specialty) and.push({ category: params.specialty });
+    if (params.type) and.push({ title: params.type });
+    if (params.priceFrom !== undefined) {
+      and.push({ priceMax: { gte: params.priceFrom } });
+    }
+    if (params.priceTo !== undefined) {
+      and.push({ priceMin: { lte: params.priceTo } });
+    }
+    if (params.location?.trim()) {
+      and.push({
+        location: { contains: params.location.trim(), mode: 'insensitive' },
+      });
+    }
+    if (params.saved) and.push({ bookmarks: { some: { identityId } } });
     // The requester's rejected requests drop off their list after 30 days
     if (params.scope === 'mine') {
       and.push({
@@ -255,6 +325,8 @@ export class CompanyRequestsService {
         targetIdentity: { include: PROVIDER_INCLUDE },
         acceptedByIdentity: { include: PROVIDER_INCLUDE },
         offers: OFFERS_INCLUDE,
+        bookmarks: { where: { identityId }, select: { id: true } },
+        dismissals: { where: { identityId }, select: { id: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -271,9 +343,12 @@ export class CompanyRequestsService {
           identityId,
           previousOffersByClient.get(r.clientIdentityId) ?? 0,
         ),
+        // Rejected by this company: مرفوضة for it, whatever others see
+        ...(r.dismissals?.length ? { status: 'rejected' as const } : {}),
         provider: toProviderInfo(r.acceptedByIdentity ?? r.targetIdentity),
         offers,
         offersCount: offers.length,
+        isSaved: (r.bookmarks?.length ?? 0) > 0,
       };
     });
   }
@@ -330,6 +405,8 @@ export class CompanyRequestsService {
         targetIdentity: { include: PROVIDER_INCLUDE },
         acceptedByIdentity: { include: PROVIDER_INCLUDE },
         offers: OFFERS_INCLUDE,
+        bookmarks: { where: { identityId }, select: { id: true } },
+        dismissals: { where: { identityId }, select: { id: true } },
       },
     });
     const offers = visibleOffers(
@@ -339,11 +416,13 @@ export class CompanyRequestsService {
     );
     return {
       ...this.toResponseDto(request, identityId, previousOffers),
+      ...(extras?.dismissals?.length ? { status: 'rejected' as const } : {}),
       provider: toProviderInfo(
         extras?.acceptedByIdentity ?? extras?.targetIdentity,
       ),
       offers,
       offersCount: offers.length,
+      isSaved: (extras?.bookmarks?.length ?? 0) > 0,
     };
   }
 
@@ -385,13 +464,22 @@ export class CompanyRequestsService {
   ): Promise<CompanyRequestResponseDto> {
     const request = await this.getVisibleRequestOrThrow(id, identityId);
 
-    // A company can only reject a request that was sent directly to it --
-    // rejecting a public/marketplace lead would incorrectly remove it from
-    // every other company's list too, since status is a single shared field.
-    if (request.targetIdentityId !== identityId) {
-      throw new ForbiddenException('لا يمكن رفض طلب عام غير موجه لشركتك');
+    // A public request: rejecting it hides it from this company only (it
+    // shows under its مرفوضة); its shared status stays, so other companies
+    // and the client aren't affected
+    if (request.targetIdentityId === null) {
+      await this.prisma.requestDismissal.upsert({
+        where: { requestId_identityId: { requestId: id, identityId } },
+        create: { requestId: id, identityId },
+        update: {},
+      });
+      return this.findOne(id, identityId);
     }
 
+    // A request sent directly to this company
+    if (request.targetIdentityId !== identityId) {
+      throw new NotFoundException('الطلب غير موجود');
+    }
     await this.prisma.companyRequest.update({
       where: { id },
       data: { status: RequestStatus.REJECTED },
@@ -415,6 +503,25 @@ export class CompanyRequestsService {
       where: { clientIdentityId: identityId },
     });
     return { deleted: count };
+  }
+
+  /** A company saves a request it can see (اضافة الى المفضلة). */
+  async bookmark(id: string, identityId: string): Promise<{ saved: true }> {
+    await this.getVisibleRequestOrThrow(id, identityId);
+    await this.prisma.requestBookmark.upsert({
+      where: { requestId_identityId: { requestId: id, identityId } },
+      create: { requestId: id, identityId },
+      update: {},
+    });
+    return { saved: true };
+  }
+
+  /** A company removes a request from its saved ones. */
+  async unbookmark(id: string, identityId: string): Promise<{ saved: false }> {
+    await this.prisma.requestBookmark.deleteMany({
+      where: { requestId: id, identityId },
+    });
+    return { saved: false };
   }
 
   /**
@@ -441,9 +548,16 @@ export class CompanyRequestsService {
       throw new ConflictException('تم إغلاق هذا الطلب');
     }
 
+    // Both fields are optional in the design, but a reply says something
+    const message = dto.message?.trim() || null;
+    const notes = dto.notes?.trim() || null;
+    if (!message && !notes && dto.price === undefined) {
+      throw new BadRequestException('اكتب رسالة أو ملاحظات للعميل');
+    }
+
     const data = {
-      message: dto.message,
-      notes: dto.notes ?? null,
+      message,
+      notes,
       price: dto.price ?? null,
       status: RequestOfferStatus.SENT,
     };
@@ -461,8 +575,58 @@ export class CompanyRequestsService {
       where: { id, status: RequestStatus.PENDING },
       data: { status: RequestStatus.RESPONDED },
     });
+    await this.notifyClientOfReply(request, identityId);
 
     return this.findOne(id, identityId);
+  }
+
+  /**
+   * Tells the client a company answered their request: an in-app notice on
+   * the client persona and a push. Never throws: a failed notice must not
+   * fail the reply.
+   */
+  private async notifyClientOfReply(
+    request: RequestWithClient,
+    providerIdentityId: string,
+  ) {
+    try {
+      const provider = await this.prisma.identity.findUnique({
+        where: { id: providerIdentityId },
+        include: PROVIDER_INCLUDE,
+      });
+      const name =
+        provider?.companyData?.name ?? provider?.officeData?.name ?? 'شركة';
+      const title = 'رد جديد على طلبك';
+      const body = `ردّت ${name} على طلبك «${request.title}»`;
+      const userId = request.clientIdentity.userId;
+
+      await this.notifications.create({
+        userId,
+        type: 'REQUEST_REPLY',
+        title,
+        body,
+        identityId: request.clientIdentityId,
+        data: { requestId: request.id },
+      });
+      const sessions = await this.prisma.session.findMany({
+        where: { userId, pushToken: { not: null } },
+        select: { pushToken: true },
+      });
+      await this.push.sendToTokens(
+        sessions.map((s) => s.pushToken).filter((t): t is string => !!t),
+        {
+          title,
+          body,
+          data: {
+            type: 'REQUEST_REPLY',
+            route: `/request-details/${request.id}`,
+            requestId: request.id,
+          },
+        },
+      );
+    } catch (err) {
+      this.logger.error(`Reply notice for ${request.id} failed`, err as Error);
+    }
   }
 
   /**
@@ -672,6 +836,7 @@ export class CompanyRequestsService {
       createdAt: request.createdAt.toISOString(),
       updatedAt: request.updatedAt.toISOString(),
       client: {
+        userId: client.userId,
         name,
         joinedDate: client.createdAt.toISOString(),
         previousOffers,

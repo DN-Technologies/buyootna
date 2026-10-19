@@ -1,7 +1,8 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -10,28 +11,37 @@ import {
   CompanyRequestsFilterPills,
   CompanyRequestsHeader,
   CompanyRequestsScopeTabs,
+  EMPTY_REQUEST_FILTERS,
+  RequestFilterDraft,
+  RequestFilterSheet,
+  RequestListTab,
+  RequestReplySheet,
   RequestScope,
-  RequestStatusFilter,
   SearchIcon,
+  toRequestListFilters,
 } from '@/features/company/components/requests';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
-import { chatService } from '@/shared/api/chat.service';
-import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
-import { showAlert } from '@/shared/utils/alert';
 
 export default function CompanyRequestsScreen() {
   const router = useRouter();
   const [activeScope, setActiveScope] = useState<RequestScope>('company');
   const [activeStatusFilter, setActiveStatusFilter] =
-    useState<RequestStatusFilter>('all');
+    useState<RequestListTab>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const [filterDraft, setFilterDraft] =
+    useState<RequestFilterDraft>(EMPTY_REQUEST_FILTERS);
+  const filters = useMemo(() => toRequestListFilters(filterDraft), [filterDraft]);
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+  const replySheetRef = useRef<BottomSheetModal>(null);
+  const [replyTo, setReplyTo] = useState<CompanyRequestItem | null>(null);
 
   const { data: requests, isLoading, refetch } = useCompanyRequests(
     activeScope,
     activeStatusFilter,
     debouncedSearch,
+    filters,
   );
 
   useFocusEffect(
@@ -40,33 +50,16 @@ export default function CompanyRequestsScreen() {
     }, [refetch]),
   );
 
-  const handleReplyPress = async (request: CompanyRequestItem) => {
-    try {
-      const conversation = await chatService.createConversation(
-        request.clientIdentityId,
-        undefined,
-        // The chat is about this request: both sides see it pinned
-        request.id,
-      );
-      await companyRequestsService.markResponded(request.id);
-      refetch();
-      router.push(`/chat/${conversation.id}` as any);
-    } catch (error: any) {
-      const backendMsg = error?.response?.data?.message;
-      const msg = Array.isArray(backendMsg)
-        ? backendMsg.join('\n')
-        : backendMsg || 'تعذر بدء المحادثة مع العميل';
-      showAlert('تنبيه', msg);
-    }
+  // الرد: the reply sheet (message / notes), not a chat
+  const handleReplyPress = (request: CompanyRequestItem) => {
+    setReplyTo(request);
+    replySheetRef.current?.present();
   };
 
   const handleDetailsPress = (request: CompanyRequestItem) => {
     router.push(`/(company)/(requests)/${request.id}`);
   };
 
-  const handleFilterToggle = () => {
-    Alert.alert('تصفية متقدمة', 'خيارات تصفية إضافية حسب الموقع ونطاق السعر');
-  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -74,7 +67,8 @@ export default function CompanyRequestsScreen() {
       <CompanyRequestsHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onFilterPress={handleFilterToggle}
+        onFilterPress={() => filterSheetRef.current?.present()}
+        filterActive={Object.keys(filters).length > 0}
       />
 
       {/* 2. Dual-Scope Segmented Tabs ("خاصة بالشركة" vs "عامة") */}
@@ -83,7 +77,7 @@ export default function CompanyRequestsScreen() {
         onScopeChange={setActiveScope}
       />
 
-      {/* 3. Status Filter Pills ("الكل", "قيد الانتظار", "مقبولة", "تم الرد") */}
+      {/* 3. Status chips, then المفضلة */}
       <CompanyRequestsFilterPills
         activeFilter={activeStatusFilter}
         onFilterChange={setActiveStatusFilter}
@@ -135,6 +129,13 @@ export default function CompanyRequestsScreen() {
           </View>
         )}
       </ScrollView>
+
+      <RequestFilterSheet
+        ref={filterSheetRef}
+        value={filterDraft}
+        onApply={setFilterDraft}
+      />
+      <RequestReplySheet ref={replySheetRef} request={replyTo} />
     </SafeAreaView>
   );
 }

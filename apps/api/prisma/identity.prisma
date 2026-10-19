@@ -68,6 +68,9 @@ model Identity {
   requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
   // Answers this company/office gave to requests
   requestOffers    RequestOffer[]   @relation("ProvidedOffers")
+  // Public requests this company hid (رفض) and requests it saved
+  requestDismissals RequestDismissal[]
+  requestBookmarks  RequestBookmark[]
 
   // One individual, one company and one office per account
   @@unique([userId, type])

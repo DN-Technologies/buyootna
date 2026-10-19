@@ -1,7 +1,11 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { WarningTriangleIcon } from '@/assets/icons/activity';
 import {
   RequestDetailsAttachments,
   RequestDetailsBottomBar,
@@ -11,11 +15,16 @@ import {
   RequestDetailsInfoGrid,
   RequestDetailsMap,
   RequestDetailsTitleCard,
+  RequestOptionsMenu,
 } from '@/features/company/components/requests';
 import { useCompanyRequestDetails } from '@/features/company/hooks/useCompanyRequestDetails';
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
+import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
 import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
+import { useChatReport } from '@/shared/hooks/chat/useChatReport';
 import { showAlert } from '@/shared/utils/alert';
 import { formatTimeAgo } from '@/shared/utils/helpers/time';
 
@@ -39,64 +48,63 @@ export default function CompanyRequestDetailsScreen() {
     }
   };
 
-  const handleOptions = () => {
-    Alert.alert('خيارات الطلب', 'خيارات إضافية لمشاركة أو الإبلاغ عن الطلب');
+  const queryClient = useQueryClient();
+  const acceptSheetRef = useRef<BottomSheetModal>(null);
+  const rejectSheetRef = useRef<BottomSheetModal>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState<boolean | null>(null);
+  const saved = isSaved ?? request?.isSaved ?? false;
+  const { reportSheetRef, handleReportUser, handleSubmitReport } =
+    useChatReport(request?.client?.userId);
+
+  const errorText = (error: any) => {
+    const backendMsg = error?.response?.data?.message;
+    return Array.isArray(backendMsg)
+      ? backendMsg.join('\n')
+      : backendMsg || 'حدث خطأ ما';
   };
 
-  const handleAccept = () => {
+  const refreshLists = () =>
+    queryClient.invalidateQueries({ queryKey: ['companyRequests'] });
+
+  const handleConfirmAccept = async () => {
     if (!request) return;
-    Alert.alert(
-      'قبول الطلب',
-      `هل أنت متأكد من رغبتك في قبول طلب: "${request.title}"؟`,
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        {
-          text: 'تأكيد القبول',
-          style: 'default',
-          onPress: async () => {
-            try {
-              await companyRequestsService.accept(request.id);
-              await refetch();
-              showAlert('تم القبول', 'تم قبول الطلب بنجاح وإشعار العميل.');
-            } catch (error: any) {
-              const backendMsg = error?.response?.data?.message;
-              showAlert(
-                'تعذر القبول',
-                Array.isArray(backendMsg) ? backendMsg.join('\n') : backendMsg || 'حدث خطأ ما',
-              );
-            }
-          },
-        },
-      ],
-    );
+    try {
+      await companyRequestsService.accept(request.id);
+      await refetch();
+      refreshLists();
+      showAlert('تم القبول', 'تم قبول الطلب بنجاح وإشعار العميل.');
+    } catch (error: any) {
+      if (handleSubscriptionRequired(error, router)) return;
+      showAlert('تعذر القبول', errorText(error));
+    }
   };
 
-  const handleReject = () => {
+  // A public request leaves only this company's lists (shown under مرفوضة)
+  const handleConfirmReject = async () => {
     if (!request) return;
-    Alert.alert(
-      'رفض الطلب',
-      `هل أنت متأكد من رغبتك في رفض طلب: "${request.title}"؟`,
-      [
-        { text: 'إلغاء', style: 'cancel' },
-        {
-          text: 'تأكيد الرفض',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await companyRequestsService.reject(request.id);
-              await refetch();
-              showAlert('تم الرفض', 'تم رفض الطلب بنجاح.');
-            } catch (error: any) {
-              const backendMsg = error?.response?.data?.message;
-              showAlert(
-                'تعذر الرفض',
-                Array.isArray(backendMsg) ? backendMsg.join('\n') : backendMsg || 'حدث خطأ ما',
-              );
-            }
-          },
-        },
-      ],
-    );
+    try {
+      await companyRequestsService.reject(request.id);
+      refreshLists();
+      handleBack();
+    } catch (error: any) {
+      showAlert('تعذر الرفض', errorText(error));
+    }
+  };
+
+  // اضافة الى المفضلة / إزالة من المفضلة, shown at once
+  const handleToggleSave = async () => {
+    if (!request) return;
+    const next = !saved;
+    setIsSaved(next);
+    try {
+      if (next) await companyRequestsService.bookmark(request.id);
+      else await companyRequestsService.unbookmark(request.id);
+      refreshLists();
+    } catch (error: any) {
+      setIsSaved(!next);
+      showAlert('تعذر الحفظ', errorText(error));
+    }
   };
 
   const handleChat = async () => {
@@ -134,7 +142,7 @@ export default function CompanyRequestDetailsScreen() {
       <RequestDetailsHeader
         title="تفاصيل الطلب"
         onBackPress={handleBack}
-        onOptionsPress={handleOptions}
+        onOptionsPress={() => setMenuOpen(true)}
       />
 
       {/* 2. Scrollable Body Content */}
@@ -158,7 +166,7 @@ export default function CompanyRequestDetailsScreen() {
           location={request.location}
           priceRange={request.priceRange}
           publishTime={formatTimeAgo(request.createdAt)}
-          offerType={request.offerType}
+          offersCount={request.offersCount ?? request.offers?.length ?? 0}
         />
 
         {/* Attached Photos Gallery */}
@@ -193,12 +201,43 @@ export default function CompanyRequestDetailsScreen() {
         />
       </ScrollView>
 
-      {/* 3. Sticky Bottom Action Buttons */}
-      <RequestDetailsBottomBar
-        onAcceptPress={handleAccept}
-        onRejectPress={handleReject}
-        showReject={request.scope === 'company'}
+      {/* 3. Sticky Bottom Action Buttons, while the request is open */}
+      {(request.status === 'pending' || request.status === 'responded') && (
+        <RequestDetailsBottomBar
+          onAcceptPress={() => acceptSheetRef.current?.present()}
+          onRejectPress={() => rejectSheetRef.current?.present()}
+        />
+      )}
+
+      <RequestOptionsMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        isSaved={saved}
+        onToggleSave={handleToggleSave}
+        onReport={request.client?.userId ? handleReportUser : undefined}
       />
+
+      <ConfirmActionSheet
+        ref={acceptSheetRef}
+        title="هل أنت متأكد من قبول هذا الطلب؟"
+        description="سيتم إشعار العميل بقبولك للطلب."
+        confirmLabel="تأكيد القبول"
+        onConfirm={handleConfirmAccept}
+      />
+
+      {/* Figma 4410:165291 */}
+      <ConfirmActionSheet
+        ref={rejectSheetRef}
+        variant="danger"
+        icon={<WarningTriangleIcon color="#15304D" />}
+        iconBackground="#F9FAFE"
+        title="هل أنت متأكد من رفض هذا الطلب؟"
+        description="لن يظهر مرة أخرى ضمن طلباتك."
+        confirmLabel="تأكيد الرفض"
+        onConfirm={handleConfirmReject}
+      />
+
+      <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
     </SafeAreaView>
   );
 }

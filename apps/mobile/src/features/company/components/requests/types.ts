@@ -11,11 +11,27 @@ export type RequestStatusFilter =
   | 'responded'
   | 'rejected';
 
+// The list's chips: a status, or المفضلة (the requests this company saved)
+export type RequestListTab = RequestStatusFilter | 'saved';
+
+// تصفية البحث on the requests list; every field optional
+export interface RequestListFilters {
+  specialty?: string;
+  type?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  // A governorate or area name the request's location contains
+  location?: string;
+}
+
 export interface RequestClientInfo {
+  // The client's account, for الإبلاغ عن المستخدم
+  userId?: string;
   name: string;
   joinedDate: string;
   previousOffers: number;
-  rating: number;
+  // null until the client has a review
+  rating: number | null;
   avatarUrl?: string;
   phone?: string;
   whatsapp?: string;
@@ -81,5 +97,7 @@ export interface CompanyRequestItem {
   updatedAt?: string;
   // Quotes received so far (scope=mine)
   offersCount?: number;
+  // This company saved the request (المفضلة)
+  isSaved?: boolean;
 }
 

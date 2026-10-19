@@ -204,6 +204,8 @@ enum NotificationType {
   NEW_DEVICE_LOGIN
   SERVICE_INVOICE
   SUBSCRIPTION_EXPIRING
+  // A company answered a quote request (الرد على العميل)
+  REQUEST_REPLY
 }
 
 model Notification {

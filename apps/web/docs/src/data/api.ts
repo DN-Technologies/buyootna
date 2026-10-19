@@ -9,6 +9,45 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-requests-reply-reject-save-filter",
+      title: {
+        en: "Company requests: reply with message or notes (client notified), reject a public request for one company, saved requests, list filters",
+        ar: "طلبات الشركة: الرد برسالة أو ملاحظات (مع إشعار العميل)، ورفض الطلب العام لشركة واحدة، والطلبات المحفوظة، وتصفية القائمة",
+      },
+      priority: "P1",
+      story: {
+        en: "Backing for the Figma «الطلبات» flow. POST /company-requests/:id/offers: message is now optional like notes, but an empty reply (no message, notes or price) is 400; after the offer is saved the client gets a REQUEST_REPLY notification on their persona (data { requestId }) and a push opening /request-details/:id, and a failed notice never fails the reply. PATCH /company-requests/:id/reject on a public request no longer returns 403: it adds a RequestDismissal for this company only, so the request leaves its public list and shows under status=rejected (reported as rejected to this company), while its shared status, other companies and the client are untouched; a request sent to this company is still closed as before, and one sent to another company is 404. New POST and DELETE /company-requests/:id/bookmark save and unsave a request the company can see (RequestBookmark), returned as isSaved. GET /company-requests/me takes specialty (category), type (title), priceFrom / priceTo (overlap with the request's range), location (contained in it) and saved=true. CompanyRequest gains priceMin / priceMax, parsed from priceRange on create and backfilled from it (Latin or Arabic digits, thousands commas). client.userId is returned for reporting the client. Migration 20261019180000_request_dismissals_bookmarks_price.",
+        ar: "الواجهة الخلفية لمسار «الطلبات» في فيجما. POST /company-requests/:id/offers: أصبحت الرسالة اختيارية مثل الملاحظات، لكن الرد الفارغ (بلا رسالة ولا ملاحظات ولا سعر) → 400؛ وبعد حفظ العرض يصل العميل إشعار REQUEST_REPLY على هويته (data { requestId }) وتنبيه يفتح /request-details/:id، وفشل الإشعار لا يُفشل الرد. PATCH /company-requests/:id/reject على طلب عام لم يعد يُرجع 403: يضيف RequestDismissal لهذه الشركة فقط، فيختفي الطلب من قائمتها العامة ويظهر تحت status=rejected (ويُعرض لها كمرفوض)، بينما حالته المشتركة والشركات الأخرى والعميل دون تغيير؛ والطلب المرسل لهذه الشركة يُغلق كما كان، والمرسل لشركة أخرى → 404. وPOST وDELETE /company-requests/:id/bookmark الجديدان يحفظان الطلب ويزيلانه من المحفوظ (RequestBookmark)، ويُرجع isSaved. ويقبل GET /company-requests/me كلاً من specialty (الفئة) وtype (العنوان) وpriceFrom / priceTo (تقاطع مع نطاق الطلب) وlocation (موجود فيه) وsaved=true. وأُضيف إلى CompanyRequest الحقلان priceMin / priceMax، يُستخرجان من priceRange عند الإنشاء ومُلئا للطلبات الموجودة (أرقام لاتينية أو عربية، وفواصل الآلاف). ويُرجع client.userId للإبلاغ عن العميل. الترحيل 20261019180000_request_dismissals_bookmarks_price.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A reply with notes only is saved; an empty reply is 400.",
+          "The client gets a REQUEST_REPLY notification for the reply.",
+          "Rejecting a public request hides it from that company's public list and lists it under rejected; another company still sees it as pending.",
+          "Bookmark then GET /me?saved=true lists the request with isSaved true; unbookmark removes it.",
+          "Each filter narrows the list; priceFrom/priceTo match requests whose range overlaps.",
+        ],
+        ar: [
+          "الرد بالملاحظات فقط يُحفظ؛ والرد الفارغ → 400.",
+          "يصل العميل إشعار REQUEST_REPLY بالرد.",
+          "رفض طلب عام يخفيه من القائمة العامة لتلك الشركة ويعرضه تحت المرفوضة؛ وشركة أخرى ما زالت تراه قيد الانتظار.",
+          "الحفظ ثم GET /me?saved=true يعرض الطلب مع isSaved = true؛ وإزالة الحفظ تخفيه.",
+          "كل مرشح يضيّق القائمة؛ وpriceFrom/priceTo تطابق الطلبات التي يتقاطع نطاقها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As company A, PATCH /company-requests/<public id>/reject; GET /me?scope=public: gone; ?scope=public&status=rejected: listed. As company B: still pending.",
+          "POST /company-requests/<id>/offers { notes: 'يشمل المواد' } → 201; the client's GET /notifications has a REQUEST_REPLY.",
+        ],
+        ar: [
+          "كشركة أ: PATCH /company-requests/<طلب عام>/reject؛ GET /me?scope=public: اختفى؛ ?scope=public&status=rejected: يظهر. وكشركة ب: ما زال قيد الانتظار.",
+          "POST /company-requests/<id>/offers { notes: 'يشمل المواد' } → 201؛ وفي GET /notifications للعميل إشعار REQUEST_REPLY.",
+        ],
+      },
+      updatedIn: "feat/company-requests-figma",
+    },
+    {
       id: "api-requests-by-specialty",
       title: {
         en: "Public quote requests reach the companies of their specialty; catalogue names migrated",

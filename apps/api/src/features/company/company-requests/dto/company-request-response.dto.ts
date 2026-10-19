@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RequestClientInfoDto {
+  @ApiProperty({
+    description:
+      "The client's user id, for reporting them (POST /users/:id/reports)",
+  })
+  userId: string;
+
   @ApiProperty()
   name: string;
 
@@ -155,4 +161,10 @@ export class CompanyRequestResponseDto {
       "Companies' answers: all of them for the requester, only its own for a company",
   })
   offers?: RequestOfferResponseDto[];
+
+  @ApiProperty({
+    required: false,
+    description: 'Provider-facing: this company saved the request (المفضلة)',
+  })
+  isSaved?: boolean;
 }

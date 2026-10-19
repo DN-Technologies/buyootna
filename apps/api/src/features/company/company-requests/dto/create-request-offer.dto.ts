@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNumber,
   IsOptional,
@@ -8,10 +8,14 @@ import {
 } from 'class-validator';
 
 export class CreateRequestOfferDto {
-  @ApiProperty({ description: 'The reply shown to the requester' })
+  @ApiPropertyOptional({
+    description:
+      'The reply shown to the requester (رسالة الى العميل). Optional, but a reply needs a message or notes.',
+  })
+  @IsOptional()
   @IsString()
   @MaxLength(2000)
-  message: string;
+  message?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
