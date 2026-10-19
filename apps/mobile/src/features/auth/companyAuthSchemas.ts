@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
+
 export const companyLoginSchema = z.object({
   identifier: z
     .string({ message: 'هذا الحقل مطلوب' })
@@ -51,7 +53,7 @@ export function createCompanySignupSchema(includeAccountFields: boolean) {
     services: z.string().optional(),
     hqLocation: z.string().optional(),
     serviceAreas: z.string().optional(),
-    about: z.string().optional(),
+    about: z.string().max(ABOUT_MAX_LENGTH).optional(),
     logo: z.any().optional(),
 
     // Step 3: Licensing

@@ -92,6 +92,8 @@ export default function CompanyProfileCard({
           <Text
             className="mt-2 font-cairo-regular text-[14px] leading-[21px] text-[#A0A0A0]"
             style={{ writingDirection: 'rtl' }}
+            // A long bio (some predate the length limit) stays a summary
+            numberOfLines={4}
           >
             {description}
           </Text>

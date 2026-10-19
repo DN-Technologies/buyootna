@@ -1,6 +1,14 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { trim } from '../../../core/validators/trim.transform';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class RegisterCompanyDto {
   @Transform(trim)
@@ -34,6 +42,9 @@ export class RegisterCompanyDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsString()

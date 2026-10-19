@@ -21,6 +21,7 @@ import {
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { readableLocation } from '@/shared/utils/location';
 import { emailForSave } from '@/shared/utils/profileEmail';
 
 // Minimal shape both expo pickers satisfy (DocumentPicker asset, and the
@@ -96,7 +97,8 @@ export function useCompanyEditProfile() {
   // --- Identity fields (plain state; saved to /identities/:id) ---
   const initialValues = useMemo<Omit<CompanyIdentityFields, never>>(
     () => ({
-      hqLocation: companyData?.hqLocation || '',
+      // A raw map pin opens empty, to be written as an address
+      hqLocation: readableLocation(companyData?.hqLocation),
       serviceAreas: companyData?.serviceAreas || '',
       about: companyData?.about || '',
       services: companyData?.services || '',

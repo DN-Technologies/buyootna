@@ -15,6 +15,7 @@ import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSh
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import { isCoordinates } from '@/shared/utils/location';
 
 import { CompanySignupProgress } from './CompanySignupProgress';
 import { SignupStep1, SignupStep2, SignupStep3 } from './CompanySignupSteps';
@@ -226,7 +227,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
         const hqLocationVal = watch('hqLocation');
         let initialLat: number | undefined;
         let initialLng: number | undefined;
-        if (hqLocationVal && hqLocationVal.includes(',')) {
+        if (hqLocationVal && isCoordinates(hqLocationVal)) {
           const [latStr, lngStr] = hqLocationVal.split(',');
           initialLat = parseFloat(latStr);
           initialLng = parseFloat(lngStr);
@@ -236,7 +237,11 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
             visible={showMapPicker}
             onClose={() => setShowMapPicker(false)}
             onConfirm={(addressName, lat, lng) => {
-              setValue('hqLocation', `${lat},${lng}`, { shouldValidate: true });
+              // The address name, not the pin: it is what the profile shows
+              // and what location search matches
+              setValue('hqLocation', addressName || `${lat},${lng}`, {
+                shouldValidate: true,
+              });
               setHqAddressLabel(addressName);
             }}
             initialLat={initialLat}

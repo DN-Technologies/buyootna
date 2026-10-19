@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { IdentitiesService } from './identities.service';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { StorageService } from 'src/core/storage/storage.service';
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { IdentityType, Prisma } from '@prisma/client';
 
 interface IdentityCreateArgs {
@@ -300,6 +300,23 @@ describe('IdentitiesService', () => {
       expect(mockStorage.deleteFile).toHaveBeenCalledWith(
         'https://bucket/company-licenses/f.png',
       );
+    });
+
+    it('refuses a bio over 300 characters, before uploading or writing', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+
+      await expect(
+        service.update(
+          'user-1',
+          'identity-c',
+          { about: 'ا'.repeat(301) },
+          file,
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mockStorage.uploadFile).not.toHaveBeenCalled();
+      expect(
+        mockPrismaService.companyIdentityData.update,
+      ).not.toHaveBeenCalled();
     });
 
     it('updates from a plain JSON body without touching storage', async () => {

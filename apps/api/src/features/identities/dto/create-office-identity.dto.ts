@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class CreateOfficeIdentityDto {
   @IsNotEmpty()
@@ -19,6 +20,9 @@ export class CreateOfficeIdentityDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsOptional()

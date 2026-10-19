@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
+import { readableLocation } from '../../../common/utils/location.util';
 
 type CompanyIdentity = Identity & {
   companyData: CompanyIdentityData | null;
@@ -86,7 +87,7 @@ export class ProviderCardsService {
           name: i.officeData!.name,
           rating: s?.rating ?? 0,
           reviewsCount: s?.reviewsCount ?? 0,
-          location: i.officeData!.hqLocation || '',
+          location: readableLocation(i.officeData!.hqLocation) || '',
           logoUrl: i.officeData!.logoUrl,
           isVerified: i.officeData!.isVerified,
           phone: contactPhoneOf(i, i.user),

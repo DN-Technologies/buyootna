@@ -3,6 +3,7 @@ import { Text, TextInput, View } from 'react-native';
 
 import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
+import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 interface OfficeGeneralInfoSectionProps {
   name: string;
@@ -162,6 +163,7 @@ export default function OfficeGeneralInfoSection({
               onChangeText={setAbout}
               multiline
               numberOfLines={4}
+              maxLength={ABOUT_MAX_LENGTH}
               placeholder="مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة."
               placeholderTextColor="#979797"
               textAlign="right"

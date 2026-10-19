@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class CreateCompanyIdentityDto {
   @IsNotEmpty()
@@ -23,6 +30,9 @@ export class CreateCompanyIdentityDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsOptional()

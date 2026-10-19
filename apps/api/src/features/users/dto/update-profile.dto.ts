@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { trim } from '../../../core/validators/trim.transform';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class UpdateProfileDto {
   // Individual / Company / Office name -- optional (a profile update may
@@ -20,6 +21,9 @@ export class UpdateProfileDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   // Company-specific fields

@@ -22,6 +22,7 @@ import {
   normalizeLicenseNumber,
   rethrowAsConflict,
 } from './persona-rules';
+import { ABOUT_MAX_LENGTH } from '../../common/utils/location.util';
 
 type ProviderType = Extract<IdentityType, 'COMPANY' | 'OFFICE'>;
 
@@ -370,6 +371,16 @@ export class IdentitiesService {
     licenseFile?: Express.Multer.File,
   ) {
     const identity = await this.findOne(userId, identityId);
+
+    // The body is a union of three DTOs, which the global ValidationPipe
+    // can't check, so the bio's length is checked here
+    const about = (dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto)
+      .about;
+    if (typeof about === 'string' && about.length > ABOUT_MAX_LENGTH) {
+      throw new BadRequestException(
+        `النبذة يجب ألا تتجاوز ${ABOUT_MAX_LENGTH} حرف`,
+      );
+    }
 
     // A changed licence number must still be free platform-wide
     const nextLicense = (
