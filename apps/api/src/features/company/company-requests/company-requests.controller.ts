@@ -63,6 +63,36 @@ export class CompanyRequestsController {
     required: false,
   })
   @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({
+    name: 'specialty',
+    required: false,
+    description: 'التخصص: the request category',
+  })
+  @ApiQuery({
+    name: 'type',
+    required: false,
+    description: 'نوع الخدمة: the request type (its title)',
+  })
+  @ApiQuery({
+    name: 'priceFrom',
+    required: false,
+    description: 'Requests whose price range reaches this (د.ك)',
+  })
+  @ApiQuery({
+    name: 'priceTo',
+    required: false,
+    description: 'Requests whose price range starts at or below this (د.ك)',
+  })
+  @ApiQuery({
+    name: 'location',
+    required: false,
+    description: 'A governorate or area name in the location',
+  })
+  @ApiQuery({
+    name: 'saved',
+    required: false,
+    description: 'true: only the requests this company saved',
+  })
   @ApiResponse({ status: 200, type: [CompanyRequestResponseDto] })
   @ApiCommonErrors()
   async findMine(
@@ -70,11 +100,27 @@ export class CompanyRequestsController {
     @Query('scope') scope: RequestScopeFilter = 'company',
     @Query('status') status?: RequestStatusFilter,
     @Query('search') search?: string,
+    @Query('specialty') specialty?: string,
+    @Query('type') type?: string,
+    @Query('priceFrom') priceFrom?: string,
+    @Query('priceTo') priceTo?: string,
+    @Query('location') location?: string,
+    @Query('saved') saved?: string,
   ) {
+    const toNumber = (value?: string) => {
+      const n = value === undefined || value === '' ? NaN : Number(value);
+      return Number.isFinite(n) ? n : undefined;
+    };
     return this.companyRequestsService.findMine(reqUser.identityId, {
       scope,
       status,
       search,
+      specialty: specialty || undefined,
+      type: type || undefined,
+      priceFrom: toNumber(priceFrom),
+      priceTo: toNumber(priceTo),
+      location: location || undefined,
+      saved: saved === 'true',
     });
   }
 
@@ -111,9 +157,29 @@ export class CompanyRequestsController {
     return this.companyRequestsService.accept(id, reqUser.identityId);
   }
 
+  @Post(':id/bookmark')
+  @ApiOperation({
+    summary: 'Save a request to come back to (اضافة الى المفضلة)',
+  })
+  @ApiCommonErrors()
+  async bookmark(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
+    return this.companyRequestsService.bookmark(id, reqUser.identityId);
+  }
+
+  @Delete(':id/bookmark')
+  @ApiOperation({ summary: 'Remove a request from the saved ones' })
+  @ApiCommonErrors()
+  async unbookmark(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.companyRequestsService.unbookmark(id, reqUser.identityId);
+  }
+
   @Patch(':id/reject')
   @ApiOperation({
-    summary: 'Reject a request sent directly to this company',
+    summary:
+      'Reject a request: one sent to this company is closed; a public one is hidden from this company only (listed under its status=rejected)',
   })
   @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
   @ApiCommonErrors()

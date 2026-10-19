@@ -12,30 +12,20 @@ import {
 } from './icons';
 
 export interface RequestDetailsClientCardProps {
-  client?: RequestClientInfo;
+  client?: RequestClientInfo | null;
   onChatPress?: () => void;
   onWhatsAppPress?: () => void;
   onCallPress?: () => void;
 }
 
-const DEFAULT_CLIENT: RequestClientInfo = {
-  name: 'نواف الجارحي',
-  joinedDate: 'مضيف منذ 06/2026',
-  previousOffers: 5,
-  rating: 3.5,
-  avatarUrl:
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
-  phone: '+96590000000',
-  whatsapp: '+96590000000',
-  isVerified: true,
-};
-
 export default function RequestDetailsClientCard({
-  client = DEFAULT_CLIENT,
+  client,
   onChatPress,
   onWhatsAppPress,
   onCallPress,
 }: RequestDetailsClientCardProps) {
+  if (!client) return null;
+
   const handleCall = () => {
     if (onCallPress) {
       onCallPress();
@@ -65,11 +55,20 @@ export default function RequestDetailsClientCard({
         <View className="flex-1 flex-row items-center gap-3">
           {/* Avatar */}
           <View className="size-[52px] overflow-hidden rounded-full border border-gray-200 bg-white">
-            <Image
-              source={{ uri: client.avatarUrl || DEFAULT_CLIENT.avatarUrl }}
-              contentFit="cover"
-              style={{ width: '100%', height: '100%' }}
-            />
+            {client.avatarUrl ? (
+              <Image
+                source={{ uri: client.avatarUrl }}
+                contentFit="cover"
+                style={{ width: '100%', height: '100%' }}
+              />
+            ) : (
+              // No photo yet: the name's first letter
+              <View className="flex-1 items-center justify-center bg-[#DEE3E8]">
+                <Text className="font-cairo-bold text-[18px] text-[#15304D]">
+                  {client.name.trim().charAt(0)}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Name & Subtitle & Actions */}
@@ -127,16 +126,18 @@ export default function RequestDetailsClientCard({
           </View>
         </View>
 
-        {/* Child 1 (Visual Left): Star Rating */}
-        <View
-          testID="request-details-client-rating"
-          className="flex-row items-center gap-1 rounded-full bg-white px-2 py-1 border border-gray-100"
-        >
-          <Text className="font-cairo-bold text-[13px] text-[#111111]">
-            {client.rating.toFixed(1)}
-          </Text>
-          <RatingStarIcon size={12} color="#F59E0B" />
-        </View>
+        {/* Child 1 (Visual Left): Star Rating, once the client has one */}
+        {client.rating != null && (
+          <View
+            testID="request-details-client-rating"
+            className="flex-row items-center gap-1 rounded-full bg-white px-2 py-1 border border-gray-100"
+          >
+            <Text className="font-cairo-bold text-[13px] text-[#111111]">
+              {client.rating.toFixed(1)}
+            </Text>
+            <RatingStarIcon size={12} color="#F59E0B" />
+          </View>
+        )}
       </View>
     </View>
   );

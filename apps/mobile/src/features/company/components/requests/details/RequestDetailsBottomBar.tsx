@@ -3,9 +3,8 @@ import { Text, TouchableOpacity, View } from 'react-native';
 export interface RequestDetailsBottomBarProps {
   onAcceptPress?: () => void;
   onRejectPress?: () => void;
-  // A public/marketplace request can't be rejected (rejecting it would
-  // incorrectly hide it from every other company too, since status is a
-  // single shared field) -- hide the button rather than show one that no-ops.
+  // Rejecting a public request hides it for this company only, so both
+  // scopes can reject; kept for callers that need to hide it
   showReject?: boolean;
 }
 

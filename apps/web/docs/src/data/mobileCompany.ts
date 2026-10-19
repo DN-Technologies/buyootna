@@ -167,6 +167,45 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "mobile-company-requests-figma",
+      title: {
+        en: "Company الطلبات (Figma): reply sheet, reject confirmation, ⋮ save / report, تصفية البحث, مرفوضة and المفضلة",
+        ar: "طلبات الشركة (فيجما): نافذة الرد، وتأكيد الرفض، وقائمة ⋮ للحفظ والإبلاغ، وتصفية البحث، والمرفوضة والمفضلة",
+      },
+      priority: "P1",
+      story: {
+        en: "The company's requests tab follows its Figma frames. The chips are الكل, قيد الانتظار, مقبولة, تم الرد, مرفوضة and المفضلة (requests the company saved). «الرد» on a card opens الرد على العميل instead of a chat: the request in short with its status, then رسالة الى العميل and ملاحظات, both optional; ارسال الرد turns on once either has text, sends the company's offer, and shows «تم إرسال ردك بنجاح!» with حسنًا; the client is notified. A company without a running plan gets the usual subscribe prompt. The filter button opens تصفية البحث: التخصص, نوع الخدمة (of that specialty), نطاق السعر من / الى, and المحافظة + المنطقة; عرض النتائج stays off until something changes, إعادة التعيين clears it, and a dot shows on the button while filters apply. On تفاصيل الطلب, قبول and رفض ask in a sheet instead of a system alert («هل أنت متأكد من رفض هذا الطلب؟ لن يظهر مرة أخرى ضمن طلباتك.»); رفض is offered on public requests too and hides the request for this company only, then goes back; neither button shows once the request is accepted or rejected. ⋮ opens اضافة الى المفضلة (إزالة من المفضلة once saved) and الإبلاغ عن المستخدم, which reports the client with the usual reasons. العروض shows how many offers there are instead of the offer type, the client card no longer falls back to a made-up client, and a client with no rating or photo shows no stars and their initial. Tapping a REQUEST_REPLY notification opens the request.",
+        ar: "تتبع تبويبة طلبات الشركة إطارات فيجما. الشرائح: الكل وقيد الانتظار ومقبولة وتم الرد ومرفوضة والمفضلة (الطلبات التي حفظتها الشركة). «الرد» على البطاقة يفتح «الرد على العميل» بدلاً من المحادثة: ملخص الطلب وحالته، ثم «رسالة الى العميل» و«ملاحظات» وكلاهما اختياري؛ ويتفعل «ارسال الرد» عند كتابة أي منهما، فيرسل عرض الشركة ويعرض «تم إرسال ردك بنجاح!» مع «حسنًا»، ويُشعر العميل. والشركة بلا باقة سارية ترى رسالة الاشتراك المعتادة. وزر التصفية يفتح «تصفية البحث»: التخصص، ونوع الخدمة (لذلك التخصص)، ونطاق السعر من / الى، والمحافظة + المنطقة؛ ويبقى «عرض النتائج» معطلاً حتى يتغير شيء، و«إعادة التعيين» تمسحها، وتظهر نقطة على الزر أثناء التصفية. وفي «تفاصيل الطلب» يسأل «قبول» و«رفض» في نافذة سفلية بدل تنبيه النظام («هل أنت متأكد من رفض هذا الطلب؟ لن يظهر مرة أخرى ضمن طلباتك.»)؛ و«رفض» متاح للطلبات العامة أيضاً ويخفي الطلب عن هذه الشركة فقط ثم يعود؛ ولا يظهر الزران بعد قبول الطلب أو رفضه. و⋮ تفتح «اضافة الى المفضلة» («إزالة من المفضلة» بعد الحفظ) و«الإبلاغ عن المستخدم» الذي يبلّغ عن العميل بالأسباب المعتادة. و«العروض» تعرض عدد العروض بدل نوع العرض، ولم تعد بطاقة العميل تعرض عميلاً مختلقاً، والعميل بلا تقييم أو صورة يظهر بلا نجوم وبالحرف الأول من اسمه. والضغط على إشعار REQUEST_REPLY يفتح الطلب.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "الرد opens the sheet; ارسال الرد is off until a field has text; sending shows تم إرسال ردك بنجاح!.",
+          "رفض on a public request → confirm → back; the request is gone from عامة and listed under مرفوضة.",
+          "⋮ › اضافة الى المفضلة, then المفضلة lists the request; ⋮ now says إزالة من المفضلة.",
+          "⋮ › الإبلاغ عن المستخدم sends a report on the client.",
+          "تصفية البحث narrows the list; نوع الخدمة waits for التخصص; إعادة التعيين clears it.",
+        ],
+        ar: [
+          "«الرد» يفتح النافذة؛ و«ارسال الرد» معطل حتى يُكتب في حقل؛ والإرسال يعرض «تم إرسال ردك بنجاح!».",
+          "«رفض» على طلب عام ← تأكيد ← رجوع؛ ويختفي الطلب من «عامة» ويظهر تحت «مرفوضة».",
+          "⋮ › «اضافة الى المفضلة» ثم «المفضلة» تعرض الطلب؛ وتصبح ⋮ «إزالة من المفضلة».",
+          "⋮ › «الإبلاغ عن المستخدم» يرسل بلاغاً عن العميل.",
+          "«تصفية البحث» تضيّق القائمة؛ و«نوع الخدمة» ينتظر «التخصص»؛ و«إعادة التعيين» تمسحها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: الطلبات › الرد › write only ملاحظات › ارسال الرد: success sheet; as the client, the bell shows the reply and opens the request.",
+          "عامة › التفاصيل › رفض › تأكيد الرفض: back on the list without it; مرفوضة shows it.",
+        ],
+        ar: [
+          "كشركة: الطلبات › الرد › اكتب الملاحظات فقط › ارسال الرد: نافذة النجاح؛ وكعميل يظهر الرد في الإشعارات ويفتح الطلب.",
+          "عامة › التفاصيل › رفض › تأكيد الرفض: العودة للقائمة بدونه؛ و«مرفوضة» تعرضه.",
+        ],
+      },
+      updatedIn: "feat/company-requests-figma",
+    },
+    {
       id: "mobile-edit-profile-hq-map",
       title: {
         en: "Edit profile: المقر الرئيسي picked on the map; مناطق تقديم الخدمة aligned right",

@@ -39,4 +39,12 @@ describe('getNotificationRoute', () => {
       ),
     ).toBe('/devices');
   });
+
+  it("opens the request a company answered", () => {
+    expect(
+      getNotificationRoute(
+        notification({ type: 'REQUEST_REPLY', data: { requestId: 'req-1' } }),
+      ),
+    ).toBe('/request-details/req-1');
+  });
 });

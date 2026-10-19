@@ -3,18 +3,33 @@ import { useQuery } from '@tanstack/react-query';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
-import { RequestScope, RequestStatusFilter } from '../components/requests/types';
+import {
+  RequestListFilters,
+  RequestListTab,
+  RequestScope,
+} from '../components/requests/types';
 
 export function useCompanyRequests(
   scope: RequestScope,
-  status: RequestStatusFilter,
+  tab: RequestListTab,
   search: string,
+  filters: RequestListFilters = {},
 ) {
   const { token } = useAuthStore();
+  // المفضلة is every saved request, whatever its status
+  const saved = tab === 'saved';
+  const status = saved ? 'all' : tab;
 
   const query = useQuery({
-    queryKey: ['companyRequests', scope, status, search],
-    queryFn: () => companyRequestsService.getMine({ scope, status, search }),
+    queryKey: ['companyRequests', scope, tab, search, filters],
+    queryFn: () =>
+      companyRequestsService.getMine({
+        scope,
+        status,
+        search,
+        ...filters,
+        ...(saved ? { saved: true } : {}),
+      }),
     enabled: !!token,
   });
 

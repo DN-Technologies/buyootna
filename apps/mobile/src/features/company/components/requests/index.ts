@@ -8,4 +8,12 @@ export type { CompanyRequestsScopeTabsProps } from './CompanyRequestsScopeTabs';
 export { default as CompanyRequestsScopeTabs } from './CompanyRequestsScopeTabs';
 export * from './details';
 export * from './icons';
+export {
+  EMPTY_REQUEST_FILTERS,
+  requestFilterCount,
+  type RequestFilterDraft,
+  default as RequestFilterSheet,
+  toRequestListFilters,
+} from './RequestFilterSheet';
+export { default as RequestReplySheet } from './RequestReplySheet';
 export * from './types';

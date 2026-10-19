@@ -1,5 +1,6 @@
 import {
   CompanyRequestItem,
+  RequestListFilters,
   RequestScope,
   RequestStatusFilter,
 } from '@/features/company/components/requests/types';
@@ -7,10 +8,18 @@ import apiClient from '@/shared/api/api';
 import { propertiesService } from '@/shared/api/properties.service';
 import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
 
-export interface GetCompanyRequestsParams {
+export interface GetCompanyRequestsParams extends RequestListFilters {
   scope: RequestScope;
   status?: RequestStatusFilter;
   search?: string;
+  // المفضلة: only the requests this company saved
+  saved?: boolean;
+}
+
+// الرد على العميل: both optional, but one of them is needed
+export interface RequestReplyPayload {
+  message?: string;
+  notes?: string;
 }
 
 export interface CreateCompanyRequestPayload {
@@ -106,6 +115,27 @@ export const companyRequestsService = {
       offerId ? { offerId } : {},
     );
     return response.data;
+  },
+
+  // The company's reply (an offer the client sees); notifies the client
+  respond: async (
+    id: string,
+    payload: RequestReplyPayload,
+  ): Promise<CompanyRequestItem> => {
+    const response = await apiClient.post<CompanyRequestItem>(
+      `/company-requests/${id}/offers`,
+      payload,
+    );
+    return response.data;
+  },
+
+  // اضافة الى المفضلة / إزالة من المفضلة
+  bookmark: async (id: string): Promise<void> => {
+    await apiClient.post(`/company-requests/${id}/bookmark`);
+  },
+
+  unbookmark: async (id: string): Promise<void> => {
+    await apiClient.delete(`/company-requests/${id}/bookmark`);
   },
 
   markResponded: async (id: string): Promise<CompanyRequestItem> => {

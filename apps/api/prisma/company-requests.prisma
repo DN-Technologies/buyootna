@@ -17,6 +17,9 @@ model CompanyRequest {
   title       String
   category    String?
   priceRange  String?
+  // priceRange's two ends (د.ك), for the price filter
+  priceMin    Float?
+  priceMax    Float?
   location    String
   // القطعة / الشارع / الجادة / المنزل / علامة مميزة, from the location picker
   addressDetails Json?
@@ -32,6 +35,9 @@ model CompanyRequest {
   offers    RequestOffer[]
   // Chats opened about this request
   conversations Conversation[]
+  // Companies that hid this public request, and that saved it
+  dismissals RequestDismissal[]
+  bookmarks  RequestBookmark[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -60,4 +66,31 @@ model RequestOffer {
 
   @@unique([requestId, providerIdentityId])
   @@index([requestId])
+}
+
+// A company rejected (رفض) a public request: it leaves only that company's
+// lists; other companies and the client are not affected
+model RequestDismissal {
+  id         String         @id @default(uuid())
+  requestId  String
+  request    CompanyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity       @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+
+  @@unique([requestId, identityId])
+  @@index([identityId])
+}
+
+// A request a company saved (اضافة الى المفضلة) to come back to
+model RequestBookmark {
+  id         String         @id @default(uuid())
+  requestId  String
+  request    CompanyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity       @relation(fields: [identityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+
+  @@unique([requestId, identityId])
+  @@index([identityId])
 }

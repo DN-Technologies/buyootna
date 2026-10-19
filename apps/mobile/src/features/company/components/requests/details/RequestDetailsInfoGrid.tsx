@@ -7,14 +7,18 @@ export interface RequestDetailsInfoGridProps {
   location: string;
   priceRange?: string;
   publishTime?: string;
-  offerType?: string;
+  // العروض: how many offers the request has (the company sees its own)
+  offersCount?: number;
 }
+
+const offersLabel = (count: number) =>
+  count === 0 ? 'لا توجد عروض' : count === 1 ? 'عرض واحد' : `${count} عروض`;
 
 export default function RequestDetailsInfoGrid({
   location,
-  priceRange = '22,000 - 15,000 د.ك',
-  publishTime = 'منذ ساعتين',
-  offerType = 'عرض مخصص',
+  priceRange = 'غير محدد',
+  publishTime = '',
+  offersCount = 0,
 }: RequestDetailsInfoGridProps) {
   return (
     <View className="rounded-[12px] bg-[#F9FAFE] p-3.5">
@@ -95,7 +99,7 @@ export default function RequestDetailsInfoGrid({
           </View>
         </View>
 
-        {/* Child 1 (Visual Left): Offer Type */}
+        {/* Child 1 (Visual Left): العروض */}
         <View className="flex-1 flex-row items-center gap-2.5">
           <View className="size-[26px] items-center justify-center rounded-full bg-[#DEE3E8]">
             <DocumentOfferIcon size={14} color="#15304D" />
@@ -113,7 +117,7 @@ export default function RequestDetailsInfoGrid({
               style={{ writingDirection: 'rtl' }}
               numberOfLines={1}
             >
-              {offerType}
+              {offersLabel(offersCount)}
             </Text>
           </View>
         </View>
