@@ -167,6 +167,39 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "mobile-company-requests-status-views",
+      title: {
+        en: "Company الطلبات by status (Figma): card actions, تفاصيل الرد, اصدار فاتورة, انهاء الطلب",
+        ar: "طلبات الشركة حسب الحالة (فيجما): أزرار البطاقة، وتفاصيل الرد، واصدار فاتورة، وانهاء الطلب",
+      },
+      priority: "P1",
+      story: {
+        en: "Each request card's buttons now follow its status: قيد الانتظار keeps الرد and التفاصيل; تم الرد and مرفوضة show only التفاصيل; مقبولة shows «ابدأ المحادثة» (opens the chat pinned to the request) and a red trash that, after «إزالة الطلب من قائمتك؟», takes the request off the company's lists. A request the company ended shows a «منتهي» chip. Under مرفوضة the list says «الطلبات المرفوضة تختفي بعد 30يوم». The reply sheet has three optional fields, «العرض يشمل», «العرض لا يشمل» and «ملاحظات», shown on تفاصيل الطلب as «تفاصيل الرد» (and to the client in the company's reply). On تفاصيل الطلب, قبول / رفض show only while pending; an accepted request shows «اصدار فاتورة» (opens the invoice with this client and request already picked) and «انهاء الطلب»; a rejected one has no ⋮. انهاء الطلب asks «هل انتهى التعامل مع العميل؟» (نعم، انتهى / لا، مازال مستمرًا), then the انهاء الطلب screen asks whether the service is done and, if so, where the final agreement was made (من خلال التطبيق / خارج التطبيق); تحديث الحالة stays off until answered. «لا» changes nothing; «نعم» ends the request, returns to the list and shows «تم إنهاء الطلب بنجاح. شكراً لمساعدتك في تحسين جودة المنصة.»",
+        ar: "أصبحت أزرار بطاقة الطلب تتبع حالته: قيد الانتظار يبقى فيها الرد والتفاصيل؛ وتم الرد والمرفوضة تعرض التفاصيل فقط؛ والمقبولة تعرض «ابدأ المحادثة» (تفتح المحادثة المرتبطة بالطلب) وسلة حمراء تزيل الطلب من قوائم الشركة بعد «إزالة الطلب من قائمتك؟». والطلب الذي أنهته الشركة يظهر بشارة «منتهي». وتحت «مرفوضة» تقول القائمة «الطلبات المرفوضة تختفي بعد 30يوم». ونافذة الرد فيها ثلاثة حقول اختيارية: «العرض يشمل» و«العرض لا يشمل» و«ملاحظات»، تظهر في تفاصيل الطلب كـ«تفاصيل الرد» (وللعميل في رد الشركة). وفي تفاصيل الطلب يظهر قبول / رفض أثناء الانتظار فقط؛ والطلب المقبول يعرض «اصدار فاتورة» (تفتح الفاتورة مع اختيار هذا العميل والطلب) و«انهاء الطلب»؛ والمرفوض بلا ⋮. ويسأل «انهاء الطلب»: «هل انتهى التعامل مع العميل؟» (نعم، انتهى / لا، مازال مستمرًا)، ثم تسأل شاشة انهاء الطلب إن انتهت الخدمة، وإن انتهت فأين تم الاتفاق النهائي (من خلال التطبيق / خارج التطبيق)؛ ويبقى «تحديث الحالة» معطلاً حتى الإجابة. و«لا» لا يغيّر شيئاً؛ و«نعم» يُنهي الطلب ويعود للقائمة ويعرض «تم إنهاء الطلب بنجاح. شكراً لمساعدتك في تحسين جودة المنصة.»",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Card buttons match the status; the trash asks first and removes the request.",
+          "مرفوضة shows the 30-day note.",
+          "تفاصيل الرد shows only the parts the reply has.",
+          "اصدار فاتورة opens the invoice with the client filled in.",
+          "انهاء الطلب › نعم › a place › تحديث الحالة: the request leaves مقبولة and the toast shows.",
+        ],
+        ar: [
+          "أزرار البطاقة تطابق الحالة؛ والسلة تسأل أولاً ثم تزيل الطلب.",
+          "«مرفوضة» تعرض ملاحظة الثلاثين يوماً.",
+          "«تفاصيل الرد» تعرض الأجزاء الموجودة في الرد فقط.",
+          "«اصدار فاتورة» تفتح الفاتورة مع تعبئة العميل.",
+          "انهاء الطلب › نعم › مكان › تحديث الحالة: يخرج الطلب من «مقبولة» ويظهر الإشعار.",
+        ],
+      },
+      testScenarios: {
+        en: ["As a company, open an accepted request › انهاء الطلب › نعم، انتهى › نعم › خارج التطبيق › تحديث الحالة: back on the list with the toast; مقبولة no longer lists it, الكل shows it as منتهي."],
+        ar: ["كشركة: افتح طلباً مقبولاً › انهاء الطلب › نعم، انتهى › نعم › خارج التطبيق › تحديث الحالة: العودة للقائمة مع الإشعار؛ ولم تعد «مقبولة» تعرضه، و«الكل» تعرضه كمنتهي."],
+      },
+      updatedIn: "feat/company-requests-status-views",
+    },
+    {
       id: "mobile-company-requests-figma",
       title: {
         en: "Company الطلبات (Figma): reply sheet, reject confirmation, ⋮ save / report, تصفية البحث, مرفوضة and المفضلة",

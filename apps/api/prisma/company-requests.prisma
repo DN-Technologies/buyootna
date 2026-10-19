@@ -30,6 +30,10 @@ model CompanyRequest {
   description String
 
   status    RequestStatus @default(PENDING)
+  // انهاء الطلب: the accepting company marked the work finished, and where
+  // the final agreement was made (in_app | outside)
+  completedAt  DateTime?
+  completedVia String?
   invoices  CompanyInvoice[]
   // The answers companies gave (one per company)
   offers    RequestOffer[]
@@ -56,6 +60,8 @@ model RequestOffer {
   provider           Identity           @relation("ProvidedOffers", fields: [providerIdentityId], references: [id], onDelete: Cascade)
 
   message String?
+  // العرض لا يشمل: what the offer leaves out
+  excludes String?
   notes   String?
   // What the company asks for (د.ك)
   price   Float?
@@ -68,10 +74,12 @@ model RequestOffer {
   @@index([requestId])
 }
 
-// A company rejected (رفض) a public request: it leaves only that company's
-// lists; other companies and the client are not affected
+// A request a company took off its own lists; other companies and the
+// client are not affected. kind: rejected (رفض on a public request, shown
+// under مرفوضة) or removed (the trash on an accepted request, gone)
 model RequestDismissal {
   id         String         @id @default(uuid())
+  kind       String         @default("rejected")
   requestId  String
   request    CompanyRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
   identityId String

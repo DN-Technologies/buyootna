@@ -13,6 +13,8 @@ export type { RequestDetailsInfoGridProps } from './RequestDetailsInfoGrid';
 export { default as RequestDetailsInfoGrid } from './RequestDetailsInfoGrid';
 export type { RequestDetailsMapProps } from './RequestDetailsMap';
 export { default as RequestDetailsMap } from './RequestDetailsMap';
+export type { RequestDetailsReplySectionProps } from './RequestDetailsReplySection';
+export { default as RequestDetailsReplySection } from './RequestDetailsReplySection';
 export type { RequestDetailsTitleCardProps } from './RequestDetailsTitleCard';
 export { default as RequestDetailsTitleCard } from './RequestDetailsTitleCard';
 export type { RequestOptionsMenuProps } from './RequestOptionsMenu';

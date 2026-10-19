@@ -53,6 +53,9 @@ export class RequestOfferReplyDto {
   @ApiProperty({ nullable: true })
   message: string | null;
 
+  @ApiProperty({ nullable: true, description: 'العرض لا يشمل' })
+  excludes: string | null;
+
   @ApiProperty({ nullable: true })
   notes: string | null;
 }
@@ -129,6 +132,14 @@ export class CompanyRequestResponseDto {
 
   @ApiProperty({ enum: ['company', 'public'] })
   scope: 'company' | 'public';
+
+  @ApiProperty({
+    description: 'The accepting company ended it (انهاء الطلب)',
+  })
+  completed: boolean;
+
+  @ApiProperty({ enum: ['in_app', 'outside'], nullable: true })
+  completedVia: 'in_app' | 'outside' | null;
 
   @ApiProperty()
   createdAt: string;

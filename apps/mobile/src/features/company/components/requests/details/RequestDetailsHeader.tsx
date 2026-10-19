@@ -37,16 +37,21 @@ export default function RequestDetailsHeader({
           {title}
         </Text>
 
-        {/* Visual Left (Child 2): More Options */}
-        <TouchableOpacity
-          testID="request-details-options-button"
-          onPress={onOptionsPress}
-          activeOpacity={0.7}
-          className="size-[36px] items-center justify-center rounded-full"
-          accessibilityLabel="خيارات إضافية"
-        >
-          <ThreeDotsMenuIcon size={18} color="#111111" />
-        </TouchableOpacity>
+        {/* Visual Left (Child 2): More Options; a same-size spacer keeps the
+            title centred when there are none */}
+        {onOptionsPress ? (
+          <TouchableOpacity
+            testID="request-details-options-button"
+            onPress={onOptionsPress}
+            activeOpacity={0.7}
+            className="size-[36px] items-center justify-center rounded-full"
+            accessibilityLabel="خيارات إضافية"
+          >
+            <ThreeDotsMenuIcon size={18} color="#111111" />
+          </TouchableOpacity>
+        ) : (
+          <View className="size-[36px]" />
+        )}
       </View>
     </View>
   );

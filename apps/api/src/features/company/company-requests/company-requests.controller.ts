@@ -23,6 +23,7 @@ import type {
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 import { CreateRequestOfferDto } from './dto/create-request-offer.dto';
+import { CompleteRequestDto } from './dto/complete-request.dto';
 
 @ApiTags('Company Requests')
 @ApiAuth()
@@ -174,6 +175,38 @@ export class CompanyRequestsController {
     @Param('id') id: string,
   ) {
     return this.companyRequestsService.unbookmark(id, reqUser.identityId);
+  }
+
+  @Delete(':id/mine')
+  @ApiOperation({
+    summary:
+      "Take a request off this company's lists (the trash on an accepted request); others are not affected",
+  })
+  @ApiCommonErrors()
+  async removeFromMine(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.companyRequestsService.removeFromMine(id, reqUser.identityId);
+  }
+
+  @Patch(':id/complete')
+  @ApiOperation({
+    summary:
+      'End an accepted request (انهاء الطلب): the accepting company says the work is done and where the agreement was made',
+  })
+  @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
+  @ApiCommonErrors()
+  async complete(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: CompleteRequestDto,
+  ) {
+    return this.companyRequestsService.complete(
+      id,
+      reqUser.identityId,
+      dto.via,
+    );
   }
 
   @Patch(':id/reject')

@@ -1,6 +1,6 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
 import { Share } from 'react-native';
 
@@ -32,10 +32,18 @@ export function useCreateInvoice() {
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
   const queryClient = useQueryClient();
 
+  // Opened from an accepted request's اصدار فاتورة: its client is picked
+  const params = useLocalSearchParams<{
+    requestId?: string;
+    clientName?: string;
+  }>();
+
   const [step, setStep] = useState<WizardStep>(1);
-  const [clientName, setClientName] = useState('');
+  const [clientName, setClientName] = useState(params.clientName ?? '');
   // Set when the client was picked from an accepted request
-  const [requestId, setRequestId] = useState<string | null>(null);
+  const [requestId, setRequestId] = useState<string | null>(
+    params.requestId ?? null,
+  );
   const [invoiceNo] = useState(generateProvisionalInvoiceNo);
   const [title, setTitle] = useState('');
   const [warrantyMonths, setWarrantyMonths] = useState('');

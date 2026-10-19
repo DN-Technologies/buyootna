@@ -336,4 +336,65 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     );
     expect(queryByTestId('request-details-client-rating')).toBeNull();
   });
+
+  it('مقبولة: اصدار فاتورة opens the invoice for this client', async () => {
+    mockDetails({ status: 'accepted' });
+    const { getByTestId, queryByTestId } = await render(<CompanyRequestDetailsScreen />);
+
+    expect(queryByTestId('request-details-accept-button')).toBeNull();
+    await fireEvent.press(getByTestId('request-details-invoice-button'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/create-invoice',
+      params: { requestId: 'req-1', clientName: 'نواف الجارحي' },
+    });
+  });
+
+  it('مقبولة: انهاء الطلب asks, then opens the end screen', async () => {
+    mockDetails({ status: 'accepted' });
+    const { getByTestId, getByText } = await render(<CompanyRequestDetailsScreen />);
+
+    await fireEvent.press(getByTestId('request-details-end-button'));
+    expect(getByText('لا، مازال مستمرًا')).toBeTruthy();
+    await fireEvent.press(getByText('نعم، انتهى'));
+    expect(mockPush).toHaveBeenCalledWith('/(company)/(requests)/end/req-1');
+  });
+
+  it('an ended request has no actions', async () => {
+    mockDetails({ status: 'accepted', completed: true });
+    const { queryByTestId } = await render(<CompanyRequestDetailsScreen />);
+    expect(queryByTestId('request-details-end-button')).toBeNull();
+    expect(queryByTestId('request-details-invoice-button')).toBeNull();
+  });
+
+  it('تم الرد: تفاصيل الرد, no actions', async () => {
+    mockDetails({
+      status: 'responded',
+      offers: [
+        {
+          id: 'o1',
+          provider: {
+            id: 'company-1',
+            name: 'شركة',
+            logoUrl: null,
+            specialty: null,
+            isVerified: true,
+          },
+          reply: { message: 'فحص إنشائي', excludes: 'اختبار التربة', notes: null },
+        },
+      ],
+    });
+    const { getByTestId, queryByTestId } = await render(<CompanyRequestDetailsScreen />);
+
+    expect(getByTestId('request-details-reply-includes')).toHaveTextContent('فحص إنشائي');
+    expect(getByTestId('request-details-reply-excludes')).toHaveTextContent('اختبار التربة');
+    expect(queryByTestId('request-details-reply-notes')).toBeNull();
+    expect(queryByTestId('request-details-accept-button')).toBeNull();
+    expect(queryByTestId('request-details-end-button')).toBeNull();
+  });
+
+  it('مرفوضة: no ⋮', async () => {
+    mockDetails({ status: 'rejected' });
+    const { queryByTestId } = await render(<CompanyRequestDetailsScreen />);
+    expect(queryByTestId('request-details-options-button')).toBeNull();
+  });
 });

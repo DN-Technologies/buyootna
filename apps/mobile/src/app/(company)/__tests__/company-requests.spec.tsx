@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor, within } from '@testing-library/react-native';
 
 import { CompanyRequestItem } from '@/features/company/components/requests';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
+import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 
 import CompanyRequestsScreen from '../company-requests';
 
 const mockPush = jest.fn();
+const mockSetParams = jest.fn();
+let mockParams: Record<string, string | undefined> = {};
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, setParams: mockSetParams }),
+  useLocalSearchParams: () => mockParams,
 }));
 
 jest.mock('@react-navigation/native', () => ({
@@ -43,7 +47,11 @@ jest.mock('@gorhom/bottom-sheet', () => {
 });
 
 jest.mock('@/shared/api/companyRequests.service', () => ({
-  companyRequestsService: { respond: jest.fn() },
+  companyRequestsService: { respond: jest.fn(), removeFromMine: jest.fn() },
+}));
+
+jest.mock('@/shared/api/chat.service', () => ({
+  chatService: { createConversation: jest.fn() },
 }));
 
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
@@ -125,6 +133,7 @@ const renderScreen = () => render(<Screen />);
 describe('CompanyRequestsScreen (real data)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockParams = {};
     mockRequestsFor('company', 'all');
   });
 
@@ -316,5 +325,87 @@ describe('CompanyRequestsScreen (real data)', () => {
       {},
     );
     expect(queryByTestId('company-requests-filter-active-dot')).toBeNull();
+  });
+
+  it('card footers follow the status (Figma)', async () => {
+    const { getByTestId, queryByTestId } = await renderScreen();
+
+    // قيد الانتظار: الرد + التفاصيل
+    expect(getByTestId('company-request-reply-btn-req-1')).toBeTruthy();
+    // تم الرد: التفاصيل only
+    expect(queryByTestId('company-request-reply-btn-req-2')).toBeNull();
+    expect(getByTestId('company-request-details-btn-req-2')).toBeTruthy();
+    // مقبولة: ابدأ المحادثة + the trash
+    expect(getByTestId('company-request-chat-btn-req-3')).toHaveTextContent(
+      'ابدأ المحادثة',
+    );
+    expect(getByTestId('company-request-remove-btn-req-3')).toBeTruthy();
+    expect(queryByTestId('company-request-details-btn-req-3')).toBeNull();
+  });
+
+  it('ابدأ المحادثة opens the chat pinned to the request', async () => {
+    (chatService.createConversation as jest.Mock).mockResolvedValue({ id: 'conv-3' });
+    const { getByTestId } = await renderScreen();
+
+    await fireEvent.press(getByTestId('company-request-chat-btn-req-3'));
+
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith('/chat/conv-3'),
+    );
+    expect(chatService.createConversation).toHaveBeenCalledWith(
+      'client-1',
+      undefined,
+      'req-3',
+    );
+  });
+
+  it('the trash asks, then takes the request off the list', async () => {
+    (companyRequestsService.removeFromMine as jest.Mock).mockResolvedValue(undefined);
+    const { getByTestId, getByText } = await renderScreen();
+
+    await fireEvent.press(getByTestId('company-request-remove-btn-req-3'));
+    expect(getByText('إزالة الطلب من قائمتك؟')).toBeTruthy();
+    await fireEvent.press(getByText('تأكيد الإزالة'));
+
+    await waitFor(() =>
+      expect(companyRequestsService.removeFromMine).toHaveBeenCalledWith('req-3'),
+    );
+  });
+
+  it('مرفوضة says they disappear after 30 days', async () => {
+    const { getByTestId, queryByTestId } = await renderScreen();
+    expect(queryByTestId('company-requests-rejected-note')).toBeNull();
+
+    await fireEvent.press(getByTestId('company-requests-filter-rejected'));
+    expect(getByTestId('company-requests-rejected-note')).toHaveTextContent(
+      'الطلبات المرفوضة تختفي بعد 30يوم',
+    );
+  });
+
+  it('back from انهاء الطلب: تم إنهاء الطلب بنجاح.', async () => {
+    // The toast hides on a 3.5s timer: run it here, not after the file ends
+    jest.useFakeTimers();
+    mockParams = { ended: '1' };
+    const { getByText } = await renderScreen();
+
+    expect(getByText('تم إنهاء الطلب بنجاح.')).toBeTruthy();
+    expect(mockSetParams).toHaveBeenCalledWith({ ended: undefined });
+    await act(() => jest.runOnlyPendingTimers());
+    jest.useRealTimers();
+  });
+
+  it('the reply sends «العرض لا يشمل» too', async () => {
+    (companyRequestsService.respond as jest.Mock).mockResolvedValue({});
+    const { getByTestId } = await renderScreen();
+
+    await fireEvent.press(getByTestId('company-request-reply-btn-req-1'));
+    await fireEvent.changeText(getByTestId('request-reply-excludes'), 'المواد');
+    await fireEvent.press(getByTestId('request-reply-send'));
+
+    await waitFor(() =>
+      expect(companyRequestsService.respond).toHaveBeenCalledWith('req-1', {
+        excludes: 'المواد',
+      }),
+    );
   });
 });
