@@ -11,6 +11,12 @@ import { useChatStore } from '@/shared/store/useChatStore';
 
 import OfficeMoreScreen from '../office-more';
 
+// The map picker pulls in the native map, which Jest can't load
+jest.mock('@/shared/components/map/MapPickerModal', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@gorhom/bottom-sheet');
 
 jest.mock('expo-router', () => ({

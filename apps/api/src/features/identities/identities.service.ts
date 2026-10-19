@@ -97,6 +97,14 @@ const IDENTITY_INCLUDE = {
   },
 };
 
+// A map coordinate from JSON (a number) or a multipart body (text);
+// undefined when absent or not a number, so the stored one is kept
+const toCoordinate = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : undefined;
+};
+
 @Injectable()
 export class IdentitiesService {
   constructor(
@@ -445,8 +453,9 @@ export class IdentitiesService {
             licenseExpiry: companyDto.licenseExpiry,
             logoUrl: companyDto.logoUrl,
             licenseFileUrl: companyDto.licenseFileUrl,
-            latitude: companyDto.latitude,
-            longitude: companyDto.longitude,
+            // Multipart bodies carry the map point as text
+            latitude: toCoordinate(companyDto.latitude),
+            longitude: toCoordinate(companyDto.longitude),
             specialty: companyDto.specialty,
             workingHours,
           },

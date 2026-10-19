@@ -36,6 +36,9 @@ export interface CompanyData {
   about?: string | null;
   // مواعيد العمل, as saved (see shared/utils/workingHours)
   workingHours?: WorkingDay[] | null;
+  // The HQ's map point (picked on edit profile)
+  latitude?: number | null;
+  longitude?: number | null;
   licenseActivity?: string | null;
   licenseNumber?: string;
   licenseExpiry?: string | null;

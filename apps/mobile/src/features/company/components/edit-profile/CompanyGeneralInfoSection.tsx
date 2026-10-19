@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { useState } from 'react';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -9,6 +10,7 @@ import FieldLabel from '@/shared/components/forms/FieldLabel';
 import KuwaitPhoneField from '@/shared/components/forms/KuwaitPhoneField';
 import PhoneVerificationHint from '@/shared/components/forms/PhoneVerificationHint';
 import type { ProfileFormData } from '@/shared/components/forms/types';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
 import WorkingHoursField from '@/shared/components/profile/WorkingHoursField';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
@@ -53,6 +55,8 @@ export default function CompanyGeneralInfoSection({
   needsPhoneVerification,
   verifySavedPhone,
 }: CompanyGeneralInfoSectionProps) {
+  // المقر الرئيسي's map
+  const [showMap, setShowMap] = useState(false);
   return (
     <View>
       <Text
@@ -123,21 +127,37 @@ export default function CompanyGeneralInfoSection({
             No WhatsApp: companies are reached by phone or in-app chat */}
         <IdentityContactPhone />
 
-        {/* Field: المقر الرئيسي */}
+        {/* Field: المقر الرئيسي, picked on the map (address + point) */}
         <View>
           <FieldLabel className={LABEL_CLASS}>المقر الرئيسي</FieldLabel>
-          <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
-            <TextInput
-              value={identity.hqLocation}
-              onChangeText={(val) => setIdentityField('hqLocation', val)}
-              placeholder="أدخل المقر الرئيسي"
-              placeholderTextColor="#979797"
-              textAlign="right"
-              className="flex-1 font-cairo-regular text-[14px] text-[#111111]"
+          <TouchableOpacity
+            testID="hq-location-field"
+            activeOpacity={0.7}
+            onPress={() => setShowMap(true)}
+            className="h-[46px] flex-row items-center justify-between gap-2 rounded-[8px] border border-[#ECECEC] bg-white px-3"
+          >
+            <Text
+              numberOfLines={1}
+              className={`flex-1 font-cairo-regular text-[14px] leading-[22px] ${identity.hqLocation ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl' }}
-            />
+            >
+              {identity.hqLocation || 'حدد المقر على الخريطة'}
+            </Text>
             <LocationPinIcon size={16} color="#15304D" />
-          </View>
+          </TouchableOpacity>
+          <MapPickerModal
+            visible={showMap}
+            onClose={() => setShowMap(false)}
+            onConfirm={(addressName, lat, lng) => {
+              setIdentityField('hqLocation', addressName);
+              setIdentityField('latitude', String(lat));
+              setIdentityField('longitude', String(lng));
+              setShowMap(false);
+            }}
+            initialLat={identity.latitude ? Number(identity.latitude) : undefined}
+            initialLng={identity.longitude ? Number(identity.longitude) : undefined}
+            initialAddressLabel={identity.hqLocation || undefined}
+          />
         </View>
 
         {/* Field: مناطق تقديم الخدمة */}
@@ -150,8 +170,10 @@ export default function CompanyGeneralInfoSection({
           >
             <Text
               numberOfLines={1}
-              className={`flex-1 font-cairo-regular text-[14px] ${identity.serviceAreas ? 'text-[#111111]' : 'text-[#979797]'}`}
-              style={{ writingDirection: 'rtl', textAlign: 'right' }}
+              className={`flex-1 font-cairo-regular text-[14px] leading-[22px] ${identity.serviceAreas ? 'text-[#111111]' : 'text-[#979797]'}`}
+              // No textAlign: 'right' (swapped to the left in the app's
+              // forced RTL); the rtl writing direction starts it right
+              style={{ writingDirection: 'rtl' }}
             >
               {identity.serviceAreas || 'اختر نطاقات الخدمة'}
             </Text>

@@ -15,6 +15,7 @@ import apiClient from '@/shared/api/api';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { readableLocation } from '@/shared/utils/location';
 
 import OfficeGeneralInfoSection from './OfficeGeneralInfoSection';
 import OfficeLicenseSection from './OfficeLicenseSection';
@@ -39,7 +40,8 @@ export default function OfficeEditProfile() {
       email: user?.email || '',
       // Never a made-up number: empty when the account has none
       phone: stripKuwaitPrefix(user?.phone) || '',
-      hqLocation: officeData?.hqLocation || 'السالمية',
+      // Never a made-up place; a raw map pin opens empty
+      hqLocation: readableLocation(officeData?.hqLocation),
       about:
         officeData?.about ||
         'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.',

@@ -167,6 +167,35 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "mobile-edit-profile-hq-map",
+      title: {
+        en: "Edit profile: المقر الرئيسي picked on the map; مناطق تقديم الخدمة aligned right",
+        ar: "تعديل الملف: المقر الرئيسي يُحدد على الخريطة؛ ومناطق تقديم الخدمة لليمين",
+      },
+      priority: "P2",
+      story: {
+        en: "المقر الرئيسي on company and office edit profile was a free text box. It now opens the map picker (MapPickerModal, as in sign-up): the picked address name is what's shown and saved in hqLocation, and for a company the point too (latitude / longitude, sent as text in the multipart body and turned into numbers by the API). The office field no longer starts on a made-up «السالمية». The مناطق تقديم الخدمة value sat on the left: its Text had textAlign 'right', which the app's forced RTL swaps to the left; it now uses the rtl writing direction only and starts on the right.",
+        ar: "كان المقر الرئيسي في تعديل ملف الشركة والمكتب حقل نص حر. الآن يفتح منتقي الخريطة (MapPickerModal كما في التسجيل): اسم العنوان المختار هو ما يُعرض ويُحفظ في hqLocation، وللشركة النقطة أيضاً (latitude / longitude، تُرسل كنص في جسم multipart ويحولها الخادم إلى أرقام). ولم يعد حقل المكتب يبدأ بـ«السالمية» مختلقة. وكانت قيمة مناطق تقديم الخدمة على اليسار: كان للنص textAlign 'right' الذي يقلبه اتجاه التطبيق المفروض (RTL) إلى اليسار؛ الآن يستخدم اتجاه الكتابة rtl فقط ويبدأ من اليمين.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping المقر الرئيسي opens the map; confirming a place shows its address name in the field.",
+          "After saving, the company/office page and المزيد card show that address.",
+          "مناطق تقديم الخدمة shows its value on the right.",
+        ],
+        ar: [
+          "الضغط على المقر الرئيسي يفتح الخريطة، وتأكيد مكان يعرض اسم عنوانه في الحقل.",
+          "بعد الحفظ تعرض صفحة الشركة/المكتب وبطاقة المزيد ذلك العنوان.",
+          "مناطق تقديم الخدمة تعرض قيمتها على اليمين.",
+        ],
+      },
+      testScenarios: {
+        en: ["As a company: edit profile › المقر الرئيسي › pick a place › save: المزيد shows the address."],
+        ar: ["كشركة: تعديل الملف › المقر الرئيسي › اختر مكاناً › احفظ: تعرض المزيد العنوان."],
+      },
+      updatedIn: "fix/edit-profile-hq-map",
+    },
+    {
       id: "mobile-company-location-about",
       title: {
         en: "Company location shows an address, not coordinates; نبذة is capped at 300 characters",

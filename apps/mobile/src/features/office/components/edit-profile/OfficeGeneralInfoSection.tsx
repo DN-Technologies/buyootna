@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons';
-import { Text, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 import { LocationPinIcon } from '@/assets/icons/more';
+import MapPickerModal from '@/shared/components/map/MapPickerModal';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
 import WorkingHoursField from '@/shared/components/profile/WorkingHoursField';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
@@ -36,6 +38,8 @@ export default function OfficeGeneralInfoSection({
   workingHours,
   setWorkingHours,
 }: OfficeGeneralInfoSectionProps) {
+  // المقر الرئيسي's map
+  const [showMap, setShowMap] = useState(false);
   return (
     <View>
       <Text
@@ -135,20 +139,31 @@ export default function OfficeGeneralInfoSection({
           >
             المقر الرئيسي
           </Text>
-          <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
-            {/* Visual Right (Child 0): Input Text */}
-            <TextInput
-              value={hqLocation}
-              onChangeText={setHqLocation}
-              placeholder="السالمية"
-              placeholderTextColor="#979797"
-              textAlign="right"
-              className="flex-1 font-cairo-regular text-[14px] text-[#111111]"
+          {/* Picked on the map, like the company's */}
+          <TouchableOpacity
+            testID="hq-location-field"
+            activeOpacity={0.7}
+            onPress={() => setShowMap(true)}
+            className="h-[46px] flex-row items-center justify-between gap-2 rounded-[8px] border border-[#ECECEC] bg-white px-3"
+          >
+            <Text
+              numberOfLines={1}
+              className={`flex-1 font-cairo-regular text-[14px] leading-[22px] ${hqLocation ? 'text-[#111111]' : 'text-[#979797]'}`}
               style={{ writingDirection: 'rtl' }}
-            />
-            {/* Visual Left (Child 1): Location Pin Icon */}
+            >
+              {hqLocation || 'حدد المقر على الخريطة'}
+            </Text>
             <LocationPinIcon size={16} color="#15304D" />
-          </View>
+          </TouchableOpacity>
+          <MapPickerModal
+            visible={showMap}
+            onClose={() => setShowMap(false)}
+            onConfirm={(addressName) => {
+              setHqLocation(addressName);
+              setShowMap(false);
+            }}
+            initialAddressLabel={hqLocation || undefined}
+          />
         </View>
 
         {/* Field: نبذة عن الشركة / المكتب (Multiline Textarea) */}

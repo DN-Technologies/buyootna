@@ -36,6 +36,9 @@ export interface PickedFile {
 // they are identity data (saved to PATCH /identities/:id), not user data.
 export interface CompanyIdentityFields {
   hqLocation: string;
+  // The HQ's map point, as text for the form ('' when not picked)
+  latitude: string;
+  longitude: string;
   serviceAreas: string;
   about: string;
   // مواعيد العمل as JSON text (WorkingDay[]); '' when not set. It used to
@@ -49,6 +52,8 @@ export interface CompanyIdentityFields {
 
 export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   hqLocation: '',
+  latitude: '',
+  longitude: '',
   serviceAreas: '',
   about: '',
   workingHours: '',
@@ -101,6 +106,8 @@ export function useCompanyEditProfile() {
     () => ({
       // A raw map pin opens empty, to be written as an address
       hqLocation: readableLocation(companyData?.hqLocation),
+      latitude: companyData?.latitude?.toString() ?? '',
+      longitude: companyData?.longitude?.toString() ?? '',
       serviceAreas: companyData?.serviceAreas || '',
       about: companyData?.about || '',
       workingHours: companyData?.workingHours
