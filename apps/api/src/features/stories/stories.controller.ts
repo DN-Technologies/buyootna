@@ -18,8 +18,12 @@ import { CurrentUser } from '../../core/decorators/current-user.decorator';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
+import { CreateReportDto } from '../reports/dto/create-report.dto';
+import { ReportsService } from '../reports/reports.service';
 import { CreateStoryUploadDto } from './dto/create-story-upload.dto';
 import { PublishStoryDto } from './dto/publish-story.dto';
+import { RecordStoryViewsDto } from './dto/record-story-views.dto';
+import { StoryViewersQueryDto } from './dto/story-viewers-query.dto';
 import { StoryFeedQueryDto } from './dto/story-feed-query.dto';
 import {
   AuthorStoryDto,
@@ -27,6 +31,7 @@ import {
   StoryAuthorStoriesDto,
   StoryFeedDto,
   StoryUploadSlotDto,
+  StoryViewersDto,
 } from './dto/story-response.dto';
 import { StoriesFeedService } from './stories-feed.service';
 import { StoriesService } from './stories.service';
@@ -39,7 +44,58 @@ export class StoriesController {
   constructor(
     private readonly stories: StoriesService,
     private readonly feedService: StoriesFeedService,
+    private readonly reports: ReportsService,
   ) {}
+
+  @Post('views')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Record that the current profile viewed these stories (up to 50; repeat-safe; stories it may not view are skipped)',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async recordViews(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RecordStoryViewsDto,
+  ): Promise<void> {
+    await this.stories.recordViews(
+      { identityId: reqUser.identityId, userId: reqUser.userId },
+      dto,
+    );
+  }
+
+  @Get(':id/viewers')
+  @ApiOperation({
+    summary: "Who viewed one of the current profile's stories (author only)",
+  })
+  @ApiResponse({ status: 200, type: StoryViewersDto })
+  @ApiCommonErrors()
+  viewers(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: StoryViewersQueryDto,
+  ) {
+    return this.stories.viewers(id, reqUser.identityId, query);
+  }
+
+  @Post(':id/reports')
+  @ApiOperation({
+    summary:
+      'Report a story: a report against its author, linked to the story (one per profile and story; repeating returns the first)',
+  })
+  @ApiCommonErrors()
+  report(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateReportDto,
+  ) {
+    return this.reports.createForStory(
+      { userId: reqUser.userId, identityId: reqUser.identityId },
+      id,
+      dto,
+    );
+  }
 
   @Post('uploads')
   @ApiOperation({

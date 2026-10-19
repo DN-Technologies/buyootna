@@ -3,7 +3,9 @@
  * advisory lock (lockKeys) must keep simultaneous requests within the rules.
  *  - many upload-slot requests at once leave exactly one pending slot;
  *  - many publishes at once never exceed 20 live stories, nor 30 published
- *    in 24 hours (deleted stories included).
+ *    in 24 hours (deleted stories included);
+ *  - the same view or the same report sent many times at once is stored
+ *    once (primary key / unique key).
  * An in-memory database can't run these (no concurrent sessions or
  * advisory locks), so they need a real one. S3 is stubbed: this checks the
  * database logic only.
@@ -22,6 +24,7 @@ import { HttpException } from '@nestjs/common';
 
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from '../../../core/storage/storage.service';
+import { ReportsService } from '../../reports/reports.service';
 import { StoriesMediaService } from '../stories-media.service';
 import { StoriesService } from '../stories.service';
 
@@ -35,6 +38,9 @@ describeIfDb('Stories limits (real Postgres concurrency)', () => {
   let service: StoriesService;
   let userId: string;
   let officeId: string;
+  let viewerUserId: string;
+  let viewerId: string;
+  let reports: ReportsService;
 
   // No S3: every file "passes" the check and links are placeholders
   const media = {
@@ -84,6 +90,7 @@ describeIfDb('Stories limits (real Postgres concurrency)', () => {
   beforeAll(() => {
     prisma = new PrismaService();
     service = new StoriesService(prisma, media, storage);
+    reports = new ReportsService(prisma);
   });
 
   beforeEach(async () => {
@@ -107,10 +114,26 @@ describeIfDb('Stories limits (real Postgres concurrency)', () => {
       },
     });
     officeId = office.id;
+    // A viewer on another account
+    const viewerUser = await prisma.user.create({
+      data: { password: 'x', email: `viewer-${suffix}@test.local` },
+    });
+    viewerUserId = viewerUser.id;
+    const viewer = await prisma.identity.create({
+      data: {
+        userId: viewerUserId,
+        type: 'INDIVIDUAL',
+        individualData: { create: { name: 'مشاهد' } },
+      },
+    });
+    viewerId = viewer.id;
   });
 
   afterEach(async () => {
     // Cascades to the identity, its stories and views
+    // Reports are kept for admins; remove this run's before the users
+    await prisma.report.deleteMany({ where: { reporterUserId: viewerUserId } });
+    await prisma.user.delete({ where: { id: viewerUserId } });
     await prisma.user.delete({ where: { id: userId } });
   });
 
@@ -203,5 +226,93 @@ describeIfDb('Stories limits (real Postgres concurrency)', () => {
         sizeBytes: 1,
       }),
     ).rejects.toThrow(HttpException);
+  });
+
+  /** One live story by the office, published an hour ago. */
+  const liveStory = async () => {
+    const now = new Date();
+    await seed(1, {
+      status: 'ACTIVE',
+      publishedAt: new Date(now.getTime() - HOUR),
+      expiresAt: new Date(now.getTime() + 23 * HOUR),
+    });
+    const story = await prisma.story.findFirstOrThrow({
+      where: { identityId: officeId, status: 'ACTIVE' },
+      select: { id: true },
+    });
+    return story.id;
+  };
+
+  it(`the same view sent ${CONCURRENT} times at once is stored once`, async () => {
+    const storyId = await liveStory();
+    const results = await settle(
+      Array.from({ length: CONCURRENT }, () =>
+        service.recordViews(
+          { identityId: viewerId, userId: viewerUserId },
+          { storyIds: [storyId] },
+        ),
+      ),
+    );
+    expect(results.every((r) => r.status === 'fulfilled')).toBe(true);
+    expect(await prisma.storyView.count({ where: { storyId } })).toBe(1);
+  });
+
+  it(`the same report sent ${CONCURRENT} times at once is filed once`, async () => {
+    const storyId = await liveStory();
+    const results = await settle(
+      Array.from({ length: CONCURRENT }, () =>
+        reports.createForStory(
+          { userId: viewerUserId, identityId: viewerId },
+          storyId,
+          { reason: 'محتوى مسيء' },
+        ),
+      ),
+    );
+    expect(results.every((r) => r.status === 'fulfilled')).toBe(true);
+    expect(
+      await prisma.report.count({ where: { targetStoryId: storyId } }),
+    ).toBe(1);
+    const ids = new Set(
+      results.map((r) =>
+        r.status === 'fulfilled' ? (r.value.data as { id: string }).id : null,
+      ),
+    );
+    // Every caller got the same report back
+    expect(ids.size).toBe(1);
+  });
+
+  it('the viewer list and its total leave out disabled accounts', async () => {
+    const storyId = await liveStory();
+    await service.recordViews(
+      { identityId: viewerId, userId: viewerUserId },
+      { storyIds: [storyId] },
+    );
+    let list = await service.viewers(storyId, officeId, {});
+    expect(list.total).toBe(1);
+    expect(list.viewers.map((v) => v.identityId)).toEqual([viewerId]);
+
+    await prisma.user.update({
+      where: { id: viewerUserId },
+      data: { isDisabled: true },
+    });
+    list = await service.viewers(storyId, officeId, {});
+    expect(list.total).toBe(0);
+    expect(list.viewers).toEqual([]);
+  });
+
+  it('a purged story leaves its report in place, unlinked', async () => {
+    const storyId = await liveStory();
+    await reports.createForStory(
+      { userId: viewerUserId, identityId: viewerId },
+      storyId,
+      { reason: 'محتوى مسيء' },
+    );
+    await prisma.story.delete({ where: { id: storyId } });
+    const report = await prisma.report.findFirstOrThrow({
+      where: { reporterUserId: viewerUserId },
+      select: { targetStoryId: true, targetStorySnapshot: true },
+    });
+    expect(report.targetStoryId).toBeNull();
+    expect(report.targetStorySnapshot).toMatchObject({ storyId });
   });
 });

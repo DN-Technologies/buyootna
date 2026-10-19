@@ -37,6 +37,13 @@ model Report {
   targetPropertyId String?
   targetProperty   Property? @relation(fields: [targetPropertyId], references: [id], onDelete: SetNull)
 
+  // A report made from a story: still a report against its author (USER),
+  // linked to the story while it exists, with what it showed kept here
+  // because the story itself is deleted within about a day
+  targetStoryId       String?
+  targetStory         Story?    @relation(fields: [targetStoryId], references: [id], onDelete: SetNull)
+  targetStorySnapshot Json?
+
   resolvedAt         DateTime?
   resolvedByAdminId  String?
   resolvedByAdmin    User?     @relation("ReportResolvedBy", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
@@ -47,6 +54,10 @@ model Report {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // One report per reporting profile and story (other reports have no
+  // story, and NULLs never collide)
+  @@unique([reporterIdentityId, targetStoryId])
+  @@index([targetStoryId])
   @@index([status])
   @@index([targetUserId])
   @@index([targetPropertyId])
