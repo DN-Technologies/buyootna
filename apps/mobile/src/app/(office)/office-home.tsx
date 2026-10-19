@@ -22,6 +22,7 @@ import {
   OFFICE_SERVICES_MOCK,
   OFFICE_STATS_MOCK,
 } from '@/features/office/mockData';
+import StoryTray from '@/features/stories/components/StoryTray';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
@@ -71,7 +72,12 @@ export default function OfficeHomeScreen() {
             unreadNotificationsCount={unreadCount}
             onPressNotifications={() => router.push('/notification-list')}
           />
+        </ContentContainer>
 
+        {/* Stories (hidden when there are none) */}
+        <StoryTray className="mt-3" />
+
+        <ContentContainer className="px-4">
           {/* 2. 2x2 Stats Grid */}
           <View className="mt-2">
             <OfficeStatsGrid

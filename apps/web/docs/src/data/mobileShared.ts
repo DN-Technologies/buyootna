@@ -9,6 +9,47 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-stories-viewer",
+      title: {
+        en: "Stories (phase 3, not released): the stories tray and the photo viewer",
+        ar: "القصص (المرحلة 3، غير منشورة): شريط القصص وعارض الصور",
+      },
+      priority: "P1",
+      story: {
+        en: "Every signed-in profile sees a stories tray at the top of its home (individual, company and office): approved companies and offices with live stories, in the server's order (unseen first, followed first), each with a gold ring while it has unseen stories and grey once all are seen. The tray is hidden while there are none, refreshes when the home comes into focus and on pull-to-refresh, and loads more as it scrolls. Tapping a ring opens the full-screen viewer at that provider's first unseen story. Each photo shows for 5 seconds once it has loaded, with progress bars across the top (filling right to left); tapping the left half goes forward and the right half back (the Arabic reading direction), holding pauses, swiping sideways moves to the next or previous provider, and swiping down or ✕ closes. The clock also pauses while the report sheet is open, while a chat or listing is open over it, and when the app goes to the background. A story counts as viewed after a second on screen: its ring turns grey at once and the view is sent in a batch (the same story is never sent twice). The footer shows the caption, «عرض الإعلان» when the story links a listing, and «إرسال رسالة», which opens the chat with the provider (about the linked listing). ⋮ reports the story with the usual reasons. Story photos are kept in memory only, never in the phone's disk cache, and the next photos are preloaded in memory. Switching profile closes the viewer, never shows one profile's seen state for another, and drops views not yet sent rather than crediting the new profile. A photo that fails to load (an expired link) fetches fresh links once.",
+        ar: "ترى كل هوية مسجلة شريط القصص أعلى صفحتها الرئيسية (فرد وشركة ومكتب): الشركات والمكاتب المعتمدة ذات القصص الحية، بترتيب الخادم (غير المشاهَدة أولاً، والمتابَعة أولاً)، ولكل منها حلقة ذهبية ما دامت لها قصص لم تُشاهد ورمادية بعد مشاهدتها كلها. يختفي الشريط إن لم توجد قصص، ويتحدّث عند العودة إلى الصفحة وعند السحب للتحديث، ويحمّل المزيد مع التمرير. الضغط على حلقة يفتح العارض بملء الشاشة عند أول قصة لم تُشاهد لذلك الحساب. تظهر كل صورة 5 ثوانٍ بعد تحميلها، مع أشرطة تقدم في الأعلى (تمتلئ من اليمين لليسار)؛ الضغط على النصف الأيسر يتقدم والأيمن يرجع (اتجاه القراءة العربية)، والضغط المطوّل يوقف مؤقتاً، والسحب جانبياً ينتقل للحساب التالي أو السابق، والسحب لأسفل أو ✕ يغلق. ويتوقف العدّاد أيضاً أثناء نافذة الإبلاغ، وأثناء فتح محادثة أو إعلان فوقه، وعند انتقال التطبيق للخلفية. تُحتسب المشاهدة بعد ثانية على الشاشة: تصبح الحلقة رمادية فوراً وتُرسل المشاهدة ضمن دفعة (ولا تُرسل القصة نفسها مرتين). يعرض الأسفل الوصف، و«عرض الإعلان» إن كانت القصة مرتبطة بإعلان، و«إرسال رسالة» التي تفتح المحادثة مع الحساب (عن الإعلان المرتبط). و⋮ للإبلاغ عن القصة بالأسباب المعتادة. صور القصص تُحفظ في الذاكرة فقط، ولا تُخزَّن على قرص الهاتف، وتُحمّل الصور التالية مسبقاً في الذاكرة. تبديل الهوية يغلق العارض، ولا يعرض حالة مشاهدة هوية لهوية أخرى، ويتجاهل المشاهدات غير المرسلة بدلاً من نسبها للهوية الجديدة. والصورة التي يتعذر تحميلها (رابط منتهٍ) تجلب روابط جديدة مرة واحدة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The tray shows only when there are stories, in the server's order, gold for unseen and grey for seen.",
+          "The viewer opens at the provider's first unseen story; a photo advances after 5 seconds and the last one closes the viewer.",
+          "Left tap goes forward, right tap back, holding pauses, a sideways swipe changes provider, a down swipe closes.",
+          "After a second on screen a story's ring turns grey and its view is recorded once.",
+          "«إرسال رسالة» opens the chat with the provider; «عرض الإعلان» opens the linked listing; ⋮ reports the story.",
+          "Switching profile closes the viewer and never carries one profile's views or seen state to another.",
+        ],
+        ar: [
+          "يظهر الشريط فقط عند وجود قصص، بترتيب الخادم، ذهبي لغير المشاهَد ورمادي للمشاهَد.",
+          "يفتح العارض عند أول قصة لم تُشاهد للحساب؛ وتتقدم الصورة بعد 5 ثوانٍ وتغلق الأخيرة العارض.",
+          "الضغط يساراً يتقدم ويميناً يرجع، والضغط المطوّل يوقف، والسحب جانبياً يغيّر الحساب، والسحب لأسفل يغلق.",
+          "بعد ثانية على الشاشة تصبح حلقة القصة رمادية وتُسجَّل مشاهدتها مرة واحدة.",
+          "«إرسال رسالة» تفتح المحادثة مع الحساب؛ و«عرض الإعلان» يفتح الإعلان المرتبط؛ و⋮ للإبلاغ عن القصة.",
+          "تبديل الهوية يغلق العارض ولا ينقل مشاهدات أو حالة مشاهدة هوية إلى أخرى.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment yet (Stories isn't deployed; posting comes in phase 4).",
+          "With stories seeded for two offices: open the tray's first ring, watch both stories, check the ring turns grey and GET /stories/:id/viewers lists you once.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة؛ والنشر في المرحلة 4).",
+          "مع قصص لمكتبين: افتح أول حلقة في الشريط، وشاهد القصتين، وتحقق أن الحلقة أصبحت رمادية وأن GET /stories/:id/viewers يعرضك مرة واحدة.",
+        ],
+      },
+      updatedIn: "feat/stories-phase3",
+    },
+    {
       id: "mobile-company-office-gate",
       title: {
         en: "Company and office accounts are live in every build",
