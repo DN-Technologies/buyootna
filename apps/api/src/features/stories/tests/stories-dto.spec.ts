@@ -3,6 +3,8 @@ import { validate } from 'class-validator';
 
 import { CreateStoryUploadDto } from '../dto/create-story-upload.dto';
 import { PublishStoryDto } from '../dto/publish-story.dto';
+import { RecordStoryViewsDto } from '../dto/record-story-views.dto';
+import { StoryViewersQueryDto } from '../dto/story-viewers-query.dto';
 import { StoryFeedQueryDto } from '../dto/story-feed-query.dto';
 import { toViewerStoryDto, type StoryRow } from '../stories.mapper';
 
@@ -66,6 +68,40 @@ describe('story DTOs', () => {
         'limit',
       ]);
     });
+  });
+});
+
+describe('phase 2 DTOs', () => {
+  const id = (n: number) =>
+    `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+
+  it('views: 1 to 50 distinct story ids', async () => {
+    expect(await errorsOf(RecordStoryViewsDto, { storyIds: [id(1)] })).toEqual(
+      [],
+    );
+    const fifty = Array.from({ length: 50 }, (_, i) => id(i + 1));
+    expect(await errorsOf(RecordStoryViewsDto, { storyIds: fifty })).toEqual(
+      [],
+    );
+  });
+
+  it.each([
+    ['empty', []],
+    ['51 ids', Array.from({ length: 51 }, (_, i) => id(i + 1))],
+    ['a duplicate', [id(1), id(1)]],
+    ['not an id', ['abc']],
+    ['not a list', id(1)],
+  ])('views: %s is refused', async (_label, storyIds) => {
+    expect(await errorsOf(RecordStoryViewsDto, { storyIds })).toEqual([
+      'storyIds',
+    ]);
+  });
+
+  it('viewers: limit up to 50', async () => {
+    expect(await errorsOf(StoryViewersQueryDto, { limit: '50' })).toEqual([]);
+    expect(await errorsOf(StoryViewersQueryDto, { limit: '51' })).toEqual([
+      'limit',
+    ]);
   });
 });
 

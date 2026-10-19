@@ -45,6 +45,12 @@ export const STORY_MEDIA_URL_MAX_SECONDS = 15 * 60;
 export const STORY_ACTIVE_LIMIT = 20;
 export const STORY_DAILY_PUBLISH_LIMIT = 30;
 
+// Views the app sends in one request
+export const STORY_VIEWS_BATCH_MAX = 50;
+// The author's viewer list
+export const STORY_VIEWERS_DEFAULT_LIMIT = 30;
+export const STORY_VIEWERS_MAX_LIMIT = 50;
+
 export const STORY_FEED_DEFAULT_LIMIT = 20;
 export const STORY_FEED_MAX_LIMIT = 30;
 // A feed cursor older than this is refused (the app starts again)

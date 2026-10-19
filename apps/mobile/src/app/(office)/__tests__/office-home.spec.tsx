@@ -5,6 +5,12 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import OfficeHomeScreen from '../office-home';
 
+// The stories tray has its own tests; here it renders nothing
+jest.mock('@/features/stories/components/StoryTray', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@gorhom/bottom-sheet');
 
 jest.mock('expo-router', () => ({
