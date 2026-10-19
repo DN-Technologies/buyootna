@@ -17,6 +17,14 @@ export class CreateRequestOfferDto {
   @MaxLength(2000)
   message?: string;
 
+  @ApiPropertyOptional({
+    description: 'العرض لا يشمل: what the offer leaves out',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  excludes?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

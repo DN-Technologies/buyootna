@@ -38,6 +38,13 @@ const PROVIDER_INCLUDE = {
 // A rejected request stays on the requester's list this long
 const REJECTED_VISIBLE_MS = 30 * 24 * 60 * 60 * 1000;
 
+// RequestDismissal.kind: رفض on a public request (listed under مرفوضة), or
+// the trash on an accepted one (listed nowhere)
+const DISMISSAL_REJECTED = 'rejected';
+const DISMISSAL_REMOVED = 'removed';
+
+export type CompletedVia = 'in_app' | 'outside';
+
 type ProviderIdentity = Prisma.IdentityGetPayload<{
   include: typeof PROVIDER_INCLUDE;
 }>;
@@ -88,7 +95,7 @@ function visibleOffers(
           provider,
           price: o.price,
           status: o.status.toLowerCase() as 'sent' | 'accepted' | 'rejected',
-          reply: { message: o.message, notes: o.notes },
+          reply: { message: o.message, excludes: o.excludes, notes: o.notes },
         },
       ];
     });
@@ -246,18 +253,31 @@ export class CompanyRequestsService {
               ],
             };
 
-    // A public request this company rejected left only its own lists: it
-    // shows under مرفوضة (whatever its shared status) and nowhere else
+    // What this company took off its lists: a public request it rejected
+    // shows under مرفوضة only (whatever its shared status), for 30 days; one
+    // it removed (the trash on an accepted request) shows nowhere
+    const rejectedCutoff = new Date(Date.now() - REJECTED_VISIBLE_MS);
     const publicRejected =
       params.scope === 'public' && params.status === 'rejected';
-    if (params.scope === 'public') {
+    if (params.scope !== 'mine') {
       where.dismissals = publicRejected
-        ? { some: { identityId } }
+        ? {
+            some: {
+              identityId,
+              kind: DISMISSAL_REJECTED,
+              createdAt: { gte: rejectedCutoff },
+            },
+          }
         : { none: { identityId } };
     }
 
     if (params.status && params.status !== 'all' && !publicRejected) {
       where.status = params.status.toUpperCase() as RequestStatus;
+    }
+    // A finished request (انهاء الطلب) leaves the company's مقبولة; it stays
+    // under الكل
+    if (params.scope !== 'mine' && params.status === 'accepted') {
+      where.completedAt = null;
     }
 
     const and: Prisma.CompanyRequestWhereInput[] = [];
@@ -307,15 +327,14 @@ export class CompanyRequestsService {
       });
     }
     if (params.saved) and.push({ bookmarks: { some: { identityId } } });
-    // The requester's rejected requests drop off their list after 30 days
-    if (params.scope === 'mine') {
-      and.push({
-        NOT: {
-          status: RequestStatus.REJECTED,
-          updatedAt: { lt: new Date(Date.now() - REJECTED_VISIBLE_MS) },
-        },
-      });
-    }
+    // Rejected requests drop off every list after 30 days (الطلبات
+    // المرفوضة تختفي بعد 30يوم)
+    and.push({
+      NOT: {
+        status: RequestStatus.REJECTED,
+        updatedAt: { lt: rejectedCutoff },
+      },
+    });
     if (and.length) where.AND = and;
 
     const requests = await this.prisma.companyRequest.findMany({
@@ -326,7 +345,7 @@ export class CompanyRequestsService {
         acceptedByIdentity: { include: PROVIDER_INCLUDE },
         offers: OFFERS_INCLUDE,
         bookmarks: { where: { identityId }, select: { id: true } },
-        dismissals: { where: { identityId }, select: { id: true } },
+        dismissals: { where: { identityId }, select: { kind: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -344,7 +363,9 @@ export class CompanyRequestsService {
           previousOffersByClient.get(r.clientIdentityId) ?? 0,
         ),
         // Rejected by this company: مرفوضة for it, whatever others see
-        ...(r.dismissals?.length ? { status: 'rejected' as const } : {}),
+        ...(r.dismissals?.some((d) => d.kind === DISMISSAL_REJECTED)
+          ? { status: 'rejected' as const }
+          : {}),
         provider: toProviderInfo(r.acceptedByIdentity ?? r.targetIdentity),
         offers,
         offersCount: offers.length,
@@ -406,7 +427,7 @@ export class CompanyRequestsService {
         acceptedByIdentity: { include: PROVIDER_INCLUDE },
         offers: OFFERS_INCLUDE,
         bookmarks: { where: { identityId }, select: { id: true } },
-        dismissals: { where: { identityId }, select: { id: true } },
+        dismissals: { where: { identityId }, select: { kind: true } },
       },
     });
     const offers = visibleOffers(
@@ -416,7 +437,9 @@ export class CompanyRequestsService {
     );
     return {
       ...this.toResponseDto(request, identityId, previousOffers),
-      ...(extras?.dismissals?.length ? { status: 'rejected' as const } : {}),
+      ...(extras?.dismissals?.some((d) => d.kind === DISMISSAL_REJECTED)
+        ? { status: 'rejected' as const }
+        : {}),
       provider: toProviderInfo(
         extras?.acceptedByIdentity ?? extras?.targetIdentity,
       ),
@@ -470,7 +493,7 @@ export class CompanyRequestsService {
     if (request.targetIdentityId === null) {
       await this.prisma.requestDismissal.upsert({
         where: { requestId_identityId: { requestId: id, identityId } },
-        create: { requestId: id, identityId },
+        create: { requestId: id, identityId, kind: DISMISSAL_REJECTED },
         update: {},
       });
       return this.findOne(id, identityId);
@@ -523,6 +546,46 @@ export class CompanyRequestsService {
     });
     return { saved: false };
   }
+  /**
+   * The trash on an accepted request: it leaves this company's lists for
+   * good. Other companies and the client are not affected.
+   */
+  async removeFromMine(
+    id: string,
+    identityId: string,
+  ): Promise<{ removed: true }> {
+    await this.getVisibleRequestOrThrow(id, identityId);
+    await this.prisma.requestDismissal.upsert({
+      where: { requestId_identityId: { requestId: id, identityId } },
+      create: { requestId: id, identityId, kind: DISMISSAL_REMOVED },
+      update: { kind: DISMISSAL_REMOVED },
+    });
+    return { removed: true };
+  }
+
+  /**
+   * انهاء الطلب: the company that took the request says the work is done
+   * and where the final agreement was made. It leaves the company's
+   * مقبولة; the client still sees it accepted.
+   */
+  async complete(
+    id: string,
+    identityId: string,
+    via: CompletedVia,
+  ): Promise<CompanyRequestResponseDto> {
+    const request = await this.getVisibleRequestOrThrow(id, identityId);
+    if (request.acceptedByIdentityId !== identityId) {
+      throw new NotFoundException('الطلب غير موجود');
+    }
+    const { count } = await this.prisma.companyRequest.updateMany({
+      where: { id, status: RequestStatus.ACCEPTED, completedAt: null },
+      data: { completedAt: new Date(), completedVia: via },
+    });
+    if (count === 0) {
+      throw new ConflictException('لا يمكن إنهاء هذا الطلب');
+    }
+    return this.findOne(id, identityId);
+  }
 
   /**
    * A company answers a request: it gets an offer (message, notes, price) the
@@ -548,15 +611,17 @@ export class CompanyRequestsService {
       throw new ConflictException('تم إغلاق هذا الطلب');
     }
 
-    // Both fields are optional in the design, but a reply says something
+    // Every field is optional in the design, but a reply says something
     const message = dto.message?.trim() || null;
+    const excludes = dto.excludes?.trim() || null;
     const notes = dto.notes?.trim() || null;
-    if (!message && !notes && dto.price === undefined) {
-      throw new BadRequestException('اكتب رسالة أو ملاحظات للعميل');
+    if (!message && !excludes && !notes && dto.price === undefined) {
+      throw new BadRequestException('اكتب تفاصيل العرض أو ملاحظات للعميل');
     }
 
     const data = {
       message,
+      excludes,
       notes,
       price: dto.price ?? null,
       status: RequestOfferStatus.SENT,
@@ -833,6 +898,8 @@ export class CompanyRequestsService {
       status:
         request.status.toLowerCase() as CompanyRequestResponseDto['status'],
       scope: request.targetIdentityId ? 'company' : 'public',
+      completed: !!request.completedAt,
+      completedVia: (request.completedVia ?? null) as CompletedVia | null,
       createdAt: request.createdAt.toISOString(),
       updatedAt: request.updatedAt.toISOString(),
       client: {

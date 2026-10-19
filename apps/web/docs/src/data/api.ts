@@ -9,6 +9,39 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-requests-complete-remove-excludes",
+      title: {
+        en: "Company requests: end an accepted request, remove one from a company's lists, «العرض لا يشمل», rejected drop off after 30 days",
+        ar: "طلبات الشركة: إنهاء الطلب المقبول، وإزالة طلب من قوائم الشركة، و«العرض لا يشمل»، واختفاء المرفوضة بعد 30 يوماً",
+      },
+      priority: "P1",
+      story: {
+        en: "PATCH /company-requests/:id/complete { via: 'in_app' | 'outside' } lets the company that accepted a request end it (انهاء الطلب): it sets completedAt and completedVia; another company gets 404, and a request that isn't accepted or is already ended gets 409. An ended request leaves the company's status=accepted list but stays under all; responses carry completed and completedVia, and the client's view is unchanged. DELETE /company-requests/:id/mine takes any visible request off this company's lists for good (RequestDismissal kind 'removed'); other companies and the client aren't affected. RequestDismissal.kind tells this apart from رفض on a public request (kind 'rejected', still listed under status=rejected). Rejected requests now drop off every company list after 30 days: a directed one by its updatedAt, a rejected public one by the dismissal's createdAt. Offers take excludes («العرض لا يشمل», max 1000), returned as reply.excludes; a reply needs a message, excludes, notes or a price. Migration 20261019200000_request_complete_remove_excludes (existing dismissals become 'rejected').",
+        ar: "PATCH /company-requests/:id/complete { via: 'in_app' | 'outside' } يتيح للشركة التي قبلت الطلب إنهاءه (انهاء الطلب): يضبط completedAt وcompletedVia؛ والشركة الأخرى ← 404، والطلب غير المقبول أو المنتهي سابقاً ← 409. والطلب المنتهي يخرج من قائمة status=accepted للشركة لكنه يبقى تحت الكل؛ وتحمل الاستجابات completed وcompletedVia، ولا يتغير ما يراه العميل. وDELETE /company-requests/:id/mine يزيل أي طلب مرئي من قوائم هذه الشركة نهائياً (RequestDismissal بنوع 'removed')؛ دون تأثير على الشركات الأخرى أو العميل. ويميّز RequestDismissal.kind ذلك عن رفض الطلب العام (النوع 'rejected'، ويظهر تحت status=rejected). وأصبحت الطلبات المرفوضة تختفي من كل قوائم الشركة بعد 30 يوماً: الموجهة حسب updatedAt، والعامة المرفوضة حسب createdAt للرفض. وتقبل العروض excludes («العرض لا يشمل»، 1000 حرف)، وتُرجع في reply.excludes؛ والرد يحتاج رسالة أو excludes أو ملاحظات أو سعراً. الترحيل 20261019200000_request_complete_remove_excludes (الرفض الموجود يصبح 'rejected').",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The accepting company ends a request; it leaves accepted and stays under all; a second call is 409.",
+          "Another company ending it gets 404.",
+          "DELETE /:id/mine hides the request from every list of that company only.",
+          "A reply with only excludes is saved and returned in reply.excludes.",
+          "A rejected request older than 30 days is not listed.",
+        ],
+        ar: [
+          "الشركة القابلة تُنهي الطلب؛ فيخرج من المقبولة ويبقى تحت الكل؛ والطلب الثاني ← 409.",
+          "إنهاؤه من شركة أخرى ← 404.",
+          "DELETE /:id/mine يخفي الطلب من كل قوائم تلك الشركة فقط.",
+          "الرد بـ excludes فقط يُحفظ ويُرجع في reply.excludes.",
+          "الطلب المرفوض الأقدم من 30 يوماً لا يظهر.",
+        ],
+      },
+      testScenarios: {
+        en: ["As the accepting company, PATCH /company-requests/<id>/complete { via: 'outside' }; GET /me?status=accepted: gone; ?status=all: listed with completed true."],
+        ar: ["كالشركة القابلة: PATCH /company-requests/<id>/complete { via: 'outside' }؛ GET /me?status=accepted: اختفى؛ ?status=all: يظهر مع completed = true."],
+      },
+      updatedIn: "feat/company-requests-status-views",
+    },
+    {
       id: "api-company-requests-reply-reject-save-filter",
       title: {
         en: "Company requests: reply with message or notes (client notified), reject a public request for one company, saved requests, list filters",

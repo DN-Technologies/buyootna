@@ -14,6 +14,7 @@ import {
   RequestDetailsHeader,
   RequestDetailsInfoGrid,
   RequestDetailsMap,
+  RequestDetailsReplySection,
   RequestDetailsTitleCard,
   RequestOptionsMenu,
 } from '@/features/company/components/requests';
@@ -51,6 +52,7 @@ export default function CompanyRequestDetailsScreen() {
   const queryClient = useQueryClient();
   const acceptSheetRef = useRef<BottomSheetModal>(null);
   const rejectSheetRef = useRef<BottomSheetModal>(null);
+  const endSheetRef = useRef<BottomSheetModal>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isSaved, setIsSaved] = useState<boolean | null>(null);
   const saved = isSaved ?? request?.isSaved ?? false;
@@ -138,11 +140,13 @@ export default function CompanyRequestDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      {/* 1. Header with Back Button & Options */}
+      {/* 1. Header with Back Button & Options (none once rejected) */}
       <RequestDetailsHeader
         title="تفاصيل الطلب"
         onBackPress={handleBack}
-        onOptionsPress={() => setMenuOpen(true)}
+        onOptionsPress={
+          request.status === 'rejected' ? undefined : () => setMenuOpen(true)
+        }
       />
 
       {/* 2. Scrollable Body Content */}
@@ -199,13 +203,29 @@ export default function CompanyRequestDetailsScreen() {
           }
           onChatPress={handleChat}
         />
+
+        {/* تفاصيل الرد: the company's own offer */}
+        <RequestDetailsReplySection reply={request.offers?.[0]?.reply} />
       </ScrollView>
 
-      {/* 3. Sticky Bottom Action Buttons, while the request is open */}
-      {(request.status === 'pending' || request.status === 'responded') && (
+      {/* 3. Sticky actions by status (Figma): قيد الانتظار قبول / رفض;
+          مقبولة اصدار فاتورة / انهاء الطلب until it's ended; none otherwise */}
+      {request.status === 'pending' && (
         <RequestDetailsBottomBar
           onAcceptPress={() => acceptSheetRef.current?.present()}
           onRejectPress={() => rejectSheetRef.current?.present()}
+        />
+      )}
+      {request.status === 'accepted' && !request.completed && (
+        <RequestDetailsBottomBar
+          variant="accepted"
+          onInvoicePress={() =>
+            router.push({
+              pathname: '/create-invoice',
+              params: { requestId: request.id, clientName: request.clientName },
+            } as never)
+          }
+          onEndPress={() => endSheetRef.current?.present()}
         />
       )}
 
@@ -235,6 +255,21 @@ export default function CompanyRequestDetailsScreen() {
         description="لن يظهر مرة أخرى ضمن طلباتك."
         confirmLabel="تأكيد الرفض"
         onConfirm={handleConfirmReject}
+      />
+
+      {/* Figma 7432:129312 */}
+      <ConfirmActionSheet
+        ref={endSheetRef}
+        variant="danger"
+        icon={<WarningTriangleIcon color="#15304D" />}
+        iconBackground="#F9FAFE"
+        title="إنهاء الطلب"
+        description="هل انتهى التعامل مع العميل؟ يمكنك إنهاء الطلب وإخراجه من قائمة الطلبات المقبولة.لن يظهر الطلب ضمن طلباتك المقبولة."
+        confirmLabel="نعم، انتهى"
+        cancelLabel="لا، مازال مستمرًا"
+        onConfirm={() =>
+          router.push(`/(company)/(requests)/end/${request.id}` as never)
+        }
       />
 
       <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />

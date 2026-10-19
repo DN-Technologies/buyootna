@@ -202,7 +202,9 @@ describe('CompanyRequestsService', () => {
       )[0][0] as {
         where: { AND?: unknown[] };
       };
-      expect(where.AND).toBeUndefined();
+      // Only the 30-day rule for rejected requests; no specialty filter
+      expect(where.AND).toHaveLength(1);
+      expect(JSON.stringify(where.AND)).not.toContain('category');
     });
 
     it('requests sent to the company directly are not narrowed by specialty', async () => {
@@ -550,7 +552,7 @@ describe('CompanyRequestsService', () => {
         where: {
           requestId_identityId: { requestId: 'req-1', identityId: 'company-1' },
         },
-        create: { requestId: 'req-1', identityId: 'company-1' },
+        create: { requestId: 'req-1', identityId: 'company-1', kind: 'rejected' },
         update: {},
       });
       // The shared status (other companies, the client) is untouched
@@ -881,7 +883,14 @@ describe('CompanyRequestsService', () => {
       });
 
       const where = whereOf();
-      expect(where.dismissals).toEqual({ some: { identityId: 'company-1' } });
+      // Only the ones it rejected, for 30 days
+      expect(where.dismissals).toEqual({
+        some: {
+          identityId: 'company-1',
+          kind: 'rejected',
+          createdAt: { gte: expect.any(Date) },
+        },
+      });
       expect(where.status).toBeUndefined();
     });
 
@@ -994,6 +1003,135 @@ describe('CompanyRequestsService', () => {
       await expect(
         service.respond('req-1', 'company-1', { message: 'مرحبا' }),
       ).resolves.toBeDefined();
+    });
+  });
+
+  describe('by status: remove, انهاء الطلب, تفاصيل الرد', () => {
+    const whereOf = () =>
+      (
+        prisma.companyRequest.findMany.mock.calls as {
+          where: Record<string, unknown>;
+        }[][]
+      )[0][0].where;
+
+    it('a reply may carry only «العرض لا يشمل»', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-1',
+      });
+      await service.respond('req-1', 'company-1', { excludes: 'المواد' });
+
+      expect(prisma.requestOffer.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({
+            message: null,
+            excludes: 'المواد',
+            notes: null,
+          }),
+        }),
+      );
+    });
+
+    it('the trash takes a request off this company\'s lists', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-1',
+        status: 'ACCEPTED',
+        acceptedByIdentityId: 'company-1',
+      });
+
+      await expect(
+        service.removeFromMine('req-1', 'company-1'),
+      ).resolves.toEqual({ removed: true });
+      expect(prisma.requestDismissal.upsert).toHaveBeenCalledWith({
+        where: {
+          requestId_identityId: { requestId: 'req-1', identityId: 'company-1' },
+        },
+        create: { requestId: 'req-1', identityId: 'company-1', kind: 'removed' },
+        update: { kind: 'removed' },
+      });
+    });
+
+    it('the company lists leave out what it took off them', async () => {
+      await service.findMine('company-1', { scope: 'company' });
+      expect(whereOf().dismissals).toEqual({
+        none: { identityId: 'company-1' },
+      });
+    });
+
+    it('مقبولة leaves out finished requests', async () => {
+      await service.findMine('company-1', {
+        scope: 'company',
+        status: 'accepted',
+      });
+      expect(whereOf().completedAt).toBeNull();
+    });
+
+    it('rejected requests drop off after 30 days', async () => {
+      await service.findMine('company-1', { scope: 'company' });
+      expect(whereOf().AND).toEqual(
+        expect.arrayContaining([
+          {
+            NOT: {
+              status: 'REJECTED',
+              updatedAt: { lt: expect.any(Date) },
+            },
+          },
+        ]),
+      );
+    });
+
+    it('the accepting company ends the request', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'ACCEPTED',
+        acceptedByIdentityId: 'company-1',
+      });
+      prisma.companyRequest.updateMany.mockResolvedValue({ count: 1 });
+
+      await service.complete('req-1', 'company-1', 'outside');
+
+      expect(prisma.companyRequest.updateMany).toHaveBeenCalledWith({
+        where: { id: 'req-1', status: 'ACCEPTED', completedAt: null },
+        data: { completedAt: expect.any(Date), completedVia: 'outside' },
+      });
+    });
+
+    it('another company can\'t end it', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+        status: 'ACCEPTED',
+        acceptedByIdentityId: 'company-other',
+      });
+      await expect(
+        service.complete('req-1', 'company-1', 'in_app'),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('a request not accepted, or already ended, is 409', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'ACCEPTED',
+        acceptedByIdentityId: 'company-1',
+      });
+      prisma.companyRequest.updateMany.mockResolvedValue({ count: 0 });
+      await expect(
+        service.complete('req-1', 'company-1', 'in_app'),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('returns completed and completedVia', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'ACCEPTED',
+        acceptedByIdentityId: 'company-1',
+        completedAt: new Date(),
+        completedVia: 'in_app',
+      });
+      const result = await service.findOne('req-1', 'company-1');
+      expect(result.completed).toBe(true);
+      expect(result.completedVia).toBe('in_app');
     });
   });
 });

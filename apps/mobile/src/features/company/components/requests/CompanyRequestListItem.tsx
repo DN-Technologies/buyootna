@@ -1,5 +1,8 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { TrashIcon } from '@/assets/icons/company-add';
+
+import { ClientChatIcon } from './details/icons';
 import {
   LocationPinSmallIcon,
   PaperclipSmallIcon,
@@ -12,6 +15,9 @@ export interface CompanyRequestListItemProps {
   onReply?: (request: CompanyRequestItem) => void;
   onDetails?: (request: CompanyRequestItem) => void;
   onPress?: (request: CompanyRequestItem) => void;
+  // مقبولة: ابدأ المحادثة and the trash
+  onStartChat?: (request: CompanyRequestItem) => void;
+  onRemove?: (request: CompanyRequestItem) => void;
 }
 
 interface StatusConfig {
@@ -44,13 +50,24 @@ export const STATUS_CONFIGS: Record<RequestStatus, StatusConfig> = {
   },
 };
 
+// A request its company ended (انهاء الطلب)
+const COMPLETED_CONFIG: StatusConfig = {
+  label: 'منتهي',
+  bgClass: 'bg-[#F5F7F9]',
+  textClass: 'text-[#6B6A6A]',
+};
+
 export default function CompanyRequestListItem({
   request,
   onReply,
   onDetails,
   onPress,
+  onStartChat,
+  onRemove,
 }: CompanyRequestListItemProps) {
-  const statusConfig = STATUS_CONFIGS[request.status] ?? STATUS_CONFIGS.pending;
+  const statusConfig = request.completed
+    ? COMPLETED_CONFIG
+    : (STATUS_CONFIGS[request.status] ?? STATUS_CONFIGS.pending);
 
   return (
     <TouchableOpacity
@@ -147,37 +164,67 @@ export default function CompanyRequestListItem({
         </Text>
       </View>
 
-      {/* Footer CTA Buttons (RTL: Child 0 is Visual Right, Child 1 is Visual Left) */}
+      {/* Footer by status (Figma): قيد الانتظار الرد + التفاصيل; مقبولة
+          ابدأ المحادثة + the trash; تم الرد / مرفوضة التفاصيل only */}
       <View className="flex-row items-center justify-between gap-2 border-t border-[#ECECEC] bg-[#F5F7F9] px-3 py-2">
-        {/* Visual Right (Child 0): Primary "الرد" Button */}
-        <TouchableOpacity
-          testID={`company-request-reply-btn-${request.id}`}
-          onPress={() => onReply?.(request)}
-          activeOpacity={0.8}
-          className="h-[32px] flex-1 items-center justify-center rounded-[24px] bg-[#15304D]"
-        >
-          <Text
-            className="font-cairo-semibold text-[14px] text-white"
-            style={{ writingDirection: 'rtl' }}
-          >
-            الرد
-          </Text>
-        </TouchableOpacity>
-
-        {/* Visual Left (Child 1): Secondary "التفاصيل" Button */}
-        <TouchableOpacity
-          testID={`company-request-details-btn-${request.id}`}
-          onPress={() => onDetails?.(request)}
-          activeOpacity={0.8}
-          className="h-[32px] flex-1 items-center justify-center rounded-[24px] border border-[#E2E8F0] bg-white"
-        >
-          <Text
-            className="font-cairo-semibold text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            التفاصيل
-          </Text>
-        </TouchableOpacity>
+        {request.status === 'accepted' ? (
+          <>
+            <TouchableOpacity
+              testID={`company-request-chat-btn-${request.id}`}
+              onPress={() => onStartChat?.(request)}
+              activeOpacity={0.8}
+              className="h-[32px] flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-[#B28648] bg-white"
+            >
+              <ClientChatIcon size={16} color="#B28648" />
+              <Text
+                className="font-cairo-semibold text-[14px] text-[#B28648]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                ابدأ المحادثة
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID={`company-request-remove-btn-${request.id}`}
+              onPress={() => onRemove?.(request)}
+              activeOpacity={0.8}
+              accessibilityLabel="إزالة الطلب"
+              className="size-[32px] items-center justify-center"
+            >
+              <TrashIcon size={18} color="#9C1E28" />
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
+            {request.status === 'pending' && (
+              <TouchableOpacity
+                testID={`company-request-reply-btn-${request.id}`}
+                onPress={() => onReply?.(request)}
+                activeOpacity={0.8}
+                className="h-[32px] flex-1 items-center justify-center rounded-[24px] bg-[#15304D]"
+              >
+                <Text
+                  className="font-cairo-semibold text-[14px] text-white"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  الرد
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              testID={`company-request-details-btn-${request.id}`}
+              onPress={() => onDetails?.(request)}
+              activeOpacity={0.8}
+              className="h-[32px] flex-1 items-center justify-center rounded-[24px] border border-[#E2E8F0] bg-white"
+            >
+              <Text
+                className="font-cairo-semibold text-[14px] text-[#111111]"
+                style={{ writingDirection: 'rtl' }}
+              >
+                التفاصيل
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </TouchableOpacity>
   );

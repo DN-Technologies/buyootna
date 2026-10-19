@@ -20,6 +20,7 @@ import { STATUS_CONFIGS } from './CompanyRequestListItem';
 import type { CompanyRequestItem } from './types';
 
 const MESSAGE_MAX = 2000;
+const EXCLUDES_MAX = 1000;
 const NOTES_MAX = 1000;
 
 interface RequestReplySheetProps {
@@ -71,8 +72,8 @@ function Field({
 
 /**
  * الرد على العميل (Figma 4410:165224): the request in short, then
- * رسالة الى العميل and ملاحظات, both optional but one needed, sent as the
- * company's offer. The client is notified; تم إرسال ردك بنجاح! follows.
+ * العرض يشمل, العرض لا يشمل and ملاحظات (shown as تفاصيل الرد), all optional
+ * but one needed, sent as the company's offer. The client is notified; تم إرسال ردك بنجاح! follows.
  */
 const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
   ({ request, onSent }, ref) => {
@@ -81,10 +82,12 @@ const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
     const queryClient = useQueryClient();
     const successRef = useRef<BottomSheetModal>(null);
     const [message, setMessage] = useState('');
+    const [excludes, setExcludes] = useState('');
     const [notes, setNotes] = useState('');
     const [sending, setSending] = useState(false);
 
-    const canSend = !!(message.trim() || notes.trim()) && !sending;
+    const canSend =
+      !!(message.trim() || excludes.trim() || notes.trim()) && !sending;
 
     const dismiss = useCallback(() => {
       if (ref && 'current' in ref) ref.current?.dismiss();
@@ -108,6 +111,7 @@ const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
       try {
         await companyRequestsService.respond(request.id, {
           ...(message.trim() ? { message: message.trim() } : {}),
+          ...(excludes.trim() ? { excludes: excludes.trim() } : {}),
           ...(notes.trim() ? { notes: notes.trim() } : {}),
         });
         queryClient.invalidateQueries({ queryKey: ['companyRequests'] });
@@ -115,6 +119,7 @@ const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
           queryKey: ['companyRequest', request.id],
         });
         setMessage('');
+        setExcludes('');
         setNotes('');
         dismiss();
         successRef.current?.present();
@@ -202,19 +207,28 @@ const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
 
               <Field
                 testID="request-reply-message"
-                label="رسالة الى العميل"
+                label="العرض يشمل"
                 value={message}
                 onChange={setMessage}
-                placeholder="اكتب تفاصيل عرضك أو أي ملاحظات..."
+                placeholder="اكتب تفاصيل عرضك وما يشمله..."
                 maxLength={MESSAGE_MAX}
-                height={185}
+                height={140}
+              />
+              <Field
+                testID="request-reply-excludes"
+                label="العرض لا يشمل"
+                value={excludes}
+                onChange={setExcludes}
+                placeholder="اكتب ما لا يشمله العرض..."
+                maxLength={EXCLUDES_MAX}
+                height={96}
               />
               <Field
                 testID="request-reply-notes"
                 label="ملاحظات"
                 value={notes}
                 onChange={setNotes}
-                placeholder="اكتب ملاحظات اضافية لما يشمله العرض وما لا يشمله.."
+                placeholder="اكتب أي ملاحظات اضافية للعميل.."
                 maxLength={NOTES_MAX}
                 height={96}
               />

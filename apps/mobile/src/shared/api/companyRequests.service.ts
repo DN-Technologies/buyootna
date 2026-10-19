@@ -1,5 +1,6 @@
 import {
   CompanyRequestItem,
+  CompletedVia,
   RequestListFilters,
   RequestScope,
   RequestStatusFilter,
@@ -16,9 +17,12 @@ export interface GetCompanyRequestsParams extends RequestListFilters {
   saved?: boolean;
 }
 
-// الرد على العميل: both optional, but one of them is needed
+// الرد على العميل: every field optional, but one of them is needed
 export interface RequestReplyPayload {
+  // العرض يشمل
   message?: string;
+  // العرض لا يشمل
+  excludes?: string;
   notes?: string;
 }
 
@@ -136,6 +140,23 @@ export const companyRequestsService = {
 
   unbookmark: async (id: string): Promise<void> => {
     await apiClient.delete(`/company-requests/${id}/bookmark`);
+  },
+
+  // The trash on an accepted request: off this company's lists for good
+  removeFromMine: async (id: string): Promise<void> => {
+    await apiClient.delete(`/company-requests/${id}/mine`);
+  },
+
+  // انهاء الطلب: the work is done, agreed in the app or outside it
+  complete: async (
+    id: string,
+    via: CompletedVia,
+  ): Promise<CompanyRequestItem> => {
+    const response = await apiClient.patch<CompanyRequestItem>(
+      `/company-requests/${id}/complete`,
+      { via },
+    );
+    return response.data;
   },
 
   markResponded: async (id: string): Promise<CompanyRequestItem> => {

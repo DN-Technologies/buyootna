@@ -11,6 +11,9 @@ export type RequestStatusFilter =
   | 'responded'
   | 'rejected';
 
+// أين تم الاتفاق النهائي on انهاء الطلب
+export type CompletedVia = 'in_app' | 'outside';
+
 // The list's chips: a status, or المفضلة (the requests this company saved)
 export type RequestListTab = RequestStatusFilter | 'saved';
 
@@ -50,7 +53,10 @@ export interface RequestProviderInfo {
 
 // What a company answered a request with
 export interface RequestReply {
+  // العرض يشمل
   message?: string | null;
+  // العرض لا يشمل
+  excludes?: string | null;
   notes?: string | null;
 }
 
@@ -99,5 +105,8 @@ export interface CompanyRequestItem {
   offersCount?: number;
   // This company saved the request (المفضلة)
   isSaved?: boolean;
+  // The accepting company ended it (انهاء الطلب)
+  completed?: boolean;
+  completedVia?: CompletedVia | null;
 }
 

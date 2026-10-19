@@ -1,10 +1,12 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { WarningTriangleIcon } from '@/assets/icons/activity';
 import {
   CompanyRequestItem,
   CompanyRequestListItem,
@@ -21,10 +23,24 @@ import {
   toRequestListFilters,
 } from '@/features/company/components/requests';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
+import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
+import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
+import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
+import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
+import { chatService } from '@/shared/api/chat.service';
+import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function CompanyRequestsScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  // Back from انهاء الطلب: say it worked
+  const { ended } = useLocalSearchParams<{ ended?: string }>();
+  const { showToast, toastMessage, toastSubtitle, fadeAnim, slideAnim, triggerToast } =
+    useActivityToast();
+  const removeSheetRef = useRef<BottomSheetModal>(null);
+  const [toRemove, setToRemove] = useState<CompanyRequestItem | null>(null);
   const [activeScope, setActiveScope] = useState<RequestScope>('company');
   const [activeStatusFilter, setActiveStatusFilter] =
     useState<RequestListTab>('all');
@@ -54,6 +70,53 @@ export default function CompanyRequestsScreen() {
   const handleReplyPress = (request: CompanyRequestItem) => {
     setReplyTo(request);
     replySheetRef.current?.present();
+  };
+
+  useEffect(() => {
+    if (ended !== '1') return;
+    triggerToast(
+      'تم إنهاء الطلب بنجاح.',
+      'شكراً لمساعدتك في تحسين جودة المنصة.',
+    );
+    router.setParams({ ended: undefined });
+  }, [ended, router, triggerToast]);
+
+  // ابدأ المحادثة on an accepted request: the chat pinned to it
+  const handleStartChat = async (request: CompanyRequestItem) => {
+    try {
+      const conversation = await chatService.createConversation(
+        request.clientIdentityId,
+        undefined,
+        request.id,
+      );
+      router.push(`/chat/${conversation.id}` as never);
+    } catch (error: any) {
+      if (handleSubscriptionRequired(error, router)) return;
+      const backendMsg = error?.response?.data?.message;
+      showAlert(
+        'تنبيه',
+        Array.isArray(backendMsg)
+          ? backendMsg.join('\n')
+          : backendMsg || 'تعذر بدء المحادثة مع العميل',
+      );
+    }
+  };
+
+  // The trash: off this company's lists, once confirmed
+  const handleRemovePress = (request: CompanyRequestItem) => {
+    setToRemove(request);
+    removeSheetRef.current?.present();
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!toRemove) return;
+    try {
+      await companyRequestsService.removeFromMine(toRemove.id);
+      queryClient.invalidateQueries({ queryKey: ['companyRequests'] });
+    } catch (error: any) {
+      const backendMsg = error?.response?.data?.message;
+      showAlert('تعذر إزالة الطلب', backendMsg || 'حدث خطأ ما');
+    }
   };
 
   const handleDetailsPress = (request: CompanyRequestItem) => {
@@ -99,12 +162,23 @@ export default function CompanyRequestsScreen() {
           />
         }
       >
+        {activeStatusFilter === 'rejected' && (
+          <Text
+            testID="company-requests-rejected-note"
+            className="mb-3 font-cairo-medium text-[14px] text-[#111111]"
+            style={{ writingDirection: 'rtl' }}
+          >
+            الطلبات المرفوضة تختفي بعد 30يوم
+          </Text>
+        )}
         {requests.length > 0 ? (
           requests.map((request) => (
             <CompanyRequestListItem
               key={request.id}
               request={request}
               onReply={handleReplyPress}
+              onStartChat={handleStartChat}
+              onRemove={handleRemovePress}
               onDetails={handleDetailsPress}
               onPress={handleDetailsPress}
             />
@@ -136,6 +210,24 @@ export default function CompanyRequestsScreen() {
         onApply={setFilterDraft}
       />
       <RequestReplySheet ref={replySheetRef} request={replyTo} />
+      <ConfirmActionSheet
+        ref={removeSheetRef}
+        variant="danger"
+        icon={<WarningTriangleIcon color="#15304D" />}
+        iconBackground="#F9FAFE"
+        title="إزالة الطلب من قائمتك؟"
+        description="لن يظهر هذا الطلب ضمن طلباتك."
+        confirmLabel="تأكيد الإزالة"
+        onConfirm={handleConfirmRemove}
+      />
+      <ActivitySuccessToast
+        visible={showToast}
+        message={toastMessage}
+        subtitle={toastSubtitle}
+        bottomOffset={110}
+        fadeAnim={fadeAnim}
+        slideAnim={slideAnim}
+      />
     </SafeAreaView>
   );
 }

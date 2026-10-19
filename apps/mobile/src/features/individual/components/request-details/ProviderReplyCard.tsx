@@ -25,11 +25,14 @@ function ReplyBlock({ label, text }: { label: string; text: string }) {
   );
 }
 
-/** The company's answer: الرد and ملاحظات, on #F9FAFE blocks. */
+/** The company's answer: الرد, العرض لا يشمل and ملاحظات, on #F9FAFE blocks. */
 export function ReplyBlocks({ reply }: { reply: RequestReply }) {
   return (
     <View className="gap-[2px] rounded-[6px] bg-[#F9FAFE]">
       {!!reply.message && <ReplyBlock label="الرد" text={reply.message} />}
+      {!!reply.excludes && (
+        <ReplyBlock label="العرض لا يشمل" text={reply.excludes} />
+      )}
       {!!reply.notes && <ReplyBlock label="ملاحظات" text={reply.notes} />}
     </View>
   );
@@ -37,7 +40,7 @@ export function ReplyBlocks({ reply }: { reply: RequestReply }) {
 
 /** "تفاصيل رد الشركة" card. */
 export default function ProviderReplyCard({ reply }: { reply: RequestReply }) {
-  if (!reply.message && !reply.notes) return null;
+  if (!reply.message && !reply.excludes && !reply.notes) return null;
   return (
     <RequestCard>
       <Text
