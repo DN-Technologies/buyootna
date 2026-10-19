@@ -2,20 +2,30 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
-import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
 import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
+import {
+  listedTypes,
+  OTHER_TYPE,
+  SPECIALTIES,
+} from '@/shared/data/serviceCatalog';
 import { showAlert } from '@/shared/utils/alert';
 
-export const SPECIALTY_OPTIONS = COMPANY_CATEGORY_OPTIONS.filter(
-  (option) => option.id !== 'all',
-);
+// مجال التخصص and نوع الطلب come from the services catalogue, the same list
+// companies pick their services from, so a request lands with the
+// companies of that specialty
+export const SPECIALTY_OPTIONS = SPECIALTIES.map((specialty) => ({
+  id: specialty,
+  label: specialty,
+}));
 
-export const REQUEST_TYPE_OPTIONS = [
-  { id: 'quote', label: 'عرض سعر' },
-  { id: 'consultation', label: 'استشارة' },
-  { id: 'site_visit', label: 'معاينة موقع' },
-  { id: 'full_project', label: 'تنفيذ مشروع كامل' },
-];
+/** نوع الطلب for a specialty: its listed types, then «اخرى». */
+export const requestTypeOptions = (specialty: string) =>
+  specialty
+    ? [...listedTypes(specialty), OTHER_TYPE].map((type) => ({
+        id: type,
+        label: type,
+      }))
+    : [];
 
 export const MAX_ATTACHMENTS = 10;
 
@@ -25,8 +35,13 @@ export interface AddressCoords {
 }
 
 export function useRequestQuoteForm() {
-  const [specialtyId, setSpecialtyId] = useState('');
+  const [specialtyId, setSpecialtyIdState] = useState('');
   const [requestTypeId, setRequestTypeId] = useState('');
+  // Another specialty has another list of request types
+  const setSpecialtyId = useCallback((value: string) => {
+    setSpecialtyIdState(value);
+    setRequestTypeId('');
+  }, []);
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
   const [addressLabel, setAddressLabel] = useState('');
@@ -42,7 +57,7 @@ export function useRequestQuoteForm() {
 
   // Back to the empty form (after a request is sent)
   const reset = useCallback(() => {
-    setSpecialtyId('');
+    setSpecialtyIdState('');
     setRequestTypeId('');
     setPriceFrom('');
     setPriceTo('');
@@ -122,20 +137,14 @@ export function useRequestQuoteForm() {
         return;
       }
 
-      const specialtyLabel =
-        SPECIALTY_OPTIONS.find((option) => option.id === specialtyId)?.label ||
-        specialtyId;
-      const requestTypeLabel =
-        REQUEST_TYPE_OPTIONS.find((option) => option.id === requestTypeId)
-          ?.label || undefined;
-
       try {
         submittingRef.current = true;
         setIsSubmitting(true);
         await companyRequestsService.create({
-          title: specialtyLabel,
-          category: specialtyLabel,
-          offerType: requestTypeLabel,
+          // The request type names it; the specialty decides which
+          // companies see it
+          title: requestTypeId || specialtyId,
+          category: specialtyId,
           priceRange:
             priceFrom || priceTo
               ? `${priceFrom || 0} - ${priceTo || 0} د.ك`
@@ -181,6 +190,7 @@ export function useRequestQuoteForm() {
     setSpecialtyId,
     requestTypeId,
     setRequestTypeId,
+    requestTypeOptions: requestTypeOptions(specialtyId),
     priceFrom,
     setPriceFrom,
     priceTo,

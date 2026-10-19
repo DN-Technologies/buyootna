@@ -25,6 +25,7 @@ export default function AddServiceForm({ service }: AddServiceFormProps) {
       <ServiceTypeField
         options={service.typeOptions}
         selected={service.selectedTypes}
+        disabled={service.disabledTypes}
         label={service.typesLabel}
         isOpen={service.openField === 'types'}
         onToggleOpen={() => service.toggleField('types')}
@@ -63,7 +64,7 @@ export default function AddServiceForm({ service }: AddServiceFormProps) {
           style={{ writingDirection: 'rtl' }}
         />
         <Text
-          className="font-cairo-medium text-[10px] text-[#111111]"
+          className="font-cairo-medium text-[10px] leading-[16px] text-[#111111]"
           style={{ writingDirection: 'rtl' }}
         >
           يجب أن لا يتخطى الوصف {DESCRIPTION_MAX_LENGTH} حرف.

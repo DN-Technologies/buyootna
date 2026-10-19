@@ -76,6 +76,7 @@ describe('CompanyRequestsService', () => {
     };
     $transaction: jest.Mock;
     identity: { findUnique: jest.Mock };
+    companyIdentityData: { findUnique: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -97,6 +98,10 @@ describe('CompanyRequestsService', () => {
         count: jest.fn().mockResolvedValue(0),
       },
       $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
+      // The provider's specialty: none unless a test sets one
+      companyIdentityData: {
+        findUnique: jest.fn().mockResolvedValue({ specialty: null }),
+      },
       // The caller/target: an approved company unless a test says otherwise
       identity: {
         findUnique: jest.fn().mockResolvedValue({
@@ -147,6 +152,48 @@ describe('CompanyRequestsService', () => {
           }),
         }),
       );
+    });
+
+    it('a company with a specialty sees public requests of that specialty (or none)', async () => {
+      prisma.companyIdentityData.findUnique.mockResolvedValue({
+        specialty: 'التشطيب',
+      });
+
+      await service.findMine('company-1', { scope: 'public' });
+
+      const { where } = (
+        prisma.companyRequest.findMany.mock.calls as unknown[][]
+      )[0][0] as {
+        where: { AND?: unknown[] };
+      };
+      expect(where.AND).toContainEqual({
+        OR: [
+          { category: 'التشطيب' },
+          { category: null },
+          { acceptedByIdentityId: 'company-1' },
+        ],
+      });
+    });
+
+    it('a company without a specialty yet sees every public request', async () => {
+      await service.findMine('company-1', { scope: 'public' });
+
+      const { where } = (
+        prisma.companyRequest.findMany.mock.calls as unknown[][]
+      )[0][0] as {
+        where: { AND?: unknown[] };
+      };
+      expect(where.AND).toBeUndefined();
+    });
+
+    it('requests sent to the company directly are not narrowed by specialty', async () => {
+      prisma.companyIdentityData.findUnique.mockResolvedValue({
+        specialty: 'التشطيب',
+      });
+
+      await service.findMine('company-1', { scope: 'company' });
+
+      expect(prisma.companyIdentityData.findUnique).not.toHaveBeenCalled();
     });
 
     it("maps rating as the average of the client's received reviews", async () => {
@@ -546,7 +593,7 @@ describe('CompanyRequestsService', () => {
   });
 
   describe('requester actions', () => {
-    it('removeMine deletes only the requester\'s own request', async () => {
+    it("removeMine deletes only the requester's own request", async () => {
       await expect(service.removeMine('req-1', 'client-1')).resolves.toEqual({
         deleted: true,
       });
@@ -555,7 +602,7 @@ describe('CompanyRequestsService', () => {
       });
     });
 
-    it('removeMine is not-found for someone else\'s request', async () => {
+    it("removeMine is not-found for someone else's request", async () => {
       prisma.companyRequest.deleteMany.mockResolvedValue({ count: 0 });
       await expect(service.removeMine('req-1', 'intruder')).rejects.toThrow(
         NotFoundException,
@@ -693,7 +740,7 @@ describe('CompanyRequestsService', () => {
   describe('respond (a company answers a request)', () => {
     const dto = { message: 'مرحبا', notes: 'خلال يومين', price: 200 };
 
-    it('creates the company\'s offer and marks a pending request responded', async () => {
+    it("creates the company's offer and marks a pending request responded", async () => {
       prisma.companyRequest.findUnique.mockResolvedValue({
         ...baseRequest,
         targetIdentityId: 'company-1',
@@ -723,7 +770,7 @@ describe('CompanyRequestsService', () => {
       });
     });
 
-    it('a request sent to another company can\'t be answered', async () => {
+    it("a request sent to another company can't be answered", async () => {
       prisma.companyRequest.findUnique.mockResolvedValue({
         ...baseRequest,
         targetIdentityId: 'company-other',
@@ -733,7 +780,7 @@ describe('CompanyRequestsService', () => {
       );
     });
 
-    it('a closed request can\'t be answered', async () => {
+    it("a closed request can't be answered", async () => {
       prisma.companyRequest.findUnique.mockResolvedValue({
         ...baseRequest,
         targetIdentityId: null,

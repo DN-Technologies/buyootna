@@ -10,12 +10,11 @@ import { forwardRef, useCallback, useMemo, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { SPECIALTIES } from '@/features/company/components/add-service/serviceCatalog';
-import { COMPANY_CATEGORY_OPTIONS } from '@/shared/components/filters/CategoryFilterSheet';
 import DrawerTrigger from '@/shared/components/filters/DrawerTrigger';
 import SelectionDrawer, {
   type SelectionItem,
 } from '@/shared/components/filters/SelectionDrawer';
+import { listedTypes, SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { AREAS, GOVERNORATES } from '@/shared/utils/data/locations';
 
 export interface CompanyFilters {
@@ -36,10 +35,11 @@ const SPECIALTY_ITEMS: SelectionItem[] = SPECIALTIES.map((label) => ({
   id: label,
   label,
 }));
-// نوع الخدمة: the service categories, without their own "الكل"
-const CATEGORY_ITEMS: SelectionItem[] = COMPANY_CATEGORY_OPTIONS.filter(
-  (option) => option.id !== 'all',
-);
+// نوع الخدمة: the types of the picked specialties (the services catalogue)
+const typeItemsFor = (specialties: SelectionItem[]): SelectionItem[] =>
+  [...new Set(specialties.flatMap((item) => listedTypes(item.id)))].map(
+    (type) => ({ id: type, label: type }),
+  );
 
 const joined = (items: SelectionItem[]) =>
   items.length ? items.map((item) => item.label).join('، ') : undefined;
@@ -81,6 +81,12 @@ const CompanyFilterSheet = forwardRef<BottomSheetModal, CompanyFilterSheetProps>
 
     const set = <K extends keyof CompanyFilters>(key: K, items: CompanyFilters[K]) =>
       setDraft((current) => ({ ...current, [key]: items }));
+
+    // Service types of the picked specialties; none until one is picked
+    const typeItems = useMemo(
+      () => typeItemsFor(draft.specialties),
+      [draft.specialties],
+    );
 
     // Areas of the picked governorates, or all of them
     const areaItems = useMemo(
@@ -196,8 +202,13 @@ const CompanyFilterSheet = forwardRef<BottomSheetModal, CompanyFilterSheetProps>
             />
             <DrawerTrigger
               label="نوع الخدمة"
-              placeholder="اختر نوع الخدمة التي تبحث عنها"
+              placeholder={
+                draft.specialties.length
+                  ? 'اختر نوع الخدمة التي تبحث عنها'
+                  : 'اختر التخصص أولاً'
+              }
               value={joined(draft.categories)}
+              disabled={!draft.specialties.length}
               onPress={() => categoryRef.current?.present()}
             />
             <View className="w-full flex-row" style={{ gap: 12 }}>
@@ -223,12 +234,20 @@ const CompanyFilterSheet = forwardRef<BottomSheetModal, CompanyFilterSheetProps>
           data={SPECIALTY_ITEMS}
           multiSelect
           selectedItems={draft.specialties}
-          onSelectMultiple={(items) => set('specialties', items)}
+          onSelectMultiple={(items) => {
+            // Keep only the service types still under the picked specialties
+            const allowed = new Set(typeItemsFor(items).map((t) => t.id));
+            setDraft((current) => ({
+              ...current,
+              specialties: items,
+              categories: current.categories.filter((t) => allowed.has(t.id)),
+            }));
+          }}
         />
         <SelectionDrawer
           ref={categoryRef}
           title="اختر نوع الخدمة"
-          data={CATEGORY_ITEMS}
+          data={typeItems}
           multiSelect
           selectedItems={draft.categories}
           onSelectMultiple={(items) => set('categories', items)}

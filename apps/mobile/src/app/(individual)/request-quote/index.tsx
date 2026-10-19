@@ -21,7 +21,6 @@ import RequestQuotePriceRange from '@/features/individual/components/request-quo
 import RequestQuoteSubmitButton from '@/features/individual/components/request-quote/RequestQuoteSubmitButton';
 import { PLACEHOLDER_COLOR, requestQuoteInputStyle } from '@/features/individual/components/request-quote/styles';
 import {
-  REQUEST_TYPE_OPTIONS,
   SPECIALTY_OPTIONS,
   useRequestQuoteForm,
 } from '@/features/individual/hooks/useRequestQuoteForm';
@@ -43,6 +42,7 @@ export default function RequestQuoteScreen() {
     setSpecialtyId,
     requestTypeId,
     setRequestTypeId,
+    requestTypeOptions,
     priceFrom,
     setPriceFrom,
     priceTo,
@@ -86,6 +86,7 @@ export default function RequestQuoteScreen() {
         >
           {/* --- مجال التخصص --- */}
           <InlineDropdown
+            testID="request-specialty"
             title="مجال التخصص"
             required
             placeholder="اختر نوع الخدمة أو اسم الشركة.."
@@ -95,11 +96,16 @@ export default function RequestQuoteScreen() {
           />
 
           {/* --- نوع الطلب --- */}
+          {/* The chosen specialty's types (the services catalogue) */}
           <InlineDropdown
+            testID="request-type"
             title="نوع الطلب"
             optional
-            placeholder="حدد الخدمة اللي ترغب بها"
-            options={REQUEST_TYPE_OPTIONS}
+            placeholder={
+              specialtyId ? 'حدد الخدمة اللي ترغب بها' : 'اختر مجال التخصص أولاً'
+            }
+            disabled={!specialtyId}
+            options={requestTypeOptions}
             value={requestTypeId}
             onChange={setRequestTypeId}
           />
