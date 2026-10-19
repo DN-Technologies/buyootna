@@ -1,11 +1,12 @@
 // The services catalogue: specialties (نوع التخصص) and their service /
 // request types (نوع الطلب), from the client's
-// Buyootna_RFQ_2Level_Classification_v1.0.xlsx, sheet «التصنيف النهائي»
-// (31 specialties, 257 types; the «Potential» sheet is not in
-// yet). One list for both sides: what a company offers (إضافة خدمة) and what
-// a client asks for (طلب عرض سعر), so requests match the companies'
-// services. Keep the spelling exact: specialties and types are stored as
-// these strings.
+// Buyootna_RFQ_2Level_Classification_v1.0.xlsx, sheet «التصنيف النهائي».
+// The sheet pairs «مكتب هندسي / دار استشارية» and «مقاول عام / مقاول بناء»;
+// here each is its own specialty with the pair's types (33 specialties).
+// The «Potential» sheet is not in yet. One list for both sides: what a
+// company offers (إضافة خدمة) and what a client asks for (طلب عرض سعر), so
+// requests match the companies' services. Keep the spelling exact:
+// specialties and types are stored as these strings.
 
 export interface CatalogSpecialty {
   specialty: string;
@@ -14,7 +15,41 @@ export interface CatalogSpecialty {
 
 export const SERVICE_CATALOG: CatalogSpecialty[] = [
   {
-    specialty: 'مكتب هندسي / دار استشارية',
+    specialty: 'مكتب هندسي',
+    types: [
+      'مخطط معماري (المساقط)',
+      'تصميم الواجهات',
+      'مخططات تنفيذية',
+      'مخططات التقديم للبلدية',
+      'تصور ثلاثي الأبعاد (3D)',
+      'مخطط إنشائي',
+      'حسابات إنشائية',
+      'تفاصيل التسليح',
+      'مخططات الأساسات',
+      'تقرير فحص التربة',
+      'مخطط كهربائي وتوزيع الأحمال',
+      'توزيع الإنارة',
+      'مخططات التكييف',
+      'مخططات المياه والصرف',
+      'مخططات أنظمة الإطفاء والإنذار',
+      'الإشراف على التنفيذ',
+      'إدارة المشروع',
+      'متابعة شهادة إتمام البناء',
+      'استخراج رخصة بناء جديدة',
+      'استخراج رخصة إضافة أو ترميم',
+      'استخراج رخصة هدم',
+      'تعديل مخططات معتمدة',
+      'فحص العقار قبل الشراء',
+      'فحص إنشائي وشقوق',
+      'كشف التسربات والرطوبة',
+      'فحص الكهرباء والتأريض',
+      'فحص السباكة والصرف',
+      'تصوير حراري',
+      'اختبارات لا إتلافية (NDT)',
+    ],
+  },
+  {
+    specialty: 'دار استشارية',
     types: [
       'مخطط معماري (المساقط)',
       'تصميم الواجهات',
@@ -59,7 +94,20 @@ export const SERVICE_CATALOG: CatalogSpecialty[] = [
     ],
   },
   {
-    specialty: 'مقاول عام / مقاول بناء',
+    specialty: 'مقاول عام',
+    types: [
+      'الحفر والردم',
+      'الأساسات والقواعد المسلحة',
+      'الأعمدة والأسقف (الصبات)',
+      'أعمال البلوك',
+      'عزل السرداب',
+      'بناء على العظم (تسليم على العظم)',
+      'بناء وتشطيب كامل (تسليم مفتاح)',
+      'تنفيذ كامل أعمال MEP',
+    ],
+  },
+  {
+    specialty: 'مقاول بناء',
     types: [
       'الحفر والردم',
       'الأساسات والقواعد المسلحة',

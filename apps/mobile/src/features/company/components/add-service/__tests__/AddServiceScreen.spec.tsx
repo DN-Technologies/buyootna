@@ -104,16 +104,16 @@ describe('AddServiceScreen', () => {
     expect(isDisabled(getByTestId('company-submit'))).toBe(true);
   });
 
-  it('offers the 31 specialties of the services catalogue and the engineering checklist', async () => {
+  it('offers the 33 specialties of the services catalogue and the engineering checklist', async () => {
     const { getByTestId, getAllByTestId } = await render(<AddServiceScreen />);
 
     await fireEvent.press(getByTestId('service-specialty'));
     expect(getAllByTestId(/^service-specialty-(?!value|options)/)).toHaveLength(
-      31,
+      33,
     );
-    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي / دار استشارية'));
+    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي'));
     expect(getByTestId('service-specialty-value').props.children).toBe(
-      'مكتب هندسي / دار استشارية',
+      'مكتب هندسي',
     );
 
     await fireEvent.press(getByTestId('service-types'));
@@ -125,7 +125,7 @@ describe('AddServiceScreen', () => {
     const { getByTestId, getByText } = await render(<AddServiceScreen />);
 
     await fireEvent.press(getByTestId('service-specialty'));
-    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي / دار استشارية'));
+    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي'));
     await fireEvent.press(getByTestId('service-types'));
     await fireEvent.press(getByTestId('service-type-الكل'));
     expect(getByTestId('service-types-value').props.children).toBe('الكل');
@@ -133,7 +133,7 @@ describe('AddServiceScreen', () => {
     await fireEvent.press(getByText('إضافة الخدمة'));
     await waitFor(() => expect(createService).toHaveBeenCalled());
     const sent = createService.mock.calls[0][0];
-    expect(sent.specialty).toBe('مكتب هندسي / دار استشارية');
+    expect(sent.specialty).toBe('مكتب هندسي');
     expect(sent.types).toHaveLength(29);
     expect(sent.types).not.toContain('الكل');
     expect(sent.title).toBeUndefined();
@@ -188,20 +188,20 @@ describe('AddServiceScreen', () => {
   });
 
   describe('the second time (Figma 8455:24216, 8453:24047)', () => {
-    const ENGINEERING = listedTypes('مكتب هندسي / دار استشارية');
+    const ENGINEERING = listedTypes('مكتب هندسي');
     const added = (types: string[]) =>
       types.map((type, i) => ({ id: `s${i}`, type, title: null }));
 
     it("locks التخصص from the company's services, even before the profile refreshes", async () => {
       mockMyServices = {
-        specialty: 'مكتب هندسي / دار استشارية',
+        specialty: 'مكتب هندسي',
         services: added(ENGINEERING.slice(0, 3)),
         isLoading: false,
       };
       const { getByTestId, queryByTestId } = await render(<AddServiceScreen />);
 
       expect(getByTestId('service-specialty-value').props.children).toBe(
-        'مكتب هندسي / دار استشارية',
+        'مكتب هندسي',
       );
       await fireEvent.press(getByTestId('service-specialty'));
       expect(queryByTestId('service-specialty-options')).toBeNull();
@@ -209,7 +209,7 @@ describe('AddServiceScreen', () => {
 
     it('shows the types already added ticked and greyed, and they never send again', async () => {
       mockMyServices = {
-        specialty: 'مكتب هندسي / دار استشارية',
+        specialty: 'مكتب هندسي',
         services: added(ENGINEERING.slice(0, 3)),
         isLoading: false,
       };
@@ -238,7 +238,7 @@ describe('AddServiceScreen', () => {
       await waitFor(() =>
         expect(createService).toHaveBeenCalledWith(
           expect.objectContaining({
-            specialty: 'مكتب هندسي / دار استشارية',
+            specialty: 'مكتب هندسي',
             types: ENGINEERING.slice(3),
           }),
         ),
@@ -247,7 +247,7 @@ describe('AddServiceScreen', () => {
 
     it('with every type added, الكل is greyed and اخرى with a title still adds', async () => {
       mockMyServices = {
-        specialty: 'مكتب هندسي / دار استشارية',
+        specialty: 'مكتب هندسي',
         services: [
           ...added(ENGINEERING),
           { id: 'o1', type: 'اخرى', title: 'إشراف هندسي' },
@@ -272,7 +272,7 @@ describe('AddServiceScreen', () => {
     });
 
     it("doesn't open نوع الخدمة until the company's services are known", async () => {
-      mockMyServices = { specialty: 'مكتب هندسي / دار استشارية', services: [], isLoading: true };
+      mockMyServices = { specialty: 'مكتب هندسي', services: [], isLoading: true };
       const { getByTestId, queryByTestId } = await render(<AddServiceScreen />);
 
       await fireEvent.press(getByTestId('service-types'));
