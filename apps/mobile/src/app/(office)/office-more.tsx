@@ -27,6 +27,7 @@ import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { readableLocation } from '@/shared/utils/location';
 
 export default function OfficeMoreScreen() {
   const router = useRouter();
@@ -84,7 +85,7 @@ export default function OfficeMoreScreen() {
     'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.';
 
   const officeLocation =
-    activeIdentity?.officeData?.hqLocation ||
+    readableLocation(activeIdentity?.officeData?.hqLocation) ||
     'السالمية • شمال غرب صليبيخات';
 
   const officeLicenseNumber =

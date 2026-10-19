@@ -16,6 +16,7 @@ import { ProviderCardsService } from './provider-cards.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import { hasActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { splitList } from '../../properties/dto/get-properties-filter.dto';
+import { readableLocation } from '../../../common/utils/location.util';
 
 @Injectable()
 export class UsersDirectoryService {
@@ -275,7 +276,9 @@ export class UsersDirectoryService {
       reviewsCount: stats.reviewsCount,
       responseTime,
       bio: companyData.about,
-      location: companyData.hqLocation || companyData.serviceAreas,
+      // A pin saved as raw coordinates isn't shown
+      location:
+        readableLocation(companyData.hqLocation) || companyData.serviceAreas,
       servicesCount: formattedServices.length,
       projectsCount: formattedProjects.length,
       instagramUrl: null,
@@ -338,7 +341,7 @@ export class UsersDirectoryService {
       reviewsCount: stats.reviewsCount,
       responseTime,
       bio: officeData.about,
-      location: officeData.hqLocation,
+      location: readableLocation(officeData.hqLocation),
       licenseNumber: officeData.licenseNumber,
       listingsCount: identity.properties.length,
       servicesCount: formattedServices.length,

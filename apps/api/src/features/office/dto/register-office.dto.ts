@@ -4,9 +4,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { trim } from '../../../core/validators/trim.transform';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class RegisterOfficeDto {
   @Transform(trim)
@@ -32,6 +34,9 @@ export class RegisterOfficeDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsString()

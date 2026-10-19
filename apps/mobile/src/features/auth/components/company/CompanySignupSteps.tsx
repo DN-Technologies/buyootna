@@ -6,6 +6,7 @@ import { Platform, Text, TouchableOpacity, View } from 'react-native';
 
 import { CompanySignupFormValues } from '@/features/auth/companyAuthSchemas';
 import FormInput from '@/shared/components/ui/FormInput';
+import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 interface StepProps {
   control: Control<CompanySignupFormValues>;
@@ -218,6 +219,7 @@ export const SignupStep2: React.FC<Step2Props> = ({
         }
         multiline={true}
         numberOfLines={6}
+        maxLength={ABOUT_MAX_LENGTH}
         className="h-40 items-start"
         isRequired={false}
       />

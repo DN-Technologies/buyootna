@@ -10,6 +10,7 @@ import KuwaitPhoneField from '@/shared/components/forms/KuwaitPhoneField';
 import PhoneVerificationHint from '@/shared/components/forms/PhoneVerificationHint';
 import type { ProfileFormData } from '@/shared/components/forms/types';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
+import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 import type { CompanyIdentityFields } from './useCompanyEditProfile';
 
@@ -166,6 +167,7 @@ export default function CompanyGeneralInfoSection({
               onChangeText={(val) => setIdentityField('about', val)}
               multiline
               numberOfLines={4}
+              maxLength={ABOUT_MAX_LENGTH}
               placeholder="اكتب نبذة عن الشركة"
               placeholderTextColor="#979797"
               textAlign="right"
@@ -177,6 +179,13 @@ export default function CompanyGeneralInfoSection({
               }}
             />
           </View>
+          <Text
+            testID="about-counter"
+            className="mt-1 font-cairo-medium text-[10px] leading-[16px] text-[#6B6A6A]"
+            style={{ writingDirection: 'rtl' }}
+          >
+            {identity.about.length}/{ABOUT_MAX_LENGTH} حرف
+          </Text>
         </View>
 
         {/* Field: مواعيد العمل */}

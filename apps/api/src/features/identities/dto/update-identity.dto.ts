@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { ABOUT_MAX_LENGTH } from '../../../common/utils/location.util';
 
 export class UpdateIndividualIdentityDto {
   @IsOptional()
@@ -37,6 +38,9 @@ export class UpdateCompanyIdentityDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsOptional()
@@ -87,6 +91,9 @@ export class UpdateOfficeIdentityDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(ABOUT_MAX_LENGTH, {
+    message: 'النبذة يجب ألا تتجاوز ' + ABOUT_MAX_LENGTH + ' حرف',
+  })
   about?: string;
 
   @IsOptional()

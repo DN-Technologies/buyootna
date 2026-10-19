@@ -28,6 +28,7 @@ import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
+import { readableLocation } from '@/shared/utils/location';
 
 export default function CompanyMoreScreen() {
   const router = useRouter();
@@ -82,7 +83,10 @@ export default function CompanyMoreScreen() {
 
   const companyBio = activeIdentity?.companyData?.about;
 
-  const companyLocation = activeIdentity?.companyData?.hqLocation;
+  // A pin saved as raw coordinates isn't shown
+  const companyLocation = readableLocation(
+    activeIdentity?.companyData?.hqLocation,
+  );
 
   const finalDisplayName =
     displayName || activeIdentity?.companyData?.name || '';

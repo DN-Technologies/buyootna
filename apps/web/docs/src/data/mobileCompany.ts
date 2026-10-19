@@ -167,6 +167,37 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "mobile-company-location-about",
+      title: {
+        en: "Company location shows an address, not coordinates; نبذة is capped at 300 characters",
+        ar: "موقع الشركة يظهر كعنوان لا كإحداثيات؛ والنبذة بحد أقصى 300 حرف",
+      },
+      priority: "P1",
+      story: {
+        en: "Company sign-up saved the map pin as \"lat,lng\" in hqLocation, so the المزيد card, edit profile (المقر الرئيسي) and public cards showed raw coordinates, and location search (which matches governorate and area names) couldn't find the company. Sign-up now saves the picked address name. Coordinates already saved are hidden: the card leaves the row out, edit profile opens المقر الرئيسي empty to be written, and the API's public company/office cards fall back to the service areas (readableLocation in the app and in common/utils/location.util on the API). نبذة عن الشركة / المكتب is capped at 300 characters in sign-up, both edit-profile screens (company edit shows a «x/300» counter) and every API DTO that takes it (400 above that). The المزيد card shows at most four lines of the bio, so older long ones stay a summary.",
+        ar: "كان تسجيل الشركة يحفظ دبوس الخريطة كـ\"lat,lng\" في hqLocation، فتظهر الإحداثيات الخام في بطاقة المزيد وتعديل الملف (المقر الرئيسي) والبطاقات العامة، ولا يجد البحث بالموقع (الذي يطابق أسماء المحافظات والمناطق) الشركة. الآن يحفظ التسجيل اسم العنوان المختار. والإحداثيات المحفوظة سابقاً تُخفى: البطاقة تحذف السطر، وتعديل الملف يفتح المقر الرئيسي فارغاً ليُكتب، والبطاقات العامة في الواجهة الخلفية تعرض مناطق الخدمة بدلاً منها (readableLocation في التطبيق وcommon/utils/location.util في الخادم). ونبذة عن الشركة / المكتب بحد أقصى 300 حرف في التسجيل وشاشتي تعديل الملف (تعديل الشركة يعرض عدّاد «x/300») وكل DTO في الخادم يقبلها (400 إذا زادت). وبطاقة المزيد تعرض أربعة أسطر على الأكثر من النبذة، فتبقى النبذ الطويلة القديمة ملخصاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company that signed up with a map pin shows its address name, never numbers.",
+          "A company with coordinates already saved shows no location row on المزيد; edit profile's المقر الرئيسي opens empty.",
+          "نبذة can't be typed past 300 characters in sign-up or edit profile; the company edit shows the count.",
+          "The API refuses a bio longer than 300 characters.",
+        ],
+        ar: [
+          "الشركة التي سجلت بدبوس خريطة تعرض اسم العنوان لا أرقاماً.",
+          "الشركة المحفوظ لها إحداثيات لا يظهر لها سطر موقع في المزيد، والمقر الرئيسي في تعديل الملف يفتح فارغاً.",
+          "لا يمكن كتابة أكثر من 300 حرف في النبذة عند التسجيل أو التعديل، وتعديل الشركة يعرض العدد.",
+          "الخادم يرفض نبذة أطول من 300 حرف.",
+        ],
+      },
+      testScenarios: {
+        en: ["Sign up a company and pick its HQ on the map: المزيد shows the address. Edit profile › نبذة: typing stops at 300 and the counter reads 300/300."],
+        ar: ["سجّل شركة واختر مقرها على الخريطة: تعرض المزيد العنوان. تعديل الملف › النبذة: تتوقف الكتابة عند 300 ويعرض العداد 300/300."],
+      },
+      updatedIn: "fix/company-card-location-about",
+    },
+    {
       id: "mobile-company-add-flows-figma",
       title: {
         en: "Company + sheet, add project and invoice wizard match the design",
