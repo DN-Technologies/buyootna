@@ -75,6 +75,8 @@ model Property {
   conversations      Conversation[]
   alertMatches       AlertMatch[]
   reports            Report[]
+  // Stories that link to this listing
+  stories            Story[]
   featureInvoices    Invoice[]
 
   // New identity-based relation

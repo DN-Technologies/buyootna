@@ -9,6 +9,49 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-stories-foundation",
+      title: {
+        en: "Stories (phase 1, not released): photo upload slots, publish after a server check, 24-hour expiry, the feed and cleanup",
+        ar: "القصص (المرحلة 1، غير منشورة): رفع الصور، والنشر بعد فحص الخادم، والانتهاء بعد 24 ساعة، وقائمة القصص، والتنظيف",
+      },
+      priority: "P1",
+      story: {
+        en: "Backend foundation for Stories; no app screens yet, not deployed. Who may post: approved companies (with a running subscription or trial) and approved offices; individuals get 403 STORY_PUBLISHER_ONLY, unapproved providers the existing approval 403, an unsubscribed company 403 SUBSCRIPTION_REQUIRED. Upload: POST /stories/uploads { mediaType: IMAGE, contentType (jpeg/png/webp), sizeBytes ≤ 10 MB } creates a pending story with a server-chosen key under stories/ and returns a presigned PUT (10 minutes) whose Content-Type, exact Content-Length and story id are signed; a new slot replaces the profile's older pending one. POST /stories/:id/publish { caption? ≤ 200, propertyId? } checks the stored file itself — it exists, has the declared size and type, carries the story's id, and its own bytes are that kind of image (≤ 8192 px a side and ≤ 50 MP; the first 1 MB is read to find the header) — then publishes it for 24 hours with the size read from the file. Not uploaded yet → 409 STORY_UPLOAD_INCOMPLETE (retry); a file that fails → 422 STORY_MEDIA_INVALID and its file is deleted; past the 30-minute window → 410; publishing again returns the story. A listing link must be one of the author's own active listings (400 STORY_PROPERTY_INVALID) and stops showing if the listing stops being active. Limits: 20 live stories and 30 published per 24 hours (429 STORY_LIMIT), counted again under a per-profile database lock when a slot is created and when a story is activated, so simultaneous requests can't exceed them; activation also re-checks the upload window. DELETE /stories/:id (author only, else 404) hides it at once and deletes its files; a published story's record is kept until publishedAt + 24h so deleting doesn't free a publish. GET /stories/feed?cursor&limit (≤ 30) lists approved authors of accounts that are neither disabled nor blocked, leaving out the viewer's own account: unseen authors first, followed providers first within unseen and within seen, then newest, then id. Pages share the first page's snapshot for what counts as seen and as followed (views and follows after it are ignored); an unfollow, an approval or account-status change, a deletion or an expiry during a scroll applies at once, so a page may then skip or repeat an author. A cursor older than 30 minutes → 400 STORY_CURSOR_EXPIRED. GET /stories/authors/:identityId and GET /stories/me (with view counts). Media links are signed, last 15 minutes at most and never past the story's expiry, and are served with Cache-Control: private, no-store (the app, in phase 3, must use expo-image's memory-only cache and no video caching, which ignore HTTP headers). An hourly job retries deleting the files of deleted and failed stories until S3 confirms it, and deletes rows that are due (expired after a 1-hour grace, abandoned, failed, and deleted ones past publishedAt + 24h) only after their files are confirmed gone; a daily job deletes files no row accounts for (accounts or profiles deleted). One API instance only: running several needs a cross-instance lease first. Migration 20261020090000_stories (Story, StoryView). Views and viewer lists come in phase 2.",
+        ar: "الأساس الخلفي للقصص؛ بلا شاشات في التطبيق بعد ولم يُنشر. من يمكنه النشر: الشركات المعتمدة (باشتراك سارٍ أو فترة تجريبية) والمكاتب المعتمدة؛ والأفراد ← 403 STORY_PUBLISHER_ONLY، وغير المعتمد ← خطأ الاعتماد الحالي 403، والشركة بلا اشتراك ← 403 SUBSCRIPTION_REQUIRED. الرفع: POST /stories/uploads { mediaType: IMAGE، contentType (jpeg/png/webp)، sizeBytes حتى 10 ميجابايت } ينشئ قصة معلقة بمفتاح يختاره الخادم تحت stories/ ويعيد رابط رفع PUT موقّعاً (10 دقائق) يوقّع النوع والحجم الدقيق ومعرّف القصة؛ والطلب الجديد يلغي طلب الرفع المعلق الأقدم. POST /stories/:id/publish { caption حتى 200، propertyId اختياري } يفحص الملف المخزّن نفسه — موجود، وبالحجم والنوع المعلنين، ويحمل معرّف القصة، وبياناته صورة من ذلك النوع (حتى 8192 بكسل للضلع و50 ميجابكسل؛ ويُقرأ أول 1 ميجابايت لإيجاد الترويسة) — ثم ينشره لمدة 24 ساعة بالأبعاد المقروءة من الملف. لم يُرفع بعد ← 409 STORY_UPLOAD_INCOMPLETE (يُعاد)؛ وملف لا يجتاز الفحص ← 422 STORY_MEDIA_INVALID ويُحذف ملفه؛ وبعد مهلة الثلاثين دقيقة ← 410؛ وتكرار النشر يعيد القصة. ربط الإعلان يجب أن يكون لإعلان نشط للناشر نفسه (400 STORY_PROPERTY_INVALID) ويختفي إذا لم يعد نشطاً. الحدود: 20 قصة حية و30 منشورة خلال 24 ساعة (429 STORY_LIMIT)، وتُحسب من جديد تحت قفل قاعدة بيانات لكل هوية عند إنشاء طلب الرفع وعند التفعيل، فلا تتجاوزها الطلبات المتزامنة؛ ويعيد التفعيل فحص مهلة الرفع. DELETE /stories/:id (للناشر فقط، وإلا 404) يخفيها فوراً ويحذف ملفاتها؛ ويبقى سجل القصة المنشورة حتى publishedAt + 24 ساعة فلا يعيد الحذف رصيد النشر. GET /stories/feed?cursor&limit (حتى 30) يعرض الناشرين المعتمدين لحسابات غير معطلة وغير محظورة، دون حسابات المشاهد نفسه: غير المشاهَدين أولاً، والمتابَعون أولاً داخل غير المشاهَد وداخل المشاهَد، ثم الأحدث، ثم المعرّف. الصفحات تشترك في لحظة الصفحة الأولى لتحديد ما شوهد وما هو متابَع (المشاهدات والمتابعات بعدها لا تُحتسب)؛ أما إلغاء المتابعة أو الاعتماد أو تغيير حالة الحساب أو الحذف أو الانتهاء أثناء التمرير فتسري فوراً، فقد تتخطى صفحة ناشراً أو تكرره. ومؤشر أقدم من 30 دقيقة ← 400 STORY_CURSOR_EXPIRED. وGET /stories/authors/:identityId وGET /stories/me (مع عدد المشاهدات). روابط الوسائط موقّعة، تنتهي بعد 15 دقيقة كحد أقصى ولا تتجاوز انتهاء القصة، وتُقدَّم مع Cache-Control: private, no-store (وعلى التطبيق في المرحلة 3 استخدام ذاكرة expo-image المؤقتة في الذاكرة فقط وعدم تخزين الفيديو، لأنها تتجاهل ترويسات HTTP). مهمة كل ساعة تعيد محاولة حذف ملفات القصص المحذوفة والفاشلة حتى يؤكد S3 ذلك، وتحذف الصفوف المستحقة (المنتهية بعد مهلة ساعة، والمتروكة، والفاشلة، والمحذوفة بعد publishedAt + 24 ساعة) فقط بعد تأكيد حذف ملفاتها؛ ومهمة يومية تحذف الملفات التي لا يقابلها صف (حسابات أو هويات محذوفة). نسخة واحدة من الخادم فقط: تشغيل عدة نسخ يحتاج قفلاً مشتركاً أولاً. الترحيل 20261020090000_stories (Story وStoryView). المشاهدات وقائمة المشاهدين في المرحلة 2.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "An individual, an unapproved provider and an unsubscribed company cannot get an upload slot; an approved office can.",
+          "A file of a different size, type or story id, or that is not really a JPEG/PNG/WebP, is refused on publish and deleted.",
+          "A published story appears in another profile's feed and disappears from every read when it expires or is deleted.",
+          "The feed order is: unseen + followed, unseen, seen + followed, seen; paging returns every author once when nothing else changes.",
+          "Media links work only signed, last at most 15 minutes, never past the story's expiry, and carry Cache-Control: private, no-store.",
+          "Deleting stories does not let a profile publish more than 30 in 24 hours, and simultaneous requests never exceed either limit.",
+          "Cleanup deletes files before rows, retries files S3 could not delete, and keeps their rows until it succeeds.",
+        ],
+        ar: [
+          "لا يحصل الفرد ولا الناشر غير المعتمد ولا الشركة بلا اشتراك على رابط رفع؛ والمكتب المعتمد يحصل عليه.",
+          "الملف المختلف في الحجم أو النوع أو معرّف القصة، أو الذي ليس فعلاً JPEG/PNG/WebP، يُرفض عند النشر ويُحذف.",
+          "القصة المنشورة تظهر في قائمة هوية أخرى وتختفي من كل القراءات عند انتهائها أو حذفها.",
+          "ترتيب القائمة: غير مشاهَد ومتابَع، ثم غير مشاهَد، ثم مشاهَد ومتابَع، ثم مشاهَد؛ والتصفح يعيد كل ناشر مرة واحدة ما لم يتغير شيء آخر.",
+          "روابط الوسائط تعمل موقّعة فقط، لمدة 15 دقيقة كحد أقصى ولا تتجاوز انتهاء القصة، ومع Cache-Control: private, no-store.",
+          "حذف القصص لا يسمح للهوية بنشر أكثر من 30 خلال 24 ساعة، والطلبات المتزامنة لا تتجاوز أياً من الحدين.",
+          "التنظيف يحذف الملفات قبل الصفوف، ويعيد محاولة ما تعذّر حذفه، ويُبقي صفوفها حتى ينجح.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment yet: needs the stories/ prefix made private (bucket policy) and the migration, both pending approval.",
+          "As an approved office: POST /stories/uploads, PUT the file with the returned headers, POST /stories/:id/publish → 200; as another profile GET /stories/feed lists it.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة بعد: يحتاج جعل مجلد stories/ خاصاً (سياسة الحاوية) والترحيل، وكلاهما بانتظار الموافقة.",
+          "كمكتب معتمد: POST /stories/uploads، ثم PUT للملف بالترويسات المعادة، ثم POST /stories/:id/publish ← 200؛ وكهوية أخرى GET /stories/feed يعرضها.",
+        ],
+      },
+      updatedIn: "feat/stories-phase1",
+    },
+    {
       id: "api-company-requests-complete-remove-excludes",
       title: {
         en: "Company requests: end an accepted request, remove one from a company's lists, «العرض لا يشمل», rejected drop off after 30 days",

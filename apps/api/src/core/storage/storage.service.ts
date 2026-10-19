@@ -1,6 +1,9 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
   S3ClientConfig,
@@ -10,9 +13,34 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { extname } from 'path';
 
+/** What the app must send with a presigned PUT (all of it is signed). */
+export interface PresignedPut {
+  url: string;
+  headers: Record<string, string>;
+}
+
+/** An object's stored size, type and metadata, as S3 reports them. */
+export interface ObjectHead {
+  contentLength: number;
+  contentType: string | null;
+  metadata: Record<string, string>;
+}
+
+export interface ListedObject {
+  key: string;
+  lastModified: Date | null;
+}
+
+// DeleteObjects takes at most this many keys per request
+const DELETE_BATCH = 1000;
+
 @Injectable()
 export class StorageService {
   private readonly s3Client: S3Client;
+  // Presigned PUTs only. With the SDK default ("when supported") the URL
+  // carries the CRC32 of an empty body (x-amz-checksum-crc32=AAAAAA==), which
+  // S3 would check against the uploaded file. Other calls keep the default.
+  private readonly presignClient: S3Client;
   private readonly bucketName = process.env.AWS_S3_BUCKET_NAME;
   private readonly region = process.env.AWS_REGION;
 
@@ -32,6 +60,10 @@ export class StorageService {
     }
 
     this.s3Client = new S3Client(s3Config);
+    this.presignClient = new S3Client({
+      ...s3Config,
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+    });
   }
 
   // Uploads a file directly from memory buffer to S3
@@ -138,6 +170,139 @@ export class StorageService {
     } catch (error) {
       console.error('S3 Delete Error:', error);
     }
+  }
+
+  /**
+   * A presigned PUT for a private object with a server-chosen key. The type
+   * and exact size are signed, so S3 refuses an upload that differs; the
+   * metadata travels in the signed query string, so the client can't
+   * change it either.
+   */
+  async presignPut(
+    key: string,
+    options: {
+      contentType: string;
+      contentLength: number;
+      metadata?: Record<string, string>;
+    },
+    expiresInSeconds: number,
+  ): Promise<PresignedPut> {
+    const url = await getSignedUrl(
+      this.presignClient,
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        ContentType: options.contentType,
+        ContentLength: options.contentLength,
+        Metadata: options.metadata,
+      }),
+      {
+        expiresIn: expiresInSeconds,
+        signableHeaders: new Set(['content-type', 'content-length']),
+      },
+    );
+    return {
+      url,
+      headers: {
+        'Content-Type': options.contentType,
+        'Content-Length': String(options.contentLength),
+      },
+    };
+  }
+
+  /** An object's size, type and metadata; null when there is no such key. */
+  async headObject(key: string): Promise<ObjectHead | null> {
+    try {
+      const head = await this.s3Client.send(
+        new HeadObjectCommand({ Bucket: this.bucketName, Key: key }),
+      );
+      return {
+        contentLength: head.ContentLength ?? 0,
+        contentType: head.ContentType ?? null,
+        metadata: head.Metadata ?? {},
+      };
+    } catch (error) {
+      const status = (error as { $metadata?: { httpStatusCode?: number } })
+        .$metadata?.httpStatusCode;
+      if (status === 404) return null;
+      throw error;
+    }
+  }
+
+  /** Bytes `start`..`end` (inclusive) of an object. */
+  async getRange(key: string, start: number, end: number): Promise<Buffer> {
+    const object = await this.s3Client.send(
+      new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Range: `bytes=${start}-${end}`,
+      }),
+    );
+    if (!object.Body) return Buffer.alloc(0);
+    return Buffer.from(await object.Body.transformToByteArray());
+  }
+
+  /** One page of the keys under a prefix. */
+  async listKeys(
+    prefix: string,
+    continuationToken?: string,
+  ): Promise<{ objects: ListedObject[]; nextToken: string | null }> {
+    const page = await this.s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    return {
+      objects: (page.Contents ?? []).flatMap((o) =>
+        o.Key ? [{ key: o.Key, lastModified: o.LastModified ?? null }] : [],
+      ),
+      nextToken: page.IsTruncated ? (page.NextContinuationToken ?? null) : null,
+    };
+  }
+
+  /**
+   * Deletes keys and says which ones could not be deleted, so a caller can
+   * keep its records until the files are really gone. A key that doesn't
+   * exist counts as deleted (S3 reports success), so this is safe to repeat.
+   */
+  async deleteKeysReporting(keys: string[]): Promise<{ failed: string[] }> {
+    const failed: string[] = [];
+    for (let i = 0; i < keys.length; i += DELETE_BATCH) {
+      const batch = keys.slice(i, i + DELETE_BATCH);
+      try {
+        const result = await this.s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucketName,
+            Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: true },
+          }),
+        );
+        for (const e of result.Errors ?? []) if (e.Key) failed.push(e.Key);
+      } catch (error) {
+        console.error('S3 Batch Delete Error:', error);
+        failed.push(...batch);
+      }
+    }
+    return { failed };
+  }
+
+  /**
+   * A signed GET for private media that no cache may store
+   * (Cache-Control: private, no-store), so a deleted or expired file isn't
+   * served from a copy. Apps that ignore HTTP caching (image libraries' own
+   * disk caches) must be configured separately.
+   */
+  async signedMediaUrl(key: string, expiresInSeconds: number): Promise<string> {
+    return getSignedUrl(
+      this.s3Client,
+      new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        ResponseCacheControl: 'private, no-store',
+      }),
+      { expiresIn: expiresInSeconds },
+    );
   }
 
   // Multiple File Uploads
