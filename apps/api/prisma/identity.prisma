@@ -71,6 +71,9 @@ model Identity {
   // Public requests this company hid (رفض) and requests it saved
   requestDismissals RequestDismissal[]
   requestBookmarks  RequestBookmark[]
+  // Stories this company/office posted, and the stories this profile viewed
+  stories           Story[]          @relation("StoryAuthor")
+  storyViews        StoryView[]      @relation("StoryViewer")
 
   // One individual, one company and one office per account
   @@unique([userId, type])
