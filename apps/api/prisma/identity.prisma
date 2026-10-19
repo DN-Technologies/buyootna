@@ -95,6 +95,8 @@ model CompanyIdentityData {
   hqLocation      String?
   serviceAreas    String?
   about           String?
+  // مواعيد العمل: the week, Sunday first: { day, open, ranges: [{ from, to }] }
+  workingHours    Json?
   licenseActivity String?
   // Normalised (no spaces, Western digits); unique across companies AND
   // offices -- the cross-table half is enforced in IdentitiesService
@@ -123,6 +125,8 @@ model OfficeIdentityData {
   services        String?
   hqLocation      String?
   about           String?
+  // مواعيد العمل: the week, Sunday first: { day, open, ranges: [{ from, to }] }
+  workingHours    Json?
   licenseActivity String?
   // Normalised (no spaces, Western digits); unique across companies AND
   // offices -- the cross-table half is enforced in IdentitiesService

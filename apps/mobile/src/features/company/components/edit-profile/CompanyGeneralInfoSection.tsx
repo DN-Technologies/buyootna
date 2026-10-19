@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Control, Controller, FieldErrors } from 'react-hook-form';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
+import { LocationPinIcon } from '@/assets/icons/more';
 import EmailField from '@/shared/components/forms/EmailField';
 import EmailVerificationHint from '@/shared/components/forms/EmailVerificationHint';
 import FieldLabel from '@/shared/components/forms/FieldLabel';
@@ -10,6 +10,7 @@ import KuwaitPhoneField from '@/shared/components/forms/KuwaitPhoneField';
 import PhoneVerificationHint from '@/shared/components/forms/PhoneVerificationHint';
 import type { ProfileFormData } from '@/shared/components/forms/types';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
+import WorkingHoursField from '@/shared/components/profile/WorkingHoursField';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 import type { CompanyIdentityFields } from './useCompanyEditProfile';
@@ -188,22 +189,14 @@ export default function CompanyGeneralInfoSection({
           </Text>
         </View>
 
-        {/* Field: مواعيد العمل */}
-        <View>
-          <FieldLabel className={LABEL_CLASS}>مواعيد العمل</FieldLabel>
-          <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
-            <TextInput
-              value={identity.services}
-              onChangeText={(val) => setIdentityField('services', val)}
-              placeholder="مثال: من 9 صباحا حتى 5 مساءا"
-              placeholderTextColor="#979797"
-              textAlign="right"
-              className="flex-1 font-cairo-regular text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            />
-            <CalendarClockIcon size={18} color="#111111" />
-          </View>
-        </View>
+        {/* Field: مواعيد العمل (day by day, like WhatsApp Business) */}
+        <WorkingHoursField
+          value={identity.workingHours}
+          onChange={(week) =>
+            setIdentityField('workingHours', JSON.stringify(week))
+          }
+          labelClassName={LABEL_CLASS}
+        />
       </View>
     </View>
   );

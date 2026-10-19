@@ -38,8 +38,10 @@ export interface CompanyIdentityFields {
   hqLocation: string;
   serviceAreas: string;
   about: string;
-  // Stored in the API's `services` column -- the design's "مواعيد العمل"
-  services: string;
+  // مواعيد العمل as JSON text (WorkingDay[]); '' when not set. It used to
+  // be typed into the `services` column, which also holds the company's
+  // services list (search, cards), so it overwrote that.
+  workingHours: string;
   licenseActivity: string;
   licenseNumber: string;
   licenseExpiry: string;
@@ -49,7 +51,7 @@ export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   hqLocation: '',
   serviceAreas: '',
   about: '',
-  services: '',
+  workingHours: '',
   licenseActivity: '',
   licenseNumber: '',
   licenseExpiry: '',
@@ -101,7 +103,9 @@ export function useCompanyEditProfile() {
       hqLocation: readableLocation(companyData?.hqLocation),
       serviceAreas: companyData?.serviceAreas || '',
       about: companyData?.about || '',
-      services: companyData?.services || '',
+      workingHours: companyData?.workingHours
+        ? JSON.stringify(companyData.workingHours)
+        : '',
       licenseActivity: companyData?.licenseActivity || '',
       licenseNumber: companyData?.licenseNumber || '',
       licenseExpiry: companyData?.licenseExpiry || '',

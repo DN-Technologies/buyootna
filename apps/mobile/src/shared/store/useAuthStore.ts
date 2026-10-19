@@ -4,6 +4,7 @@ import { create } from 'zustand';
 
 import apiClient, { setAuthToken, setOnUnauthorized } from '@/shared/api/api';
 import { socketService } from '@/shared/services/socket.service';
+import type { WorkingDay } from '@/shared/utils/workingHours';
 
 import { clearIdentityScopedStores } from './identityScopedStores';
 import { hasInstallStorage } from './installStorage';
@@ -33,6 +34,8 @@ export interface CompanyData {
   // التخصص, e.g. "مكتب هندسي"
   specialty?: string | null;
   about?: string | null;
+  // مواعيد العمل, as saved (see shared/utils/workingHours)
+  workingHours?: WorkingDay[] | null;
   licenseActivity?: string | null;
   licenseNumber?: string;
   licenseExpiry?: string | null;
@@ -48,6 +51,8 @@ export interface OfficeData {
   services?: string | null;
   hqLocation?: string | null;
   about?: string | null;
+  // مواعيد العمل, as saved (see shared/utils/workingHours)
+  workingHours?: WorkingDay[] | null;
   licenseActivity?: string | null;
   licenseNumber?: string;
   licenseExpiry?: string | null;

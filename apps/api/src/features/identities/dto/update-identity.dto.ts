@@ -70,6 +70,12 @@ export class UpdateCompanyIdentityDto {
   @IsOptional()
   @IsString()
   specialty?: string;
+
+  // مواعيد العمل: [{ day: 0-6 (Sunday first), open, ranges: [{ from, to }] }]
+  // as an array, or as JSON text in a multipart body; null clears them.
+  // Checked by parseWorkingHours in the service.
+  @IsOptional()
+  workingHours?: unknown;
 }
 
 export class UpdateOfficeIdentityDto {
@@ -111,4 +117,10 @@ export class UpdateOfficeIdentityDto {
   @IsOptional()
   @IsString()
   licenseFileUrl?: string;
+
+  // مواعيد العمل: [{ day: 0-6 (Sunday first), open, ranges: [{ from, to }] }]
+  // as an array, or as JSON text in a multipart body; null clears them.
+  // Checked by parseWorkingHours in the service.
+  @IsOptional()
+  workingHours?: unknown;
 }

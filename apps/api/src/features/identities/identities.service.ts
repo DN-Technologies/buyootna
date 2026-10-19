@@ -23,6 +23,7 @@ import {
   rethrowAsConflict,
 } from './persona-rules';
 import { ABOUT_MAX_LENGTH } from '../../common/utils/location.util';
+import { parseWorkingHours } from '../../common/utils/working-hours.util';
 
 type ProviderType = Extract<IdentityType, 'COMPANY' | 'OFFICE'>;
 
@@ -382,6 +383,18 @@ export class IdentitiesService {
       );
     }
 
+    // مواعيد العمل, when sent: checked and normalised (400 if malformed)
+    const rawHours = (dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto)
+      .workingHours;
+    const parsedHours =
+      rawHours === undefined ? undefined : parseWorkingHours(rawHours);
+    const workingHours =
+      parsedHours === undefined
+        ? undefined
+        : parsedHours === null
+          ? Prisma.DbNull
+          : (parsedHours as unknown as Prisma.InputJsonValue);
+
     // A changed licence number must still be free platform-wide
     const nextLicense = (
       dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto
@@ -435,6 +448,7 @@ export class IdentitiesService {
             latitude: companyDto.latitude,
             longitude: companyDto.longitude,
             specialty: companyDto.specialty,
+            workingHours,
           },
         });
       } else if (identity.type === IdentityType.OFFICE) {
@@ -451,6 +465,7 @@ export class IdentitiesService {
             licenseExpiry: officeDto.licenseExpiry,
             logoUrl: officeDto.logoUrl,
             licenseFileUrl: officeDto.licenseFileUrl,
+            workingHours,
           },
         });
       }

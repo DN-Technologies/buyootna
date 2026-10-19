@@ -2,6 +2,7 @@ import apiClient from '@/shared/api/api';
 import { CompanyProjectItemData } from '@/shared/components/company/CompanyGalleryTab';
 import { CompanyHeaderData } from '@/shared/components/company/CompanyHeaderCard';
 import { CompanyServiceItemData } from '@/shared/components/company/CompanyServicesTab';
+import type { WorkingDay } from '@/shared/utils/workingHours';
 
 export interface CompanyDetailsResponse extends CompanyHeaderData {
   userId: string;
@@ -9,6 +10,8 @@ export interface CompanyDetailsResponse extends CompanyHeaderData {
   whatsapp?: string;
   services: CompanyServiceItemData[];
   projects: CompanyProjectItemData[];
+  // مواعيد العمل as the company set them (null: not set)
+  workingHours?: WorkingDay[] | null;
 }
 
 export const companyService = {

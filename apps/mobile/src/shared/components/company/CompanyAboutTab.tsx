@@ -16,6 +16,8 @@ interface CompanyAboutTabProps {
   onToggleLike: (reviewId: string) => void;
   onToggleDislike: (reviewId: string) => void;
   onShowMoreReviews: () => void;
+  // مواعيد العمل as the company set them
+  workingHours?: unknown;
 }
 
 export default function CompanyAboutTab({
@@ -28,11 +30,12 @@ export default function CompanyAboutTab({
   onToggleLike,
   onToggleDislike,
   onShowMoreReviews,
+  workingHours,
 }: CompanyAboutTabProps) {
   return (
     <View>
       {/* Working Hours */}
-      <CompanyWorkingHours />
+      <CompanyWorkingHours hours={workingHours} />
 
       {/* Reviews Section Header & Toolbar */}
       <View className="mb-4 flex-row items-center justify-between">

@@ -1,15 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import { WorkingHourItem } from '@/shared/components/company/CompanyWorkingHours';
 import OfficeWorkingHours from '@/shared/components/office/OfficeWorkingHours';
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem, ReviewSummary } from '@/shared/components/profile/types';
+import type { WorkingDay } from '@/shared/utils/workingHours';
 
 interface OfficeAboutTabProps {
   licenseNumber?: string;
-  workingHours?: WorkingHourItem[];
+  // مواعيد العمل as the office set them
+  workingHours?: WorkingDay[] | null;
   reviewSummary: ReviewSummary;
   reviews: ReviewItem[];
   displayedReviews: ReviewItem[];
@@ -39,7 +40,7 @@ export default function OfficeAboutTab({
       {/* License Number & Working Hours */}
       <OfficeWorkingHours
         licenseNumber={licenseNumber}
-        schedule={workingHours}
+        hours={workingHours}
       />
 
       {/* Reviews Section Header & Toolbar */}

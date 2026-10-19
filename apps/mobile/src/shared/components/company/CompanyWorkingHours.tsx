@@ -1,23 +1,23 @@
 import { Text, View } from 'react-native';
 
-export interface WorkingHourItem {
-  days: string;
-  hours: string;
-  isOpen: boolean;
-}
+import { readWeek, summarizeWeek } from '@/shared/utils/workingHours';
+
+// One line of the section (re-exported for older imports)
+export type { WorkingHourItem } from '@/shared/utils/workingHours';
 
 interface CompanyWorkingHoursProps {
-  schedule?: WorkingHourItem[];
+  // The saved مواعيد العمل (the API's WorkingDay[]); none: the section hides
+  hours?: unknown;
 }
 
-const DEFAULT_SCHEDULE: WorkingHourItem[] = [
-  { days: 'الأحد - الخميس', hours: '9:00 ص - 8:00 م.', isOpen: true },
-  { days: 'الجمعة والسبت', hours: 'مغلق.', isOpen: false },
-];
-
 export default function CompanyWorkingHours({
-  schedule = DEFAULT_SCHEDULE,
+  hours,
 }: CompanyWorkingHoursProps) {
+  // What the company set; nothing made up when it hasn't
+  const week = readWeek(hours);
+  if (!week) return null;
+  const schedule = summarizeWeek(week);
+
   return (
     <View className="mb-6">
       <Text className="mb-3 font-cairo-semibold text-[14px] leading-[22px] text-[#6B6A6A]"

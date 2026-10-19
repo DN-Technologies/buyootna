@@ -141,14 +141,25 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
     fireEvent.press(saveBtn);
 
     await waitFor(() => {
+      // The account's fields only: /users/profile rejects the licence ones
       expect(apiClient.patch).toHaveBeenCalledWith(
         '/users/profile',
-        expect.objectContaining({
-          name: 'مكتب المنار الحديث',
-          licenseNumber: '6743963845',
-        })
+        expect.objectContaining({ name: 'مكتب المنار الحديث' })
       );
       expect(mockRefreshProfile).toHaveBeenCalled();
     });
+    const accountBody = (apiClient.patch as jest.Mock).mock.calls.find(
+      ([url]) => url === '/users/profile'
+    )[1];
+    expect(accountBody.licenseNumber).toBeUndefined();
+
+    // The office's fields go to its identity
+    const identityCall = (apiClient.patch as jest.Mock).mock.calls.find(
+      ([url]) => String(url).startsWith('/identities/')
+    );
+    const body: FormData = identityCall[1];
+    expect(body.get('licenseNumber')).toBe('6743963845');
+    // مواعيد العمل no longer overwrite the services text
+    expect(body.has('services')).toBe(false);
   });
 });
