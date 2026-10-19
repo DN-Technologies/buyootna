@@ -184,6 +184,11 @@ function RootLayout() {
                   <Stack.Screen name="(company)" />
                   <Stack.Screen name="(office)" />
                   <Stack.Screen name="property/[id]" />
+                  {/* Stories open over everything, full screen */}
+                  <Stack.Screen
+                    name="stories/[authorId]"
+                    options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+                  />
                 </Stack>
                 <AppAlertModal />
                 {/* The app is light everywhere, whatever the phone's theme:

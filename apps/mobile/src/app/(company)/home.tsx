@@ -12,6 +12,7 @@ import {
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
+import StoryTray from '@/features/stories/components/StoryTray';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
@@ -107,7 +108,12 @@ export default function CompanyHomeScreen() {
             isVerified={isVerified}
             unreadNotificationsCount={unreadCount}
           />
+        </ContentContainer>
 
+        {/* Stories (hidden when there are none) */}
+        <StoryTray className="mt-4" />
+
+        <ContentContainer>
           <View className="mt-5 gap-6">
             <HomeStatsGrid
               privateRequestsThisWeek={privateRequestsThisWeek}

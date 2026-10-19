@@ -22,6 +22,8 @@ import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
 import { feedService } from '@/features/individual/services/feed.service';
+import StoryTray from '@/features/stories/components/StoryTray';
+import { useStoriesFeed } from '@/features/stories/hooks/useStoriesQueries';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
@@ -69,6 +71,7 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const { refetch: refetchStories } = useStoriesFeed();
 
   // --- Fetch Function ---
   const loadFeed = async () => {
@@ -98,7 +101,7 @@ export default function HomeScreen() {
   // --- Pull to Refresh Handle ---
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadFeed();
+    await Promise.all([loadFeed(), refetchStories()]);
     setRefreshing(false);
   };
 
@@ -108,6 +111,9 @@ export default function HomeScreen() {
   ];
 
   const renderHeader = (withHorizontalPadding = true) => (
+    <View>
+      {/* Stories (hidden when there are none) */}
+      <StoryTray />
     <View className={` ${withHorizontalPadding ? 'px-[20px]' : ''}`}>
       {/* Tabs & Controls Row */}
       <View className="mb-4 flex-row items-center gap-2">
@@ -171,6 +177,7 @@ export default function HomeScreen() {
         viewMode={viewMode}
         onViewModeChange={setViewMode}
       />
+    </View>
     </View>
   );
 

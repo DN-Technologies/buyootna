@@ -6,6 +6,12 @@ import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests'
 
 import CompanyHomeScreen from '../home';
 
+// The stories tray has its own tests; here it renders nothing
+jest.mock('@/features/stories/components/StoryTray', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 const mockPush = jest.fn();
 const mockReply = jest.fn();
 let mockServices = [{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }];
