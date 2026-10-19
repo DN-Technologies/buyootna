@@ -1,27 +1,22 @@
 import { Text, View } from 'react-native';
 
 import { LicenseIcon } from '@/assets/icons/home/property';
-
-export interface WorkingHourItem {
-  days: string;
-  hours: string;
-  isOpen: boolean;
-}
+import { readWeek, summarizeWeek } from '@/shared/utils/workingHours';
 
 interface OfficeWorkingHoursProps {
   licenseNumber?: string;
-  schedule?: WorkingHourItem[];
+  // The saved مواعيد العمل (the API's WorkingDay[]); none: not shown
+  hours?: unknown;
 }
-
-const DEFAULT_SCHEDULE: WorkingHourItem[] = [
-  { days: 'الأحد - الخميس', hours: '9:00 ص - 8:00 م.', isOpen: true },
-  { days: 'الجمعة والسبت', hours: 'مغلق.', isOpen: false },
-];
 
 export default function OfficeWorkingHours({
   licenseNumber = '2454685',
-  schedule = DEFAULT_SCHEDULE,
+  hours,
 }: OfficeWorkingHoursProps) {
+  // What the office set; nothing made up when it hasn't
+  const week = readWeek(hours);
+  const schedule = week ? summarizeWeek(week) : [];
+
   return (
     <View className="mb-6 space-y-4">
       {/* License Number Row */}
@@ -35,6 +30,7 @@ export default function OfficeWorkingHours({
       ) : null}
 
       {/* Working Hours Section */}
+      {schedule.length > 0 && (
       <View>
         <Text
           className="mb-3 font-cairo-semibold text-[14px] leading-[22px] text-[#6B6A6A]"
@@ -58,6 +54,7 @@ export default function OfficeWorkingHours({
           ))}
         </View>
       </View>
+      )}
     </View>
   );
 }

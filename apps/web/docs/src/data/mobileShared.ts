@@ -422,6 +422,47 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/quote-gov-area",
     },
     {
+      id: "mobile-working-hours",
+      title: {
+        en: "مواعيد العمل set day by day, like WhatsApp Business",
+        ar: "مواعيد العمل لكل يوم، مثل واتساب للأعمال",
+      },
+      priority: "P1",
+      story: {
+        en: "Companies and offices typed مواعيد العمل as free text on edit profile, and that text was saved into the services column (which also holds the services list that search and cards read), overwriting it; the public profiles meanwhile showed a made-up «الأحد - الخميس 9-8». Edit profile now opens a day-by-day editor (shared/components/profile/WorkingHoursEditor): each day of the week open or closed, an open day with one to three time ranges set with the system time picker (15-minute steps), «إضافة فترة» and a remove button per extra range. It refuses ranges that end before they start or overlap. The hours are saved as workingHours (the new JSON column) and the profiles show them with neighbouring days of the same hours on one line («الأحد - الخميس: 9:00 ص - 5:00 م», «الجمعة - السبت: مغلق»); with none saved the section is hidden. Office edit profile also stops sending its licence fields to /users/profile (which rejects them): account fields go there, office fields to the identity.",
+        ar: "كانت الشركات والمكاتب تكتب مواعيد العمل كنص حر في تعديل الملف، ويُحفظ هذا النص في عمود services (الذي يحمل أيضاً قائمة الخدمات التي يقرؤها البحث والبطاقات) فيكتب فوقها؛ وفي الوقت نفسه كانت الصفحات العامة تعرض «الأحد - الخميس 9-8» مختلقة. الآن يفتح تعديل الملف محرراً يوماً بيوم (shared/components/profile/WorkingHoursEditor): كل يوم من أيام الأسبوع مفتوح أو مغلق، واليوم المفتوح بفترة إلى ثلاث فترات تُحدد بمنتقي الوقت في النظام (كل 15 دقيقة)، مع «إضافة فترة» وزر حذف لكل فترة إضافية. ويرفض الفترات التي تنتهي قبل أن تبدأ أو المتداخلة. تُحفظ المواعيد في workingHours (عمود JSON جديد) وتعرضها الصفحات مع جمع الأيام المتتالية ذات المواعيد نفسها في سطر واحد («الأحد - الخميس: 9:00 ص - 5:00 م»، «الجمعة - السبت: مغلق»)؛ وإذا لم تُحفظ مواعيد يُخفى القسم. كما توقف تعديل ملف المكتب عن إرسال حقول الرخصة إلى /users/profile (الذي يرفضها): حقول الحساب تذهب إليه وحقول المكتب إلى الهوية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Edit profile › مواعيد العمل opens the week; each day has an open/closed switch.",
+          "An open day has at least one range and can have up to three (إضافة فترة); extra ranges can be removed.",
+          "Times are picked with the system time picker; a range ending before it starts, or overlapping another, can't be saved.",
+          "After saving, the company/office page shows the hours with identical neighbouring days grouped.",
+          "With no hours saved, the page shows no مواعيد العمل section.",
+          "Saving hours no longer changes the company's services.",
+        ],
+        ar: [
+          "تعديل الملف › مواعيد العمل يفتح الأسبوع؛ ولكل يوم مفتاح مفتوح/مغلق.",
+          "لليوم المفتوح فترة واحدة على الأقل وحتى ثلاث (إضافة فترة)، ويمكن حذف الفترات الإضافية.",
+          "يُختار الوقت بمنتقي الوقت في النظام؛ ولا تُحفظ فترة تنتهي قبل أن تبدأ أو تتداخل مع أخرى.",
+          "بعد الحفظ تعرض صفحة الشركة/المكتب المواعيد مع جمع الأيام المتتالية المتطابقة.",
+          "دون مواعيد محفوظة لا يظهر قسم مواعيد العمل في الصفحة.",
+          "حفظ المواعيد لم يعد يغيّر خدمات الشركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: edit profile › مواعيد العمل › open الجمعة, add a second range 4:00 م - 9:00 م, save, then save the profile. Open the company page: «الجمعة: 9:00 ص - 5:00 م، 4:00 م - 9:00 م».",
+          "As an office: set hours and save without changing the logo: the save succeeds and the office page shows them.",
+        ],
+        ar: [
+          "كشركة: تعديل الملف › مواعيد العمل › افتح الجمعة وأضف فترة ثانية 4:00 م - 9:00 م واحفظ ثم احفظ الملف. افتح صفحة الشركة: «الجمعة: 9:00 ص - 5:00 م، 4:00 م - 9:00 م».",
+          "كمكتب: حدد المواعيد واحفظ دون تغيير الشعار: ينجح الحفظ وتعرضها صفحة المكتب.",
+        ],
+      },
+      updatedIn: "feat/working-hours",
+    },
+    {
       id: "mobile-identity-switch",
       title: {
         en: "Switching persona is per device, with no data bleed",

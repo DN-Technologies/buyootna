@@ -1,8 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TextInput, View } from 'react-native';
 
-import { CalendarClockIcon, LocationPinIcon } from '@/assets/icons/more';
+import { LocationPinIcon } from '@/assets/icons/more';
 import IdentityContactPhone from '@/shared/components/profile/IdentityContactPhone';
+import WorkingHoursField from '@/shared/components/profile/WorkingHoursField';
 import { ABOUT_MAX_LENGTH } from '@/shared/utils/location';
 
 interface OfficeGeneralInfoSectionProps {
@@ -16,8 +17,9 @@ interface OfficeGeneralInfoSectionProps {
   setHqLocation: (val: string) => void;
   about: string;
   setAbout: (val: string) => void;
-  services: string;
-  setServices: (val: string) => void;
+  // مواعيد العمل as JSON text (WorkingDay[]); '' when not set
+  workingHours: string;
+  setWorkingHours: (val: string) => void;
 }
 
 export default function OfficeGeneralInfoSection({
@@ -31,8 +33,8 @@ export default function OfficeGeneralInfoSection({
   setHqLocation,
   about,
   setAbout,
-  services,
-  setServices,
+  workingHours,
+  setWorkingHours,
 }: OfficeGeneralInfoSectionProps) {
   return (
     <View>
@@ -177,27 +179,11 @@ export default function OfficeGeneralInfoSection({
           </View>
         </View>
 
-        {/* Field: مواعيد العمل */}
-        <View>
-          <Text
-            className="mb-1.5 font-cairo-medium text-[14px] text-[#111111]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            مواعيد العمل
-          </Text>
-          <View className="h-[46px] flex-row items-center justify-between rounded-[8px] border border-[#ECECEC] bg-white px-3">
-            <TextInput
-              value={services}
-              onChangeText={setServices}
-              placeholder="من 9 صباحا حتى 5 مساءا"
-              placeholderTextColor="#979797"
-              textAlign="right"
-              className="flex-1 font-cairo-regular text-[14px] text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
-            />
-            <CalendarClockIcon size={18} color="#111111" />
-          </View>
-        </View>
+        {/* Field: مواعيد العمل (day by day, like WhatsApp Business) */}
+        <WorkingHoursField
+          value={workingHours}
+          onChange={(week) => setWorkingHours(JSON.stringify(week))}
+        />
       </View>
     </View>
   );

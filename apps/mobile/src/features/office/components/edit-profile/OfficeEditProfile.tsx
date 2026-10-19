@@ -43,7 +43,11 @@ export default function OfficeEditProfile() {
       about:
         officeData?.about ||
         'مكتب متخصص في بيع وتأجير العقارات السكنية والتجارية مع خدمات استشارية متكاملة.',
-      services: officeData?.services || 'من 9 صباحا حتى 5 مساءا',
+      // مواعيد العمل as JSON text (WorkingDay[]); '' when not set. It used
+      // to be typed into `services`, overwriting the office's services text
+      workingHours: officeData?.workingHours
+        ? JSON.stringify(officeData.workingHours)
+        : '',
       licenseActivity:
         officeData?.licenseActivity || 'تشطيبات،بناء،ديكور،كهرباء',
       licenseNumber: officeData?.licenseNumber || '6743963845',
@@ -58,7 +62,7 @@ export default function OfficeEditProfile() {
   const [phone, setPhone] = useState(initialValues.phone);
   const [hqLocation, setHqLocation] = useState(initialValues.hqLocation);
   const [about, setAbout] = useState(initialValues.about);
-  const [services, setServices] = useState(initialValues.services);
+  const [workingHours, setWorkingHours] = useState(initialValues.workingHours);
   const [licenseActivity, setLicenseActivity] = useState(
     initialValues.licenseActivity
   );
@@ -88,7 +92,7 @@ export default function OfficeEditProfile() {
       phone !== initialValues.phone ||
       hqLocation !== initialValues.hqLocation ||
       about !== initialValues.about ||
-      services !== initialValues.services ||
+      workingHours !== initialValues.workingHours ||
       licenseActivity !== initialValues.licenseActivity ||
       licenseNumber !== initialValues.licenseNumber ||
       licenseExpiry !== initialValues.licenseExpiry ||
@@ -101,7 +105,7 @@ export default function OfficeEditProfile() {
     phone,
     hqLocation,
     about,
-    services,
+    workingHours,
     licenseActivity,
     licenseNumber,
     licenseExpiry,
@@ -159,62 +163,57 @@ export default function OfficeEditProfile() {
 
     setIsSubmitting(true);
     try {
-      if (logoFile || licenseFile) {
-        const formData = new FormData();
-        formData.append('name', name);
-        formData.append('licenseNumber', licenseNumber);
-        formData.append('services', services);
-        formData.append('hqLocation', hqLocation);
-        formData.append('about', about);
-        formData.append('licenseActivity', licenseActivity);
-        formData.append('licenseExpiry', licenseExpiry);
+      const formatKuwaitPhone = (val?: string | null) => {
+        if (!val) return '';
+        const cleaned = val.trim();
+        if (!cleaned) return '';
+        if (cleaned.startsWith('+')) return cleaned;
+        if (cleaned.startsWith('965')) return `+${cleaned}`;
+        return `+965${cleaned}`;
+      };
 
-        if (logoFile) {
-          formData.append('logo', {
-            uri: logoFile.uri,
-            name: logoFile.name || 'logo.jpg',
-            type: logoFile.mimeType || 'image/jpeg',
-          } as any);
-        }
+      // 1. The account's fields. Office fields go to the identity below:
+      //    /users/profile rejects the licence ones (unknown properties)
+      await apiClient.patch('/users/profile', {
+        name,
+        email,
+        phone: formatKuwaitPhone(phone),
+        // No WhatsApp: offices are reached by phone or in-app chat
+      });
 
-        if (licenseFile) {
-          formData.append('license', {
-            uri: licenseFile.uri,
-            name: licenseFile.name || 'license.jpg',
-            type: licenseFile.mimeType || 'image/jpeg',
-          } as any);
-        }
+      // 2. The office's own fields, with any picked files
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('licenseNumber', licenseNumber);
+      formData.append('hqLocation', hqLocation);
+      formData.append('about', about);
+      formData.append('licenseActivity', licenseActivity);
+      formData.append('licenseExpiry', licenseExpiry);
+      if (workingHours) formData.append('workingHours', workingHours);
 
-        await apiClient.patch(
-          `/identities/${activeIdentity?.id || ''}`,
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          }
-        );
-      } else {
-        const formatKuwaitPhone = (val?: string | null) => {
-          if (!val) return '';
-          const cleaned = val.trim();
-          if (!cleaned) return '';
-          if (cleaned.startsWith('+')) return cleaned;
-          if (cleaned.startsWith('965')) return `+${cleaned}`;
-          return `+965${cleaned}`;
-        };
-
-        await apiClient.patch('/users/profile', {
-          name,
-          email,
-          phone: formatKuwaitPhone(phone),
-          // No WhatsApp: offices are reached by phone or in-app chat
-          hqLocation,
-          about,
-          services,
-          licenseActivity,
-          licenseNumber,
-          licenseExpiry,
-        });
+      if (logoFile) {
+        formData.append('logo', {
+          uri: logoFile.uri,
+          name: logoFile.name || 'logo.jpg',
+          type: logoFile.mimeType || 'image/jpeg',
+        } as any);
       }
+
+      if (licenseFile) {
+        formData.append('license', {
+          uri: licenseFile.uri,
+          name: licenseFile.name || 'license.jpg',
+          type: licenseFile.mimeType || 'image/jpeg',
+        } as any);
+      }
+
+      await apiClient.patch(
+        `/identities/${activeIdentity?.id || ''}`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
 
       await refreshProfile();
       showAlert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [
@@ -261,8 +260,8 @@ export default function OfficeEditProfile() {
             setHqLocation={setHqLocation}
             about={about}
             setAbout={setAbout}
-            services={services}
-            setServices={setServices}
+            workingHours={workingHours}
+            setWorkingHours={setWorkingHours}
           />
 
           {/* 4. Section 2: رخصة المكتب */}

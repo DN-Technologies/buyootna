@@ -40,6 +40,35 @@ export const api: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "api-working-hours",
+      title: {
+        en: "workingHours on companies and offices",
+        ar: "workingHours للشركات والمكاتب",
+      },
+      priority: "P1",
+      story: {
+        en: "CompanyIdentityData and OfficeIdentityData gain workingHours (JSONB, migration 20261019150000_working_hours): the week, Sunday (0) first, as [{ day, open, ranges: [{ from, to }] }] with 24h «HH:mm» times. PATCH /identities/:id accepts it as an array or as JSON text (multipart), checked by parseWorkingHours (common/utils/working-hours.util): days 0-6 without repeats, an open day with one to three ranges, each starting before it ends, none overlapping; anything else is 400 «مواعيد العمل غير صالحة». A closed day is stored with no ranges, ranges sorted; null clears; leaving the field out leaves the hours as they are. GET /users/company/:id and /users/office/:id return workingHours (null when not set; the office response returned an empty list before).",
+        ar: "أُضيف workingHours إلى CompanyIdentityData وOfficeIdentityData (JSONB، الترحيل 20261019150000_working_hours): الأسبوع بدءاً من الأحد (0) بصيغة [{ day, open, ranges: [{ from, to }] }] وأوقات 24 ساعة «HH:mm». يقبله PATCH /identities/:id كقائمة أو كنص JSON (multipart)، ويتحقق منه parseWorkingHours (common/utils/working-hours.util): أيام 0-6 دون تكرار، ولليوم المفتوح من فترة إلى ثلاث، تبدأ كل منها قبل أن تنتهي ولا تتداخل؛ وغير ذلك 400 «مواعيد العمل غير صالحة». اليوم المغلق يُحفظ دون فترات والفترات مرتبة؛ وnull يمسحها؛ وعدم إرسال الحقل يبقيها كما هي. ويعيد GET /users/company/:id و/users/office/:id قيمة workingHours (null إذا لم تُحدد؛ وكان رد المكتب يعيد قائمة فارغة سابقاً).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "PATCH /identities/:id with workingHours as JSON text saves it; GET /users/company/:id returns it.",
+          "Overlapping ranges, an end before the start, a fourth range or an unknown day: 400.",
+          "An update without workingHours keeps the saved hours.",
+        ],
+        ar: [
+          "PATCH /identities/:id مع workingHours كنص JSON يحفظه؛ وGET /users/company/:id يعيده.",
+          "فترات متداخلة أو نهاية قبل البداية أو فترة رابعة أو يوم غير معروف: 400.",
+          "التحديث دون workingHours يبقي المواعيد المحفوظة.",
+        ],
+      },
+      testScenarios: {
+        en: ["PATCH a company with workingHours=[{\"day\":0,\"open\":true,\"ranges\":[{\"from\":\"09:00\",\"to\":\"17:00\"}]}] (multipart) → 200; GET /users/company/:id shows it."],
+        ar: ["PATCH لشركة مع workingHours=[{\"day\":0,\"open\":true,\"ranges\":[{\"from\":\"09:00\",\"to\":\"17:00\"}]}] (multipart) ← 200؛ وGET /users/company/:id يعرضه."],
+      },
+      updatedIn: "feat/working-hours",
+    },
+    {
       id: "api-auth-guards",
       title: {
         en: "JWT and Admin guards correctly gate every protected endpoint",

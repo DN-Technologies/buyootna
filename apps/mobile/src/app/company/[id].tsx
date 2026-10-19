@@ -101,6 +101,7 @@ export default function CompanyProfileScreen() {
                   onToggleLike={handleToggleLike}
                   onToggleDislike={handleToggleDislike}
                   onShowMoreReviews={handleShowMoreReviews}
+                  workingHours={company?.workingHours}
                 />
               )}
 

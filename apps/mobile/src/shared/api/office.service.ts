@@ -1,7 +1,7 @@
 import apiClient from '@/shared/api/api';
 import { CompanyServiceItemData } from '@/shared/components/company/CompanyServicesTab';
-import { WorkingHourItem } from '@/shared/components/company/CompanyWorkingHours';
 import { ResponseTime } from '@/shared/utils/helpers/activity';
+import type { WorkingDay } from '@/shared/utils/workingHours';
 import { PropertyDto } from '@/types/feed';
 
 export interface OfficeHeaderData {
@@ -28,7 +28,8 @@ export interface OfficeHeaderData {
 }
 
 export interface OfficeDetailsResponse extends OfficeHeaderData {
-  workingHours?: WorkingHourItem[];
+  // مواعيد العمل as the office set them (null: not set)
+  workingHours?: WorkingDay[] | null;
   services: CompanyServiceItemData[];
   properties: PropertyDto[];
 }

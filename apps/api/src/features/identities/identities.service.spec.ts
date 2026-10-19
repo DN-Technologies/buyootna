@@ -319,6 +319,38 @@ describe('IdentitiesService', () => {
       ).not.toHaveBeenCalled();
     });
 
+    it('saves مواعيد العمل sent as JSON text in a multipart body', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockResolvedValue({});
+      const week = [
+        { day: 0, open: true, ranges: [{ from: '09:00', to: '17:00' }] },
+      ];
+
+      await service.update('user-1', 'identity-c', {
+        workingHours: JSON.stringify(week),
+      });
+
+      expect(mockPrismaService.companyIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ workingHours: week }) as unknown,
+        }),
+      );
+    });
+
+    it('leaves مواعيد العمل alone when they are not sent', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockResolvedValue({});
+
+      await service.update('user-1', 'identity-c', { about: 'نبذة' });
+
+      const { data } = (
+        mockPrismaService.companyIdentityData.update.mock.calls as {
+          data: { workingHours?: unknown };
+        }[][]
+      )[0][0];
+      expect(data.workingHours).toBeUndefined();
+    });
+
     it('updates from a plain JSON body without touching storage', async () => {
       mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
       mockPrismaService.companyIdentityData.update.mockResolvedValue({});

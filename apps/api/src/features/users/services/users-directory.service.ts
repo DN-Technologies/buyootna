@@ -287,6 +287,8 @@ export class UsersDirectoryService {
       phone: contactPhoneOf(identity, identity.user),
       // Companies and offices are reached by phone or in-app chat only
       whatsapp: null,
+      // مواعيد العمل as the company set them (null: not set yet)
+      workingHours: companyData.workingHours ?? null,
       services: formattedServices,
       projects: formattedProjects,
     };
@@ -351,7 +353,8 @@ export class UsersDirectoryService {
       phone: contactPhoneOf(identity, identity.user),
       // Companies and offices are reached by phone or in-app chat only
       whatsapp: null,
-      workingHours: [],
+      // مواعيد العمل as the office set them (null: not set yet)
+      workingHours: officeData.workingHours ?? null,
       services: formattedServices,
       properties: formatOfficeListings(identity.properties, officeData.name),
     };
