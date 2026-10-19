@@ -43,7 +43,7 @@ jest.mock('react-native-gesture-handler', () => {
 });
 
 jest.mock('@/shared/api/stories.service', () => ({
-  storiesService: { recordViews: jest.fn(), report: jest.fn() },
+  storiesService: { recordViews: jest.fn(), report: jest.fn(), remove: jest.fn() },
 }));
 jest.mock('@/shared/api/chat.service', () => ({
   chatService: { createConversation: jest.fn() },
@@ -64,6 +64,37 @@ jest.mock('../hooks/useStoriesQueries', () => ({
     refetch: jest.fn(),
   }),
   useMarkStoryViewed: () => mockMarkViewed,
+  useMyStories: () => mockMine,
+  useStoryViewers: () => ({
+    viewers: mockViewers,
+    total: mockViewers.length,
+    isLoading: false,
+    hasNextPage: false,
+    fetchNextPage: jest.fn(),
+  }),
+}));
+
+let mockMine: {
+  data: { stories: (ViewerStory & { viewCount: number })[] } | undefined;
+  isLoading: boolean;
+  isFetched: boolean;
+  refetch: jest.Mock;
+} = { data: undefined, isLoading: false, isFetched: false, refetch: jest.fn() };
+let mockViewers: {
+  identityId: string;
+  type: 'INDIVIDUAL';
+  name: string;
+  avatarUrl: null;
+  isVerified: boolean;
+  viewedAt: string;
+}[] = [];
+jest.mock('@/shared/hooks/auth/useIdentity', () => ({
+  useIdentity: () => ({
+    activeIdentity: { id: 'co-me', type: 'COMPANY' },
+    displayName: 'شركتي',
+    avatarUrl: null,
+    isVerified: true,
+  }),
 }));
 
 const story = (id: string, over: Partial<ViewerStory> = {}): ViewerStory => ({
@@ -271,5 +302,73 @@ describe('StoryViewer', () => {
     mockAuthors = [];
     await render(<StoryViewer authorId="a1" source="feed" />);
     expect(mockRouter.back).toHaveBeenCalled();
+  });
+
+  describe('own stories (source=mine)', () => {
+    beforeEach(() => {
+      mockAuthors = [];
+      mockMine = {
+        data: {
+          stories: [
+            { ...story('m1', { viewed: true }), viewCount: 3 },
+            { ...story('m2', { viewed: true }), viewCount: 0 },
+          ],
+        },
+        isLoading: false,
+        isFetched: true,
+        refetch: jest.fn().mockResolvedValue(undefined),
+      };
+      mockViewers = [
+        { identityId: 'v1', type: 'INDIVIDUAL', name: 'مشاهد أول', avatarUrl: null, isVerified: false, viewedAt: '2026-10-20T11:00:00.000Z' },
+      ];
+    });
+
+    it('shows the view count instead of a reply, under its own name', async () => {
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      expect(screen.getByTestId('story-author-name')).toHaveTextContent('شركتي');
+      // The button also holds the eye icon's glyph
+      expect(screen.getByTestId('story-viewers')).toHaveTextContent(/المشاهدون · 3$/);
+      expect(screen.queryByTestId('story-reply')).toBeNull();
+    });
+
+    it('opens the viewer list', async () => {
+      const { present } = require('@gorhom/bottom-sheet');
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      await act(() => {
+        fireEvent.press(screen.getByTestId('story-viewers'));
+      });
+      expect(present).toHaveBeenCalled();
+      expect(screen.getByTestId('viewers-title')).toHaveTextContent('المشاهدون · 1');
+      expect(screen.getByText('مشاهد أول')).toBeTruthy();
+    });
+
+    it('⋮ deletes after confirming, then reloads its stories', async () => {
+      (storiesService.remove as jest.Mock).mockResolvedValue(undefined);
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      await act(() => {
+        fireEvent.press(screen.getByTestId('story-options'));
+      });
+      expect(screen.queryByText('احتيال أو نصب')).toBeNull();
+      await act(() => {
+        fireEvent.press(screen.getByText('حذف'));
+      });
+      await waitFor(() => expect(storiesService.remove).toHaveBeenCalledWith('m1'));
+      expect(mockMine.refetch).toHaveBeenCalled();
+    });
+
+    it('its own views are never recorded', async () => {
+      mockMine.data = { stories: [{ ...story('m3', { viewed: false }), viewCount: 0 }] };
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      await loadImage(screen);
+      await act(() => jest.advanceTimersByTimeAsync(STORY_VIEW_AFTER_MS + 2000));
+      expect(mockMarkViewed).not.toHaveBeenCalled();
+      expect(storiesService.recordViews).not.toHaveBeenCalled();
+    });
+
+    it('no stories left closes the viewer', async () => {
+      mockMine.data = { stories: [] };
+      await render(<StoryViewer authorId="co-me" source="mine" />);
+      expect(mockRouter.back).toHaveBeenCalled();
+    });
   });
 });

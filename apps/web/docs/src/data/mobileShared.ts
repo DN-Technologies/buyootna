@@ -9,6 +9,47 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-stories-posting",
+      title: {
+        en: "Stories (phase 4, not released): posting a story, «قصتك», your viewers and deleting",
+        ar: "القصص (المرحلة 4، غير منشورة): نشر قصة، و«قصتك»، ومشاهدوك، والحذف",
+      },
+      priority: "P1",
+      story: {
+        en: "Companies and offices get «قصتك» first in the stories tray, with their own logo: gold while they have live stories (tap to watch them) and grey otherwise (tap to post); the small + always opens a new story. The tray shows for them even when no one else has stories. Posting (/stories/new): pick a photo from the gallery (asked for a compatible JPEG, so iOS doesn't send HEIC) or take one with the camera; the phone checks the type (JPEG, PNG or WebP) and size (up to 10 MB) first. The photo is previewed full screen with an optional caption (counter up to 200) and an optional link to one of the author's active listings, then «نشر القصة» uploads it straight to S3 with a percentage and publishes it. A failed upload is retried once with the same link, or with a new one if it expired; a publish that finds the file not uploaded yet is retried once. Errors are explained: the limit, a file the server refuses, a listing that isn't the author's, and a company without a running subscription gets the plans prompt. Individuals can't post. Watching your own stories shows «المشاهدون · N» instead of a reply: it opens the list of viewers (photo, name, badge and when they viewed, newest first, loading more as you scroll). ⋮ deletes the story after «حذف القصة؟»; it disappears at once and the viewer closes when none are left. Your own views are never recorded.",
+        ar: "تظهر للشركات والمكاتب «قصتك» أولاً في شريط القصص بشعارها: ذهبية ما دامت لها قصص حية (اضغط لمشاهدتها) ورمادية غير ذلك (اضغط للنشر)؛ وعلامة + الصغيرة تفتح قصة جديدة دائماً. ويظهر الشريط لها حتى لو لم تكن لغيرها قصص. النشر (/stories/new): اختر صورة من المعرض (تُطلب بصيغة JPEG متوافقة حتى لا يرسل iOS صيغة HEIC) أو التقطها بالكاميرا؛ ويفحص الهاتف أولاً النوع (JPEG أو PNG أو WebP) والحجم (حتى 10 ميجابايت). تُعرض الصورة بملء الشاشة مع وصف اختياري (عدّاد حتى 200) وربط اختياري بأحد إعلانات الناشر النشطة، ثم يرفعها «نشر القصة» مباشرة إلى S3 مع نسبة التقدم وينشرها. يُعاد الرفع الفاشل مرة واحدة بالرابط نفسه، أو برابط جديد إن انتهت صلاحيته؛ ويُعاد النشر مرة واحدة إن لم يكن الملف قد رُفع بعد. وتُشرح الأخطاء: الحد الأقصى، والملف الذي يرفضه الخادم، والإعلان الذي لا يخص الناشر، والشركة بلا اشتراك سارٍ تظهر لها رسالة الباقات. لا يمكن للأفراد النشر. مشاهدة قصصك تعرض «المشاهدون · N» بدلاً من الرد: تفتح قائمة المشاهدين (الصورة والاسم والشارة ووقت المشاهدة، الأحدث أولاً، مع تحميل المزيد عند التمرير). و⋮ تحذف القصة بعد «حذف القصة؟»؛ فتختفي فوراً ويُغلق العارض إن لم يبق شيء. ولا تُسجَّل أبداً مشاهداتك لقصصك.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company or office sees «قصتك» first; an individual doesn't.",
+          "A HEIC or over-10 MB photo is refused on the phone with a clear message.",
+          "Posting with a caption and a listing shows the progress and the story appears in «قصتك».",
+          "A company without a subscription gets the plans prompt; other refusals are explained.",
+          "«المشاهدون · N» matches the list, newest first.",
+          "Deleting asks first and removes the story at once.",
+        ],
+        ar: [
+          "ترى الشركة أو المكتب «قصتك» أولاً؛ ولا يراها الفرد.",
+          "تُرفض على الهاتف صورة HEIC أو أكبر من 10 ميجابايت برسالة واضحة.",
+          "النشر مع وصف وإعلان يعرض نسبة التقدم وتظهر القصة في «قصتك».",
+          "الشركة بلا اشتراك تظهر لها رسالة الباقات؛ وتُشرح أسباب الرفض الأخرى.",
+          "«المشاهدون · N» يطابق القائمة، الأحدث أولاً.",
+          "الحذف يسأل أولاً ويزيل القصة فوراً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "Locally as a seeded office: + › pick a photo › caption › link the listing › نشر القصة; as dev@youssef.app the story appears; back as the office, «المشاهدون · 1» lists dev; ⋮ › حذف removes it.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "محلياً كمكتب تجريبي: + › اختر صورة › وصف › اربط الإعلان › نشر القصة؛ وكـ dev@youssef.app تظهر القصة؛ وبالعودة كمكتب تعرض «المشاهدون · 1» حساب dev؛ و⋮ › حذف يزيلها.",
+        ],
+      },
+      updatedIn: "feat/stories-phase4",
+    },
+    {
       id: "mobile-stories-viewer",
       title: {
         en: "Stories (phase 3, not released): the stories tray and the photo viewer",

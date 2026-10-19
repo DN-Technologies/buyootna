@@ -189,6 +189,10 @@ function RootLayout() {
                     name="stories/[authorId]"
                     options={{ presentation: 'fullScreenModal', animation: 'fade' }}
                   />
+                  <Stack.Screen
+                    name="stories/new"
+                    options={{ presentation: 'fullScreenModal' }}
+                  />
                 </Stack>
                 <AppAlertModal />
                 {/* The app is light everywhere, whatever the phone's theme:

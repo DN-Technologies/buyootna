@@ -118,3 +118,32 @@ export function useMarkStoryViewed() {
     [identityId, queryClient],
   );
 }
+
+/** The current profile's own live stories (companies and offices). */
+export function useMyStories(enabled = true) {
+  const identityId = useActiveIdentityId();
+  const token = useAuthStore((s) => s.token);
+  return useQuery({
+    queryKey: [...storiesKeys.all(identityId), 'mine'],
+    queryFn: () => storiesService.getMine(),
+    enabled: enabled && !!token && !!identityId,
+  });
+}
+
+/** Who viewed one of the profile's stories, newest first, paged. */
+export function useStoryViewers(storyId: string | null) {
+  const identityId = useActiveIdentityId();
+  const query = useInfiniteQuery({
+    queryKey: [...storiesKeys.all(identityId), 'viewers', storyId],
+    queryFn: ({ pageParam }) =>
+      storiesService.getViewers(storyId ?? '', pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+    enabled: !!storyId && !!identityId,
+  });
+  return {
+    ...query,
+    total: query.data?.pages[0]?.total ?? 0,
+    viewers: query.data?.pages.flatMap((p) => p.viewers) ?? [],
+  };
+}

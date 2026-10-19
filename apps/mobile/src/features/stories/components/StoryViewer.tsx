@@ -17,15 +17,19 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { WarningTriangleIcon } from '@/assets/icons/activity';
+import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
 import { chatService } from '@/shared/api/chat.service';
 import { storiesService } from '@/shared/api/stories.service';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
+import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { showAlert } from '@/shared/utils/alert';
 
 import {
   useActiveIdentityId,
   useAuthorStories,
   useMarkStoryViewed,
+  useMyStories,
   useStoriesFeed,
 } from '../hooks/useStoriesQueries';
 import { useStoryTimer } from '../hooks/useStoryTimer';
@@ -45,6 +49,7 @@ import type { StoryAuthorStories } from '../types';
 import StoryFooter from './StoryFooter';
 import StoryHeader from './StoryHeader';
 import StoryProgressBars from './StoryProgressBars';
+import StoryViewersSheet from './StoryViewersSheet';
 
 // How long a photo story shows
 export const STORY_IMAGE_MS = 5000;
@@ -59,7 +64,7 @@ const firstUnseen = (a: StoryAuthorStories | undefined) => {
 interface StoryViewerProps {
   authorId: string;
   // From the tray (swipe on to the next authors) or one author's profile
-  source: 'feed' | 'author';
+  source: 'feed' | 'author' | 'mine';
 }
 
 /**
@@ -76,18 +81,51 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
   const markViewed = useMarkStoryViewed();
   const reportSheet = useRef<BottomSheetModal>(null);
 
+  const viewersSheet = useRef<BottomSheetModal>(null);
+  const deleteSheet = useRef<BottomSheetModal>(null);
+
+  // The author looking at its own stories: views and delete, no reply,
+  // report or view recording
+  const isMine = source === 'mine';
+  const me = useIdentity();
+  const mine = useMyStories(isMine);
   const feed = useStoriesFeed();
   const inFeed =
     source === 'feed' &&
     feed.authors.some((a) => a.author.identityId === authorId);
-  const single = useAuthorStories(authorId, !inFeed);
+  const single = useAuthorStories(authorId, !inFeed && !isMine);
 
   const authors = useMemo<StoryAuthorStories[]>(() => {
+    if (isMine) {
+      const stories = mine.data?.stories ?? [];
+      const type = me.activeIdentity?.type;
+      if (stories.length === 0 || (type !== 'COMPANY' && type !== 'OFFICE')) {
+        return [];
+      }
+      return [
+        {
+          author: {
+            identityId: me.activeIdentity?.id ?? authorId,
+            type,
+            name: me.displayName,
+            logoUrl: me.avatarUrl ?? null,
+            isVerified: !!me.isVerified,
+          },
+          followed: false,
+          hasUnseen: false,
+          firstUnseenIndex: 0,
+          stories,
+        },
+      ];
+    }
     if (inFeed) return feed.authors.filter((a) => a.stories.length > 0);
     return single.data && single.data.stories.length > 0 ? [single.data] : [];
-  }, [inFeed, feed.authors, single.data]);
+  }, [isMine, mine.data, me.activeIdentity, me.displayName, me.avatarUrl, me.isVerified, authorId, inFeed, feed.authors, single.data]);
   const counts = useMemo(() => authors.map((a) => a.stories.length), [authors]);
-  const loading = inFeed ? false : single.isLoading;
+  const loading = isMine ? mine.isLoading : inFeed ? false : single.isLoading;
+  const fetched = isMine ? mine.isFetched : inFeed || single.isFetched;
+  const viewCountOf = (id: string) =>
+    mine.data?.stories.find((s) => s.id === id)?.viewCount ?? 0;
 
   const [position, setPosition] = useState<StoryPosition | null>(null);
   const [restart, setRestart] = useState(0);
@@ -96,6 +134,8 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
   const [retried, setRetried] = useState(false);
   const [holding, setHolding] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The story whose viewer list is open (loads only then)
+  const [viewersFor, setViewersFor] = useState<string | null>(null);
   const [replying, setReplying] = useState(false);
   // At an iOS cold start (and in tests) the state can be 'unknown': start
   // running unless backgrounded; the listener then pauses on anything but
@@ -126,10 +166,10 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
 
   // Nothing to show (none left, or not signed in): close
   useEffect(() => {
-    if (!loading && authors.length === 0 && (inFeed || single.isFetched || !identityId)) {
+    if (!loading && authors.length === 0 && (fetched || !identityId)) {
       close();
     }
-  }, [authors.length, close, identityId, inFeed, loading, single.isFetched]);
+  }, [authors.length, close, identityId, fetched, loading]);
 
   // Another profile: its stories and seen state are not this one's
   useEffect(() => {
@@ -203,14 +243,14 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
 
   // Counts as viewed after a second on screen
   useEffect(() => {
-    if (!current || !loaded || current.viewed) return undefined;
+    if (isMine || !current || !loaded || current.viewed) return undefined;
     const id = current.id;
     const timer = setTimeout(() => {
       queue.add(id);
       markViewed(id);
     }, STORY_VIEW_AFTER_MS);
     return () => clearTimeout(timer);
-  }, [current, loaded, queue, markViewed]);
+  }, [isMine, current, loaded, queue, markViewed]);
 
   // The next photos, in memory only
   useEffect(() => {
@@ -253,7 +293,21 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
       return;
     }
     setRetried(true);
-    void (inFeed ? feed.refetch() : single.refetch());
+    void (isMine ? mine.refetch() : inFeed ? feed.refetch() : single.refetch());
+  };
+
+  const deleteCurrent = async () => {
+    if (!current) return;
+    try {
+      await storiesService.remove(current.id);
+      await mine.refetch();
+    } catch (error) {
+      const message = (error as { response?: { data?: { message?: unknown } } })
+        ?.response?.data?.message;
+      showAlert('خطأ', typeof message === 'string' ? message : 'تعذر حذف القصة');
+    } finally {
+      setSheetOpen(false);
+    }
   };
 
   const reply = async () => {
@@ -363,7 +417,7 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
                 onClose={close}
                 onOptions={() => {
                   setSheetOpen(true);
-                  reportSheet.current?.present();
+                  (isMine ? deleteSheet : reportSheet).current?.present();
                 }}
               />
             </View>
@@ -381,16 +435,52 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
               replying={replying}
               onReply={() => void reply()}
               onOpenProperty={(id) => router.push(`/property/${id}` as never)}
+              own={
+                isMine
+                  ? {
+                      viewCount: viewCountOf(current.id),
+                      onViewers: () => {
+                        setSheetOpen(true);
+                        setViewersFor(current.id);
+                        viewersSheet.current?.present();
+                      },
+                    }
+                  : undefined
+              }
             />
           </LinearGradient>
         </View>
       </GestureDetector>
 
-      <ReportReasonSheet
-        ref={reportSheet}
-        onSubmit={(reason, description) => void submitReport(reason, description)}
-        onClose={() => setSheetOpen(false)}
-      />
+      {isMine ? (
+        <>
+          <StoryViewersSheet
+            ref={viewersSheet}
+            storyId={viewersFor}
+            onClose={() => {
+              setViewersFor(null);
+              setSheetOpen(false);
+            }}
+          />
+          <ConfirmActionSheet
+            ref={deleteSheet}
+            variant="danger"
+            icon={<WarningTriangleIcon color="#15304D" />}
+            iconBackground="#F9FAFE"
+            title="حذف القصة؟"
+            description="ستختفي القصة من حسابك ومن قصص المتابعين فوراً."
+            confirmLabel="حذف"
+            onConfirm={() => void deleteCurrent()}
+            onCancel={() => setSheetOpen(false)}
+          />
+        </>
+      ) : (
+        <ReportReasonSheet
+          ref={reportSheet}
+          onSubmit={(reason, description) => void submitReport(reason, description)}
+          onClose={() => setSheetOpen(false)}
+        />
+      )}
     </View>
   );
 }

@@ -52,3 +52,37 @@ export interface StoryFeedPage {
   authors: FeedAuthor[];
   nextCursor: string | null;
 }
+
+/** The author's own story, with how many profiles viewed it. */
+export interface AuthorStory extends ViewerStory {
+  viewCount: number;
+}
+
+export interface MyStories {
+  stories: AuthorStory[];
+}
+
+/** Where to PUT a story photo (every header is part of the signature). */
+export interface StoryUploadSlot {
+  storyId: string;
+  uploadUrlExpiresAt: string;
+  publishBefore: string;
+  media: { method: 'PUT'; url: string; headers: Record<string, string> };
+}
+
+export interface StoryViewerEntry {
+  identityId: string;
+  type: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE';
+  name: string;
+  avatarUrl: string | null;
+  isVerified: boolean;
+  viewedAt: string;
+}
+
+export interface StoryViewersPage {
+  total: number;
+  viewers: StoryViewerEntry[];
+  nextCursor: string | null;
+}
+
+export type StoryPhotoType = 'image/jpeg' | 'image/png' | 'image/webp';
