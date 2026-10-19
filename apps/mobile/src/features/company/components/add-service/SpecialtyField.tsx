@@ -1,7 +1,8 @@
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { SPECIALTIES } from '@/shared/data/serviceCatalog';
+
 import DropdownField from './DropdownField';
-import { SPECIALTIES } from './serviceCatalog';
 
 interface SpecialtyFieldProps {
   value: string;
@@ -37,10 +38,12 @@ export default function SpecialtyField({
             testID={`service-specialty-${specialty}`}
             activeOpacity={0.7}
             onPress={() => onSelect(specialty)}
-            className="h-9 w-full flex-row items-center p-2"
+            className="min-h-9 w-full flex-row items-center px-2 py-1"
           >
             <Text
-              className={`flex-1 text-[13px] ${
+              // A fixed 20pt text box cut Cairo's lower strokes: give it
+              // the line height its glyphs need
+              className={`flex-1 text-[13px] leading-[24px] ${
                 specialty === value
                   ? 'font-cairo-semibold text-[#15304D]'
                   : 'font-cairo-medium text-[#111111]'

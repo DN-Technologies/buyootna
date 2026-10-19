@@ -57,7 +57,7 @@ describe('useRequestQuoteForm', () => {
     await setup();
 
     await act(async () => {
-      hookRef.current.setSpecialtyId('مقاولين');
+      hookRef.current.setSpecialtyId('التشطيب');
     });
 
     await act(async () => {
@@ -72,7 +72,7 @@ describe('useRequestQuoteForm', () => {
     await setup();
 
     await act(async () => {
-      hookRef.current.setSpecialtyId('مقاولين');
+      hookRef.current.setSpecialtyId('التشطيب');
       hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
     });
     await act(async () => {
@@ -89,8 +89,8 @@ describe('useRequestQuoteForm', () => {
     await setup();
 
     await act(async () => {
-      hookRef.current.setSpecialtyId('مقاولين');
-      hookRef.current.setRequestTypeId('quote');
+      hookRef.current.setSpecialtyId('التشطيب');
+      hookRef.current.setRequestTypeId('تشطيب شقة');
       hookRef.current.setPriceFrom('200');
       hookRef.current.setPriceTo('800');
       hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
@@ -102,10 +102,11 @@ describe('useRequestQuoteForm', () => {
       await hookRef.current.handleSubmit(onSuccess);
     });
 
+    // The request type names it; the specialty decides which companies see it
     expect(companyRequestsService.create).toHaveBeenCalledWith({
-      title: 'مقاولين',
-      category: 'مقاولين',
-      offerType: 'عرض سعر',
+      title: 'تشطيب شقة',
+      category: 'التشطيب',
+      addressDetails: undefined,
       priceRange: '200 - 800 د.ك',
       location: 'مدينة الكويت',
       latitude: 29.3759,
@@ -117,10 +118,52 @@ describe('useRequestQuoteForm', () => {
     expect(hookRef.current.isSubmitting).toBe(false);
   });
 
+  it("offers the picked specialty's request types, and a new specialty clears the pick", async () => {
+    await setup();
+    expect(hookRef.current.requestTypeOptions).toEqual([]);
+
+    await act(async () => {
+      hookRef.current.setSpecialtyId('المسابح');
+    });
+    expect(hookRef.current.requestTypeOptions.map((o: { id: string }) => o.id)).toEqual([
+      'تصميم وإنشاء مسبح',
+      'معالجة تسربات المسبح',
+      'صيانة المضخات والفلاتر',
+      'تنظيف المسبح',
+      'معالجة المياه والكيماويات',
+      'اخرى',
+    ]);
+
+    await act(async () => {
+      hookRef.current.setRequestTypeId('تنظيف المسبح');
+    });
+    await act(async () => {
+      hookRef.current.setSpecialtyId('التكييف');
+    });
+    expect(hookRef.current.requestTypeId).toBe('');
+  });
+
+  it('without a request type, the specialty names the request', async () => {
+    (companyRequestsService.create as jest.Mock).mockResolvedValueOnce({ id: 'r2' });
+    await setup();
+    await act(async () => {
+      hookRef.current.setSpecialtyId('التكييف');
+      hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
+      hookRef.current.setDescription('مكيف لا يبرد');
+    });
+    await act(async () => {
+      await hookRef.current.handleSubmit();
+    });
+
+    expect(companyRequestsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'التكييف', category: 'التكييف' }),
+    );
+  });
+
   const fill = async () => {
     await act(async () => {
-      hookRef.current.setSpecialtyId('مقاولين');
-      hookRef.current.setRequestTypeId('quote');
+      hookRef.current.setSpecialtyId('التشطيب');
+      hookRef.current.setRequestTypeId('تشطيب شقة');
       hookRef.current.setPriceFrom('200');
       hookRef.current.setPriceTo('800');
       hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
@@ -164,7 +207,7 @@ describe('useRequestQuoteForm', () => {
       await hookRef.current.handleSubmit();
     });
 
-    expect(hookRef.current.specialtyId).toBe('مقاولين');
+    expect(hookRef.current.specialtyId).toBe('التشطيب');
     expect(hookRef.current.description).toBe('تفاصيل التشطيب');
     expect(hookRef.current.attachments).toEqual(['file:///img1.jpg']);
   });
@@ -196,7 +239,7 @@ describe('useRequestQuoteForm', () => {
     await setup();
 
     await act(async () => {
-      hookRef.current.setSpecialtyId('مقاولين');
+      hookRef.current.setSpecialtyId('التشطيب');
       hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
       hookRef.current.setDescription('تفاصيل');
     });

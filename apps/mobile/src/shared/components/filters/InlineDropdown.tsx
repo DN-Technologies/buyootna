@@ -18,6 +18,9 @@ export interface InlineDropdownProps {
   // Shown after the title: a red * / "(اختياري)"
   required?: boolean;
   optional?: boolean;
+  // Greyed and closed (e.g. نوع الطلب until a specialty is chosen)
+  disabled?: boolean;
+  testID?: string;
 }
 
 export default function InlineDropdown({
@@ -28,6 +31,8 @@ export default function InlineDropdown({
   onChange,
   required,
   optional,
+  disabled = false,
+  testID,
 }: InlineDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,11 +56,14 @@ export default function InlineDropdown({
 
       {/* Dropdown Header/Trigger */}
       <TouchableOpacity
+        testID={testID}
         activeOpacity={0.7}
+        disabled={disabled}
+        accessibilityState={{ disabled }}
         onPress={() => setIsOpen(!isOpen)}
-        className={`h-[46px] flex-row items-center justify-between rounded-md border bg-white px-4 ${
+        className={`h-[46px] flex-row items-center justify-between rounded-md border px-4 ${
           isOpen ? 'border-[#15304D]' : 'border-gray-200'
-        }`}
+        } ${disabled ? 'bg-gray-50' : 'bg-white'}`}
       >
         <Text
           className={`font-cairo text-[13px] leading-[22px] ${
@@ -73,7 +81,7 @@ export default function InlineDropdown({
       </TouchableOpacity>
 
       {/* Expanded Options List */}
-      {isOpen && (
+      {isOpen && !disabled && (
         // The shadow sits on an outer view: overflow-hidden (needed for the
         // rounded corners) would clip it on iOS
         <View
@@ -91,6 +99,7 @@ export default function InlineDropdown({
             {options.map((option, index) => (
               <TouchableOpacity
                 key={option.id}
+                testID={testID ? `${testID}-${option.id}` : undefined}
                 activeOpacity={0.7}
                 onPress={() => handleSelect(option.id)}
                 className={`items-start px-4 py-3 ${
@@ -98,7 +107,7 @@ export default function InlineDropdown({
                 } ${value === option.id ? 'bg-gray-50' : ''}`}
               >
                 <Text
-                  className={`font-cairo-medium text-[14px] ${
+                    className={`font-cairo-medium text-[14px] leading-[22px] ${
                     value === option.id ? 'text-[#15304D]' : 'text-[#111111]'
                   }`}
                 >

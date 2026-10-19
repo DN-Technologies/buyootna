@@ -9,6 +9,37 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-requests-by-specialty",
+      title: {
+        en: "Public quote requests reach the companies of their specialty; catalogue names migrated",
+        ar: "طلبات عرض السعر العامة تصل لشركات تخصصها؛ ونقل أسماء قائمة الخدمات",
+      },
+      priority: "P1",
+      story: {
+        en: "A public request (no targetIdentityId) is now sent with category = its specialty from the services catalogue. In CompanyRequestsService.findMine, the public scope narrows to requests whose category is the company's specialty (CompanyIdentityData.specialty), plus requests with no category and any request this company already accepted. A company with no specialty yet still sees every public request; the company and mine scopes are unchanged. Migration 20261019090000_service_catalog_v1_names moves stored names to catalogue v1.0: «مكتب هندسي» and «دار استشارية» become «مكتب هندسي / دار استشارية», «إدارة الاملاك» becomes «إدارة الأملاك», in CompanyIdentityData.specialty, CompanyService.specialty and type, and CompanyRequest.category. Data only, no schema change.",
+        ar: "أصبح الطلب العام (دون targetIdentityId) يُرسل مع category = تخصصه من قائمة الخدمات. وفي CompanyRequestsService.findMine يقتصر النطاق العام على الطلبات التي فئتها تخصص الشركة (CompanyIdentityData.specialty)، إضافة إلى الطلبات بلا فئة وأي طلب قبلته هذه الشركة. والشركة التي لا تخصص لها بعد ترى كل الطلبات العامة؛ ونطاقا company وmine دون تغيير. والترحيل 20261019090000_service_catalog_v1_names ينقل الأسماء المخزنة إلى قائمة v1.0: «مكتب هندسي» و«دار استشارية» تصبحان «مكتب هندسي / دار استشارية»، و«إدارة الاملاك» تصبح «إدارة الأملاك»، في CompanyIdentityData.specialty وCompanyService.specialty وtype وCompanyRequest.category. بيانات فقط دون تغيير في الجداول.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company with specialty التشطيب sees public requests of التشطيب and those with no category, not التكييف ones.",
+          "A company without a specialty sees every public request.",
+          "Requests sent to a company directly are not narrowed.",
+          "After the migration, a company stored as «مكتب هندسي» reads «مكتب هندسي / دار استشارية».",
+        ],
+        ar: [
+          "شركة تخصصها التشطيب ترى الطلبات العامة للتشطيب والطلبات بلا فئة، لا طلبات التكييف.",
+          "شركة بلا تخصص ترى كل الطلبات العامة.",
+          "الطلبات المرسلة إلى شركة مباشرة لا تُقيَّد.",
+          "بعد الترحيل، الشركة المخزنة بـ«مكتب هندسي» تُقرأ «مكتب هندسي / دار استشارية».",
+        ],
+      },
+      testScenarios: {
+        en: ["Send a public request for التكييف; GET /company-requests?scope=public as an التشطيب company: it isn't listed; as an التكييف company: it is."],
+        ar: ["أرسل طلباً عاماً للتكييف؛ GET /company-requests?scope=public كشركة تشطيب: لا يظهر؛ وكشركة تكييف: يظهر."],
+      },
+      updatedIn: "feat/add-service-second-time",
+    },
+    {
       id: "api-auth-guards",
       title: {
         en: "JWT and Admin guards correctly gate every protected endpoint",

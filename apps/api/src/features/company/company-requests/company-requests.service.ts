@@ -216,6 +216,27 @@ export class CompanyRequestsService {
         ],
       });
     }
+    // Public requests reach the companies of their specialty (the services
+    // catalogue's مجال التخصص); one with no specialty reaches everyone, and
+    // a company with no specialty yet still sees them all. A request this
+    // company already took stays on its list either way.
+    if (params.scope !== 'company' && params.scope !== 'mine') {
+      const specialty = (
+        await this.prisma.companyIdentityData.findUnique({
+          where: { identityId },
+          select: { specialty: true },
+        })
+      )?.specialty;
+      if (specialty) {
+        and.push({
+          OR: [
+            { category: specialty },
+            { category: null },
+            { acceptedByIdentityId: identityId },
+          ],
+        });
+      }
+    }
     // The requester's rejected requests drop off their list after 30 days
     if (params.scope === 'mine') {
       and.push({

@@ -88,8 +88,8 @@ export const mobileCompany: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "The company's إضافة خدمة form now follows the design. التخصص is one choice from 32 specialties. نوع الخدمة is a checklist that depends on the specialty: مكتب هندسي has 13 listed types plus الكل and اخرى; every other specialty offers الكل and اخرى. الكل ticks all listed types. Ticking اخرى reveals عنوان الخدمة, which is then required. الوصف is optional, up to 100 characters. Each chosen type is saved as its own service (before, saving replaced the company's whole services text). The company's first service fixes its specialty: from then on التخصص is shown greyed and cannot be changed. The home's خدمات نشطة figure counts the saved services.",
-        ar: "أصبح نموذج إضافة خدمة للشركة مطابقاً للتصميم. التخصص اختيار واحد من 32 تخصصاً. نوع الخدمة قائمة اختيار تعتمد على التخصص: لمكتب هندسي 13 نوعاً مع الكل واخرى؛ ولكل تخصص آخر الكل واخرى فقط. الكل يحدد كل الأنواع المدرجة. تحديد اخرى يُظهر عنوان الخدمة ويصبح مطلوباً. الوصف اختياري حتى 100 حرف. يُحفظ كل نوع مختار كخدمة مستقلة (كان الحفظ سابقاً يستبدل نص خدمات الشركة كله). أول خدمة للشركة تثبّت تخصصها: بعدها يظهر التخصص باهتاً ولا يمكن تغييره. رقم خدمات نشطة في الرئيسية يعدّ الخدمات المحفوظة.",
+        en: "The company's إضافة خدمة form now follows the design. التخصص is one choice from the 31 specialties of the services catalogue (see mobile-services-catalogue). نوع الخدمة is a checklist of that specialty's types plus الكل and اخرى. الكل ticks all listed types. Ticking اخرى reveals عنوان الخدمة, which is then required. الوصف is optional, up to 100 characters. Each chosen type is saved as its own service (before, saving replaced the company's whole services text). The company's first service fixes its specialty: from then on التخصص is shown greyed and cannot be changed. The home's خدمات نشطة figure counts the saved services.",
+        ar: "أصبح نموذج إضافة خدمة للشركة مطابقاً للتصميم. التخصص اختيار واحد من 31 تخصصاً في قائمة الخدمات (انظر mobile-services-catalogue). نوع الخدمة قائمة اختيار بأنواع ذلك التخصص مع الكل واخرى. الكل يحدد كل الأنواع المدرجة. تحديد اخرى يُظهر عنوان الخدمة ويصبح مطلوباً. الوصف اختياري حتى 100 حرف. يُحفظ كل نوع مختار كخدمة مستقلة (كان الحفظ سابقاً يستبدل نص خدمات الشركة كله). أول خدمة للشركة تثبّت تخصصها: بعدها يظهر التخصص باهتاً ولا يمكن تغييره. رقم خدمات نشطة في الرئيسية يعدّ الخدمات المحفوظة.",
       },
       acceptanceCriteria: {
         en: [
@@ -126,6 +126,45 @@ export const mobileCompany: DocSection = {
         ],
       },
       updatedIn: "feat/company-add-flows-figma",
+    },
+    {
+      id: "mobile-company-add-service-second-time",
+      title: {
+        en: "إضافة خدمة the second time: types already added are greyed and locked",
+        ar: "إضافة خدمة للمرة الثانية: الأنواع المضافة مسبقاً باهتة ومقفلة",
+      },
+      priority: "P1",
+      story: {
+        en: "After a company's first service, opening إضافة خدمة again offered every service type as new: ticking one already added did nothing on save or failed with «هذه الخدمات مضافة مسبقاً», and the التخصص lock read the profile in the auth store, which could still be empty right after the first service. The form now loads the company's services (GET /users/profile/services through useMyCompanyServices). التخصص is locked from the specialty the server returns. In نوع الخدمة the types already added show ticked and greyed (#A0A0A0) and can't be pressed (Figma 8453:24047). الكل picks only the types still free, and turns greyed once none are left (for a specialty without a list, once the specialty itself was added). اخرى stays available, since each اخرى service has its own title. The checklist waits for the services to load before it opens. After a success, إضافة خدمة أخرى shows the types just added as taken. The rows of both lists have a minimum height and a 24pt line height, so Cairo's lower strokes are no longer cut.",
+        ar: "بعد أول خدمة للشركة كان فتح إضافة خدمة مرة أخرى يعرض كل أنواع الخدمة كأنها جديدة: تحديد نوع مضاف سابقاً لا يفعل شيئاً عند الحفظ أو يفشل برسالة «هذه الخدمات مضافة مسبقاً»، وكان قفل التخصص يقرأ الملف من مخزن الجلسة الذي قد يكون فارغاً بعد أول خدمة مباشرة. الآن يحمّل النموذج خدمات الشركة (GET /users/profile/services عبر useMyCompanyServices). يُقفل التخصص حسب التخصص الذي يعيده الخادم. وفي نوع الخدمة تظهر الأنواع المضافة مسبقاً محددة وباهتة (#A0A0A0) ولا يمكن الضغط عليها (Figma 8453:24047). الكل يحدد الأنواع المتبقية فقط، ويصبح باهتاً عندما لا يتبقى شيء (وللتخصص الذي لا قائمة له، بعد إضافة التخصص نفسه). وتبقى اخرى متاحة لأن لكل خدمة اخرى عنواناً خاصاً بها. ولا تُفتح القائمة قبل تحميل الخدمات. وبعد النجاح يعرض إضافة خدمة أخرى الأنواع المضافة للتو كمأخوذة. وصار لصفوف القائمتين ارتفاع أدنى وارتفاع سطر 24 نقطة، فلا تُقص أطراف حروف خط Cairo السفلية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Second time: التخصص shows the company's specialty, greyed, with no list.",
+          "The types added before are ticked, greyed and do nothing when pressed.",
+          "الكل sends only the types not added yet.",
+          "With every listed type added, الكل is greyed; اخرى with a title still adds a service.",
+          "After «إضافة خدمة أخرى», the types just added show as taken.",
+        ],
+        ar: [
+          "في المرة الثانية: يعرض التخصص تخصص الشركة باهتاً ودون قائمة.",
+          "الأنواع المضافة سابقاً محددة وباهتة ولا تفعل شيئاً عند الضغط.",
+          "الكل يرسل الأنواع غير المضافة فقط.",
+          "عند إضافة كل الأنواع المدرجة يكون الكل باهتاً، وتبقى اخرى مع عنوان تضيف خدمة.",
+          "بعد «إضافة خدمة أخرى» تظهر الأنواع المضافة للتو كمأخوذة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company with an active subscription, add مكتب هندسي with three types. Tap «إضافة خدمة أخرى»: التخصص is locked and those three are greyed and ticked.",
+          "Pick اخرى, write a title and add it; open the company page: the new service is listed.",
+        ],
+        ar: [
+          "كشركة باشتراك نشط أضف مكتب هندسي بثلاثة أنواع. اضغط «إضافة خدمة أخرى»: التخصص مقفل والأنواع الثلاثة باهتة ومحددة.",
+          "اختر اخرى واكتب عنواناً وأضفها، ثم افتح صفحة الشركة: تظهر الخدمة الجديدة.",
+        ],
+      },
+      updatedIn: "feat/add-service-second-time",
     },
     {
       id: "mobile-company-add-flows-figma",

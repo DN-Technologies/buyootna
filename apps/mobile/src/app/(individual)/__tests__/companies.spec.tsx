@@ -173,7 +173,8 @@ describe('CompaniesScreen', () => {
       const { getByText, getByTestId } = await renderScreen();
 
       expect(getByText('اختر التخصص أو المجال')).toBeTruthy();
-      expect(getByText('اختر نوع الخدمة التي تبحث عنها')).toBeTruthy();
+      // نوع الخدمة waits for a specialty: its types come from it
+      expect(getByText('اختر التخصص أولاً')).toBeTruthy();
       expect(getByText('اختر المحافظة')).toBeTruthy();
       expect(getByText('اختر المنطقة')).toBeTruthy();
       expect(getByTestId('company-filter-apply').props.accessibilityState).toMatchObject({
@@ -189,8 +190,9 @@ describe('CompaniesScreen', () => {
 
       await fireEvent.press(getByText('اختر التخصص أو المجال'));
       await fireEvent.press(getAllByText('التشطيب').at(-1)!);
+      // التشطيب's own service types (the services catalogue)
       await fireEvent.press(getByText('اختر نوع الخدمة التي تبحث عنها'));
-      await fireEvent.press(getAllByText('ديكورات').at(-1)!);
+      await fireEvent.press(getAllByText('تشطيب شقة').at(-1)!);
       await fireEvent.press(getByText('اختر المحافظة'));
       await fireEvent.press(getAllByText('حولي').at(-1)!);
 
@@ -198,7 +200,7 @@ describe('CompaniesScreen', () => {
 
       await waitFor(() =>
         expect(feedService.getCompanies).toHaveBeenLastCalledWith(
-          'ديكورات',
+          'تشطيب شقة',
           1,
           10,
           undefined,

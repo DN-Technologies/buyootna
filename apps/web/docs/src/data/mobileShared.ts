@@ -317,6 +317,72 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/own-company-actions",
     },
     {
+      id: "mobile-services-catalogue",
+      title: {
+        en: "One services catalogue for إضافة خدمة, طلب عرض سعر and the شركات filter",
+        ar: "قائمة خدمات واحدة لإضافة خدمة وطلب عرض سعر وتصفية الشركات",
+      },
+      priority: "P1",
+      story: {
+        en: "The specialties and their service types now come from the client's Buyootna_RFQ_2Level_Classification_v1.0.xlsx (sheet «التصنيف النهائي»): 31 specialties and 257 types, in shared/data/serviceCatalog.ts. «مكتب هندسي» and «دار استشارية» are one specialty, «مكتب هندسي / دار استشارية» (29 types), and «إدارة الأملاك» is spelled with the hamza. The «Potential» sheet is not in yet. إضافة خدمة: every specialty has its own checklist with الكل and اخرى. طلب عرض سعر (public): مجال التخصص lists the 31 specialties; نوع الطلب lists the chosen specialty's types plus اخرى, stays disabled («اختر مجال التخصص أولاً») until a specialty is picked and clears when it changes; the request is sent with category = the specialty and title = the request type (or the specialty). The old generic request types (عرض سعر، استشارة…) are gone. شركات › تصفية البحث: نوع الخدمة lists the types of the picked specialties, waits for one («اختر التخصص أولاً»), and drops types that no longer belong when the specialties change.",
+        ar: "أصبحت التخصصات وأنواع خدماتها من ملف العميل Buyootna_RFQ_2Level_Classification_v1.0.xlsx (ورقة «التصنيف النهائي»): 31 تخصصاً و257 نوعاً في shared/data/serviceCatalog.ts. صار «مكتب هندسي» و«دار استشارية» تخصصاً واحداً هو «مكتب هندسي / دار استشارية» (29 نوعاً)، وتُكتب «إدارة الأملاك» بالهمزة. وورقة «Potential» لم تُضف بعد. إضافة خدمة: لكل تخصص قائمته الخاصة مع الكل واخرى. طلب عرض سعر (العام): مجال التخصص يعرض الـ31 تخصصاً، ونوع الطلب يعرض أنواع التخصص المختار مع اخرى، ويبقى معطلاً («اختر مجال التخصص أولاً») حتى يُختار تخصص ويُمسح عند تغييره؛ ويُرسل الطلب مع category = التخصص وtitle = نوع الطلب (أو التخصص). وأُزيلت الأنواع العامة القديمة (عرض سعر، استشارة…). شركات › تصفية البحث: نوع الخدمة يعرض أنواع التخصصات المختارة وينتظر اختيار تخصص («اختر التخصص أولاً») ويحذف الأنواع التي لم تعد تنتمي عند تغيير التخصصات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "إضافة خدمة lists 31 specialties; picking any shows its own types with الكل and اخرى.",
+          "طلب عرض سعر: نوع الطلب is disabled until مجال التخصص is chosen, then lists that specialty's types and اخرى.",
+          "Changing مجال التخصص clears نوع الطلب.",
+          "A sent request carries the specialty as its category and the request type as its title.",
+          "شركات filter: نوع الخدمة lists only the picked specialties' types.",
+        ],
+        ar: [
+          "إضافة خدمة تعرض 31 تخصصاً، واختيار أي منها يعرض أنواعه مع الكل واخرى.",
+          "طلب عرض سعر: نوع الطلب معطل حتى يُختار مجال التخصص، ثم يعرض أنواع ذلك التخصص مع اخرى.",
+          "تغيير مجال التخصص يمسح نوع الطلب.",
+          "الطلب المرسل يحمل التخصص كفئة ونوع الطلب كعنوان.",
+          "تصفية الشركات: نوع الخدمة يعرض أنواع التخصصات المختارة فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open طلب عرض سعر, pick المسابح: نوع الطلب shows its 5 types and اخرى; switch to التكييف: the pick is cleared.",
+          "As a company, إضافة خدمة › التشطيب: its 10 types are listed.",
+        ],
+        ar: [
+          "افتح طلب عرض سعر واختر المسابح: يعرض نوع الطلب أنواعه الخمسة واخرى؛ بدّل إلى التكييف: يُمسح الاختيار.",
+          "كشركة، إضافة خدمة › التشطيب: تظهر أنواعه العشرة.",
+        ],
+      },
+      updatedIn: "feat/add-service-second-time",
+    },
+    {
+      id: "mobile-more-stack-back",
+      title: {
+        en: "Back from إضافة خدمة never lands on an older form",
+        ar: "الرجوع من إضافة خدمة لا يفتح نموذجاً قديماً",
+      },
+      priority: "P1",
+      story: {
+        en: "On a company or office account, the forms opened from the + sheet and المزيد (إضافة خدمة, إضافة مشروع, إصدار فاتورة…) live in a stack nested in the tabs ((more)/_layout.tsx). A stack can't pop its last screen, so a form left with back stayed underneath: opening إضافة خدمة after an earlier إضافة مشروع stacked on top of it, and back opened the project form. The stack now forgets its screens whenever its tab is left (useResetStackOnBlur), so each visit starts from the screen asked for. Moving between screens inside it (e.g. الباقات › سجل الاشتراك) keeps its back as before.",
+        ar: "في حساب الشركة أو المكتب تعيش النماذج التي تُفتح من نافذة + ومن المزيد (إضافة خدمة، إضافة مشروع، إصدار فاتورة…) في مكدس داخل التبويبات ((more)/_layout.tsx). ولا يستطيع المكدس إزالة آخر شاشة فيه، فيبقى النموذج الذي خرج منه المستخدم بالرجوع تحت غيره: فتح إضافة خدمة بعد إضافة مشروع سابق يضعها فوقه، والرجوع يفتح نموذج المشروع. الآن ينسى المكدس شاشاته كلما غادر المستخدم تبويبه (useResetStackOnBlur)، فتبدأ كل زيارة من الشاشة المطلوبة. والتنقل بين شاشاته (مثل الباقات › سجل الاشتراك) يبقى رجوعه كما كان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Open إضافة مشروع, go back, then open إضافة خدمة and go back: you return to where you opened it, not to إضافة مشروع.",
+          "The same for an office account.",
+        ],
+        ar: [
+          "افتح إضافة مشروع وارجع، ثم افتح إضافة خدمة وارجع: تعود إلى حيث فتحتها لا إلى إضافة مشروع.",
+          "وكذلك في حساب المكتب.",
+        ],
+      },
+      testScenarios: {
+        en: ["As a company: + › إضافة مشروع › back; + › إضافة خدمة › back: the home shows."],
+        ar: ["كشركة: + › إضافة مشروع › رجوع؛ ثم + › إضافة خدمة › رجوع: تظهر الرئيسية."],
+      },
+      updatedIn: "feat/add-service-second-time",
+    },
+    {
       id: "mobile-identity-switch",
       title: {
         en: "Switching persona is per device, with no data bleed",

@@ -1,11 +1,18 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import { companyService } from '@/shared/api/company.service';
+import { listedTypes } from '@/shared/data/serviceCatalog';
 
 import AddServiceScreen from '../AddServiceScreen';
 
 const mockPresent = jest.fn();
 let mockSpecialty: string | null = null;
+// What the company already offers (GET /users/profile/services)
+let mockMyServices: {
+  specialty: string | null;
+  services: { id: string; type: string; title: string | null }[];
+  isLoading: boolean;
+} = { specialty: null, services: [], isLoading: false };
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
@@ -50,6 +57,10 @@ jest.mock('@/shared/api/company.service', () => ({
   companyService: { createService: jest.fn() },
 }));
 
+jest.mock('@/features/company/hooks/useMyCompanyServices', () => ({
+  useMyCompanyServices: () => mockMyServices,
+}));
+
 jest.mock('@/shared/hooks/auth/useIdentity', () => ({
   useIdentity: () => ({
     activeIdentity: { id: 'co-1', companyData: { specialty: mockSpecialty } },
@@ -71,6 +82,7 @@ describe('AddServiceScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSpecialty = null;
+    mockMyServices = { specialty: null, services: [], isLoading: false };
     createService.mockResolvedValue({ success: true, created: 1 });
   });
 
@@ -92,28 +104,28 @@ describe('AddServiceScreen', () => {
     expect(isDisabled(getByTestId('company-submit'))).toBe(true);
   });
 
-  it('offers the 32 specialties and the engineering checklist', async () => {
+  it('offers the 31 specialties of the services catalogue and the engineering checklist', async () => {
     const { getByTestId, getAllByTestId } = await render(<AddServiceScreen />);
 
     await fireEvent.press(getByTestId('service-specialty'));
     expect(getAllByTestId(/^service-specialty-(?!value|options)/)).toHaveLength(
-      32,
+      31,
     );
-    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي'));
+    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي / دار استشارية'));
     expect(getByTestId('service-specialty-value').props.children).toBe(
-      'مكتب هندسي',
+      'مكتب هندسي / دار استشارية',
     );
 
     await fireEvent.press(getByTestId('service-types'));
-    // الكل + 13 listed types + اخرى
-    expect(getAllByTestId(/^service-type-/)).toHaveLength(15);
+    // الكل + 29 listed types + اخرى
+    expect(getAllByTestId(/^service-type-/)).toHaveLength(31);
   });
 
   it('"الكل" ticks every listed type and sends them', async () => {
     const { getByTestId, getByText } = await render(<AddServiceScreen />);
 
     await fireEvent.press(getByTestId('service-specialty'));
-    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي'));
+    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي / دار استشارية'));
     await fireEvent.press(getByTestId('service-types'));
     await fireEvent.press(getByTestId('service-type-الكل'));
     expect(getByTestId('service-types-value').props.children).toBe('الكل');
@@ -121,8 +133,8 @@ describe('AddServiceScreen', () => {
     await fireEvent.press(getByText('إضافة الخدمة'));
     await waitFor(() => expect(createService).toHaveBeenCalled());
     const sent = createService.mock.calls[0][0];
-    expect(sent.specialty).toBe('مكتب هندسي');
-    expect(sent.types).toHaveLength(13);
+    expect(sent.specialty).toBe('مكتب هندسي / دار استشارية');
+    expect(sent.types).toHaveLength(29);
     expect(sent.types).not.toContain('الكل');
     expect(sent.title).toBeUndefined();
     expect(mockPresent).toHaveBeenCalled();
@@ -152,7 +164,7 @@ describe('AddServiceScreen', () => {
     );
   });
 
-  it('a specialty without a list offers الكل and اخرى; الكل sends the specialty', async () => {
+  it('every specialty has its own list from the catalogue: المسابح', async () => {
     const { getByTestId, getAllByTestId, getByText } = await render(
       <AddServiceScreen />,
     );
@@ -160,25 +172,111 @@ describe('AddServiceScreen', () => {
     await fireEvent.press(getByTestId('service-specialty'));
     await fireEvent.press(getByTestId('service-specialty-المسابح'));
     await fireEvent.press(getByTestId('service-types'));
-    expect(getAllByTestId(/^service-type-/)).toHaveLength(2);
+    // الكل + 5 listed types + اخرى
+    expect(getAllByTestId(/^service-type-/)).toHaveLength(7);
 
     await fireEvent.press(getByTestId('service-type-الكل'));
     await fireEvent.press(getByText('إضافة الخدمة'));
     await waitFor(() =>
       expect(createService).toHaveBeenCalledWith(
-        expect.objectContaining({ specialty: 'المسابح', types: ['المسابح'] }),
+        expect.objectContaining({
+          specialty: 'المسابح',
+          types: listedTypes('المسابح'),
+        }),
       ),
     );
   });
 
-  it('locks التخصص once the company has one', async () => {
-    mockSpecialty = 'مكتب هندسي';
-    const { getByTestId, queryByTestId } = await render(<AddServiceScreen />);
+  describe('the second time (Figma 8455:24216, 8453:24047)', () => {
+    const ENGINEERING = listedTypes('مكتب هندسي / دار استشارية');
+    const added = (types: string[]) =>
+      types.map((type, i) => ({ id: `s${i}`, type, title: null }));
 
-    expect(getByTestId('service-specialty-value').props.children).toBe(
-      'مكتب هندسي',
-    );
-    await fireEvent.press(getByTestId('service-specialty'));
-    expect(queryByTestId('service-specialty-options')).toBeNull();
+    it("locks التخصص from the company's services, even before the profile refreshes", async () => {
+      mockMyServices = {
+        specialty: 'مكتب هندسي / دار استشارية',
+        services: added(ENGINEERING.slice(0, 3)),
+        isLoading: false,
+      };
+      const { getByTestId, queryByTestId } = await render(<AddServiceScreen />);
+
+      expect(getByTestId('service-specialty-value').props.children).toBe(
+        'مكتب هندسي / دار استشارية',
+      );
+      await fireEvent.press(getByTestId('service-specialty'));
+      expect(queryByTestId('service-specialty-options')).toBeNull();
+    });
+
+    it('shows the types already added ticked and greyed, and they never send again', async () => {
+      mockMyServices = {
+        specialty: 'مكتب هندسي / دار استشارية',
+        services: added(ENGINEERING.slice(0, 3)),
+        isLoading: false,
+      };
+      const { getByTestId, getByText } = await render(<AddServiceScreen />);
+      await fireEvent.press(getByTestId('service-types'));
+
+      for (const type of ENGINEERING.slice(0, 3)) {
+        const row = getByTestId(`service-type-${type}`);
+        expect(row.props.accessibilityState).toEqual({
+          checked: true,
+          disabled: true,
+        });
+      }
+      expect(isDisabled(getByTestId('service-type-الكل'))).toBe(false);
+
+      // Pressing a taken row picks nothing: the field still shows its
+      // placeholder
+      await fireEvent.press(getByTestId(`service-type-${ENGINEERING[0]}`));
+      expect(getByTestId('service-types-value').props.children).toBe(
+        'اختر نوع الخدمة',
+      );
+
+      // الكل picks only the ten still free
+      await fireEvent.press(getByTestId('service-type-الكل'));
+      await fireEvent.press(getByText('إضافة الخدمة'));
+      await waitFor(() =>
+        expect(createService).toHaveBeenCalledWith(
+          expect.objectContaining({
+            specialty: 'مكتب هندسي / دار استشارية',
+            types: ENGINEERING.slice(3),
+          }),
+        ),
+      );
+    });
+
+    it('with every type added, الكل is greyed and اخرى with a title still adds', async () => {
+      mockMyServices = {
+        specialty: 'مكتب هندسي / دار استشارية',
+        services: [
+          ...added(ENGINEERING),
+          { id: 'o1', type: 'اخرى', title: 'إشراف هندسي' },
+        ],
+        isLoading: false,
+      };
+      const { getByTestId, getByText } = await render(<AddServiceScreen />);
+      await fireEvent.press(getByTestId('service-types'));
+
+      expect(isDisabled(getByTestId('service-type-الكل'))).toBe(true);
+      // An earlier "اخرى" doesn't take "اخرى" away
+      expect(isDisabled(getByTestId('service-type-اخرى'))).toBe(false);
+
+      await fireEvent.press(getByTestId('service-type-اخرى'));
+      await fireEvent.changeText(getByTestId('service-title'), 'تصميم مسابح');
+      await fireEvent.press(getByText('إضافة الخدمة'));
+      await waitFor(() =>
+        expect(createService).toHaveBeenCalledWith(
+          expect.objectContaining({ types: ['اخرى'], title: 'تصميم مسابح' }),
+        ),
+      );
+    });
+
+    it("doesn't open نوع الخدمة until the company's services are known", async () => {
+      mockMyServices = { specialty: 'مكتب هندسي / دار استشارية', services: [], isLoading: true };
+      const { getByTestId, queryByTestId } = await render(<AddServiceScreen />);
+
+      await fireEvent.press(getByTestId('service-types'));
+      expect(queryByTestId('service-type-الكل')).toBeNull();
+    });
   });
 });
