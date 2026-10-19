@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import RequestQuoteAddressField from '@/features/individual/components/request-quote/RequestQuoteAddressField';
 import RequestQuoteAttachments from '@/features/individual/components/request-quote/RequestQuoteAttachments';
 import RequestQuoteHeader from '@/features/individual/components/request-quote/RequestQuoteHeader';
 import RequestQuotePriceRange from '@/features/individual/components/request-quote/RequestQuotePriceRange';
@@ -26,7 +25,7 @@ import {
 } from '@/features/individual/hooks/useRequestQuoteForm';
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
-import MapPickerModal from '@/shared/components/map/MapPickerModal';
+import GovAreaFields from '@/shared/components/forms/GovAreaFields';
 import RequirementMark from '@/shared/components/ui/RequirementMark';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -47,18 +46,13 @@ export default function RequestQuoteScreen() {
     setPriceFrom,
     priceTo,
     setPriceTo,
-    addressLabel,
-    addressCoords,
-    addressDetails,
-    showMapPicker,
-    setShowMapPicker,
+    govArea,
     description,
     setDescription,
     attachments,
     isSubmitting,
     handlePickAttachments,
     removeAttachment,
-    handleConfirmAddress,
     handleSubmit,
   } = useRequestQuoteForm();
 
@@ -119,11 +113,8 @@ export default function RequestQuoteScreen() {
             keyboardAccessoryId={keyboardAccessoryId}
           />
 
-          {/* --- العنوان --- */}
-          <RequestQuoteAddressField
-            addressLabel={addressLabel}
-            onPress={() => setShowMapPicker(true)}
-          />
+          {/* --- المحافظة / المنطقة (no map pin) --- */}
+          <GovAreaFields value={govArea} />
 
           {/* --- وصف --- */}
           <View className="mb-6 w-full">
@@ -180,15 +171,6 @@ export default function RequestQuoteScreen() {
         </InputAccessoryView>
       )}
 
-      <MapPickerModal
-        visible={showMapPicker}
-        onClose={() => setShowMapPicker(false)}
-        onConfirm={handleConfirmAddress}
-        initialLat={addressCoords?.lat}
-        initialLng={addressCoords?.lng}
-        initialAddressLabel={addressLabel || undefined}
-        initialDetails={addressDetails}
-      />
 
       <SuccessBottomSheet
         ref={successSheetRef}

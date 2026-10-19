@@ -383,6 +383,45 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/add-service-second-time",
     },
     {
+      id: "mobile-quote-gov-area",
+      title: {
+        en: "Quote requests: المحافظة and المنطقة instead of a map address",
+        ar: "طلبات عرض السعر: المحافظة والمنطقة بدل العنوان على الخريطة",
+      },
+      priority: "P1",
+      story: {
+        en: "Both quote forms, the public «تقديم طلب سعر» screen and the «طلب عرض سعر» sheet on a company's page, asked for العنوان as a pin on the map. They now ask for المحافظة and then المنطقة from the app's location list (shared/components/forms/GovAreaFields): the area list follows the governorate, is off («اختر المحافظة أولاً») until one is picked, and clears when the governorate changes. Both are required. The request is sent with location = «المحافظة - المنطقة» and no coordinates or address details; the API already accepted that (location is a string, coordinates optional), so no server change.",
+        ar: "كان نموذجا عرض السعر، شاشة «تقديم طلب سعر» العامة ونافذة «طلب عرض سعر» في صفحة الشركة، يطلبان العنوان كدبوس على الخريطة. الآن يطلبان المحافظة ثم المنطقة من قائمة المواقع في التطبيق (shared/components/forms/GovAreaFields): قائمة المناطق تتبع المحافظة، وتبقى معطلة («اختر المحافظة أولاً») حتى تُختار محافظة، وتُمسح عند تغييرها. والاثنتان مطلوبتان. ويُرسل الطلب مع location = «المحافظة - المنطقة» دون إحداثيات أو تفاصيل عنوان؛ والواجهة الخلفية تقبل ذلك أصلاً (location نص والإحداثيات اختيارية)، فلا تغيير في الخادم.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Neither quote form shows العنوان or opens a map.",
+          "المحافظة and المنطقة are both marked required; المنطقة is off until a governorate is picked.",
+          "Changing المحافظة clears المنطقة.",
+          "Sending without both shows «يرجى اختيار المحافظة والمنطقة».",
+          "The company sees the request's location as «المحافظة - المنطقة».",
+        ],
+        ar: [
+          "لا يعرض أي من نموذجي عرض السعر العنوان ولا يفتح خريطة.",
+          "المحافظة والمنطقة مطلوبتان؛ والمنطقة معطلة حتى تُختار محافظة.",
+          "تغيير المحافظة يمسح المنطقة.",
+          "الإرسال دونهما يعرض «يرجى اختيار المحافظة والمنطقة».",
+          "ترى الشركة موقع الطلب «المحافظة - المنطقة».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open + › طلب عرض سعر: pick حولي then السالمية and send; the company sees «حولي - السالمية».",
+          "On a company's page, طلب عرض سعر: the same two fields, no map.",
+        ],
+        ar: [
+          "افتح + › طلب عرض سعر: اختر حولي ثم السالمية وأرسل؛ ترى الشركة «حولي - السالمية».",
+          "في صفحة شركة، طلب عرض سعر: الحقلان نفسهما دون خريطة.",
+        ],
+      },
+      updatedIn: "feat/quote-gov-area",
+    },
+    {
       id: "mobile-identity-switch",
       title: {
         en: "Switching persona is per device, with no data bleed",

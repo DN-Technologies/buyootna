@@ -31,7 +31,8 @@ function Harness() {
 const fill = async () => {
   await act(async () => {
     hookRef.current.setServiceId('s1');
-    hookRef.current.confirmAddress('السالمية', 29.33, 48.05);
+    hookRef.current.govArea.setGovernorateId('hawally');
+    hookRef.current.govArea.setAreaId('hawally_2');
     hookRef.current.setDescription('تفاصيل');
   });
 };
@@ -50,9 +51,13 @@ describe('useQuoteRequestForm (company profile sheet)', () => {
     });
 
     expect(companyRequestsService.create).toHaveBeenCalledTimes(1);
+    // Where it's for: المحافظة - المنطقة, with no map pin
+    const sent = (companyRequestsService.create as jest.Mock).mock.calls[0][0];
+    expect(sent.location).toBe('حولي - السالمية');
+    expect(sent.latitude).toBeUndefined();
     expect(onSent).toHaveBeenCalledTimes(1);
     expect(hookRef.current.serviceId).toBe('');
-    expect(hookRef.current.addressLabel).toBe('');
+    expect(hookRef.current.govArea.areaId).toBe('');
     expect(hookRef.current.description).toBe('');
   });
 
@@ -74,5 +79,19 @@ describe('useQuoteRequestForm (company profile sheet)', () => {
     });
 
     expect(companyRequestsService.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('a new governorate clears the area, and both are needed to send', async () => {
+    await render(<Harness />);
+    await fill();
+    await act(async () => {
+      hookRef.current.govArea.setGovernorateId('capital');
+    });
+    expect(hookRef.current.govArea.areaId).toBe('');
+
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+    expect(companyRequestsService.create).not.toHaveBeenCalled();
   });
 });

@@ -14,10 +14,9 @@ import {
 } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import RequestQuoteAddressField from '@/features/individual/components/request-quote/RequestQuoteAddressField';
 import RequestQuoteAttachments from '@/features/individual/components/request-quote/RequestQuoteAttachments';
 import InlineDropdown from '@/shared/components/filters/InlineDropdown';
-import MapPickerModal from '@/shared/components/map/MapPickerModal';
+import GovAreaFields from '@/shared/components/forms/GovAreaFields';
 
 import KeyboardDoneBar from './quote-request/KeyboardDoneBar';
 import QuoteCompanyCard from './quote-request/QuoteCompanyCard';
@@ -54,7 +53,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
 /**
  * تقديم طلب سعر sent straight to one company or office: the form lives in
  * useQuoteRequestForm, the pieces in ./quote-request and the request-quote
- * screen (address field, attachments are shared with it).
+ * screen (attachments are shared with it).
  */
 const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
   (
@@ -158,10 +157,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             keyboardAccessoryId={keyboardAccessoryId}
           />
 
-          <RequestQuoteAddressField
-            addressLabel={form.addressLabel}
-            onPress={form.openMapPicker}
-          />
+          <GovAreaFields value={form.govArea} />
 
           <QuoteDescriptionField
             value={form.description}
@@ -178,15 +174,6 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
 
         <KeyboardDoneBar nativeID={keyboardAccessoryId} />
 
-        <MapPickerModal
-          visible={form.showMapPicker}
-          onClose={form.closeMapPicker}
-          onConfirm={form.confirmAddress}
-          initialLat={form.addressCoords?.lat}
-          initialLng={form.addressCoords?.lng}
-          initialAddressLabel={form.addressLabel || undefined}
-          initialDetails={form.addressDetails}
-        />
       </BottomSheetModal>
     );
   },

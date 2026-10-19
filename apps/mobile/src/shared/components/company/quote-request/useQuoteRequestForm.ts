@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
-import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
+import { useGovArea } from '@/shared/components/forms/GovAreaFields';
 import { showAlert } from '@/shared/utils/alert';
 
 export interface ServiceItem {
@@ -21,9 +21,8 @@ interface Options {
 }
 
 /**
- * The quote popup's form: service, price range, the map-picked address
- * (with its details), description and photos, then sending the request
- * to this company.
+ * The quote popup's form: service, price range, the governorate and area,
+ * description and photos, then sending the request to this company.
  */
 export function useQuoteRequestForm({
   companyName,
@@ -34,13 +33,8 @@ export function useQuoteRequestForm({
   const [serviceId, setServiceId] = useState('');
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
-  const [addressLabel, setAddressLabel] = useState('');
-  const [addressCoords, setAddressCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [addressDetails, setAddressDetails] = useState<AddressDetails>();
-  const [showMapPicker, setShowMapPicker] = useState(false);
+  // Where: the governorate and an area of it (no map pin)
+  const govArea = useGovArea();
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,23 +50,9 @@ export function useQuoteRequestForm({
     setServiceId('');
     setPriceFrom('');
     setPriceTo('');
-    setAddressLabel('');
-    setAddressCoords(null);
-    setAddressDetails(undefined);
+    govArea.reset();
     setDescription('');
     setAttachments([]);
-  };
-
-  const confirmAddress = (
-    addressName: string,
-    lat: number,
-    lng: number,
-    details?: AddressDetails,
-  ) => {
-    setAddressLabel(addressName);
-    setAddressCoords({ lat, lng });
-    setAddressDetails(details);
-    setShowMapPicker(false);
   };
 
   const pickAttachments = async () => {
@@ -114,8 +94,8 @@ export function useQuoteRequestForm({
       showAlert('تنبيه', 'يرجى اختيار نوع الطلب');
       return;
     }
-    if (!addressLabel) {
-      showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+    if (!govArea.isComplete) {
+      showAlert('تنبيه', 'يرجى اختيار المحافظة والمنطقة');
       return;
     }
     if (!description.trim()) {
@@ -139,10 +119,7 @@ export function useQuoteRequestForm({
             ? `${priceFrom || 0} - ${priceTo || 0} د.ك`
             : undefined,
         offerType: 'عرض مخصص',
-        location: addressLabel,
-        addressDetails,
-        latitude: addressCoords?.lat,
-        longitude: addressCoords?.lng,
+        location: govArea.locationLabel,
         description,
         images: attachments,
         targetIdentityId,
@@ -170,13 +147,7 @@ export function useQuoteRequestForm({
     setPriceFrom,
     priceTo,
     setPriceTo,
-    addressLabel,
-    addressCoords,
-    addressDetails,
-    showMapPicker,
-    openMapPicker: () => setShowMapPicker(true),
-    closeMapPicker: () => setShowMapPicker(false),
-    confirmAddress,
+    govArea,
     description,
     setDescription,
     attachments,
