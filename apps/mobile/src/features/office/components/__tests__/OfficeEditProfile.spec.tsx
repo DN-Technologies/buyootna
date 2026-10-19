@@ -5,6 +5,12 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import OfficeEditProfile from '../edit-profile/OfficeEditProfile';
 
+// The map picker pulls in the native map, which Jest can't load
+jest.mock('@/shared/components/map/MapPickerModal', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@/shared/api/api', () => ({
   __esModule: true,
   default: {
@@ -72,7 +78,8 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
   });
 
   it('renders all sections and input labels matching Figma 4494:136911', async () => {
-    const { getByText, getByPlaceholderText, queryByText } = await render(
+    const { getByText, getByPlaceholderText, getByTestId, queryByText } =
+      await render(
       <OfficeEditProfile />
     );
 
@@ -102,7 +109,8 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
     expect(getByPlaceholderText('المنار')).toBeTruthy();
     expect(getByPlaceholderText('salemelshekh@gmail.com')).toBeTruthy();
     expect(getByPlaceholderText('58094586')).toBeTruthy();
-    expect(getByPlaceholderText('السالمية')).toBeTruthy();
+    // المقر الرئيسي is picked on the map; the saved address shows in it
+    expect(getByTestId('hq-location-field')).toHaveTextContent('السالمية');
     expect(getByPlaceholderText('6743963845')).toBeTruthy();
 
     // Save button

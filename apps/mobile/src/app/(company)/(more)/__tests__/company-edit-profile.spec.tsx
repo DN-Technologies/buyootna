@@ -4,6 +4,12 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import CompanyEditProfileScreen from '../company-edit-profile';
 
+// The map picker pulls in the native map, which Jest can't load
+jest.mock('@/shared/components/map/MapPickerModal', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
 jest.mock('@/shared/api/api', () => ({
   __esModule: true,
   default: {

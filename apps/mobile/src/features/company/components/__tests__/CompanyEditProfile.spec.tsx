@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import apiClient from '@/shared/api/api';
 import { settingsService } from '@/shared/api/settings.service';
@@ -64,6 +64,19 @@ jest.mock('@gorhom/bottom-sheet', () => {
     }) => <View testID={testID}>{children}</View>,
   };
 });
+
+// The map, reduced to its confirm: picking returns this place
+let mockMapProps: {
+  visible: boolean;
+  onConfirm: (name: string, lat: number, lng: number) => void;
+};
+jest.mock('@/shared/components/map/MapPickerModal', () => ({
+  __esModule: true,
+  default: (props: typeof mockMapProps) => {
+    mockMapProps = props;
+    return null;
+  },
+}));
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
@@ -282,5 +295,37 @@ describe('CompanyEditProfile', () => {
     );
     expect(settingsService.updateProfile).not.toHaveBeenCalled();
     expect(apiClient.patch).not.toHaveBeenCalled();
+  });
+
+  it('المقر الرئيسي is picked on the map; its address and point are saved', async () => {
+    const { getByTestId, getByText } = await render(<CompanyEditProfile />);
+
+    await fireEvent.press(getByTestId('hq-location-field'));
+    expect(mockMapProps.visible).toBe(true);
+    await act(async () => {
+      mockMapProps.onConfirm('حولي - السالمية', 29.3376, 48.0759);
+    });
+    expect(getByText('حولي - السالمية')).toBeTruthy();
+
+    await waitFor(() =>
+      expect(
+        getByTestId('save-button').props.accessibilityState?.disabled,
+      ).toBe(false),
+    );
+    await fireEvent.press(getByTestId('save-button'));
+
+    await waitFor(() =>
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/identities/identity-123',
+        expect.anything(),
+        expect.anything(),
+      ),
+    );
+    const body: FormData = (apiClient.patch as jest.Mock).mock.calls.find(
+      ([url]: [string]) => url === '/identities/identity-123',
+    )[1];
+    expect(body.get('hqLocation')).toBe('حولي - السالمية');
+    expect(body.get('latitude')).toBe('29.3376');
+    expect(body.get('longitude')).toBe('48.0759');
   });
 });

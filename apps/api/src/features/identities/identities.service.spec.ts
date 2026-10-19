@@ -351,6 +351,25 @@ describe('IdentitiesService', () => {
       expect(data.workingHours).toBeUndefined();
     });
 
+    it('saves the HQ map point sent as multipart text as numbers', async () => {
+      mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
+      mockPrismaService.companyIdentityData.update.mockResolvedValue({});
+
+      await service.update('user-1', 'identity-c', {
+        hqLocation: 'حولي - السالمية',
+        latitude: '29.3376' as unknown as number,
+        longitude: '48.0759' as unknown as number,
+      });
+
+      const { data } = (
+        mockPrismaService.companyIdentityData.update.mock.calls as {
+          data: { latitude?: unknown; longitude?: unknown };
+        }[][]
+      )[0][0];
+      expect(data.latitude).toBe(29.3376);
+      expect(data.longitude).toBe(48.0759);
+    });
+
     it('updates from a plain JSON body without touching storage', async () => {
       mockPrismaService.identity.findFirst.mockResolvedValue(companyIdentity);
       mockPrismaService.companyIdentityData.update.mockResolvedValue({});

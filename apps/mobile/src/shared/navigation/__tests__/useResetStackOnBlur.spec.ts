@@ -4,6 +4,7 @@ import { useResetStackOnBlur } from '../useResetStackOnBlur';
 
 const mockListeners: Record<string, () => void> = {};
 const mockDispatch = jest.fn();
+let mockTabsState: unknown;
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({
@@ -12,6 +13,7 @@ jest.mock('@react-navigation/native', () => ({
       return jest.fn();
     },
     dispatch: mockDispatch,
+    getState: () => mockTabsState,
   }),
   useRoute: () => ({ key: 'more-key' }),
 }));
@@ -43,5 +45,57 @@ describe('useResetStackOnBlur', () => {
     // Only this stack loses its screens; the other tabs keep theirs
     expect(routes[1].state).toBeUndefined();
     expect(routes[0].state).toEqual({ index: 0 });
+  });
+
+  it('entering the group keeps only the screen just opened', async () => {
+    mockDispatch.mockClear();
+    await renderHook(() => useResetStackOnBlur());
+    mockTabsState = {
+      routes: [
+        {
+          key: 'more-key',
+          name: '(more)',
+          // An إضافة مشروع left underneath, then تعديل الملف opened
+          state: {
+            key: 'more-stack',
+            index: 1,
+            routes: [
+              { key: 'p', name: 'add-project' },
+              { key: 'e', name: 'company-edit-profile' },
+            ],
+          },
+        },
+      ],
+    };
+
+    mockListeners.focus();
+
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'RESET',
+        target: 'more-stack',
+        payload: expect.objectContaining({
+          index: 0,
+          routes: [{ key: 'e', name: 'company-edit-profile' }],
+        }),
+      }),
+    );
+  });
+
+  it('leaves a single-screen stack alone on entering', async () => {
+    mockDispatch.mockClear();
+    await renderHook(() => useResetStackOnBlur());
+    mockTabsState = {
+      routes: [
+        {
+          key: 'more-key',
+          state: { key: 'more-stack', index: 0, routes: [{ key: 'e' }] },
+        },
+      ],
+    };
+
+    mockListeners.focus();
+
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });
