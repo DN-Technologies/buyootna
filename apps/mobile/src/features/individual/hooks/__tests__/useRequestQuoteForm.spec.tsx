@@ -64,7 +64,7 @@ describe('useRequestQuoteForm', () => {
       await hookRef.current.handleSubmit();
     });
 
-    expect(showAlert).toHaveBeenCalledWith('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+    expect(showAlert).toHaveBeenCalledWith('تنبيه', 'يرجى اختيار المحافظة والمنطقة');
     expect(companyRequestsService.create).not.toHaveBeenCalled();
   });
 
@@ -73,7 +73,8 @@ describe('useRequestQuoteForm', () => {
 
     await act(async () => {
       hookRef.current.setSpecialtyId('التشطيب');
-      hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
     });
     await act(async () => {
       await hookRef.current.handleSubmit();
@@ -93,7 +94,8 @@ describe('useRequestQuoteForm', () => {
       hookRef.current.setRequestTypeId('تشطيب شقة');
       hookRef.current.setPriceFrom('200');
       hookRef.current.setPriceTo('800');
-      hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
+      hookRef.current.govArea.setGovernorateId('capital');
+      hookRef.current.govArea.setAreaId('capital_5');
       hookRef.current.setDescription('تفاصيل التشطيب');
       hookRef.current.setAttachments(['file:///img1.jpg']);
     });
@@ -106,11 +108,9 @@ describe('useRequestQuoteForm', () => {
     expect(companyRequestsService.create).toHaveBeenCalledWith({
       title: 'تشطيب شقة',
       category: 'التشطيب',
-      addressDetails: undefined,
       priceRange: '200 - 800 د.ك',
-      location: 'مدينة الكويت',
-      latitude: 29.3759,
-      longitude: 47.9774,
+      // المحافظة - المنطقة, no map pin
+      location: 'العاصمة - كيفان',
       description: 'تفاصيل التشطيب',
       images: ['file:///img1.jpg'],
     });
@@ -148,7 +148,8 @@ describe('useRequestQuoteForm', () => {
     await setup();
     await act(async () => {
       hookRef.current.setSpecialtyId('التكييف');
-      hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
+      hookRef.current.govArea.setGovernorateId('capital');
+      hookRef.current.govArea.setAreaId('capital_5');
       hookRef.current.setDescription('مكيف لا يبرد');
     });
     await act(async () => {
@@ -166,7 +167,8 @@ describe('useRequestQuoteForm', () => {
       hookRef.current.setRequestTypeId('تشطيب شقة');
       hookRef.current.setPriceFrom('200');
       hookRef.current.setPriceTo('800');
-      hookRef.current.handleConfirmAddress('مدينة الكويت', 29.3759, 47.9774);
+      hookRef.current.govArea.setGovernorateId('capital');
+      hookRef.current.govArea.setAreaId('capital_5');
       hookRef.current.setDescription('تفاصيل التشطيب');
       hookRef.current.setAttachments(['file:///img1.jpg']);
     });
@@ -185,8 +187,8 @@ describe('useRequestQuoteForm', () => {
     expect(hookRef.current.requestTypeId).toBe('');
     expect(hookRef.current.priceFrom).toBe('');
     expect(hookRef.current.priceTo).toBe('');
-    expect(hookRef.current.addressLabel).toBe('');
-    expect(hookRef.current.addressCoords).toBeNull();
+    expect(hookRef.current.govArea.governorateId).toBe('');
+    expect(hookRef.current.govArea.areaId).toBe('');
     expect(hookRef.current.description).toBe('');
     expect(hookRef.current.attachments).toEqual([]);
 
@@ -240,7 +242,8 @@ describe('useRequestQuoteForm', () => {
 
     await act(async () => {
       hookRef.current.setSpecialtyId('التشطيب');
-      hookRef.current.handleConfirmAddress('حولي', 29.33, 48.02);
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
       hookRef.current.setDescription('تفاصيل');
     });
 

@@ -1,9 +1,11 @@
 import { render } from '@testing-library/react-native';
 
-import RequestQuoteAddressField from '@/features/individual/components/request-quote/RequestQuoteAddressField';
 import RequestQuoteAttachments from '@/features/individual/components/request-quote/RequestQuoteAttachments';
 import RequestQuotePriceRange from '@/features/individual/components/request-quote/RequestQuotePriceRange';
 import { QuoteDescriptionField } from '@/shared/components/company/quote-request/QuoteSheetFields';
+import GovAreaFields, {
+  useGovArea,
+} from '@/shared/components/forms/GovAreaFields';
 import RequirementMark from '@/shared/components/ui/RequirementMark';
 
 import AlertAuctionsTab, {
@@ -88,11 +90,11 @@ describe('Add Alert marks the governorate as required and the rest as optional',
 });
 
 describe('Request a Quote marks its fields', () => {
-  it('address and description are required; price range and photos optional', async () => {
-    const address = await render(
-      <RequestQuoteAddressField addressLabel="" onPress={jest.fn()} />,
-    );
-    expect(address.getByText(/^العنوان \*$/)).toBeTruthy();
+  it('governorate, area and description are required; price range and photos optional', async () => {
+    const Where = () => <GovAreaFields value={useGovArea()} />;
+    const where = await render(<Where />);
+    expect(where.getByText(/^المحافظة \*$/)).toBeTruthy();
+    expect(where.getByText(/^المنطقة \*$/)).toBeTruthy();
 
     const description = await render(
       <QuoteDescriptionField value="" onChange={jest.fn()} keyboardAccessoryId="k" />,

@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
-import type { AddressDetails } from '@/shared/components/map/picker/addressTypes';
+import { useGovArea } from '@/shared/components/forms/GovAreaFields';
 import {
   listedTypes,
   OTHER_TYPE,
@@ -29,11 +29,6 @@ export const requestTypeOptions = (specialty: string) =>
 
 export const MAX_ATTACHMENTS = 10;
 
-export interface AddressCoords {
-  lat: number;
-  lng: number;
-}
-
 export function useRequestQuoteForm() {
   const [specialtyId, setSpecialtyIdState] = useState('');
   const [requestTypeId, setRequestTypeId] = useState('');
@@ -44,10 +39,9 @@ export function useRequestQuoteForm() {
   }, []);
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
-  const [addressLabel, setAddressLabel] = useState('');
-  const [addressCoords, setAddressCoords] = useState<AddressCoords | null>(null);
-  const [addressDetails, setAddressDetails] = useState<AddressDetails>();
-  const [showMapPicker, setShowMapPicker] = useState(false);
+  // Where: the governorate and an area of it (no map pin)
+  const govArea = useGovArea();
+  const resetGovArea = govArea.reset;
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,12 +55,10 @@ export function useRequestQuoteForm() {
     setRequestTypeId('');
     setPriceFrom('');
     setPriceTo('');
-    setAddressLabel('');
-    setAddressCoords(null);
-    setAddressDetails(undefined);
+    resetGovArea();
     setDescription('');
     setAttachments([]);
-  }, []);
+  }, [resetGovArea]);
 
   const handlePickAttachments = useCallback(async () => {
     try {
@@ -106,21 +98,6 @@ export function useRequestQuoteForm() {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
-  const handleConfirmAddress = useCallback(
-    (
-      addressName: string,
-      lat: number,
-      lng: number,
-      details?: AddressDetails,
-    ) => {
-      setAddressLabel(addressName);
-      setAddressCoords({ lat, lng });
-      setAddressDetails(details);
-      setShowMapPicker(false);
-    },
-    [],
-  );
-
   const handleSubmit = useCallback(
     async (onSuccess?: () => void) => {
       if (submittingRef.current) return;
@@ -128,8 +105,8 @@ export function useRequestQuoteForm() {
         showAlert('تنبيه', 'يرجى اختيار مجال التخصص');
         return;
       }
-      if (!addressLabel) {
-        showAlert('تنبيه', 'يرجى تحديد العنوان على الخريطة');
+      if (!govArea.isComplete) {
+        showAlert('تنبيه', 'يرجى اختيار المحافظة والمنطقة');
         return;
       }
       if (!description.trim()) {
@@ -149,10 +126,7 @@ export function useRequestQuoteForm() {
             priceFrom || priceTo
               ? `${priceFrom || 0} - ${priceTo || 0} د.ك`
               : undefined,
-          location: addressLabel,
-          addressDetails,
-          latitude: addressCoords?.lat,
-          longitude: addressCoords?.lng,
+          location: govArea.locationLabel,
           description,
           images: attachments,
         });
@@ -173,13 +147,11 @@ export function useRequestQuoteForm() {
     [
       reset,
       specialtyId,
-      addressLabel,
+      govArea.isComplete,
+      govArea.locationLabel,
       requestTypeId,
       priceFrom,
       priceTo,
-      addressCoords?.lat,
-      addressCoords?.lng,
-      addressDetails,
       description,
       attachments,
     ],
@@ -195,13 +167,7 @@ export function useRequestQuoteForm() {
     setPriceFrom,
     priceTo,
     setPriceTo,
-    addressLabel,
-    setAddressLabel,
-    addressCoords,
-    addressDetails,
-    setAddressCoords,
-    showMapPicker,
-    setShowMapPicker,
+    govArea,
     description,
     setDescription,
     attachments,
@@ -209,7 +175,6 @@ export function useRequestQuoteForm() {
     isSubmitting,
     handlePickAttachments,
     removeAttachment,
-    handleConfirmAddress,
     handleSubmit,
     reset,
   };
