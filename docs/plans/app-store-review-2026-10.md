@@ -15,9 +15,9 @@ Tick each box when it is done.
 - [x] App: «حظر» on provider profiles (company, office), in chat and on stories
 - [x] App: «المحظورون» list in settings, with unblock
 - [x] Tests (API + app), docs QA story (EN + AR)
-- [ ] Migration checked on a scratch database, then applied to production
-      (scratch check done: migrations and schema identical)
-- [ ] Merged, deployed (`cd.yml`), app update published
+- [x] Migration checked on a scratch database, then applied to production
+      (scratch: migrations and schema identical; Neon production 61/61 on 2026-10-21)
+- [x] Merged (#342), deployed (`cd.yml`), app update published (`5c13728d`)
 
 ### 1.2 Stories in the live app without the server
 - [x] Decide: release Stories now, or hide them until later — **release**
