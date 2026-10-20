@@ -53,8 +53,10 @@ const pending = (over: Record<string, unknown> = {}) => ({
   id: STORY,
   identityId: AUTHOR,
   status: 'PENDING',
+  mediaType: 'IMAGE',
   mediaKey: `stories/${AUTHOR}/${STORY}/media.jpg`,
   posterKey: null,
+  posterSizeBytes: null,
   mediaContentType: 'image/jpeg',
   mediaSizeBytes: 2048,
   expiresAt: new Date(NOW.getTime() + 10 * 60 * 1000),
@@ -88,20 +90,27 @@ describe('StoriesService', () => {
   };
   const media = {
     mediaKeyFor: jest.fn(
+      (identityId: string, storyId: string, type: string) =>
+        `stories/${identityId}/${storyId}/media.${type === 'video/mp4' ? 'mp4' : 'jpg'}`,
+    ),
+    posterKeyFor: jest.fn(
       (identityId: string, storyId: string) =>
-        `stories/${identityId}/${storyId}/media.jpg`,
+        `stories/${identityId}/${storyId}/poster.jpg`,
     ),
     presignUpload: jest.fn().mockResolvedValue({
       url: 'https://s3.example/put',
       headers: { 'Content-Type': 'image/jpeg', 'Content-Length': '2048' },
     }),
     checkImage: jest.fn(),
+    checkVideo: jest.fn(),
     linksFor: jest.fn().mockResolvedValue({
       mediaUrl: 'https://s3.example/get',
       posterUrl: null,
       urlExpiresAt: new Date(NOW.getTime() + 3600 * 1000),
     }),
-    keysOf: jest.fn((s: { mediaKey: string }) => [s.mediaKey]),
+    keysOf: jest.fn((s: { mediaKey: string; posterKey: string | null }) =>
+      s.posterKey ? [s.mediaKey, s.posterKey] : [s.mediaKey],
+    ),
   };
   const storage = {
     deleteKeysReporting: jest.fn().mockResolvedValue({ failed: [] }),
@@ -260,6 +269,134 @@ describe('StoriesService', () => {
     });
   });
 
+  describe('createUpload (video)', () => {
+    const video = {
+      mediaType: 'VIDEO' as const,
+      contentType: 'video/mp4' as const,
+      sizeBytes: 20 * 1024 * 1024,
+      poster: { contentType: 'image/jpeg' as const, sizeBytes: 90_000 },
+    };
+
+    it('issues a slot for the video and its poster, both signed to the story', async () => {
+      const slot = await service.createUpload(AUTHOR, video, NOW);
+      const mediaKey = `stories/${AUTHOR}/${slot.storyId}/media.mp4`;
+      const posterKey = `stories/${AUTHOR}/${slot.storyId}/poster.jpg`;
+      expect(prisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          mediaType: 'VIDEO',
+          mediaKey,
+          mediaContentType: 'video/mp4',
+          mediaSizeBytes: 20 * 1024 * 1024,
+          posterKey,
+          posterSizeBytes: 90_000,
+        }) as Record<string, unknown>,
+      });
+      expect(media.presignUpload).toHaveBeenCalledWith(
+        slot.storyId,
+        mediaKey,
+        'video/mp4',
+        20 * 1024 * 1024,
+      );
+      expect(media.presignUpload).toHaveBeenCalledWith(
+        slot.storyId,
+        posterKey,
+        'image/jpeg',
+        90_000,
+      );
+      expect(slot.poster).toMatchObject({ method: 'PUT' });
+    });
+
+    it('a photo slot has no poster', async () => {
+      const slot = await service.createUpload(
+        AUTHOR,
+        { mediaType: 'IMAGE', contentType: 'image/jpeg', sizeBytes: 2048 },
+        NOW,
+      );
+      expect(slot.poster).toBeUndefined();
+      expect(prisma.story.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          posterKey: null,
+          posterSizeBytes: null,
+        }) as Record<string, unknown>,
+      });
+    });
+  });
+
+  describe('publish (video)', () => {
+    const videoPending = () =>
+      pending({
+        mediaType: 'VIDEO',
+        mediaKey: `stories/${AUTHOR}/${STORY}/media.mp4`,
+        mediaContentType: 'video/mp4',
+        posterKey: `stories/${AUTHOR}/${STORY}/poster.jpg`,
+        posterSizeBytes: 90_000,
+      });
+    beforeEach(() => {
+      prisma.story.findUnique.mockResolvedValue(videoPending());
+      media.checkVideo.mockResolvedValue({
+        ok: true,
+        width: 720,
+        height: 1280,
+        durationMs: 29_800,
+      });
+    });
+
+    it('is checked as a video, and its measured length is stored', async () => {
+      await service.publish(STORY, AUTHOR, {}, NOW);
+      expect(media.checkVideo).toHaveBeenCalled();
+      expect(media.checkImage).not.toHaveBeenCalled();
+      expect(
+        callArg<{ data: Record<string, unknown> }>(prisma.story.updateMany)
+          .data,
+      ).toMatchObject({ width: 720, height: 1280, durationMs: 29_800 });
+    });
+
+    it('not fully uploaded is 409 with a video message', async () => {
+      media.checkVideo.mockResolvedValue({ ok: false, missing: true });
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        code: 'STORY_UPLOAD_INCOMPLETE',
+        message: 'لم يكتمل رفع الفيديو بعد',
+      });
+    });
+
+    it('too long: 422 saying so, the story fails and both files are deleted', async () => {
+      media.checkVideo.mockResolvedValue({
+        ok: false,
+        missing: false,
+        reason: 'too_long',
+      });
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(UnprocessableEntityException);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        code: 'STORY_MEDIA_INVALID',
+        reason: 'too_long',
+        message: 'مدة الفيديو تتجاوز 30 ثانية',
+      });
+      expect(storage.deleteKeysReporting).toHaveBeenCalledWith([
+        `stories/${AUTHOR}/${STORY}/media.mp4`,
+        `stories/${AUTHOR}/${STORY}/poster.jpg`,
+      ]);
+    });
+
+    it('a photo that is too large keeps the photo wording', async () => {
+      prisma.story.findUnique.mockResolvedValue(
+        pending({ status: 'FAILED', failureReason: 'too_large' }),
+      );
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        message: 'الملف المرفوع غير صالح، يرجى اختيار صورة أخرى',
+      });
+    });
+  });
+
   describe('publish', () => {
     beforeEach(() => {
       prisma.story.findUnique.mockResolvedValue(pending());
@@ -286,11 +423,13 @@ describe('StoriesService', () => {
           expiresAt: new Date(NOW.getTime() + 24 * 3600 * 1000),
           width: 1080,
           height: 1920,
+          durationMs: null,
           caption: 'عرض جديد',
           propertyId: null,
         },
       });
       expect(result).toMatchObject({ id: STORY, viewCount: 0, viewed: true });
+      expect(media.checkVideo).not.toHaveBeenCalled();
     });
 
     it('an empty caption is stored as none', async () => {

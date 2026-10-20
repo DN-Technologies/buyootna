@@ -1,4 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { mkdtemp, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 import {
   type PresignedPut,
@@ -7,19 +10,27 @@ import {
 import {
   STORY_IMAGE_TYPES,
   STORY_MEDIA_URL_MAX_SECONDS,
+  STORY_POSTER_TYPE,
   STORY_PREFIX,
   STORY_PROBE_BYTES,
   STORY_PUT_TTL_SECONDS,
+  STORY_VIDEO_TYPES,
   type StoryImageType,
+  type StoryMediaContentType,
 } from './stories.constants';
 import { dimensionProblem, probeImage } from './utils/image-probe';
+import {
+  probeVideoFile,
+  VideoProbeUnavailableError,
+  type VideoVerdict,
+} from './utils/video-probe';
 
 // The upload's metadata key that ties the file to its story
 const STORY_ID_META = 'story-id';
 
 /** What the stored file turned out to be. */
 export type MediaCheck =
-  | { ok: true; width: number; height: number }
+  | { ok: true; width: number; height: number; durationMs?: number }
   // Not uploaded (yet): the story stays pending so the app can retry
   | { ok: false; missing: true }
   // Uploaded but not acceptable: the story fails
@@ -41,15 +52,27 @@ export interface StoryLinks {
 /** Story files in S3: where they go, how they're uploaded, checked and served. */
 @Injectable()
 export class StoriesMediaService {
+  // ffprobe on a local file; replaced in tests
+  probeVideo: (path: string) => Promise<VideoVerdict> = probeVideoFile;
+
   constructor(private readonly storage: StorageService) {}
 
   /** stories/{identityId}/{storyId}/media.{ext}: chosen by the server only. */
   mediaKeyFor(
     identityId: string,
     storyId: string,
-    contentType: StoryImageType,
+    contentType: StoryMediaContentType,
   ): string {
-    return `${STORY_PREFIX}${identityId}/${storyId}/media.${STORY_IMAGE_TYPES[contentType]}`;
+    const ext =
+      contentType in STORY_IMAGE_TYPES
+        ? STORY_IMAGE_TYPES[contentType as StoryImageType]
+        : STORY_VIDEO_TYPES[contentType as keyof typeof STORY_VIDEO_TYPES];
+    return `${STORY_PREFIX}${identityId}/${storyId}/media.${ext}`;
+  }
+
+  /** stories/{identityId}/{storyId}/poster.jpg: a video story's still. */
+  posterKeyFor(identityId: string, storyId: string): string {
+    return `${STORY_PREFIX}${identityId}/${storyId}/poster.jpg`;
   }
 
   /** The story id a key belongs to, or null for anything not ours. */
@@ -114,6 +137,108 @@ export class StoriesMediaService {
     const sizeProblem = dimensionProblem(image.width, image.height);
     if (sizeProblem) return { ok: false, missing: false, reason: sizeProblem };
     return { ok: true, width: image.width, height: image.height };
+  }
+
+  /**
+   * Checks an uploaded video and its poster. Both must match their slot
+   * (size, type, this story's id); the poster must really be a JPEG within
+   * the photo limits; the video is downloaded to a private temp folder and
+   * judged by ffprobe (container, codecs, streams, ≤ 30.5 s, ≤ 1920 px),
+   * then the copy is removed.
+   */
+  async checkVideo(story: {
+    id: string;
+    mediaKey: string;
+    mediaContentType: string;
+    mediaSizeBytes: number;
+    posterKey: string | null;
+    posterSizeBytes: number | null;
+  }): Promise<MediaCheck> {
+    if (!story.posterKey || !story.posterSizeBytes) {
+      return { ok: false, missing: false, reason: 'poster_missing' };
+    }
+    const [head, posterHead] = await Promise.all([
+      this.storage.headObject(story.mediaKey),
+      this.storage.headObject(story.posterKey),
+    ]);
+    if (!head || !posterHead) return { ok: false, missing: true };
+    const mismatch =
+      this.headMismatch(
+        head,
+        story.id,
+        story.mediaSizeBytes,
+        story.mediaContentType,
+      ) ??
+      this.headMismatch(
+        posterHead,
+        story.id,
+        story.posterSizeBytes,
+        STORY_POSTER_TYPE,
+        'poster_',
+      );
+    if (mismatch) return { ok: false, missing: false, reason: mismatch };
+
+    const posterStart = await this.storage.getRange(
+      story.posterKey,
+      0,
+      Math.min(STORY_PROBE_BYTES, posterHead.contentLength) - 1,
+    );
+    const poster = probeImage(posterStart);
+    if (!poster || poster.type !== STORY_POSTER_TYPE) {
+      return { ok: false, missing: false, reason: 'poster_not_jpeg' };
+    }
+    if (dimensionProblem(poster.width, poster.height)) {
+      return { ok: false, missing: false, reason: 'poster_too_large' };
+    }
+
+    const dir = await mkdtemp(join(tmpdir(), 'story-'));
+    try {
+      const file = join(dir, 'media');
+      await this.storage.downloadToFile(
+        story.mediaKey,
+        file,
+        story.mediaSizeBytes,
+      );
+      const verdict = await this.probeVideo(file);
+      if (!verdict.ok)
+        return { ok: false, missing: false, reason: verdict.reason };
+      return {
+        ok: true,
+        width: verdict.width,
+        height: verdict.height,
+        durationMs: verdict.durationMs,
+      };
+    } catch (error) {
+      if (error instanceof VideoProbeUnavailableError) {
+        // A server problem, not the file's: the story stays pending
+        throw new ServiceUnavailableException({
+          statusCode: 503,
+          message: 'تعذر فحص الفيديو حالياً، حاول مرة أخرى',
+          code: 'STORY_PROBE_UNAVAILABLE',
+        });
+      }
+      throw error;
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }
+
+  private headMismatch(
+    head: {
+      contentLength: number;
+      contentType: string | null;
+      metadata: Record<string, string>;
+    },
+    storyId: string,
+    sizeBytes: number,
+    contentType: string,
+    prefix = '',
+  ): string | null {
+    if (head.contentLength !== sizeBytes) return `${prefix}size_mismatch`;
+    if (head.contentType !== contentType) return `${prefix}type_mismatch`;
+    if (head.metadata[STORY_ID_META] !== storyId)
+      return `${prefix}metadata_mismatch`;
+    return null;
   }
 
   /**

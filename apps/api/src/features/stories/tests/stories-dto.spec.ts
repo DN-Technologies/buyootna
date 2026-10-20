@@ -23,8 +23,58 @@ describe('story DTOs', () => {
       expect(await errorsOf(CreateStoryUploadDto, ok)).toEqual([]);
     });
 
+    const video = {
+      mediaType: 'VIDEO',
+      contentType: 'video/mp4',
+      sizeBytes: 50 * 1024 * 1024,
+      poster: { contentType: 'image/jpeg', sizeBytes: 1024 * 1024 },
+    };
+
+    it('a video with its poster is valid (MP4 or MOV, up to 50 MB)', async () => {
+      expect(await errorsOf(CreateStoryUploadDto, video)).toEqual([]);
+      expect(
+        await errorsOf(CreateStoryUploadDto, {
+          ...video,
+          contentType: 'video/quicktime',
+        }),
+      ).toEqual([]);
+    });
+
     it.each([
-      ['video (later phase)', { mediaType: 'VIDEO' }, 'mediaType'],
+      ['over 50 MB', { sizeBytes: 50 * 1024 * 1024 + 1 }, ['sizeBytes']],
+      ['a photo type', { contentType: 'image/jpeg' }, ['contentType']],
+      ['WebM', { contentType: 'video/webm' }, ['contentType']],
+      ['no poster', { poster: undefined }, ['mediaType']],
+      [
+        'a PNG poster',
+        { poster: { contentType: 'image/png', sizeBytes: 10 } },
+        ['poster'],
+      ],
+      [
+        'a poster over 1 MB',
+        { poster: { contentType: 'image/jpeg', sizeBytes: 1024 * 1024 + 1 } },
+        ['poster'],
+      ],
+    ])('a video with %s is refused', async (_label, change, fields) => {
+      expect(
+        await errorsOf(CreateStoryUploadDto, { ...video, ...change }),
+      ).toEqual(fields);
+    });
+
+    it('a photo cannot carry a poster, nor use a video type', async () => {
+      expect(
+        await errorsOf(CreateStoryUploadDto, { ...ok, poster: video.poster }),
+      ).toEqual(['mediaType']);
+      expect(
+        await errorsOf(CreateStoryUploadDto, {
+          ...ok,
+          contentType: 'video/mp4',
+        }),
+      ).toEqual(['contentType']);
+    });
+
+    it.each([
+      ['an unknown kind', { mediaType: 'AUDIO' }, 'mediaType'],
       ['HEIC', { contentType: 'image/heic' }, 'contentType'],
       ['GIF', { contentType: 'image/gif' }, 'contentType'],
       ['over 10 MB', { sizeBytes: 10 * 1024 * 1024 + 1 }, 'sizeBytes'],
