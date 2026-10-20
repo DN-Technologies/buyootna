@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 import CompanyAboutTab from '@/shared/components/company/CompanyAboutTab';
 import CompanyBottomBar from '@/shared/components/company/CompanyBottomBar';
 import CompanyGalleryTab from '@/shared/components/company/CompanyGalleryTab';
@@ -37,6 +38,8 @@ export default function CompanyProfileScreen() {
   // Data & Business Logic Hooks (Separation of Concerns)
   const { company, isLoading, services, projects, targetUserId } =
     useCompanyDetails(companyId);
+  // Its live stories, as a ring on the logo (company.id is the identity)
+  const storyRing = useProviderStoryRing(company?.id);
   // The account's own company: its quote button doesn't respond
   const currentUserId = useAuthStore((state) => state.user?.id);
 
@@ -81,7 +84,7 @@ export default function CompanyProfileScreen() {
           >
             <View className="px-5 pt-4">
               {/* Header Info Card */}
-              <CompanyHeaderCard company={company} />
+              <CompanyHeaderCard company={company} logoRing={storyRing} />
 
               {/* Tab Navigation Switcher */}
               <CompanyTabsSwitcher

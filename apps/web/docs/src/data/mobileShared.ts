@@ -9,10 +9,47 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-stories-profiles",
+      title: {
+        en: "Stories (phase 6): story rings on company and office profiles, fresher links",
+        ar: "القصص (المرحلة 6): حلقات القصص في ملفات الشركات والمكاتب، وروابط أحدث",
+      },
+      priority: "P2",
+      story: {
+        en: "On a company's or office's profile (company/[id], office/[id]), the logo in the header gets a ring while the provider has live stories: gold while any is unseen by the current profile, grey once all are seen. Tapping the logo then opens that provider's stories in the viewer (from its first unseen one); without stories the logo looks and behaves as before. The ring refreshes whenever the profile comes into focus, so it turns grey after watching. In the viewer, a story whose signed link is within 30 seconds of expiring (the screen was left open) gets fresh links before it's shown, once per story, instead of failing to load first; the old retry on a load error stays as the fallback. Internally the viewer was split into smaller pieces (data source, playback, actions, media, tap zones, sheets) with no change in behaviour. The feed query was load-tested on a throwaway database (3 000 providers, 20 000 viewers, ~145 000 views, 100 000 follows): every page, all four queries, in about 60 ms (p95 under 80 ms), always through the Story indexes.",
+        ar: "في ملف الشركة أو المكتب (company/[id] وoffice/[id])، يحصل الشعار في رأس الصفحة على حلقة ما دامت لمقدم الخدمة قصص حية: ذهبية ما دامت منها قصة لم يشاهدها الملف الحالي، ورمادية بعد مشاهدتها كلها. والضغط على الشعار حينها يفتح قصص مقدم الخدمة في العارض (من أول قصة لم تُشاهد)؛ وبلا قصص يبقى الشعار كما كان شكلاً وسلوكاً. تتحدث الحلقة كلما عاد الملف إلى الواجهة، فتصبح رمادية بعد المشاهدة. وفي العارض، القصة التي يقترب رابطها الموقّع من الانتهاء خلال 30 ثانية (بقيت الشاشة مفتوحة) تحصل على روابط جديدة قبل عرضها، مرة لكل قصة، بدلاً من أن تفشل في التحميل أولاً؛ وتبقى إعادة المحاولة عند خطأ التحميل احتياطاً. داخلياً قُسّم العارض إلى أجزاء أصغر (مصدر البيانات، والتشغيل، والإجراءات، والوسائط، ومناطق اللمس، والنوافذ) دون أي تغيير في السلوك. واختُبر استعلام القصص تحت الحمل على قاعدة بيانات مؤقتة (3000 مقدم خدمة، و20000 مشاهد، وقرابة 145000 مشاهدة، و100000 متابعة): كل صفحة، بالاستعلامات الأربعة، في نحو 60 ملي ثانية (والنسبة 95% أقل من 80)، ودائماً عبر فهارس القصص.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A provider with unseen stories shows a gold ring on its profile logo; tapping it opens them.",
+          "After watching them all and going back, the ring is grey.",
+          "A provider without live stories: the logo is unchanged and does nothing.",
+          "Leaving the viewer open past 15 minutes, then going on, still shows the next story.",
+        ],
+        ar: [
+          "مقدم خدمة له قصص لم تُشاهد يظهر شعاره في ملفه بحلقة ذهبية؛ والضغط عليه يفتحها.",
+          "بعد مشاهدتها كلها والرجوع تصبح الحلقة رمادية.",
+          "مقدم خدمة بلا قصص حية: الشعار كما هو ولا يفعل شيئاً.",
+          "ترك العارض مفتوحاً أكثر من 15 دقيقة ثم المتابعة ما زال يعرض القصة التالية.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Runnable on production (Stories released on 2026-10-20).",
+          "Locally as dev@youssef.app: open a seeded company's profile from search › gold ring › tap › watch › back › grey ring.",
+        ],
+        ar: [
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
+          "محلياً كـ dev@youssef.app: افتح ملف شركة تجريبية من البحث › حلقة ذهبية › اضغط › شاهد › ارجع › حلقة رمادية.",
+        ],
+      },
+      updatedIn: "feat/stories-phase6",
+    },
+    {
       id: "mobile-stories-video",
       title: {
-        en: "Stories (phase 5, not released): posting and watching video stories",
-        ar: "القصص (المرحلة 5، غير منشورة): نشر قصص الفيديو ومشاهدتها",
+        en: "Stories (phase 5): posting and watching video stories",
+        ar: "القصص (المرحلة 5): نشر قصص الفيديو ومشاهدتها",
       },
       priority: "P1",
       story: {
@@ -35,11 +72,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment until the API image with ffmpeg is deployed.",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Locally as a seeded office: + › pick a short phone video › نشر القصة; as dev@youssef.app open it: poster, then playback with sound; hold, release; swipe down mid-video and check the sound stops.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة حتى تُنشر صورة الـ API مع ffmpeg.",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "محلياً كمكتب تجريبي: + › اختر فيديو قصيراً من الهاتف › نشر القصة؛ وكـ dev@youssef.app افتحه: الغلاف ثم التشغيل بالصوت؛ اضغط مطوّلاً ثم اترك؛ واسحب للأسفل أثناء الفيديو وتأكد من توقف الصوت.",
         ],
       },
@@ -48,8 +85,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-posting",
       title: {
-        en: "Stories (phase 4, not released): posting a story, «قصتك», your viewers and deleting",
-        ar: "القصص (المرحلة 4، غير منشورة): نشر قصة، و«قصتك»، ومشاهدوك، والحذف",
+        en: "Stories (phase 4): posting a story, «قصتك», your viewers and deleting",
+        ar: "القصص (المرحلة 4): نشر قصة، و«قصتك»، ومشاهدوك، والحذف",
       },
       priority: "P1",
       story: {
@@ -76,11 +113,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Locally as a seeded office: + › pick a photo › caption › link the listing › نشر القصة; as dev@youssef.app the story appears; back as the office, «المشاهدون · 1» lists dev; ⋮ › حذف removes it.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "محلياً كمكتب تجريبي: + › اختر صورة › وصف › اربط الإعلان › نشر القصة؛ وكـ dev@youssef.app تظهر القصة؛ وبالعودة كمكتب تعرض «المشاهدون · 1» حساب dev؛ و⋮ › حذف يزيلها.",
         ],
       },
@@ -89,8 +126,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-viewer",
       title: {
-        en: "Stories (phase 3, not released): the stories tray and the photo viewer",
-        ar: "القصص (المرحلة 3، غير منشورة): شريط القصص وعارض الصور",
+        en: "Stories (phase 3): the stories tray and the photo viewer",
+        ar: "القصص (المرحلة 3): شريط القصص وعارض الصور",
       },
       priority: "P1",
       story: {
@@ -117,11 +154,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed; posting comes in phase 4).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "With stories seeded for two offices: open the tray's first ring, watch both stories, check the ring turns grey and GET /stories/:id/viewers lists you once.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة؛ والنشر في المرحلة 4).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "مع قصص لمكتبين: افتح أول حلقة في الشريط، وشاهد القصتين، وتحقق أن الحلقة أصبحت رمادية وأن GET /stories/:id/viewers يعرضك مرة واحدة.",
         ],
       },

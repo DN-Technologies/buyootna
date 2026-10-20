@@ -11,8 +11,8 @@ export const api: DocSection = {
     {
       id: "api-stories-video",
       title: {
-        en: "Stories (phase 5, not released): video stories up to 30 seconds, checked with ffprobe",
-        ar: "القصص (المرحلة 5، غير منشورة): قصص فيديو حتى 30 ثانية، تُفحص بـ ffprobe",
+        en: "Stories (phase 5): video stories up to 30 seconds, checked with ffprobe",
+        ar: "القصص (المرحلة 5): قصص فيديو حتى 30 ثانية، تُفحص بـ ffprobe",
       },
       priority: "P1",
       story: {
@@ -35,11 +35,11 @@ export const api: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment until the API image with ffmpeg is deployed.",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Automated: the real-ffprobe spec (video-probe.ffprobe.spec.ts) inside node:20-alpine with ffmpeg makes and checks a 30 s, a 31 s, a sideways, a VP9, a fake and a playlist file.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة حتى تُنشر صورة الـ API مع ffmpeg.",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "آلياً: اختبار ffprobe الحقيقي (video-probe.ffprobe.spec.ts) داخل node:20-alpine مع ffmpeg ينشئ ويفحص ملفات 30 ثانية و31 ثانية وجانبياً وVP9 ومزيفاً وقائمة تشغيل.",
         ],
       },
@@ -48,8 +48,8 @@ export const api: DocSection = {
     {
       id: "api-stories-views-reports",
       title: {
-        en: "Stories (phase 2, not released): views, the author's viewer list, and reporting a story",
-        ar: "القصص (المرحلة 2، غير منشورة): المشاهدات، وقائمة المشاهدين للناشر، والإبلاغ عن قصة",
+        en: "Stories (phase 2): views, the author's viewer list, and reporting a story",
+        ar: "القصص (المرحلة 2): المشاهدات، وقائمة المشاهدين للناشر، والإبلاغ عن قصة",
       },
       priority: "P1",
       story: {
@@ -74,12 +74,12 @@ export const api: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "As a viewer: POST /stories/views twice with the same id; as the author: GET /stories/:id/viewers shows one entry and total 1.",
           "As a viewer: POST /stories/:id/reports twice → the same report; it appears in the admin reports list against the author.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "كمشاهد: POST /stories/views مرتين بالمعرّف نفسه؛ وكناشر: GET /stories/:id/viewers يعرض مدخلاً واحداً ومجموعاً 1.",
           "كمشاهد: POST /stories/:id/reports مرتين ← البلاغ نفسه؛ ويظهر في قائمة بلاغات المشرف ضد الناشر.",
         ],
@@ -89,8 +89,8 @@ export const api: DocSection = {
     {
       id: "api-stories-foundation",
       title: {
-        en: "Stories (phase 1, not released): photo upload slots, publish after a server check, 24-hour expiry, the feed and cleanup",
-        ar: "القصص (المرحلة 1، غير منشورة): رفع الصور، والنشر بعد فحص الخادم، والانتهاء بعد 24 ساعة، وقائمة القصص، والتنظيف",
+        en: "Stories (phase 1): photo upload slots, publish after a server check, 24-hour expiry, the feed and cleanup",
+        ar: "القصص (المرحلة 1): رفع الصور، والنشر بعد فحص الخادم، والانتهاء بعد 24 ساعة، وقائمة القصص، والتنظيف",
       },
       priority: "P1",
       story: {
@@ -119,11 +119,11 @@ export const api: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet: needs the stories/ prefix made private (bucket policy) and the migration, both pending approval.",
+          "Runnable on production (Stories released on 2026-10-20; stories/ is private and the migrations are applied).",
           "As an approved office: POST /stories/uploads, PUT the file with the returned headers, POST /stories/:id/publish → 200; as another profile GET /stories/feed lists it.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد: يحتاج جعل مجلد stories/ خاصاً (سياسة الحاوية) والترحيل، وكلاهما بانتظار الموافقة.",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20؛ ومجلد stories/ خاص والترحيلات مطبّقة).",
           "كمكتب معتمد: POST /stories/uploads، ثم PUT للملف بالترويسات المعادة، ثم POST /stories/:id/publish ← 200؛ وكهوية أخرى GET /stories/feed يعرضها.",
         ],
       },

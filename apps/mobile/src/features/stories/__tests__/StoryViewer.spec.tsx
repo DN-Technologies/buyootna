@@ -8,6 +8,7 @@ import { storiesService } from '@/shared/api/stories.service';
 
 import StoryViewer, {
   STORY_IMAGE_MS,
+  STORY_LINK_MARGIN_MS,
   STORY_VIEW_AFTER_MS,
 } from '../components/StoryViewer';
 import type { FeedAuthor, ViewerStory } from '../types';
@@ -113,7 +114,8 @@ const story = (id: string, over: Partial<ViewerStory> = {}): ViewerStory => ({
   mediaType: 'IMAGE',
   mediaUrl: `https://s3.test/${id}.jpg`,
   posterUrl: null,
-  urlExpiresAt: '2026-10-20T12:15:00.000Z',
+  // Far ahead unless a test is about expiring links
+  urlExpiresAt: '2099-01-01T00:00:00.000Z',
   width: 1080,
   height: 1920,
   durationMs: null,
@@ -417,15 +419,18 @@ describe('StoryViewer', () => {
     });
 
     it('lasts as long as the video (not a photo\'s 5 s), then moves on', async () => {
+      // 6 s: past a photo's 5 s, short enough to keep the frame-by-frame
+      // progress animation cheap on a busy CI runner
+      mockAuthors = [author('a1', [clip('v1', { durationMs: 6000 }), story('s2')])];
       const screen = await render(<StoryViewer authorId="a1" source="feed" />);
       await ready();
-      await act(() => jest.advanceTimersByTimeAsync(11_000));
+      await act(() => jest.advanceTimersByTimeAsync(STORY_IMAGE_MS + 500));
       expect(screen.getByTestId('story-video')).toBeTruthy();
       expect(screen.queryByTestId('story-image')).toBeNull();
-      await act(() => jest.advanceTimersByTimeAsync(1100));
+      await act(() => jest.advanceTimersByTimeAsync(600));
       expect(screen.queryByTestId('story-video')).toBeNull();
       expect(screen.getByTestId('story-caption')).toHaveTextContent('caption s2');
-    });
+    }, 30_000);
 
     it('holding pauses the video with the clock', async () => {
       const screen = await render(<StoryViewer authorId="a1" source="feed" />);
@@ -470,6 +475,29 @@ describe('StoryViewer', () => {
       mockAuthors = [author('a1', [story('s0'), clip('v2')])];
       await render(<StoryViewer authorId="a1" source="feed" />);
       expect(Image.prefetch).toHaveBeenCalledWith(['https://s3.test/v2-poster.jpg'], 'memory');
+    });
+  });
+
+  describe('links about to expire', () => {
+    const soon = (ms: number) => new Date(Date.now() + ms).toISOString();
+
+    it('are renewed before the story is shown (screen left open)', async () => {
+      mockAuthors = [author('a1', [story('s1', { urlExpiresAt: soon(STORY_LINK_MARGIN_MS - 1000) })])];
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('only once per story, however often it renders', async () => {
+      mockAuthors = [author('a1', [story('s1', { urlExpiresAt: soon(0) })])];
+      const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+      await screen.rerender(<StoryViewer authorId="a1" source="feed" />);
+      expect(mockRefetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('links with time left are used as they are', async () => {
+      mockAuthors = [author('a1', [story('s1', { urlExpiresAt: soon(STORY_LINK_MARGIN_MS + 60_000) })])];
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      expect(mockRefetch).not.toHaveBeenCalled();
     });
   });
 });
