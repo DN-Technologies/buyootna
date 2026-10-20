@@ -9,6 +9,43 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-stories-video",
+      title: {
+        en: "Stories (phase 5, not released): video stories up to 30 seconds, checked with ffprobe",
+        ar: "القصص (المرحلة 5، غير منشورة): قصص فيديو حتى 30 ثانية، تُفحص بـ ffprobe",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /stories/uploads now also takes { mediaType: 'VIDEO', contentType: 'video/mp4' | 'video/quicktime', sizeBytes ≤ 50 MB, poster: { contentType: 'image/jpeg', sizeBytes ≤ 1 MB } }; the poster is required for a video and refused for a photo. The slot returns a second presigned PUT, poster, signed like the video (exact size, type, and the story id as metadata); keys are stories/{author}/{story}/media.mp4|mov and poster.jpg. On publish the server checks both files exist and match their slot, that the poster really is a JPEG within the photo limits, then downloads the video to a private temp folder and runs ffprobe on that copy (file protocol only, no shell, 15 s, 1 MB of output, at most two at once); the copy is removed afterwards. Accepted: an MP4/MOV container, exactly one H.264 or HEVC video stream, at most one AAC audio stream (iPhone timecode/metadata tracks are ignored), ≤ 30.5 s and ≤ 1920 px per side. The measured length goes to durationMs, and a sideways phone recording reports its shown (portrait) size. Anything else is 422 STORY_MEDIA_INVALID with a reason and an Arabic message the app shows (e.g. «مدة الفيديو تتجاوز 30 ثانية»), the story fails and both files are deleted. If either file isn't uploaded yet it's 409 STORY_UPLOAD_INCOMPLETE; if ffprobe itself is missing it's 503 STORY_PROBE_UNAVAILABLE and the story stays pending. Feeds return the video's mediaUrl, posterUrl and durationMs, signed and short-lived like photos. The API image now installs ffmpeg (for ffprobe). No migration.",
+        ar: "يقبل POST /stories/uploads الآن أيضاً { mediaType: 'VIDEO'، contentType: 'video/mp4' أو 'video/quicktime'، sizeBytes حتى 50 ميجابايت، poster: { contentType: 'image/jpeg'، sizeBytes حتى 1 ميجابايت } }؛ وصورة الغلاف مطلوبة للفيديو ومرفوضة للصورة. يعيد الحجز رابط PUT ثانياً موقّعاً، poster، موقّعاً مثل الفيديو (الحجم الدقيق والنوع ومعرّف القصة كبيانات وصفية)؛ والمفاتيح stories/{الناشر}/{القصة}/media.mp4 أو mov وposter.jpg. عند النشر يتحقق الخادم من وجود الملفين ومطابقتهما للحجز، وأن الغلاف JPEG فعلاً ضمن حدود الصور، ثم ينزّل الفيديو إلى مجلد مؤقت خاص ويشغّل ffprobe على تلك النسخة (بروتوكول الملفات فقط، بلا shell، 15 ثانية، 1 ميجابايت من المخرجات، واثنان على الأكثر في الوقت نفسه)؛ وتُحذف النسخة بعد ذلك. المقبول: حاوية MP4 أو MOV، ومسار فيديو واحد بالضبط H.264 أو HEVC، ومسار صوت AAC واحد على الأكثر (تُتجاهل مسارات التوقيت والبيانات في الآيفون)، وحتى 30.5 ثانية و1920 بكسل لكل جانب. تُحفظ المدة المقيسة في durationMs، ويُبلَّغ عن التسجيل الجانبي من الهاتف بمقاسه المعروض (عمودي). وأي شيء آخر ← 422 STORY_MEDIA_INVALID مع السبب ورسالة عربية يعرضها التطبيق (مثل «مدة الفيديو تتجاوز 30 ثانية»)، وتفشل القصة ويُحذف الملفان. وإن لم يُرفع أحد الملفين بعد ← 409 STORY_UPLOAD_INCOMPLETE؛ وإن لم يكن ffprobe موجوداً ← 503 STORY_PROBE_UNAVAILABLE وتبقى القصة معلقة. تعيد القوائم mediaUrl وposterUrl وdurationMs للفيديو، موقّعة وقصيرة الصلاحية مثل الصور. صورة الـ API تثبّت الآن ffmpeg (من أجل ffprobe). لا ترحيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A 30 s 720p H.264 video with its poster publishes, with durationMs about 30000.",
+          "A 31 s video, a WebM/VP9 file, or a renamed non-video is refused with 422, and both files are deleted.",
+          "A video slot without a poster, or a photo slot with one, is refused with 400.",
+          "A portrait phone video is reported as portrait (width < height).",
+        ],
+        ar: [
+          "فيديو 30 ثانية بدقة 720 وH.264 مع غلافه يُنشر، وdurationMs قرابة 30000.",
+          "فيديو 31 ثانية، أو ملف WebM/VP9، أو ملف ليس فيديو بامتداد مغيّر يُرفض بـ 422 ويُحذف الملفان.",
+          "حجز فيديو بلا غلاف، أو حجز صورة معه غلاف، يُرفض بـ 400.",
+          "فيديو الهاتف العمودي يُبلَّغ عنه عمودياً (العرض أقل من الارتفاع).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment until the API image with ffmpeg is deployed.",
+          "Automated: the real-ffprobe spec (video-probe.ffprobe.spec.ts) inside node:20-alpine with ffmpeg makes and checks a 30 s, a 31 s, a sideways, a VP9, a fake and a playlist file.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة حتى تُنشر صورة الـ API مع ffmpeg.",
+          "آلياً: اختبار ffprobe الحقيقي (video-probe.ffprobe.spec.ts) داخل node:20-alpine مع ffmpeg ينشئ ويفحص ملفات 30 ثانية و31 ثانية وجانبياً وVP9 ومزيفاً وقائمة تشغيل.",
+        ],
+      },
+      updatedIn: "feat/stories-phase5",
+    },
+    {
       id: "api-stories-views-reports",
       title: {
         en: "Stories (phase 2, not released): views, the author's viewer list, and reporting a story",

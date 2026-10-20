@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -30,20 +31,55 @@ import { showPermissionDenied } from '@/shared/utils/permissionDenied';
 import { useActiveIdentityId } from '../hooks/useStoriesQueries';
 import {
   publishStory,
-  type StoryPhoto,
+  type StoryMedia,
   storyPublishErrorMessage,
 } from '../publishStory';
 import {
   STORY_CAPTION_MAX,
+  STORY_POSTER_MAX_BYTES,
+  STORY_VIDEO_MAX_MS,
   storyPhotoProblem,
   storyPhotoType,
+  storyVideoProblem,
+  storyVideoType,
 } from '../storyPhoto';
 
 const NO_LISTING = 'none';
+const VIDEO_MAX_SECONDS = STORY_VIDEO_MAX_MS / 1000;
+
+const sizeOf = async (uri: string, reported?: number | null) => {
+  if (reported) return reported;
+  const info = await getInfoAsync(uri);
+  return info.exists ? info.size : undefined;
+};
 
 /**
- * Posting a photo story (companies and offices): pick or take a photo,
- * add a caption and optionally one of your active listings, then publish.
+ * The video's still, as a JPEG within the poster limit (made again at a
+ * lower quality if the first is too big); null if it can't be made.
+ */
+async function makePoster(uri: string): Promise<{ uri: string; sizeBytes: number } | null> {
+  for (const quality of [0.7, 0.4]) {
+    try {
+      const still = await VideoThumbnails.getThumbnailAsync(uri, { time: 0, quality });
+      const size = await sizeOf(still.uri);
+      if (size && size <= STORY_POSTER_MAX_BYTES) return { uri: still.uri, sizeBytes: size };
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+const VIDEO_PROBLEMS = {
+  type: 'نوع الفيديو غير مدعوم (MP4 أو MOV)',
+  size: 'حجم الفيديو يتجاوز 50 ميجابايت',
+  length: 'مدة الفيديو تتجاوز 30 ثانية',
+} as const;
+
+/**
+ * Posting a story (companies and offices): pick or take a media or a video
+ * of up to 30 seconds, add a caption and optionally one of your active
+ * listings, then publish.
  */
 export default function StoryComposer() {
   const router = useRouter();
@@ -52,7 +88,8 @@ export default function StoryComposer() {
   const identityId = useActiveIdentityId();
   const listingSheet = useRef<BottomSheetModal>(null);
 
-  const [photo, setPhoto] = useState<StoryPhoto | null>(null);
+  const [media, setMedia] = useState<StoryMedia | null>(null);
+  const [preparing, setPreparing] = useState(false);
   const [caption, setCaption] = useState('');
   const [propertyId, setPropertyId] = useState<string>(NO_LISTING);
   const [progress, setProgress] = useState<number | null>(null);
@@ -73,13 +110,38 @@ export default function StoryComposer() {
 
   const close = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
-  const acceptAsset = async (asset: ImagePicker.ImagePickerAsset) => {
-    const type = storyPhotoType(asset.mimeType, asset.uri);
-    let size = asset.fileSize;
-    if (!size) {
-      const info = await getInfoAsync(asset.uri);
-      size = info.exists ? info.size : undefined;
+  const acceptVideo = async (asset: ImagePicker.ImagePickerAsset) => {
+    const type = storyVideoType(asset.mimeType, asset.uri);
+    const size = await sizeOf(asset.uri, asset.fileSize);
+    const problem = storyVideoProblem(type, size, asset.duration);
+    if (problem || !type || !size) {
+      showAlert('تنبيه', VIDEO_PROBLEMS[problem ?? 'type']);
+      return;
     }
+    setPreparing(true);
+    const poster = await makePoster(asset.uri);
+    setPreparing(false);
+    if (!poster) {
+      showAlert('تنبيه', 'تعذر تجهيز الفيديو، اختر فيديو آخر');
+      return;
+    }
+    setMedia({
+      kind: 'VIDEO',
+      uri: asset.uri,
+      type,
+      sizeBytes: size,
+      durationMs: asset.duration ?? null,
+      poster,
+    });
+  };
+
+  const acceptAsset = async (asset: ImagePicker.ImagePickerAsset) => {
+    if (asset.type === 'video') {
+      await acceptVideo(asset);
+      return;
+    }
+    const type = storyPhotoType(asset.mimeType, asset.uri);
+    const size = await sizeOf(asset.uri, asset.fileSize);
     const problem = storyPhotoProblem(type, size);
     if (problem || !type || !size) {
       showAlert(
@@ -90,16 +152,18 @@ export default function StoryComposer() {
       );
       return;
     }
-    setPhoto({ uri: asset.uri, type, sizeBytes: size });
+    setMedia({ kind: 'IMAGE', uri: asset.uri, type, sizeBytes: size });
   };
 
   const pickFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ['images', 'videos'],
       quality: 0.85,
-      // iOS: hand over a JPEG rather than HEIC
+      // iOS: hand over a JPEG rather than HEIC, and a 720p H.264 video
       preferredAssetRepresentationMode:
         ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+      videoMaxDuration: VIDEO_MAX_SECONDS,
+      videoExportPreset: ImagePicker.VideoExportPreset.H264_1280x720,
     });
     if (!result.canceled && result.assets[0]) await acceptAsset(result.assets[0]);
   };
@@ -111,19 +175,20 @@ export default function StoryComposer() {
       return;
     }
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ['images', 'videos'],
       quality: 0.85,
+      videoMaxDuration: VIDEO_MAX_SECONDS,
     });
     if (!result.canceled && result.assets[0]) await acceptAsset(result.assets[0]);
   };
 
   const publish = async () => {
-    if (!photo || progress !== null) return;
+    if (!media || progress !== null) return;
     setProgress(0);
     try {
       await publishStory(
         storiesService,
-        photo,
+        media,
         {
           caption,
           propertyId: propertyId === NO_LISTING ? undefined : propertyId,
@@ -160,14 +225,31 @@ export default function StoryComposer() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
-      {photo && (
+      {media && (
         <Image
           testID="composer-preview"
-          source={{ uri: photo.uri }}
+          // A video is previewed by its poster
+          source={{ uri: media.kind === 'VIDEO' ? media.poster.uri : media.uri }}
           contentFit="contain"
           cachePolicy="memory"
           style={StyleSheet.absoluteFill}
         />
+      )}
+      {media?.kind === 'VIDEO' && (
+        <View
+          testID="composer-video-badge"
+          pointerEvents="none"
+          className="absolute inset-0 items-center justify-center"
+        >
+          <View className="size-16 items-center justify-center rounded-full bg-black/50">
+            <Feather name="video" size={28} color="#FFFFFF" />
+          </View>
+          {media.durationMs ? (
+            <Text className="mt-2 font-cairo-semibold text-[13px] text-white">
+              {Math.round(media.durationMs / 1000)} ث
+            </Text>
+          ) : null}
+        </View>
       )}
 
       <View
@@ -182,22 +264,29 @@ export default function StoryComposer() {
         >
           <Feather name="x" size={22} color="#FFFFFF" />
         </TouchableOpacity>
-        {photo && (
+        {media && (
           <TouchableOpacity
             testID="composer-change"
-            onPress={() => setPhoto(null)}
+            onPress={() => setMedia(null)}
             className="h-10 justify-center rounded-full bg-black/40 px-4"
           >
-            <Text className="font-cairo-semibold text-[14px] text-white">تغيير الصورة</Text>
+            <Text className="font-cairo-semibold text-[14px] text-white">
+              {media.kind === 'VIDEO' ? 'تغيير الفيديو' : 'تغيير الصورة'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {!photo ? (
+      {!media ? (
         <View className="flex-1 items-center justify-center gap-4 px-8">
           <Text className="font-cairo-semibold text-[18px] text-white">قصة جديدة</Text>
+          <Text className="text-center font-cairo-medium text-[13px] text-white/70">
+            صورة، أو فيديو حتى 30 ثانية
+          </Text>
+          {preparing && <ActivityIndicator testID="composer-preparing" color="#FFFFFF" />}
           <TouchableOpacity
             testID="composer-pick-library"
+            disabled={preparing}
             onPress={() => void pickFromLibrary()}
             className="h-12 w-full flex-row items-center justify-center gap-2 rounded-full bg-white"
           >
@@ -206,11 +295,12 @@ export default function StoryComposer() {
           </TouchableOpacity>
           <TouchableOpacity
             testID="composer-take-photo"
+            disabled={preparing}
             onPress={() => void takePhoto()}
             className="h-12 w-full flex-row items-center justify-center gap-2 rounded-full border border-white/60"
           >
             <Feather name="camera" size={18} color="#FFFFFF" />
-            <Text className="font-cairo-semibold text-[14px] text-white">التقط صورة</Text>
+            <Text className="font-cairo-semibold text-[14px] text-white">الكاميرا</Text>
           </TouchableOpacity>
         </View>
       ) : (

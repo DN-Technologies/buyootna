@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { getInfoAsync } from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
+import * as VideoThumbnails from 'expo-video-thumbnails';
 
 import { storiesService } from '@/shared/api/stories.service';
 import { userService } from '@/shared/api/user.service';
@@ -20,7 +21,9 @@ jest.mock('expo-image-picker', () => ({
   launchCameraAsync: jest.fn(),
   requestCameraPermissionsAsync: jest.fn(),
   UIImagePickerPreferredAssetRepresentationMode: { Compatible: 'compatible' },
+  VideoExportPreset: { H264_1280x720: 6 },
 }));
+jest.mock('expo-video-thumbnails', () => ({ getThumbnailAsync: jest.fn() }));
 jest.mock('expo-file-system/legacy', () => ({ getInfoAsync: jest.fn() }));
 jest.mock('@/shared/api/stories.service', () => ({
   storiesService: { createUpload: jest.fn(), uploadToSlot: jest.fn(), publish: jest.fn() },
@@ -85,7 +88,13 @@ describe('StoryComposer', () => {
     const screen = await renderComposer();
     await pick(screen);
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
-      expect.objectContaining({ preferredAssetRepresentationMode: 'compatible' }),
+      expect.objectContaining({
+        mediaTypes: ['images', 'videos'],
+        preferredAssetRepresentationMode: 'compatible',
+        // Videos: at most 30 s, exported as 720p H.264 on iOS
+        videoMaxDuration: 30,
+        videoExportPreset: 6,
+      }),
     );
     expect(screen.getByTestId('composer-preview').props.source).toEqual({ uri: 'file:///p.jpg' });
   });
@@ -117,7 +126,11 @@ describe('StoryComposer', () => {
     await act(async () => {
       await fireEvent.press(screen.getByTestId('composer-publish'));
     });
-    expect(storiesService.createUpload).toHaveBeenCalledWith('image/jpeg', 4096);
+    expect(storiesService.createUpload).toHaveBeenCalledWith({
+      mediaType: 'IMAGE',
+      contentType: 'image/jpeg',
+      sizeBytes: 4096,
+    });
   });
 
   it('counts the caption up to 200', async () => {
@@ -141,7 +154,11 @@ describe('StoryComposer', () => {
       await fireEvent.press(screen.getByTestId('composer-publish'));
     });
 
-    expect(storiesService.createUpload).toHaveBeenCalledWith('image/jpeg', 2048);
+    expect(storiesService.createUpload).toHaveBeenCalledWith({
+      mediaType: 'IMAGE',
+      contentType: 'image/jpeg',
+      sizeBytes: 2048,
+    });
     expect(storiesService.publish).toHaveBeenCalledWith('s1', {
       caption: 'عرض جديد',
       propertyId: 'p1',
@@ -185,5 +202,105 @@ describe('StoryComposer', () => {
     });
     expect(showPermissionDenied).toHaveBeenCalledWith('camera');
     expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+  });
+
+  describe('video', () => {
+    const videoAsset = (over: Partial<ImagePicker.ImagePickerAsset> = {}) =>
+      asset({
+        uri: 'file:///v.mp4',
+        type: 'video',
+        mimeType: 'video/mp4',
+        fileSize: 8 * 1024 * 1024,
+        duration: 12_000,
+        ...over,
+      });
+
+    beforeEach(() => {
+      (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(videoAsset());
+      (VideoThumbnails.getThumbnailAsync as jest.Mock).mockResolvedValue({
+        uri: 'file:///poster.jpg',
+      });
+      (getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 50_000 });
+      (storiesService.createUpload as jest.Mock).mockResolvedValue({
+        ...slot,
+        poster: { method: 'PUT', url: 'https://s3.test/poster', headers: {} },
+      });
+    });
+
+    it('a picked video is previewed by its poster, with its length', async () => {
+      const screen = await renderComposer();
+      await pick(screen);
+      expect(VideoThumbnails.getThumbnailAsync).toHaveBeenCalledWith('file:///v.mp4', {
+        time: 0,
+        quality: 0.7,
+      });
+      expect(screen.getByTestId('composer-preview').props.source).toEqual({
+        uri: 'file:///poster.jpg',
+      });
+      expect(screen.getByTestId('composer-video-badge')).toHaveTextContent(/12 ث$/);
+      expect(screen.getByText('تغيير الفيديو')).toBeTruthy();
+    });
+
+    it('publishes the video with its poster', async () => {
+      const screen = await renderComposer();
+      await pick(screen);
+      await act(async () => {
+        await fireEvent.press(screen.getByTestId('composer-publish'));
+      });
+      expect(storiesService.createUpload).toHaveBeenCalledWith({
+        mediaType: 'VIDEO',
+        contentType: 'video/mp4',
+        sizeBytes: 8 * 1024 * 1024,
+        poster: { contentType: 'image/jpeg', sizeBytes: 50_000 },
+      });
+      expect((storiesService.uploadToSlot as jest.Mock).mock.calls.map((c) => c[1])).toEqual([
+        'file:///poster.jpg',
+        'file:///v.mp4',
+      ]);
+      expect(mockRouter.back).toHaveBeenCalled();
+    });
+
+    it.each([
+      ['over 30 s', { duration: 31_000 }, 'مدة الفيديو تتجاوز 30 ثانية'],
+      ['over 50 MB', { fileSize: 51 * 1024 * 1024 }, 'حجم الفيديو يتجاوز 50 ميجابايت'],
+      ['a WebM', { mimeType: 'video/webm', uri: 'file:///v.webm' }, 'نوع الفيديو غير مدعوم (MP4 أو MOV)'],
+    ])('%s is refused before uploading', async (_label, over, message) => {
+      (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(videoAsset(over));
+      const screen = await renderComposer();
+      await pick(screen);
+      expect(showAlert).toHaveBeenCalledWith('تنبيه', message);
+      expect(screen.queryByTestId('composer-preview')).toBeNull();
+      expect(VideoThumbnails.getThumbnailAsync).not.toHaveBeenCalled();
+    });
+
+    it('a poster over 1 MB is made again at a lower quality', async () => {
+      (getInfoAsync as jest.Mock)
+        .mockResolvedValueOnce({ exists: true, size: 2 * 1024 * 1024 })
+        .mockResolvedValueOnce({ exists: true, size: 300_000 });
+      const screen = await renderComposer();
+      await pick(screen);
+      expect((VideoThumbnails.getThumbnailAsync as jest.Mock).mock.calls.map((c) => c[1].quality)).toEqual([0.7, 0.4]);
+      expect(screen.getByTestId('composer-preview')).toBeTruthy();
+    });
+
+    it('a video whose still cannot be made is refused', async () => {
+      (VideoThumbnails.getThumbnailAsync as jest.Mock).mockRejectedValue(new Error('codec'));
+      const screen = await renderComposer();
+      await pick(screen);
+      expect(showAlert).toHaveBeenCalledWith('تنبيه', 'تعذر تجهيز الفيديو، اختر فيديو آخر');
+      expect(screen.queryByTestId('composer-preview')).toBeNull();
+    });
+
+    it('the camera can record up to 30 s too', async () => {
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({ granted: true });
+      (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({ canceled: true, assets: [] });
+      const screen = await renderComposer();
+      await act(async () => {
+        await fireEvent.press(screen.getByTestId('composer-take-photo'));
+      });
+      expect(ImagePicker.launchCameraAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ mediaTypes: ['images', 'videos'], videoMaxDuration: 30 }),
+      );
+    });
   });
 });

@@ -20,7 +20,9 @@ RUN pnpm --filter api build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-RUN apk add --no-cache openssl
+# ffmpeg brings ffprobe, which checks uploaded story videos (on a local
+# copy, file protocol only). Rebuild the image to pick up its fixes.
+RUN apk add --no-cache openssl ffmpeg
 
 # Copy root node_modules (.pnpm virtual store with actual package files)
 COPY --from=build /app/node_modules ./node_modules

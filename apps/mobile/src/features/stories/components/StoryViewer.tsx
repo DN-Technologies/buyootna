@@ -49,10 +49,13 @@ import type { StoryAuthorStories } from '../types';
 import StoryFooter from './StoryFooter';
 import StoryHeader from './StoryHeader';
 import StoryProgressBars from './StoryProgressBars';
+import StoryVideo from './StoryVideo';
 import StoryViewersSheet from './StoryViewersSheet';
 
 // How long a photo story shows
 export const STORY_IMAGE_MS = 5000;
+// A video whose length the server didn't record (it always should)
+export const STORY_VIDEO_FALLBACK_MS = 15_000;
 // A story counts as viewed after this long on screen
 export const STORY_VIEW_AFTER_MS = 1000;
 
@@ -234,31 +237,40 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
     !sheetOpen &&
     !replying;
 
+  const isVideo = current?.mediaType === 'VIDEO';
   const progress = useStoryTimer({
-    durationMs: STORY_IMAGE_MS,
+    // A video's clock is its measured length, and only runs while it plays
+    durationMs: isVideo
+      ? (current?.durationMs ?? STORY_VIDEO_FALLBACK_MS)
+      : STORY_IMAGE_MS,
     running,
     resetKey: `${current?.id ?? ''}:${restart}`,
     onDone: () => position && go(nextStory(position, counts)),
   });
 
-  // Counts as viewed after a second on screen
+  // Counts as viewed after a second on screen (a video: a second played)
+  const watching = isVideo ? running : loaded;
   useEffect(() => {
-    if (isMine || !current || !loaded || current.viewed) return undefined;
+    if (isMine || !current || !watching || current.viewed) return undefined;
     const id = current.id;
     const timer = setTimeout(() => {
       queue.add(id);
       markViewed(id);
     }, STORY_VIEW_AFTER_MS);
     return () => clearTimeout(timer);
-  }, [isMine, current, loaded, queue, markViewed]);
+  }, [isMine, current, watching, queue, markViewed]);
 
-  // The next photos, in memory only
+  // The next photos (a video's poster), in memory only
   useEffect(() => {
     if (!position) return;
     const upcoming = [
       authors[position.authorIndex]?.stories[position.storyIndex + 1],
       authors[position.authorIndex + 1]?.stories[firstUnseen(authors[position.authorIndex + 1])],
-    ].flatMap((s) => (s ? [s.mediaUrl] : []));
+    ].flatMap((s) => {
+      if (!s) return [];
+      if (s.mediaType !== 'VIDEO') return [s.mediaUrl];
+      return s.posterUrl ? [s.posterUrl] : [];
+    });
     if (upcoming.length) void Image.prefetch(upcoming, 'memory');
   }, [authors, position]);
 
@@ -361,17 +373,30 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
       <StatusBar style="light" />
       <GestureDetector gesture={pan}>
         <View className="flex-1">
-          <Image
-            testID="story-image"
-            source={{ uri: current.mediaUrl }}
-            // Memory only: story media must not stay on the phone's disk
-            cachePolicy="memory"
-            contentFit="contain"
-            recyclingKey={current.id}
-            style={StyleSheet.absoluteFill}
-            onLoad={() => setLoaded(true)}
-            onError={onImageError}
-          />
+          {isVideo ? (
+            <StoryVideo
+              key={current.id}
+              url={current.mediaUrl}
+              posterUrl={current.posterUrl}
+              playing={running}
+              restartKey={restart}
+              onReady={() => setLoaded(true)}
+              onWaiting={() => setLoaded(false)}
+              onError={onImageError}
+            />
+          ) : (
+            <Image
+              testID="story-image"
+              source={{ uri: current.mediaUrl }}
+              // Memory only: story media must not stay on the phone's disk
+              cachePolicy="memory"
+              contentFit="contain"
+              recyclingKey={current.id}
+              style={StyleSheet.absoluteFill}
+              onLoad={() => setLoaded(true)}
+              onError={onImageError}
+            />
+          )}
           {!loaded && !failed && (
             <View style={StyleSheet.absoluteFill} className="items-center justify-center" pointerEvents="none">
               <ActivityIndicator color="#FFFFFF" />

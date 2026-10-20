@@ -63,12 +63,30 @@ export interface MyStories {
 }
 
 /** Where to PUT a story photo (every header is part of the signature). */
+export interface StoryUploadTarget {
+  method: 'PUT';
+  url: string;
+  headers: Record<string, string>;
+}
+
 export interface StoryUploadSlot {
   storyId: string;
   uploadUrlExpiresAt: string;
   publishBefore: string;
-  media: { method: 'PUT'; url: string; headers: Record<string, string> };
+  media: StoryUploadTarget;
+  // Video stories: where the poster goes
+  poster?: StoryUploadTarget;
 }
+
+/** What POST /stories/uploads is told about the files. */
+export type StoryUploadRequest =
+  | { mediaType: 'IMAGE'; contentType: StoryPhotoType; sizeBytes: number }
+  | {
+      mediaType: 'VIDEO';
+      contentType: StoryVideoType;
+      sizeBytes: number;
+      poster: { contentType: 'image/jpeg'; sizeBytes: number };
+    };
 
 export interface StoryViewerEntry {
   identityId: string;
@@ -86,3 +104,4 @@ export interface StoryViewersPage {
 }
 
 export type StoryPhotoType = 'image/jpeg' | 'image/png' | 'image/webp';
+export type StoryVideoType = 'video/mp4' | 'video/quicktime';

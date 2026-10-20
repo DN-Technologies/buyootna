@@ -8,8 +8,9 @@ import type {
   MyStories,
   StoryAuthorStories,
   StoryFeedPage,
-  StoryPhotoType,
+  StoryUploadRequest,
   StoryUploadSlot,
+  StoryUploadTarget,
   StoryViewersPage,
 } from '@/features/stories/types';
 import apiClient from '@/shared/api/api';
@@ -49,15 +50,11 @@ export const storiesService = {
   },
 
   /** An upload slot for a photo of exactly `sizeBytes`. */
-  createUpload: async (
-    contentType: StoryPhotoType,
-    sizeBytes: number,
-  ): Promise<StoryUploadSlot> => {
-    const response = await apiClient.post<StoryUploadSlot>('/stories/uploads', {
-      mediaType: 'IMAGE',
-      contentType,
-      sizeBytes,
-    });
+  createUpload: async (request: StoryUploadRequest): Promise<StoryUploadSlot> => {
+    const response = await apiClient.post<StoryUploadSlot>(
+      '/stories/uploads',
+      request,
+    );
     return response.data;
   },
 
@@ -66,17 +63,17 @@ export const storiesService = {
    * body, not multipart). Resolves with the HTTP status.
    */
   uploadToSlot: async (
-    slot: StoryUploadSlot,
+    target: StoryUploadTarget,
     fileUri: string,
     onProgress?: (fraction: number) => void,
   ): Promise<number> => {
     const task = createUploadTask(
-      slot.media.url,
+      target.url,
       fileUri,
       {
-        httpMethod: slot.media.method,
+        httpMethod: target.method,
         uploadType: FileSystemUploadType.BINARY_CONTENT,
-        headers: slot.media.headers,
+        headers: target.headers,
       },
       ({ totalBytesSent, totalBytesExpectedToSend }) => {
         if (totalBytesExpectedToSend > 0) {

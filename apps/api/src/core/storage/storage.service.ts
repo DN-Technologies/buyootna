@@ -11,7 +11,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { createWriteStream } from 'fs';
 import { extname } from 'path';
+import { Readable } from 'stream';
+import { pipeline } from 'stream/promises';
 
 /** What the app must send with a presigned PUT (all of it is signed). */
 export interface PresignedPut {
@@ -240,6 +243,31 @@ export class StorageService {
     );
     if (!object.Body) return Buffer.alloc(0);
     return Buffer.from(await object.Body.transformToByteArray());
+  }
+
+  /**
+   * Streams an object to a local file, refusing to write more than
+   * `maxBytes` (the size the object was checked to have).
+   */
+  async downloadToFile(
+    key: string,
+    path: string,
+    maxBytes: number,
+  ): Promise<void> {
+    const object = await this.s3Client.send(
+      new GetObjectCommand({ Bucket: this.bucketName, Key: key }),
+    );
+    if (!(object.Body instanceof Readable)) {
+      throw new InternalServerErrorException('Unexpected S3 body');
+    }
+    let written = 0;
+    const body = object.Body;
+    body.on('data', (chunk: Buffer) => {
+      written += chunk.length;
+      if (written > maxBytes)
+        body.destroy(new Error('Object larger than expected'));
+    });
+    await pipeline(body, createWriteStream(path, { mode: 0o600 }));
   }
 
   /** One page of the keys under a prefix. */

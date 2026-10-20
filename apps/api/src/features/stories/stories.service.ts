@@ -59,6 +59,15 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Db = Prisma.TransactionClient | PrismaService;
 
+// Video refusals the author can act on; anything else gets the generic text
+const VIDEO_REFUSALS: Record<string, string> = {
+  too_long: 'مدة الفيديو تتجاوز 30 ثانية',
+  too_large: 'دقة الفيديو أعلى من المسموح (1920 بكسل)',
+  video_codec: 'صيغة الفيديو غير مدعومة (H.264 أو HEVC)',
+  audio_codec: 'صيغة صوت الفيديو غير مدعومة',
+  not_a_video: 'الملف المرفوع ليس فيديو صالحاً',
+};
+
 /**
  * Serialises one profile's slot replacement and publishing (the limit
  * counts and the change they guard happen under the same lock).
@@ -94,6 +103,10 @@ export class StoriesService {
       storyId,
       dto.contentType,
     );
+    const poster = dto.mediaType === 'VIDEO' ? dto.poster : undefined;
+    const posterKey = poster
+      ? this.media.posterKeyFor(identityId, storyId)
+      : null;
     const publishBefore = new Date(now.getTime() + STORY_UPLOAD_WINDOW_MS);
 
     await this.prisma.$transaction(async (tx) => {
@@ -108,21 +121,33 @@ export class StoriesService {
           id: storyId,
           identityId,
           status: 'PENDING',
-          mediaType: 'IMAGE',
+          mediaType: dto.mediaType,
           mediaKey,
           mediaContentType: dto.contentType,
           mediaSizeBytes: dto.sizeBytes,
+          posterKey,
+          posterSizeBytes: poster?.sizeBytes ?? null,
           expiresAt: publishBefore,
         },
       });
     });
 
-    const put = await this.media.presignUpload(
-      storyId,
-      mediaKey,
-      dto.contentType,
-      dto.sizeBytes,
-    );
+    const [put, posterPut] = await Promise.all([
+      this.media.presignUpload(
+        storyId,
+        mediaKey,
+        dto.contentType,
+        dto.sizeBytes,
+      ),
+      poster && posterKey
+        ? this.media.presignUpload(
+            storyId,
+            posterKey,
+            poster.contentType,
+            poster.sizeBytes,
+          )
+        : Promise.resolve(null),
+    ]);
     return {
       storyId,
       uploadUrlExpiresAt: new Date(
@@ -130,6 +155,15 @@ export class StoriesService {
       ).toISOString(),
       publishBefore: publishBefore.toISOString(),
       media: { method: 'PUT', url: put.url, headers: put.headers },
+      ...(posterPut
+        ? {
+            poster: {
+              method: 'PUT' as const,
+              url: posterPut.url,
+              headers: posterPut.headers,
+            },
+          }
+        : {}),
     };
   }
 
@@ -152,8 +186,10 @@ export class StoriesService {
         id: true,
         identityId: true,
         status: true,
+        mediaType: true,
         mediaKey: true,
         posterKey: true,
+        posterSizeBytes: true,
         mediaContentType: true,
         mediaSizeBytes: true,
         expiresAt: true,
@@ -168,7 +204,9 @@ export class StoriesService {
       throw new NotFoundException('القصة غير موجودة');
     }
     if (story.status === 'ACTIVE') return this.authorView(id, now);
-    if (story.status === 'FAILED') throw this.invalidMedia(story.failureReason);
+    if (story.status === 'FAILED') {
+      throw this.invalidMedia(story.failureReason, story.mediaType);
+    }
     if (story.expiresAt <= now) {
       throw new GoneException({
         statusCode: 410,
@@ -182,11 +220,17 @@ export class StoriesService {
     await this.assertWithinLimits(this.prisma, identityId, now);
     if (dto.propertyId) await this.assertOwnListing(dto.propertyId, identityId);
 
-    const check = await this.media.checkImage(story);
+    const check =
+      story.mediaType === 'VIDEO'
+        ? await this.media.checkVideo(story)
+        : await this.media.checkImage(story);
     if (!check.ok && check.missing) {
       throw new ConflictException({
         statusCode: 409,
-        message: 'لم يكتمل رفع الصورة بعد',
+        message:
+          story.mediaType === 'VIDEO'
+            ? 'لم يكتمل رفع الفيديو بعد'
+            : 'لم يكتمل رفع الصورة بعد',
         code: 'STORY_UPLOAD_INCOMPLETE',
       });
     }
@@ -197,7 +241,7 @@ export class StoriesService {
       });
       // Now if possible; otherwise the cleanup retries until it succeeds
       await this.deleteMediaNow(id, this.media.keysOf(story), now);
-      throw this.invalidMedia(check.reason);
+      throw this.invalidMedia(check.reason, story.mediaType);
     }
 
     const caption = dto.caption?.trim() || null;
@@ -213,6 +257,7 @@ export class StoriesService {
           expiresAt: new Date(now.getTime() + STORY_LIFETIME_MS),
           width: check.width,
           height: check.height,
+          durationMs: check.durationMs ?? null,
           caption,
           propertyId: dto.propertyId ?? null,
         },
@@ -569,10 +614,17 @@ export class StoriesService {
     }
   }
 
-  private invalidMedia(reason: string | null): UnprocessableEntityException {
+  private invalidMedia(
+    reason: string | null,
+    mediaType: 'IMAGE' | 'VIDEO' = 'IMAGE',
+  ): UnprocessableEntityException {
     return new UnprocessableEntityException({
       statusCode: 422,
-      message: 'الملف المرفوع غير صالح، يرجى اختيار صورة أخرى',
+      message:
+        mediaType === 'VIDEO'
+          ? (VIDEO_REFUSALS[reason ?? ''] ??
+            'الفيديو المرفوع غير صالح، يرجى اختيار فيديو آخر')
+          : 'الملف المرفوع غير صالح، يرجى اختيار صورة أخرى',
       code: 'STORY_MEDIA_INVALID',
       reason,
     });
