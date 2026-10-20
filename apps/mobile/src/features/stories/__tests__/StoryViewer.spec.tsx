@@ -42,6 +42,17 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
+// The player itself is tested in StoryVideo.spec; here, what the viewer
+// tells it and does with its signals
+let mockVideo: Record<string, unknown> | null = null;
+jest.mock('../components/StoryVideo', () => {
+  const mockReact = jest.requireActual<typeof import('react')>('react');
+  return (props: Record<string, unknown>) => {
+    mockVideo = props;
+    return mockReact.createElement('StoryVideo', { testID: 'story-video', ...props });
+  };
+});
+
 jest.mock('@/shared/api/stories.service', () => ({
   storiesService: { recordViews: jest.fn(), report: jest.fn(), remove: jest.fn() },
 }));
@@ -140,7 +151,9 @@ const loadImage = (screen: { getByTestId: (id: string) => unknown }) =>
 
 describe('StoryViewer', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    // Only the clocks are fake: on Node 22 (CI) React's scheduled work runs
+    // on setImmediate, and faking it left render() waiting forever
+    jest.useFakeTimers({ doNotFake: ['setImmediate', 'queueMicrotask', 'nextTick'] });
     jest.clearAllMocks();
     mockIdentityId = 'viewer-1';
     mockAuthors = [
@@ -369,6 +382,94 @@ describe('StoryViewer', () => {
       mockMine.data = { stories: [] };
       await render(<StoryViewer authorId="co-me" source="mine" />);
       expect(mockRouter.back).toHaveBeenCalled();
+    });
+  });
+
+  describe('video stories', () => {
+    const clip = (id: string, over: Partial<ViewerStory> = {}) =>
+      story(id, {
+        mediaType: 'VIDEO',
+        mediaUrl: `https://s3.test/${id}.mp4`,
+        posterUrl: `https://s3.test/${id}-poster.jpg`,
+        durationMs: 12_000,
+        ...over,
+      });
+    const ready = () =>
+      act(() => {
+        (mockVideo?.onReady as () => void)();
+      });
+
+    beforeEach(() => {
+      mockVideo = null;
+      mockAuthors = [author('a1', [clip('v1'), story('s2')])];
+    });
+
+    it('plays the video with its poster, and only once it is ready', async () => {
+      const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+      expect(screen.queryByTestId('story-image')).toBeNull();
+      expect(mockVideo).toMatchObject({
+        url: 'https://s3.test/v1.mp4',
+        posterUrl: 'https://s3.test/v1-poster.jpg',
+        playing: false,
+      });
+      await ready();
+      expect(mockVideo?.playing).toBe(true);
+    });
+
+    it('lasts as long as the video (not a photo\'s 5 s), then moves on', async () => {
+      const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+      await ready();
+      await act(() => jest.advanceTimersByTimeAsync(11_000));
+      expect(screen.getByTestId('story-video')).toBeTruthy();
+      expect(screen.queryByTestId('story-image')).toBeNull();
+      await act(() => jest.advanceTimersByTimeAsync(1100));
+      expect(screen.queryByTestId('story-video')).toBeNull();
+      expect(screen.getByTestId('story-caption')).toHaveTextContent('caption s2');
+    });
+
+    it('holding pauses the video with the clock', async () => {
+      const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+      await ready();
+      await act(() => {
+        fireEvent(screen.getByTestId(`story-tap-${I18nManager.isRTL ? 'right' : 'left'}`), 'longPress');
+      });
+      expect(mockVideo?.playing).toBe(false);
+    });
+
+    it('waiting for the network stops the clock and the view count', async () => {
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      await ready();
+      await act(() => {
+        (mockVideo?.onWaiting as () => void)();
+      });
+      expect(mockVideo?.playing).toBe(false);
+      await act(() => jest.advanceTimersByTimeAsync(STORY_VIEW_AFTER_MS + 2000));
+      expect(mockMarkViewed).not.toHaveBeenCalled();
+    });
+
+    it('counts as viewed after a second of playing', async () => {
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      await act(() => jest.advanceTimersByTimeAsync(STORY_VIEW_AFTER_MS + 500));
+      // Not playing yet: not seen
+      expect(mockMarkViewed).not.toHaveBeenCalled();
+      await ready();
+      await act(() => jest.advanceTimersByTimeAsync(STORY_VIEW_AFTER_MS));
+      expect(mockMarkViewed).toHaveBeenCalledWith('v1');
+    });
+
+    it('a video error fetches fresh links, like a photo', async () => {
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      await act(() => {
+        (mockVideo?.onError as () => void)();
+      });
+      expect(mockRefetch).toHaveBeenCalled();
+    });
+
+    it("the next video's poster is prepared, not the video", async () => {
+      const { Image } = require('expo-image');
+      mockAuthors = [author('a1', [story('s0'), clip('v2')])];
+      await render(<StoryViewer authorId="a1" source="feed" />);
+      expect(Image.prefetch).toHaveBeenCalledWith(['https://s3.test/v2-poster.jpg'], 'memory');
     });
   });
 });

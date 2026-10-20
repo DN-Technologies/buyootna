@@ -17,6 +17,32 @@ export const STORY_IMAGE_TYPE_LIST = Object.keys(
 ) as StoryImageType[];
 
 export const STORY_IMAGE_MAX_BYTES = 10 * MB;
+
+/** Video types a story accepts, with the file extension each is stored as. */
+export const STORY_VIDEO_TYPES = {
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+} as const;
+export type StoryVideoType = keyof typeof STORY_VIDEO_TYPES;
+export const STORY_VIDEO_TYPE_LIST = Object.keys(
+  STORY_VIDEO_TYPES,
+) as StoryVideoType[];
+export type StoryMediaContentType = StoryImageType | StoryVideoType;
+
+export const STORY_VIDEO_MAX_BYTES = 50 * MB;
+// 30 s, with room for the encoder's rounding
+export const STORY_VIDEO_MAX_MS = 30_500;
+export const STORY_VIDEO_MAX_SIDE = 1920;
+// ffprobe's codec names
+export const STORY_VIDEO_CODECS = ['h264', 'hevc'] as const;
+export const STORY_AUDIO_CODECS = ['aac'] as const;
+// A video story's still frame, shown while the video loads
+export const STORY_POSTER_TYPE = 'image/jpeg';
+export const STORY_POSTER_MAX_BYTES = MB;
+// ffprobe runs on a downloaded copy, never on a URL
+export const STORY_PROBE_TIMEOUT_MS = 15_000;
+export const STORY_PROBE_MAX_OUTPUT = MB;
+export const STORY_PROBE_MAX_CONCURRENT = 2;
 // Large enough for 48 MP phone photos (8064 × 6048)
 export const STORY_IMAGE_MAX_SIDE = 8192;
 // Bounds the decoded size on phones (about 200 MB of RGBA at most): a

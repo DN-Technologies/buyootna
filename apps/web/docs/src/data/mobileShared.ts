@@ -9,6 +9,43 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-stories-video",
+      title: {
+        en: "Stories (phase 5, not released): posting and watching video stories",
+        ar: "القصص (المرحلة 5، غير منشورة): نشر قصص الفيديو ومشاهدتها",
+      },
+      priority: "P1",
+      story: {
+        en: "In the composer, «اختر من المعرض» now offers photos and videos (at most 30 s; iOS exports them as 720p H.264), and «الكاميرا» can record up to 30 s. A picked video is checked on the phone first (MP4 or MOV, up to 50 MB, up to 30 s), then its first frame is saved as the poster (made again at a lower quality if over 1 MB). The preview shows the poster with a video badge and the length; «نشر القصة» uploads the poster, then the video with the percentage, then publishes; refusals from the server are shown as it words them (e.g. too long). In the viewer, a video story shows its poster until the video is ready, then plays with sound; the story lasts as long as the video, its bar follows playback, holding pauses it, waiting for the network stops the clock, and it counts as viewed after a second of playing. Leaving the story or the viewer stops the video and its sound at once. Videos are streamed and never kept on the phone; the next video's poster is preloaded in memory.",
+        ar: "في شاشة النشر، يعرض «اختر من المعرض» الآن الصور والفيديو (حتى 30 ثانية؛ ويصدّره iOS بدقة 720 وH.264)، ويمكن لـ «الكاميرا» التسجيل حتى 30 ثانية. يُفحص الفيديو المختار على الهاتف أولاً (MP4 أو MOV، حتى 50 ميجابايت، حتى 30 ثانية)، ثم يُحفظ أول إطار منه غلافاً (ويُعاد بجودة أقل إن تجاوز 1 ميجابايت). تعرض المعاينة الغلاف مع شارة فيديو والمدة؛ ويرفع «نشر القصة» الغلاف ثم الفيديو مع النسبة ثم ينشر؛ وتُعرض أسباب رفض الخادم كما يصوغها (مثل تجاوز المدة). في العارض، تعرض قصة الفيديو غلافها حتى يجهز الفيديو ثم يُشغَّل بالصوت؛ وتستمر القصة بطول الفيديو، ويتبع شريطها التشغيل، والضغط المطوّل يوقفه مؤقتاً، وانتظار الشبكة يوقف العدّاد، وتُحتسب مشاهدة بعد ثانية من التشغيل. مغادرة القصة أو العارض توقف الفيديو وصوته فوراً. يُبث الفيديو ولا يُحفظ على الهاتف أبداً؛ ويُحمَّل غلاف الفيديو التالي مسبقاً في الذاكرة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A 30 s video posts and plays for 30 s, then moves on.",
+          "A 31 s, over-50 MB or WebM video is refused on the phone before uploading.",
+          "Holding a video pauses picture, sound and bar together.",
+          "Closing the viewer mid-video leaves no sound playing.",
+        ],
+        ar: [
+          "فيديو 30 ثانية يُنشر ويُشغَّل 30 ثانية ثم ينتقل.",
+          "فيديو 31 ثانية أو أكبر من 50 ميجابايت أو WebM يُرفض على الهاتف قبل الرفع.",
+          "الضغط المطوّل على الفيديو يوقف الصورة والصوت والشريط معاً.",
+          "إغلاق العارض أثناء الفيديو لا يترك صوتاً يعمل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Not runnable on a shared environment until the API image with ffmpeg is deployed.",
+          "Locally as a seeded office: + › pick a short phone video › نشر القصة; as dev@youssef.app open it: poster, then playback with sound; hold, release; swipe down mid-video and check the sound stops.",
+        ],
+        ar: [
+          "لا يمكن تشغيله على بيئة مشتركة حتى تُنشر صورة الـ API مع ffmpeg.",
+          "محلياً كمكتب تجريبي: + › اختر فيديو قصيراً من الهاتف › نشر القصة؛ وكـ dev@youssef.app افتحه: الغلاف ثم التشغيل بالصوت؛ اضغط مطوّلاً ثم اترك؛ واسحب للأسفل أثناء الفيديو وتأكد من توقف الصوت.",
+        ],
+      },
+      updatedIn: "feat/stories-phase5",
+    },
+    {
       id: "mobile-stories-posting",
       title: {
         en: "Stories (phase 4, not released): posting a story, «قصتك», your viewers and deleting",

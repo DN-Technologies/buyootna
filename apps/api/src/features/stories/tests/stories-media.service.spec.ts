@@ -14,6 +14,7 @@ describe('StoriesMediaService', () => {
     presignPut: jest.fn(),
     headObject: jest.fn(),
     getRange: jest.fn(),
+    downloadToFile: jest.fn(),
     signedMediaUrl: jest.fn(
       (key: string, ttl: number) => `https://s3.example/${key}?ttl=${ttl}`,
     ),
@@ -196,6 +197,143 @@ describe('StoriesMediaService', () => {
       );
       expect(storage.signedMediaUrl).toHaveBeenCalledWith(KEY, 300);
       expect(links.urlExpiresAt).toEqual(new Date('2026-10-20T12:05:00.000Z'));
+    });
+  });
+
+  describe('checkVideo', () => {
+    const VIDEO_KEY = `stories/${AUTHOR}/${STORY}/media.mp4`;
+    const POSTER_KEY = `stories/${AUTHOR}/${STORY}/poster.jpg`;
+    const video = {
+      id: STORY,
+      mediaKey: VIDEO_KEY,
+      mediaContentType: 'video/mp4',
+      mediaSizeBytes: 5_000_000,
+      posterKey: POSTER_KEY,
+      posterSizeBytes: jpg.length,
+    };
+    const heads: Record<string, unknown> = {};
+    const probe = jest.fn();
+
+    beforeEach(() => {
+      heads[VIDEO_KEY] = {
+        contentLength: 5_000_000,
+        contentType: 'video/mp4',
+        metadata: { 'story-id': STORY },
+      };
+      heads[POSTER_KEY] = {
+        contentLength: jpg.length,
+        contentType: 'image/jpeg',
+        metadata: { 'story-id': STORY },
+      };
+      storage.headObject.mockImplementation((key: string) =>
+        Promise.resolve(heads[key] ?? null),
+      );
+      storage.downloadToFile.mockResolvedValue(undefined);
+      probe.mockResolvedValue({
+        ok: true,
+        width: 720,
+        height: 1280,
+        durationMs: 29_800,
+      });
+      service.probeVideo = probe;
+    });
+
+    it('a good video: downloaded to a temp file, probed, measured', async () => {
+      await expect(service.checkVideo(video)).resolves.toEqual({
+        ok: true,
+        width: 720,
+        height: 1280,
+        durationMs: 29_800,
+      });
+      const [key, path, max] = storage.downloadToFile.mock.calls[0] as [
+        string,
+        string,
+        number,
+      ];
+      expect(key).toBe(VIDEO_KEY);
+      expect(max).toBe(5_000_000);
+      expect(probe).toHaveBeenCalledWith(path);
+      // The copy is gone afterwards
+      const { existsSync } = jest.requireActual<typeof import('fs')>('fs');
+      expect(existsSync(path)).toBe(false);
+    });
+
+    it('either file not there yet: missing, nothing downloaded', async () => {
+      delete heads[POSTER_KEY];
+      await expect(service.checkVideo(video)).resolves.toEqual({
+        ok: false,
+        missing: true,
+      });
+      expect(storage.downloadToFile).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['video size', VIDEO_KEY, { contentLength: 1 }, 'size_mismatch'],
+      [
+        'video type',
+        VIDEO_KEY,
+        { contentType: 'video/quicktime' },
+        'type_mismatch',
+      ],
+      [
+        'video owner',
+        VIDEO_KEY,
+        { metadata: { 'story-id': 'other' } },
+        'metadata_mismatch',
+      ],
+      ['poster size', POSTER_KEY, { contentLength: 1 }, 'poster_size_mismatch'],
+      [
+        'poster owner',
+        POSTER_KEY,
+        { metadata: {} },
+        'poster_metadata_mismatch',
+      ],
+    ])(
+      'a wrong %s fails before downloading',
+      async (_l, key, change, reason) => {
+        heads[key] = { ...(heads[key] as object), ...change };
+        await expect(service.checkVideo(video)).resolves.toEqual({
+          ok: false,
+          missing: false,
+          reason,
+        });
+        expect(storage.downloadToFile).not.toHaveBeenCalled();
+      },
+    );
+
+    it('a poster that is not really a JPEG fails', async () => {
+      storage.getRange.mockResolvedValue(Buffer.from('not an image at all'));
+      await expect(service.checkVideo(video)).resolves.toEqual({
+        ok: false,
+        missing: false,
+        reason: 'poster_not_jpeg',
+      });
+    });
+
+    it("ffprobe's refusal is the story's reason, and the copy is removed", async () => {
+      probe.mockResolvedValue({ ok: false, reason: 'too_long' });
+      await expect(service.checkVideo(video)).resolves.toEqual({
+        ok: false,
+        missing: false,
+        reason: 'too_long',
+      });
+      const [, path] = storage.downloadToFile.mock.calls[0] as [
+        string,
+        string,
+        number,
+      ];
+      const { existsSync } = jest.requireActual<typeof import('fs')>('fs');
+      expect(existsSync(path)).toBe(false);
+    });
+
+    it('no ffprobe on the server: 503, the story is left pending', async () => {
+      const { VideoProbeUnavailableError } = jest.requireActual<
+        typeof import('../utils/video-probe')
+      >('../utils/video-probe');
+      probe.mockRejectedValue(new VideoProbeUnavailableError('missing'));
+      await expect(service.checkVideo(video)).rejects.toMatchObject({
+        status: 503,
+      });
     });
   });
 });

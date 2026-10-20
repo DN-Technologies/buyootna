@@ -27,6 +27,12 @@ export class StoryUploadSlotDto {
 
   @ApiProperty({ type: StoryUploadTargetDto })
   media: StoryUploadTargetDto;
+
+  @ApiPropertyOptional({
+    type: StoryUploadTargetDto,
+    description: 'Video only: where the poster goes',
+  })
+  poster?: StoryUploadTargetDto;
 }
 
 export class StoryPropertyLinkDto {
