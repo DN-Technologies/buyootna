@@ -48,12 +48,23 @@ jest.mock('@/shared/hooks/providers/useOfficeReport', () => ({
 }));
 
 const mockUseOfficeDetails = useOfficeDetails as jest.Mock;
+// The story ring has its own spec (useProviderStoryRing)
+let mockStoryRing: { hasUnseen: boolean; onPress: jest.Mock } | null = null;
+const mockStoryRingFor = jest.fn();
+jest.mock('@/features/stories/hooks/useProviderStoryRing', () => ({
+  useProviderStoryRing: (id: string | undefined) => {
+    mockStoryRingFor(id);
+    return mockStoryRing;
+  },
+}));
+
 const mockUseOfficeReviews = useOfficeReviews as jest.Mock;
 const mockUseOfficeReport = useOfficeReport as jest.Mock;
 
 describe('OfficeProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStoryRing = null;
 
     mockUseOfficeReport.mockReturnValue({
       reportSheetRef: { current: null },
@@ -281,6 +292,49 @@ describe('OfficeProfileScreen', () => {
       await fireEvent.press(getAllByText('الخدمات')[1]);
 
       expect(getByTestId('office-service-s-1')).toBeTruthy();
+    });
+  });
+
+  describe('story ring on the logo', () => {
+    beforeEach(() => {
+      mockUseOfficeDetails.mockReturnValue({
+        office: { id: 'off-ident-1', name: 'مكتب الرواد العقاري', userId: 'user-off-1', services: [], properties: [] },
+        isLoading: false,
+        isError: false,
+        services: [],
+        properties: [],
+        workingHours: [],
+        targetUserId: 'user-off-1',
+      });
+    });
+
+    it('asks for the profile\'s stories by its identity id', async () => {
+      await render(<OfficeProfileScreen />);
+      expect(mockStoryRingFor).toHaveBeenLastCalledWith('off-ident-1');
+    });
+
+    it('without stories the logo is a plain, inert badge', async () => {
+      const screen = await render(<OfficeProfileScreen />);
+      const logo = screen.getByTestId('profile-logo');
+      expect(logo.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
+    });
+
+    it('with unseen stories it has a gold ring and opens them', async () => {
+      mockStoryRing = { hasUnseen: true, onPress: jest.fn() };
+      const screen = await render(<OfficeProfileScreen />);
+      const logo = screen.getByTestId('profile-logo');
+      expect(logo.props.accessibilityState).toMatchObject({ disabled: false, selected: true });
+      await fireEvent.press(logo);
+      expect(mockStoryRing.onPress).toHaveBeenCalled();
+    });
+
+    it('once all are seen the ring is grey', async () => {
+      mockStoryRing = { hasUnseen: false, onPress: jest.fn() };
+      const screen = await render(<OfficeProfileScreen />);
+      expect(screen.getByTestId('profile-logo').props.accessibilityState).toMatchObject({
+        disabled: false,
+        selected: false,
+      });
     });
   });
 });

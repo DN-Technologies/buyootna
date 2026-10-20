@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 import OfficeAboutTab from '@/shared/components/office/OfficeAboutTab';
 import OfficeBottomBar from '@/shared/components/office/OfficeBottomBar';
 import OfficeHeaderCard from '@/shared/components/office/OfficeHeaderCard';
@@ -49,6 +50,8 @@ export default function OfficeProfileScreen() {
     workingHours,
     targetUserId,
   } = useOfficeDetails(officeId);
+  // Its live stories, as a ring on the logo (office.id is the identity)
+  const storyRing = useProviderStoryRing(office?.id);
 
   const {
     reviewSummary,
@@ -107,7 +110,7 @@ export default function OfficeProfileScreen() {
           >
             <View className="px-5 pt-4">
               {/* Header Info Card */}
-              <OfficeHeaderCard office={office} />
+              <OfficeHeaderCard office={office} logoRing={storyRing} />
 
               {/* Tab Navigation Switcher */}
               <OfficeTabsSwitcher

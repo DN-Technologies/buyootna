@@ -42,12 +42,23 @@ jest.mock('@/shared/hooks/providers/useCompanyReport', () => ({
 }));
 
 const mockUseCompanyDetails = useCompanyDetails as jest.Mock;
+// The story ring has its own spec (useProviderStoryRing)
+let mockStoryRing: { hasUnseen: boolean; onPress: jest.Mock } | null = null;
+const mockStoryRingFor = jest.fn();
+jest.mock('@/features/stories/hooks/useProviderStoryRing', () => ({
+  useProviderStoryRing: (id: string | undefined) => {
+    mockStoryRingFor(id);
+    return mockStoryRing;
+  },
+}));
+
 const mockUseCompanyReviews = useCompanyReviews as jest.Mock;
 const mockUseCompanyReport = useCompanyReport as jest.Mock;
 
 describe('CompanyProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStoryRing = null;
 
     mockUseCompanyReport.mockReturnValue({
       reportSheetRef: { current: null },
@@ -146,5 +157,46 @@ describe('CompanyProfileScreen', () => {
     // Switch to Gallery tab
     fireEvent.press(getByText('المعرض'));
     expect(await findByText('فيلا الرياض')).toBeTruthy();
+  });
+
+  describe('story ring on the logo', () => {
+    beforeEach(() => {
+      mockUseCompanyDetails.mockReturnValue({
+        company: { id: 'comp-ident-1', name: 'شركة البناء الحديث', userId: 'user-1', services: [], projects: [] },
+        isLoading: false,
+        services: [],
+        projects: [],
+        targetUserId: 'user-1',
+      });
+    });
+
+    it('asks for the profile\'s stories by its identity id', async () => {
+      await render(<CompanyProfileScreen />);
+      expect(mockStoryRingFor).toHaveBeenLastCalledWith('comp-ident-1');
+    });
+
+    it('without stories the logo is a plain, inert badge', async () => {
+      const screen = await render(<CompanyProfileScreen />);
+      const logo = screen.getByTestId('profile-logo');
+      expect(logo.props.accessibilityState).toMatchObject({ disabled: true, selected: false });
+    });
+
+    it('with unseen stories it has a gold ring and opens them', async () => {
+      mockStoryRing = { hasUnseen: true, onPress: jest.fn() };
+      const screen = await render(<CompanyProfileScreen />);
+      const logo = screen.getByTestId('profile-logo');
+      expect(logo.props.accessibilityState).toMatchObject({ disabled: false, selected: true });
+      await fireEvent.press(logo);
+      expect(mockStoryRing.onPress).toHaveBeenCalled();
+    });
+
+    it('once all are seen the ring is grey', async () => {
+      mockStoryRing = { hasUnseen: false, onPress: jest.fn() };
+      const screen = await render(<CompanyProfileScreen />);
+      expect(screen.getByTestId('profile-logo').props.accessibilityState).toMatchObject({
+        disabled: false,
+        selected: false,
+      });
+    });
   });
 });

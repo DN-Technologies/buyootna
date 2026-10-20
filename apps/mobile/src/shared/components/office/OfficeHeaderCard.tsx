@@ -12,9 +12,14 @@ import { openUrlThrottled } from '@/shared/utils/openUrl';
 
 interface OfficeHeaderCardProps {
   office: OfficeHeaderData;
+  // Live stories: the logo gets a ring (gold while unseen) and opens them
+  logoRing?: { hasUnseen: boolean; onPress: () => void } | null;
 }
 
-export default function OfficeHeaderCard({ office }: OfficeHeaderCardProps) {
+export default function OfficeHeaderCard({
+  office,
+  logoRing,
+}: OfficeHeaderCardProps) {
   const activity = formatPresence({
     isOnline: !!office.isActiveNow,
     lastSeenAt: office.lastSeenAt ?? null,
@@ -25,6 +30,13 @@ export default function OfficeHeaderCard({ office }: OfficeHeaderCardProps) {
       openUrlThrottled(url).catch(() => {});
     }
   };
+
+  // White normally; gold while it has unseen stories, grey once seen
+  const ring = !logoRing
+    ? 'border-2 border-white'
+    : logoRing.hasUnseen
+      ? 'border-[3px] border-[#C99A52]'
+      : 'border-[3px] border-[#C4C9CF]';
 
   return (
     <View className="mb-4 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
@@ -39,7 +51,16 @@ export default function OfficeHeaderCard({ office }: OfficeHeaderCardProps) {
         ) : null}
 
         {/* Office Logo Badge */}
-        <View className="absolute -bottom-8 left-5 h-16 w-16 items-center justify-center overflow-hidden rounded-2xl border-2 border-white bg-[#15304D] shadow-sm">
+        <TouchableOpacity
+          testID="profile-logo"
+          disabled={!logoRing}
+          onPress={logoRing?.onPress}
+          activeOpacity={0.8}
+          accessibilityRole={logoRing ? 'button' : undefined}
+          accessibilityState={{ disabled: !logoRing, selected: !!logoRing?.hasUnseen }}
+          accessibilityLabel={logoRing ? `قصص ${office.name}` : undefined}
+          className={`absolute -bottom-8 left-5 h-16 w-16 items-center justify-center overflow-hidden rounded-2xl ${ring} bg-[#15304D] shadow-sm`}
+        >
           {office.logoUrl ? (
             <ExpoImage
               source={{ uri: office.logoUrl }}
@@ -49,7 +70,7 @@ export default function OfficeHeaderCard({ office }: OfficeHeaderCardProps) {
           ) : (
             <Feather name="home" size={24} color="#FFFFFF" />
           )}
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* ── 2. Office Identity Info ── */}

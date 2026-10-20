@@ -36,9 +36,14 @@ export interface CompanyHeaderData {
 
 interface CompanyHeaderCardProps {
   company: CompanyHeaderData;
+  // Live stories: the logo gets a ring (gold while unseen) and opens them
+  logoRing?: { hasUnseen: boolean; onPress: () => void } | null;
 }
 
-export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
+export default function CompanyHeaderCard({
+  company,
+  logoRing,
+}: CompanyHeaderCardProps) {
   const activity = formatPresence({
     isOnline: !!company.isActiveNow,
     lastSeenAt: company.lastSeenAt ?? null,
@@ -49,6 +54,13 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
       openUrlThrottled(url).catch(() => {});
     }
   };
+
+  // White normally; gold while it has unseen stories, grey once seen
+  const ring = !logoRing
+    ? 'border-2 border-white'
+    : logoRing.hasUnseen
+      ? 'border-[3px] border-[#C99A52]'
+      : 'border-[3px] border-[#C4C9CF]';
 
   return (
     <View className="mb-4 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
@@ -63,7 +75,16 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
         ) : null}
 
         {/* Company Logo Badge */}
-        <View className="absolute -bottom-8 left-5 h-16 w-16 items-center justify-center rounded-2xl border-2 border-white bg-[#111111] overflow-hidden shadow-sm">
+        <TouchableOpacity
+          testID="profile-logo"
+          disabled={!logoRing}
+          onPress={logoRing?.onPress}
+          activeOpacity={0.8}
+          accessibilityRole={logoRing ? 'button' : undefined}
+          accessibilityState={{ disabled: !logoRing, selected: !!logoRing?.hasUnseen }}
+          accessibilityLabel={logoRing ? `قصص ${company.name}` : undefined}
+          className={`absolute -bottom-8 left-5 h-16 w-16 items-center justify-center rounded-2xl ${ring} bg-[#111111] overflow-hidden shadow-sm`}
+        >
           {company.logoUrl ? (
             <ExpoImage
               source={{ uri: company.logoUrl }}
@@ -73,7 +94,7 @@ export default function CompanyHeaderCard({ company }: CompanyHeaderCardProps) {
           ) : (
             <Feather name="briefcase" size={24} color="#FFFFFF" />
           )}
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* ── 2. Company Identity Info ── */}
