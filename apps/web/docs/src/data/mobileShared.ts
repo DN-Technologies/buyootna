@@ -11,8 +11,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-profiles",
       title: {
-        en: "Stories (phase 6, not released): story rings on company and office profiles, fresher links",
-        ar: "القصص (المرحلة 6، غير منشورة): حلقات القصص في ملفات الشركات والمكاتب، وروابط أحدث",
+        en: "Stories (phase 6): story rings on company and office profiles, fresher links",
+        ar: "القصص (المرحلة 6): حلقات القصص في ملفات الشركات والمكاتب، وروابط أحدث",
       },
       priority: "P2",
       story: {
@@ -35,11 +35,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Locally as dev@youssef.app: open a seeded company's profile from search › gold ring › tap › watch › back › grey ring.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "محلياً كـ dev@youssef.app: افتح ملف شركة تجريبية من البحث › حلقة ذهبية › اضغط › شاهد › ارجع › حلقة رمادية.",
         ],
       },
@@ -48,8 +48,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-video",
       title: {
-        en: "Stories (phase 5, not released): posting and watching video stories",
-        ar: "القصص (المرحلة 5، غير منشورة): نشر قصص الفيديو ومشاهدتها",
+        en: "Stories (phase 5): posting and watching video stories",
+        ar: "القصص (المرحلة 5): نشر قصص الفيديو ومشاهدتها",
       },
       priority: "P1",
       story: {
@@ -72,11 +72,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment until the API image with ffmpeg is deployed.",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Locally as a seeded office: + › pick a short phone video › نشر القصة; as dev@youssef.app open it: poster, then playback with sound; hold, release; swipe down mid-video and check the sound stops.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة حتى تُنشر صورة الـ API مع ffmpeg.",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "محلياً كمكتب تجريبي: + › اختر فيديو قصيراً من الهاتف › نشر القصة؛ وكـ dev@youssef.app افتحه: الغلاف ثم التشغيل بالصوت؛ اضغط مطوّلاً ثم اترك؛ واسحب للأسفل أثناء الفيديو وتأكد من توقف الصوت.",
         ],
       },
@@ -85,8 +85,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-posting",
       title: {
-        en: "Stories (phase 4, not released): posting a story, «قصتك», your viewers and deleting",
-        ar: "القصص (المرحلة 4، غير منشورة): نشر قصة، و«قصتك»، ومشاهدوك، والحذف",
+        en: "Stories (phase 4): posting a story, «قصتك», your viewers and deleting",
+        ar: "القصص (المرحلة 4): نشر قصة، و«قصتك»، ومشاهدوك، والحذف",
       },
       priority: "P1",
       story: {
@@ -113,11 +113,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "Locally as a seeded office: + › pick a photo › caption › link the listing › نشر القصة; as dev@youssef.app the story appears; back as the office, «المشاهدون · 1» lists dev; ⋮ › حذف removes it.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "محلياً كمكتب تجريبي: + › اختر صورة › وصف › اربط الإعلان › نشر القصة؛ وكـ dev@youssef.app تظهر القصة؛ وبالعودة كمكتب تعرض «المشاهدون · 1» حساب dev؛ و⋮ › حذف يزيلها.",
         ],
       },
@@ -126,8 +126,8 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-stories-viewer",
       title: {
-        en: "Stories (phase 3, not released): the stories tray and the photo viewer",
-        ar: "القصص (المرحلة 3، غير منشورة): شريط القصص وعارض الصور",
+        en: "Stories (phase 3): the stories tray and the photo viewer",
+        ar: "القصص (المرحلة 3): شريط القصص وعارض الصور",
       },
       priority: "P1",
       story: {
@@ -154,11 +154,11 @@ export const mobileShared: DocSection = {
       },
       testScenarios: {
         en: [
-          "Not runnable on a shared environment yet (Stories isn't deployed; posting comes in phase 4).",
+          "Runnable on production (Stories released on 2026-10-20).",
           "With stories seeded for two offices: open the tray's first ring, watch both stories, check the ring turns grey and GET /stories/:id/viewers lists you once.",
         ],
         ar: [
-          "لا يمكن تشغيله على بيئة مشتركة بعد (القصص غير منشورة؛ والنشر في المرحلة 4).",
+          "يمكن تشغيله على الإنتاج (نُشرت القصص في 2026-10-20).",
           "مع قصص لمكتبين: افتح أول حلقة في الشريط، وشاهد القصتين، وتحقق أن الحلقة أصبحت رمادية وأن GET /stories/:id/viewers يعرضك مرة واحدة.",
         ],
       },
