@@ -13,6 +13,7 @@ import { ReactionType } from '@prisma/client';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import { OptionalJwtGuard } from '../../core/guards/optional-jwt.guard';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { GetReviewsDto } from './dto/get-reviews.dto';
@@ -52,6 +53,9 @@ export class ReviewsController {
     );
   }
 
+  // Public; signed in, the caller's reactions show and reviews by accounts
+  // blocked either way are left out
+  @UseGuards(OptionalJwtGuard)
   @Get('users/:targetUserId/reviews')
   @ApiOperation({ summary: 'List reviews for a target user, paginated' })
   @ApiParam({ name: 'targetUserId', description: 'Target user ID' })
@@ -66,6 +70,7 @@ export class ReviewsController {
       targetUserId,
       reqUser?.identityId,
       query,
+      reqUser?.userId,
     );
   }
 

@@ -35,6 +35,11 @@ describe('a chat about a quote request', () => {
       },
     };
     const prisma = {
+      // No blocks between the two accounts
+      userBlock: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       identity: {
         findUnique: jest
           .fn()

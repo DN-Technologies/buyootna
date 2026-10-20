@@ -43,6 +43,26 @@ jest.mock('@/shared/hooks/providers/useCompanyReport', () => ({
 
 const mockUseCompanyDetails = useCompanyDetails as jest.Mock;
 // The story ring has its own spec (useProviderStoryRing)
+// Blocking has its own spec (useBlocks); here, what the menu offers
+const mockAskToBlock = jest.fn();
+const mockAskToUnblock = jest.fn();
+let mockBlocked: boolean | null = false;
+jest.mock('@/shared/hooks/blocks/useBlocks', () => ({
+  useBlockStatus: () => mockBlocked,
+  useBlockFlow: () => ({
+    askToBlock: mockAskToBlock,
+    askToUnblock: mockAskToUnblock,
+  }),
+}));
+jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+type AlertButton = { text: string; onPress?: () => void };
+const alertButtons = (): AlertButton[] => {
+  const { showAlert } = jest.requireMock<{ showAlert: jest.Mock }>(
+    '@/shared/utils/alert',
+  );
+  const calls = showAlert.mock.calls;
+  return calls[calls.length - 1][2] as AlertButton[];
+};
 let mockStoryRing: { hasUnseen: boolean; onPress: jest.Mock } | null = null;
 const mockStoryRingFor = jest.fn();
 jest.mock('@/features/stories/hooks/useProviderStoryRing', () => ({
@@ -59,6 +79,7 @@ describe('CompanyProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStoryRing = null;
+    mockBlocked = false;
 
     mockUseCompanyReport.mockReturnValue({
       reportSheetRef: { current: null },
@@ -197,6 +218,43 @@ describe('CompanyProfileScreen', () => {
         disabled: false,
         selected: false,
       });
+    });
+  });
+
+  describe('blocking from the profile menu', () => {
+    beforeEach(() => {
+      mockUseCompanyDetails.mockReturnValue({
+        company: { id: 'comp-ident-1', name: 'شركة البناء الحديث', userId: 'user-1', services: [], projects: [] },
+        isLoading: false,
+        services: [],
+        projects: [],
+        targetUserId: 'user-1',
+      });
+    });
+
+    it('offers «حظر الشركة», which asks to block the account and its profile', async () => {
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const block = alertButtons().find((b) => b.text === 'حظر الشركة');
+      expect(block).toBeTruthy();
+      block?.onPress?.();
+      expect(mockAskToBlock).toHaveBeenCalledWith(
+        { userId: 'user-1', identityId: 'comp-ident-1' },
+        expect.any(String),
+      );
+    });
+
+    it('once blocked, offers «إلغاء حظر الشركة» instead', async () => {
+      mockBlocked = true;
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const texts = alertButtons().map((b) => b.text);
+      expect(texts).toContain('إلغاء حظر الشركة');
+      expect(texts).not.toContain('حظر الشركة');
+      alertButtons()
+        .find((b) => b.text === 'إلغاء حظر الشركة')
+        ?.onPress?.();
+      expect(mockAskToUnblock).toHaveBeenCalledWith('user-1', expect.any(String));
     });
   });
 });

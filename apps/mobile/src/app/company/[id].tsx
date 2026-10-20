@@ -17,6 +17,7 @@ import CompanyTabsSwitcher, {
 } from '@/shared/components/company/CompanyTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useBlockFlow, useBlockStatus } from '@/shared/hooks/blocks/useBlocks';
 import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
 import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
@@ -40,6 +41,20 @@ export default function CompanyProfileScreen() {
     useCompanyDetails(companyId);
   // Its live stories, as a ring on the logo (company.id is the identity)
   const storyRing = useProviderStoryRing(company?.id);
+  // Block / unblock the account behind the profile (not your own)
+  const blockedByMe = useBlockStatus(company?.userId);
+  const { askToBlock, askToUnblock } = useBlockFlow();
+  const accountId = useAuthStore((state) => state.user?.id);
+  const toggleBlock =
+    company?.userId && company.userId !== accountId
+      ? () =>
+          blockedByMe
+            ? askToUnblock(company.userId, company.name)
+            : askToBlock(
+                { userId: company.userId, identityId: company.id },
+                company.name,
+              )
+      : undefined;
   // The account's own company: its quote button doesn't respond
   const currentUserId = useAuthStore((state) => state.user?.id);
 
@@ -66,6 +81,8 @@ export default function CompanyProfileScreen() {
         <CompanyNavBar
           onBack={() => router.back()}
           onOpenReport={handleOpenReport}
+          onToggleBlock={toggleBlock}
+          blocked={!!blockedByMe}
         />
 
         {isLoading ? (

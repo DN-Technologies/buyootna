@@ -60,6 +60,23 @@ export const VISIBLE_AUTHOR_WHERE = {
   ],
 } satisfies Prisma.IdentityWhereInput;
 
+/**
+ * A visible author, as one account sees it: also not blocked by it, nor
+ * blocking it (Guideline 1.2: a block hides the other's stories).
+ */
+export function visibleAuthorFor(
+  viewerUserId: string,
+): Prisma.IdentityWhereInput {
+  return {
+    ...VISIBLE_AUTHOR_WHERE,
+    user: {
+      ...VISIBLE_AUTHOR_WHERE.user,
+      blocksMade: { none: { blockedUserId: viewerUserId } },
+      blocksReceived: { none: { blockerUserId: viewerUserId } },
+    },
+  };
+}
+
 /** Published and not expired. Every read filters on this, cleanup or not. */
 export function liveStoryWhere(now: Date): Prisma.StoryWhereInput {
   return { status: 'ACTIVE', expiresAt: { gt: now } };

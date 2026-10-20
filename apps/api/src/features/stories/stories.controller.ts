@@ -171,6 +171,9 @@ export class StoriesController {
     @CurrentUser() reqUser: RequestUser,
     @Param('identityId', ParseUUIDPipe) identityId: string,
   ) {
-    return this.stories.findByAuthor(reqUser.identityId, identityId);
+    return this.stories.findByAuthor(
+      { identityId: reqUser.identityId, userId: reqUser.userId },
+      identityId,
+    );
   }
 }

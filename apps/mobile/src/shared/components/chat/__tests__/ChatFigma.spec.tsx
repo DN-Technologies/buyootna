@@ -105,6 +105,36 @@ describe('ChatHeader status', () => {
 
 // QA (iOS): the first and last letters of a message were cut at the edges
 // of its bubble, and the time beside it lost its top
+describe('ChatHeader ⋮ menu', () => {
+  const menu = (over: object = {}) => (
+    <ChatHeader
+      userName="دار العقار الحديث"
+      avatarUrl="https://x/a.jpg"
+      onReportUser={jest.fn()}
+      showMoreMenu
+      setShowMoreMenu={jest.fn()}
+      {...over}
+    />
+  );
+
+  it('offers blocking beside reporting, and closes the menu', async () => {
+    const onBlockUser = jest.fn();
+    const setShowMoreMenu = jest.fn();
+    const { getByTestId, getByText } = await render(
+      menu({ onBlockUser, setShowMoreMenu }),
+    );
+    expect(getByText('الإبلاغ عن المستخدم')).toBeTruthy();
+    await fireEvent.press(getByTestId('chat-block-user'));
+    expect(onBlockUser).toHaveBeenCalled();
+    expect(setShowMoreMenu).toHaveBeenCalledWith(false);
+  });
+
+  it('without a way to block, only reporting shows', async () => {
+    const { queryByTestId } = await render(menu());
+    expect(queryByTestId('chat-block-user')).toBeNull();
+  });
+});
+
 describe('MessageBubble text fits its bubble', () => {
   it.each([[true], [false]])('has no letter spacing and a tall enough line (mine: %s)', async (isMine) => {
     const { getByTestId } = await render(

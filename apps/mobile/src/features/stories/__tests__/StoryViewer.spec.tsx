@@ -61,6 +61,19 @@ jest.mock('@/shared/api/chat.service', () => ({
   chatService: { createConversation: jest.fn() },
 }));
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+const mockAskToBlock = jest.fn();
+jest.mock('@/shared/hooks/blocks/useBlocks', () => ({
+  useBlockFlow: () => ({ askToBlock: mockAskToBlock, askToUnblock: jest.fn() }),
+}));
+
+type AlertButton = { text: string; onPress?: () => void };
+/** Presses one button of the last alert shown (the ⋮ options). */
+const pressAlertButton = (text: string) => {
+  const { showAlert } = require('@/shared/utils/alert');
+  const calls = (showAlert as jest.Mock).mock.calls;
+  const buttons = calls[calls.length - 1][2] as AlertButton[];
+  buttons.find((b) => b.text === text)?.onPress?.();
+};
 
 let mockIdentityId = 'viewer-1';
 let mockAuthors: FeedAuthor[] = [];
@@ -277,6 +290,9 @@ describe('StoryViewer', () => {
     await act(() => {
       fireEvent.press(screen.getByTestId('story-options'));
     });
+    await act(() => {
+      pressAlertButton('إبلاغ عن القصة');
+    });
     expect(present).toHaveBeenCalled();
     await act(() => {
       fireEvent.press(screen.getByText('احتيال أو نصب'));
@@ -291,6 +307,27 @@ describe('StoryViewer', () => {
         undefined,
       ),
     );
+  });
+
+  it("⋮ on someone else's story can block its account, which closes the viewer", async () => {
+    const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+    await act(() => {
+      fireEvent.press(screen.getByTestId('story-options'));
+    });
+    await act(() => {
+      pressAlertButton('حظر الحساب');
+    });
+    expect(mockAskToBlock).toHaveBeenCalledWith(
+      { identityId: 'a1' },
+      'شركة a1',
+      expect.any(Function),
+      expect.any(Function),
+    );
+    // Confirmed: the viewer closes
+    await act(() => {
+      (mockAskToBlock.mock.calls[0][2] as () => void)();
+    });
+    expect(mockRouter.back).toHaveBeenCalled();
   });
 
   it('closes when the active profile changes', async () => {

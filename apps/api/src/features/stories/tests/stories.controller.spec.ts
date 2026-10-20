@@ -66,7 +66,11 @@ describe('StoriesController', () => {
     await controller.mine(reqUser);
     expect(stories.findMine).toHaveBeenCalledWith('ident-1');
     await controller.byAuthor(reqUser, 'author-1');
-    expect(stories.findByAuthor).toHaveBeenCalledWith('ident-1', 'author-1');
+    // With the account, so blocks between the two accounts apply
+    expect(stories.findByAuthor).toHaveBeenCalledWith(
+      { identityId: 'ident-1', userId: 'user-1' },
+      'author-1',
+    );
   });
 
   it('views are recorded for the active profile and its account', async () => {

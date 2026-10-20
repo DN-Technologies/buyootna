@@ -17,6 +17,7 @@ import OfficeTabsSwitcher, {
 } from '@/shared/components/office/OfficeTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useBlockFlow, useBlockStatus } from '@/shared/hooks/blocks/useBlocks';
 import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
@@ -52,6 +53,19 @@ export default function OfficeProfileScreen() {
   } = useOfficeDetails(officeId);
   // Its live stories, as a ring on the logo (office.id is the identity)
   const storyRing = useProviderStoryRing(office?.id);
+  // Block / unblock the account behind the profile (not your own)
+  const blockedByMe = useBlockStatus(office?.userId);
+  const { askToBlock, askToUnblock } = useBlockFlow();
+  const accountId = useAuthStore((state) => state.user?.id);
+  const officeUserId = office?.userId;
+  const officeName = office?.name ?? 'المكتب';
+  const toggleBlock =
+    officeUserId && officeUserId !== accountId
+      ? () =>
+          blockedByMe
+            ? askToUnblock(officeUserId, officeName)
+            : askToBlock({ userId: officeUserId, identityId: office?.id }, officeName)
+      : undefined;
 
   const {
     reviewSummary,
@@ -92,6 +106,8 @@ export default function OfficeProfileScreen() {
         <OfficeNavBar
           onBack={() => router.back()}
           onOpenReport={handleOpenReport}
+          onToggleBlock={toggleBlock}
+          blocked={!!blockedByMe}
         />
 
         {isLoading ? (

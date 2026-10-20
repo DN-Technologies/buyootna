@@ -14,6 +14,8 @@ interface ChatHeaderProps {
   avatarUrl: string;
   isLoading?: boolean;
   onReportUser: () => void;
+  // Blocking the other account (Guideline 1.2); absent hides the item
+  onBlockUser?: () => void;
   showMoreMenu: boolean;
   setShowMoreMenu: (show: boolean) => void;
   // Opens the in-chat search bar
@@ -31,6 +33,7 @@ export default function ChatHeader({
   avatarUrl,
   isLoading = false,
   onReportUser,
+  onBlockUser,
   showMoreMenu,
   setShowMoreMenu,
   onPressSearch,
@@ -146,6 +149,23 @@ export default function ChatHeader({
                   الإبلاغ عن المستخدم
                 </Text>
               </TouchableOpacity>
+              {onBlockUser && (
+                <TouchableOpacity
+                  testID="chat-block-user"
+                  className="border-t border-gray-100 px-4 py-3"
+                  onPress={() => {
+                    onBlockUser();
+                    setShowMoreMenu(false);
+                  }}
+                >
+                  <Text
+                    className="font-cairo text-sm leading-[22px] text-[#9C1E28]"
+                    style={{ writingDirection: 'rtl' }}
+                  >
+                    حظر المستخدم
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               {/* Pointer / Triangle */}
               <View className="absolute -top-1.5 right-3 -z-10 h-4 w-4 rotate-45 rounded-sm bg-white shadow-md shadow-gray-200" />

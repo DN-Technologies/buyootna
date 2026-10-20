@@ -1,0 +1,19 @@
+/// One account blocking another (Guideline 1.2). Account-wide: it covers
+/// every profile of both accounts. Neither side can start a chat or send a
+/// message to the other; the blocker no longer sees the other's
+/// conversations, stories or reviews.
+model UserBlock {
+  blockerUserId     String
+  blocker           User      @relation("UserBlocksMade", fields: [blockerUserId], references: [id], onDelete: Cascade)
+  blockedUserId     String
+  blocked           User      @relation("UserBlocksReceived", fields: [blockedUserId], references: [id], onDelete: Cascade)
+  // The profile it was done from (a company, an office…), only to show
+  // the right name and picture in the blocked list
+  blockedIdentityId String?
+  blockedIdentity   Identity? @relation("UserBlocksAsProfile", fields: [blockedIdentityId], references: [id], onDelete: SetNull)
+  createdAt         DateTime  @default(now())
+
+  @@id([blockerUserId, blockedUserId])
+  // "Who blocked me" (the other direction of every check)
+  @@index([blockedUserId])
+}

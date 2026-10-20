@@ -49,6 +49,11 @@ describe('ChatMessagesService — location, shared ads, proposals', () => {
       property: { findUnique: jest.fn() },
       message: { findFirst: jest.fn() },
       $transaction: jest.fn((fn) => fn(tx)),
+      // No blocks between the two accounts
+      userBlock: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
     };
     proposals = { parse: jest.fn(), createFor: jest.fn() };
     service = new ChatMessagesService(

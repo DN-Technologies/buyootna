@@ -7,14 +7,18 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 
-import { PrismaService } from '../../../core/prisma/prisma.service';
-import { StorageService } from '../../../core/storage/storage.service';
 import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { assertApprovedProvider } from '../../identities/persona-rules';
-import { StoriesMediaService } from '../stories-media.service';
-import { StoriesService, deletedRowKeptUntil } from '../stories.service';
+import type { StoriesService } from '../stories.service';
+import { deletedRowKeptUntil } from '../stories.service';
+import {
+  AUTHOR,
+  NOW,
+  pending,
+  setupStoriesService,
+  STORY,
+} from './stories-service.harness';
 import { callArg } from './test-utils';
 
 // The real lockKeys runs (against the mocked $executeRaw); only the
@@ -29,119 +33,12 @@ jest.mock('../../company-subscriptions/company-subscription.rules', () => ({
   assertActiveCompanySubscription: jest.fn(),
 }));
 
-const NOW = new Date('2026-10-20T12:00:00.000Z');
-const AUTHOR = '11111111-1111-4111-8111-111111111111';
-const STORY = '22222222-2222-4222-8222-222222222222';
-
-const storyRow = (over: Record<string, unknown> = {}) => ({
-  id: STORY,
-  identityId: AUTHOR,
-  mediaType: 'IMAGE',
-  mediaKey: `stories/${AUTHOR}/${STORY}/media.jpg`,
-  posterKey: null,
-  width: 1080,
-  height: 1920,
-  durationMs: null,
-  caption: 'عرض جديد',
-  publishedAt: NOW,
-  expiresAt: new Date(NOW.getTime() + 24 * 3600 * 1000),
-  property: null,
-  ...over,
-});
-
-const pending = (over: Record<string, unknown> = {}) => ({
-  id: STORY,
-  identityId: AUTHOR,
-  status: 'PENDING',
-  mediaType: 'IMAGE',
-  mediaKey: `stories/${AUTHOR}/${STORY}/media.jpg`,
-  posterKey: null,
-  posterSizeBytes: null,
-  mediaContentType: 'image/jpeg',
-  mediaSizeBytes: 2048,
-  expiresAt: new Date(NOW.getTime() + 10 * 60 * 1000),
-  failureReason: null,
-  ...over,
-});
-
-describe('StoriesService', () => {
+describe('StoriesService: upload slots, publishing, deleting', () => {
+  const harness = setupStoriesService();
+  const { prisma, media, storage } = harness;
   let service: StoriesService;
-  const prisma = {
-    $transaction: jest.fn(),
-    // lockKeys runs SELECT pg_advisory_xact_lock(...) through this
-    $executeRaw: jest.fn(),
-    identity: { findUnique: jest.fn(), findFirst: jest.fn() },
-    story: {
-      count: jest.fn(),
-      create: jest.fn(),
-      updateMany: jest.fn(),
-      findUnique: jest.fn(),
-      findUniqueOrThrow: jest.fn(),
-      findMany: jest.fn(),
-    },
-    storyView: {
-      count: jest.fn(),
-      groupBy: jest.fn(),
-      findMany: jest.fn(),
-      createMany: jest.fn(),
-    },
-    providerFavorite: { findUnique: jest.fn() },
-    property: { findFirst: jest.fn() },
-  };
-  const media = {
-    mediaKeyFor: jest.fn(
-      (identityId: string, storyId: string, type: string) =>
-        `stories/${identityId}/${storyId}/media.${type === 'video/mp4' ? 'mp4' : 'jpg'}`,
-    ),
-    posterKeyFor: jest.fn(
-      (identityId: string, storyId: string) =>
-        `stories/${identityId}/${storyId}/poster.jpg`,
-    ),
-    presignUpload: jest.fn().mockResolvedValue({
-      url: 'https://s3.example/put',
-      headers: { 'Content-Type': 'image/jpeg', 'Content-Length': '2048' },
-    }),
-    checkImage: jest.fn(),
-    checkVideo: jest.fn(),
-    linksFor: jest.fn().mockResolvedValue({
-      mediaUrl: 'https://s3.example/get',
-      posterUrl: null,
-      urlExpiresAt: new Date(NOW.getTime() + 3600 * 1000),
-    }),
-    keysOf: jest.fn((s: { mediaKey: string; posterKey: string | null }) =>
-      s.posterKey ? [s.mediaKey, s.posterKey] : [s.mediaKey],
-    ),
-  };
-  const storage = {
-    deleteKeysReporting: jest.fn().mockResolvedValue({ failed: [] }),
-  };
-
-  beforeEach(async () => {
-    jest.clearAllMocks();
-    prisma.identity.findUnique.mockResolvedValue({ type: 'COMPANY' });
-    prisma.story.count.mockResolvedValue(0);
-    prisma.story.updateMany.mockResolvedValue({ count: 1 });
-    prisma.story.findUniqueOrThrow.mockResolvedValue(storyRow());
-    prisma.storyView.count.mockResolvedValue(0);
-    // Interactive transactions run their callback with the client itself
-    prisma.$transaction.mockImplementation(
-      (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma),
-    );
-    prisma.$executeRaw.mockResolvedValue(1);
-    // Drop any queued one-off results left by a previous test
-    prisma.story.findUnique.mockReset();
-    (assertApprovedProvider as jest.Mock).mockResolvedValue(undefined);
-    (assertActiveCompanySubscription as jest.Mock).mockResolvedValue(undefined);
-
-    const module = await Test.createTestingModule({
-      providers: [
-        StoriesService,
-        { provide: PrismaService, useValue: prisma },
-        { provide: StoriesMediaService, useValue: media },
-        { provide: StorageService, useValue: storage },
-      ],
-    }).compile();
-    service = module.get(StoriesService);
+  beforeEach(() => {
+    service = harness.service;
   });
 
   describe('createUpload', () => {
@@ -318,81 +215,6 @@ describe('StoriesService', () => {
           posterKey: null,
           posterSizeBytes: null,
         }) as Record<string, unknown>,
-      });
-    });
-  });
-
-  describe('publish (video)', () => {
-    const videoPending = () =>
-      pending({
-        mediaType: 'VIDEO',
-        mediaKey: `stories/${AUTHOR}/${STORY}/media.mp4`,
-        mediaContentType: 'video/mp4',
-        posterKey: `stories/${AUTHOR}/${STORY}/poster.jpg`,
-        posterSizeBytes: 90_000,
-      });
-    beforeEach(() => {
-      prisma.story.findUnique.mockResolvedValue(videoPending());
-      media.checkVideo.mockResolvedValue({
-        ok: true,
-        width: 720,
-        height: 1280,
-        durationMs: 29_800,
-      });
-    });
-
-    it('is checked as a video, and its measured length is stored', async () => {
-      await service.publish(STORY, AUTHOR, {}, NOW);
-      expect(media.checkVideo).toHaveBeenCalled();
-      expect(media.checkImage).not.toHaveBeenCalled();
-      expect(
-        callArg<{ data: Record<string, unknown> }>(prisma.story.updateMany)
-          .data,
-      ).toMatchObject({ width: 720, height: 1280, durationMs: 29_800 });
-    });
-
-    it('not fully uploaded is 409 with a video message', async () => {
-      media.checkVideo.mockResolvedValue({ ok: false, missing: true });
-      const error = await service
-        .publish(STORY, AUTHOR, {}, NOW)
-        .catch((e: unknown) => e);
-      expect(error).toBeInstanceOf(ConflictException);
-      expect((error as HttpException).getResponse()).toMatchObject({
-        code: 'STORY_UPLOAD_INCOMPLETE',
-        message: 'لم يكتمل رفع الفيديو بعد',
-      });
-    });
-
-    it('too long: 422 saying so, the story fails and both files are deleted', async () => {
-      media.checkVideo.mockResolvedValue({
-        ok: false,
-        missing: false,
-        reason: 'too_long',
-      });
-      const error = await service
-        .publish(STORY, AUTHOR, {}, NOW)
-        .catch((e: unknown) => e);
-      expect(error).toBeInstanceOf(UnprocessableEntityException);
-      expect((error as HttpException).getResponse()).toMatchObject({
-        code: 'STORY_MEDIA_INVALID',
-        reason: 'too_long',
-        message: 'مدة الفيديو تتجاوز 30 ثانية',
-      });
-      expect(storage.deleteKeysReporting).toHaveBeenCalledWith([
-        `stories/${AUTHOR}/${STORY}/media.mp4`,
-        `stories/${AUTHOR}/${STORY}/poster.jpg`,
-      ]);
-    });
-
-    it('a photo that is too large keeps the photo wording', async () => {
-      prisma.story.findUnique.mockResolvedValue(
-        pending({ status: 'FAILED', failureReason: 'too_large' }),
-      );
-      const error = await service
-        .publish(STORY, AUTHOR, {}, NOW)
-        .catch((e: unknown) => e);
-      expect((error as HttpException).getResponse()).toMatchObject({
-        message: 'الملف المرفوع غير صالح، يرجى اختيار صورة أخرى',
       });
     });
   });
@@ -620,6 +442,81 @@ describe('StoriesService', () => {
     });
   });
 
+  describe('publish (video)', () => {
+    const videoPending = () =>
+      pending({
+        mediaType: 'VIDEO',
+        mediaKey: `stories/${AUTHOR}/${STORY}/media.mp4`,
+        mediaContentType: 'video/mp4',
+        posterKey: `stories/${AUTHOR}/${STORY}/poster.jpg`,
+        posterSizeBytes: 90_000,
+      });
+    beforeEach(() => {
+      prisma.story.findUnique.mockResolvedValue(videoPending());
+      media.checkVideo.mockResolvedValue({
+        ok: true,
+        width: 720,
+        height: 1280,
+        durationMs: 29_800,
+      });
+    });
+
+    it('is checked as a video, and its measured length is stored', async () => {
+      await service.publish(STORY, AUTHOR, {}, NOW);
+      expect(media.checkVideo).toHaveBeenCalled();
+      expect(media.checkImage).not.toHaveBeenCalled();
+      expect(
+        callArg<{ data: Record<string, unknown> }>(prisma.story.updateMany)
+          .data,
+      ).toMatchObject({ width: 720, height: 1280, durationMs: 29_800 });
+    });
+
+    it('not fully uploaded is 409 with a video message', async () => {
+      media.checkVideo.mockResolvedValue({ ok: false, missing: true });
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        code: 'STORY_UPLOAD_INCOMPLETE',
+        message: 'لم يكتمل رفع الفيديو بعد',
+      });
+    });
+
+    it('too long: 422 saying so, the story fails and both files are deleted', async () => {
+      media.checkVideo.mockResolvedValue({
+        ok: false,
+        missing: false,
+        reason: 'too_long',
+      });
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(UnprocessableEntityException);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        code: 'STORY_MEDIA_INVALID',
+        reason: 'too_long',
+        message: 'مدة الفيديو تتجاوز 30 ثانية',
+      });
+      expect(storage.deleteKeysReporting).toHaveBeenCalledWith([
+        `stories/${AUTHOR}/${STORY}/media.mp4`,
+        `stories/${AUTHOR}/${STORY}/poster.jpg`,
+      ]);
+    });
+
+    it('a photo that is too large keeps the photo wording', async () => {
+      prisma.story.findUnique.mockResolvedValue(
+        pending({ status: 'FAILED', failureReason: 'too_large' }),
+      );
+      const error = await service
+        .publish(STORY, AUTHOR, {}, NOW)
+        .catch((e: unknown) => e);
+      expect((error as HttpException).getResponse()).toMatchObject({
+        message: 'الملف المرفوع غير صالح، يرجى اختيار صورة أخرى',
+      });
+    });
+  });
+
   describe('remove', () => {
     const publishedAt = new Date('2026-10-20T10:00:00.000Z');
 
@@ -706,72 +603,6 @@ describe('StoriesService', () => {
     });
   });
 
-  describe('findMine', () => {
-    it('only live stories, with their view counts', async () => {
-      prisma.story.findMany.mockResolvedValue([storyRow()]);
-      prisma.storyView.groupBy.mockResolvedValue([
-        { storyId: STORY, _count: { _all: 3 } },
-      ]);
-      const result = await service.findMine(AUTHOR, NOW);
-      expect(
-        callArg<{
-          where: Record<string, unknown>;
-          data: Record<string, unknown>;
-        }>(prisma.story.findMany).where,
-      ).toEqual({
-        identityId: AUTHOR,
-        status: 'ACTIVE',
-        expiresAt: { gt: NOW },
-      });
-      expect(result.stories[0]).toMatchObject({ id: STORY, viewCount: 3 });
-    });
-  });
-
-  describe('findByAuthor', () => {
-    const author = {
-      id: AUTHOR,
-      type: 'COMPANY',
-      companyData: { name: 'شركة البنيان', logoUrl: null, isVerified: true },
-      officeData: null,
-    };
-
-    it('marks seen stories and opens at the first unseen one', async () => {
-      prisma.identity.findFirst.mockResolvedValue(author);
-      const second = '44444444-4444-4444-8444-444444444444';
-      prisma.story.findMany.mockResolvedValue([
-        storyRow(),
-        storyRow({ id: second }),
-      ]);
-      prisma.storyView.findMany.mockResolvedValue([{ storyId: STORY }]);
-      prisma.providerFavorite.findUnique.mockResolvedValue({ id: 'f' });
-
-      const result = await service.findByAuthor('viewer', AUTHOR, NOW);
-      expect(result).toMatchObject({
-        author: { identityId: AUTHOR, type: 'COMPANY', name: 'شركة البنيان' },
-        followed: true,
-        hasUnseen: true,
-        firstUnseenIndex: 1,
-      });
-      expect(result.stories.map((s) => s.viewed)).toEqual([true, false]);
-    });
-
-    it('an author who may not appear is 404', async () => {
-      prisma.identity.findFirst.mockResolvedValue(null);
-      await expect(service.findByAuthor('viewer', AUTHOR, NOW)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(
-        callArg<{
-          where: Record<string, unknown>;
-          data: Record<string, unknown>;
-        }>(prisma.identity.findFirst).where,
-      ).toMatchObject({
-        id: AUTHOR,
-        user: { isDisabled: false, isBlocked: false },
-      });
-    });
-  });
-
   describe('deletedRowKeptUntil', () => {
     it('a published story: publishedAt + 24h', () => {
       expect(
@@ -785,167 +616,6 @@ describe('StoriesService', () => {
     });
     it('never published: now', () => {
       expect(deletedRowKeptUntil(null, NOW)).toEqual(NOW);
-    });
-  });
-
-  describe('recordViews', () => {
-    const viewer = { identityId: 'viewer-ident', userId: 'viewer-user' };
-    const ids = [STORY, '55555555-5555-4555-8555-555555555555'];
-
-    it('records only live stories of visible authors from other accounts', async () => {
-      prisma.story.findMany.mockResolvedValue([{ id: STORY }]);
-      await service.recordViews(viewer, { storyIds: ids }, NOW);
-
-      expect(
-        callArg<{ where: Record<string, unknown> }>(prisma.story.findMany)
-          .where,
-      ).toEqual({
-        id: { in: ids },
-        status: 'ACTIVE',
-        expiresAt: { gt: NOW },
-        identity: {
-          user: { isDisabled: false, isBlocked: false },
-          OR: [
-            { type: 'COMPANY', companyData: { status: 'APPROVED' } },
-            { type: 'OFFICE', officeData: { status: 'APPROVED' } },
-          ],
-          // Never the viewer's own account (any of its profiles)
-          userId: { not: 'viewer-user' },
-        },
-      });
-      expect(prisma.storyView.createMany).toHaveBeenCalledWith({
-        data: [{ storyId: STORY, viewerIdentityId: 'viewer-ident' }],
-        // One view per profile and story; repeating changes nothing
-        skipDuplicates: true,
-      });
-    });
-
-    it('nothing eligible: nothing written', async () => {
-      prisma.story.findMany.mockResolvedValue([]);
-      await service.recordViews(viewer, { storyIds: ids }, NOW);
-      expect(prisma.storyView.createMany).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('viewers', () => {
-    const viewerRow = (n: number, at: string) => ({
-      viewedAt: new Date(at),
-      viewer: {
-        id: `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`,
-        type: 'INDIVIDUAL',
-        individualData: { name: `مشاهد ${n}`, avatarUrl: null },
-        companyData: null,
-        officeData: null,
-      },
-    });
-
-    beforeEach(() => {
-      prisma.story.findUnique.mockResolvedValue({
-        identityId: AUTHOR,
-        status: 'ACTIVE',
-      });
-    });
-
-    it('the author gets the newest first, the total, and a cursor', async () => {
-      prisma.storyView.findMany.mockResolvedValue([
-        viewerRow(1, '2026-10-20T11:00:00.000Z'),
-        viewerRow(2, '2026-10-20T10:00:00.000Z'),
-        viewerRow(3, '2026-10-20T09:00:00.000Z'),
-      ]);
-      prisma.storyView.count.mockResolvedValue(3);
-
-      const result = await service.viewers(STORY, AUTHOR, { limit: 2 });
-      expect(result.total).toBe(3);
-      expect(result.viewers.map((v) => v.name)).toEqual(['مشاهد 1', 'مشاهد 2']);
-      expect(result.viewers[0]).toMatchObject({
-        type: 'INDIVIDUAL',
-        avatarUrl: null,
-        isVerified: false,
-        viewedAt: '2026-10-20T11:00:00.000Z',
-      });
-      expect(result.nextCursor).not.toBeNull();
-
-      const query = callArg<{
-        where: Record<string, unknown>;
-        orderBy: unknown;
-        take: number;
-      }>(prisma.storyView.findMany);
-      expect(query.where).toEqual({
-        storyId: STORY,
-        viewer: { user: { isDisabled: false, isBlocked: false } },
-      });
-      expect(query.orderBy).toEqual([
-        { viewedAt: 'desc' },
-        { viewerIdentityId: 'asc' },
-      ]);
-      expect(query.take).toBe(3);
-      // The total leaves out the same viewers as the list
-      expect(
-        callArg<{ where: Record<string, unknown> }>(prisma.storyView.count)
-          .where,
-      ).toEqual({
-        storyId: STORY,
-        viewer: { user: { isDisabled: false, isBlocked: false } },
-      });
-    });
-
-    it('the next page continues after the cursor', async () => {
-      prisma.storyView.findMany.mockResolvedValue([
-        viewerRow(1, '2026-10-20T11:00:00.000Z'),
-        viewerRow(2, '2026-10-20T10:00:00.000Z'),
-      ]);
-      prisma.storyView.count.mockResolvedValue(2);
-      const first = await service.viewers(STORY, AUTHOR, { limit: 1 });
-
-      prisma.storyView.findMany.mockResolvedValue([
-        viewerRow(2, '2026-10-20T10:00:00.000Z'),
-      ]);
-      await service.viewers(STORY, AUTHOR, {
-        limit: 1,
-        cursor: first.nextCursor ?? undefined,
-      });
-      expect(
-        callArg<{ where: { OR: unknown } }>(prisma.storyView.findMany, 1).where
-          .OR,
-      ).toEqual([
-        { viewedAt: { lt: new Date('2026-10-20T11:00:00.000Z') } },
-        {
-          viewedAt: new Date('2026-10-20T11:00:00.000Z'),
-          viewerIdentityId: { gt: '00000000-0000-4000-8000-000000000001' },
-        },
-      ]);
-    });
-
-    it.each([
-      ['someone else', { identityId: 'other', status: 'ACTIVE' }],
-      ['a deleted story', { identityId: AUTHOR, status: 'DELETED' }],
-      ['a pending story', { identityId: AUTHOR, status: 'PENDING' }],
-      ['no story', null],
-    ])('%s gets 404', async (_label, row) => {
-      prisma.story.findUnique.mockResolvedValue(row);
-      await expect(service.viewers(STORY, AUTHOR, {})).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(prisma.storyView.findMany).not.toHaveBeenCalled();
-    });
-
-    it('a malformed cursor is a 400', async () => {
-      await expect(
-        service.viewers(STORY, AUTHOR, { cursor: 'not-a-cursor' }),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  it('view counts leave out disabled or blocked viewers, like the list', async () => {
-    prisma.story.findMany.mockResolvedValue([storyRow()]);
-    prisma.storyView.groupBy.mockResolvedValue([]);
-    await service.findMine(AUTHOR, NOW);
-    expect(
-      callArg<{ where: Record<string, unknown> }>(prisma.storyView.groupBy)
-        .where,
-    ).toEqual({
-      storyId: { in: [STORY] },
-      viewer: { user: { isDisabled: false, isBlocked: false } },
     });
   });
 });

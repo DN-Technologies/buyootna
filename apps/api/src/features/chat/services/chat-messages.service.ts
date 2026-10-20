@@ -13,6 +13,10 @@ import {
   isOtherAvailable,
 } from './chat-participant-display.service';
 import { SendMessageDto } from '../dto/send-message.dto';
+import {
+  blockedContactError,
+  isBlockedEitherWay,
+} from '../../blocks/block.rules';
 import { receiptOf } from './chat-receipts.service';
 import {
   presentRequestContext,
@@ -310,7 +314,10 @@ export class ChatMessagesService {
       where: { conversationId, identityId: { not: sender.identityId } },
       select: {
         identity: {
-          select: { user: { select: { isDisabled: true, isBlocked: true } } },
+          select: {
+            userId: true,
+            user: { select: { isDisabled: true, isBlocked: true } },
+          },
         },
       },
     });
@@ -319,6 +326,18 @@ export class ChatMessagesService {
     );
     if (unavailable) {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
+    }
+    // A block either way between the two accounts: nothing more is sent
+    for (const other of others) {
+      if (
+        await isBlockedEitherWay(
+          this.prisma,
+          sender.userId,
+          other.identity.userId,
+        )
+      ) {
+        throw blockedContactError();
+      }
     }
     // Their account was deleted: the message would reach nobody
     if (others.length === 0) {

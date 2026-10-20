@@ -78,6 +78,11 @@ describe('ChatMessagesService replies and hiding', () => {
       message: { findFirst: jest.fn(), findUnique: jest.fn() },
       messageHidden: { upsert: jest.fn().mockResolvedValue({}) },
       $transaction: jest.fn((fn) => fn(tx)),
+      // No blocks between the two accounts
+      userBlock: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       tx,
     };
     service = new ChatMessagesService(
