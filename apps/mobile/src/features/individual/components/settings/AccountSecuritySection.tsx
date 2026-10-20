@@ -1,4 +1,4 @@
-import { DeviceIcon, LockIcon, LoginIcon } from '@/assets/icons/settings';
+import { DeviceIcon, HideIcon, LockIcon, LoginIcon } from '@/assets/icons/settings';
 import MenuItem from '@/shared/components/ui/MenuItem';
 
 import SettingsSection from './SettingsSection';
@@ -7,10 +7,13 @@ export default function AccountSecuritySection({
   onChangePassword,
   onDevices,
   onLoginMethod,
+  onBlocked,
 }: {
   onChangePassword: () => void;
   onDevices: () => void;
   onLoginMethod: () => void;
+  // The accounts you blocked (Settings › «المحظورون»)
+  onBlocked?: () => void;
 }) {
   return (
     <SettingsSection title="الحساب والامان">
@@ -25,6 +28,9 @@ export default function AccountSecuritySection({
         title="طريقة تسجيل الدخول"
         onPress={onLoginMethod}
       />
+      {onBlocked && (
+        <MenuItem icon={HideIcon} title="المحظورون" onPress={onBlocked} />
+      )}
     </SettingsSection>
   );
 }

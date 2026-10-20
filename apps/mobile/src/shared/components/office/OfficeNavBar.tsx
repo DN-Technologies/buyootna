@@ -6,12 +6,17 @@ import { showAlert } from '@/shared/utils/alert';
 interface OfficeNavBarProps {
   onBack: () => void;
   onOpenReport: () => void;
+  // Blocking the account behind the profile; absent hides the option
+  onToggleBlock?: () => void;
+  blocked?: boolean;
   onShareProfile?: () => void;
 }
 
 export default function OfficeNavBar({
   onBack,
   onOpenReport,
+  onToggleBlock,
+  blocked = false,
   onShareProfile,
 }: OfficeNavBarProps) {
   const handleShowOptions = () => {
@@ -25,6 +30,15 @@ export default function OfficeNavBar({
         style: 'destructive',
         onPress: onOpenReport,
       },
+      ...(onToggleBlock
+        ? [
+            {
+              text: blocked ? 'إلغاء حظر المكتب' : 'حظر المكتب',
+              style: blocked ? ('default' as const) : ('destructive' as const),
+              onPress: onToggleBlock,
+            },
+          ]
+        : []),
       { text: 'إلغاء', style: 'cancel' },
     ]);
   };
@@ -41,6 +55,8 @@ export default function OfficeNavBar({
 
       <TouchableOpacity
         activeOpacity={0.7}
+        testID="profile-options"
+        accessibilityLabel="خيارات"
         onPress={handleShowOptions}
         className="h-9 w-9 items-center justify-center rounded-full bg-[#F8FAFC]"
       >

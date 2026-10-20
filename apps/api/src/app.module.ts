@@ -22,6 +22,7 @@ import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
 import { MediaModule } from './media/media.module';
 import { StoriesModule } from './features/stories/stories.module';
+import { BlocksModule } from './features/blocks/blocks.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 import { FavoritesModule } from './features/favorites/favorites.module';
 import { ChatModule } from './features/chat/chat.module';
@@ -89,6 +90,7 @@ import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
     NotificationsModule,
     SavedLocationsModule,
     StoriesModule,
+    BlocksModule,
     DevicesModule,
     PlansModule,
     CompanySubscriptionsModule,

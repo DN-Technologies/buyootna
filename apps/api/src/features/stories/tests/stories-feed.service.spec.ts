@@ -218,6 +218,18 @@ describe('StoriesFeedService', () => {
       expect(q.values).toContain(snapshot.toISOString());
     });
 
+    it('leaves out authors whose account blocked the viewer, or that it blocked', () => {
+      const q = rankQuery(VIEWER, NOW, NOW, null, 21);
+      expect(q.text).toContain('NOT EXISTS');
+      expect(q.text).toContain('"UserBlock" ub');
+      expect(q.text).toMatch(
+        /ub\."blockerUserId" = \$\d+ AND ub\."blockedUserId" = i\."userId"/,
+      );
+      expect(q.text).toMatch(
+        /ub\."blockerUserId" = i\."userId" AND ub\."blockedUserId" = \$\d+/,
+      );
+    });
+
     it('the first page has no cursor condition', () => {
       const q = rankQuery(VIEWER, NOW, NOW, null, 21);
       expect(q.text).not.toContain('r.tier >');

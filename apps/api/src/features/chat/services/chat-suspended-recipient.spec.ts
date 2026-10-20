@@ -168,3 +168,84 @@ describe('chat with a suspended or blocked account', () => {
     expect(isOtherAvailable(null)).toBe(false);
   });
 });
+
+describe('chat between accounts with a block', () => {
+  const display = {} as ChatParticipantDisplayService;
+  const blockedErr = expect.objectContaining({
+    response: expect.objectContaining({ code: 'USER_BLOCKED' }) as unknown,
+  }) as unknown;
+
+  it.each([
+    ['this account blocked them', { blockerUserId: 'u1', blockedUserId: 'u2' }],
+    ['they blocked this account', { blockerUserId: 'u2', blockedUserId: 'u1' }],
+  ])('no new conversation when %s', async (_label, row) => {
+    const prisma = {
+      identity: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValueOnce({ id: 'i2' })
+          .mockResolvedValueOnce({
+            id: 'i2',
+            userId: 'u2',
+            user: { isDisabled: false, isBlocked: false },
+          }),
+      },
+      userBlock: { findFirst: jest.fn().mockResolvedValue(row) },
+      $transaction: jest.fn(),
+    };
+    const service = new ChatConversationsService(
+      prisma as unknown as PrismaService,
+      display,
+    );
+    await expect(
+      service.findOrCreateConversation('u1', 'i1', 'i2'),
+    ).rejects.toEqual(blockedErr);
+    // Either direction is looked up
+    expect(prisma.userBlock.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          OR: [
+            { blockerUserId: 'u1', blockedUserId: 'u2' },
+            { blockerUserId: 'u2', blockedUserId: 'u1' },
+          ],
+        },
+      }),
+    );
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('no new messages into an existing conversation', async () => {
+    const prisma = {
+      conversationParticipant: {
+        findFirst: jest.fn().mockResolvedValue({ id: 'p1' }),
+        findMany: jest.fn().mockResolvedValue([
+          {
+            identity: {
+              userId: 'u2',
+              user: { isDisabled: false, isBlocked: false },
+            },
+          },
+        ]),
+      },
+      userBlock: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ blockerUserId: 'u2', blockedUserId: 'u1' }),
+      },
+      $transaction: jest.fn(),
+    };
+    const service = new ChatMessagesService(
+      prisma as unknown as PrismaService,
+      display,
+      {} as ChatAttachmentsService,
+      {} as ChatProposalsService,
+    );
+    await expect(
+      service.sendMessage({ userId: 'u1', identityId: 'i1' }, 'c1', {
+        content: 'مرحبا',
+        type: 'TEXT',
+      }),
+    ).rejects.toEqual(blockedErr);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+});

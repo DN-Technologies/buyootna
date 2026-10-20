@@ -22,6 +22,10 @@ import {
   REQUEST_CONTEXT_SELECT,
 } from './chat-request-context';
 import { findDefaultPersonaId } from '../../identities/persona-rules';
+import {
+  blockedContactError,
+  isBlockedEitherWay,
+} from '../../blocks/block.rules';
 
 /**
  * Conversation lifecycle and listing: finding-or-creating the 1:1
@@ -128,6 +132,10 @@ export class ChatConversationsService {
     // A suspended (تعطيل مؤقت) or blocked account can't be contacted
     if (recipient.user.isDisabled || recipient.user.isBlocked) {
       throw new ForbiddenException('هذا الحساب غير متاح حالياً');
+    }
+    // Nor one that blocked this account, or that this account blocked
+    if (await isBlockedEitherWay(this.prisma, userId, recipient.userId)) {
+      throw blockedContactError();
     }
 
     // Verify property exists if propertyId is provided
@@ -238,9 +246,38 @@ export class ChatConversationsService {
   ) {
     const skip = (page - 1) * limit;
 
+    // Conversations with accounts this one blocked leave its list (the
+    // other side keeps theirs, but can't send)
+    const me = await this.prisma.identity.findUnique({
+      where: { id: identityId },
+      select: { userId: true },
+    });
+    const blockedByMe = me
+      ? (
+          await this.prisma.userBlock.findMany({
+            where: { blockerUserId: me.userId },
+            select: { blockedUserId: true },
+          })
+        ).map((b) => b.blockedUserId)
+      : [];
+    const mine: Prisma.ConversationWhereInput = {
+      AND: [
+        { participants: { some: { identityId } } },
+        ...(blockedByMe.length
+          ? [
+              {
+                participants: {
+                  none: { identity: { userId: { in: blockedByMe } } },
+                },
+              },
+            ]
+          : []),
+      ],
+    };
+
     const conversations = await this.prisma.conversation.findMany({
       where: {
-        participants: { some: { identityId } },
+        ...mine,
         ...(query?.trim() ? conversationSearchWhere(identityId, query) : {}),
         // NOTE: deliberately no `messages: { some: {} }` filter here. A
         // conversation starts empty (created by "contact" taps before any
@@ -370,11 +407,9 @@ export class ChatConversationsService {
     );
 
     const total = await this.prisma.conversation.count({
-      where: {
-        participants: { some: { identityId } },
-        // Keep in sync with the list query above: empty (newly initiated)
-        // conversations count too.
-      },
+      // Keep in sync with the list query above: empty (newly initiated)
+      // conversations count too, blocked accounts' don't
+      where: mine,
     });
 
     return {

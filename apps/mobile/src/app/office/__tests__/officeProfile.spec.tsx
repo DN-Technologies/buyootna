@@ -49,6 +49,26 @@ jest.mock('@/shared/hooks/providers/useOfficeReport', () => ({
 
 const mockUseOfficeDetails = useOfficeDetails as jest.Mock;
 // The story ring has its own spec (useProviderStoryRing)
+// Blocking has its own spec (useBlocks); here, what the menu offers
+const mockAskToBlock = jest.fn();
+const mockAskToUnblock = jest.fn();
+let mockBlocked: boolean | null = false;
+jest.mock('@/shared/hooks/blocks/useBlocks', () => ({
+  useBlockStatus: () => mockBlocked,
+  useBlockFlow: () => ({
+    askToBlock: mockAskToBlock,
+    askToUnblock: mockAskToUnblock,
+  }),
+}));
+jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+type AlertButton = { text: string; onPress?: () => void };
+const alertButtons = (): AlertButton[] => {
+  const { showAlert } = jest.requireMock<{ showAlert: jest.Mock }>(
+    '@/shared/utils/alert',
+  );
+  const calls = showAlert.mock.calls;
+  return calls[calls.length - 1][2] as AlertButton[];
+};
 let mockStoryRing: { hasUnseen: boolean; onPress: jest.Mock } | null = null;
 const mockStoryRingFor = jest.fn();
 jest.mock('@/features/stories/hooks/useProviderStoryRing', () => ({
@@ -65,6 +85,7 @@ describe('OfficeProfileScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStoryRing = null;
+    mockBlocked = false;
 
     mockUseOfficeReport.mockReturnValue({
       reportSheetRef: { current: null },
@@ -335,6 +356,45 @@ describe('OfficeProfileScreen', () => {
         disabled: false,
         selected: false,
       });
+    });
+  });
+
+  describe('blocking from the profile menu', () => {
+    beforeEach(() => {
+      mockUseOfficeDetails.mockReturnValue({
+        office: { id: 'off-ident-1', name: 'مكتب الرواد العقاري', userId: 'user-off-1', services: [], properties: [] },
+        isLoading: false,
+        isError: false,
+        services: [],
+        properties: [],
+        workingHours: [],
+        targetUserId: 'user-off-1',
+      });
+    });
+
+    it('offers «حظر المكتب», which asks to block the account and its profile', async () => {
+      const screen = await render(<OfficeProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const block = alertButtons().find((b) => b.text === 'حظر المكتب');
+      expect(block).toBeTruthy();
+      block?.onPress?.();
+      expect(mockAskToBlock).toHaveBeenCalledWith(
+        { userId: 'user-off-1', identityId: 'off-ident-1' },
+        expect.any(String),
+      );
+    });
+
+    it('once blocked, offers «إلغاء حظر المكتب» instead', async () => {
+      mockBlocked = true;
+      const screen = await render(<OfficeProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const texts = alertButtons().map((b) => b.text);
+      expect(texts).toContain('إلغاء حظر المكتب');
+      expect(texts).not.toContain('حظر المكتب');
+      alertButtons()
+        .find((b) => b.text === 'إلغاء حظر المكتب')
+        ?.onPress?.();
+      expect(mockAskToUnblock).toHaveBeenCalledWith('user-off-1', expect.any(String));
     });
   });
 });

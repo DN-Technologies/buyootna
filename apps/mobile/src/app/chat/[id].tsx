@@ -1,5 +1,5 @@
 import { FlashListRef } from '@shopify/flash-list';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { KeyboardAvoidingView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,6 +18,7 @@ import ReplyComposeBar from '@/shared/components/chat/ReplyComposeBar';
 import VideoPlayerModal from '@/shared/components/chat/VideoPlayerModal';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useBlockFlow } from '@/shared/hooks/blocks/useBlocks';
 import { useChatComposer } from '@/shared/hooks/chat/useChatComposer';
 import { useChatConversation } from '@/shared/hooks/chat/useChatConversation';
 import {
@@ -88,6 +89,16 @@ export default function ChatDetailsScreen() {
   const navigation = useChatNavigation(chat.propertyContext?.id);
   const { reportSheetRef, handleReportUser, handleSubmitReport } =
     useChatReport(chat.otherUserId);
+  const router = useRouter();
+  const { askToBlock } = useBlockFlow();
+  // Blocked: the conversation leaves the list, so leave it too
+  const handleBlockUser = () =>
+    chat.otherUserId &&
+    askToBlock(
+      { identityId: chat.otherUserId },
+      chat.otherUserName || 'هذا المستخدم',
+      () => router.back(),
+    );
 
   // Replying (swipe right or رد): show what's quoted and open the keyboard
   const startReply = (message: ChatMessage) => {
@@ -117,6 +128,7 @@ export default function ChatDetailsScreen() {
             avatarUrl={chat.otherUserAvatar}
             isLoading={chat.isHeaderLoading}
             onReportUser={handleReportUser}
+            onBlockUser={chat.otherUserId ? handleBlockUser : undefined}
             showMoreMenu={chat.showMoreMenu}
             setShowMoreMenu={chat.setShowMoreMenu}
             onPressSearch={search.open}

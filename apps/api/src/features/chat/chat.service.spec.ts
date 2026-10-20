@@ -110,6 +110,7 @@ describe('ChatService.findOrCreateConversation', () => {
     $transaction: jest.Mock;
     identity: { findUnique: jest.Mock; findMany: jest.Mock };
     property: { findUnique: jest.Mock };
+    userBlock: { findFirst: jest.Mock; findMany: jest.Mock };
   };
   let tx: {
     $executeRaw: jest.Mock;
@@ -137,6 +138,11 @@ describe('ChatService.findOrCreateConversation', () => {
       $transaction: jest.fn((cb: (client: typeof tx) => unknown) => cb(tx)),
       identity: { findUnique: jest.fn(), findMany: jest.fn() },
       property: { findUnique: jest.fn() },
+      // No blocks between the two accounts
+      userBlock: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -342,10 +348,16 @@ describe('ChatService.getConversations', () => {
   let prisma: {
     conversation: { count: jest.Mock; findMany: jest.Mock };
     message: { count: jest.Mock };
+    identity: { findUnique: jest.Mock };
+    userBlock: { findMany: jest.Mock };
   };
 
   beforeEach(async () => {
     prisma = {
+      identity: {
+        findUnique: jest.fn().mockResolvedValue({ userId: 'user-1' }),
+      },
+      userBlock: { findMany: jest.fn().mockResolvedValue([]) },
       conversation: {
         findMany: jest.fn().mockResolvedValue([
           {
@@ -400,10 +412,10 @@ describe('ChatService.getConversations', () => {
       ]
     )[0];
     expect(listArgs.where).not.toHaveProperty('messages');
-    // The persona's own inbox only
-    expect(listArgs.where.participants).toEqual({
-      some: { identityId: 'identity-1' },
-    });
+    // The persona's own inbox only, and nothing else when no one is blocked
+    expect(listArgs.where.AND).toEqual([
+      { participants: { some: { identityId: 'identity-1' } } },
+    ]);
 
     const [countArgs] = (
       prisma.conversation.count.mock.calls as unknown as [
@@ -416,5 +428,26 @@ describe('ChatService.getConversations', () => {
     expect(result.data[0].id).toBe('conv-empty');
     expect(result.data[0].lastMessage).toBeNull();
     expect(result.meta.total).toBe(1);
+  });
+
+  it('leaves out conversations with accounts this one blocked, in the list and the total', async () => {
+    prisma.userBlock.findMany.mockResolvedValue([{ blockedUserId: 'user-9' }]);
+    await service.getConversations('identity-1');
+    const hidden = {
+      participants: { none: { identity: { userId: { in: ['user-9'] } } } },
+    };
+    const [listArgs] = prisma.conversation.findMany.mock.calls[0] as [
+      { where: { AND: unknown[] } },
+    ];
+    const [countArgs] = prisma.conversation.count.mock.calls[0] as [
+      { where: { AND: unknown[] } },
+    ];
+    expect(listArgs.where.AND).toContainEqual(hidden);
+    expect(countArgs.where.AND).toContainEqual(hidden);
+    // Only blocks this account made (the blocked side keeps its thread)
+    expect(prisma.userBlock.findMany).toHaveBeenCalledWith({
+      where: { blockerUserId: 'user-1' },
+      select: { blockedUserId: true },
+    });
   });
 });

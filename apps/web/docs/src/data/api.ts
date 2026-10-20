@@ -9,6 +9,43 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-user-blocks",
+      title: {
+        en: "Blocking another account (App Store Guideline 1.2): no chat either way, their stories and reviews hidden",
+        ar: "حظر حساب آخر (إرشاد App Store 1.2): لا محادثة بين الطرفين، وتختفي قصصه وتقييماته",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /blocks { userId?, identityId? } blocks an account, given the account or one of its profiles (a story only knows the author's profile; an older chat may carry an account id in identityId, which also works). A block is account-wide: it covers every profile of both accounts. Repeating it changes nothing; blocking yourself is 400 and an unknown account 404. DELETE /blocks/:userId lifts it; GET /blocks lists the accounts you blocked (newest first, shown as the profile blocked from, else their active profile); GET /blocks/:userId says whether you blocked that account. Effects, either way between the two accounts: starting a chat and sending a message are refused with 403 USER_BLOCKED («لا يمكنك مراسلة هذا المستخدم»); the blocker's chat list (and its total) leaves out conversations with the blocked account, while the blocked side keeps its thread but can't send; the stories feed, one author's stories (404) and view recording leave the other account out; and the public review list leaves out reviews written by an account blocked either way once the caller is signed in (an optional sign-in on that route, which also makes the caller's like/dislike show again). Ratings and averages are unchanged. Migration 20261021090000_user_blocks adds the UserBlock table.",
+        ar: "POST /blocks { userId اختياري، identityId اختياري } يحظر حساباً، بالحساب أو بأحد ملفاته (القصة تعرف ملف الناشر فقط؛ وقد تحمل محادثة قديمة معرّف حساب في identityId، وهذا يعمل أيضاً). الحظر على مستوى الحساب: يشمل كل ملفات الحسابين. تكراره لا يغيّر شيئاً؛ وحظر حسابك ← 400 والحساب غير الموجود ← 404. DELETE /blocks/:userId يلغيه؛ وGET /blocks يعرض الحسابات التي حظرتها (الأحدث أولاً، باسم الملف الذي حُظر منه، وإلا ملفه النشط)؛ وGET /blocks/:userId يخبر إن كنت حظرت ذلك الحساب. الأثر، في الاتجاهين بين الحسابين: بدء محادثة وإرسال رسالة يُرفضان بـ 403 USER_BLOCKED («لا يمكنك مراسلة هذا المستخدم»)؛ وقائمة محادثات الحاظر (ومجموعها) تستبعد محادثات الحساب المحظور، بينما يحتفظ الطرف المحظور بمحادثته دون إرسال؛ وقائمة القصص وقصص ناشر واحد (404) وتسجيل المشاهدات تستبعد الحساب الآخر؛ وقائمة التقييمات العامة تستبعد تقييمات حساب محظور في أي اتجاه متى كان الطالب مسجلاً للدخول (تسجيل دخول اختياري على هذا المسار، يعيد أيضاً إظهار إعجاب الطالب أو عدمه). التقييمات والمتوسطات كما هي. الترحيل 20261021090000_user_blocks يضيف جدول UserBlock.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After A blocks B, neither can start a chat or send a message to the other (403 USER_BLOCKED).",
+          "A's chat list no longer shows the conversation with B; B still sees it but can't send.",
+          "A no longer sees B's stories or B's reviews; unblocking brings them back.",
+          "Blocking twice, or blocking from a profile id, works; blocking yourself is refused.",
+        ],
+        ar: [
+          "بعد أن يحظر A الحساب B، لا يستطيع أي منهما بدء محادثة أو إرسال رسالة للآخر (403 USER_BLOCKED).",
+          "لم تعد قائمة محادثات A تعرض المحادثة مع B؛ وما زال B يراها لكن لا يستطيع الإرسال.",
+          "لم يعد A يرى قصص B ولا تقييماته؛ وإلغاء الحظر يعيدها.",
+          "الحظر مرتين، أو الحظر بمعرّف ملف، يعمل؛ وحظر حسابك مرفوض.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two accounts on production: A opens B's company profile › ⋮ › حظر الشركة › حظر; A's chat with B disappears; B tries to send to A → «لا يمكنك مراسلة هذا المستخدم».",
+          "A: Settings › المحظورون › إلغاء الحظر; B's stories and reviews show again.",
+        ],
+        ar: [
+          "حسابان على الإنتاج: يفتح A ملف شركة B › ⋮ › حظر الشركة › حظر؛ تختفي محادثة A مع B؛ ويحاول B الإرسال إلى A ← «لا يمكنك مراسلة هذا المستخدم».",
+          "A: الإعدادات › المحظورون › إلغاء الحظر؛ تعود قصص B وتقييماته.",
+        ],
+      },
+      updatedIn: "feat/user-blocking",
+    },
+    {
       id: "api-stories-video",
       title: {
         en: "Stories (phase 5): video stories up to 30 seconds, checked with ffprobe",

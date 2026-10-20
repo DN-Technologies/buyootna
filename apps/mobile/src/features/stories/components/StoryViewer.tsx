@@ -7,6 +7,9 @@ import { ActivityIndicator, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useBlockFlow } from '@/shared/hooks/blocks/useBlocks';
+import { showAlert } from '@/shared/utils/alert';
+
 import { useStoryActions } from '../hooks/useStoryActions';
 import { useStoryPlayback } from '../hooks/useStoryPlayback';
 import {
@@ -61,6 +64,8 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
 
   // A reply on its way (opening the chat) pauses the story
   const [replying, setReplying] = useState(false);
+
+  const { askToBlock } = useBlockFlow();
 
   const data = useStoryViewerSource(authorId, source);
   const playback = useStoryPlayback({
@@ -130,7 +135,33 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
                 onClose={close}
                 onOptions={() => {
                   setSheetOpen(true);
-                  (isMine ? deleteSheet : reportSheet).current?.present();
+                  if (isMine) {
+                    deleteSheet.current?.present();
+                    return;
+                  }
+                  // Someone else's story: report it, or block its account
+                  showAlert('خيارات', '', [
+                    {
+                      text: 'إبلاغ عن القصة',
+                      onPress: () => reportSheet.current?.present(),
+                    },
+                    {
+                      text: 'حظر الحساب',
+                      style: 'destructive',
+                      onPress: () =>
+                        askToBlock(
+                          { identityId: author.author.identityId },
+                          author.author.name,
+                          close,
+                          () => setSheetOpen(false),
+                        ),
+                    },
+                    {
+                      text: 'إلغاء',
+                      style: 'cancel',
+                      onPress: () => setSheetOpen(false),
+                    },
+                  ]);
                 }}
               />
             </View>

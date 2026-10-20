@@ -9,6 +9,41 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-user-blocking",
+      title: {
+        en: "Blocking another account from chat, profiles and stories; Settings › «المحظورون»",
+        ar: "حظر حساب آخر من المحادثة والملفات والقصص؛ الإعدادات › «المحظورون»",
+      },
+      priority: "P1",
+      story: {
+        en: "Anyone can block another account (Apple requires blocking next to reporting): in a chat, ⋮ › «حظر المستخدم»; on a company or office profile, ⋮ › «حظر الشركة» / «حظر المكتب»; on someone else's story, ⋮ › «حظر الحساب» (the ⋮ now offers «إبلاغ عن القصة» and «حظر الحساب»). Each asks first: «حظر {الاسم}؟ لن يتمكن من مراسلتك، ولن ترى محادثاته أو قصصه أو تقييماته. يمكنك إلغاء الحظر من الإعدادات.» Once blocked, the chat closes and leaves the chat list, the story viewer closes, and their stories, ring and reviews disappear; sending to them shows «لا يمكنك مراسلة هذا المستخدم». A blocked profile's ⋮ shows «إلغاء حظر الشركة / المكتب». Settings › الحساب والامان › «المحظورون» lists blocked accounts (picture or initial, name) with «إلغاء الحظر» after a confirmation; an empty list says «لا يوجد حسابات محظورة». A block covers the whole account, from any of your profiles.",
+        ar: "يمكن لأي مستخدم حظر حساب آخر (تطلب Apple الحظر إلى جانب الإبلاغ): في المحادثة ⋮ › «حظر المستخدم»؛ وفي ملف شركة أو مكتب ⋮ › «حظر الشركة» / «حظر المكتب»؛ وفي قصة لغيرك ⋮ › «حظر الحساب» (تعرض ⋮ الآن «إبلاغ عن القصة» و«حظر الحساب»). كل منها يسأل أولاً: «حظر {الاسم}؟ لن يتمكن من مراسلتك، ولن ترى محادثاته أو قصصه أو تقييماته. يمكنك إلغاء الحظر من الإعدادات.» بعد الحظر تُغلق المحادثة وتختفي من قائمة المحادثات، ويُغلق عارض القصص، وتختفي قصصه وحلقته وتقييماته؛ ومراسلته تعرض «لا يمكنك مراسلة هذا المستخدم». وتعرض ⋮ في ملف محظور «إلغاء حظر الشركة / المكتب». الإعدادات › الحساب والامان › «المحظورون» تعرض الحسابات المحظورة (الصورة أو الحرف الأول، والاسم) مع «إلغاء الحظر» بعد التأكيد؛ والقائمة الفارغة تقول «لا يوجد حسابات محظورة». الحظر يشمل الحساب كله، من أي ملف من ملفاتك.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Chat ⋮ › حظر المستخدم › حظر: the chat closes and is gone from the list.",
+          "A blocked company's stories and reviews no longer show; its ⋮ offers «إلغاء حظر الشركة».",
+          "Story ⋮ › حظر الحساب closes the viewer; cancelling resumes the story.",
+          "Settings › المحظورون lists them; إلغاء الحظر brings their content back.",
+        ],
+        ar: [
+          "المحادثة ⋮ › حظر المستخدم › حظر: تُغلق المحادثة وتختفي من القائمة.",
+          "لم تعد قصص الشركة المحظورة وتقييماتها تظهر؛ وتعرض ⋮ «إلغاء حظر الشركة».",
+          "القصة ⋮ › حظر الحساب يغلق العارض؛ والإلغاء يستأنف القصة.",
+          "الإعدادات › المحظورون تعرضهم؛ وإلغاء الحظر يعيد محتواهم.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Two accounts on a phone with the store build: block from a chat, a company profile and a story; check the chat list, stories tray and reviews; unblock from Settings › المحظورون.",
+        ],
+        ar: [
+          "حسابان على هاتف بنسخة المتجر: احظر من محادثة وملف شركة وقصة؛ وتحقق من قائمة المحادثات وشريط القصص والتقييمات؛ ثم ألغِ الحظر من الإعدادات › المحظورون.",
+        ],
+      },
+      updatedIn: "feat/user-blocking",
+    },
+    {
       id: "mobile-stories-profiles",
       title: {
         en: "Stories (phase 6): story rings on company and office profiles, fresher links",

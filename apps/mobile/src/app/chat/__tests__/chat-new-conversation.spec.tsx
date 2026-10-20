@@ -14,6 +14,10 @@ import ChatDetailScreen from '../[id]';
 
 let mockSearchParams: Record<string, string> = {};
 
+// Blocking from the chat has its own tests (useBlocks, ChatHeader)
+jest.mock('@/shared/hooks/blocks/useBlocks', () => ({
+  useBlockFlow: () => ({ askToBlock: jest.fn(), askToUnblock: jest.fn() }),
+}));
 jest.mock('expo-router', () => {
   const mockRouter = {
     push: jest.fn(),

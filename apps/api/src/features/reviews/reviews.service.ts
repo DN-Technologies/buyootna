@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { blockedUserIdsFor } from '../blocks/block.rules';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { GetReviewsDto, ReviewSortOption } from './dto/get-reviews.dto';
 import { Prisma, ReactionType } from '@prisma/client';
@@ -93,6 +94,8 @@ export class ReviewsService {
     targetUserId: string,
     currentIdentityId?: string,
     query?: GetReviewsDto,
+    // The signed-in account: reviews by accounts blocked either way are hidden
+    currentUserId?: string,
   ) {
     const page = query?.page ? parseInt(query.page, 10) : 1;
     const limit = query?.limit ? parseInt(query.limit, 10) : 20;
@@ -107,8 +110,27 @@ export class ReviewsService {
       orderBy = { rating: 'asc' };
     }
 
+    const blocked = currentUserId
+      ? await blockedUserIdsFor(this.prisma, currentUserId)
+      : [];
     const whereClause: Prisma.ReviewWhereInput = {
       OR: [{ targetUserId }, { targetIdentityId: targetUserId }],
+      ...(blocked.length
+        ? {
+            // Null-safe: legacy reviews may lack one of the two links
+            AND: [
+              {
+                OR: [{ reviewerId: null }, { reviewerId: { notIn: blocked } }],
+              },
+              {
+                OR: [
+                  { reviewerIdentityId: null },
+                  { reviewerIdentity: { userId: { notIn: blocked } } },
+                ],
+              },
+            ],
+          }
+        : {}),
     };
 
     const [reviews, total] = await Promise.all([

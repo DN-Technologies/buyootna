@@ -56,6 +56,7 @@ export default function SettingsScreen() {
               onChangePassword={() => router.push('/change-password')}
               onDevices={() => router.push('/devices')}
               onLoginMethod={() => loginMethodSheetRef.current?.present()}
+              onBlocked={() => router.push('/blocked')}
             />
             <PrivacySettingsSection
               showPhone={settings.showPhone}

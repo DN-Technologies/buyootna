@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { notBlockedSql } from '../blocks/block.rules';
 import type { FeedAuthorDto, StoryFeedDto } from './dto/story-response.dto';
 import { StoryFeedQueryDto } from './dto/story-feed-query.dto';
 import { StoriesMediaService } from './stories-media.service';
@@ -160,8 +161,8 @@ export class StoriesFeedService {
 /**
  * The ordering query. Authors: approved companies and offices with a live
  * story published by the snapshot, owned by an account that is neither
- * disabled nor blocked, and not the viewer's own account (none of its
- * profiles).
+ * disabled nor blocked, not the viewer's own account (none of its
+ * profiles), and with no block either way between the two accounts.
  */
 export function rankQuery(
   viewer: FeedViewer,
@@ -189,6 +190,7 @@ export function rankQuery(
         AND s."expiresAt" > ${utc(now)}
         AND s."publishedAt" <= ${utc(snapshotAt)}
         AND i."userId" <> ${viewer.userId}
+        AND ${notBlockedSql(viewer.userId, Prisma.sql`i."userId"`)}
         AND u."isDisabled" = false
         AND u."isBlocked" = false
         AND ((i.type = 'COMPANY' AND c.status = 'APPROVED')

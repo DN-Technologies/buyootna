@@ -54,6 +54,8 @@ model User {
   adminActionLogsAbout AdminActionLog[]      @relation("AdminActionLogTarget")
   adminNotesAuthored   AdminNote[]           @relation("AdminNoteAuthor")
   adminNotesAbout      AdminNote[]           @relation("AdminNoteTarget")
+  blocksMade           UserBlock[]           @relation("UserBlocksMade")
+  blocksReceived       UserBlock[]           @relation("UserBlocksReceived")
 
   // Legacy fields - kept for backward compatibility during migration
   // TODO: Remove after migration is complete
