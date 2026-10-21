@@ -134,10 +134,10 @@ describe('CompanyMoreScreen (Figma Design Implementation)', () => {
     const { getByText } = await render(<CompanyMoreScreen />);
 
     await fireEvent.press(getByText('الخدمات'));
-    expect(router.push).toHaveBeenCalledWith('/add-service');
+    expect(router.push).toHaveBeenCalledWith('/company-services');
 
     await fireEvent.press(getByText('معرض الأعمال'));
-    expect(router.push).toHaveBeenCalledWith('/add-project');
+    expect(router.push).toHaveBeenCalledWith('/company-projects');
 
     await fireEvent.press(getByText('فواتير الخدمات'));
     expect(router.push).toHaveBeenCalledWith('/company-service-invoices');

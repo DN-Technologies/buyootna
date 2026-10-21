@@ -1,4 +1,5 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useQueryClient } from '@tanstack/react-query';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
@@ -21,6 +22,7 @@ export const MAX_IMAGES = 3;
  */
 export function useAddProject() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { activeIdentity } = useIdentity();
   const refreshProfile = useAuthStore((state) => state.refreshProfile);
 
@@ -81,6 +83,7 @@ export function useAddProject() {
         images: urls,
       });
       refreshProfile();
+      queryClient.invalidateQueries({ queryKey: ['companyProjects'] });
       setIsSubmitting(false);
       successSheetRef.current?.present();
     } catch (error) {

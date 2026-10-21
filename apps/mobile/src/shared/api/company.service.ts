@@ -14,6 +14,15 @@ export interface CompanyDetailsResponse extends CompanyHeaderData {
   workingHours?: WorkingDay[] | null;
 }
 
+// One of the current company's projects, as GET /users/profile/projects
+// returns it
+export interface MyCompanyProject {
+  id: string;
+  title: string;
+  description: string;
+  images: string[];
+}
+
 export const companyService = {
   /**
    * Fetches full company profile details by profile ID or user ID.
@@ -56,9 +65,38 @@ export const companyService = {
    */
   getMyServices: async (): Promise<{
     specialty: string | null;
-    services: { id: string; type: string; title: string | null }[];
+    services: {
+      id: string;
+      type: string;
+      title: string | null;
+      description?: string | null;
+    }[];
   }> => {
     const response = await apiClient.get('/users/profile/services');
+    return response.data;
+  },
+
+  /**
+   * Removes one of the current company's services.
+   */
+  deleteService: async (id: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.delete(`/users/profile/services/${id}`);
+    return response.data;
+  },
+
+  /**
+   * The current company's معرض الأعمال projects, newest first.
+   */
+  getMyProjects: async (): Promise<MyCompanyProject[]> => {
+    const response = await apiClient.get('/users/profile/projects');
+    return response.data;
+  },
+
+  /**
+   * Removes one of the current company's معرض الأعمال projects.
+   */
+  deleteProject: async (id: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.delete(`/users/profile/projects/${id}`);
     return response.data;
   },
 
