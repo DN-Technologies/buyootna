@@ -53,6 +53,8 @@ overrides:
   'source-map-js@^1.0.0': 1.2.2
   'compression@^1.0.0': 1.8.2
   'handlebars@^4.0.0': 4.7.10
+  'vite@^6.0.0': 6.4.4
+  'follow-redirects@^1.0.0': 1.16.1
 
 patchedDependencies:
   react-native@0.81.5: patches/react-native@0.81.5.patch
