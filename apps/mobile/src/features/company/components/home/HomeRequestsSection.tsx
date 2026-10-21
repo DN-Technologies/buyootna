@@ -49,7 +49,7 @@ export default function HomeRequestsSection({
           <CompanyRequestCard
             request={item}
             variant={variant}
-            onReply={(request) => openChat(request, { markResponded: true })}
+            onReply={openChat}
             isReplying={openingId === item.id}
             onDetails={(request) =>
               router.push(`/(company)/(requests)/${request.id}`)

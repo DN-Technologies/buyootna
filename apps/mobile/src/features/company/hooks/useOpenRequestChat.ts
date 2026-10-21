@@ -1,10 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { chatService } from '@/shared/api/chat.service';
-import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { showAlert } from '@/shared/utils/alert';
 
 interface RequestRef {
@@ -12,26 +10,21 @@ interface RequestRef {
   clientIdentityId: string;
 }
 
-interface OpenOptions {
-  // الرد / ارسال عرض: the request counts as answered once the chat exists
-  markResponded?: boolean;
-}
-
 /**
  * Opens the chat pinned to a request (الرد, ارسال عرض, ابدأ المحادثة, the
- * chat button on the details). The chat opens as soon as the conversation
- * exists; marking the request answered runs after, in the background, so
- * the tap waits on one call, not two. `openingId` is the request being
- * opened, for the button's spinner; taps while one opens are ignored.
+ * chat button on the details), as soon as the conversation exists. Opening
+ * a chat doesn't mark the request answered: only sending the reply sheet
+ * does (تم الرد is the company's own, from its reply). `openingId` is the
+ * request being opened, for the button's spinner; taps while one opens are
+ * ignored.
  */
 export function useOpenRequestChat() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const [openingId, setOpeningId] = useState<string | null>(null);
   // A ref as well: a second tap in the same frame sees the first one
   const busy = useRef(false);
 
-  const openChat = async (request: RequestRef, options: OpenOptions = {}) => {
+  const openChat = async (request: RequestRef) => {
     if (busy.current) return;
     busy.current = true;
     setOpeningId(request.id);
@@ -43,20 +36,6 @@ export function useOpenRequestChat() {
         request.id,
       );
       router.push(`/chat/${conversation.id}` as never);
-      if (options.markResponded) {
-        companyRequestsService
-          .markResponded(request.id)
-          .then(() => {
-            // The lists and this request's details show the new status
-            queryClient.invalidateQueries({ queryKey: ['companyRequests'] });
-            queryClient.invalidateQueries({
-              queryKey: ['companyRequest', request.id],
-            });
-          })
-          .catch(() => {
-            // The chat is open; the status catches up on the next refresh
-          });
-      }
     } catch (error: any) {
       if (handleSubscriptionRequired(error, router)) return;
       const backendMsg = error?.response?.data?.message;

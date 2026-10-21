@@ -7,6 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   CompanyRequestsService,
   parsePriceRange,
+  statusForProvider,
 } from './company-requests.service';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { PushService } from '../../../core/push/push.service';
@@ -630,6 +631,137 @@ describe('CompanyRequestsService', () => {
       await expect(
         service.findOne('req-1', 'company-1'),
       ).resolves.toBeDefined();
+    });
+  });
+
+  describe("تم الرد is the company's own (QA: shown without replying)", () => {
+    const offerBy = (providerIdentityId: string) => ({
+      id: `offer-${providerIdentityId}`,
+      providerIdentityId,
+      provider: null,
+      price: null,
+      status: 'SENT',
+      message: 'عرضنا',
+      excludes: null,
+      notes: null,
+      createdAt: new Date('2026-02-02T00:00:00.000Z'),
+    });
+
+    it('opening the details of a public request another company answered shows قيد الانتظار', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+        status: 'RESPONDED',
+        offers: [offerBy('company-other')],
+      });
+
+      const result = await service.findOne('req-1', 'company-1');
+
+      expect(result.status).toBe('pending');
+    });
+
+    it('a request marked answered with no reply (an opened chat) shows قيد الانتظار', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'RESPONDED',
+        offers: [],
+      });
+
+      expect((await service.findOne('req-1', 'company-1')).status).toBe(
+        'pending',
+      );
+    });
+
+    it('once this company sent its reply, it sees تم الرد', async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'RESPONDED',
+        offers: [offerBy('company-1')],
+      });
+
+      expect((await service.findOne('req-1', 'company-1')).status).toBe(
+        'responded',
+      );
+    });
+
+    it("the requester still sees the request's own status", async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        status: 'RESPONDED',
+        offers: [offerBy('company-1')],
+      });
+
+      expect((await service.findOne('req-1', 'client-1')).status).toBe(
+        'responded',
+      );
+    });
+
+    it('the lists show each company its own status', async () => {
+      prisma.companyRequest.findMany.mockResolvedValue([
+        {
+          ...baseRequest,
+          id: 'a',
+          status: 'RESPONDED',
+          offers: [offerBy('company-other')],
+        },
+        {
+          ...baseRequest,
+          id: 'b',
+          status: 'RESPONDED',
+          offers: [offerBy('company-1')],
+        },
+      ]);
+
+      const result = await service.findMine('company-1', { scope: 'public' });
+
+      expect(result.map((r) => [r.id, r.status])).toEqual([
+        ['a', 'pending'],
+        ['b', 'responded'],
+      ]);
+    });
+
+    it.each([
+      ['pending', { none: { providerIdentityId: 'company-1' } }],
+      ['responded', { some: { providerIdentityId: 'company-1' } }],
+    ] as const)(
+      "the %s tab filters by this company's own reply",
+      async (status, offers) => {
+        await service.findMine('company-1', { scope: 'public', status });
+
+        const { where } = (
+          prisma.companyRequest.findMany.mock.calls as unknown[][]
+        )[0][0] as { where: Record<string, unknown> };
+        expect(where.status).toEqual({ in: ['PENDING', 'RESPONDED'] });
+        expect(where.offers).toEqual(offers);
+      },
+    );
+
+    it("the requester's own list (mine) keeps filtering by the request status", async () => {
+      await service.findMine('client-1', {
+        scope: 'mine',
+        status: 'responded',
+      });
+
+      const { where } = (
+        prisma.companyRequest.findMany.mock.calls as unknown[][]
+      )[0][0] as { where: Record<string, unknown> };
+      expect(where.status).toBe('RESPONDED');
+      expect(where.offers).toBeUndefined();
+    });
+
+    it('mark-responded (opening a chat) no longer changes the status', async () => {
+      await service.markResponded('req-1', 'company-1');
+
+      expect(prisma.companyRequest.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('statusForProvider leaves accepted and rejected as they are', () => {
+      expect(statusForProvider('ACCEPTED', [], 'company-1')).toBe(
+        'accepted',
+      );
+      expect(statusForProvider('REJECTED', [], 'company-1')).toBe(
+        'rejected',
+      );
     });
   });
 

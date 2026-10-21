@@ -223,7 +223,8 @@ export class CompanyRequestsController {
   @Patch(':id/mark-responded')
   @ApiOperation({
     summary:
-      'Mark a request as responded to (after opening a chat with the client)',
+      'Deprecated: no longer changes anything; returns the request. A request counts as answered for a company only once it sends a reply (POST :id/respond)',
+    deprecated: true,
   })
   @ApiResponse({ status: 200, type: CompanyRequestResponseDto })
   @ApiCommonErrors()

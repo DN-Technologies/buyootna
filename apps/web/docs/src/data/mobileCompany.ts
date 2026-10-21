@@ -9,6 +9,49 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-replied-badge-own-reply",
+      title: {
+        en: "«تم الرد» only after this company sends its reply",
+        ar: "«تم الرد» فقط بعد أن ترسل الشركة ردها",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: a company saw «تم الرد» on requests it had only opened. Two causes: opening a chat from a request (الرد / ارسال عرض / the details chat button) marked it answered before anything was sent, and the status was shared, so on a public request every company saw «تم الرد» once any one of them answered or opened a chat. Now «تم الرد» is each company's own: a request shows it, and is under the تم الرد tab, only once that company sent its reply or offer from the reply sheet (ارسال الرد). Opening the details or a chat changes nothing; another company's reply doesn't either. The requester still sees their request as answered once any company replies. Accepted and rejected are unchanged.",
+        ar: "QA: كانت الشركة ترى «تم الرد» على طلبات فتحتها فقط. سببان: فتح محادثة من الطلب (الرد / ارسال عرض / زر المحادثة في التفاصيل) كان يعلّمه كمردود عليه قبل إرسال أي شيء، والحالة كانت مشتركة، فعلى الطلب العام كانت كل الشركات ترى «تم الرد» بمجرد أن ترد أي شركة أو تفتح محادثة. الآن «تم الرد» خاص بكل شركة: يظهر على الطلب، ويكون تحت تبويب تم الرد، فقط بعد أن ترسل تلك الشركة ردها أو عرضها من نافذة الرد (ارسال الرد). فتح التفاصيل أو المحادثة لا يغيّر شيئاً، ولا رد شركة أخرى. وصاحب الطلب ما زال يرى طلبه مردوداً عليه بمجرد أن ترد أي شركة. والمقبول والمرفوض بلا تغيير.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Opening a pending request's details leaves it قيد الانتظار, in the details and the lists.",
+          "Opening a chat from the request leaves it قيد الانتظار.",
+          "Sending a reply from the reply sheet shows تم الرد and moves it to the تم الرد tab.",
+          "Company A replies to a public request: company B still sees it قيد الانتظار.",
+          "The requester sees their request answered once any company replied.",
+        ],
+        ar: [
+          "فتح تفاصيل طلب قيد الانتظار يتركه قيد الانتظار في التفاصيل والقوائم.",
+          "فتح محادثة من الطلب يتركه قيد الانتظار.",
+          "إرسال رد من نافذة الرد يعرض تم الرد وينقله إلى تبويب تم الرد.",
+          "الشركة أ ترد على طلب عام: الشركة ب ما زالت تراه قيد الانتظار.",
+          "صاحب الطلب يرى طلبه مردوداً عليه بمجرد أن ترد أي شركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company, open a pending request's details, go back — still قيد الانتظار.",
+          "Tap الرد on the home card or the details chat button, go back without writing — still قيد الانتظار.",
+          "Open the reply sheet, send a reply — تم الرد, and it is under the تم الرد tab.",
+          "With two companies: A replies to a public request; B opens the list and the details — قيد الانتظار.",
+        ],
+        ar: [
+          "كشركة افتح تفاصيل طلب قيد الانتظار ثم ارجع — ما زال قيد الانتظار.",
+          "اضغط الرد في بطاقة الرئيسية أو زر المحادثة في التفاصيل، ثم ارجع بدون كتابة — ما زال قيد الانتظار.",
+          "افتح نافذة الرد وأرسل رداً — يظهر تم الرد ويكون تحت تبويب تم الرد.",
+          "بشركتين: أ ترد على طلب عام، وب تفتح القائمة والتفاصيل — قيد الانتظار.",
+        ],
+      },
+      updatedIn: "fix/replied-badge-own-reply",
+    },
+    {
       id: "mobile-company-request-chat-opens-fast",
       title: {
         en: "Opening a chat from a request: immediate feedback, one wait instead of two",
@@ -16,36 +59,36 @@ export const mobileCompany: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "QA: tapping الرد / ارسال عرض on a home request card, the chat button on a request's details, or ابدأ المحادثة on an accepted request seemed frozen for a second or two before the chat opened. The app waited for two server calls in a row (create the chat, then mark the request answered) with no sign anything was happening, and a second tap started it again. Now the button shows a spinner straight away and ignores more taps; the chat opens as soon as the conversation exists; marking the request answered (الرد / ارسال عرض / details) happens after, in the background, and the lists and details pick up the new status. If the chat can't be created, an alert says why and the button works again. On the details screen, a company without a plan now goes to the plans like elsewhere.",
-        ar: "QA: الضغط على الرد / ارسال عرض في بطاقة طلب في الرئيسية، أو زر المحادثة في تفاصيل الطلب، أو ابدأ المحادثة في طلب مقبول كان يبدو متجمداً لثانية أو اثنتين قبل فتح المحادثة. كان التطبيق ينتظر طلبين للخادم متتاليين (إنشاء المحادثة ثم تعليم الطلب كمردود عليه) دون أي إشارة، والضغطة الثانية كانت تعيد العملية. الآن يعرض الزر مؤشر تحميل فوراً ويتجاهل الضغطات الإضافية، وتفتح المحادثة بمجرد إنشائها، ويتم تعليم الطلب كمردود عليه (الرد / ارسال عرض / التفاصيل) بعدها في الخلفية، وتعرض القوائم والتفاصيل الحالة الجديدة. وإن تعذر إنشاء المحادثة يظهر تنبيه بالسبب ويعود الزر للعمل. وفي شاشة التفاصيل تنتقل الشركة بلا باقة إلى الباقات كما في بقية الشاشات.",
+        en: "QA: tapping الرد / ارسال عرض on a home request card, the chat button on a request's details, or ابدأ المحادثة on an accepted request seemed frozen for a second or two before the chat opened. The app waited for two server calls in a row (create the chat, then mark the request answered) with no sign anything was happening, and a second tap started it again. Now the button shows a spinner straight away and ignores more taps; the chat opens as soon as the conversation exists. Opening a chat no longer marks the request answered (see mobile-company-replied-badge-own-reply). If the chat can't be created, an alert says why and the button works again. On the details screen, a company without a plan now goes to the plans like elsewhere.",
+        ar: "QA: الضغط على الرد / ارسال عرض في بطاقة طلب في الرئيسية، أو زر المحادثة في تفاصيل الطلب، أو ابدأ المحادثة في طلب مقبول كان يبدو متجمداً لثانية أو اثنتين قبل فتح المحادثة. كان التطبيق ينتظر طلبين للخادم متتاليين (إنشاء المحادثة ثم تعليم الطلب كمردود عليه) دون أي إشارة، والضغطة الثانية كانت تعيد العملية. الآن يعرض الزر مؤشر تحميل فوراً ويتجاهل الضغطات الإضافية، وتفتح المحادثة بمجرد إنشائها. ولم يعد فتح المحادثة يعلّم الطلب كمردود عليه (راجع mobile-company-replied-badge-own-reply). وإن تعذر إنشاء المحادثة يظهر تنبيه بالسبب ويعود الزر للعمل. وفي شاشة التفاصيل تنتقل الشركة بلا باقة إلى الباقات كما في بقية الشاشات.",
       },
       acceptanceCriteria: {
         en: [
           "Each of the three buttons shows a spinner as soon as it is tapped; tapping again does nothing.",
           "The chat opens after a single server call; it does not wait for the request status.",
-          "After الرد / ارسال عرض / the details chat button, the request shows تم الرد in the lists and the details.",
+          "Opening the chat leaves the request's status as it was.",
           "If the chat can't be created: an alert, no chat, the button works again.",
         ],
         ar: [
           "كل زر من الثلاثة يعرض مؤشر تحميل فور الضغط، والضغط مرة أخرى لا يفعل شيئاً.",
           "تفتح المحادثة بعد طلب واحد للخادم ولا تنتظر حالة الطلب.",
-          "بعد الرد / ارسال عرض / زر المحادثة في التفاصيل يظهر الطلب بحالة تم الرد في القوائم والتفاصيل.",
+          "فتح المحادثة يترك حالة الطلب كما هي.",
           "إن تعذر إنشاء المحادثة: تنبيه، ولا محادثة، ويعود الزر للعمل.",
         ],
       },
       testScenarios: {
         en: [
-          "As a company, tap الرد on a request on the home — a spinner shows at once, then the chat opens; back on the home the request shows تم الرد.",
+          "As a company, tap الرد on a request on the home — a spinner shows at once, then the chat opens; back on the home the request is still قيد الانتظار.",
           "Tap the button several times quickly — only one chat opens.",
           "Repeat from a request's details (chat button) and from an accepted request (ابدأ المحادثة).",
         ],
         ar: [
-          "كشركة اضغط الرد على طلب في الرئيسية — يظهر مؤشر التحميل فوراً ثم تفتح المحادثة؛ وعند الرجوع يظهر الطلب بحالة تم الرد.",
+          "كشركة اضغط الرد على طلب في الرئيسية — يظهر مؤشر التحميل فوراً ثم تفتح المحادثة؛ وعند الرجوع يبقى الطلب قيد الانتظار.",
           "اضغط الزر عدة مرات بسرعة — تفتح محادثة واحدة فقط.",
           "كرر من تفاصيل طلب (زر المحادثة) ومن طلب مقبول (ابدأ المحادثة).",
         ],
       },
-      updatedIn: "fix/request-chat-opens-fast",
+      updatedIn: "fix/replied-badge-own-reply",
     },
     {
       id: "mobile-company-manage-services-projects",

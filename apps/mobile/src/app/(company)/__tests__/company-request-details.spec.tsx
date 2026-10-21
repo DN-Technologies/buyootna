@@ -36,7 +36,7 @@ jest.mock('@/shared/api/companyRequests.service', () => ({
   companyRequestsService: {
     accept: jest.fn(),
     reject: jest.fn(),
-    markResponded: jest.fn(),
+    respond: jest.fn(),
     bookmark: jest.fn(),
     unbookmark: jest.fn(),
   },
@@ -205,7 +205,6 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
 
   it('renders client card with name, metadata, rating, and starts a real chat on the chat/reply triggers', async () => {
     (chatService.createConversation as jest.Mock).mockResolvedValue({ id: 'conv-1' });
-    (companyRequestsService.markResponded as jest.Mock).mockResolvedValue({});
 
     const { getByTestId } = await render(<CompanyRequestDetailsScreen />);
 
@@ -223,7 +222,9 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
       undefined,
       'req-1',
     );
-    expect(companyRequestsService.markResponded).toHaveBeenCalledWith('req-1');
+    // Opening a chat is not a reply: the status is left alone (QA: تم الرد
+    // showed without replying)
+    expect(companyRequestsService.respond).not.toHaveBeenCalled();
     expect(mockPush).toHaveBeenCalledWith('/chat/conv-1');
 
     await fireEvent.press(getByTestId('request-details-call-button'));

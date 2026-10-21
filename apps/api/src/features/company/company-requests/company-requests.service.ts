@@ -72,6 +72,26 @@ type OfferWithProvider = Prisma.RequestOfferGetPayload<{
 }>;
 
 /**
+ * The status a company sees. «تم الرد» is its own: a request counts as
+ * answered for a company once that company sent its reply or offer (its
+ * RequestOffer), never because another company answered a public request
+ * or because a chat about it was opened. Accepted and rejected stay as the
+ * request has them.
+ */
+export function statusForProvider(
+  status: RequestStatus,
+  offers: { providerIdentityId: string }[] | undefined,
+  viewerIdentityId: string,
+): CompanyRequestResponseDto['status'] {
+  if (status === RequestStatus.PENDING || status === RequestStatus.RESPONDED) {
+    return offers?.some((o) => o.providerIdentityId === viewerIdentityId)
+      ? 'responded'
+      : 'pending';
+  }
+  return status.toLowerCase() as CompanyRequestResponseDto['status'];
+}
+
+/**
  * The offers a viewer may see: the requester sees every company's answer, a
  * company only its own.
  */
@@ -271,7 +291,18 @@ export class CompanyRequestsService {
         : { none: { identityId } };
     }
 
-    if (params.status && params.status !== 'all' && !publicRejected) {
+    const providerAnswered =
+      params.scope !== 'mine' &&
+      (params.status === 'pending' || params.status === 'responded');
+    if (providerAnswered) {
+      // قيد الانتظار / تم الرد are this company's own (statusForProvider):
+      // open requests it has or hasn't sent its reply to
+      where.status = { in: [RequestStatus.PENDING, RequestStatus.RESPONDED] };
+      where.offers =
+        params.status === 'responded'
+          ? { some: { providerIdentityId: identityId } }
+          : { none: { providerIdentityId: identityId } };
+    } else if (params.status && params.status !== 'all' && !publicRejected) {
       where.status = params.status.toUpperCase() as RequestStatus;
     }
     // A finished request (انهاء الطلب) leaves the company's مقبولة; it stays
@@ -362,6 +393,9 @@ export class CompanyRequestsService {
           identityId,
           previousOffersByClient.get(r.clientIdentityId) ?? 0,
         ),
+        ...(params.scope !== 'mine'
+          ? { status: statusForProvider(r.status, r.offers, identityId) }
+          : {}),
         // Rejected by this company: مرفوضة for it, whatever others see
         ...(r.dismissals?.some((d) => d.kind === DISMISSAL_REJECTED)
           ? { status: 'rejected' as const }
@@ -437,6 +471,16 @@ export class CompanyRequestsService {
     );
     return {
       ...this.toResponseDto(request, identityId, previousOffers),
+      // A company sees its own تم الرد; the requester the request's status
+      ...(identityId !== request.clientIdentityId
+        ? {
+            status: statusForProvider(
+              request.status,
+              extras?.offers,
+              identityId,
+            ),
+          }
+        : {}),
       ...(extras?.dismissals?.some((d) => d.kind === DISMISSAL_REJECTED)
         ? { status: 'rejected' as const }
         : {}),
@@ -806,13 +850,10 @@ export class CompanyRequestsService {
     id: string,
     identityId: string,
   ): Promise<CompanyRequestResponseDto> {
+    // Kept for app builds that still call it when they open a chat. Opening
+    // a chat is not a reply: only respond() (a reply or offer) marks a
+    // request answered, so this changes nothing
     await this.getVisibleRequestOrThrow(id, identityId);
-
-    await this.prisma.companyRequest.updateMany({
-      where: { id, status: RequestStatus.PENDING },
-      data: { status: RequestStatus.RESPONDED },
-    });
-
     return this.findOne(id, identityId);
   }
 
