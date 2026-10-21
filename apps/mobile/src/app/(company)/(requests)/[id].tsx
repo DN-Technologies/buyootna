@@ -19,9 +19,9 @@ import {
   RequestOptionsMenu,
 } from '@/features/company/components/requests';
 import { useCompanyRequestDetails } from '@/features/company/hooks/useCompanyRequestDetails';
+import { useOpenRequestChat } from '@/features/company/hooks/useOpenRequestChat';
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
-import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { formatDetails } from '@/shared/components/map/picker/addressParsing';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
@@ -109,25 +109,10 @@ export default function CompanyRequestDetailsScreen() {
     }
   };
 
-  const handleChat = async () => {
+  const { openChat, openingId } = useOpenRequestChat();
+  const handleChat = () => {
     if (!request) return;
-    try {
-      const conversation = await chatService.createConversation(
-        request.clientIdentityId,
-        undefined,
-        // The chat is about this request: both sides see it pinned
-        request.id,
-      );
-      await companyRequestsService.markResponded(request.id);
-      refetch();
-      router.push(`/chat/${conversation.id}` as any);
-    } catch (error: any) {
-      const backendMsg = error?.response?.data?.message;
-      const msg = Array.isArray(backendMsg)
-        ? backendMsg.join('\n')
-        : backendMsg || 'تعذر بدء المحادثة مع العميل';
-      showAlert('تنبيه', msg);
-    }
+    openChat(request, { markResponded: true });
   };
 
   const handlePhotoPress = (index: number) => {
@@ -202,6 +187,7 @@ export default function CompanyRequestDetailsScreen() {
               : undefined
           }
           onChatPress={handleChat}
+          isOpeningChat={!!openingId}
         />
 
         {/* تفاصيل الرد: the company's own offer */}

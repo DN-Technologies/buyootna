@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import {
   CardAttachIcon,
@@ -19,6 +19,8 @@ interface CompanyRequestCardProps {
   variant?: 'company' | 'public';
   onDetails: (request: CompanyRequestItem) => void;
   onReply: (request: CompanyRequestItem) => void;
+  // The chat is being opened: a spinner in place of the label
+  isReplying?: boolean;
 }
 
 interface Badge {
@@ -68,6 +70,7 @@ export default function CompanyRequestCard({
   variant = 'company',
   onDetails,
   onReply,
+  isReplying = false,
 }: CompanyRequestCardProps) {
   const badge =
     variant === 'company'
@@ -161,14 +164,23 @@ export default function CompanyRequestCard({
           testID={`home-request-reply-${request.id}`}
           activeOpacity={0.8}
           onPress={() => onReply(request)}
+          disabled={isReplying}
           className="h-8 flex-1 items-center justify-center rounded-[24px] bg-[#15304D]"
         >
-          <Text
-            className="font-cairo-semibold text-[14px] leading-[21px] text-white"
-            style={{ letterSpacing: 0.28 }}
-          >
-            {variant === 'company' ? 'الرد' : 'ارسال عرض'}
-          </Text>
+          {isReplying ? (
+            <ActivityIndicator
+              testID={`home-request-reply-loading-${request.id}`}
+              size="small"
+              color="#FFFFFF"
+            />
+          ) : (
+            <Text
+              className="font-cairo-semibold text-[14px] leading-[21px] text-white"
+              style={{ letterSpacing: 0.28 }}
+            >
+              {variant === 'company' ? 'الرد' : 'ارسال عرض'}
+            </Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           testID={`home-request-details-${request.id}`}

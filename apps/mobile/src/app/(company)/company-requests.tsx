@@ -23,11 +23,10 @@ import {
   toRequestListFilters,
 } from '@/features/company/components/requests';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
-import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
+import { useOpenRequestChat } from '@/features/company/hooks/useOpenRequestChat';
 import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
 import ConfirmActionSheet from '@/features/individual/components/activity/offers/ConfirmActionSheet';
 import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
-import { chatService } from '@/shared/api/chat.service';
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { showAlert } from '@/shared/utils/alert';
@@ -82,25 +81,8 @@ export default function CompanyRequestsScreen() {
   }, [ended, router, triggerToast]);
 
   // ابدأ المحادثة on an accepted request: the chat pinned to it
-  const handleStartChat = async (request: CompanyRequestItem) => {
-    try {
-      const conversation = await chatService.createConversation(
-        request.clientIdentityId,
-        undefined,
-        request.id,
-      );
-      router.push(`/chat/${conversation.id}` as never);
-    } catch (error: any) {
-      if (handleSubscriptionRequired(error, router)) return;
-      const backendMsg = error?.response?.data?.message;
-      showAlert(
-        'تنبيه',
-        Array.isArray(backendMsg)
-          ? backendMsg.join('\n')
-          : backendMsg || 'تعذر بدء المحادثة مع العميل',
-      );
-    }
-  };
+  const { openChat, openingId } = useOpenRequestChat();
+  const handleStartChat = (request: CompanyRequestItem) => openChat(request);
 
   // The trash: off this company's lists, once confirmed
   const handleRemovePress = (request: CompanyRequestItem) => {
@@ -178,6 +160,7 @@ export default function CompanyRequestsScreen() {
               request={request}
               onReply={handleReplyPress}
               onStartChat={handleStartChat}
+              isOpeningChat={openingId === request.id}
               onRemove={handleRemovePress}
               onDetails={handleDetailsPress}
               onPress={handleDetailsPress}

@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { TrashIcon } from '@/assets/icons/company-add';
 
@@ -17,6 +17,8 @@ export interface CompanyRequestListItemProps {
   onPress?: (request: CompanyRequestItem) => void;
   // مقبولة: ابدأ المحادثة and the trash
   onStartChat?: (request: CompanyRequestItem) => void;
+  // The chat is being opened: a spinner in place of the icon
+  isOpeningChat?: boolean;
   onRemove?: (request: CompanyRequestItem) => void;
 }
 
@@ -63,6 +65,7 @@ export default function CompanyRequestListItem({
   onDetails,
   onPress,
   onStartChat,
+  isOpeningChat = false,
   onRemove,
 }: CompanyRequestListItemProps) {
   const statusConfig = request.completed
@@ -172,10 +175,19 @@ export default function CompanyRequestListItem({
             <TouchableOpacity
               testID={`company-request-chat-btn-${request.id}`}
               onPress={() => onStartChat?.(request)}
+              disabled={isOpeningChat}
               activeOpacity={0.8}
               className="h-[32px] flex-1 flex-row items-center justify-center gap-2 rounded-[24px] border border-[#B28648] bg-white"
             >
-              <ClientChatIcon size={16} color="#B28648" />
+              {isOpeningChat ? (
+                <ActivityIndicator
+                  testID={`company-request-chat-loading-${request.id}`}
+                  size="small"
+                  color="#B28648"
+                />
+              ) : (
+                <ClientChatIcon size={16} color="#B28648" />
+              )}
               <Text
                 className="font-cairo-semibold text-[14px] text-[#B28648]"
                 style={{ writingDirection: 'rtl' }}
