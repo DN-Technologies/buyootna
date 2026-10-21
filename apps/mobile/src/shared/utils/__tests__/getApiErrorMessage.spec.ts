@@ -33,6 +33,35 @@ describe('getApiErrorMessage', () => {
     );
   });
 
+  // A deploy restarts the API; the proxy answers 502 with an HTML page
+  it.each([502, 503, 504])(
+    'a %d from the proxy says the service is briefly unavailable',
+    (status) => {
+      const error = {
+        message: `Request failed with status code ${status}`,
+        response: { status, data: '<html>Bad Gateway</html>' },
+      };
+      expect(getApiErrorMessage(error, 'حدث خطأ أثناء معالجة الدفع.')).toBe(
+        'الخدمة غير متاحة مؤقتاً، يرجى المحاولة مرة أخرى بعد قليل.',
+      );
+    },
+  );
+
+  it("Nest's English default 500 is replaced, a 500 with our own message is kept", () => {
+    expect(
+      getApiErrorMessage(
+        { response: { status: 500, data: { message: 'Internal server error' } } },
+        'fallback',
+      ),
+    ).toBe('الخدمة غير متاحة مؤقتاً، يرجى المحاولة مرة أخرى بعد قليل.');
+    expect(
+      getApiErrorMessage(
+        { response: { status: 500, data: { message: 'حدث خطأ أثناء الاتصال ببوابة الدفع Tap' } } },
+        'fallback',
+      ),
+    ).toBe('حدث خطأ أثناء الاتصال ببوابة الدفع Tap');
+  });
+
   it('handles a nullish/malformed error without throwing', () => {
     expect(getApiErrorMessage(null, 'fallback')).toBe(
       'يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.',

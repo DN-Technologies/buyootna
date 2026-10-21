@@ -10,7 +10,7 @@ import {
 } from '@/shared/api/companySubscriptions.service';
 import { paymentsService } from '@/shared/api/payments.service';
 import { showAlert } from '@/shared/utils/alert';
-import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+import { paymentErrorMessage } from '@/shared/utils/paymentErrorMessage';
 
 export const COMPANY_SUBSCRIPTION_KEY = ['company-subscription'];
 
@@ -66,15 +66,7 @@ export function useCompanyPlans() {
       // Back from the checkout, paid or not
       refresh();
     } catch (error) {
-      showAlert(
-        'خطأ',
-        getApiErrorMessage(
-          error,
-          error instanceof Error
-            ? error.message
-            : 'حدث خطأ أثناء معالجة الدفع.',
-        ),
-      );
+      showAlert('خطأ', paymentErrorMessage(error));
     } finally {
       setProcessingPlanId(null);
     }
