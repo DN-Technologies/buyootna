@@ -2293,6 +2293,43 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/native-1.5.0-video-voice",
     },
     {
+      id: "mobile-notifications-empty-explore",
+      title: {
+        en: "Notifications with nothing in them: «استكشف الان» goes home",
+        ar: "الإشعارات الفارغة: «استكشف الان» يعود للرئيسية",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: on the notifications list with no notifications, «استكشف الان» opened the app's launch screen, so the splash played again as if the app had restarted (reported from a company account). It now returns to the home of the profile in use: a company or office goes back to its own home, an individual to the home tab. The list button on the map had the same fault and now opens the home tab.",
+        ar: "QA: في قائمة الإشعارات وهي فارغة، كان «استكشف الان» يفتح شاشة بدء التطبيق فتظهر شاشة البداية من جديد كأن التطبيق أُعيد تشغيله (بُلّغ عنه من حساب شركة). الآن يعود إلى رئيسية الملف المستخدم: الشركة أو المكتب إلى رئيسيته، والفرد إلى تبويب الرئيسية. وزر القائمة على الخريطة كان فيه الخطأ نفسه، والآن يفتح تبويب الرئيسية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company or office: the bell, then «استكشف الان» on the empty list, shows the company/office home without the splash; back does not return to the notifications.",
+          "Individual: the same steps show the home tab without the splash.",
+          "Individual map: the list (layers) button shows the home tab without the splash.",
+        ],
+        ar: [
+          "الشركة أو المكتب: الجرس ثم «استكشف الان» في القائمة الفارغة يعرض رئيسية الشركة/المكتب بدون شاشة البداية، والرجوع لا يعيد إلى الإشعارات.",
+          "الفرد: الخطوات نفسها تعرض تبويب الرئيسية بدون شاشة البداية.",
+          "خريطة الفرد: زر القائمة (الطبقات) يعرض تبويب الرئيسية بدون شاشة البداية.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as a company with no notifications, tap the bell on the home, tap «استكشف الان» — the company home shows straight away.",
+          "Repeat as an office and as an individual.",
+          "As an individual open the map and tap the layers button — the home tab shows.",
+        ],
+        ar: [
+          "سجّل الدخول كشركة بلا إشعارات، اضغط الجرس في الرئيسية ثم «استكشف الان» — تظهر رئيسية الشركة مباشرة.",
+          "كرر كمكتب وكفرد.",
+          "كفرد افتح الخريطة واضغط زر الطبقات — يظهر تبويب الرئيسية.",
+        ],
+      },
+      updatedIn: "fix/notifications-explore-home",
+    },
+    {
       id: "mobile-app-icon-badge",
       title: {
         en: "Unread number on the app icon",

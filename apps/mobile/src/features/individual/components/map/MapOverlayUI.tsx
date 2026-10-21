@@ -66,7 +66,8 @@ export default function MapOverlayUI({
           {/* List View / Stack Layers Button */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push('/')}
+            // Home is a tab next to the map; '/' is the launch screen
+            onPress={() => router.navigate('/(individual)/home')}
             className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
           >
             <Feather name="layers" size={20} color="#111111" />
