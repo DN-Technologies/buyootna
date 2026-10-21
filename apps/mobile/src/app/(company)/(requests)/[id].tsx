@@ -112,7 +112,7 @@ export default function CompanyRequestDetailsScreen() {
   const { openChat, openingId } = useOpenRequestChat();
   const handleChat = () => {
     if (!request) return;
-    openChat(request, { markResponded: true });
+    openChat(request);
   };
 
   const handlePhotoPress = (index: number) => {

@@ -155,9 +155,7 @@ describe('CompanyHomeScreen', () => {
     expect(getByText('15,000 - 22,000 د.ك')).toBeTruthy();
 
     await fireEvent.press(getByTestId('home-request-reply-p-1'));
-    expect(mockReply).toHaveBeenCalledWith(PRIVATE[0], {
-      markResponded: true,
-    });
+    expect(mockReply).toHaveBeenCalledWith(PRIVATE[0]);
 
     expect(getByText('ارسال عرض')).toBeTruthy();
     await fireEvent.press(getByTestId('home-request-details-g-1'));

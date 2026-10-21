@@ -158,11 +158,4 @@ export const companyRequestsService = {
     );
     return response.data;
   },
-
-  markResponded: async (id: string): Promise<CompanyRequestItem> => {
-    const response = await apiClient.patch<CompanyRequestItem>(
-      `/company-requests/${id}/mark-responded`,
-    );
-    return response.data;
-  },
 };
