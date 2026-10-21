@@ -57,5 +57,14 @@ existed; don't reintroduce a path around them.
   someone with write access must manually trigger it from the Actions
   tab. This is a deliberate human checkpoint before production changes go
   live.
+- CD's `prisma migrate deploy` must connect directly, not through Neon's
+  `-pooler` host: set `DIRECT_URL` (the same URL without `-pooler`) in the
+  server's `apps/api/.env`; `prisma.config.ts` prefers it over
+  `DATABASE_URL`. Through the transaction pooler, migrate's session-level
+  advisory lock can stay held on a pooled connection, and every later
+  deploy then fails with `P1002 ... pg_advisory_lock(72707369)` (CD #93,
+  2026-10-21). To clear a leaked lock: find the holder with
+  `SELECT pid FROM pg_locks WHERE locktype = 'advisory' AND objid = 72707369`
+  and `pg_terminate_backend(<pid>)` it.
 - `main` is never pushed to directly (pre-push hook blocks it); changes
   land only via a `dev` → `main` PR gated by `.github/CODEOWNERS` review.

@@ -9,7 +9,12 @@ export default defineConfig({
     path: 'prisma/migrations',
     seed: 'pnpm ts-node prisma/seeds/seed.ts',
   },
+  // The CLI (migrate deploy, db push, studio) connects here; the app uses
+  // DATABASE_URL through its pg adapter. Migrations take a session-level
+  // advisory lock, which a transaction pooler (Neon's -pooler host) can
+  // leave held on a pooled connection and block every later deploy, so
+  // DIRECT_URL is the direct, non-pooler host when one is set.
   datasource: {
-    url: process.env['DATABASE_URL'],
+    url: process.env['DIRECT_URL'] ?? process.env['DATABASE_URL'],
   },
 });
