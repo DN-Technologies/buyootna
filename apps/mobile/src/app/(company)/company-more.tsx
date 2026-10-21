@@ -130,14 +130,14 @@ export default function CompanyMoreScreen() {
                   title="الخدمات"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/add-service')}
+                  onPress={() => router.push('/company-services')}
                 />
                 <MenuItem
                   icon={PortfolioIcon}
                   title="معرض الأعمال"
                   compact
                   chevronColor="#6B6A6A"
-                  onPress={() => router.push('/add-project')}
+                  onPress={() => router.push('/company-projects')}
                 />
                 <MenuItem
                   icon={ServiceInvoicesIcon}

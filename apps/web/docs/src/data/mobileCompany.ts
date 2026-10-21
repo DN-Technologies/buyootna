@@ -9,6 +9,51 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-manage-services-projects",
+      title: {
+        en: "More › الخدمات and معرض الأعمال list what the company has",
+        ar: "المزيد › الخدمات ومعرض الأعمال تعرضان ما لدى الشركة",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: More › الخدمات opened the إضافة خدمة form directly, so a company could never see or remove the services it had added; معرض الأعمال did the same with اضافة مشروع. Both now open a list: الخدمات shows the specialty and one row per service (its type, or its own title for 'اخرى', with the description), معرض الأعمال one row per project with its first photo. Each row has a delete button that asks first. With nothing added, the list says so. The «إضافة خدمة» / «إضافة مشروع» button at the bottom opens the form, and back from the form returns to the list, which shows the new item. Editing a service or project is not available yet. The + sheet and the home banner still open the forms directly.",
+        ar: "QA: كان المزيد › الخدمات يفتح نموذج إضافة خدمة مباشرة، فلا تستطيع الشركة رؤية خدماتها أو حذفها؛ ومعرض الأعمال كان يفعل الشيء نفسه مع اضافة مشروع. الآن يفتح كل منهما قائمة: الخدمات تعرض التخصص وصفاً لكل خدمة (نوعها، أو عنوانها الخاص لـ'اخرى'، مع الوصف)، ومعرض الأعمال صفاً لكل مشروع مع أول صورة. لكل صف زر حذف يطلب التأكيد أولاً. وإن لم يُضف شيء تقول القائمة ذلك. زر «إضافة خدمة» / «إضافة مشروع» في الأسفل يفتح النموذج، والرجوع من النموذج يعيد إلى القائمة وفيها العنصر الجديد. تعديل خدمة أو مشروع غير متاح بعد. وزر + وبطاقة الرئيسية ما زالا يفتحان النموذجين مباشرة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "More › الخدمات opens the services list, not the form; the specialty shows above the rows.",
+          "More › معرض الأعمال opens the projects list, each with its first photo.",
+          "Delete asks «حذف هذه الخدمة؟» / «حذف هذا المشروع؟»; تراجع keeps it, حذف removes it from the list and from the public company profile.",
+          "A failed delete shows an alert and keeps the row.",
+          "With nothing added: an empty message and the add button.",
+          "Adding from the list, then back: the list shows the new item.",
+        ],
+        ar: [
+          "المزيد › الخدمات يفتح قائمة الخدمات لا النموذج، والتخصص يظهر فوق الصفوف.",
+          "المزيد › معرض الأعمال يفتح قائمة المشاريع، كل مشروع مع أول صورة له.",
+          "الحذف يسأل «حذف هذه الخدمة؟» / «حذف هذا المشروع؟»؛ تراجع يبقيه، وحذف يزيله من القائمة ومن ملف الشركة العام.",
+          "فشل الحذف يعرض تنبيهاً ويبقى الصف.",
+          "بلا عناصر: رسالة فارغة وزر الإضافة.",
+          "الإضافة من القائمة ثم الرجوع: تظهر القائمة وفيها العنصر الجديد.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company with services: More › الخدمات — the services list shows; tap «إضافة خدمة», add one, go back — it is in the list.",
+          "Delete a service, confirm — it disappears here and from the company's public profile.",
+          "Repeat with معرض الأعمال and a project.",
+          "As a new company with nothing added — both lists show the empty message.",
+        ],
+        ar: [
+          "كشركة لديها خدمات: المزيد › الخدمات — تظهر قائمة الخدمات؛ اضغط «إضافة خدمة» وأضف واحدة ثم ارجع — تظهر في القائمة.",
+          "احذف خدمة وأكّد — تختفي هنا ومن ملف الشركة العام.",
+          "كرر مع معرض الأعمال ومشروع.",
+          "كشركة جديدة بلا إضافات — تعرض القائمتان الرسالة الفارغة.",
+        ],
+      },
+      updatedIn: "fix/company-services-list",
+    },
+    {
       id: "mobile-company-dashboard-mock-data",
       title: {
         en: "Company Home: views, billing and messages are live; requests are still mock data",
