@@ -102,12 +102,16 @@ export default function CompanyRequestCard({
               {request.clientName}
             </Text>
           </View>
+          {/* No negative letterSpacing on the tag: iOS measures the Arabic
+              word narrower than it draws and clipped "مناسبة لك" (QA) */}
           <View
-            className={`h-5 items-center justify-center rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] px-2 ${badge.bgClass}`}
+            testID={`home-request-badge-${request.id}`}
+            className={`h-5 shrink-0 items-center justify-center rounded-br-[8px] rounded-tl-[8px] rounded-tr-[8px] px-2 ${badge.bgClass}`}
           >
             <Text
               className={`font-almarai-regular ${badge.textClass}`}
-              style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+              style={{ writingDirection: 'rtl' }}
+              numberOfLines={1}
             >
               {badge.label}
             </Text>

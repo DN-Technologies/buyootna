@@ -9,6 +9,41 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-request-card-tag-clipped",
+      title: {
+        en: "Home request cards: the «مناسبة لك» tag shows in full",
+        ar: "بطاقات الطلبات في الرئيسية: وسم «مناسبة لك» يظهر كاملاً",
+      },
+      priority: "P2",
+      story: {
+        en: "QA (iOS): on the company home, the «مناسبة لك» tag on public request cards was cut off at its right edge (the first letter clipped). The tag's text had a negative letter spacing, which iOS applies when measuring the Arabic word but not when drawing it, so the tag came out narrower than its text. The tag now sizes to its full text with its padding on both sides, stays on one line, and doesn't shrink next to a long title. The same applies to the status tags on the company's own request cards.",
+        ar: "QA (iOS): في رئيسية الشركة كان وسم «مناسبة لك» على بطاقات الطلبات العامة مقطوعاً من طرفه الأيمن (الحرف الأول مقصوص). كان لنص الوسم تباعد أحرف سالب يطبقه iOS عند قياس الكلمة العربية لا عند رسمها، فيخرج الوسم أضيق من نصه. الآن يأخذ الوسم عرض نصه كاملاً مع الهوامش الداخلية على الجانبين، ويبقى في سطر واحد، ولا ينكمش بجانب عنوان طويل. وينطبق ذلك على وسوم الحالة في بطاقات طلبات الشركة الخاصة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«مناسبة لك» shows in full, with even padding on the right and left.",
+          "With a long request title, the tag keeps its full width and the title is cut with an ellipsis instead.",
+          "The status tags (قيد الانتظار, تم الرد, مقبولة, مرفوضة) on private request cards show in full too.",
+        ],
+        ar: [
+          "يظهر «مناسبة لك» كاملاً بهوامش متساوية يميناً ويساراً.",
+          "مع عنوان طلب طويل يحتفظ الوسم بعرضه الكامل ويُختصر العنوان بنقاط بدلاً منه.",
+          "وسوم الحالة (قيد الانتظار، تم الرد، مقبولة، مرفوضة) على بطاقات الطلبات الخاصة تظهر كاملة أيضاً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On iOS, sign in as a company and scroll طلبات عامة on the home: every card's «مناسبة لك» is whole.",
+          "Create a public request with a long title and check its card: the tag is whole, the title ends in «…».",
+        ],
+        ar: [
+          "على iOS سجّل الدخول كشركة ومرّر طلبات عامة في الرئيسية: «مناسبة لك» كامل في كل بطاقة.",
+          "أنشئ طلباً عاماً بعنوان طويل وافحص بطاقته: الوسم كامل والعنوان ينتهي بـ«…».",
+        ],
+      },
+      updatedIn: "fix/suitable-badge-truncated",
+    },
+    {
       id: "mobile-company-replied-badge-own-reply",
       title: {
         en: "«تم الرد» only after this company sends its reply",
