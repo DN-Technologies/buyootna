@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { FlatList, View } from 'react-native';
 
-import { useReplyToRequest } from '@/features/company/hooks/useReplyToRequest';
+import { useOpenRequestChat } from '@/features/company/hooks/useOpenRequestChat';
 
 import type { CompanyRequestItem } from '../requests/types';
 import CompanyRequestCard from './CompanyRequestCard';
@@ -27,7 +27,7 @@ export default function HomeRequestsSection({
   requests,
 }: HomeRequestsSectionProps) {
   const router = useRouter();
-  const reply = useReplyToRequest();
+  const { openChat, openingId } = useOpenRequestChat();
 
   if (requests.length === 0) return null;
 
@@ -49,7 +49,8 @@ export default function HomeRequestsSection({
           <CompanyRequestCard
             request={item}
             variant={variant}
-            onReply={reply}
+            onReply={(request) => openChat(request, { markResponded: true })}
+            isReplying={openingId === item.id}
             onDetails={(request) =>
               router.push(`/(company)/(requests)/${request.id}`)
             }

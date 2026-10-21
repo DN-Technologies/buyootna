@@ -37,8 +37,8 @@ jest.mock('@/features/company/hooks/useCompanyRequests', () => ({
   useCompanyRequests: jest.fn(),
 }));
 
-jest.mock('@/features/company/hooks/useReplyToRequest', () => ({
-  useReplyToRequest: () => mockReply,
+jest.mock('@/features/company/hooks/useOpenRequestChat', () => ({
+  useOpenRequestChat: () => ({ openChat: mockReply, openingId: null }),
 }));
 
 jest.mock('@/features/company/hooks/useMyCompanyServices', () => ({
@@ -155,7 +155,9 @@ describe('CompanyHomeScreen', () => {
     expect(getByText('15,000 - 22,000 د.ك')).toBeTruthy();
 
     await fireEvent.press(getByTestId('home-request-reply-p-1'));
-    expect(mockReply).toHaveBeenCalledWith(PRIVATE[0]);
+    expect(mockReply).toHaveBeenCalledWith(PRIVATE[0], {
+      markResponded: true,
+    });
 
     expect(getByText('ارسال عرض')).toBeTruthy();
     await fireEvent.press(getByTestId('home-request-details-g-1'));

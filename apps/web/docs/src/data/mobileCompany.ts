@@ -9,6 +9,45 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-request-chat-opens-fast",
+      title: {
+        en: "Opening a chat from a request: immediate feedback, one wait instead of two",
+        ar: "فتح محادثة من طلب: استجابة فورية وانتظار واحد بدلاً من اثنين",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: tapping الرد / ارسال عرض on a home request card, the chat button on a request's details, or ابدأ المحادثة on an accepted request seemed frozen for a second or two before the chat opened. The app waited for two server calls in a row (create the chat, then mark the request answered) with no sign anything was happening, and a second tap started it again. Now the button shows a spinner straight away and ignores more taps; the chat opens as soon as the conversation exists; marking the request answered (الرد / ارسال عرض / details) happens after, in the background, and the lists and details pick up the new status. If the chat can't be created, an alert says why and the button works again. On the details screen, a company without a plan now goes to the plans like elsewhere.",
+        ar: "QA: الضغط على الرد / ارسال عرض في بطاقة طلب في الرئيسية، أو زر المحادثة في تفاصيل الطلب، أو ابدأ المحادثة في طلب مقبول كان يبدو متجمداً لثانية أو اثنتين قبل فتح المحادثة. كان التطبيق ينتظر طلبين للخادم متتاليين (إنشاء المحادثة ثم تعليم الطلب كمردود عليه) دون أي إشارة، والضغطة الثانية كانت تعيد العملية. الآن يعرض الزر مؤشر تحميل فوراً ويتجاهل الضغطات الإضافية، وتفتح المحادثة بمجرد إنشائها، ويتم تعليم الطلب كمردود عليه (الرد / ارسال عرض / التفاصيل) بعدها في الخلفية، وتعرض القوائم والتفاصيل الحالة الجديدة. وإن تعذر إنشاء المحادثة يظهر تنبيه بالسبب ويعود الزر للعمل. وفي شاشة التفاصيل تنتقل الشركة بلا باقة إلى الباقات كما في بقية الشاشات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Each of the three buttons shows a spinner as soon as it is tapped; tapping again does nothing.",
+          "The chat opens after a single server call; it does not wait for the request status.",
+          "After الرد / ارسال عرض / the details chat button, the request shows تم الرد in the lists and the details.",
+          "If the chat can't be created: an alert, no chat, the button works again.",
+        ],
+        ar: [
+          "كل زر من الثلاثة يعرض مؤشر تحميل فور الضغط، والضغط مرة أخرى لا يفعل شيئاً.",
+          "تفتح المحادثة بعد طلب واحد للخادم ولا تنتظر حالة الطلب.",
+          "بعد الرد / ارسال عرض / زر المحادثة في التفاصيل يظهر الطلب بحالة تم الرد في القوائم والتفاصيل.",
+          "إن تعذر إنشاء المحادثة: تنبيه، ولا محادثة، ويعود الزر للعمل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company, tap الرد on a request on the home — a spinner shows at once, then the chat opens; back on the home the request shows تم الرد.",
+          "Tap the button several times quickly — only one chat opens.",
+          "Repeat from a request's details (chat button) and from an accepted request (ابدأ المحادثة).",
+        ],
+        ar: [
+          "كشركة اضغط الرد على طلب في الرئيسية — يظهر مؤشر التحميل فوراً ثم تفتح المحادثة؛ وعند الرجوع يظهر الطلب بحالة تم الرد.",
+          "اضغط الزر عدة مرات بسرعة — تفتح محادثة واحدة فقط.",
+          "كرر من تفاصيل طلب (زر المحادثة) ومن طلب مقبول (ابدأ المحادثة).",
+        ],
+      },
+      updatedIn: "fix/request-chat-opens-fast",
+    },
+    {
       id: "mobile-company-manage-services-projects",
       title: {
         en: "More › الخدمات and معرض الأعمال list what the company has",

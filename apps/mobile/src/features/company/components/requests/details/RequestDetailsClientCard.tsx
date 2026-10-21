@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
@@ -14,6 +14,8 @@ import {
 export interface RequestDetailsClientCardProps {
   client?: RequestClientInfo | null;
   onChatPress?: () => void;
+  // The chat is being opened: a spinner in place of the icon
+  isOpeningChat?: boolean;
   onWhatsAppPress?: () => void;
   onCallPress?: () => void;
 }
@@ -21,6 +23,7 @@ export interface RequestDetailsClientCardProps {
 export default function RequestDetailsClientCard({
   client,
   onChatPress,
+  isOpeningChat = false,
   onWhatsAppPress,
   onCallPress,
 }: RequestDetailsClientCardProps) {
@@ -94,11 +97,20 @@ export default function RequestDetailsClientCard({
               <TouchableOpacity
                 testID="request-details-chat-button"
                 onPress={onChatPress}
+                disabled={isOpeningChat}
                 activeOpacity={0.7}
                 className="size-[30px] items-center justify-center rounded-full border border-[#B28648] bg-white"
                 accessibilityLabel="محادثة"
               >
-                <ClientChatIcon size={16} color="#B28648" />
+                {isOpeningChat ? (
+                  <ActivityIndicator
+                    testID="request-details-chat-loading"
+                    size="small"
+                    color="#B28648"
+                  />
+                ) : (
+                  <ClientChatIcon size={16} color="#B28648" />
+                )}
               </TouchableOpacity>
 
               {/* WhatsApp Button */}
