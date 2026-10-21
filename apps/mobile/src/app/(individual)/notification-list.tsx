@@ -20,11 +20,13 @@ import { getNotificationRoute } from '@/features/individual/utils/notificationRo
 import { AppNotification } from '@/shared/api/notifications.service';
 import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function NotificationListScreen() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const identityType = useAuthStore((state) => state.activeIdentity?.type);
 
   const {
     notifications,
@@ -54,6 +56,16 @@ export default function NotificationListScreen() {
     handleMarkAsRead(notification);
     const route = getNotificationRoute(notification);
     if (route) router.push(route as any);
+  };
+
+  // Back to this profile's home. Not '/': that is the launch screen, which
+  // replays the splash and the update check. dismissTo returns a company or
+  // office to its home under this screen; navigate switches an individual's
+  // tab (home and this list are tabs of the same group)
+  const handleExplore = () => {
+    const home = getIdentityHomeRoute(identityType);
+    router.dismissTo(home);
+    router.navigate(home);
   };
 
   if (!token) {
@@ -120,7 +132,7 @@ export default function NotificationListScreen() {
           ))}
         </View>
       ) : notifications.length === 0 ? (
-        <NotificationsEmptyState onExplore={() => router.push('/')} />
+        <NotificationsEmptyState onExplore={handleExplore} />
       ) : filteredNotifications.length === 0 ? (
         <View className="flex-1 items-center justify-center px-6">
           <Text

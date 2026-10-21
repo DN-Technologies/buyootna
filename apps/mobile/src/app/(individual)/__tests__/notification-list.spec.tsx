@@ -7,11 +7,15 @@ import NotificationListScreen from '../notification-list';
 
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
+const mockNavigate = jest.fn();
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: mockPush,
     back: mockBack,
+    dismissTo: mockDismissTo,
+    navigate: mockNavigate,
   }),
 }));
 
@@ -80,7 +84,32 @@ describe('NotificationListScreen', () => {
     const exploreBtn = getByText('استكشف الان');
     expect(exploreBtn).toBeTruthy();
     fireEvent.press(exploreBtn);
-    expect(mockPush).toHaveBeenCalledWith('/');
+    // Never '/': that is the launch screen (splash + update check)
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockDismissTo).toHaveBeenCalledWith('/(individual)/home');
+    expect(mockNavigate).toHaveBeenCalledWith('/(individual)/home');
+  });
+
+  it('explore takes a company back to the company home', async () => {
+    const state = { token: 'mock-token', activeIdentity: { type: 'COMPANY' } };
+    (useAuthStore as unknown as jest.Mock).mockImplementation(
+      (selector: (s: typeof state) => unknown) => selector(state),
+    );
+    (useNotificationList as unknown as jest.Mock).mockReturnValue({
+      notifications: [],
+      filteredNotifications: [],
+      isLoading: false,
+      isRefreshing: false,
+      handleRefresh: jest.fn(),
+      activeTab: 'ALL',
+      setActiveTab: jest.fn(),
+      hasUnread: false,
+    });
+
+    const { getByText } = await render(<NotificationListScreen />);
+    fireEvent.press(getByText('استكشف الان'));
+    expect(mockDismissTo).toHaveBeenCalledWith('/(company)/home');
+    expect(mockNavigate).toHaveBeenCalledWith('/(company)/home');
   });
 
   it('renders notifications list and interacts with tabs and actions', async () => {
