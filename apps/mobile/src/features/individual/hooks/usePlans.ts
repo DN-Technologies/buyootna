@@ -13,6 +13,7 @@ import { withApiPrice } from '@/features/individual/utils/planPricing';
 import { paymentsService } from '@/shared/api/payments.service';
 import { plansService } from '@/shared/api/plans.service';
 import { showAlert } from '@/shared/utils/alert';
+import { paymentErrorMessage } from '@/shared/utils/paymentErrorMessage';
 
 async function fetchPlansData() {
   const [plansRes, walletRes] = await Promise.all([
@@ -91,12 +92,7 @@ export function usePlans() {
       await WebBrowser.openBrowserAsync(charge.checkoutUrl);
     } catch (error: any) {
       console.error('Payment Error:', error);
-      showAlert(
-        'خطأ',
-        error.response?.data?.message ||
-          error.message ||
-          'حدث خطأ أثناء معالجة الدفع.',
-      );
+      showAlert('خطأ', paymentErrorMessage(error));
     } finally {
       setIsProcessing(null);
     }

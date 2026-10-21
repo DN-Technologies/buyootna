@@ -2330,6 +2330,41 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/notifications-explore-home",
     },
     {
+      id: "mobile-server-unavailable-message",
+      title: {
+        en: "Server briefly unavailable: an Arabic message, not 'status code 502'",
+        ar: "الخادم غير متاح مؤقتاً: رسالة عربية بدلاً من 'status code 502'",
+      },
+      priority: "P2",
+      story: {
+        en: "QA: buying a plan while the API restarted for a deploy showed 'Request failed with status code 502'. When the server can't be reached behind the proxy (502, 503, 504) or fails without its own message (Nest's 'Internal server error'), the app now says «الخدمة غير متاحة مؤقتاً، يرجى المحاولة مرة أخرى بعد قليل.». A message the server sends (e.g. «الباقة غير موجودة أو غير نشطة») is still shown as is, and no connection still shows the network message. Applies to every screen using the shared error message, and now to buying a plan (individual and company), which showed the raw text before.",
+        ar: "QA: شراء باقة أثناء إعادة تشغيل الخادم للنشر كان يعرض 'Request failed with status code 502'. عندما يتعذر الوصول إلى الخادم خلف الوسيط (502 أو 503 أو 504) أو يفشل بدون رسالة خاصة به ('Internal server error' من Nest)، يعرض التطبيق الآن «الخدمة غير متاحة مؤقتاً، يرجى المحاولة مرة أخرى بعد قليل.». والرسالة التي يرسلها الخادم (مثل «الباقة غير موجودة أو غير نشطة») ما زالت تظهر كما هي، وانقطاع الاتصال ما زال يعرض رسالة الشبكة. ينطبق على كل الشاشات التي تستخدم رسالة الخطأ المشتركة، والآن على شراء باقة (الفرد والشركة) الذي كان يعرض النص الخام.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Buying a plan while the API is down or restarting shows «الخدمة غير متاحة مؤقتاً…», never English text.",
+          "A server error with its own Arabic message shows that message.",
+          "With no internet: «يرجى التحقق من اتصالك بالإنترنت…».",
+        ],
+        ar: [
+          "شراء باقة والخادم متوقف أو يُعاد تشغيله يعرض «الخدمة غير متاحة مؤقتاً…» ولا يعرض نصاً إنجليزياً أبداً.",
+          "خطأ من الخادم برسالة عربية خاصة به يعرض تلك الرسالة.",
+          "بدون إنترنت: «يرجى التحقق من اتصالك بالإنترنت…».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "During a deploy (or with the API stopped on a test server), tap «اشتر الان» on a plan — the Arabic unavailable message shows.",
+          "In airplane mode, tap «اشتر الان» — the network message shows.",
+        ],
+        ar: [
+          "أثناء النشر (أو والخادم متوقف على خادم تجريبي) اضغط «اشتر الان» على باقة — تظهر رسالة عدم التوفر بالعربية.",
+          "في وضع الطيران اضغط «اشتر الان» — تظهر رسالة الشبكة.",
+        ],
+      },
+      updatedIn: "fix/server-unavailable-message",
+    },
+    {
       id: "mobile-app-icon-badge",
       title: {
         en: "Unread number on the app icon",
