@@ -17,7 +17,8 @@ function ReplyBlock({ label, text }: { label: string; text: string }) {
       </Text>
       <Text
         className="font-cairo text-[14px] leading-[21px] text-[#111111]"
-        style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
+        // No negative letterSpacing on wrapping Arabic: iOS stacks the lines
+        style={{ writingDirection: 'rtl' }}
       >
         {text}
       </Text>

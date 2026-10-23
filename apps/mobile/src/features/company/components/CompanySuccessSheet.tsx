@@ -63,9 +63,12 @@ const CompanySuccessSheet = forwardRef<
                 <Text className="text-center font-cairo-semibold text-[20px] leading-[30px] text-[#111111]">
                   {title}
                 </Text>
+                {/* No negative letterSpacing: iOS measured the Arabic lines
+                    narrower than it drew them and stacked them on top of
+                    each other (QA) */}
                 <Text
                   className="text-center font-cairo-medium text-[14px] leading-[21px] text-[#6B6A6A]"
-                  style={{ letterSpacing: -0.408 }}
+                  style={{ writingDirection: 'rtl' }}
                 >
                   {description}
                 </Text>

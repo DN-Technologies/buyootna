@@ -133,7 +133,8 @@ export default function EndRequestScreen({ id }: { id?: string }) {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 24 }}>
         <Text
           className="self-center text-center font-cairo-medium text-[14px] text-[#6B6A6A]"
-          style={{ maxWidth: 287, letterSpacing: -0.408 }}
+          // No negative letterSpacing on wrapping Arabic: iOS stacks the lines
+          style={{ maxWidth: 287, writingDirection: 'rtl' }}
         >
           ساعدنا في تحسين تجربة الاستخدام من خلال اختيار الحالة المناسبة.
         </Text>

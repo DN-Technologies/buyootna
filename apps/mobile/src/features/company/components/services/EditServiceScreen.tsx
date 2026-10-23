@@ -18,12 +18,12 @@ import CompanyFormHeader from '../CompanyFormHeader';
 import CompanySubmitButton from '../CompanySubmitButton';
 import { formatCreatedDate } from '../portfolio/portfolio.utils';
 import AddSubServiceSheet from './AddSubServiceSheet';
-import ServiceSwitch from './ServiceSwitch';
 import { serviceName, servicesSummary } from './services.utils';
+import ServiceSwitch from './ServiceSwitch';
 import { useAddSubService } from './useAddSubService';
 import { useEditService } from './useEditService';
 
-/** تعديل الخدمة (Figma 4410:170024, collapsed 8461:25830). */
+/** تعديل الخدمة. */
 export default function EditServiceScreen() {
   const edit = useEditService();
   const add = useAddSubService(edit.specialty ?? '', edit.services);
@@ -100,13 +100,19 @@ export default function EditServiceScreen() {
                     </Text>
                   )}
                 </View>
+                {/* The frame turns its chevron assets: up when open, down
+                    when closed (Figma rotate-90 / -rotate-90) */}
                 <Image
                   source={
                     edit.isExpanded
                       ? require('@/assets/icons/services/chevron-open.svg')
                       : require('@/assets/icons/services/chevron-closed.svg')
                   }
-                  style={{ width: 16, height: 16 }}
+                  style={{
+                    width: 16,
+                    height: 16,
+                    transform: [{ rotate: edit.isExpanded ? '90deg' : '-90deg' }],
+                  }}
                   contentFit="contain"
                 />
               </TouchableOpacity>

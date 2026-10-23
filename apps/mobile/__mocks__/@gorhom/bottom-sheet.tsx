@@ -5,7 +5,7 @@ export const present = jest.fn();
 export const dismiss = jest.fn();
 export const close = jest.fn();
 
-export const BottomSheetModal = forwardRef<any, any>(({ children }, ref) => {
+export const BottomSheetModal = forwardRef<any, any>(({ children, footerComponent }, ref) => {
   useImperativeHandle(ref, () => ({
     present,
     dismiss,
@@ -17,7 +17,14 @@ export const BottomSheetModal = forwardRef<any, any>(({ children }, ref) => {
     forceClose: jest.fn(),
   }));
 
-  return <View>{children}</View>;
+  // A footer (e.g. a fixed apply / add button) renders after the content
+  const Footer = footerComponent;
+  return (
+    <View>
+      {children}
+      {Footer ? <Footer animatedFooterPosition={{ value: 0 }} /> : null}
+    </View>
+  );
 });
 BottomSheetModal.displayName = 'BottomSheetModal';
 

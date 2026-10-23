@@ -1,10 +1,13 @@
 import {
   BottomSheetBackdrop,
+  BottomSheetFooter,
+  type BottomSheetFooterProps,
   BottomSheetModal,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BackChevronIcon } from '@/assets/icons/activity';
 import { CheckboxOffIcon, CheckboxOnIcon } from '@/assets/icons/company-add';
@@ -15,15 +18,28 @@ interface SubServicePickerSheetProps {
   // Already added: ticked, greyed, not pressable
   disabled: string[];
   onToggle: (type: string) => void;
+  // The bottom button: adds what is ticked, or, with «اخرى» ticked, goes
+  // back to the sheet for its title («التالي»)
+  canAdd: boolean;
+  needsTitle: boolean;
+  isSubmitting: boolean;
+  onAdd: () => void;
 }
 
 /**
  * «اختر الخدمة الفرعية» (Figma 8455:25558): الكل, the specialty's types and
- * اخرى, each with its box on the right; back closes it.
+ * اخرى, each with its box on the right; back closes it. Below the list,
+ * «اضافة» adds the ticked types straight away (QA: the frame had no way
+ * to add from here).
  */
 const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheetProps>(
-  ({ options, selected, disabled, onToggle }, ref) => {
-    const snapPoints = useMemo(() => ['92%'], []);
+  (
+    { options, selected, disabled, onToggle, canAdd, needsTitle, isSubmitting, onAdd },
+    ref,
+  ) => {
+    const insets = useSafeAreaInsets();
+    // Below the status bar, so the header is never under it
+    const snapPoints = useMemo(() => ['100%'], []);
     const renderBackdrop = useCallback(
       (props: any) => (
         <BottomSheetBackdrop
@@ -37,11 +53,46 @@ const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheet
     );
     const close = () => (ref as any)?.current?.dismiss();
 
+    const renderFooter = useCallback(
+      (props: BottomSheetFooterProps) => (
+        <BottomSheetFooter {...props} bottomInset={0}>
+          <View
+            className="w-full bg-white px-4 pt-3"
+            style={{ paddingBottom: insets.bottom + 12 }}
+          >
+            <TouchableOpacity
+              testID="sub-service-picker-add"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canAdd || isSubmitting }}
+              activeOpacity={0.8}
+              disabled={!canAdd || isSubmitting}
+              onPress={onAdd}
+              className={`h-12 items-center justify-center rounded-[24px] ${
+                canAdd ? 'bg-[#15304D]' : 'bg-[#A6A6A6]'
+              }`}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text className="font-cairo-semibold text-[14px] text-white">
+                  {needsTitle ? 'التالي' : 'اضافة'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </BottomSheetFooter>
+      ),
+      [canAdd, insets.bottom, isSubmitting, needsTitle, onAdd],
+    );
+
     return (
       <BottomSheetModal
         ref={ref}
         snapPoints={snapPoints}
+        enableDynamicSizing={false}
+        topInset={insets.top}
         backdropComponent={renderBackdrop}
+        footerComponent={renderFooter}
         handleComponent={null}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
       >
@@ -62,7 +113,12 @@ const SubServicePickerSheet = forwardRef<BottomSheetModal, SubServicePickerSheet
           </Text>
           <View className="h-8 w-8" />
         </View>
-        <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 48, gap: 8 }}>
+        <BottomSheetScrollView contentContainerStyle={{
+            paddingHorizontal: 16,
+            // Clear of the fixed «اضافة» below
+            paddingBottom: insets.bottom + 96,
+            gap: 8,
+          }}>
           {options.map((option) => {
             const isDisabled = disabled.includes(option);
             const isSelected = isDisabled || selected.includes(option);

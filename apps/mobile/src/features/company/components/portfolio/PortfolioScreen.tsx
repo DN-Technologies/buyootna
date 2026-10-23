@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -110,11 +111,8 @@ export default function PortfolioScreen() {
             disabled={projects.length === 0}
             className="h-8 w-8 items-center justify-center rounded-full"
           >
-            <Image
-              source={require('@/assets/icons/portfolio/more-dots.svg')}
-              style={{ width: 20, height: 20 }}
-              contentFit="contain"
-            />
+            {/* As the company profile's ⋮ (the Figma SVG's mask drew broken dots) */}
+            <Feather name="more-vertical" size={20} color="#111111" />
           </TouchableOpacity>
         }
       />

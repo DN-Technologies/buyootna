@@ -14,7 +14,7 @@ import FieldLabel from '@/features/company/components/invoice/FieldLabel';
 import SubServicePickerSheet from './SubServicePickerSheet';
 import type { AddSubService } from './useAddSubService';
 
-/** اضافة خدمة فرعية (Figma 8455:24674 / 8455:25340). */
+/** اضافة خدمة فرعية. */
 export default function AddSubServiceSheet({ add }: { add: AddSubService }) {
   const insets = useSafeAreaInsets();
   const renderBackdrop = useCallback(
@@ -129,6 +129,10 @@ export default function AddSubServiceSheet({ add }: { add: AddSubService }) {
         selected={add.selectedTypes}
         disabled={add.disabledTypes}
         onToggle={add.toggleType}
+        canAdd={add.types.length > 0}
+        needsTitle={add.hasOther}
+        isSubmitting={add.isSubmitting}
+        onAdd={add.addFromPicker}
       />
     </>
   );

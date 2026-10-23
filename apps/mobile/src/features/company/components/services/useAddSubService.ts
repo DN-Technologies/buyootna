@@ -48,6 +48,7 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
         title: selection.hasOther ? serviceTitle.trim() : undefined,
       });
       await refresh();
+      pickerRef.current?.dismiss();
       sheetRef.current?.dismiss();
       reset();
     } catch (error) {
@@ -62,8 +63,19 @@ export function useAddSubService(specialty: string, existing: MyCompanyService[]
     }
   };
 
+  // The picker's «اضافة»: adds at once, unless «اخرى» still needs its
+  // title (back to the sheet)
+  const addFromPicker = () => {
+    if (selection.hasOther) {
+      pickerRef.current?.dismiss();
+      return;
+    }
+    void submit();
+  };
+
   return {
     ...selection,
+    addFromPicker,
     serviceTitle,
     setServiceTitle,
     isValid,

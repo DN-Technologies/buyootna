@@ -88,7 +88,8 @@ const ConfirmActionSheet = forwardRef<BottomSheetModal, ConfirmActionSheetProps>
                 <Text
                   testID="confirm-sheet-description"
                   className="w-full text-center font-cairo-medium text-[14px] leading-[21px] text-[#6B6A6A]"
-                  style={{ letterSpacing: -0.408 }}
+                  // No negative letterSpacing on wrapping Arabic: iOS stacks the lines
+                  style={{ writingDirection: 'rtl' }}
                 >
                   {description}
                 </Text>
