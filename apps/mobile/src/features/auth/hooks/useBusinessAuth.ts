@@ -13,8 +13,8 @@ import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
-import { loginAs } from '../utils/loginAs';
 import { requireTermsAccepted } from '../terms';
+import { loginAs } from '../utils/loginAs';
 
 // Company/office accounts stay behind the ComingSoonGate unless explicitly
 // enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
@@ -65,9 +65,8 @@ export function useBusinessAuth() {
   // Signs in to the company or office persona picked above, straight to its
   // dashboard (never the individual one first)
   const onLogin = async (
-    data: CompanyLoginFormValues & { rememberMe: boolean },
+    data: CompanyLoginFormValues,
   ) => {
-    if (!requireTermsAccepted()) return;
     setIsLoading(true);
     try {
       await loginAs(

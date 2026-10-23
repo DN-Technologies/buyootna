@@ -34,12 +34,7 @@ export async function loginAs(
 ): Promise<void> {
   try {
     const response = await withReactivationPrompt(
-      // Only reached once the terms are ticked (requireTermsAccepted)
-      apiClient.post('/auth/login', {
-        ...credentials,
-        identityType,
-        acceptTerms: true,
-      }),
+      apiClient.post('/auth/login', { ...credentials, identityType }),
     );
     const { user, activeIdentity, identities, access_token, sessionId } =
       response.data;

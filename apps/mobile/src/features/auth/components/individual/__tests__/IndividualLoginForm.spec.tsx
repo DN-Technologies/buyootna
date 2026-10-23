@@ -15,7 +15,7 @@ describe('IndividualLoginForm', () => {
 
   afterEach(cleanup);
 
-  it('submits identifier/password with rememberMe:false by default', async () => {
+  it('submits identifier and password', async () => {
     const onSubmit = jest.fn();
     const { getByPlaceholderText, getByText } = await render(
       <IndividualLoginForm
@@ -43,39 +43,21 @@ describe('IndividualLoginForm', () => {
       expect.objectContaining({
         identifier: 'ali@example.com',
         password: 'password123',
-        rememberMe: false,
       }),
     );
   });
 
-  it('sets rememberMe:true when the checkbox is toggled before submit', async () => {
-    const onSubmit = jest.fn();
-    const { getByPlaceholderText, getByText } = await render(
+  it('has no «تذكري» and no terms box (the terms are on sign-up only)', async () => {
+    const { queryByText, queryByTestId } = await render(
       <IndividualLoginForm
-        onSubmit={onSubmit}
+        onSubmit={jest.fn()}
         onOpenProfiles={jest.fn()}
         onGooglePress={jest.fn()}
         onApplePress={jest.fn()}
       />,
     );
-
-    await fireEvent.changeText(
-      getByPlaceholderText('alisalem@gmail.com'),
-      'ali@example.com',
-    );
-    await fireEvent.changeText(
-      getByPlaceholderText('**************'),
-      'password123',
-    );
-    await fireEvent.press(getByText('تذكري'));
-    await fireEvent.press(getByText('تسجيل الدخول'));
-
-    await waitFor(() => {
-      expect(onSubmit).toHaveBeenCalled();
-    });
-    expect(onSubmit.mock.calls[0][0]).toEqual(
-      expect.objectContaining({ rememberMe: true }),
-    );
+    expect(queryByText('تذكري')).toBeNull();
+    expect(queryByTestId('terms-agreement-checkbox')).toBeNull();
   });
 
   it('blocks submission when the password is shorter than 6 characters', async () => {

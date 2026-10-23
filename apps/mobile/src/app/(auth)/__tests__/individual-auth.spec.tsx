@@ -97,30 +97,22 @@ describe('IndividualAuthScreen', () => {
   };
 
   describe('login', () => {
-    it('shows the terms checkbox and logs in only once it is ticked (Guideline 1.2)', async () => {
+    it('has no terms box: signing in works unticked (the terms are on sign-up)', async () => {
       useTermsAgreement.setState({ accepted: false });
       mockApiClient.post.mockResolvedValueOnce({ data: loginResponseData });
-      const { getByPlaceholderText, getByText, getByTestId } = await render(
+      const { getByPlaceholderText, getByText, queryByTestId } = await render(
         <IndividualAuthScreen />,
       );
 
+      expect(queryByTestId('terms-agreement-checkbox')).toBeNull();
       await fillLoginForm(getByPlaceholderText, 'ali@example.com', 'password123');
       await fireEvent.press(getByText('تسجيل الدخول'));
       await waitFor(() =>
-        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
-          'الموافقة على الشروط',
-          expect.any(String),
-        ),
-      );
-      expect(mockApiClient.post).not.toHaveBeenCalled();
-
-      await fireEvent.press(getByTestId('terms-agreement-checkbox'));
-      await fireEvent.press(getByText('تسجيل الدخول'));
-      await waitFor(() =>
-        expect(mockApiClient.post).toHaveBeenCalledWith(
-          '/auth/login',
-          expect.objectContaining({ acceptTerms: true }),
-        ),
+        expect(mockApiClient.post).toHaveBeenCalledWith('/auth/login', {
+          identifier: 'ali@example.com',
+          password: 'password123',
+          identityType: 'INDIVIDUAL',
+        }),
       );
     });
 
@@ -138,7 +130,6 @@ describe('IndividualAuthScreen', () => {
           identifier: 'ali@example.com',
           password: 'password123',
           identityType: 'INDIVIDUAL',
-          acceptTerms: true,
         });
       });
       await waitFor(() =>
@@ -282,6 +273,43 @@ describe('IndividualAuthScreen', () => {
     const switchToSignup = async (getByText: any) => {
       await fireEvent.press(getByText('تسجيل جديد'));
     };
+
+    it('asks for the terms before creating the account, with Apple and Google too (Guideline 1.2)', async () => {
+      useTermsAgreement.setState({ accepted: false });
+      const { getByPlaceholderText, getAllByPlaceholderText, getByText, getByTestId } =
+        await render(<IndividualAuthScreen />);
+
+      await switchToSignup(getByText);
+      await fireEvent.changeText(getByPlaceholderText('علي سالم'), 'Ali Salem');
+      await fireEvent.changeText(
+        getByPlaceholderText('alisalem@gmail.com'),
+        'ali@example.com',
+      );
+      const passwordInputs = getAllByPlaceholderText('**************');
+      await fireEvent.changeText(passwordInputs[0], 'Password123!');
+      await fireEvent.changeText(passwordInputs[1], 'Password123!');
+      await fireEvent.press(getByText('إنشاء حساب'));
+      await fireEvent.press(getByTestId('social-auth-apple-button'));
+
+      await waitFor(() =>
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'الموافقة على الشروط',
+          expect.any(String),
+        ),
+      );
+      expect(mockApiClient.post).not.toHaveBeenCalled();
+      expect(AppleAuthentication.signInAsync).not.toHaveBeenCalled();
+
+      mockApiClient.post.mockResolvedValueOnce({ data: { otpRequired: true } });
+      await fireEvent.press(getByTestId('terms-agreement-checkbox'));
+      await fireEvent.press(getByText('إنشاء حساب'));
+      await waitFor(() =>
+        expect(mockApiClient.post).toHaveBeenCalledWith(
+          '/users/register/individual',
+          expect.any(Object),
+        ),
+      );
+    });
 
     it('with an email identifier: only registers, then shows the OTP step', async () => {
       mockApiClient.post.mockResolvedValueOnce({

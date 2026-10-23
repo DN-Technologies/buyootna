@@ -5,6 +5,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
 import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
+import { requireTermsAccepted } from '@/features/auth/terms';
 import FormInput from '@/shared/components/ui/FormInput';
 
 interface IndividualSignupFormProps {
@@ -90,9 +91,10 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         )}
       </TouchableOpacity>
 
+      {/* Apple or Google may create the account: the terms come first */}
       <SocialAuthButtons
-        onGooglePress={onGooglePress}
-        onApplePress={onApplePress}
+        onGooglePress={() => requireTermsAccepted() && onGooglePress()}
+        onApplePress={() => requireTermsAccepted() && onApplePress()}
         isGoogleLoading={isGoogleLoading}
         isAppleLoading={isAppleLoading}
         disabled={isLoading}

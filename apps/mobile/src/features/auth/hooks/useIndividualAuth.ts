@@ -61,8 +61,7 @@ export function useIndividualAuth() {
   };
 
   // Signs in to the individual persona of the account (فرد picked above)
-  const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
-    if (!requireTermsAccepted()) return;
+  const onLogin = async (data: LoginFormValues) => {
     setIsFormLoading(true);
     try {
       await loginAs(

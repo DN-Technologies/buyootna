@@ -14,12 +14,11 @@ Thank you for the review. We have added every precaution listed in
 Guideline 1.2. The attached recording was captured on a physical
 [[device, e.g. iPhone 15]] running iOS [[version]].
 
-**1. Terms of use (EULA) before registering or logging in**
-Every sign-in and sign-up screen shows an unticked checkbox: "I agree to
-the Terms of Use and the Privacy Policy, and there is no tolerance for
-objectionable content or abusive users" (in Arabic, with links to both
-documents). Signing in or registering — with a password, Sign in with
-Apple or Google — is not possible until it is ticked. The Terms of Use
+**1. Terms of use (EULA) before registering**
+Every sign-up screen shows an unticked checkbox for the Terms of Use and
+the Privacy Policy (in Arabic, each linking to the document). Creating an
+account — with the form, Sign in with Apple or Google — is not possible
+until it is ticked. The Terms of Use
 have a section on zero tolerance for objectionable content and abusive
 users, and explain reporting, blocking, and our 24-hour review.
 

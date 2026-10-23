@@ -1,7 +1,5 @@
-import { Feather } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,11 +7,10 @@ import {
   CompanyLoginFormValues,
   companyLoginSchema,
 } from '@/features/auth/companyAuthSchemas';
-import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import FormInput from '@/shared/components/ui/FormInput';
 
 interface CompanyLoginFormProps {
-  onSubmit: (data: CompanyLoginFormValues & { rememberMe: boolean }) => void;
+  onSubmit: (data: CompanyLoginFormValues) => void;
   onOpenProfiles: () => void;
   isLoading?: boolean;
 }
@@ -24,7 +21,6 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
   isLoading = false,
 }) => {
   const router = useRouter();
-  const [rememberMe, setRememberMe] = useState(false);
 
   const { control, handleSubmit } = useForm<CompanyLoginFormValues>({
     resolver: zodResolver(companyLoginSchema),
@@ -32,7 +28,7 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
   });
 
   const handleLogin = (data: CompanyLoginFormValues) => {
-    onSubmit({ ...data, rememberMe });
+    onSubmit(data);
   };
 
   return (
@@ -52,23 +48,8 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
         isPassword={true}
       />
 
-      <View className="mb-8 w-full flex-row items-center justify-between">
-        <TouchableOpacity
-          activeOpacity={0.7}
-          className="flex-row items-center"
-          onPress={() => setRememberMe(!rememberMe)}
-        >
-          <View
-            className={`mr-2 h-5 w-5 items-center justify-center rounded border-[1.5px] ${
-              rememberMe ? 'border-primary bg-primary' : 'border-gray-400'
-            }`}
-          >
-            {rememberMe && <Feather name="check" size={14} color="white" />}
-          </View>
-          <Text className="font-cairo-medium text-sm text-slate-700">
-            تذكري
-          </Text>
-        </TouchableOpacity>
+      {/* هل نسيت كلمة المرور؟ on the right (start, in RTL) */}
+      <View className="mb-8 w-full flex-row items-center justify-start">
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => router.push('/(auth)/forgot-password')}
@@ -80,8 +61,6 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
       </View>
 
       <View>
-        <TermsAgreement />
-
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={handleSubmit(handleLogin)}

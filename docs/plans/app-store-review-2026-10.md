@@ -67,9 +67,10 @@ device of the terms before sign-in, flagging, and blocking. Branch
 `fix/ugc-guideline-1-2`.
 
 ### 6.1 What the app now does
-- [x] Terms (EULA) before sign-in and sign-up: unticked checkbox on every
-      login/signup form, required for password, Apple and Google; recorded
-      on the account (`termsAcceptedAt`, `termsVersion`)
+- [x] Terms (EULA) at sign-up: unticked «شروط الاستخدام و سياسة الخصوصية»
+      box on every sign-up form, required for the form, Apple and Google;
+      recorded on the account (`termsAcceptedAt`, `termsVersion`). Not on
+      login (decided 2026-10-23), where «تذكري» was removed
 - [x] Terms text: «سياسة عدم التسامح مع المحتوى المسيء» (zero tolerance,
       report and block, 24-hour removal and suspension)
 - [x] Filter: banned words refuse listings, reviews, story captions,
@@ -95,9 +96,9 @@ device of the terms before sign-in, flagging, and blocking. Branch
       admin panel
 
 ### 6.3 Recording (physical iPhone, store build + update)
-- [ ] Launch → login screen: the terms checkbox, unticked; trying to log
-      in shows «الموافقة على الشروط»; open شروط الاستخدام (the new section)
-- [ ] Tick → log in (also show the signup tab with the same checkbox)
+- [ ] Launch → تسجيل جديد: the terms checkbox, unticked; trying إنشاء حساب
+      shows «الموافقة على الشروط»; open شروط الاستخدام (the new section)
+- [ ] Tick → create the account (or log in with the demo account)
 - [ ] Report a listing (flag on the ad), a review («إبلاغ»), a user (chat ⋮)
 - [ ] Block a company (profile ⋮) → back home: its ads are gone; Settings ›
       المحظورون

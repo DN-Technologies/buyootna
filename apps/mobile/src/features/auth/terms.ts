@@ -3,10 +3,9 @@ import { create } from 'zustand';
 import { showAlert } from '@/shared/utils/alert';
 
 /**
- * «أوافق على شروط الاستخدام وسياسة الخصوصية» on the sign-in and sign-up
- * screens (App Store Guideline 1.2: the terms are agreed to before
- * registering or logging in). One tick for every form and tab of a visit;
- * it starts unticked each time the app opens.
+ * «شروط الاستخدام و سياسة الخصوصية» on the sign-up screens (App Store
+ * Guideline 1.2: the terms are agreed to before registering). One tick for
+ * a visit; it starts unticked each time the app opens.
  */
 interface TermsAgreementState {
   accepted: boolean;
@@ -19,8 +18,8 @@ export const useTermsAgreement = create<TermsAgreementState>((set) => ({
 }));
 
 /**
- * Whether sign-in or sign-up may go on: true once the terms are ticked,
- * otherwise says why and returns false.
+ * Whether sign-up may go on: true once the terms are ticked, otherwise
+ * says why and returns false.
  */
 export function requireTermsAccepted(): boolean {
   if (useTermsAgreement.getState().accepted) return true;
