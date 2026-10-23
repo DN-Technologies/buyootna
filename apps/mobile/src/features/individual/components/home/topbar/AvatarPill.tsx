@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { type RefObject,useState } from 'react';
+import { type RefObject,useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -26,6 +26,8 @@ const GOLD = '#C5A36D';
 const ACTIONS_WIDTH = 84.5;
 // Closed, the icons' slot keeps Figma's 96pt pill: 4 + 42 + 8 + 10 + 8 + 20 + 4
 const CLOSED_SLOT = 10;
+// Two taps on the photo this close together switch profile (as Facebook)
+const DOUBLE_TAP_MS = 280;
 
 // Figma 9297:76318: the chat icon's own path, in the brand colour, with its
 // red dot only while chats are unread
@@ -44,6 +46,8 @@ function ChatIcon({ dot }: { dot: boolean }) {
 interface AvatarPillProps {
   // Signed out: asks to sign in instead of opening
   authSheetRef: RefObject<BottomSheetModal | null>;
+  // A double tap on the photo: the profile switcher
+  onSwitchProfile: () => void;
 }
 
 /**
@@ -51,7 +55,10 @@ interface AvatarPillProps {
  * profile photo with what's unread. A tap or a sideways swipe opens it to
  * the chats and notifications icons; › closes it.
  */
-export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
+export default function AvatarPill({
+  authSheetRef,
+  onSwitchProfile,
+}: AvatarPillProps) {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const { avatarUrl } = useIdentity();
@@ -81,6 +88,32 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
     // One spring drives it all: the slot grows from beside the photo (which
     // never moves), the icons fade in, the count fades out, ‹ turns to ›
     progress.value = withSpring(next ? 1 : 0, IOS_SPRING);
+  };
+
+  // The photo: one tap opens / closes the pill, two switch profile. The
+  // single tap waits out the double-tap window first
+  const pendingTap = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (pendingTap.current) clearTimeout(pendingTap.current);
+    },
+    [],
+  );
+  const onPhotoPress = () => {
+    if (pendingTap.current) {
+      clearTimeout(pendingTap.current);
+      pendingTap.current = null;
+      if (!token) {
+        authSheetRef.current?.present();
+        return;
+      }
+      onSwitchProfile();
+      return;
+    }
+    pendingTap.current = setTimeout(() => {
+      pendingTap.current = null;
+      toggle(!open);
+    }, DOUBLE_TAP_MS);
   };
 
   // RTL: the pill grows to the left, so a swipe left opens it
@@ -120,8 +153,9 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
           testID="avatar-pill-photo"
           accessibilityRole="button"
           accessibilityLabel={open ? 'إغلاق' : 'الإشعارات والمحادثات'}
+          accessibilityHint="انقر مرتين لتبديل الحساب"
           activeOpacity={0.8}
-          onPress={() => toggle(!open)}
+          onPress={onPhotoPress}
         >
           {photo}
         </TouchableOpacity>

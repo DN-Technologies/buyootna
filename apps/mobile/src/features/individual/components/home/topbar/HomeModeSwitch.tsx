@@ -84,7 +84,7 @@ export default function HomeModeSwitch({ mode, onChange }: HomeModeSwitchProps) 
               />
             </View>
             {active && (
-              <Text className="font-cairo text-[14px] leading-[22px] text-[#111111]">
+              <Text className="font-cairo text-[14px] leading-[26px] text-[#111111]">
                 {m.label}
               </Text>
             )}

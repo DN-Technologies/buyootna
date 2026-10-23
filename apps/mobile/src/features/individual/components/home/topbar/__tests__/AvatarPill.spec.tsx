@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import AvatarPill from '../AvatarPill';
 
@@ -40,6 +40,8 @@ jest.mock('@/shared/api/notifications.service', () => ({
   },
 }));
 
+const mockSwitch = jest.fn();
+
 const sheet = () => {
   const present = jest.fn();
   return { ref: { current: { present } } as never, present };
@@ -54,7 +56,7 @@ describe('AvatarPill', () => {
   });
 
   it('closed, it counts unread notifications and chats together', async () => {
-    const screen = await render(<AvatarPill authSheetRef={sheet().ref} />);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
     await waitFor(() =>
       expect(screen.getByTestId('avatar-pill-count')).toHaveTextContent('3'),
     );
@@ -66,13 +68,13 @@ describe('AvatarPill', () => {
   it('shows no count when nothing is unread', async () => {
     mockBadge.mockResolvedValue(0);
     mockUnread.mockResolvedValue(0);
-    const screen = await render(<AvatarPill authSheetRef={sheet().ref} />);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
     await waitFor(() => expect(mockBadge).toHaveBeenCalled());
     expect(screen.queryByTestId('avatar-pill-count')).toBeNull();
   });
 
   it('opens to chats and notifications, each routing; › closes it', async () => {
-    const screen = await render(<AvatarPill authSheetRef={sheet().ref} />);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
     await waitFor(() => screen.getByTestId('avatar-pill-count'));
     await fireEvent.press(screen.getByTestId('avatar-pill-toggle'));
 
@@ -91,11 +93,36 @@ describe('AvatarPill', () => {
     );
   });
 
+  it('one tap on the photo opens it; two switch profile instead', async () => {
+    jest.useFakeTimers();
+    try {
+      const screen = await render(
+        <AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />,
+      );
+      const actions = () =>
+        screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true })
+          .props.pointerEvents;
+
+      await fireEvent.press(screen.getByTestId('avatar-pill-photo'));
+      await fireEvent.press(screen.getByTestId('avatar-pill-photo'));
+      await act(() => jest.advanceTimersByTime(400));
+      expect(mockSwitch).toHaveBeenCalledTimes(1);
+      expect(actions()).toBe('none');
+
+      await fireEvent.press(screen.getByTestId('avatar-pill-photo'));
+      await act(() => jest.advanceTimersByTime(400));
+      expect(actions()).toBe('auto');
+      expect(mockSwitch).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('signed out, a tap asks to sign in', async () => {
     mockToken = null;
     const { ref, present } = sheet();
-    const screen = await render(<AvatarPill authSheetRef={ref} />);
-    await fireEvent.press(screen.getByTestId('avatar-pill-photo'));
+    const screen = await render(<AvatarPill authSheetRef={ref} onSwitchProfile={mockSwitch} />);
+    await fireEvent.press(screen.getByTestId('avatar-pill-toggle'));
     expect(present).toHaveBeenCalled();
     expect(screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true }).props.pointerEvents).toBe(
       'none',

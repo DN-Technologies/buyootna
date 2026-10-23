@@ -11,6 +11,8 @@ interface HomeTopBarProps {
   mode: HomeMode;
   onModeChange: (mode: HomeMode) => void;
   authSheetRef: RefObject<BottomSheetModal | null>;
+  // A double tap on the photo
+  onSwitchProfile: () => void;
 }
 
 /**
@@ -21,12 +23,16 @@ export default function HomeTopBar({
   mode,
   onModeChange,
   authSheetRef,
+  onSwitchProfile,
 }: HomeTopBarProps) {
   const router = useRouter();
   return (
     <View className="h-[46px] flex-row items-center px-[16px]" style={{ gap: 8 }}>
       <View className="flex-1 flex-row">
-        <AvatarPill authSheetRef={authSheetRef} />
+        <AvatarPill
+          authSheetRef={authSheetRef}
+          onSwitchProfile={onSwitchProfile}
+        />
       </View>
       <TouchableOpacity
         testID="home-map-button"

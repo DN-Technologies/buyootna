@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
 import {
   HOME_SORT_OPTIONS,
@@ -76,6 +77,7 @@ export default function HomeScreen() {
   // «الرئيسية» or «القصص» (the top bar's switch)
   const [mode, setMode] = useState<HomeMode>('home');
   const authSheetRef = useRef<BottomSheetModal>(null);
+  const profileSheetRef = useRef<BottomSheetModal>(null);
   // Lists mounted on first visit, then kept (see the FadeLayers below)
   const visited = {
     offices: useRef(false),
@@ -154,6 +156,7 @@ export default function HomeScreen() {
             mode={mode}
             onModeChange={setMode}
             authSheetRef={authSheetRef}
+            onSwitchProfile={() => profileSheetRef.current?.present()}
           />
           {mode === 'home' ? (
             <View className="py-[12px]" style={{ gap: 12 }}>
@@ -279,6 +282,14 @@ export default function HomeScreen() {
           isLoading={isLoading}
         />
         <AuthGuardSheet ref={authSheetRef} />
+        {/* A double tap on the avatar: switch profile (as in المزيد) */}
+        <ProfileBottomSheet
+          ref={profileSheetRef}
+          onAddAccount={() => {
+            profileSheetRef.current?.dismiss();
+            router.push('/(auth)/add-identity');
+          }}
+        />
       </ContentContainer>
     </SafeAreaView>
   );
