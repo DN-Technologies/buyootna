@@ -34,6 +34,8 @@ export class CompanySearchStrategy implements SearchStrategy {
     }
 
     if (filters.requestType) {
+      // A hidden service («اخفاء الخدمة») matches nothing
+      companyProfileFilter.servicesHidden = false;
       companyProfileFilter.services = {
         contains: filters.requestType,
         mode: 'insensitive',

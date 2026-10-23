@@ -1,4 +1,5 @@
 import { Prisma, PropertyCategory } from '@prisma/client';
+import { visibleServices } from '../../users/services/profile-formatting.util';
 
 // "عمارة للبيع": the listing type after the category label
 export const LISTING_TYPE_LABELS: Record<string, string> = {
@@ -122,7 +123,7 @@ export function formatCompanies(
     .map((i) => ({
       id: i.id,
       name: i.companyData!.name,
-      category: i.companyData!.services || '',
+      category: visibleServices(i.companyData!) || '',
       rating: stats.get(i.id)?.rating ?? 0,
       reviewsCount: stats.get(i.id)?.reviewsCount ?? 0,
       projectsCount: String(adsCount.get(i.id) ?? 0),

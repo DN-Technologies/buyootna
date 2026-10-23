@@ -4,8 +4,8 @@ import { router } from 'expo-router';
 
 import { companyService } from '@/shared/api/company.service';
 
-import PortfolioScreen from '../PortfolioScreen';
 import { visibleProjects } from '../portfolio.utils';
+import PortfolioScreen from '../PortfolioScreen';
 import { usePortfolioToast } from '../usePortfolioToast';
 
 jest.mock('@/shared/api/company.service', () => ({

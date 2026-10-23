@@ -9,6 +9,7 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import { readableLocation } from '../../../common/utils/location.util';
+import { visibleServices } from './profile-formatting.util';
 
 type CompanyIdentity = Identity & {
   companyData: CompanyIdentityData | null;
@@ -58,7 +59,7 @@ export class ProviderCardsService {
           id: i.id,
           userId: i.userId,
           name: i.companyData!.name,
-          category: i.companyData!.services || '',
+          category: visibleServices(i.companyData!) || '',
           rating: s?.rating ?? 0,
           reviewsCount: s?.reviewsCount ?? 0,
           projectsCount: String(projectsCountByIdentity.get(i.id) ?? 0),

@@ -126,7 +126,11 @@ export class MapService {
       const q = dto.searchQuery.trim();
       profileWhere.OR = [
         { name: { contains: q, mode: 'insensitive' } },
-        { services: { contains: q, mode: 'insensitive' } },
+        // A hidden service («اخفاء الخدمة») matches nothing
+        {
+          servicesHidden: false,
+          services: { contains: q, mode: 'insensitive' },
+        },
         { specialty: { contains: q, mode: 'insensitive' } },
       ];
     }

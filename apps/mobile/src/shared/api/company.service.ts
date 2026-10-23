@@ -26,6 +26,34 @@ export interface MyCompanyProject {
   createdAt: string;
 }
 
+// One sub-service (a CompanyService row)
+export interface MyCompanyService {
+  id: string;
+  type: string;
+  // "اخرى" services carry their own title
+  title: string | null;
+  description?: string | null;
+  isHidden?: boolean;
+  createdAt?: string;
+}
+
+// The company's service, as GET /users/profile/services returns it
+export interface MyCompanyServices {
+  specialty: string | null;
+  // «اخفاء الخدمة»: off the profile, cards and search
+  servicesHidden?: boolean;
+  description?: string | null;
+  createdAt?: string | null;
+  services: MyCompanyService[];
+}
+
+// What تعديل الخدمة can change
+export interface ServicesUpdate {
+  servicesHidden?: boolean;
+  description?: string;
+  rows?: { id: string; isHidden: boolean }[];
+}
+
 // What تعديل المشروع can change
 export interface ProjectUpdate {
   title?: string;
@@ -74,16 +102,36 @@ export const companyService = {
   /**
    * The current company's services and its specialty.
    */
-  getMyServices: async (): Promise<{
-    specialty: string | null;
-    services: {
-      id: string;
-      type: string;
-      title: string | null;
-      description?: string | null;
-    }[];
-  }> => {
+  getMyServices: async (): Promise<MyCompanyServices> => {
     const response = await apiClient.get('/users/profile/services');
+    return response.data;
+  },
+
+  /** One sub-service hidden from the profile, or shown again. */
+  setServiceHidden: async (
+    id: string,
+    isHidden: boolean,
+  ): Promise<{ success: boolean }> => {
+    const response = await apiClient.patch(`/users/profile/services/${id}`, {
+      isHidden,
+    });
+    return response.data;
+  },
+
+  /**
+   * تعديل الخدمة's save: the whole service hidden or shown, the
+   * description, and which sub-services are hidden.
+   */
+  updateServices: async (
+    patch: ServicesUpdate,
+  ): Promise<MyCompanyServices> => {
+    const response = await apiClient.patch('/users/profile/services', patch);
+    return response.data;
+  },
+
+  /** حذف الخدمة نهائيا: every sub-service, and the specialty is cleared. */
+  deleteAllServices: async (): Promise<{ success: boolean; deleted: number }> => {
+    const response = await apiClient.delete('/users/profile/services');
     return response.data;
   },
 

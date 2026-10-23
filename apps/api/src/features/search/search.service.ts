@@ -17,6 +17,7 @@ import { ExchangeSearchStrategy } from 'src/features/search/strategies/exchange-
 import { CompanySearchStrategy } from 'src/features/search/strategies/company-search.strategy';
 import { AuctionSearchStrategy } from 'src/features/search/strategies/auction-search.strategy';
 import { DealSearchStrategy } from 'src/features/search/strategies/deal-search.strategy';
+import { visibleServices } from '../users/services/profile-formatting.util';
 
 @Injectable()
 export class SearchService {
@@ -89,7 +90,11 @@ export class SearchService {
     if (query) {
       companyProfileFilter.OR = [
         { name: { contains: query, mode: 'insensitive' } },
-        { services: { contains: query, mode: 'insensitive' } },
+        // A hidden service («اخفاء الخدمة») matches nothing
+        {
+          servicesHidden: false,
+          services: { contains: query, mode: 'insensitive' },
+        },
       ];
     }
 
@@ -120,7 +125,7 @@ export class SearchService {
     const formattedData = identities.map((ident) => ({
       id: ident.id,
       name: ident.companyData?.name || 'شركة غير معروفة',
-      category: ident.companyData?.services || '',
+      category: (ident.companyData && visibleServices(ident.companyData)) || '',
       serviceArea: ident.companyData?.serviceAreas || 'يخدم جميع المناطق',
       projectsCount: String(ident._count.properties),
       logoUrl: ident.companyData?.logoUrl || 'https://via.placeholder.com/150',

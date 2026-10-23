@@ -114,6 +114,9 @@ model CompanyIdentityData {
   latitude        Float?
   longitude       Float?
   specialty       String?
+  // «اخفاء الخدمة»: its services are off the profile, cards and search;
+  // requests still match the specialty
+  servicesHidden  Boolean        @default(false)
   isVerified      Boolean        @default(false)
   status          ApprovalStatus @default(PENDING)
   createdAt       DateTime       @default(now())
@@ -176,6 +179,8 @@ model CompanyService {
   type        String
   title       String?
   description String?
+  // One sub-service hidden from the profile (its name leaves `services`)
+  isHidden    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
