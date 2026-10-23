@@ -1,6 +1,8 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class VerifyRegisterOtpDto {
+import { TermsAcceptanceDto } from './terms-acceptance.dto';
+
+export class VerifyRegisterOtpDto extends TermsAcceptanceDto {
   @IsString()
   @IsNotEmpty()
   phone: string;

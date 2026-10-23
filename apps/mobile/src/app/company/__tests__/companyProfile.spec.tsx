@@ -17,6 +17,11 @@ jest.mock('@gorhom/bottom-sheet', () => ({
   BottomSheetModal: 'BottomSheetModal',
 }));
 
+// The reviews' «إبلاغ» sheet, like the screen's other sheets, isn't rendered
+jest.mock('@/shared/hooks/useReviewReport', () => ({
+  useReviewReport: () => ({ reportReview: jest.fn(), reportSheet: null }),
+}));
+
 jest.mock('@/shared/components/company/CompanyModals', () => {
   return function MockCompanyModals() {
     return null;

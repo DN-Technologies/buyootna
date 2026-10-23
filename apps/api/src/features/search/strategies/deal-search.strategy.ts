@@ -16,6 +16,7 @@ export class DealSearchStrategy implements SearchStrategy {
     filters: DealFilterDto,
     page: number,
     limit: number,
+    viewerUserId?: string,
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
@@ -64,7 +65,7 @@ export class DealSearchStrategy implements SearchStrategy {
 
     const [data, total] = await Promise.all([
       this.prisma.property.findMany({
-        where: withPublicListing(where),
+        where: withPublicListing(where, viewerUserId),
         skip,
         take: limit,
         orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
@@ -80,7 +81,9 @@ export class DealSearchStrategy implements SearchStrategy {
           area: true,
         },
       }),
-      this.prisma.property.count({ where: withPublicListing(where) }),
+      this.prisma.property.count({
+        where: withPublicListing(where, viewerUserId),
+      }),
     ]);
 
     return {

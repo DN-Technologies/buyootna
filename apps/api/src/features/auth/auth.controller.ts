@@ -14,6 +14,7 @@ import { DeviceCtx } from '../devices/sessions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
+import { TermsAcceptanceDto } from './dto/terms-acceptance.dto';
 import { Request } from 'express';
 import { SocialProvider, type User } from '@prisma/client';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
@@ -76,6 +77,7 @@ export class AuthController {
   login(@Req() req: RequestWithUser, @Body() loginDto: LoginDto) {
     // req.user is populated by the LocalStrategy if successful; the persona
     // it opens is the one picked on the login screen, if any
+    this.recordTerms(req.user.id, loginDto);
     return this.authService.login(req.user, undefined, extractDeviceCtx(req), {
       identityType: loginDto.identityType,
     });
@@ -105,11 +107,13 @@ export class AuthController {
   @ApiCommonErrors()
   async googleLogin(@Req() req: RequestWithUser, @Body() dto: GoogleLoginDto) {
     const profile = await this.googleAuthService.verifyIdToken(dto.idToken);
-    return this.authService.loginOrRegisterWithSocial(
+    const result = await this.authService.loginOrRegisterWithSocial(
       SocialProvider.GOOGLE,
       profile,
       extractDeviceCtx(req),
     );
+    this.recordTerms(result?.user?.id, dto);
+    return result;
   }
 
   @Post('apple')
@@ -122,11 +126,13 @@ export class AuthController {
     const profile = await this.appleAuthService.verifyIdentityToken(
       dto.identityToken,
     );
-    return this.authService.loginOrRegisterWithSocial(
+    const result = await this.authService.loginOrRegisterWithSocial(
       SocialProvider.APPLE,
       profile,
       extractDeviceCtx(req),
     );
+    this.recordTerms(result?.user?.id, dto);
+    return result;
   }
 
   @Post('register/verify-otp')
@@ -140,11 +146,13 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Body() dto: VerifyRegisterOtpDto,
   ) {
-    return this.authService.verifyRegistrationOtp(
+    const result = await this.authService.verifyRegistrationOtp(
       dto.phone,
       dto.otp,
       extractDeviceCtx(req),
     );
+    this.recordTerms(result?.user?.id, dto);
+    return result;
   }
 
   @Post('register/verify-email-otp')
@@ -159,11 +167,13 @@ export class AuthController {
     @Req() req: RequestWithUser,
     @Body() dto: VerifyEmailOtpDto,
   ) {
-    return this.authService.verifyEmailRegistrationOtp(
+    const result = await this.authService.verifyEmailRegistrationOtp(
       dto.email,
       dto.otp,
       extractDeviceCtx(req),
     );
+    this.recordTerms(result?.user?.id, dto);
+    return result;
   }
 
   // Dev/CI only — 404s unless MailService is in mock mode (RESEND_API_KEY
@@ -245,5 +255,16 @@ export class AuthController {
       dto.logoutAllDevices,
       reqUser.sessionId,
     );
+  }
+
+  // The terms checkbox (Guideline 1.2): recorded once the sign-in succeeded,
+  // without holding up the answer
+  private recordTerms(
+    userId: string | undefined,
+    dto: TermsAcceptanceDto,
+  ): void {
+    if (dto.acceptTerms && userId) {
+      void this.authService.recordTermsAccepted(userId);
+    }
   }
 }

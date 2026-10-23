@@ -39,6 +39,11 @@ export class AuthService {
     return this.sessionService.login(user, identityId, deviceCtx, opts);
   }
 
+  // 2.05. The sign-in/sign-up terms checkbox, recorded on the account
+  recordTermsAccepted(userId: string) {
+    return this.sessionService.recordTermsAccepted(userId);
+  }
+
   // 2.1. Finish a sign-in paused at "reactivate your account now?"
   loginWithReactivationTicket(ticket: string, deviceCtx: DeviceCtx = {}) {
     return this.sessionService.loginWithReactivationTicket(ticket, deviceCtx);

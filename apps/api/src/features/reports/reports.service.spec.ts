@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { ReportsService } from './reports.service';
+import { ModerationAlertService } from './moderation-alert.service';
+
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { ReportTargetType } from '@prisma/client';
+
+const alerts = { reportCreated: jest.fn().mockResolvedValue(undefined) };
 
 describe('ReportsService', () => {
   let service: ReportsService;
@@ -21,7 +25,11 @@ describe('ReportsService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ReportsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        ReportsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ModerationAlertService, useValue: alerts },
+      ],
     }).compile();
 
     service = module.get<ReportsService>(ReportsService);

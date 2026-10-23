@@ -16,6 +16,7 @@ export class ExchangeSearchStrategy implements SearchStrategy {
     filters: ExchangeFilterDto,
     page: number,
     limit: number,
+    viewerUserId?: string,
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
@@ -49,12 +50,14 @@ export class ExchangeSearchStrategy implements SearchStrategy {
 
     const [data, total] = await Promise.all([
       this.prisma.property.findMany({
-        where: withPublicListing(where),
+        where: withPublicListing(where, viewerUserId),
         skip,
         take: limit,
         orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
       }),
-      this.prisma.property.count({ where: withPublicListing(where) }),
+      this.prisma.property.count({
+        where: withPublicListing(where, viewerUserId),
+      }),
     ]);
 
     return {

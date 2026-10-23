@@ -48,12 +48,18 @@ export class FavoritesService {
   }
 
   // Get user's favorited properties
-  async getFavorites(identityId: string, page = 1, limit = 10) {
+  // viewerUserId: saved ads of an account blocked either way are left out
+  async getFavorites(
+    identityId: string,
+    page = 1,
+    limit = 10,
+    viewerUserId?: string,
+  ) {
     const skip = (page - 1) * limit;
 
     const [favorites, total] = await Promise.all([
       this.prisma.favorite.findMany({
-        where: { identityId, property: ownerActiveWhere() },
+        where: { identityId, property: ownerActiveWhere(viewerUserId) },
         include: {
           property: {
             include: {
@@ -81,7 +87,7 @@ export class FavoritesService {
         take: limit,
       }),
       this.prisma.favorite.count({
-        where: { identityId, property: ownerActiveWhere() },
+        where: { identityId, property: ownerActiveWhere(viewerUserId) },
       }),
     ]);
 

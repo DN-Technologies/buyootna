@@ -9,6 +9,7 @@ import {
   notBlockedSql,
 } from '../block.rules';
 import { BlocksService } from '../blocks.service';
+import { ReportsService } from '../../reports/reports.service';
 import { BlockUserDto } from '../dto/block-user.dto';
 import { Prisma } from '@prisma/client';
 
@@ -23,12 +24,43 @@ describe('BlocksService', () => {
       findMany: jest.fn(),
     },
   };
-  const service = new BlocksService(prisma as unknown as PrismaService);
+  const reports = { createForBlock: jest.fn().mockResolvedValue(undefined) };
+  const service = new BlocksService(
+    prisma as unknown as PrismaService,
+    reports as unknown as ReportsService,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
     prisma.user.findUnique.mockResolvedValue({ id: 'u2' });
     prisma.identity.findFirst.mockResolvedValue({ id: 'u2-company' });
+    prisma.userBlock.createMany.mockResolvedValue({ count: 1 });
+  });
+
+  it('a new block is filed as a report for the moderators, with the reason (Guideline 1.2)', async () => {
+    await service.block(
+      'u1',
+      { userId: 'u2', identityId: 'u2-company' },
+      { blockerIdentityId: 'u1-me', reason: 'رسائل مسيئة' },
+    );
+    expect(reports.createForBlock).toHaveBeenCalledWith(
+      { userId: 'u1', identityId: 'u1-me' },
+      { userId: 'u2', identityId: 'u2-company' },
+      'رسائل مسيئة',
+    );
+  });
+
+  it('blocking again files no second report', async () => {
+    prisma.userBlock.createMany.mockResolvedValue({ count: 0 });
+    await service.block('u1', { userId: 'u2' });
+    expect(reports.createForBlock).not.toHaveBeenCalled();
+  });
+
+  it('the block stands when filing its report fails', async () => {
+    reports.createForBlock.mockRejectedValueOnce(new Error('db down'));
+    await expect(service.block('u1', { userId: 'u2' })).resolves.toEqual({
+      blocked: true,
+    });
   });
 
   it('blocks an account, remembering the profile it was blocked from; repeating changes nothing', async () => {

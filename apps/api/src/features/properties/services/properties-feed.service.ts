@@ -14,6 +14,7 @@ import {
   formatProperties,
 } from './property-formatting.util';
 import { notExpiredWhere, ownerActiveWhere } from './property-expiry.util';
+import { isBlockedEitherWay } from '../../blocks/block.rules';
 
 // Stable orders for paginated lists: the id tiebreaker keeps ads with the
 // same publish time from shifting between pages
@@ -59,7 +60,9 @@ export class PropertiesFeedService {
   ) {}
 
   // --- PUBLIC FEED ---
-  async getHomeFeed() {
+  // viewerUserId: the signed-in caller, whose blocked accounts' ads are left
+  // out (Guideline 1.2)
+  async getHomeFeed(viewerUserId?: string) {
     const [saleProperties, rentProperties, exchangeProperties, topCompanies] =
       await Promise.all([
         this.prisma.property.findMany({
@@ -68,7 +71,7 @@ export class PropertiesFeedService {
             status: 'ACTIVE',
             isHidden: false,
             ...notExpiredWhere(),
-            ...ownerActiveWhere(),
+            ...ownerActiveWhere(viewerUserId),
           },
           orderBy: [
             { isPriority: 'desc' },
@@ -95,7 +98,7 @@ export class PropertiesFeedService {
             status: 'ACTIVE',
             isHidden: false,
             ...notExpiredWhere(),
-            ...ownerActiveWhere(),
+            ...ownerActiveWhere(viewerUserId),
           },
           orderBy: [
             { isPriority: 'desc' },
@@ -122,7 +125,7 @@ export class PropertiesFeedService {
             status: 'ACTIVE',
             isHidden: false,
             ...notExpiredWhere(),
-            ...ownerActiveWhere(),
+            ...ownerActiveWhere(viewerUserId),
           },
           orderBy: [
             { isPriority: 'desc' },
@@ -184,7 +187,7 @@ export class PropertiesFeedService {
   }
 
   // --- PAGINATED FEED (For Infinite Scroll) ---
-  async findAll(filters: GetPropertiesFilterDto) {
+  async findAll(filters: GetPropertiesFilterDto, viewerUserId?: string) {
     const {
       type,
       page = 1,
@@ -206,7 +209,7 @@ export class PropertiesFeedService {
       status: 'ACTIVE',
       isHidden: false,
       ...notExpiredWhere(),
-      ...ownerActiveWhere(),
+      ...ownerActiveWhere(viewerUserId),
     };
     if (type) {
       whereClause.type = type;
@@ -263,13 +266,14 @@ export class PropertiesFeedService {
   }
 
   // --- GET SINGLE PROPERTY BY ID ---
-  async findOne(id: string) {
+  async findOne(id: string, viewerUserId?: string) {
     const property = await this.prisma.property.findUnique({
       where: { id },
       include: {
         identity: {
           select: {
             id: true,
+            userId: true,
             type: true,
             createdAt: true,
             useAccountPhone: true,
@@ -306,6 +310,15 @@ export class PropertiesFeedService {
     // hidden -- the owner themselves is signed out while suspended
     const ownerUser = property?.identity?.user;
     if (!property || ownerUser?.isDisabled || ownerUser?.isBlocked) {
+      throw new NotFoundException('عذراً، هذا العقار غير موجود أو تم حذفه');
+    }
+    // Nor is it shown across a block, either way, with the viewer
+    const ownerUserId = property.identity?.userId;
+    if (
+      viewerUserId &&
+      ownerUserId &&
+      (await isBlockedEitherWay(this.prisma, viewerUserId, ownerUserId))
+    ) {
       throw new NotFoundException('عذراً، هذا العقار غير موجود أو تم حذفه');
     }
 

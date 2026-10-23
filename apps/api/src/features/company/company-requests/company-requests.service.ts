@@ -7,6 +7,8 @@ import {
 } from '@nestjs/common';
 import { Prisma, RequestOfferStatus, RequestStatus } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { assertCleanContent } from '../../../core/content-filter/content-filter';
+import { notBlockedWithIdentityWhere } from '../../blocks/block.rules';
 import { PushService } from '../../../core/push/push.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
@@ -184,6 +186,7 @@ export class CompanyRequestsService {
     clientIdentityId: string,
     dto: CreateCompanyRequestDto,
   ): Promise<CompanyRequestResponseDto> {
+    assertCleanContent(dto.title, dto.description, dto.location);
     let targetIdentityId: string | null = null;
 
     if (dto.targetIdentityId) {
@@ -312,6 +315,13 @@ export class CompanyRequestsService {
     }
 
     const and: Prisma.CompanyRequestWhereInput[] = [];
+    // Nothing from a client blocked either way with this company
+    // (Guideline 1.2)
+    if (params.scope !== 'mine') {
+      and.push({
+        clientIdentity: { user: notBlockedWithIdentityWhere(identityId) },
+      });
+    }
     if (params.search?.trim()) {
       const q = params.search.trim();
       and.push({
@@ -662,6 +672,7 @@ export class CompanyRequestsService {
     if (!message && !excludes && !notes && dto.price === undefined) {
       throw new BadRequestException('اكتب تفاصيل العرض أو ملاحظات للعميل');
     }
+    assertCleanContent(message, excludes, notes);
 
     const data = {
       message,

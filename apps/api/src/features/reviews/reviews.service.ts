@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { assertCleanContent } from '../../core/content-filter/content-filter';
 import { blockedUserIdsFor } from '../blocks/block.rules';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { GetReviewsDto, ReviewSortOption } from './dto/get-reviews.dto';
@@ -27,6 +28,7 @@ export class ReviewsService {
 
     // Stars-only reviews store an empty comment (the column is required)
     const comment = dto.comment?.trim() ?? '';
+    assertCleanContent(comment);
 
     const reviewerIdentity = await this.prisma.identity.findFirst({
       where: {

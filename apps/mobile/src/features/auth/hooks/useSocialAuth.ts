@@ -2,6 +2,12 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
 
+import { useTermsAgreement } from '@/features/auth/terms';
+
+// Sent when ticked on the sign-up tab (Apple or Google may create the
+// account there); the login tab has no box, so nothing is sent from it
+const termsAccepted = () =>
+  useTermsAgreement.getState().accepted ? { acceptTerms: true } : {};
 import apiClient from '@/shared/api/api';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -78,7 +84,10 @@ export function useSocialAuth() {
       }
 
       const response = await withReactivationPrompt(
-        apiClient.post('/auth/google', { idToken: result.data.idToken }),
+        apiClient.post('/auth/google', {
+          idToken: result.data.idToken,
+          ...termsAccepted(),
+        }),
       );
       await handleSocialAuthResponse(response);
     } catch (error: any) {
@@ -108,6 +117,7 @@ export function useSocialAuth() {
       const response = await withReactivationPrompt(
         apiClient.post('/auth/apple', {
           identityToken: credential.identityToken,
+          ...termsAccepted(),
         }),
       );
       await handleSocialAuthResponse(response);

@@ -9,6 +9,7 @@ import {
   BackendReportStatus,
   bulkDismissReports,
   bulkResolveReports,
+  enforceReport,
   fetchReport,
   fetchReports,
   updateReport,
@@ -90,6 +91,29 @@ function toReportItem(row: AdminReportRow): ReportItem {
     createdAt: formatRelativeArabicTime(row.createdAt),
     priority: MAIN_PRIORITY_LABEL[row.priority],
     description: row.description || undefined,
+    ...reportedContent(row),
+  }
+}
+
+const CONTENT_LABEL = {
+  PROPERTY: 'الإعلان المبلغ عنه',
+  REVIEW: 'التقييم المبلغ عنه',
+  STORY: 'القصة المبلغ عنها',
+} as const
+
+// A reported review's comment or story's caption, for the drawer
+function reportedContent(row: AdminReportRow) {
+  if (!row.content) return {}
+  const snap = row.content.snapshot ?? {}
+  const text =
+    typeof snap.comment === 'string'
+      ? snap.comment
+      : typeof snap.caption === 'string'
+        ? snap.caption
+        : undefined
+  return {
+    contentLabel: CONTENT_LABEL[row.content.kind],
+    contentText: text || undefined,
   }
 }
 
@@ -282,6 +306,25 @@ export function useReportsPage() {
   }
 
   // Single report dismissal
+  // «حذف المحتوى وإيقاف الحساب»: the 24-hour action on a report
+  const handleEnforceReport = async (id: string) => {
+    if (
+      !window.confirm(
+        'سيتم حذف المحتوى المبلغ عنه وإيقاف حساب ناشره وإغلاق البلاغ. متابعة؟',
+      )
+    ) {
+      return
+    }
+    try {
+      await enforceReport(id)
+      triggerToast('تم حذف المحتوى وإيقاف الحساب')
+      await loadReports()
+    } catch (err) {
+      console.error('Failed to enforce report:', err)
+      triggerToast('حدث خطأ أثناء حذف المحتوى وإيقاف الحساب.')
+    }
+  }
+
   const handleDismissReport = async (id: string) => {
     try {
       await updateReport(id, { status: 'DISMISSED' })
@@ -332,6 +375,7 @@ export function useReportsPage() {
     handleConfirmResolution,
     handleResolveReport: handleOpenSingleConfirm,
     handleDismissReport,
+    handleEnforceReport,
     stats,
     pagination,
     setCurrentPage,

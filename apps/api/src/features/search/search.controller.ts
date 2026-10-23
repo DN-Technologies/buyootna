@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -31,6 +32,9 @@ import { GetSearchFilterDto } from 'src/features/search/dto/get-search-filter.dt
 import { SearchService } from 'src/features/search/search.service';
 import { mapToFrontendCard } from 'src/features/search/utils/search-mapper.util';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
+import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import { OptionalJwtGuard } from '../../core/guards/optional-jwt.guard';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import {
   AdvancedSearchResponseDto,
   GlobalSearchResponseDto,
@@ -45,6 +49,8 @@ export class SearchController {
    * POST /search/advanced
    * Consumes the complex polymorphic payload
    */
+  // Signed in, accounts blocked either way are left out of the results
+  @UseGuards(OptionalJwtGuard)
   @Post('advanced')
   @HttpCode(HttpStatus.OK) // Return 200 OK instead of the default 201 Created for POST
   @ApiOperation({
@@ -80,9 +86,15 @@ export class SearchController {
   })
   @ApiResponse({ status: 200, type: AdvancedSearchResponseDto })
   @ApiCommonErrors()
-  async executeAdvancedSearch(@Body() payload: AdvancedSearchDto) {
+  async executeAdvancedSearch(
+    @Body() payload: AdvancedSearchDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
     // 1. Pass the validated DTO to the routing service (which hits the Prisma Strategies)
-    const rawResult = await this.searchService.globalAdvancedSearch(payload);
+    const rawResult = await this.searchService.globalAdvancedSearch(
+      payload,
+      reqUser?.userId,
+    );
 
     // 2. Map the raw database entities into the unified frontend format
     const formattedData = rawResult.data.map((item) =>

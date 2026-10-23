@@ -1,0 +1,66 @@
+/**
+ * Words refused in public content and masked in chat (App Store Guideline
+ * 1.2). Matched as whole words after normalising (content-filter.ts), so a
+ * short word here never matches inside a longer, innocent one. An entry
+ * ending in `*` also matches any word starting with it (fucking, fucker).
+ * Keep the list to unambiguous insults and slurs: a false positive blocks a
+ * real listing.
+ */
+export const BANNED_WORDS: readonly string[] = [
+  // Arabic (Gulf and common forms)
+  'كس',
+  'كسك',
+  'كسمك',
+  'كسختك',
+  'كسخت',
+  'زب',
+  'زبي',
+  'زبك',
+  'طيز',
+  'طيزك',
+  'نيك',
+  'نيكك',
+  'انيك',
+  'انيكك',
+  'منيوك',
+  'منيوكه',
+  'منيك',
+  'متناك',
+  'متناكه',
+  'شرموط',
+  'شرموطه',
+  'شراميط',
+  'قحبه',
+  'قحاب',
+  'عاهر',
+  'عاهره',
+  'عواهر',
+  'خول',
+  'لوطي',
+  'ديوث',
+  'مخنث',
+  'كلخره',
+  'فاجره',
+  'زاني',
+  'زانيه',
+  'يلعن',
+  // English
+  'fuck*',
+  'motherfuck*',
+  'shit',
+  'shitty',
+  'bullshit',
+  'bitch*',
+  'cunt*',
+  'whore*',
+  'slut*',
+  'dick',
+  'dickhead',
+  'pussy',
+  'asshole*',
+  'bastard*',
+  'nigger*',
+  'nigga*',
+  'faggot*',
+  'retard',
+];

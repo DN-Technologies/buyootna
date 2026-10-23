@@ -5,10 +5,10 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
 import RepublishAdSheet, {
   RepublishPlanType,
 } from '@/features/individual/components/activity/ads/RepublishAdSheet';
+import DeleteConfirmationSheet from '@/features/individual/components/activity/delete-confirmation/DeleteConfirmationSheet';
 import apiClient from '@/shared/api/api';
 import { plansService } from '@/shared/api/plans.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
@@ -16,6 +16,7 @@ import ArchivedPropertyActionBar from '@/shared/components/property/ArchivedProp
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import PropertyDetailsContent from '@/shared/components/property/PropertyDetailsContent';
 import PropertyErrorState from '@/shared/components/property/PropertyErrorState';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import PropertyDetailSkeleton from '@/shared/components/skeletons/PropertyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
@@ -23,6 +24,8 @@ import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { renewProperty, useMyActivity } from '@/shared/hooks/properties/useMyActivity';
 import { usePropertyActions } from '@/shared/hooks/properties/usePropertyActions';
 import { usePropertyDetails } from '@/shared/hooks/properties/usePropertyDetails';
+import { useContentReport } from '@/shared/hooks/useContentReport';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 
@@ -70,6 +73,14 @@ export default function PropertyDetailsScreen() {
     guardAction,
     toggleFavorite,
   });
+
+  // إبلاغ عن الإعلان (Guideline 1.2): signed in, on someone else's ad
+  const isOwnAd = useAuthStore((s) =>
+    s.identities.some((i) => i.id === property?.host?.id),
+  );
+  const { reportSheetRef, openReport, submitReport } = useContentReport();
+  const handleReport = () =>
+    guardAction(() => openReport({ kind: 'property', id: propertyId }));
 
   const handleOpenRepublish = () => {
     republishSheetRef.current?.present();
@@ -142,6 +153,7 @@ export default function PropertyDetailsScreen() {
         onBack={handleBack}
         onFavorite={handleFavoriteToggle}
         onShare={handleShare}
+        onReport={isOwnAd ? undefined : handleReport}
         onHostPress={handleHostPress}
       />
 
@@ -167,6 +179,9 @@ export default function PropertyDetailsScreen() {
 
       {/* --- Auth Guard Bottom Sheet --- */}
       <AuthGuardSheet ref={authSheetRef} />
+
+      {/* --- إبلاغ عن الإعلان --- */}
+      <ReportReasonSheet ref={reportSheetRef} onSubmit={submitReport} />
 
       {/* --- Republish Ad Bottom Sheet (Archived ads) --- */}
       <RepublishAdSheet

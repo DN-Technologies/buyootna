@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 
+import { notBlockedUserWhere } from '../../blocks/block.rules';
+
 /**
  * Defense-in-depth alongside PropertiesExpiryService's cron: that job is the
  * source of truth for flipping status ACTIVE -> EXPIRED once a listing's
@@ -20,19 +22,33 @@ export function notExpiredWhere(): Prisma.PropertyWhereInput {
 /**
  * Hides a listing whose owner suspended their account (تعطيل مؤقت) or was
  * blocked/disabled by an admin. Suspension flips only the user's flags, so
- * their ads come back by themselves when they sign in again.
+ * their ads come back by themselves when they sign in again. Given the
+ * signed-in viewer, it also hides the listings of an account blocked
+ * either way with them (Guideline 1.2), back as soon as it is unblocked.
  */
-export function ownerActiveWhere(): Prisma.PropertyWhereInput {
-  return { identity: { user: { isDisabled: false, isBlocked: false } } };
+export function ownerActiveWhere(
+  viewerUserId?: string,
+): Prisma.PropertyWhereInput {
+  return {
+    identity: {
+      user: {
+        isDisabled: false,
+        isBlocked: false,
+        ...(viewerUserId ? notBlockedUserWhere(viewerUserId) : {}),
+      },
+    },
+  };
 }
 
-/** Everything a listing needs to be shown to the public. */
-export function publicListingWhere(): Prisma.PropertyWhereInput {
+/** Everything a listing needs to be shown to the public (and the viewer). */
+export function publicListingWhere(
+  viewerUserId?: string,
+): Prisma.PropertyWhereInput {
   return {
     AND: [
       { status: 'ACTIVE', isHidden: false },
       notExpiredWhere(),
-      ownerActiveWhere(),
+      ownerActiveWhere(viewerUserId),
     ],
   };
 }
@@ -43,6 +59,7 @@ export function publicListingWhere(): Prisma.PropertyWhereInput {
  */
 export function withPublicListing(
   where: Prisma.PropertyWhereInput,
+  viewerUserId?: string,
 ): Prisma.PropertyWhereInput {
-  return { AND: [where, publicListingWhere()] };
+  return { AND: [where, publicListingWhere(viewerUserId)] };
 }

@@ -5,6 +5,7 @@ import CompanyWorkingHours from '@/shared/components/company/CompanyWorkingHours
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem, ReviewSummary } from '@/shared/components/profile/types';
+import { useReviewReport } from '@/shared/hooks/useReviewReport';
 
 interface CompanyAboutTabProps {
   reviewSummary: ReviewSummary;
@@ -32,6 +33,8 @@ export default function CompanyAboutTab({
   onShowMoreReviews,
   workingHours,
 }: CompanyAboutTabProps) {
+  const { reportReview, reportSheet } = useReviewReport();
+
   return (
     <View>
       {/* Working Hours */}
@@ -71,6 +74,7 @@ export default function CompanyAboutTab({
             item={rev}
             onToggleLike={onToggleLike}
             onToggleDislike={onToggleDislike}
+            onReport={reportReview}
           />
         ))}
       </View>
@@ -87,6 +91,7 @@ export default function CompanyAboutTab({
           </Text>
         </TouchableOpacity>
       )}
+      {reportSheet}
     </View>
   );
 }

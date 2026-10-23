@@ -68,6 +68,21 @@ describe('PropertiesMutationsService alert matching', () => {
       images: [],
     });
 
+  it('refuses an ad whose text has a banned word, before anything is saved (Guideline 1.2)', async () => {
+    await expect(
+      service.create('identity-1', {
+        ...dto,
+        description: 'شقة للايجار يا قحبة',
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(property.create).not.toHaveBeenCalled();
+
+    owned('ACTIVE');
+    await expect(
+      service.update('identity-1', 'prop-1', { rentConditions: 'fuck off' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('notifies after publishing a new listing', async () => {
     property.create.mockResolvedValue({ id: 'prop-1' });
 

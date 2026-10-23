@@ -4,6 +4,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { ReportsService } from './reports.service';
+import { ModerationAlertService } from './moderation-alert.service';
+
+const alerts = { reportCreated: jest.fn().mockResolvedValue(undefined) };
 
 const NOW = new Date('2026-10-20T12:00:00.000Z');
 const STORY = '22222222-2222-4222-8222-222222222222';
@@ -42,7 +45,11 @@ describe('ReportsService.createForStory', () => {
         Promise.resolve({ id: 'report-1', ...data }),
     );
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ReportsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        ReportsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ModerationAlertService, useValue: alerts },
+      ],
     }).compile();
     service = module.get(ReportsService);
   });

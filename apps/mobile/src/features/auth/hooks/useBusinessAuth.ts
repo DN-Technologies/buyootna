@@ -13,6 +13,7 @@ import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
+import { requireTermsAccepted } from '../terms';
 import { loginAs } from '../utils/loginAs';
 
 // Company/office accounts stay behind the ComingSoonGate unless explicitly
@@ -64,7 +65,7 @@ export function useBusinessAuth() {
   // Signs in to the company or office persona picked above, straight to its
   // dashboard (never the individual one first)
   const onLogin = async (
-    data: CompanyLoginFormValues & { rememberMe: boolean },
+    data: CompanyLoginFormValues,
   ) => {
     setIsLoading(true);
     try {
@@ -89,6 +90,7 @@ export function useBusinessAuth() {
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
+    if (!requireTermsAccepted()) return false;
     setIsLoading(true);
     try {
       // 1. Create a new FormData object

@@ -157,6 +157,7 @@ export class FavoritesController {
       reqUser.identityId,
       pageNum,
       limitNum,
+      reqUser.userId,
     );
   }
 

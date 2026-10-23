@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import { assertCleanContent } from '../../../core/content-filter/content-filter';
 import {
   NAME_REGEX,
   NAME_REGEX_MESSAGE,
@@ -47,6 +48,7 @@ export class UsersProfileService {
     ) {
       throw new BadRequestException(NAME_REGEX_MESSAGE);
     }
+    assertCleanContent(dto.name, dto.about, dto.services, dto.specialty);
 
     // An account that signs in by phone needs one on file. An account that
     // signs in by email may have none: it registered without a phone, and

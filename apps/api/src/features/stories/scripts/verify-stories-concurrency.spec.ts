@@ -25,6 +25,7 @@ import { HttpException } from '@nestjs/common';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { StorageService } from '../../../core/storage/storage.service';
 import { ReportsService } from '../../reports/reports.service';
+import { ModerationAlertService } from '../../reports/moderation-alert.service';
 import { StoriesMediaService } from '../stories-media.service';
 import { StoriesService } from '../stories.service';
 
@@ -90,7 +91,9 @@ describeIfDb('Stories limits (real Postgres concurrency)', () => {
   beforeAll(() => {
     prisma = new PrismaService();
     service = new StoriesService(prisma, media, storage);
-    reports = new ReportsService(prisma);
+    reports = new ReportsService(prisma, {
+      reportCreated: () => Promise.resolve(),
+    } as unknown as ModerationAlertService);
   });
 
   beforeEach(async () => {

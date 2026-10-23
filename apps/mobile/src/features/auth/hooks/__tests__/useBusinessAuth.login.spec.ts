@@ -3,7 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 
 import apiClient from '@/shared/api/api';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
+import { showAlert } from '@/shared/utils/alert';
 
+import { useTermsAgreement } from '../../terms';
 import { useBusinessAuth } from '../useBusinessAuth';
 
 jest.mock('expo-router', () => ({
@@ -31,7 +33,39 @@ jest.mock('@/shared/store/useAuthStore', () => ({
 const post = apiClient.post as jest.Mock;
 
 describe('useBusinessAuth › login opens the persona picked on the screen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useTermsAgreement.setState({ accepted: true });
+  });
+
+  it('signing in needs no terms box (it is on sign-up only)', async () => {
+    useTermsAgreement.setState({ accepted: false });
+    (useLocalSearchParams as jest.Mock).mockReturnValue({ type: 'office' });
+    post.mockResolvedValueOnce({
+      data: {
+        user: { id: 'u1' },
+        activeIdentity: { id: 'i1', type: 'OFFICE' },
+        identities: [],
+        access_token: 'jwt',
+        sessionId: 's1',
+      },
+    });
+    const { result } = await renderHook(() => useBusinessAuth());
+
+    await act(() =>
+      result.current.onLogin({
+        identifier: 'ali@example.com',
+        password: 'secret12',
+      }),
+    );
+
+    expect(post).toHaveBeenCalledWith('/auth/login', {
+      identifier: 'ali@example.com',
+      password: 'secret12',
+      identityType: 'OFFICE',
+    });
+    expect(showAlert).not.toHaveBeenCalled();
+  });
 
   it.each([
     ['office', 'OFFICE'],
@@ -55,8 +89,7 @@ describe('useBusinessAuth › login opens the persona picked on the screen', () 
         result.current.onLogin({
           identifier: 'ali@example.com',
           password: 'secret12',
-          rememberMe: false,
-        }),
+          }),
       );
 
       expect(post).toHaveBeenCalledWith('/auth/login', {

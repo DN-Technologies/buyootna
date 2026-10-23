@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { assertCleanContent } from 'src/core/content-filter/content-filter';
 import { IdentityType, Prisma } from '@prisma/client';
 import { StorageService } from 'src/core/storage/storage.service';
 import { grantTrialIfNew } from '../company-subscriptions/company-subscription.rules';
@@ -390,6 +391,7 @@ export class IdentitiesService {
         `النبذة يجب ألا تتجاوز ${ABOUT_MAX_LENGTH} حرف`,
       );
     }
+    assertCleanContent(dto.name, about);
 
     // مواعيد العمل, when sent: checked and normalised (400 if malformed)
     const rawHours = (dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto)

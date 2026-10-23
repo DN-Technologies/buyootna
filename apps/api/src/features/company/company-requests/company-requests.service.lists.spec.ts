@@ -91,9 +91,41 @@ describe('CompanyRequestsService: lists, details status, saved and dismissed', (
       )[0][0] as {
         where: { AND?: unknown[] };
       };
-      // Only the 30-day rule for rejected requests; no specialty filter
-      expect(where.AND).toHaveLength(1);
+      // The block filter and the 30-day rule for rejected requests; no
+      // specialty filter
+      expect(where.AND).toHaveLength(2);
       expect(JSON.stringify(where.AND)).not.toContain('category');
+    });
+
+    it('leaves out requests from a client blocked either way with the company (Guideline 1.2)', async () => {
+      const blockFilter = {
+        clientIdentity: {
+          user: {
+            blocksMade: {
+              none: { blocked: { identities: { some: { id: 'company-1' } } } },
+            },
+            blocksReceived: {
+              none: { blocker: { identities: { some: { id: 'company-1' } } } },
+            },
+          },
+        },
+      };
+      for (const scope of ['public', 'company'] as const) {
+        prisma.companyRequest.findMany.mockClear();
+        await service.findMine('company-1', { scope });
+        const { where } = (
+          prisma.companyRequest.findMany.mock.calls as unknown[][]
+        )[0][0] as { where: { AND?: unknown[] } };
+        expect(where.AND).toContainEqual(blockFilter);
+      }
+
+      // The requester's own list is theirs, whoever they blocked
+      prisma.companyRequest.findMany.mockClear();
+      await service.findMine('company-1', { scope: 'mine' });
+      const { where } = (
+        prisma.companyRequest.findMany.mock.calls as unknown[][]
+      )[0][0] as { where: { AND?: unknown[] } };
+      expect(where.AND ?? []).not.toContainEqual(blockFilter);
     });
 
     it('requests sent to the company directly are not narrowed by specialty', async () => {

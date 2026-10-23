@@ -23,6 +23,7 @@ interface PropertyDetailsContentProps {
   onBack: () => void;
   onFavorite: () => void;
   onShare: () => void;
+  onReport?: () => void;
   onHostPress: () => void;
 }
 
@@ -33,6 +34,7 @@ export default function PropertyDetailsContent({
   onBack,
   onFavorite,
   onShare,
+  onReport,
   onHostPress,
 }: PropertyDetailsContentProps) {
   const displayTitle = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type)}`;
@@ -59,6 +61,7 @@ export default function PropertyDetailsContent({
           isFavorite={isFavorite}
           onFavorite={onFavorite}
           onShare={onShare}
+          onReport={onReport}
         />
 
         {/* --- Card 1: Property Specs & Overview --- */}

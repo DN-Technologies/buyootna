@@ -45,6 +45,33 @@ export async function blockedUserIdsFor(
   ];
 }
 
+/**
+ * For Prisma filters on another account (a listing's owner…): no block
+ * either way between it and `viewerUserId`.
+ */
+export function notBlockedUserWhere(
+  viewerUserId: string,
+): Prisma.UserWhereInput {
+  return {
+    blocksMade: { none: { blockedUserId: viewerUserId } },
+    blocksReceived: { none: { blockerUserId: viewerUserId } },
+  };
+}
+
+/**
+ * The same, when only one of the viewer's profiles is known (the company
+ * requests lists): no block either way with the account owning it.
+ */
+export function notBlockedWithIdentityWhere(
+  viewerIdentityId: string,
+): Prisma.UserWhereInput {
+  const viewer = { identities: { some: { id: viewerIdentityId } } };
+  return {
+    blocksMade: { none: { blocked: viewer } },
+    blocksReceived: { none: { blocker: viewer } },
+  };
+}
+
 /** SQL for raw queries: no block either way between `viewer` and `other`. */
 export function notBlockedSql(
   viewerUserId: string,

@@ -34,6 +34,18 @@ access.
 `apps/web/admin`) is a security-sensitive change, not a routine feature
 change. Flag it explicitly and be conservative about scope.
 
+### Moderation (App Store Guideline 1.2)
+
+Reports and blocks are a 24-hour commitment to Apple: every new report
+(account, story, listing, review) and every new block emails
+`MODERATION_ALERT_EMAIL` (set in the server's `apps/api/.env`;
+comma-separated for several people). Someone must watch that inbox every
+day. Acting on a report is admin › البلاغات › «حذف المحتوى وإيقاف الحساب»
+(`POST /admin/reports/:id/enforce`): it removes the listing, review or
+story, suspends the account that posted it and resolves the report. Keep
+`apps/api/src/core/content-filter/banned-words.ts` to unambiguous words:
+a false positive refuses a real listing.
+
 ## Database access
 
 - CLAUDE.md's standing rule: **development/local always uses the Neon

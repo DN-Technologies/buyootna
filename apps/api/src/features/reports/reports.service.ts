@@ -6,6 +6,10 @@ import {
 import { Prisma, ReportTargetType } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { CreateReportDto } from './dto/create-report.dto';
+import { ModerationAlertService } from './moderation-alert.service';
+
+// The reason a block is filed under (the admin's reports list shows it)
+export const BLOCK_REPORT_REASON = 'حظر المستخدم';
 
 function generateReportNumber(): number {
   return Math.floor(1000 + Math.random() * 9000);
@@ -13,7 +17,10 @@ function generateReportNumber(): number {
 
 @Injectable()
 export class ReportsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alerts: ModerationAlertService,
+  ) {}
 
   async create(
     reporterUserId: string,
@@ -48,6 +55,7 @@ export class ReportsService {
         targetIdentityId,
       },
     });
+    this.alert(report, 'حساب');
 
     return {
       message: 'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته',
@@ -90,7 +98,7 @@ export class ReportsService {
     }
 
     const existing = await this.findStoryReport(reporter.identityId, storyId);
-    if (existing) return this.storyReportResult(existing);
+    if (existing) return this.reportResult(existing);
 
     try {
       const report = await this.prisma.report.create({
@@ -113,7 +121,8 @@ export class ReportsService {
           },
         },
       });
-      return this.storyReportResult(report);
+      this.alert(report, 'قصة');
+      return this.reportResult(report);
     } catch (error) {
       // A simultaneous report by the same profile won the unique key
       if (
@@ -121,10 +130,160 @@ export class ReportsService {
         error.code === 'P2002'
       ) {
         const winner = await this.findStoryReport(reporter.identityId, storyId);
-        if (winner) return this.storyReportResult(winner);
+        if (winner) return this.reportResult(winner);
       }
       throw error;
     }
+  }
+
+  /**
+   * A report made from a listing (إبلاغ عن الإعلان): PROPERTY, against the
+   * listing and its owner. A profile's report on a listing still pending
+   * review is returned again instead of being filed twice.
+   */
+  async createForProperty(
+    reporter: { userId: string; identityId?: string },
+    propertyId: string,
+    dto: CreateReportDto,
+  ) {
+    const property = await this.prisma.property.findUnique({
+      where: { id: propertyId },
+      select: {
+        id: true,
+        identityId: true,
+        identity: { select: { userId: true } },
+      },
+    });
+    if (!property) throw new NotFoundException('الإعلان غير موجود');
+    if (property.identity?.userId === reporter.userId) {
+      throw new BadRequestException('لا يمكنك الإبلاغ عن إعلانك');
+    }
+
+    const pending = await this.prisma.report.findFirst({
+      where: {
+        reporterUserId: reporter.userId,
+        targetPropertyId: propertyId,
+        status: 'PENDING',
+      },
+    });
+    if (pending) return this.reportResult(pending);
+
+    const report = await this.prisma.report.create({
+      data: {
+        reportNumber: await this.nextReportNumber(),
+        targetType: ReportTargetType.PROPERTY,
+        reason: dto.reason,
+        description: dto.description,
+        reporterUserId: reporter.userId,
+        reporterIdentityId: reporter.identityId,
+        targetUserId: property.identity?.userId,
+        targetIdentityId: property.identityId,
+        targetPropertyId: property.id,
+      },
+    });
+    this.alert(report, 'إعلان');
+    return this.reportResult(report);
+  }
+
+  /**
+   * A report made from a review: against its author (USER), linked to the
+   * review, with its text kept in case the review is deleted. Returned
+   * again while the profile's earlier report on it is still pending.
+   */
+  async createForReview(
+    reporter: { userId: string; identityId?: string },
+    reviewId: string,
+    dto: CreateReportDto,
+  ) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        reviewerId: true,
+        reviewerIdentityId: true,
+        reviewerIdentity: { select: { userId: true } },
+      },
+    });
+    if (!review) throw new NotFoundException('التقييم غير موجود');
+    const authorUserId = review.reviewerIdentity?.userId ?? review.reviewerId;
+    if (authorUserId === reporter.userId) {
+      throw new BadRequestException('لا يمكنك الإبلاغ عن تقييمك');
+    }
+
+    const pending = await this.prisma.report.findFirst({
+      where: {
+        reporterUserId: reporter.userId,
+        targetReviewId: reviewId,
+        status: 'PENDING',
+      },
+    });
+    if (pending) return this.reportResult(pending);
+
+    const report = await this.prisma.report.create({
+      data: {
+        reportNumber: await this.nextReportNumber(),
+        targetType: ReportTargetType.USER,
+        reason: dto.reason,
+        description: dto.description,
+        reporterUserId: reporter.userId,
+        reporterIdentityId: reporter.identityId,
+        targetUserId: authorUserId,
+        targetIdentityId: review.reviewerIdentityId,
+        targetReviewId: review.id,
+        targetReviewSnapshot: {
+          reviewId: review.id,
+          rating: review.rating,
+          comment: review.comment,
+          createdAt: review.createdAt.toISOString(),
+        },
+      },
+    });
+    this.alert(report, 'تقييم');
+    return this.reportResult(report);
+  }
+
+  /**
+   * A block tells the moderators too (Guideline 1.2): it is filed as a
+   * report against the blocked account, with the blocker's reason if any.
+   */
+  async createForBlock(
+    blocker: { userId: string; identityId?: string },
+    blocked: { userId: string; identityId?: string | null },
+    reason?: string,
+  ): Promise<void> {
+    const report = await this.prisma.report.create({
+      data: {
+        reportNumber: await this.nextReportNumber(),
+        targetType: ReportTargetType.USER,
+        reason: BLOCK_REPORT_REASON,
+        description: reason?.trim() || null,
+        reporterUserId: blocker.userId,
+        reporterIdentityId: blocker.identityId,
+        targetUserId: blocked.userId,
+        targetIdentityId: blocked.identityId ?? undefined,
+      },
+    });
+    this.alert(report, 'حظر مستخدم');
+  }
+
+  // The moderation inbox hears of every new report, without holding it up
+  private alert(
+    report: {
+      reportNumber: number;
+      reason: string;
+      description: string | null;
+    },
+    kind: string,
+  ): void {
+    void this.alerts.reportCreated({
+      reportNumber: report.reportNumber,
+      kind,
+      reason: report.reason,
+      description: report.description,
+    });
   }
 
   private findStoryReport(reporterIdentityId: string, storyId: string) {
@@ -138,7 +297,7 @@ export class ReportsService {
     });
   }
 
-  private storyReportResult<T>(report: T) {
+  private reportResult<T>(report: T) {
     return {
       message: 'تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته',
       data: report,

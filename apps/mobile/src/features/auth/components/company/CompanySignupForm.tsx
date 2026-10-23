@@ -11,6 +11,7 @@ import {
   getStep1Fields,
   STEP_2_FIELDS,
 } from '@/features/auth/companyAuthSchemas';
+import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import SelectionBottomSheet from '@/shared/components/feedback/SelectionBottomSheet';
 import SuccessBottomSheet from '@/shared/components/feedback/SuccessBottomSheet';
 import MapPickerModal from '@/shared/components/map/MapPickerModal';
@@ -157,6 +158,7 @@ export const CompanySignupForm: React.FC<CompanySignupFormProps> = ({
 
       {/* Footer Actions */}
       <View className="mt-auto pt-6">
+        {step === 3 && <TermsAgreement />}
         <CompanySignupProgress step={step} totalSteps={3} />
 
         <View className="w-full flex-row items-center justify-between">

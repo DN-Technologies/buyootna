@@ -44,6 +44,12 @@ model Report {
   targetStory         Story?    @relation(fields: [targetStoryId], references: [id], onDelete: SetNull)
   targetStorySnapshot Json?
 
+  // A report made from a review: against its author (USER), linked to the
+  // review while it exists, with its text kept here once it is deleted
+  targetReviewId       String?
+  targetReview         Review?   @relation(fields: [targetReviewId], references: [id], onDelete: SetNull)
+  targetReviewSnapshot Json?
+
   resolvedAt         DateTime?
   resolvedByAdminId  String?
   resolvedByAdmin    User?     @relation("ReportResolvedBy", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
@@ -58,6 +64,7 @@ model Report {
   // story, and NULLs never collide)
   @@unique([reporterIdentityId, targetStoryId])
   @@index([targetStoryId])
+  @@index([targetReviewId])
   @@index([status])
   @@index([targetUserId])
   @@index([targetPropertyId])

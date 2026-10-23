@@ -1,6 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-export class VerifyEmailOtpDto {
+import { TermsAcceptanceDto } from './terms-acceptance.dto';
+
+export class VerifyEmailOtpDto extends TermsAcceptanceDto {
   @IsEmail({}, { message: 'البريد الإلكتروني غير صالح' })
   email: string;
 
