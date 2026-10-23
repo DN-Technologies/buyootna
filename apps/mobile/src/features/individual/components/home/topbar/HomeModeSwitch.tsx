@@ -44,9 +44,11 @@ export default function HomeModeSwitch({ mode, onChange }: HomeModeSwitchProps) 
       testID="home-mode-switch"
       options={MODES.map((m) => m.id)}
       value={mode}
-      className="h-[40px] items-center rounded-[20px] bg-white"
+      // The cream sits centred inside the gold border, with an even 4pt gap
+      // all round (as «عقارات / مكاتب عقارية»), not over the border
+      className="h-[40px] items-center rounded-[20px] bg-white p-[4px]"
       style={{ borderWidth: 0.5, borderColor: '#C5A36D', gap: 2 }}
-      thumbStyle={{ backgroundColor: '#FBEFCD', borderRadius: 20 }}
+      thumbStyle={{ backgroundColor: '#FBEFCD', borderRadius: 16 }}
       renderOption={(id, active) => {
         const m = byId.get(id)!;
         return (
@@ -62,7 +64,7 @@ export default function HomeModeSwitch({ mode, onChange }: HomeModeSwitchProps) 
               animateNextLayout();
               onChange(m.id);
             }}
-            className="h-[40px] flex-row items-center justify-center px-[12px]"
+            className="h-[31px] flex-row items-center justify-center px-[10px]"
             // Right to left inside, as the rest of the app (the segment
             // itself is laid out left to right)
             style={{ gap: 4, direction: 'rtl' }}
