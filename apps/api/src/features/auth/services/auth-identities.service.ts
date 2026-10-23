@@ -63,16 +63,14 @@ export class AuthIdentitiesService {
    * which is what a device with no persona of its own opens with.
    */
   async markLastUsed(userId: string, identityId: string): Promise<void> {
-    await this.prisma.$transaction([
-      this.prisma.identity.updateMany({
-        where: { userId, id: { not: identityId }, isActive: true },
-        data: { isActive: false },
-      }),
-      this.prisma.identity.update({
-        where: { id: identityId },
-        data: { isActive: true },
-      }),
-    ]);
+    // One statement (atomic on its own): a transaction of two updates cost
+    // four round trips, felt on every profile switch
+    await this.prisma.$executeRaw`
+      UPDATE "Identity"
+      SET "isActive" = (id = ${identityId})
+      WHERE "userId" = ${userId}
+        AND ("isActive" = true OR id = ${identityId})
+    `;
   }
 
   /** The persona this device was last using, if it still exists. */
