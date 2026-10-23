@@ -63,16 +63,24 @@ describe('الخدمات', () => {
     const { findByText, getByText, getByTestId } = await renderScreen();
     expect(await findByText('مكتب هندسي')).toBeTruthy();
     expect(getByText('تنفيذ مشاريع البناء')).toBeTruthy();
-    expect(getByTestId('service-switch-s1').props.value).toBe(true);
-    expect(getByTestId('service-switch-s2').props.value).toBe(false);
+    expect(getByTestId('service-switch-s1').props.accessibilityState.checked).toBe(true);
+    expect(getByTestId('service-switch-s2').props.accessibilityState.checked).toBe(false);
 
     await fireEvent.press(getByTestId('services-edit'));
     expect(router.push).toHaveBeenCalledWith('/edit-service');
   });
 
+  it('without a description, the card shows the Figma text', async () => {
+    api.getMyServices.mockResolvedValue({ ...data, description: null });
+    const { findByTestId } = await renderScreen();
+    expect((await findByTestId('services-description')).props.children).toBe(
+      'سيتم إخفاء جميع الخدمات من صفحتك ولن يتمكن العملاء من رؤيتها وطلبها حالياً. يمكنك إعادة تفعيلها في أي وقت بنقرة واحدة.',
+    );
+  });
+
   it('a switch hides its sub-service at once, with «تراجع» showing it again', async () => {
     const { findByTestId, getByTestId } = await renderScreen();
-    await fireEvent(await findByTestId('service-switch-s1'), 'valueChange', false);
+    await fireEvent.press(await findByTestId('service-switch-s1'));
     await waitFor(() => expect(api.setServiceHidden).toHaveBeenCalledWith('s1', true));
     expect(useServicesToast.getState().toast?.message).toBe('تم اخفاء الخدمة بنجاح.');
 

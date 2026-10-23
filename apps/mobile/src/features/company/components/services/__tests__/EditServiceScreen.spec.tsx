@@ -66,7 +66,7 @@ describe('تعديل الخدمة', () => {
 
   it('saves only what changed: a hidden sub-service and the description', async () => {
     const { findByTestId, getByTestId } = await renderScreen();
-    await fireEvent(await findByTestId('edit-service-switch-s2'), 'valueChange', false);
+    await fireEvent.press(await findByTestId('edit-service-switch-s2'));
     await fireEvent.changeText(getByTestId('edit-service-description'), 'تنفيذ المشاريع');
     await fireEvent.press(getByTestId('company-submit'));
     await waitFor(() =>
@@ -81,7 +81,7 @@ describe('تعديل الخدمة', () => {
 
   it('hiding the whole service leaves «تم اخفاء الخدمة بنجاح.» on the list', async () => {
     const { findByTestId, getByTestId } = await renderScreen();
-    await fireEvent(await findByTestId('edit-service-visibility'), 'valueChange', false);
+    await fireEvent.press(await findByTestId('edit-service-visibility'));
     await fireEvent.press(getByTestId('company-submit'));
     await waitFor(() =>
       expect(api.updateServices).toHaveBeenCalledWith({ servicesHidden: true }),

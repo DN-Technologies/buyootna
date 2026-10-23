@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -21,6 +22,10 @@ import ServiceSwitch from './ServiceSwitch';
 import { useAddSubService } from './useAddSubService';
 import { useServicesActions } from './useServicesActions';
 import { serviceVisibilityMessage, useServicesToast } from './useServicesToast';
+
+// Figma 4410:169834's card text, shown while the service has no description
+const SERVICES_CARD_TEXT =
+  'سيتم إخفاء جميع الخدمات من صفحتك ولن يتمكن العملاء من رؤيتها وطلبها حالياً. يمكنك إعادة تفعيلها في أي وقت بنقرة واحدة.';
 
 const failed = (title: string) => (error: unknown) =>
   showAlert(title, getApiErrorMessage(error, 'حدث خطأ، حاول مرة أخرى'), [
@@ -105,11 +110,8 @@ export default function ServicesScreen() {
               isEmpty ? 'opacity-0' : ''
             }`}
           >
-            <Image
-              source={require('@/assets/icons/portfolio/more-dots.svg')}
-              style={{ width: 20, height: 20 }}
-              contentFit="contain"
-            />
+            {/* As the company profile's ⋮ (the Figma SVG's mask drew broken dots) */}
+            <Feather name="more-vertical" size={20} color="#111111" />
           </TouchableOpacity>
         }
       />
@@ -147,14 +149,14 @@ export default function ServicesScreen() {
                 </View>
               )}
             </View>
-            {!!description && (
-              <Text
-                className="font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
-                style={{ writingDirection: 'rtl', letterSpacing: -0.408 }}
-              >
-                {description}
-              </Text>
-            )}
+            {/* The service's description, else the Figma card's text */}
+            <Text
+              testID="services-description"
+              className="font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              {description || SERVICES_CARD_TEXT}
+            </Text>
           </View>
 
           <View className="gap-3">
