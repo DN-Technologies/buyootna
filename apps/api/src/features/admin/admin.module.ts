@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AdminController } from './admin.controller';
+import { ADMIN_CONTROLLERS } from './controllers';
 import { AdminService } from './admin.service';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AdminUsersService } from './services/users/admin-users.service';
@@ -37,7 +37,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
       secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
     }),
   ],
-  controllers: [AdminController],
+  controllers: ADMIN_CONTROLLERS,
   providers: [
     AdminService,
     AdminUsersService,
