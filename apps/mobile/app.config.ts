@@ -53,7 +53,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna',
-  version: '1.5.0',
+  version: '1.6.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
