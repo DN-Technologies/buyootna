@@ -1,15 +1,24 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { SvgXml } from 'react-native-svg';
 
 import type { ViewerStory } from '../types';
+import { eyeXml, shareXml } from './composer/storyIconXml';
+
+// Figma's glassy circles over the story
+const GLASS = {
+  borderWidth: 0.83,
+  borderColor: '#FFFFFF',
+  backgroundColor: 'rgba(255,255,255,0.1)',
+} as const;
 
 interface StoryFooterProps {
   story: ViewerStory;
   onOpenProperty: (propertyId: string) => void;
   onReply: () => void;
   replying: boolean;
-  // The author looking at its own story: views instead of a reply
-  own?: { viewCount: number; onViewers: () => void };
+  // The author looking at its own story: views and share, no reply
+  own?: { viewCount: number; onViewers: () => void; onShare: () => void };
 }
 
 /** The caption, the linked listing, and a reply that opens the chat. */
@@ -46,17 +55,32 @@ export default function StoryFooter({
           </TouchableOpacity>
         )}
         {own ? (
-          <TouchableOpacity
-            testID="story-viewers"
-            onPress={own.onViewers}
-            activeOpacity={0.8}
-            className="h-11 flex-1 flex-row items-center justify-center gap-2 rounded-full border border-white/60"
-          >
-            <Feather name="eye" size={16} color="#FFFFFF" />
-            <Text className="font-cairo-semibold text-[14px] text-white">
-              المشاهدون · {own.viewCount}
-            </Text>
-          </TouchableOpacity>
+          // Figma 9519:30105: the views on one side, share on the other
+          <View className="flex-1 flex-row items-center justify-between">
+            <TouchableOpacity
+              testID="story-viewers"
+              onPress={own.onViewers}
+              activeOpacity={0.8}
+              accessibilityLabel={`المشاهدون ${own.viewCount}`}
+              className="h-[42px] min-w-[78px] flex-row items-center justify-center rounded-full px-[14px]"
+              style={[GLASS, { gap: 8 }]}
+            >
+              <Text className="font-cairo-semibold text-[14px] text-white">
+                {own.viewCount}
+              </Text>
+              <SvgXml xml={eyeXml} width={24} height={24} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              testID="story-share"
+              onPress={own.onShare}
+              activeOpacity={0.8}
+              accessibilityLabel="مشاركة"
+              className="size-[42px] items-center justify-center rounded-full"
+              style={GLASS}
+            >
+              <SvgXml xml={shareXml} width={24} height={24} />
+            </TouchableOpacity>
+          </View>
         ) : (
           <TouchableOpacity
             testID="story-reply"

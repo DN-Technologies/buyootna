@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useBlockFlow } from '@/shared/hooks/blocks/useBlocks';
 import { showAlert } from '@/shared/utils/alert';
+import { shareProfile } from '@/shared/utils/helpers/shareProfile';
 
 import { useStoryActions } from '../hooks/useStoryActions';
 import { useStoryPlayback } from '../hooks/useStoryPlayback';
@@ -133,6 +134,11 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
                 author={author.author}
                 publishedAt={current.publishedAt}
                 onClose={close}
+                own={
+                  isMine
+                    ? { onAdd: () => router.push('/stories/new' as never) }
+                    : undefined
+                }
                 onOptions={() => {
                   setSheetOpen(true);
                   if (isMine) {
@@ -188,6 +194,7 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
                         setViewersFor(current.id);
                         viewersSheet.current?.present();
                       },
+                      onShare: () => void shareProfile(author.author.name),
                     }
                   : undefined
               }

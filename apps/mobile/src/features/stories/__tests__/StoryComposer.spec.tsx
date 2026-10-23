@@ -24,6 +24,26 @@ jest.mock('expo-image-picker', () => ({
   VideoExportPreset: { H264_1280x720: 6 },
 }));
 jest.mock('expo-video-thumbnails', () => ({ getThumbnailAsync: jest.fn() }));
+// The preview's player: what it's told, not the native video
+const mockPlayer = {
+  play: jest.fn(),
+  pause: jest.fn(),
+  muted: false,
+  currentTime: 0,
+  addListener: jest.fn(() => ({ remove: jest.fn() })),
+};
+jest.mock('expo-video', () => ({
+  useVideoPlayer: (_uri: string, setup: (p: unknown) => void) => {
+    setup(mockPlayer);
+    return mockPlayer;
+  },
+  VideoView: 'VideoView',
+}));
+// The native trimmer: absent (app builds before it) unless a test sets it
+let mockEditor: { trimVideo: jest.Mock } | null = null;
+jest.mock('expo', () => ({
+  requireOptionalNativeModule: () => mockEditor,
+}));
 jest.mock('expo-file-system/legacy', () => ({ getInfoAsync: jest.fn() }));
 jest.mock('@/shared/api/stories.service', () => ({
   storiesService: { createUpload: jest.fn(), uploadToSlot: jest.fn(), publish: jest.fn() },
@@ -61,6 +81,7 @@ describe('StoryComposer', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsBusiness = true;
+    mockEditor = null;
     useAuthStore.setState({ token: 't', activeIdentity: { id: 'co-1' } as never });
     (userService.getUserProperties as jest.Mock).mockResolvedValue([
       { id: 'p1', location: 'السالمية', categoryLabel: 'شقة', type: 'سكني', images: [], price: 350 },
@@ -133,13 +154,37 @@ describe('StoryComposer', () => {
     });
   });
 
-  it('counts the caption up to 200', async () => {
+  it('takes a caption of up to 200 characters', async () => {
     const screen = await renderComposer();
     await pick(screen);
     const input = screen.getByTestId('composer-caption');
     expect(input.props.maxLength).toBe(200);
-    await fireEvent.changeText(input, 'عرض جديد');
-    expect(screen.getByTestId('composer-caption-count')).toHaveTextContent('8/200');
+    expect(input.props.placeholder).toBe('اضافة شرح توضيحي....');
+  });
+
+  it('the image+ button links a listing, shown as a chip that can be removed', async () => {
+    const screen = await renderComposer();
+    await pick(screen);
+    await waitFor(() => expect(screen.getByText('شقة · السالمية')).toBeTruthy());
+    await act(async () => {
+      await fireEvent.press(screen.getByText('شقة · السالمية'));
+    });
+    expect(screen.getByTestId('composer-linked')).toHaveTextContent(/شقة · السالمية/);
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId('composer-unlink'));
+    });
+    expect(screen.queryByTestId('composer-linked')).toBeNull();
+  });
+
+  it('× on the preview goes back to choosing', async () => {
+    const screen = await renderComposer();
+    await pick(screen);
+    await act(async () => {
+      await fireEvent.press(screen.getByTestId('composer-change'));
+    });
+    expect(screen.queryByTestId('composer-preview')).toBeNull();
+    expect(screen.getByTestId('composer-pick-library')).toBeTruthy();
+    expect(mockRouter.back).not.toHaveBeenCalled();
   });
 
   it('publishes with the caption and the chosen listing, then closes', async () => {
@@ -227,18 +272,17 @@ describe('StoryComposer', () => {
       });
     });
 
-    it('a picked video is previewed by its poster, with its length', async () => {
+    it('a picked video plays in the preview; its poster is made for the upload', async () => {
       const screen = await renderComposer();
       await pick(screen);
       expect(VideoThumbnails.getThumbnailAsync).toHaveBeenCalledWith('file:///v.mp4', {
         time: 0,
         quality: 0.7,
       });
-      expect(screen.getByTestId('composer-preview').props.source).toEqual({
-        uri: 'file:///poster.jpg',
-      });
-      expect(screen.getByTestId('composer-video-badge')).toHaveTextContent(/12 ث$/);
-      expect(screen.getByText('تغيير الفيديو')).toBeTruthy();
+      expect(screen.getByTestId('composer-preview')).toBeTruthy();
+      expect(mockPlayer.play).toHaveBeenCalled();
+      // App builds without the trimmer: no trim bar
+      expect(screen.queryByTestId('composer-trim')).toBeNull();
     });
 
     it('publishes the video with its poster', async () => {
@@ -301,6 +345,98 @@ describe('StoryComposer', () => {
       expect(ImagePicker.launchCameraAsync).toHaveBeenCalledWith(
         expect.objectContaining({ mediaTypes: ['images', 'videos'], videoMaxDuration: 30 }),
       );
+    });
+
+    describe('with the trimmer (new app builds)', () => {
+      beforeEach(() => {
+        mockEditor = {
+          trimVideo: jest.fn().mockResolvedValue({
+            uri: 'file:///cut.mp4',
+            sizeBytes: 6 * 1024 * 1024,
+            durationMs: 30_000,
+          }),
+        };
+      });
+
+      it('takes a longer video and starts with its first 30 s', async () => {
+        (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(
+          videoAsset({ duration: 120_000, fileSize: 90 * 1024 * 1024 }),
+        );
+        const screen = await renderComposer();
+        await pick(screen);
+        expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
+          expect.not.objectContaining({ videoMaxDuration: expect.anything() }),
+        );
+        expect(showAlert).not.toHaveBeenCalled();
+        expect(screen.getByTestId('composer-trim-range')).toHaveTextContent('0:00 - 0:30');
+      });
+
+      it('cuts it before upload and sends the cut file with its own poster', async () => {
+        (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(
+          videoAsset({ duration: 120_000, fileSize: 90 * 1024 * 1024 }),
+        );
+        const screen = await renderComposer();
+        await pick(screen);
+        await act(async () => {
+          await fireEvent.press(screen.getByTestId('composer-sound'));
+        });
+        await act(async () => {
+          await fireEvent.press(screen.getByTestId('composer-publish'));
+        });
+        expect(mockEditor?.trimVideo).toHaveBeenCalledWith('file:///v.mp4', {
+          startMs: 0,
+          endMs: 30_000,
+          muted: true,
+        });
+        expect(VideoThumbnails.getThumbnailAsync).toHaveBeenLastCalledWith(
+          'file:///cut.mp4',
+          { time: 0, quality: 0.7 },
+        );
+        expect(storiesService.createUpload).toHaveBeenCalledWith(
+          expect.objectContaining({ contentType: 'video/mp4', sizeBytes: 6 * 1024 * 1024 }),
+        );
+        expect((storiesService.uploadToSlot as jest.Mock).mock.calls.map((c) => c[1])).toContain(
+          'file:///cut.mp4',
+        );
+        expect(mockRouter.back).toHaveBeenCalled();
+      });
+
+      it('a short video with its sound is sent as it is', async () => {
+        const screen = await renderComposer();
+        await pick(screen);
+        await act(async () => {
+          await fireEvent.press(screen.getByTestId('composer-publish'));
+        });
+        expect(mockEditor?.trimVideo).not.toHaveBeenCalled();
+        expect((storiesService.uploadToSlot as jest.Mock).mock.calls.map((c) => c[1])).toContain(
+          'file:///v.mp4',
+        );
+      });
+
+      it('a cut that fails says so and uploads nothing', async () => {
+        mockEditor?.trimVideo.mockRejectedValue(new Error('export failed'));
+        const screen = await renderComposer();
+        await pick(screen);
+        await act(async () => {
+          await fireEvent.press(screen.getByTestId('composer-sound'));
+        });
+        await act(async () => {
+          await fireEvent.press(screen.getByTestId('composer-publish'));
+        });
+        expect(showAlert).toHaveBeenCalledWith('تنبيه', 'تعذر تجهيز الفيديو، اختر فيديو آخر');
+        expect(storiesService.createUpload).not.toHaveBeenCalled();
+        expect(mockRouter.back).not.toHaveBeenCalled();
+      });
+
+      it('a video over 10 minutes is refused', async () => {
+        (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(
+          videoAsset({ duration: 11 * 60_000 }),
+        );
+        const screen = await renderComposer();
+        await pick(screen);
+        expect(showAlert).toHaveBeenCalledWith('تنبيه', 'الفيديو طويل جداً، اختر فيديو أقصر من 10 دقائق');
+        expect(screen.queryByTestId('composer-preview')).toBeNull();
+      });
     });
   });
 });

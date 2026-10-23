@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["StoryVideoEditorModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.storyvideoeditor.StoryVideoEditorModule"]
+  }
+}

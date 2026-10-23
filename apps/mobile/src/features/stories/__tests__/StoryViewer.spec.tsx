@@ -375,12 +375,32 @@ describe('StoryViewer', () => {
       ];
     });
 
-    it('shows the view count instead of a reply, under its own name', async () => {
+    it('shows «حالتي» and the view count instead of a reply', async () => {
       const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
-      expect(screen.getByTestId('story-author-name')).toHaveTextContent('شركتي');
-      // The button also holds the eye icon's glyph
-      expect(screen.getByTestId('story-viewers')).toHaveTextContent(/المشاهدون · 3$/);
+      expect(screen.getByTestId('story-author-name')).toHaveTextContent('حالتي');
+      expect(screen.getByTestId('story-viewers')).toHaveTextContent('3');
       expect(screen.queryByTestId('story-reply')).toBeNull();
+    });
+
+    it('+ on the avatar posts another story', async () => {
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      await act(() => {
+        fireEvent.press(screen.getByTestId('story-add-mine'));
+      });
+      expect(mockRouter.push).toHaveBeenCalledWith('/stories/new');
+    });
+
+    it('share sends an invitation to follow the profile', async () => {
+      const { Share } = require('react-native');
+      const share = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      const screen = await render(<StoryViewer authorId="co-me" source="mine" />);
+      await act(() => {
+        fireEvent.press(screen.getByTestId('story-share'));
+      });
+      expect(share).toHaveBeenCalledWith({
+        title: 'شركتي',
+        message: 'تابع شركتي على بيوتنا\nhttps://buyootna.cloud',
+      });
     });
 
     it('opens the viewer list', async () => {
