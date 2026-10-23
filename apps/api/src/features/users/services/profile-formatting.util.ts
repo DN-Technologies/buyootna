@@ -45,6 +45,17 @@ export function mapPropertyCategoryToLabel(category: PropertyCategory): string {
 }
 
 // --- Split a free-text services string into individual service cards ---
+/**
+ * A company's services text as the public sees it: none while the company
+ * hid its service («اخفاء الخدمة»).
+ */
+export function visibleServices(data: {
+  services: string | null;
+  servicesHidden?: boolean;
+}): string | null {
+  return data.servicesHidden ? null : data.services;
+}
+
 export function formatServiceList(raw: string | null, ownerName: string) {
   const rawServices = raw
     ? raw

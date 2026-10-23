@@ -28,6 +28,10 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateCompanyInvoiceDto } from './dto/create-company-invoice.dto';
 import { CreateCompanyServiceDto } from './dto/create-company-service.dto';
+import {
+  SetServiceHiddenDto,
+  UpdateCompanyServicesDto,
+} from './dto/update-company-services.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import {
   SetProjectsVisibilityDto,
@@ -159,6 +163,52 @@ export class CompanyController {
     @Param('id') id: string,
   ) {
     return this.companyServices.deleteMine(reqUser.userId, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile/services/:id')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Hide one of the current user's company sub-services from the profile, or show it again",
+  })
+  @ApiParam({ name: 'id', description: 'Service ID' })
+  @ApiBody({ type: SetServiceHiddenDto })
+  @ApiCommonErrors()
+  async setMyServiceHidden(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: SetServiceHiddenDto,
+  ) {
+    return this.companyServices.setHidden(reqUser.userId, id, dto.isHidden);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile/services')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Save تعديل الخدمة: hide or show the whole service, its description, and which sub-services are hidden',
+  })
+  @ApiBody({ type: UpdateCompanyServicesDto })
+  @ApiCommonErrors()
+  async updateMyServices(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: UpdateCompanyServicesDto,
+  ) {
+    return this.companyServices.updateMine(reqUser.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('profile/services')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Delete the current user's company service: every sub-service, and the specialty is cleared",
+  })
+  @ApiCommonErrors()
+  async deleteAllMyServices(@CurrentUser() reqUser: RequestUser) {
+    return this.companyServices.deleteAllMine(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

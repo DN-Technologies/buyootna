@@ -6,16 +6,12 @@ import { useRef, useState } from 'react';
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
 import { companyService } from '@/shared/api/company.service';
-import {
-  ALL_TYPES,
-  listedTypes,
-  OTHER_TYPE,
-  typesToSend,
-} from '@/shared/data/serviceCatalog';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
+
+import { useServiceTypeSelection } from './useServiceTypeSelection';
 
 export const DESCRIPTION_MAX_LENGTH = 100;
 
@@ -40,13 +36,7 @@ export function useAddService() {
   const myServices = useMyCompanyServices();
   const lockedSpecialty =
     myServices.specialty || activeIdentity?.companyData?.specialty || null;
-  // Types already added can't be added again; "اخرى" can, under a new title
-  const takenTypes = myServices.services
-    .map((item) => item.type)
-    .filter((type) => type !== OTHER_TYPE);
-
   const [pickedSpecialty, setPickedSpecialty] = useState('');
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [serviceTitle, setServiceTitle] = useState('');
   const [description, setDescription] = useState('');
   const [openField, setOpenField] = useState<OpenField>(null);
@@ -54,23 +44,16 @@ export function useAddService() {
   const successSheetRef = useRef<BottomSheetModal>(null);
 
   const specialty = lockedSpecialty ?? pickedSpecialty;
-  const typeOptions = specialty
-    ? [ALL_TYPES, ...listedTypes(specialty), OTHER_TYPE]
-    : [];
-  // The listed types still free to add
-  const freeTypes = listedTypes(specialty).filter(
-    (type) => !takenTypes.includes(type),
-  );
-  // The rows shown ticked and greyed: the taken types, and "الكل" once
-  // nothing it stands for is left (every listed type, or, for a specialty
-  // with no list, the specialty itself)
-  const allTaken =
-    listedTypes(specialty).length > 0
-      ? freeTypes.length === 0
-      : !!specialty && takenTypes.includes(specialty);
-  const disabledTypes = [...takenTypes, ...(allTaken ? [ALL_TYPES] : [])];
-  const hasOther = selectedTypes.includes(OTHER_TYPE);
-  const types = typesToSend(specialty, selectedTypes);
+  const {
+    typeOptions,
+    selectedTypes,
+    setSelectedTypes,
+    disabledTypes,
+    toggleType,
+    typesLabel,
+    hasOther,
+    types,
+  } = useServiceTypeSelection(specialty, myServices.services);
 
   const isValid =
     specialty.length > 0 &&
@@ -86,27 +69,6 @@ export function useAddService() {
     setOpenField(null);
   };
 
-  const toggleType = (type: string) => {
-    if (disabledTypes.includes(type)) return;
-    setSelectedTypes((current) => {
-      if (type === ALL_TYPES) {
-        const others = current.filter((item) => item === OTHER_TYPE);
-        return current.includes(ALL_TYPES)
-          ? others
-          : [ALL_TYPES, ...freeTypes, ...others];
-      }
-      const next = current.includes(type)
-        ? current.filter((item) => item !== type)
-        : [...current, type];
-      if (type === OTHER_TYPE) return next;
-      // "الكل" follows the free listed types: on only while all of them are
-      const allFree =
-        freeTypes.length > 0 && freeTypes.every((item) => next.includes(item));
-      const withoutAll = next.filter((item) => item !== ALL_TYPES);
-      return allFree ? [ALL_TYPES, ...withoutAll] : withoutAll;
-    });
-  };
-
   const toggleField = (field: Exclude<OpenField, null>) => {
     if (field === 'specialty' && lockedSpecialty) return;
     if (field === 'types' && !specialty) {
@@ -117,11 +79,6 @@ export function useAddService() {
     if (field === 'types' && myServices.isLoading) return;
     setOpenField((current) => (current === field ? null : field));
   };
-
-  // What the closed نوع الخدمة field reads
-  const typesLabel = selectedTypes.includes(ALL_TYPES)
-    ? [ALL_TYPES, ...(hasOther ? [OTHER_TYPE] : [])].join('، ')
-    : selectedTypes.join('، ');
 
   const submit = async () => {
     if (!isValid || isSubmitting) return;

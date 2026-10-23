@@ -11,6 +11,7 @@ import {
   OFFICE_LISTING_PROPERTY_SELECT,
   formatOfficeListings,
   formatServiceList,
+  visibleServices,
 } from './profile-formatting.util';
 import { ProviderCardsService } from './provider-cards.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
@@ -50,11 +51,14 @@ export class UsersDirectoryService {
         .filter(Boolean);
 
       if (categories.length === 1) {
+        // A hidden service («اخفاء الخدمة») matches nothing
+        companyDataWhere.servicesHidden = false;
         companyDataWhere.services = {
           contains: categories[0],
           mode: 'insensitive',
         };
       } else if (categories.length > 1) {
+        companyDataWhere.servicesHidden = false;
         companyDataWhere.OR = categories.map((c) => ({
           services: { contains: c, mode: 'insensitive' as const },
         }));
@@ -236,7 +240,7 @@ export class UsersDirectoryService {
     ]);
 
     const formattedServices = formatServiceList(
-      companyData.services,
+      visibleServices(companyData),
       companyData.name,
     );
 

@@ -16,6 +16,9 @@ export function useMyCompanyServices() {
   return {
     services: query.data?.services ?? [],
     specialty: query.data?.specialty ?? null,
+    servicesHidden: query.data?.servicesHidden ?? false,
+    description: query.data?.description ?? null,
+    createdAt: query.data?.createdAt ?? null,
     isLoading: query.isLoading,
     refetch: query.refetch,
   };

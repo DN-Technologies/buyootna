@@ -202,6 +202,31 @@ describe('UsersDirectoryService', () => {
       });
     });
 
+    it('a hidden service («اخفاء الخدمة») shows no services on the profile', async () => {
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'c1',
+        userId: 'u1',
+        type: 'COMPANY',
+        useAccountPhone: true,
+        contactPhone: null,
+        user: { phone: '99990000' },
+        companyData: {
+          name: 'شركة',
+          services: 'مخطط معماري، تصميم الواجهات',
+          servicesHidden: true,
+          logoUrl: null,
+          isVerified: false,
+          about: null,
+          hqLocation: null,
+          serviceAreas: null,
+        },
+        properties: [],
+        projects: [],
+      });
+      const res = await service.findCompanyDetails('c1');
+      expect(res.services).toEqual([]);
+    });
+
     it('asks only for visible projects (a hidden one stays off the public profile)', async () => {
       prisma.identity.findFirst.mockResolvedValue(null);
       await service.findCompanyDetails('c1').catch(() => undefined);

@@ -9,6 +9,41 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-services-hide",
+      title: {
+        en: "Company services: hide a sub-service or the whole service, edit, and delete the service",
+        ar: "خدمات الشركة: إخفاء خدمة فرعية أو الخدمة كلها، والتعديل، وحذف الخدمة",
+      },
+      priority: "P2",
+      story: {
+        en: "Migration 20261023200000_company_services_hidden adds CompanyService.isHidden and CompanyIdentityData.servicesHidden (both false, so everything stays visible). PATCH /users/profile/services/:id { isHidden } hides or shows one sub-service of the caller's company; another company's is 404. The company's services text (what the profile, cards, search and map read) then holds the hand-typed parts and the visible sub-services only. PATCH /users/profile/services { servicesHidden?, description?, rows?: [{ id, isHidden }] } is the edit screen's save: only what is sent changes, the description (filtered for banned words, 400 OBJECTIONABLE_CONTENT) goes on every sub-service, and it returns the service. With servicesHidden the company's services are left out of its public profile, company cards, the directory's category filter, search and the map search; public requests still match its specialty. DELETE /users/profile/services deletes every sub-service and clears the specialty and the hide flag, so a new service may use any specialty. GET /users/profile/services now also returns servicesHidden, description, createdAt and each sub-service's isHidden. None of these needs a subscription; adding still does.",
+        ar: "يضيف الترحيل 20261023200000_company_services_hidden الحقلين CompanyService.isHidden وCompanyIdentityData.servicesHidden (وكلاهما false، فيبقى كل شيء ظاهراً). PATCH /users/profile/services/:id { isHidden } يخفي خدمة فرعية لشركة الطالب أو يظهرها؛ وخدمة شركة أخرى ← 404. ويصبح نص خدمات الشركة (الذي يقرؤه الملف والبطاقات والبحث والخريطة) الأجزاء المكتوبة يدوياً والخدمات الفرعية الظاهرة فقط. وPATCH /users/profile/services { servicesHidden اختياري، description اختياري، rows اختياري: [{ id، isHidden }] } هو حفظ شاشة التعديل: يتغير ما أُرسل فقط، ويوضع الوصف (بعد مرشّح الألفاظ المسيئة، 400 OBJECTIONABLE_CONTENT) على كل الخدمات الفرعية، ويعيد الخدمة. ومع servicesHidden تُستبعد خدمات الشركة من ملفها العام وبطاقات الشركات وتصفية الدليل بالفئة والبحث وبحث الخريطة؛ وتبقى الطلبات العامة تطابق تخصصها. وDELETE /users/profile/services يحذف كل الخدمات الفرعية ويمسح التخصص وعلامة الإخفاء، فيمكن أن تكون الخدمة الجديدة بأي تخصص. ويعيد GET /users/profile/services الآن أيضاً servicesHidden وdescription وcreatedAt وisHidden لكل خدمة فرعية. ولا يحتاج أي منها إلى اشتراك؛ وما زالت الإضافة تحتاجه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Hiding a sub-service takes its name off the company's profile and search; showing it brings it back.",
+          "Hiding the whole service removes the services from the profile, cards and search, but public requests of its specialty still arrive.",
+          "The edit save changes only the fields sent; the description is filtered.",
+          "Deleting the service clears the specialty; adding a service under another specialty then works.",
+        ],
+        ar: [
+          "إخفاء خدمة فرعية يزيل اسمها من ملف الشركة والبحث؛ وإظهارها يعيده.",
+          "إخفاء الخدمة كلها يزيل الخدمات من الملف والبطاقات والبحث، لكن طلبات تخصصها العامة ما زالت تصل.",
+          "حفظ التعديل يغيّر الحقول المرسلة فقط؛ ويمر الوصف بالمرشّح.",
+          "حذف الخدمة يمسح التخصص؛ ثم تعمل إضافة خدمة بتخصص آخر.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: hide «تصميم الواجهات», open the public profile from another account → it's not listed; ⋮ › اخفاء الخدمة → no services on the profile and the company isn't found by its service name; a client's public request of its specialty still reaches it.",
+        ],
+        ar: [
+          "كشركة: أخفِ «تصميم الواجهات» وافتح الملف العام من حساب آخر ← لا تظهر؛ و⋮ › اخفاء الخدمة ← لا خدمات في الملف ولا تُوجد الشركة باسم خدمتها؛ وما زال طلب عميل عام في تخصصها يصلها.",
+        ],
+      },
+      updatedIn: "feat/company-services-figma",
+    },
+    {
       id: "api-company-projects-edit-hide",
       title: {
         en: "Portfolio projects: edit, hide from the public profile, hide or delete all",
