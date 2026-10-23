@@ -256,7 +256,8 @@ const RequestReplySheet = forwardRef<BottomSheetModal, RequestReplySheetProps>(
               </TouchableOpacity>
               <Text
                 className="w-full text-center font-cairo-medium text-[14px] leading-[21px] text-[#A0A0A0]"
-                style={{ letterSpacing: -0.408 }}
+                // No negative letterSpacing on wrapping Arabic: iOS stacks the lines
+                style={{ writingDirection: 'rtl' }}
               >
                 سيتم اشعار العميل فورا بقبولك للطلب
               </Text>
