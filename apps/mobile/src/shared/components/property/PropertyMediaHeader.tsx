@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import  { useState } from 'react';
 import {
   Dimensions,
@@ -24,6 +25,8 @@ export interface PropertyMediaHeaderProps {
   isFavorite?: boolean;
   onFavorite?: () => void;
   onShare?: () => void;
+  // إبلاغ عن الإعلان; no flag when left out (e.g. the owner's own ad)
+  onReport?: () => void;
 }
 
 export default function PropertyMediaHeader({
@@ -33,6 +36,7 @@ export default function PropertyMediaHeader({
   isFavorite = true,
   onFavorite,
   onShare,
+  onReport,
 }: PropertyMediaHeaderProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   // Tap a photo: full screen, swipe, pinch / double-tap to zoom
@@ -151,6 +155,17 @@ export default function PropertyMediaHeader({
           >
             <ShareIcon color="#111111" size={17} />
           </TouchableOpacity>
+          {onReport && (
+            <TouchableOpacity
+              testID="property-report"
+              accessibilityLabel="إبلاغ عن الإعلان"
+              activeOpacity={0.8}
+              onPress={onReport}
+              className="h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm"
+            >
+              <Feather name="flag" size={17} color="#111111" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

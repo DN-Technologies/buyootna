@@ -39,6 +39,9 @@ export interface ReportItem {
   targetPropertyType?: string // e.g. "عمارة"
   targetImage?: string
   attachments?: ReportAttachment[]
+  // What a reported review or story said (kept even once it is deleted)
+  contentLabel?: string
+  contentText?: string
 }
 
 export type StatusFilterOption = 'الكل' | 'قيد الانتظار' | 'تم حلها' | 'مرفوض'

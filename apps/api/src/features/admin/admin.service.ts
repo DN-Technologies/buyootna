@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
-import { AdminUpdateStatusDto } from './dto/admin-update-status.dto';
+import {
+  AdminUpdateStatusDto,
+  UserAccountStatusAction,
+} from './dto/admin-update-status.dto';
 import { AdminUpdateIdentityStatusDto } from './dto/admin-update-identity-status.dto';
 import { AdminRequestIdentityEditDto } from './dto/admin-request-identity-edit.dto';
 import { AdminCreateIndividualDto } from './dto/admin-create-individual.dto';
@@ -95,6 +98,29 @@ export class AdminService {
     adminUserId: string,
   ) {
     return this.adminReportsService.updateReport(id, dto, adminUserId);
+  }
+
+  /**
+   * «حذف المحتوى وإيقاف الحساب» (Guideline 1.2: act on a report within 24
+   * hours): removes the reported listing, review or story, suspends the
+   * account that posted it, and resolves the report (which tells the
+   * reporter). Each step is the same as doing it by hand.
+   */
+  async enforceReport(id: string, adminUserId: string) {
+    const { targetUserId } =
+      await this.adminReportsService.removeReportedContent(id, adminUserId);
+    if (targetUserId) {
+      await this.adminUsersService.updateUserStatus(
+        targetUserId,
+        { status: UserAccountStatusAction.SUSPENDED },
+        adminUserId,
+      );
+    }
+    return this.adminReportsService.updateReport(
+      id,
+      { status: 'RESOLVED' },
+      adminUserId,
+    );
   }
 
   async resolveReports(ids: string[], adminUserId: string) {

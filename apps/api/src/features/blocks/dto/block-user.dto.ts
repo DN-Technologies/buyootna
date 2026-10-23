@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID, ValidateIf } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 
 /**
  * Who to block: the account, or one of its profiles (a story only knows
@@ -18,6 +24,15 @@ export class BlockUserDto {
   @IsOptional()
   @IsUUID()
   identityId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Why (optional): sent to the moderators with the block, which is filed as a report',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }
 
 export class BlockedAccountDto {

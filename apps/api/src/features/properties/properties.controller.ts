@@ -24,6 +24,7 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CurrentUser } from 'src/core/decorators/current-user.decorator';
+import { OptionalJwtGuard } from 'src/core/guards/optional-jwt.guard';
 import type { ListingStatus } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { RenewPropertyDto } from './dto/renew-property.dto';
@@ -46,6 +47,8 @@ export class PropertiesController {
   constructor(private readonly propertiesService: PropertiesService) {}
 
   // Public Feed Endpoint
+  // Signed in, the ads of accounts blocked either way are left out
+  @UseGuards(OptionalJwtGuard)
   @Get('feed/home')
   @ApiOperation({
     summary:
@@ -53,8 +56,8 @@ export class PropertiesController {
   })
   @ApiResponse({ status: 200, type: HomeFeedResponseDto })
   @ApiCommonErrors()
-  async getHomeFeed() {
-    return this.propertiesService.getHomeFeed();
+  async getHomeFeed(@CurrentUser() reqUser?: RequestUser) {
+    return this.propertiesService.getHomeFeed(reqUser?.userId);
   }
 
   // Public Features Metadata Endpoint
@@ -139,23 +142,28 @@ export class PropertiesController {
   }
 
   // Public Paginated Endpoint
+  @UseGuards(OptionalJwtGuard)
   @Get()
   @ApiOperation({ summary: 'List active properties, paginated and filterable' })
   @ApiQuery({ type: GetPropertiesFilterDto })
   @ApiResponse({ status: 200, type: PropertyListResponseDto })
   @ApiCommonErrors()
-  async findAll(@Query() filters: GetPropertiesFilterDto) {
-    return this.propertiesService.findAll(filters);
+  async findAll(
+    @Query() filters: GetPropertiesFilterDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.propertiesService.findAll(filters, reqUser?.userId);
   }
 
   // Public Single Property Endpoint
+  @UseGuards(OptionalJwtGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Get a single property by ID' })
   @ApiParam({ name: 'id', description: 'Property ID' })
   @ApiResponse({ status: 200, type: PropertyDto })
   @ApiCommonErrors()
-  async findOne(@Param('id') id: string) {
-    return this.propertiesService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() reqUser?: RequestUser) {
+    return this.propertiesService.findOne(id, reqUser?.userId);
   }
 
   // Public View Tracking Endpoint

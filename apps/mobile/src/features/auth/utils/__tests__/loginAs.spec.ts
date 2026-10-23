@@ -43,6 +43,7 @@ describe('loginAs (the login screen\'s فرد / مكتب / شركة)', () => {
       expect(post).toHaveBeenCalledWith('/auth/login', {
         ...credentials,
         identityType: type,
+        acceptTerms: true,
       });
       expect(setAuth).toHaveBeenCalledWith(
         { id: 'u1' },
@@ -88,6 +89,7 @@ describe('loginAs (the login screen\'s فرد / مكتب / شركة)', () => {
     expect(post).toHaveBeenLastCalledWith('/auth/login', {
       ...credentials,
       identityType: 'COMPANY',
+      acceptTerms: true,
     });
     expect(resetToIdentityHome).toHaveBeenCalledWith('COMPANY');
   });

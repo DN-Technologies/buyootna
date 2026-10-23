@@ -117,6 +117,15 @@ describe('ChatMessagesService replies and hiding', () => {
     expect(sent.replyTo).toMatchObject({ id: 'm1', content: 'هاي' });
   });
 
+  it('masks a banned word in the message instead of refusing it (Guideline 1.2)', async () => {
+    await service.sendMessage({ userId: 'u', identityId: 'me' }, 'c1', {
+      content: 'انت شرموط',
+    });
+    expect(prisma.tx.message.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ content: 'انت ***' }) as unknown,
+    });
+  });
+
   it('ignores a replyToId from another conversation', async () => {
     prisma.message.findFirst.mockResolvedValue(null);
 

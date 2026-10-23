@@ -7,6 +7,7 @@ import {
 import { Prisma, Property } from '@prisma/client';
 
 import { PrismaService } from 'src/core/prisma/prisma.service';
+import { maskBanned } from 'src/core/content-filter/content-filter';
 
 import {
   ChatParticipantDisplayService,
@@ -400,7 +401,8 @@ export class ChatMessagesService {
           senderId: sender.userId,
           senderIdentityId: sender.identityId,
           type,
-          content: dto.content || null,
+          // Banned words are masked, not refused (Guideline 1.2)
+          content: dto.content ? maskBanned(dto.content) : null,
           imageUrl: dto.imageUrl || null,
           propertyId: dto.propertyId || null,
           replyToId: replyTo?.id ?? null,

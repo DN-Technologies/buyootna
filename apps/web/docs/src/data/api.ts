@@ -9,6 +9,82 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-ugc-safeguards",
+      title: {
+        en: "User-generated content safeguards (App Store Guideline 1.2): terms at sign-in, a banned-words filter, reporting listings and reviews, blocks reported to moderators, and a 24-hour enforce action",
+        ar: "ضوابط المحتوى الذي ينشره المستخدمون (إرشاد App Store 1.2): الموافقة على الشروط عند الدخول، ومرشّح للألفاظ المسيئة، والإبلاغ عن الإعلانات والتقييمات، ووصول الحظر للمشرفين، وإجراء خلال 24 ساعة",
+      },
+      priority: "P1",
+      story: {
+        en: "Terms: POST /auth/login, /auth/google, /auth/apple, /auth/register/verify-otp and /auth/register/verify-email-otp take an optional acceptTerms (must be true when sent; false is 400). Once the sign-in succeeds the account records termsAcceptedAt and termsVersion (2026-10-23); older app builds that send nothing still sign in. Filter: a whole-word Arabic and English banned-words list, matched after folding diacritics, tatweel, alef/ya/ta-marbuta variants, case, leetspeak and repeated letters (so تكسي, اكسسوارات or Dickens are not caught). A listing (description, location, extra costs, rent conditions), a review comment, a story caption, a company request (title, description, location) or offer (message, excludes, notes), and a profile name or bio with a banned word is refused with 400 OBJECTIONABLE_CONTENT «المحتوى يحتوي على كلمات غير لائقة، يرجى تعديله». A chat message is sent with the word replaced by ***. Reports: POST /properties/:id/reports files a PROPERTY report against the listing and its owner; POST /reviews/:id/reports files one against the review's author, linked to the review with its text kept. Repeating either while the first is still pending returns it. Your own listing or review is 400, and a missing one 404. A new block (POST /blocks, with an optional reason) is also filed as a report «حظر المستخدم» against the blocked account; repeating a block files nothing. Every new report (account, story, listing, review, block) emails MODERATION_ALERT_EMAIL (comma-separated; unset sends nothing) with its number, reason and a link to the admin reports page, without slowing the request. Admin: GET /admin/reports rows now carry content { kind PROPERTY | REVIEW | STORY, id, snapshot }. POST /admin/reports/:id/enforce («حذف المحتوى وإيقاف الحساب») deletes the reported listing or review, or takes the story down, then suspends the account that posted it and resolves the report, which notifies the reporter. Each step is audit-logged (PROPERTY_DELETED, REVIEW_DELETED, STORY_REMOVED, USER_STATUS_CHANGED, REPORT_RESOLVED). Migration 20261023090000_ugc_terms_review_reports adds User.termsAcceptedAt/termsVersion, Report.targetReviewId/targetReviewSnapshot and two audit actions.",
+        ar: "الشروط: تقبل POST /auth/login و/auth/google و/auth/apple و/auth/register/verify-otp و/auth/register/verify-email-otp الحقل الاختياري acceptTerms (يجب أن يكون true إن أُرسل؛ وfalse ← 400). بعد نجاح الدخول يُسجَّل على الحساب termsAcceptedAt وtermsVersion (2026-10-23)؛ والنسخ القديمة من التطبيق التي لا ترسله تدخل كالمعتاد. المرشّح: قائمة ألفاظ مسيئة عربية وإنجليزية تُطابق كلمات كاملة بعد توحيد التشكيل والتطويل وأشكال الألف والياء والتاء المربوطة وحالة الأحرف والأرقام البديلة والحروف المكررة (فلا تُلتقط تكسي أو اكسسوارات أو Dickens). يُرفض بـ 400 OBJECTIONABLE_CONTENT «المحتوى يحتوي على كلمات غير لائقة، يرجى تعديله» كل إعلان (الوصف والموقع والمصاريف الإضافية وشروط الإيجار)، أو تعليق تقييم، أو وصف قصة، أو طلب شركة (العنوان والوصف والموقع) أو عرض (الرسالة والاستثناءات والملاحظات)، أو اسم ملف أو نبذته، إن احتوى لفظاً مسيئاً. أما رسالة المحادثة فتُرسل مع استبدال اللفظ بـ ***. البلاغات: POST /properties/:id/reports يقدّم بلاغ PROPERTY ضد الإعلان وصاحبه؛ وPOST /reviews/:id/reports يقدّم بلاغاً ضد كاتب التقييم، مرتبطاً بالتقييم مع حفظ نصه. وتكرار أي منهما والبلاغ الأول ما زال قيد المراجعة يعيد البلاغ نفسه. الإبلاغ عن إعلانك أو تقييمك ← 400، وغير الموجود ← 404. وكل حظر جديد (POST /blocks، مع سبب اختياري) يُقدَّم أيضاً بلاغاً «حظر المستخدم» ضد الحساب المحظور؛ وتكرار الحظر لا يقدّم شيئاً. كل بلاغ جديد (حساب، قصة، إعلان، تقييم، حظر) يرسل بريداً إلى MODERATION_ALERT_EMAIL (مفصولة بفواصل؛ ولا يُرسل شيء إن لم تُضبط) برقمه وسببه ورابط صفحة البلاغات في لوحة الإدارة، دون إبطاء الطلب. الإدارة: صفوف GET /admin/reports تحمل الآن content { kind PROPERTY أو REVIEW أو STORY، id، snapshot }. وPOST /admin/reports/:id/enforce («حذف المحتوى وإيقاف الحساب») يحذف الإعلان أو التقييم المبلغ عنه أو يوقف القصة، ثم يوقف حساب ناشرها ويغلق البلاغ، فيصل إشعار للمبلِّغ. وكل خطوة تُسجَّل في سجل الإدارة (PROPERTY_DELETED وREVIEW_DELETED وSTORY_REMOVED وUSER_STATUS_CHANGED وREPORT_RESOLVED). الترحيل 20261023090000_ugc_terms_review_reports يضيف User.termsAcceptedAt/termsVersion وReport.targetReviewId/targetReviewSnapshot وإجراءين في سجل الإدارة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Signing in with acceptTerms: true sets termsAcceptedAt; acceptTerms: false is 400; leaving it out still signs in.",
+          "Publishing a listing or review with a banned word is 400 OBJECTIONABLE_CONTENT; a normal listing mentioning تكسي or اكسسوارات publishes.",
+          "A chat message with a banned word arrives with *** in its place.",
+          "Reporting a listing or a review creates one pending report and emails the moderation inbox; reporting it again returns the same report.",
+          "Blocking an account creates a «حظر المستخدم» report once.",
+          "Enforce on a listing report deletes the listing, suspends its owner (who can no longer sign in) and marks the report resolved.",
+        ],
+        ar: [
+          "الدخول مع acceptTerms: true يضبط termsAcceptedAt؛ وacceptTerms: false ← 400؛ وتركه يدخل كالمعتاد.",
+          "نشر إعلان أو تقييم فيه لفظ مسيء ← 400 OBJECTIONABLE_CONTENT؛ وإعلان عادي يذكر تكسي أو اكسسوارات يُنشر.",
+          "رسالة محادثة فيها لفظ مسيء تصل وفي مكانه ***.",
+          "الإبلاغ عن إعلان أو تقييم يُنشئ بلاغاً واحداً قيد المراجعة ويرسل بريداً للمشرفين؛ وتكرار الإبلاغ يعيد البلاغ نفسه.",
+          "حظر حساب يُنشئ بلاغ «حظر المستخدم» مرة واحدة.",
+          "الإجراء على بلاغ إعلان يحذف الإعلان ويوقف حساب صاحبه (فلا يستطيع الدخول) ويغلق البلاغ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Staging, with MODERATION_ALERT_EMAIL set: account A reports B's listing (⋮ flag on the ad) → the inbox gets «بلاغ جديد RP-…»; in the admin panel › البلاغات, open it › «حذف المحتوى وإيقاف الحساب» → the ad is gone and B's sign-in is refused.",
+          "Post an ad whose description contains a banned word → «المحتوى يحتوي على كلمات غير لائقة، يرجى تعديله».",
+        ],
+        ar: [
+          "على بيئة الاختبار مع ضبط MODERATION_ALERT_EMAIL: يبلّغ الحساب A عن إعلان B (علم الإبلاغ أعلى الإعلان) ← يصل للبريد «بلاغ جديد RP-…»؛ وفي لوحة الإدارة › البلاغات يُفتح البلاغ › «حذف المحتوى وإيقاف الحساب» ← يختفي الإعلان ويُرفض دخول B.",
+          "انشر إعلاناً في وصفه لفظ مسيء ← «المحتوى يحتوي على كلمات غير لائقة، يرجى تعديله».",
+        ],
+      },
+      updatedIn: "fix/ugc-guideline-1-2",
+    },
+    {
+      id: "api-blocks-hide-listings",
+      title: {
+        en: "A block also hides the other account's listings, map pins, favorites and requests (Guideline 1.2)",
+        ar: "الحظر يخفي أيضاً إعلانات الحساب الآخر ودبابيسه على الخريطة ومفضلته وطلباته (إرشاد 1.2)",
+      },
+      priority: "P1",
+      story: {
+        en: "Apple requires a block to remove the blocked user's content from the feed at once, so the earlier decision to keep listings visible is reversed. For a signed-in caller (optional sign-in on these public routes), listings owned by an account blocked either way are left out of GET /properties/feed/home, GET /properties, POST /search/advanced (every tab, companies too) and GET /map/discover (listings and company pins). GET /properties/:id answers 404 for such a listing, and GET /favorites leaves them out. In the company requests lists (scopes company and public), requests from a client blocked either way are left out; the requester's own list is unchanged. Unblocking brings everything back. Signed-out callers see the same results as before. No migration.",
+        ar: "تشترط Apple أن يزيل الحظر محتوى المستخدم المحظور من القائمة فوراً، لذا أُلغي القرار السابق بإبقاء الإعلانات ظاهرة. للطالب المسجّل دخوله (تسجيل دخول اختياري على هذه المسارات العامة) تُستبعد إعلانات الحساب المحظور في أي اتجاه من GET /properties/feed/home وGET /properties وPOST /search/advanced (كل التبويبات، والشركات أيضاً) وGET /map/discover (الإعلانات ودبابيس الشركات). ويعيد GET /properties/:id ‏404 لمثل هذا الإعلان، ويستبعدها GET /favorites. وفي قوائم طلبات الشركة (النطاقان company وpublic) تُستبعد طلبات العميل المحظور في أي اتجاه؛ وقائمة صاحب الطلبات نفسه كما هي. وإلغاء الحظر يعيد كل شيء. والطالب غير المسجّل يرى النتائج كما كانت. لا ترحيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "After A blocks company B, B's listings are gone from A's home, lists, search, map and favorites, and B's ad link opens «not found» for A.",
+          "B, and a signed-out visitor, still see B's listings.",
+          "A company that blocked a client no longer sees that client's requests.",
+          "Unblocking shows everything again.",
+        ],
+        ar: [
+          "بعد أن يحظر A الشركة B، تختفي إعلانات B من رئيسية A وقوائمه وبحثه وخريطته ومفضلته، ويفتح رابط إعلان B عند A «غير موجود».",
+          "B، والزائر غير المسجّل، ما زالا يريان إعلانات B.",
+          "الشركة التي حظرت عميلاً لا ترى طلباته بعد ذلك.",
+          "إلغاء الحظر يعيد إظهار كل شيء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Production, two accounts: A opens company B › ⋮ › حظر الشركة; back on الرئيسية, the map and البحث, none of B's ads show; Settings › المحظورون › إلغاء الحظر brings them back.",
+        ],
+        ar: [
+          "على الإنتاج بحسابين: يفتح A الشركة B › ⋮ › حظر الشركة؛ وبالعودة إلى الرئيسية والخريطة والبحث لا يظهر أي إعلان لـ B؛ والإعدادات › المحظورون › إلغاء الحظر يعيدها.",
+        ],
+      },
+      updatedIn: "fix/ugc-guideline-1-2",
+    },
+    {
       id: "api-user-blocks",
       title: {
         en: "Blocking another account (App Store Guideline 1.2): no chat either way, their stories and reviews hidden",

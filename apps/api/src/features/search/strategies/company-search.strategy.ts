@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { notBlockedUserWhere } from '../../blocks/block.rules';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { CompanyFilterDto } from 'src/features/search/dto/advanced-filters.dto';
 import {
@@ -15,6 +16,7 @@ export class CompanySearchStrategy implements SearchStrategy {
     filters: CompanyFilterDto,
     page: number,
     limit: number,
+    viewerUserId?: string,
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
@@ -94,7 +96,11 @@ export class CompanySearchStrategy implements SearchStrategy {
       type: 'COMPANY',
       companyData: companyProfileFilter,
       // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
-      user: { isDisabled: false, isBlocked: false },
+      user: {
+        isDisabled: false,
+        isBlocked: false,
+        ...(viewerUserId ? notBlockedUserWhere(viewerUserId) : {}),
+      },
     };
 
     const [identities, total] = await Promise.all([

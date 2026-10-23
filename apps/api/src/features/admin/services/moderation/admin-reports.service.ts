@@ -5,6 +5,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { AdminReportsFilterDto } from '../../dto/admin-reports-filter.dto';
 import { AdminReportUpdateDto } from '../../dto/admin-report-update.dto';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { deletedRowKeptUntil } from '../../../stories/stories.rules';
 
 function dayBounds(daysAgo: number) {
   const now = new Date();
@@ -75,6 +76,37 @@ function toUserSummary(
   };
 }
 
+// What the report is about beyond the account, for the admin to see and
+// for «حذف المحتوى وإيقاف الحساب» to remove
+function reportContent(row: ReportRow) {
+  const snapshot = (v: Prisma.JsonValue | null | undefined) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? (v as Record<string, unknown>)
+      : null;
+  if (row.targetType === 'PROPERTY' || row.targetPropertyId) {
+    return {
+      kind: 'PROPERTY' as const,
+      id: row.targetPropertyId,
+      snapshot: null,
+    };
+  }
+  if (row.targetReviewId || row.targetReviewSnapshot) {
+    return {
+      kind: 'REVIEW' as const,
+      id: row.targetReviewId,
+      snapshot: snapshot(row.targetReviewSnapshot),
+    };
+  }
+  if (row.targetStoryId || row.targetStorySnapshot) {
+    return {
+      kind: 'STORY' as const,
+      id: row.targetStoryId,
+      snapshot: snapshot(row.targetStorySnapshot),
+    };
+  }
+  return null;
+}
+
 function toRow(row: ReportRow) {
   return {
     id: row.id,
@@ -89,6 +121,7 @@ function toRow(row: ReportRow) {
     assignedAdmin: row.assignedAdmin
       ? { id: row.assignedAdmin.id, name: row.assignedAdmin.name || 'مشرف' }
       : null,
+    content: reportContent(row),
     createdAt: row.createdAt.toISOString(),
     resolvedAt: row.resolvedAt ? row.resolvedAt.toISOString() : null,
   };
@@ -368,6 +401,82 @@ export class AdminReportsService {
     });
 
     return { message: 'تم حذف الإعلان بنجاح' };
+  }
+
+  /**
+   * The first half of «حذف المحتوى وإيقاف الحساب» (Guideline 1.2): removes
+   * what the report is about (its listing, review or story; a report on an
+   * account alone has nothing to remove) and returns the account to eject.
+   * Something already gone is skipped.
+   */
+  async removeReportedContent(
+    id: string,
+    adminUserId: string,
+    now = new Date(),
+  ): Promise<{ targetUserId: string | null; removed: string | null }> {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+    if (!report) throw new NotFoundException('البلاغ غير موجود');
+    const reason = `حذف بسبب البلاغ RP-${report.reportNumber}`;
+
+    let removed: string | null = null;
+    if (report.targetPropertyId) {
+      const exists = await this.prisma.property.findUnique({
+        where: { id: report.targetPropertyId },
+        select: { id: true },
+      });
+      if (exists) {
+        await this.removeReportedProperty(
+          report.targetPropertyId,
+          reason,
+          adminUserId,
+        );
+        removed = 'PROPERTY';
+      }
+    } else if (report.targetReviewId) {
+      const { count } = await this.prisma.review.deleteMany({
+        where: { id: report.targetReviewId },
+      });
+      if (count > 0) {
+        removed = 'REVIEW';
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action: 'REVIEW_DELETED',
+          targetType: 'REVIEW',
+          targetId: report.targetReviewId,
+          targetUserId: report.targetUserId ?? undefined,
+          metadata: { reason },
+        });
+      }
+    } else if (report.targetStoryId) {
+      const story = await this.prisma.story.findUnique({
+        where: { id: report.targetStoryId },
+        select: { status: true, publishedAt: true },
+      });
+      if (story && (story.status === 'ACTIVE' || story.status === 'PENDING')) {
+        // Leaves every read at once; the stories cleanup deletes its files
+        await this.prisma.story.updateMany({
+          where: {
+            id: report.targetStoryId,
+            status: { in: ['PENDING', 'ACTIVE'] },
+          },
+          data: {
+            status: 'DELETED',
+            deletedAt: now,
+            expiresAt: deletedRowKeptUntil(story.publishedAt, now),
+          },
+        });
+        removed = 'STORY';
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action: 'STORY_REMOVED',
+          targetType: 'STORY',
+          targetId: report.targetStoryId,
+          targetUserId: report.targetUserId ?? undefined,
+          metadata: { reason },
+        });
+      }
+    }
+    return { targetUserId: report.targetUserId, removed };
   }
 
   async getAssignableAdmins() {

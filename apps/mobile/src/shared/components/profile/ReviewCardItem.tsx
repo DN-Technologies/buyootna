@@ -9,12 +9,15 @@ interface ReviewCardItemProps {
   item: ReviewItem;
   onToggleLike: (id: string) => void;
   onToggleDislike: (id: string) => void;
+  // «إبلاغ» (Guideline 1.2); no link when left out
+  onReport?: (id: string) => void;
 }
 
 export default function ReviewCardItem({
   item,
   onToggleLike,
   onToggleDislike,
+  onReport,
 }: ReviewCardItemProps) {
   return (
     <View className="mx-5 mb-4 border-b border-[#D7D7D7] p-4">
@@ -94,6 +97,18 @@ export default function ReviewCardItem({
             ({item.dislikes})
           </Text>
         </TouchableOpacity>
+
+        {onReport && (
+          <TouchableOpacity
+            testID={`review-report-${item.id}`}
+            activeOpacity={0.7}
+            onPress={() => onReport(item.id)}
+            className="ml-auto flex-row items-center gap-1"
+          >
+            <Feather name="flag" size={14} color="#94A3B8" />
+            <Text className="font-cairo text-xs text-[#94A3B8]">إبلاغ</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { SignupFormValues, signupSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
+import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import FormInput from '@/shared/components/ui/FormInput';
 
 interface IndividualSignupFormProps {
@@ -71,6 +72,8 @@ export const IndividualSignupForm: React.FC<IndividualSignupFormProps> = ({
         textContentType="newPassword"
         autoComplete="new-password"
       />
+
+      <TermsAgreement />
 
       <TouchableOpacity
         activeOpacity={0.8}

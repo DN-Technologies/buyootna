@@ -7,6 +7,8 @@ import apiClient from '@/shared/api/api';
 import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+import { useTermsAgreement } from '@/features/auth/terms';
+
 import IndividualAuthScreen from '../individual-auth';
 
 jest.mock('@/shared/api/api', () => ({
@@ -56,6 +58,8 @@ const loginResponseData = {
 describe('IndividualAuthScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // The terms checkbox is ticked unless a test says otherwise
+    useTermsAgreement.setState({ accepted: true });
     mockSetAuth.mockResolvedValue(undefined);
     const authState = {
       setAuth: mockSetAuth,
@@ -93,6 +97,33 @@ describe('IndividualAuthScreen', () => {
   };
 
   describe('login', () => {
+    it('shows the terms checkbox and logs in only once it is ticked (Guideline 1.2)', async () => {
+      useTermsAgreement.setState({ accepted: false });
+      mockApiClient.post.mockResolvedValueOnce({ data: loginResponseData });
+      const { getByPlaceholderText, getByText, getByTestId } = await render(
+        <IndividualAuthScreen />,
+      );
+
+      await fillLoginForm(getByPlaceholderText, 'ali@example.com', 'password123');
+      await fireEvent.press(getByText('تسجيل الدخول'));
+      await waitFor(() =>
+        expect(useAlertStore.getState().showAlert).toHaveBeenCalledWith(
+          'الموافقة على الشروط',
+          expect.any(String),
+        ),
+      );
+      expect(mockApiClient.post).not.toHaveBeenCalled();
+
+      await fireEvent.press(getByTestId('terms-agreement-checkbox'));
+      await fireEvent.press(getByText('تسجيل الدخول'));
+      await waitFor(() =>
+        expect(mockApiClient.post).toHaveBeenCalledWith(
+          '/auth/login',
+          expect.objectContaining({ acceptTerms: true }),
+        ),
+      );
+    });
+
     it('logs in successfully and navigates to the identity home route', async () => {
       mockApiClient.post.mockResolvedValueOnce({ data: loginResponseData });
       const { getByPlaceholderText, getByText } = await render(
@@ -107,6 +138,7 @@ describe('IndividualAuthScreen', () => {
           identifier: 'ali@example.com',
           password: 'password123',
           identityType: 'INDIVIDUAL',
+          acceptTerms: true,
         });
       });
       await waitFor(() =>
@@ -355,7 +387,7 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => {
           expect(mockApiClient.post).toHaveBeenCalledWith(
             '/auth/register/verify-otp',
-            { phone: '51234567', otp: '123456' },
+            { phone: '51234567', otp: '123456', acceptTerms: true },
           );
         });
         await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
@@ -452,7 +484,7 @@ describe('IndividualAuthScreen', () => {
         await waitFor(() => {
           expect(mockApiClient.post).toHaveBeenCalledWith(
             '/auth/register/verify-email-otp',
-            { email: 'ali@example.com', otp: '123456' },
+            { email: 'ali@example.com', otp: '123456', acceptTerms: true },
           );
         });
         await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());
@@ -524,6 +556,7 @@ describe('IndividualAuthScreen', () => {
       await waitFor(() => {
         expect(mockApiClient.post).toHaveBeenCalledWith('/auth/apple', {
           identityToken: 'apple-tok',
+          acceptTerms: true,
         });
       });
       await waitFor(() => expect(mockSetAuth).toHaveBeenCalled());

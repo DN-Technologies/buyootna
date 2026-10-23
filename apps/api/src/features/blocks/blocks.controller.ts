@@ -39,10 +39,11 @@ export class BlocksController {
   @ApiResponse({ status: 200, type: BlockStatusDto })
   @ApiCommonErrors()
   block(@CurrentUser() reqUser: RequestUser, @Body() dto: BlockUserDto) {
-    return this.blocks.block(reqUser.userId, {
-      userId: dto.userId,
-      identityId: dto.identityId,
-    });
+    return this.blocks.block(
+      reqUser.userId,
+      { userId: dto.userId, identityId: dto.identityId },
+      { blockerIdentityId: reqUser.identityId, reason: dto.reason },
+    );
   }
 
   @Delete(':userId')

@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 
 import type { PrismaService } from '../../core/prisma/prisma.service';
 import type { StorageService } from '../../core/storage/storage.service';
+import { assertCleanContent } from '../../core/content-filter/content-filter';
 import { lockKeys } from '../identities/persona-rules';
 import { CreateStoryUploadDto } from './dto/create-story-upload.dto';
 import { PublishStoryDto } from './dto/publish-story.dto';
@@ -167,6 +168,7 @@ export class StoriesPublishing {
       throw invalidMedia(story.failureReason, story.mediaType);
     }
     if (story.expiresAt <= now) throw uploadExpired();
+    assertCleanContent(dto.caption);
 
     await assertCanPublish(this.prisma, identityId);
     // Cheap early answer before reading S3; repeated under the lock below

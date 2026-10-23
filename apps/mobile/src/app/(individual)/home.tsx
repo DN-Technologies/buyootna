@@ -28,6 +28,7 @@ import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorMo
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useBlocksVersion } from '@/shared/hooks/blocks/useBlocks';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { HomeFeedResponse } from '@/types/feed';
@@ -97,6 +98,13 @@ export default function HomeScreen() {
   useEffect(() => {
     loadFeed();
   }, [token]);
+
+  // A block or unblock changes whose ads the feed may show: reload it
+  const blocksVersion = useBlocksVersion((s) => s.version);
+  useEffect(() => {
+    if (blocksVersion > 0) void loadFeed();
+     
+  }, [blocksVersion]);
 
   // --- Pull to Refresh Handle ---
   const onRefresh = async () => {

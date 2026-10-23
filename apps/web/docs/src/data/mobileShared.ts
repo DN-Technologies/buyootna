@@ -9,6 +9,41 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-ugc-terms-report",
+      title: {
+        en: "Terms checkbox before sign-in and sign-up, reporting listings and reviews, and a block clears the account's ads at once (Guideline 1.2)",
+        ar: "خانة الموافقة على الشروط قبل الدخول والتسجيل، والإبلاغ عن الإعلانات والتقييمات، والحظر يزيل إعلانات الحساب فوراً (إرشاد 1.2)",
+      },
+      priority: "P1",
+      story: {
+        en: "Every sign-in and sign-up form (individual login and signup, company/office login, and the last step of company/office signup) shows «أوافق على شروط الاستخدام و سياسة الخصوصية، ولا تسامح مع المحتوى المسيء أو المستخدمين المسيئين», unticked, above the main button. The two links open the terms and the privacy policy. Pressing تسجيل الدخول, إنشاء حساب, Apple or Google without ticking shows «الموافقة على الشروط — يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة» and sends nothing. The tick is kept across the login and signup tabs while the app is open. The terms page has a new section «سياسة عدم التسامح مع المحتوى المسيء» covering the banned-words filter, reporting and blocking, and the 24-hour review (removal and suspension). Reporting: someone else's ad has a flag button next to share (guests are asked to sign in first) that opens the usual report reasons, and every review has «إبلاغ» next to like/dislike. Both answer «تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته خلال 24 ساعة.» Blocking: the confirmation now also says their ads disappear and that the block reaches the team for review. After a block or unblock, the home feed, ad lists, search results, map, favorites and company requests reload at once. Content refused by the filter shows the server's message.",
+        ar: "كل نماذج الدخول والتسجيل (دخول الفرد وتسجيله، ودخول الشركة أو المكتب، والخطوة الأخيرة من تسجيل الشركة أو المكتب) تعرض فوق الزر الرئيسي «أوافق على شروط الاستخدام و سياسة الخصوصية، ولا تسامح مع المحتوى المسيء أو المستخدمين المسيئين» دون تحديد. والرابطان يفتحان الشروط وسياسة الخصوصية. والضغط على تسجيل الدخول أو إنشاء حساب أو Apple أو Google دون التحديد يعرض «الموافقة على الشروط — يجب الموافقة على شروط الاستخدام وسياسة الخصوصية للمتابعة» ولا يُرسل شيء. ويبقى التحديد بين تبويبي الدخول والتسجيل ما دام التطبيق مفتوحاً. وفي صفحة الشروط قسم جديد «سياسة عدم التسامح مع المحتوى المسيء» عن مرشّح الألفاظ والإبلاغ والحظر والمراجعة خلال 24 ساعة (الحذف والإيقاف). الإبلاغ: في إعلان غيرك زر علم بجانب المشاركة (ويُطلب من الزائر الدخول أولاً) يفتح أسباب الإبلاغ المعتادة، ولكل تقييم «إبلاغ» بجانب الإعجاب وعدمه. وكلاهما يجيب «تم إرسال البلاغ بنجاح وسيقوم فريق الدعم بمراجعته خلال 24 ساعة.» الحظر: يذكر التأكيد الآن أن إعلاناته تختفي وأن الحظر يصل للفريق للمراجعة. وبعد الحظر أو إلغائه تُعاد فوراً تحميل الرئيسية وقوائم الإعلانات ونتائج البحث والخريطة والمفضلة وطلبات الشركة. والمحتوى الذي يرفضه المرشّح يعرض رسالة الخادم.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "On a fresh launch the terms box is unticked on login and signup; signing in (password, Apple, Google) without it is stopped with an explanation.",
+          "Ticked, sign-in works as before.",
+          "Someone else's ad shows the flag and your own doesn't; reporting it and reporting a review both confirm.",
+          "Blocking a company from its profile and going back home: its ads are gone without pulling to refresh.",
+        ],
+        ar: [
+          "عند فتح التطبيق من جديد تكون خانة الشروط غير محددة في الدخول والتسجيل؛ والدخول (بكلمة المرور أو Apple أو Google) بدونها يُوقف مع توضيح.",
+          "مع التحديد يعمل الدخول كما كان.",
+          "يظهر العلم في إعلان غيرك ولا يظهر في إعلانك؛ والإبلاغ عنه وعن تقييم يؤكَّد كلاهما.",
+          "حظر شركة من ملفها ثم العودة للرئيسية: تختفي إعلاناتها دون السحب للتحديث.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Physical iPhone (this is the App Review recording): launch › تسجيل الدخول › try to log in unticked › tick › open شروط الاستخدام › log in; open a company's ad › flag › pick a reason › إرسال; the company's profile › التقييمات › إبلاغ; ⋮ › حظر الشركة › حظر; home: its ads are gone.",
+        ],
+        ar: [
+          "على آيفون حقيقي (وهذا تسجيل مراجعة Apple): فتح التطبيق › تسجيل الدخول › محاولة الدخول دون تحديد › التحديد › فتح شروط الاستخدام › الدخول؛ فتح إعلان شركة › العلم › اختيار سبب › إرسال؛ ملف الشركة › التقييمات › إبلاغ؛ ⋮ › حظر الشركة › حظر؛ الرئيسية: اختفت إعلاناتها.",
+        ],
+      },
+      updatedIn: "fix/ugc-guideline-1-2",
+    },
+    {
       id: "mobile-user-blocking",
       title: {
         en: "Blocking another account from chat, profiles and stories; Settings › «المحظورون»",

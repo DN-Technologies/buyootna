@@ -1,10 +1,12 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../../core/prisma/prisma.service';
+import { ReportsService } from '../reports/reports.service';
 import type { BlockedAccountDto, BlockStatusDto } from './dto/block-user.dto';
 
 // The blocked list is short in practice; this keeps one response bounded
@@ -44,15 +46,22 @@ const profileDisplay = (p: ProfileRow | null | undefined) => ({
  */
 @Injectable()
 export class BlocksService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(BlocksService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reports: ReportsService,
+  ) {}
 
   /**
    * Blocks an account, given it or one of its profiles; doing it again
-   * changes nothing.
+   * changes nothing. A new block is also filed as a report so the
+   * moderators hear of it (Guideline 1.2), with the blocker's reason.
    */
   async block(
     blockerUserId: string,
     target: { userId?: string; identityId?: string },
+    opts: { blockerIdentityId?: string; reason?: string } = {},
   ): Promise<BlockStatusDto> {
     let blockedUserId = target.userId;
     if (!blockedUserId && target.identityId) {
@@ -83,7 +92,7 @@ export class BlocksService {
         })
       : null;
 
-    await this.prisma.userBlock.createMany({
+    const { count } = await this.prisma.userBlock.createMany({
       data: [
         {
           blockerUserId,
@@ -93,6 +102,20 @@ export class BlocksService {
       ],
       skipDuplicates: true,
     });
+    if (count > 0) {
+      // The block stands even if filing its report fails
+      try {
+        await this.reports.createForBlock(
+          { userId: blockerUserId, identityId: opts.blockerIdentityId },
+          { userId: blockedUserId, identityId: identity?.id },
+          opts.reason,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Block report ${blockerUserId} -> ${blockedUserId} failed: ${String(error)}`,
+        );
+      }
+    }
     return { blocked: true };
   }
 

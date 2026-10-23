@@ -27,6 +27,9 @@ enum AdminActionType {
   FEATURE_PACKAGE_UPDATED
   // An admin edited a plan on the Plans page
   PLAN_UPDATED
+  // «حذف المحتوى وإيقاف الحساب» on a report (Guideline 1.2)
+  REVIEW_DELETED
+  STORY_REMOVED
 }
 
 model AdminActionLog {

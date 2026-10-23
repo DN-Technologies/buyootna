@@ -18,16 +18,16 @@ export class PropertiesService {
   ) {}
 
   // --- PUBLIC FEED & DISCOVERY ---
-  getHomeFeed() {
-    return this.feedService.getHomeFeed();
+  getHomeFeed(viewerUserId?: string) {
+    return this.feedService.getHomeFeed(viewerUserId);
   }
 
-  findAll(filters: GetPropertiesFilterDto) {
-    return this.feedService.findAll(filters);
+  findAll(filters: GetPropertiesFilterDto, viewerUserId?: string) {
+    return this.feedService.findAll(filters, viewerUserId);
   }
 
-  findOne(id: string) {
-    return this.feedService.findOne(id);
+  findOne(id: string, viewerUserId?: string) {
+    return this.feedService.findOne(id, viewerUserId);
   }
 
   incrementViews(id: string) {

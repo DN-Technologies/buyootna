@@ -3,12 +3,14 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'src/core/prisma/prisma.service';
 import { IdentityType, User } from '@prisma/client';
 import { JwtPayload } from '../strategies/jwt.strategy';
+import { TERMS_VERSION } from '../dto/terms-acceptance.dto';
 import {
   AuthIdentitiesService,
   IdentityWithData,
@@ -40,6 +42,8 @@ const REACTIVATION_TICKET_TTL = '10m';
  */
 @Injectable()
 export class AuthSessionService {
+  private readonly logger = new Logger(AuthSessionService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -50,6 +54,24 @@ export class AuthSessionService {
   ) {}
 
   // Generate JWT token with identity information
+  /**
+   * Records that the account agreed to the current terms (the sign-in and
+   * sign-up checkbox). Never throws: a failed write must not fail a
+   * sign-in that already succeeded.
+   */
+  async recordTermsAccepted(userId: string): Promise<void> {
+    try {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION },
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Could not record terms acceptance for ${userId}: ${String(error)}`,
+      );
+    }
+  }
+
   async login(
     user: Omit<User, 'password'>,
     identityId?: string,

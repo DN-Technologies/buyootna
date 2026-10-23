@@ -14,4 +14,28 @@ export const reportsService = {
       description,
     });
   },
+
+  /** إبلاغ عن الإعلان: a report against a listing and its owner. */
+  reportProperty: async (
+    propertyId: string,
+    reason: string,
+    description?: string,
+  ): Promise<void> => {
+    await apiClient.post(`/properties/${propertyId}/reports`, {
+      reason,
+      description,
+    });
+  },
+
+  /** A report against a review and its author. */
+  reportReview: async (
+    reviewId: string,
+    reason: string,
+    description?: string,
+  ): Promise<void> => {
+    await apiClient.post(`/reviews/${reviewId}/reports`, {
+      reason,
+      description,
+    });
+  },
 };

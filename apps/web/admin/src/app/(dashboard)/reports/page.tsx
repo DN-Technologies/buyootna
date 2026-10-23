@@ -36,6 +36,7 @@ export default function ReportsPage() {
     handleConfirmResolution,
     handleResolveReport,
     handleDismissReport,
+    handleEnforceReport,
     stats,
     pagination,
     setCurrentPage,
@@ -79,6 +80,7 @@ export default function ReportsPage() {
         onClose={handleCloseReview}
         onResolve={handleResolveReport}
         onDismiss={handleDismissReport}
+        onEnforce={handleEnforceReport}
       />
 
       {/* Confirm Resolve Reports Modal (Figma Node 4940:87775 for single, 4881:16818 for bulk) */}

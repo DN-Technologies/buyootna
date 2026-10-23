@@ -130,6 +130,20 @@ export class AdminController {
     return this.adminService.updateReport(id, dto, reqUser.userId);
   }
 
+  @Post('reports/:id/enforce')
+  @ApiOperation({
+    summary:
+      '«حذف المحتوى وإيقاف الحساب»: remove the reported listing/review/story, suspend the account that posted it, and resolve the report (Guideline 1.2)',
+  })
+  @ApiParam({ name: 'id', description: 'Report ID' })
+  @ApiCommonErrors()
+  async enforceReport(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+  ) {
+    return this.adminService.enforceReport(id, reqUser.userId);
+  }
+
   @Post('reports/bulk-resolve')
   @ApiOperation({ summary: 'Resolve multiple reports at once' })
   @ApiCommonErrors()

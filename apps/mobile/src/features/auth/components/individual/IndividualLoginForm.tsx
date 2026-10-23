@@ -7,6 +7,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
 import { LoginFormValues, loginSchema } from '@/features/auth/authSchemas';
 import { SocialAuthButtons } from '@/features/auth/components/SocialAuthButtons';
+import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import FormInput from '@/shared/components/ui/FormInput';
 
 interface IndividualLoginFormProps {
@@ -87,6 +88,8 @@ export const IndividualLoginForm: React.FC<IndividualLoginFormProps> = ({
           </Text>
         </TouchableOpacity>
       </View>
+
+      <TermsAgreement />
 
       <TouchableOpacity
         activeOpacity={0.8}

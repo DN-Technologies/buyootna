@@ -2,6 +2,7 @@ import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-si
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
 
+import { requireTermsAccepted } from '@/features/auth/terms';
 import apiClient from '@/shared/api/api';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -67,6 +68,7 @@ export function useSocialAuth() {
       showAlert('تسجيل الدخول عبر Google غير مُفعّل حالياً');
       return;
     }
+    if (!requireTermsAccepted()) return;
 
     setIsGoogleLoading(true);
     try {
@@ -78,7 +80,10 @@ export function useSocialAuth() {
       }
 
       const response = await withReactivationPrompt(
-        apiClient.post('/auth/google', { idToken: result.data.idToken }),
+        apiClient.post('/auth/google', {
+          idToken: result.data.idToken,
+          acceptTerms: true,
+        }),
       );
       await handleSocialAuthResponse(response);
     } catch (error: any) {
@@ -92,6 +97,7 @@ export function useSocialAuth() {
   };
 
   const onAppleSignIn = async () => {
+    if (!requireTermsAccepted()) return;
     setIsAppleLoading(true);
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -108,6 +114,7 @@ export function useSocialAuth() {
       const response = await withReactivationPrompt(
         apiClient.post('/auth/apple', {
           identityToken: credential.identityToken,
+          acceptTerms: true,
         }),
       );
       await handleSocialAuthResponse(response);

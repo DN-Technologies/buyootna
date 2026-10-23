@@ -9,6 +9,7 @@ import {
   CompanyLoginFormValues,
   companyLoginSchema,
 } from '@/features/auth/companyAuthSchemas';
+import { TermsAgreement } from '@/features/auth/components/TermsAgreement';
 import FormInput from '@/shared/components/ui/FormInput';
 
 interface CompanyLoginFormProps {
@@ -79,6 +80,8 @@ export const CompanyLoginForm: React.FC<CompanyLoginFormProps> = ({
       </View>
 
       <View>
+        <TermsAgreement />
+
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={handleSubmit(handleLogin)}

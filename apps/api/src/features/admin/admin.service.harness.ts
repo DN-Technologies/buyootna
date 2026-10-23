@@ -70,6 +70,7 @@ interface MockAdminReportsService {
   getReportsForUser: jest.Mock;
   getReportsForProperty: jest.Mock;
   removeReportedProperty: jest.Mock;
+  removeReportedContent: jest.Mock;
   getAssignableAdmins: jest.Mock;
   getDashboardReportStats: jest.Mock;
 }
@@ -187,6 +188,7 @@ function createMocks(): AdminServiceMocks {
       getReportsForUser: jest.fn(),
       getReportsForProperty: jest.fn(),
       removeReportedProperty: jest.fn(),
+      removeReportedContent: jest.fn(),
       getAssignableAdmins: jest.fn(),
       getDashboardReportStats: jest.fn().mockResolvedValue({
         newReportsCount: 0,

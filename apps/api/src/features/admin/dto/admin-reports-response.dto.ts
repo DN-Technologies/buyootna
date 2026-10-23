@@ -28,6 +28,25 @@ export class ReportAssignedAdminDto {
   name: string;
 }
 
+export class ReportContentDto {
+  @ApiProperty({ enum: ['PROPERTY', 'REVIEW', 'STORY'] })
+  kind: 'PROPERTY' | 'REVIEW' | 'STORY';
+
+  @ApiProperty({
+    nullable: true,
+    description: 'Null once the listing, review or story is gone',
+  })
+  id: string | null;
+
+  @ApiProperty({
+    type: 'object',
+    additionalProperties: true,
+    nullable: true,
+    description: 'What a review or story showed when it was reported',
+  })
+  snapshot: Record<string, unknown> | null;
+}
+
 export class AdminReportRowDto {
   @ApiProperty()
   id: string;
@@ -58,6 +77,14 @@ export class AdminReportRowDto {
 
   @ApiProperty({ type: ReportAssignedAdminDto, nullable: true })
   assignedAdmin: ReportAssignedAdminDto | null;
+
+  @ApiProperty({
+    type: ReportContentDto,
+    nullable: true,
+    description:
+      'The listing, review or story reported (null for a report on an account alone); what «حذف المحتوى وإيقاف الحساب» removes',
+  })
+  content: ReportContentDto | null;
 
   @ApiProperty()
   createdAt: string;

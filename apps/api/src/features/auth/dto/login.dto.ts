@@ -8,7 +8,9 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class LoginDto {
+import { TermsAcceptanceDto } from './terms-acceptance.dto';
+
+export class LoginDto extends TermsAcceptanceDto {
   @IsString()
   @IsNotEmpty({ message: 'هذا الحقل مطلوب' })
   identifier: string; // Can be email OR phone

@@ -5,6 +5,7 @@ import OfficeWorkingHours from '@/shared/components/office/OfficeWorkingHours';
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import ReviewsSummarySection from '@/shared/components/profile/ReviewsSummarySection';
 import { ReviewItem, ReviewSummary } from '@/shared/components/profile/types';
+import { useReviewReport } from '@/shared/hooks/useReviewReport';
 import type { WorkingDay } from '@/shared/utils/workingHours';
 
 interface OfficeAboutTabProps {
@@ -35,6 +36,8 @@ export default function OfficeAboutTab({
   onToggleDislike,
   onShowMoreReviews,
 }: OfficeAboutTabProps) {
+  const { reportReview, reportSheet } = useReviewReport();
+
   return (
     <View>
       {/* License Number & Working Hours */}
@@ -77,6 +80,7 @@ export default function OfficeAboutTab({
             item={rev}
             onToggleLike={onToggleLike}
             onToggleDislike={onToggleDislike}
+            onReport={reportReview}
           />
         ))}
       </View>
@@ -93,6 +97,7 @@ export default function OfficeAboutTab({
           </Text>
         </TouchableOpacity>
       )}
+      {reportSheet}
     </View>
   );
 }

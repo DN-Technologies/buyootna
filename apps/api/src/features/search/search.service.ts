@@ -29,7 +29,10 @@ export class SearchService {
     private readonly dealStrategy: DealSearchStrategy,
   ) {}
 
-  async globalAdvancedSearch(payload: AdvancedSearchDto) {
+  async globalAdvancedSearch(
+    payload: AdvancedSearchDto,
+    viewerUserId?: string,
+  ) {
     const { tab, filters, page = 1, limit = 10 } = payload;
 
     // Traffic Cop: Route to the correct strategy based on the 'tab'
@@ -41,16 +44,23 @@ export class SearchService {
           { ...(filters as StandardFilterDto), type: tab },
           page,
           limit,
+          viewerUserId,
         );
 
       case FilterTab.EXCHANGE:
-        return this.exchangeStrategy.execute(filters, page, limit);
+        return this.exchangeStrategy.execute(
+          filters,
+          page,
+          limit,
+          viewerUserId,
+        );
 
       case FilterTab.COMPANIES:
         return this.companyStrategy.execute(
           filters as CompanyFilterDto,
           page,
           limit,
+          viewerUserId,
         );
 
       case FilterTab.AUCTIONS:
@@ -58,10 +68,11 @@ export class SearchService {
           filters as AuctionFilterDto,
           page,
           limit,
+          viewerUserId,
         );
 
       case FilterTab.DEALS:
-        return this.dealStrategy.execute(filters, page, limit);
+        return this.dealStrategy.execute(filters, page, limit, viewerUserId);
 
       default:
         throw new BadRequestException('Invalid search tab provided.');

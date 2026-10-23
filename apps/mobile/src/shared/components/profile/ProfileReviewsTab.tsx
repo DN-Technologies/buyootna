@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import ProfileEmptyState from '@/shared/components/profile/ProfileEmptyState';
 import ReviewCardItem from '@/shared/components/profile/ReviewCardItem';
 import { ReviewItem } from '@/shared/components/profile/types';
+import { useReviewReport } from '@/shared/hooks/useReviewReport';
 
 interface ProfileReviewsTabProps {
   reviews: ReviewItem[];
@@ -30,24 +31,30 @@ export default function ProfileReviewsTab({
     });
   }, [reviews, sort]);
 
+  const { reportReview, reportSheet } = useReviewReport();
+
   return (
-    <FlashList
-      key="reviews-list"
-      data={sortedReviews}
-      keyExtractor={(item) => item.id}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={<ProfileEmptyState tab="reviews" />}
-      contentContainerStyle={{
-        paddingBottom: bottomInset + 85,
-      }}
-      showsVerticalScrollIndicator={false}
-      renderItem={({ item }) => (
-        <ReviewCardItem
-          item={item}
-          onToggleLike={onToggleLike}
-          onToggleDislike={onToggleDislike}
-        />
-      )}
-    />
+    <>
+      <FlashList
+        key="reviews-list"
+        data={sortedReviews}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={<ProfileEmptyState tab="reviews" />}
+        contentContainerStyle={{
+          paddingBottom: bottomInset + 85,
+        }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item }) => (
+          <ReviewCardItem
+            item={item}
+            onToggleLike={onToggleLike}
+            onToggleDislike={onToggleDislike}
+            onReport={reportReview}
+          />
+        )}
+      />
+      {reportSheet}
+    </>
   );
 }

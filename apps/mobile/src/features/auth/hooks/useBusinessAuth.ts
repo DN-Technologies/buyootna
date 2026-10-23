@@ -14,6 +14,7 @@ import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
 import { loginAs } from '../utils/loginAs';
+import { requireTermsAccepted } from '../terms';
 
 // Company/office accounts stay behind the ComingSoonGate unless explicitly
 // enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
@@ -66,6 +67,7 @@ export function useBusinessAuth() {
   const onLogin = async (
     data: CompanyLoginFormValues & { rememberMe: boolean },
   ) => {
+    if (!requireTermsAccepted()) return;
     setIsLoading(true);
     try {
       await loginAs(
@@ -89,6 +91,7 @@ export function useBusinessAuth() {
   };
 
   const onSignupFinal = async (data: CompanySignupFormValues) => {
+    if (!requireTermsAccepted()) return false;
     setIsLoading(true);
     try {
       // 1. Create a new FormData object

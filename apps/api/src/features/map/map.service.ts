@@ -15,6 +15,7 @@ import {
   companiesToFeatureCollection,
   propertiesToFeatureCollection,
 } from './utils/map-geojson.mapper';
+import { notBlockedUserWhere } from '../blocks/block.rules';
 
 const MAP_LIMIT = 500;
 
@@ -28,16 +29,18 @@ const PIN_TO_LISTING: Record<Exclude<MapPinType, 'company'>, ListingType> = {
 export class MapService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async discover(dto: GetMapBoundsDto) {
+  // viewerUserId: the signed-in caller, whose blocked accounts' pins are
+  // left out (Guideline 1.2)
+  async discover(dto: GetMapBoundsDto, viewerUserId?: string) {
     this.assertValidBounds(dto);
 
     const type = dto.type ?? 'sell';
 
     if (type === 'company') {
-      return this.discoverCompanies(dto);
+      return this.discoverCompanies(dto, viewerUserId);
     }
 
-    return this.discoverProperties(dto, type);
+    return this.discoverProperties(dto, type, viewerUserId);
   }
 
   private assertValidBounds(dto: GetMapBoundsDto) {
@@ -49,6 +52,7 @@ export class MapService {
   private async discoverProperties(
     dto: GetMapBoundsDto,
     type: Exclude<MapPinType, 'company'>,
+    viewerUserId?: string,
   ) {
     const where: Prisma.PropertyWhereInput = {
       status: ListingStatus.ACTIVE,
@@ -60,7 +64,7 @@ export class MapService {
       // `where.OR` below is used for the free-text search match — Prisma
       // ANDs every top-level key together, so this still combines correctly
       // without the two OR-clauses stomping on each other.
-      AND: [notExpiredWhere(), ownerActiveWhere()],
+      AND: [notExpiredWhere(), ownerActiveWhere(viewerUserId)],
     };
 
     // Chosen areas narrow further than their governorates, so they win
@@ -103,13 +107,19 @@ export class MapService {
     return propertiesToFeatureCollection(rows);
   }
 
-  private async discoverCompanies(dto: GetMapBoundsDto) {
+  private async discoverCompanies(dto: GetMapBoundsDto, viewerUserId?: string) {
     const profileWhere: Prisma.CompanyIdentityDataWhereInput = {
       status: ApprovalStatus.APPROVED,
       latitude: { gte: dto.sw_lat, lte: dto.ne_lat, not: null },
       longitude: { gte: dto.sw_lng, lte: dto.ne_lng, not: null },
       // Hidden while the owner's account is suspended or blocked
-      identity: { user: { isDisabled: false, isBlocked: false } },
+      identity: {
+        user: {
+          isDisabled: false,
+          isBlocked: false,
+          ...(viewerUserId ? notBlockedUserWhere(viewerUserId) : {}),
+        },
+      },
     };
 
     if (dto.searchQuery?.trim()) {

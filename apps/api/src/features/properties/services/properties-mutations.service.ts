@@ -13,6 +13,7 @@ import { UpdatePropertyDto } from '../dto/update-property.dto';
 import { PropertiesQuotaService } from './properties-quota.service';
 import { generateReferenceNumber } from './property-formatting.util';
 import { assertApprovedProvider } from '../../identities/persona-rules';
+import { assertCleanContent } from '../../../core/content-filter/content-filter';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
 import {
   categoryFieldOverrides,
@@ -35,6 +36,16 @@ const ARCHIVED_STATUSES: ListingStatus[] = [
   ListingStatus.CLOSED,
 ];
 
+// The ad's free text, refused when it has a banned word (Guideline 1.2)
+function assertAdTextClean(dto: UpdatePropertyDto): void {
+  assertCleanContent(
+    dto.description,
+    dto.location,
+    dto.additionalExpenses,
+    dto.rentConditions,
+  );
+}
+
 @Injectable()
 export class PropertiesMutationsService {
   constructor(
@@ -55,6 +66,7 @@ export class PropertiesMutationsService {
   // response, a double tap) gets the ad it already created back instead of
   // spending the package a second time
   async create(identityId: string, dto: CreatePropertyDto) {
+    assertAdTextClean(dto);
     const { submissionKey } = dto;
     if (submissionKey) {
       const replay = await this.findSubmission(identityId, submissionKey);
@@ -218,6 +230,7 @@ export class PropertiesMutationsService {
 
   // --- UPDATE ---
   async update(identityId: string, propertyId: string, dto: UpdatePropertyDto) {
+    assertAdTextClean(dto);
     const existingProperty = await this.verifyOwnership(identityId, propertyId);
     const {
       isDraft,

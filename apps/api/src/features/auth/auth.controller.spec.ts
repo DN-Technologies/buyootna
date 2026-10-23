@@ -6,6 +6,9 @@ import { AppleAuthService } from './services/apple-auth.service';
 import { OtpRateLimiterService } from '../../core/otp-rate-limiter/otp-rate-limiter.service';
 import { SocialProvider } from '@prisma/client';
 import type { RequestUser } from './strategies/jwt.strategy';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { LoginDto } from './dto/login.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -17,6 +20,7 @@ describe('AuthController', () => {
     switchIdentity: jest.fn(),
     requestChangePasswordOtp: jest.fn(),
     changePassword: jest.fn(),
+    recordTermsAccepted: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockGoogleAuthService = {
@@ -108,6 +112,43 @@ describe('AuthController', () => {
       expectedDeviceCtx,
       { identityType: 'COMPANY' },
     );
+  });
+
+  it('records the terms checkbox (Guideline 1.2) on login and sign-up, only when ticked', async () => {
+    mockAuthService.login.mockReturnValue('login-result');
+    void controller.login(makeReq({ user: { id: 'user-1' } }), {
+      identifier: 'a@example.com',
+      password: 'secret1',
+      acceptTerms: true,
+    });
+    expect(mockAuthService.recordTermsAccepted).toHaveBeenCalledWith('user-1');
+
+    mockAuthService.recordTermsAccepted.mockClear();
+    mockGoogleAuthService.verifyIdToken.mockResolvedValue({ providerId: 'g' });
+    mockAuthService.loginOrRegisterWithSocial.mockResolvedValue({
+      user: { id: 'user-2' },
+    });
+    await controller.googleLogin(makeReq(), {
+      idToken: 't',
+      acceptTerms: true,
+    });
+    expect(mockAuthService.recordTermsAccepted).toHaveBeenCalledWith('user-2');
+
+    // An older app build sends nothing: nothing is recorded
+    mockAuthService.recordTermsAccepted.mockClear();
+    await controller.googleLogin(makeReq(), { idToken: 't' });
+    expect(mockAuthService.recordTermsAccepted).not.toHaveBeenCalled();
+  });
+
+  it('refuses acceptTerms other than true', async () => {
+    const errors = await validate(
+      plainToInstance(LoginDto, {
+        identifier: 'a@example.com',
+        password: 'secret1',
+        acceptTerms: false,
+      }),
+    );
+    expect(errors.map((e) => e.property)).toEqual(['acceptTerms']);
   });
 
   it('googleLogin() verifies the ID token then delegates to loginOrRegisterWithSocial with GOOGLE and the device context', async () => {

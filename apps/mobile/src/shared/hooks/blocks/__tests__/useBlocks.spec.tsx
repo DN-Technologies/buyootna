@@ -7,7 +7,7 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
 
-import { useBlockFlow, useBlockStatus } from '../useBlocks';
+import { useBlockFlow, useBlockStatus,useBlocksVersion } from '../useBlocks';
 
 jest.mock('@/shared/api/blocks.service', () => ({
   blocksService: {
@@ -61,6 +61,22 @@ describe('useBlocks', () => {
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['blocks', 'me'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['stories'] });
     expect(loadConversations).toHaveBeenCalledWith(1);
+  });
+
+  it("a block takes the account's ads and requests out of every list at once (Guideline 1.2)", async () => {
+    const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+    const before = useBlocksVersion.getState().version;
+    const onBlocked = jest.fn();
+    const { result } = await renderHook(() => useBlockFlow(), { wrapper });
+    await act(async () => result.current.askToBlock({ identityId: 'co-1' }, 'شركة البنيان', onBlocked));
+    await act(async () => pressButton('حظر'));
+    await waitFor(() => expect(onBlocked).toHaveBeenCalled());
+
+    for (const key of ['homeProperties', 'searchResults', 'mapDiscover', 'favorites', 'property', 'companyRequests']) {
+      expect(invalidate).toHaveBeenCalledWith({ queryKey: [key] });
+    }
+    // The home feed, kept in state, reloads on this
+    expect(useBlocksVersion.getState().version).toBe(before + 1);
   });
 
   it('cancelling blocks nothing and says so to the caller', async () => {

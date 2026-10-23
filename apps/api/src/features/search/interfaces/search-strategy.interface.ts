@@ -15,5 +15,7 @@ export interface SearchStrategy {
     filters: any,
     page: number,
     limit: number,
+    // The signed-in caller: accounts blocked either way are left out
+    viewerUserId?: string,
   ): Promise<PaginatedResult<any>>;
 }

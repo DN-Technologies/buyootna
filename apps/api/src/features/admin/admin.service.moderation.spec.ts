@@ -3,7 +3,8 @@ import { setupAdminService } from './admin.service.harness';
 
 describe('AdminService facade: reports and moderated listings', () => {
   const harness = setupAdminService();
-  const { adminReportsService, adminPropertiesService } = harness;
+  const { adminReportsService, adminPropertiesService, adminUsersService } =
+    harness;
   let service: AdminService;
   beforeEach(() => {
     service = harness.service;
@@ -18,6 +19,42 @@ describe('AdminService facade: reports and moderated listings', () => {
 
     expect(adminReportsService.getReports).toHaveBeenCalledWith(filters);
     expect(result).toBe(mockResult);
+  });
+
+  it('enforceReport removes the content, suspends its author and resolves the report (Guideline 1.2)', async () => {
+    adminReportsService.removeReportedContent.mockResolvedValue({
+      targetUserId: 'user-2',
+      removed: 'PROPERTY',
+    });
+    adminReportsService.updateReport.mockResolvedValue({ id: 'rep-1' });
+
+    await expect(service.enforceReport('rep-1', 'admin-1')).resolves.toEqual({
+      id: 'rep-1',
+    });
+    expect(adminReportsService.removeReportedContent).toHaveBeenCalledWith(
+      'rep-1',
+      'admin-1',
+    );
+    expect(adminUsersService.updateUserStatus).toHaveBeenCalledWith(
+      'user-2',
+      { status: 'suspended' },
+      'admin-1',
+    );
+    expect(adminReportsService.updateReport).toHaveBeenCalledWith(
+      'rep-1',
+      { status: 'RESOLVED' },
+      'admin-1',
+    );
+  });
+
+  it('enforceReport with no account on the report only removes and resolves', async () => {
+    adminReportsService.removeReportedContent.mockResolvedValue({
+      targetUserId: null,
+      removed: null,
+    });
+    await service.enforceReport('rep-1', 'admin-1');
+    expect(adminUsersService.updateUserStatus).not.toHaveBeenCalled();
+    expect(adminReportsService.updateReport).toHaveBeenCalled();
   });
 
   it('delegates getReportById to AdminReportsService', async () => {

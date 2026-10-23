@@ -16,6 +16,7 @@ export class StandardSearchStrategy implements SearchStrategy {
     filters: StandardFilterDto & { type: string },
     page: number,
     limit: number,
+    viewerUserId?: string,
   ): Promise<PaginatedResult<any>> {
     const skip = (page - 1) * limit;
 
@@ -70,7 +71,7 @@ export class StandardSearchStrategy implements SearchStrategy {
     // 6. Execute Query & Count concurrently
     const [data, total] = await Promise.all([
       this.prisma.property.findMany({
-        where: withPublicListing(where),
+        where: withPublicListing(where, viewerUserId),
         skip,
         take: limit,
         orderBy: { publishedAt: { sort: 'desc', nulls: 'last' } },
@@ -86,7 +87,9 @@ export class StandardSearchStrategy implements SearchStrategy {
           area: true,
         }, // Include relations
       }),
-      this.prisma.property.count({ where: withPublicListing(where) }),
+      this.prisma.property.count({
+        where: withPublicListing(where, viewerUserId),
+      }),
     ]);
 
     return {

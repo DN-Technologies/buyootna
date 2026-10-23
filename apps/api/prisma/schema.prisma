@@ -26,6 +26,11 @@ model User {
   suspendedUntil DateTime?
   isAdmin    Boolean @default(false)
 
+  // The terms of use (EULA) this account last agreed to at sign-in or
+  // sign-up (Guideline 1.2), and when
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   // Set on every successful password change; JwtStrategy rejects legacy
   // no-sid tokens issued before this moment.
   passwordChangedAt DateTime?
@@ -410,6 +415,7 @@ model Review {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
   reactions ReviewReaction[]
+  reports   Report[]
 
   // New identity-based relations
   reviewerIdentityId String?

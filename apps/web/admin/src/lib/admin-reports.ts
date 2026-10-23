@@ -31,6 +31,12 @@ export interface AdminReportRow {
   submittedBy: AdminReportUserSummary | null
   against: AdminReportUserSummary | null
   assignedAdmin: AdminReportAssignedAdmin | null
+  // The listing, review or story reported (null for an account alone)
+  content: {
+    kind: 'PROPERTY' | 'REVIEW' | 'STORY'
+    id: string | null
+    snapshot: Record<string, unknown> | null
+  } | null
   createdAt: string
   resolvedAt: string | null
 }
@@ -168,5 +174,15 @@ export interface AdminModerator {
 
 export async function fetchAssignableAdmins(): Promise<AdminModerator[]> {
   const res = await api.get('/admin/moderators')
+  return res.data
+}
+
+/**
+ * «حذف المحتوى وإيقاف الحساب» (App Store Guideline 1.2): removes the
+ * reported listing, review or story, suspends the account that posted it,
+ * and resolves the report.
+ */
+export async function enforceReport(id: string): Promise<AdminReportRow> {
+  const res = await api.post(`/admin/reports/${id}/enforce`)
   return res.data
 }

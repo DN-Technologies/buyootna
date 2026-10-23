@@ -21,6 +21,8 @@ interface ReportReviewDrawerProps {
   onClose: () => void
   onResolve: (id: string) => void
   onDismiss?: (id: string) => void
+  // «حذف المحتوى وإيقاف الحساب» (Guideline 1.2)
+  onEnforce?: (id: string) => void
 }
 
 const PRIORITY_BADGE_CONFIG: Record<
@@ -49,6 +51,7 @@ export function ReportReviewDrawer({
   isOpen,
   onClose,
   onResolve,
+  onEnforce,
 }: ReportReviewDrawerProps) {
   if (!isOpen || !report) return null
 
@@ -358,6 +361,22 @@ export function ReportReviewDrawer({
               </p>
             </div>
 
+            {report.contentLabel && (
+              <>
+                <div className="border-b border-[#ECECEC]" />
+                <div className="space-y-2">
+                  <span className="font-['Cairo'] font-medium text-[14px] text-[#6B6A6A] block">
+                    {report.contentLabel}
+                  </span>
+                  {report.contentText && (
+                    <p className="font-['Cairo'] font-medium text-[14px] text-[#111111] leading-relaxed whitespace-pre-wrap">
+                      {report.contentText}
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
+
             {report.attachments && report.attachments.length > 0 && (
               <>
                 <div className="border-b border-[#ECECEC]" />
@@ -387,6 +406,22 @@ export function ReportReviewDrawer({
               </>
             )}
           </div>
+
+          {/* Remove the content and eject its author (Guideline 1.2) */}
+          {!isFinal && onEnforce && (
+            <div className="bg-white border-t border-[#ECECEC] px-5 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  onEnforce(report.id)
+                  onClose()
+                }}
+                className="w-full h-11.5 rounded-3xl bg-[#9C1E28] text-white font-['Cairo'] font-semibold text-[14px] hover:bg-[#7f1820] transition cursor-pointer"
+              >
+                حذف المحتوى وإيقاف الحساب
+              </button>
+            </div>
+          )}
 
           {/* Footer Actions */}
           <div className="bg-white border-t border-[#ECECEC] px-5 py-4 flex items-center gap-3">

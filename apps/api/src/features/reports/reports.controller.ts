@@ -1,4 +1,11 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -33,6 +40,50 @@ export class ReportsController {
       reqUser.userId,
       reqUser.identityId,
       targetUserId,
+      dto,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('properties/:propertyId/reports')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Report a listing (إبلاغ عن الإعلان): a PROPERTY report against it and its owner; repeating while the first is pending returns it',
+  })
+  @ApiParam({ name: 'propertyId', description: 'Property ID' })
+  @ApiResponse({ status: 201, type: CreateReportResponseDto })
+  @ApiCommonErrors()
+  reportProperty(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('propertyId', ParseUUIDPipe) propertyId: string,
+    @Body() dto: CreateReportDto,
+  ) {
+    return this.reportsService.createForProperty(
+      { userId: reqUser.userId, identityId: reqUser.identityId },
+      propertyId,
+      dto,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('reviews/:reviewId/reports')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Report a review: a report against its author, linked to the review; repeating while the first is pending returns it',
+  })
+  @ApiParam({ name: 'reviewId', description: 'Review ID' })
+  @ApiResponse({ status: 201, type: CreateReportResponseDto })
+  @ApiCommonErrors()
+  reportReview(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('reviewId', ParseUUIDPipe) reviewId: string,
+    @Body() dto: CreateReportDto,
+  ) {
+    return this.reportsService.createForReview(
+      { userId: reqUser.userId, identityId: reqUser.identityId },
+      reviewId,
       dto,
     );
   }

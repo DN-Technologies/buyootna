@@ -15,6 +15,7 @@ import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import { AccountType } from '@/types';
 
+import { requireTermsAccepted } from '../terms';
 import { loginAs } from '../utils/loginAs';
 import { useSocialAuth } from './useSocialAuth';
 
@@ -61,6 +62,7 @@ export function useIndividualAuth() {
 
   // Signs in to the individual persona of the account (فرد picked above)
   const onLogin = async (data: LoginFormValues & { rememberMe: boolean }) => {
+    if (!requireTermsAccepted()) return;
     setIsFormLoading(true);
     try {
       await loginAs(
@@ -74,6 +76,7 @@ export function useIndividualAuth() {
   };
 
   const onSignup = async (data: SignupFormValues) => {
+    if (!requireTermsAccepted()) return;
     setIsFormLoading(true);
     try {
       await apiClient.post('/users/register/individual', {
@@ -107,10 +110,13 @@ export function useIndividualAuth() {
         ? await apiClient.post('/auth/register/verify-otp', {
             phone: signupIdentifier,
             otp,
+            // Ticked before the signup form was sent
+            acceptTerms: true,
           })
         : await apiClient.post('/auth/register/verify-email-otp', {
             email: signupIdentifier,
             otp,
+            acceptTerms: true,
           });
 
       // Save token to Secure Store and update global state
