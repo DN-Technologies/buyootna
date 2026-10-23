@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersProfileService } from '../users-profile.service';
@@ -45,6 +45,9 @@ describe('UsersProfileService', () => {
           identityId: 'identity-1',
         }),
         delete: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({ id: 'project-1' }),
+        updateMany: jest.fn().mockResolvedValue({ count: 2 }),
+        deleteMany: jest.fn().mockResolvedValue({ count: 2 }),
       },
     };
 
@@ -333,6 +336,67 @@ describe('UsersProfileService', () => {
       expect(prisma.companyProject.delete).toHaveBeenCalledWith({
         where: { id: 'project-1' },
       });
+    });
+  });
+
+  describe('editing, hiding and deleting all (معرض الأعمال)', () => {
+    it('edits only the fields sent, including حالة ظهور المشروع', async () => {
+      await service.updateMyProject('user-1', 'project-1', {
+        title: 'فيلا المطلاع',
+        isHidden: true,
+      });
+      expect(prisma.companyProject.update).toHaveBeenCalledWith({
+        where: { id: 'project-1' },
+        data: { title: 'فيلا المطلاع', isHidden: true },
+      });
+    });
+
+    it("refuses another company's project with 404", async () => {
+      prisma.companyProject.findUnique.mockResolvedValue({
+        id: 'project-1',
+        identityId: 'someone-elses-identity',
+      });
+      await expect(
+        service.updateMyProject('user-1', 'project-1', { isHidden: true }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(prisma.companyProject.update).not.toHaveBeenCalled();
+    });
+
+    it('refuses a banned word in the title or description (Guideline 1.2)', async () => {
+      await expect(
+        service.updateMyProject('user-1', 'project-1', {
+          description: 'تشطيب قحبة',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(prisma.companyProject.update).not.toHaveBeenCalled();
+    });
+
+    it('hides or shows every project of the caller company', async () => {
+      await expect(
+        service.setAllMyProjectsHidden('user-1', true),
+      ).resolves.toEqual({ success: true, updated: 2 });
+      expect(prisma.companyProject.updateMany).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { isHidden: true },
+      });
+    });
+
+    it('deletes every project of the caller company only', async () => {
+      await expect(service.deleteAllMyProjects('user-1')).resolves.toEqual({
+        success: true,
+        deleted: 2,
+      });
+      expect(prisma.companyProject.deleteMany).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+      });
+    });
+
+    it('an account with no company has nothing to hide or delete', async () => {
+      prisma.identity.findFirst.mockResolvedValue(null);
+      await expect(
+        service.deleteAllMyProjects('user-1'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(prisma.companyProject.deleteMany).not.toHaveBeenCalled();
     });
   });
 });

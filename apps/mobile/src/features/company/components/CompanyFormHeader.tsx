@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BackChevronIcon } from '@/assets/icons/activity';
@@ -5,6 +6,8 @@ import { BackChevronIcon } from '@/assets/icons/activity';
 interface CompanyFormHeaderProps {
   title: string;
   onBack: () => void;
+  // On the left, in place of the blank (e.g. معرض الأعمال's ⋮)
+  trailing?: ReactNode;
 }
 
 // Figma "pages title" of the company "+" flows: back on the right, the
@@ -12,6 +15,7 @@ interface CompanyFormHeaderProps {
 export default function CompanyFormHeader({
   title,
   onBack,
+  trailing,
 }: CompanyFormHeaderProps) {
   return (
     <View className="h-[52px] flex-row items-center justify-between px-4 py-[6px]">
@@ -35,7 +39,7 @@ export default function CompanyFormHeader({
         {title}
       </Text>
 
-      <View className="h-8 w-8" />
+      {trailing ?? <View className="h-8 w-8" />}
     </View>
   );
 }

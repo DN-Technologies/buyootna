@@ -13,6 +13,7 @@ import {
 } from '../../../core/validators/name.regex';
 import { StorageService } from 'src/core/storage/storage.service';
 import { CreateProjectDto } from '../../company/dto/create-project.dto';
+import { UpdateProjectDto } from '../../company/dto/update-project.dto';
 import { assertActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
@@ -233,6 +234,7 @@ export class UsersProfileService {
       throw new NotFoundException('الملف الشخصي للشركة غير موجود');
     }
     await assertActiveCompanySubscription(this.prisma, identity.id);
+    assertCleanContent(dto.title, dto.description);
 
     const project = await this.prisma.companyProject.create({
       data: {
@@ -262,22 +264,73 @@ export class UsersProfileService {
   }
 
   async deleteMyProject(userId: string, projectId: string) {
+    await this.findMyProject(userId, projectId);
+    await this.prisma.companyProject.delete({ where: { id: projectId } });
+    return { success: true, message: 'تم حذف المشروع بنجاح' };
+  }
+
+  /**
+   * تعديل المشروع: its text, photos and حالة ظهور المشروع. No subscription
+   * needed, as for hiding and deleting (only adding a project needs one).
+   */
+  async updateMyProject(
+    userId: string,
+    projectId: string,
+    dto: UpdateProjectDto,
+  ) {
+    await this.findMyProject(userId, projectId);
+    assertCleanContent(dto.title, dto.description);
+    const project = await this.prisma.companyProject.update({
+      where: { id: projectId },
+      data: {
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.images !== undefined && { images: dto.images }),
+        ...(dto.isHidden !== undefined && { isHidden: dto.isHidden }),
+      },
+    });
+    return { success: true, project };
+  }
+
+  /** اخفاء / اظهار جميع المشاريع of the caller's company. */
+  async setAllMyProjectsHidden(userId: string, isHidden: boolean) {
+    const identityId = await this.myCompanyIdentityId(userId);
+    const { count } = await this.prisma.companyProject.updateMany({
+      where: { identityId },
+      data: { isHidden },
+    });
+    return { success: true, updated: count };
+  }
+
+  /** حذف الكل: every project of the caller's company. */
+  async deleteAllMyProjects(userId: string) {
+    const identityId = await this.myCompanyIdentityId(userId);
+    const { count } = await this.prisma.companyProject.deleteMany({
+      where: { identityId },
+    });
+    return { success: true, deleted: count };
+  }
+
+  private async myCompanyIdentityId(userId: string): Promise<string> {
     const identity = await this.prisma.identity.findFirst({
       where: { userId, type: 'COMPANY' },
     });
     if (!identity) {
       throw new NotFoundException('الملف الشخصي للشركة غير موجود');
     }
+    return identity.id;
+  }
 
+  // One of the caller's company projects; another company's is the same 404
+  private async findMyProject(userId: string, projectId: string) {
+    const identityId = await this.myCompanyIdentityId(userId);
     const project = await this.prisma.companyProject.findUnique({
       where: { id: projectId },
     });
-    if (!project || project.identityId !== identity.id) {
+    if (!project || project.identityId !== identityId) {
       throw new NotFoundException('المشروع غير موجود');
     }
-
-    await this.prisma.companyProject.delete({ where: { id: projectId } });
-    return { success: true, message: 'تم حذف المشروع بنجاح' };
+    return project;
   }
 
   async deleteAccount(userId: string) {

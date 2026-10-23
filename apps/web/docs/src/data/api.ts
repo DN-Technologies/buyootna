@@ -9,6 +9,41 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-projects-edit-hide",
+      title: {
+        en: "Portfolio projects: edit, hide from the public profile, hide or delete all",
+        ar: "مشاريع معرض الأعمال: التعديل، والإخفاء من الملف العام، وإخفاء الكل أو حذفه",
+      },
+      priority: "P2",
+      story: {
+        en: "CompanyProject has isHidden (migration 20261023180000_company_project_hidden; existing projects stay visible). PATCH /users/profile/projects/:id edits a project of the caller's company: any of title, description (each up to 100 characters), images (1–3 URLs) and isHidden; another company's project is 404. PATCH /users/profile/projects { isHidden } hides or shows all of them ({ updated }), and DELETE /users/profile/projects deletes them all ({ deleted }). None of these needs an active subscription (adding a project still does). Title and description go through the banned-words filter on create and edit (400 OBJECTIONABLE_CONTENT). GET /users/profile/projects now returns isHidden, and the company's public profile (GET /users/company/:id) leaves hidden projects out; the admin view still lists them all.",
+        ar: "أصبح لـ CompanyProject الحقل isHidden (الترحيل 20261023180000_company_project_hidden؛ والمشاريع الحالية تبقى ظاهرة). PATCH /users/profile/projects/:id يعدّل مشروعاً لشركة الطالب: أياً من العنوان والوصف (كل منهما حتى 100 حرف) والصور (من 1 إلى 3 روابط) وisHidden؛ ومشروع شركة أخرى ← 404. وPATCH /users/profile/projects { isHidden } يخفي جميع المشاريع أو يظهرها ({ updated })، وDELETE /users/profile/projects يحذفها كلها ({ deleted }). ولا يحتاج أي منها إلى اشتراك فعّال (إضافة مشروع ما زالت تحتاجه). ويمر العنوان والوصف بمرشّح الألفاظ المسيئة عند الإضافة والتعديل (400 OBJECTIONABLE_CONTENT). ويعيد GET /users/profile/projects الآن isHidden، ويستبعد الملف العام للشركة (GET /users/company/:id) المشاريع المخفية؛ وما زالت لوحة الإدارة تعرضها كلها.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Editing a project's title, description or photos saves only what was sent.",
+          "A hidden project stays on the company's own list but not on its public profile; showing it brings it back.",
+          "Hide all, show all and delete all touch only the caller's company.",
+          "Editing another company's project is refused with 404.",
+        ],
+        ar: [
+          "تعديل عنوان المشروع أو وصفه أو صوره يحفظ ما أُرسل فقط.",
+          "المشروع المخفي يبقى في قائمة الشركة لكنه لا يظهر في ملفها العام؛ وإظهاره يعيده.",
+          "إخفاء الكل وإظهار الكل وحذف الكل لا تمس إلا شركة الطالب.",
+          "تعديل مشروع شركة أخرى يُرفض بـ 404.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: hide a project in the app, open the company's public profile from another account → it's not in معرض الأعمال; show it again → it's back.",
+        ],
+        ar: [
+          "كشركة: أخفِ مشروعاً من التطبيق، وافتح الملف العام للشركة من حساب آخر ← لا يظهر في معرض الأعمال؛ وأظهره من جديد ← يعود.",
+        ],
+      },
+      updatedIn: "feat/company-portfolio-figma",
+    },
+    {
       id: "api-ugc-safeguards",
       title: {
         en: "User-generated content safeguards (App Store Guideline 1.2): terms at sign-in, a banned-words filter, reporting listings and reviews, blocks reported to moderators, and a 24-hour enforce action",

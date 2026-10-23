@@ -9,6 +9,43 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-portfolio",
+      title: {
+        en: "More › معرض الأعمال from Figma: search, sort, hide or delete all, and editing a project",
+        ar: "المزيد › معرض الأعمال من التصميم: البحث والترتيب وإخفاء الكل أو حذفه وتعديل المشروع",
+      },
+      priority: "P2",
+      story: {
+        en: "More › معرض الأعمال (Figma 4410:169500) lists the company's projects as cards: a photo carousel with dots, «مخفي» on a hidden one, the title, how long ago it was added, the description and «تعديل». The search field filters by title and description and shows «N نتائج بحث»; the sort button opens «الترتيب حسب» (الكل, الأحدث أولاً, الأقدم أولاً). No projects shows «لا توجد مشاريع في معرضك حاليا» with «إضافة مشروع»; no matches shows «لا توجد أي مشاريع مطابقة للبحث». ⋮ offers «اخفاء جميع المشاريع» (after a confirmation; «اظهار جميع المشاريع» once all are hidden) and «حذف الكل» (after a confirmation). «تعديل» opens the project (Figma 8464:26503): the «حالة ظهور المشروع» switch, title, description (100 characters at most), up to 3 photos (each can be removed or replaced, plus «اضافة صورة»), «تاريخ الانشاء», and «حذف المشروع نهائيا» after a confirmation. «حفظ التغييرات» is greyed out until something changes. Saving a change of visibility goes back to the list with «تم اخفاء المشروع بنجاح.» or «أصبح المشروع ظاهر للعملاء.» and «تراجع», which undoes it; hiding all shows the same kind of message.",
+        ar: "يعرض المزيد › معرض الأعمال (التصميم 4410:169500) مشاريع الشركة كبطاقات: صور تُقلَّب مع نقاط، و«مخفي» على المشروع المخفي، والعنوان، ومنذ متى أُضيف، والوصف، و«تعديل». ويصفّي حقل البحث بالعنوان والوصف ويعرض «N نتائج بحث»؛ ويفتح زر الترتيب «الترتيب حسب» (الكل، الأحدث أولاً، الأقدم أولاً). ومن دون مشاريع تظهر «لا توجد مشاريع في معرضك حاليا» مع «إضافة مشروع»؛ ومن دون نتائج تظهر «لا توجد أي مشاريع مطابقة للبحث». وتعرض ⋮ «اخفاء جميع المشاريع» (بعد التأكيد؛ و«اظهار جميع المشاريع» إن كانت كلها مخفية) و«حذف الكل» (بعد التأكيد). ويفتح «تعديل» المشروع (التصميم 8464:26503): مفتاح «حالة ظهور المشروع»، والعنوان، والوصف (100 حرف على الأكثر)، وحتى 3 صور (لكل صورة حذف أو تبديل، مع «اضافة صورة»)، و«تاريخ الانشاء»، و«حذف المشروع نهائيا» بعد التأكيد. ويبقى «حفظ التغييرات» رمادياً حتى يتغير شيء. وحفظ تغيير الظهور يعود إلى القائمة مع «تم اخفاء المشروع بنجاح.» أو «أصبح المشروع ظاهر للعملاء.» و«تراجع» الذي يلغيه؛ وإخفاء الكل يعرض رسالة مماثلة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The list matches Figma; a hidden project shows «مخفي».",
+          "Search and the three sort options work, with the count and both empty states.",
+          "Hide all / show all and delete all ask first and update the list.",
+          "Edit: save is disabled until a change; photos can be removed, replaced and added up to 3; delete asks first.",
+          "Hiding or showing a project shows the toast, and «تراجع» undoes it.",
+        ],
+        ar: [
+          "تطابق القائمة التصميم؛ ويظهر «مخفي» على المشروع المخفي.",
+          "يعمل البحث وخيارات الترتيب الثلاثة، مع العدد وحالتي القائمة الفارغة.",
+          "إخفاء الكل وإظهاره وحذف الكل تسأل أولاً وتحدّث القائمة.",
+          "التعديل: الحفظ معطل حتى يتغير شيء؛ والصور تُحذف وتُبدّل ويُضاف حتى 3؛ والحذف يسأل أولاً.",
+          "إخفاء المشروع أو إظهاره يعرض الرسالة، و«تراجع» يلغيه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a subscribed company with two projects: search one; sort oldest first; edit one (title and a photo) and save; switch it off and save → «تم اخفاء المشروع بنجاح.» → «تراجع»; ⋮ › اخفاء جميع المشاريع › confirm; ⋮ › حذف الكل › confirm → the empty state.",
+        ],
+        ar: [
+          "كشركة مشتركة لديها مشروعان: ابحث عن أحدهما؛ ورتّب الأقدم أولاً؛ وعدّل أحدهما (العنوان وصورة) واحفظ؛ وأطفئ ظهوره واحفظ ← «تم اخفاء المشروع بنجاح.» ← «تراجع»؛ و⋮ › اخفاء جميع المشاريع › التأكيد؛ و⋮ › حذف الكل › التأكيد ← القائمة الفارغة.",
+        ],
+      },
+      updatedIn: "feat/company-portfolio-figma",
+    },
+    {
       id: "mobile-company-request-card-tag-clipped",
       title: {
         en: "Home request cards: the «مناسبة لك» tag shows in full",

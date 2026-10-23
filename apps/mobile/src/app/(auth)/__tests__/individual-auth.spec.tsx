@@ -3,11 +3,10 @@ import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { router } from 'expo-router';
 
+import { useTermsAgreement } from '@/features/auth/terms';
 import apiClient from '@/shared/api/api';
 import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-
-import { useTermsAgreement } from '@/features/auth/terms';
 
 import IndividualAuthScreen from '../individual-auth';
 

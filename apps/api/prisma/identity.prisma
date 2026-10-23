@@ -156,6 +156,9 @@ model CompanyProject {
   title       String
   description String
   images      String[] @default([])
+  // حالة ظهور المشروع: hidden from the public profile, kept on the company's
+  // own list
+  isHidden    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

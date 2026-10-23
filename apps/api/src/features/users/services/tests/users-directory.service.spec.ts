@@ -201,6 +201,15 @@ describe('UsersDirectoryService', () => {
         images: ['https://cdn/a.jpg', 'https://cdn/b.jpg'],
       });
     });
+
+    it('asks only for visible projects (a hidden one stays off the public profile)', async () => {
+      prisma.identity.findFirst.mockResolvedValue(null);
+      await service.findCompanyDetails('c1').catch(() => undefined);
+      const args = prisma.identity.findFirst.mock.calls[0][0] as {
+        include: { projects: { where: unknown } };
+      };
+      expect(args.include.projects.where).toEqual({ isHidden: false });
+    });
   });
 
   describe('findOfficeDetails listings', () => {
