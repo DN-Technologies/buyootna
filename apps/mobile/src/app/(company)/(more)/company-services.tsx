@@ -1,5 +1,5 @@
-import { MyServicesScreen } from '@/features/company/components/manage';
+import { ServicesScreen } from '@/features/company/components/services';
 
 export default function CompanyServicesPage() {
-  return <MyServicesScreen />;
+  return <ServicesScreen />;
 }

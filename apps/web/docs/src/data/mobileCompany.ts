@@ -9,6 +9,43 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-services",
+      title: {
+        en: "More › الخدمات from Figma: sub-service switches, edit, add a sub-service, hide or delete the service",
+        ar: "المزيد › الخدمات من التصميم: مفاتيح الخدمات الفرعية، والتعديل، وإضافة خدمة فرعية، وإخفاء الخدمة أو حذفها",
+      },
+      priority: "P2",
+      story: {
+        en: "More › الخدمات (Figma 4410:169834) shows the specialty with its description, then «الخدمات الفرعية», each with a switch: turning one off hides it at once (greyed) with «تم اخفاء الخدمة بنجاح.» and «تراجع»; turning it on shows «أصبحت الخدمة ظاهرة للعملاء.». ⋮ offers «اخفاء الخدمة» («اظهار الخدمة» when hidden; the card then shows «مخفية») and «حذف الخدمة نهائيا» after a confirmation, which clears the specialty and leads to «لا توجد خدمات بعد» with «إضافة خدمة». «اضافة خدمة فرعية» opens a sheet: «نوع الخدمة» opens «اختر الخدمة الفرعية» (الكل, the specialty's types with the ones already added ticked and greyed, and اخرى), and «اخرى» needs «عنوان الخدمة». «تعديل» opens «تعديل الخدمة» (Figma 4410:170024): the whole service's switch, the sub-services (collapsible to «N خدمات نشطة M خدمات مخفية»), each with its switch and a trash that deletes it after «حذف خدمة …؟», «اضافة خدمة فرعية», «الوصف» and «تاريخ الانشاء»; «حفظ التغييرات» is enabled once something changed. In إضافة خدمة, a locked «التخصص» now shows a padlock.",
+        ar: "يعرض المزيد › الخدمات (التصميم 4410:169834) التخصص مع وصفه، ثم «الخدمات الفرعية»، ولكل منها مفتاح: إطفاؤه يخفيها فوراً (رمادية) مع «تم اخفاء الخدمة بنجاح.» و«تراجع»؛ وتشغيله يعرض «أصبحت الخدمة ظاهرة للعملاء.». وتعرض ⋮ «اخفاء الخدمة» («اظهار الخدمة» إن كانت مخفية؛ وتعرض البطاقة حينها «مخفية») و«حذف الخدمة نهائيا» بعد التأكيد، الذي يمسح التخصص ويؤدي إلى «لا توجد خدمات بعد» مع «إضافة خدمة». و«اضافة خدمة فرعية» تفتح نافذة: «نوع الخدمة» يفتح «اختر الخدمة الفرعية» (الكل، وأنواع التخصص مع المضاف منها محدداً ورمادياً، واخرى)، و«اخرى» تحتاج «عنوان الخدمة». و«تعديل» يفتح «تعديل الخدمة» (التصميم 4410:170024): مفتاح الخدمة كلها، والخدمات الفرعية (تُطوى إلى «N خدمات نشطة M خدمات مخفية»)، ولكل منها مفتاح وسلة تحذفها بعد «حذف خدمة …؟»، و«اضافة خدمة فرعية» و«الوصف» و«تاريخ الانشاء»؛ ويُفعَّل «حفظ التغييرات» حين يتغير شيء. وفي إضافة خدمة، يعرض «التخصص» المقفل الآن قفلاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The list and edit screens match Figma; switches show the right state.",
+          "A list switch hides/shows at once with the toast; «تراجع» reverts it.",
+          "Edit saves only changes; collapsing shows the summary; the trash deletes after confirming.",
+          "Adding a sub-service greys the taken types; «اخرى» needs a title.",
+          "Deleting the service leads to the empty state, and a new specialty can be picked.",
+        ],
+        ar: [
+          "تطابق القائمة وشاشة التعديل التصميم؛ وتعرض المفاتيح الحالة الصحيحة.",
+          "مفتاح القائمة يخفي أو يظهر فوراً مع الرسالة؛ و«تراجع» يعيده.",
+          "التعديل يحفظ التغييرات فقط؛ والطي يعرض الملخص؛ والسلة تحذف بعد التأكيد.",
+          "إضافة خدمة فرعية تجعل الأنواع المضافة رمادية؛ و«اخرى» تحتاج عنواناً.",
+          "حذف الخدمة يؤدي إلى القائمة الفارغة، ويمكن اختيار تخصص جديد.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a subscribed company with 3 sub-services: switch one off → toast → «تراجع»; تعديل › hide another and change the description › حفظ التغييرات; اضافة خدمة فرعية › pick a free type › اضافة; ⋮ › حذف الخدمة نهائيا › confirm → empty state → إضافة خدمة with another specialty.",
+        ],
+        ar: [
+          "كشركة مشتركة لديها 3 خدمات فرعية: أطفئ إحداها ← الرسالة ← «تراجع»؛ تعديل › أخفِ أخرى وغيّر الوصف › حفظ التغييرات؛ اضافة خدمة فرعية › اختر نوعاً متاحاً › اضافة؛ ⋮ › حذف الخدمة نهائيا › التأكيد ← القائمة الفارغة ← إضافة خدمة بتخصص آخر.",
+        ],
+      },
+      updatedIn: "feat/company-services-figma",
+    },
+    {
       id: "mobile-company-portfolio",
       title: {
         en: "More › معرض الأعمال from Figma: search, sort, hide or delete all, and editing a project",

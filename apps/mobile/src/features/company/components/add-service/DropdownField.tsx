@@ -1,3 +1,4 @@
+import { Image } from 'expo-image';
 import type { ReactNode } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
@@ -10,7 +11,7 @@ interface DropdownFieldProps {
   value: string;
   isOpen: boolean;
   onToggle: () => void;
-  // A locked field shows its value greyed, with no chevron (Figma 8455:24216)
+  // A locked field shows its value greyed, with a padlock (Figma 8461:26357)
   locked?: boolean;
   children: ReactNode;
 }
@@ -57,7 +58,15 @@ export default function DropdownField({
         >
           {value || placeholder}
         </Text>
-        {!locked && (
+        {locked ? (
+          // Figma 8461:26357: a padlock where the chevron was
+          <Image
+            testID={`${testID}-locked`}
+            source={require('@/assets/icons/services/lock.svg')}
+            style={{ width: 18, height: 18 }}
+            contentFit="contain"
+          />
+        ) : (
           <View style={isOpen ? { transform: [{ rotate: '180deg' }] } : null}>
             <ChevronDownIcon />
           </View>

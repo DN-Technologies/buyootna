@@ -1,7 +1,14 @@
-import { ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
-import { CompanyServicesService } from '../company-services.service';
+import {
+  CompanyServicesService,
+  legacyServicesText,
+} from '../company-services.service';
 
 import * as subscriptionRules from 'src/features/company-subscriptions/company-subscription.rules';
 // The subscription gate has its own spec; here every company is subscribed
@@ -26,17 +33,27 @@ describe('CompanyServicesService', () => {
       findUnique: jest.Mock;
       createMany: jest.Mock;
       delete: jest.Mock;
+      update: jest.Mock;
+      updateMany: jest.Mock;
+      deleteMany: jest.Mock;
+      count: jest.Mock;
     };
-    companyIdentityData: { update: jest.Mock };
+    companyIdentityData: { update: jest.Mock; findUnique: jest.Mock };
     $transaction: jest.Mock;
   };
 
   const company = (data: {
     specialty?: string | null;
     services?: string | null;
+    servicesHidden?: boolean;
   }) => ({
     id: 'identity-1',
-    companyData: { specialty: null, services: null, ...data },
+    companyData: {
+      specialty: null,
+      services: null,
+      servicesHidden: false,
+      ...data,
+    },
   });
 
   beforeEach(async () => {
@@ -47,8 +64,15 @@ describe('CompanyServicesService', () => {
         findUnique: jest.fn(),
         createMany: jest.fn((args: unknown) => args),
         delete: jest.fn((args: unknown) => args),
+        update: jest.fn((args: unknown) => args),
+        updateMany: jest.fn((args: unknown) => args),
+        deleteMany: jest.fn().mockResolvedValue({ count: 3 }),
+        count: jest.fn(),
       },
-      companyIdentityData: { update: jest.fn((args: unknown) => args) },
+      companyIdentityData: {
+        update: jest.fn((args: unknown) => args),
+        findUnique: jest.fn().mockResolvedValue({ services: null }),
+      },
       $transaction: jest.fn((ops: unknown[]) => Promise.resolve(ops)),
     };
 
@@ -186,11 +210,18 @@ describe('CompanyServicesService', () => {
       prisma.identity.findFirst.mockResolvedValue(
         company({ specialty: 'مكتب هندسي' }),
       );
-      prisma.companyService.findMany.mockResolvedValue([{ id: 's-1' }]);
+      const rows = [
+        { id: 's-2', description: 'تنفيذ', createdAt: new Date('2026-10-02') },
+        { id: 's-1', description: 'تنفيذ', createdAt: new Date('2026-10-01') },
+      ];
+      prisma.companyService.findMany.mockResolvedValue(rows);
 
       await expect(service.listMine('user-1')).resolves.toEqual({
         specialty: 'مكتب هندسي',
-        services: [{ id: 's-1' }],
+        servicesHidden: false,
+        description: 'تنفيذ',
+        createdAt: new Date('2026-10-01'),
+        services: rows,
       });
     });
   });
@@ -231,6 +262,117 @@ describe('CompanyServicesService', () => {
         NotFoundException,
       );
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('hiding (الخدمات)', () => {
+    const row = (id: string, type: string, isHidden = false) => ({
+      id,
+      identityId: 'identity-1',
+      type,
+      title: null,
+      isHidden,
+    });
+
+    it('legacyServicesText keeps hand-typed parts and lists the visible sub-services', () => {
+      expect(
+        legacyServicesText('تشطيب، مخطط معماري، تصميم الواجهات', [
+          row('s-1', 'مخطط معماري'),
+          row('s-2', 'تصميم الواجهات', true),
+        ]),
+      ).toBe('تشطيب، مخطط معماري');
+      expect(legacyServicesText(null, [row('s-1', 'مخطط', true)])).toBeNull();
+    });
+
+    it('hides one sub-service and takes its name out of the legacy text', async () => {
+      prisma.companyService.findUnique.mockResolvedValue(
+        row('s-2', 'تصميم الواجهات'),
+      );
+      prisma.companyService.findMany.mockResolvedValue([
+        row('s-1', 'مخطط معماري'),
+        row('s-2', 'تصميم الواجهات', true),
+      ]);
+      prisma.companyIdentityData.findUnique.mockResolvedValue({
+        services: 'مخطط معماري، تصميم الواجهات',
+      });
+
+      await service.setHidden('user-1', 's-2', true);
+      expect(prisma.companyService.update).toHaveBeenCalledWith({
+        where: { id: 's-2' },
+        data: { isHidden: true },
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenLastCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { services: 'مخطط معماري' },
+      });
+    });
+
+    it("refuses another company's sub-service", async () => {
+      prisma.companyService.findUnique.mockResolvedValue({
+        ...row('s-9', 'x'),
+        identityId: 'other',
+      });
+      await expect(
+        service.setHidden('user-1', 's-9', true),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('the edit save changes only what was sent', async () => {
+      prisma.companyService.count.mockResolvedValue(1);
+      await service.updateMine('user-1', {
+        servicesHidden: true,
+        rows: [{ id: 's-1', isHidden: true }],
+      });
+      expect(prisma.companyService.update).toHaveBeenCalledWith({
+        where: { id: 's-1' },
+        data: { isHidden: true },
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { servicesHidden: true },
+      });
+      expect(prisma.companyService.updateMany).not.toHaveBeenCalled();
+    });
+
+    it('the edit save puts the description on every row, through the filter', async () => {
+      await service.updateMine('user-1', { description: 'تنفيذ المشاريع' });
+      expect(prisma.companyService.updateMany).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { description: 'تنفيذ المشاريع' },
+      });
+      await expect(
+        service.updateMine('user-1', { description: 'خدمة قحبة' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it("refuses rows that aren't the company's", async () => {
+      prisma.companyService.count.mockResolvedValue(0);
+      await expect(
+        service.updateMine('user-1', { rows: [{ id: 's-9', isHidden: true }] }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('deleting the service removes every sub-service and clears the specialty', async () => {
+      prisma.identity.findFirst.mockResolvedValue(
+        company({
+          specialty: 'مكتب هندسي',
+          services: 'تشطيب، مخطط معماري',
+          servicesHidden: true,
+        }),
+      );
+      prisma.companyService.findMany.mockResolvedValue([
+        row('s-1', 'مخطط معماري'),
+      ]);
+      prisma.$transaction.mockResolvedValue([{ count: 1 }, {}]);
+
+      await expect(service.deleteAllMine('user-1')).resolves.toEqual({
+        success: true,
+        deleted: 1,
+      });
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-1' },
+        data: { specialty: null, servicesHidden: false, services: 'تشطيب' },
+      });
     });
   });
 });
