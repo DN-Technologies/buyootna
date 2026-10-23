@@ -49,7 +49,7 @@ export default function GoldSegment<T extends string>({
             numberOfLines={1}
             className={`${
               active ? 'font-cairo-bold' : 'font-cairo'
-            } text-[14px] leading-[22px] text-[#111111]`}
+            } text-[14px] leading-[24px] text-[#111111]`}
           >
             {labels.get(id)}
           </Text>
