@@ -29,6 +29,10 @@ import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateCompanyInvoiceDto } from './dto/create-company-invoice.dto';
 import { CreateCompanyServiceDto } from './dto/create-company-service.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
+import {
+  SetProjectsVisibilityDto,
+  UpdateProjectDto,
+} from './dto/update-project.dto';
 import { GetCompaniesFilterDto } from './dto/get-companies-filter.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import {
@@ -197,6 +201,54 @@ export class CompanyController {
     @Param('id') id: string,
   ) {
     return this.profileService.deleteMyProject(reqUser.userId, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile/projects/:id')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Edit one of the current user's portfolio projects: title, description, images, and hidden from the public profile",
+  })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiBody({ type: UpdateProjectDto })
+  @ApiCommonErrors()
+  async updateMyProject(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateProjectDto,
+  ) {
+    return this.profileService.updateMyProject(reqUser.userId, id, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile/projects')
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Hide (or show again) all of the current user's portfolio projects",
+  })
+  @ApiBody({ type: SetProjectsVisibilityDto })
+  @ApiCommonErrors()
+  async setAllMyProjectsHidden(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: SetProjectsVisibilityDto,
+  ) {
+    return this.profileService.setAllMyProjectsHidden(
+      reqUser.userId,
+      dto.isHidden,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('profile/projects')
+  @ApiAuth()
+  @ApiOperation({
+    summary: "Delete all of the current user's portfolio projects",
+  })
+  @ApiCommonErrors()
+  async deleteAllMyProjects(@CurrentUser() reqUser: RequestUser) {
+    return this.profileService.deleteAllMyProjects(reqUser.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -214,7 +214,9 @@ export class UsersDirectoryService {
             createdAt: true,
           },
         },
+        // A hidden project (حالة ظهور المشروع) stays off the public profile
         projects: {
+          where: { isHidden: false },
           orderBy: { createdAt: 'desc' as const },
         },
       },

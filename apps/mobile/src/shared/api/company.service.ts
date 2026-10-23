@@ -21,6 +21,17 @@ export interface MyCompanyProject {
   title: string;
   description: string;
   images: string[];
+  // حالة ظهور المشروع: hidden ones are off the public profile
+  isHidden: boolean;
+  createdAt: string;
+}
+
+// What تعديل المشروع can change
+export interface ProjectUpdate {
+  title?: string;
+  description?: string;
+  images?: string[];
+  isHidden?: boolean;
 }
 
 export const companyService = {
@@ -97,6 +108,37 @@ export const companyService = {
    */
   deleteProject: async (id: string): Promise<{ success: boolean }> => {
     const response = await apiClient.delete(`/users/profile/projects/${id}`);
+    return response.data;
+  },
+
+  /**
+   * Edits one of the current company's projects (text, photos, and
+   * حالة ظهور المشروع).
+   */
+  updateProject: async (
+    id: string,
+    patch: ProjectUpdate,
+  ): Promise<{ success: boolean; project: MyCompanyProject }> => {
+    const response = await apiClient.patch(
+      `/users/profile/projects/${id}`,
+      patch,
+    );
+    return response.data;
+  },
+
+  /** اخفاء / اظهار جميع المشاريع. */
+  setAllProjectsHidden: async (
+    isHidden: boolean,
+  ): Promise<{ success: boolean; updated: number }> => {
+    const response = await apiClient.patch('/users/profile/projects', {
+      isHidden,
+    });
+    return response.data;
+  },
+
+  /** حذف الكل: every project of the current company. */
+  deleteAllProjects: async (): Promise<{ success: boolean; deleted: number }> => {
+    const response = await apiClient.delete('/users/profile/projects');
     return response.data;
   },
 

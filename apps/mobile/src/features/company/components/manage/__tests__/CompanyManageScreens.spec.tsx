@@ -5,15 +5,12 @@ import { router } from 'expo-router';
 import { companyService } from '@/shared/api/company.service';
 import { showAlert } from '@/shared/utils/alert';
 
-import MyProjectsScreen from '../MyProjectsScreen';
 import MyServicesScreen from '../MyServicesScreen';
 
 jest.mock('@/shared/api/company.service', () => ({
   companyService: {
     getMyServices: jest.fn(),
     deleteService: jest.fn(),
-    getMyProjects: jest.fn(),
-    deleteProject: jest.fn(),
   },
 }));
 
@@ -127,38 +124,5 @@ describe('More › الخدمات', () => {
     expect(await findByTestId('manage-list-empty')).toBeTruthy();
     expect(getByText('لا توجد خدمات بعد')).toBeTruthy();
     expect(getByText('إضافة خدمة')).toBeTruthy();
-  });
-});
-
-describe('More › معرض الأعمال', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    api.getMyProjects.mockResolvedValue([
-      {
-        id: 'p1',
-        title: 'فيلا القرين',
-        description: 'تشطيب كامل',
-        images: ['https://cdn.example/p1.jpg'],
-      },
-    ]);
-    api.deleteProject.mockResolvedValue({ success: true });
-  });
-
-  it('lists the projects and opens the add form from the button', async () => {
-    const { findByText, getByText } = await renderScreen(<MyProjectsScreen />);
-    expect(await findByText('فيلا القرين')).toBeTruthy();
-    expect(getByText('تشطيب كامل')).toBeTruthy();
-    await fireEvent.press(getByText('إضافة مشروع'));
-    expect(router.push).toHaveBeenCalledWith('/add-project');
-  });
-
-  it('deletes a project after the confirmation', async () => {
-    const { findByText, getByTestId } = await renderScreen(
-      <MyProjectsScreen />,
-    );
-    await findByText('فيلا القرين');
-    await fireEvent.press(getByTestId('manage-delete-p1'));
-    await fireEvent.press(getByTestId('confirm-sheet-confirm'));
-    await waitFor(() => expect(api.deleteProject).toHaveBeenCalledWith('p1'));
   });
 });

@@ -1,5 +1,5 @@
-import { MyProjectsScreen } from '@/features/company/components/manage';
+import { PortfolioScreen } from '@/features/company/components/portfolio';
 
 export default function CompanyProjectsPage() {
-  return <MyProjectsScreen />;
+  return <PortfolioScreen />;
 }
