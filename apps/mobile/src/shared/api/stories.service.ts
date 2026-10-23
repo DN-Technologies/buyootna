@@ -7,6 +7,7 @@ import type {
   AuthorStory,
   MyStories,
   StoryAuthorStories,
+  StoryAuthorType,
   StoryFeedPage,
   StoryUploadRequest,
   StoryUploadSlot,
@@ -17,9 +18,13 @@ import apiClient from '@/shared/api/api';
 
 export const storiesService = {
   /** One page of the stories feed; pass the previous page's nextCursor. */
-  getFeed: async (cursor?: string): Promise<StoryFeedPage> => {
+  /** `type`: only companies («شركات») or offices («مكاتب عقارية») */
+  getFeed: async (
+    cursor?: string,
+    type?: StoryAuthorType,
+  ): Promise<StoryFeedPage> => {
     const response = await apiClient.get<StoryFeedPage>('/stories/feed', {
-      params: cursor ? { cursor } : {},
+      params: { ...(cursor ? { cursor } : {}), ...(type ? { type } : {}) },
     });
     return response.data;
   },

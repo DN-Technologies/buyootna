@@ -19,6 +19,7 @@ import {
   decodeFeedCursor,
   encodeFeedCursor,
   type FeedCursor,
+  type StoryFeedType,
 } from './utils/feed-cursor';
 
 export interface FeedViewer {
@@ -75,11 +76,13 @@ export class StoriesFeedService {
     now = new Date(),
   ): Promise<StoryFeedDto> {
     const limit = query.limit ?? STORY_FEED_DEFAULT_LIMIT;
-    const cursor = query.cursor ? decodeFeedCursor(query.cursor, now) : null;
+    const cursor = query.cursor
+      ? decodeFeedCursor(query.cursor, now, query.type)
+      : null;
     const snapshotAt = cursor?.snapshotAt ?? now;
 
     const ranked = await this.prisma.$queryRaw<FeedRankRow[]>(
-      rankQuery(viewer, snapshotAt, now, cursor, limit + 1),
+      rankQuery(viewer, snapshotAt, now, cursor, limit + 1, query.type),
     );
     const page = ranked.slice(0, limit);
     const last = page[page.length - 1];
@@ -90,6 +93,7 @@ export class StoriesFeedService {
             tier: last.tier,
             latest: new Date(last.latestIso),
             authorId: last.authorId,
+            type: query.type,
           })
         : null;
     if (page.length === 0) {
@@ -163,6 +167,7 @@ export class StoriesFeedService {
  * story published by the snapshot, owned by an account that is neither
  * disabled nor blocked, not the viewer's own account (none of its
  * profiles), and with no block either way between the two accounts.
+ * `type` keeps only companies or only offices.
  */
 export function rankQuery(
   viewer: FeedViewer,
@@ -170,6 +175,7 @@ export function rankQuery(
   now: Date,
   cursor: FeedCursor | null,
   take: number,
+  type?: StoryFeedType,
 ): Prisma.Sql {
   const after = cursor
     ? Prisma.sql`WHERE r.tier > ${cursor.tier}
@@ -177,6 +183,7 @@ export function rankQuery(
         OR (r.tier = ${cursor.tier} AND r.latest = ${utc(cursor.latest)}
             AND r."authorId" > ${cursor.authorId})`
     : Prisma.empty;
+  const ofType = type ? Prisma.sql`AND i.type::text = ${type}` : Prisma.empty;
 
   return Prisma.sql`
     WITH live AS (
@@ -195,6 +202,7 @@ export function rankQuery(
         AND u."isBlocked" = false
         AND ((i.type = 'COMPANY' AND c.status = 'APPROVED')
           OR (i.type = 'OFFICE' AND o.status = 'APPROVED'))
+        ${ofType}
     ),
     authors AS (
       SELECT l."identityId" AS "authorId",

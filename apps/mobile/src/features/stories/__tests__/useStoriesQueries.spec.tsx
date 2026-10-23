@@ -37,6 +37,8 @@ describe('storiesKeys', () => {
     expect(storiesKeys.feed('p1')).toEqual(['stories', 'p1', 'feed']);
     expect(storiesKeys.author('p1', 'a1')).toEqual(['stories', 'p1', 'author', 'a1']);
     expect(storiesKeys.feed('p1')).not.toEqual(storiesKeys.feed('p2'));
+    // «القصص»'s segments: one cache each, under the profile's feed
+    expect(storiesKeys.feed('p1', 'OFFICE')).toEqual(['stories', 'p1', 'feed', 'OFFICE']);
   });
 });
 
@@ -50,6 +52,10 @@ describe('useMarkStoryViewed', () => {
       authors: [feedAuthor('a1', [story('s1', true), story('s2', false)])],
     };
     client.setQueryData(storiesKeys.feed('p1'), { pages: [page], pageParams: [undefined] });
+    client.setQueryData(storiesKeys.feed('p1', 'COMPANY'), {
+      pages: [page],
+      pageParams: [undefined],
+    });
     // Another profile's cache stays untouched
     client.setQueryData(storiesKeys.feed('p2'), { pages: [page], pageParams: [undefined] });
 
@@ -62,6 +68,11 @@ describe('useMarkStoryViewed', () => {
     const mine = client.getQueryData<{ pages: StoryFeedPage[] }>(storiesKeys.feed('p1'));
     expect(mine?.pages[0].authors[0].stories.map((s) => s.viewed)).toEqual([true, true]);
     expect(mine?.pages[0].authors[0].hasUnseen).toBe(false);
+    // …and in every segment's feed
+    const companies = client.getQueryData<{ pages: StoryFeedPage[] }>(
+      storiesKeys.feed('p1', 'COMPANY'),
+    );
+    expect(companies?.pages[0].authors[0].hasUnseen).toBe(false);
 
     const other = client.getQueryData<{ pages: StoryFeedPage[] }>(storiesKeys.feed('p2'));
     expect(other?.pages[0].authors[0].hasUnseen).toBe(true);

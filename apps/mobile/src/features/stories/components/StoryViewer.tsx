@@ -17,6 +17,7 @@ import {
   type StoryViewerSourceKind,
   useStoryViewerSource,
 } from '../hooks/useStoryViewerSource';
+import type { StoryAuthorType } from '../types';
 import StoryFooter from './StoryFooter';
 import StoryHeader from './StoryHeader';
 import StoryMedia from './StoryMedia';
@@ -36,6 +37,8 @@ interface StoryViewerProps {
   // From the tray (swipe on to the next authors), one author's profile, or
   // the author's own stories
   source: StoryViewerSourceKind;
+  // Opened from a «القصص» segment: swipes stay in it
+  feedType?: StoryAuthorType;
 }
 
 /**
@@ -44,7 +47,11 @@ interface StoryViewerProps {
  * from useStoryViewerSource, what's on screen and its clock from
  * useStoryPlayback, and reply / report / delete from useStoryActions.
  */
-export default function StoryViewer({ authorId, source }: StoryViewerProps) {
+export default function StoryViewer({
+  authorId,
+  source,
+  feedType,
+}: StoryViewerProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   // The author looking at its own stories: views and delete, no reply,
@@ -68,7 +75,7 @@ export default function StoryViewer({ authorId, source }: StoryViewerProps) {
 
   const { askToBlock } = useBlockFlow();
 
-  const data = useStoryViewerSource(authorId, source);
+  const data = useStoryViewerSource(authorId, source, feedType);
   const playback = useStoryPlayback({
     authorId,
     authors: data.authors,

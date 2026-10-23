@@ -11,16 +11,16 @@ import {
 } from 'react-native';
 
 import type { HomeSort } from '@/features/individual/components/home/homeSort';
-import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { usePropertyPreviewSheet } from '@/features/individual/components/property-details-sheet/usePropertyPreviewSheet';
+import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
 import PropertyCard from '@/shared/components/property/PropertyCard';
 import PropertyListItem from '@/shared/components/property/PropertyListItem';
 import PropertyListSkeleton from '@/shared/components/skeletons/PropertyListSkeleton';
 import PropertySkeleton from '@/shared/components/skeletons/PropertySkeleton';
-import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { useResponsiveLayout } from '@/shared/hooks/device/useResponsiveLayout';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useFavorites } from '@/shared/hooks/properties/useFavorites';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import {
   formatTimeAgo,
@@ -190,9 +190,9 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
           data={data}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingBottom: scrollContentBottomPadding,
-            paddingTop: 10,
+            paddingTop: 12,
           }}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -268,9 +268,9 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
           ListHeaderComponent={ListHeaderComponent}
           ListEmptyComponent={renderEmptyComponent('list')}
           contentContainerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 16,
             paddingBottom: scrollContentBottomPadding,
-            paddingTop: 10,
+            paddingTop: 12,
           }}
           showsVerticalScrollIndicator={false}
           refreshControl={

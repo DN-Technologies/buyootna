@@ -7,24 +7,45 @@ import type { StoryAuthor } from '../types';
 interface StoryRingProps {
   author: StoryAuthor;
   hasUnseen: boolean;
+  // Some stories watched, new ones left: a dashed gold ring («القصص» list)
+  partial?: boolean;
+  // «القصص» list (Figma 9377:35314): a solid gold, thin ring
+  variant?: 'tray' | 'list';
   size?: number;
   onPress?: () => void;
   testID?: string;
 }
 
-/** A provider's avatar inside its story ring: gold while unseen, grey after. */
+const GOLD = '#C5A36D';
+const GREY = '#D7D7D7';
+
+/**
+ * A provider's avatar inside its story ring: gold while unseen, grey after.
+ * With `partial`, dashed gold while some are left to watch.
+ */
 export default function StoryRing({
   author,
   hasUnseen,
+  partial = false,
+  variant = 'tray',
   size = 64,
   onPress,
   testID,
 }: StoryRingProps) {
-  const inner = size - 6;
+  const isList = variant === 'list';
+  // The list's ring is 1/34 of the avatar, with a hairline white gap
+  const inner = isList ? size * 0.9412 : size - 6;
+  const ringState = !hasUnseen ? 'seen' : partial ? 'partial' : 'unseen';
   const avatar = (
     <View
-      className="items-center justify-center overflow-hidden rounded-full border-2 border-white bg-[#DEE3E8]"
-      style={{ width: inner, height: inner }}
+      className={`items-center justify-center overflow-hidden rounded-full border-white bg-[#DEE3E8] ${
+        isList ? '' : 'border-2'
+      }`}
+      style={{
+        width: inner,
+        height: inner,
+        ...(isList ? { borderWidth: size * 0.0147 } : {}),
+      }}
     >
       {author.logoUrl ? (
         <Image
@@ -49,7 +70,27 @@ export default function StoryRing({
       accessibilityLabel={`قصص ${author.name}`}
       accessibilityState={{ selected: hasUnseen }}
     >
-      {hasUnseen ? (
+      {ringState === 'partial' ? (
+        <View
+          testID={testID ? `${testID}-partial` : undefined}
+          className="items-center justify-center rounded-full border-2 border-dashed"
+          style={{ width: size, height: size, borderColor: GOLD }}
+        >
+          {avatar}
+        </View>
+      ) : isList ? (
+        <View
+          testID={testID ? `${testID}-${ringState}` : undefined}
+          className="items-center justify-center rounded-full"
+          style={{
+            width: size,
+            height: size,
+            backgroundColor: ringState === 'unseen' ? GOLD : GREY,
+          }}
+        >
+          {avatar}
+        </View>
+      ) : hasUnseen ? (
         <LinearGradient
           testID={testID ? `${testID}-unseen` : undefined}
           colors={['#FFD084', '#B28648']}

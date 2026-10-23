@@ -270,6 +270,45 @@ export const api: DocSection = {
       updatedIn: "feat/stories-phase2",
     },
     {
+      id: "api-stories-feed-segments",
+      title: {
+        en: "Stories feed: only companies or only offices (type), and each author's specialty (subtitle)",
+        ar: "قائمة القصص: الشركات فقط أو المكاتب فقط (type)، وتخصص كل ناشر (subtitle)",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /stories/feed takes an optional type=COMPANY|OFFICE for «القصص»'s segments; anything else → 400. The ordering is unchanged within a segment. A next cursor carries its segment: sent with another type (or none) → 400 STORY_CURSOR_EXPIRED, so the app starts that segment over. Each author also has subtitle: a company's specialty (null if it hid its services or has none), «مكتب عقاري» for an office. Additive: older apps ignore both. No migration.",
+        ar: "GET /stories/feed يقبل type=COMPANY|OFFICE اختيارياً لأقسام «القصص»؛ وغير ذلك ← 400. والترتيب داخل القسم كما هو. ومؤشر الصفحة التالية يحمل قسمه: إرساله مع نوع آخر (أو بلا نوع) ← 400 STORY_CURSOR_EXPIRED فيبدأ التطبيق ذلك القسم من جديد. ولكل ناشر subtitle: تخصص الشركة (null إن أخفت خدماتها أو لا تخصص لها)، و«مكتب عقاري» للمكتب. إضافة فقط: التطبيقات الأقدم تتجاهلهما. بلا ترحيل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "type=OFFICE returns only offices, type=COMPANY only companies; no type returns both, as before.",
+          "type=INDIVIDUAL → 400.",
+          "A cursor from type=OFFICE used without type, or with COMPANY → 400 STORY_CURSOR_EXPIRED.",
+          "subtitle: a company's specialty, null when its services are hidden; «مكتب عقاري» for offices.",
+        ],
+        ar: [
+          "type=OFFICE يعيد المكاتب فقط، وtype=COMPANY الشركات فقط؛ وبلا type يعيد الاثنين كما كان.",
+          "type=INDIVIDUAL ← 400.",
+          "مؤشر من type=OFFICE يُرسل بلا type أو مع COMPANY ← 400 STORY_CURSOR_EXPIRED.",
+          "subtitle: تخصص الشركة، وnull إن كانت خدماتها مخفية؛ و«مكتب عقاري» للمكاتب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With a company and an office both posting, call the feed with each type and none.",
+          "Page type=OFFICE with limit=1, then send its nextCursor with type=COMPANY.",
+          "Hide a company's services and check its subtitle is null.",
+        ],
+        ar: [
+          "مع شركة ومكتب ينشران، اطلب القائمة بكل نوع وبلا نوع.",
+          "تصفح type=OFFICE مع limit=1 ثم أرسل nextCursor مع type=COMPANY.",
+          "أخفِ خدمات شركة وتأكد أن subtitle لها null.",
+        ],
+      },
+      updatedIn: "feat/home-stories-figma",
+    },
+    {
       id: "api-stories-foundation",
       title: {
         en: "Stories (phase 1): photo upload slots, publish after a server check, 24-hour expiry, the feed and cleanup",

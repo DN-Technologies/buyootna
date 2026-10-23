@@ -175,6 +175,71 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/rent-label-cut',
     },
     {
+      id: 'mobile-home-top-bar-and-stories',
+      title: {
+        en: 'Home top bar: the avatar pill, the map, and «الرئيسية / القصص»; the stories list with its segments and rings',
+        ar: 'الشريط العلوي للرئيسية: كبسولة الصورة والخريطة و«الرئيسية / القصص»؛ وقائمة القصص بأقسامها وحلقاتها',
+      },
+      priority: 'P1',
+      figmaFrameUrls: [
+        {
+          url: 'https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9297-75800&m=dev',
+          label: { en: 'Home (الرئيسية)', ar: 'الرئيسية' },
+        },
+        {
+          url: 'https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9377-34843&m=dev',
+          label: { en: 'Stories (القصص)', ar: 'القصص' },
+        },
+        {
+          url: 'https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9297-76305&m=dev',
+          label: { en: 'Avatar pill, open', ar: 'كبسولة الصورة مفتوحة' },
+        },
+      ],
+      endUserStory: {
+        en: "As an individual user, I want my chats, notifications, the map and the providers' stories one tap away at the top of the home screen, so that I can reach them without leaving it.",
+        ar: 'بصفتي مستخدماً فردياً، أريد المحادثات والإشعارات والخريطة وقصص مقدمي الخدمة على بعد ضغطة في أعلى الرئيسية، حتى أصل إليها دون مغادرتها.',
+      },
+      story: {
+        en: "Individual home only (company and office homes keep their header and story tray). The top bar: the avatar pill on the right (the profile photo, a red count of unread notifications + unread chats, hidden at 0, «9+» above 9, and ‹), the map button (→ /map) and the «الرئيسية / القصص» switch on the left. A tap on the photo or ‹, or a sideways swipe, opens the pill to the chats icon (→ /chat) and the bell (→ /notification-list), each with a red dot while it has unread items; › closes it; the photo stays in place while it opens. Signed out, the pill asks to sign in. Under الرئيسية: «عقارات / مكاتب عقارية» with the filter button, «بيع / إيجار / بدل», then «الترتيب حسب» (the sort sheet) and the list / photos toggle (the list is selected on first open); the old «الخريطة» pill and the story tray are gone. Under القصص: «الكل / مكاتب عقارية / شركات», then one row per provider with live stories: its ring, name, a company's specialty or «مكتب عقاري», and how long ago it posted. The ring is solid gold while nothing is watched, dashed gold when some are watched and new ones are left, grey once all are watched. A row opens its stories; swiping on stays in the segment. Every selection fades smoothly, and the switch and the pill resize smoothly.",
+        ar: 'الرئيسية للأفراد فقط (رئيسية الشركات والمكاتب تحتفظ برأسها وشريط قصصها). الشريط العلوي: كبسولة الصورة على اليمين (صورة الملف، ورقم أحمر لمجموع الإشعارات والمحادثات غير المقروءة، يختفي عند 0 ويظهر «9+» فوق 9، و‹)، وزر الخريطة (← /map) ومبدّل «الرئيسية / القصص» على اليسار. الضغط على الصورة أو ‹، أو السحب جانباً، يفتح الكبسولة على أيقونة المحادثات (← /chat) والجرس (← /notification-list)، ولكل منهما نقطة حمراء ما دام فيه غير مقروء؛ و› تغلقها؛ وتبقى الصورة مكانها أثناء الفتح. بلا تسجيل دخول تطلب الكبسولة تسجيل الدخول. تحت الرئيسية: «عقارات / مكاتب عقارية» مع زر الفلاتر، و«بيع / إيجار / بدل»، ثم «الترتيب حسب» (نافذة الترتيب) ومبدّل القائمة / الصور (القائمة مختارة عند أول فتح)؛ وأزيل زر «الخريطة» القديم وشريط القصص. تحت القصص: «الكل / مكاتب عقارية / شركات»، ثم صف لكل مقدم خدمة له قصص حية: حلقته واسمه وتخصص الشركة أو «مكتب عقاري» ومنذ متى نشر. الحلقة ذهبية كاملة إن لم يُشاهَد شيء، وذهبية متقطعة إن شوهد بعضها وبقي جديد، ورمادية بعد مشاهدة الكل. الصف يفتح قصصه؛ والانتقال للتالي يبقى داخل القسم. كل اختيار يتلاشى بسلاسة، والمبدّل والكبسولة يتغير حجمهما بسلاسة.',
+      },
+      acceptanceCriteria: {
+        en: [
+          'The pill count equals unread notifications + unread chats of the active profile, and updates when coming back to the home.',
+          'Opening the pill keeps the photo in place; chats and bell route correctly; › closes it.',
+          'The filter button, segment, pills, «الترتيب حسب» and list / photos toggle match the frame (40, 42, 32, 30 pt) on a 375 and a 402 pt wide phone.',
+          'القصص: each segment lists only its kind; a company row shows its specialty, an office «مكتب عقاري».',
+          'Rings: watch part of a provider\'s stories → dashed; watch them all → grey, without reloading.',
+          'Opening a row from «مكاتب عقارية» and swiping on shows only offices.',
+        ],
+        ar: [
+          'رقم الكبسولة يساوي الإشعارات غير المقروءة + المحادثات غير المقروءة للملف النشط، ويتحدث عند العودة للرئيسية.',
+          'فتح الكبسولة يبقي الصورة مكانها؛ والمحادثات والجرس يفتحان الشاشة الصحيحة؛ و› تغلقها.',
+          'زر الفلاتر والمبدّل والأزرار و«الترتيب حسب» ومبدّل القائمة / الصور تطابق التصميم (40 و42 و32 و30 نقطة) على هاتف بعرض 375 و402 نقطة.',
+          'القصص: كل قسم يعرض نوعه فقط؛ وصف الشركة يعرض تخصصها، والمكتب «مكتب عقاري».',
+          'الحلقات: شاهد بعض قصص مقدم خدمة ← متقطعة؛ شاهدها كلها ← رمادية، دون إعادة تحميل.',
+          'فتح صف من «مكاتب عقارية» ثم الانتقال للتالي يعرض مكاتب فقط.',
+        ],
+      },
+      testScenarios: {
+        en: [
+          'With 2 unread notifications and 1 unread chat: the pill shows 3; open it — both icons show a dot; read the chat, come back — the count is 2.',
+          'Swipe the pill left to open it, right to close it.',
+          'Switch الرئيسية ↔ القصص several times quickly; the list shown always matches the switch.',
+          'In القصص, switch الكل → مكاتب عقارية → شركات and back; pull to refresh in each.',
+          'Signed out: tap the pill and «تسجيل الدخول» under القصص — both open the sign-in sheet.',
+        ],
+        ar: [
+          'مع إشعارين غير مقروءين ومحادثة غير مقروءة: الكبسولة تعرض 3؛ افتحها — لكل أيقونة نقطة؛ اقرأ المحادثة وعد — الرقم 2.',
+          'اسحب الكبسولة يساراً لفتحها ويميناً لإغلاقها.',
+          'بدّل بين الرئيسية والقصص عدة مرات بسرعة؛ القائمة المعروضة تطابق المبدّل دائماً.',
+          'في القصص بدّل الكل ← مكاتب عقارية ← شركات والعكس؛ واسحب للتحديث في كل منها.',
+          'بلا تسجيل دخول: اضغط الكبسولة و«تسجيل الدخول» تحت القصص — كلاهما يفتح نافذة تسجيل الدخول.',
+        ],
+      },
+      updatedIn: 'feat/home-stories-figma',
+    },
+    {
       id: 'mobile-property-details-rent-price-suffix',
       title: {
         en: "Rental prices don't say 'per month' anywhere",

@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -13,6 +14,7 @@ import {
   STORY_FEED_DEFAULT_LIMIT,
   STORY_FEED_MAX_LIMIT,
 } from '../stories.constants';
+import type { StoryFeedType } from '../utils/feed-cursor';
 
 export class StoryFeedQueryDto {
   @ApiPropertyOptional({ description: 'nextCursor from the previous page' })
@@ -31,4 +33,12 @@ export class StoryFeedQueryDto {
   @Min(1)
   @Max(STORY_FEED_MAX_LIMIT)
   limit?: number;
+
+  @ApiPropertyOptional({
+    enum: ['COMPANY', 'OFFICE'],
+    description: 'Only companies («شركات») or offices («مكاتب عقارية»)',
+  })
+  @IsOptional()
+  @IsIn(['COMPANY', 'OFFICE'])
+  type?: StoryFeedType;
 }

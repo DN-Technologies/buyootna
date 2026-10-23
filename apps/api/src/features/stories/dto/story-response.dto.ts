@@ -67,6 +67,12 @@ export class StoryAuthorDto {
 
   @ApiProperty()
   isVerified: boolean;
+
+  @ApiProperty({
+    nullable: true,
+    description: "A company's specialty, or «مكتب عقاري» for an office",
+  })
+  subtitle: string | null;
 }
 
 export class ViewerStoryDto {

@@ -1,14 +1,14 @@
 import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { forwardRef, useMemo, useRef, useState } from 'react';
+import { forwardRef, useMemo, useRef } from 'react';
 import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
 
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
-import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { openChatWith } from '@/shared/utils/openChat';
@@ -94,9 +94,9 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
       ListHeaderComponent={ListHeaderComponent}
       ListEmptyComponent={renderEmptyComponent}
       contentContainerStyle={{
-        paddingHorizontal: 20,
+        paddingHorizontal: 16,
         paddingBottom: scrollContentBottomPadding,
-        paddingTop: 10,
+        paddingTop: 12,
       }}
       showsVerticalScrollIndicator={false}
       refreshControl={

@@ -1,33 +1,39 @@
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useScrollToTop } from '@react-navigation/native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import  { useCallback, useEffect, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SortIcon } from '@/assets/icons';
-import { FilterHorizontalIcon } from '@/assets/icons/home/header';
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
 import {
   HOME_SORT_OPTIONS,
   type HomeSort,
 } from '@/features/individual/components/home/homeSort';
+import HomeSortRow from '@/features/individual/components/home/HomeSortRow';
 import HomeAll from '@/features/individual/components/home/sections/HomeAll';
 import HomeOffices from '@/features/individual/components/home/sections/HomeOffices';
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
+import type { HomeMode } from '@/features/individual/components/home/topbar/HomeModeSwitch';
+import HomeTopBar from '@/features/individual/components/home/topbar/HomeTopBar';
 import { feedService } from '@/features/individual/services/feed.service';
-import StoryTray from '@/features/stories/components/StoryTray';
-import { useStoriesFeed } from '@/features/stories/hooks/useStoriesQueries';
+import StoriesList from '@/features/stories/components/StoriesList';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import FadeLayer from '@/shared/components/ui/FadeLayer';
+import GoldSegment, {
+  type GoldSegmentOption,
+} from '@/shared/components/ui/GoldSegment';
 import { useBlocksVersion } from '@/shared/hooks/blocks/useBlocks';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -66,13 +72,24 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
   const [activePropFilter, setActivePropFilter] =
     useState<PropertyFilter>('sale');
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card');
+  // The design opens on the quick list (عرض سريع)
+  const [viewMode, setViewMode] = useState<'card' | 'list'>('list');
+  // «الرئيسية» or «القصص» (the top bar's switch)
+  const [mode, setMode] = useState<HomeMode>('home');
+  const authSheetRef = useRef<BottomSheetModal>(null);
+  const profileSheetRef = useRef<BottomSheetModal>(null);
+  // Lists mounted on first visit, then kept (see the FadeLayers below)
+  const visited = {
+    offices: useRef(false),
+    stories: useRef(false),
+  };
+  if (activeTab === 'offices') visited.offices.current = true;
+  if (mode === 'stories') visited.stories.current = true;
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const { refetch: refetchStories } = useStoriesFeed();
 
   // --- Fetch Function ---
   const loadFeed = async () => {
@@ -109,132 +126,140 @@ export default function HomeScreen() {
   // --- Pull to Refresh Handle ---
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadFeed(), refetchStories()]);
+    await loadFeed();
     setRefreshing(false);
   };
 
-  const TABS = [
+  const TABS: GoldSegmentOption<'properties' | 'offices'>[] = [
     { id: 'properties', label: 'عقارات' },
     { id: 'offices', label: 'مكاتب عقارية' },
   ];
 
-  const renderHeader = (withHorizontalPadding = true) => (
-    <View>
-      {/* Stories (hidden when there are none) */}
-      <StoryTray />
-    <View className={` ${withHorizontalPadding ? 'px-[20px]' : ''}`}>
-      {/* Tabs & Controls Row */}
-      <View className="mb-4 flex-row items-center gap-2">
-        {/* Tab Pill Container */}
-        <View className="h-[45px] flex-1 flex-row items-center justify-between rounded-full border border-gray-100 bg-[#F8FAFC] px-1">
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <TouchableOpacity
-                key={tab.id}
-                onPress={() => setActiveTab(tab.id as any)}
-                className="h-full flex-1 items-center justify-center rounded-full"
-                activeOpacity={0.7}
-              >
-                <View className="items-center justify-center">
-                  <Text
-                    className={`${
-                      isActive
-                        ? 'font-cairo-bold text-[#15304D]'
-                        : 'font-cairo text-[#6B6A6A]'
-                    } text-sm leading-[22px]`}
-                  >
-                    {tab.label}
-                  </Text>
-                  {isActive && (
-                    <View className="absolute bottom-[-10px] h-[2px] w-[80%] rounded-full bg-[#15304D]" />
-                  )}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Filter Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => filterSheetRef.current?.present()}
-          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
-        >
-          <FilterHorizontalIcon size={18} color="#111111" />
-        </TouchableOpacity>
-
-        {/* Sort Button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => sortSheetRef.current?.present()}
-          accessibilityRole="button"
-          accessibilityLabel="الترتيب حسب"
-          testID="home-sort-button"
-          className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
-        >
-          <SortIcon size={18} color="#111111" />
-        </TouchableOpacity>
-      </View>
-
-      {/* 4. Secondary Tabs (Filter Pills) */}
-      <HomeFilterPills
-        activeTab={activeTab}
-        activePropFilter={activePropFilter}
-        onPropFilterChange={setActivePropFilter}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
-    </View>
-    </View>
+  // Above the عقارات list: «الترتيب حسب» and the list / photos toggle
+  const sortRow = (
+    <HomeSortRow
+      onSortPress={() => sortSheetRef.current?.present()}
+      viewMode={viewMode}
+      onViewModeChange={setViewMode}
+    />
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ContentContainer className="flex-1">
-        {/* 5. Scrolling Content Area (The Feed) */}
-        {activeTab === 'properties' ? (
-          <HomeProperties
-            ref={scrollRef}
-            activeFilter={activePropFilter}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            viewMode={viewMode}
-            sortBy={sortBy}
-            ListHeaderComponent={renderHeader(false)}
+        {/* The top bar (Figma 9297:75802): fixed above the content */}
+        <View
+          className="bg-white pt-[8px]"
+          style={{ borderBottomWidth: 0.5, borderBottomColor: '#ECECEC' }}
+        >
+          <HomeTopBar
+            mode={mode}
+            onModeChange={setMode}
+            authSheetRef={authSheetRef}
+            onSwitchProfile={() => profileSheetRef.current?.present()}
           />
-        ) : activeTab === 'offices' ? (
-          <HomeOffices
-            ref={scrollRef}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            ListHeaderComponent={renderHeader(false)}
-          />
-        ) : (
-          <ScrollView
-            ref={scrollRef}
-            className="flex-1 pt-4"
-            contentContainerStyle={{
-              paddingBottom: scrollContentBottomPadding,
-            }} // Extra padding for the custom bottom bar
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
+          {mode === 'home' ? (
+            <View className="py-[12px]" style={{ gap: 12 }}>
+              <View className="h-[42px] flex-row items-center px-[16px]" style={{ gap: 12 }}>
+                <GoldSegment
+                  testID="home-tabs"
+                  options={TABS}
+                  value={activeTab === 'offices' ? 'offices' : 'properties'}
+                  onChange={setActiveTab}
+                />
+                <TouchableOpacity
+                  testID="home-filter-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="الفلاتر"
+                  activeOpacity={0.7}
+                  onPress={() => filterSheetRef.current?.present()}
+                  className="size-[40px] shrink-0 items-center justify-center rounded-full"
+                  style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
+                >
+                  <View className="size-[22px] items-center justify-center">
+                    <Image
+                      source={require('@/assets/icons/home/topbar/filter.svg')}
+                      style={{ width: 17.5, height: 15.667 }}
+                      contentFit="contain"
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+              <HomeFilterPills
+                activeTab={activeTab}
+                activePropFilter={activePropFilter}
+                onPropFilterChange={setActivePropFilter}
+              />
+            </View>
+          ) : (
+            <View className="h-[12px]" />
+          )}
+        </View>
+
+        {/* Each list stays mounted once opened and they cross-fade, so a
+            switch is a smooth fade instead of a rebuild (and each keeps its
+            scroll) */}
+        <View className="flex-1">
+          <FadeLayer active={mode === 'home' && activeTab !== 'offices'}>
+            {activeTab === 'all' ? (
+              <ScrollView
+                ref={scrollRef}
+                className="flex-1 px-[16px] pt-[12px]"
+                contentContainerStyle={{
+                  paddingBottom: scrollContentBottomPadding,
+                }} // Extra padding for the custom bottom bar
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={['#15304D']}
+                    tintColor="#15304D"
+                  />
+                }
+              >
+                {sortRow}
+                <HomeAll
+                  feedData={feedData}
+                  isLoading={isLoading}
+                  viewMode={viewMode}
+                />
+              </ScrollView>
+            ) : (
+              <HomeProperties
+                ref={
+                  mode === 'home' && activeTab === 'properties'
+                    ? scrollRef
+                    : undefined
+                }
+                activeFilter={activePropFilter}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={['#15304D']}
-                tintColor="#15304D"
+                viewMode={viewMode}
+                sortBy={sortBy}
+                ListHeaderComponent={sortRow}
               />
-            }
-          >
-            {renderHeader(true)}
-            <HomeAll
-              feedData={feedData}
-              isLoading={isLoading}
-              viewMode={viewMode}
-            />
-          </ScrollView>
-        )}
+            )}
+          </FadeLayer>
+          {visited.offices.current && (
+            <FadeLayer active={mode === 'home' && activeTab === 'offices'}>
+              <HomeOffices
+                ref={
+                  mode === 'home' && activeTab === 'offices'
+                    ? scrollRef
+                    : undefined
+                }
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            </FadeLayer>
+          )}
+          {visited.stories.current && (
+            <FadeLayer active={mode === 'stories'}>
+              <StoriesList authSheetRef={authSheetRef} />
+            </FadeLayer>
+          )}
+        </View>
         <GlobalFilterSheet
           ref={filterSheetRef}
           onApplyFilters={handleAdvancedSearch}
@@ -255,6 +280,15 @@ export default function HomeScreen() {
           onClose={() => setShowErrorModal(false)}
           onRetry={loadFeed}
           isLoading={isLoading}
+        />
+        <AuthGuardSheet ref={authSheetRef} />
+        {/* A double tap on the avatar: switch profile (as in المزيد) */}
+        <ProfileBottomSheet
+          ref={profileSheetRef}
+          onAddAccount={() => {
+            profileSheetRef.current?.dismiss();
+            router.push('/(auth)/add-identity');
+          }}
         />
       </ContentContainer>
     </SafeAreaView>
