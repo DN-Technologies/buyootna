@@ -29,6 +29,7 @@ import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorMo
 import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import FadeLayer from '@/shared/components/ui/FadeLayer';
 import GoldSegment, {
   type GoldSegmentOption,
 } from '@/shared/components/ui/GoldSegment';
@@ -75,6 +76,13 @@ export default function HomeScreen() {
   // «الرئيسية» or «القصص» (the top bar's switch)
   const [mode, setMode] = useState<HomeMode>('home');
   const authSheetRef = useRef<BottomSheetModal>(null);
+  // Lists mounted on first visit, then kept (see the FadeLayers below)
+  const visited = {
+    offices: useRef(false),
+    stories: useRef(false),
+  };
+  if (activeTab === 'offices') visited.offices.current = true;
+  if (mode === 'stories') visited.stories.current = true;
 
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -185,49 +193,70 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {mode === 'stories' ? (
-          <StoriesList authSheetRef={authSheetRef} />
-        ) : activeTab === 'properties' ? (
-          <HomeProperties
-            ref={scrollRef}
-            activeFilter={activePropFilter}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            viewMode={viewMode}
-            sortBy={sortBy}
-            ListHeaderComponent={sortRow}
-          />
-        ) : activeTab === 'offices' ? (
-          <HomeOffices
-            ref={scrollRef}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
-        ) : (
-          <ScrollView
-            ref={scrollRef}
-            className="flex-1 px-[16px] pt-[12px]"
-            contentContainerStyle={{
-              paddingBottom: scrollContentBottomPadding,
-            }} // Extra padding for the custom bottom bar
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
+        {/* Each list stays mounted once opened and they cross-fade, so a
+            switch is a smooth fade instead of a rebuild (and each keeps its
+            scroll) */}
+        <View className="flex-1">
+          <FadeLayer active={mode === 'home' && activeTab !== 'offices'}>
+            {activeTab === 'all' ? (
+              <ScrollView
+                ref={scrollRef}
+                className="flex-1 px-[16px] pt-[12px]"
+                contentContainerStyle={{
+                  paddingBottom: scrollContentBottomPadding,
+                }} // Extra padding for the custom bottom bar
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={['#15304D']}
+                    tintColor="#15304D"
+                  />
+                }
+              >
+                {sortRow}
+                <HomeAll
+                  feedData={feedData}
+                  isLoading={isLoading}
+                  viewMode={viewMode}
+                />
+              </ScrollView>
+            ) : (
+              <HomeProperties
+                ref={
+                  mode === 'home' && activeTab === 'properties'
+                    ? scrollRef
+                    : undefined
+                }
+                activeFilter={activePropFilter}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={['#15304D']}
-                tintColor="#15304D"
+                viewMode={viewMode}
+                sortBy={sortBy}
+                ListHeaderComponent={sortRow}
               />
-            }
-          >
-            {sortRow}
-            <HomeAll
-              feedData={feedData}
-              isLoading={isLoading}
-              viewMode={viewMode}
-            />
-          </ScrollView>
-        )}
+            )}
+          </FadeLayer>
+          {visited.offices.current && (
+            <FadeLayer active={mode === 'home' && activeTab === 'offices'}>
+              <HomeOffices
+                ref={
+                  mode === 'home' && activeTab === 'offices'
+                    ? scrollRef
+                    : undefined
+                }
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+              />
+            </FadeLayer>
+          )}
+          {visited.stories.current && (
+            <FadeLayer active={mode === 'stories'}>
+              <StoriesList authSheetRef={authSheetRef} />
+            </FadeLayer>
+          )}
+        </View>
         <GlobalFilterSheet
           ref={filterSheetRef}
           onApplyFilters={handleAdvancedSearch}
