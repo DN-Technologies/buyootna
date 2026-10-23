@@ -23,7 +23,7 @@ import { useAddSubService } from './useAddSubService';
 import { useServicesActions } from './useServicesActions';
 import { serviceVisibilityMessage, useServicesToast } from './useServicesToast';
 
-// Figma 4410:169834's card text, shown while the service has no description
+// Figma 4410:169834's card text
 const SERVICES_CARD_TEXT =
   'سيتم إخفاء جميع الخدمات من صفحتك ولن يتمكن العملاء من رؤيتها وطلبها حالياً. يمكنك إعادة تفعيلها في أي وقت بنقرة واحدة.';
 
@@ -149,13 +149,13 @@ export default function ServicesScreen() {
                 </View>
               )}
             </View>
-            {/* The service's description, else the Figma card's text */}
+            {/* The Figma card's text (4410:169834) */}
             <Text
               testID="services-description"
               className="font-cairo text-[13px] leading-[20px] text-[#6B6A6A]"
               style={{ writingDirection: 'rtl' }}
             >
-              {description || SERVICES_CARD_TEXT}
+              {SERVICES_CARD_TEXT}
             </Text>
           </View>
 

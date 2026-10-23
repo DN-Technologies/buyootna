@@ -59,10 +59,12 @@ describe('الخدمات', () => {
     api.deleteAllServices.mockResolvedValue({ success: true, deleted: 2 });
   });
 
-  it('shows the specialty, its description and the sub-services with their switches', async () => {
-    const { findByText, getByText, getByTestId } = await renderScreen();
+  it('shows the specialty, the card text and the sub-services with their switches', async () => {
+    const { findByText, getByTestId } = await renderScreen();
     expect(await findByText('مكتب هندسي')).toBeTruthy();
-    expect(getByText('تنفيذ مشاريع البناء')).toBeTruthy();
+    expect(getByTestId('services-description').props.children).toBe(
+      'سيتم إخفاء جميع الخدمات من صفحتك ولن يتمكن العملاء من رؤيتها وطلبها حالياً. يمكنك إعادة تفعيلها في أي وقت بنقرة واحدة.',
+    );
     expect(getByTestId('service-switch-s1').props.accessibilityState.checked).toBe(true);
     expect(getByTestId('service-switch-s2').props.accessibilityState.checked).toBe(false);
 
@@ -70,7 +72,7 @@ describe('الخدمات', () => {
     expect(router.push).toHaveBeenCalledWith('/edit-service');
   });
 
-  it('without a description, the card shows the Figma text', async () => {
+  it('the card shows the Figma text with or without a description', async () => {
     api.getMyServices.mockResolvedValue({ ...data, description: null });
     const { findByTestId } = await renderScreen();
     expect((await findByTestId('services-description')).props.children).toBe(
