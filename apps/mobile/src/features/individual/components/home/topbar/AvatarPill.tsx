@@ -26,6 +26,8 @@ const GOLD = '#C5A36D';
 const ACTIONS_WIDTH = 84.5;
 // Closed, the icons' slot keeps Figma's 96pt pill: 4 + 42 + 8 + 10 + 8 + 20 + 4
 const CLOSED_SLOT = 10;
+// Open: 4 + 42 + 8 + the icons + 8 + 20 + 4, and the 0.5pt border each side
+export const AVATAR_PILL_OPEN_WIDTH = 86 + ACTIONS_WIDTH + 1;
 // Two taps on the photo this close together switch profile (as Facebook)
 const DOUBLE_TAP_MS = 280;
 
@@ -48,6 +50,8 @@ interface AvatarPillProps {
   authSheetRef: RefObject<BottomSheetModal | null>;
   // A double tap on the photo: the profile switcher
   onSwitchProfile: () => void;
+  // Opening or closing (the top bar makes room on narrow phones)
+  onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -58,6 +62,7 @@ interface AvatarPillProps {
 export default function AvatarPill({
   authSheetRef,
   onSwitchProfile,
+  onOpenChange,
 }: AvatarPillProps) {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
@@ -85,6 +90,7 @@ export default function AvatarPill({
       return;
     }
     setOpen(next);
+    onOpenChange?.(next);
     // One spring drives it all: the slot grows from beside the photo (which
     // never moves), the icons fade in, the count fades out, ‹ turns to ›
     progress.value = withSpring(next ? 1 : 0, IOS_SPRING);
