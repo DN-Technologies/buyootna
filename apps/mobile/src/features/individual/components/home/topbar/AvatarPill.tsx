@@ -5,16 +5,27 @@ import { useRouter } from 'expo-router';
 import { type RefObject,useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import Animated, {
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { IOS_SPRING } from '@/shared/components/ui/SlidingSegment';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-import { animateNextLayout } from '@/shared/utils/animation/animateNextLayout';
 
 import { useHomeBadges } from './useHomeBadges';
 
 const GOLD = '#C5A36D';
+
+// The icons' row: chat 34 + 8 + divider + 8 + bell 34
+const ACTIONS_WIDTH = 84.5;
+// Closed, the icons' slot keeps Figma's 96pt pill: 4 + 42 + 8 + 10 + 8 + 20 + 4
+const CLOSED_SLOT = 10;
 
 // Figma 9297:76318: the chat icon's own path, in the brand colour, with its
 // red dot only while chats are unread
@@ -46,6 +57,19 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
   const { avatarUrl } = useIdentity();
   const { notifications, chats } = useHomeBadges();
   const [open, setOpen] = useState(false);
+  const progress = useSharedValue(0);
+  const slot = useAnimatedStyle(() => ({
+    width: interpolate(progress.value, [0, 1], [CLOSED_SLOT, ACTIONS_WIDTH]),
+    opacity: interpolate(progress.value, [0, 0.35, 1], [0, 0, 1]),
+  }));
+  const chevron = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${interpolate(progress.value, [0, 1], [0, 180])}deg` },
+    ],
+  }));
+  const count = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 0.3], [1, 0], 'clamp'),
+  }));
   const total = notifications + chats;
 
   const toggle = (next: boolean) => {
@@ -53,9 +77,10 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
       authSheetRef.current?.present();
       return;
     }
-    // Grows and shrinks smoothly, the icons fading in; the photo stays put
-    animateNextLayout();
     setOpen(next);
+    // One spring drives it all: the slot grows from beside the photo (which
+    // never moves), the icons fade in, the count fades out, ‹ turns to ›
+    progress.value = withSpring(next ? 1 : 0, IOS_SPRING);
   };
 
   // RTL: the pill grows to the left, so a swipe left opens it
@@ -89,8 +114,6 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
           borderWidth: 0.5,
           borderColor: GOLD,
           gap: 8,
-          // Closed it is Figma's 96px, photo and chevron at either end
-          ...(open ? {} : { width: 96, justifyContent: 'space-between' }),
         }}
       >
         <TouchableOpacity
@@ -103,10 +126,19 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
           {photo}
         </TouchableOpacity>
 
-        {open && (
+        {/* The icons' slot: clips the row while it grows, so the chat
+            (nearest the photo) shows first, then the bell */}
+        <Animated.View
+          testID="avatar-pill-actions"
+          pointerEvents={open ? 'auto' : 'none'}
+          accessibilityElementsHidden={!open}
+          importantForAccessibility={open ? 'auto' : 'no-hide-descendants'}
+          className="h-[34px] items-start overflow-hidden"
+          style={slot}
+        >
           <View
             className="flex-row items-center"
-            style={{ gap: 8 }}
+            style={{ gap: 8, width: ACTIONS_WIDTH }}
           >
             <TouchableOpacity
               testID="avatar-pill-chats"
@@ -155,7 +187,7 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
               )}
             </TouchableOpacity>
           </View>
-        )}
+        </Animated.View>
 
         <TouchableOpacity
           testID="avatar-pill-toggle"
@@ -164,29 +196,30 @@ export default function AvatarPill({ authSheetRef }: AvatarPillProps) {
           hitSlop={10}
           onPress={() => toggle(!open)}
           className="size-[20px] items-center justify-center"
-          // Closed it points away from the photo (‹), open back at it (›)
-          style={{ transform: [{ scaleX: open ? -1 : 1 }] }}
         >
-          <Image
-            source={require('@/assets/icons/home/topbar/chevron.svg')}
-            style={{ width: 14, height: 14 }}
-            contentFit="contain"
-          />
+          {/* Closed it points away from the photo (‹), open back at it (›) */}
+          <Animated.View style={chevron}>
+            <Image
+              source={require('@/assets/icons/home/topbar/chevron.svg')}
+              style={{ width: 14, height: 14 }}
+              contentFit="contain"
+            />
+          </Animated.View>
         </TouchableOpacity>
 
         {/* Figma's count sits over the photo's edge, beside the chevron */}
-        {!open && total > 0 && (
-          <View
+        {total > 0 && (
+          <Animated.View
             testID="avatar-pill-count"
             pointerEvents="none"
             className="absolute size-[14px] items-center justify-center rounded-full bg-[#BA0003]"
             // The app's RTL swaps left and right: this is Figma's left 24
-            style={{ right: 24, top: 16 }}
+            style={[{ right: 24, top: 16 }, count]}
           >
             <Text className="font-cairo-bold text-[8px] leading-[12px] text-white">
               {total > 9 ? '9+' : total}
             </Text>
-          </View>
+          </Animated.View>
         )}
       </View>
     </GestureDetector>

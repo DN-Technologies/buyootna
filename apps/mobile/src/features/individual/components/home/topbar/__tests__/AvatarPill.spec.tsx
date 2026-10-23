@@ -19,9 +19,7 @@ jest.mock('react-native-gesture-handler', () => {
     Gesture: { Pan: () => chain },
   };
 });
-jest.mock('react-native-reanimated', () => ({
-  runOnJS: (fn: unknown) => fn,
-}));
+
 jest.mock('@/shared/hooks/auth/useIdentity', () => ({
   useIdentity: () => ({ avatarUrl: 'https://cdn.example/me.jpg' }),
 }));
@@ -60,7 +58,9 @@ describe('AvatarPill', () => {
     await waitFor(() =>
       expect(screen.getByTestId('avatar-pill-count')).toHaveTextContent('3'),
     );
-    expect(screen.queryByTestId('avatar-pill-chats')).toBeNull();
+    expect(screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true }).props.pointerEvents).toBe(
+      'none',
+    );
   });
 
   it('shows no count when nothing is unread', async () => {
@@ -76,7 +76,9 @@ describe('AvatarPill', () => {
     await waitFor(() => screen.getByTestId('avatar-pill-count'));
     await fireEvent.press(screen.getByTestId('avatar-pill-toggle'));
 
-    expect(screen.queryByTestId('avatar-pill-count')).toBeNull();
+    expect(screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true }).props.pointerEvents).toBe(
+      'auto',
+    );
     expect(screen.getByTestId('avatar-pill-notifications-dot')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('avatar-pill-chats'));
     expect(mockPush).toHaveBeenCalledWith('/chat');
@@ -84,7 +86,9 @@ describe('AvatarPill', () => {
     expect(mockPush).toHaveBeenCalledWith('/notification-list');
 
     await fireEvent.press(screen.getByTestId('avatar-pill-toggle'));
-    expect(screen.queryByTestId('avatar-pill-chats')).toBeNull();
+    expect(screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true }).props.pointerEvents).toBe(
+      'none',
+    );
   });
 
   it('signed out, a tap asks to sign in', async () => {
@@ -93,7 +97,9 @@ describe('AvatarPill', () => {
     const screen = await render(<AvatarPill authSheetRef={ref} />);
     await fireEvent.press(screen.getByTestId('avatar-pill-photo'));
     expect(present).toHaveBeenCalled();
-    expect(screen.queryByTestId('avatar-pill-chats')).toBeNull();
+    expect(screen.getByTestId('avatar-pill-actions', { includeHiddenElements: true }).props.pointerEvents).toBe(
+      'none',
+    );
     expect(mockBadge).not.toHaveBeenCalled();
   });
 });
