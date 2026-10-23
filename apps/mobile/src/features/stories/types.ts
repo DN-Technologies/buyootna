@@ -8,6 +8,8 @@ export interface StoryAuthor {
   name: string;
   logoUrl: string | null;
   isVerified: boolean;
+  // A company's specialty, or «مكتب عقاري» (feed only; older APIs omit it)
+  subtitle?: string | null;
 }
 
 export interface StoryPropertyLink {

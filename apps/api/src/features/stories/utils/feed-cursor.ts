@@ -11,7 +11,11 @@ export interface FeedCursor {
   tier: number;
   latest: Date;
   authorId: string;
+  // The «شركات» / «مكاتب عقارية» segment the scroll is in, if any
+  type?: StoryFeedType;
 }
+
+export type StoryFeedType = 'COMPANY' | 'OFFICE';
 
 interface CursorJson {
   v: 1;
@@ -19,6 +23,7 @@ interface CursorJson {
   t: number;
   l: string;
   a: string;
+  k?: StoryFeedType;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -30,6 +35,7 @@ export function encodeFeedCursor(cursor: FeedCursor): string {
     t: cursor.tier,
     l: cursor.latest.toISOString(),
     a: cursor.authorId,
+    ...(cursor.type ? { k: cursor.type } : {}),
   };
   return Buffer.from(JSON.stringify(json)).toString('base64url');
 }
@@ -44,10 +50,15 @@ function cursorError(): BadRequestException {
 
 /**
  * Reads a cursor the server issued. A malformed one, or one whose snapshot
- * is older than STORY_CURSOR_MAX_AGE_MS, is refused with
- * STORY_CURSOR_EXPIRED so the app reloads from the first page.
+ * is older than STORY_CURSOR_MAX_AGE_MS, or one made for another segment
+ * (`type`), is refused with STORY_CURSOR_EXPIRED so the app reloads from
+ * the first page.
  */
-export function decodeFeedCursor(raw: string, now = new Date()): FeedCursor {
+export function decodeFeedCursor(
+  raw: string,
+  now = new Date(),
+  type?: StoryFeedType,
+): FeedCursor {
   let parsed: unknown;
   try {
     parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
@@ -63,8 +74,15 @@ export function decodeFeedCursor(raw: string, now = new Date()): FeedCursor {
   }
   const age = now.getTime() - snapshotAt.getTime();
   if (age < 0 || age > STORY_CURSOR_MAX_AGE_MS) throw cursorError();
+  if ((parsed.k ?? undefined) !== type) throw cursorError();
 
-  return { snapshotAt, tier: parsed.t, latest, authorId: parsed.a };
+  return {
+    snapshotAt,
+    tier: parsed.t,
+    latest,
+    authorId: parsed.a,
+    ...(parsed.k ? { type: parsed.k } : {}),
+  };
 }
 
 function isCursorJson(value: unknown): value is CursorJson {
@@ -79,6 +97,7 @@ function isCursorJson(value: unknown): value is CursorJson {
     typeof v.t === 'number' &&
     Number.isInteger(v.t) &&
     v.t >= 0 &&
-    v.t <= 3
+    v.t <= 3 &&
+    (v.k === undefined || v.k === 'COMPANY' || v.k === 'OFFICE')
   );
 }

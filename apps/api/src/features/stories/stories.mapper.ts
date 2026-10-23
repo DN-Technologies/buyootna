@@ -39,9 +39,20 @@ export type StoryRow = Prisma.StoryGetPayload<{ select: typeof STORY_SELECT }>;
 export const AUTHOR_SELECT = {
   id: true,
   type: true,
-  companyData: { select: { name: true, logoUrl: true, isVerified: true } },
+  companyData: {
+    select: {
+      name: true,
+      logoUrl: true,
+      isVerified: true,
+      specialty: true,
+      servicesHidden: true,
+    },
+  },
   officeData: { select: { name: true, logoUrl: true, isVerified: true } },
 } satisfies Prisma.IdentitySelect;
+
+/** What the «القصص» list shows under an author's name. */
+const OFFICE_SUBTITLE = 'مكتب عقاري';
 
 export type AuthorRow = Prisma.IdentityGetPayload<{
   select: typeof AUTHOR_SELECT;
@@ -93,7 +104,16 @@ export function toAuthorDto(author: AuthorRow): StoryAuthorDto | null {
     name: data.name,
     logoUrl: data.logoUrl ?? null,
     isVerified: data.isVerified,
+    subtitle: authorSubtitle(author),
   };
+}
+
+/** A company's specialty (unless it hid its services), or «مكتب عقاري». */
+function authorSubtitle(author: AuthorRow): string | null {
+  if (author.type === 'OFFICE') return OFFICE_SUBTITLE;
+  const company = author.companyData;
+  if (!company || company.servicesHidden) return null;
+  return company.specialty?.trim() || null;
 }
 
 /** The linked listing, only while it is still the author's and active. */

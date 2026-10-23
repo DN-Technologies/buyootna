@@ -30,6 +30,33 @@ describe('feed cursor', () => {
     expect(decodeFeedCursor(encodeFeedCursor(cursor), NOW)).toEqual(cursor);
   });
 
+  it('a segment cursor round-trips only within its segment', () => {
+    const offices = { ...cursor, type: 'OFFICE' as const };
+    expect(decodeFeedCursor(encodeFeedCursor(offices), NOW, 'OFFICE')).toEqual(
+      offices,
+    );
+    // From «مكاتب عقارية» into «شركات» or «الكل», and «الكل» into one
+    expectExpired(() =>
+      decodeFeedCursor(encodeFeedCursor(offices), NOW, 'COMPANY'),
+    );
+    expectExpired(() => decodeFeedCursor(encodeFeedCursor(offices), NOW));
+    expectExpired(() =>
+      decodeFeedCursor(encodeFeedCursor(cursor), NOW, 'OFFICE'),
+    );
+  });
+
+  it('an unknown segment is refused', () => {
+    const json = {
+      v: 1,
+      s: cursor.snapshotAt.toISOString(),
+      t: 2,
+      l: cursor.latest.toISOString(),
+      a: cursor.authorId,
+      k: 'INDIVIDUAL',
+    };
+    expectExpired(() => decodeFeedCursor(raw(json), NOW));
+  });
+
   it('a snapshot older than 30 minutes is refused', () => {
     const old = { ...cursor, snapshotAt: new Date('2026-10-20T11:29:59.000Z') };
     expectExpired(() => decodeFeedCursor(encodeFeedCursor(old), NOW));
