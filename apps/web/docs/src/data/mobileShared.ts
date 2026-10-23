@@ -116,6 +116,77 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/stories-phase6",
     },
     {
+      id: "mobile-stories-composer-figma",
+      title: {
+        en: "Stories: the new «اضف قصة جديدة», trimming videos on the phone, and «حالتي»",
+        ar: "القصص: «اضف قصة جديدة» الجديدة، وقصّ الفيديو على الهاتف، و«حالتي»",
+      },
+      priority: "P1",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9516-5513&m=dev",
+          label: { en: "Start", ar: "البداية" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9519-29609&m=dev",
+          label: { en: "Photo", ar: "صورة" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9519-31410&m=dev",
+          label: { en: "Video with trim", ar: "فيديو مع القص" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9519-30101&m=dev",
+          label: { en: "Own story", ar: "قصتي" },
+        },
+      ],
+      endUserStory: {
+        en: "As a company or office, I want to post any video from my phone, keep just the part that matters and choose whether it has sound, so that my stories look good without editing them in another app first.",
+        ar: "بصفتي شركة أو مكتباً، أريد نشر أي فيديو من هاتفي، والاحتفاظ بالجزء المهم فقط واختيار وجود الصوت، حتى تبدو قصصي جيدة دون تعديلها في تطبيق آخر أولاً.",
+      },
+      story: {
+        en: "The composer follows Figma. Start: «اضف قصة جديدة» on dark, «صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.», «اختر من المعرض» and «الكاميرا»; × closes. Preview: the photo, or the video playing, fills the screen; × goes back to choosing. At the bottom: image+ links one of my active listings (a chip shows it, with × to unlink), the caption «اضافة شرح توضيحي....» (up to 200), and the send circle, which shows the upload percentage. Videos, from app 1.6.0 (a new store build: the trimmer is native code): any video up to 10 minutes can be picked; a strip of its frames with two handles chooses the part kept (1 to 30 s, the first 30 s at first), with «0:00 - 0:30» and a sound button. The preview loops the chosen part. On send, the part is cut on the phone (iOS AVFoundation, Android media3), re-encoded as MP4 up to 720p, without sound if turned off, its poster is made from the cut, and that is uploaded. A short video with sound, untouched, is sent as it is. On older app builds (an over-the-air update) there is no trim bar and the 30 s limit stays. Own story («حالتي»): › closes, the avatar's + posts another, ⋮ deletes, the eye pill «👁 N» lists the viewers, and share sends «تابع <name> على بيوتنا» with the website link (there is no profile page on the site yet). Other people's stories use the same header with their name.",
+        ar: "شاشة النشر تتبع Figma. البداية: «اضف قصة جديدة» على خلفية داكنة، و«صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.»، و«اختر من المعرض» و«الكاميرا»؛ و× تغلق. المعاينة: الصورة أو الفيديو يعمل بملء الشاشة؛ و× تعود للاختيار. في الأسفل: زر الصورة+ يربط أحد إعلاناتي النشطة (تظهره شارة مع × لإلغاء الربط)، والوصف «اضافة شرح توضيحي....» (حتى 200)، ودائرة الإرسال التي تعرض نسبة الرفع. الفيديو، من إصدار التطبيق 1.6.0 (إصدار جديد في المتجر: القص كود أصلي): يمكن اختيار أي فيديو حتى 10 دقائق؛ وشريط من إطاراته بمقبضين يحدد الجزء المحفوظ (من 1 إلى 30 ثانية، وأول 30 ثانية في البداية)، مع «0:00 - 0:30» وزر الصوت. وتكرر المعاينة الجزء المختار. عند الإرسال يُقص الجزء على الهاتف (AVFoundation في iOS وmedia3 في Android)، ويُعاد ترميزه MP4 حتى 720p، وبلا صوت إن أُطفئ، ويُصنع غلافه من المقطوع، ثم يُرفع. والفيديو القصير بالصوت دون تعديل يُرسل كما هو. وفي إصدارات التطبيق الأقدم (تحديث عبر الهواء) لا يظهر شريط القص ويبقى حد 30 ثانية. قصتي («حالتي»): › تغلق، و+ على الصورة تنشر أخرى، و⋮ تحذف، وزر العين «👁 N» يعرض المشاهدين، والمشاركة ترسل «تابع <الاسم> على بيوتنا» مع رابط الموقع (لا توجد صفحة للحساب على الموقع بعد). وقصص الآخرين بالرأس نفسه مع أسمائهم.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The start, photo, video and own-story screens match the Figma frames.",
+          "A 2-minute video can be picked; the kept part can't be under 1 s or over 30 s.",
+          "Sending a cut part uploads ≤30 s, ≤50 MB, and without sound when turned off.",
+          "An untouched short video with sound is uploaded unchanged.",
+          "A failed cut says «تعذر تجهيز الفيديو، اختر فيديو آخر» and uploads nothing.",
+          "On an older app build the composer still works with the 30 s limit and no trim bar.",
+          "«حالتي»: + opens the composer, the eye pill lists viewers, share opens the share sheet.",
+        ],
+        ar: [
+          "شاشات البداية والصورة والفيديو وقصتي تطابق إطارات Figma.",
+          "يمكن اختيار فيديو دقيقتين؛ ولا يقل الجزء المحفوظ عن ثانية ولا يزيد عن 30 ثانية.",
+          "إرسال جزء مقصوص يرفع 30 ثانية أو أقل و50 ميجابايت أو أقل، وبلا صوت إن أُطفئ.",
+          "الفيديو القصير بالصوت دون تعديل يُرفع كما هو.",
+          "فشل القص يعرض «تعذر تجهيز الفيديو، اختر فيديو آخر» ولا يرفع شيئاً.",
+          "في إصدار أقدم من التطبيق تعمل شاشة النشر بحد 30 ثانية ودون شريط القص.",
+          "«حالتي»: + تفتح النشر، وزر العين يعرض المشاهدين، والمشاركة تفتح نافذة المشاركة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Needs app 1.6.0 (a dev or EAS build with the story-video-editor module).",
+          "As an office: + › اختر من المعرض › a 2-minute video › drag the handles to 0:20–0:45 › sound off › send; open the story: 25 s, silent.",
+          "Repeat on Android.",
+          "Pick a 10 s video and send it untouched: it plays with sound, same length.",
+          "Open your story: «حالتي», + opens the composer, «👁 N» lists the viewers, share opens the share sheet.",
+        ],
+        ar: [
+          "يحتاج إصدار التطبيق 1.6.0 (بناء تطوير أو EAS فيه وحدة story-video-editor).",
+          "كمكتب: + › اختر من المعرض › فيديو دقيقتين › اسحب المقبضين إلى 0:20–0:45 › أطفئ الصوت › أرسل؛ وافتح القصة: 25 ثانية بلا صوت.",
+          "كرر على Android.",
+          "اختر فيديو 10 ثوانٍ وأرسله دون تعديل: يعمل بالصوت وبالمدة نفسها.",
+          "افتح قصتك: «حالتي»، و+ تفتح النشر، و«👁 N» يعرض المشاهدين، والمشاركة تفتح نافذة المشاركة.",
+        ],
+      },
+      updatedIn: "feat/story-composer-figma",
+    },
+    {
       id: "mobile-stories-video",
       title: {
         en: "Stories (phase 5): posting and watching video stories",
@@ -123,8 +194,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "In the composer, «اختر من المعرض» now offers photos and videos (at most 30 s; iOS exports them as 720p H.264), and «الكاميرا» can record up to 30 s. A picked video is checked on the phone first (MP4 or MOV, up to 50 MB, up to 30 s), then its first frame is saved as the poster (made again at a lower quality if over 1 MB). The preview shows the poster with a video badge and the length; «نشر القصة» uploads the poster, then the video with the percentage, then publishes; refusals from the server are shown as it words them (e.g. too long). In the viewer, a video story shows its poster until the video is ready, then plays with sound; the story lasts as long as the video, its bar follows playback, holding pauses it, waiting for the network stops the clock, and it counts as viewed after a second of playing. Leaving the story or the viewer stops the video and its sound at once. Videos are streamed and never kept on the phone; the next video's poster is preloaded in memory.",
-        ar: "في شاشة النشر، يعرض «اختر من المعرض» الآن الصور والفيديو (حتى 30 ثانية؛ ويصدّره iOS بدقة 720 وH.264)، ويمكن لـ «الكاميرا» التسجيل حتى 30 ثانية. يُفحص الفيديو المختار على الهاتف أولاً (MP4 أو MOV، حتى 50 ميجابايت، حتى 30 ثانية)، ثم يُحفظ أول إطار منه غلافاً (ويُعاد بجودة أقل إن تجاوز 1 ميجابايت). تعرض المعاينة الغلاف مع شارة فيديو والمدة؛ ويرفع «نشر القصة» الغلاف ثم الفيديو مع النسبة ثم ينشر؛ وتُعرض أسباب رفض الخادم كما يصوغها (مثل تجاوز المدة). في العارض، تعرض قصة الفيديو غلافها حتى يجهز الفيديو ثم يُشغَّل بالصوت؛ وتستمر القصة بطول الفيديو، ويتبع شريطها التشغيل، والضغط المطوّل يوقفه مؤقتاً، وانتظار الشبكة يوقف العدّاد، وتُحتسب مشاهدة بعد ثانية من التشغيل. مغادرة القصة أو العارض توقف الفيديو وصوته فوراً. يُبث الفيديو ولا يُحفظ على الهاتف أبداً؛ ويُحمَّل غلاف الفيديو التالي مسبقاً في الذاكرة.",
+        en: "In the composer, «اختر من المعرض» now offers photos and videos (at most 30 s; iOS exports them as 720p H.264), and «الكاميرا» can record up to 30 s. A picked video is checked on the phone first (MP4 or MOV, up to 50 MB, up to 30 s), then its first frame is saved as the poster (made again at a lower quality if over 1 MB). The preview shows the poster with a video badge and the length; «نشر القصة» uploads the poster, then the video with the percentage, then publishes; refusals from the server are shown as it words them (e.g. too long). In the viewer, a video story shows its poster until the video is ready, then plays with sound; the story lasts as long as the video, its bar follows playback, holding pauses it, waiting for the network stops the clock, and it counts as viewed after a second of playing. Leaving the story or the viewer stops the video and its sound at once. Videos are streamed and never kept on the phone; the next video's poster is preloaded in memory. From app 1.6.0 a longer video can be picked and cut to 30 s or less on the phone, and the preview plays the video itself (see mobile-stories-composer-figma).",
+        ar: "في شاشة النشر، يعرض «اختر من المعرض» الآن الصور والفيديو (حتى 30 ثانية؛ ويصدّره iOS بدقة 720 وH.264)، ويمكن لـ «الكاميرا» التسجيل حتى 30 ثانية. يُفحص الفيديو المختار على الهاتف أولاً (MP4 أو MOV، حتى 50 ميجابايت، حتى 30 ثانية)، ثم يُحفظ أول إطار منه غلافاً (ويُعاد بجودة أقل إن تجاوز 1 ميجابايت). تعرض المعاينة الغلاف مع شارة فيديو والمدة؛ ويرفع «نشر القصة» الغلاف ثم الفيديو مع النسبة ثم ينشر؛ وتُعرض أسباب رفض الخادم كما يصوغها (مثل تجاوز المدة). في العارض، تعرض قصة الفيديو غلافها حتى يجهز الفيديو ثم يُشغَّل بالصوت؛ وتستمر القصة بطول الفيديو، ويتبع شريطها التشغيل، والضغط المطوّل يوقفه مؤقتاً، وانتظار الشبكة يوقف العدّاد، وتُحتسب مشاهدة بعد ثانية من التشغيل. مغادرة القصة أو العارض توقف الفيديو وصوته فوراً. يُبث الفيديو ولا يُحفظ على الهاتف أبداً؛ ويُحمَّل غلاف الفيديو التالي مسبقاً في الذاكرة. ومن إصدار التطبيق 1.6.0 يمكن اختيار فيديو أطول وقصّه إلى 30 ثانية أو أقل على الهاتف، وتعرض المعاينة الفيديو نفسه (انظر mobile-stories-composer-figma).",
       },
       acceptanceCriteria: {
         en: [
@@ -150,7 +221,7 @@ export const mobileShared: DocSection = {
           "محلياً كمكتب تجريبي: + › اختر فيديو قصيراً من الهاتف › نشر القصة؛ وكـ dev@youssef.app افتحه: الغلاف ثم التشغيل بالصوت؛ اضغط مطوّلاً ثم اترك؛ واسحب للأسفل أثناء الفيديو وتأكد من توقف الصوت.",
         ],
       },
-      updatedIn: "feat/stories-phase5",
+      updatedIn: "feat/story-composer-figma",
     },
     {
       id: "mobile-stories-posting",
@@ -160,8 +231,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "Companies and offices get «قصتك» first in the stories tray, with their own logo: gold while they have live stories (tap to watch them) and grey otherwise (tap to post); the small + always opens a new story. The tray shows for them even when no one else has stories. Posting (/stories/new): pick a photo from the gallery (asked for a compatible JPEG, so iOS doesn't send HEIC) or take one with the camera; the phone checks the type (JPEG, PNG or WebP) and size (up to 10 MB) first. The photo is previewed full screen with an optional caption (counter up to 200) and an optional link to one of the author's active listings, then «نشر القصة» uploads it straight to S3 with a percentage and publishes it. A failed upload is retried once with the same link, or with a new one if it expired; a publish that finds the file not uploaded yet is retried once. Errors are explained: the limit, a file the server refuses, a listing that isn't the author's, and a company without a running subscription gets the plans prompt. Individuals can't post. Watching your own stories shows «المشاهدون · N» instead of a reply: it opens the list of viewers (photo, name, badge and when they viewed, newest first, loading more as you scroll). ⋮ deletes the story after «حذف القصة؟»; it disappears at once and the viewer closes when none are left. Your own views are never recorded.",
-        ar: "تظهر للشركات والمكاتب «قصتك» أولاً في شريط القصص بشعارها: ذهبية ما دامت لها قصص حية (اضغط لمشاهدتها) ورمادية غير ذلك (اضغط للنشر)؛ وعلامة + الصغيرة تفتح قصة جديدة دائماً. ويظهر الشريط لها حتى لو لم تكن لغيرها قصص. النشر (/stories/new): اختر صورة من المعرض (تُطلب بصيغة JPEG متوافقة حتى لا يرسل iOS صيغة HEIC) أو التقطها بالكاميرا؛ ويفحص الهاتف أولاً النوع (JPEG أو PNG أو WebP) والحجم (حتى 10 ميجابايت). تُعرض الصورة بملء الشاشة مع وصف اختياري (عدّاد حتى 200) وربط اختياري بأحد إعلانات الناشر النشطة، ثم يرفعها «نشر القصة» مباشرة إلى S3 مع نسبة التقدم وينشرها. يُعاد الرفع الفاشل مرة واحدة بالرابط نفسه، أو برابط جديد إن انتهت صلاحيته؛ ويُعاد النشر مرة واحدة إن لم يكن الملف قد رُفع بعد. وتُشرح الأخطاء: الحد الأقصى، والملف الذي يرفضه الخادم، والإعلان الذي لا يخص الناشر، والشركة بلا اشتراك سارٍ تظهر لها رسالة الباقات. لا يمكن للأفراد النشر. مشاهدة قصصك تعرض «المشاهدون · N» بدلاً من الرد: تفتح قائمة المشاهدين (الصورة والاسم والشارة ووقت المشاهدة، الأحدث أولاً، مع تحميل المزيد عند التمرير). و⋮ تحذف القصة بعد «حذف القصة؟»؛ فتختفي فوراً ويُغلق العارض إن لم يبق شيء. ولا تُسجَّل أبداً مشاهداتك لقصصك.",
+        en: "Companies and offices get «قصتك» first in the stories tray, with their own logo: gold while they have live stories (tap to watch them) and grey otherwise (tap to post); the small + always opens a new story. The tray shows for them even when no one else has stories. Posting (/stories/new): pick a photo from the gallery (asked for a compatible JPEG, so iOS doesn't send HEIC) or take one with the camera; the phone checks the type (JPEG, PNG or WebP) and size (up to 10 MB) first. The photo is previewed full screen with an optional caption (counter up to 200) and an optional link to one of the author's active listings, then «نشر القصة» uploads it straight to S3 with a percentage and publishes it. A failed upload is retried once with the same link, or with a new one if it expired; a publish that finds the file not uploaded yet is retried once. Errors are explained: the limit, a file the server refuses, a listing that isn't the author's, and a company without a running subscription gets the plans prompt. Individuals can't post. Watching your own stories shows «المشاهدون · N» instead of a reply: it opens the list of viewers (photo, name, badge and when they viewed, newest first, loading more as you scroll). ⋮ deletes the story after «حذف القصة؟»; it disappears at once and the viewer closes when none are left. Your own views are never recorded. The composer's and own-story screens were redesigned from Figma (see mobile-stories-composer-figma): the caption has no counter, and the viewers open from the eye pill «👁 N».",
+        ar: "تظهر للشركات والمكاتب «قصتك» أولاً في شريط القصص بشعارها: ذهبية ما دامت لها قصص حية (اضغط لمشاهدتها) ورمادية غير ذلك (اضغط للنشر)؛ وعلامة + الصغيرة تفتح قصة جديدة دائماً. ويظهر الشريط لها حتى لو لم تكن لغيرها قصص. النشر (/stories/new): اختر صورة من المعرض (تُطلب بصيغة JPEG متوافقة حتى لا يرسل iOS صيغة HEIC) أو التقطها بالكاميرا؛ ويفحص الهاتف أولاً النوع (JPEG أو PNG أو WebP) والحجم (حتى 10 ميجابايت). تُعرض الصورة بملء الشاشة مع وصف اختياري (عدّاد حتى 200) وربط اختياري بأحد إعلانات الناشر النشطة، ثم يرفعها «نشر القصة» مباشرة إلى S3 مع نسبة التقدم وينشرها. يُعاد الرفع الفاشل مرة واحدة بالرابط نفسه، أو برابط جديد إن انتهت صلاحيته؛ ويُعاد النشر مرة واحدة إن لم يكن الملف قد رُفع بعد. وتُشرح الأخطاء: الحد الأقصى، والملف الذي يرفضه الخادم، والإعلان الذي لا يخص الناشر، والشركة بلا اشتراك سارٍ تظهر لها رسالة الباقات. لا يمكن للأفراد النشر. مشاهدة قصصك تعرض «المشاهدون · N» بدلاً من الرد: تفتح قائمة المشاهدين (الصورة والاسم والشارة ووقت المشاهدة، الأحدث أولاً، مع تحميل المزيد عند التمرير). و⋮ تحذف القصة بعد «حذف القصة؟»؛ فتختفي فوراً ويُغلق العارض إن لم يبق شيء. ولا تُسجَّل أبداً مشاهداتك لقصصك. وأُعيد تصميم شاشتي النشر وقصتك من Figma (انظر mobile-stories-composer-figma): لا عدّاد للوصف، وتُفتح قائمة المشاهدين من زر العين «👁 N».",
       },
       acceptanceCriteria: {
         en: [
@@ -191,7 +262,7 @@ export const mobileShared: DocSection = {
           "محلياً كمكتب تجريبي: + › اختر صورة › وصف › اربط الإعلان › نشر القصة؛ وكـ dev@youssef.app تظهر القصة؛ وبالعودة كمكتب تعرض «المشاهدون · 1» حساب dev؛ و⋮ › حذف يزيلها.",
         ],
       },
-      updatedIn: "feat/stories-phase4",
+      updatedIn: "feat/story-composer-figma",
     },
     {
       id: "mobile-stories-viewer",
