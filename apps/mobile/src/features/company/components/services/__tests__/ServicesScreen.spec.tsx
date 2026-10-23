@@ -133,6 +133,41 @@ describe('الخدمات', () => {
   });
 });
 
+describe('اختر الخدمة الفرعية › اضافة', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    api.getMyServices.mockResolvedValue(data);
+    api.createService.mockResolvedValue({ success: true, created: 1 });
+  });
+
+  it('adds the ticked types straight from the picker', async () => {
+    const { findByTestId, getByTestId } = await renderScreen();
+    await fireEvent.press(await findByTestId('services-add-sub'));
+    expect(
+      getByTestId('sub-service-picker-add').props.accessibilityState?.disabled,
+    ).toBe(true);
+
+    await fireEvent.press(getByTestId('sub-service-option-تصميم الواجهات'));
+    await fireEvent.press(getByTestId('sub-service-picker-add'));
+    await waitFor(() =>
+      expect(api.createService).toHaveBeenCalledWith({
+        specialty: 'مكتب هندسي',
+        types: ['تصميم الواجهات'],
+        title: undefined,
+      }),
+    );
+  });
+
+  it('with «اخرى» ticked it reads «التالي» and adds nothing yet (the title comes first)', async () => {
+    const { findByTestId, getByTestId, getByText } = await renderScreen();
+    await fireEvent.press(await findByTestId('services-add-sub'));
+    await fireEvent.press(getByTestId('sub-service-option-اخرى'));
+    expect(getByText('التالي')).toBeTruthy();
+    await fireEvent.press(getByTestId('sub-service-picker-add'));
+    expect(api.createService).not.toHaveBeenCalled();
+  });
+});
+
 describe('servicesSummary', () => {
   it('counts the active and hidden sub-services', () => {
     expect(servicesSummary([{}, {}, {}, { isHidden: true }, { isHidden: true }])).toBe(
