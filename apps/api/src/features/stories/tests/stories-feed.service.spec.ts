@@ -16,7 +16,13 @@ const B = id(20);
 const author = (n: string, name: string) => ({
   id: n,
   type: 'COMPANY',
-  companyData: { name, logoUrl: null, isVerified: false },
+  companyData: {
+    name,
+    logoUrl: null,
+    isVerified: false,
+    specialty: 'مكتب هندسي',
+    servicesHidden: false,
+  },
   officeData: null,
 });
 const story = (storyId: string, identityId: string) => ({
@@ -182,6 +188,63 @@ describe('StoriesFeedService', () => {
     expect(result.authors.map((a) => a.author.identityId)).toEqual([B]);
   });
 
+  it("shows a company's specialty, «مكتب عقاري» for an office, none when hidden", async () => {
+    prisma.identity.findMany.mockResolvedValue([
+      author(A, 'دار العقار'),
+      {
+        id: B,
+        type: 'OFFICE',
+        companyData: null,
+        officeData: { name: 'مكتب', logoUrl: null, isVerified: true },
+      },
+    ]);
+    const result = await service.feed(VIEWER, {}, NOW);
+    expect(result.authors.map((a) => a.author.subtitle)).toEqual([
+      'مكتب هندسي',
+      'مكتب عقاري',
+    ]);
+
+    const hidden = author(A, 'دار العقار');
+    hidden.companyData.servicesHidden = true;
+    prisma.identity.findMany.mockResolvedValue([hidden]);
+    const again = await service.feed(VIEWER, {}, NOW);
+    expect(again.authors[0]?.author.subtitle).toBeNull();
+  });
+
+  it('a segment ranks only its kind and its next cursor stays in it', async () => {
+    prisma.$queryRaw.mockResolvedValue([
+      {
+        authorId: A,
+        latestIso: '2026-10-20T10:00:00.000Z',
+        hasUnseen: true,
+        followed: false,
+        tier: 1,
+      },
+      {
+        authorId: B,
+        latestIso: '2026-10-20T09:00:00.000Z',
+        hasUnseen: true,
+        followed: false,
+        tier: 1,
+      },
+    ]);
+    const result = await service.feed(
+      VIEWER,
+      { type: 'OFFICE', limit: 1 },
+      NOW,
+    );
+    const sql = callArg<{ text: string; values: unknown[] }>(prisma.$queryRaw);
+    expect(sql.text).toContain('AND i.type::text =');
+    expect(sql.values).toContain('OFFICE');
+    expect(decodeFeedCursor(result.nextCursor ?? '', NOW, 'OFFICE').type).toBe(
+      'OFFICE',
+    );
+    // That cursor can't continue «الكل»
+    await expect(
+      service.feed(VIEWER, { cursor: result.nextCursor ?? '' }, NOW),
+    ).rejects.toThrow(BadRequestException);
+  });
+
   it('an empty feed makes only the ranking query', async () => {
     prisma.$queryRaw.mockResolvedValue([]);
     await expect(service.feed(VIEWER, {}, NOW)).resolves.toEqual({
@@ -233,6 +296,11 @@ describe('StoriesFeedService', () => {
     it('the first page has no cursor condition', () => {
       const q = rankQuery(VIEWER, NOW, NOW, null, 21);
       expect(q.text).not.toContain('r.tier >');
+    });
+
+    it('«الكل» has no type condition', () => {
+      const q = rankQuery(VIEWER, NOW, NOW, null, 21);
+      expect(q.text).not.toContain('i.type::text');
     });
   });
 });

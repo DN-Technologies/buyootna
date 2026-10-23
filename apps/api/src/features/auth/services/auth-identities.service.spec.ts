@@ -16,6 +16,7 @@ describe('AuthIdentitiesService Unit Tests', () => {
     },
     session: { findUnique: jest.fn() },
     $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
+    $executeRaw: jest.fn().mockResolvedValue(1),
   };
 
   beforeEach(async () => {
@@ -69,14 +70,15 @@ describe('AuthIdentitiesService Unit Tests', () => {
   it('markLastUsed makes the given persona the only last-used one', async () => {
     await service.markLastUsed('user-1', 'i-1');
 
-    expect(mockPrismaService.identity.updateMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1', id: { not: 'i-1' }, isActive: true },
-      data: { isActive: false },
-    });
-    expect(mockPrismaService.identity.update).toHaveBeenCalledWith({
-      where: { id: 'i-1' },
-      data: { isActive: true },
-    });
+    // One statement: on for this persona, off for the account's others
+    const [strings, ...values] = mockPrismaService.$executeRaw.mock
+      .calls[0] as [TemplateStringsArray, ...unknown[]];
+    const sql = (strings as string[]).join('?').replace(/\s+/g, ' ');
+    expect(sql).toContain('UPDATE "Identity" SET "isActive" = (id = ?)');
+    expect(sql).toContain(
+      'WHERE "userId" = ? AND ("isActive" = true OR id = ?)',
+    );
+    expect(values).toEqual(['i-1', 'user-1', 'i-1']);
   });
 
   it("findForDevice resumes the persona this device's session was using", async () => {

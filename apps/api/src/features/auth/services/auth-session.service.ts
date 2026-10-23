@@ -245,38 +245,38 @@ export class AuthSessionService {
 
   // Switch active identity
   async switchIdentity(userId: string, identityId: string, sessionId?: string) {
-    // Verify identity belongs to user
-    const identity = await this.identities.findById(identityId, userId);
+    // Each database round trip is felt in the app (~145 ms from far away):
+    // the reads go together, then the writes go together
+    const [identity, user, identities] = await Promise.all([
+      // Verify identity belongs to user
+      this.identities.findById(identityId, userId),
+      this.prisma.user.findUnique({ where: { id: userId } }),
+      this.identities.listAll(userId),
+    ]);
 
     if (!identity) {
       throw new ForbiddenException('الهوية غير موجودة أو لا تنتمي لهذا الحساب');
     }
-
-    // This device now uses it, and it becomes the account's last used one;
-    // other devices keep their own persona
-    await this.identities.markLastUsed(userId, identityId);
-    if (sessionId) {
-      await this.sessions.setActiveIdentity(sessionId, identityId);
-    }
-
-    // Get updated user
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
-
     if (!user) {
       throw new UnauthorizedException('المستخدم غير موجود');
     }
 
+    // This device now uses it, and it becomes the account's last used one;
+    // other devices keep their own persona. Switching stays on the same
+    // device/session: its sid is reused, not a new Session row
+    await Promise.all([
+      this.identities.markLastUsed(userId, identityId),
+      ...(sessionId
+        ? [
+            this.sessions.setActiveIdentity(sessionId, identityId),
+            this.sessions.touchLastActive(sessionId),
+          ]
+        : []),
+    ]);
+
     const userWithoutPassword = { ...user };
     delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
       .password;
-
-    // Switching identity stays on the same device/session — reuse the
-    // existing sid rather than creating a new Session row.
-    if (sessionId) {
-      await this.sessions.touchLastActive(sessionId);
-    }
 
     // Generate new JWT token with updated identity
     const payload: JwtPayload = {
@@ -285,9 +285,6 @@ export class AuthSessionService {
       type: identity.type,
       sid: sessionId,
     };
-
-    // Get all identities
-    const identities = await this.identities.listAll(userId);
 
     return {
       access_token: this.jwtService.sign(payload),

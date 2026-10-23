@@ -153,9 +153,7 @@ describe('AuthSessionService.login account status', () => {
     });
 
     it('a ticket for an account an admin has since suspended is refused', async () => {
-      const { reactivationTicket } = await conflictOf(
-        service.login(timed(3)),
-      );
+      const { reactivationTicket } = await conflictOf(service.login(timed(3)));
       prisma.user.findUnique.mockResolvedValue({
         ...user({ isDisabled: true }),
         password: 'hash',

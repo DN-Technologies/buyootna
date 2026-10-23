@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 
-import type { StoryAuthorStories } from '../types';
+import type { StoryAuthorStories, StoryAuthorType } from '../types';
 import { useAuthorStories, useMyStories, useStoriesFeed } from './useStoriesQueries';
 
 export type StoryViewerSourceKind = 'feed' | 'author' | 'mine';
@@ -28,11 +28,13 @@ export interface StoryViewerSource {
 export function useStoryViewerSource(
   authorId: string,
   source: StoryViewerSourceKind,
+  // The «القصص» segment it was opened from: swipes stay in it
+  feedType?: StoryAuthorType,
 ): StoryViewerSource {
   const isMine = source === 'mine';
   const me = useIdentity();
   const mine = useMyStories(isMine);
-  const feed = useStoriesFeed();
+  const feed = useStoriesFeed(feedType);
   const inFeed =
     source === 'feed' &&
     feed.authors.some((a) => a.author.identityId === authorId);

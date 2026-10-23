@@ -11,6 +11,7 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import type {
   StoryAuthorStories,
+  StoryAuthorType,
   StoryFeedPage,
   ViewerStory,
 } from '../types';
@@ -22,7 +23,11 @@ import type {
  */
 export const storiesKeys = {
   all: (identityId: string | null) => ['stories', identityId] as const,
-  feed: (identityId: string | null) => ['stories', identityId, 'feed'] as const,
+  // `type`: the «شركات» / «مكاتب عقارية» segment; every feed shares the prefix
+  feed: (identityId: string | null, type?: StoryAuthorType) =>
+    type
+      ? (['stories', identityId, 'feed', type] as const)
+      : (['stories', identityId, 'feed'] as const),
   author: (identityId: string | null, authorId: string) =>
     ['stories', identityId, 'author', authorId] as const,
 };
@@ -36,16 +41,19 @@ type FeedData = InfiniteData<StoryFeedPage, string | undefined>;
 const errorCode = (error: unknown) =>
   (error as { response?: { data?: { code?: string } } })?.response?.data?.code;
 
-/** The stories feed (signed-in profiles only), paged by cursor. */
-export function useStoriesFeed() {
+/**
+ * The stories feed (signed-in profiles only), paged by cursor. `type` keeps
+ * only companies or only offices («القصص»'s segments).
+ */
+export function useStoriesFeed(type?: StoryAuthorType) {
   const identityId = useActiveIdentityId();
   const token = useAuthStore((s) => s.token);
   const queryClient = useQueryClient();
-  const key = storiesKeys.feed(identityId);
+  const key = storiesKeys.feed(identityId, type);
 
   const query = useInfiniteQuery({
     queryKey: key,
-    queryFn: ({ pageParam }) => storiesService.getFeed(pageParam),
+    queryFn: ({ pageParam }) => storiesService.getFeed(pageParam, type),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: !!token && !!identityId,
@@ -92,7 +100,8 @@ export function useMarkStoryViewed() {
   const queryClient = useQueryClient();
   return useCallback(
     (storyId: string) => {
-      queryClient.setQueryData<FeedData>(storiesKeys.feed(identityId), (data) =>
+      // Every segment's feed
+      queryClient.setQueriesData<FeedData>({ queryKey: storiesKeys.feed(identityId) }, (data) =>
         data
           ? {
               ...data,
