@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 
 import type { PulseItem } from '@/shared/api/pulse.service';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { PULSE_TONE_COLORS, pulseView } from './pulseItems';
 
@@ -24,6 +25,7 @@ interface PulseNotchProps {
  * view). A tap opens the quick view.
  */
 export default function PulseNotch({ items, paused, onPress }: PulseNotchProps) {
+  const identity = useAuthStore((s) => s.activeIdentity?.type);
   const [index, setIndex] = useState(0);
   const cycling = items.length > 1 && !paused;
 
@@ -38,7 +40,7 @@ export default function PulseNotch({ items, paused, onPress }: PulseNotchProps) 
 
   const item = items[index % items.length];
   if (!item) return null;
-  const view = pulseView(item);
+  const view = pulseView(item, identity);
   const color = PULSE_TONE_COLORS[item.tone];
 
   return (

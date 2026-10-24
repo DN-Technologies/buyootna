@@ -60,4 +60,82 @@ describe('pulseView', () => {
       },
     });
   });
+
+  it('expiring ads open the office\'s own listings for an office', () => {
+    expect(
+      pulseView(item({ kind: 'adExpiring', daysLeft: 1 }), 'OFFICE').href,
+    ).toBe('/(office)/office-properties');
+  });
+
+  describe('company', () => {
+    it('private requests: one opens it, several the requests list', () => {
+      expect(
+        pulseView(item({ kind: 'privateRequests', refId: 'q1' }), 'COMPANY'),
+      ).toMatchObject({
+        icon: 'briefcase',
+        short: '+1',
+        title: 'طلب خاص بانتظار ردك',
+        href: '/(company)/(requests)/q1',
+      });
+      expect(
+        pulseView(item({ kind: 'privateRequests', count: 3 }), 'COMPANY'),
+      ).toMatchObject({
+        title: '3 طلبات خاصة بانتظار ردك',
+        href: '/(company)/company-requests',
+      });
+    });
+
+    it('billing: overdue or expired says «!», ending says the days', () => {
+      expect(
+        pulseView(item({ kind: 'billing', tone: 'red' }), 'COMPANY'),
+      ).toMatchObject({
+        icon: 'alert-circle',
+        short: '!',
+        title: 'اشتراكك يحتاج إلى تجديد',
+        href: '/company-plans',
+      });
+      const ending = (d: number) =>
+        pulseView(item({ kind: 'billing', daysLeft: d, tone: 'amber' }), 'COMPANY');
+      expect(ending(1)).toMatchObject({ short: '1', title: 'ينتهي اشتراكك غداً' });
+      expect(ending(2).title).toBe('ينتهي اشتراكك خلال يومين');
+      expect(ending(5).title).toBe('ينتهي اشتراكك خلال 5 أيام');
+    });
+
+    it('accepted offers and new public requests', () => {
+      expect(
+        pulseView(item({ kind: 'offerAccepted', refId: 'r1' }), 'COMPANY'),
+      ).toMatchObject({ title: 'قبل العميل عرضك', href: '/(company)/(requests)/r1' });
+      expect(
+        pulseView(item({ kind: 'publicRequests', count: 4 }), 'COMPANY'),
+      ).toMatchObject({
+        title: '4 طلبات عامة جديدة في تخصصك',
+        href: '/(company)/company-requests',
+      });
+    });
+  });
+
+  it('office: ad credits running out open the packages', () => {
+    expect(pulseView(item({ kind: 'adCredits', count: 0 }), 'OFFICE')).toMatchObject({
+      short: '0',
+      title: 'نفد رصيد إعلاناتك',
+      href: '/plans',
+    });
+    expect(pulseView(item({ kind: 'adCredits', count: 1 }), 'OFFICE').title).toBe(
+      'بقي إعلان واحد في رصيدك',
+    );
+  });
+
+  it('my story: its views, time left, and opens my stories', () => {
+    expect(
+      pulseView(item({ kind: 'myStory', count: 128, refId: 'me', hoursLeft: 9 }), 'OFFICE'),
+    ).toMatchObject({
+      short: '99+',
+      title: 'قصتك: 128 مشاهدة',
+      subtitle: 'تنتهي خلال 9 ساعة',
+      href: { pathname: '/stories/[authorId]', params: { authorId: 'me', source: 'mine' } },
+    });
+    expect(
+      pulseView(item({ kind: 'myStory', count: 3, hoursLeft: 0 }), 'COMPANY').subtitle,
+    ).toBe('تنتهي خلال أقل من ساعة');
+  });
 });

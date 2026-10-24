@@ -7,10 +7,17 @@ interface PillPhotoProps {
   avatarUrl: string | null | undefined;
   open: boolean;
   onPress: () => void;
+  // Companies and offices: the + on the photo adds a story
+  onAddStory?: () => void;
 }
 
 /** The profile photo: one tap opens / closes the pill, two switch profile. */
-export default function PillPhoto({ avatarUrl, open, onPress }: PillPhotoProps) {
+export default function PillPhoto({
+  avatarUrl,
+  open,
+  onPress,
+  onAddStory,
+}: PillPhotoProps) {
   return (
     <TouchableOpacity
       testID="avatar-pill-photo"
@@ -31,6 +38,21 @@ export default function PillPhoto({ avatarUrl, open, onPress }: PillPhotoProps) 
           <Feather name="user" size={22} color="#94A3B8" />
         )}
       </View>
+      {onAddStory && (
+        <TouchableOpacity
+          testID="avatar-pill-add-story"
+          accessibilityRole="button"
+          accessibilityLabel="إضافة قصة"
+          hitSlop={8}
+          onPress={onAddStory}
+          className="absolute bottom-[-2px] size-[18px] items-center justify-center rounded-full bg-[#15304D]"
+          // The app's RTL swaps left and right: this is the photo's
+          // bottom-left, as on the story rings
+          style={{ right: -2, borderWidth: 1.5, borderColor: '#FFFFFF' }}
+        >
+          <Feather name="plus" size={11} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
     </TouchableOpacity>
   );
 }

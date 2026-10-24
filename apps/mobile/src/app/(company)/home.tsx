@@ -1,8 +1,11 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useRef } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import {
   HomeBanner,
   HomeHeader,
@@ -12,11 +15,9 @@ import {
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
-import StoryTray from '@/features/stories/components/StoryTray';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
-import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -28,9 +29,10 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
  * services) and the two request lists.
  */
 export default function CompanyHomeScreen() {
-  const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
+  const router = useRouter();
+  const profileSheetRef = useRef<BottomSheetModal>(null);
+  const { activeIdentity } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
-  const unreadCount = useUnreadNotificationsCount();
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
   const { data: dashboard, refetch: refetchDashboard } = useCompanyHome();
@@ -46,8 +48,6 @@ export default function CompanyHomeScreen() {
   );
 
   const { services, refetch: refetchServices } = useMyCompanyServices();
-
-  const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
   const activeServicesCount = services.length;
 
@@ -103,15 +103,9 @@ export default function CompanyHomeScreen() {
       >
         <ContentContainer>
           <HomeHeader
-            logoUrl={logoUrl}
-            displayName={displayName}
-            isVerified={isVerified}
-            unreadNotificationsCount={unreadCount}
+            onSwitchProfile={() => profileSheetRef.current?.present()}
           />
         </ContentContainer>
-
-        {/* Stories (hidden when there are none) */}
-        <StoryTray className="mt-4" />
 
         <ContentContainer>
           <View className="mt-5 gap-6">
@@ -141,6 +135,14 @@ export default function CompanyHomeScreen() {
           </View>
         </ContentContainer>
       </ScrollView>
+      {/* A double tap on the logo: switch profile (as in المزيد) */}
+      <ProfileBottomSheet
+        ref={profileSheetRef}
+        onAddAccount={() => {
+          profileSheetRef.current?.dismiss();
+          router.push('/(auth)/add-identity');
+        }}
+      />
     </SafeAreaView>
   );
 }

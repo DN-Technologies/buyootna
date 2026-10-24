@@ -7,11 +7,18 @@
  *   pnpm --filter api pulse:demo expiring [--days N] my ad with N whole days left (0-2, default 1)
  *   pnpm --filter api pulse:demo matches             a new listing matching my alert
  *   pnpm --filter api pulse:demo story               a saved company's unwatched story
+ *   pnpm --filter api pulse:demo company             my company profile (a demo one if I have none):
+ *                                                    an overdue invoice, a private request, an
+ *                                                    accepted offer, a new public request, a live story
+ *   pnpm --filter api pulse:demo office              my office profile (a demo one if I have none):
+ *                                                    an ad expiring tomorrow, a live story, and no
+ *                                                    ad credits unless it has a package
  *   pnpm --filter api pulse:demo clear               removes everything it added
  *
  * The account: --email <email>, or the only individual profile in the
  * database. Each case replaces its own earlier rows, so it can be re-run;
- * pull to refresh (or leave and come back to) the home to see it.
+ * pull to refresh (or leave and come back to) the home to see it. For the
+ * company and office, double-tap your photo and switch to the new profile.
  */
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
@@ -20,6 +27,9 @@ import { Pool } from 'pg';
 
 const CASES = ['offers', 'expiring', 'matches', 'story'] as const;
 type Case = (typeof CASES)[number];
+const PROFILES = ['company', 'office'] as const;
+type Profile = (typeof PROFILES)[number];
+const COMMANDS: string[] = [...CASES, 'all', ...PROFILES, 'clear'];
 
 // Every row it adds has an id starting with this, so clear finds them all
 const P = 'pulse-demo-';
@@ -38,7 +48,23 @@ const ids = {
   match: `${P}match`,
   favorite: `${P}favorite`,
   story: `${P}story`,
+  // My own demo company and office (profiles on my account)
+  myCompany: `${P}my-company`,
+  myCompanyData: `${P}my-company-data`,
+  invoice: `${P}invoice`,
+  privateRequest: `${P}private-request`,
+  acceptedRequest: `${P}accepted-request`,
+  acceptedOffer: `${P}accepted-offer`,
+  publicRequest: `${P}public-request`,
+  myCompanyStory: `${P}my-company-story`,
+  myOffice: `${P}my-office`,
+  myOfficeData: `${P}my-office-data`,
+  officeAd: `${P}my-office-ad`,
+  myOfficeStory: `${P}my-office-story`,
 };
+const HOUR_MS = 60 * 60 * 1000;
+const LOGO = (letter: string) =>
+  `https://placehold.co/96x96/15304D/C5A36D/png?text=${letter}`;
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -57,9 +83,9 @@ function assertLocal(url: string | undefined) {
 
 async function main() {
   const what = process.argv[2];
-  if (!what || ![...CASES, 'all', 'clear'].includes(what)) {
+  if (!what || !COMMANDS.includes(what)) {
     console.log(
-      `Usage: pnpm --filter api pulse:demo <${[...CASES, 'all', 'clear'].join(' | ')}> [--email <email>] [--days N]`,
+      `Usage: pnpm --filter api pulse:demo <${COMMANDS.join(' | ')}> [--email <email>] [--days N]`,
     );
     process.exit(1);
   }
@@ -75,6 +101,14 @@ async function main() {
     }
     const me = await findMe(prisma, arg('email'));
     await ensureCompany(prisma);
+    if ((PROFILES as readonly string[]).includes(what)) {
+      await profiles[what as Profile](prisma, me);
+      console.log(
+        `\nOn ${me.label}: double-tap your photo, switch to the new profile, and look at its home.`,
+      );
+      console.log('Undo: pnpm --filter api pulse:demo clear');
+      return;
+    }
     const cases: Case[] = what === 'all' ? [...CASES] : [what as Case];
     for (const c of cases) {
       await seed[c](prisma, me);
@@ -96,7 +130,11 @@ async function findMe(prisma: PrismaClient, email?: string) {
       id: { not: { startsWith: P } },
       ...(email ? { user: { email } } : {}),
     },
-    select: { id: true, user: { select: { email: true, phone: true } } },
+    select: {
+      id: true,
+      userId: true,
+      user: { select: { email: true, phone: true } },
+    },
   });
   if (identities.length !== 1) {
     throw new Error(
@@ -106,7 +144,11 @@ async function findMe(prisma: PrismaClient, email?: string) {
     );
   }
   const [me] = identities;
-  return { id: me.id, label: me.user.email ?? me.user.phone ?? me.id };
+  return {
+    id: me.id,
+    userId: me.userId,
+    label: me.user.email ?? me.user.phone ?? me.id,
+  };
 }
 
 // The other side of every case: an approved company with a logo
@@ -130,7 +172,7 @@ async function ensureCompany(prisma: PrismaClient) {
       name: 'شركة النبض التجريبية',
       licenseNumber: 'PULSE-DEMO',
       status: 'APPROVED',
-      logoUrl: 'https://placehold.co/96x96/15304D/C5A36D/png?text=B',
+      logoUrl: LOGO('B'),
     },
   });
 }
@@ -142,7 +184,7 @@ async function nextReference(prisma: PrismaClient) {
   return (_max.referenceNumber ?? 0) + 1;
 }
 
-type Me = { id: string; label: string };
+type Me = { id: string; userId: string; label: string };
 
 const seed: Record<Case, (prisma: PrismaClient, me: Me) => Promise<void>> = {
   async offers(prisma, me) {
@@ -254,6 +296,176 @@ const seed: Record<Case, (prisma: PrismaClient, me: Me) => Promise<void>> = {
   },
 };
 
+// A live story by `identityId` that the demo company has viewed
+async function liveStory(
+  prisma: PrismaClient,
+  id: string,
+  identityId: string,
+  hoursLeft: number,
+) {
+  await prisma.storyView.deleteMany({ where: { storyId: id } });
+  await prisma.story.deleteMany({ where: { id } });
+  await prisma.story.create({
+    data: {
+      id,
+      identityId,
+      status: 'ACTIVE',
+      mediaType: 'IMAGE',
+      mediaKey: `${id}/media.jpg`,
+      mediaContentType: 'image/jpeg',
+      mediaSizeBytes: 1,
+      publishedAt: new Date(),
+      expiresAt: new Date(Date.now() + hoursLeft * HOUR_MS + 10 * 60 * 1000),
+    },
+  });
+  await prisma.storyView.create({
+    data: { storyId: id, viewerIdentityId: ids.company },
+  });
+}
+
+/**
+ * My company or office: the one already on my account (its own data is left
+ * alone), else a demo one, approved, that clear removes.
+ */
+async function myProfile(
+  prisma: PrismaClient,
+  me: Me,
+  type: 'COMPANY' | 'OFFICE',
+): Promise<{ id: string; name: string }> {
+  const existing = await prisma.identity.findFirst({
+    where: { userId: me.userId, type },
+    select: {
+      id: true,
+      companyData: { select: { name: true } },
+      officeData: { select: { name: true } },
+    },
+  });
+  if (existing) {
+    return {
+      id: existing.id,
+      name: existing.companyData?.name ?? existing.officeData?.name ?? type,
+    };
+  }
+  const company = type === 'COMPANY';
+  const id = company ? ids.myCompany : ids.myOffice;
+  const name = company ? 'شركتي التجريبية' : 'مكتبي التجريبي';
+  await prisma.identity.create({ data: { id, userId: me.userId, type } });
+  const data = {
+    identityId: id,
+    name,
+    licenseNumber: company ? 'PULSE-DEMO-MINE' : 'PULSE-DEMO-OFFICE',
+    status: 'APPROVED' as const,
+    logoUrl: LOGO(company ? 'C' : 'O'),
+  };
+  if (company) {
+    await prisma.companyIdentityData.create({
+      data: { id: ids.myCompanyData, ...data },
+    });
+  } else {
+    await prisma.officeIdentityData.create({
+      data: { id: ids.myOfficeData, ...data },
+    });
+  }
+  return { id, name };
+}
+
+const profiles: Record<
+  Profile,
+  (prisma: PrismaClient, me: Me) => Promise<void>
+> = {
+  async company(prisma, me) {
+    const co = await myProfile(prisma, me, 'COMPANY');
+    // An overdue invoice: billing in red
+    await prisma.invoice.deleteMany({ where: { id: ids.invoice } });
+    await prisma.invoice.create({
+      data: {
+        id: ids.invoice,
+        invoiceNo: 'PULSE-DEMO-INVOICE',
+        planName: 'باقة تجريبية',
+        amount: 50,
+        identityId: co.id,
+        status: 'OVERDUE',
+        dueDate: new Date(Date.now() - 2 * DAY_MS),
+      },
+    });
+    // The requests come from the demo company
+    const reqIds = [ids.privateRequest, ids.acceptedRequest, ids.publicRequest];
+    await prisma.requestOffer.deleteMany({ where: { id: ids.acceptedOffer } });
+    await prisma.companyRequest.deleteMany({ where: { id: { in: reqIds } } });
+    const base = {
+      clientIdentityId: ids.company,
+      location: 'الكويت',
+      description: 'طلب تجريبي لعرض النبض',
+    };
+    await prisma.companyRequest.create({
+      data: {
+        ...base,
+        id: ids.privateRequest,
+        targetIdentityId: co.id,
+        title: 'تصميم مكتب (طلب خاص تجريبي)',
+      },
+    });
+    await prisma.companyRequest.create({
+      data: {
+        ...base,
+        id: ids.acceptedRequest,
+        acceptedByIdentityId: co.id,
+        status: 'ACCEPTED',
+        title: 'ترميم شقة (عرض مقبول تجريبي)',
+      },
+    });
+    await prisma.requestOffer.create({
+      data: {
+        id: ids.acceptedOffer,
+        requestId: ids.acceptedRequest,
+        providerIdentityId: co.id,
+        status: 'ACCEPTED',
+        price: 4200,
+      },
+    });
+    await prisma.companyRequest.create({
+      data: {
+        ...base,
+        id: ids.publicRequest,
+        title: 'صيانة مكيفات (طلب عام تجريبي)',
+        createdAt: new Date(Date.now() - 2 * HOUR_MS),
+      },
+    });
+    await liveStory(prisma, ids.myCompanyStory, co.id, 9);
+    console.log(
+      `✓ company   — «${co.name}»: an overdue invoice, a private request,`,
+    );
+    console.log(
+      '              an accepted offer, a new public request, a live story (1 view)',
+    );
+  },
+
+  async office(prisma, me) {
+    const of = await myProfile(prisma, me, 'OFFICE');
+    // No ad package: no credits left
+    await prisma.property.deleteMany({ where: { id: ids.officeAd } });
+    await prisma.property.create({
+      data: {
+        id: ids.officeAd,
+        referenceNumber: await nextReference(prisma),
+        identityId: of.id,
+        type: 'RENT',
+        category: 'APARTMENT',
+        location: 'حولي',
+        description: 'إعلان مكتب تجريبي ينتهي غداً',
+        status: 'ACTIVE',
+        publishedAt: new Date(),
+        endDate: new Date(Date.now() + DAY_MS + HOUR_MS),
+      },
+    });
+    await liveStory(prisma, ids.myOfficeStory, of.id, 20);
+    console.log(
+      `✓ office    — «${of.name}»: an ad expiring tomorrow, a live story (1 view),`,
+    );
+    console.log('              and no ad credits, unless it has a package');
+  },
+};
+
 // Children first; everything the demo added, whichever cases ran
 async function clear(prisma: PrismaClient) {
   const mine = { startsWith: P };
@@ -265,7 +477,9 @@ async function clear(prisma: PrismaClient) {
   await prisma.requestOffer.deleteMany({ where: { id: mine } });
   await prisma.companyRequest.deleteMany({ where: { id: mine } });
   await prisma.property.deleteMany({ where: { id: mine } });
+  await prisma.invoice.deleteMany({ where: { id: mine } });
   await prisma.companyIdentityData.deleteMany({ where: { id: mine } });
+  await prisma.officeIdentityData.deleteMany({ where: { id: mine } });
   await prisma.identity.deleteMany({ where: { id: mine } });
   await prisma.user.deleteMany({ where: { id: mine } });
 }

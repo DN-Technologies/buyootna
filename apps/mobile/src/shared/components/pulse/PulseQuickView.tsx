@@ -13,6 +13,7 @@ import {
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 import type { PulseItem } from '@/shared/api/pulse.service';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { PULSE_TONE_COLORS, pulseView } from './pulseItems';
 
@@ -41,6 +42,7 @@ export default function PulseQuickView({
   onClose,
 }: PulseQuickViewProps) {
   const router = useRouter();
+  const identity = useAuthStore((s) => s.activeIdentity?.type);
   const { width: screenWidth } = useWindowDimensions();
   const rows = items.slice(0, MAX_ROWS);
   const cardWidth = Math.min(CARD_MAX_WIDTH, screenWidth - anchor.inset * 2);
@@ -99,7 +101,7 @@ export default function PulseQuickView({
             </View>
 
             {rows.map((item, i) => {
-              const view = pulseView(item);
+              const view = pulseView(item, identity);
               const color = PULSE_TONE_COLORS[item.tone];
               return (
                 <TouchableOpacity

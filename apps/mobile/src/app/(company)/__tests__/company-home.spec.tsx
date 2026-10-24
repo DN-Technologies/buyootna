@@ -7,6 +7,15 @@ import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests'
 import CompanyHomeScreen from '../home';
 
 // The stories tray has its own tests; here it renders nothing
+// The pill (logo, notch, chats and bell) has its own specs
+jest.mock('@/shared/components/avatar-pill/AvatarPill', () => {
+  const { View } = jest.requireActual('react-native');
+  return { __esModule: true, default: () => <View testID="avatar-pill" /> };
+});
+jest.mock('@/features/auth/components/ProfileBottomSheet', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('@/features/stories/components/StoryTray', () => ({
   __esModule: true,
   default: () => null,
@@ -124,8 +133,9 @@ describe('CompanyHomeScreen', () => {
   it('shows the header, the four figures and both request lists', async () => {
     const { getByText, getByTestId, queryByText } = await setup();
 
-    expect(getByText('دار العقار الحديث')).toBeTruthy();
-    expect(getByTestId('company-home-notifications-dot')).toBeTruthy();
+    // The header is the home pill alone
+    expect(queryByText('دار العقار الحديث')).toBeNull();
+    expect(getByTestId('avatar-pill')).toBeTruthy();
 
     // One of the two private requests is from the last 7 days
     expect(getByTestId('stat-private-requests-value').props.children).toBe(

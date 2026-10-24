@@ -20,15 +20,26 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
+let mockBusiness: 'COMPANY' | 'OFFICE' | null = null;
 jest.mock('@/shared/hooks/auth/useIdentity', () => ({
-  useIdentity: () => ({ avatarUrl: 'https://cdn.example/me.jpg' }),
+  useIdentity: () => ({
+    avatarUrl: 'https://cdn.example/me.jpg',
+    isBusiness: !!mockBusiness,
+  }),
 }));
 
 let mockToken: string | null = 'token';
 jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: (
-    select: (s: { token: string | null; activeIdentity: { id: string } }) => unknown,
-  ) => select({ token: mockToken, activeIdentity: { id: 'me' } }),
+    select: (s: {
+      token: string | null;
+      activeIdentity: { id: string; type: string };
+    }) => unknown,
+  ) =>
+    select({
+      token: mockToken,
+      activeIdentity: { id: 'me', type: mockBusiness ?? 'INDIVIDUAL' },
+    }),
 }));
 
 const mockBadge = jest.fn();
@@ -56,6 +67,7 @@ describe('AvatarPill', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockToken = 'token';
+    mockBusiness = null;
     mockBadge.mockResolvedValue(3); // 2 notifications + 1 chat
     mockUnread.mockResolvedValue(2);
     mockPulse.mockResolvedValue([]);
@@ -201,5 +213,18 @@ describe('AvatarPill', () => {
     expect(mockPulse).not.toHaveBeenCalled();
     expect(screen.queryByTestId('avatar-pill-time')).toBeNull();
     expect(screen.queryByTestId('pulse-notch')).toBeNull();
+  });
+
+  it("an individual's photo has no +", async () => {
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
+    await waitFor(() => expect(mockBadge).toHaveBeenCalled());
+    expect(screen.queryByTestId('avatar-pill-add-story')).toBeNull();
+  });
+
+  it.each(['COMPANY', 'OFFICE'] as const)('a %s adds a story from the + on its photo', async (type) => {
+    mockBusiness = type;
+    const screen = await render(<AvatarPill onSwitchProfile={mockSwitch} />);
+    await fireEvent.press(screen.getByTestId('avatar-pill-add-story'));
+    expect(mockPush).toHaveBeenCalledWith('/stories/new');
   });
 });

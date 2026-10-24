@@ -6,6 +6,15 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import OfficeHomeScreen from '../office-home';
 
 // The stories tray has its own tests; here it renders nothing
+// The pill (logo, notch, chats and bell) has its own specs
+jest.mock('@/shared/components/avatar-pill/AvatarPill', () => {
+  const { View } = jest.requireActual('react-native');
+  return { __esModule: true, default: () => <View testID="avatar-pill" /> };
+});
+jest.mock('@/features/auth/components/ProfileBottomSheet', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('@/features/stories/components/StoryTray', () => ({
   __esModule: true,
   default: () => null,
@@ -66,12 +75,12 @@ describe('OfficeHomeScreen (Figma Design Implementation)', () => {
     });
   });
 
-  it('renders top header with office name and verified badge', async () => {
-    const { getByText, getByLabelText } = await render(<OfficeHomeScreen />);
+  it('the header is the home pill alone (no greeting, name or story row)', async () => {
+    const { queryByText, getByTestId } = await render(<OfficeHomeScreen />);
 
-    expect(getByText('مرحبا بك!')).toBeTruthy();
-    expect(getByText('الفيروز')).toBeTruthy();
-    expect(getByLabelText('الإشعارات')).toBeTruthy();
+    expect(getByTestId('avatar-pill')).toBeTruthy();
+    expect(queryByText('مرحبا بك!')).toBeNull();
+    expect(queryByText('الفيروز')).toBeNull();
   });
 
   it('renders the 2x2 stats grid with proper numbers and labels', async () => {

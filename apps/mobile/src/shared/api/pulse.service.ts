@@ -1,10 +1,21 @@
 import apiClient from '@/shared/api/api';
 
 export type PulseKind =
+  // Individual
   | 'requestOffers'
-  | 'adExpiring'
   | 'alertMatches'
-  | 'providerStory';
+  | 'providerStory'
+  // Company
+  | 'privateRequests'
+  | 'billing'
+  | 'offerAccepted'
+  | 'publicRequests'
+  // Individual and office
+  | 'adExpiring'
+  // Office
+  | 'adCredits'
+  // Company and office
+  | 'myStory';
 
 export type PulseTone = 'gold' | 'amber' | 'red';
 
@@ -16,6 +27,8 @@ export interface PulseItem {
   // Where a tap goes when the items share one target; null when several
   refId: string | null;
   daysLeft?: number;
+  // myStory: until the latest live story expires
+  hoursLeft?: number;
   avatarUrl?: string | null;
   tone: PulseTone;
 }

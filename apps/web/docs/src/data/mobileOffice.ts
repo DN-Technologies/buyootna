@@ -25,7 +25,7 @@ export const mobileOffice: DocSection = {
       },
       acceptanceCriteria: {
         en: [
-          "Office header displays verified badge, office name, greeting, and notification bell.",
+          "The office header is the home pill alone, as in mobile-business-home-pill (no greeting, name, bell or story row).",
           "Stats grid renders 4 cards: active listings (with weekly count), active services, views count, and new messages (with today count).",
           "Office listings section renders horizontal carousel with image, featured gradient badge, price in KWD, stats (views, favorites, chats), and 'إدارة الإعلان' button.",
           "Services section renders horizontal carousel with circular dark icon, title, description, 'إدارة الخدمة'/'إدارة الإعلان' button, and status request pills ('12 طلب جديد' / '12 طلب نشط').",
@@ -35,7 +35,7 @@ export const mobileOffice: DocSection = {
           "Office layout mounts CustomTabBar with 5 tabs and wires the center '+' button to PlusActionsSheet.",
         ],
         ar: [
-          "ترويسة المكتب تعرض شارة التحقق، اسم المكتب، التحية، وجرس الإشعارات.",
+          "ترويسة المكتب هي كبسولة الصورة وحدها، كما في mobile-business-home-pill (بلا تحية أو اسم أو جرس أو شريط قصص).",
           "شبكة الإحصاءات تعرض 4 بطاقات: الإعلانات النشطة (مع عدّاد الأسبوع)، الخدمات النشطة، المشاهدات، والرسائل الجديدة (مع عدّاد اليوم).",
           "قسم إعلانات المكتب يعرض شريطاً أفقياً مع صورة العقار، شارة التمييز المتدرجة، السعر بالدينار الكويتي، إحصاءات التفاعل، وزر 'إدارة الإعلان'.",
           "قسم الخدمات يعرض شريطاً أفقياً بأيقونة داكنة دائرية، العنوان، الوصف، زر الإدارة، وشارات الطلبات ('12 طلب جديد' / '12 طلب نشط').",
@@ -57,7 +57,7 @@ export const mobileOffice: DocSection = {
           "التحقق من مطابقة التصميم المرئي لعقد فيجما 4494:140590 و 4494:140318.",
         ],
       },
-      updatedIn: "feat/offices",
+      updatedIn: "feat/avatar-pill-idle-state",
     },
     {
       id: "mobile-office-dashboard-mock-data",

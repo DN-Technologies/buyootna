@@ -9,6 +9,41 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-business-home-pill",
+      title: {
+        en: "Company and office homes: the avatar pill with its notch, and + to add a story",
+        ar: "رئيسية الشركة والمكتب: كبسولة الصورة مع النبض، و+ لإضافة قصة",
+      },
+      priority: "P1",
+      story: {
+        en: "The company and office homes' header is now the individual home's avatar pill alone: the logo (with a + on its bottom-left that opens the story composer), the red unread count with the shaking ‹, or the notch («النبض») and its quick view, or the time-of-day glyph; a tap or a swipe opens it to chats (company-chats / office-chats) and the bell; a double tap on the logo opens the profile switcher. The greeting, name, bell and the story row are gone. A company's notch: billing (red: an overdue invoice or an expired plan, → company-plans; amber: the trial or plan ends within 5 days), private requests waiting for its reply, its offers accepted in the last 3 days, new public requests of its specialty from the last day (each → the request, or the requests list when several), and its live story (views, hours left → its stories). An office's notch: ad credits running out (0 red, 1 amber → plans), its ads expiring within 3 days (→ its listings), and its live story.",
+        ar: "أصبح رأس رئيسية الشركة والمكتب هو كبسولة الصورة التي في رئيسية الأفراد وحدها: الشعار (وعليه + في أسفله يفتح إنشاء قصة)، والرقم الأحمر لغير المقروء مع اهتزاز ‹، أو النبض وعرضه السريع، أو رمز وقت اليوم؛ الضغط أو السحب يفتحها على المحادثات (company-chats / office-chats) والجرس؛ والضغط مرتين على الشعار يفتح تبديل الحساب. وأزيلت التحية والاسم والجرس وشريط القصص. نبض الشركة: الفوترة (أحمر: فاتورة متأخرة أو باقة منتهية ← company-plans؛ كهرماني: تنتهي التجربة أو الباقة خلال 5 أيام)، والطلبات الخاصة التي تنتظر ردها، وعروضها المقبولة خلال آخر 3 أيام، والطلبات العامة الجديدة في تخصصها خلال آخر يوم (كل منها ← الطلب، أو قائمة الطلبات إن تعددت)، وقصتها الحية (المشاهدات والساعات المتبقية ← قصصها). نبض المكتب: رصيد الإعلانات ينفد (0 أحمر، 1 كهرماني ← الباقات)، وإعلاناته التي تنتهي خلال 3 أيام (← إعلاناته)، وقصته الحية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The header shows only the pill; its photo is the logo with a +; the + opens the story composer.",
+          "The pill opens to the profile's own chats list and the notifications.",
+          "Each notch item appears as listed, most pressing first, and its row opens the right screen.",
+        ],
+        ar: [
+          "يعرض الرأس الكبسولة فقط؛ وصورتها الشعار وعليه +؛ و+ يفتح إنشاء قصة.",
+          "تفتح الكبسولة على قائمة محادثات الحساب نفسه والإشعارات.",
+          "يظهر كل عنصر في النبض كما هو موصوف، الأهم أولاً، ويفتح صفه الشاشة الصحيحة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Locally: `pnpm --filter api pulse:demo company` (and `office`), switch to that profile with a double tap on the photo: the notch takes turns through the items; the quick view lists them; each row opens its screen. `pnpm --filter api pulse:demo clear` removes them.",
+          "As a company, tap the + on the logo: the story composer opens; publish a story: «قصتك: 0 مشاهدة» appears in the notch.",
+        ],
+        ar: [
+          "محلياً: `pnpm --filter api pulse:demo company` (و`office`)، وانتقل لذلك الحساب بالضغط مرتين على الصورة: يتناوب النبض على العناصر؛ ويسردها العرض السريع؛ وكل صف يفتح شاشته. و`pnpm --filter api pulse:demo clear` يزيلها.",
+          "كشركة اضغط + على الشعار: تفتح شاشة إنشاء القصة؛ انشر قصة: يظهر «قصتك: 0 مشاهدة» في النبض.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "mobile-ugc-terms-report",
       title: {
         en: "Terms checkbox on sign-up, reporting listings and reviews, and a block clears the account's ads at once (Guideline 1.2)",

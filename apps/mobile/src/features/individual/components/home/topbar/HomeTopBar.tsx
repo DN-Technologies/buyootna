@@ -9,9 +9,9 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
+import AvatarPill, { AVATAR_PILL_OPEN_WIDTH } from '@/shared/components/avatar-pill/AvatarPill';
 import { IOS_SPRING } from '@/shared/components/ui/SlidingSegment';
 
-import AvatarPill, { AVATAR_PILL_OPEN_WIDTH } from './AvatarPill';
 import HomeModeSwitch, { type HomeMode } from './HomeModeSwitch';
 
 const MAP_WIDTH = 46;

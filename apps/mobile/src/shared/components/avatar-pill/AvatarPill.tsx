@@ -1,4 +1,5 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
+import { useRouter } from 'expo-router';
 import { type RefObject, useState } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -9,22 +10,23 @@ import { usePulse } from '@/shared/components/pulse/usePulse';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
-import { GOLD } from './avatar-pill/constants';
-import PillActions from './avatar-pill/PillActions';
-import PillChevron from './avatar-pill/PillChevron';
-import PillGap, { pillGapState } from './avatar-pill/PillGap';
-import PillPhoto from './avatar-pill/PillPhoto';
-import { usePhotoTaps } from './avatar-pill/usePhotoTaps';
-import { usePillMotion } from './avatar-pill/usePillMotion';
-import { useQuickViewAnchor } from './avatar-pill/useQuickViewAnchor';
+import { GOLD } from './constants';
+import PillActions from './PillActions';
+import PillChevron from './PillChevron';
+import PillGap, { pillGapState } from './PillGap';
+import PillPhoto from './PillPhoto';
 import { useHomeBadges } from './useHomeBadges';
+import { usePhotoTaps } from './usePhotoTaps';
+import { usePillMotion } from './usePillMotion';
+import { useQuickViewAnchor } from './useQuickViewAnchor';
 
-export { AVATAR_PILL_OPEN_WIDTH } from './avatar-pill/constants';
-export { timeOfDayGlyph } from './avatar-pill/timeOfDay';
+export { AVATAR_PILL_OPEN_WIDTH } from './constants';
+export { timeOfDayGlyph } from './timeOfDay';
 
 interface AvatarPillProps {
-  // Signed out: asks to sign in instead of opening
-  authSheetRef: RefObject<BottomSheetModal | null>;
+  // Signed out: asks to sign in instead of opening (the individual home;
+  // the company and office homes are always signed in)
+  authSheetRef?: RefObject<BottomSheetModal | null>;
   // A double tap on the photo: the profile switcher
   onSwitchProfile: () => void;
   // Opening or closing (the top bar makes room on narrow phones)
@@ -43,7 +45,14 @@ export default function AvatarPill({
   onOpenChange,
 }: AvatarPillProps) {
   const token = useAuthStore((s) => s.token);
-  const { avatarUrl } = useIdentity();
+  const router = useRouter();
+  const { avatarUrl, isBusiness } = useIdentity();
+  const identityType = useAuthStore((s) => s.activeIdentity?.type);
+  // Companies and offices post stories: from the + on their photo
+  const canPostStory =
+    !!token &&
+    !!isBusiness &&
+    (identityType === 'COMPANY' || identityType === 'OFFICE');
   const { notifications, chats } = useHomeBadges();
   const pulse = usePulse();
   const [open, setOpen] = useState(false);
@@ -60,7 +69,7 @@ export default function AvatarPill({
 
   const toggle = (next: boolean) => {
     if (!token) {
-      authSheetRef.current?.present();
+      authSheetRef?.current?.present();
       return;
     }
     setOpen(next);
@@ -69,7 +78,7 @@ export default function AvatarPill({
 
   const onPhotoPress = usePhotoTaps(
     () => toggle(!open),
-    () => (token ? onSwitchProfile() : authSheetRef.current?.present()),
+    () => (token ? onSwitchProfile() : authSheetRef?.current?.present()),
   );
 
   // RTL: the pill grows to the left, so a swipe left opens it
@@ -94,6 +103,9 @@ export default function AvatarPill({
             avatarUrl={token ? avatarUrl : null}
             open={open}
             onPress={onPhotoPress}
+            onAddStory={
+              canPostStory ? () => router.push('/stories/new' as never) : undefined
+            }
           />
           <PillActions
             open={open}

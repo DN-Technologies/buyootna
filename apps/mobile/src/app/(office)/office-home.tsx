@@ -1,9 +1,11 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import {
   MarketPropertyCard,
   OfficeConversationCard,
@@ -22,21 +24,17 @@ import {
   OFFICE_SERVICES_MOCK,
   OFFICE_STATS_MOCK,
 } from '@/features/office/mockData';
-import StoryTray from '@/features/stories/components/StoryTray';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
-import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function OfficeHomeScreen() {
   const router = useRouter();
-  const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
+  const profileSheetRef = useRef<BottomSheetModal>(null);
+  const { activeIdentity } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
-  const unreadCount = useUnreadNotificationsCount();
   const [refreshing, setRefreshing] = useState(false);
 
-  const officeName = displayName || 'الفيروز';
-  const officeLogo = avatarUrl || undefined;
 
   useFocusEffect(
     useCallback(() => {
@@ -66,16 +64,9 @@ export default function OfficeHomeScreen() {
         <ContentContainer className="px-4">
           {/* 1. Header */}
           <OfficeHomeHeader
-            displayName={officeName}
-            logoUrl={officeLogo}
-            isVerified={isVerified ?? true}
-            unreadNotificationsCount={unreadCount}
-            onPressNotifications={() => router.push('/notification-list')}
+            onSwitchProfile={() => profileSheetRef.current?.present()}
           />
         </ContentContainer>
-
-        {/* Stories (hidden when there are none) */}
-        <StoryTray className="mt-3" />
 
         <ContentContainer className="px-4">
           {/* 2. 2x2 Stats Grid */}
@@ -240,6 +231,14 @@ export default function OfficeHomeScreen() {
           ))}
         </ScrollView>
       </ScrollView>
+      {/* A double tap on the logo: switch profile (as in المزيد) */}
+      <ProfileBottomSheet
+        ref={profileSheetRef}
+        onAddAccount={() => {
+          profileSheetRef.current?.dismiss();
+          router.push('/(auth)/add-identity');
+        }}
+      />
     </SafeAreaView>
   );
 }

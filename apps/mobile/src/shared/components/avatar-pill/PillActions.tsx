@@ -4,6 +4,8 @@ import type { ViewStyle } from 'react-native';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 
+import { useAuthStore } from '@/shared/store/useAuthStore';
+
 import ChatIcon from './ChatIcon';
 import { ACTIONS_WIDTH, GOLD } from './constants';
 
@@ -27,6 +29,14 @@ export default function PillActions({
   notificationsUnread,
 }: PillActionsProps) {
   const router = useRouter();
+  // Each profile type has its own chats list
+  const identity = useAuthStore((s) => s.activeIdentity?.type);
+  const chatsHref =
+    identity === 'COMPANY'
+      ? '/(company)/company-chats'
+      : identity === 'OFFICE'
+        ? '/(office)/office-chats'
+        : '/chat';
 
   return (
     <Animated.View
@@ -42,7 +52,7 @@ export default function PillActions({
           testID="avatar-pill-chats"
           accessibilityRole="button"
           accessibilityLabel="المحادثات"
-          onPress={() => router.push('/chat')}
+          onPress={() => router.push(chatsHref)}
         >
           <ChatIcon dot={chatsUnread} />
         </TouchableOpacity>

@@ -634,12 +634,12 @@ export const mobileCompany: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "The company home now follows its Figma frames. Header: logo, 'مرحبا بك!' and the company name with its verified mark on the right, the bell on the left (the search button is gone). Four figures: خدمات نشطة, طلبات خاصة (requests sent to the company in the last 7 days), طلبات مقبولة and الرسائل الجديدة (unread messages). Under them at most one card: an overdue invoice notice, the trial countdown, 'استعرض الباقات' for a company without a plan, or 'اضافة خدمة' for a subscribed company without services; a company with a plan and services sees none. Then طلبات خاصة بالشركة and طلبات عامة as sideways lists of real requests (they were sample data before), up to five each; a list with no requests is not shown. The الخدمات, ads and latest conversations sections are no longer on the home.",
-        ar: "أصبحت رئيسية الشركة مطابقة لتصميم Figma. الرأس: الشعار و'مرحبا بك!' واسم الشركة مع علامة التوثيق على اليمين والجرس على اليسار (أزيل زر البحث). أربعة أرقام: خدمات نشطة، طلبات خاصة (الطلبات المرسلة للشركة خلال آخر 7 أيام)، طلبات مقبولة، الرسائل الجديدة (الرسائل غير المقروءة). تحتها بطاقة واحدة على الأكثر: تنبيه فاتورة متأخرة، أو عدّاد النسخة التجريبية، أو 'استعرض الباقات' لشركة بلا باقة، أو 'اضافة خدمة' لشركة مشتركة بلا خدمات؛ والشركة التي لديها باقة وخدمات لا ترى أي بطاقة. ثم طلبات خاصة بالشركة وطلبات عامة كقائمتين أفقيتين من طلبات حقيقية (كانت بيانات تجريبية)، حتى خمسة في كل قائمة؛ والقائمة بلا طلبات لا تظهر. لم تعد أقسام الخدمات والإعلانات وآخر المحادثات في الرئيسية.",
+        en: "The company home now follows its Figma frames. Header: the home pill alone (see mobile-business-home-pill); the greeting, name, bell and story row are gone. Four figures: خدمات نشطة, طلبات خاصة (requests sent to the company in the last 7 days), طلبات مقبولة and الرسائل الجديدة (unread messages). Under them at most one card: an overdue invoice notice, the trial countdown, 'استعرض الباقات' for a company without a plan, or 'اضافة خدمة' for a subscribed company without services; a company with a plan and services sees none. Then طلبات خاصة بالشركة and طلبات عامة as sideways lists of real requests (they were sample data before), up to five each; a list with no requests is not shown. The الخدمات, ads and latest conversations sections are no longer on the home.",
+        ar: "أصبحت رئيسية الشركة مطابقة لتصميم Figma. الرأس: كبسولة الصورة وحدها (راجع mobile-business-home-pill)؛ وأزيلت التحية والاسم والجرس وشريط القصص. أربعة أرقام: خدمات نشطة، طلبات خاصة (الطلبات المرسلة للشركة خلال آخر 7 أيام)، طلبات مقبولة، الرسائل الجديدة (الرسائل غير المقروءة). تحتها بطاقة واحدة على الأكثر: تنبيه فاتورة متأخرة، أو عدّاد النسخة التجريبية، أو 'استعرض الباقات' لشركة بلا باقة، أو 'اضافة خدمة' لشركة مشتركة بلا خدمات؛ والشركة التي لديها باقة وخدمات لا ترى أي بطاقة. ثم طلبات خاصة بالشركة وطلبات عامة كقائمتين أفقيتين من طلبات حقيقية (كانت بيانات تجريبية)، حتى خمسة في كل قائمة؛ والقائمة بلا طلبات لا تظهر. لم تعد أقسام الخدمات والإعلانات وآخر المحادثات في الرئيسية.",
       },
       acceptanceCriteria: {
         en: [
-          "The header shows the logo and name on the right and only the bell on the left, with a red dot when there are unread notifications.",
+          "The header is the home pill alone, as in mobile-business-home-pill.",
           "طلبات خاصة shows 'N هذا الأسبوع' for requests received in the last 7 days, or 0.",
           "A company without a plan sees the grey card with the 'استعرض الباقات' button; one with a plan but no services sees 'اضافة خدمة', which opens the add-service screen.",
           "A company with a plan and services sees no card between the figures and the requests.",
@@ -648,7 +648,7 @@ export const mobileCompany: DocSection = {
           "Private cards carry their status tag and 'الرد'; public cards carry 'مناسبة لك' and 'ارسال عرض'. Both open a chat with the client; التفاصيل opens the request.",
         ],
         ar: [
-          "يعرض الرأس الشعار والاسم على اليمين والجرس فقط على اليسار، مع نقطة حمراء عند وجود إشعارات غير مقروءة.",
+          "الرأس هو كبسولة الصورة وحدها، كما في mobile-business-home-pill.",
           "طلبات خاصة تعرض 'N هذا الأسبوع' للطلبات الواردة خلال آخر 7 أيام، أو 0.",
           "الشركة بلا باقة ترى البطاقة الرمادية بزر 'استعرض الباقات'؛ والتي لديها باقة بلا خدمات ترى 'اضافة خدمة' ويفتح شاشة إضافة خدمة.",
           "الشركة التي لديها باقة وخدمات لا ترى بطاقة بين الأرقام والطلبات.",
@@ -669,7 +669,7 @@ export const mobileCompany: DocSection = {
           "أرسل للشركة طلب عرض سعر من حساب فرد ثم اسحب لتحديث الرئيسية: يظهر تحت طلبات خاصة بالشركة ويزيد رقم طلبات خاصة.",
         ],
       },
-      updatedIn: "feat/company-home-figma",
+      updatedIn: "feat/avatar-pill-idle-state",
     },
     {
       id: "mobile-company-requests",
