@@ -18,6 +18,12 @@
  *                                                    highlights, one keeping a 40-day-old story
  *   pnpm --filter api pulse:demo clear               removes everything it added
  *
+ * On the production server (deliberately, removed again with clear), inside
+ * the API container, with the account named:
+ *
+ *   docker compose run --rm api node dist/src/scripts/pulse-demo.js all --email you@example.com --production
+ *   (then company, office, studio the same way; clear --production removes them)
+ *
  * The account: --email <email>, or the only individual profile in the
  * database. Each case replaces its own earlier rows, so it can be re-run;
  * pull to refresh (or leave and come back to) the home to see it. For the
@@ -34,36 +40,40 @@ const PROFILES = ['company', 'office', 'studio'] as const;
 type Profile = (typeof PROFILES)[number];
 const COMMANDS: string[] = [...CASES, 'all', ...PROFILES, 'clear'];
 
-// Every row it adds has an id starting with this, so clear finds them all
+// Every row it adds has a UUID starting with this (the app's routes check
+// ids are UUIDs), so clear finds them all. P names its non-id values (and
+// rows from before, which clear still removes)
+const U = 'b0b0b0b0-';
+const uuid = (n: number) => `${U}0000-4000-8000-${String(n).padStart(12, '0')}`;
 const P = 'pulse-demo-';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '::1'];
 
 const ids = {
-  user: `${P}company-user`,
-  company: `${P}company`,
-  companyData: `${P}company-data`,
-  request: `${P}request`,
-  offer: `${P}offer`,
-  ad: `${P}my-ad`,
-  matchAd: `${P}match-ad`,
-  alert: `${P}alert`,
-  match: `${P}match`,
-  favorite: `${P}favorite`,
-  story: `${P}story`,
+  user: uuid(1001),
+  company: uuid(1002),
+  companyData: uuid(1003),
+  request: uuid(1004),
+  offer: uuid(1005),
+  ad: uuid(1006),
+  matchAd: uuid(1007),
+  alert: uuid(1008),
+  match: uuid(1009),
+  favorite: uuid(1010),
+  story: uuid(1011),
   // My own demo company and office (profiles on my account)
-  myCompany: `${P}my-company`,
-  myCompanyData: `${P}my-company-data`,
-  invoice: `${P}invoice`,
-  privateRequest: `${P}private-request`,
-  acceptedRequest: `${P}accepted-request`,
-  acceptedOffer: `${P}accepted-offer`,
-  publicRequest: `${P}public-request`,
-  myCompanyStory: `${P}my-company-story`,
-  myOffice: `${P}my-office`,
-  myOfficeData: `${P}my-office-data`,
-  officeAd: `${P}my-office-ad`,
-  myOfficeStory: `${P}my-office-story`,
+  myCompany: uuid(1012),
+  myCompanyData: uuid(1013),
+  invoice: uuid(1014),
+  privateRequest: uuid(1015),
+  acceptedRequest: uuid(1016),
+  acceptedOffer: uuid(1017),
+  publicRequest: uuid(1018),
+  myCompanyStory: uuid(1019),
+  myOffice: uuid(1020),
+  myOfficeData: uuid(1021),
+  officeAd: uuid(1022),
+  myOfficeStory: uuid(1023),
 };
 const HOUR_MS = 60 * 60 * 1000;
 const LOGO = (letter: string) =>
@@ -74,25 +84,38 @@ function arg(name: string): string | undefined {
   return i > -1 ? process.argv[i + 1] : undefined;
 }
 
-function assertLocal(url: string | undefined) {
+/**
+ * Local databases only, unless --production is passed together with
+ * --email (production has many accounts): then it says loudly where it
+ * writes. Demo rows there are seen by real users until `clear`.
+ */
+function assertTarget(url: string | undefined): string {
   if (!url) throw new Error('DATABASE_URL is not set (apps/api/.env).');
   const host = new URL(url).hostname;
-  if (!LOCAL_HOSTS.includes(host)) {
+  if (LOCAL_HOSTS.includes(host)) return host;
+  if (!process.argv.includes('--production')) {
     throw new Error(
-      `Refusing to write demo data to "${host}": local databases only (${LOCAL_HOSTS.join(', ')}).`,
+      `Refusing to write demo data to "${host}": local databases only (${LOCAL_HOSTS.join(', ')}). Add --production --email <email> to do it on purpose.`,
     );
   }
+  if (!arg('email')) {
+    throw new Error('--production needs --email <the account to fill>.');
+  }
+  console.log(
+    `⚠ PRODUCTION database "${host}": demo rows are visible to real users until "clear --production".`,
+  );
+  return host;
 }
 
 async function main() {
   const what = process.argv[2];
   if (!what || !COMMANDS.includes(what)) {
     console.log(
-      `Usage: pnpm --filter api pulse:demo <${COMMANDS.join(' | ')}> [--email <email>] [--days N]`,
+      `Usage: pnpm --filter api pulse:demo <${COMMANDS.join(' | ')}> [--email <email>] [--days N] [--production]`,
     );
     process.exit(1);
   }
-  assertLocal(process.env.DATABASE_URL);
+  assertTarget(process.env.DATABASE_URL);
 
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
@@ -130,7 +153,10 @@ async function findMe(prisma: PrismaClient, email?: string) {
   const identities = await prisma.identity.findMany({
     where: {
       type: 'INDIVIDUAL',
-      id: { not: { startsWith: P } },
+      AND: [
+        { id: { not: { startsWith: P } } },
+        { id: { not: { startsWith: U } } },
+      ],
       ...(email ? { user: { email } } : {}),
     },
     select: {
@@ -372,11 +398,6 @@ async function myProfile(
   return { id, name };
 }
 
-// Studio rows are read through UUID-checked routes, so their ids are UUIDs
-// that start alike, which clear looks for
-const U = 'b0b0b0b0-';
-const uuid = (n: number) => `${U}0000-4000-8000-${String(n).padStart(12, '0')}`;
-
 /** A past story of `identityId` that ended `daysAgo` days ago. */
 async function pastStory(
   prisma: PrismaClient,
@@ -558,28 +579,40 @@ const profiles: Record<
 };
 
 // Children first; everything the demo added, whichever cases ran
+// The studio's own rows (stories 1–5, highlights 101–102), not the other cases'
+const STUDIO_STORIES = [1, 2, 3, 4, 5].map(uuid);
+const STUDIO_HIGHLIGHTS = [101, 102].map(uuid);
+
 async function clearStudio(prisma: PrismaClient) {
-  await prisma.storyHighlight.deleteMany({ where: { id: { startsWith: U } } });
-  await prisma.storyView.deleteMany({ where: { storyId: { startsWith: U } } });
-  await prisma.story.deleteMany({ where: { id: { startsWith: U } } });
+  await prisma.storyHighlight.deleteMany({
+    where: { id: { in: STUDIO_HIGHLIGHTS } },
+  });
+  await prisma.storyView.deleteMany({
+    where: { storyId: { in: STUDIO_STORIES } },
+  });
+  await prisma.story.deleteMany({ where: { id: { in: STUDIO_STORIES } } });
 }
 
 async function clear(prisma: PrismaClient) {
   await clearStudio(prisma);
-  const mine = { startsWith: P };
-  await prisma.storyView.deleteMany({ where: { storyId: mine } });
-  await prisma.story.deleteMany({ where: { id: mine } });
-  await prisma.providerFavorite.deleteMany({ where: { id: mine } });
-  await prisma.alertMatch.deleteMany({ where: { id: mine } });
-  await prisma.alert.deleteMany({ where: { id: mine } });
-  await prisma.requestOffer.deleteMany({ where: { id: mine } });
-  await prisma.companyRequest.deleteMany({ where: { id: mine } });
-  await prisma.property.deleteMany({ where: { id: mine } });
-  await prisma.invoice.deleteMany({ where: { id: mine } });
-  await prisma.companyIdentityData.deleteMany({ where: { id: mine } });
-  await prisma.officeIdentityData.deleteMany({ where: { id: mine } });
-  await prisma.identity.deleteMany({ where: { id: mine } });
-  await prisma.user.deleteMany({ where: { id: mine } });
+  // Children first; this run's UUIDs and rows from before them
+  for (const prefix of [U, P]) {
+    const mine = { startsWith: prefix };
+    await prisma.storyHighlight.deleteMany({ where: { id: mine } });
+    await prisma.storyView.deleteMany({ where: { storyId: mine } });
+    await prisma.story.deleteMany({ where: { id: mine } });
+    await prisma.providerFavorite.deleteMany({ where: { id: mine } });
+    await prisma.alertMatch.deleteMany({ where: { id: mine } });
+    await prisma.alert.deleteMany({ where: { id: mine } });
+    await prisma.requestOffer.deleteMany({ where: { id: mine } });
+    await prisma.companyRequest.deleteMany({ where: { id: mine } });
+    await prisma.property.deleteMany({ where: { id: mine } });
+    await prisma.invoice.deleteMany({ where: { id: mine } });
+    await prisma.companyIdentityData.deleteMany({ where: { id: mine } });
+    await prisma.officeIdentityData.deleteMany({ where: { id: mine } });
+    await prisma.identity.deleteMany({ where: { id: mine } });
+    await prisma.user.deleteMany({ where: { id: mine } });
+  }
 }
 
 main().catch((e: Error) => {
