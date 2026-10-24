@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import type { PulseItem } from '@/shared/api/pulse.service';
 import { useAuthStore } from '@/shared/store/useAuthStore';
@@ -68,7 +68,6 @@ export default function PulseQuickView({
         >
           <Animated.View
             testID="pulse-quick-view"
-            entering={FadeInDown.springify().damping(18)}
             // Taps on the card itself don't reach the backdrop
             onStartShouldSetResponder={() => true}
             className="overflow-hidden rounded-[24px] bg-white"

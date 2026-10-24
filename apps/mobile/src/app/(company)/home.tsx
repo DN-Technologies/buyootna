@@ -1,7 +1,7 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,8 +15,11 @@ import {
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
+import StoryStudio from '@/features/stories/studio/StoryStudio';
+import type { BusinessHomeMode } from '@/features/stories/studio/StudioModeSwitch';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import FadeLayer from '@/shared/components/ui/FadeLayer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
@@ -31,6 +34,9 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 export default function CompanyHomeScreen() {
   const router = useRouter();
   const profileSheetRef = useRef<BottomSheetModal>(null);
+  const [mode, setMode] = useState<BusinessHomeMode>('home');
+  const studioOpened = useRef(false);
+  if (mode === 'studio') studioOpened.current = true;
   const { activeIdentity } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
   const conversations = useChatStore((state) => state.conversations);
@@ -96,45 +102,56 @@ export default function CompanyHomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
-      >
-        <ContentContainer>
-          <HomeHeader
-            onSwitchProfile={() => profileSheetRef.current?.present()}
-          />
-        </ContentContainer>
+      <ContentContainer>
+        <HomeHeader
+          mode={mode}
+          onModeChange={setMode}
+          onSwitchProfile={() => profileSheetRef.current?.present()}
+        />
+      </ContentContainer>
+      <View className="flex-1">
+        <FadeLayer active={mode === 'home'}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+          >
+            <ContentContainer>
+              <View className="mt-5 gap-6">
+                <HomeStatsGrid
+                  privateRequestsThisWeek={privateRequestsThisWeek}
+                  activeServicesCount={activeServicesCount}
+                  unreadMessagesCount={unreadMessagesCount}
+                  acceptedRequestsCount={acceptedRequestsCount}
+                />
 
-        <ContentContainer>
-          <View className="mt-5 gap-6">
-            <HomeStatsGrid
-              privateRequestsThisWeek={privateRequestsThisWeek}
-              activeServicesCount={activeServicesCount}
-              unreadMessagesCount={unreadMessagesCount}
-              acceptedRequestsCount={acceptedRequestsCount}
-            />
+                <HomeBanner
+                  billing={dashboard?.billing}
+                  activeServicesCount={activeServicesCount}
+                />
 
-            <HomeBanner
-              billing={dashboard?.billing}
-              activeServicesCount={activeServicesCount}
-            />
+                <HomeRequestsSection
+                  title="طلبات خاصة بالشركة"
+                  variant="company"
+                  requests={privateRequests}
+                />
 
-            <HomeRequestsSection
-              title="طلبات خاصة بالشركة"
-              variant="company"
-              requests={privateRequests}
-            />
-
-            <HomeRequestsSection
-              title="طلبات عامة"
-              variant="public"
-              requests={publicRequests}
-            />
-          </View>
-        </ContentContainer>
-      </ScrollView>
+                <HomeRequestsSection
+                  title="طلبات عامة"
+                  variant="public"
+                  requests={publicRequests}
+                />
+              </View>
+            </ContentContainer>
+          </ScrollView>
+        </FadeLayer>
+        {/* Mounted once first opened, then kept (its scroll and data) */}
+        {studioOpened.current && (
+          <FadeLayer active={mode === 'studio'}>
+            <StoryStudio />
+          </FadeLayer>
+        )}
+      </View>
       {/* A double tap on the logo: switch profile (as in المزيد) */}
       <ProfileBottomSheet
         ref={profileSheetRef}

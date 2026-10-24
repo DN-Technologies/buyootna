@@ -215,16 +215,13 @@ describe('AvatarPill', () => {
     expect(screen.queryByTestId('pulse-notch')).toBeNull();
   });
 
-  it("an individual's photo has no +", async () => {
-    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
-    await waitFor(() => expect(mockBadge).toHaveBeenCalled());
-    expect(screen.queryByTestId('avatar-pill-add-story')).toBeNull();
-  });
-
-  it.each(['COMPANY', 'OFFICE'] as const)('a %s adds a story from the + on its photo', async (type) => {
-    mockBusiness = type;
-    const screen = await render(<AvatarPill onSwitchProfile={mockSwitch} />);
-    await fireEvent.press(screen.getByTestId('avatar-pill-add-story'));
-    expect(mockPush).toHaveBeenCalledWith('/stories/new');
-  });
+  it.each(['COMPANY', 'OFFICE', null] as const)(
+    'no + on the photo (%s): stories are added from the studio',
+    async (type) => {
+      mockBusiness = type;
+      const screen = await render(<AvatarPill onSwitchProfile={mockSwitch} />);
+      await waitFor(() => expect(mockBadge).toHaveBeenCalled());
+      expect(screen.queryByTestId('avatar-pill-add-story')).toBeNull();
+    },
+  );
 });

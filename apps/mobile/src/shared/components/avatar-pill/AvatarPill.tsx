@@ -1,5 +1,4 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
-import { useRouter } from 'expo-router';
 import { type RefObject, useState } from 'react';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -45,14 +44,7 @@ export default function AvatarPill({
   onOpenChange,
 }: AvatarPillProps) {
   const token = useAuthStore((s) => s.token);
-  const router = useRouter();
-  const { avatarUrl, isBusiness } = useIdentity();
-  const identityType = useAuthStore((s) => s.activeIdentity?.type);
-  // Companies and offices post stories: from the + on their photo
-  const canPostStory =
-    !!token &&
-    !!isBusiness &&
-    (identityType === 'COMPANY' || identityType === 'OFFICE');
+  const { avatarUrl } = useIdentity();
   const { notifications, chats } = useHomeBadges();
   const pulse = usePulse();
   const [open, setOpen] = useState(false);
@@ -103,9 +95,6 @@ export default function AvatarPill({
             avatarUrl={token ? avatarUrl : null}
             open={open}
             onPress={onPhotoPress}
-            onAddStory={
-              canPostStory ? () => router.push('/stories/new' as never) : undefined
-            }
           />
           <PillActions
             open={open}

@@ -12,12 +12,14 @@ import { showAlert } from '@/shared/utils/alert';
 import { shareProfile } from '@/shared/utils/helpers/shareProfile';
 
 import { useStoryActions } from '../hooks/useStoryActions';
+import { useHighlightMutations } from '../hooks/useStoryHighlights';
 import { useStoryPlayback } from '../hooks/useStoryPlayback';
 import {
   type StoryViewerSourceKind,
   useStoryViewerSource,
 } from '../hooks/useStoryViewerSource';
 import type { StoryAuthorType } from '../types';
+import OwnStoryOptionsSheet from './OwnStoryOptionsSheet';
 import StoryFooter from './StoryFooter';
 import StoryHeader from './StoryHeader';
 import StoryMedia from './StoryMedia';
@@ -39,6 +41,9 @@ interface StoryViewerProps {
   source: StoryViewerSourceKind;
   // Opened from a «القصص» segment: swipes stay in it
   feedType?: StoryAuthorType;
+  // archive: the story to open at; highlight: which one
+  storyId?: string;
+  highlightId?: string;
 }
 
 /**
@@ -51,16 +56,16 @@ export default function StoryViewer({
   authorId,
   source,
   feedType,
+  storyId,
+  highlightId,
 }: StoryViewerProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  // The author looking at its own stories: views and delete, no reply,
-  // report or view recording
-  const isMine = source === 'mine';
 
   const reportSheet = useRef<BottomSheetModal>(null);
   const viewersSheet = useRef<BottomSheetModal>(null);
   const deleteSheet = useRef<BottomSheetModal>(null);
+  const ownSheet = useRef<BottomSheetModal>(null);
   const [holding, setHolding] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [viewersFor, setViewersFor] = useState<string | null>(null);
@@ -75,7 +80,17 @@ export default function StoryViewer({
 
   const { askToBlock } = useBlockFlow();
 
-  const data = useStoryViewerSource(authorId, source, feedType);
+  const data = useStoryViewerSource(authorId, source, {
+    feedType,
+    storyId,
+    highlightId,
+  });
+  // The author looking at its own stories (live, archive, a highlight of
+  // its own): delete and highlight them, no reply, report or view recording
+  const isMine = source === 'mine' || source === 'archive' || data.ownHighlight;
+  // Its views: live and archived stories (a highlight shows none)
+  const showsViews = source === 'mine' || source === 'archive';
+  const { update: updateHighlight } = useHighlightMutations();
   const playback = useStoryPlayback({
     authorId,
     authors: data.authors,
@@ -149,7 +164,7 @@ export default function StoryViewer({
                 onOptions={() => {
                   setSheetOpen(true);
                   if (isMine) {
-                    deleteSheet.current?.present();
+                    ownSheet.current?.present();
                     return;
                   }
                   // Someone else's story: report it, or block its account
@@ -193,7 +208,7 @@ export default function StoryViewer({
               onReply={() => void actions.reply()}
               onOpenProperty={(id) => router.push(`/property/${id}` as never)}
               own={
-                isMine
+                showsViews
                   ? {
                       viewCount: data.viewCountOf(current.id),
                       onViewers: () => {
@@ -224,6 +239,27 @@ export default function StoryViewer({
         onReport={(reason, description) => void actions.report(reason, description)}
         onDismiss={() => setSheetOpen(false)}
       />
+      {isMine && (
+        <OwnStoryOptionsSheet
+          ref={ownSheet}
+          storyId={current.id}
+          inHighlight={data.ownHighlight && !!data.highlightId}
+          onRemoveFromHighlight={() => {
+            const rest = author.stories
+              .map((s) => s.id)
+              .filter((id) => id !== current.id);
+            updateHighlight.mutate(
+              { id: data.highlightId!, input: { storyIds: rest } },
+              { onSettled: () => setSheetOpen(false) },
+            );
+            // The last one out: nothing left to play
+            if (rest.length === 0) close();
+          }}
+          // Opened once the options have closed; still paused meanwhile
+          onDelete={() => deleteSheet.current?.present()}
+          onDismiss={() => setSheetOpen(false)}
+        />
+      )}
     </View>
   );
 }
