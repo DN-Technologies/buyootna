@@ -16,6 +16,7 @@ describe('AlertsService', () => {
       updateMany: jest.Mock;
     };
     property: { findMany: jest.Mock };
+    alertMatch: { findMany: jest.Mock; updateMany: jest.Mock };
   };
 
   beforeEach(async () => {
@@ -29,6 +30,10 @@ describe('AlertsService', () => {
         updateMany: jest.fn(),
       },
       property: { findMany: jest.fn().mockResolvedValue([]) },
+      alertMatch: {
+        findMany: jest.fn().mockResolvedValue([]),
+        updateMany: jest.fn(),
+      },
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -45,7 +50,7 @@ describe('AlertsService', () => {
   describe('create', () => {
     it('scopes the new alert to the given identityId', async () => {
       const dto: CreateAlertDto = {
-        type: 'PROPERTIES' as any,
+        type: 'PROPERTIES',
         operationType: 'SALE',
         governorateId: 'capital',
       };
@@ -67,7 +72,7 @@ describe('AlertsService', () => {
 
     it('converts startDate/endDate strings to Date objects before writing', async () => {
       const dto: CreateAlertDto = {
-        type: 'AUCTIONS' as any,
+        type: 'AUCTIONS',
         governorateId: 'capital',
         startDate: '2026-10-01T00:00:00.000Z',
         endDate: '2026-10-15T00:00:00.000Z',
@@ -83,7 +88,7 @@ describe('AlertsService', () => {
 
     it('defaults amenities to an empty array when not provided', async () => {
       const dto: CreateAlertDto = {
-        type: 'PROPERTIES' as any,
+        type: 'PROPERTIES',
         operationType: 'SALE',
         governorateId: 'capital',
       };
@@ -231,6 +236,35 @@ describe('AlertsService', () => {
       expect(prisma.property.findMany).not.toHaveBeenCalled();
     });
 
+    it("marks the alert's unseen matches seen", async () => {
+      prisma.alert.findUnique.mockResolvedValue({
+        id: 'alert-1',
+        identityId: 'identity-1',
+        type: 'PROPERTIES',
+        operationType: 'SALE',
+        governorateId: 'capital',
+      });
+
+      await service.findMatches('identity-1', 'alert-1');
+
+      expect(prisma.alertMatch.updateMany).toHaveBeenCalledWith({
+        where: { alertId: 'alert-1', seenAt: null },
+        data: { seenAt: expect.any(Date) },
+      });
+    });
+
+    it("doesn't mark another identity's matches seen", async () => {
+      prisma.alert.findUnique.mockResolvedValue({
+        id: 'alert-1',
+        identityId: 'identity-2',
+      });
+
+      await expect(
+        service.findMatches('identity-1', 'alert-1'),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.alertMatch.updateMany).not.toHaveBeenCalled();
+    });
+
     it("queries live listings matching the alert, excluding the owner's", async () => {
       prisma.alert.findUnique.mockResolvedValue({
         id: 'alert-1',
@@ -305,6 +339,53 @@ describe('AlertsService', () => {
         where: { id: 'alert-1' },
       });
       expect(result).toEqual({ message: 'تم حذف التنبيه بنجاح' });
+    });
+  });
+
+  describe('findUnseenMatches', () => {
+    it("counts unseen matches of the identity's active alerts on live listings", async () => {
+      await service.findUnseenMatches('identity-1');
+
+      expect(prisma.alertMatch.findMany).toHaveBeenCalledWith({
+        where: {
+          seenAt: null,
+          alert: { identityId: 'identity-1', isActive: true },
+          property: { status: 'ACTIVE', isHidden: false },
+        },
+        select: { alertId: true },
+      });
+    });
+
+    it('returns 0 and no alert when there are none', async () => {
+      await expect(service.findUnseenMatches('identity-1')).resolves.toEqual({
+        count: 0,
+        alertId: null,
+      });
+    });
+
+    it('names the alert when they all belong to one', async () => {
+      prisma.alertMatch.findMany.mockResolvedValue([
+        { alertId: 'alert-1' },
+        { alertId: 'alert-1' },
+      ]);
+
+      await expect(service.findUnseenMatches('identity-1')).resolves.toEqual({
+        count: 2,
+        alertId: 'alert-1',
+      });
+    });
+
+    it('names no alert when they belong to several', async () => {
+      prisma.alertMatch.findMany.mockResolvedValue([
+        { alertId: 'alert-1' },
+        { alertId: 'alert-2' },
+        { alertId: 'alert-2' },
+      ]);
+
+      await expect(service.findUnseenMatches('identity-1')).resolves.toEqual({
+        count: 3,
+        alertId: null,
+      });
     });
   });
 });

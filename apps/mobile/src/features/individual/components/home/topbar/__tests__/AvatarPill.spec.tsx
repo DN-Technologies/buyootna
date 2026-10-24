@@ -1,6 +1,6 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
-import AvatarPill from '../AvatarPill';
+import AvatarPill, { timeOfDayGlyph } from '../AvatarPill';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
@@ -40,6 +40,11 @@ jest.mock('@/shared/api/notifications.service', () => ({
   },
 }));
 
+const mockPulse = jest.fn();
+jest.mock('@/shared/api/pulse.service', () => ({
+  pulseService: { getMine: () => mockPulse() },
+}));
+
 const mockSwitch = jest.fn();
 
 const sheet = () => {
@@ -53,6 +58,7 @@ describe('AvatarPill', () => {
     mockToken = 'token';
     mockBadge.mockResolvedValue(3); // 2 notifications + 1 chat
     mockUnread.mockResolvedValue(2);
+    mockPulse.mockResolvedValue([]);
   });
 
   it('closed, it counts unread notifications and chats together', async () => {
@@ -65,12 +71,76 @@ describe('AvatarPill', () => {
     );
   });
 
-  it('shows no count when nothing is unread', async () => {
+  it('shows no count when nothing is unread, but the time of day', async () => {
     mockBadge.mockResolvedValue(0);
     mockUnread.mockResolvedValue(0);
     const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
     await waitFor(() => expect(mockBadge).toHaveBeenCalled());
     expect(screen.queryByTestId('avatar-pill-count')).toBeNull();
+    expect(screen.getByTestId('avatar-pill-time')).toBeTruthy();
+    expect(screen.queryByTestId('pulse-notch')).toBeNull();
+  });
+
+  it('the time of day: sun by day, sunset in the evening, moon at night', () => {
+    expect(timeOfDayGlyph(5).icon).toBe('sun');
+    expect(timeOfDayGlyph(16).icon).toBe('sun');
+    expect(timeOfDayGlyph(17).icon).toBe('sunset');
+    expect(timeOfDayGlyph(19).icon).toBe('sunset');
+    expect(timeOfDayGlyph(20).icon).toBe('moon');
+    expect(timeOfDayGlyph(0).icon).toBe('moon');
+    expect(timeOfDayGlyph(4).icon).toBe('moon');
+  });
+
+  it('nothing unread: the notch shows the pulse, and opens the quick view', async () => {
+    mockBadge.mockResolvedValue(0);
+    mockUnread.mockResolvedValue(0);
+    mockPulse.mockResolvedValue([
+      { kind: 'requestOffers', count: 2, refId: 'r1', tone: 'gold' },
+      { kind: 'alertMatches', count: 4, refId: null, tone: 'gold' },
+    ]);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
+    await waitFor(() => screen.getByTestId('pulse-notch-requestOffers'));
+    expect(screen.queryByTestId('avatar-pill-time')).toBeNull();
+    expect(screen.queryByTestId('pulse-quick-view')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('pulse-notch'));
+    expect(screen.getByTestId('pulse-quick-view')).toBeTruthy();
+    expect(screen.getByTestId('pulse-row-requestOffers')).toHaveTextContent(/2 عروض على طلباتك/);
+    await fireEvent.press(screen.getByTestId('pulse-row-alertMatches'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/(individual)/activity',
+      params: { tab: 'alerts' },
+    });
+    expect(screen.queryByTestId('pulse-quick-view')).toBeNull();
+  });
+
+  it('a tap outside closes the quick view', async () => {
+    mockBadge.mockResolvedValue(0);
+    mockUnread.mockResolvedValue(0);
+    mockPulse.mockResolvedValue([{ kind: 'adExpiring', count: 1, refId: 'p1', daysLeft: 0, tone: 'amber' }]);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
+    await waitFor(() => screen.getByTestId('pulse-notch'));
+    await fireEvent.press(screen.getByTestId('pulse-notch'));
+    await fireEvent.press(screen.getByTestId('pulse-quick-view-backdrop'));
+    expect(screen.queryByTestId('pulse-quick-view')).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('the red count wins over the pulse', async () => {
+    mockPulse.mockResolvedValue([{ kind: 'alertMatches', count: 4, refId: 'a1', tone: 'gold' }]);
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
+    await waitFor(() => expect(screen.getByTestId('avatar-pill-count')).toHaveTextContent('3'));
+    await waitFor(() => expect(mockPulse).toHaveBeenCalled());
+    expect(screen.queryByTestId('pulse-notch')).toBeNull();
+    expect(screen.queryByTestId('avatar-pill-time')).toBeNull();
+  });
+
+  it('an API without the pulse still shows the unread count', async () => {
+    mockPulse.mockRejectedValue(new Error('404'));
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const screen = await render(<AvatarPill authSheetRef={sheet().ref} onSwitchProfile={mockSwitch} />);
+    await waitFor(() => expect(screen.getByTestId('avatar-pill-count')).toHaveTextContent('3'));
+    warn.mockRestore();
   });
 
   it('opens to chats and notifications, each routing; › closes it', async () => {
@@ -128,5 +198,8 @@ describe('AvatarPill', () => {
       'none',
     );
     expect(mockBadge).not.toHaveBeenCalled();
+    expect(mockPulse).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('avatar-pill-time')).toBeNull();
+    expect(screen.queryByTestId('pulse-notch')).toBeNull();
   });
 });

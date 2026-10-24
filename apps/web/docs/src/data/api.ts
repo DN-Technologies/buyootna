@@ -9,6 +9,78 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-pulse",
+      title: {
+        en: "The pulse: GET /pulse/me, what's going on for the current profile",
+        ar: "النبض: GET /pulse/me، ما يحدث للملف الحالي",
+      },
+      priority: "P2",
+      story: {
+        en: "GET /pulse/me returns { items }, most pressing first, at most 6, each { kind, count, refId, tone (gold, amber or red), daysLeft?, avatarUrl? }; refId is the one target the rows share (request, ad, alert or story author), null when several. For an individual: requestOffers (offers in SENT on the caller's PENDING requests), adExpiring (the caller's ACTIVE ads whose endDate is within 3 days; daysLeft is whole days to the soonest, amber under 2), alertMatches (as GET /alerts/me/unseen-matches) and providerStory (saved companies and offices, approved and not disabled or blocked, with an ACTIVE unexpired story the caller hasn't viewed; avatarUrl is the first one's logo). Items stay until acted on: the offer answered, the ad renewed, the matches opened, the story viewed. Companies and offices get an empty list for now.",
+        ar: "GET /pulse/me يعيد { items }، الأهم أولاً، وستة على الأكثر، لكل منها { kind، count، refId، tone (gold أو amber أو red)، daysLeft اختياري، avatarUrl اختياري }؛ وrefId الهدف الوحيد المشترك (الطلب أو الإعلان أو التنبيه أو صاحب القصة)، وnull إن تعدد. للفرد: requestOffers (العروض بحالة SENT على طلبات الطالب PENDING)، وadExpiring (إعلانات الطالب ACTIVE التي ينتهي endDate خلال 3 أيام؛ وdaysLeft الأيام الكاملة لأقربها، وamber تحت يومين)، وalertMatches (كـ GET /alerts/me/unseen-matches)، وproviderStory (الشركات والمكاتب المحفوظة، المعتمدة وغير المعطلة أو المحظورة، ولها قصة ACTIVE لم تنتهِ ولم يشاهدها الطالب؛ وavatarUrl شعار أولها). ويبقى العنصر حتى التعامل معه: الرد على العرض، تجديد الإعلان، فتح المطابقات، مشاهدة القصة. والشركات والمكاتب تحصل على قائمة فارغة حالياً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Items come in the order requestOffers, adExpiring, alertMatches, providerStory, only those that apply.",
+          "An offer accepted or rejected, an ad renewed past 3 days, matches opened and a story viewed each remove their item.",
+          "Another profile's offers, ads, alerts and favourites never count.",
+        ],
+        ar: [
+          "تأتي العناصر بالترتيب requestOffers ثم adExpiring ثم alertMatches ثم providerStory، المنطبق منها فقط.",
+          "قبول العرض أو رفضه، وتجديد الإعلان لأبعد من 3 أيام، وفتح المطابقات، ومشاهدة القصة، كل منها يزيل عنصره.",
+          "عروض الملفات الأخرى وإعلاناتها وتنبيهاتها ومفضلتها لا تُحسب أبداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual with an offer on an open request, an ad ending tomorrow, an unopened alert match and a saved office with an unwatched story: GET /pulse/me lists the four in order, the ad amber with daysLeft 1. Watch the story, accept the offer, renew the ad, open the matches: { items: [] }.",
+          "Locally, put each case on your account with `pnpm --filter api pulse:demo <offers | expiring [--days 0-2] | matches | story | all>` and remove them with `pnpm --filter api pulse:demo clear` (it refuses any database that isn't on localhost).",
+        ],
+        ar: [
+          "كفرد لديه عرض على طلب مفتوح وإعلان ينتهي غداً ومطابقة تنبيه لم تُفتح ومكتب محفوظ له قصة لم تُشاهد: GET /pulse/me يسرد الأربعة بالترتيب، والإعلان amber وdaysLeft 1. شاهد القصة واقبل العرض وجدد الإعلان وافتح المطابقات: { items: [] }.",
+          "محلياً، ضع كل حالة على حسابك بـ `pnpm --filter api pulse:demo <offers | expiring [--days 0-2] | matches | story | all>` وأزلها بـ `pnpm --filter api pulse:demo clear` (ويرفض أي قاعدة بيانات ليست على localhost).",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
+      id: "api-alerts-unseen-matches",
+      title: {
+        en: "Alert matches not opened yet: GET /alerts/me/unseen-matches",
+        ar: "مطابقات التنبيهات التي لم تُفتح بعد: GET /alerts/me/unseen-matches",
+      },
+      priority: "P2",
+      story: {
+        en: "Migration 20261024210000_alert_match_seen adds AlertMatch.seenAt and sets it to createdAt on every existing match, so nobody's older matches count as new. GET /alerts/me/unseen-matches returns { count, alertId }: count is the matches with no seenAt, of the caller's active (not paused) alerts, on listings still ACTIVE and not hidden; alertId is the one alert they all belong to, or null when there are none or several. GET /alerts/:id/matches now also sets seenAt on all of that alert's unseen matches (only for the alert's owner; another identity's alert stays 404 and nothing is marked). GET /pulse/me reports the same count as its alertMatches item.",
+        ar: "يضيف الترحيل 20261024210000_alert_match_seen الحقل AlertMatch.seenAt ويضبطه على createdAt في كل مطابقة موجودة، فلا تُحسب مطابقات أحد القديمة جديدة. وGET /alerts/me/unseen-matches يعيد { count، alertId }: count عدد المطابقات بلا seenAt، لتنبيهات الطالب النشطة (غير الموقوفة)، على إعلانات ما زالت ACTIVE وغير مخفية؛ وalertId التنبيه الوحيد الذي تنتمي إليه كلها، أو null إن لم توجد أو كانت لعدة تنبيهات. وGET /alerts/:id/matches يضبط الآن أيضاً seenAt على كل مطابقات ذلك التنبيه غير المرئية (لمالك التنبيه فقط؛ وتنبيه هوية أخرى يبقى 404 ولا يُعلَّم شيء). ويعرض GET /pulse/me العدد نفسه في عنصر alertMatches.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Right after the migration, every identity's count is 0.",
+          "A new listing matching an active alert raises the count by 1 and names that alert; a paused alert's matches don't count.",
+          "Opening the alert's matches brings the count back to 0; opening another identity's alert is 404 and changes nothing.",
+          "A matched listing that is hidden or no longer active stops counting.",
+        ],
+        ar: [
+          "بعد الترحيل مباشرة العدد 0 لكل هوية.",
+          "إعلان جديد يطابق تنبيهاً نشطاً يرفع العدد 1 ويسمّي ذلك التنبيه؛ ومطابقات التنبيه الموقوف لا تُحسب.",
+          "فتح مطابقات التنبيه يعيد العدد إلى 0؛ وفتح تنبيه هوية أخرى ← 404 ولا يتغير شيء.",
+          "الإعلان المطابق إن أُخفي أو لم يعد نشطاً لا يُحسب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Save an alert, publish a matching listing from another account: GET /alerts/me/unseen-matches → { count: 1, alertId: <the alert> }. GET /alerts/<the alert>/matches, then again → { count: 0, alertId: null }.",
+          "With two alerts each matched once: { count: 2, alertId: null }. Pause one: { count: 1, alertId: <the other> }.",
+        ],
+        ar: [
+          "احفظ تنبيهاً وانشر إعلاناً مطابقاً من حساب آخر: GET /alerts/me/unseen-matches ← { count: 1، alertId: <التنبيه> }. ثم GET /alerts/<التنبيه>/matches، ثم مرة أخرى ← { count: 0، alertId: null }.",
+          "مع تنبيهين طابق كلاً منهما إعلان: { count: 2، alertId: null }. أوقف أحدهما: { count: 1، alertId: <الآخر> }.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "api-company-services-hide",
       title: {
         en: "Company services: hide a sub-service or the whole service, edit, and delete the service",

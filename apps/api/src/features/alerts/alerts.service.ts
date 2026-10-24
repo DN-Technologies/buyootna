@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Alert, ListingType } from '@prisma/client';
 import { PrismaService } from '../../core/prisma/prisma.service';
-import { notExpiredWhere, ownerActiveWhere } from '../properties/services/property-expiry.util';
+import {
+  notExpiredWhere,
+  ownerActiveWhere,
+} from '../properties/services/property-expiry.util';
 import {
   formatProperties,
   propertyFeedPayload,
@@ -89,9 +92,14 @@ export class AlertsService {
     return { count };
   }
 
-  // Live listings that currently satisfy the alert
+  // Live listings that currently satisfy the alert. Opening them is seeing
+  // the alert's matches, so the avatar pill's "+N" drops them
   async findMatches(identityId: string, id: string) {
     const alert = await this.findOwned(identityId, id);
+    await this.prisma.alertMatch.updateMany({
+      where: { alertId: id, seenAt: null },
+      data: { seenAt: new Date() },
+    });
     const properties = await this.prisma.property.findMany({
       where: {
         AND: [
@@ -110,6 +118,25 @@ export class AlertsService {
       ...propertyFeedPayload,
     });
     return formatProperties(properties);
+  }
+
+  // Matches of the identity's active alerts not opened yet, on listings
+  // still live. alertId says where to go: the one alert they all belong
+  // to, or null (none, or several: the alerts list)
+  async findUnseenMatches(identityId: string) {
+    const unseen = await this.prisma.alertMatch.findMany({
+      where: {
+        seenAt: null,
+        alert: { identityId, isActive: true },
+        property: { status: 'ACTIVE', isHidden: false },
+      },
+      select: { alertId: true },
+    });
+    const alertIds = new Set(unseen.map((m) => m.alertId));
+    return {
+      count: unseen.length,
+      alertId: alertIds.size === 1 ? [...alertIds][0] : null,
+    };
   }
 
   async remove(identityId: string, id: string) {

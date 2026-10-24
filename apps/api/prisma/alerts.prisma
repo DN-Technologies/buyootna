@@ -46,7 +46,11 @@ model AlertMatch {
   propertyId String
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
+  // Set when the owner opens the alert's matches; null ones are the home
+  // avatar pill's gold "+N"
+  seenAt     DateTime?
 
   @@unique([alertId, propertyId])
   @@index([propertyId])
+  @@index([alertId, seenAt])
 }

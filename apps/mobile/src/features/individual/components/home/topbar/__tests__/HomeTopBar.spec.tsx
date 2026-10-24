@@ -24,6 +24,9 @@ jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: (select: (s: unknown) => unknown) =>
     select({ token: 't', activeIdentity: { id: 'me' } }),
 }));
+jest.mock('@/shared/api/pulse.service', () => ({
+  pulseService: { getMine: jest.fn().mockResolvedValue([]) },
+}));
 jest.mock('@/shared/api/notifications.service', () => ({
   notificationsService: {
     getBadge: jest.fn().mockResolvedValue(0),
