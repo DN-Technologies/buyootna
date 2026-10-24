@@ -57,6 +57,13 @@ existed; don't reintroduce a path around them.
   someone with write access must manually trigger it from the Actions
   tab. This is a deliberate human checkpoint before production changes go
   live.
+- Production's database is the server's `postgres` container
+  (docker-compose.yaml). Moving from Neon: `scripts/migrate-from-neon.sh
+  "<neon direct url>" [--switch]` on the server. It checks the container is
+  Postgres 17 and empty, dumps Neon read-only, loads it, compares row
+  counts, and with `--switch` points `DATABASE_URL`/`DIRECT_URL` at
+  `postgres:5432` (backing up the old `apps/api/.env`). Rehearsed on
+  2026-10-24 against a stand-in Neon and a leftover Postgres 16 volume.
 - CD's `prisma migrate deploy` must connect directly, not through Neon's
   `-pooler` host: set `DIRECT_URL` (the same URL without `-pooler`) in the
   server's `apps/api/.env`; `prisma.config.ts` prefers it over

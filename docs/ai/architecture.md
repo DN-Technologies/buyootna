@@ -10,7 +10,9 @@ schema, navigation structure, state management, or adds a new dependency.
   `module.ts` / `controller.ts` / `service.ts` / `dto/`. Mirror this for
   new features rather than inventing a new layout.
 - **ORM**: Prisma (v7) via `@prisma/adapter-pg` over `pg.Pool`, PostgreSQL
-  (Neon in development). The schema is split across multiple `.prisma`
+  — in production, the server's `postgres` container (docker-compose.yaml,
+  Postgres 17, backed up daily into `backups/postgres`), moved from Neon
+  with `scripts/migrate-from-neon.sh`; Neon stays for development. The schema is split across multiple `.prisma`
   files by feature (e.g. `identity.prisma`, `properties.prisma`,
   `alerts.prisma`) and loaded together via `--schema=prisma` (the whole
   `prisma/` directory, not a single file) — every Prisma CLI command in
