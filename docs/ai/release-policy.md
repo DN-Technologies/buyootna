@@ -59,9 +59,14 @@ existed; don't reintroduce a path around them.
   live.
 - Production's database is the server's `postgres` container
   (docker-compose.yaml). Moving from Neon: `scripts/migrate-from-neon.sh
-  "<neon direct url>" [--switch]` on the server. It checks the container is
-  Postgres 17 and empty, dumps Neon read-only, loads it, compares row
-  counts, and with `--switch` points `DATABASE_URL`/`DIRECT_URL` at
+  '<neon direct url>' [--replace] [--switch]` on the server. It copies Neon
+  first (read-only) and changes nothing on the server if that fails (it
+  did on 2026-10-24: Neon over quota, while an earlier version had already
+  moved the container to an empty volume and taken the API down). Then it
+  asks before replacing a running container on another volume, loads into
+  an empty database (`--replace` saves an existing one to
+  `backups/box-<time>.sql` and empties it first), compares row counts, and
+  with `--switch` points `DATABASE_URL`/`DIRECT_URL` at
   `postgres:5432` (backing up the old `apps/api/.env`). Postgres 17 runs
   on its own volume, `postgres17_data`; the old postgres:16 cluster in
   `postgres_data` (59 tables on the server, 2026-10-24) is kept untouched,
