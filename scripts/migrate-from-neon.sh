@@ -4,8 +4,10 @@
 #
 # Run on the server, from the repo root (~/buyootna):
 #
-#   scripts/migrate-from-neon.sh "<NEON_DIRECT_URL>"            # copy + check
-#   scripts/migrate-from-neon.sh "<NEON_DIRECT_URL>" --switch   # …and switch the API
+#   scripts/migrate-from-neon.sh '<NEON_DIRECT_URL>'            # copy + check
+#   scripts/migrate-from-neon.sh '<NEON_DIRECT_URL>' --switch   # …and switch the API
+#
+# Keep the URL in quotes: its "&" would otherwise end the command.
 #
 # <NEON_DIRECT_URL> is Neon's direct connection string (the host WITHOUT
 # "-pooler"): pg_dump needs a real session. Neon must be reachable: while it
@@ -13,9 +15,9 @@
 # lift the quota (upgrade) or wait for it to reset first.
 #
 # What it does:
-#   1. Makes sure the container runs Postgres 17 (Neon's version). An EMPTY
-#      volume left by the old postgres:16 image is replaced, after asking;
-#      a volume that holds data stops the script.
+#   1. Saves the old postgres:16 cluster's data to backups/pg16-<time>.sql
+#      (its volume is never changed), and starts Postgres 17 on its own
+#      volume (postgres17_data).
 #   2. Refuses to load into a database that already has tables.
 #   3. Dumps Neon (read-only) to backups/neon-<time>.sql and loads it,
 #      stopping at the first error. Prisma's migration history comes along,
@@ -29,7 +31,7 @@ set -euo pipefail
 NEON_URL="${1:-}"
 SWITCH="${2:-}"
 if [[ -z "$NEON_URL" ]]; then
-  sed -n '2,13p' "$0"
+  sed -n '2,15p' "$0"
   exit 1
 fi
 if [[ "$NEON_URL" == *-pooler* ]]; then
@@ -63,30 +65,30 @@ psql_neon() {
 }
 
 echo "1/5 The container's Postgres"
-if docker volume inspect "$VOLUME" >/dev/null 2>&1; then
-  OLD="$(docker run --rm -v "$VOLUME":/d alpine cat /d/PG_VERSION 2>/dev/null || true)"
-  if [[ -n "$OLD" && "$OLD" != "17" ]]; then
-    echo "  The volume $VOLUME holds a Postgres $OLD cluster; Neon is 17."
-    docker compose stop postgres postgres-backup >/dev/null 2>&1 || true
-    CHECK="buyootna-pg${OLD}-check"
-    docker run -d --rm --name "$CHECK" -v "$VOLUME":/var/lib/postgresql/data \
-      "postgres:${OLD}-alpine" >/dev/null
-    until docker exec "$CHECK" pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" >/dev/null 2>&1; do sleep 1; done
-    TABLES="$(docker exec "$CHECK" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atc \
-      "select count(*) from information_schema.tables where table_schema = 'public'" 2>/dev/null || echo 0)"
-    docker stop "$CHECK" >/dev/null
-    if [[ "$TABLES" != "0" ]]; then
-      echo "✗ It has $TABLES tables: not touching it. Upgrade it by hand (dump with"
-      echo "  postgres:${OLD}, load into a fresh 17 volume) before running this again."
-      exit 1
+# The old postgres:16 cluster (volume postgres_data) is never changed: its
+# data is saved to backups/ once, and Postgres 17 runs on its own volume
+OLD_VOLUME="${PROJECT}_postgres_data"
+if docker volume inspect "$OLD_VOLUME" >/dev/null 2>&1 && ! ls backups/pg16-*.sql >/dev/null 2>&1; then
+  OLD="$(docker run --rm -v "$OLD_VOLUME":/d:ro alpine cat /d/PG_VERSION 2>/dev/null || true)"
+  if [[ -n "$OLD" ]]; then
+    OLD_DUMP="backups/pg${OLD}-${STAMP}.sql"
+    echo "  Saving the old Postgres $OLD data (volume $OLD_VOLUME) → $OLD_DUMP"
+    RUNNING="$(docker ps -q --filter volume="$OLD_VOLUME" | head -n1)"
+    if [[ -n "$RUNNING" ]]; then
+      # Still served by a container: dump through it (never two servers on one volume)
+      docker exec "$RUNNING" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" >"$OLD_DUMP"
+    else
+      CHECK="buyootna-pg${OLD}-save"
+      docker run -d --rm --name "$CHECK" -v "$OLD_VOLUME":/var/lib/postgresql/data \
+        --env-file .env.postgres "postgres:${OLD}-alpine" >/dev/null
+      until docker exec "$CHECK" pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" >/dev/null 2>&1; do sleep 1; done
+      docker exec "$CHECK" pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" >"$OLD_DUMP"
+      docker stop "$CHECK" >/dev/null
     fi
-    read -r -p "  It's empty. Replace it with a Postgres 17 volume? [y/N] " OK
-    [[ "$OK" == "y" || "$OK" == "Y" ]] || { echo "Stopped. Nothing was changed."; exit 1; }
-    docker compose rm -f postgres postgres-backup >/dev/null
-    docker volume rm "$VOLUME" >/dev/null
-    echo "  ✓ Replaced"
+    echo "  ✓ $(du -h "$OLD_DUMP" | cut -f1), and the volume is left as it was"
   fi
 fi
+# A container still on the old volume is replaced by one on postgres17_data
 docker compose up -d postgres postgres-backup
 # Over TCP: a fresh volume's first start runs a socket-only init server
 # that answers pg_isready, then restarts
