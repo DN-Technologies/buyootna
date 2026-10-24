@@ -26,14 +26,15 @@ services:
 
   postgres:
     # Neon's version, so its dump loads as is (scripts/migrate-from-neon.sh).
-    # A volume made by an older major doesn't start on this image: that
-    # script replaces an empty one and stops on one with data
+    # Its own volume: postgres_data holds the old postgres:16 cluster, which
+    # this image can't start on; it's kept untouched (and dumped to backups/
+    # by that script)
     image: postgres:17-alpine
     restart: always
     env_file:
       - ./.env.postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres17_data:/var/lib/postgresql/data
     expose: ["5432"]
 
   postgres-backup:
@@ -116,7 +117,9 @@ services:
     restart: always
 
 volumes:
+  # The old postgres:16 cluster: no longer mounted, kept as it was
   postgres_data:
+  postgres17_data:
   geoip_data:
 
 networks:

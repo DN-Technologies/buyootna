@@ -62,8 +62,12 @@ existed; don't reintroduce a path around them.
   "<neon direct url>" [--switch]` on the server. It checks the container is
   Postgres 17 and empty, dumps Neon read-only, loads it, compares row
   counts, and with `--switch` points `DATABASE_URL`/`DIRECT_URL` at
-  `postgres:5432` (backing up the old `apps/api/.env`). Rehearsed on
-  2026-10-24 against a stand-in Neon and a leftover Postgres 16 volume.
+  `postgres:5432` (backing up the old `apps/api/.env`). Postgres 17 runs
+  on its own volume, `postgres17_data`; the old postgres:16 cluster in
+  `postgres_data` (59 tables on the server, 2026-10-24) is kept untouched,
+  and its data saved once to `backups/pg16-<time>.sql`. Quote the URL: its
+  `&` otherwise ends the command. Rehearsed on 2026-10-24 against a
+  stand-in Neon and an old Postgres 16 volume holding data.
 - CD's `prisma migrate deploy` must connect directly, not through Neon's
   `-pooler` host: set `DIRECT_URL` (the same URL without `-pooler`) in the
   server's `apps/api/.env`; `prisma.config.ts` prefers it over
