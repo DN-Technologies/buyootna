@@ -13,6 +13,10 @@ import Animated, {
 
 // UIKit's segmented-control feel: a quick, barely-bouncing spring
 export const IOS_SPRING = { duration: 380, dampingRatio: 0.86 } as const;
+// The selection's glide: a little longer and without any bounce, so it
+// eases into place instead of snapping or wobbling
+export const SEGMENT_MS = 480;
+export const SEGMENT_SPRING = { duration: SEGMENT_MS, dampingRatio: 1 } as const;
 
 interface Frame {
   x: number;
@@ -67,8 +71,8 @@ export default function SlidingSegment<T extends string>({
       y.value = f.y;
       height.value = f.height;
       if (shown.value) {
-        x.value = withSpring(f.x, IOS_SPRING);
-        width.value = withSpring(f.width, IOS_SPRING);
+        x.value = withSpring(f.x, SEGMENT_SPRING);
+        width.value = withSpring(f.width, SEGMENT_SPRING);
       } else {
         // The first placement doesn't slide in from the edge
         x.value = f.x;

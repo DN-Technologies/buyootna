@@ -1,7 +1,9 @@
 import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
-import SlidingSegment from '@/shared/components/ui/SlidingSegment';
+import SlidingSegment, {
+  SEGMENT_MS,
+} from '@/shared/components/ui/SlidingSegment';
 import { animateNextLayout } from '@/shared/utils/animation/animateNextLayout';
 
 export type HomeMode = 'home' | 'stories';
@@ -61,7 +63,8 @@ export default function HomeModeSwitch({ mode, onChange }: HomeModeSwitchProps) 
             onPress={() => {
               if (active) return;
               // The sides trade widths on a spring as the name moves over
-              animateNextLayout();
+              // in step with the selection's glide
+              animateNextLayout(SEGMENT_MS);
               onChange(m.id);
             }}
             className="h-[31px] flex-row items-center justify-center px-[10px]"
