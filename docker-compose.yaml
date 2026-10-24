@@ -25,7 +25,10 @@ services:
       - postgres
 
   postgres:
-    image: postgres:16-alpine
+    # Neon's version, so its dump loads as is (scripts/migrate-from-neon.sh).
+    # A volume made by an older major doesn't start on this image: that
+    # script replaces an empty one and stops on one with data
+    image: postgres:17-alpine
     restart: always
     env_file:
       - ./.env.postgres
