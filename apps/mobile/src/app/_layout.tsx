@@ -31,6 +31,7 @@ import { useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
 import { usePushRegistration } from '@/shared/hooks/notifications/usePushRegistration';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/properties/useFavorites';
 import { installNavigationDebounce } from '@/shared/navigation/installNavigationDebounce';
+import { useLateIdentityRedirect } from '@/shared/navigation/useLateIdentityRedirect';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { ensureRtlDirection } from '@/shared/utils/rtl';
 
@@ -119,6 +120,8 @@ function RootLayout() {
   usePushRegistration(token);
   // The unread number on the app icon
   useAppBadge(token);
+  // A business profile that loaded after launch fell back to individual
+  useLateIdentityRedirect();
   const navigationRef = useNavigationContainerRef();
 
   const [loaded, error] = useFonts({

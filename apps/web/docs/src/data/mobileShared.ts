@@ -9,6 +9,37 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-late-identity-home",
+      title: {
+        en: "A company or office opened while the API was unreachable lands on its own home once it loads",
+        ar: "الشركة أو المكتب المفتوح أثناء تعذر الوصول للخادم ينتقل لرئيسيته بعد التحميل",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug: opening the app while the API was restarting (or offline) showed a company's account in the individual layout (الرئيسية / شركات / نشاطي / المزيد, the individual home), because launch picks the home from the profile and the profile request had failed. Now, when the profile loads later as a company or office while the individual screens are showing, the app moves to that profile's home. It reacts only to that first load: a company opening the notifications (kept with the individual screens) stays there, and switching profile works as before.",
+        ar: "خلل من الاختبار: فتح التطبيق أثناء إعادة تشغيل الخادم (أو دون اتصال) كان يعرض حساب الشركة بتخطيط الأفراد (الرئيسية / شركات / نشاطي / المزيد، ورئيسية الأفراد)، لأن الإقلاع يختار الرئيسية حسب الحساب وكان طلب الحساب قد فشل. الآن، عندما يُحمَّل الحساب لاحقاً كشركة أو مكتب والتطبيق على شاشات الأفراد، ينتقل لرئيسية ذلك الحساب. ويحدث ذلك عند أول تحميل فقط: الشركة التي تفتح الإشعارات (المحفوظة مع شاشات الأفراد) تبقى فيها، وتبديل الحساب يعمل كما كان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With a company active, stop the API, reopen the app, start the API, pull to refresh: the company home with its own tabs.",
+          "A company opening الإشعارات stays on it.",
+        ],
+        ar: [
+          "والشركة هي الحساب النشط: أوقف الخادم وأعد فتح التطبيق ثم شغّل الخادم واسحب للتحديث: رئيسية الشركة بتبويباتها.",
+          "الشركة التي تفتح الإشعارات تبقى فيها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: kill the API, force-quit and reopen the app (it shows individual screens), start the API and pull to refresh on الرئيسية or open المزيد: the app moves to the company home.",
+        ],
+        ar: [
+          "كشركة: أوقف الخادم وأغلق التطبيق وأعد فتحه (يعرض شاشات الأفراد)، ثم شغّل الخادم واسحب للتحديث في الرئيسية أو افتح المزيد: ينتقل التطبيق لرئيسية الشركة.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "mobile-business-studio",
       title: {
         en: "«الاستوديو»: a company's or office's stories, archive and highlights (المميزة)",
