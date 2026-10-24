@@ -1,5 +1,6 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -12,9 +13,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
-import { useAddToHighlight } from '../hooks/useAddToHighlight';
 import { useMyStories } from '../hooks/useStoriesQueries';
-import { useMyHighlights, useStoryArchive } from '../hooks/useStoryHighlights';
+import {
+  useHighlightMutations,
+  useMyHighlights,
+  useStoryArchive,
+} from '../hooks/useStoryHighlights';
+import HighlightPickerSheet from './HighlightPickerSheet';
 import StudioArchiveGrid from './StudioArchiveGrid';
 import StudioHighlightsRow from './StudioHighlightsRow';
 import StudioLiveRow from './StudioLiveRow';
@@ -32,7 +37,30 @@ export default function StoryStudio() {
   const live = useMyStories();
   const highlights = useMyHighlights();
   const archive = useStoryArchive();
-  const addToHighlight = useAddToHighlight();
+  const pickerSheet = useRef<BottomSheetModal>(null);
+  const { reorder } = useHighlightMutations();
+  // «ترتيب»: the highlights' ids in their new order, until «تم»
+  const [order, setOrder] = useState<string[] | null>(null);
+  const savedHighlights = highlights.data?.highlights ?? [];
+  const shownHighlights = order
+    ? (order
+        .map((id) => savedHighlights.find((h) => h.id === id))
+        .filter(Boolean) as typeof savedHighlights)
+    : savedHighlights;
+  const move = (id: string, by: -1 | 1) =>
+    setOrder((ids) => {
+      const next = [...(ids ?? [])];
+      const from = next.indexOf(id);
+      const to = from + by;
+      if (from < 0 || to < 0 || to >= next.length) return ids;
+      [next[from], next[to]] = [next[to], next[from]];
+      return next;
+    });
+  const finishOrder = () => {
+    const before = savedHighlights.map((h) => h.id);
+    if (order && order.join() !== before.join()) reorder.mutate(order);
+    setOrder(null);
+  };
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -74,10 +102,26 @@ export default function StoryStudio() {
           <StudioLiveRow stories={live.data?.stories ?? []} identityId={identityId} />
         </StudioSection>
 
-        <StudioSection title="المميزة" hint="تبقى ظاهرة في ملفك لكل الزوار">
+        <StudioSection
+          title="المميزة"
+          hint={order ? 'حرّكها بالأسهم ثم اضغط تم' : 'تبقى ظاهرة في ملفك لكل الزوار'}
+          action={
+            savedHighlights.length > 1
+              ? {
+                  label: order ? 'تم' : 'ترتيب',
+                  onPress: order
+                    ? finishOrder
+                    : () => setOrder(savedHighlights.map((h) => h.id)),
+                  testID: 'studio-reorder',
+                }
+              : undefined
+          }
+        >
           <StudioHighlightsRow
-            highlights={highlights.data?.highlights ?? []}
+            highlights={shownHighlights}
             identityId={identityId}
+            reordering={!!order}
+            onMove={move}
           />
         </StudioSection>
 
@@ -128,7 +172,7 @@ export default function StoryStudio() {
             testID="studio-add-to-highlight"
             accessibilityRole="button"
             activeOpacity={0.85}
-            onPress={() => addToHighlight(selected, stopSelecting)}
+            onPress={() => pickerSheet.current?.present()}
             className="h-[50px] items-center justify-center rounded-full"
             style={{ backgroundColor: NAVY }}
           >
@@ -138,6 +182,8 @@ export default function StoryStudio() {
           </TouchableOpacity>
         </View>
       )}
+
+      <HighlightPickerSheet ref={pickerSheet} storyIds={selected} onDone={stopSelecting} />
     </View>
   );
 }

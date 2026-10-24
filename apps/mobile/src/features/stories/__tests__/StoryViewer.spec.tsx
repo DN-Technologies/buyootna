@@ -95,9 +95,6 @@ jest.mock('../hooks/useStoryHighlights', () => {
     useHighlightMutations: () => ({ update: { mutate: jest.fn() } }),
   };
 });
-jest.mock('../hooks/useAddToHighlight', () => ({
-  useAddToHighlight: () => jest.fn(),
-}));
 jest.mock('../hooks/useStoriesQueries', () => ({
   useActiveIdentityId: () => mockIdentityId,
   useStoriesFeed: () => ({ authors: mockAuthors, refetch: mockRefetch }),

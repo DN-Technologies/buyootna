@@ -58,7 +58,7 @@ describe('OwnStoryOptionsSheet', () => {
     const s = await screen;
     await fireEvent.press(s.getByTestId('own-story-add-highlight'));
     expect(s.getByText('موجودة فيها')).toBeTruthy();
-    await fireEvent.press(s.getByTestId('own-story-pick-h1'));
+    await fireEvent.press(s.getByTestId('highlight-picker-h1'));
     expect(mockMutate).toHaveBeenCalledWith(
       { id: 'h1', input: { storyIds: ['old', 's1'] } },
       expect.any(Object),
@@ -68,7 +68,7 @@ describe('OwnStoryOptionsSheet', () => {
   it('a new highlight opens its form with the story chosen', async () => {
     const s = await setup().screen;
     await fireEvent.press(s.getByTestId('own-story-add-highlight'));
-    await fireEvent.press(s.getByTestId('own-story-new-highlight'));
+    await fireEvent.press(s.getByTestId('highlight-picker-new'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/stories/highlights/new',
       params: { storyIds: 's1' },
