@@ -22,6 +22,7 @@ const liveStory = (over: Record<string, unknown> = {}) => ({
   publishedAt: new Date('2026-10-20T10:00:00.000Z'),
   expiresAt: new Date('2026-10-21T10:00:00.000Z'),
   identity: { userId: 'author-user' },
+  _count: { highlightItems: 0 },
   ...over,
 });
 
@@ -136,11 +137,25 @@ describe('ReportsService.createForStory', () => {
     ['deleted', liveStory({ status: 'DELETED' })],
     ['pending', liveStory({ status: 'PENDING' })],
     ['expired', liveStory({ expiresAt: NOW })],
+    [
+      'deleted, even in a highlight',
+      liveStory({ status: 'DELETED', _count: { highlightItems: 1 } }),
+    ],
   ])('a %s story cannot be reported (404)', async (_label, row) => {
     prisma.story.findUnique.mockResolvedValue(row);
     await expect(
       service.createForStory(reporter, STORY, dto, NOW),
     ).rejects.toThrow(NotFoundException);
     expect(prisma.report.create).not.toHaveBeenCalled();
+  });
+
+  it('an expired story kept in a highlight can be reported (it is on the profile)', async () => {
+    prisma.story.findUnique.mockResolvedValue(
+      liveStory({ expiresAt: NOW, _count: { highlightItems: 1 } }),
+    );
+    await expect(
+      service.createForStory(reporter, STORY, dto, NOW),
+    ).resolves.toBeDefined();
+    expect(prisma.report.create).toHaveBeenCalled();
   });
 });

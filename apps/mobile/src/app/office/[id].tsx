@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileHighlights from '@/features/stories/components/ProfileHighlights';
 import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 import OfficeAboutTab from '@/shared/components/office/OfficeAboutTab';
 import OfficeBottomBar from '@/shared/components/office/OfficeBottomBar';
@@ -127,6 +128,8 @@ export default function OfficeProfileScreen() {
             <View className="px-5 pt-4">
               {/* Header Info Card */}
               <OfficeHeaderCard office={office} logoRing={storyRing} />
+              {/* المميزة: its highlights, kept past their 24 hours */}
+              <ProfileHighlights authorId={office?.id} />
 
               {/* Tab Navigation Switcher */}
               <OfficeTabsSwitcher

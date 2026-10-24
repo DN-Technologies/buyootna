@@ -6,9 +6,13 @@ import {
 import type {
   AuthorStory,
   MyStories,
+  StoryArchivePage,
   StoryAuthorStories,
   StoryAuthorType,
   StoryFeedPage,
+  StoryHighlight,
+  StoryHighlightInput,
+  StoryHighlights,
   StoryUploadRequest,
   StoryUploadSlot,
   StoryUploadTarget,
@@ -111,6 +115,61 @@ export const storiesService = {
   /** Deletes one of the current profile's stories (repeat-safe). */
   remove: async (storyId: string): Promise<void> => {
     await apiClient.delete(`/stories/${storyId}`);
+  },
+
+  /** The current profile's stories of the last 30 days (its archive). */
+  getArchive: async (cursor?: string): Promise<StoryArchivePage> => {
+    const response = await apiClient.get<StoryArchivePage>(
+      '/stories/me/archive',
+      { params: cursor ? { cursor } : {} },
+    );
+    return response.data;
+  },
+
+  /** The current profile's highlights, empty ones too. */
+  getMyHighlights: async (): Promise<StoryHighlights> => {
+    const response = await apiClient.get<StoryHighlights>(
+      '/stories/me/highlights',
+    );
+    return response.data;
+  },
+
+  /** A company's or office's highlights as shown on its profile. */
+  getAuthorHighlights: async (identityId: string): Promise<StoryHighlights> => {
+    const response = await apiClient.get<StoryHighlights>(
+      `/stories/authors/${identityId}/highlights`,
+    );
+    return response.data;
+  },
+
+  createHighlight: async (
+    input: Required<Pick<StoryHighlightInput, 'title' | 'storyIds'>>,
+  ): Promise<StoryHighlight> => {
+    const response = await apiClient.post<StoryHighlight>(
+      '/stories/highlights',
+      input,
+    );
+    return response.data;
+  },
+
+  updateHighlight: async (
+    id: string,
+    input: StoryHighlightInput,
+  ): Promise<StoryHighlight> => {
+    const response = await apiClient.patch<StoryHighlight>(
+      `/stories/highlights/${id}`,
+      input,
+    );
+    return response.data;
+  },
+
+  removeHighlight: async (id: string): Promise<void> => {
+    await apiClient.delete(`/stories/highlights/${id}`);
+  },
+
+  /** Every one of the profile's highlights, in their new order. */
+  reorderHighlights: async (ids: string[]): Promise<void> => {
+    await apiClient.put('/stories/highlights/order', { ids });
   },
 
   /** Who viewed one of the current profile's stories, newest first. */

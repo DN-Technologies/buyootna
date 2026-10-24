@@ -7,7 +7,7 @@ import { StorageService } from '../../core/storage/storage.service';
 import { StoriesMediaService } from './stories-media.service';
 import {
   STORY_CLEANUP_BATCH,
-  STORY_EXPIRED_GRACE_MS,
+  STORY_ARCHIVE_MS,
   STORY_ORPHAN_MIN_AGE_MS,
   STORY_PENDING_GRACE_MS,
   STORY_PREFIX,
@@ -31,10 +31,12 @@ export interface ReconcileResult {
 export function dueForPurge(now: Date): Prisma.StoryWhereInput {
   return {
     OR: [
-      // Expired, after viewers who opened it just before have finished
+      // Out of its author's 30-day archive, and in no highlight (those stay
+      // on the profile until taken out)
       {
         status: 'ACTIVE',
-        expiresAt: { lt: new Date(now.getTime() - STORY_EXPIRED_GRACE_MS) },
+        expiresAt: { lt: new Date(now.getTime() - STORY_ARCHIVE_MS) },
+        highlightItems: { none: {} },
       },
       // Upload abandoned (publish refuses after the deadline)
       {

@@ -1,8 +1,11 @@
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import {
   HomeBanner,
   HomeHeader,
@@ -12,11 +15,12 @@ import {
 import { useCompanyHome } from '@/features/company/hooks/useCompanyHome';
 import { useCompanyRequests } from '@/features/company/hooks/useCompanyRequests';
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
-import StoryTray from '@/features/stories/components/StoryTray';
+import StoryStudio from '@/features/stories/studio/StoryStudio';
+import type { BusinessHomeMode } from '@/features/stories/studio/StudioModeSwitch';
 import ProfileHomeSkeleton from '@/shared/components/skeletons/ProfileHomeSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import FadeLayer from '@/shared/components/ui/FadeLayer';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
-import { useUnreadNotificationsCount } from '@/shared/hooks/notifications/useUnreadNotificationsCount';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useChatStore } from '@/shared/store/useChatStore';
 
@@ -28,9 +32,13 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
  * services) and the two request lists.
  */
 export default function CompanyHomeScreen() {
-  const { activeIdentity, displayName, avatarUrl, isVerified } = useIdentity();
+  const router = useRouter();
+  const profileSheetRef = useRef<BottomSheetModal>(null);
+  const [mode, setMode] = useState<BusinessHomeMode>('home');
+  const studioOpened = useRef(false);
+  if (mode === 'studio') studioOpened.current = true;
+  const { activeIdentity } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
-  const unreadCount = useUnreadNotificationsCount();
   const conversations = useChatStore((state) => state.conversations);
   const loadConversations = useChatStore((state) => state.loadConversations);
   const { data: dashboard, refetch: refetchDashboard } = useCompanyHome();
@@ -46,8 +54,6 @@ export default function CompanyHomeScreen() {
   );
 
   const { services, refetch: refetchServices } = useMyCompanyServices();
-
-  const logoUrl = avatarUrl || 'https://via.placeholder.com/150';
 
   const activeServicesCount = services.length;
 
@@ -96,51 +102,64 @@ export default function CompanyHomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
-      >
-        <ContentContainer>
-          <HomeHeader
-            logoUrl={logoUrl}
-            displayName={displayName}
-            isVerified={isVerified}
-            unreadNotificationsCount={unreadCount}
-          />
-        </ContentContainer>
+      <ContentContainer>
+        <HomeHeader
+          mode={mode}
+          onModeChange={setMode}
+          onSwitchProfile={() => profileSheetRef.current?.present()}
+        />
+      </ContentContainer>
+      <View className="flex-1">
+        <FadeLayer active={mode === 'home'}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+          >
+            <ContentContainer>
+              <View className="mt-5 gap-6">
+                <HomeStatsGrid
+                  privateRequestsThisWeek={privateRequestsThisWeek}
+                  activeServicesCount={activeServicesCount}
+                  unreadMessagesCount={unreadMessagesCount}
+                  acceptedRequestsCount={acceptedRequestsCount}
+                />
 
-        {/* Stories (hidden when there are none) */}
-        <StoryTray className="mt-4" />
+                <HomeBanner
+                  billing={dashboard?.billing}
+                  activeServicesCount={activeServicesCount}
+                />
 
-        <ContentContainer>
-          <View className="mt-5 gap-6">
-            <HomeStatsGrid
-              privateRequestsThisWeek={privateRequestsThisWeek}
-              activeServicesCount={activeServicesCount}
-              unreadMessagesCount={unreadMessagesCount}
-              acceptedRequestsCount={acceptedRequestsCount}
-            />
+                <HomeRequestsSection
+                  title="طلبات خاصة بالشركة"
+                  variant="company"
+                  requests={privateRequests}
+                />
 
-            <HomeBanner
-              billing={dashboard?.billing}
-              activeServicesCount={activeServicesCount}
-            />
-
-            <HomeRequestsSection
-              title="طلبات خاصة بالشركة"
-              variant="company"
-              requests={privateRequests}
-            />
-
-            <HomeRequestsSection
-              title="طلبات عامة"
-              variant="public"
-              requests={publicRequests}
-            />
-          </View>
-        </ContentContainer>
-      </ScrollView>
+                <HomeRequestsSection
+                  title="طلبات عامة"
+                  variant="public"
+                  requests={publicRequests}
+                />
+              </View>
+            </ContentContainer>
+          </ScrollView>
+        </FadeLayer>
+        {/* Mounted once first opened, then kept (its scroll and data) */}
+        {studioOpened.current && (
+          <FadeLayer active={mode === 'studio'}>
+            <StoryStudio />
+          </FadeLayer>
+        )}
+      </View>
+      {/* A double tap on the logo: switch profile (as in المزيد) */}
+      <ProfileBottomSheet
+        ref={profileSheetRef}
+        onAddAccount={() => {
+          profileSheetRef.current?.dismiss();
+          router.push('/(auth)/add-identity');
+        }}
+      />
     </SafeAreaView>
   );
 }

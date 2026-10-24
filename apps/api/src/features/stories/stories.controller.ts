@@ -7,7 +7,9 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -26,10 +28,19 @@ import { RecordStoryViewsDto } from './dto/record-story-views.dto';
 import { StoryViewersQueryDto } from './dto/story-viewers-query.dto';
 import { StoryFeedQueryDto } from './dto/story-feed-query.dto';
 import {
+  CreateStoryHighlightDto,
+  ReorderStoryHighlightsDto,
+  StoryArchiveQueryDto,
+  UpdateStoryHighlightDto,
+} from './dto/story-highlight.dto';
+import {
   AuthorStoryDto,
   MyStoriesDto,
+  StoryArchiveDto,
   StoryAuthorStoriesDto,
   StoryFeedDto,
+  StoryHighlightDto,
+  StoryHighlightsDto,
   StoryUploadSlotDto,
   StoryViewersDto,
 } from './dto/story-response.dto';
@@ -175,5 +186,100 @@ export class StoriesController {
       { identityId: reqUser.identityId, userId: reqUser.userId },
       identityId,
     );
+  }
+
+  @Get('me/archive')
+  @ApiOperation({
+    summary:
+      "The current profile's stories of the last 30 days, live and past, newest first, with view counts (its archive; only it sees the past ones)",
+  })
+  @ApiResponse({ status: 200, type: StoryArchiveDto })
+  @ApiCommonErrors()
+  archive(
+    @CurrentUser() reqUser: RequestUser,
+    @Query() query: StoryArchiveQueryDto,
+  ) {
+    return this.stories.archive(reqUser.identityId, query.cursor);
+  }
+
+  @Get('me/highlights')
+  @ApiOperation({
+    summary: "The current profile's highlights (المميزة), empty ones too",
+  })
+  @ApiResponse({ status: 200, type: StoryHighlightsDto })
+  @ApiCommonErrors()
+  myHighlights(@CurrentUser() reqUser: RequestUser) {
+    return this.stories.myHighlights(reqUser.identityId);
+  }
+
+  @Get('authors/:identityId/highlights')
+  @ApiOperation({
+    summary:
+      "A company's or office's highlights as shown on its profile (none when it isn't visible to the viewer)",
+  })
+  @ApiResponse({ status: 200, type: StoryHighlightsDto })
+  @ApiCommonErrors()
+  authorHighlights(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('identityId', ParseUUIDPipe) identityId: string,
+  ) {
+    return this.stories.authorHighlights(reqUser.userId, identityId);
+  }
+
+  @Post('highlights')
+  @ApiOperation({
+    summary:
+      "Create a highlight from the author's own stories of the last 30 days; it is added at the end",
+  })
+  @ApiResponse({ status: 201, type: StoryHighlightDto })
+  @ApiCommonErrors()
+  createHighlight(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: CreateStoryHighlightDto,
+  ) {
+    return this.stories.createHighlight(reqUser.identityId, dto);
+  }
+
+  // Declared before 'highlights/:id' so "order" isn't taken for an id
+  @Put('highlights/order')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Reorder all of the author's highlights" })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async reorderHighlights(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: ReorderStoryHighlightsDto,
+  ): Promise<void> {
+    await this.stories.reorderHighlights(reqUser.identityId, dto.ids);
+  }
+
+  @Patch('highlights/:id')
+  @ApiOperation({
+    summary:
+      'Rename a highlight, change its cover, or replace its stories and their order',
+  })
+  @ApiResponse({ status: 200, type: StoryHighlightDto })
+  @ApiCommonErrors()
+  updateHighlight(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateStoryHighlightDto,
+  ) {
+    return this.stories.updateHighlight(reqUser.identityId, id, dto);
+  }
+
+  @Delete('highlights/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Delete a highlight (its stories stay in the archive while within its 30 days)',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async removeHighlight(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    await this.stories.removeHighlight(reqUser.identityId, id);
   }
 }

@@ -64,6 +64,34 @@ export interface MyStories {
   stories: AuthorStory[];
 }
 
+/** The author's own stories of the last 30 days, live and past, newest first. */
+export interface StoryArchivePage {
+  stories: AuthorStory[];
+  nextCursor: string | null;
+}
+
+/** المميزة: a named collection of an author's stories on its profile. */
+export interface StoryHighlight {
+  id: string;
+  title: string;
+  // The cover story's photo or video poster
+  coverUrl: string | null;
+  coverStoryId: string | null;
+  // In their order
+  stories: ViewerStory[];
+}
+
+export interface StoryHighlights {
+  highlights: StoryHighlight[];
+}
+
+export interface StoryHighlightInput {
+  title?: string;
+  coverStoryId?: string | null;
+  // Replaces its stories and their order
+  storyIds?: string[];
+}
+
 /** Where to PUT a story photo (every header is part of the signature). */
 export interface StoryUploadTarget {
   method: 'PUT';

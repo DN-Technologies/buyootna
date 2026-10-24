@@ -8,6 +8,6 @@ import { AlertsService } from './alerts.service';
   imports: [NotificationsModule],
   controllers: [AlertsController],
   providers: [AlertsService, AlertMatchingService],
-  exports: [AlertMatchingService],
+  exports: [AlertMatchingService, AlertsService],
 })
 export class AlertsModule {}

@@ -46,6 +46,7 @@ import { CompanyModule } from './features/company/company.module';
 import { OfficeModule } from './features/office/office.module';
 import { AlertsModule } from './features/alerts/alerts.module';
 import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
+import { PulseModule } from './features/pulse/pulse.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
     CompanyRequestsModule,
     AlertsModule,
     DocsPortalModule,
+    PulseModule,
   ],
   controllers: [AppController],
   providers: [

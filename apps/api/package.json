@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seeds/seed.ts",
     "docs:set-password": "ts-node -r tsconfig-paths/register src/scripts/docs-set-password.ts",
+    "pulse:demo": "ts-node -r tsconfig-paths/register src/scripts/pulse-demo.ts",
     "seed:draft": "ts-node prisma/seeds/seed-draft.ts",
     "db:push": "prisma db push --schema=prisma",
     "prisma:generate": "prisma generate --schema=prisma",

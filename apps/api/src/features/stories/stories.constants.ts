@@ -1,5 +1,6 @@
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
 const MB = 1024 * 1024;
 
 /** Every story file lives under this prefix, which must stay private. */
@@ -82,8 +83,14 @@ export const STORY_FEED_MAX_LIMIT = 30;
 // A feed cursor older than this is refused (the app starts again)
 export const STORY_CURSOR_MAX_AGE_MS = 30 * MINUTE_MS;
 
-// Cleanup: viewers who opened a story just before it expired can finish
-export const STORY_EXPIRED_GRACE_MS = HOUR_MS;
+// After its 24 hours a story stays this long in its author's archive (only
+// the author sees it), and for as long as it is in a highlight
+export const STORY_ARCHIVE_MS = 30 * DAY_MS;
+export const STORY_ARCHIVE_PAGE = 30;
+// المميزة: per author, stories in one, and the title's length
+export const STORY_HIGHLIGHTS_MAX = 30;
+export const STORY_HIGHLIGHT_ITEMS_MAX = 100;
+export const STORY_HIGHLIGHT_TITLE_MAX = 20;
 // Cleanup: leaves a publish that started just before the deadline alone
 export const STORY_PENDING_GRACE_MS = 5 * MINUTE_MS;
 // Reconciliation: files younger than this are never treated as orphans

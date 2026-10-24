@@ -53,6 +53,11 @@ jest.mock('@/shared/hooks/providers/useOfficeReport', () => ({
 }));
 
 const mockUseOfficeDetails = useOfficeDetails as jest.Mock;
+// The highlights row has its own spec
+jest.mock('@/features/stories/components/ProfileHighlights', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 // The story ring has its own spec (useProviderStoryRing)
 // Blocking has its own spec (useBlocks); here, what the menu offers
 const mockAskToBlock = jest.fn();

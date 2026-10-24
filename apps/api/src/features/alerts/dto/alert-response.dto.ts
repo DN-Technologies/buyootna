@@ -70,3 +70,18 @@ export class AlertsBulkUpdateResponseDto {
   @ApiProperty({ description: 'Number of alerts updated' })
   count: number;
 }
+
+export class AlertsUnseenMatchesResponseDto {
+  @ApiProperty({
+    description:
+      "Matches of the identity's active alerts on live listings, not opened yet",
+  })
+  count: number;
+
+  @ApiProperty({
+    nullable: true,
+    description:
+      'The alert they all belong to; null when there are none or several',
+  })
+  alertId: string | null;
+}

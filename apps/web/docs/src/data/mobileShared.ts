@@ -9,6 +9,109 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-late-identity-home",
+      title: {
+        en: "A company or office opened while the API was unreachable lands on its own home once it loads",
+        ar: "الشركة أو المكتب المفتوح أثناء تعذر الوصول للخادم ينتقل لرئيسيته بعد التحميل",
+      },
+      priority: "P1",
+      story: {
+        en: "QA bug: opening the app while the API was restarting (or offline) showed a company's account in the individual layout (الرئيسية / شركات / نشاطي / المزيد, the individual home), because launch picks the home from the profile and the profile request had failed. Now, when the profile loads later as a company or office while the individual screens are showing, the app moves to that profile's home. It reacts only to that first load: a company opening the notifications (kept with the individual screens) stays there, and switching profile works as before.",
+        ar: "خلل من الاختبار: فتح التطبيق أثناء إعادة تشغيل الخادم (أو دون اتصال) كان يعرض حساب الشركة بتخطيط الأفراد (الرئيسية / شركات / نشاطي / المزيد، ورئيسية الأفراد)، لأن الإقلاع يختار الرئيسية حسب الحساب وكان طلب الحساب قد فشل. الآن، عندما يُحمَّل الحساب لاحقاً كشركة أو مكتب والتطبيق على شاشات الأفراد، ينتقل لرئيسية ذلك الحساب. ويحدث ذلك عند أول تحميل فقط: الشركة التي تفتح الإشعارات (المحفوظة مع شاشات الأفراد) تبقى فيها، وتبديل الحساب يعمل كما كان.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With a company active, stop the API, reopen the app, start the API, pull to refresh: the company home with its own tabs.",
+          "A company opening الإشعارات stays on it.",
+        ],
+        ar: [
+          "والشركة هي الحساب النشط: أوقف الخادم وأعد فتح التطبيق ثم شغّل الخادم واسحب للتحديث: رئيسية الشركة بتبويباتها.",
+          "الشركة التي تفتح الإشعارات تبقى فيها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a company: kill the API, force-quit and reopen the app (it shows individual screens), start the API and pull to refresh on الرئيسية or open المزيد: the app moves to the company home.",
+        ],
+        ar: [
+          "كشركة: أوقف الخادم وأغلق التطبيق وأعد فتحه (يعرض شاشات الأفراد)، ثم شغّل الخادم واسحب للتحديث في الرئيسية أو افتح المزيد: ينتقل التطبيق لرئيسية الشركة.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
+      id: "mobile-business-studio",
+      title: {
+        en: "«الاستوديو»: a company's or office's stories, archive and highlights (المميزة)",
+        ar: "«الاستوديو»: قصص الشركة أو المكتب وأرشيفها ومميزاتها",
+      },
+      priority: "P1",
+      story: {
+        en: "Company and office homes have «الرئيسية / الاستوديو» beside the pill (the same switch as the individual home's «الرئيسية / القصص»); the header stays while the two fade. The studio: الآن (a «قصة جديدة» tile, then the live stories with their views and hours left, each opening the viewer), المميزة («جديدة», then each highlight's cover and title; a tap plays it, a long press offers تعديل and حذف المميزة; with two or more, «ترتيب» shows arrows under each to move it earlier or later, saved on «تم»), and الأرشيف (the last 30 days, three to a row with the day; a tap plays it; «تحديد» picks stories in order and «إضافة إلى المميزة» opens a sheet listing the highlights with their covers («موجودة فيها» when one has them all) to add them at its end, or «مميزة جديدة»). The highlight form: name (20 letters), stories in the order picked (the archive, plus older ones it already keeps), and its cover; editing also deletes. In the viewer, the author's options on its own story are a sheet inside the viewer: إضافة إلى المميزة (then the highlights with their covers, «موجودة فيها» when it's there already, or «مميزة جديدة»), or إزالة من المميزة when playing one of its highlights, and حذف القصة (with its confirmation). Company and office profiles show their highlights under the header; a tap plays one. The + on the logo is gone. The «يحدث الآن» quick view now appears at once, without the fade that showed the home through it.",
+        ar: "في رئيسية الشركة والمكتب «الرئيسية / الاستوديو» بجانب الكبسولة (المبدّل نفسه في رئيسية الأفراد «الرئيسية / القصص»)؛ ويبقى الرأس ثابتاً أثناء التبديل. الاستوديو: الآن (بطاقة «قصة جديدة» ثم القصص الحية بمشاهداتها وساعاتها المتبقية، وكل منها يفتح العارض)، والمميزة («جديدة» ثم غلاف كل مميزة واسمها؛ الضغط يعرضها، والضغط المطول يعرض تعديل وحذف المميزة؛ ومع اثنتين أو أكثر يُظهر «ترتيب» أسهماً تحت كل منها لتقديمها أو تأخيرها، ويُحفظ عند «تم»)، والأرشيف (آخر 30 يوماً، ثلاثة في الصف مع اليوم؛ الضغط يعرض القصة؛ و«تحديد» يختار القصص بالترتيب و«إضافة إلى المميزة» يفتح نافذة بالمميزات وأغلفتها («موجودة فيها» إن كانت تحويها كلها) لإضافتها في آخرها، أو «مميزة جديدة»). نموذج المميزة: الاسم (20 حرفاً)، والقصص بترتيب اختيارها (من الأرشيف، ومعها الأقدم المحفوظة فيها أصلاً)، والغلاف؛ والتعديل يتيح الحذف أيضاً. وفي العارض خيارات صاحب القصة نافذة داخل العارض: إضافة إلى المميزة (ثم المميزات بأغلفتها، و«موجودة فيها» إن كانت فيها، أو «مميزة جديدة»)، أو إزالة من المميزة عند عرض إحدى مميزاته، وحذف القصة (مع التأكيد). وتعرض ملفات الشركات والمكاتب مميزاتها تحت الرأس؛ والضغط يعرضها. وأزيلت علامة + من الشعار. ويظهر العرض السريع «يحدث الآن» فوراً، دون التلاشي الذي كان يُظهر الرئيسية من خلاله.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The switch slides between الرئيسية and الاستوديو; the dashboard keeps its scroll when coming back.",
+          "A story posted from the studio appears under الآن; after 24 hours it moves to الأرشيف.",
+          "Adding stories to a highlight from the archive or from the viewer shows it in المميزة and on the profile.",
+          "The viewer's options on an own story open inside the viewer, not after closing it.",
+        ],
+        ar: [
+          "ينزلق المبدّل بين الرئيسية والاستوديو؛ وتحتفظ اللوحة بموضعها عند العودة.",
+          "القصة المنشورة من الاستوديو تظهر تحت الآن؛ وبعد 24 ساعة تنتقل إلى الأرشيف.",
+          "إضافة قصص لمميزة من الأرشيف أو من العارض تُظهرها في المميزة وفي الملف.",
+          "خيارات صاحب القصة في العارض تفتح داخل العارض، لا بعد إغلاقه.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Locally: `pnpm --filter api pulse:demo studio`, then as the company open «الاستوديو»: الأرشيف has the 1, 3, 8 and 20-day stories; «مشاريعنا» and «عروض» are under المميزة. «تحديد» two archive stories › «إضافة إلى المميزة» › «عروض»: it now has 3. Long-press «عروض» › تعديل: rename it, pick another cover, save. From an individual account open the company's profile: both highlights show; tap one: it plays; report it.",
+          "Open one of your live stories › ⋯: the sheet opens over the story; «إضافة إلى المميزة» › «مشاريعنا»: «أضيفت إلى «مشاريعنا»»; play «مشاريعنا» › ⋯ › «إزالة من المميزة».",
+        ],
+        ar: [
+          "محلياً: `pnpm --filter api pulse:demo studio`، ثم كشركة افتح «الاستوديو»: في الأرشيف قصص 1 و3 و8 و20 يوماً؛ و«مشاريعنا» و«عروض» تحت المميزة. «تحديد» قصتين من الأرشيف › «إضافة إلى المميزة» › «عروض»: صارت 3. اضغط مطولاً على «عروض» › تعديل: غيّر اسمها واختر غلافاً آخر واحفظ. ومن حساب فرد افتح ملف الشركة: تظهر المميزتان؛ اضغط إحداهما: تُعرض؛ أبلغ عنها.",
+          "افتح إحدى قصصك الحية › ⋯: تفتح النافذة فوق القصة؛ «إضافة إلى المميزة» › «مشاريعنا»: «أضيفت إلى «مشاريعنا»»؛ اعرض «مشاريعنا» › ⋯ › «إزالة من المميزة».",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
+      id: "mobile-business-home-pill",
+      title: {
+        en: "Company and office homes: the avatar pill with its notch, and «الرئيسية / الاستوديو»",
+        ar: "رئيسية الشركة والمكتب: كبسولة الصورة مع النبض، و«الرئيسية / الاستوديو»",
+      },
+      priority: "P1",
+      story: {
+        en: "The company and office homes' header is now the individual home's avatar pill, with the «الرئيسية / الاستوديو» switch on the left (see mobile-business-studio): the logo, the red unread count with the shaking ‹, or the notch («النبض») and its quick view, or the time-of-day glyph; a tap or a swipe opens it to chats (company-chats / office-chats) and the bell; a double tap on the logo opens the profile switcher. The greeting, name, bell and the story row are gone. A company's notch: billing (red: an overdue invoice or an expired plan, → company-plans; amber: the trial or plan ends within 5 days), private requests waiting for its reply, its offers accepted in the last 3 days, new public requests of its specialty from the last day (each → the request, or the requests list when several), and its live story (views, hours left → its stories). An office's notch: ad credits running out (0 red, 1 amber → plans), its ads expiring within 3 days (→ its listings), and its live story.",
+        ar: "أصبح رأس رئيسية الشركة والمكتب هو كبسولة الصورة التي في رئيسية الأفراد، ومبدّل «الرئيسية / الاستوديو» على اليسار (راجع mobile-business-studio): الشعار، والرقم الأحمر لغير المقروء مع اهتزاز ‹، أو النبض وعرضه السريع، أو رمز وقت اليوم؛ الضغط أو السحب يفتحها على المحادثات (company-chats / office-chats) والجرس؛ والضغط مرتين على الشعار يفتح تبديل الحساب. وأزيلت التحية والاسم والجرس وشريط القصص. نبض الشركة: الفوترة (أحمر: فاتورة متأخرة أو باقة منتهية ← company-plans؛ كهرماني: تنتهي التجربة أو الباقة خلال 5 أيام)، والطلبات الخاصة التي تنتظر ردها، وعروضها المقبولة خلال آخر 3 أيام، والطلبات العامة الجديدة في تخصصها خلال آخر يوم (كل منها ← الطلب، أو قائمة الطلبات إن تعددت)، وقصتها الحية (المشاهدات والساعات المتبقية ← قصصها). نبض المكتب: رصيد الإعلانات ينفد (0 أحمر، 1 كهرماني ← الباقات)، وإعلاناته التي تنتهي خلال 3 أيام (← إعلاناته)، وقصته الحية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The header shows the pill (its photo is the logo, with no +) and «الرئيسية / الاستوديو»; stories are added from the studio.",
+          "The pill opens to the profile's own chats list and the notifications.",
+          "Each notch item appears as listed, most pressing first, and its row opens the right screen.",
+        ],
+        ar: [
+          "يعرض الرأس الكبسولة (صورتها الشعار، بلا +) و«الرئيسية / الاستوديو»؛ وتُضاف القصص من الاستوديو.",
+          "تفتح الكبسولة على قائمة محادثات الحساب نفسه والإشعارات.",
+          "يظهر كل عنصر في النبض كما هو موصوف، الأهم أولاً، ويفتح صفه الشاشة الصحيحة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Locally: `pnpm --filter api pulse:demo company` (and `office`), switch to that profile with a double tap on the photo: the notch takes turns through the items; the quick view lists them; each row opens its screen. `pnpm --filter api pulse:demo clear` removes them.",
+          "As a company, open «الاستوديو» › «قصة جديدة» and publish a story: «قصتك: 0 مشاهدة» appears in the notch.",
+        ],
+        ar: [
+          "محلياً: `pnpm --filter api pulse:demo company` (و`office`)، وانتقل لذلك الحساب بالضغط مرتين على الصورة: يتناوب النبض على العناصر؛ ويسردها العرض السريع؛ وكل صف يفتح شاشته. و`pnpm --filter api pulse:demo clear` يزيلها.",
+          "كشركة افتح «الاستوديو» › «قصة جديدة» وانشر قصة: يظهر «قصتك: 0 مشاهدة» في النبض.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "mobile-ugc-terms-report",
       title: {
         en: "Terms checkbox on sign-up, reporting listings and reviews, and a block clears the account's ads at once (Guideline 1.2)",

@@ -242,14 +242,22 @@ export class StoriesMediaService {
   }
 
   /**
-   * Signed links that stop working at the earlier of one hour and the
-   * story's expiry, and tell caches to keep the file no longer.
+   * Signed links that stop working at the earlier of 15 minutes and the
+   * story's expiry, and tell caches to keep the file no longer. A story
+   * shown after its 24 hours (its author's archive, a highlight) gets the
+   * full 15 minutes.
    */
-  async linksFor(story: StoryMediaRef, now = new Date()): Promise<StoryLinks> {
+  async linksFor(
+    story: StoryMediaRef,
+    now = new Date(),
+    { afterExpiry = false }: { afterExpiry?: boolean } = {},
+  ): Promise<StoryLinks> {
     const untilExpiry = Math.floor(
       (story.expiresAt.getTime() - now.getTime()) / 1000,
     );
-    const ttl = Math.max(1, Math.min(STORY_MEDIA_URL_MAX_SECONDS, untilExpiry));
+    const ttl = afterExpiry
+      ? STORY_MEDIA_URL_MAX_SECONDS
+      : Math.max(1, Math.min(STORY_MEDIA_URL_MAX_SECONDS, untilExpiry));
     const [mediaUrl, posterUrl] = await Promise.all([
       this.storage.signedMediaUrl(story.mediaKey, ttl),
       story.posterKey

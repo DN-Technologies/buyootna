@@ -9,6 +9,113 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-story-highlights",
+      title: {
+        en: "Stories: the 30-day archive and highlights (المميزة)",
+        ar: "القصص: أرشيف 30 يوماً والمميزة",
+      },
+      priority: "P1",
+      story: {
+        en: "Migration 20261024220000_story_highlights adds StoryHighlight and StoryHighlightItem. After its 24 hours a story now stays 30 days in its author's archive (only the author sees it) instead of being purged after an hour, and for as long as it is in one of the author's highlights. GET /stories/me/archive?cursor lists the author's own published stories of the last 30 days, live and past, newest first, 30 a page, with view counts. GET /stories/me/highlights lists its highlights (empty ones too); GET /stories/authors/:identityId/highlights lists a company's or office's non-empty highlights as a viewer sees them (none when the author blocked the viewer or was blocked by it, or is disabled). POST /stories/highlights { title (1–20, banned-words filter), storyIds (1–100, own, published, in the archive or already highlighted) } adds one at the end (30 at most, STORY_HIGHLIGHT_LIMIT); PATCH /stories/highlights/:id { title?, coverStoryId?, storyIds? } renames, sets the cover (one of its stories; a cover that leaves goes back to the first) or replaces the stories and their order; DELETE /stories/highlights/:id; PUT /stories/highlights/order { ids } takes all of the author's highlights in their new order (otherwise STORY_HIGHLIGHT_ORDER_INVALID). Writes are for approved companies and offices only (STORY_PUBLISHER_ONLY), no running plan needed. Past stories get 15-minute signed links. A deleted story leaves every highlight. An expired story in a highlight can be reported (it is public).",
+        ar: "يضيف الترحيل 20261024220000_story_highlights جدولي StoryHighlight وStoryHighlightItem. بعد 24 ساعتها تبقى القصة الآن 30 يوماً في أرشيف صاحبها (يراه وحده) بدلاً من حذفها بعد ساعة، وما دامت في إحدى مميزاته. GET /stories/me/archive?cursor يسرد قصص صاحبه المنشورة خلال آخر 30 يوماً، الحية والسابقة، الأحدث أولاً، 30 في الصفحة، مع عدد المشاهدات. وGET /stories/me/highlights يسرد مميزاته (الفارغة أيضاً)؛ وGET /stories/authors/:identityId/highlights يسرد مميزات الشركة أو المكتب غير الفارغة كما يراها المشاهد (لا شيء إن حظر أحدهما الآخر أو كان الحساب معطلاً). وPOST /stories/highlights { title (1–20، مع مرشّح الألفاظ)، storyIds (1–100، قصصه المنشورة في الأرشيف أو المميزة أصلاً) } يضيفها في آخر الصف (30 كحد أقصى، STORY_HIGHLIGHT_LIMIT)؛ وPATCH /stories/highlights/:id { title، coverStoryId، storyIds اختيارية } يعيد التسمية أو يختار الغلاف (إحدى قصصها؛ والغلاف الذي يخرج منها يعود لأولها) أو يستبدل القصص وترتيبها؛ وDELETE /stories/highlights/:id؛ وPUT /stories/highlights/order { ids } يأخذ كل مميزاته بترتيبها الجديد (وإلا STORY_HIGHLIGHT_ORDER_INVALID). الكتابة للشركات والمكاتب المعتمدة فقط (STORY_PUBLISHER_ONLY) دون اشتراط باقة سارية. وللقصص السابقة روابط موقعة لمدة 15 دقيقة. والقصة المحذوفة تخرج من كل المميزات. ويمكن الإبلاغ عن قصة منتهية في مميزة (فهي ظاهرة للعامة).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A story past its 24 hours stays in the archive for 30 days, then is purged unless it is in a highlight.",
+          "A highlighted story is shown on the profile until it is taken out of every highlight or deleted.",
+          "Only the author's own stories can be highlighted; individuals get STORY_PUBLISHER_ONLY.",
+          "A viewer blocked either way sees no highlights.",
+        ],
+        ar: [
+          "القصة بعد 24 ساعتها تبقى في الأرشيف 30 يوماً، ثم تُحذف ما لم تكن في مميزة.",
+          "القصة المميزة تظهر في الملف حتى تخرج من كل المميزات أو تُحذف.",
+          "لا يمكن تمييز إلا قصص صاحبها؛ والأفراد يحصلون على STORY_PUBLISHER_ONLY.",
+          "المشاهد المحظور في أي اتجاه لا يرى أي مميزة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Locally: `pnpm --filter api pulse:demo studio` (5 past stories, two highlights, one keeping a 40-day-old story). As the company: the archive lists the 1, 3, 8 and 20-day ones (not the 40-day one); create a highlight from two of them, rename it, set its cover, reorder, delete. As an individual: the company's profile highlights list «مشاريعنا» (2) and «عروض» (1); creating one is 403.",
+        ],
+        ar: [
+          "محلياً: `pnpm --filter api pulse:demo studio` (5 قصص سابقة ومميزتان إحداهما تحفظ قصة عمرها 40 يوماً). كشركة: يسرد الأرشيف قصص 1 و3 و8 و20 يوماً (لا قصة الأربعين)؛ أنشئ مميزة من اثنتين وأعد تسميتها واختر غلافها وأعد الترتيب واحذفها. كفرد: مميزات الشركة في ملفها «مشاريعنا» (2) و«عروض» (1)؛ والإنشاء 403.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
+      id: "api-pulse",
+      title: {
+        en: "The pulse: GET /pulse/me, what's going on for the current profile",
+        ar: "النبض: GET /pulse/me، ما يحدث للملف الحالي",
+      },
+      priority: "P2",
+      story: {
+        en: "GET /pulse/me returns { items }, most pressing first, at most 6, each { kind, count, refId, tone (gold, amber or red), daysLeft?, avatarUrl? }; refId is the one target the rows share (request, ad, alert or story author), null when several. For an individual: requestOffers (offers in SENT on the caller's PENDING requests), adExpiring (the caller's ACTIVE ads whose endDate is within 3 days; daysLeft is whole days to the soonest, amber under 2), alertMatches (as GET /alerts/me/unseen-matches) and providerStory (saved companies and offices, approved and not disabled or blocked, with an ACTIVE unexpired story the caller hasn't viewed; avatarUrl is the first one's logo). Items stay until acted on: the offer answered, the ad renewed, the matches opened, the story viewed. For a company: billing (red for an overdue invoice or an EXPIRED plan; amber with daysLeft when a TRIAL or ACTIVE plan ends within 5 days), privateRequests (directed, open and not yet answered by it, as GET /company-requests/me?scope=company&status=pending), offerAccepted (its offers ACCEPTED in the last 3 days on requests not completed), publicRequests (as scope=public&status=pending, created in the last day) and myStory (its ACTIVE unexpired stories: count is their views, hoursLeft until the latest expires, refId its own id). For an office: adCredits (adsRemaining over its ACTIVE slots, when 0 (red) or 1 (amber)), adExpiring and myStory.",
+        ar: "GET /pulse/me يعيد { items }، الأهم أولاً، وستة على الأكثر، لكل منها { kind، count، refId، tone (gold أو amber أو red)، daysLeft اختياري، avatarUrl اختياري }؛ وrefId الهدف الوحيد المشترك (الطلب أو الإعلان أو التنبيه أو صاحب القصة)، وnull إن تعدد. للفرد: requestOffers (العروض بحالة SENT على طلبات الطالب PENDING)، وadExpiring (إعلانات الطالب ACTIVE التي ينتهي endDate خلال 3 أيام؛ وdaysLeft الأيام الكاملة لأقربها، وamber تحت يومين)، وalertMatches (كـ GET /alerts/me/unseen-matches)، وproviderStory (الشركات والمكاتب المحفوظة، المعتمدة وغير المعطلة أو المحظورة، ولها قصة ACTIVE لم تنتهِ ولم يشاهدها الطالب؛ وavatarUrl شعار أولها). ويبقى العنصر حتى التعامل معه: الرد على العرض، تجديد الإعلان، فتح المطابقات، مشاهدة القصة. وللشركة: billing (أحمر لفاتورة متأخرة أو باقة EXPIRED؛ وكهرماني مع daysLeft إن كانت التجربة أو الباقة تنتهي خلال 5 أيام)، وprivateRequests (الطلبات الموجهة لها المفتوحة التي لم ترد عليها، كـ GET /company-requests/me?scope=company&status=pending)، وofferAccepted (عروضها المقبولة خلال آخر 3 أيام على طلبات غير منتهية)، وpublicRequests (كـ scope=public&status=pending، المنشأة خلال آخر يوم)، وmyStory (قصصها الحية: count مشاهداتها، وhoursLeft حتى انتهاء آخرها، وrefId معرّفها). وللمكتب: adCredits (مجموع adsRemaining في باقاته النشطة إن كان 0 (أحمر) أو 1 (كهرماني))، وadExpiring، وmyStory.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Items come in the order requestOffers, adExpiring, alertMatches, providerStory, only those that apply.",
+          "An offer accepted or rejected, an ad renewed past 3 days, matches opened and a story viewed each remove their item.",
+          "Another profile's offers, ads, alerts and favourites never count.",
+        ],
+        ar: [
+          "تأتي العناصر بالترتيب requestOffers ثم adExpiring ثم alertMatches ثم providerStory، المنطبق منها فقط.",
+          "قبول العرض أو رفضه، وتجديد الإعلان لأبعد من 3 أيام، وفتح المطابقات، ومشاهدة القصة، كل منها يزيل عنصره.",
+          "عروض الملفات الأخرى وإعلاناتها وتنبيهاتها ومفضلتها لا تُحسب أبداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual with an offer on an open request, an ad ending tomorrow, an unopened alert match and a saved office with an unwatched story: GET /pulse/me lists the four in order, the ad amber with daysLeft 1. Watch the story, accept the offer, renew the ad, open the matches: { items: [] }.",
+          "Locally, put each case on your account with `pnpm --filter api pulse:demo <offers | expiring [--days 0-2] | matches | story | all>` and remove them with `pnpm --filter api pulse:demo clear` (it refuses any database that isn't on localhost).",
+        ],
+        ar: [
+          "كفرد لديه عرض على طلب مفتوح وإعلان ينتهي غداً ومطابقة تنبيه لم تُفتح ومكتب محفوظ له قصة لم تُشاهد: GET /pulse/me يسرد الأربعة بالترتيب، والإعلان amber وdaysLeft 1. شاهد القصة واقبل العرض وجدد الإعلان وافتح المطابقات: { items: [] }.",
+          "محلياً، ضع كل حالة على حسابك بـ `pnpm --filter api pulse:demo <offers | expiring [--days 0-2] | matches | story | all>` وأزلها بـ `pnpm --filter api pulse:demo clear` (ويرفض أي قاعدة بيانات ليست على localhost).",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
+      id: "api-alerts-unseen-matches",
+      title: {
+        en: "Alert matches not opened yet: GET /alerts/me/unseen-matches",
+        ar: "مطابقات التنبيهات التي لم تُفتح بعد: GET /alerts/me/unseen-matches",
+      },
+      priority: "P2",
+      story: {
+        en: "Migration 20261024210000_alert_match_seen adds AlertMatch.seenAt and sets it to createdAt on every existing match, so nobody's older matches count as new. GET /alerts/me/unseen-matches returns { count, alertId }: count is the matches with no seenAt, of the caller's active (not paused) alerts, on listings still ACTIVE and not hidden; alertId is the one alert they all belong to, or null when there are none or several. GET /alerts/:id/matches now also sets seenAt on all of that alert's unseen matches (only for the alert's owner; another identity's alert stays 404 and nothing is marked). GET /pulse/me reports the same count as its alertMatches item.",
+        ar: "يضيف الترحيل 20261024210000_alert_match_seen الحقل AlertMatch.seenAt ويضبطه على createdAt في كل مطابقة موجودة، فلا تُحسب مطابقات أحد القديمة جديدة. وGET /alerts/me/unseen-matches يعيد { count، alertId }: count عدد المطابقات بلا seenAt، لتنبيهات الطالب النشطة (غير الموقوفة)، على إعلانات ما زالت ACTIVE وغير مخفية؛ وalertId التنبيه الوحيد الذي تنتمي إليه كلها، أو null إن لم توجد أو كانت لعدة تنبيهات. وGET /alerts/:id/matches يضبط الآن أيضاً seenAt على كل مطابقات ذلك التنبيه غير المرئية (لمالك التنبيه فقط؛ وتنبيه هوية أخرى يبقى 404 ولا يُعلَّم شيء). ويعرض GET /pulse/me العدد نفسه في عنصر alertMatches.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Right after the migration, every identity's count is 0.",
+          "A new listing matching an active alert raises the count by 1 and names that alert; a paused alert's matches don't count.",
+          "Opening the alert's matches brings the count back to 0; opening another identity's alert is 404 and changes nothing.",
+          "A matched listing that is hidden or no longer active stops counting.",
+        ],
+        ar: [
+          "بعد الترحيل مباشرة العدد 0 لكل هوية.",
+          "إعلان جديد يطابق تنبيهاً نشطاً يرفع العدد 1 ويسمّي ذلك التنبيه؛ ومطابقات التنبيه الموقوف لا تُحسب.",
+          "فتح مطابقات التنبيه يعيد العدد إلى 0؛ وفتح تنبيه هوية أخرى ← 404 ولا يتغير شيء.",
+          "الإعلان المطابق إن أُخفي أو لم يعد نشطاً لا يُحسب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Save an alert, publish a matching listing from another account: GET /alerts/me/unseen-matches → { count: 1, alertId: <the alert> }. GET /alerts/<the alert>/matches, then again → { count: 0, alertId: null }.",
+          "With two alerts each matched once: { count: 2, alertId: null }. Pause one: { count: 1, alertId: <the other> }.",
+        ],
+        ar: [
+          "احفظ تنبيهاً وانشر إعلاناً مطابقاً من حساب آخر: GET /alerts/me/unseen-matches ← { count: 1، alertId: <التنبيه> }. ثم GET /alerts/<التنبيه>/matches، ثم مرة أخرى ← { count: 0، alertId: null }.",
+          "مع تنبيهين طابق كلاً منهما إعلان: { count: 2، alertId: null }. أوقف أحدهما: { count: 1، alertId: <الآخر> }.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "api-company-services-hide",
       title: {
         en: "Company services: hide a sub-service or the whole service, edit, and delete the service",

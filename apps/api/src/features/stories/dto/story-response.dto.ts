@@ -197,3 +197,40 @@ export class StoryViewersDto {
   @ApiPropertyOptional({ nullable: true })
   nextCursor: string | null;
 }
+
+export class StoryArchiveDto {
+  @ApiProperty({
+    type: [AuthorStoryDto],
+    description:
+      "The author's own stories of the last 30 days, live and past, newest first",
+  })
+  stories: AuthorStoryDto[];
+
+  @ApiProperty({ nullable: true })
+  nextCursor: string | null;
+}
+
+export class StoryHighlightDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  title: string;
+
+  @ApiProperty({
+    nullable: true,
+    description: "Its cover: the chosen story's photo or video poster",
+  })
+  coverUrl: string | null;
+
+  @ApiProperty({ nullable: true })
+  coverStoryId: string | null;
+
+  @ApiProperty({ type: [ViewerStoryDto], description: 'In their order' })
+  stories: ViewerStoryDto[];
+}
+
+export class StoryHighlightsDto {
+  @ApiProperty({ type: [StoryHighlightDto], description: 'In their order' })
+  highlights: StoryHighlightDto[];
+}

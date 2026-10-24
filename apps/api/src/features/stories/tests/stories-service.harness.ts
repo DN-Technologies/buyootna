@@ -80,6 +80,15 @@ export function setupStoriesService() {
     },
     providerFavorite: { findUnique: jest.fn() },
     property: { findFirst: jest.fn() },
+    storyHighlight: {
+      count: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+    },
+    storyHighlightItem: { deleteMany: jest.fn(), createMany: jest.fn() },
   };
   const media = {
     mediaKeyFor: jest.fn(

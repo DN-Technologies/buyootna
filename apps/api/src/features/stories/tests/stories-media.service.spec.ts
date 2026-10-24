@@ -198,6 +198,21 @@ describe('StoriesMediaService', () => {
       expect(storage.signedMediaUrl).toHaveBeenCalledWith(KEY, 300);
       expect(links.urlExpiresAt).toEqual(new Date('2026-10-20T12:05:00.000Z'));
     });
+
+    it('after its 24 hours (archive, highlight) the full 15 minutes', async () => {
+      const links = await service.linksFor(
+        {
+          id: STORY,
+          mediaKey: KEY,
+          posterKey: null,
+          expiresAt: new Date('2026-10-01T00:00:00.000Z'),
+        },
+        now,
+        { afterExpiry: true },
+      );
+      expect(storage.signedMediaUrl).toHaveBeenCalledWith(KEY, 900);
+      expect(links.urlExpiresAt).toEqual(new Date('2026-10-20T12:15:00.000Z'));
+    });
   });
 
   describe('checkVideo', () => {

@@ -79,6 +79,22 @@ let mockIdentityId = 'viewer-1';
 let mockAuthors: FeedAuthor[] = [];
 const mockRefetch = jest.fn();
 const mockMarkViewed = jest.fn();
+// The archive and highlights (studio sources) aren't used by these stories
+jest.mock('../hooks/useStoryHighlights', () => {
+  const idle = {
+    data: undefined,
+    stories: [],
+    isLoading: false,
+    isFetched: true,
+    refetch: jest.fn(),
+  };
+  return {
+    useStoryArchive: () => idle,
+    useMyHighlights: () => idle,
+    useAuthorHighlights: () => idle,
+    useHighlightMutations: () => ({ update: { mutate: jest.fn() } }),
+  };
+});
 jest.mock('../hooks/useStoriesQueries', () => ({
   useActiveIdentityId: () => mockIdentityId,
   useStoriesFeed: () => ({ authors: mockAuthors, refetch: mockRefetch }),

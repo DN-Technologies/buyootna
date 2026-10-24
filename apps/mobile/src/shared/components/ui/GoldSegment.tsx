@@ -1,6 +1,48 @@
-import { Text, TouchableOpacity } from 'react-native';
+import { useEffect } from 'react';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-import SlidingSegment from './SlidingSegment';
+import SlidingSegment, { SEGMENT_MS } from './SlidingSegment';
+
+/**
+ * The label turning bold as the selection arrives (and back as it leaves):
+ * the regular and bold words crossfade over the glide instead of the
+ * weight snapping at the start of it.
+ */
+function CrossfadeLabel({ label, active }: { label: string; active: boolean }) {
+  const bold = useSharedValue(active ? 1 : 0);
+  useEffect(() => {
+    bold.value = withTiming(active ? 1 : 0, { duration: SEGMENT_MS * 0.7 });
+  }, [active, bold]);
+  const regularStyle = useAnimatedStyle(() => ({ opacity: 1 - bold.value }));
+  const boldStyle = useAnimatedStyle(() => ({ opacity: bold.value }));
+  const text = 'text-[14px] leading-[24px] text-[#111111]';
+  return (
+    <>
+      <Animated.Text numberOfLines={1} className={`font-cairo ${text}`} style={regularStyle}>
+        {label}
+      </Animated.Text>
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.centred, boldStyle]}>
+        <Text
+          numberOfLines={1}
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          className={`font-cairo-bold ${text}`}
+        >
+          {label}
+        </Text>
+      </Animated.View>
+    </>
+  );
+}
+
+const styles = StyleSheet.create({
+  centred: { alignItems: 'center', justifyContent: 'center' },
+});
 
 export interface GoldSegmentOption<T extends string> {
   id: T;
@@ -45,14 +87,7 @@ export default function GoldSegment<T extends string>({
           onPress={() => onChange(id)}
           className="h-[32px] items-center justify-center px-[12px]"
         >
-          <Text
-            numberOfLines={1}
-            className={`${
-              active ? 'font-cairo-bold' : 'font-cairo'
-            } text-[14px] leading-[24px] text-[#111111]`}
-          >
-            {labels.get(id)}
-          </Text>
+          <CrossfadeLabel label={labels.get(id) ?? ''} active={active} />
         </TouchableOpacity>
       )}
     />

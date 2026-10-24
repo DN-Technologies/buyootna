@@ -16,6 +16,7 @@ import { CreateAlertDto } from './dto/create-alert.dto';
 import {
   AlertResponseDto,
   AlertsBulkUpdateResponseDto,
+  AlertsUnseenMatchesResponseDto,
 } from './dto/alert-response.dto';
 import { UpdateAlertActiveDto } from './dto/update-alert-active.dto';
 import { PropertyCardDto } from '../properties/dto/property-response.dto';
@@ -50,6 +51,17 @@ export class AlertsController {
   @ApiCommonErrors()
   async findMine(@CurrentUser() reqUser: RequestUser) {
     return this.alertsService.findMine(reqUser.identityId);
+  }
+
+  @Get('me/unseen-matches')
+  @ApiOperation({
+    summary:
+      "Count the current identity's alert matches not opened yet (the home avatar pill's +N)",
+  })
+  @ApiResponse({ status: 200, type: AlertsUnseenMatchesResponseDto })
+  @ApiCommonErrors()
+  async findUnseenMatches(@CurrentUser() reqUser: RequestUser) {
+    return this.alertsService.findUnseenMatches(reqUser.identityId);
   }
 
   // Declared before ':id' so "active" isn't captured as an alert id
@@ -100,7 +112,7 @@ export class AlertsController {
   @Get(':id/matches')
   @ApiOperation({
     summary:
-      "List live listings that match one of the current identity's alerts",
+      "List live listings that match one of the current identity's alerts, and mark its matches seen",
   })
   @ApiParam({ name: 'id', description: 'Alert ID' })
   @ApiResponse({ status: 200, type: [PropertyCardDto] })
