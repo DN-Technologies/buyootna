@@ -9,6 +9,41 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-story-highlights",
+      title: {
+        en: "Stories: the 30-day archive and highlights (المميزة)",
+        ar: "القصص: أرشيف 30 يوماً والمميزة",
+      },
+      priority: "P1",
+      story: {
+        en: "Migration 20261024220000_story_highlights adds StoryHighlight and StoryHighlightItem. After its 24 hours a story now stays 30 days in its author's archive (only the author sees it) instead of being purged after an hour, and for as long as it is in one of the author's highlights. GET /stories/me/archive?cursor lists the author's own published stories of the last 30 days, live and past, newest first, 30 a page, with view counts. GET /stories/me/highlights lists its highlights (empty ones too); GET /stories/authors/:identityId/highlights lists a company's or office's non-empty highlights as a viewer sees them (none when the author blocked the viewer or was blocked by it, or is disabled). POST /stories/highlights { title (1–20, banned-words filter), storyIds (1–100, own, published, in the archive or already highlighted) } adds one at the end (30 at most, STORY_HIGHLIGHT_LIMIT); PATCH /stories/highlights/:id { title?, coverStoryId?, storyIds? } renames, sets the cover (one of its stories; a cover that leaves goes back to the first) or replaces the stories and their order; DELETE /stories/highlights/:id; PUT /stories/highlights/order { ids } takes all of the author's highlights in their new order (otherwise STORY_HIGHLIGHT_ORDER_INVALID). Writes are for approved companies and offices only (STORY_PUBLISHER_ONLY), no running plan needed. Past stories get 15-minute signed links. A deleted story leaves every highlight. An expired story in a highlight can be reported (it is public).",
+        ar: "يضيف الترحيل 20261024220000_story_highlights جدولي StoryHighlight وStoryHighlightItem. بعد 24 ساعتها تبقى القصة الآن 30 يوماً في أرشيف صاحبها (يراه وحده) بدلاً من حذفها بعد ساعة، وما دامت في إحدى مميزاته. GET /stories/me/archive?cursor يسرد قصص صاحبه المنشورة خلال آخر 30 يوماً، الحية والسابقة، الأحدث أولاً، 30 في الصفحة، مع عدد المشاهدات. وGET /stories/me/highlights يسرد مميزاته (الفارغة أيضاً)؛ وGET /stories/authors/:identityId/highlights يسرد مميزات الشركة أو المكتب غير الفارغة كما يراها المشاهد (لا شيء إن حظر أحدهما الآخر أو كان الحساب معطلاً). وPOST /stories/highlights { title (1–20، مع مرشّح الألفاظ)، storyIds (1–100، قصصه المنشورة في الأرشيف أو المميزة أصلاً) } يضيفها في آخر الصف (30 كحد أقصى، STORY_HIGHLIGHT_LIMIT)؛ وPATCH /stories/highlights/:id { title، coverStoryId، storyIds اختيارية } يعيد التسمية أو يختار الغلاف (إحدى قصصها؛ والغلاف الذي يخرج منها يعود لأولها) أو يستبدل القصص وترتيبها؛ وDELETE /stories/highlights/:id؛ وPUT /stories/highlights/order { ids } يأخذ كل مميزاته بترتيبها الجديد (وإلا STORY_HIGHLIGHT_ORDER_INVALID). الكتابة للشركات والمكاتب المعتمدة فقط (STORY_PUBLISHER_ONLY) دون اشتراط باقة سارية. وللقصص السابقة روابط موقعة لمدة 15 دقيقة. والقصة المحذوفة تخرج من كل المميزات. ويمكن الإبلاغ عن قصة منتهية في مميزة (فهي ظاهرة للعامة).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A story past its 24 hours stays in the archive for 30 days, then is purged unless it is in a highlight.",
+          "A highlighted story is shown on the profile until it is taken out of every highlight or deleted.",
+          "Only the author's own stories can be highlighted; individuals get STORY_PUBLISHER_ONLY.",
+          "A viewer blocked either way sees no highlights.",
+        ],
+        ar: [
+          "القصة بعد 24 ساعتها تبقى في الأرشيف 30 يوماً، ثم تُحذف ما لم تكن في مميزة.",
+          "القصة المميزة تظهر في الملف حتى تخرج من كل المميزات أو تُحذف.",
+          "لا يمكن تمييز إلا قصص صاحبها؛ والأفراد يحصلون على STORY_PUBLISHER_ONLY.",
+          "المشاهد المحظور في أي اتجاه لا يرى أي مميزة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Locally: `pnpm --filter api pulse:demo studio` (5 past stories, two highlights, one keeping a 40-day-old story). As the company: the archive lists the 1, 3, 8 and 20-day ones (not the 40-day one); create a highlight from two of them, rename it, set its cover, reorder, delete. As an individual: the company's profile highlights list «مشاريعنا» (2) and «عروض» (1); creating one is 403.",
+        ],
+        ar: [
+          "محلياً: `pnpm --filter api pulse:demo studio` (5 قصص سابقة ومميزتان إحداهما تحفظ قصة عمرها 40 يوماً). كشركة: يسرد الأرشيف قصص 1 و3 و8 و20 يوماً (لا قصة الأربعين)؛ أنشئ مميزة من اثنتين وأعد تسميتها واختر غلافها وأعد الترتيب واحذفها. كفرد: مميزات الشركة في ملفها «مشاريعنا» (2) و«عروض» (1)؛ والإنشاء 403.",
+        ],
+      },
+      updatedIn: "feat/avatar-pill-idle-state",
+    },
+    {
       id: "api-pulse",
       title: {
         en: "The pulse: GET /pulse/me, what's going on for the current profile",

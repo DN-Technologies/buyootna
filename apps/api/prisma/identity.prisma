@@ -5,24 +5,24 @@ enum IdentityType {
 }
 
 model Identity {
-  id        String       @id @default(uuid())
-  userId    String
-  type      IdentityType
+  id                     String       @id @default(uuid())
+  userId                 String
+  type                   IdentityType
   // The persona used last, on any device -- what a brand-new device opens
   // with. Each device's own current persona is Session.activeIdentityId.
-  isActive  Boolean      @default(false)
+  isActive               Boolean      @default(false)
   // The welcome free ad: each persona has its own
-  freeAdsRemaining Int   @default(1)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  freeAdsRemaining       Int          @default(1)
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
   // Last time this persona used the app (socket connect/disconnect or an
   // API request); drives the public "نشط الآن / نشط منذ" badge
-  lastSeenAt DateTime?
+  lastSeenAt             DateTime?
   // How people reach this persona by phone (calls on its ads and profile).
   // On by default: the account's own (sign-in) number. Off: this persona's
   // own number, SMS-verified, e.g. a company's office line. Not unique and
   // never a sign-in identifier
-  useAccountPhone        Boolean   @default(true)
+  useAccountPhone        Boolean      @default(true)
   contactPhone           String?
   contactPhoneVerifiedAt DateTime?
 
@@ -37,44 +37,45 @@ model Identity {
   activeOnSessions Session[]
 
   // Identity-scoped data
-  properties      Property[]
-  deletionLogs    PropertyDeletionLog[]
-  favorites       Favorite[]
+  properties           Property[]
+  deletionLogs         PropertyDeletionLog[]
+  favorites            Favorite[]
   // Companies/offices this identity favorited, and who favorited it
-  providerFavorites   ProviderFavorite[] @relation("ProviderFavoriteOwner")
-  favoritedByUsers    ProviderFavorite[] @relation("ProviderFavoriteTarget")
-  conversations   ConversationParticipant[]
-  messages        Message[]
-  hiddenMessages  MessageHidden[]
-  chatAttachments MessageAttachment[]
-  givenReviews    Review[]                  @relation("IdentityGivenReviews")
-  receivedReviews Review[]                  @relation("IdentityReceivedReviews")
-  reviewReactions ReviewReaction[]
-  planSlots       UserPlanSlot[]
-  invoices        Invoice[]
+  providerFavorites    ProviderFavorite[]        @relation("ProviderFavoriteOwner")
+  favoritedByUsers     ProviderFavorite[]        @relation("ProviderFavoriteTarget")
+  conversations        ConversationParticipant[]
+  messages             Message[]
+  hiddenMessages       MessageHidden[]
+  chatAttachments      MessageAttachment[]
+  givenReviews         Review[]                  @relation("IdentityGivenReviews")
+  receivedReviews      Review[]                  @relation("IdentityReceivedReviews")
+  reviewReactions      ReviewReaction[]
+  planSlots            UserPlanSlot[]
+  invoices             Invoice[]
   companySubscriptions CompanySubscription[]
-  projects        CompanyProject[]
-  companyServices CompanyService[]
-  companyInvoices CompanyInvoice[]
+  projects             CompanyProject[]
+  companyServices      CompanyService[]
+  companyInvoices      CompanyInvoice[]
   // Service invoices a company addressed to this persona (فواتير الخدمات)
-  invoicesReceived CompanyInvoice[] @relation("InvoiceClient")
-  reportsFiled    Report[]                  @relation("ReporterIdentityReports")
-  reportsAgainst  Report[]                  @relation("TargetIdentityReports")
-  alerts          Alert[]
+  invoicesReceived     CompanyInvoice[]          @relation("InvoiceClient")
+  reportsFiled         Report[]                  @relation("ReporterIdentityReports")
+  reportsAgainst       Report[]                  @relation("TargetIdentityReports")
+  alerts               Alert[]
 
   // Company-requests (leads marketplace)
-  requestsAsClient CompanyRequest[] @relation("ClientRequests")
-  requestsTargeted CompanyRequest[] @relation("TargetedRequests")
-  requestsAccepted CompanyRequest[] @relation("AcceptedRequests")
+  requestsAsClient  CompanyRequest[]   @relation("ClientRequests")
+  requestsTargeted  CompanyRequest[]   @relation("TargetedRequests")
+  requestsAccepted  CompanyRequest[]   @relation("AcceptedRequests")
   // Answers this company/office gave to requests
-  requestOffers    RequestOffer[]   @relation("ProvidedOffers")
+  requestOffers     RequestOffer[]     @relation("ProvidedOffers")
   // Public requests this company hid (رفض) and requests it saved
   requestDismissals RequestDismissal[]
   requestBookmarks  RequestBookmark[]
   // Stories this company/office posted, and the stories this profile viewed
-  stories           Story[]          @relation("StoryAuthor")
-  storyViews        StoryView[]      @relation("StoryViewer")
-  blockedAs         UserBlock[]      @relation("UserBlocksAsProfile")
+  stories           Story[]            @relation("StoryAuthor")
+  storyViews        StoryView[]        @relation("StoryViewer")
+  storyHighlights   StoryHighlight[]   @relation("StoryHighlightAuthor")
+  blockedAs         UserBlock[]        @relation("UserBlocksAsProfile")
 
   // One individual, one company and one office per account
   @@unique([userId, type])

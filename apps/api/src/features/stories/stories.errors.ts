@@ -86,3 +86,29 @@ export const propertyNotOwn = () =>
     message: 'يمكن ربط القصة بإعلاناتك النشطة فقط',
     code: 'STORY_PROPERTY_INVALID',
   });
+
+/** Missing or someone else's: the same answer for both. */
+export const highlightNotFound = () =>
+  new NotFoundException('المميزة غير موجودة');
+
+export const highlightLimitReached = () =>
+  new BadRequestException({
+    statusCode: 400,
+    message: 'وصلت للحد الأقصى من المميزة',
+    code: 'STORY_HIGHLIGHT_LIMIT',
+  });
+
+/** A story that isn't the author's own, or no longer in its archive. */
+export const highlightStoriesInvalid = () =>
+  new BadRequestException({
+    statusCode: 400,
+    message: 'بعض القصص المختارة لم تعد متاحة',
+    code: 'STORY_HIGHLIGHT_STORIES_INVALID',
+  });
+
+export const highlightOrderInvalid = () =>
+  new BadRequestException({
+    statusCode: 400,
+    message: 'تغيرت المميزة، يرجى المحاولة مرة أخرى',
+    code: 'STORY_HIGHLIGHT_ORDER_INVALID',
+  });

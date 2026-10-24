@@ -52,12 +52,13 @@ describe('StoriesCleanupService', () => {
     );
   });
 
-  it('what is due: expired after the grace hour, abandoned uploads, deleted and failed', () => {
+  it('what is due: out of the 30-day archive and in no highlight, abandoned uploads, deleted and failed', () => {
     expect(dueForPurge(NOW)).toEqual({
       OR: [
         {
           status: 'ACTIVE',
-          expiresAt: { lt: new Date('2026-10-20T11:00:00.000Z') },
+          expiresAt: { lt: new Date('2026-09-20T12:00:00.000Z') },
+          highlightItems: { none: {} },
         },
         {
           status: 'PENDING',

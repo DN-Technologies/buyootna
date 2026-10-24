@@ -87,10 +87,15 @@ export class ReportsService {
         publishedAt: true,
         expiresAt: true,
         identity: { select: { userId: true } },
+        _count: { select: { highlightItems: true } },
       },
     });
-    // Only a story the reporter can still see
-    if (!story || story.status !== 'ACTIVE' || story.expiresAt <= now) {
+    // Only a story the reporter can still see: live, or kept in one of its
+    // author's highlights (shown on the profile)
+    const visible =
+      story?.status === 'ACTIVE' &&
+      (story.expiresAt > now || story._count.highlightItems > 0);
+    if (!story || !visible) {
       throw new NotFoundException('القصة غير موجودة');
     }
     if (story.identity.userId === reporter.userId) {

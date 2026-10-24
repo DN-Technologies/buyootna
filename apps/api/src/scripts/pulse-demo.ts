@@ -13,6 +13,9 @@
  *   pnpm --filter api pulse:demo office              my office profile (a demo one if I have none):
  *                                                    an ad expiring tomorrow, a live story, and no
  *                                                    ad credits unless it has a package
+ *   pnpm --filter api pulse:demo studio              my company (or office): past stories in its
+ *                                                    archive (1, 3, 8 and 20 days ago), and two
+ *                                                    highlights, one keeping a 40-day-old story
  *   pnpm --filter api pulse:demo clear               removes everything it added
  *
  * The account: --email <email>, or the only individual profile in the
@@ -27,7 +30,7 @@ import { Pool } from 'pg';
 
 const CASES = ['offers', 'expiring', 'matches', 'story'] as const;
 type Case = (typeof CASES)[number];
-const PROFILES = ['company', 'office'] as const;
+const PROFILES = ['company', 'office', 'studio'] as const;
 type Profile = (typeof PROFILES)[number];
 const COMMANDS: string[] = [...CASES, 'all', ...PROFILES, 'clear'];
 
@@ -369,6 +372,36 @@ async function myProfile(
   return { id, name };
 }
 
+// Studio rows are read through UUID-checked routes, so their ids are UUIDs
+// that start alike, which clear looks for
+const U = 'b0b0b0b0-';
+const uuid = (n: number) => `${U}0000-4000-8000-${String(n).padStart(12, '0')}`;
+
+/** A past story of `identityId` that ended `daysAgo` days ago. */
+async function pastStory(
+  prisma: PrismaClient,
+  n: number,
+  identityId: string,
+  daysAgo: number,
+) {
+  const expiresAt = new Date(Date.now() - daysAgo * DAY_MS);
+  await prisma.story.create({
+    data: {
+      id: uuid(n),
+      identityId,
+      status: 'ACTIVE',
+      mediaType: 'IMAGE',
+      mediaKey: `${P}studio/${n}/media.jpg`,
+      mediaContentType: 'image/jpeg',
+      mediaSizeBytes: 1,
+      caption: `قصة تجريبية قبل ${daysAgo} يوماً`,
+      publishedAt: new Date(expiresAt.getTime() - DAY_MS),
+      expiresAt,
+    },
+  });
+  return uuid(n);
+}
+
 const profiles: Record<
   Profile,
   (prisma: PrismaClient, me: Me) => Promise<void>
@@ -440,6 +473,64 @@ const profiles: Record<
     );
   },
 
+  async studio(prisma, me) {
+    const mine = await prisma.identity.findFirst({
+      where: { userId: me.userId, type: { in: ['COMPANY', 'OFFICE'] } },
+      orderBy: { type: 'asc' },
+      select: { id: true },
+    });
+    const owner = mine
+      ? await myProfile(
+          prisma,
+          me,
+          (
+            await prisma.identity.findUniqueOrThrow({
+              where: { id: mine.id },
+              select: { type: true },
+            })
+          ).type as 'COMPANY' | 'OFFICE',
+        )
+      : await myProfile(prisma, me, 'COMPANY');
+    await clearStudio(prisma);
+    const [, threeDays, eightDays] = [
+      await pastStory(prisma, 1, owner.id, 1),
+      await pastStory(prisma, 2, owner.id, 3),
+      await pastStory(prisma, 3, owner.id, 8),
+    ];
+    await pastStory(prisma, 4, owner.id, 20);
+    // Past its 30 days: only kept because it is highlighted
+    const fortyDays = await pastStory(prisma, 5, owner.id, 40);
+    await prisma.storyHighlight.create({
+      data: {
+        id: uuid(101),
+        identityId: owner.id,
+        title: 'مشاريعنا',
+        position: 0,
+        items: {
+          create: [
+            { storyId: fortyDays, position: 0 },
+            { storyId: eightDays, position: 1 },
+          ],
+        },
+      },
+    });
+    await prisma.storyHighlight.create({
+      data: {
+        id: uuid(102),
+        identityId: owner.id,
+        title: 'عروض',
+        position: 1,
+        items: { create: [{ storyId: threeDays, position: 0 }] },
+      },
+    });
+    console.log(
+      `✓ studio    — «${owner.name}»: 5 past stories (1, 3, 8, 20, 40 days ago; the 40-day one only`,
+    );
+    console.log(
+      '              kept by «مشاريعنا»), highlights «مشاريعنا» and «عروض»',
+    );
+  },
+
   async office(prisma, me) {
     const of = await myProfile(prisma, me, 'OFFICE');
     // No ad package: no credits left
@@ -467,7 +558,14 @@ const profiles: Record<
 };
 
 // Children first; everything the demo added, whichever cases ran
+async function clearStudio(prisma: PrismaClient) {
+  await prisma.storyHighlight.deleteMany({ where: { id: { startsWith: U } } });
+  await prisma.storyView.deleteMany({ where: { storyId: { startsWith: U } } });
+  await prisma.story.deleteMany({ where: { id: { startsWith: U } } });
+}
+
 async function clear(prisma: PrismaClient) {
+  await clearStudio(prisma);
   const mine = { startsWith: P };
   await prisma.storyView.deleteMany({ where: { storyId: mine } });
   await prisma.story.deleteMany({ where: { id: mine } });
