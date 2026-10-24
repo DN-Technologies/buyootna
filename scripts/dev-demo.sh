@@ -37,6 +37,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$(dirname "$0")/.."
+# Meant for a developer's machine, never the server: there the database is
+# production and the API runs in Docker (no node on the host)
+if ! command -v node >/dev/null || ! command -v pnpm >/dev/null; then
+  echo "✗ This is for your own machine (it needs node and pnpm), not the server."
+  echo "  On the server, migrations run with the deploy (CD); demo data never goes to production."
+  exit 1
+fi
 API_ENV="apps/api/.env"
 [[ -f "$API_ENV" ]] || { echo "✗ $API_ENV is missing."; exit 1; }
 
