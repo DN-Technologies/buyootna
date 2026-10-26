@@ -2,6 +2,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadBucketCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
@@ -70,6 +71,13 @@ export class StorageService {
   }
 
   // Uploads a file directly from memory buffer to S3
+  /** Throws when the bucket can't be reached with these credentials (health check). */
+  async checkAccess(): Promise<void> {
+    await this.s3Client.send(
+      new HeadBucketCommand({ Bucket: this.bucketName }),
+    );
+  }
+
   async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
     try {
       // Generate a unique filename: folder-name/uuid.extension

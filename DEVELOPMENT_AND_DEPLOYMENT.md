@@ -153,6 +153,34 @@ UI/UX, Client, Admin). One-time setup per environment:
 Locally: `pnpm --filter api docs:set-password ADMIN`, and run the docs site
 with `API_URL=http://localhost:8000` in `apps/web/docs/.env`.
 
+## 🧪 Testing Portal Setup (testing.buyootna.cloud / .com)
+
+The testers' portal (`apps/web/testing`, mobile-first, installable as an app).
+One-time setup, **in this order** (nginx can't start with a site whose
+certificate doesn't exist yet, and then every site is down):
+
+1. DNS: A records for `testing.buyootna.cloud` and `testing.buyootna.com` →
+   the server.
+2. Generate a secret (`openssl rand -hex 32`) and put the **same value** in
+   `apps/api/.env` and `apps/web/testing/.env` as `TESTING_JWT_SECRET`.
+   Optional in `apps/api/.env`: `TESTFLIGHT_URL`, `ANDROID_BUILD_URL`
+   (install links + QR codes on المزيد).
+3. Merge and run CD (applies the `testing_portal` migration, builds
+   `web-testing`). nginx keeps running its old config.
+4. Right away: `./init-letsencrypt.sh` on the server — answer **N** for the
+   existing domains; it issues the two testing certificates and restarts nginx.
+5. Set the passwords (hidden prompt):
+   ```bash
+   docker compose run --rm api node dist/src/scripts/testing-set-password.js LOGIN
+   docker compose run --rm api node dist/src/scripts/testing-set-password.js DANGER
+   ```
+   LOGIN signs testers in (a new one signs everyone out); DANGER is asked
+   again before wiping the database.
+
+Locally: `pnpm --filter api testing:set-password LOGIN`, then run the site
+with `API_URL=http://localhost:8000` and the same `TESTING_JWT_SECRET` in
+`apps/web/testing/.env.local` (`pnpm --filter @buyootna/web-testing dev`, port 3007).
+
 ## 🔍 Server Verification Commands
 
 After deployment completes, connect to your server via SSH to inspect container status and logs:

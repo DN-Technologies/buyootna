@@ -28,6 +28,9 @@ jobs:
             set -e
             cd ${{ secrets.TARGET_DIR }}
             git pull origin main
+            # The API image records which build it is (testing portal)
+            export GIT_SHA=$(git rev-parse --short HEAD)
+            export BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             # Build images one service at a time. A plain `docker compose
             # build` (Bake) builds all of them in parallel; after a lockfile
             # change that's 6 cold Next.js builds + nest at once, which used

@@ -1,0 +1,8 @@
+# Used by apps/web/testing/Dockerfile (BuildKit reads <Dockerfile>.dockerignore).
+# Local installs and builds must not overwrite the image's own; secrets stay out.
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+**/*.tsbuildinfo
+.git

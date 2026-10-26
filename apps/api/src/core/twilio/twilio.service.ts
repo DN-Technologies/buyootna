@@ -27,6 +27,11 @@ export class TwilioService {
     { code: string; expiresAt: Date }
   >();
 
+  /** Real Twilio Verify (true), or mock codes in the log (false). */
+  get isConfigured(): boolean {
+    return this.twilioClient !== null && this.serviceSid !== null;
+  }
+
   constructor() {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;

@@ -20,6 +20,7 @@ PNPM workspace.
 | `apps/web/management` | `@buyootna/web-management` | Next.js Property Management Portal |
 | `apps/web/admin` | `@buyootna/web-admin` | Next.js System Administrator Dashboard |
 | `apps/web/docs` | `@buyootna/web-docs` | Next.js QA docs portal (docs.buyootna.cloud): user stories, test tracking, role passwords |
+| `apps/web/testing` | `@buyootna/web-testing` | Next.js testers' portal, mobile-first PWA (testing.buyootna.cloud): health, metrics, logs, builds, OTPs, test data tools |
 | `packages/ui` | `@buyootna/ui` | Shared UI components package |
 
 ## Where to read next
