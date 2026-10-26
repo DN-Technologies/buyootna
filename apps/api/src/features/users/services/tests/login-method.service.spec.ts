@@ -97,7 +97,10 @@ describe('LoginMethodService', () => {
       await expect(service.requestPhoneOtp('u1', '55556666')).resolves.toEqual({
         destination: '+965 •••• 66',
       });
-      expect(twilio.sendVerification).toHaveBeenCalledWith('55556666');
+      expect(twilio.sendVerification).toHaveBeenCalledWith(
+        '55556666',
+        'PHONE_CHANGE',
+      );
     });
 
     it("refuses a number that is another account's, in any stored form", async () => {

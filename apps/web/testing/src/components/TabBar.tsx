@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, Gauge, ScrollText, Menu } from 'lucide-react'
+import { Activity, Gauge, KeyRound, ScrollText, Menu } from 'lucide-react'
 
 const TABS = [
   { href: '/', label: 'الحالة', icon: Activity },
+  { href: '/otps', label: 'الرموز', icon: KeyRound },
   { href: '/metrics', label: 'المقاييس', icon: Gauge },
   { href: '/logs', label: 'السجلات', icon: ScrollText },
   { href: '/more', label: 'المزيد', icon: Menu },
@@ -21,7 +22,8 @@ export default function TabBar() {
     >
       <ul className="mx-auto flex max-w-xl">
         {TABS.map(({ href, label, icon: Icon }) => {
-          const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
+          const active =
+            href === '/' ? pathname === '/' : pathname.startsWith(href)
           return (
             <li key={href} className="flex-1">
               <Link

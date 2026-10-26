@@ -71,7 +71,7 @@ export class IdentityContactPhoneService {
     await this.load(userId, identityId);
     const clean = this.clean(phone);
     try {
-      await this.twilio.sendVerification(clean);
+      await this.twilio.sendVerification(clean, 'CONTACT_PHONE');
     } catch {
       throw new InternalServerErrorException(
         'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',

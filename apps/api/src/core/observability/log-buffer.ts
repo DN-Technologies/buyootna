@@ -66,6 +66,19 @@ class LogBuffer {
 
 export const logBuffer = new LogBuffer();
 
+// Mock email/SMS log their OTP in plain text (local development). The
+// portal's السجلات must not show it: codes are only shown through the
+// audited reveal on الرموز. stdout keeps the line as it is.
+const MENTIONS_OTP = /\b(?:otp|code)\b/i;
+// The code: 4-8 digits right after ": " or "code " (not the phone before it)
+const CODE_DIGITS = /(?<=(?::|\bcode)\s)\d{4,8}\b/gi;
+
+export function maskOtps(text: string): string {
+  return MENTIONS_OTP.test(text)
+    ? text.replace(CODE_DIGITS, (digits) => '•'.repeat(digits.length))
+    : text;
+}
+
 function toText(message: unknown): string {
   if (typeof message === 'string') return message;
   if (message instanceof Error) return message.message;
@@ -94,7 +107,7 @@ export class BufferedLogger extends ConsoleLogger {
         at: new Date().toISOString(),
         level: logLevel,
         context: context || null,
-        message: toText(message),
+        message: maskOtps(toText(message)),
         requestId,
         stack:
           typeof errorStack === 'string'

@@ -1,4 +1,5 @@
 import { ObservabilityModule } from './core/observability/observability.module';
+import { OtpFeedModule } from './core/otp-feed/otp-feed.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -66,6 +67,7 @@ import { PulseModule } from './features/pulse/pulse.module';
     }),
     PrismaModule,
     ObservabilityModule,
+    OtpFeedModule,
     TrustSignalsModule,
     TwilioModule,
     MailModule,

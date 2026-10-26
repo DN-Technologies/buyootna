@@ -94,6 +94,7 @@ describe('RecoveryService', () => {
 
       expect(twilioService.sendVerification).toHaveBeenCalledWith(
         '+96599998888',
+        'RECOVERY',
       );
       expect(emailOtpService.sendPasswordResetOtp).not.toHaveBeenCalled();
     });

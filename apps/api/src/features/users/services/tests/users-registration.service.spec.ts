@@ -167,7 +167,10 @@ describe('UsersRegistrationService', () => {
         identifier: '55123456',
         message: 'تم إرسال رمز التحقق إلى هاتفك',
       });
-      expect(twilioService.sendVerification).toHaveBeenCalledWith('55123456');
+      expect(twilioService.sendVerification).toHaveBeenCalledWith(
+        '55123456',
+        'SIGNUP',
+      );
       expect(emailOtpService.sendRegistrationOtp).not.toHaveBeenCalled();
       expect(prisma.$transaction).not.toHaveBeenCalled();
       expect(phonePendingService.save).toHaveBeenCalledWith(

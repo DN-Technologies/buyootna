@@ -186,7 +186,10 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
         phone: '+96555123456',
       } as unknown as User);
 
-      expect(ctx.twilio.sendVerification).toHaveBeenCalledWith('+96555123456');
+      expect(ctx.twilio.sendVerification).toHaveBeenCalledWith(
+        '+96555123456',
+        'PASSWORD_CHANGE',
+      );
       expect(result).toEqual({ message: 'تم إرسال رمز التحقق بنجاح' });
     });
 
@@ -238,7 +241,10 @@ export function registerCredentialsAuthTests(ctx: AuthTestContext) {
       await expect(
         ctx.service.requestChangePasswordOtp(phoneUser, 'old-password'),
       ).resolves.toEqual({ message: 'تم إرسال رمز التحقق بنجاح' });
-      expect(ctx.twilio.sendVerification).toHaveBeenCalledWith('+96555123456');
+      expect(ctx.twilio.sendVerification).toHaveBeenCalledWith(
+        '+96555123456',
+        'PASSWORD_CHANGE',
+      );
     });
   });
 
