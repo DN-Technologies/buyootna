@@ -65,7 +65,7 @@ export class RecoveryService {
     // registration flow produces for a failed send.
     try {
       if (validPhone && user.phone) {
-        await this.twilioService.sendVerification(user.phone);
+        await this.twilioService.sendVerification(user.phone, 'RECOVERY');
       } else if (validEmail && user.email) {
         await this.emailOtpService.sendPasswordResetOtp(
           user.email,

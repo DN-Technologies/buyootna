@@ -74,7 +74,7 @@ export class UsersRegistrationService {
 
     if (phone) {
       try {
-        await this.twilioService.sendVerification(phone);
+        await this.twilioService.sendVerification(phone, 'SIGNUP');
         // Keyed by the raw identifier to match @OtpRequestRateLimit('identifier')
         // on the controller, which is what actually enforces the cooldown.
         this.rateLimiter?.recordRequest(dto.identifier);

@@ -120,7 +120,7 @@ export class LoginMethodService {
     const clean = phone.trim();
     await this.assertPhoneAvailable(userId, clean);
     try {
-      await this.twilio.sendVerification(clean);
+      await this.twilio.sendVerification(clean, 'PHONE_CHANGE');
     } catch {
       throw new InternalServerErrorException(
         'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',

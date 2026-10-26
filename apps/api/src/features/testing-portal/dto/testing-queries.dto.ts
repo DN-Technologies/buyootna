@@ -84,3 +84,11 @@ export class TestingPageQueryDto {
   @Max(100)
   limit?: number = 30;
 }
+
+export class TestingOtpQueryDto {
+  @ApiPropertyOptional({ description: 'Part of the email or phone' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  q?: string;
+}

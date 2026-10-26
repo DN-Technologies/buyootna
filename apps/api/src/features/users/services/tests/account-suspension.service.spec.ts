@@ -64,7 +64,10 @@ describe('AccountSuspensionService', () => {
         channel: 'phone',
         destination: '+965 •••• 88',
       });
-      expect(twilio.sendVerification).toHaveBeenCalledWith('+96599998888');
+      expect(twilio.sendVerification).toHaveBeenCalledWith(
+        '+96599998888',
+        'ACCOUNT_SUSPEND',
+      );
       expect(emailOtp.sendAccountSuspendOtp).not.toHaveBeenCalled();
       expect(rateLimiter.recordRequest).toHaveBeenCalledWith('u1');
     });

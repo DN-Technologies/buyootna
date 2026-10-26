@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MailService } from '../mail/mail.service';
 import { otpVerificationTemplate } from '../mail/templates/otp-verification.template';
 import { accountSuspendOtpTemplate } from '../mail/templates/account-suspend-otp.template';
@@ -6,6 +6,7 @@ import { emailChangeOtpTemplate } from '../mail/templates/email-change-otp.templ
 import { passwordResetOtpTemplate } from '../mail/templates/password-reset-otp.template';
 import { OtpRateLimiterService } from '../otp-rate-limiter/otp-rate-limiter.service';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
+import { OtpFeedService, OtpPurpose } from '../otp-feed/otp-feed.service';
 
 const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 
@@ -48,7 +49,28 @@ export class EmailOtpService {
   constructor(
     private readonly mailService: MailService,
     private readonly rateLimiter?: OtpRateLimiterService,
+    // The testing portal's الرموز feed (absent in some unit tests)
+    @Optional() private readonly feed?: OtpFeedService,
   ) {}
+
+  /** Lists a sent code in the testing portal's feed. */
+  private toFeed(
+    purpose: OtpPurpose,
+    email: string,
+    otp: string,
+    expiresAt: Date,
+    key?: string,
+  ) {
+    this.feed?.recordSent({
+      channel: 'EMAIL',
+      purpose,
+      recipient: email,
+      code: otp,
+      provider: this.mailService.isMockMode ? 'mock-mail' : 'resend',
+      expiresAt,
+      key,
+    });
+  }
 
   async sendRegistrationOtp(
     email: string,
@@ -74,6 +96,7 @@ export class EmailOtpService {
       subject: 'رمز التحقق من بريدك الإلكتروني - Buyootna',
       html: otpVerificationTemplate({ userName: name, otp }),
     });
+    this.toFeed('SIGNUP', email, otp, this.pending.get(email)!.expiresAt);
 
     this.rateLimiter?.recordRequest(email);
   }
@@ -106,6 +129,7 @@ export class EmailOtpService {
     }
 
     this.pending.delete(email);
+    this.feed?.recordUsed('EMAIL', 'SIGNUP', email);
     return { name: record.name, hashedPassword: record.hashedPassword };
   }
 
@@ -128,6 +152,12 @@ export class EmailOtpService {
       subject: 'رمز إعادة تعيين كلمة المرور - Buyootna',
       html: passwordResetOtpTemplate({ userName, otp }),
     });
+    this.toFeed(
+      'PASSWORD_RESET',
+      email,
+      otp,
+      this.pendingResets.get(email)!.expiresAt,
+    );
 
     this.rateLimiter?.recordRequest(email);
   }
@@ -147,6 +177,7 @@ export class EmailOtpService {
     }
 
     this.pendingResets.delete(email);
+    this.feed?.recordUsed('EMAIL', 'PASSWORD_RESET', email);
     return true;
   }
 
@@ -169,6 +200,12 @@ export class EmailOtpService {
       subject: 'رمز تأكيد تعطيل الحساب - Buyootna',
       html: accountSuspendOtpTemplate({ userName, otp }),
     });
+    this.toFeed(
+      'ACCOUNT_SUSPEND',
+      email,
+      otp,
+      this.pendingSuspends.get(email)!.expiresAt,
+    );
     // Rate limiting is keyed by user id by the caller (AccountSuspension)
   }
 
@@ -187,6 +224,7 @@ export class EmailOtpService {
     }
 
     this.pendingSuspends.delete(email);
+    this.feed?.recordUsed('EMAIL', 'ACCOUNT_SUSPEND', email);
     return true;
   }
 
@@ -217,6 +255,14 @@ export class EmailOtpService {
       subject: 'رمز التحقق من البريد الإلكتروني - Buyootna',
       html: emailChangeOtpTemplate({ userName, otp }),
     });
+    const changeKey = this.emailChangeKey(userId, email);
+    this.toFeed(
+      'EMAIL_CHANGE',
+      email,
+      otp,
+      this.pendingEmailChanges.get(changeKey)!.expiresAt,
+      `EMAIL:EMAIL_CHANGE:${changeKey}`,
+    );
     // Rate limiting is keyed by user id by the caller (LoginMethodService)
   }
 
@@ -237,6 +283,12 @@ export class EmailOtpService {
     }
 
     this.pendingEmailChanges.delete(key);
+    this.feed?.recordUsed(
+      'EMAIL',
+      'EMAIL_CHANGE',
+      email,
+      `EMAIL:EMAIL_CHANGE:${key}`,
+    );
     return true;
   }
 }

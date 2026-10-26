@@ -1,10 +1,12 @@
 import {
   Injectable,
   Logger,
+  Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import Twilio from 'twilio';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
+import { OtpFeedService, OtpPurpose } from '../otp-feed/otp-feed.service';
 
 const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 
@@ -32,7 +34,10 @@ export class TwilioService {
     return this.twilioClient !== null && this.serviceSid !== null;
   }
 
-  constructor() {
+  constructor(
+    // The testing portal's الرموز feed (absent in some unit tests)
+    @Optional() private readonly feed?: OtpFeedService,
+  ) {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
@@ -85,7 +90,11 @@ export class TwilioService {
    * OtpRateLimiterService.recordRequest() with that same key yourself
    * after a successful send.
    */
-  async sendVerification(phone: string): Promise<{ success: boolean }> {
+  async sendVerification(
+    phone: string,
+    // What the code is for, shown on the testing portal's الرموز feed
+    purpose: OtpPurpose = 'OTHER',
+  ): Promise<{ success: boolean }> {
     const formattedPhone = this.formatPhoneNumber(phone);
 
     if (!this.twilioClient || !this.serviceSid) {
@@ -102,6 +111,14 @@ export class TwilioService {
       this.logger.warn(
         `[MOCK SMS] Twilio is disabled or unconfigured. OTP code for ${formattedPhone}: ${code}`,
       );
+      this.feed?.recordSent({
+        channel: 'SMS',
+        purpose,
+        recipient: formattedPhone,
+        code,
+        provider: 'mock-sms',
+        expiresAt: new Date(Date.now() + OTP_TTL_MS()),
+      });
       return { success: true };
     }
 
@@ -116,6 +133,15 @@ export class TwilioService {
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
+      // Twilio Verify makes the code itself: the feed lists the send, no code
+      this.feed?.recordSent({
+        channel: 'SMS',
+        purpose,
+        recipient: formattedPhone,
+        code: null,
+        provider: 'twilio',
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      });
       return { success: true };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -143,6 +169,7 @@ export class TwilioService {
       );
       if (isValid) {
         this.mockCodes.delete(formattedPhone);
+        this.feed?.recordPhoneUsed(formattedPhone);
       }
       return isValid;
     }
@@ -158,7 +185,9 @@ export class TwilioService {
       this.logger.log(
         `Twilio verification check for ${formattedPhone}. Status: ${check.status}`,
       );
-      return check.status === 'approved';
+      const approved = check.status === 'approved';
+      if (approved) this.feed?.recordPhoneUsed(formattedPhone);
+      return approved;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(

@@ -3,6 +3,9 @@ import {
   Controller,
   Get,
   HttpCode,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
   Post,
   Query,
   Req,
@@ -11,6 +14,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { logBuffer } from '../../core/observability/log-buffer';
+import { OtpFeedService } from '../../core/otp-feed/otp-feed.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import type { TestingUser } from './testing-portal.constants';
 import { CurrentTester, TestingAuthGuard } from './testing-auth.guard';
@@ -22,6 +26,7 @@ import { TestingLoginDto } from './dto/testing-login.dto';
 import {
   TestingLogsQueryDto,
   TestingMetricsQueryDto,
+  TestingOtpQueryDto,
   TestingPageQueryDto,
 } from './dto/testing-queries.dto';
 
@@ -34,6 +39,7 @@ export class TestingPortalController {
     private readonly metrics: TestingMetricsService,
     private readonly audit: TestingAuditService,
     private readonly prisma: PrismaService,
+    private readonly otpFeed: OtpFeedService,
   ) {}
 
   @Post('auth/login')
@@ -102,6 +108,46 @@ export class TestingPortalController {
         android: process.env.ANDROID_BUILD_URL || null,
       },
     };
+  }
+
+  @Get('otps')
+  @UseGuards(TestingAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'The OTPs sent in the last 30 minutes (recipient, purpose, status) — never the codes',
+  })
+  listOtps(@Query() { q }: TestingOtpQueryDto) {
+    return { data: this.otpFeed.list({ q }) };
+  }
+
+  @Post('otps/:id/reveal')
+  @HttpCode(200)
+  @UseGuards(TestingAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      "One OTP's code while it's still valid; every reveal is written to the audit log",
+  })
+  async revealOtp(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentTester() tester: TestingUser,
+    @Req() req: Request,
+  ) {
+    const { code, entry } = this.otpFeed.reveal(id);
+    if (!entry) throw new NotFoundException('الرمز غير موجود');
+    await this.audit.record({
+      actorName: tester.name,
+      action: 'OTP_REVEALED',
+      target: entry.recipient,
+      metadata: {
+        purpose: entry.purpose,
+        channel: entry.channel,
+        shown: code !== null,
+      },
+      ip: req.ip,
+    });
+    return { code, entry };
   }
 
   @Get('audit')

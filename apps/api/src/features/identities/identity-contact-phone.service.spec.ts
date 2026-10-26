@@ -68,7 +68,10 @@ describe('IdentityContactPhoneService', () => {
   it('texts a code to the new number', async () => {
     await service.requestOtp('user-1', 'company-1', '55556666');
 
-    expect(twilio.sendVerification).toHaveBeenCalledWith('55556666');
+    expect(twilio.sendVerification).toHaveBeenCalledWith(
+      '55556666',
+      'CONTACT_PHONE',
+    );
     expect(rateLimiter.recordRequest).toHaveBeenCalledWith('user-1');
   });
 

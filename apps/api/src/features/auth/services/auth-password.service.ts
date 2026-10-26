@@ -48,7 +48,7 @@ export class AuthPasswordService {
     // accounts". Translate into the same handled, user-facing error the
     // registration flow already produces for a failed send.
     try {
-      await this.twilioService.sendVerification(user.phone);
+      await this.twilioService.sendVerification(user.phone, 'PASSWORD_CHANGE');
     } catch {
       throw new InternalServerErrorException(
         'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',

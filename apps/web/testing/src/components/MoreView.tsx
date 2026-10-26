@@ -34,6 +34,7 @@ interface AuditResponse {
 
 const ACTION_LABEL: Record<string, string> = {
   SIGN_IN: 'تسجيل دخول',
+  OTP_REVEALED: 'إظهار رمز تحقق',
 }
 
 function dateTime(iso: string | null) {

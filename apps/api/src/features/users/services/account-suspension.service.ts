@@ -61,7 +61,7 @@ export class AccountSuspensionService {
 
     if (user.phone) {
       try {
-        await this.twilio.sendVerification(user.phone);
+        await this.twilio.sendVerification(user.phone, 'ACCOUNT_SUSPEND');
       } catch {
         throw new InternalServerErrorException(
           'تعذر إرسال رمز التحقق. يرجى المحاولة مرة أخرى لاحقاً.',

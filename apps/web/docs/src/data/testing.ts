@@ -79,6 +79,45 @@ export const testing: DocSection = {
       updatedIn: "feat/testing-portal",
     },
     {
+      id: "testing-otp-feed",
+      title: {
+        en: "الرموز lists every OTP sent; a code shows only when tapped, and each reveal is logged",
+        ar: "الرموز تعرض كل رموز التحقق المرسلة؛ الرمز يظهر بالضغط فقط وكل إظهار يُسجَّل",
+      },
+      priority: "P0",
+      story: {
+        en: "By the owner's decision (docs/ai/security-policy.md) the portal shows the OTPs of every user. Every code the platform sends — email (sign-up, password reset, account suspension, email change) and SMS (sign-up, password change, recovery, phone change, contact phone, account suspension) — is listed for 30 minutes with its recipient, purpose, time left and status (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps never returns a code; «إظهار الرمز» calls POST /testing-portal/otps/:id/reveal, which returns it while it's still valid and writes OTP_REVEALED (tester, recipient, purpose) to the audit log. Codes live only in memory and are dropped when used, replaced or expired. Phone codes sent by real Twilio Verify are listed without a code (Twilio makes it). Mock-mode log lines show codes as •••••• on السجلات.",
+        ar: "بقرار المالك (docs/ai/security-policy.md) تعرض البوابة رموز التحقق لكل المستخدمين. كل رمز ترسله المنصة — بالبريد (إنشاء حساب، استعادة كلمة المرور، تعطيل الحساب، تغيير البريد) وبالرسائل (إنشاء حساب، تغيير كلمة المرور، استعادة الحساب، تغيير الرقم، رقم التواصل، تعطيل الحساب) — يُعرض 30 دقيقة مع المستلم والغرض والوقت المتبقي والحالة (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps لا يُرجع الرمز أبداً؛ «إظهار الرمز» يستدعي POST /testing-portal/otps/:id/reveal الذي يُرجعه ما دام صالحاً ويكتب OTP_REVEALED (المختبر، المستلم، الغرض) في سجل البوابة. الرموز في الذاكرة فقط وتُحذف عند استخدامها أو استبدالها أو انتهائها. رموز الهاتف المرسلة عبر Twilio Verify الحقيقي تظهر بلا رمز (Twilio يصنعه). وأسطر الوضع التجريبي تظهر الرموز فيها •••••• في السجلات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Signing up with an email (or a phone in mock SMS mode) shows a صالح entry within 5 s; «إظهار الرمز» shows the code, which completes the sign-up.",
+          "After it's used the entry turns استُخدم and no code can be shown; asking for a new code marks the old one استُبدل برمز أحدث.",
+          "Each reveal appears in المزيد › سجل البوابة as «إظهار رمز تحقق» with the recipient.",
+          "The code is never in the list response, the database, the logs screen or the service worker cache.",
+        ],
+        ar: [
+          "إنشاء حساب ببريد (أو برقم في الوضع التجريبي للرسائل) يظهر كرمز «صالح» خلال 5 ثوانٍ؛ «إظهار الرمز» يعرض الرمز الذي يكمل التسجيل.",
+          "بعد استخدامه يصبح «استُخدم» ولا يمكن إظهاره؛ وطلب رمز جديد يجعل القديم «استُبدل برمز أحدث».",
+          "كل إظهار يظهر في المزيد › سجل البوابة كـ«إظهار رمز تحقق» مع المستلم.",
+          "الرمز لا يوجد أبداً في استجابة القائمة ولا قاعدة البيانات ولا شاشة السجلات ولا ذاكرة عامل الخدمة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Forgot password on an email account: copy the code from الرموز into the app; the entry turns استُخدم.",
+          "Search by part of the phone number: only that phone's codes remain.",
+          "Leave a revealed code on screen: it hides itself after a minute.",
+        ],
+        ar: [
+          "نسيت كلمة المرور لحساب بريد: انسخ الرمز من الرموز إلى التطبيق؛ يصبح «استُخدم».",
+          "ابحث بجزء من رقم الهاتف: تبقى رموز ذلك الرقم فقط.",
+          "اترك رمزاً ظاهراً: يختفي وحده بعد دقيقة.",
+        ],
+      },
+      updatedIn: "feat/testing-otp-feed",
+    },
+    {
       id: "testing-metrics",
       title: {
         en: "المقاييس shows API traffic, errors, latency and platform activity",
