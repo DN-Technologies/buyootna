@@ -1,4 +1,11 @@
-import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AdminReportsFilterDto {
@@ -37,4 +44,9 @@ export class AdminReportsFilterDto {
   @IsInt()
   @Min(1)
   limit?: number = 10;
+
+  // Reports against one of the user's identities only (users/:id/reports)
+  @IsOptional()
+  @IsUUID()
+  identityId?: string;
 }

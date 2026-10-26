@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { InvoicesService } from '../../../invoices/invoices.service';
+import { findOwnedIdentity } from '../users/admin-persona.util';
 
 @Injectable()
 export class AdminInvoicesService {
@@ -9,8 +10,14 @@ export class AdminInvoicesService {
     private readonly invoicesService: InvoicesService,
   ) {}
 
-  async getInvoicesForUser(userId: string) {
-    return this.invoicesService.findUserInvoices(userId);
+  // One persona's invoices, or all of the account's
+  async getInvoicesForUser(userId: string, identityId?: string) {
+    if (!identityId) return this.invoicesService.findUserInvoices(userId);
+    await findOwnedIdentity(this.prisma, userId, identityId);
+    return this.prisma.invoice.findMany({
+      where: { identityId },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async getCouponHistoryForUser(userId: string) {

@@ -8,7 +8,13 @@ import { AdminUserWallet, fetchUserWallet } from '@/lib/admin-plans'
 function exportHistoryCsv(wallet: AdminUserWallet) {
   const header = 'الباقة,رقم المعرف,الحالة,رصيد الاعلانات,التاريخ'
   const rows = wallet.history.map((item) =>
-    [item.planName, item.displayId, item.status, item.adsRemaining, item.dateText].join(','),
+    [
+      item.planName,
+      item.displayId,
+      item.status,
+      item.adsRemaining,
+      item.dateText,
+    ].join(','),
   )
   const csv = [header, ...rows].join('\n')
   const blob = new Blob([`﻿${csv}`], { type: 'text/csv;charset=utf-8' })
@@ -20,7 +26,13 @@ function exportHistoryCsv(wallet: AdminUserWallet) {
   URL.revokeObjectURL(url)
 }
 
-export default function UserPackagesTabContent({ userId }: { userId: string }) {
+export default function UserPackagesTabContent({
+  userId,
+  identityId,
+}: {
+  userId: string
+  identityId?: string
+}) {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false)
   const [wallet, setWallet] = useState<AdminUserWallet | null>(null)
   const [loading, setLoading] = useState(true)
@@ -28,14 +40,14 @@ export default function UserPackagesTabContent({ userId }: { userId: string }) {
   const loadWallet = useCallback(async () => {
     try {
       setLoading(true)
-      const data = await fetchUserWallet(userId)
+      const data = await fetchUserWallet(userId, identityId)
       setWallet(data)
     } catch (err) {
       console.error('Failed to load user wallet:', err)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     loadWallet()
@@ -192,6 +204,7 @@ export default function UserPackagesTabContent({ userId }: { userId: string }) {
         open={upgradeDialogOpen}
         onClose={() => setUpgradeDialogOpen(false)}
         userId={userId}
+        identityId={identityId}
         onSuccess={loadWallet}
       />
     </div>

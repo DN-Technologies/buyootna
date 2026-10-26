@@ -54,22 +54,33 @@ export async function fetchPlans(): Promise<AdminPlan[]> {
   return res.data
 }
 
-export async function fetchUserWallet(userId: string): Promise<AdminUserWallet> {
-  const res = await api.get(`/admin/users/${userId}/wallet`)
+export async function fetchUserWallet(
+  userId: string,
+  identityId?: string,
+): Promise<AdminUserWallet> {
+  const res = await api.get(`/admin/users/${userId}/wallet`, {
+    params: { identityId },
+  })
   return res.data
 }
 
 export interface ChangeUserPlanInput {
   planId: string
   adsRemaining?: number
+  // The persona the plan is for (the page's selected identity)
+  identityId?: string
 }
 
-export async function changeUserPlan(userId: string, data: ChangeUserPlanInput) {
+export async function changeUserPlan(
+  userId: string,
+  data: ChangeUserPlanInput,
+) {
   const res = await api.post(`/admin/users/${userId}/plan`, data)
   return res.data
 }
 
 export interface GrantExceptionalFeatureInput {
+  identityId?: string
   adsCount?: number
   photosCount?: number
   durationDays?: number
@@ -127,7 +138,11 @@ export async function updatePlan(id: string, data: UpdatePlanInput) {
 export function buildPlanFeatures(
   plan: Pick<
     AdminPlan,
-    'maxActiveAds' | 'durationDays' | 'maxImagesPerAd' | 'featuredDays' | 'prioritySearch'
+    | 'maxActiveAds'
+    | 'durationDays'
+    | 'maxImagesPerAd'
+    | 'featuredDays'
+    | 'prioritySearch'
   >,
 ): string[] {
   const lines = [
@@ -149,4 +164,3 @@ export function buildPlanFeatures(
   )
   return lines
 }
-

@@ -22,8 +22,13 @@ export interface AdminCouponHistoryRow {
   grantedAt: string
 }
 
-export async function fetchUserInvoices(userId: string): Promise<AdminInvoiceRow[]> {
-  const res = await api.get(`/admin/users/${userId}/invoices`)
+export async function fetchUserInvoices(
+  userId: string,
+  identityId?: string,
+): Promise<AdminInvoiceRow[]> {
+  const res = await api.get(`/admin/users/${userId}/invoices`, {
+    params: { identityId },
+  })
   return res.data
 }
 

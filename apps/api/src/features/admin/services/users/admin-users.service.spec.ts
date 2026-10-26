@@ -220,6 +220,64 @@ describe('AdminUsersService', () => {
       expect(result.data[0].name).toBe('شركة النور');
       expect(result.data[0].verificationStatus).toBe('قيد الانتظار');
     });
+
+    // QA: under الأفراد the account showed as its company («الصباح»)
+    it('shows them as the individual under الأفراد, with both identities', async () => {
+      prisma.identity.groupBy.mockResolvedValue([{ userId: 'user-2' }]);
+      prisma.user.findMany.mockReset();
+      prisma.user.findMany.mockResolvedValueOnce([
+        {
+          id: 'user-2',
+          name: 'سارة',
+          email: 'sara@example.com',
+          phone: '+96599992222',
+          role: Role.INDIVIDUAL,
+          isDisabled: false,
+          isBlocked: false,
+          createdAt: new Date('2026-02-01T10:00:00Z'),
+          activePlan: null,
+          identities: [
+            {
+              id: 'ind-1',
+              type: 'INDIVIDUAL',
+              individualData: { name: 'سارة' },
+              _count: { properties: 2 },
+            },
+            {
+              id: 'co-1',
+              type: 'COMPANY',
+              companyData: { name: 'شركة النور', status: 'PENDING' },
+              _count: { properties: 5 },
+            },
+          ],
+        },
+      ]);
+      prisma.user.findMany.mockResolvedValueOnce([]);
+      prisma.user.count.mockResolvedValue(1);
+
+      const result = await service.getUsers({
+        role: Role.INDIVIDUAL,
+        sortOrder: 'desc',
+        page: 1,
+        limit: 10,
+      });
+
+      expect(result.data[0]).toMatchObject({
+        accountType: 'فرد',
+        name: 'سارة',
+        verificationStatus: '—',
+        adsCount: 2,
+        identities: [
+          { id: 'ind-1', type: 'INDIVIDUAL', name: 'سارة', status: null },
+          {
+            id: 'co-1',
+            type: 'COMPANY',
+            name: 'شركة النور',
+            status: 'PENDING',
+          },
+        ],
+      });
+    });
   });
 
   // QA: a company added to an older account was "missing" from the admin

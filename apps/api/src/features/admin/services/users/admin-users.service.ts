@@ -24,7 +24,11 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { MailService } from '../../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../../core/mail/templates/admin-custom-message.template';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
-import { accountTypeOf, hasAccountType } from './account-type.util';
+import {
+  ACCOUNT_TYPE_LABELS,
+  accountTypeOf,
+  hasAccountType,
+} from './account-type.util';
 import { accountStatus as accountState } from '../../../auth/account-status.util';
 
 @Injectable()
@@ -196,6 +200,7 @@ export class AdminUsersService {
 
     const userInclude = {
       identities: {
+        orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
         include: {
           individualData: true,
           companyData: true,
@@ -255,7 +260,15 @@ export class AdminUsersService {
     ]);
 
     const formattedUsers = users.map((user) => {
-      const accountType = accountTypeOf(user.role, user.identities);
+      // In a type's tab the row is that persona (an individual who added a
+      // company shows as himself under الأفراد and as the company under
+      // الشركات); unfiltered, the strongest one
+      const accountType = role
+        ? ACCOUNT_TYPE_LABELS[role]
+        : accountTypeOf(user.role, user.identities);
+      const shown = role
+        ? user.identities.filter((i) => i.type === (role as string))
+        : user.identities;
 
       const companyIdent = user.identities.find((i) => i.type === 'COMPANY');
       const officeIdent = user.identities.find((i) => i.type === 'OFFICE');
@@ -300,7 +313,7 @@ export class AdminUsersService {
 
       const subscriptionPlan = user.activePlan?.name || 'العادية';
 
-      const adsCount = user.identities.reduce(
+      const adsCount = shown.reduce(
         (sum, i) => sum + (i._count?.properties ?? 0),
         0,
       );
@@ -320,6 +333,18 @@ export class AdminUsersService {
         email: user.email || user.phone || '—',
         phone: user.phone || '—',
         accountType,
+        // Each persona of the account, for its badges and to open the page
+        // on the right one
+        identities: user.identities.map((i) => ({
+          id: i.id,
+          type: i.type,
+          name:
+            i.companyData?.name ??
+            i.officeData?.name ??
+            i.individualData?.name ??
+            null,
+          status: i.companyData?.status ?? i.officeData?.status ?? null,
+        })),
         verificationStatus,
         subscriptionPlan,
         adsCount,
@@ -357,7 +382,10 @@ export class AdminUsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
+        // The admin page's identity switcher, in the order the app's default
+        // persona is picked (findDefaultPersonaId)
         identities: {
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
           include: {
             individualData: true,
             companyData: true,

@@ -6,6 +6,8 @@ export interface ChangePlanDrawerProps {
   onSuccess?: (userId: string, planName: string) => void
   user?: UserRow | null
   userId?: string
+  // The persona the plan is for; omitted: the account's default one
+  identityId?: string
   userName?: string
   userEmail?: string
   accountType?: string

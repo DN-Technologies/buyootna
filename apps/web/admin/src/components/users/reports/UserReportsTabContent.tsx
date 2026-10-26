@@ -4,8 +4,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, MoreVertical } from 'lucide-react'
 import ReportDetailDrawer from './ReportDetailDrawer'
 import AssignUserReportDialog, { AdminOption } from './AssignUserReportDialog'
-import { AdminReportRow, fetchUserReports, updateReport } from '@/lib/admin-reports'
-import { USER_TAB_PRIORITY_LABEL, USER_TAB_STATUS_LABEL } from '@/lib/report-labels'
+import {
+  AdminReportRow,
+  fetchUserReports,
+  updateReport,
+} from '@/lib/admin-reports'
+import {
+  USER_TAB_PRIORITY_LABEL,
+  USER_TAB_STATUS_LABEL,
+} from '@/lib/report-labels'
 import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
 export interface UserReportItem {
@@ -42,7 +49,10 @@ const statusBadgeStyles: Record<UserReportItem['status'], string> = {
   مغلقة: 'bg-[#F1F5F9] text-[#6B6A6A]',
 }
 
-const priorityBadgeStyles: Record<NonNullable<UserReportItem['priority']>, string> = {
+const priorityBadgeStyles: Record<
+  NonNullable<UserReportItem['priority']>,
+  string
+> = {
   منخفضة: 'bg-[#F1F5F9] text-[#6B6A6A]',
   متوسطة: 'bg-[#FEF6E6] text-[#D97706]',
   عالية: 'bg-[#FEF3F2] text-[#9C1E28]',
@@ -50,13 +60,19 @@ const priorityBadgeStyles: Record<NonNullable<UserReportItem['priority']>, strin
 
 interface UserReportsTabContentProps {
   userId: string
+  identityId?: string
 }
 
-export default function UserReportsTabContent({ userId }: UserReportsTabContentProps) {
+export default function UserReportsTabContent({
+  userId,
+  identityId,
+}: UserReportsTabContentProps) {
   const [reports, setReports] = useState<UserReportItem[]>([])
   const [loading, setLoading] = useState(true)
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
-  const [selectedReport, setSelectedReport] = useState<UserReportItem | null>(null)
+  const [selectedReport, setSelectedReport] = useState<UserReportItem | null>(
+    null,
+  )
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
   const [reportForAssign, setReportForAssign] = useState<UserReportItem | null>(
     null,
@@ -66,14 +82,14 @@ export default function UserReportsTabContent({ userId }: UserReportsTabContentP
   const loadReports = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetchUserReports(userId, { limit: 50 })
+      const res = await fetchUserReports(userId, { limit: 50, identityId })
       setReports(res.data.map(toUserReportItem))
     } catch (err) {
       console.error('Failed to load user reports:', err)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     loadReports()
@@ -97,8 +113,13 @@ export default function UserReportsTabContent({ userId }: UserReportsTabContentP
 
   if (loading) {
     return (
-      <div className="bg-white border border-[#ECECEC] rounded-xl flex items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']" dir="rtl">
-        <span className="text-[14px] font-medium text-[#6B6A6A]">جارٍ التحميل...</span>
+      <div
+        className="bg-white border border-[#ECECEC] rounded-xl flex items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']"
+        dir="rtl"
+      >
+        <span className="text-[14px] font-medium text-[#6B6A6A]">
+          جارٍ التحميل...
+        </span>
       </div>
     )
   }
@@ -106,7 +127,10 @@ export default function UserReportsTabContent({ userId }: UserReportsTabContentP
   if (reports.length === 0) {
     /* Node 4043:133410: 0-State View */
     return (
-      <div className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']" dir="rtl">
+      <div
+        className="bg-white border border-[#ECECEC] rounded-xl flex flex-col items-center justify-center py-16 px-6 text-center w-full min-h-80 font-['Cairo']"
+        dir="rtl"
+      >
         <div className="size-16 rounded-full bg-[#F8FAFC] border border-[#ECECEC] flex items-center justify-center mb-4 text-[#111111]">
           <AlertTriangle className="w-7 h-7" />
         </div>

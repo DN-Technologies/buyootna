@@ -18,6 +18,7 @@ export default function ChangePlanDrawer({
   onSuccess,
   user,
   userId,
+  identityId,
   userName = 'محمد الجارح',
   userEmail = 'mohamedelgareh@gmail.com',
   accountType = 'فرد',
@@ -97,7 +98,10 @@ export default function ChangePlanDrawer({
     const chosenPlan = plans.find((p) => p.id === selectedPlanId)
 
     try {
-      await changeUserPlan(resolvedUserId, { planId: selectedPlanId })
+      await changeUserPlan(resolvedUserId, {
+        planId: selectedPlanId,
+        identityId,
+      })
       onSuccess?.(resolvedUserId, chosenPlan?.name || 'الباقة الجديدة')
       onClose()
     } catch (err) {
@@ -159,10 +163,7 @@ export default function ChangePlanDrawer({
             onSelectPlan={setSelectedPlanId}
           />
 
-          <TimingOptionsSection
-            timing={timing}
-            onTimingChange={setTiming}
-          />
+          <TimingOptionsSection timing={timing} onTimingChange={setTiming} />
 
           <NotificationChannelsSection
             notifyEmail={notifyEmail}

@@ -6,7 +6,10 @@ import { CompanyRequestsService } from '../../../company/company-requests/compan
 
 describe('AdminRequestsService', () => {
   let service: AdminRequestsService;
-  let prisma: { user: { findUnique: jest.Mock } };
+  let prisma: {
+    user: { findUnique: jest.Mock };
+    identity: { findFirst: jest.Mock };
+  };
   let companyRequestsService: { findForIdentityAsAdmin: jest.Mock };
 
   beforeEach(async () => {
@@ -17,6 +20,11 @@ describe('AdminRequestsService', () => {
           role: 'INDIVIDUAL',
           identities: [{ id: 'identity-1', type: 'INDIVIDUAL' }],
         }),
+      },
+      identity: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ id: 'identity-2', type: 'COMPANY' }),
       },
     };
     companyRequestsService = {
@@ -36,6 +44,27 @@ describe('AdminRequestsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it("lists the named identity's requests, as its type", async () => {
+    await service.getRequestsForUser('user-1', 'identity-2');
+
+    expect(prisma.identity.findFirst).toHaveBeenCalledWith({
+      where: { id: 'identity-2', userId: 'user-1' },
+      select: { id: true, type: true },
+    });
+    expect(companyRequestsService.findForIdentityAsAdmin).toHaveBeenCalledWith(
+      'identity-2',
+      'COMPANY',
+    );
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("refuses an identity that isn't the user's", async () => {
+    prisma.identity.findFirst.mockResolvedValue(null);
+    await expect(
+      service.getRequestsForUser('user-1', 'someone-elses'),
+    ).rejects.toThrow(NotFoundException);
   });
 
   it('throws NotFoundException when the user does not exist', async () => {

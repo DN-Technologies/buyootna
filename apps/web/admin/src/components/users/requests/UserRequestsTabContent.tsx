@@ -43,11 +43,14 @@ function toRequestItem(row: AdminRequestRow): RequestItem {
 
 export interface UserRequestsTabContentProps {
   userId: string
+  // The page's selected persona
+  identityId?: string
   userRole?: string
 }
 
 export default function UserRequestsTabContent({
   userId,
+  identityId,
   userRole = 'COMPANY',
 }: UserRequestsTabContentProps) {
   const [requests, setRequests] = useState<RequestItem[]>([])
@@ -60,14 +63,14 @@ export default function UserRequestsTabContent({
   const loadRequests = useCallback(async () => {
     try {
       setLoading(true)
-      const rows = await fetchUserRequests(userId)
+      const rows = await fetchUserRequests(userId, identityId)
       setRequests(rows.map(toRequestItem))
     } catch (err) {
       console.error('Failed to load user requests:', err)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     loadRequests()

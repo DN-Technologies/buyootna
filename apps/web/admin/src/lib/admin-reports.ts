@@ -138,9 +138,15 @@ export interface UserReportsResponse {
 
 export async function fetchUserReports(
   userId: string,
-  filters: { status?: 'ALL' | BackendReportStatus; page?: number; limit?: number } = {},
+  filters: {
+    status?: 'ALL' | BackendReportStatus
+    page?: number
+    limit?: number
+    identityId?: string
+  } = {},
 ): Promise<UserReportsResponse> {
   const params: Record<string, any> = {}
+  if (filters.identityId) params.identityId = filters.identityId
   if (filters.status) params.status = filters.status
   if (filters.page) params.page = filters.page
   if (filters.limit) params.limit = filters.limit

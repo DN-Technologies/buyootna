@@ -14,6 +14,13 @@ export function hasAccountType(role: Role): Prisma.UserWhereInput {
   };
 }
 
+export const ACCOUNT_TYPE_LABELS: Record<Role, 'فرد' | 'شركة' | 'مكتب عقاري'> =
+  {
+    [Role.INDIVIDUAL]: 'فرد',
+    [Role.COMPANY]: 'شركة',
+    [Role.OFFICE]: 'مكتب عقاري',
+  };
+
 /** Company wins over office, office over individual: the admin's "type". */
 export function accountTypeOf(
   role: Role | null,

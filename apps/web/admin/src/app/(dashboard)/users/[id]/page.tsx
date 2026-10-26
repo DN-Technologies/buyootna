@@ -1,11 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
 import UserQuickStats from '@/components/users/UserQuickStats'
-import UserDetailTabs from '@/components/users/UserDetailTabs'
+import UserDetailTabs, { tabsFor } from '@/components/users/UserDetailTabs'
+import IdentitySwitcher, {
+  IDENTITY_TYPE_LABELS,
+} from '@/components/users/IdentitySwitcher'
 import UserDetailPageSkeleton from '@/components/users/UserDetailPageSkeleton'
 import IndividualProfileOverview from '@/components/users/profiles/IndividualProfileOverview'
 import OfficeProfileOverview from '@/components/users/profiles/OfficeProfileOverview'
@@ -24,15 +27,29 @@ import UserReportsTabContent from '@/components/users/reports/UserReportsTabCont
 import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabContent'
 import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
 import UserNotesTabContent from '@/components/users/notes/UserNotesTabContent'
-import { fetchUserDetails, AdminUserDetail } from '@/lib/admin-users'
+import { setActiveAccountType } from '@/lib/active-account-type'
+import {
+  fetchUserDetails,
+  AdminUserDetail,
+  AdminUserIdentity,
+} from '@/lib/admin-users'
 import { fetchUserReports } from '@/lib/admin-reports'
 import { fetchUserReviewsSummary } from '@/lib/admin-ratings'
 import { fetchUserRequests } from '@/lib/admin-requests'
 
-const roleLabels: Record<string, string> = {
-  INDIVIDUAL: 'فرد',
-  COMPANY: 'شركة',
-  OFFICE: 'مكتب عقاري',
+/**
+ * The persona the page shows: `?identity=` when it's one of the account's,
+ * else the one the app opens by default (the individual, else the first).
+ */
+function selectIdentity(
+  identities: AdminUserIdentity[],
+  requestedId: string | null,
+): AdminUserIdentity | undefined {
+  return (
+    identities.find((i) => i.id === requestedId) ??
+    identities.find((i) => i.type === 'INDIVIDUAL') ??
+    identities[0]
+  )
 }
 
 const TAB_SLUGS: Record<string, string> = {
@@ -94,12 +111,41 @@ export default function UserOverviewPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const currentTabSlug = searchParams.get('tab')
-  const activeTab = (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
+  const requestedTab = (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
+
+  const identity = user
+    ? selectIdentity(user.identities ?? [], searchParams.get('identity'))
+    : undefined
+  const identityId = identity?.id
+  const userRole = (identity?.type || user?.role || 'INDIVIDUAL') as
+    | 'INDIVIDUAL'
+    | 'OFFICE'
+    | 'COMPANY'
+  // A tab the selected persona doesn't have (المعرض on an individual) opens the overview
+  const activeTab = tabsFor(userRole).includes(requestedTab)
+    ? requestedTab
+    : 'نظرة عامة'
 
   const handleTabChange = (tabLabel: string) => {
     const slug = TAB_SLUGS[tabLabel] || 'overview'
     const newParams = new URLSearchParams(searchParams.toString())
     newParams.set('tab', slug)
+    router.replace(`${pathname}?${newParams.toString()}`, { scroll: false })
+  }
+
+  // The side nav highlights the shown identity's type, until the page closes
+  useEffect(() => {
+    if (!identity) return
+    setActiveAccountType(identity.type.toLowerCase() as 'individual' | 'company' | 'office')
+  }, [identity])
+  useEffect(() => () => setActiveAccountType(null), [])
+
+  const handleIdentityChange = (nextId: string) => {
+    const next = user?.identities.find((i) => i.id === nextId)
+    if (!next) return
+    const newParams = new URLSearchParams(searchParams.toString())
+    newParams.set('identity', nextId)
+    if (!tabsFor(next.type).includes(activeTab)) newParams.delete('tab')
     router.replace(`${pathname}?${newParams.toString()}`, { scroll: false })
   }
 
@@ -129,15 +175,18 @@ export default function UserOverviewPage() {
   }, [loadUser])
 
   // Lightweight parallel fetches for UserQuickStats — independent of which
-  // tab is active. servicesCount stays unset (no Service backend exists).
+  // tab is active, for the selected persona. servicesCount stays unset (no
+  // Service backend exists).
+  const userLoaded = !!user
   useEffect(() => {
+    if (!userLoaded) return
     let cancelled = false
-    fetchUserReports(params.id, { limit: 1 })
+    fetchUserReports(params.id, { limit: 1, identityId })
       .then((res) => {
         if (!cancelled) setReportsCount(res.meta.total)
       })
       .catch((err) => console.error('Failed to load reports count:', err))
-    fetchUserReviewsSummary(params.id)
+    fetchUserReviewsSummary(params.id, identityId)
       .then((res) => {
         if (!cancelled) {
           setRatingAverage(res.averageRating)
@@ -145,7 +194,7 @@ export default function UserOverviewPage() {
         }
       })
       .catch((err) => console.error('Failed to load ratings summary:', err))
-    fetchUserRequests(params.id)
+    fetchUserRequests(params.id, identityId)
       .then((res) => {
         if (!cancelled) setRequestsCount(res.length)
       })
@@ -153,7 +202,7 @@ export default function UserOverviewPage() {
     return () => {
       cancelled = true
     }
-  }, [params.id])
+  }, [params.id, identityId, userLoaded])
 
   const handleHeaderAction = (action: string) => {
     if (action === 'change_package') {
@@ -184,8 +233,6 @@ export default function UserOverviewPage() {
     )
   }
 
-  const identity = user.identities?.[0]
-  const userRole = (user.role || 'INDIVIDUAL') as 'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
   const isOffice = userRole === 'OFFICE'
   const displayName =
     identity?.companyData?.name ||
@@ -198,7 +245,9 @@ export default function UserOverviewPage() {
     identity?.companyData?.logoUrl ||
     identity?.officeData?.logoUrl ||
     user.avatarUrl
-  const accountType = roleLabels[userRole] || 'فرد'
+  const licenseNumber =
+    identity?.companyData?.licenseNumber ?? identity?.officeData?.licenseNumber
+  const accountType = IDENTITY_TYPE_LABELS[userRole] || 'فرد'
   const statusLabel: 'نشط' | 'محظور' | 'موقوف' = user.isBlocked
     ? 'محظور'
     : user.isDisabled
@@ -225,7 +274,16 @@ export default function UserOverviewPage() {
           avatarUrl={avatarUrl}
           isOffice={isOffice || userRole === 'COMPANY'}
           userId={user.id}
+          licenseNumber={licenseNumber}
+          backHref={`/users?type=${userRole.toLowerCase()}`}
           onActionSelect={handleHeaderAction}
+          identitySwitcher={
+            <IdentitySwitcher
+              identities={user.identities ?? []}
+              selectedId={identityId}
+              onSelect={handleIdentityChange}
+            />
+          }
         />
         <UserQuickStats
           userRole={userRole}
@@ -244,6 +302,8 @@ export default function UserOverviewPage() {
         />
       </div>
 
+      {/* Keyed by persona: switching identity starts each tab afresh */}
+      <Fragment key={identityId ?? 'account'}>
       {activeTab === 'الاعلانات' ? (
         <UserAdsTabContent
           properties={identity?.properties || []}
@@ -251,19 +311,26 @@ export default function UserOverviewPage() {
           onRefresh={refreshAds}
         />
       ) : activeTab === 'الطلبات' ? (
-        <UserRequestsTabContent userRole={userRole} userId={user.id} />
+        <UserRequestsTabContent
+          userRole={userRole}
+          userId={user.id}
+          identityId={identityId}
+        />
       ) : activeTab === 'الخدمات' ? (
         <UserServicesTabContent />
       ) : activeTab === 'المعرض' ? (
-        <UserExhibitionTabContent userId={user.id} />
+        <UserExhibitionTabContent userId={user.id} identityId={identityId} />
       ) : activeTab === 'الباقة' ? (
-        <UserPackagesTabContent userId={user.id} />
+        <UserPackagesTabContent userId={user.id} identityId={identityId} />
       ) : activeTab === 'الفواتير والخصم' ? (
-        <UserInvoicesDiscountsTabContent userId={user.id} />
+        <UserInvoicesDiscountsTabContent
+          userId={user.id}
+          identityId={identityId}
+        />
       ) : activeTab === 'البلاغات' ? (
-        <UserReportsTabContent userId={user.id} />
+        <UserReportsTabContent userId={user.id} identityId={identityId} />
       ) : activeTab === 'التقييمات' ? (
-        <UserRatingsTabContent userId={user.id} />
+        <UserRatingsTabContent userId={user.id} identityId={identityId} />
       ) : activeTab === 'السجل' ? (
         <UserLogsTabContent userId={user.id} />
       ) : activeTab === 'ملاحظات' ? (
@@ -271,10 +338,10 @@ export default function UserOverviewPage() {
       ) : userRole === 'COMPANY' ? (
         <CompanyProfileOverview
           email={user.email || '—'}
-          fullName={user.name || displayName}
+          fullName={displayName}
+          licenseNumber={licenseNumber}
           whatsapp={user.whatsapp || '—'}
           phone={user.phone || '—'}
-          userId={user.id}
           isPendingVerification={identity?.companyData?.status === 'PENDING'}
           lastActivity="اليوم 09:30 صباحاً"
           lastLogin="28 فبراير 2025"
@@ -283,10 +350,10 @@ export default function UserOverviewPage() {
       ) : userRole === 'OFFICE' ? (
         <OfficeProfileOverview
           email={user.email || '—'}
-          fullName={user.name || displayName}
+          fullName={displayName}
+          licenseNumber={licenseNumber}
           whatsapp={user.whatsapp || '—'}
           phone={user.phone || '—'}
-          userId={user.id}
           isPendingVerification={identity?.officeData?.status === 'PENDING'}
           lastActivity="اليوم 09:30 صباحاً"
           lastLogin="28 فبراير 2025"
@@ -295,7 +362,7 @@ export default function UserOverviewPage() {
       ) : (
         <IndividualProfileOverview
           email={user.email || '—'}
-          fullName={user.name || displayName}
+          fullName={displayName}
           whatsapp={user.whatsapp || '—'}
           phone={user.phone || '—'}
           accountType={accountType}
@@ -304,6 +371,7 @@ export default function UserOverviewPage() {
           joinedAt={formatArabicDate(user.createdAt)}
         />
       )}
+      </Fragment>
 
       {/* Change Package Drawer */}
       <ChangePackageDrawer
@@ -311,6 +379,7 @@ export default function UserOverviewPage() {
         onClose={() => setChangePackageOpen(false)}
         onSuccess={() => showToast('تم تغيير الباقة بنجاح.')}
         userId={user.id}
+        identityId={identityId}
         userName={displayName}
         userEmail={user.email || '—'}
         accountType={accountType}
@@ -320,6 +389,7 @@ export default function UserOverviewPage() {
       {/* Add Exceptional Feature Drawer */}
       <AddExceptionalFeatureDrawer
         userId={user.id}
+        identityId={identityId}
         open={addExceptionalFeatureOpen}
         onClose={() => setAddExceptionalFeatureOpen(false)}
         onSuccess={() =>

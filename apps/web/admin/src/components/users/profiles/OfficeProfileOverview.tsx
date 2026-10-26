@@ -10,12 +10,11 @@ export interface OfficeProfileOverviewProps {
   fullName: string
   whatsapp: string
   phone: string
-  licenseNumber?: string
+  licenseNumber?: string | null
   workingHours?: {
     weekday?: string
     weekend?: string
   }
-  userId?: string
   isPendingVerification?: boolean
   onReviewVerification?: () => void
   lastActivity: string
@@ -33,7 +32,6 @@ export default function OfficeProfileOverview({
   phone,
   licenseNumber,
   workingHours,
-  userId,
   isPendingVerification = true,
   onReviewVerification,
   lastActivity,
@@ -57,7 +55,6 @@ export default function OfficeProfileOverview({
         licenseNumber={licenseNumber}
         workingHours={workingHours}
         accountType="مكتب عقاري"
-        userId={userId}
         loading={loading}
       />
 

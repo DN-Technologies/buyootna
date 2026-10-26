@@ -3,7 +3,10 @@ import { CurrentUser } from '../../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../../auth/strategies/jwt.strategy';
 import { ApiOperation, ApiParam } from '@nestjs/swagger';
 import { AdminService } from '../admin.service';
-import { GetReviewsDto } from '../../reviews/dto/get-reviews.dto';
+import {
+  AdminGetReviewsDto,
+  AdminIdentityQueryDto,
+} from '../dto/admin-identity-query.dto';
 import { AdminCreateNoteDto, AdminUpdateNoteDto } from '../dto/admin-note.dto';
 import { ApiCommonErrors } from '../../../core/swagger/api-common-errors.decorator';
 import { AdminApi } from './admin-api.decorator';
@@ -20,8 +23,11 @@ export class AdminUserProfileController {
   })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiCommonErrors()
-  async getRequestsForUser(@Param('id') id: string) {
-    return this.adminService.getRequestsForUser(id);
+  async getRequestsForUser(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getRequestsForUser(id, identityId);
   }
 
   @Get('users/:id/projects')
@@ -30,8 +36,11 @@ export class AdminUserProfileController {
   })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiCommonErrors()
-  async getProjectsForUser(@Param('id') id: string) {
-    return this.adminService.getProjectsForUser(id);
+  async getProjectsForUser(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getProjectsForUser(id, identityId);
   }
 
   @Delete('projects/:id')
@@ -51,9 +60,9 @@ export class AdminUserProfileController {
   @ApiCommonErrors()
   async getReviewsForUser(
     @Param('id') id: string,
-    @Query() query: GetReviewsDto,
+    @Query() { identityId, ...query }: AdminGetReviewsDto,
   ) {
-    return this.adminService.getReviewsForUser(id, query);
+    return this.adminService.getReviewsForUser(id, query, identityId);
   }
 
   @Get('users/:id/reviews/summary')
@@ -62,8 +71,11 @@ export class AdminUserProfileController {
   })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiCommonErrors()
-  async getReviewsSummaryForUser(@Param('id') id: string) {
-    return this.adminService.getReviewsSummaryForUser(id);
+  async getReviewsSummaryForUser(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getReviewsSummaryForUser(id, identityId);
   }
 
   @Delete('reviews/:id')

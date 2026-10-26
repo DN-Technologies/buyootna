@@ -8,7 +8,10 @@ import {
   fetchUserCouponHistory,
   fetchUserInvoices,
 } from '@/lib/admin-invoices'
-import { INVOICE_STATUS_LABEL, INVOICE_STATUS_STYLE } from '@/lib/invoice-labels'
+import {
+  INVOICE_STATUS_LABEL,
+  INVOICE_STATUS_STYLE,
+} from '@/lib/invoice-labels'
 import { formatArabicDate } from '@/lib/property-labels'
 
 function exportInvoicesCsv(invoices: AdminInvoiceRow[]) {
@@ -33,8 +36,10 @@ function exportInvoicesCsv(invoices: AdminInvoiceRow[]) {
 
 export default function UserInvoicesDiscountsTabContent({
   userId,
+  identityId,
 }: {
   userId: string
+  identityId?: string
 }) {
   const [invoices, setInvoices] = useState<AdminInvoiceRow[]>([])
   const [coupons, setCoupons] = useState<AdminCouponHistoryRow[]>([])
@@ -44,7 +49,7 @@ export default function UserInvoicesDiscountsTabContent({
     try {
       setLoading(true)
       const [invoiceRows, couponRows] = await Promise.all([
-        fetchUserInvoices(userId),
+        fetchUserInvoices(userId, identityId),
         fetchUserCouponHistory(userId),
       ])
       setInvoices(invoiceRows)
@@ -54,7 +59,7 @@ export default function UserInvoicesDiscountsTabContent({
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     load()
@@ -148,7 +153,9 @@ export default function UserInvoicesDiscountsTabContent({
                       <button
                         type="button"
                         onClick={() =>
-                          alert(`تحميل الفاتورة ${inv.invoiceNo} — لم يتم تفعيل هذا الإجراء بعد.`)
+                          alert(
+                            `تحميل الفاتورة ${inv.invoiceNo} — لم يتم تفعيل هذا الإجراء بعد.`,
+                          )
                         }
                         className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline cursor-pointer text-[14px]"
                       >

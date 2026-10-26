@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import { Eye, MoreVertical, Check } from 'lucide-react'
 import Skeleton from '@/components/ui/Skeleton'
 import UserActivityDropdown from './UserActivityDropdown'
+import { IDENTITY_TYPE_LABELS } from './IdentitySwitcher'
+import type { AdminUserRowIdentity } from '@/lib/admin-users'
 
 export interface UserRow {
   id: string
@@ -11,6 +13,8 @@ export interface UserRow {
   email: string
   phone?: string
   accountType?: 'فرد' | 'شركة' | 'مكتب عقاري'
+  // Every persona of the account; the others are shown as badges
+  identities?: AdminUserRowIdentity[]
   verificationStatus?: 'موثق' | 'غير موثق' | 'قيد الانتظار' | '—'
   subscriptionPlan: string
   adsCount?: number | string
@@ -255,6 +259,25 @@ export default function UserTable({
                         <span className="text-[#6B6A6A] text-[12px] font-normal leading-tight mt-0.5">
                           {user.email}
                         </span>
+                        {(user.identities?.length ?? 0) > 1 && (
+                          <span className="flex items-center gap-1 mt-1 flex-wrap">
+                            {user
+                              .identities!.filter(
+                                (i) =>
+                                  IDENTITY_TYPE_LABELS[i.type] !==
+                                  user.accountType,
+                              )
+                              .map((i) => (
+                                <span
+                                  key={i.id}
+                                  title={i.name || undefined}
+                                  className="h-4.5 flex items-center px-1.5 rounded-full text-[10px] font-medium bg-[#F1F5F9] text-[#475467]"
+                                >
+                                  + {IDENTITY_TYPE_LABELS[i.type]}
+                                </span>
+                              ))}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </td>

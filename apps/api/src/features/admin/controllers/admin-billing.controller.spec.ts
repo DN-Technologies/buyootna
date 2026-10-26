@@ -13,10 +13,10 @@ describe('AdminBillingController', () => {
     adminService = harness.adminService;
   });
 
-  it('getWallet should forward id to service', async () => {
+  it('getWallet should forward id and identityId to service', async () => {
     adminService.getWallet.mockResolvedValue({ freeAdsRemaining: 0 });
-    await controller.getWallet('u-1');
-    expect(adminService.getWallet).toHaveBeenCalledWith('u-1');
+    await controller.getWallet('u-1', { identityId: 'i-1' });
+    expect(adminService.getWallet).toHaveBeenCalledWith('u-1', 'i-1');
   });
 
   it('changePlan should forward id, dto and adminUserId to service', async () => {
@@ -37,10 +37,13 @@ describe('AdminBillingController', () => {
     );
   });
 
-  it('getInvoicesForUser should forward id to service', async () => {
+  it('getInvoicesForUser should forward id and identityId to service', async () => {
     adminService.getInvoicesForUser.mockResolvedValue([]);
-    await controller.getInvoicesForUser('u-1');
-    expect(adminService.getInvoicesForUser).toHaveBeenCalledWith('u-1');
+    await controller.getInvoicesForUser('u-1', {});
+    expect(adminService.getInvoicesForUser).toHaveBeenCalledWith(
+      'u-1',
+      undefined,
+    );
   });
 
   it('getCouponHistoryForUser should forward id to service', async () => {

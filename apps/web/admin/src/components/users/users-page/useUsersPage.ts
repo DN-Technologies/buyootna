@@ -302,8 +302,16 @@ export function useUsersPage() {
     }
   }
 
+  // Opens the page on the persona of the tab the row is in
   const handleViewUser = (user: UserRow) => {
-    router.push(`/users/${user.id}`)
+    const tabType = (
+      { individual: 'INDIVIDUAL', office: 'OFFICE', company: 'COMPANY' } as Record<
+        string,
+        string
+      >
+    )[activeTab]
+    const identity = user.identities?.find((i) => i.type === tabType)
+    router.push(identity ? `/users/${user.id}?identity=${identity.id}` : `/users/${user.id}`)
   }
 
   const handleAddUser = () => {

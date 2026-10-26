@@ -8,6 +8,7 @@ export interface UpgradePackageDialogProps {
   open: boolean
   onClose: () => void
   userId: string
+  identityId?: string
   onSuccess?: () => void
 }
 
@@ -15,6 +16,7 @@ export default function UpgradePackageDialog({
   open,
   onClose,
   userId,
+  identityId,
   onSuccess,
 }: UpgradePackageDialogProps) {
   const [plans, setPlans] = useState<AdminPlan[]>([])
@@ -52,7 +54,7 @@ export default function UpgradePackageDialog({
   async function handlePurchase(plan: AdminPlan) {
     try {
       setPurchasingId(plan.id)
-      await changeUserPlan(userId, { planId: plan.id })
+      await changeUserPlan(userId, { planId: plan.id, identityId })
       onSuccess?.()
       onClose()
     } catch (err) {
