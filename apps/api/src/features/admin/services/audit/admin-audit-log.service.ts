@@ -39,15 +39,31 @@ export class AdminAuditLogService {
   }
 
   async getLogsForUser(targetUserId: string, page = 1, limit = 10) {
+    return this.page({ targetUserId }, page, limit);
+  }
+
+  /** Every admin action, newest first (the السجل page and the dashboard's اخر الانشطة). */
+  async getLogs(page = 1, limit = 20, action?: AdminActionType) {
+    return this.page(action ? { action } : {}, page, limit);
+  }
+
+  private async page(
+    where: Prisma.AdminActionLogWhereInput,
+    page: number,
+    limit: number,
+  ) {
     const [rows, total] = await Promise.all([
       this.prisma.adminActionLog.findMany({
-        where: { targetUserId },
-        include: { actorAdmin: { select: { id: true, name: true } } },
+        where,
+        include: {
+          actorAdmin: { select: { id: true, name: true } },
+          targetUser: { select: { id: true, name: true, email: true } },
+        },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      this.prisma.adminActionLog.count({ where: { targetUserId } }),
+      this.prisma.adminActionLog.count({ where }),
     ]);
 
     return {
@@ -59,6 +75,12 @@ export class AdminAuditLogService {
         actorType: row.actorType,
         actorAdmin: row.actorAdmin
           ? { id: row.actorAdmin.id, name: row.actorAdmin.name || 'مشرف' }
+          : null,
+        targetUser: row.targetUser
+          ? {
+              id: row.targetUser.id,
+              name: row.targetUser.name || row.targetUser.email || null,
+            }
           : null,
         metadata: row.metadata,
         createdAt: row.createdAt.toISOString(),

@@ -19,6 +19,7 @@ import { AdminRequestsService } from './services/user-profile/admin-requests.ser
 import { AdminExhibitionService } from './services/user-profile/admin-exhibition.service';
 import { AdminPlansService } from './services/billing/admin-plans.service';
 import { AdminInvoicesService } from './services/billing/admin-invoices.service';
+import { AdminBillingListService } from './services/billing/admin-billing-list.service';
 import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { AdminNotesService } from './services/users/admin-notes.service';
 import { AdminAuditLogService } from './services/audit/admin-audit-log.service';
@@ -84,6 +85,7 @@ interface MockAdminRequestsService {
 }
 
 interface MockAdminExhibitionService {
+  getServicesForUser: jest.Mock;
   getProjectsForUser: jest.Mock;
   deleteProject: jest.Mock;
 }
@@ -114,6 +116,7 @@ interface MockAdminNotesService {
 
 interface MockAdminAuditLogService {
   getLogsForUser: jest.Mock;
+  getLogs: jest.Mock;
 }
 
 export interface AdminServiceMocks {
@@ -133,6 +136,10 @@ export interface AdminServiceMocks {
   adminRatingsService: MockAdminRatingsService;
   adminNotesService: MockAdminNotesService;
   adminAuditLogService: MockAdminAuditLogService;
+  adminBillingListService: {
+    getSubscriptions: jest.Mock;
+    getInvoices: jest.Mock;
+  };
   adminPlanCatalogService: { list: jest.Mock; update: jest.Mock };
   adminFeaturePackagesService: {
     list: jest.Mock;
@@ -204,6 +211,7 @@ function createMocks(): AdminServiceMocks {
     },
 
     adminExhibitionService: {
+      getServicesForUser: jest.fn(),
       getProjectsForUser: jest.fn(),
       deleteProject: jest.fn(),
     },
@@ -234,6 +242,11 @@ function createMocks(): AdminServiceMocks {
 
     adminAuditLogService: {
       getLogsForUser: jest.fn(),
+      getLogs: jest.fn(),
+    },
+    adminBillingListService: {
+      getSubscriptions: jest.fn(),
+      getInvoices: jest.fn(),
     },
     adminPlanCatalogService: { list: jest.fn(), update: jest.fn() },
     adminFeaturePackagesService: {
@@ -283,6 +296,7 @@ export function setupAdminService() {
       adminRatingsService,
       adminNotesService,
       adminAuditLogService,
+      adminBillingListService,
       adminFeaturePackagesService,
       adminPlanCatalogService,
     } = mocks;
@@ -352,6 +366,10 @@ export function setupAdminService() {
         {
           provide: AdminAuditLogService,
           useValue: adminAuditLogService,
+        },
+        {
+          provide: AdminBillingListService,
+          useValue: adminBillingListService,
         },
         {
           provide: AdminFeaturePackagesService,

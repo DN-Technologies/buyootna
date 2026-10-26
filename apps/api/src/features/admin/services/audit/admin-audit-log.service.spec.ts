@@ -119,4 +119,39 @@ describe('AdminAuditLogService', () => {
       });
     });
   });
+
+  describe('getLogs', () => {
+    it('lists every action newest first with the target user, filtered by action', async () => {
+      prisma.adminActionLog.findMany.mockResolvedValue([
+        {
+          id: 'log-2',
+          action: 'PLAN_CHANGED',
+          targetType: 'PLAN',
+          targetId: 'slot-1',
+          actorType: 'ADMIN',
+          actorAdmin: { id: 'admin-1', name: 'أحمد' },
+          targetUser: { id: 'user-3', name: null, email: 'sara@example.com' },
+          metadata: null,
+          createdAt: new Date('2026-10-01T10:00:00Z'),
+        },
+      ]);
+      prisma.adminActionLog.count.mockResolvedValue(41);
+
+      const result = await service.getLogs(2, 20, 'PLAN_CHANGED');
+
+      expect(prisma.adminActionLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { action: 'PLAN_CHANGED' },
+          orderBy: { createdAt: 'desc' },
+          skip: 20,
+          take: 20,
+        }),
+      );
+      expect(result.data[0].targetUser).toEqual({
+        id: 'user-3',
+        name: 'sara@example.com',
+      });
+      expect(result.meta.totalPages).toBe(3);
+    });
+  });
 });

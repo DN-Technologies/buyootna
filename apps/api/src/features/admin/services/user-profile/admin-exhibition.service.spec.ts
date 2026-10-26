@@ -8,6 +8,9 @@ describe('AdminExhibitionService', () => {
   let service: AdminExhibitionService;
   let prisma: {
     identity: { findFirst: jest.Mock };
+    companyService: { findMany: jest.Mock };
+    companyIdentityData: { findUnique: jest.Mock };
+    officeIdentityData: { findUnique: jest.Mock };
     companyProject: {
       findMany: jest.Mock;
       findUnique: jest.Mock;
@@ -21,6 +24,9 @@ describe('AdminExhibitionService', () => {
       identity: {
         findFirst: jest.fn().mockResolvedValue({ id: 'identity-1' }),
       },
+      companyService: { findMany: jest.fn().mockResolvedValue([]) },
+      companyIdentityData: { findUnique: jest.fn() },
+      officeIdentityData: { findUnique: jest.fn() },
       companyProject: {
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn().mockResolvedValue({
@@ -46,6 +52,71 @@ describe('AdminExhibitionService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getServicesForUser', () => {
+    it("lists a company's services by their profile name", async () => {
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'co-1',
+        type: 'COMPANY',
+      });
+      prisma.companyIdentityData.findUnique.mockResolvedValue({
+        specialty: 'تشطيب',
+        servicesHidden: false,
+      });
+      prisma.companyService.findMany.mockResolvedValue([
+        {
+          id: 's-1',
+          type: 'اخرى',
+          title: 'تنسيق حدائق',
+          specialty: 'تشطيب',
+          description: null,
+          isHidden: true,
+          createdAt: new Date('2026-10-01T00:00:00Z'),
+        },
+      ]);
+
+      const result = await service.getServicesForUser('user-1', 'co-1');
+
+      expect(result.specialty).toBe('تشطيب');
+      expect(result.services).toEqual([
+        {
+          id: 's-1',
+          name: 'تنسيق حدائق',
+          specialty: 'تشطيب',
+          description: null,
+          isHidden: true,
+          createdAt: '2026-10-01T00:00:00.000Z',
+        },
+      ]);
+    });
+
+    it("lists an office's typed services as names", async () => {
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'of-1',
+        type: 'OFFICE',
+      });
+      prisma.officeIdentityData.findUnique.mockResolvedValue({
+        services: 'بيع، تأجير,تقييم',
+        updatedAt: new Date('2026-10-01T00:00:00Z'),
+      });
+
+      const result = await service.getServicesForUser('user-1', 'of-1');
+
+      expect(result.services.map((s) => s.name)).toEqual([
+        'بيع',
+        'تأجير',
+        'تقييم',
+      ]);
+      expect(prisma.companyService.findMany).not.toHaveBeenCalled();
+    });
+
+    it("refuses another account's identity", async () => {
+      prisma.identity.findFirst.mockResolvedValue(null);
+      await expect(
+        service.getServicesForUser('user-1', 'someone-elses'),
+      ).rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('getProjectsForUser', () => {

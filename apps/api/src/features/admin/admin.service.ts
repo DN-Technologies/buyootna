@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AdminActionType } from '@prisma/client';
 import { AdminUsersFilterDto } from './dto/admin-users-filter.dto';
 import {
   AdminUpdateStatusDto,
@@ -34,6 +35,11 @@ import { AdminPlansService } from './services/billing/admin-plans.service';
 import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
 import { AdminUpdatePlanDto } from './dto/admin-update-plan.dto';
 import { AdminInvoicesService } from './services/billing/admin-invoices.service';
+import { AdminBillingListService } from './services/billing/admin-billing-list.service';
+import {
+  AdminInvoicesFilterDto,
+  AdminSubscriptionsFilterDto,
+} from './dto/admin-billing-filter.dto';
 import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { GetReviewsDto } from '../reviews/dto/get-reviews.dto';
 import { AdminNotesService } from './services/users/admin-notes.service';
@@ -64,6 +70,7 @@ export class AdminService {
     private readonly adminPlansService: AdminPlansService,
     private readonly adminPlanCatalogService: AdminPlanCatalogService,
     private readonly adminInvoicesService: AdminInvoicesService,
+    private readonly adminBillingListService: AdminBillingListService,
     private readonly adminRatingsService: AdminRatingsService,
     private readonly adminNotesService: AdminNotesService,
     private readonly adminAuditLogService: AdminAuditLogService,
@@ -169,6 +176,10 @@ export class AdminService {
 
   async getProjectsForUser(userId: string, identityId?: string) {
     return this.adminExhibitionService.getProjectsForUser(userId, identityId);
+  }
+
+  async getServicesForUser(userId: string, identityId?: string) {
+    return this.adminExhibitionService.getServicesForUser(userId, identityId);
   }
 
   async deleteProject(projectId: string, adminUserId: string) {
@@ -302,6 +313,14 @@ export class AdminService {
     return this.adminFeaturePackagesService.update(id, dto, adminUserId);
   }
 
+  async getSubscriptions(filters: AdminSubscriptionsFilterDto) {
+    return this.adminBillingListService.getSubscriptions(filters);
+  }
+
+  async getInvoices(filters: AdminInvoicesFilterDto) {
+    return this.adminBillingListService.getInvoices(filters);
+  }
+
   async getInvoicesForUser(userId: string, identityId?: string) {
     return this.adminInvoicesService.getInvoicesForUser(userId, identityId);
   }
@@ -352,6 +371,10 @@ export class AdminService {
 
   async getLogsForUser(userId: string, page?: number, limit?: number) {
     return this.adminAuditLogService.getLogsForUser(userId, page, limit);
+  }
+
+  async getLogs(page?: number, limit?: number, action?: AdminActionType) {
+    return this.adminAuditLogService.getLogs(page, limit, action);
   }
 
   async grantCoupon(
