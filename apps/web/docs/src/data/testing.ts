@@ -4,8 +4,8 @@ export const testing: DocSection = {
   slug: "web-testing",
   title: { en: "Testing Portal", ar: "بوابة الاختبار" },
   summary: {
-    en: "testing.buyootna.cloud / .com (apps/web/testing, port 3007): the testers' and QA team's mobile-first portal, installable as an app. Health of every part of the platform, API metrics, live logs, the builds in use, and an audit log, behind its own password. It runs on the production server, against production data.",
-    ar: "testing.buyootna.cloud / .com (apps/web/testing، المنفذ 3007): بوابة فريق الاختبار وضمان الجودة، مصممة للجوال أولاً وقابلة للتثبيت كتطبيق. حالة كل أجزاء المنصة، ومقاييس الـ API، والسجلات المباشرة، والنسخ المستخدمة، وسجل البوابة، خلف كلمة مرور خاصة بها. تعمل على خادم الإنتاج وبياناته.",
+    en: "testing.buyootna.cloud / .com (apps/web/testing, port 3007): the testers' and QA team's mobile-first portal, installable as an app. Health of every part of the platform, API metrics, live logs, the builds in use, bug reports from the phone, and an audit log, behind its own password. It runs on the production server, against production data.",
+    ar: "testing.buyootna.cloud / .com (apps/web/testing، المنفذ 3007): بوابة فريق الاختبار وضمان الجودة، مصممة للجوال أولاً وقابلة للتثبيت كتطبيق. حالة كل أجزاء المنصة، ومقاييس الـ API، والسجلات المباشرة، والنسخ المستخدمة، وبلاغات الأخطاء من الجوال، وسجل البوابة، خلف كلمة مرور خاصة بها. تعمل على خادم الإنتاج وبياناته.",
   },
   stories: [
     {
@@ -191,8 +191,8 @@ export const testing: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "The API keeps its last 3 000 log lines in memory (BufferedLogger; stdout unchanged). Every response carries X-Request-Id and every line written while handling it has that id. GET /testing-portal/logs filters by level (أخطاء / تنبيهات / معلومات), text or request id; the screen refreshes every 5 s while مباشر is on. Tapping a line shows its stack; tapping its #id shows every line of that request.",
-        ar: "يحتفظ الـ API بآخر 3000 سطر في الذاكرة (BufferedLogger؛ الطباعة كما هي). كل استجابة تحمل X-Request-Id وكل سطر كُتب أثناءها يحمل نفس الرقم. GET /testing-portal/logs يرشّح حسب المستوى (أخطاء / تنبيهات / معلومات) أو النص أو رقم الطلب؛ والشاشة تتحدث كل 5 ثوانٍ ما دام «مباشر» مفعّلاً. الضغط على سطر يعرض الـ stack، والضغط على #الرقم يعرض كل سطور ذلك الطلب.",
+        en: "The API keeps its last 3 000 log lines in memory (BufferedLogger; stdout unchanged). Every response carries X-Request-Id and every line written while handling it has that id. GET /testing-portal/logs filters by level (أخطاء / تنبيهات / معلومات), text or request id; the screen (opened from الحالة) refreshes every 5 s while مباشر is on. Tapping a line shows its stack; tapping its #id shows every line of that request.",
+        ar: "يحتفظ الـ API بآخر 3000 سطر في الذاكرة (BufferedLogger؛ الطباعة كما هي). كل استجابة تحمل X-Request-Id وكل سطر كُتب أثناءها يحمل نفس الرقم. GET /testing-portal/logs يرشّح حسب المستوى (أخطاء / تنبيهات / معلومات) أو النص أو رقم الطلب؛ والشاشة (تُفتح من «الحالة») تتحدث كل 5 ثوانٍ ما دام «مباشر» مفعّلاً. الضغط على سطر يعرض الـ stack، والضغط على #الرقم يعرض كل سطور ذلك الطلب.",
       },
       acceptanceCriteria: {
         en: [
@@ -269,6 +269,43 @@ export const testing: DocSection = {
         ],
       },
       updatedIn: "feat/testing-portal",
+    },
+    {
+      id: "testing-bug-reports",
+      title: {
+        en: "الأخطاء: testers report a bug from the phone, with screenshots, and follow it to a fix",
+        ar: "الأخطاء: يبلّغ المختبر عن خطأ من جواله مع صور الشاشة ويتابعه حتى الحل",
+      },
+      priority: "P1",
+      story: {
+        en: "The الأخطاء tab lists every report, newest first, with filters by status (جديد / قيد العمل / تم الحل / ليس خطأ, each with its count) and a search over the title, steps and reporter. «إبلاغ» opens a form: title, where (the app, admin, companies, offices, management, the site, the API, other), severity (منخفضة / متوسطة / عالية / حرجة), steps, expected and actual, and up to 8 screenshots from the camera or gallery (images only, 8 MB each, uploaded to S3 under testing-bugs/ as soon as they're picked). The phone and iOS/Android version are filled in from the browser and can be edited, with the app version. A report's page shows everything, opens each screenshot full size, changes its status and takes comments. The reporter and commenters are the names they signed in with; reporting and status changes go to سجل البوابة.",
+        ar: "تبويب «الأخطاء» يعرض كل البلاغات، الأحدث أولاً، مع تصفية حسب الحالة (جديد / قيد العمل / تم الحل / ليس خطأ، ولكل منها عدده) وبحث في العنوان والخطوات واسم المُبلغ. «إبلاغ» يفتح نموذجاً: العنوان، وأين (التطبيق، لوحة الإدارة، الشركات، المكاتب، الإدارة العقارية، الموقع، الـ API، أخرى)، والخطورة (منخفضة / متوسطة / عالية / حرجة)، والخطوات، والمتوقع وما حدث فعلاً، وحتى 8 صور شاشة من الكاميرا أو المعرض (صور فقط، 8 ميجابايت لكل صورة، تُرفع إلى S3 تحت testing-bugs/ فور اختيارها). الجهاز ونسخة iOS/Android تُملأ من المتصفح ويمكن تعديلها مع نسخة التطبيق. صفحة البلاغ تعرض كل شيء، وتفتح كل صورة بحجمها الكامل، وتغيّر الحالة وتقبل التعليقات. المُبلغ والمعلّقون بالأسماء التي دخلوا بها؛ والإبلاغ وتغيير الحالة يُسجَّلان في سجل البوابة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A report with 2 screenshots shows both on its page and «2» with the image icon in the list.",
+          "A non-image file, or an image over 8 MB, is refused with a message; the form keeps what was typed.",
+          "Changing the status moves the report between the filters and updates their counts.",
+          "سجل البوابة shows «إبلاغ عن خطأ» and «تحديث حالة خطأ» with the tester's name.",
+        ],
+        ar: [
+          "بلاغ بصورتين يعرضهما في صفحته و«2» بجانب أيقونة الصورة في القائمة.",
+          "ملف ليس صورة، أو صورة أكبر من 8 ميجابايت، يُرفض برسالة ويبقى ما كُتب في النموذج.",
+          "تغيير الحالة ينقل البلاغ بين التصفيات ويحدّث أعدادها.",
+          "سجل البوابة يعرض «إبلاغ عن خطأ» و«تحديث حالة خطأ» باسم المختبر.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an iPhone: إبلاغ, take a photo with the camera and pick one from the gallery, send: the device reads iPhone, iOS <version>.",
+          "Mark it قيد العمل, add a comment, then تم الحل: the list shows it under تم الحل with 1 comment.",
+        ],
+        ar: [
+          "على آيفون: إبلاغ، التقط صورة بالكاميرا واختر أخرى من المعرض، أرسل: الجهاز يظهر iPhone, iOS <النسخة>.",
+          "اجعله «قيد العمل» وأضف تعليقاً ثم «تم الحل»: يظهر في القائمة تحت «تم الحل» بتعليق واحد.",
+        ],
+      },
+      updatedIn: "feat/testing-bug-reports",
     },
   ],
 };
