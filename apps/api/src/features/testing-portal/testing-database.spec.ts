@@ -74,9 +74,11 @@ function setup({ dangerOk = true, users = 0 } = {}) {
   return { service, prisma, storage, audit };
 }
 
-async function settle(job: DatabaseJob) {
-  for (let i = 0; i < 50 && job.state === 'running'; i++) {
-    await new Promise((resolve) => setImmediate(resolve));
+/** Waits for the background job to finish (real temp-file I/O, so by time, not ticks). */
+async function settle(job: DatabaseJob, timeoutMs = 5000) {
+  const deadline = Date.now() + timeoutMs;
+  while (job.state === 'running' && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 5));
   }
 }
 
