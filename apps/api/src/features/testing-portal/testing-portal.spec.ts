@@ -40,12 +40,12 @@ describe('Testing portal sign-in', () => {
   it('signs a tester in, records it, and the token passes the guard', async () => {
     const result = await service.login(
       'correct-horse-1',
-      'Sara (QA)',
+      'Ahmed (QA)',
       '1.2.3.4',
     );
-    expect(result.user).toEqual({ name: 'Sara (QA)' });
+    expect(result.user).toEqual({ name: 'Ahmed (QA)' });
     expect(audit.record).toHaveBeenCalledWith({
-      actorName: 'Sara (QA)',
+      actorName: 'Ahmed (QA)',
       action: 'SIGN_IN',
       ip: '1.2.3.4',
     });
@@ -79,7 +79,7 @@ describe('Testing portal sign-in', () => {
   });
 
   it('signs everyone out when the password changes (token version)', async () => {
-    const { accessToken } = await service.login('correct-horse-1', 'Sara');
+    const { accessToken } = await service.login('correct-horse-1', 'Ahmed');
     prisma.testingCredential.findUnique.mockResolvedValue({
       updatedAt: new Date('2026-10-27T10:00:00Z'),
     });

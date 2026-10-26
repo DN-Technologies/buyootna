@@ -52,7 +52,7 @@ export default function LoginPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputClass}
-            placeholder="مثال: سارة (QA)"
+            placeholder="مثال: أحمد (QA)"
             autoComplete="name"
             required
             minLength={2}

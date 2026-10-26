@@ -9,7 +9,7 @@ export class TestingLoginDto {
   password: string;
 
   // Attached to everything this person does on the portal (the audit log)
-  @ApiProperty({ example: 'Sara (QA)' })
+  @ApiProperty({ example: 'Ahmed (QA)' })
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
