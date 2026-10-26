@@ -3,6 +3,7 @@ import { mobileIndividual } from "./mobileIndividual";
 import { mobileCompany } from "./mobileCompany";
 import { mobileOffice } from "./mobileOffice";
 import { admin } from "./admin";
+import { testing } from "./testing";
 import { companies } from "./companies";
 import { offices } from "./offices";
 import { management } from "./management";
@@ -17,6 +18,7 @@ export const sections: DocSection[] = [
   mobileCompany,
   mobileOffice,
   admin,
+  testing,
   companies,
   offices,
   management,

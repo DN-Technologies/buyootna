@@ -1,5 +1,7 @@
 import { create } from 'axios';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
 
 import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
@@ -56,6 +58,24 @@ getOrCreateDeviceId()
   })
   .catch(() => undefined);
 
+// Which build this is, sent on every request so the testing portal can show
+// the builds in use: the app version, its runtime, and the OTA update it
+// runs ("embedded" before any OTA). Read once; never fails a request.
+function readBuildHeaders(): Record<string, string> {
+  try {
+    const headers: Record<string, string> = {};
+    const version = Constants.expoConfig?.version;
+    if (version) headers['X-App-Version'] = version;
+    if (Updates.runtimeVersion) headers['X-App-Runtime'] = Updates.runtimeVersion;
+    headers['X-App-Update'] =
+      !Updates.isEmbeddedLaunch && Updates.updateId ? Updates.updateId.slice(0, 8) : 'embedded';
+    return headers;
+  } catch {
+    return {};
+  }
+}
+const BUILD_HEADERS = readBuildHeaders();
+
 // --- Request Interceptor ---
 apiClient.interceptors.request.use(
   async (config) => {
@@ -64,6 +84,9 @@ apiClient.interceptors.request.use(
     }
     if (config.headers) {
       config.headers['X-Device-Platform'] = Platform.OS;
+      for (const [name, value] of Object.entries(BUILD_HEADERS)) {
+        config.headers[name] = value;
+      }
       if (_deviceId) {
         config.headers['X-Device-Id'] = _deviceId;
       }

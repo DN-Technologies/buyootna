@@ -102,16 +102,15 @@ describe('AppVersionTracker', () => {
       appVersionSeen: { upsert },
     } as never);
 
-    tracker.note({
-      'x-platform': 'ios',
+    // What the app sends (X-Device-Platform + its build and OTA update)
+    const ios = {
+      'x-device-platform': 'ios',
       'x-app-version': '1.7.0',
       'x-app-runtime': '1.7.0',
-    });
-    tracker.note({
-      'x-platform': 'ios',
-      'x-app-version': '1.7.0',
-      'x-app-runtime': '1.7.0',
-    });
+      'x-app-update': '3f9a1c2e',
+    };
+    tracker.note(ios);
+    tracker.note(ios);
     tracker.note({ 'x-platform': 'android', 'x-app-version': '1.6.2' });
     tracker.note({}); // a browser: nothing to count
     await tracker.flush();
@@ -123,7 +122,7 @@ describe('AppVersionTracker', () => {
           platform_appVersion_runtime: {
             platform: 'ios',
             appVersion: '1.7.0',
-            runtime: '1.7.0',
+            runtime: '1.7.0/3f9a1c2e',
           },
         },
         update: expect.objectContaining({ requests: { increment: 2 } }),

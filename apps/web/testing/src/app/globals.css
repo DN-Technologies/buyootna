@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@fontsource/cairo/400.css";
+@import "@fontsource/cairo/500.css";
+@import "@fontsource/cairo/600.css";
+@import "@fontsource/cairo/700.css";
+
+@theme {
+  --font-sans: "Cairo", "Segoe UI", Roboto, Arial, sans-serif;
+
+  --color-primary: #0f1e2e;
+  --color-accent: #c5a880;
+  --color-surface: #0f1a24;
+  --color-line: #1b2936;
+  --color-muted: #b9c3cc;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
+  --color-down: #f87171;
+}
+
+html,
+body {
+  background-color: #0a1118;
+  color: #eceff2;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Room for the bottom tab bar and the phone's home indicator */
+.pb-tabbar {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}

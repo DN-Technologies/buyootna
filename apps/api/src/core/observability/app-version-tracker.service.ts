@@ -11,8 +11,8 @@ const clean = (value: string | string[] | undefined) =>
     .slice(0, 40) || null;
 
 /**
- * Counts requests per app build (X-Platform / X-App-Version / X-App-Runtime,
- * sent by the mobile app) and writes the totals once a minute, so the
+ * Counts requests per app build (X-Device-Platform / X-App-Version /
+ * X-App-Runtime / X-App-Update, sent by the mobile app) and writes the totals once a minute, so the
  * testing portal can show which builds are in use without a write per
  * request.
  */
@@ -22,10 +22,15 @@ export class AppVersionTracker {
   private pending = new Map<string, number>();
 
   note(headers: IncomingHttpHeaders): void {
-    const platform = clean(headers['x-platform']);
+    const platform =
+      clean(headers['x-device-platform']) ?? clean(headers['x-platform']);
     const appVersion = clean(headers['x-app-version']);
     if (!platform || !appVersion) return;
-    const runtime = clean(headers['x-app-runtime']) ?? appVersion;
+    // The runtime and the OTA update it runs: «1.7.0/3f9a1c2e» or «1.7.0/embedded»
+    const update = clean(headers['x-app-update']);
+    const runtime = [clean(headers['x-app-runtime']) ?? appVersion, update]
+      .filter(Boolean)
+      .join('/');
     const key = [platform, appVersion, runtime].join('|');
     this.pending.set(key, (this.pending.get(key) ?? 0) + 1);
   }

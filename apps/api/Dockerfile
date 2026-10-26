@@ -20,6 +20,10 @@ RUN pnpm --filter api build
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+# Which build is running, for the testing portal
+ARG GIT_SHA=""
+ARG BUILD_TIME=""
+ENV GIT_SHA=$GIT_SHA BUILD_TIME=$BUILD_TIME
 # ffmpeg brings ffprobe, which checks uploaded story videos (on a local
 # copy, file protocol only). Rebuild the image to pick up its fixes.
 RUN apk add --no-cache openssl ffmpeg

@@ -13,6 +13,10 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
+      # Shown on the testing portal (الحالة / المزيد); CD exports both
+      args:
+        GIT_SHA: ${GIT_SHA:-}
+        BUILD_TIME: ${BUILD_TIME:-}
     expose: ["8000"]
     env_file:
       - ./apps/api/.env
@@ -107,6 +111,21 @@ services:
     # stays locked, so a missing file doesn't stop the stack from starting.
     env_file:
       - path: ./apps/web/docs/.env
+        required: false
+    restart: always
+
+  web-testing:
+    build:
+      context: .
+      dockerfile: apps/web/testing/Dockerfile
+    expose: ["3007"]
+    environment:
+      # Server-to-server: the testing site signs testers in through the API
+      API_URL: http://api:8000
+    # TESTING_JWT_SECRET (same value as in apps/api/.env). Without it the
+    # site stays locked, so a missing file doesn't stop the stack.
+    env_file:
+      - path: ./apps/web/testing/.env
         required: false
     restart: always
 

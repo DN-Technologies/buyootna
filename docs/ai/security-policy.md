@@ -67,3 +67,29 @@ a false positive refuses a real listing.
   with `prisma migrate resolve --applied` after confirming the live
   schema is actually correct, the way this was done earlier in this
   repo's history for a drifted `Session`/`CompanyProject` migration state.
+
+## Testing portal (testing.buyootna.cloud / .com)
+
+`apps/web/testing` + `apps/api/src/features/testing-portal/`. It runs on the
+production server against production data, behind its own password
+(`TestingCredential` LOGIN, `testing:set-password`) and token secret
+(`TESTING_JWT_SECRET`) — never the app's or the docs portal's.
+
+Two capabilities exist **by the owner's explicit decision (2026-10-26)**,
+after the risk was explained, and break the rules above on purpose:
+
+1. **Every user's OTP is shown** (not only test accounts). Anyone with the
+   portal password can sign in as any real user. Safeguards that must stay:
+   codes are hidden until tapped and every reveal is written to
+   `TestingAuditLog` (who, which recipient, when); codes live only in memory
+   and are dropped when used or expired — never written to the database,
+   logs or a cache (the PWA's service worker caches no API data). Phone
+   OTPs sent by real Twilio Verify can't be shown: Twilio generates them.
+2. **Wiping the production database** from the portal: typed confirmation
+   («buyootna-production»), the separate DANGER password, a 10-second
+   countdown, and a `pg_dump` to S3 first — no backup, no wipe.
+
+Don't widen either (e.g. persist codes, skip the backup) without the owner.
+If the portal password may have leaked, rotate it at once
+(`docker compose run --rm api node dist/src/scripts/testing-set-password.js LOGIN`
+signs everyone out) and review `TestingAuditLog`.
