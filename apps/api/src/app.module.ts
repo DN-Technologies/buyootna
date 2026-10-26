@@ -1,3 +1,4 @@
+import { ObservabilityModule } from './core/observability/observability.module';
 import { Module } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -46,6 +47,7 @@ import { CompanyModule } from './features/company/company.module';
 import { OfficeModule } from './features/office/office.module';
 import { AlertsModule } from './features/alerts/alerts.module';
 import { DocsPortalModule } from './features/docs-portal/docs-portal.module';
+import { TestingPortalModule } from './features/testing-portal/testing-portal.module';
 import { PulseModule } from './features/pulse/pulse.module';
 
 @Module({
@@ -63,6 +65,7 @@ import { PulseModule } from './features/pulse/pulse.module';
       ],
     }),
     PrismaModule,
+    ObservabilityModule,
     TrustSignalsModule,
     TwilioModule,
     MailModule,
@@ -105,6 +108,7 @@ import { PulseModule } from './features/pulse/pulse.module';
     CompanyRequestsModule,
     AlertsModule,
     DocsPortalModule,
+    TestingPortalModule,
     PulseModule,
   ],
   controllers: [AppController],

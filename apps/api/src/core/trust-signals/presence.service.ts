@@ -40,6 +40,11 @@ export class PresenceService {
     this.stamp(identityId, true);
   }
 
+  /** How many personas have the app open (a live chat socket) right now. */
+  connectedCount() {
+    return this.liveSockets.size;
+  }
+
   /** Whether this persona's app has a live socket right now. */
   isConnected(identityId: string) {
     return (this.liveSockets.get(identityId) ?? 0) > 0;

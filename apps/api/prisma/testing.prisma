@@ -1,0 +1,48 @@
+// Testing portal (testing.buyootna.cloud): the testers' and QA team's view of
+// the platform. Separate from app users and from the docs portal on purpose:
+// its own passwords, its own audit trail.
+
+enum TestingCredentialKind {
+  // Signs a tester in
+  LOGIN
+  // Asked again before destructive tools (wiping the database)
+  DANGER
+}
+
+// Each password stored only as a bcrypt hash
+model TestingCredential {
+  kind         TestingCredentialKind @id
+  passwordHash String
+  // Name of whoever set it (a tester on the site, or "server script")
+  updatedBy    String
+  updatedAt    DateTime              @updatedAt
+}
+
+// Who did what on the portal: sign-ins, OTP reveals, account and data tools
+model TestingAuditLog {
+  id        String   @id @default(uuid())
+  actorName String
+  action    String
+  // The account, email or record the action was about, when there is one
+  target    String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}
+
+// App builds in use, from the X-Platform / X-App-Version / X-App-Runtime
+// headers the app sends with every request
+model AppVersionSeen {
+  platform    String
+  appVersion  String
+  runtime     String
+  requests    Int      @default(0)
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  @@id([platform, appVersion, runtime])
+  @@index([lastSeenAt])
+}

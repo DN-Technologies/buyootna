@@ -7,8 +7,13 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { createSwaggerAuthMiddleware } from './core/swagger/swagger-auth.middleware';
+import { BufferedLogger } from './core/observability/log-buffer';
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // Every log line also goes to the testing portal's السجلات (BufferedLogger)
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+  app.useLogger(new BufferedLogger());
 
   // Behind exactly one proxy (nginx), which sets X-Forwarded-For. Without
   // this, req.ip is nginx's container address, so session IPs and the
