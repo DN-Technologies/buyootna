@@ -87,7 +87,13 @@ after the risk was explained, and break the rules above on purpose:
    OTPs sent by real Twilio Verify can't be shown: Twilio generates them.
 2. **Wiping the production database** from the portal: typed confirmation
    («buyootna-production»), the separate DANGER password, a 10-second
-   countdown, and a `pg_dump` to S3 first — no backup, no wipe.
+   countdown, and a `pg_dump` to S3 first — no backup, no wipe. The backup
+   must be private: the bucket policy makes every prefix public except the
+   ones in its `NotResource` list (`chat/`, `stories/`, `backups/`), so the
+   wipe checks the uploaded backup can't be read anonymously, and if it
+   can, deletes it and stops. A wrong DANGER password is a 403 (5 per IP
+   per 15 minutes) and is audited. Seeding only runs on a database with no
+   users, and never creates the admin account.
 
 Don't widen either (e.g. persist codes, skip the backup) without the owner.
 If the portal password may have leaked, rotate it at once

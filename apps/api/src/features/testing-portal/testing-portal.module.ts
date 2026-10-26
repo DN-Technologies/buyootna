@@ -6,6 +6,8 @@ import { TestingAccountsController } from './testing-accounts.controller';
 import { TestingAccountsService } from './testing-accounts.service';
 import { TestingBugsController } from './testing-bugs.controller';
 import { TestingBugsService } from './testing-bugs.service';
+import { TestingDatabaseController } from './testing-database.controller';
+import { TestingDatabaseService } from './testing-database.service';
 import { DocsLoginLimiterService } from '../docs-portal/docs-login-limiter.service';
 import { TestingAuditService } from './testing-audit.service';
 import { TestingAuthGuard } from './testing-auth.guard';
@@ -25,6 +27,7 @@ import { TestingTokenService } from './testing-token.service';
     TestingPortalController,
     TestingAccountsController,
     TestingBugsController,
+    TestingDatabaseController,
   ],
   providers: [
     TestingPortalService,
@@ -35,6 +38,7 @@ import { TestingTokenService } from './testing-token.service';
     TestingMetricsService,
     TestingAccountsService,
     TestingBugsService,
+    TestingDatabaseService,
     // Its own instance: wrong testing passwords don't lock the docs portal
     DocsLoginLimiterService,
   ],

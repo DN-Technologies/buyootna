@@ -4,8 +4,8 @@ export const testing: DocSection = {
   slug: "web-testing",
   title: { en: "Testing Portal", ar: "بوابة الاختبار" },
   summary: {
-    en: "testing.buyootna.cloud / .com (apps/web/testing, port 3007): the testers' and QA team's mobile-first portal, installable as an app. Health of every part of the platform, API metrics, live logs, the builds in use, bug reports from the phone, and an audit log, behind its own password. It runs on the production server, against production data.",
-    ar: "testing.buyootna.cloud / .com (apps/web/testing، المنفذ 3007): بوابة فريق الاختبار وضمان الجودة، مصممة للجوال أولاً وقابلة للتثبيت كتطبيق. حالة كل أجزاء المنصة، ومقاييس الـ API، والسجلات المباشرة، والنسخ المستخدمة، وبلاغات الأخطاء من الجوال، وسجل البوابة، خلف كلمة مرور خاصة بها. تعمل على خادم الإنتاج وبياناته.",
+    en: "testing.buyootna.cloud / .com (apps/web/testing, port 3007): the testers' and QA team's mobile-first portal, installable as an app. Health of every part of the platform, API metrics, live logs, the builds in use, bug reports from the phone, seeding or wiping the database (backup first), and an audit log, behind its own password. It runs on the production server, against production data.",
+    ar: "testing.buyootna.cloud / .com (apps/web/testing، المنفذ 3007): بوابة فريق الاختبار وضمان الجودة، مصممة للجوال أولاً وقابلة للتثبيت كتطبيق. حالة كل أجزاء المنصة، ومقاييس الـ API، والسجلات المباشرة، والنسخ المستخدمة، وبلاغات الأخطاء من الجوال، وتعبئة قاعدة البيانات أو مسحها (بعد نسخة احتياطية)، وسجل البوابة، خلف كلمة مرور خاصة بها. تعمل على خادم الإنتاج وبياناته.",
   },
   stories: [
     {
@@ -306,6 +306,49 @@ export const testing: DocSection = {
         ],
       },
       updatedIn: "feat/testing-bug-reports",
+    },
+    {
+      id: "testing-database",
+      title: {
+        en: "قاعدة البيانات: seed an empty database, or wipe all data after a private backup",
+        ar: "قاعدة البيانات: تعبئة قاعدة فارغة، أو مسح كل البيانات بعد نسخة احتياطية خاصة",
+      },
+      priority: "P0",
+      story: {
+        en: "الأدوات › قاعدة البيانات shows the users, approximate rows and tables, and the current or last job line by line. تعبئة بيانات التطوير fills an empty database with the dev fixtures (governorates and areas, 500 companies with their listings, the App Store reviewer accounts, plans, FAQs, invoices) with a password the tester chooses, without the admin account; it refuses while any user exists. مسح كل البيانات asks for «buyootna-production» typed exactly and the DANGER password, then counts down 10 seconds (إلغاء stops it). The API then runs pg_dump, uploads it to S3 under backups/, checks S3 has every byte and that the backup can't be read anonymously, and only then empties every table except _prisma_migrations and the Testing* tables. One job runs at a time. Wrong DANGER passwords, the start, the wipe (with the backup key) and the seed go to سجل البوابة.",
+        ar: "الأدوات › قاعدة البيانات تعرض عدد المستخدمين والصفوف التقريبي والجداول، والعملية الحالية أو الأخيرة سطراً بسطر. «تعبئة بيانات التطوير» تملأ قاعدة فارغة ببيانات التطوير (المحافظات والمناطق، 500 شركة بإعلاناتها، حسابات مراجعي آبل، الباقات، الأسئلة الشائعة، الفواتير) بكلمة مرور يختارها المختبر، بدون حساب المدير؛ وترفض ما دام هناك أي مستخدم. «مسح كل البيانات» يطلب كتابة «buyootna-production» كما هي وكلمة مرور الخطر، ثم عداً تنازلياً 10 ثوانٍ («إلغاء» يوقفه). بعدها يشغّل الـ API أداة pg_dump ويرفع النسخة إلى S3 تحت backups/، ويتحقق أن S3 استلمها كاملة وأنها لا تُقرأ بدون صلاحية، وعندها فقط يفرغ كل الجداول عدا _prisma_migrations وجداول Testing*. عملية واحدة في كل مرة. كلمات مرور الخطر الخاطئة وبدء المسح والمسح (مع مفتاح النسخة) والتعبئة تُسجَّل في سجل البوابة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The wipe button stays disabled until the phrase matches exactly and a DANGER password is entered.",
+          "A wrong DANGER password shows «كلمة مرور الخطر غير صحيحة» after the countdown, keeps the tester signed in, and deletes nothing.",
+          "If pg_dump or the upload fails, or the backup would be public, the job shows فشل with the reason and every row is still there.",
+          "After a wipe, the portal still signs in, سجل البوابة and الأخطاء keep their history, and the backup key is on the screen.",
+          "Seeding refuses on a database with users; on an empty one it finishes and its accounts sign in with the chosen password; admin@buyootna.com doesn't exist.",
+          "The backup restores with pg_restore --clean --if-exists --single-transaction (DEVELOPMENT_AND_DEPLOYMENT.md).",
+        ],
+        ar: [
+          "زر المسح معطّل حتى تطابق العبارة تماماً وتُدخل كلمة مرور الخطر.",
+          "كلمة مرور خطر خاطئة تعرض «كلمة مرور الخطر غير صحيحة» بعد العد، ويبقى المختبر مسجلاً، ولا يُحذف شيء.",
+          "إن فشل pg_dump أو الرفع، أو كانت النسخة ستكون عامة، تظهر العملية «فشل» مع السبب وتبقى كل الصفوف.",
+          "بعد المسح، الدخول للبوابة يعمل، وسجل البوابة والأخطاء يحتفظان بتاريخهما، ومفتاح النسخة ظاهر على الشاشة.",
+          "التعبئة ترفض قاعدة فيها مستخدمون؛ وعلى قاعدة فارغة تكتمل وتدخل حساباتها بكلمة المرور المختارة؛ ولا يوجد admin@buyootna.com.",
+          "النسخة تُستعاد بـ pg_restore --clean --if-exists --single-transaction (DEVELOPMENT_AND_DEPLOYMENT.md).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Start a wipe, tap إلغاء during the countdown: nothing happens and the counts stay.",
+          "Before backups/ is private in the bucket policy: a wipe fails with «The backup would be public» and the data stays.",
+          "On a staging copy: wipe, then تعبئة with a new password, then sign in to the app as reviewer@buyootna.com with it.",
+        ],
+        ar: [
+          "ابدأ المسح واضغط «إلغاء» أثناء العد: لا يحدث شيء وتبقى الأعداد.",
+          "قبل جعل backups/ خاصاً في سياسة الحاوية: يفشل المسح بـ «The backup would be public» وتبقى البيانات.",
+          "على نسخة للتجربة: امسح، ثم «تعبئة» بكلمة مرور جديدة، ثم ادخل التطبيق بـ reviewer@buyootna.com بها.",
+        ],
+      },
+      updatedIn: "feat/testing-database",
     },
   ],
 };

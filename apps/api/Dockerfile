@@ -26,7 +26,9 @@ ARG BUILD_TIME=""
 ENV GIT_SHA=$GIT_SHA BUILD_TIME=$BUILD_TIME
 # ffmpeg brings ffprobe, which checks uploaded story videos (on a local
 # copy, file protocol only). Rebuild the image to pick up its fixes.
-RUN apk add --no-cache openssl ffmpeg
+# pg_dump (same major as the postgres:17 service) backs up the database
+# before the testing portal may wipe it.
+RUN apk add --no-cache openssl ffmpeg postgresql17-client
 
 # Copy root node_modules (.pnpm virtual store with actual package files)
 COPY --from=build /app/node_modules ./node_modules

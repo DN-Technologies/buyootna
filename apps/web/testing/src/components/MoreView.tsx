@@ -44,6 +44,10 @@ const ACTION_LABEL: Record<string, string> = {
   DEMO_CLEARED: 'حذف البيانات التجريبية',
   BUG_REPORTED: 'إبلاغ عن خطأ',
   BUG_UPDATED: 'تحديث حالة خطأ',
+  DANGER_PASSWORD_WRONG: 'كلمة مرور خطر خاطئة',
+  DATABASE_WIPE_STARTED: 'بدء مسح قاعدة البيانات',
+  DATABASE_WIPED: 'مسح قاعدة البيانات',
+  DATABASE_SEEDED: 'تعبئة قاعدة البيانات',
 }
 
 function dateTime(iso: string | null) {
