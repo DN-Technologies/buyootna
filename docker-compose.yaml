@@ -129,12 +129,6 @@ services:
         required: false
     restart: always
 
-  marketing:
-    build:
-      context: ./apps/marketing
-    expose: ["7000"]
-    restart: always
-
 volumes:
   # The old postgres:16 cluster: no longer mounted, kept as it was
   postgres_data:
