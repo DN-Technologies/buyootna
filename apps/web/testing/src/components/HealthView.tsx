@@ -1,6 +1,7 @@
 'use client'
 
-import { RefreshCw } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, Gauge, RefreshCw } from 'lucide-react'
 import { usePolling } from '@/lib/usePolling'
 import {
   Card,
@@ -87,6 +88,17 @@ export default function HealthView() {
             </p>
           </div>
 
+          <Link
+            href="/metrics"
+            className="flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-3"
+          >
+            <span className="flex items-center gap-2 font-semibold">
+              <Gauge className="h-4 w-4 text-accent" />
+              المقاييس: الطلبات والأخطاء وزمن الاستجابة
+            </span>
+            <ChevronLeft className="h-4 w-4 text-muted" />
+          </Link>
+
           <Card className="p-0">
             <ul className="divide-y divide-line">
               {data.checks.map((check) => (
@@ -104,7 +116,7 @@ export default function HealthView() {
                         {STATUS_LABEL[check.status]}
                       </span>
                     </div>
-                    <p className="mt-0.5 break-words text-xs text-muted">
+                    <p className="mt-0.5 wrap-break-word text-xs text-muted">
                       {check.detail}
                     </p>
                   </div>

@@ -214,6 +214,39 @@ export class OtpRateLimiterService {
   }
 
   /**
+   * The limiter's live entries whose key contains `query` (an email, phone,
+   * or user id), for the testing portal's «فك القفل». Read-only.
+   */
+  entries(query = '', limit = 50) {
+    const now = Date.now();
+    const config = getOtpRateLimitConfig();
+    const q = query.trim().toLowerCase();
+    return [...this.store.entries()]
+      .filter(([key]) => !q || key.toLowerCase().includes(q))
+      .slice(0, limit)
+      .map(([key, entry]) => {
+        const recent = entry.requestTimestamps.filter(
+          (ts) => now - ts < ONE_DAY_MS,
+        );
+        const last = recent.at(-1);
+        const cooldownMs = this.getRequiredCooldown(entry.resendCount) * 1000;
+        const waitUntil =
+          last !== undefined && now - last < cooldownMs
+            ? new Date(last + cooldownMs).toISOString()
+            : null;
+        return {
+          key,
+          requestsToday: recent.length,
+          dailyLimit: config.MAX_REQUESTS_PER_DAY,
+          dailyLimitReached: recent.length >= config.MAX_REQUESTS_PER_DAY,
+          waitUntil,
+          failedAttempts: entry.verifyAttempts,
+          blocked: entry.blocked,
+        };
+      });
+  }
+
+  /**
    * Resets all rate limit tracking for an identifier (e.g. on account deletion / full reset).
    */
   reset(key: string): void {
