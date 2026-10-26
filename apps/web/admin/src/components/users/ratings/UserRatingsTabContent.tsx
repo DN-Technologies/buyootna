@@ -11,7 +11,13 @@ import {
   fetchUserReviewsSummary,
 } from '@/lib/admin-ratings'
 
-export default function UserRatingsTabContent({ userId }: { userId: string }) {
+export default function UserRatingsTabContent({
+  userId,
+  identityId,
+}: {
+  userId: string
+  identityId?: string
+}) {
   const [reviews, setReviews] = useState<AdminReviewRow[]>([])
   const [summary, setSummary] = useState<AdminReviewsSummary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,8 +27,8 @@ export default function UserRatingsTabContent({ userId }: { userId: string }) {
     try {
       setLoading(true)
       const [reviewsRes, summaryRes] = await Promise.all([
-        fetchUserReviews(userId),
-        fetchUserReviewsSummary(userId),
+        fetchUserReviews(userId, identityId),
+        fetchUserReviewsSummary(userId, identityId),
       ])
       setReviews(reviewsRes.data)
       setSummary(summaryRes)
@@ -31,7 +37,7 @@ export default function UserRatingsTabContent({ userId }: { userId: string }) {
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     load()

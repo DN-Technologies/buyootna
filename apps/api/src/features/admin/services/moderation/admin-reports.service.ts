@@ -6,6 +6,7 @@ import { AdminReportsFilterDto } from '../../dto/admin-reports-filter.dto';
 import { AdminReportUpdateDto } from '../../dto/admin-report-update.dto';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
 import { deletedRowKeptUntil } from '../../../stories/stories.rules';
+import { findOwnedIdentity } from '../users/admin-persona.util';
 
 function dayBounds(daysAgo: number) {
   const now = new Date();
@@ -335,8 +336,12 @@ export class AdminReportsService {
   async getReportsForUser(userId: string, filters: AdminReportsFilterDto) {
     const page = filters.page ?? 1;
     const limit = filters.limit ?? 10;
+    const identity = filters.identityId
+      ? await findOwnedIdentity(this.prisma, userId, filters.identityId)
+      : null;
     const where: Prisma.ReportWhereInput = {
       targetUserId: userId,
+      ...(identity ? { targetIdentityId: identity.id } : {}),
       ...(filters.status && filters.status !== 'ALL'
         ? { status: filters.status }
         : {}),

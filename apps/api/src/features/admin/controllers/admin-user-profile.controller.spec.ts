@@ -13,16 +13,19 @@ describe('AdminUserProfileController', () => {
     adminService = harness.adminService;
   });
 
-  it('getRequestsForUser should forward id to service', async () => {
+  it('getRequestsForUser should forward id and identityId to service', async () => {
     adminService.getRequestsForUser.mockResolvedValue([]);
-    await controller.getRequestsForUser('u-1');
-    expect(adminService.getRequestsForUser).toHaveBeenCalledWith('u-1');
+    await controller.getRequestsForUser('u-1', { identityId: 'i-1' });
+    expect(adminService.getRequestsForUser).toHaveBeenCalledWith('u-1', 'i-1');
   });
 
-  it('getProjectsForUser should forward id to service', async () => {
+  it('getProjectsForUser should forward id and identityId to service', async () => {
     adminService.getProjectsForUser.mockResolvedValue([]);
-    await controller.getProjectsForUser('u-1');
-    expect(adminService.getProjectsForUser).toHaveBeenCalledWith('u-1');
+    await controller.getProjectsForUser('u-1', {});
+    expect(adminService.getProjectsForUser).toHaveBeenCalledWith(
+      'u-1',
+      undefined,
+    );
   });
 
   it('deleteProject should forward id and adminUserId to service', async () => {
@@ -34,19 +37,25 @@ describe('AdminUserProfileController', () => {
     );
   });
 
-  it('getReviewsForUser should forward id and query to service', async () => {
+  it('getReviewsForUser should forward id, query and identityId to service', async () => {
     adminService.getReviewsForUser.mockResolvedValue({ data: [] });
-    const query = { page: '1' };
-    await controller.getReviewsForUser('u-1', query);
-    expect(adminService.getReviewsForUser).toHaveBeenCalledWith('u-1', query);
+    await controller.getReviewsForUser('u-1', { page: '1', identityId: 'i-1' });
+    expect(adminService.getReviewsForUser).toHaveBeenCalledWith(
+      'u-1',
+      { page: '1' },
+      'i-1',
+    );
   });
 
   it('getReviewsSummaryForUser should forward id to service', async () => {
     adminService.getReviewsSummaryForUser.mockResolvedValue({
       averageRating: 0,
     });
-    await controller.getReviewsSummaryForUser('u-1');
-    expect(adminService.getReviewsSummaryForUser).toHaveBeenCalledWith('u-1');
+    await controller.getReviewsSummaryForUser('u-1', { identityId: 'i-1' });
+    expect(adminService.getReviewsSummaryForUser).toHaveBeenCalledWith(
+      'u-1',
+      'i-1',
+    );
   });
 
   it('deleteReview should forward id to service', async () => {

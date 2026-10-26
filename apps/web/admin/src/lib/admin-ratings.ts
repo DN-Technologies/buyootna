@@ -30,21 +30,29 @@ export interface AdminReviewsSummary {
   ratingBreakdown: { star: number; pct: string }[]
 }
 
-export async function fetchUserReviews(userId: string): Promise<AdminReviewsResponse> {
+export async function fetchUserReviews(
+  userId: string,
+  identityId?: string,
+): Promise<AdminReviewsResponse> {
   const res = await api.get(`/admin/users/${userId}/reviews`, {
-    params: { limit: '100' },
+    params: { limit: '100', identityId },
   })
   return res.data
 }
 
 export async function fetchUserReviewsSummary(
   userId: string,
+  identityId?: string,
 ): Promise<AdminReviewsSummary> {
-  const res = await api.get(`/admin/users/${userId}/reviews/summary`)
+  const res = await api.get(`/admin/users/${userId}/reviews/summary`, {
+    params: { identityId },
+  })
   return res.data
 }
 
-export async function deleteReview(reviewId: string): Promise<{ message: string }> {
+export async function deleteReview(
+  reviewId: string,
+): Promise<{ message: string }> {
   const res = await api.delete(`/admin/reviews/${reviewId}`)
   return res.data
 }

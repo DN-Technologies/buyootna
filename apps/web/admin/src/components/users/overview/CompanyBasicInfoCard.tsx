@@ -15,7 +15,7 @@ export interface CompanyBasicInfoCardProps {
     weekend?: string
   }
   accountType?: string
-  userId?: string
+  licenseNumber?: string | null
   loading?: boolean
 }
 
@@ -68,7 +68,7 @@ export default function CompanyBasicInfoCard({
     weekend: 'الجمعة والسبت: مغلق.',
   },
   accountType = 'شركة',
-  userId = 'USR-001',
+  licenseNumber,
   loading = false,
 }: CompanyBasicInfoCardProps) {
   return (
@@ -124,7 +124,7 @@ export default function CompanyBasicInfoCard({
       <div className="flex items-stretch justify-between">
         <Field label="نوع الحساب" value={accountType} icon={Building2} loading={loading} />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="الرقم التعريفي" value={userId} icon={Hash} loading={loading} />
+        <Field label="رقم الرخصة" value={licenseNumber || '—'} icon={Hash} loading={loading} />
       </div>
     </div>
   )

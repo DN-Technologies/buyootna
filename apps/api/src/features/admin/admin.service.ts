@@ -163,20 +163,20 @@ export class AdminService {
     );
   }
 
-  async getRequestsForUser(userId: string) {
-    return this.adminRequestsService.getRequestsForUser(userId);
+  async getRequestsForUser(userId: string, identityId?: string) {
+    return this.adminRequestsService.getRequestsForUser(userId, identityId);
   }
 
-  async getProjectsForUser(userId: string) {
-    return this.adminExhibitionService.getProjectsForUser(userId);
+  async getProjectsForUser(userId: string, identityId?: string) {
+    return this.adminExhibitionService.getProjectsForUser(userId, identityId);
   }
 
   async deleteProject(projectId: string, adminUserId: string) {
     return this.adminExhibitionService.deleteProject(projectId, adminUserId);
   }
 
-  async getWallet(userId: string) {
-    return this.adminPlansService.getWallet(userId);
+  async getWallet(userId: string, identityId?: string) {
+    return this.adminPlansService.getWallet(userId, identityId);
   }
 
   async changePlan(
@@ -302,20 +302,28 @@ export class AdminService {
     return this.adminFeaturePackagesService.update(id, dto, adminUserId);
   }
 
-  async getInvoicesForUser(userId: string) {
-    return this.adminInvoicesService.getInvoicesForUser(userId);
+  async getInvoicesForUser(userId: string, identityId?: string) {
+    return this.adminInvoicesService.getInvoicesForUser(userId, identityId);
   }
 
   async getCouponHistoryForUser(userId: string) {
     return this.adminInvoicesService.getCouponHistoryForUser(userId);
   }
 
-  async getReviewsForUser(userId: string, query?: GetReviewsDto) {
-    return this.adminRatingsService.getReviewsForUser(userId, query);
+  async getReviewsForUser(
+    userId: string,
+    query?: GetReviewsDto,
+    identityId?: string,
+  ) {
+    return this.adminRatingsService.getReviewsForUser(
+      userId,
+      query,
+      identityId,
+    );
   }
 
-  async getReviewsSummaryForUser(userId: string) {
-    return this.adminRatingsService.getSummaryForUser(userId);
+  async getReviewsSummaryForUser(userId: string, identityId?: string) {
+    return this.adminRatingsService.getSummaryForUser(userId, identityId);
   }
 
   async deleteReview(reviewId: string) {

@@ -222,6 +222,55 @@ export const admin: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
+      id: "admin-user-identity-switcher",
+      title: {
+        en: "User page shows one identity at a time: فرد / شركة / مكتب switcher",
+        ar: "صفحة المستخدم تعرض هوية واحدة في كل مرة: مبدّل فرد / شركة / مكتب",
+      },
+      priority: "P0",
+      story: {
+        en: "One account can own an individual, a company and an office identity. The user page used to mix them: the type, tabs and overview came from User.role (set at sign-up only) and the name from an arbitrary identity, so a company opened as an individual (and the reverse), and each tab guessed its own persona. Now /users/[id] shows one identity, picked by ?identity=<identityId> (missing or not the account's: the individual, else the first). A segmented control under the header (only when the account has 2+ identities, with an orange dot on one awaiting verification) switches it, keeping ?tab= unless that type lacks the tab (then the overview). The name, logo, type, tabs, quick stats, overview, ads, requests, gallery, plan (wallet, change plan, exceptional feature), invoices, ratings and reports are that identity's (the API's per-user tab endpoints take ?identityId=, checked as the account's: 404 otherwise, 400 if not a UUID; without it they answer as before). Account matters stay account-wide: status (active/suspended/blocked), password, السجل and ملاحظات (after a divider in the tabs), coupons. In Users, each type tab lists the account as that identity (name, verification, ads count) with '+ شركة'-style badges for its other identities, and opening a row opens the page on that identity.",
+        ar: "يمكن لحساب واحد أن يملك هوية فرد وشركة ومكتب. كانت صفحة المستخدم تخلط بينها: النوع والتبويبات والنظرة العامة من User.role (يُضبط عند التسجيل فقط) والاسم من هوية عشوائية، فتُفتح الشركة كفرد (والعكس)، وكل تبويب يخمّن هويته بنفسه. الآن تعرض /users/[id] هوية واحدة يحددها ?identity=<identityId> (إن غاب أو لم يكن من هويات الحساب: الفرد، وإلا الأولى). مبدّل تحت الترويسة (فقط لحساب له هويتان أو أكثر، مع نقطة برتقالية على هوية بانتظار التوثيق) يغيّرها مع إبقاء ?tab= ما لم يكن التبويب غير موجود لذلك النوع (فالنظرة العامة). الاسم والشعار والنوع والتبويبات والإحصاءات والنظرة العامة والإعلانات والطلبات والمعرض والباقة (الرصيد، تغيير الباقة، الميزة الاستثنائية) والفواتير والتقييمات والبلاغات كلها لتلك الهوية (نقاط نهاية تبويبات المستخدم تقبل ?identityId= ويُتحقق أنها من هويات الحساب: 404 وإلا، و400 إن لم تكن UUID؛ وبدونها تجيب كما كانت). وما يخص الحساب يبقى للحساب كاملاً: الحالة (نشط/موقوف/محظور)، كلمة المرور، السجل وملاحظات (بعد فاصل في التبويبات)، الكوبونات. وفي المستخدمين، كل تبويب نوع يعرض الحساب بهوية ذلك النوع (الاسم، التوثيق، عدد الإعلانات) مع شارات مثل '+ شركة' لهوياته الأخرى، وفتح الصف يفتح الصفحة على تلك الهوية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "An account with فرد + شركة opened from المستخدمون ← شركات shows the company: its name, شركة, company tabs and CompanyProfileOverview; from الأفراد it shows the individual.",
+          "Switching identity changes ?identity= (a reload keeps it) and every per-identity tab reloads that identity's data; السجل and ملاحظات are the same on every identity.",
+          "A single-identity account shows no switcher and looks as before.",
+          "GET /admin/users/:id/{requests,projects,wallet,invoices,reviews,reviews/summary,reports}?identityId= returns that identity's data only; another account's identity → 404.",
+          "In الأفراد an individual who added a company is listed with the individual's name and ads count, plus a '+ شركة' badge.",
+          "The side nav highlights الأفراد / الشركات / المكاتب العقارية as the switcher changes, and «العودة» goes back to that type's list.",
+          "A company / office shows its licence number (رقم الرخصة) in the header and overview instead of the account id; none set: '—'.",
+        ],
+        ar: [
+          "حساب فرد + شركة يُفتح من المستخدمون ← شركات يعرض الشركة: اسمها، شركة، تبويبات الشركة وCompanyProfileOverview؛ ومن الأفراد يعرض الفرد.",
+          "تبديل الهوية يغيّر ?identity= (وإعادة التحميل تحفظه) وكل تبويب خاص بالهوية يعيد تحميل بياناتها؛ السجل وملاحظات متطابقان في كل الهويات.",
+          "حساب بهوية واحدة لا يظهر له مبدّل ويبدو كما كان.",
+          "GET /admin/users/:id/{requests,projects,wallet,invoices,reviews,reviews/summary,reports}?identityId= يُرجع بيانات تلك الهوية فقط؛ وهوية حساب آخر ← 404.",
+          "في الأفراد يظهر الفرد الذي أضاف شركة باسمه وعدد إعلاناته، مع شارة '+ شركة'.",
+          "القائمة الجانبية تُبرز الأفراد / الشركات / المكاتب العقارية مع تغيّر المبدّل، و«العودة» ترجع إلى قائمة ذلك النوع.",
+          "الشركة / المكتب يظهر رقم رخصته (رقم الرخصة) في الترويسة والنظرة العامة بدل معرّف الحساب؛ وبدونه '—'.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run scripts/dev-demo.sh (dev@youssef.app gets فرد + شركة «الصباح» + مكتب), sign in to the admin as admin@buyootna.com, open the account from each type tab and check header, tabs and overview.",
+          "On the company identity open الطلبات, الباقة, الفواتير; switch to فرد and confirm each shows different data and the URL's identity changed.",
+          "Open المعرض on the company, switch to فرد: the page falls back to نظرة عامة.",
+          "Change the plan with the office selected: the slot is the office's (GET wallet?identityId=<office> shows it, the individual's doesn't).",
+          "Call a tab endpoint with another user's identityId → 404, with identityId=nope → 400.",
+        ],
+        ar: [
+          "شغّل scripts/dev-demo.sh (يحصل dev@youssef.app على فرد + شركة «الصباح» + مكتب)، وادخل لوحة الإدارة بـ admin@buyootna.com، وافتح الحساب من كل تبويب نوع وتحقق من الترويسة والتبويبات والنظرة العامة.",
+          "على هوية الشركة افتح الطلبات والباقة والفواتير؛ بدّل إلى فرد وتأكد أن كلاً منها يعرض بيانات مختلفة وأن الهوية في الرابط تغيّرت.",
+          "افتح المعرض على الشركة ثم بدّل إلى فرد: تعود الصفحة إلى نظرة عامة.",
+          "غيّر الباقة والمكتب محدد: تكون الحصة للمكتب (GET wallet?identityId=<office> يعرضها، وللفرد لا).",
+          "استدعِ نقطة نهاية تبويب بـ identityId لمستخدم آخر ← 404، وبـ identityId=nope ← 400.",
+        ],
+      },
+      updatedIn: "fix/admin-identity-switcher",
+    },
+    {
       id: "admin-plans-pricing",
       title: {
         en: "Admin Plans page edits the real plans the app sells",

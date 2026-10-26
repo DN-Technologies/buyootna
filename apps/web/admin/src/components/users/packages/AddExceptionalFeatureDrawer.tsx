@@ -9,6 +9,7 @@ export interface AddExceptionalFeatureDrawerProps {
   onClose: () => void
   onSuccess: () => void
   userId: string
+  identityId?: string
 }
 
 export default function AddExceptionalFeatureDrawer({
@@ -16,6 +17,7 @@ export default function AddExceptionalFeatureDrawer({
   onClose,
   onSuccess,
   userId,
+  identityId,
 }: AddExceptionalFeatureDrawerProps) {
   const [adsCount, setAdsCount] = useState<string>('')
   const [photosCount, setPhotosCount] = useState<string>('')
@@ -51,6 +53,7 @@ export default function AddExceptionalFeatureDrawer({
     setSubmitting(true)
     try {
       await grantExceptionalFeature(userId, {
+        identityId,
         adsCount: adsCount !== '' ? Number(adsCount) : undefined,
         photosCount: photosCount !== '' ? Number(photosCount) : undefined,
         durationDays: durationDays !== '' ? Number(durationDays) : undefined,

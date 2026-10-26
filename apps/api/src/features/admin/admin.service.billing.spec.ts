@@ -19,9 +19,9 @@ describe('AdminService facade: plans, invoices, coupons and the paid catalogs', 
     const mockResult = { freeAdsRemaining: 0 };
     adminPlansService.getWallet.mockResolvedValue(mockResult);
 
-    const result = await service.getWallet('u-1');
+    const result = await service.getWallet('u-1', 'i-1');
 
-    expect(adminPlansService.getWallet).toHaveBeenCalledWith('u-1');
+    expect(adminPlansService.getWallet).toHaveBeenCalledWith('u-1', 'i-1');
     expect(result).toBe(mockResult);
   });
 
@@ -59,9 +59,12 @@ describe('AdminService facade: plans, invoices, coupons and the paid catalogs', 
     const mockResult: any[] = [];
     adminInvoicesService.getInvoicesForUser.mockResolvedValue(mockResult);
 
-    const result = await service.getInvoicesForUser('u-1');
+    const result = await service.getInvoicesForUser('u-1', 'i-1');
 
-    expect(adminInvoicesService.getInvoicesForUser).toHaveBeenCalledWith('u-1');
+    expect(adminInvoicesService.getInvoicesForUser).toHaveBeenCalledWith(
+      'u-1',
+      'i-1',
+    );
     expect(result).toBe(mockResult);
   });
 

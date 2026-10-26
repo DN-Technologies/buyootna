@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useState, useRef, useEffect } from 'react'
+import { Fragment, useState, useRef, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
 import {
   ChevronLeft,
@@ -28,9 +28,15 @@ export interface UserDetailHeaderProps {
   avatarUrl?: string | null
   location?: string
   userId?: string
+  // A company's / office's licence, shown instead of the account id
+  licenseNumber?: string | null
   isOffice?: boolean
   loading?: boolean
   onActionSelect?: (action: string) => void
+  // The account's identities (فرد / شركة / مكتب), when it has several
+  identitySwitcher?: ReactNode
+  // «العودة»: the list of the shown identity's type
+  backHref?: string
 }
 
 const statusStyles: Record<string, string> = {
@@ -50,9 +56,12 @@ export default function UserDetailHeader({
   avatarUrl,
   location = 'السالمية، شمال غرب صليبيخات',
   userId = 'USR-001',
+  licenseNumber,
   isOffice = false,
   loading = false,
   onActionSelect,
+  identitySwitcher,
+  backHref = '/users',
 }: UserDetailHeaderProps) {
   const trail = [...breadcrumbs, loading ? '...' : name]
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -126,7 +135,7 @@ export default function UserDetailHeader({
 
       {/* Back link */}
       <Link
-        href="/users"
+        href={backHref}
         className="flex items-center gap-1 text-[14px] text-[#111111] w-fit"
       >
         <ChevronRight className="w-3 h-3" />
@@ -165,7 +174,9 @@ export default function UserDetailHeader({
                 </>
               ) : (
                 <>
-                  <h1 className="font-bold text-[22px] text-[#111111]">{name}</h1>
+                  <h1 className="font-bold text-[22px] text-[#111111]">
+                    {name}
+                  </h1>
                   <div className="flex items-center gap-2">
                     <span
                       className={`h-5 flex items-center gap-1 px-1.5 rounded-full text-[12px] font-medium ${
@@ -195,8 +206,12 @@ export default function UserDetailHeader({
 
                   {isOffice ? (
                     <>
-                      <span className="text-[#ECECEC]">|</span>
-                      <span># {userId}</span>
+                      {licenseNumber && (
+                        <>
+                          <span className="text-[#ECECEC]">|</span>
+                          <span>رقم الرخصة {licenseNumber}</span>
+                        </>
+                      )}
                       <span className="text-[#ECECEC]">|</span>
                       <span className="flex items-center gap-1">
                         <MapPin className="w-4 h-4 text-[#6B6A6A]" />
@@ -253,6 +268,10 @@ export default function UserDetailHeader({
           )}
         </div>
       </div>
+
+      {identitySwitcher && !loading && (
+        <div className="pt-1">{identitySwitcher}</div>
+      )}
     </div>
   )
 }

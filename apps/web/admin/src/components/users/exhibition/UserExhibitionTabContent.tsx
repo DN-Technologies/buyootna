@@ -12,8 +12,10 @@ import { formatArabicDate } from '@/lib/property-labels'
 
 export default function UserExhibitionTabContent({
   userId,
+  identityId,
 }: {
   userId: string
+  identityId?: string
 }) {
   const [projects, setProjects] = useState<AdminProjectRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,14 +23,14 @@ export default function UserExhibitionTabContent({
   const loadProjects = useCallback(async () => {
     try {
       setLoading(true)
-      const rows = await fetchUserProjects(userId)
+      const rows = await fetchUserProjects(userId, identityId)
       setProjects(rows)
     } catch (err) {
       console.error('Failed to load user projects:', err)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, identityId])
 
   useEffect(() => {
     loadProjects()

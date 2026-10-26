@@ -1,6 +1,6 @@
 'use client'
 
-import { Mail, MessageCircle, Phone, User, FileText, Clock, Hash, Building2 } from 'lucide-react'
+import { Mail, MessageCircle, Phone, User, FileText, Clock, Building2 } from 'lucide-react'
 import type { ComponentType } from 'react'
 import Skeleton from '@/components/ui/Skeleton'
 
@@ -9,13 +9,12 @@ export interface OfficeBasicInfoCardProps {
   fullName: string
   whatsapp: string
   phone: string
-  licenseNumber?: string
+  licenseNumber?: string | null
   workingHours?: {
     weekday?: string
     weekend?: string
   }
   accountType?: string
-  userId?: string
   loading?: boolean
 }
 
@@ -62,13 +61,12 @@ export default function OfficeBasicInfoCard({
   fullName,
   whatsapp,
   phone,
-  licenseNumber = '2454685',
+  licenseNumber,
   workingHours = {
     weekday: 'الأحد - الخميس: 9:00 ص - 8:00 م.',
     weekend: 'الجمعة والسبت: مغلق.',
   },
   accountType = 'مكتب عقاري',
-  userId = 'USR-001',
   loading = false,
 }: OfficeBasicInfoCardProps) {
   return (
@@ -117,14 +115,12 @@ export default function OfficeBasicInfoCard({
           </div>
         </Field>
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="رقم الرخصة" value={licenseNumber} icon={FileText} loading={loading} />
+        <Field label="رقم الرخصة" value={licenseNumber || '—'} icon={FileText} loading={loading} />
       </div>
 
       {/* Row 4 */}
       <div className="flex items-stretch justify-between">
         <Field label="نوع الحساب" value={accountType} icon={Building2} loading={loading} />
-        <div className="w-px bg-[#ECECEC]" />
-        <Field label="الرقم التعريفي" value={userId} icon={Hash} loading={loading} />
       </div>
     </div>
   )

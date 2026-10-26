@@ -1,4 +1,4 @@
-import { Body, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CurrentUser } from '../../../core/decorators/current-user.decorator';
 import type { RequestUser } from '../../auth/strategies/jwt.strategy';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
@@ -14,6 +14,7 @@ import {
   AdminGrantBulkCouponDto,
 } from '../dto/admin-grant-coupon.dto';
 import { AdminUpdatePlanDto } from '../dto/admin-update-plan.dto';
+import { AdminIdentityQueryDto } from '../dto/admin-identity-query.dto';
 import { ApiCommonErrors } from '../../../core/swagger/api-common-errors.decorator';
 import { AdminApi } from './admin-api.decorator';
 
@@ -29,8 +30,11 @@ export class AdminBillingController {
   })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiCommonErrors()
-  async getWallet(@Param('id') id: string) {
-    return this.adminService.getWallet(id);
+  async getWallet(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getWallet(id, identityId);
   }
 
   @Post('users/:id/plan')
@@ -65,8 +69,11 @@ export class AdminBillingController {
   @ApiOperation({ summary: "List a user's invoices" })
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiCommonErrors()
-  async getInvoicesForUser(@Param('id') id: string) {
-    return this.adminService.getInvoicesForUser(id);
+  async getInvoicesForUser(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getInvoicesForUser(id, identityId);
   }
 
   @Get('users/:id/coupons')

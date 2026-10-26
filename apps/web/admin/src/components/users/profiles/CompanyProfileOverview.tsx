@@ -15,7 +15,7 @@ export interface CompanyProfileOverviewProps {
     weekday?: string
     weekend?: string
   }
-  userId?: string
+  licenseNumber?: string | null
   isPendingVerification?: boolean
   onReviewVerification?: () => void
   lastActivity: string
@@ -33,7 +33,7 @@ export default function CompanyProfileOverview({
   phone,
   serviceAreas,
   workingHours,
-  userId,
+  licenseNumber,
   isPendingVerification = true,
   onReviewVerification,
   lastActivity,
@@ -57,7 +57,7 @@ export default function CompanyProfileOverview({
         serviceAreas={serviceAreas}
         workingHours={workingHours}
         accountType="شركة"
-        userId={userId}
+        licenseNumber={licenseNumber}
         loading={loading}
       />
 

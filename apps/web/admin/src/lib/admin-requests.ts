@@ -1,6 +1,7 @@
 import { api } from './api'
 
-export type BackendRequestStatus = 'pending' | 'responded' | 'accepted' | 'rejected'
+export type BackendRequestStatus =
+  'pending' | 'responded' | 'accepted' | 'rejected'
 export type BackendRequestScope = 'company' | 'public'
 
 export interface AdminRequestClient {
@@ -35,7 +36,12 @@ export interface AdminRequestRow {
   client: AdminRequestClient
 }
 
-export async function fetchUserRequests(userId: string): Promise<AdminRequestRow[]> {
-  const res = await api.get(`/admin/users/${userId}/requests`)
+export async function fetchUserRequests(
+  userId: string,
+  identityId?: string,
+): Promise<AdminRequestRow[]> {
+  const res = await api.get(`/admin/users/${userId}/requests`, {
+    params: { identityId },
+  })
   return res.data
 }

@@ -19,9 +19,12 @@ describe("AdminService facade: a user's requests, projects, ratings, notes and l
     const mockResult: any[] = [];
     adminRequestsService.getRequestsForUser.mockResolvedValue(mockResult);
 
-    const result = await service.getRequestsForUser('u-1');
+    const result = await service.getRequestsForUser('u-1', 'i-1');
 
-    expect(adminRequestsService.getRequestsForUser).toHaveBeenCalledWith('u-1');
+    expect(adminRequestsService.getRequestsForUser).toHaveBeenCalledWith(
+      'u-1',
+      'i-1',
+    );
     expect(result).toBe(mockResult);
   });
 
@@ -29,10 +32,11 @@ describe("AdminService facade: a user's requests, projects, ratings, notes and l
     const mockResult: any[] = [];
     adminExhibitionService.getProjectsForUser.mockResolvedValue(mockResult);
 
-    const result = await service.getProjectsForUser('u-1');
+    const result = await service.getProjectsForUser('u-1', 'i-1');
 
     expect(adminExhibitionService.getProjectsForUser).toHaveBeenCalledWith(
       'u-1',
+      'i-1',
     );
     expect(result).toBe(mockResult);
   });
@@ -55,11 +59,12 @@ describe("AdminService facade: a user's requests, projects, ratings, notes and l
     adminRatingsService.getReviewsForUser.mockResolvedValue(mockResult);
     const query = { page: '1' };
 
-    const result = await service.getReviewsForUser('u-1', query);
+    const result = await service.getReviewsForUser('u-1', query, 'i-1');
 
     expect(adminRatingsService.getReviewsForUser).toHaveBeenCalledWith(
       'u-1',
       query,
+      'i-1',
     );
     expect(result).toBe(mockResult);
   });
@@ -68,9 +73,12 @@ describe("AdminService facade: a user's requests, projects, ratings, notes and l
     const mockResult = { averageRating: 4.5 };
     adminRatingsService.getSummaryForUser.mockResolvedValue(mockResult);
 
-    const result = await service.getReviewsSummaryForUser('u-1');
+    const result = await service.getReviewsSummaryForUser('u-1', 'i-1');
 
-    expect(adminRatingsService.getSummaryForUser).toHaveBeenCalledWith('u-1');
+    expect(adminRatingsService.getSummaryForUser).toHaveBeenCalledWith(
+      'u-1',
+      'i-1',
+    );
     expect(result).toBe(mockResult);
   });
 

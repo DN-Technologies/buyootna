@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
+import { useActiveAccountType } from '@/lib/active-account-type'
 import {
   DashboardIcon,
   IndividualsIcon,
@@ -84,7 +85,9 @@ const navGroups: NavGroup[] = [
 function SideNavContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const currentType = searchParams?.get('type')
+  // A user's page has no ?type=: it's the type of the identity it shows
+  const pageType = useActiveAccountType()
+  const currentType = searchParams?.get('type') || pageType
 
   const isItemActive = (href: string) => {
     const [targetPath, queryString] = href.split('?')
@@ -174,9 +177,6 @@ function SideNavContent() {
           </div>
         ))}
       </div>
-
-      {/* Empty Spacer */}
-      <div className="flex-1 min-h-2" />
     </div>
   )
 }

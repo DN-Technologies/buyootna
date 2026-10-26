@@ -12,6 +12,7 @@ import { AdminAuditLogService } from '../audit/admin-audit-log.service';
 import { AdminChangePlanDto } from '../../dto/admin-change-plan.dto';
 import { AdminGrantExceptionalFeatureDto } from '../../dto/admin-grant-exceptional-feature.dto';
 import { findDefaultPersonaId } from '../../../identities/persona-rules';
+import { findOwnedIdentity } from '../users/admin-persona.util';
 
 @Injectable()
 export class AdminPlansService {
@@ -24,20 +25,17 @@ export class AdminPlansService {
     private readonly auditLog: AdminAuditLogService,
   ) {}
 
-  // All of the account's personas together
-  async getWallet(userId: string) {
-    return this.plansService.getAccountWallet(userId);
+  // One persona's wallet, or all of the account's personas together
+  async getWallet(userId: string, identityId?: string) {
+    if (!identityId) return this.plansService.getAccountWallet(userId);
+    await findOwnedIdentity(this.prisma, userId, identityId);
+    return this.plansService.getWallet(identityId);
   }
 
   // Credits are per persona: the one named, else the account's default
   private async resolveTargetPersona(userId: string, identityId?: string) {
     if (identityId) {
-      const owned = await this.prisma.identity.findFirst({
-        where: { id: identityId, userId },
-        select: { id: true },
-      });
-      if (!owned) throw new NotFoundException('الهوية غير موجودة');
-      return identityId;
+      return (await findOwnedIdentity(this.prisma, userId, identityId)).id;
     }
     const fallback = await findDefaultPersonaId(this.prisma, userId);
     if (!fallback) throw new BadRequestException('لا توجد هوية لهذا المستخدم');
