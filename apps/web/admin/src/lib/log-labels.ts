@@ -1,4 +1,4 @@
-import { BackendAdminActionType } from './admin-logs'
+import { AdminLogRow, BackendAdminActionType } from './admin-logs'
 
 export const LOG_ACTION_LABEL: Record<BackendAdminActionType, string> = {
   PROPERTY_DELETED: 'حذف اعلان',
@@ -21,6 +21,10 @@ export const LOG_ACTION_LABEL: Record<BackendAdminActionType, string> = {
   EXCEPTIONAL_FEATURE_GRANTED: 'منح مميزات استثنائية',
   COMPANY_PROJECT_DELETED: 'حذف مشروع من المعرض',
   PLAN_UPDATED: 'تعديل باقة',
+  FEATURE_PACKAGE_CREATED: 'إضافة باقة تمييز',
+  FEATURE_PACKAGE_UPDATED: 'تعديل باقة تمييز',
+  REVIEW_DELETED: 'حذف تقييم',
+  STORY_REMOVED: 'حذف قصة',
 }
 
 export const LOG_TARGET_TYPE_LABEL: Record<string, string> = {
@@ -31,4 +35,13 @@ export const LOG_TARGET_TYPE_LABEL: Record<string, string> = {
   USER: 'مستخدم',
   PLAN: 'باقة',
   COMPANY_PROJECT: 'مشروع',
+}
+
+/** One line about an action: who did what, to whom («أحمد: تغيير الباقة — سارة»). */
+export function describeLog(row: AdminLogRow): string {
+  const actor =
+    row.actorType === 'SYSTEM' ? 'النظام' : (row.actorAdmin?.name ?? 'مشرف')
+  const action = LOG_ACTION_LABEL[row.action] ?? row.action
+  const target = row.targetUser?.name
+  return target ? `${actor}: ${action} — ${target}` : `${actor}: ${action}`
 }
