@@ -1,103 +1,153 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import {
   BillingFilterState,
-  SubscriptionRecord,
+  BillingTab,
+  FilterOption,
+  INVOICE_STATUS_OPTIONS,
+  ROLE_OPTIONS,
+  SUBSCRIPTION_STATUS_OPTIONS,
+  formatKwd,
 } from '@/components/billing/billing.types'
-import { MOCK_SUBSCRIPTIONS } from '@/components/billing/billing.data'
-import BillingMetrics from '@/components/billing/BillingMetrics'
+import BillingMetrics, { BillingMetric } from '@/components/billing/BillingMetrics'
 import BillingFilters from '@/components/billing/BillingFilters'
-import SubscriptionsTable from '@/components/billing/SubscriptionsTable'
-import BillingPagination from '@/components/billing/BillingPagination'
+import {
+  InvoicesTable,
+  SubscriptionsTable,
+} from '@/components/billing/SubscriptionsTable'
+import UserPagination from '@/components/users/UserPagination'
+import {
+  AdminBillingInvoicesResponse,
+  AdminSubscriptionsResponse,
+  BackendInvoiceStatus,
+  fetchBillingInvoices,
+  fetchSubscriptions,
+} from '@/lib/admin-billing'
+
+const PAGE_SIZE = 10
+const EMPTY_FILTERS: BillingFilterState = { search: '', role: '', plan: '', status: '' }
 
 export default function BillingPage() {
-  const [activeTab, setActiveTab] = useState<'subscriptions' | 'invoices'>(
-    'subscriptions',
+  const [activeTab, setActiveTab] = useState<BillingTab>('subscriptions')
+  const [filters, setFilters] = useState<BillingFilterState>(EMPTY_FILTERS)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [subscriptions, setSubscriptions] = useState<AdminSubscriptionsResponse | null>(null)
+  const [invoices, setInvoices] = useState<AdminBillingInvoicesResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // The search box asks the server once typing pauses
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFilters((prev) => (prev.search === search ? prev : { ...prev, search }))
+      setPage(1)
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    const common = {
+      search: filters.search || undefined,
+      role: filters.role || undefined,
+      page,
+      limit: PAGE_SIZE,
+    }
+    const request =
+      activeTab === 'subscriptions'
+        ? fetchSubscriptions({
+            ...common,
+            plan: filters.plan || undefined,
+            status: (filters.status || undefined) as 'active' | 'expired' | undefined,
+          }).then((res) => !cancelled && setSubscriptions(res))
+        : fetchBillingInvoices({
+            ...common,
+            status: (filters.status || undefined) as BackendInvoiceStatus | undefined,
+          }).then((res) => !cancelled && setInvoices(res))
+    request
+      .catch(() => !cancelled && setError('تعذر تحميل البيانات.'))
+      .finally(() => !cancelled && setLoading(false))
+    return () => {
+      cancelled = true
+    }
+  }, [activeTab, filters, page])
+
+  const switchTab = (tab: BillingTab) => {
+    if (tab === activeTab) return
+    setActiveTab(tab)
+    setFilters(EMPTY_FILTERS)
+    setSearch('')
+    setPage(1)
+  }
+
+  const updateFilter = (key: keyof BillingFilterState) => (value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+    setPage(1)
+  }
+
+  const metrics: BillingMetric[] =
+    activeTab === 'subscriptions'
+      ? [
+          { label: 'إجمالي الاشتراكات', value: String(subscriptions?.metrics.total ?? 0) },
+          { label: 'نشطة', value: String(subscriptions?.metrics.active ?? 0), tone: 'positive' },
+          {
+            label: 'تنتهي خلال 7 أيام',
+            value: String(subscriptions?.metrics.expiringSoon ?? 0),
+            tone: 'warning',
+          },
+          { label: 'منتهية', value: String(subscriptions?.metrics.expired ?? 0) },
+        ]
+      : [
+          { label: 'إجمالي الفواتير', value: String(invoices?.metrics.total ?? 0) },
+          { label: 'مدفوعة', value: String(invoices?.metrics.paid ?? 0), tone: 'positive' },
+          {
+            label: 'بانتظار الدفع',
+            value: String(invoices?.metrics.pending ?? 0),
+            tone: 'warning',
+          },
+          { label: 'الإيرادات المحصلة', value: formatKwd(invoices?.metrics.revenuePaid ?? 0) },
+        ]
+
+  const planOptions: FilterOption[] = [
+    { value: '', label: 'الكل' },
+    ...(subscriptions?.planNames ?? []).map((name) => ({ value: name, label: name })),
+  ]
+
+  const dropdowns = [
+    { label: 'المستخدم', value: filters.role, options: ROLE_OPTIONS, onSelect: updateFilter('role') },
+    ...(activeTab === 'subscriptions'
+      ? [{ label: 'الباقة', value: filters.plan, options: planOptions, onSelect: updateFilter('plan') }]
+      : []),
+    {
+      label: 'الحالة',
+      value: filters.status,
+      options: activeTab === 'subscriptions' ? SUBSCRIPTION_STATUS_OPTIONS : INVOICE_STATUS_OPTIONS,
+      onSelect: updateFilter('status'),
+    },
+  ]
+
+  const current = activeTab === 'subscriptions' ? subscriptions : invoices
+  const pagination = current && current.meta.total > 0 && (
+    <UserPagination
+      currentPage={current.meta.currentPage}
+      totalPages={current.meta.totalPages}
+      totalItems={current.meta.total}
+      currentCount={current.data.length}
+      itemLabel={activeTab === 'subscriptions' ? 'اشتراك' : 'فاتورة'}
+      onPageChange={setPage}
+    />
   )
 
-  // Search & Filters State
-  const [filters, setFilters] = useState<BillingFilterState>({
-    searchQuery: '',
-    userRoleFilter: 'الكل',
-    packageFilter: 'الكل',
-    statusFilter: 'الكل',
-  })
-
-  // Selection & Pagination State
-  const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const updateFilters = (updates: Partial<BillingFilterState>) => {
-    setFilters((prev) => ({ ...prev, ...updates }))
-  }
-
-  // Filter logic
-  const filteredSubscriptions =
-    activeTab === 'invoices'
-      ? []
-      : MOCK_SUBSCRIPTIONS.filter((sub) => {
-          const q = filters.searchQuery.toLowerCase().trim()
-          const matchesSearch =
-            !q ||
-            sub.userName.toLowerCase().includes(q) ||
-            sub.userEmail.toLowerCase().includes(q) ||
-            sub.packageName.toLowerCase().includes(q)
-
-          const matchesUser =
-            filters.userRoleFilter === 'الكل' ||
-            (filters.userRoleFilter === 'الأفراد' &&
-              sub.userRole === 'INDIVIDUAL') ||
-            (filters.userRoleFilter === 'المكاتب العقارية' &&
-              sub.userRole === 'OFFICE') ||
-            (filters.userRoleFilter === 'الشركات' && sub.userRole === 'COMPANY')
-
-          const matchesPackage =
-            filters.packageFilter === 'الكل' ||
-            sub.packageName === filters.packageFilter
-
-          const matchesStatus =
-            filters.statusFilter === 'الكل' ||
-            (filters.statusFilter === 'مدفوعة' && sub.status === 'نشط') ||
-            sub.status === filters.statusFilter
-
-          return matchesSearch && matchesUser && matchesPackage && matchesStatus
-        })
-
-  const handleToggleSelectAll = () => {
-    if (selectedIds.length === filteredSubscriptions.length) {
-      setSelectedIds([])
-    } else {
-      setSelectedIds(filteredSubscriptions.map((s) => s.id))
-    }
-  }
-
-  const handleToggleSelectOne = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    )
-  }
-
-  const handleActionClick = (
-    action: 'view' | 'invoice' | 'rebuy',
-    sub: SubscriptionRecord,
-  ) => {
-    if (action === 'view') alert(`عرض تفاصيل اشتراك ${sub.userName}`)
-    else if (action === 'invoice') alert(`تحميل فاتورة ${sub.userName}`)
-    else if (action === 'rebuy') alert(`شراء الباقة مجدداً لـ ${sub.userName}`)
-  }
-
   return (
-    <div
-      className="flex flex-col gap-6 w-full font-['Cairo'] text-right pb-10"
-      dir="rtl"
-    >
-      {/* Top Header Strip matching Figma Node 4497:213610 */}
+    <div className="flex flex-col gap-6 w-full font-['Cairo'] text-right pb-10" dir="rtl">
       <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[#ECECEC] pb-4">
         <div className="flex flex-col gap-1">
-          {/* Breadcrumbs */}
           <div className="flex items-center gap-1.5 text-[13px] text-[#6B6A6A]">
             <Link href="/" className="hover:text-[#111111]">
               الرئيسية
@@ -105,86 +155,61 @@ export default function BillingPage() {
             <ChevronLeft className="w-3.5 h-3.5 text-[#94A3B8]" />
             <span>المالية</span>
             <ChevronLeft className="w-3.5 h-3.5 text-[#94A3B8]" />
-            <span className="text-[#111111] font-bold">
-              الاشتراكات والفواتير
-            </span>
+            <span className="text-[#111111] font-bold">الاشتراكات والفواتير</span>
           </div>
-
-          {/* Title & Subtitle */}
-          <h1 className="text-[22px] font-bold text-[#111111] mt-1">
-            الاشتراكات والفواتير
-          </h1>
+          <h1 className="text-[22px] font-bold text-[#111111] mt-1">الاشتراكات والفواتير</h1>
           <p className="text-[13px] font-medium text-[#6B6A6A]">
-            إدارة اشتراكات المستخدمين والشركات ومتابعة الفواتير وحالات الدفع
-            والمعاملات المالية.
+            اشتراكات الشركات وباقات الإعلانات للأفراد والمكاتب، وكل الفواتير وحالات الدفع.
           </p>
         </div>
       </div>
 
-      {/* Summary Metrics Cards Grid */}
-      <BillingMetrics />
+      <BillingMetrics metrics={metrics} loading={loading && !current} />
 
-      {/* Main Sub-nav Tabs */}
       <div className="border-b border-[#ECECEC] flex items-center gap-8 pt-2">
-        <button
-          type="button"
-          onClick={() => setActiveTab('subscriptions')}
-          className={`pb-3 text-[15px] font-bold transition-all relative cursor-pointer ${
-            activeTab === 'subscriptions'
-              ? 'text-primary'
-              : 'text-[#6B6A6A] hover:text-[#111111]'
-          }`}
-        >
-          <span>الاشتراكات</span>
-          {activeTab === 'subscriptions' && (
-            <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('invoices')}
-          className={`pb-3 text-[15px] font-bold transition-all relative cursor-pointer ${
-            activeTab === 'invoices'
-              ? 'text-primary'
-              : 'text-[#6B6A6A] hover:text-[#111111]'
-          }`}
-        >
-          <span>الفواتير</span>
-          {activeTab === 'invoices' && (
-            <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
-          )}
-        </button>
+        {(
+          [
+            ['subscriptions', 'الاشتراكات'],
+            ['invoices', 'الفواتير'],
+          ] as const
+        ).map(([tab, label]) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => switchTab(tab)}
+            className={`pb-3 text-[15px] font-bold transition-all relative cursor-pointer ${
+              activeTab === tab ? 'text-primary' : 'text-[#6B6A6A] hover:text-[#111111]'
+            }`}
+          >
+            <span>{label}</span>
+            {activeTab === tab && (
+              <div className="absolute bottom-0 inset-x-0 h-0.5 bg-primary rounded-full" />
+            )}
+          </button>
+        ))}
       </div>
 
-      {/* Search & Filter Dropdowns Bar */}
-      <BillingFilters filters={filters} onChange={updateFilters} />
+      <BillingFilters
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={
+          activeTab === 'subscriptions'
+            ? 'ابحث بالاسم أو البريد أو الهاتف...'
+            : 'ابحث برقم الفاتورة أو الاسم أو البريد...'
+        }
+        dropdowns={dropdowns}
+      />
 
-      {/* Subscriptions Table & Pagination Card */}
-      {filteredSubscriptions.length === 0 ? (
-        <SubscriptionsTable
-          subscriptions={[]}
-          selectedIds={[]}
-          onToggleSelectAll={() => {}}
-          onToggleSelectOne={() => {}}
-          onActionClick={() => {}}
-          emptyTitle="لا توجد فواتير حتى الآن"
-          emptySubtitle="ستظهر الفواتير والاشتراكات هنا عند إجلاء أي عملية شراء من المستخدمين."
-        />
-      ) : (
-        <div className="bg-white border border-[#ECECEC] rounded-2xl shadow-xs overflow-hidden">
-          <SubscriptionsTable
-            subscriptions={filteredSubscriptions}
-            selectedIds={selectedIds}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelectOne={handleToggleSelectOne}
-            onActionClick={handleActionClick}
-          />
-          <BillingPagination
-            currentPage={currentPage}
-            totalUsersCount={100}
-            onPageChange={setCurrentPage}
-          />
+      {error ? (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+          {error}
         </div>
+      ) : loading && !current ? (
+        <div className="py-24 text-center text-[13px] text-[#6B6A6A]">جاري التحميل...</div>
+      ) : activeTab === 'subscriptions' ? (
+        <SubscriptionsTable rows={subscriptions?.data ?? []} footer={pagination} />
+      ) : (
+        <InvoicesTable rows={invoices?.data ?? []} footer={pagination} />
       )}
     </div>
   )

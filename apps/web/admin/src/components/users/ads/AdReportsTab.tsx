@@ -14,7 +14,7 @@ import {
 // reports yet (no such UI exists on mobile) -- fetchPropertyReports always
 // returns an empty array today, so this tab correctly renders its 0-state
 // until property reporting is wired on mobile in a future pass.
-export interface MockReport {
+export interface AdReportItem {
   id: string
   code: string
   reason: string
@@ -28,62 +28,15 @@ export interface MockReport {
   attachments: string[]
 }
 
-const initialMockReports: MockReport[] = [
-  {
-    id: '1',
-    code: 'RP-1025',
-    reason: 'معلومات غير صحيحة',
-    reporterName: 'محمد المالك',
-    reporterPhone: '+96568690396',
-    reporterEmail: 'mohamedelgareh@gmail.com',
-    timeAgo: 'منذ 47 دقيقة',
-    priority: 'متوسط',
-    status: 'مفتوحة',
-    details:
-      'أرغب بالبدل في منطقة "خيران السكنية" أو "المنطقة العاشرة" • يفضل زاوية أو شارع واحد • مستعد للتفاوض مع المواقع المميزة في خيران الأرض في موقع مميز جداً بضاحية N5، قريبة من مجمع الخدمات والمسجد. مدخل ومخرج سهل جداً من الطريق الرئيسي.',
-    attachments: ['صورة_الكهرباء.jpg', 'تقرير_الفحص.pdf'],
-  },
-  {
-    id: '2',
-    code: 'RP-1025',
-    reason: 'معلومات غير صحيحة',
-    reporterName: 'محمد المالك',
-    reporterPhone: '+96568690396',
-    reporterEmail: 'mohamedelgareh@gmail.com',
-    timeAgo: 'منذ 47 دقيقة',
-    priority: 'منخفضة',
-    status: 'مفتوحة',
-    details: 'معلومات مضللة حول مساحة العقار المعروضة في الإعلان.',
-    attachments: [],
-  },
-  {
-    id: '3',
-    code: 'RP-1025',
-    reason: 'معلومات غير صحيحة',
-    reporterName: 'محمد المالك',
-    reporterPhone: '+96568690396',
-    reporterEmail: 'mohamedelgareh@gmail.com',
-    timeAgo: 'منذ 47 دقيقة',
-    priority: 'متوسط',
-    status: 'مغلقة',
-    details: 'تم التحقق من المعلومات ولا توجد مخالفة.',
-    attachments: [],
-  },
-]
-
-const priorityStyles: Record<MockReport['priority'], string> = {
+const priorityStyles: Record<AdReportItem['priority'], string> = {
   عاجل: 'bg-[#FEF3F2] text-[#9C1E28]',
   متوسط: 'bg-[#FFF9DA] text-[#B97500]',
   منخفضة: 'bg-[#EDEDED] text-[#344054]',
 }
 
-const statusStyles: Record<MockReport['status'], string> = {
+const statusStyles: Record<AdReportItem['status'], string> = {
   مفتوحة: 'bg-[#FEF3F2] text-[#9C1E28]',
   مغلقة: 'bg-[#F4F8EE] text-[#111111]',
-}
-
-function notImplemented(action: string) {
-  alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
 }
 
 function ReportRow({
@@ -92,10 +45,10 @@ function ReportRow({
   onCloseReport,
   onAssignReport,
 }: {
-  report: MockReport
+  report: AdReportItem
   onViewDetails: () => void
-  onCloseReport: (report: MockReport) => void
-  onAssignReport: (report: MockReport) => void
+  onCloseReport: (report: AdReportItem) => void
+  onAssignReport: (report: AdReportItem) => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -185,10 +138,10 @@ export function ReportDetailView({
   onAssignReport,
   onDeleteAd,
 }: {
-  report: MockReport
+  report: AdReportItem
   onBack: () => void
-  onCloseReport: (report: MockReport) => void
-  onAssignReport: (report: MockReport) => void
+  onCloseReport: (report: AdReportItem) => void
+  onAssignReport: (report: AdReportItem) => void
   onDeleteAd?: () => void
 }) {
   return (
@@ -282,7 +235,8 @@ export function ReportDetailView({
       <div className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full">
         <button
           type="button"
-          onClick={() => (onDeleteAd ? onDeleteAd() : notImplemented('حذف الاعلان'))}
+          onClick={onDeleteAd}
+          disabled={!onDeleteAd}
           className="flex-1 h-11.5 flex items-center justify-center rounded-full border border-[#9C1E28] text-[#9C1E28] text-[14px] font-semibold cursor-pointer"
         >
           حذف الاعلان
@@ -313,10 +267,10 @@ export function ReportsList({
   onCloseReport,
   onAssignReport,
 }: {
-  reports: MockReport[]
-  onSelect: (report: MockReport) => void
-  onCloseReport: (report: MockReport) => void
-  onAssignReport: (report: MockReport) => void
+  reports: AdReportItem[]
+  onSelect: (report: AdReportItem) => void
+  onCloseReport: (report: AdReportItem) => void
+  onAssignReport: (report: AdReportItem) => void
 }) {
   const closedCount = reports.filter((r) => r.status === 'مغلقة').length
   const openCount = reports.filter((r) => r.status === 'مفتوحة').length

@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
-import { Card, Button } from '@buyootna/ui'
+import { Card } from '@buyootna/ui'
 
 export interface RevenueChartMonth {
   month: string
@@ -94,20 +93,12 @@ export default function RevenueChart({ data }: RevenueChartProps) {
       <div className="flex items-start justify-between w-full pb-6">
         <div className="space-y-1 text-right">
           <h3 className="font-['Cairo'] font-bold text-[16px] text-[#111111] leading-none">
-            الإيرادات والمصروفات
+            الإيرادات
           </h3>
           <p className="font-['Cairo'] font-medium text-[13px] text-[#6b6a6a] leading-none">
             تحليل مالي شهري لآخر 12 شهر
           </p>
         </div>
-
-        <Button
-          variant="outline"
-          className="bg-white border border-[#E2E8F0] rounded-md h-7.5 px-3 font-['Cairo'] font-semibold text-[12px] text-[#111111] hover:bg-[#F8F9FA] gap-1.5 flex items-center shrink-0 cursor-pointer"
-        >
-          <ChevronDown className="w-3.5 h-3.5 text-[#111111]" />
-          <span>هذه السنة</span>
-        </Button>
       </div>
 
       <div className="relative w-full h-65 mt-2">

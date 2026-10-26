@@ -1,6 +1,7 @@
 'use client'
 
-import { Eye, MoreVertical } from 'lucide-react'
+import Link from 'next/link'
+import { Eye } from 'lucide-react'
 import { Card, Button } from '@buyootna/ui'
 import {
   AdminDashboardRecentRegistration,
@@ -36,12 +37,14 @@ export default function RecentRegistrationsTable({
             آخر الحسابات التي انضمت للمنصة
           </p>
         </div>
-        <Button
-          variant="ghost"
-          className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl"
-        >
-          عرض الكل
-        </Button>
+        <Link href="/users">
+          <Button
+            variant="ghost"
+            className="text-[#15304d] font-['Cairo'] font-bold text-[13px] hover:bg-slate-50 h-7.5 px-3 rounded-xl cursor-pointer"
+          >
+            عرض الكل
+          </Button>
+        </Link>
       </div>
 
       {registrations.length === 0 ? (
@@ -111,12 +114,15 @@ export default function RecentRegistrationsTable({
                     </td>
                     <td className="px-6 py-2 text-left">
                       <div className="flex justify-end items-center gap-3">
-                        <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
-                          <Eye className="w-5 h-5 text-[#6B6A6A]" />
-                        </button>
-                        <button className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer">
-                          <MoreVertical className="w-5 h-5 text-[#6B6A6A]" />
-                        </button>
+                        {reg.userId && (
+                          <Link
+                            href={`/users/${reg.userId}?identity=${reg.id}`}
+                            title="عرض الحساب"
+                            className="p-1 rounded hover:bg-slate-50 text-[#111111] transition cursor-pointer"
+                          >
+                            <Eye className="w-5 h-5 text-[#6B6A6A]" />
+                          </Link>
+                        )}
                       </div>
                     </td>
                   </tr>

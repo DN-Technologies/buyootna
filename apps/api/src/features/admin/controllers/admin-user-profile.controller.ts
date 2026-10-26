@@ -43,6 +43,20 @@ export class AdminUserProfileController {
     return this.adminService.getProjectsForUser(id, identityId);
   }
 
+  @Get('users/:id/services')
+  @ApiOperation({
+    summary:
+      "A company's services (CompanyService rows) or an office's listed services, for the user page's الخدمات tab",
+  })
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiCommonErrors()
+  async getServicesForUser(
+    @Param('id') id: string,
+    @Query() { identityId }: AdminIdentityQueryDto,
+  ) {
+    return this.adminService.getServicesForUser(id, identityId);
+  }
+
   @Delete('projects/:id')
   @ApiOperation({ summary: 'Permanently delete a portfolio project' })
   @ApiParam({ name: 'id', description: 'Project ID' })

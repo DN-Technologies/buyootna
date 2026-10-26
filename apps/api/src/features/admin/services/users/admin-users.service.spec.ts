@@ -5,6 +5,7 @@ import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { MailService } from '../../../../core/mail/mail.service';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { IdentityStatsService } from '../../../../core/trust-signals/identity-stats.service';
 import { Role, IdentityType } from '@prisma/client';
 import { UserAccountStatusAction } from '../../dto/admin-update-status.dto';
 
@@ -18,7 +19,7 @@ interface MockPrismaService {
     update: jest.Mock;
     delete: jest.Mock;
   };
-  session: { deleteMany: jest.Mock };
+  session: { deleteMany: jest.Mock; aggregate: jest.Mock };
   individualProfile: {
     create: jest.Mock;
   };
@@ -44,6 +45,7 @@ describe('AdminUsersService', () => {
   let notifications: MockNotificationsService;
   let mail: MockMailService;
   let auditLog: { log: jest.Mock };
+  let identityStats: { getStats: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -56,7 +58,12 @@ describe('AdminUsersService', () => {
         update: jest.fn(),
         delete: jest.fn(),
       },
-      session: { deleteMany: jest.fn() },
+      session: {
+        deleteMany: jest.fn(),
+        aggregate: jest
+          .fn()
+          .mockResolvedValue({ _max: { createdAt: null, lastActive: null } }),
+      },
       individualProfile: {
         create: jest.fn(),
       },
@@ -80,6 +87,7 @@ describe('AdminUsersService', () => {
     };
 
     auditLog = { log: jest.fn().mockResolvedValue(undefined) };
+    identityStats = { getStats: jest.fn().mockResolvedValue(new Map()) };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,6 +99,10 @@ describe('AdminUsersService', () => {
         {
           provide: NotificationsService,
           useValue: notifications,
+        },
+        {
+          provide: IdentityStatsService,
+          useValue: identityStats,
         },
         {
           provide: MailService,
@@ -394,6 +406,57 @@ describe('AdminUsersService', () => {
       const user = await service.getUserById('user-1');
       expect(user.id).toBe('user-1');
       expect((user as { password?: string }).password).toBeUndefined();
+    });
+
+    it("adds each identity's stats and ad counts, and the account's last sign-in", async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: 'user-1',
+        password: 'hashed',
+        activePlan: null,
+        identities: [
+          {
+            id: 'co-1',
+            type: 'COMPANY',
+            _count: { companyServices: 3 },
+            properties: [
+              {
+                id: 'p-1',
+                status: 'ACTIVE',
+                _count: { favorites: 4, conversations: 2 },
+              },
+            ],
+          },
+        ],
+      });
+      prisma.session.aggregate.mockResolvedValue({
+        _max: {
+          createdAt: new Date('2026-10-20T08:00:00Z'),
+          lastActive: new Date('2026-10-26T09:30:00Z'),
+        },
+      });
+      const stats = {
+        rating: 4,
+        reviewsCount: 2,
+        soldCount: 1,
+        presence: { isOnline: false, lastSeenAt: null },
+      };
+      identityStats.getStats.mockResolvedValue(new Map([['co-1', stats]]));
+
+      const user = await service.getUserById('user-1');
+
+      expect(user.lastLoginAt).toBe('2026-10-20T08:00:00.000Z');
+      expect(user.lastActiveAt).toBe('2026-10-26T09:30:00.000Z');
+      expect(user.identities[0]).toMatchObject({
+        stats,
+        servicesCount: 3,
+        properties: [
+          {
+            id: 'p-1',
+            savesCount: 4,
+            contactsCount: 2,
+          },
+        ],
+      });
     });
   });
 

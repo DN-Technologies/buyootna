@@ -49,6 +49,10 @@ const MOCKED = [
   'updateNote',
   'deleteNote',
   'getLogsForUser',
+  'getLogs',
+  'getServicesForUser',
+  'getSubscriptions',
+  'getInvoices',
   'getAssignableAdmins',
   'enforceReport',
 ] as const;

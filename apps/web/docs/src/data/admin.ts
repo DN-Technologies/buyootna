@@ -349,70 +349,113 @@ export const admin: DocSection = {
     {
       id: "admin-billing-invoices-empty",
       title: {
-        en: "Invoices tab currently shows a fixed empty state (known gap)",
-        ar: "تبويب الفواتير يعرض حالياً حالة فارغة ثابتة (نقص معروف)",
+        en: "Billing lists real subscriptions and invoices",
+        ar: "الاشتراكات والفواتير تعرض بيانات حقيقية",
       },
       priority: "P1",
       story: {
-        en: "Verify the /billing Invoices tab renders its documented empty state consistently, so that this intentionally-not-yet-built area doesn't get flagged as 'broken' rather than 'not yet implemented', and so regressions in that empty-state UI are still caught.",
-        ar: "تحقق من أن تبويب الفواتير في /billing يعرض حالته الفارغة الموثَّقة بثبات، حتى لا يُصنَّف هذا القسم غير المبني عمداً بعد كـ'معطوب' بدلاً من 'لم يُبنَ بعد'، ومع ذلك تُلتقط أي انحدارات في واجهة تلك الحالة الفارغة نفسها.",
+        en: "/billing had a mock subscriptions list, fixed metrics (500 / 100 / 10) and an always-empty Invoices tab. Now الاشتراكات lists every subscription from GET /admin/subscriptions: a company's paid or trial period (CompanySubscription: start, end, active until it ends) and an individual's or office's ad-credit plan (UserPlanSlot: active while ads remain; no invoice = «منحة من الإدارة»), newest first. Metrics: total, active, ending within 7 days (company periods), expired/used up. الفواتير lists every Invoice from GET /admin/invoices with its owner persona, item kind (ad plan / feature an ad / company subscription), amount, status, issue and paid dates; metrics: total, paid, pending (incl. overdue) and revenue collected. Search, type, package (subscriptions; the plan names come from the API) and status filters and paging run on the server. Each row's eye opens the account on that persona's الباقة tab.",
+        ar: "كانت /billing تعرض قائمة اشتراكات وهمية وأرقاماً ثابتة (500 / 100 / 10) وتبويب فواتير فارغاً دائماً. الآن يعرض تبويب الاشتراكات كل الاشتراكات من GET /admin/subscriptions: فترة شركة مدفوعة أو تجريبية (CompanySubscription: بداية ونهاية، نشطة حتى تنتهي) وباقة إعلانات لفرد أو مكتب (UserPlanSlot: نشطة ما دام فيها إعلانات؛ بلا فاتورة = «منحة من الإدارة»)، الأحدث أولاً. الأرقام: الإجمالي، النشطة، التي تنتهي خلال 7 أيام (فترات الشركات)، المنتهية/المستنفدة. ويعرض تبويب الفواتير كل فاتورة من GET /admin/invoices مع هوية صاحبها ونوع البند (باقة إعلانات / تمييز إعلان / اشتراك شركة) والمبلغ والحالة وتاريخي الإصدار والدفع؛ والأرقام: الإجمالي، المدفوعة، بانتظار الدفع (مع المتأخرة) والإيرادات المحصلة. البحث وفلاتر النوع والباقة (للاشتراكات؛ أسماء الباقات من الـAPI) والحالة والصفحات تعمل على الخادم. أيقونة العين في كل صف تفتح الحساب على تبويب الباقة لتلك الهوية.",
       },
       acceptanceCriteria: {
         en: [
-          "The Invoices tab always shows the empty state regardless of filters/search applied — expected today.",
-          "The empty state renders correctly (no layout break, no console errors) across all supported browsers/breakpoints.",
-          "This story's acceptance criteria must be replaced once real invoice data/listing is implemented.",
+          "No hardcoded rows or numbers: metrics and rows match the database.",
+          "A company's trial shows as «الفترة التجريبية», 0 د.ك, with its end date; an admin-granted ad plan shows «منحة من الإدارة» and the ads left.",
+          "Filters and search narrow the server's results; the pagination counts are the server's.",
+          "Empty results show «لا توجد اشتراكات» / «لا توجد فواتير».",
         ],
         ar: [
-          "تبويب الفواتير يعرض دائماً الحالة الفارغة بغض النظر عن الفلاتر/البحث المطبَّق — وهذا متوقع حالياً.",
-          "الحالة الفارغة تُعرض بشكل صحيح (بلا كسر في التخطيط، وبلا أخطاء في وحدة التحكم) عبر كل المتصفحات/أحجام الشاشة المدعومة.",
-          "يجب استبدال معايير القبول لهذه القصة بمجرد تطبيق عرض بيانات فواتير حقيقية.",
+          "لا صفوف أو أرقام ثابتة: الأرقام والصفوف تطابق قاعدة البيانات.",
+          "الفترة التجريبية لشركة تظهر «الفترة التجريبية» بـ 0 د.ك وتاريخ انتهائها؛ وباقة إعلانات ممنوحة من الإدارة تظهر «منحة من الإدارة» والإعلانات المتبقية.",
+          "الفلاتر والبحث تضيّق نتائج الخادم؛ وأعداد الصفحات من الخادم.",
+          "النتائج الفارغة تعرض «لا توجد اشتراكات» / «لا توجد فواتير».",
         ],
       },
       testScenarios: {
         en: [
-          "Open the Invoices tab and confirm the empty state matches the same visual language as other empty states in the app (see admin-placeholder-pages).",
-          "Resize the browser window / test on mobile-width viewport and confirm the empty state doesn't break layout.",
+          "Run scripts/dev-demo.sh: the company «الصباح» shows its trial period and the demo invoice PULSE-DEMO-INVOICE (overdue) appears under الفواتير.",
+          "Grant a plan from a user's الباقة tab: a new row «منحة من الإدارة» appears for that persona.",
+          "Filter المستخدم = الأفراد: no company periods are listed.",
         ],
         ar: [
-          "افتح تبويب الفواتير وتأكد أن الحالة الفارغة تطابق نفس اللغة البصرية للحالات الفارغة الأخرى في التطبيق (راجع admin-placeholder-pages).",
-          "غيّر حجم نافذة المتصفح / اختبر بعرض شاشة جوال وتأكد أن الحالة الفارغة لا تكسر التخطيط.",
+          "شغّل scripts/dev-demo.sh: تظهر الفترة التجريبية لشركة «الصباح» والفاتورة التجريبية PULSE-DEMO-INVOICE (متأخرة) في الفواتير.",
+          "امنح باقة من تبويب الباقة لمستخدم: يظهر صف جديد «منحة من الإدارة» لتلك الهوية.",
+          "فلتر المستخدم = الأفراد: لا تظهر فترات الشركات.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/admin-no-mock-data",
     },
     {
       id: "admin-placeholder-pages",
       title: {
-        en: "Deals, Notifications, Content, Roles, Settings and Logs are unbuilt scaffolds",
-        ar: "الصفقات والإشعارات والمحتوى والأدوار والإعدادات والسجلات هياكل غير مبنية",
+        en: "Unbuilt pages are off the side menu; سجل العمليات is built",
+        ar: "الصفحات غير المبنية خارج القائمة الجانبية؛ وسجل العمليات مبني",
       },
       priority: "P2",
       story: {
-        en: "Confirm these six admin pages render their 'no data' placeholder rather than an error: /deals ('لا توجد صفقات أو مزادات نشطة لعرضها حالياً'), /notifications, /content, /roles, /settings and /logs. Track them as known scaffolds, not six separate bugs.",
-        ar: "تأكد من أن صفحات الإدارة الست هذه تعرض حالة 'لا توجد بيانات' وليس خطأ: /deals ('لا توجد صفقات أو مزادات نشطة لعرضها حالياً') و /notifications و /content و /roles و /settings و /logs. تُتابَع كهياكل معروفة وليست ستة أخطاء منفصلة.",
+        en: "Deals, Notifications, Content, Roles and Settings are still scaffolds, so they're no longer linked from the side menu (their URLs still load their placeholder). /logs (سجل العمليات) is built on the admin audit log (GET /admin/logs): every admin action, newest first, with who did it, the account it was about (a link to its السجل tab), the item type and date, a filter by action type and paging; a row opens its details. The dashboard's «اخر الانشطة» shows the four newest of the same actions and links here.",
+        ar: "الصفقات والإشعارات والمحتوى والأدوار والإعدادات لا تزال هياكل، فلم تعد مرتبطة في القائمة الجانبية (عناوينها لا تزال تفتح حالتها الفارغة). و/logs (سجل العمليات) مبني على سجل تدقيق الإدارة (GET /admin/logs): كل إجراء نفذه مشرف، الأحدث أولاً، مع من نفذه والحساب المعني (رابط لتبويب السجل) ونوع العنصر والتاريخ، وفلتر حسب نوع الإجراء وصفحات؛ والضغط على صف يفتح تفاصيله. وبطاقة «اخر الانشطة» في الرئيسية تعرض أحدث أربعة من نفس الإجراءات وتربط إلى هنا.",
       },
       acceptanceCriteria: {
         en: [
-          "Each page loads without errors and shows its placeholder text.",
-          "Their buttons don't throw errors.",
-          "Each has a working link in the side menu.",
+          "The side menu shows البلاغات and سجل العمليات under ادارة المنصة, nothing unbuilt.",
+          "An admin action (e.g. sending a notification, changing a plan) appears at the top of /logs and in «اخر الانشطة».",
+          "With no actions yet, both show an empty state, never sample entries.",
         ],
         ar: [
-          "كل صفحة تُحمَّل دون أخطاء وتعرض نص الحالة الفارغة.",
-          "أزرارها لا تسبب أخطاء.",
-          "لكل منها رابط يعمل في القائمة الجانبية.",
+          "القائمة الجانبية تعرض البلاغات وسجل العمليات تحت ادارة المنصة، ولا شيء غير مبني.",
+          "أي إجراء لمشرف (مثل إرسال إشعار أو تغيير باقة) يظهر أعلى /logs وفي «اخر الانشطة».",
+          "بلا إجراءات بعد، يعرض كلاهما حالة فارغة، لا أمثلة.",
         ],
       },
       testScenarios: {
         en: [
-          "Open each of the six from the side menu.",
+          "Send a notification to a user, then open /logs: «إرسال إشعار» by you, about that user, now.",
+          "Filter نوع الإجراء = تغيير الباقة: only plan changes remain.",
         ],
         ar: [
-          "افتح كل صفحة من الست من القائمة الجانبية.",
+          "أرسل إشعاراً لمستخدم ثم افتح /logs: «إرسال إشعار» بواسطتك، عن ذلك المستخدم، الآن.",
+          "فلتر نوع الإجراء = تغيير الباقة: تبقى تغييرات الباقات فقط.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/admin-no-mock-data",
+    },
+    {
+      id: "admin-no-mock-data",
+      title: {
+        en: "The admin dashboard shows no invented data",
+        ar: "لوحة الإدارة لا تعرض بيانات مختلَقة",
+      },
+      priority: "P0",
+      story: {
+        en: "Every name, number and date the admin sees comes from the API; with no data it shows «—» or an empty state. Removed: the dashboard's Figma sample data (shown when the API failed or had no users) and «مرحبا ابراهيم»; the header's «نواف الجارحي» photo, always-red bell and inert search (the signed-in admin's name/email and initial show instead); the users stats' ±% chips; on the user page the fake location, working hours, service areas, Instagram/X links, «اليوم 09:30 صباحاً» / «28 فبراير 2025», licence «74978930863», ad contacts «80» / saves «11» and deletion record, and the services tab's sample services, reports and notes. Now real: last sign-in and activity (sessions), working hours (the app's week), service areas, headquarters, the licence submission date, sold count, services (GET /admin/users/:id/services), ad saves (favorites) and contacts (chats about the ad). Buttons that only said «لم يتم تفعيل» are removed or wired.",
+        ar: "كل اسم ورقم وتاريخ يراه المشرف يأتي من الـAPI؛ وبلا بيانات يعرض «—» أو حالة فارغة. أُزيل: بيانات Figma التجريبية في الرئيسية (كانت تظهر عند فشل الـAPI أو عدم وجود مستخدمين) و«مرحبا ابراهيم»؛ وفي الترويسة صورة «نواف الجارحي» والجرس الأحمر دائماً والبحث الذي لا يبحث (يظهر بدلها اسم/بريد المشرف وحرفه الأول)؛ ونسب ±% في إحصاءات المستخدمين؛ وفي صفحة المستخدم الموقع ومواعيد العمل ومناطق الخدمة وروابط Instagram/X الوهمية و«اليوم 09:30 صباحاً» / «28 فبراير 2025» والرخصة «74978930863» وتواصل «80» / حفظ «11» للإعلان وسجل الحذف، وخدمات وبلاغات وملاحظات تبويب الخدمات التجريبية. وأصبح حقيقياً: آخر تسجيل دخول ونشاط (الجلسات)، مواعيد العمل (أسبوع التطبيق)، مناطق الخدمة، المقر، تاريخ إرسال الرخصة، المباعة، الخدمات (GET /admin/users/:id/services)، مرات حفظ الإعلان (المفضلة) والتواصل (المحادثات عنه). الأزرار التي كانت تقول «لم يتم تفعيل» أُزيلت أو رُبطت.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A fresh database shows zeros and empty states everywhere, never sample rows or names.",
+          "An account without hours/areas/location shows «—» or hides the field; one with them shows exactly what the app shows.",
+          "No button opens an alert saying the action isn't implemented.",
+        ],
+        ar: [
+          "قاعدة بيانات جديدة تعرض أصفاراً وحالات فارغة في كل مكان، ولا صفوف أو أسماء تجريبية.",
+          "حساب بلا مواعيد/مناطق/موقع يعرض «—» أو يخفي الحقل؛ ومع وجودها يعرض ما يعرضه التطبيق تماماً.",
+          "لا زر يفتح تنبيهاً بأن الإجراء غير مفعّل.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Stop the API and open the dashboard: an error with «إعادة المحاولة», no sample numbers.",
+          "Set a company's working hours in the app, open it in the admin: the same lines (e.g. «الأحد - الخميس: 9:00 ص - 5:00 م»).",
+          "Favorite an ad from another account: its مرات الحفظ goes up by one.",
+        ],
+        ar: [
+          "أوقف الـAPI وافتح الرئيسية: خطأ مع «إعادة المحاولة»، بلا أرقام تجريبية.",
+          "اضبط مواعيد عمل شركة في التطبيق ثم افتحها في الإدارة: نفس الأسطر (مثل «الأحد - الخميس: 9:00 ص - 5:00 م»).",
+          "أضف إعلاناً للمفضلة من حساب آخر: تزيد مرات الحفظ واحداً.",
+        ],
+      },
+      updatedIn: "fix/admin-no-mock-data",
     },
     {
       id: "admin-verifications",

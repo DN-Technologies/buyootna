@@ -40,6 +40,8 @@ export interface AdminDashboardPendingVerification {
   licenseNumber: string | null;
   licenseActivity: string | null;
   licenseExpiry: string | null;
+  // The uploaded licence (image or PDF)
+  licenseFileUrl?: string | null;
   logoUrl: string | null;
   createdAt: string;
   status?: string | null;

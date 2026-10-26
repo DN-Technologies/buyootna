@@ -15,6 +15,7 @@ import {
 
 function UsersPageContent() {
   const {
+    config,
     data,
     loading,
     error,
@@ -31,9 +32,9 @@ function UsersPageContent() {
     <div className="space-y-6 text-right pb-10" dir="rtl">
       {/* Header matching Figma 5634:69044 */}
       <PageHeader
-        breadcrumbs={['إدارة الحسابات', 'الأفراد']}
-        title="المستخدمون"
-        subtitle="إدارة جميع حسابات المنصة، ومتابعة الاشتراكات والحالة والنشاط."
+        breadcrumbs={config.breadcrumbs.slice(1)}
+        title={config.title}
+        subtitle={config.subtitle}
         primaryAction={{
           label: 'اضافة مستخدم',
           onClick: pageActions.handleAddUser,

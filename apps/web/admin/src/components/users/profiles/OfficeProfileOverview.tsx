@@ -1,8 +1,8 @@
 'use client'
 
+import type { WorkingHourItem } from '@/lib/working-hours'
 import OfficeVerificationBanner from '../overview/OfficeVerificationBanner'
 import OfficeBasicInfoCard from '../overview/OfficeBasicInfoCard'
-import OfficeSocialLinksCard from '../overview/OfficeSocialLinksCard'
 import UserActivityInfoCard from '../overview/UserActivityInfoCard'
 
 export interface OfficeProfileOverviewProps {
@@ -11,17 +11,14 @@ export interface OfficeProfileOverviewProps {
   whatsapp: string
   phone: string
   licenseNumber?: string | null
-  workingHours?: {
-    weekday?: string
-    weekend?: string
-  }
+  workingHours?: WorkingHourItem[] | null
   isPendingVerification?: boolean
+  // When the licence was sent for review (the identity's data date)
+  submittedAt?: string
   onReviewVerification?: () => void
   lastActivity: string
   lastLogin: string
   joinedAt: string
-  instagramUrl?: string
-  xUrl?: string
   loading?: boolean
 }
 
@@ -32,19 +29,21 @@ export default function OfficeProfileOverview({
   phone,
   licenseNumber,
   workingHours,
-  isPendingVerification = true,
+  isPendingVerification = false,
+  submittedAt,
   onReviewVerification,
   lastActivity,
   lastLogin,
   joinedAt,
-  instagramUrl,
-  xUrl,
   loading = false,
 }: OfficeProfileOverviewProps) {
   return (
     <div className="flex flex-col gap-5 w-full font-['Cairo']" dir="rtl">
       {isPendingVerification && !loading && (
-        <OfficeVerificationBanner onReview={onReviewVerification} />
+        <OfficeVerificationBanner
+          submittedAt={submittedAt}
+          onReview={onReviewVerification}
+        />
       )}
 
       <OfficeBasicInfoCard
@@ -55,12 +54,6 @@ export default function OfficeProfileOverview({
         licenseNumber={licenseNumber}
         workingHours={workingHours}
         accountType="مكتب عقاري"
-        loading={loading}
-      />
-
-      <OfficeSocialLinksCard
-        instagramUrl={instagramUrl}
-        xUrl={xUrl}
         loading={loading}
       />
 

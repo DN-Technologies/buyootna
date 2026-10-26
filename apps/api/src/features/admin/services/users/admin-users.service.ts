@@ -24,6 +24,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { MailService } from '../../../../core/mail/mail.service';
 import { adminCustomMessageTemplate } from '../../../../core/mail/templates/admin-custom-message.template';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { IdentityStatsService } from '../../../../core/trust-signals/identity-stats.service';
 import {
   ACCOUNT_TYPE_LABELS,
   accountTypeOf,
@@ -38,6 +39,7 @@ export class AdminUsersService {
     private readonly notificationsService: NotificationsService,
     private readonly mailService: MailService,
     private readonly auditLog: AdminAuditLogService,
+    private readonly identityStats: IdentityStatsService,
   ) {}
 
   /**
@@ -390,7 +392,13 @@ export class AdminUsersService {
             individualData: true,
             companyData: true,
             officeData: true,
-            properties: { orderBy: { createdAt: 'desc' } },
+            properties: {
+              orderBy: { createdAt: 'desc' },
+              include: {
+                _count: { select: { favorites: true, conversations: true } },
+              },
+            },
+            _count: { select: { companyServices: true } },
           },
         },
         activePlan: true,
@@ -401,10 +409,33 @@ export class AdminUsersService {
       throw new NotFoundException('المستخدم غير موجود');
     }
 
-    const userWithoutPassword = { ...user, accountState: accountState(user) };
-    delete (userWithoutPassword as Partial<typeof userWithoutPassword>)
-      .password;
-    return userWithoutPassword;
+    const [stats, sessions] = await Promise.all([
+      this.identityStats.getStats(user.identities.map((i) => i.id)),
+      this.prisma.session.aggregate({
+        where: { userId: id },
+        _max: { createdAt: true, lastActive: true },
+      }),
+    ]);
+
+    const { password: _password, identities, ...rest } = user;
+    return {
+      ...rest,
+      accountState: accountState(user),
+      // The newest sign-in and the newest request from any device
+      lastLoginAt: sessions._max.createdAt?.toISOString() ?? null,
+      lastActiveAt: sessions._max.lastActive?.toISOString() ?? null,
+      identities: identities.map(({ _count, properties, ...identity }) => ({
+        ...identity,
+        stats: stats.get(identity.id) ?? null,
+        servicesCount: _count.companyServices,
+        properties: properties.map(({ _count: counts, ...property }) => ({
+          ...property,
+          savesCount: counts.favorites,
+          // Chats opened about the ad
+          contactsCount: counts.conversations,
+        })),
+      })),
+    };
   }
 
   async deleteUser(id: string) {

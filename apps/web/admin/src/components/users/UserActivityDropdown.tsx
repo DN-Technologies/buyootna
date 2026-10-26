@@ -1,9 +1,12 @@
 'use client'
 
 import React from 'react'
+import AnchoredMenu from '@/components/ui/AnchoredMenu'
 
 export interface UserActivityDropdownProps {
   isOpen: boolean
+  // The «⋮» button: the menu opens next to it, over the table
+  anchor: HTMLElement | null
   onClose: () => void
   accountStatus?: 'نشط' | 'محظور' | 'موقوف'
   onSendNotification: () => void
@@ -16,6 +19,7 @@ export interface UserActivityDropdownProps {
 
 export default function UserActivityDropdown({
   isOpen,
+  anchor,
   onClose,
   accountStatus = 'نشط',
   onSendNotification,
@@ -31,13 +35,10 @@ export default function UserActivityDropdown({
   const isBlocked = accountStatus === 'محظور'
 
   return (
-    <>
-      {/* Backdrop overlay to dismiss on click outside */}
-      <div className="fixed inset-0 z-30" onClick={onClose} />
-
+    <AnchoredMenu anchor={anchor} onClose={onClose}>
       {/* Dropdown Container matching Figma Node 5634:68317 */}
       <div
-        className="absolute left-0 mt-1 min-w-36.75 bg-white rounded-md shadow-[0px_4px_6px_0px_rgba(130,130,130,0.2),0px_0px_1px_0px_rgba(130,130,130,0.32)] border border-[#ECECEC]/60 py-2 px-3 flex flex-col gap-0.5 items-end z-40 text-right select-none animate-in fade-in zoom-in-95 duration-150"
+        className="min-w-36.75 bg-white rounded-md shadow-[0px_4px_6px_0px_rgba(130,130,130,0.2),0px_0px_1px_0px_rgba(130,130,130,0.32)] border border-[#ECECEC]/60 py-2 px-3 flex flex-col gap-0.5 items-end text-right select-none animate-in fade-in zoom-in-95 duration-150"
         dir="rtl"
         data-node-id="5634:68317"
         data-name="activity dropdown"
@@ -134,6 +135,6 @@ export default function UserActivityDropdown({
           </span>
         </button>
       </div>
-    </>
+    </AnchoredMenu>
   )
 }
