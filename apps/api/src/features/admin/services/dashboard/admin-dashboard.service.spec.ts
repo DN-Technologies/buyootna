@@ -144,8 +144,16 @@ describe('AdminDashboardService', () => {
       );
 
       expect(result.pendingVerifications).toEqual([
-        { identityId: 'company-identity-1', name: 'شركة الاختبار', type: 'شركة' },
-        { identityId: 'office-identity-1', name: 'مكتب الاختبار', type: 'مكتب عقاري' },
+        {
+          identityId: 'company-identity-1',
+          name: 'شركة الاختبار',
+          type: 'شركة',
+        },
+        {
+          identityId: 'office-identity-1',
+          name: 'مكتب الاختبار',
+          type: 'مكتب عقاري',
+        },
       ]);
 
       expect(result.revenueByMonth).toHaveLength(12);

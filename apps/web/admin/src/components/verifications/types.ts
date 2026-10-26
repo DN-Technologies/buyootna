@@ -12,6 +12,7 @@ export interface VerificationTableRow {
   licenseNumber?: string
   licenseActivity?: string
   licenseExpiry?: string
+  licenseFileUrl?: string
   logoUrl?: string
   createdAtTimestamp?: number
 }
