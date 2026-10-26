@@ -46,3 +46,55 @@ model AppVersionSeen {
   @@id([platform, appVersion, runtime])
   @@index([lastSeenAt])
 }
+
+enum TestingBugSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TestingBugStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+  NOT_A_BUG
+}
+
+// A bug a tester found, sent from the phone with screenshots
+model TestingBugReport {
+  id           String             @id @default(uuid())
+  title        String
+  // Where: app, admin, companies, offices, management, landing, api
+  area         String
+  severity     TestingBugSeverity @default(MEDIUM)
+  status       TestingBugStatus   @default(NEW)
+  steps        String
+  expected     String?
+  actual       String?
+  // Filled in from the tester's phone, editable
+  platform     String?
+  device       String?
+  appVersion   String?
+  // S3 URLs of the screenshots (uploaded first, like the docs portal's)
+  screenshots  String[]           @default([])
+  reporterName String
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  comments TestingBugComment[]
+
+  @@index([status, createdAt])
+}
+
+model TestingBugComment {
+  id         String   @id @default(uuid())
+  reportId   String
+  authorName String
+  body       String
+  createdAt  DateTime @default(now())
+
+  report TestingBugReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+}

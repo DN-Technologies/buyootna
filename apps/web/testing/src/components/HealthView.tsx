@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronLeft, Gauge, RefreshCw } from 'lucide-react'
+import { ChevronLeft, Gauge, RefreshCw, ScrollText } from 'lucide-react'
 import { usePolling } from '@/lib/usePolling'
 import {
   Card,
@@ -88,16 +88,29 @@ export default function HealthView() {
             </p>
           </div>
 
-          <Link
-            href="/metrics"
-            className="flex items-center justify-between rounded-2xl border border-line bg-surface px-4 py-3"
-          >
-            <span className="flex items-center gap-2 font-semibold">
-              <Gauge className="h-4 w-4 text-accent" />
-              المقاييس: الطلبات والأخطاء وزمن الاستجابة
-            </span>
-            <ChevronLeft className="h-4 w-4 text-muted" />
-          </Link>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ['/metrics', 'المقاييس', 'الطلبات والأخطاء والسرعة', Gauge],
+                ['/logs', 'السجلات', 'سطور الخادم مباشرة', ScrollText],
+              ] as const
+            ).map(([href, title, hint, Icon]) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between rounded-2xl border border-line bg-surface px-3 py-3"
+              >
+                <span>
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <Icon className="h-4 w-4 text-accent" />
+                    {title}
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-muted">{hint}</span>
+                </span>
+                <ChevronLeft className="h-4 w-4 shrink-0 text-muted" />
+              </Link>
+            ))}
+          </div>
 
           <Card className="p-0">
             <ul className="divide-y divide-line">

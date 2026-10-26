@@ -42,6 +42,8 @@ const ACTION_LABEL: Record<string, string> = {
   FREE_ADS_SET: 'تعديل الإعلانات المجانية',
   DEMO_ADDED: 'إضافة بيانات تجريبية',
   DEMO_CLEARED: 'حذف البيانات التجريبية',
+  BUG_REPORTED: 'إبلاغ عن خطأ',
+  BUG_UPDATED: 'تحديث حالة خطأ',
 }
 
 function dateTime(iso: string | null) {
