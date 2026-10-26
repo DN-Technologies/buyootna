@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, UserPlus } from 'lucide-react'
+import { ChevronLeft, Database, UserPlus } from 'lucide-react'
 import { usePolling } from '@/lib/usePolling'
 import { mutate } from '@/lib/mutate'
 import { Card, Notice, PageTitle } from '../ui'
@@ -188,6 +188,20 @@ export default function ToolsView() {
             ))}
           </ul>
         </Card>
+
+        <Link
+          href="/tools/database"
+          className="flex items-center justify-between gap-3 rounded-2xl border border-down/40 bg-surface p-4"
+        >
+          <div className="flex items-center gap-3">
+            <Database className="h-5 w-5 text-down" />
+            <div>
+              <p className="font-bold">قاعدة البيانات</p>
+              <p className="text-xs text-muted">تعبئة بيانات التطوير، أو مسح كل البيانات</p>
+            </div>
+          </div>
+          <ChevronLeft className="h-4 w-4 shrink-0 text-muted" />
+        </Link>
       </div>
     </>
   )

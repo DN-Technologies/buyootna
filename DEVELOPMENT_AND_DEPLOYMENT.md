@@ -177,6 +177,34 @@ certificate doesn't exist yet, and then every site is down):
    LOGIN signs testers in (a new one signs everyone out); DANGER is asked
    again before wiping the database.
 
+6. **Before the first wipe**, make `backups/` private in the S3 bucket
+   policy: add `"arn:aws:s3:::<bucket>/backups/*"` to the
+   `PublicReadGetObject` statement's `NotResource` list (next to `chat/*`
+   and `stories/*`). Until then every wipe stops after the backup: the API
+   checks the backup isn't readable anonymously, and if it is, removes it
+   and deletes nothing.
+
+### Wipe backups and restoring one
+
+الأدوات › قاعدة البيانات › مسح كل البيانات runs `pg_dump --format=custom`
+in the API container and uploads it to `s3://<bucket>/backups/<time>-<commit>.dump`
+before emptying anything; the key is shown on the screen and in سجل البوابة
+(`DATABASE_WIPED`). It keeps `_prisma_migrations` and the `Testing*` tables
+(portal passwords, audit log, bug reports). Backups aren't deleted
+automatically. To put a backup back (it replaces what's there now, the
+`Testing*` tables included, as they were at backup time):
+
+```bash
+aws s3 cp s3://<bucket>/backups/<file>.dump ./restore.dump
+docker compose cp restore.dump postgres:/tmp/restore.dump
+docker compose exec postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  --clean --if-exists --no-owner --single-transaction /tmp/restore.dump && rm /tmp/restore.dump'
+rm restore.dump
+```
+
+`--single-transaction` means a failed restore changes nothing. The daily
+`postgres-backup` dumps are a second way back.
+
 Locally: `pnpm --filter api testing:set-password LOGIN`, then run the site
 with `API_URL=http://localhost:8000` and the same `TESTING_JWT_SECRET` in
 `apps/web/testing/.env.local` (`pnpm --filter @buyootna/web-testing dev`, port 3007).

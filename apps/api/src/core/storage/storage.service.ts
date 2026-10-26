@@ -12,7 +12,8 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { createWriteStream } from 'fs';
+import { createReadStream, createWriteStream } from 'fs';
+import { stat } from 'fs/promises';
 import { extname } from 'path';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
@@ -251,6 +252,46 @@ export class StorageService {
     );
     if (!object.Body) return Buffer.alloc(0);
     return Buffer.from(await object.Body.transformToByteArray());
+  }
+
+  /**
+   * Streams a local file to a private object at `key` (e.g. a database
+   * backup) and returns the size S3 reports back for it.
+   */
+  async uploadPrivateFile(
+    path: string,
+    key: string,
+    contentType: string,
+  ): Promise<number> {
+    const { size } = await stat(path);
+    await this.s3Client.send(
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: createReadStream(path),
+        ContentLength: size,
+        ContentType: contentType,
+      }),
+    );
+    const head = await this.headObject(key);
+    return head?.contentLength ?? 0;
+  }
+
+  /**
+   * Whether anyone can read `key` without credentials (the bucket policy
+   * makes every prefix but a few private ones public). Unknown counts as
+   * readable, so callers that need privacy fail safe.
+   */
+  async isPubliclyReadable(key: string): Promise<boolean> {
+    try {
+      const res = await fetch(
+        `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`,
+        { method: 'HEAD' },
+      );
+      return res.status !== 403;
+    } catch {
+      return true;
+    }
   }
 
   /**
