@@ -1,8 +1,19 @@
 'use client'
 
-import { Mail, MessageCircle, Phone, User, MapPin, Clock, Hash, Building2 } from 'lucide-react'
+import {
+  Mail,
+  MessageCircle,
+  Phone,
+  User,
+  MapPin,
+  Clock,
+  Hash,
+  Building2,
+} from 'lucide-react'
 import type { ComponentType } from 'react'
 import Skeleton from '@/components/ui/Skeleton'
+import type { WorkingHourItem } from '@/lib/working-hours'
+import WorkingHoursChips from './WorkingHoursChips'
 
 export interface CompanyBasicInfoCardProps {
   email: string
@@ -10,10 +21,7 @@ export interface CompanyBasicInfoCardProps {
   whatsapp: string
   phone: string
   serviceAreas?: string
-  workingHours?: {
-    weekday?: string
-    weekend?: string
-  }
+  workingHours?: WorkingHourItem[] | null
   accountType?: string
   licenseNumber?: string | null
   loading?: boolean
@@ -62,11 +70,8 @@ export default function CompanyBasicInfoCard({
   fullName,
   whatsapp,
   phone,
-  serviceAreas = 'كافة المناطق',
-  workingHours = {
-    weekday: 'الأحد - الخميس: 9:00 ص - 8:00 م.',
-    weekend: 'الجمعة والسبت: مغلق.',
-  },
+  serviceAreas,
+  workingHours,
   accountType = 'شركة',
   licenseNumber,
   loading = false,
@@ -84,9 +89,19 @@ export default function CompanyBasicInfoCard({
 
       {/* Row 1 */}
       <div className="flex items-stretch justify-between border-b border-[#ECECEC]">
-        <Field label="البريد الإلكتروني" value={email} icon={Mail} loading={loading} />
+        <Field
+          label="البريد الإلكتروني"
+          value={email}
+          icon={Mail}
+          loading={loading}
+        />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="الاسم الكامل" value={fullName} icon={User} loading={loading} />
+        <Field
+          label="الاسم الكامل"
+          value={fullName}
+          icon={User}
+          loading={loading}
+        />
       </div>
 
       {/* Row 2 */}
@@ -99,32 +114,43 @@ export default function CompanyBasicInfoCard({
           loading={loading}
         />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="رقم الهاتف" value={phone} icon={Phone} loading={loading} />
+        <Field
+          label="رقم الهاتف"
+          value={phone}
+          icon={Phone}
+          loading={loading}
+        />
       </div>
 
       {/* Row 3 */}
       <div className="flex items-stretch justify-between border-b border-[#ECECEC]">
         <Field label="مواعيد العمل" icon={Clock} loading={loading}>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-slate-50 text-[#111111]">
-              <span className="size-1.5 rounded-full bg-[#018B1B]" />
-              {workingHours.weekday}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-slate-50 text-[#111111]">
-              <span className="size-1.5 rounded-full bg-[#9C1E28]" />
-              {workingHours.weekend}
-            </span>
-          </div>
+          <WorkingHoursChips items={workingHours} />
         </Field>
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="مناطق تقديم الخدمات" value={serviceAreas} icon={MapPin} loading={loading} />
+        <Field
+          label="مناطق تقديم الخدمات"
+          value={serviceAreas || '—'}
+          icon={MapPin}
+          loading={loading}
+        />
       </div>
 
       {/* Row 4 */}
       <div className="flex items-stretch justify-between">
-        <Field label="نوع الحساب" value={accountType} icon={Building2} loading={loading} />
+        <Field
+          label="نوع الحساب"
+          value={accountType}
+          icon={Building2}
+          loading={loading}
+        />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="رقم الرخصة" value={licenseNumber || '—'} icon={Hash} loading={loading} />
+        <Field
+          label="رقم الرخصة"
+          value={licenseNumber || '—'}
+          icon={Hash}
+          loading={loading}
+        />
       </div>
     </div>
   )

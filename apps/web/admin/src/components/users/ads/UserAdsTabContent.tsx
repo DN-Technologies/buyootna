@@ -8,15 +8,18 @@ import AdDetailSheet from './AdDetailSheet'
 import type { AdminUserProperty } from '@/lib/admin-users'
 import { AdminUserWallet, fetchUserWallet } from '@/lib/admin-plans'
 
-type AdsFilter = 'all' | 'active' | 'featured' | 'deleted'
+type AdsFilter = 'all' | 'active' | 'featured' | 'hidden'
 
 export default function UserAdsTabContent({
   properties,
   userId,
+  identityId,
   onRefresh,
 }: {
   properties: AdminUserProperty[]
   userId: string
+  // The page's selected persona: its own free ad and credits
+  identityId?: string
   onRefresh?: () => void
 }) {
   const [filter, setFilter] = useState<AdsFilter>('all')
@@ -26,7 +29,7 @@ export default function UserAdsTabContent({
 
   useEffect(() => {
     let cancelled = false
-    fetchUserWallet(userId)
+    fetchUserWallet(userId, identityId)
       .then((data) => {
         if (!cancelled) setWallet(data)
       })
@@ -34,19 +37,20 @@ export default function UserAdsTabContent({
     return () => {
       cancelled = true
     }
-  }, [userId])
+  }, [userId, identityId])
 
   const activeCount = properties.filter(
     (p) => p.status === 'ACTIVE' && !p.isHidden,
   ).length
   const featuredCount = properties.filter((p) => p.isFeatured).length
-  const deletedCount = properties.filter((p) => p.status === 'DELETED').length
+  // Hidden by the admin or the owner («اخفاء»)
+  const hiddenCount = properties.filter((p) => p.isHidden).length
 
   const tabs: { id: AdsFilter; label: string; count: number }[] = [
     { id: 'all', label: 'الكل', count: properties.length },
     { id: 'active', label: 'نشطة', count: activeCount },
     { id: 'featured', label: 'مميزة', count: featuredCount },
-    { id: 'deleted', label: 'محذوف', count: deletedCount },
+    { id: 'hidden', label: 'مخفية', count: hiddenCount },
   ]
 
   const filtered = useMemo(() => {
@@ -56,8 +60,8 @@ export default function UserAdsTabContent({
     if (filter === 'featured') {
       return properties.filter((p) => p.isFeatured)
     }
-    if (filter === 'deleted') {
-      return properties.filter((p) => p.status === 'DELETED')
+    if (filter === 'hidden') {
+      return properties.filter((p) => p.isHidden)
     }
     return properties
   }, [properties, filter])

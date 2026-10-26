@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Check, Package, Ticket, Gift } from 'lucide-react'
 
 interface UserAdsCreditCardProps {
@@ -11,6 +13,11 @@ export default function UserAdsCreditCard({
   isFreeUsed = false,
   paidCredit = null,
 }: UserAdsCreditCardProps) {
+  // «باقة إعلانات» opens this persona's الباقة tab
+  const pathname = usePathname()
+  const params = new URLSearchParams(useSearchParams().toString())
+  params.set('tab', 'packages')
+
   return (
     <div
       className="bg-white border border-[#ECECEC] rounded-lg flex flex-col gap-3.5 p-4 w-full font-['Cairo']"
@@ -21,13 +28,13 @@ export default function UserAdsCreditCard({
           الفرد يحصل على إعلان <span className="text-[#111111] font-bold">واحد مجاني</span>{' '}
           ثم يحتاج لشراء باقة إعلانات
         </p>
-        <button
-          type="button"
-          onClick={() => alert('"باقة إعلانات" — لم يتم تفعيل هذا الإجراء بعد.')}
-          className="h-9 px-4 rounded-full border border-[#E2E8F0] bg-white text-[13px] font-semibold text-[#111111] hover:bg-[#F8FAFC] cursor-pointer shrink-0"
+        <Link
+          href={`${pathname}?${params.toString()}`}
+          scroll={false}
+          className="h-9 px-4 flex items-center rounded-full border border-[#E2E8F0] bg-white text-[13px] font-semibold text-[#111111] hover:bg-[#F8FAFC] cursor-pointer shrink-0"
         >
           باقة إعلانات
-        </button>
+        </Link>
       </div>
 
       <div className="flex items-center gap-3 w-full">

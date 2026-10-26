@@ -54,8 +54,8 @@ export default function UserDetailHeader({
   planLabel,
   statusLabel,
   avatarUrl,
-  location = 'السالمية، شمال غرب صليبيخات',
-  userId = 'USR-001',
+  location,
+  userId,
   licenseNumber,
   isOffice = false,
   loading = false,
@@ -212,11 +212,15 @@ export default function UserDetailHeader({
                           <span>رقم الرخصة {licenseNumber}</span>
                         </>
                       )}
-                      <span className="text-[#ECECEC]">|</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-[#6B6A6A]" />
-                        {location}
-                      </span>
+                      {location && (
+                        <>
+                          <span className="text-[#ECECEC]">|</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-4 h-4 text-[#6B6A6A]" />
+                            {location}
+                          </span>
+                        </>
+                      )}
                       <span className="text-[#ECECEC]">|</span>
                       <span className="flex items-center gap-1">
                         <Building2 className="w-4 h-4 text-[#6B6A6A]" />

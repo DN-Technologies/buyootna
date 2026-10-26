@@ -19,8 +19,8 @@ export default function ChangePlanDrawer({
   user,
   userId,
   identityId,
-  userName = 'محمد الجارح',
-  userEmail = 'mohamedelgareh@gmail.com',
+  userName,
+  userEmail,
   accountType = 'فرد',
   currentPlanLabel,
 }: ChangePlanDrawerProps) {
@@ -74,8 +74,8 @@ export default function ChangePlanDrawer({
   if (!open) return null
 
   // Dynamic user data resolution
-  const resolvedName = user?.name || userName
-  const resolvedEmail = user?.email || userEmail
+  const resolvedName = user?.name || userName || '—'
+  const resolvedEmail = user?.email || userEmail || '—'
   const resolvedAccountType = user?.accountType || accountType
   const resolvedCurrentPlan =
     user?.subscriptionPlan &&

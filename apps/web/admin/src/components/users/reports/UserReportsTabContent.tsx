@@ -20,6 +20,7 @@ export interface UserReportItem {
   code: string
   title: string
   submitter: string
+  submitterId?: string
   submitterEmail?: string
   submitterPhone?: string
   date: string
@@ -34,6 +35,7 @@ function toUserReportItem(row: AdminReportRow): UserReportItem {
     code: `${row.reportNumber} #`,
     title: row.reason,
     submitter: row.submittedBy?.name || 'مستخدم بيوتنا',
+    submitterId: row.submittedBy?.id,
     submitterEmail: row.submittedBy?.email || undefined,
     submitterPhone: row.submittedBy?.phone || undefined,
     date: formatRelativeArabicTime(row.createdAt),

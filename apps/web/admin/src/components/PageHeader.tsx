@@ -97,7 +97,7 @@ export default function PageHeader({
             </Button>
           )}
 
-          {!primaryAction && !secondaryAction && showExport && (
+          {!primaryAction && !secondaryAction && showExport && onExport && (
             <Button
               onClick={onExport}
               variant="outline"

@@ -1,7 +1,12 @@
 'use client'
 
 import { Fragment, useCallback, useEffect, useState } from 'react'
-import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation'
+import {
+  useParams,
+  useRouter,
+  usePathname,
+  useSearchParams,
+} from 'next/navigation'
 import { CheckCircle2 } from 'lucide-react'
 import UserDetailHeader from '@/components/users/UserDetailHeader'
 import UserQuickStats from '@/components/users/UserQuickStats'
@@ -28,6 +33,8 @@ import UserRatingsTabContent from '@/components/users/ratings/UserRatingsTabCont
 import UserLogsTabContent from '@/components/users/logs/UserLogsTabContent'
 import UserNotesTabContent from '@/components/users/notes/UserNotesTabContent'
 import { setActiveAccountType } from '@/lib/active-account-type'
+import { workingHourLines } from '@/lib/working-hours'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 import {
   fetchUserDetails,
   AdminUserDetail,
@@ -54,16 +61,16 @@ function selectIdentity(
 
 const TAB_SLUGS: Record<string, string> = {
   'نظرة عامة': 'overview',
-  'الاعلانات': 'ads',
-  'الطلبات': 'requests',
-  'الخدمات': 'services',
-  'المعرض': 'exhibition',
-  'الباقة': 'packages',
+  الاعلانات: 'ads',
+  الطلبات: 'requests',
+  الخدمات: 'services',
+  المعرض: 'exhibition',
+  الباقة: 'packages',
   'الفواتير والخصم': 'invoices',
-  'البلاغات': 'reports',
-  'التقييمات': 'ratings',
-  'السجل': 'logs',
-  'ملاحظات': 'notes',
+  البلاغات: 'reports',
+  التقييمات: 'ratings',
+  السجل: 'logs',
+  ملاحظات: 'notes',
 }
 
 const SLUG_TO_TAB: Record<string, string> = {
@@ -100,27 +107,33 @@ export default function UserOverviewPage() {
   const [user, setUser] = useState<AdminUserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [reportsCount, setReportsCount] = useState<number | undefined>(undefined)
-  const [ratingAverage, setRatingAverage] = useState<number | undefined>(undefined)
+  const [reportsCount, setReportsCount] = useState<number | undefined>(
+    undefined,
+  )
+  const [ratingAverage, setRatingAverage] = useState<number | undefined>(
+    undefined,
+  )
   const [ratingCount, setRatingCount] = useState<number | undefined>(undefined)
-  const [requestsCount, setRequestsCount] = useState<number | undefined>(undefined)
+  const [requestsCount, setRequestsCount] = useState<number | undefined>(
+    undefined,
+  )
 
   const [changePackageOpen, setChangePackageOpen] = useState(false)
-  const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] = useState(false)
+  const [addExceptionalFeatureOpen, setAddExceptionalFeatureOpen] =
+    useState(false)
   const [addCouponOpen, setAddCouponOpen] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   const currentTabSlug = searchParams.get('tab')
-  const requestedTab = (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
+  const requestedTab =
+    (currentTabSlug && SLUG_TO_TAB[currentTabSlug]) || 'نظرة عامة'
 
   const identity = user
     ? selectIdentity(user.identities ?? [], searchParams.get('identity'))
     : undefined
   const identityId = identity?.id
   const userRole = (identity?.type || user?.role || 'INDIVIDUAL') as
-    | 'INDIVIDUAL'
-    | 'OFFICE'
-    | 'COMPANY'
+    'INDIVIDUAL' | 'OFFICE' | 'COMPANY'
   // A tab the selected persona doesn't have (المعرض on an individual) opens the overview
   const activeTab = tabsFor(userRole).includes(requestedTab)
     ? requestedTab
@@ -136,7 +149,9 @@ export default function UserOverviewPage() {
   // The side nav highlights the shown identity's type, until the page closes
   useEffect(() => {
     if (!identity) return
-    setActiveAccountType(identity.type.toLowerCase() as 'individual' | 'company' | 'office')
+    setActiveAccountType(
+      identity.type.toLowerCase() as 'individual' | 'company' | 'office',
+    )
   }, [identity])
   useEffect(() => () => setActiveAccountType(null), [])
 
@@ -175,8 +190,7 @@ export default function UserOverviewPage() {
   }, [loadUser])
 
   // Lightweight parallel fetches for UserQuickStats — independent of which
-  // tab is active, for the selected persona. servicesCount stays unset (no
-  // Service backend exists).
+  // tab is active, for the selected persona.
   const userLoaded = !!user
   useEffect(() => {
     if (!userLoaded) return
@@ -245,6 +259,20 @@ export default function UserOverviewPage() {
     identity?.companyData?.logoUrl ||
     identity?.officeData?.logoUrl ||
     user.avatarUrl
+  const businessData = identity?.companyData ?? identity?.officeData
+  // A company's services are rows; an office only has its typed list
+  const servicesCount =
+    identity?.type === 'COMPANY'
+      ? identity.servicesCount
+      : identity?.type === 'OFFICE'
+        ? (identity.officeData?.services ?? '')
+            .split(/[,،\n]/)
+            .filter((part) => part.trim()).length
+        : undefined
+  const lastActivity = user.lastActiveAt
+    ? formatRelativeArabicTime(user.lastActiveAt)
+    : '—'
+  const lastLogin = formatArabicDate(user.lastLoginAt)
   const licenseNumber =
     identity?.companyData?.licenseNumber ?? identity?.officeData?.licenseNumber
   const accountType = IDENTITY_TYPE_LABELS[userRole] || 'فرد'
@@ -275,6 +303,7 @@ export default function UserOverviewPage() {
           isOffice={isOffice || userRole === 'COMPANY'}
           userId={user.id}
           licenseNumber={licenseNumber}
+          location={businessData?.hqLocation || undefined}
           backHref={`/users?type=${userRole.toLowerCase()}`}
           onActionSelect={handleHeaderAction}
           identitySwitcher={
@@ -293,6 +322,8 @@ export default function UserOverviewPage() {
             ratingAverage,
             ratingCount,
             requestsCount,
+            soldCount: identity?.stats?.soldCount,
+            servicesCount,
           }}
         />
         <UserDetailTabs
@@ -304,73 +335,83 @@ export default function UserOverviewPage() {
 
       {/* Keyed by persona: switching identity starts each tab afresh */}
       <Fragment key={identityId ?? 'account'}>
-      {activeTab === 'الاعلانات' ? (
-        <UserAdsTabContent
-          properties={identity?.properties || []}
-          userId={user.id}
-          onRefresh={refreshAds}
-        />
-      ) : activeTab === 'الطلبات' ? (
-        <UserRequestsTabContent
-          userRole={userRole}
-          userId={user.id}
-          identityId={identityId}
-        />
-      ) : activeTab === 'الخدمات' ? (
-        <UserServicesTabContent />
-      ) : activeTab === 'المعرض' ? (
-        <UserExhibitionTabContent userId={user.id} identityId={identityId} />
-      ) : activeTab === 'الباقة' ? (
-        <UserPackagesTabContent userId={user.id} identityId={identityId} />
-      ) : activeTab === 'الفواتير والخصم' ? (
-        <UserInvoicesDiscountsTabContent
-          userId={user.id}
-          identityId={identityId}
-        />
-      ) : activeTab === 'البلاغات' ? (
-        <UserReportsTabContent userId={user.id} identityId={identityId} />
-      ) : activeTab === 'التقييمات' ? (
-        <UserRatingsTabContent userId={user.id} identityId={identityId} />
-      ) : activeTab === 'السجل' ? (
-        <UserLogsTabContent userId={user.id} />
-      ) : activeTab === 'ملاحظات' ? (
-        <UserNotesTabContent userId={user.id} />
-      ) : userRole === 'COMPANY' ? (
-        <CompanyProfileOverview
-          email={user.email || '—'}
-          fullName={displayName}
-          licenseNumber={licenseNumber}
-          whatsapp={user.whatsapp || '—'}
-          phone={user.phone || '—'}
-          isPendingVerification={identity?.companyData?.status === 'PENDING'}
-          lastActivity="اليوم 09:30 صباحاً"
-          lastLogin="28 فبراير 2025"
-          joinedAt={formatArabicDate(user.createdAt)}
-        />
-      ) : userRole === 'OFFICE' ? (
-        <OfficeProfileOverview
-          email={user.email || '—'}
-          fullName={displayName}
-          licenseNumber={licenseNumber}
-          whatsapp={user.whatsapp || '—'}
-          phone={user.phone || '—'}
-          isPendingVerification={identity?.officeData?.status === 'PENDING'}
-          lastActivity="اليوم 09:30 صباحاً"
-          lastLogin="28 فبراير 2025"
-          joinedAt={formatArabicDate(user.createdAt)}
-        />
-      ) : (
-        <IndividualProfileOverview
-          email={user.email || '—'}
-          fullName={displayName}
-          whatsapp={user.whatsapp || '—'}
-          phone={user.phone || '—'}
-          accountType={accountType}
-          lastActivity="اليوم 09:30 صباحاً"
-          lastLogin="28 فبراير 2025"
-          joinedAt={formatArabicDate(user.createdAt)}
-        />
-      )}
+        {activeTab === 'الاعلانات' ? (
+          <UserAdsTabContent
+            properties={identity?.properties || []}
+            userId={user.id}
+            identityId={identityId}
+            onRefresh={refreshAds}
+          />
+        ) : activeTab === 'الطلبات' ? (
+          <UserRequestsTabContent
+            userRole={userRole}
+            userId={user.id}
+            identityId={identityId}
+          />
+        ) : activeTab === 'الخدمات' ? (
+          <UserServicesTabContent
+            userId={user.id}
+            identityId={identityId}
+            userRole={userRole}
+          />
+        ) : activeTab === 'المعرض' ? (
+          <UserExhibitionTabContent userId={user.id} identityId={identityId} />
+        ) : activeTab === 'الباقة' ? (
+          <UserPackagesTabContent userId={user.id} identityId={identityId} />
+        ) : activeTab === 'الفواتير والخصم' ? (
+          <UserInvoicesDiscountsTabContent
+            userId={user.id}
+            identityId={identityId}
+          />
+        ) : activeTab === 'البلاغات' ? (
+          <UserReportsTabContent userId={user.id} identityId={identityId} />
+        ) : activeTab === 'التقييمات' ? (
+          <UserRatingsTabContent userId={user.id} identityId={identityId} />
+        ) : activeTab === 'السجل' ? (
+          <UserLogsTabContent userId={user.id} />
+        ) : activeTab === 'ملاحظات' ? (
+          <UserNotesTabContent userId={user.id} />
+        ) : userRole === 'COMPANY' ? (
+          <CompanyProfileOverview
+            email={user.email || '—'}
+            fullName={displayName}
+            licenseNumber={licenseNumber}
+            whatsapp={user.whatsapp || '—'}
+            phone={user.phone || '—'}
+            isPendingVerification={identity?.companyData?.status === 'PENDING'}
+            submittedAt={formatArabicDate(identity?.companyData?.updatedAt)}
+            workingHours={workingHourLines(identity?.companyData?.workingHours)}
+            serviceAreas={identity?.companyData?.serviceAreas || undefined}
+            lastActivity={lastActivity}
+            lastLogin={lastLogin}
+            joinedAt={formatArabicDate(user.createdAt)}
+          />
+        ) : userRole === 'OFFICE' ? (
+          <OfficeProfileOverview
+            email={user.email || '—'}
+            fullName={displayName}
+            licenseNumber={licenseNumber}
+            whatsapp={user.whatsapp || '—'}
+            phone={user.phone || '—'}
+            isPendingVerification={identity?.officeData?.status === 'PENDING'}
+            submittedAt={formatArabicDate(identity?.officeData?.updatedAt)}
+            workingHours={workingHourLines(identity?.officeData?.workingHours)}
+            lastActivity={lastActivity}
+            lastLogin={lastLogin}
+            joinedAt={formatArabicDate(user.createdAt)}
+          />
+        ) : (
+          <IndividualProfileOverview
+            email={user.email || '—'}
+            fullName={displayName}
+            whatsapp={user.whatsapp || '—'}
+            phone={user.phone || '—'}
+            accountType={accountType}
+            lastActivity={lastActivity}
+            lastLogin={lastLogin}
+            joinedAt={formatArabicDate(user.createdAt)}
+          />
+        )}
       </Fragment>
 
       {/* Change Package Drawer */}
@@ -399,7 +440,9 @@ export default function UserOverviewPage() {
 
       {/* Add Discount Coupon Modal (Figma Nodes 5634:71560, 5634:71598, 5634:71780) */}
       <AddCouponModal
-        user={user ? { id: user.id, name: displayName, email: user.email } : null}
+        user={
+          user ? { id: user.id, name: displayName, email: user.email } : null
+        }
         isOpen={addCouponOpen}
         onClose={() => setAddCouponOpen(false)}
         onSuccess={() =>

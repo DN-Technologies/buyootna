@@ -4,12 +4,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { EyeOff, RefreshCw, Star } from 'lucide-react'
 import AdDetailHeader, { AdDetailTab } from './AdDetailHeader'
 import AdDetailInfo from './AdDetailInfo'
-import { MockReport, ReportDetailView, ReportsList } from './AdReportsTab'
+import { AdReportItem, ReportDetailView, ReportsList } from './AdReportsTab'
 import AssignReportDialog from './AssignReportDialog'
 import ReportActionToast, { ToastState } from './ReportActionToast'
-import ConfirmActionDialog, {
-  ConfirmActionType,
-} from './ConfirmActionDialog'
+import ConfirmActionDialog, { ConfirmActionType } from './ConfirmActionDialog'
 import FeatureAdDialog, { featuredUntilFromDuration } from './FeatureAdDialog'
 import type { AdminUserProperty } from '@/lib/admin-users'
 import { getAdCode, getAdLabel } from '@/lib/property-labels'
@@ -24,7 +22,7 @@ import { updateProperty } from '@/lib/admin-properties'
 import { AD_TAB_PRIORITY_LABEL, AD_TAB_STATUS_LABEL } from '@/lib/report-labels'
 import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
-function toMockReport(row: AdminReportRow): MockReport {
+function toAdReportItem(row: AdminReportRow): AdReportItem {
   return {
     id: row.id,
     code: row.reportNumber,
@@ -50,9 +48,9 @@ export default function AdDetailSheet({
   onRefresh?: () => void
 }) {
   const [activeTab, setActiveTab] = useState<AdDetailTab>('details')
-  const [reports, setReports] = useState<MockReport[]>([])
+  const [reports, setReports] = useState<AdReportItem[]>([])
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null)
-  const [assigningReport, setAssigningReport] = useState<MockReport | null>(
+  const [assigningReport, setAssigningReport] = useState<AdReportItem | null>(
     null,
   )
   const [toast, setToast] = useState<ToastState | null>(null)
@@ -66,8 +64,7 @@ export default function AdDetailSheet({
   const isExpiredOrClosed =
     property.status === 'EXPIRED' || property.status === 'CLOSED'
 
-  const selectedReport =
-    reports.find((r) => r.id === selectedReportId) || null
+  const selectedReport = reports.find((r) => r.id === selectedReportId) || null
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -80,7 +77,7 @@ export default function AdDetailSheet({
   const loadReports = useCallback(async () => {
     try {
       const rows = await fetchPropertyReports(property.id)
-      setReports(rows.map(toMockReport))
+      setReports(rows.map(toAdReportItem))
     } catch (err) {
       console.error('Failed to load property reports:', err)
     }
@@ -90,7 +87,7 @@ export default function AdDetailSheet({
     loadReports()
   }, [loadReports])
 
-  async function handleCloseReport(report: MockReport) {
+  async function handleCloseReport(report: AdReportItem) {
     try {
       await updateReport(report.id, { status: 'RESOLVED' })
       setToast({ message: 'تم وضع علامة تم الحل (مغلق) للبلاغ بنجاح.' })
@@ -179,17 +176,22 @@ export default function AdDetailSheet({
               )}
             </div>
 
-            <div className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full font-['Cairo']" dir="rtl">
-              {activeTab === 'details' && !property.isFeatured && property.status !== 'DELETED' && (
-                <button
-                  type="button"
-                  onClick={() => setShowFeatureDialog(true)}
-                  className="flex-1 h-12 flex items-center justify-center gap-1.5 rounded-full bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
-                >
-                  تمييز
-                  <Star className="w-3.5 h-3.5" />
-                </button>
-              )}
+            <div
+              className="border-t border-[#ECECEC] flex items-center gap-3 px-5 py-4 w-full font-['Cairo']"
+              dir="rtl"
+            >
+              {activeTab === 'details' &&
+                !property.isFeatured &&
+                property.status !== 'DELETED' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFeatureDialog(true)}
+                    className="flex-1 h-12 flex items-center justify-center gap-1.5 rounded-full bg-linear-to-l from-[#FF8D28] to-[#FACC15] text-[14px] font-semibold text-[#111111] cursor-pointer"
+                  >
+                    تمييز
+                    <Star className="w-3.5 h-3.5" />
+                  </button>
+                )}
 
               {isExpiredOrClosed ? (
                 <button
@@ -204,7 +206,9 @@ export default function AdDetailSheet({
                 <button
                   type="button"
                   onClick={() =>
-                    property.isHidden ? handleUnhide() : setConfirmAction('hide')
+                    property.isHidden
+                      ? handleUnhide()
+                      : setConfirmAction('hide')
                   }
                   className="flex-1 h-11.5 flex items-center justify-center gap-1.5 rounded-full border border-[#E2E8F0] text-[#111111] text-[14px] font-semibold cursor-pointer"
                 >

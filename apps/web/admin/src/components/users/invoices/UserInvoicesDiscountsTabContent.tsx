@@ -124,7 +124,6 @@ export default function UserInvoicesDiscountsTabContent({
                   <th className="py-3 px-4 text-right">المبلغ</th>
                   <th className="py-3 px-4 text-right">الحالة</th>
                   <th className="py-3 px-4 text-right">تاريخ الطلب</th>
-                  <th className="py-3 px-4 text-center">الإجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#ECECEC] text-[14px]">
@@ -148,20 +147,6 @@ export default function UserInvoicesDiscountsTabContent({
                     </td>
                     <td className="py-3.5 px-4 text-[#6B6A6A]">
                       {formatArabicDate(inv.createdAt)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          alert(
-                            `تحميل الفاتورة ${inv.invoiceNo} — لم يتم تفعيل هذا الإجراء بعد.`,
-                          )
-                        }
-                        className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline cursor-pointer text-[14px]"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span>تحميل</span>
-                      </button>
                     </td>
                   </tr>
                 ))}

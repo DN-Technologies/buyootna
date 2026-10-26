@@ -5,7 +5,6 @@ import {
   X,
   Phone,
   MessageCircle,
-  MessageSquare,
   Star,
 } from 'lucide-react'
 import type { UserRequestItem } from './UserRequestsTabContent'
@@ -192,14 +191,6 @@ export default function RequestDetailSheet({
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => alert('محادثة المشتري')}
-                  className="size-9 rounded-full border border-[#ECECEC] bg-white flex items-center justify-center text-primary hover:bg-slate-50 transition-colors cursor-pointer"
-                  title="محادثة"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </button>
                 {client.whatsapp && (
                   <a
                     href={`https://wa.me/${client.whatsapp.replace(/[^\d]/g, '')}`}

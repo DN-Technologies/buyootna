@@ -59,18 +59,17 @@ export default function VerificationSuccessToast({
           </p>
         </div>
 
-        {/* Left side: Undo button matching Figma 2769:52262 */}
+        {/* Left side: Undo button matching Figma 2769:52262 (only with a real undo) */}
+        {onUndo && (
         <button
           type="button"
-          onClick={() => {
-            if (onUndo) onUndo()
-            else if (onClose) onClose()
-          }}
+          onClick={onUndo}
           className="font-['Cairo'] font-bold text-[#15304d] text-[16px] leading-normal hover:underline cursor-pointer whitespace-nowrap bg-transparent border-0 p-0"
           data-node-id="2769:52262"
         >
           {undoText}
         </button>
+        )}
       </div>
     </div>
   )

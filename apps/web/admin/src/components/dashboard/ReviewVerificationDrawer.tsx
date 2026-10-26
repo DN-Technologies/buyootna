@@ -203,7 +203,7 @@ export default function ReviewVerificationDrawer({
                       رقم الرخصة
                     </span>
                     <span className="font-['Cairo'] font-medium text-[14px] text-[#111111] leading-normal">
-                      {request.licenseNumber || '74978930863'}
+                      {request.licenseNumber || '—'}
                     </span>
                   </div>
                   <div className="h-px bg-[#ECECEC] w-full" />

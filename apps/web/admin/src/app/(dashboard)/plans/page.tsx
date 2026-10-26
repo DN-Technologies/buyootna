@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Plus, CheckCircle2, ChevronLeft } from 'lucide-react'
+import { CheckCircle2, ChevronLeft } from 'lucide-react'
 import PlanDetailDrawer, { PlanDetailDrawerItem } from './PlanDetailDrawer'
 import EditPlanDrawer, { EditPlanDrawerItem } from './EditPlanDrawer'
 import {
@@ -177,15 +177,6 @@ export default function PlansPage() {
           </p>
         </div>
 
-        {/* Primary Action Button */}
-        <button
-          type="button"
-          onClick={() => alert('إضافة باقة جديدة')}
-          className="bg-primary hover:bg-[#0f2338] text-white font-bold text-[14px] h-11 px-5 rounded-xl flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>إضافة باقة</span>
-        </button>
       </div>
 
       {/* Summary Metrics Cards Grid (4 Boxes - Figma Node 4477:132001) */}
