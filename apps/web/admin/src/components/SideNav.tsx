@@ -13,12 +13,9 @@ import {
   OfficesIcon,
   BillingIcon,
   PackagesIcon,
-  NotificationBellIcon,
-  DealsIcon,
-  RolesIcon,
-  SettingsIcon,
   ReportsNavIcon,
 } from '@/components/icons/AdminIcons'
+import { History as LogsNavIcon } from 'lucide-react'
 
 interface NavItem {
   title: string
@@ -63,22 +60,12 @@ const navGroups: NavGroup[] = [
     label: 'ادارة المنصة',
     items: [
       {
-        title: 'الاشعارات',
-        href: '/notifications',
-        icon: NotificationBellIcon,
-      },
-      {
         title: 'البلاغات',
         href: '/reports',
         icon: ReportsNavIcon,
       },
-      { title: 'الصفقات والمزادات', href: '/deals', icon: DealsIcon },
-      { title: 'الأدوار والصلاحيات', href: '/roles', icon: RolesIcon },
+      { title: 'سجل العمليات', href: '/logs', icon: LogsNavIcon },
     ],
-  },
-  {
-    label: 'النظام',
-    items: [{ title: 'الإعدادت', href: '/settings', icon: SettingsIcon }],
   },
 ]
 

@@ -1,8 +1,18 @@
 'use client'
 
-import { Mail, MessageCircle, Phone, User, FileText, Clock, Building2 } from 'lucide-react'
+import {
+  Mail,
+  MessageCircle,
+  Phone,
+  User,
+  FileText,
+  Clock,
+  Building2,
+} from 'lucide-react'
 import type { ComponentType } from 'react'
 import Skeleton from '@/components/ui/Skeleton'
+import type { WorkingHourItem } from '@/lib/working-hours'
+import WorkingHoursChips from './WorkingHoursChips'
 
 export interface OfficeBasicInfoCardProps {
   email: string
@@ -10,10 +20,7 @@ export interface OfficeBasicInfoCardProps {
   whatsapp: string
   phone: string
   licenseNumber?: string | null
-  workingHours?: {
-    weekday?: string
-    weekend?: string
-  }
+  workingHours?: WorkingHourItem[] | null
   accountType?: string
   loading?: boolean
 }
@@ -62,10 +69,7 @@ export default function OfficeBasicInfoCard({
   whatsapp,
   phone,
   licenseNumber,
-  workingHours = {
-    weekday: 'الأحد - الخميس: 9:00 ص - 8:00 م.',
-    weekend: 'الجمعة والسبت: مغلق.',
-  },
+  workingHours,
   accountType = 'مكتب عقاري',
   loading = false,
 }: OfficeBasicInfoCardProps) {
@@ -82,9 +86,19 @@ export default function OfficeBasicInfoCard({
 
       {/* Row 1 */}
       <div className="flex items-stretch justify-between border-b border-[#ECECEC]">
-        <Field label="البريد الإلكتروني" value={email} icon={Mail} loading={loading} />
+        <Field
+          label="البريد الإلكتروني"
+          value={email}
+          icon={Mail}
+          loading={loading}
+        />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="الاسم الكامل" value={fullName} icon={User} loading={loading} />
+        <Field
+          label="الاسم الكامل"
+          value={fullName}
+          icon={User}
+          loading={loading}
+        />
       </div>
 
       {/* Row 2 */}
@@ -97,30 +111,36 @@ export default function OfficeBasicInfoCard({
           loading={loading}
         />
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="رقم الهاتف" value={phone} icon={Phone} loading={loading} />
+        <Field
+          label="رقم الهاتف"
+          value={phone}
+          icon={Phone}
+          loading={loading}
+        />
       </div>
 
       {/* Row 3 */}
       <div className="flex items-stretch justify-between border-b border-[#ECECEC]">
         <Field label="مواعيد العمل" icon={Clock} loading={loading}>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-slate-50 text-[#111111]">
-              <span className="size-1.5 rounded-full bg-[#018B1B]" />
-              {workingHours.weekday}
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[12px] font-medium bg-slate-50 text-[#111111]">
-              <span className="size-1.5 rounded-full bg-[#9C1E28]" />
-              {workingHours.weekend}
-            </span>
-          </div>
+          <WorkingHoursChips items={workingHours} />
         </Field>
         <div className="w-px bg-[#ECECEC]" />
-        <Field label="رقم الرخصة" value={licenseNumber || '—'} icon={FileText} loading={loading} />
+        <Field
+          label="رقم الرخصة"
+          value={licenseNumber || '—'}
+          icon={FileText}
+          loading={loading}
+        />
       </div>
 
       {/* Row 4 */}
       <div className="flex items-stretch justify-between">
-        <Field label="نوع الحساب" value={accountType} icon={Building2} loading={loading} />
+        <Field
+          label="نوع الحساب"
+          value={accountType}
+          icon={Building2}
+          loading={loading}
+        />
       </div>
     </div>
   )

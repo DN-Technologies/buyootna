@@ -3,6 +3,7 @@
 import React from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { VerificationTableRow } from './types'
+import { formatRelativeArabicTime } from '@/lib/admin-dashboard'
 
 interface VerificationTablePagination {
   currentPage: number
@@ -195,7 +196,7 @@ export default function VerificationTable({
 
                 {/* Sent Date */}
                 <div className="w-28 text-right font-['Cairo'] font-normal text-[12px] text-[#6B6A6A]">
-                  {row.sentAt}
+                  {formatRelativeArabicTime(row.sentAt) || '—'}
                 </div>
 
                 {/* Actions Link */}

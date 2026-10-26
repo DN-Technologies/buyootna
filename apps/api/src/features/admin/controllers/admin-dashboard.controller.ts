@@ -5,9 +5,10 @@ import { AdminService } from '../admin.service';
 import { AdminUsersFilterDto } from '../dto/admin-users-filter.dto';
 import { ApiCommonErrors } from '../../../core/swagger/api-common-errors.decorator';
 import { AdminDashboardResponseDto } from '../dto/admin-dashboard-response.dto';
+import { AdminLogsFilterDto } from '../dto/admin-logs-filter.dto';
 import { AdminApi } from './admin-api.decorator';
 
-/** Dashboard stats and the users CSV export (/admin/users/export must be routed before /admin/users/:id, so this controller is registered first). */
+/** Dashboard stats, the platform's admin activity log and the users CSV export (/admin/users/export must be routed before /admin/users/:id, so this controller is registered first). */
 @AdminApi()
 export class AdminDashboardController {
   constructor(private readonly adminService: AdminService) {}
@@ -21,6 +22,16 @@ export class AdminDashboardController {
   @ApiCommonErrors()
   async getDashboard() {
     return this.adminService.getDashboard();
+  }
+
+  @Get('logs')
+  @ApiOperation({
+    summary:
+      'Every admin action (the audit log), newest first, with the acting admin and the target user; optional action filter',
+  })
+  @ApiCommonErrors()
+  async getLogs(@Query() { page, limit, action }: AdminLogsFilterDto) {
+    return this.adminService.getLogs(page, limit, action);
   }
 
   @Get('users/export')

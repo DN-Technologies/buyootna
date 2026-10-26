@@ -10,6 +10,7 @@ export interface UserQuickStatsValues {
   requestsCount?: number
   adsCount?: number
   servicesCount?: number
+  soldCount?: number
 }
 
 export interface UserQuickStatsProps {
@@ -54,8 +55,8 @@ export default function UserQuickStats({
     },
     ratingDisplay,
     { label: 'الطلبات', value: fmt(values.requestsCount) },
-    // No "sold" concept exists on Property (ListingStatus has no SOLD state).
-    { label: 'العقارات المباعة', value: '—' },
+    // Ads deleted with the «تم البيع» reason (IdentityStatsService)
+    { label: 'العقارات المباعة', value: fmt(values.soldCount) },
     { label: 'الاعلانات', value: fmt(values.adsCount) },
   ]
 

@@ -19,6 +19,7 @@ import { AdminPlansService } from './services/billing/admin-plans.service';
 import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
 import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
 import { AdminInvoicesService } from './services/billing/admin-invoices.service';
+import { AdminBillingListService } from './services/billing/admin-billing-list.service';
 import { AdminRatingsService } from './services/user-profile/admin-ratings.service';
 import { AdminNotesService } from './services/users/admin-notes.service';
 import { CompanyRequestsModule } from '../company/company-requests/company-requests.module';
@@ -55,6 +56,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
     AdminPlansService,
     AdminPlanCatalogService,
     AdminInvoicesService,
+    AdminBillingListService,
     AdminRatingsService,
     AdminNotesService,
     AdminFeaturePackagesService,

@@ -32,10 +32,6 @@ import FeatureAdDialog, { featuredUntilFromDuration } from './FeatureAdDialog'
 
 // نسخ (copy) has no confirmation design and no backend API — left as a
 // lightweight placeholder.
-function notImplemented(action: string) {
-  alert(`"${action}" — لم يتم تفعيل هذا الإجراء بعد.`)
-}
-
 export default function UserAdCard({
   property,
   onViewDetails,
@@ -172,9 +168,11 @@ export default function UserAdCard({
         <div className="flex items-center gap-1 mr-auto">
           <button
             type="button"
-            onClick={() => notImplemented('نسخ')}
+            onClick={() =>
+              navigator.clipboard?.writeText(String(property.referenceNumber))
+            }
             className="p-1.5 rounded-full text-[#111111] hover:bg-[#F1F5F9] cursor-pointer"
-            title="نسخ"
+            title="نسخ رقم الإعلان"
           >
             <Copy className="w-4 h-4" />
           </button>

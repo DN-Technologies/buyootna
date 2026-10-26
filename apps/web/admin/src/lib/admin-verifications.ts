@@ -14,6 +14,7 @@ export interface AdminVerificationRow {
   licenseNumber: string | null
   licenseActivity: string | null
   licenseExpiry: string | null
+  licenseFileUrl: string | null
   logoUrl: string | null
   createdAt: string
 }

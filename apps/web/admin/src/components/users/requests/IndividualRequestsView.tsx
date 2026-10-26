@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import {
   ChevronDown,
   Check,
-  Download,
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react'
@@ -186,15 +185,6 @@ export default function IndividualRequestsView({
             )}
           </div>
 
-          {/* Export Button */}
-          <button
-            type="button"
-            onClick={() => alert('تصدير كـ CSV/Excel')}
-            className="flex items-center gap-2 border border-[#ECECEC] bg-white hover:bg-slate-50 text-[#111111] font-medium text-[13px] rounded-xl px-4 py-2 transition-colors cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-[#6B6A6A]" />
-            <span>تصدير</span>
-          </button>
         </div>
       </div>
 

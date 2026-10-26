@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ExternalLink, X } from 'lucide-react'
 import { UserReportItem } from './UserReportsTabContent'
@@ -145,14 +146,15 @@ export default function ReportDetailDrawer({
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => alert(`الانتقال إلى ملف ${report.submitter}`)}
-                className="text-[#6B6A6A] hover:text-primary p-1 cursor-pointer"
-                title="عرض ملف المستخدم"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </button>
+              {report.submitterId && (
+                <Link
+                  href={`/users/${report.submitterId}`}
+                  className="text-[#6B6A6A] hover:text-primary p-1 cursor-pointer"
+                  title="عرض ملف المستخدم"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -214,7 +216,6 @@ export default function ReportDetailDrawer({
       {toastMessage && (
         <ReportSuccessToast
           message={toastMessage}
-          onUndo={() => alert('تم التراجع عن الإجراء بنجاح.')}
           onDismiss={() => setToastMessage(null)}
         />
       )}

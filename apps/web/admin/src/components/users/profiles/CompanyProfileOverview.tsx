@@ -1,8 +1,8 @@
 'use client'
 
+import type { WorkingHourItem } from '@/lib/working-hours'
 import OfficeVerificationBanner from '../overview/OfficeVerificationBanner'
 import CompanyBasicInfoCard from '../overview/CompanyBasicInfoCard'
-import OfficeSocialLinksCard from '../overview/OfficeSocialLinksCard'
 import UserActivityInfoCard from '../overview/UserActivityInfoCard'
 
 export interface CompanyProfileOverviewProps {
@@ -11,18 +11,15 @@ export interface CompanyProfileOverviewProps {
   whatsapp: string
   phone: string
   serviceAreas?: string
-  workingHours?: {
-    weekday?: string
-    weekend?: string
-  }
+  workingHours?: WorkingHourItem[] | null
   licenseNumber?: string | null
   isPendingVerification?: boolean
+  // When the licence was sent for review (the identity's data date)
+  submittedAt?: string
   onReviewVerification?: () => void
   lastActivity: string
   lastLogin: string
   joinedAt: string
-  instagramUrl?: string
-  xUrl?: string
   loading?: boolean
 }
 
@@ -34,19 +31,21 @@ export default function CompanyProfileOverview({
   serviceAreas,
   workingHours,
   licenseNumber,
-  isPendingVerification = true,
+  isPendingVerification = false,
+  submittedAt,
   onReviewVerification,
   lastActivity,
   lastLogin,
   joinedAt,
-  instagramUrl,
-  xUrl,
   loading = false,
 }: CompanyProfileOverviewProps) {
   return (
     <div className="flex flex-col gap-5 w-full font-['Cairo']" dir="rtl">
       {isPendingVerification && !loading && (
-        <OfficeVerificationBanner onReview={onReviewVerification} />
+        <OfficeVerificationBanner
+          submittedAt={submittedAt}
+          onReview={onReviewVerification}
+        />
       )}
 
       <CompanyBasicInfoCard
@@ -58,12 +57,6 @@ export default function CompanyProfileOverview({
         workingHours={workingHours}
         accountType="شركة"
         licenseNumber={licenseNumber}
-        loading={loading}
-      />
-
-      <OfficeSocialLinksCard
-        instagramUrl={instagramUrl}
-        xUrl={xUrl}
         loading={loading}
       />
 

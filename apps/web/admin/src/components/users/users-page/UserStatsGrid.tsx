@@ -20,29 +20,21 @@ export const UserStatsGrid: React.FC<UserStatsGridProps> = ({
       <StatCard
         title={totalTitle}
         count={stats.total}
-        change="8.1%"
-        trend="up"
         variant="green"
       />
       <StatCard
         title="نشط"
         count={stats.active}
-        change="8.1%"
-        trend="up"
         variant="green"
       />
       <StatCard
         title="محظور"
         count={stats.blocked}
-        change="3.2%"
-        trend="down"
         variant="red"
       />
       <StatCard
         title="موقوف"
         count={stats.suspended}
-        change="3.2%"
-        trend="down"
         variant="orange"
       />
     </div>

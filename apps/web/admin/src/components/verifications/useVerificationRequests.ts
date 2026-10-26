@@ -110,6 +110,7 @@ export function useVerificationRequests() {
     licenseNumber: r.licenseNumber || undefined,
     licenseActivity: r.licenseActivity || undefined,
     licenseExpiry: r.licenseExpiry || undefined,
+    licenseFileUrl: r.licenseFileUrl || undefined,
     logoUrl: r.logoUrl || undefined,
   }))
 
@@ -159,8 +160,10 @@ export function useVerificationRequests() {
       licenseNumber: row.licenseNumber || null,
       licenseActivity: row.licenseActivity || null,
       licenseExpiry: row.licenseExpiry || null,
+      licenseFileUrl: row.licenseFileUrl || null,
       logoUrl: row.logoUrl || null,
-      createdAt: new Date().toISOString(),
+      // When the licence was sent (the API's ISO date)
+      createdAt: row.sentAt,
       status: row.status,
       sentAt: row.sentAt,
     }

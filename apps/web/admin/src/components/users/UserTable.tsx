@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Eye, MoreVertical, Check } from 'lucide-react'
 import Skeleton from '@/components/ui/Skeleton'
 import UserActivityDropdown from './UserActivityDropdown'
@@ -66,6 +66,8 @@ export default function UserTable({
 }: UserTableProps) {
   const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([])
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
+  const closeMenu = useCallback(() => setActiveMenuId(null), [])
 
   const selectedIds = externalSelectedIds ?? internalSelectedIds
 
@@ -321,9 +323,10 @@ export default function UserTable({
                       <div className="relative">
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={(e) => {
+                            setMenuAnchor(e.currentTarget)
                             setActiveMenuId(isMenuOpen ? null : user.id)
-                          }
+                          }}
                           className="p-1 text-[#6B6A6A] hover:text-[#111111] rounded-md hover:bg-[#F1F5F9] cursor-pointer transition-colors"
                           title="المزيد من الإجراءات"
                         >
@@ -333,7 +336,8 @@ export default function UserTable({
                         {/* Figma Node 5634:68317 Activity Dropdown */}
                         <UserActivityDropdown
                           isOpen={isMenuOpen}
-                          onClose={() => setActiveMenuId(null)}
+                          anchor={menuAnchor}
+                          onClose={closeMenu}
                           accountStatus={user.accountStatus}
                           onSendNotification={() => onSendNotification?.(user)}
                           onChangePlan={() => onChangePlan?.(user)}

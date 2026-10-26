@@ -195,6 +195,7 @@ export class AdminVerificationsService {
         licenseNumber: row.licenseNumber,
         licenseActivity: row.licenseActivity,
         licenseExpiry: row.licenseExpiry,
+        licenseFileUrl: row.licenseFileUrl,
         logoUrl: row.logoUrl,
         createdAt: row.createdAt.toISOString(),
       };

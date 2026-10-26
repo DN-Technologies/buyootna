@@ -15,6 +15,10 @@ import {
 } from '../dto/admin-grant-coupon.dto';
 import { AdminUpdatePlanDto } from '../dto/admin-update-plan.dto';
 import { AdminIdentityQueryDto } from '../dto/admin-identity-query.dto';
+import {
+  AdminInvoicesFilterDto,
+  AdminSubscriptionsFilterDto,
+} from '../dto/admin-billing-filter.dto';
 import { ApiCommonErrors } from '../../../core/swagger/api-common-errors.decorator';
 import { AdminApi } from './admin-api.decorator';
 
@@ -22,6 +26,26 @@ import { AdminApi } from './admin-api.decorator';
 @AdminApi()
 export class AdminBillingController {
   constructor(private readonly adminService: AdminService) {}
+
+  @Get('subscriptions')
+  @ApiOperation({
+    summary:
+      "Every subscription, newest first: companies' paid/trial periods and individuals'/offices' ad-credit plans, with metrics and the plan names to filter by",
+  })
+  @ApiCommonErrors()
+  async getSubscriptions(@Query() filters: AdminSubscriptionsFilterDto) {
+    return this.adminService.getSubscriptions(filters);
+  }
+
+  @Get('invoices')
+  @ApiOperation({
+    summary:
+      'Every invoice, newest first, with its owner persona and totals (paid revenue, counts by status)',
+  })
+  @ApiCommonErrors()
+  async getInvoices(@Query() filters: AdminInvoicesFilterDto) {
+    return this.adminService.getInvoices(filters);
+  }
 
   @Get('users/:id/wallet')
   @ApiOperation({

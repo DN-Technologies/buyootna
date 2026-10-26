@@ -121,6 +121,23 @@ export interface AdminIdentityData {
   status?: 'PENDING' | 'APPROVED' | 'REJECTED'
   // Only on companyData/officeData: the commercial licence
   licenseNumber?: string | null
+  // Only on companyData/officeData
+  hqLocation?: string | null
+  workingHours?: unknown
+  createdAt?: string
+  updatedAt?: string
+  // Only on companyData/officeData: the typed «،»-separated list
+  services?: string | null
+  // Only on companyData
+  serviceAreas?: string | null
+}
+
+/** Trust signals of one persona (IdentityStatsService). */
+export interface AdminIdentityStats {
+  rating: number
+  reviewsCount: number
+  soldCount: number
+  presence: { isOnline: boolean; lastSeenAt: string | null }
 }
 
 export interface AdminUserProperty {
@@ -148,11 +165,6 @@ export interface AdminUserProperty {
   features: unknown
   savesCount?: number
   contactsCount?: number
-  deletionInfo?: {
-    deletedAt: string
-    deletedBy: string
-    reason: string
-  }
 }
 
 export interface AdminUserIdentity {
@@ -162,6 +174,9 @@ export interface AdminUserIdentity {
   companyData?: AdminIdentityData | null
   officeData?: AdminIdentityData | null
   properties?: AdminUserProperty[]
+  stats?: AdminIdentityStats | null
+  // A company's services (CompanyService rows)
+  servicesCount?: number
 }
 
 export interface AdminUserDetail {
@@ -176,6 +191,9 @@ export interface AdminUserDetail {
   isDisabled: boolean
   createdAt: string
   activePlan?: { name: string } | null
+  // The newest sign-in and the newest request, from any device
+  lastLoginAt?: string | null
+  lastActiveAt?: string | null
   identities: AdminUserIdentity[]
 }
 

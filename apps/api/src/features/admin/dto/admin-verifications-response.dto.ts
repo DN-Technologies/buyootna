@@ -40,6 +40,12 @@ export class AdminVerificationRowDto {
   @ApiProperty({ nullable: true })
   licenseExpiry: string | null;
 
+  @ApiProperty({
+    nullable: true,
+    description: 'The uploaded licence (image or PDF) to review',
+  })
+  licenseFileUrl: string | null;
+
   @ApiProperty({ nullable: true })
   logoUrl: string | null;
 
