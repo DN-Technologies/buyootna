@@ -35,6 +35,13 @@ interface AuditResponse {
 const ACTION_LABEL: Record<string, string> = {
   SIGN_IN: 'تسجيل دخول',
   OTP_REVEALED: 'إظهار رمز تحقق',
+  OTP_COOLDOWN_UNLOCKED: 'فك قفل رموز التحقق',
+  ACCOUNT_CREATED: 'إنشاء حساب',
+  PLAN_GRANTED: 'منح باقة',
+  PLAN_EDITED: 'تعديل باقة',
+  FREE_ADS_SET: 'تعديل الإعلانات المجانية',
+  DEMO_ADDED: 'إضافة بيانات تجريبية',
+  DEMO_CLEARED: 'حذف البيانات التجريبية',
 }
 
 function dateTime(iso: string | null) {

@@ -118,6 +118,45 @@ export const testing: DocSection = {
       updatedIn: "feat/testing-otp-feed",
     },
     {
+      id: "testing-account-tools",
+      title: {
+        en: "الأدوات: find or add an account, unlock OTP cooldowns, give plans, fill demo data",
+        ar: "الأدوات: البحث عن حساب أو إضافته، فك قفل الرموز، منح الباقات، البيانات التجريبية",
+      },
+      priority: "P1",
+      story: {
+        en: "الأدوات searches accounts by email, phone or name (company and office names too) and opens one: its identities (status, licence), each identity's free ads (− / +), plan slots (تعديل the ads left, إنهاء) and «منح» a plan, the demo-data buttons (the «النبض» cases, the company, the office, the studio; «حذف كل البيانات التجريبية» removes every demo row on the platform), and its OTP cooldowns. «إضافة حساب» creates an individual with email and/or phone and a password, optionally with a company (approved at once, with its trial, as in the app) or an office (approved at once if «اعتماد المكتب مباشرة» is ticked); a taken licence number refuses it without leaving a half account. «قفل رموز التحقق» lists who's waiting before a new code, has hit the daily limit or is blocked after wrong codes, with «فك القفل». Every change is in سجل البوابة. API: GET/POST /testing-portal/accounts, GET /testing-portal/accounts/:userId, POST .../accounts/:userId/demo, GET /testing-portal/cooldowns, POST .../cooldowns/unlock, GET /testing-portal/plans, POST /testing-portal/identities/:id/plans, PATCH /testing-portal/slots/:id, PUT /testing-portal/identities/:id/free-ads. المقاييس now opens from الحالة.",
+        ar: "الأدوات تبحث عن الحسابات بالبريد أو الهاتف أو الاسم (وأسماء الشركات والمكاتب) وتفتح الحساب: هوياته (الحالة، الرخصة)، والإعلانات المجانية لكل هوية (− / +)، وحصص الباقات (تعديل الإعلانات المتبقية، إنهاء) و«منح» باقة، وأزرار البيانات التجريبية (حالات «النبض»، الشركة، المكتب، الاستوديو؛ و«حذف كل البيانات التجريبية» يحذف كل الصفوف التجريبية في المنصة)، وقفل رموز التحقق للحساب. «إضافة حساب» ينشئ فرداً ببريد و/أو هاتف وكلمة مرور، ومعه شركة إن أردت (تُعتمد مباشرة مع فترتها التجريبية كما في التطبيق) أو مكتب (يُعتمد مباشرة إن فُعّل «اعتماد المكتب مباشرة»)؛ ورقم رخصة مستخدم يُرفض دون ترك حساب ناقص. «قفل رموز التحقق» يعرض من ينتظر قبل رمز جديد أو بلغ الحد اليومي أو أُقفل بعد رموز خاطئة، مع «فك القفل». كل تغيير يظهر في سجل البوابة. المقاييس أصبحت تُفتح من الحالة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Searching 2+ characters lists matching accounts with their identities; tapping one opens it.",
+          "Granting a plan adds an active slot with the plan's ads (or the number typed); إنهاء ends it; − / + changes free ads; each shows at once and in سجل البوابة.",
+          "A demo case shows what it added; on the app (switching to the profile) the pulse / studio shows it.",
+          "After «فك القفل», the same email or phone can ask for a code right away.",
+        ],
+        ar: [
+          "البحث بحرفين أو أكثر يعرض الحسابات المطابقة وهوياتها؛ والضغط على حساب يفتحه.",
+          "منح باقة يضيف حصة نشطة بإعلانات الباقة (أو العدد المكتوب)؛ و«إنهاء» ينهيها؛ و− / + يغيّر الإعلانات المجانية؛ وكل ذلك يظهر فوراً وفي سجل البوابة.",
+          "حالة البيانات التجريبية تعرض ما أضافته؛ وفي التطبيق (بعد التبديل للهوية) يظهر في النبض / الاستوديو.",
+          "بعد «فك القفل» يمكن لنفس البريد أو الرقم طلب رمز فوراً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Ask for a sign-up code 3 times quickly in the app: the third says to wait; unlock it in الأدوات and ask again.",
+          "إضافة حساب with an office and «اعتماد المكتب مباشرة»: sign in with it in the app and switch to the office — it's approved.",
+          "Give an office 0 free ads and no plan: posting an ad asks to buy a package.",
+        ],
+        ar: [
+          "اطلب رمز تسجيل 3 مرات بسرعة في التطبيق: الثالثة تطلب الانتظار؛ فك القفل من الأدوات واطلب مجدداً.",
+          "إضافة حساب مع مكتب و«اعتماد المكتب مباشرة»: ادخل به في التطبيق وبدّل للمكتب — يكون معتمداً.",
+          "اجعل الإعلانات المجانية لمكتب 0 بلا باقة: نشر إعلان يطلب شراء باقة.",
+        ],
+      },
+      updatedIn: "feat/testing-account-tools",
+    },
+    {
       id: "testing-metrics",
       title: {
         en: "المقاييس shows API traffic, errors, latency and platform activity",

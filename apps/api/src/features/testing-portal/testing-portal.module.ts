@@ -1,4 +1,9 @@
 import { Module } from '@nestjs/common';
+import { AdminModule } from '../admin/admin.module';
+import { IdentitiesModule } from '../identities/identities.module';
+import { PlansModule } from '../plans/plans.module';
+import { TestingAccountsController } from './testing-accounts.controller';
+import { TestingAccountsService } from './testing-accounts.service';
 import { DocsLoginLimiterService } from '../docs-portal/docs-login-limiter.service';
 import { TestingAuditService } from './testing-audit.service';
 import { TestingAuthGuard } from './testing-auth.guard';
@@ -10,10 +15,11 @@ import { TestingTokenService } from './testing-token.service';
 
 /**
  * testing.buyootna.cloud: the testers' and QA team's portal — health,
- * metrics, logs and builds, behind its own password.
+ * metrics, logs, builds, OTPs and account tools, behind its own password.
  */
 @Module({
-  controllers: [TestingPortalController],
+  imports: [AdminModule, IdentitiesModule, PlansModule],
+  controllers: [TestingPortalController, TestingAccountsController],
   providers: [
     TestingPortalService,
     TestingTokenService,
@@ -21,6 +27,7 @@ import { TestingTokenService } from './testing-token.service';
     TestingAuditService,
     TestingHealthService,
     TestingMetricsService,
+    TestingAccountsService,
     // Its own instance: wrong testing passwords don't lock the docs portal
     DocsLoginLimiterService,
   ],
