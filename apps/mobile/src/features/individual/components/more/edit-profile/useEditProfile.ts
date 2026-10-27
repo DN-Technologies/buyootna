@@ -59,7 +59,8 @@ export function useEditProfile() {
     email: user?.email || '',
     phone: user?.phone || '',
     whatsapp: activeIdentity?.individualData?.whatsapp || user?.phone || '',
-    avatarUrl: avatarUrl || 'https://via.placeholder.com/150',
+    // Empty when there's no photo yet (the picker shows the person icon)
+    avatarUrl: avatarUrl || '',
   });
 
   const form = useForm<ProfileFormData>({
@@ -109,7 +110,8 @@ export function useEditProfile() {
         email: emailForSave(data.email, user?.email),
         phone: data.phone,
         whatsapp: data.whatsapp,
-        avatarUrl: data.avatarUrl,
+        // Only a real (uploaded) photo; none leaves the profile's as it is
+        ...(data.avatarUrl ? { avatarUrl: data.avatarUrl } : {}),
       });
       await useAuthStore.getState().refreshProfile();
       showAlert('نجاح', 'تم تحديث الملف الشخصي بنجاح', [

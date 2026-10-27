@@ -2811,5 +2811,40 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/undefined-font-classes",
     },
+    {
+      id: "mobile-profile-photo-everywhere",
+      title: {
+        en: "A new profile photo shows everywhere; no photo shows a person icon",
+        ar: "صورة الملف الجديدة تظهر في كل مكان؛ وبلا صورة تظهر أيقونة شخص",
+      },
+      priority: "P1",
+      story: {
+        en: "QA: after changing the profile photo (تعديل الملف), the avatar pill on the home and the profile switcher (اختر الهوية) kept the old one, because the photo was saved on the account while they show the profile's. PATCH /users/profile now saves an individual's photo on the profile too, so المزيد, the avatar pill and the switcher all show it after saving. The app no longer sends a placeholder address (via.placeholder.com) when there's no photo, and the API ignores it from older apps. With no photo, avatars show a person icon (as the avatar pill) instead of the Buyootna logo, for people, companies and offices alike.",
+        ar: "بلاغ QA: بعد تغيير صورة الملف (تعديل الملف) بقيت الصورة القديمة في زر الصورة بالرئيسية وفي نافذة اختر الهوية، لأن الصورة كانت تُحفظ على الحساب بينما يعرضان صورة الملف. الآن يحفظ PATCH /users/profile صورة الفرد على الملف أيضاً، فتظهر في المزيد وزر الصورة ونافذة الهويات بعد الحفظ. ولم يعد التطبيق يرسل عنواناً بديلاً (via.placeholder.com) عند عدم وجود صورة، والواجهة البرمجية تتجاهله من النسخ الأقدم. وبلا صورة تعرض الصور الرمزية أيقونة شخص (مثل زر الصورة) بدل شعار بيوتنا، للأفراد والشركات والمكاتب.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Change the photo in تعديل الملف and save: المزيد, the avatar pill on the home and the profile switcher all show the new photo.",
+          "Saving the profile without touching the photo keeps the photo there is.",
+          "A person, company or office with no photo shows the person icon, not the Buyootna logo.",
+        ],
+        ar: [
+          "غيّر الصورة في تعديل الملف واحفظ: تظهر الصورة الجديدة في المزيد وزر الصورة بالرئيسية ونافذة اختر الهوية.",
+          "حفظ الملف دون تغيير الصورة يُبقي الصورة الحالية.",
+          "الفرد أو الشركة أو المكتب بلا صورة يظهر بأيقونة شخص لا بشعار بيوتنا.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Individual with no photo: المزيد shows the person icon; add a photo and save; go to the home: the pill shows it; open the switcher: the individual row shows it.",
+          "Change only the name and save: the photo stays.",
+        ],
+        ar: [
+          "فرد بلا صورة: المزيد يعرض أيقونة الشخص؛ أضف صورة واحفظ؛ في الرئيسية يظهرها زر الصورة؛ وفي نافذة الهويات يظهرها صف الفرد.",
+          "غيّر الاسم فقط واحفظ: تبقى الصورة.",
+        ],
+      },
+      updatedIn: "fix/individual-avatar-everywhere",
+    },
   ],
 };
