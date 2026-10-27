@@ -15,8 +15,8 @@ import ProfileNavBar from '@/shared/components/profile/ProfileNavBar';
 import ProfileReviewsTab from '@/shared/components/profile/ProfileReviewsTab';
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
-import { useProfileContact } from '@/shared/hooks/providers/useProfileContact';
 import { useUserProfile } from '@/shared/hooks/auth/useUserProfile';
+import { useProfileContact } from '@/shared/hooks/providers/useProfileContact';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -49,7 +49,7 @@ export default function UserProfileScreen() {
   } = useUserProfile({ id: idStr, sort: propertySort });
 
   // Contact Handlers Hook
-  const { handleWhatsapp, handleCall, handleChat } =
+  const { canWhatsapp, handleWhatsapp, handleCall, handleChat } =
     useProfileContact(userProfile);
 
   const renderHeader = () => (
@@ -100,7 +100,7 @@ export default function UserProfileScreen() {
           <ContentContainer className="absolute bottom-0 z-50 w-full bg-white">
             <PropertyActionBar
               insets={insets}
-              onWhatsapp={handleWhatsapp}
+              onWhatsapp={canWhatsapp ? handleWhatsapp : undefined}
               onCall={handleCall}
               onChat={handleChat}
             />

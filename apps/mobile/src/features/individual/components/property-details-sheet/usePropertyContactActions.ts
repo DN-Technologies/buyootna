@@ -3,7 +3,7 @@ import { Linking } from 'react-native';
 
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';
+import { adContactPhone, canUseWhatsapp } from '@/shared/utils/helpers/contact';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 import { PropertyDetailsDto } from '@/types/property';
@@ -26,6 +26,7 @@ export function usePropertyContactActions({
 }: UsePropertyContactActionsOptions) {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
+  const viewerType = useAuthStore((state) => state.activeIdentity?.type);
 
   const handleWhatsApp = () => {
     if (onWhatsAppPress) {
@@ -82,8 +83,8 @@ export function usePropertyContactActions({
   };
 
   return {
-    // Companies and offices have no WhatsApp
-    canWhatsApp: hostHasWhatsapp(property?.host?.role),
+    // Only between individuals: not to a company or office, nor from one
+    canWhatsApp: canUseWhatsapp(viewerType, property?.host?.role),
     handleWhatsApp,
     handleCall,
     handleChat,

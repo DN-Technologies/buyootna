@@ -2,7 +2,9 @@ import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 
 import { UserProfile } from '@/shared/components/profile/types';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { canUseWhatsapp } from '@/shared/utils/helpers/contact';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
@@ -22,6 +24,7 @@ export function normalizeKuwaitPhone(phone: string): string {
 
 export function useProfileContact(userProfile?: UserProfile) {
   const router = useRouter();
+  const viewerType = useAuthStore((state) => state.activeIdentity?.type);
 
   const handleWhatsapp = () => {
     if (!userProfile?.phone) {
@@ -57,6 +60,8 @@ export function useProfileContact(userProfile?: UserProfile) {
   };
 
   return {
+    // Only between individuals: not to a company or office, nor from one
+    canWhatsapp: canUseWhatsapp(viewerType, userProfile?.role),
     handleWhatsapp,
     handleCall,
     handleChat,

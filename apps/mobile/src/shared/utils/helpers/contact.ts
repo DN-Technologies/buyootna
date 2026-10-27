@@ -8,6 +8,16 @@ export function hostHasWhatsapp(role: HostRole): boolean {
 }
 
 /**
+ * WhatsApp is only between individuals: a company or office is never
+ * reached by it, and doesn't use it either (no WhatsApp button anywhere in
+ * their app). `viewer` is the active profile's type; signed out counts as
+ * an individual.
+ */
+export function canUseWhatsapp(viewer: HostRole, target: HostRole): boolean {
+  return hostHasWhatsapp(viewer) && hostHasWhatsapp(target);
+}
+
+/**
  * The number to call/WhatsApp for an ad: the ad's own number, else the
  * advertiser persona's contact number. Never a made-up fallback.
  */
