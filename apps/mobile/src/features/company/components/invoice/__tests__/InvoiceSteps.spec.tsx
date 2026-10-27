@@ -10,7 +10,7 @@ import InvoiceProgressBar from '../InvoiceProgressBar';
 import InvoiceReceipt from '../InvoiceReceipt';
 
 jest.mock('@gorhom/bottom-sheet', () => {
-  const { View } = require('react-native');
+  const { TextInput, View } = require('react-native');
   const React = require('react');
   const BottomSheetModal = React.forwardRef((props: any, ref: any) => {
     React.useImperativeHandle(ref, () => ({ dismiss: jest.fn() }));
@@ -24,6 +24,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
     BottomSheetView: ({ children }: { children: React.ReactNode }) => (
       <View>{children}</View>
     ),
+    BottomSheetTextInput: (props: any) => <TextInput {...props} />,
   };
 });
 

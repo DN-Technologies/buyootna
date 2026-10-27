@@ -765,6 +765,7 @@ export const mobileCompany: DocSection = {
           "The card shows who it was billed to (service • client).",
           "'تم الدفع' disappears after use and the card shows 'تم الدفع في'.",
           "The company can't delete issued invoices (no حذف).",
+          "اضافة بند: the sheet rises above the keyboard while typing the name or price, so الكمية, الاجمالي and اضافة stay reachable; it settles back when the keyboard closes.",
         ],
         ar: [
           "يفتح حقل العميل نافذة سفلية تعرض فقط الطلبات المقبولة للشركة؛ وإن لم توجد يظهر تلميح يشرح ذلك.",
@@ -774,6 +775,7 @@ export const mobileCompany: DocSection = {
           "البطاقة تعرض لمن صدرت (الخدمة • العميل).",
           "'تم الدفع' يختفي بعد استخدامه وتعرض البطاقة 'تم الدفع في'.",
           "لا يمكن للشركة حذف الفواتير الصادرة (لا يوجد حذف).",
+          "اضافة بند: ترتفع النافذة فوق لوحة المفاتيح أثناء كتابة الاسم أو السعر، فتبقى الكمية والاجمالي وزر اضافة في المتناول؛ وتعود لمكانها عند إغلاق لوحة المفاتيح.",
         ],
       },
       testScenarios: {
@@ -790,7 +792,7 @@ export const mobileCompany: DocSection = {
           "افتح الفاتورة الأولى واضغط تم الدفع — يختفي الزر ويُشعَر العميل.",
         ],
       },
-      updatedIn: "feat/company-more-edit-profile",
+      updatedIn: "fix/invoice-item-sheet-keyboard",
     },
     {
       id: "mobile-company-subscription-plans",
