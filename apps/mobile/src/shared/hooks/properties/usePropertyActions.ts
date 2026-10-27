@@ -5,7 +5,7 @@ import { normalizeKuwaitPhone } from '@/shared/hooks/providers/useProfileContact
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
-import { adContactPhone, hostHasWhatsapp } from '@/shared/utils/helpers/contact';
+import { adContactPhone, canUseWhatsapp } from '@/shared/utils/helpers/contact';
 import {
   getArabicCategoryLabel,
   getArabicTypeLabel,
@@ -27,6 +27,7 @@ export function usePropertyActions({
 }: UsePropertyActionsOptions) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const viewerType = useAuthStore((state) => state.activeIdentity?.type);
 
   const handleWhatsapp = () => {
     // The ad's own WhatsApp number when the advertiser gave one
@@ -122,9 +123,9 @@ export function usePropertyActions({
   };
 
   return {
-    // Companies and offices have no WhatsApp, unless the ad carries one
-    canWhatsapp:
-      !!property?.whatsappNumber || hostHasWhatsapp(property?.host?.role),
+    // Only between individuals: not to a company or office (even if the ad
+    // carries a number), nor from one
+    canWhatsapp: canUseWhatsapp(viewerType, property?.host?.role),
     handleWhatsapp,
     handleCall,
     handleChat,

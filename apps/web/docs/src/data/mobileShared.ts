@@ -1829,24 +1829,28 @@ export const mobileShared: DocSection = {
     {
       id: "mobile-no-whatsapp-business",
       title: {
-        en: "Companies and offices are reached by phone or chat, not WhatsApp",
-        ar: "التواصل مع الشركات والمكاتب بالهاتف أو المحادثة وليس الواتساب",
+        en: "Companies and offices use phone or chat only: no WhatsApp to them or from them",
+        ar: "الشركات والمكاتب بالهاتف أو المحادثة فقط: لا واتساب إليها ولا منها",
       },
       priority: "P2",
       story: {
-        en: "Companies and offices have no WhatsApp: their edit profile has no رقم الواتساب field, and their ads (details sheet and full page) show only call and in-app chat. Individuals keep WhatsApp. An ad with no number shows 'لا يوجد رقم هاتف متاح لهذا الإعلان' instead of dialing a made-up number.",
-        ar: "الشركات والمكاتب ليس لها واتساب: لا يوجد حقل رقم الواتساب في تعديل ملفها، وإعلاناتها (النافذة والصفحة الكاملة) تعرض الاتصال والمحادثة داخل التطبيق فقط. ويبقى الواتساب للأفراد. والإعلان بلا رقم يعرض 'لا يوجد رقم هاتف متاح لهذا الإعلان' بدل الاتصال برقم مخترع.",
+        en: "WhatsApp is only between individuals. Nobody can WhatsApp a company or office: their edit profile has no رقم الواتساب field, and their ads (details sheet and full page, even an ad carrying its own number) and their profile page show only call and in-app chat. A company or office doesn't use WhatsApp either: signed in as one, no WhatsApp button shows anywhere, including an individual's ad or profile and the client card in a request's details. Individuals keep WhatsApp with each other. An ad with no number shows 'لا يوجد رقم هاتف متاح لهذا الإعلان' instead of dialing a made-up number. The rule lives in canUseWhatsapp (shared/utils/helpers/contact.ts).",
+        ar: "الواتساب بين الأفراد فقط. لا يمكن مراسلة شركة أو مكتب بالواتساب: لا يوجد حقل رقم الواتساب في تعديل ملفها، وإعلاناتها (النافذة والصفحة الكاملة، حتى الإعلان الذي يحمل رقماً خاصاً) وصفحة ملفها تعرض الاتصال والمحادثة داخل التطبيق فقط. والشركة أو المكتب لا يستخدمان الواتساب أيضاً: عند الدخول بهما لا يظهر زر واتساب في أي مكان، بما في ذلك إعلان فرد أو ملفه وبطاقة العميل في تفاصيل الطلب. ويبقى الواتساب للأفراد فيما بينهم. والإعلان بلا رقم يعرض 'لا يوجد رقم هاتف متاح لهذا الإعلان' بدل الاتصال برقم مخترع. القاعدة في canUseWhatsapp (shared/utils/helpers/contact.ts).",
       },
       acceptanceCriteria: {
         en: [
           "Company and office edit profiles have no رقم الواتساب field.",
           "A company's or office's ad shows call + chat only, in both the details sheet and the full ad page.",
-          "An individual's ad still shows call + WhatsApp + chat.",
+          "An individual's ad still shows call + WhatsApp + chat to another individual (or a signed-out visitor).",
+          "A company's or office's profile page shows call + chat only.",
+          "Signed in as a company or office: no WhatsApp on any ad, any profile, or a request's client card (تفاصيل الطلب shows chat + call).",
         ],
         ar: [
           "لا يوجد حقل رقم الواتساب في تعديل ملف الشركة أو المكتب.",
           "إعلان الشركة أو المكتب يعرض الاتصال والمحادثة فقط في النافذة وفي صفحة الإعلان الكاملة.",
-          "إعلان الفرد ما زال يعرض الاتصال والواتساب والمحادثة.",
+          "إعلان الفرد ما زال يعرض الاتصال والواتساب والمحادثة لفرد آخر (أو زائر غير مسجّل).",
+          "صفحة ملف الشركة أو المكتب تعرض الاتصال والمحادثة فقط.",
+          "عند الدخول كشركة أو مكتب: لا واتساب في أي إعلان أو ملف أو بطاقة عميل في تفاصيل الطلب (تعرض المحادثة والاتصال).",
         ],
       },
       testScenarios: {
@@ -1854,14 +1858,18 @@ export const mobileShared: DocSection = {
           "Open an office's ad from Home — no WhatsApp button; call and chat work.",
           "Open an individual's ad — the WhatsApp button is there.",
           "Open a company's edit profile — no WhatsApp field.",
+          "As a company, open a request's details — the client card has chat and call, no WhatsApp.",
+          "As a company, open an individual's ad and profile — no WhatsApp button.",
         ],
         ar: [
           "افتح إعلان مكتب من الرئيسية — لا يوجد زر واتساب؛ والاتصال والمحادثة يعملان.",
           "افتح إعلان فرد — زر الواتساب موجود.",
           "افتح تعديل ملف شركة — لا يوجد حقل واتساب.",
+          "كشركة، افتح تفاصيل طلب — بطاقة العميل فيها المحادثة والاتصال بلا واتساب.",
+          "كشركة، افتح إعلان فرد وملفه — لا يوجد زر واتساب.",
         ],
       },
-      updatedIn: "feat/identity-contact-phone",
+      updatedIn: "fix/business-no-whatsapp",
     },
     {
       id: "mobile-chat-list-preview-alignment",

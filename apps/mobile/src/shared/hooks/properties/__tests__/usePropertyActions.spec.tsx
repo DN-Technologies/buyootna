@@ -49,6 +49,7 @@ function ActionsHarness({
   property?: PropertyDetailsDto | null;
 }) {
   const {
+    canWhatsapp,
     handleWhatsapp,
     handleCall,
     handleChat,
@@ -64,6 +65,7 @@ function ActionsHarness({
 
   return (
     <View>
+      <Text testID="can-whatsapp">{String(canWhatsapp)}</Text>
       <TouchableOpacity testID="btn-whatsapp" onPress={handleWhatsapp}>
         <Text>WhatsApp</Text>
       </TouchableOpacity>
@@ -302,6 +304,47 @@ describe('usePropertyActions', () => {
 
       expect(mockRouterBack).not.toHaveBeenCalled();
       expect(resetToIdentityHome).toHaveBeenCalledWith('COMPANY');
+    });
+  });
+
+  describe('canWhatsapp', () => {
+    const asViewer = (type?: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE') =>
+      useAuthStore.setState({
+        activeIdentity: type ? ({ type } as never) : null,
+      });
+
+    afterEach(() => asViewer(undefined));
+
+    it("is offered between individuals", async () => {
+      asViewer('INDIVIDUAL');
+      const { getByTestId } = await render(
+        <ActionsHarness property={baseProperty} />,
+      );
+      expect(getByTestId('can-whatsapp')).toHaveTextContent('true');
+    });
+
+    it("never reaches a company's ad, even one carrying a WhatsApp number", async () => {
+      const { getByTestId } = await render(
+        <ActionsHarness
+          property={{
+            ...baseProperty,
+            whatsappNumber: '98765432',
+            host: { ...baseProperty.host, role: 'COMPANY' },
+          } as PropertyDetailsDto}
+        />,
+      );
+      expect(getByTestId('can-whatsapp')).toHaveTextContent('false');
+    });
+
+    it('is never offered to a company or office viewer', async () => {
+      for (const type of ['COMPANY', 'OFFICE'] as const) {
+        asViewer(type);
+        const { getByTestId, unmount } = await render(
+          <ActionsHarness property={baseProperty} />,
+        );
+        expect(getByTestId('can-whatsapp')).toHaveTextContent('false');
+        await unmount();
+      }
     });
   });
 });

@@ -7,7 +7,6 @@ import { RequestClientInfo } from '../types';
 import {
   ClientChatIcon,
   ClientPhoneIcon,
-  ClientWhatsAppIcon,
   RatingStarIcon,
 } from './icons';
 
@@ -16,7 +15,6 @@ export interface RequestDetailsClientCardProps {
   onChatPress?: () => void;
   // The chat is being opened: a spinner in place of the icon
   isOpeningChat?: boolean;
-  onWhatsAppPress?: () => void;
   onCallPress?: () => void;
 }
 
@@ -24,7 +22,6 @@ export default function RequestDetailsClientCard({
   client,
   onChatPress,
   isOpeningChat = false,
-  onWhatsAppPress,
   onCallPress,
 }: RequestDetailsClientCardProps) {
   if (!client) return null;
@@ -36,17 +33,6 @@ export default function RequestDetailsClientCard({
     }
     if (client.phone) {
       openUrlThrottled(`tel:${client.phone}`).catch(() => {});
-    }
-  };
-
-  const handleWhatsApp = () => {
-    if (onWhatsAppPress) {
-      onWhatsAppPress();
-      return;
-    }
-    if (client.whatsapp) {
-      const cleanNumber = client.whatsapp.replace(/[^\d+]/g, '');
-      openUrlThrottled(`https://wa.me/${cleanNumber}`).catch(() => {});
     }
   };
 
@@ -113,17 +99,8 @@ export default function RequestDetailsClientCard({
                 )}
               </TouchableOpacity>
 
-              {/* WhatsApp Button */}
-              <TouchableOpacity
-                testID="request-details-whatsapp-button"
-                onPress={handleWhatsApp}
-                activeOpacity={0.7}
-                className="size-[30px] items-center justify-center rounded-full border border-[#60D669] bg-white"
-                accessibilityLabel="واتساب"
-              >
-                <ClientWhatsAppIcon size={16} color="#60D669" />
-              </TouchableOpacity>
-
+              {/* No WhatsApp: companies and offices use call and in-app
+                  chat only (mobile-no-whatsapp-business) */}
               {/* Call Button */}
               <TouchableOpacity
                 testID="request-details-call-button"

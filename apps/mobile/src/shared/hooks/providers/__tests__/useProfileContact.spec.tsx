@@ -8,6 +8,7 @@ import {
   normalizeKuwaitPhone,
   useProfileContact,
 } from '@/shared/hooks/providers/useProfileContact';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
@@ -33,11 +34,12 @@ const mockRouterPush = jest.fn();
 const mockUseRouter = useRouter as jest.Mock;
 
 function ContactHarness({ userProfile }: { userProfile?: UserProfile }) {
-  const { handleWhatsapp, handleCall, handleChat } =
+  const { canWhatsapp, handleWhatsapp, handleCall, handleChat } =
     useProfileContact(userProfile);
 
   return (
     <View>
+      <Text testID="can-whatsapp">{String(canWhatsapp)}</Text>
       <TouchableOpacity testID="btn-whatsapp" onPress={handleWhatsapp}>
         <Text>WhatsApp</Text>
       </TouchableOpacity>
@@ -198,6 +200,44 @@ describe('useProfileContact', () => {
         params: { id: 'new', recipientId: 'target-user-1' },
       });
       expect(chatService.createConversation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('canWhatsapp', () => {
+    const profile = (role: UserProfile['role']) =>
+      ({
+        id: 'user-1',
+        name: 'أحمد',
+        avatarUrl: '',
+        phone: '98765432',
+        rating: 0,
+        reviewsCount: 0,
+        soldCount: 0,
+        presence: null,
+        responseTime: null,
+        joinedDate: '1/2025',
+        role,
+      }) as UserProfile;
+
+    afterEach(() => useAuthStore.setState({ activeIdentity: null }));
+
+    it("is offered on an individual's profile", async () => {
+      const { getByTestId } = await renderContact(profile('INDIVIDUAL'));
+      expect(getByTestId('can-whatsapp')).toHaveTextContent('true');
+    });
+
+    it("is not offered on a company's or office's profile", async () => {
+      for (const role of ['COMPANY', 'OFFICE'] as const) {
+        const { getByTestId, unmount } = await renderContact(profile(role));
+        expect(getByTestId('can-whatsapp')).toHaveTextContent('false');
+        await unmount();
+      }
+    });
+
+    it('is not offered to a company or office viewer', async () => {
+      useAuthStore.setState({ activeIdentity: { type: 'COMPANY' } as never });
+      const { getByTestId } = await renderContact(profile('INDIVIDUAL'));
+      expect(getByTestId('can-whatsapp')).toHaveTextContent('false');
     });
   });
 });

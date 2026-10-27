@@ -206,7 +206,9 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
   it('renders client card with name, metadata, rating, and starts a real chat on the chat/reply triggers', async () => {
     (chatService.createConversation as jest.Mock).mockResolvedValue({ id: 'conv-1' });
 
-    const { getByTestId } = await render(<CompanyRequestDetailsScreen />);
+    const { getByTestId, queryByTestId } = await render(
+      <CompanyRequestDetailsScreen />,
+    );
 
     expect(getByTestId('request-details-client-name')).toHaveTextContent(
       'نواف الجارحي',
@@ -230,13 +232,8 @@ describe('CompanyRequestDetailsScreen (real data)', () => {
     await fireEvent.press(getByTestId('request-details-call-button'));
     expect(Linking.openURL).toHaveBeenCalledWith('tel:+96590000000');
 
-    // An independent button, not a repeat tap of the same one -- clear the
-    // openUrlThrottled burst lock so the WhatsApp open is not swallowed as
-    // a double-tap.
-    resetLinkThrottle();
-
-    await fireEvent.press(getByTestId('request-details-whatsapp-button'));
-    expect(Linking.openURL).toHaveBeenCalledWith('https://wa.me/+96590000000');
+    // Companies use call and chat only, even though the client has WhatsApp
+    expect(queryByTestId('request-details-whatsapp-button')).toBeNull();
   });
 
   it('accepts a request after the confirmation sheet', async () => {
