@@ -157,7 +157,8 @@ export default function CompanyProfileScreen() {
           companyName={company?.name || ''}
           companySubtitle={company?.bio}
           companyLogoUrl={company?.logoUrl}
-          services={services.length ? services : undefined}
+          services={services}
+          servicesLoading={isLoading}
           targetIdentityId={company?.id}
           reviewSort={reviewSort}
           onSelectSort={setReviewSort}

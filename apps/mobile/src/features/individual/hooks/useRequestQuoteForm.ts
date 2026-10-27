@@ -3,29 +3,16 @@ import { useCallback, useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useGovArea } from '@/shared/components/forms/GovAreaFields';
-import {
-  listedTypes,
-  OTHER_TYPE,
-  SPECIALTIES,
-} from '@/shared/data/serviceCatalog';
+import { requestTypeOptions } from '@/shared/data/serviceCatalog';
 import { showAlert } from '@/shared/utils/alert';
 
 // مجال التخصص and نوع الطلب come from the services catalogue, the same list
 // companies pick their services from, so a request lands with the
 // companies of that specialty
-export const SPECIALTY_OPTIONS = SPECIALTIES.map((specialty) => ({
-  id: specialty,
-  label: specialty,
-}));
-
-/** نوع الطلب for a specialty: its listed types, then «اخرى». */
-export const requestTypeOptions = (specialty: string) =>
-  specialty
-    ? [...listedTypes(specialty), OTHER_TYPE].map((type) => ({
-        id: type,
-        label: type,
-      }))
-    : [];
+export {
+  requestTypeOptions,
+  SPECIALTY_OPTIONS,
+} from '@/shared/data/serviceCatalog';
 
 export const MAX_ATTACHMENTS = 10;
 

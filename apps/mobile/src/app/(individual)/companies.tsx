@@ -40,6 +40,7 @@ import CompanySkeleton from '@/shared/components/skeletons/CompanySkeleton';
 import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useDebounce } from '@/shared/hooks/device/useDebounce';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { openChatWith } from '@/shared/utils/openChat';
@@ -88,6 +89,10 @@ export default function CompaniesScreen() {
 
   const providerFavorites = useProviderFavorites();
   const [selectedCompanyName, setSelectedCompanyName] = useState('الشركة');
+  // The company asked for a quote: the request goes to it, and its own
+  // services are the request types offered
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>();
+  const selectedCompany = useCompanyDetails(selectedCompanyId);
 
   // --- Fetch companies whenever the category or search text changes ---
   const {
@@ -143,7 +148,8 @@ export default function CompaniesScreen() {
   // asked for a quote by the account itself
   const currentUserId = useAuthStore((state) => state.user?.id);
 
-  const handleQuotePress = (companyName: string) => {
+  const handleQuotePress = (companyId: string, companyName: string) => {
+    setSelectedCompanyId(companyId);
     setSelectedCompanyName(companyName);
     quoteModalRef.current?.present();
   };
@@ -286,7 +292,7 @@ export default function CompaniesScreen() {
                 guardAction(() => providerFavorites.toggleFavorite(item.id))
               }
               onChatPress={() => handleChatPress(item.userId)}
-              onQuotePress={() => handleQuotePress(item.name)}
+              onQuotePress={() => handleQuotePress(item.id, item.name)}
               isOwn={!!currentUserId && item.userId === currentUserId}
             />
           )}
@@ -305,6 +311,13 @@ export default function CompaniesScreen() {
       <QuoteRequestModal
         ref={quoteModalRef}
         companyName={selectedCompanyName}
+        companyLogoUrl={selectedCompany.company?.logoUrl}
+        services={selectedCompany.services}
+        servicesLoading={selectedCompany.isLoading}
+        // No services yet: the client picks from the services catalogue
+        catalogFallback
+        // Without it the request went out as a public one, not to them
+        targetIdentityId={selectedCompanyId}
       />
       <CompanyFilterSheet
         ref={filterSheetRef}
