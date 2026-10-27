@@ -1,9 +1,9 @@
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { BackChevronIcon } from '@/assets/icons/activity';
 import { ChatMoreIcon, ChatSearchIcon } from '@/assets/icons/chat';
+import Avatar from '@/shared/components/ui/Avatar';
 
 interface ChatHeaderProps {
   userName: string;
@@ -11,7 +11,8 @@ interface ChatHeaderProps {
   isOnline?: boolean;
   // They are writing a message: "يكتب الان..." takes the status line
   isTyping?: boolean;
-  avatarUrl: string;
+  // null without a photo: Avatar draws the person icon
+  avatarUrl: string | null;
   isLoading?: boolean;
   onReportUser: () => void;
   // Blocking the other account (Guideline 1.2); absent hides the item
@@ -60,10 +61,9 @@ export default function ChatHeader({
             {isLoading ? (
               <View className="h-11 w-11 rounded-full bg-slate-200" />
             ) : (
-              <Image
-                source={{ uri: avatarUrl }}
-                className="h-11 w-11 rounded-full bg-gray-100"
-              />
+              <View className="h-11 w-11 overflow-hidden rounded-full">
+                <Avatar uri={avatarUrl} testID="chat-header-avatar" />
+              </View>
             )}
             {isOnline && !isLoading && (
               <View

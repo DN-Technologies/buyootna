@@ -1,8 +1,8 @@
 import { Feather, FontAwesome } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { VerifiedIcon } from '@/assets/icons/home/property';
+import Avatar from '@/shared/components/ui/Avatar';
 
 export interface ListerProfileSnippetProps {
   name: string;
@@ -34,10 +34,9 @@ export default function ListerProfileSnippet({
       <View className="flex-1 flex-row items-center gap-3">
         {/* Avatar with Verification Badge */}
         <View className="relative">
-          <Image
-            source={{ uri: avatarUrl }}
-            className="h-14 w-14 rounded-full bg-gray-200"
-          />
+          <View className="h-14 w-14 overflow-hidden rounded-full">
+            <Avatar uri={avatarUrl} testID="lister-avatar" />
+          </View>
           {isVerified && (
             <View className="absolute -bottom-0.5 -left-0.5 rounded-full">
               <VerifiedIcon size={18} />

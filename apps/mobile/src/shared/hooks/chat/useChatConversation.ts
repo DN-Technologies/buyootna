@@ -67,8 +67,8 @@ export function useChatConversation({
 
   const isHeaderLoading = !conversation;
   const otherUserName = conversation?.otherUser.name || 'مستخدم بيوتنا';
-  const otherUserAvatar =
-    conversation?.otherUser.avatarUrl || 'https://via.placeholder.com/150';
+  // No photo: null, and Avatar draws the person icon
+  const otherUserAvatar = conversation?.otherUser.avatarUrl || null;
   const otherUserId = conversation?.otherUser.id;
   // Deleted, suspended or blocked: read-only chat
   const otherUnavailable = conversation?.otherUser.isAvailable === false;

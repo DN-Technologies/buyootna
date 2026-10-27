@@ -3,7 +3,8 @@ import { IdentityPresence, ResponseTime } from '@/shared/utils/helpers/activity'
 export interface UserProfile {
   id: string;
   name: string;
-  avatarUrl: string;
+  // null without a photo: Avatar draws the person icon
+  avatarUrl: string | null;
   rating: number;
   reviewsCount: number;
   soldCount: number;

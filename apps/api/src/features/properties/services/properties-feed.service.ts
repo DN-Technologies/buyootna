@@ -339,7 +339,8 @@ export class PropertiesFeedService {
       identity?.companyData?.logoUrl ||
       identity?.individualData?.avatarUrl ||
       identity?.user?.avatarUrl ||
-      'https://via.placeholder.com/150';
+      // No photo: the app draws its own avatar icon
+      null;
     const isVerified =
       identity?.officeData?.isVerified ||
       identity?.companyData?.isVerified ||

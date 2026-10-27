@@ -128,7 +128,7 @@ export class SearchService {
       category: (ident.companyData && visibleServices(ident.companyData)) || '',
       serviceArea: ident.companyData?.serviceAreas || 'يخدم جميع المناطق',
       projectsCount: String(ident._count.properties),
-      logoUrl: ident.companyData?.logoUrl || 'https://via.placeholder.com/150',
+      logoUrl: ident.companyData?.logoUrl || null,
       isFavorite: false,
     }));
 
