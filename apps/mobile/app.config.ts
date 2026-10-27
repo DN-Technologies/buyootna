@@ -53,7 +53,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna',
-  version: '1.6.0',
+  version: '1.6.1',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
@@ -129,12 +129,15 @@ const config: ExpoConfig = {
     [
       'expo-splash-screen',
       {
-        image: './src/assets/images/splash-icon.png',
+        // Plain navy, the first frame of the launch animation
+        // (src/assets/animations/launch.json). Transparent rather than no
+        // image: Android 12+ would otherwise show the app icon.
+        image: './src/assets/images/splash-blank.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0B2239',
         dark: {
-          backgroundColor: '#000000',
+          backgroundColor: '#0B2239',
         },
       },
     ],
