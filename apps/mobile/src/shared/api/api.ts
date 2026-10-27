@@ -47,6 +47,30 @@ export function setOnUnauthorized(cb: () => void) {
   _onUnauthorized = cb;
 }
 
+// A profile switch shows the new profile at once, before the API has
+// returned its token. Meanwhile every request waits here, then goes out
+// with the new token -- never the old profile's (that would load its data
+// into the new profile's screens). The switch request itself is exempt.
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipTokenHold?: boolean;
+  }
+}
+let _tokenHold: Promise<void> | null = null;
+
+/** Holds requests until the returned release is called (once the new token is set). */
+export function holdRequestsForNewToken(): () => void {
+  let release!: () => void;
+  const hold = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  _tokenHold = hold;
+  return () => {
+    if (_tokenHold === hold) _tokenHold = null;
+    release();
+  };
+}
+
 // Resolved once at module init. Read is async (SecureStore), so the very
 // first request or two fired before this resolves goes out without the
 // header — acceptable, since login endpoints aren't typically the first
@@ -79,6 +103,7 @@ const BUILD_HEADERS = readBuildHeaders();
 // --- Request Interceptor ---
 apiClient.interceptors.request.use(
   async (config) => {
+    if (_tokenHold && !config.skipTokenHold) await _tokenHold;
     if (_authToken && config.headers) {
       config.headers.Authorization = `Bearer ${_authToken}`;
     }

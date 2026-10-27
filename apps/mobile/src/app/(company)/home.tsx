@@ -86,10 +86,21 @@ export default function CompanyHomeScreen() {
     refetchServices,
   ]);
 
+  // On the first focus the queries are already loading (they fetch on
+  // mount) and the profile was just loaded (sign-in, launch or a profile
+  // switch): only the conversations, which aren't a query, load then.
+  // Coming back to the home refreshes everything
+  const focusedBefore = useRef(false);
   useFocusEffect(
     useCallback(() => {
-      if (token) refresh();
-    }, [refresh, token]),
+      if (!token) return;
+      if (focusedBefore.current) {
+        refresh();
+      } else {
+        focusedBefore.current = true;
+        loadConversations(1);
+      }
+    }, [refresh, loadConversations, token]),
   );
 
   if (!activeIdentity) {

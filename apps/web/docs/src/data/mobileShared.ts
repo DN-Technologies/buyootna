@@ -885,6 +885,9 @@ export const mobileShared: DocSection = {
           "After switching, the chat socket reconnects and the inbox shows only the new persona's conversations.",
           "Home, My Activity, Favorites, wallet and invoices all reflect only the active persona.",
           "In the اختر الهوية sheet the active persona is listed first; the others keep their order below it.",
+          "Tapping another persona closes the sheet and opens its home at once (its loading skeleton), without waiting on a spinner; its data then loads with the new persona's token, never the old one's.",
+          "If the switch fails (no connection), the app returns to the previous persona's home with «تعذر تبديل الهوية».",
+          "Opening a home right after a switch, sign-in or launch makes no second round of requests (company: dashboard, requests, services and the profile load once); coming back to the home refreshes them.",
         ],
         ar: [
           "التبديل على الجهاز A لا يغيّر الهوية التي يستخدمها الجهاز B.",
@@ -893,6 +896,9 @@ export const mobileShared: DocSection = {
           "بعد التبديل يُعاد اتصال مقبس المحادثة ويعرض صندوق الوارد محادثات الهوية الجديدة فقط.",
           "الرئيسية ونشاطي والمفضلة والمحفظة والفواتير تعكس الهوية النشطة فقط.",
           "في نافذة اختر الهوية تظهر الهوية النشطة أولاً، وتبقى بقية الهويات بترتيبها تحتها.",
+          "الضغط على هوية أخرى يغلق النافذة ويفتح رئيسيتها فوراً (هيكل التحميل) دون انتظار مؤشر؛ ثم تُحمّل بياناتها برمز الهوية الجديدة، لا القديمة أبداً.",
+          "إذا فشل التبديل (لا اتصال) يعود التطبيق إلى رئيسية الهوية السابقة مع «تعذر تبديل الهوية».",
+          "فتح الرئيسية بعد التبديل أو الدخول أو التشغيل لا يرسل جولة طلبات ثانية (الشركة: لوحة المعلومات والطلبات والخدمات والملف تُحمّل مرة واحدة)؛ والعودة إلى الرئيسية تحدّثها.",
         ],
       },
       testScenarios: {
@@ -902,6 +908,8 @@ export const mobileShared: DocSection = {
           "Install on a third device and log in — opens with the persona most recently used.",
           "Favorite a property as Individual, switch to Company — the Favorites list doesn't show it.",
           "With three personas, switch to the last one and reopen اختر الهوية — it is at the top.",
+          "Switch Individual → Company: the sheet closes at once and the company home appears, then fills in with the company's own data.",
+          "Turn on airplane mode, then switch: you're back on the previous home with «تعذر تبديل الهوية».",
         ],
         ar: [
           "هاتفان على نفس الحساب: بدّل الهاتف A إلى الشركة؛ يبقى الهاتف B على الفرد بعد السحب للتحديث.",
@@ -909,9 +917,11 @@ export const mobileShared: DocSection = {
           "ثبّت على جهاز ثالث وسجّل الدخول — يفتح بآخر هوية استُخدمت.",
           "فضّل عقاراً كفرد ثم بدّل إلى الشركة — لا يظهر في قائمة المفضلة.",
           "مع ثلاث هويات، بدّل إلى آخرها وأعد فتح اختر الهوية — تظهر في الأعلى.",
+          "بدّل من فرد إلى شركة: تُغلق النافذة فوراً وتظهر رئيسية الشركة ثم تمتلئ ببيانات الشركة نفسها.",
+          "فعّل وضع الطيران ثم بدّل: تعود إلى الرئيسية السابقة مع «تعذر تبديل الهوية».",
         ],
       },
-      updatedIn: "feat/docs-platform, fix/property-host-avatar",
+      updatedIn: "feat/docs-platform, fix/property-host-avatar, perf/instant-profile-switch",
     },
     {
       id: "mobile-payments",

@@ -23,6 +23,7 @@ jest.mock('@/features/stories/components/StoryTray', () => ({
 
 const mockPush = jest.fn();
 const mockReply = jest.fn();
+const mockLoadConversations = jest.fn();
 let mockServices = [{ id: 's-1' }, { id: 's-2' }, { id: 's-3' }];
 
 jest.mock('expo-router', () => ({
@@ -76,7 +77,7 @@ jest.mock('@/shared/store/useChatStore', () => ({
   useChatStore: (selector: (state: unknown) => unknown) =>
     selector({
       conversations: [{ unreadCount: 2 }, { unreadCount: 3 }],
-      loadConversations: jest.fn(),
+      loadConversations: mockLoadConversations,
     }),
 }));
 
@@ -215,5 +216,29 @@ describe('CompanyHomeScreen', () => {
     const { queryByText } = await setup({ billing: undefined });
 
     expect(queryByText('استعرض الباقات')).toBeNull();
+  });
+
+  // Right after a profile switch (or sign-in) the queries are already
+  // loading and the profile was just loaded: no second round of requests
+  it('loads only the conversations on the first focus; coming back refreshes all', async () => {
+    const { useFocusEffect } = require('@react-navigation/native');
+    let focus: () => void = () => {};
+    (useFocusEffect as jest.Mock).mockImplementation((cb: () => void) => {
+      focus = cb;
+    });
+    const refetchDashboard = jest.fn();
+    await setup();
+    (useCompanyHome as jest.Mock).mockReturnValue({
+      data: { billing: BILLING },
+      refetch: refetchDashboard,
+    });
+
+    focus();
+    expect(mockLoadConversations).toHaveBeenCalledTimes(1);
+    expect(refetchDashboard).not.toHaveBeenCalled();
+
+    focus();
+    expect(mockLoadConversations).toHaveBeenCalledTimes(2);
+    (useFocusEffect as jest.Mock).mockReset();
   });
 });

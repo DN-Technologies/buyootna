@@ -14,11 +14,12 @@ import {
 } from 'react-native';
 
 import { CompanyIcon, IndividualIcon, OwnerIcon } from '@/assets/icons/account';
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import { SafeImage as Image } from '@/shared/components/ui/SafeImage';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { resetToIdentityHome } from '@/shared/navigation/getIdentityHomeRoute';
 import { Identity, IdentityType } from '@/shared/store/useAuthStore';
-import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
+import { showAlert } from '@/shared/utils/alert';
 
 interface ProfileBottomSheetProps {
   onAddAccount: () => void;
@@ -74,14 +75,21 @@ const ProfileBottomSheet = forwardRef<BottomSheetModal, ProfileBottomSheetProps>
         return;
       }
 
+      // Straight to the new profile's home: it shows its loading state while
+      // the switch completes (its requests wait for the new token), instead
+      // of a spinner here for the whole round trip
+      const previousType = activeIdentity?.type;
+      setSwitchingId(identity.id);
+      const switching = switchIdentity(identity.id);
+      handleClose();
+      resetToIdentityHome(identity.type);
       try {
-        setSwitchingId(identity.id);
-        await switchIdentity(identity.id);
-        handleClose();
-        resetToIdentityHome(identity.type);
+        await switching;
       } catch (error) {
         console.error('Failed to switch identity:', error);
-        // TODO: Show error toast
+        // The previous profile is back: so is its home
+        resetToIdentityHome(previousType);
+        showAlert('تعذر تبديل الهوية', 'تحقق من الاتصال وحاول مرة أخرى');
       } finally {
         setSwitchingId(null);
       }

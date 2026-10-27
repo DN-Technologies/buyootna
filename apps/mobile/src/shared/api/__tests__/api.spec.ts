@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 // validateApiUrl (the function under test in the block below) has no
 // module-load-time state of its own, so re-importing per test isn't needed.
 import apiClient, {
+  holdRequestsForNewToken,
   setAuthToken,
   setOnUnauthorized,
   validateApiUrl,
@@ -132,6 +133,38 @@ describe('apiClient interceptors', () => {
       setAuthToken(null);
       const config = await requestSuccessHandler({ headers: {} });
       expect(config.headers.Authorization).toBeUndefined();
+    });
+
+    // A profile switch: the new profile's screens load before its token
+    // arrives, and must never load with the old profile's
+    it('holds requests during a profile switch, then sends them with the new token', async () => {
+      setAuthToken('tok-old');
+      const release = holdRequestsForNewToken();
+      let sent: any = null;
+      const pending = requestSuccessHandler({ headers: {} }).then(
+        (config: any) => {
+          sent = config;
+        },
+      );
+
+      await Promise.resolve();
+      expect(sent).toBeNull();
+
+      setAuthToken('tok-new');
+      release();
+      await pending;
+      expect(sent.headers.Authorization).toBe('Bearer tok-new');
+    });
+
+    it('never holds the switch request itself', async () => {
+      setAuthToken('tok-old');
+      const release = holdRequestsForNewToken();
+      const config = await requestSuccessHandler({
+        headers: {},
+        skipTokenHold: true,
+      });
+      expect(config.headers.Authorization).toBe('Bearer tok-old');
+      release();
     });
   });
 
