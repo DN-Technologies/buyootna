@@ -42,10 +42,16 @@ export default function OfficeHomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
 
+  // Not on the first focus: the profile was just loaded (sign-in, launch or
+  // a profile switch). Coming back to the home refreshes it
+  const focusedBefore = useRef(false);
   useFocusEffect(
     useCallback(() => {
-      if (token) {
+      if (!token) return;
+      if (focusedBefore.current) {
         refreshProfile();
+      } else {
+        focusedBefore.current = true;
       }
     }, [refreshProfile, token])
   );

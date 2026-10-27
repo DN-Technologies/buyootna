@@ -2,7 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
-import apiClient, { setAuthToken, setOnUnauthorized } from '@/shared/api/api';
+import apiClient, {
+  holdRequestsForNewToken,
+  setAuthToken,
+  setOnUnauthorized,
+} from '@/shared/api/api';
 import { socketService } from '@/shared/services/socket.service';
 import type { WorkingDay } from '@/shared/utils/workingHours';
 
@@ -164,29 +168,41 @@ export const useAuthStore = create<AuthState>((set, get) => {
       }
     },
 
-    // Switch to a different identity
+    // Switch to a different identity. The new profile shows at once (its
+    // screens can open and start loading); their requests wait for the new
+    // token (holdRequestsForNewToken). If the switch fails, the previous
+    // profile comes back and the error is thrown for the caller to report.
     switchIdentity: async (identityId: string) => {
+      const previous = get();
+      const target = previous.identities.find((i) => i.id === identityId);
+
+      const release = holdRequestsForNewToken();
+      const request = apiClient.post<SwitchIdentityResponse>(
+        '/auth/identity/switch',
+        { identityId },
+        { skipTokenHold: true },
+      );
+
+      // Nothing of the old profile may show in the new one's screens
+      socketService.disconnect();
+      clearIdentityScopedStores();
+      useChatStore.getState().clear();
+      if (target) {
+        set({
+          activeIdentity: { ...target, isActive: true },
+          identities: previous.identities.map((i) => ({
+            ...i,
+            isActive: i.id === identityId,
+          })),
+        });
+      }
+
       try {
-        const response = await apiClient.post<SwitchIdentityResponse>(
-          '/auth/identity/switch',
-          { identityId }
-        );
-
         const { access_token, sessionId, user, activeIdentity, identities } =
-          response.data;
+          (await request).data;
 
-        // Update token in secure storage
-        await SecureStore.setItemAsync('auth_token', access_token);
+        // In memory first: the held requests go out with it on release
         setAuthToken(access_token);
-
-        // Reconnect socket with new token
-        socketService.disconnect();
-        socketService.connect(access_token);
-
-        // Clear identity-specific data
-        clearIdentityScopedStores();
-        useChatStore.getState().clear();
-
         set({
           user,
           activeIdentity,
@@ -194,8 +210,17 @@ export const useAuthStore = create<AuthState>((set, get) => {
           token: access_token,
           sessionId,
         });
+        release();
+        socketService.connect(access_token);
+        await SecureStore.setItemAsync('auth_token', access_token);
       } catch (e) {
         console.error('Failed to switch identity:', e);
+        set({
+          activeIdentity: previous.activeIdentity,
+          identities: previous.identities,
+        });
+        release();
+        if (previous.token) socketService.connect(previous.token);
         throw e;
       }
     },

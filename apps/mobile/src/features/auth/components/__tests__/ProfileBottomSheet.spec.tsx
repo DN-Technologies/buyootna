@@ -4,10 +4,12 @@ import { router } from 'expo-router';
 import { createRef } from 'react';
 
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
+import { showAlert } from '@/shared/utils/alert';
 
 import ProfileBottomSheet from '../ProfileBottomSheet';
 
 jest.mock('@/shared/hooks/auth/useIdentity');
+jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
 
 const mockUseIdentity = useIdentity as jest.Mock;
 
@@ -90,7 +92,29 @@ describe('ProfileBottomSheet', () => {
     expect(router.replace).toHaveBeenCalledWith('/(company)/home');
   });
 
-  it('swallows a switchIdentity failure silently (no crash, no navigation)', async () => {
+  it('goes to the new home before the switch completes', async () => {
+    // Answers only when the test says so: the home must not wait for it
+    let finish!: () => void;
+    switchIdentity.mockReturnValue(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const ref = createRef<BottomSheetModal>();
+    const { getByText } = await render(
+      <ProfileBottomSheet ref={ref} onAddAccount={jest.fn()} />,
+    );
+
+    const pressing = fireEvent.press(getByText('Acme'));
+    await Promise.resolve();
+
+    expect(router.replace).toHaveBeenCalledWith('/(company)/home');
+
+    finish();
+    await pressing;
+  });
+
+  it('on a failed switch, goes back to the previous home and says so', async () => {
     switchIdentity.mockRejectedValue(new Error('network down'));
     jest.spyOn(console, 'error').mockImplementation(() => {});
     const ref = createRef<BottomSheetModal>();
@@ -102,7 +126,12 @@ describe('ProfileBottomSheet', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(router.replace).not.toHaveBeenCalled();
+    expect(router.replace).toHaveBeenNthCalledWith(1, '/(company)/home');
+    expect(router.replace).toHaveBeenLastCalledWith('/(individual)/home');
+    expect(showAlert).toHaveBeenCalledWith(
+      'تعذر تبديل الهوية',
+      'تحقق من الاتصال وحاول مرة أخرى',
+    );
     jest.restoreAllMocks();
   });
 

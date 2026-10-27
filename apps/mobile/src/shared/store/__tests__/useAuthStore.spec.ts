@@ -46,7 +46,10 @@ jest.mock('@/shared/api/api', () => ({
   },
   setAuthToken: jest.fn(),
   setOnUnauthorized: jest.fn(),
+  // Returns the release; the test checks it's called
+  holdRequestsForNewToken: jest.fn(() => mockReleaseHold),
 }));
+const mockReleaseHold = jest.fn();
 
 jest.mock('@/shared/services/socket.service', () => ({
   socketService: {
@@ -278,7 +281,10 @@ describe('useAuthStore', () => {
       expect(mockApiClient.post).toHaveBeenCalledWith(
         '/auth/identity/switch',
         { identityId: 'identity-2' },
+        // The switch itself isn't held for the new token
+        { skipTokenHold: true },
       );
+      expect(mockReleaseHold).toHaveBeenCalled();
       expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
         'auth_token',
         'tok-2',
@@ -297,6 +303,69 @@ describe('useAuthStore', () => {
 
       clearChatSpy.mockRestore();
       clearScopedSpy.mockRestore();
+    });
+
+    it('shows the target profile at once, before the API answers', async () => {
+      jest.spyOn(useChatStore.getState(), 'clear').mockImplementation(() => {});
+      const current = buildIdentity({ id: 'identity-1', type: 'INDIVIDUAL' });
+      const target = buildIdentity({ id: 'identity-2', type: 'COMPANY' });
+      useAuthStore.setState({
+        activeIdentity: current,
+        identities: [current, target],
+        token: 'tok-1',
+      });
+      let answer!: (value: unknown) => void;
+      mockApiClient.post.mockReturnValueOnce(
+        new Promise((resolve) => {
+          answer = resolve;
+        }),
+      );
+
+      const switching = useAuthStore.getState().switchIdentity('identity-2');
+
+      expect(useAuthStore.getState().activeIdentity?.id).toBe('identity-2');
+      expect(useAuthStore.getState().activeIdentity?.type).toBe('COMPANY');
+      // Its requests wait: the token is still the old one
+      expect(useAuthStore.getState().token).toBe('tok-1');
+      expect(mockReleaseHold).not.toHaveBeenCalled();
+
+      answer({
+        data: {
+          access_token: 'tok-2',
+          sessionId: 'session-1',
+          user: buildUser(),
+          activeIdentity: target,
+          identities: [current, target],
+        },
+      });
+      await switching;
+      expect(useAuthStore.getState().token).toBe('tok-2');
+      expect(mockReleaseHold).toHaveBeenCalled();
+      jest.restoreAllMocks();
+    });
+
+    it('brings the previous profile back when the switch fails', async () => {
+      jest.spyOn(useChatStore.getState(), 'clear').mockImplementation(() => {});
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+      const current = buildIdentity({ id: 'identity-1', type: 'INDIVIDUAL' });
+      const target = buildIdentity({ id: 'identity-2', type: 'COMPANY' });
+      useAuthStore.setState({
+        activeIdentity: current,
+        identities: [current, target],
+        token: 'tok-1',
+      });
+      mockApiClient.post.mockRejectedValueOnce(new Error('network down'));
+
+      await expect(
+        useAuthStore.getState().switchIdentity('identity-2'),
+      ).rejects.toThrow('network down');
+
+      expect(useAuthStore.getState().activeIdentity).toBe(current);
+      expect(useAuthStore.getState().token).toBe('tok-1');
+      // Held requests go out (with the old token) and the socket comes back
+      expect(mockReleaseHold).toHaveBeenCalled();
+      expect(socketService.connect).toHaveBeenCalledWith('tok-1');
+      jest.restoreAllMocks();
     });
 
     it('logs and re-throws on failure', async () => {
@@ -589,6 +658,7 @@ describe('useAuthStore', () => {
       expect(mockApiClient.post).toHaveBeenCalledWith(
         '/auth/identity/switch',
         { identityId: 'other-id' },
+        { skipTokenHold: true },
       );
 
       jest.restoreAllMocks();
