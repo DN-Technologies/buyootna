@@ -194,6 +194,60 @@ describe('UsersProfileService', () => {
     );
   });
 
+  describe('profile photo (a person)', () => {
+    beforeEach(() => {
+      prisma.user.findUnique.mockResolvedValue({ phone: '+96599998888' });
+      prisma.identity.findFirst.mockResolvedValue({
+        id: 'identity-1',
+        individualData: {
+          name: 'سالم',
+          whatsapp: null,
+          avatarUrl: 'https://cdn/old.jpg',
+        },
+      });
+      prisma.individualIdentityData = {
+        update: jest.fn().mockResolvedValue({}),
+      };
+    });
+
+    // QA: a new photo didn't reach the avatar pill or the profile switcher,
+    // which show the profile's photo, not the account's
+    it("saves an uploaded photo's URL on the profile too", async () => {
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        avatarUrl: 'https://cdn/avatars/new.jpg',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { avatarUrl: 'https://cdn/avatars/new.jpg' },
+      });
+      expect(prisma.individualIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            avatarUrl: 'https://cdn/avatars/new.jpg',
+          }),
+        }),
+      );
+    });
+
+    it("ignores the old app's placeholder, keeping the photo there is", async () => {
+      await service.updateProfile('user-1', Role.INDIVIDUAL, {
+        name: 'سالم',
+        avatarUrl: 'https://via.placeholder.com/150',
+      });
+
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { name: 'سالم' },
+      });
+      expect(prisma.individualIdentityData.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ avatarUrl: 'https://cdn/old.jpg' }),
+        }),
+      );
+    });
+  });
+
   describe('email (a sign-in identifier)', () => {
     beforeEach(() => {
       prisma.user.findUnique.mockResolvedValue({

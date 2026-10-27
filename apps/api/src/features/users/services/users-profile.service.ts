@@ -18,6 +18,9 @@ import { assertActiveCompanySubscription } from '../../company-subscriptions/com
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { AccountStateService } from './account-state.service';
 
+// The app's old stand-in for "no photo" (via.placeholder.com), never a photo
+const PLACEHOLDER_AVATAR = /^https?:\/\/via\.placeholder\.com\//i;
+
 // Last 8 digits: "+96599998888", "96599998888" and "99998888" are one number
 function localPhone(phone?: string | null): string {
   return (phone ?? '').replace(/\D/g, '').slice(-8);
@@ -145,10 +148,17 @@ export class UsersProfileService {
       logoUrl = await this.storageService.uploadFile(logoFile, folder);
     }
 
+    // A photo picked in the app is uploaded first (/media/upload/avatar) and
+    // arrives here as its URL. The app's old placeholder isn't a photo:
+    // apps up to 1.6.0 send it back when there's none, so it's ignored
+    const sentAvatar =
+      dto.avatarUrl && !PLACEHOLDER_AVATAR.test(dto.avatarUrl)
+        ? dto.avatarUrl
+        : undefined;
     if (logoUrl) {
       userUpdateData.avatarUrl = logoUrl;
-    } else if (dto.avatarUrl !== undefined) {
-      userUpdateData.avatarUrl = dto.avatarUrl;
+    } else if (sentAvatar !== undefined) {
+      userUpdateData.avatarUrl = sentAvatar;
     }
 
     if (Object.keys(userUpdateData).length > 0) {
@@ -215,7 +225,9 @@ export class UsersProfileService {
         data: {
           name: dto.name ?? identity.individualData.name,
           whatsapp: dto.whatsapp ?? identity.individualData.whatsapp,
-          avatarUrl: logoUrl ?? identity.individualData.avatarUrl,
+          // The profile's photo is what the app shows (avatar pill, profile
+          // switcher, المزيد): it changes with the account's
+          avatarUrl: logoUrl ?? sentAvatar ?? identity.individualData.avatarUrl,
         },
       });
       return { user: await this.findFullUser(userId), profile: updated };

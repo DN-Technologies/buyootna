@@ -14,12 +14,11 @@ describe('Avatar', () => {
     expect(queryByTestId('avatar-fallback')).toBeNull();
   });
 
-  // Regression coverage for the reported bug: the default avatar must be
-  // the Buyootna logo, not a plain gray box -- previously caused by a
-  // fallback to a third-party placeholder URL (https://via.placeholder.com)
-  // that showed nothing when the request was slow, blocked, or down.
+  // With no photo: a person icon drawn locally (as the avatar pill), never a
+  // third-party placeholder URL (https://via.placeholder.com) that showed a
+  // plain gray box when the request was slow, blocked, or down.
   it.each([null, undefined, ''])(
-    'renders the Buyootna logo fallback, not the photo path, when uri is %p',
+    'renders the person-icon fallback, not the photo path, when uri is %p',
     async (uri) => {
       const { getByTestId, queryByTestId } = await render(
         <Avatar uri={uri} testID="avatar" />,
