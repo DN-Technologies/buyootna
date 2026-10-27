@@ -27,6 +27,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { favoritesService } from '@/shared/api/favorites.service';
 import { queryClient } from '@/shared/api/queryClient';
 import AppAlertModal from '@/shared/components/feedback/AppAlertModal';
+import LaunchOverlay from '@/shared/components/launch/LaunchOverlay';
 import { useAppBadge } from '@/shared/hooks/notifications/useAppBadge';
 import { usePushRegistration } from '@/shared/hooks/notifications/usePushRegistration';
 import { FAVORITE_IDS_QUERY_KEY } from '@/shared/hooks/properties/useFavorites';
@@ -203,6 +204,8 @@ function RootLayout() {
                     battery icons on the white screens (QA). Dark screens
                     (launch, photo viewer) ask for light icons themselves. */}
                 <StatusBar style="dark" />
+                {/* Last, so it covers everything while home loads beneath */}
+                <LaunchOverlay />
               </SafeAreaProvider>
             </BottomSheetModalProvider>
           </GestureHandlerRootView>

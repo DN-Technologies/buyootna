@@ -4,14 +4,9 @@ import * as Updates from 'expo-updates';
 import { verifyInstallation } from 'nativewind';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  runOnJS,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withTiming,
-} from 'react-native-reanimated';
 
+import { LAUNCH_NAVY } from '@/shared/components/launch/LaunchAnimation';
+import { useLaunchOverlay } from '@/shared/components/launch/LaunchOverlay';
 import AppLogo from '@/shared/components/ui/AppLogo';
 import { finishLaunch } from '@/shared/hooks/notifications/usePushRegistration';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
@@ -36,8 +31,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
  * the native splash screen -- most opens have no new update, and the user
  * should never see anything different from a normal launch in that case.
  * Only once a real update is found do we switch to a visible progress
- * screen (matching the splash's own background/logo so the switch is
- * seamless) showing live download percentage via useUpdates().
+ * screen (on the splash's own navy so the switch is seamless) showing
+ * live download percentage via useUpdates().
  *
  * Deliberately does NOT call Updates.reloadAsync() -- forcing a full
  * JS-context reload this early in the launch lifecycle (before the app has
@@ -93,19 +88,18 @@ function UpdateGate({ onDone }: { onDone: () => void }) {
     };
   }, [onDone]);
 
-  // Matches the native splash's own background/logo so this is seamless
-  // whether or not it's actually showing anything different -- the native
-  // splash (white bg, centered logo) stays up the whole time we're
-  // silently checking; this view only diverges from it once we know a
-  // download is genuinely happening.
+  // The native splash's plain navy while silently checking, so nothing
+  // changes on screen; it only diverges once a download is genuinely
+  // happening.
   return (
     <View style={styles.updateContainer}>
-      <AppLogo width={96} height={96} variant="icon" />
+      <StatusBar style="light" />
       {isDownloadingUpdate && (
         <>
+          <AppLogo width={96} height={96} variant="icon" />
           <ActivityIndicator
             size="small"
-            color="#15304D"
+            color="#FFFFFF"
             style={styles.updateSpinner}
           />
           <Text style={styles.updateText}>
@@ -118,82 +112,34 @@ function UpdateGate({ onDone }: { onDone: () => void }) {
 }
 
 function InitialSplashSequence() {
-  const [animationDone, setAnimationDone] = useState(false);
+  const showLaunch = useLaunchOverlay((s) => s.show);
   const isLoading = useAuthStore((state) => state.isLoading);
   const activeIdentity = useAuthStore((state) => state.activeIdentity);
 
-  // Animation Values
-  const dotOpacity = useSharedValue(1);
-  const bgColor = useSharedValue('#FFFFFF'); // White
-  const logoOpacity = useSharedValue(0);
-
+  // The launch animation plays over the app (LaunchOverlay, in the root
+  // layout), so home can open and render beneath it
   useEffect(() => {
     verifyInstallation();
+    showLaunch();
+  }, [showLaunch]);
 
-    // 1 Fade out dot
-    dotOpacity.value = withDelay(350, withTiming(0, { duration: 210 }));
-
-    // 2. Change background to dark blue (matching the design)
-    bgColor.value = withDelay(560, withTiming('#0B2239', { duration: 350 }));
-
-    // 3. Fade in logo, then mark the animation done
-    logoOpacity.value = withDelay(
-      910,
-      withTiming(1, { duration: 420 }, (finished) => {
-        if (finished) {
-          runOnJS(setAnimationDone)(true);
-        }
-      }),
-    );
-  }, [bgColor, dotOpacity, logoOpacity]);
-
-  // Route away only once the splash animation has finished AND persisted
-  // auth/identity has been hydrated, so we redirect to the correct
-  // experience (individual/company/office) instead of always landing on
-  // individual home.
+  // Route once persisted auth/identity has been hydrated, so we land on the
+  // correct experience (individual/company/office) instead of always the
+  // individual home
   useEffect(() => {
-    if (animationDone && !isLoading) {
+    if (!isLoading) {
       router.replace(getIdentityHomeRoute(activeIdentity?.type));
       // A push that started the app opens now, on top of home. Not cleared
       // on unmount: the replace above is what unmounts this screen
       setTimeout(finishLaunch, 0);
     }
-  }, [animationDone, isLoading, activeIdentity]);
+  }, [isLoading, activeIdentity]);
 
-  const animatedBackground = useAnimatedStyle(() => ({
-    backgroundColor: bgColor.value,
-  }));
-
-  const animatedDot = useAnimatedStyle(() => ({
-    opacity: dotOpacity.value,
-  }));
-
-  const animatedLogo = useAnimatedStyle(() => ({
-    opacity: logoOpacity.value,
-  }));
-
+  // Navy under the overlay, should hydration outlast the animation
   return (
-    <Animated.View
-      style={[
-        StyleSheet.absoluteFill,
-        { alignItems: 'center', justifyContent: 'center' },
-        animatedBackground,
-      ]}
-    >
-      {/* Light icons over the dark-blue launch screen */}
+    <View style={styles.launchBackground}>
       <StatusBar style="light" />
-
-      {/* Initial Dot */}
-      <Animated.View
-        className="absolute h-3 w-3 rounded-full bg-slate-800"
-        style={[animatedDot]}
-      />
-
-      {/* Main Logo */}
-      <Animated.View style={animatedLogo}>
-        <AppLogo width={120} height={120} fill="#FFFFFF" />
-      </Animated.View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -209,11 +155,15 @@ export default function InitialEntry() {
 }
 
 const styles = StyleSheet.create({
+  launchBackground: {
+    flex: 1,
+    backgroundColor: LAUNCH_NAVY,
+  },
   updateContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: LAUNCH_NAVY,
   },
   updateSpinner: {
     marginTop: 24,
@@ -222,6 +172,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontFamily: 'Cairo_500Medium',
     fontSize: 14,
-    color: '#6B6A6A',
+    color: '#FFFFFF',
   },
 });

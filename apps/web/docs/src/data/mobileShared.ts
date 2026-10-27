@@ -2731,5 +2731,42 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "fix/android-chat-keyboard",
     },
+    {
+      id: "mobile-launch-animation",
+      title: {
+        en: "The app opens with the new Buyootna logo animation on navy",
+        ar: "يُفتح التطبيق بحركة شعار بيوتنا الجديدة على خلفية كحلية",
+      },
+      priority: "P1",
+      story: {
+        en: "The designer's launch animation (Lottie, «BUYOOTNA LOGO ANIMATION F1»: the icon builds up, the white «Buyootna» letters pop in, the logo holds, then shrinks away) replaces the dot-and-fade launch, and plays in full (about 5.6 s) every time the app opens. It plays over the app: home opens and renders underneath, and the animation fades out (0.25 s) straight onto it, with no empty pause after the logo. The native splash, the update download screen and the animation are all the same navy (#0B2239), in light and dark mode, so nothing flashes white. With Reduce Motion on, the full logo shows still for 0.6 s. The app still waits for the saved sign-in before opening the right home (individual, company or office), and never waits more than 8 s on the animation. Needs native build 1.6.1 (lottie-react-native); it can't reach older installs by OTA.",
+        ar: "حركة الافتتاح من المصمم (Lottie، «BUYOOTNA LOGO ANIMATION F1»: يتكوّن الشعار، وتظهر حروف «Buyootna» البيضاء، ثم يثبت الشعار وينكمش ويختفي) تحل محل النقطة والظهور التدريجي، وتُعرض كاملة (حوالي 5.6 ثانية) في كل مرة يُفتح فيها التطبيق. تُعرض فوق التطبيق: تُفتح الصفحة الرئيسية وتُجهَّز تحتها، ثم تتلاشى الحركة (0.25 ثانية) مباشرة عليها، بلا توقف فارغ بعد الشعار. شاشة البداية الأصلية وشاشة تحميل التحديث والحركة كلها بنفس الكحلي (#0B2239) في الوضعين الفاتح والداكن، فلا يظهر وميض أبيض. مع تفعيل «تقليل الحركة» يظهر الشعار الكامل ثابتاً 0.6 ثانية. ما زال التطبيق ينتظر تسجيل الدخول المحفوظ قبل فتح الصفحة الرئيسية الصحيحة (فرد أو شركة أو مكتب)، ولا ينتظر الحركة أكثر من 8 ثوانٍ. يحتاج النسخة 1.6.1 (lottie-react-native)؛ ولا يصل للنسخ الأقدم بتحديث OTA.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every open (fresh install, and after killing the app): the whole animation plays, about 5.6 s, ending on the home of the signed-in profile (or the guest home).",
+          "No white frame between the system splash and the animation, in light and in dark mode; the status bar icons are light.",
+          "Reduce Motion on (iOS Settings › Accessibility › Motion; Android Remove animations): a still logo, then home.",
+          "When an update is downloading on launch, the progress screen is navy with the logo, spinner and «جاري تحميل التحديث… n%» in white.",
+        ],
+        ar: [
+          "كل فتح (تثبيت جديد، وبعد إغلاق التطبيق): تُعرض الحركة كاملة، حوالي 5.6 ثانية، وتنتهي بالصفحة الرئيسية للملف المسجّل (أو صفحة الزائر).",
+          "لا يوجد إطار أبيض بين شاشة البداية والحركة، في الوضعين الفاتح والداكن؛ وأيقونات شريط الحالة فاتحة.",
+          "مع «تقليل الحركة» (iOS: الإعدادات › تسهيلات الاستخدام › الحركة؛ Android: إزالة الرسوم المتحركة): شعار ثابت ثم الرئيسية.",
+          "عند تحميل تحديث أثناء الفتح، تكون شاشة التقدم كحلية والشعار والمؤشر و«جاري تحميل التحديث… n%» باللون الأبيض.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "iPhone and Android, light and dark mode: install 1.6.1, open it, then kill and reopen it twice: the full animation every time.",
+          "Signed in as a company: the animation ends on the company home, not the individual one.",
+        ],
+        ar: [
+          "آيفون وأندرويد، الوضع الفاتح والداكن: ثبّت 1.6.1 وافتحه، ثم أغلقه وأعد فتحه مرتين: الحركة كاملة في كل مرة.",
+          "مسجّل كشركة: تنتهي الحركة بالصفحة الرئيسية للشركة لا للفرد.",
+        ],
+      },
+      updatedIn: "feat/launch-animation",
+    },
   ],
 };
