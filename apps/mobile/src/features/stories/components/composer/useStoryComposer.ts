@@ -33,6 +33,7 @@ import {
   STORY_SOURCE_VIDEO_MAX_MS,
   type TrimRange,
 } from '../../videoEditor';
+import type { CapturedStoryMedia } from '../camera/useStoryCamera';
 
 export const NO_LISTING = 'none';
 const VIDEO_MAX_SECONDS = STORY_VIDEO_MAX_MS / 1000;
@@ -190,6 +191,32 @@ export function useStoryComposer() {
     if (!result.canceled && result.assets[0]) await acceptAsset(result.assets[0]);
   };
 
+  /**
+   * From the in-app camera: the same checks, poster and trimmer as a pick
+   * from the gallery. The file's extension gives its type (iOS records
+   * .mov, Android .mp4).
+   */
+  const acceptCaptured = async (captured: CapturedStoryMedia) => {
+    await acceptAsset(
+      captured.kind === 'photo'
+        ? {
+            uri: captured.uri,
+            type: 'image',
+            width: captured.width,
+            height: captured.height,
+            mimeType: 'image/jpeg',
+          }
+        : {
+            uri: captured.uri,
+            type: 'video',
+            width: 0,
+            height: 0,
+            duration: captured.durationMs,
+          },
+    );
+  };
+
+  // The system camera: only on app builds without the in-app one
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -284,6 +311,7 @@ export function useStoryComposer() {
     setMuted,
     progress,
     pickFromLibrary,
+    acceptCaptured,
     takePhoto,
     publish,
     close,

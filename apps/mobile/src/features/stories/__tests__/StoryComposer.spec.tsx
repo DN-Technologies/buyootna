@@ -39,11 +39,32 @@ jest.mock('expo-video', () => ({
   },
   VideoView: 'VideoView',
 }));
-// The native trimmer: absent (app builds before it) unless a test sets it
+// The native trimmer and the in-app camera: absent (older app builds)
+// unless a test sets them
 let mockEditor: { trimVideo: jest.Mock } | null = null;
+let mockCameraModule: object | null = null;
 jest.mock('expo', () => ({
-  requireOptionalNativeModule: () => mockEditor,
+  requireOptionalNativeModule: (name: string) =>
+    name === 'ExpoCamera' ? mockCameraModule : mockEditor,
 }));
+jest.mock('expo-image-manipulator', () => ({
+  ImageManipulator: { manipulate: jest.fn() },
+  SaveFormat: { JPEG: 'jpeg' },
+}));
+jest.mock('expo-camera', () => ({
+  CameraView: 'CameraView',
+  useCameraPermissions: () => [null, jest.fn()],
+  useMicrophonePermissions: () => [null, jest.fn()],
+}));
+// The camera screen itself has its own spec: here it hands back what it shot
+let mockCameraProps: Record<string, any> = {};
+jest.mock('@/features/stories/components/camera/StoryCamera', () => {
+  const { View } = jest.requireActual('react-native');
+  return function MockStoryCamera(props: Record<string, any>) {
+    mockCameraProps = props;
+    return <View testID="story-camera" />;
+  };
+});
 jest.mock('expo-file-system/legacy', () => ({ getInfoAsync: jest.fn() }));
 jest.mock('@/shared/api/stories.service', () => ({
   storiesService: { createUpload: jest.fn(), uploadToSlot: jest.fn(), publish: jest.fn() },
@@ -82,6 +103,8 @@ describe('StoryComposer', () => {
     jest.clearAllMocks();
     mockIsBusiness = true;
     mockEditor = null;
+    mockCameraModule = null;
+    mockCameraProps = {};
     useAuthStore.setState({ token: 't', activeIdentity: { id: 'co-1' } as never });
     (userService.getUserProperties as jest.Mock).mockResolvedValue([
       { id: 'p1', location: 'السالمية', categoryLabel: 'شقة', type: 'سكني', images: [], price: 350 },
@@ -103,6 +126,61 @@ describe('StoryComposer', () => {
     const screen = await renderComposer();
     expect(screen.getByText('نشر القصص متاح للشركات والمكاتب فقط')).toBeTruthy();
     expect(screen.queryByTestId('composer-pick-library')).toBeNull();
+  });
+
+  describe('the in-app camera (1.7.0 builds)', () => {
+    beforeEach(() => {
+      mockCameraModule = {};
+    });
+
+    it('opens straight into the camera, with the gallery in it', async () => {
+      const screen = await renderComposer();
+      expect(screen.getByTestId('story-camera')).toBeTruthy();
+      // The old «اضف قصة جديدة» start screen is gone
+      expect(screen.queryByTestId('composer-pick-library')).toBeNull();
+
+      await act(async () => {
+        mockCameraProps.onPickLibrary();
+      });
+      expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled();
+    });
+
+    it('a photo from the camera goes through the same checks to the preview', async () => {
+      (getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 4096 });
+      const screen = await renderComposer();
+
+      await act(async () => {
+        await mockCameraProps.onCaptured({
+          kind: 'photo',
+          uri: 'file:///shot.jpg',
+          width: 1080,
+          height: 1920,
+        });
+      });
+
+      expect(screen.getByTestId('composer-preview').props.source).toEqual({
+        uri: 'file:///shot.jpg',
+      });
+      expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
+    });
+
+    it('× on the preview goes back to the camera', async () => {
+      (getInfoAsync as jest.Mock).mockResolvedValue({ exists: true, size: 4096 });
+      const screen = await renderComposer();
+      await act(async () => {
+        await mockCameraProps.onCaptured({
+          kind: 'photo',
+          uri: 'file:///shot.jpg',
+          width: 1080,
+          height: 1920,
+        });
+      });
+
+      await act(async () => {
+        await fireEvent.press(screen.getByTestId('composer-change'));
+      });
+      expect(screen.getByTestId('story-camera')).toBeTruthy();
+    });
   });
 
   it('picks from the gallery as a compatible JPEG and previews it', async () => {
