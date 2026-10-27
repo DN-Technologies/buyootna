@@ -48,15 +48,20 @@ export default function PillGap({
 }: PillGapProps) {
   if (state === 'unread') {
     return (
-      // Figma's count sits over the photo's edge, beside the chevron
+      // The count sits over the photo's edge, beside the chevron: 20pt, on
+      // the same line as Figma's 14pt one (left 24)
       <Animated.View
         testID="avatar-pill-count"
         pointerEvents="none"
-        className="absolute size-[14px] items-center justify-center rounded-full bg-[#BA0003]"
-        // The app's RTL swaps left and right: this is Figma's left 24
-        style={[{ right: 24, top: 16 }, fadeStyle]}
+        className="absolute size-[20px] items-center justify-center rounded-full bg-[#BA0003]"
+        // The app's RTL swaps left and right: this is from the photo side
+        style={[{ right: 21, top: 13 }, fadeStyle]}
       >
-        <Text className="font-cairo-bold text-[8px] leading-[12px] text-white">
+        {/* Line height = the circle, so the digit sits in its middle */}
+        <Text
+          className="font-cairo-bold text-[11px] leading-[20px] text-white"
+          style={{ textAlign: 'center', includeFontPadding: false }}
+        >
           {unread > 9 ? '9+' : unread}
         </Text>
       </Animated.View>
