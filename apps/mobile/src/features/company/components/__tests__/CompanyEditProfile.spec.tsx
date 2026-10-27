@@ -183,6 +183,27 @@ describe('CompanyEditProfile', () => {
     expect(queryByText('تشطيبات،بناء،ديكور،كهرباء')).toBeNull();
   });
 
+  // مناطق تقديم الخدمة mixed governorates with two single areas
+  it('مناطق تقديم الخدمة offers all of Kuwait or a governorate', async () => {
+    const { getByText, getAllByText, queryAllByText } = await render(
+      <CompanyEditProfile />,
+    );
+    // السالمية is also the HQ's address on this screen: count it before
+    const salmiyaBefore = queryAllByText('السالمية').length;
+
+    await fireEvent.press(getByText('العاصمة'));
+
+    expect(getByText('جميع مناطق الكويت')).toBeTruthy();
+    for (const governorate of ['حولي', 'الأحمدي', 'الجهراء', 'الفروانية', 'مبارك الكبير']) {
+      expect(getByText(governorate)).toBeTruthy();
+    }
+    // The saved one shows in the field and in the list
+    expect(getAllByText('العاصمة').length).toBeGreaterThan(1);
+    // Single areas aren't offered any more
+    expect(queryAllByText('السالمية').length).toBe(salmiyaBefore);
+    expect(queryAllByText('شمال غرب صليبيخات')).toHaveLength(0);
+  });
+
   it('Save button stays disabled when unmodified (Figma 4410:159865)', async () => {
     const { getByText } = await render(<CompanyEditProfile />);
 
