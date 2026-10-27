@@ -248,8 +248,8 @@ export const mobileShared: DocSection = {
         ar: "بصفتي شركة أو مكتباً، أريد نشر أي فيديو من هاتفي، والاحتفاظ بالجزء المهم فقط واختيار وجود الصوت، حتى تبدو قصصي جيدة دون تعديلها في تطبيق آخر أولاً.",
       },
       story: {
-        en: "The composer follows Figma. Start: «اضف قصة جديدة» on dark, «صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.», «اختر من المعرض» and «الكاميرا»; × closes. Preview: the photo, or the video playing, fills the screen; × goes back to choosing. At the bottom: image+ links one of my active listings (a chip shows it, with × to unlink), the caption «اضافة شرح توضيحي....» (up to 200), and the send circle, which shows the upload percentage. Videos, from app 1.6.0 (a new store build: the trimmer is native code): any video up to 10 minutes can be picked; a strip of its frames with two handles chooses the part kept (1 to 30 s, the first 30 s at first), with «0:00 - 0:30» and a sound button. The preview loops the chosen part. On send, the part is cut on the phone (iOS AVFoundation, Android media3), re-encoded as MP4 up to 720p, without sound if turned off, its poster is made from the cut, and that is uploaded. A short video with sound, untouched, is sent as it is. On older app builds (an over-the-air update) there is no trim bar and the 30 s limit stays. Own story («حالتي»): › closes, the avatar's + posts another, ⋮ deletes, the eye pill «👁 N» lists the viewers, and share sends «تابع <name> على بيوتنا» with the website link (there is no profile page on the site yet). Other people's stories use the same header with their name.",
-        ar: "شاشة النشر تتبع Figma. البداية: «اضف قصة جديدة» على خلفية داكنة، و«صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.»، و«اختر من المعرض» و«الكاميرا»؛ و× تغلق. المعاينة: الصورة أو الفيديو يعمل بملء الشاشة؛ و× تعود للاختيار. في الأسفل: زر الصورة+ يربط أحد إعلاناتي النشطة (تظهره شارة مع × لإلغاء الربط)، والوصف «اضافة شرح توضيحي....» (حتى 200)، ودائرة الإرسال التي تعرض نسبة الرفع. الفيديو، من إصدار التطبيق 1.6.0 (إصدار جديد في المتجر: القص كود أصلي): يمكن اختيار أي فيديو حتى 10 دقائق؛ وشريط من إطاراته بمقبضين يحدد الجزء المحفوظ (من 1 إلى 30 ثانية، وأول 30 ثانية في البداية)، مع «0:00 - 0:30» وزر الصوت. وتكرر المعاينة الجزء المختار. عند الإرسال يُقص الجزء على الهاتف (AVFoundation في iOS وmedia3 في Android)، ويُعاد ترميزه MP4 حتى 720p، وبلا صوت إن أُطفئ، ويُصنع غلافه من المقطوع، ثم يُرفع. والفيديو القصير بالصوت دون تعديل يُرسل كما هو. وفي إصدارات التطبيق الأقدم (تحديث عبر الهواء) لا يظهر شريط القص ويبقى حد 30 ثانية. قصتي («حالتي»): › تغلق، و+ على الصورة تنشر أخرى، و⋮ تحذف، وزر العين «👁 N» يعرض المشاهدين، والمشاركة ترسل «تابع <الاسم> على بيوتنا» مع رابط الموقع (لا توجد صفحة للحساب على الموقع بعد). وقصص الآخرين بالرأس نفسه مع أسمائهم.",
+        en: "The composer follows Figma. (From app 1.7.0 it opens straight into the in-app camera instead of this start screen: see mobile-stories-camera.) Start: «اضف قصة جديدة» on dark, «صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.», «اختر من المعرض» and «الكاميرا»; × closes. Preview: the photo, or the video playing, fills the screen; × goes back to choosing. At the bottom: image+ links one of my active listings (a chip shows it, with × to unlink), the caption «اضافة شرح توضيحي....» (up to 200), and the send circle, which shows the upload percentage. Videos, from app 1.6.0 (a new store build: the trimmer is native code): any video up to 10 minutes can be picked; a strip of its frames with two handles chooses the part kept (1 to 30 s, the first 30 s at first), with «0:00 - 0:30» and a sound button. The preview loops the chosen part. On send, the part is cut on the phone (iOS AVFoundation, Android media3), re-encoded as MP4 up to 720p, without sound if turned off, its poster is made from the cut, and that is uploaded. A short video with sound, untouched, is sent as it is. On older app builds (an over-the-air update) there is no trim bar and the 30 s limit stays. Own story («حالتي»): › closes, the avatar's + posts another, ⋮ deletes, the eye pill «👁 N» lists the viewers, and share sends «تابع <name> على بيوتنا» with the website link (there is no profile page on the site yet). Other people's stories use the same header with their name.",
+        ar: "شاشة النشر تتبع Figma. (من إصدار التطبيق 1.7.0 تفتح مباشرة على كاميرا التطبيق بدل شاشة البداية هذه: انظر mobile-stories-camera.) البداية: «اضف قصة جديدة» على خلفية داكنة، و«صورة أو فيديو حتى 30 ثانية ستظل ظاهرة لمدة 24 ساعة.»، و«اختر من المعرض» و«الكاميرا»؛ و× تغلق. المعاينة: الصورة أو الفيديو يعمل بملء الشاشة؛ و× تعود للاختيار. في الأسفل: زر الصورة+ يربط أحد إعلاناتي النشطة (تظهره شارة مع × لإلغاء الربط)، والوصف «اضافة شرح توضيحي....» (حتى 200)، ودائرة الإرسال التي تعرض نسبة الرفع. الفيديو، من إصدار التطبيق 1.6.0 (إصدار جديد في المتجر: القص كود أصلي): يمكن اختيار أي فيديو حتى 10 دقائق؛ وشريط من إطاراته بمقبضين يحدد الجزء المحفوظ (من 1 إلى 30 ثانية، وأول 30 ثانية في البداية)، مع «0:00 - 0:30» وزر الصوت. وتكرر المعاينة الجزء المختار. عند الإرسال يُقص الجزء على الهاتف (AVFoundation في iOS وmedia3 في Android)، ويُعاد ترميزه MP4 حتى 720p، وبلا صوت إن أُطفئ، ويُصنع غلافه من المقطوع، ثم يُرفع. والفيديو القصير بالصوت دون تعديل يُرسل كما هو. وفي إصدارات التطبيق الأقدم (تحديث عبر الهواء) لا يظهر شريط القص ويبقى حد 30 ثانية. قصتي («حالتي»): › تغلق، و+ على الصورة تنشر أخرى، و⋮ تحذف، وزر العين «👁 N» يعرض المشاهدين، والمشاركة ترسل «تابع <الاسم> على بيوتنا» مع رابط الموقع (لا توجد صفحة للحساب على الموقع بعد). وقصص الآخرين بالرأس نفسه مع أسمائهم.",
       },
       acceptanceCriteria: {
         en: [
@@ -2902,6 +2902,49 @@ export const mobileShared: DocSection = {
         ],
       },
       updatedIn: "fix/quote-sheet-services",
+    },
+    {
+      id: "mobile-stories-camera",
+      title: {
+        en: "Stories: an Instagram-style full-screen 9:16 camera (tap for a photo, hold for a video)",
+        ar: "القصص: كاميرا بملء الشاشة 9:16 مثل إنستغرام (اضغط لصورة، واضغط مطولاً لفيديو)",
+      },
+      priority: "P1",
+      story: {
+        en: "From app 1.7.0 (a new store build: the camera is native code, expo-camera), adding a story opens straight into an in-app camera instead of the system camera. A full-screen 9:16 live view; tap the shutter for a photo, hold it to record a video (a gold ring fills over the 30 s limit; it stops by itself at 30 s; under a second is no video). Flip front/back with the button or a double-tap (not while recording); flash off / auto / on (on keeps the light on while recording); pinch to zoom, or slide up while holding. The gallery button opens the usual picker. Photos are centre-cropped to exactly 9:16; videos record at 720p (portrait is already 9:16). Captures go through the same checks, poster, trimmer and publishing as a pick from the gallery. Without camera access: «فتح الإعدادات», and the gallery still works; without the microphone, videos record silently. On Android the camera waits in photo mode and switches to video for a hold, so recording starts a moment after the hold. In the viewer, a 9:16 photo or video fills the screen edge to edge (a tall phone crops a sliver); other shapes still fit inside. Older app builds keep «اضف قصة جديدة» and the system camera.",
+        ar: "من إصدار التطبيق 1.7.0 (إصدار جديد في المتجر: الكاميرا كود أصلي expo-camera) تفتح إضافة قصة مباشرة على كاميرا داخل التطبيق بدل كاميرا النظام. عرض مباشر بملء الشاشة 9:16؛ اضغط زر الالتقاط لصورة، واضغط مطولاً لتسجيل فيديو (تمتلئ حلقة ذهبية حتى حد 30 ثانية؛ ويتوقف وحده عند 30 ثانية؛ وأقل من ثانية لا يُعد فيديو). تبديل الكاميرا الأمامية/الخلفية بالزر أو بضغطتين (ليس أثناء التسجيل)؛ والفلاش مطفأ / تلقائي / يعمل (يعمل يُبقي الضوء أثناء التسجيل)؛ والتقريب بإصبعين أو بالسحب للأعلى أثناء الضغط المطول. وزر المعرض يفتح المنتقي المعتاد. تُقص الصور من الوسط إلى 9:16 تماماً؛ ويُسجل الفيديو بدقة 720p (الطولي 9:16 أصلاً). وتمر اللقطات بالفحوص نفسها والغلاف والقص والنشر كالاختيار من المعرض. بلا إذن الكاميرا: «فتح الإعدادات» ويبقى المعرض متاحاً؛ وبلا الميكروفون يُسجل الفيديو بلا صوت. في Android تنتظر الكاميرا بوضع الصور وتتحول للفيديو عند الضغط المطول، فيبدأ التسجيل بعد لحظة. وفي العارض تملأ الصورة أو الفيديو بنسبة 9:16 الشاشة بالكامل (ويُقص جزء صغير في الهواتف الطويلة)؛ والأشكال الأخرى تبقى داخل الشاشة. وتبقى الإصدارات الأقدم على «اضف قصة جديدة» وكاميرا النظام.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«اضف قصة» opens the full-screen camera at once (no start screen) on 1.7.0.",
+          "A tap gives a 9:16 photo in the preview; a hold records until let go, and stops by itself at 30 s.",
+          "Flip (button and double-tap), flash off/auto/on, pinch and slide-up zoom all work; flip is disabled while recording.",
+          "The gallery button opens the usual picker; × on the preview returns to the camera.",
+          "Camera access denied: «فتح الإعدادات» and the gallery still work.",
+          "In the viewer, a 9:16 story fills the screen; an older 4:3 story still fits inside.",
+        ],
+        ar: [
+          "«اضف قصة» تفتح الكاميرا بملء الشاشة فوراً (دون شاشة البداية) في الإصدار 1.7.0.",
+          "الضغطة تعطي صورة 9:16 في المعاينة؛ والضغط المطول يسجل حتى الإفلات، ويتوقف وحده عند 30 ثانية.",
+          "التبديل (بالزر وبضغطتين)، والفلاش مطفأ/تلقائي/يعمل، والتقريب بإصبعين وبالسحب للأعلى تعمل؛ والتبديل معطّل أثناء التسجيل.",
+          "زر المعرض يفتح المنتقي المعتاد؛ و× على المعاينة تعود إلى الكاميرا.",
+          "عند رفض إذن الكاميرا: «فتح الإعدادات» والمعرض يعملان.",
+          "في العارض تملأ القصة 9:16 الشاشة؛ والقصة القديمة 4:3 تبقى داخل الشاشة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On a real iPhone and Android phone (the simulator has no camera): take a photo, a 5 s video, and a 30 s hold; publish each; open them in the viewer.",
+          "Front camera with flash on: a photo, then a video (the light stays on while recording).",
+          "Deny the camera in Settings, open «اضف قصة»: the settings prompt; pick from the gallery instead.",
+        ],
+        ar: [
+          "على آيفون وأندرويد حقيقيين (المحاكي بلا كاميرا): التقط صورة، وفيديو 5 ثوانٍ، واضغط مطولاً 30 ثانية؛ انشر كلاً منها؛ وافتحها في العارض.",
+          "الكاميرا الأمامية مع الفلاش: صورة ثم فيديو (يبقى الضوء أثناء التسجيل).",
+          "ارفض الكاميرا من الإعدادات وافتح «اضف قصة»: طلب الإعدادات؛ واختر من المعرض بدلاً منها.",
+        ],
+      },
+      updatedIn: "feat/story-camera",
     },
   ],
 };

@@ -3,6 +3,8 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
+import { storyFit } from '../storyFrame';
+
 interface StoryVideoProps {
   url: string;
   posterUrl: string | null;
@@ -35,6 +37,11 @@ export default function StoryVideo({
     p.loop = false;
   });
   const [ready, setReady] = useState(false);
+  // A 9:16 video fills the screen. Its upright size comes from the poster
+  // (iOS can report the track's size before rotation); the track is the
+  // fallback for a video without one
+  const [fit, setFit] = useState<'cover' | 'contain'>('contain');
+  const fitFromPoster = useRef(false);
   const callbacks = useRef({ onReady, onWaiting, onError });
   callbacks.current = { onReady, onWaiting, onError };
 
@@ -53,7 +60,15 @@ export default function StoryVideo({
       setReady(true);
       callbacks.current.onReady();
     }
-    return () => sub.remove();
+    const track = player.addListener('videoTrackChange', ({ videoTrack }) => {
+      if (!fitFromPoster.current && videoTrack) {
+        setFit(storyFit(videoTrack.size.width, videoTrack.size.height));
+      }
+    });
+    return () => {
+      sub.remove();
+      track.remove();
+    };
   }, [player]);
 
   useEffect(() => {
@@ -81,7 +96,7 @@ export default function StoryVideo({
         testID="story-video"
         player={player}
         style={StyleSheet.absoluteFill}
-        contentFit="contain"
+        contentFit={fit}
         nativeControls={false}
         allowsPictureInPicture={false}
       />
@@ -91,8 +106,12 @@ export default function StoryVideo({
           source={{ uri: posterUrl }}
           // Memory only, like every story file
           cachePolicy="memory"
-          contentFit="contain"
+          contentFit={fit}
           style={StyleSheet.absoluteFill}
+          onLoad={(e) => {
+            fitFromPoster.current = true;
+            setFit(storyFit(e.source.width, e.source.height));
+          }}
         />
       )}
     </>

@@ -99,7 +99,8 @@ describe('StoryVideo', () => {
 
   it('stops listening when it goes away (the player is released with it)', async () => {
     const screen = await render(<StoryVideo {...props} />);
-    expect(mockPlayer.listeners).toHaveLength(1);
+    // Its status, and its video track (for the fill)
+    expect(mockPlayer.listeners).toHaveLength(2);
     await screen.unmount();
     expect(mockPlayer.listeners).toHaveLength(0);
   });

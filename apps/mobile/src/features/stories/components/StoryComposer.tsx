@@ -1,6 +1,6 @@
 import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,17 +11,22 @@ import {
 
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 
+import StoryCamera from './camera/StoryCamera';
+import { hasStoryCamera } from './camera/useStoryCamera';
 import ComposerPreview from './composer/ComposerPreview';
 import ComposerStart from './composer/ComposerStart';
 import { useStoryComposer } from './composer/useStoryComposer';
 
 /**
- * Posting a story (companies and offices): «اضف قصة جديدة», then the photo
- * or video with its caption, listing and (video) trim, then send.
+ * Posting a story (companies and offices): straight into the camera (the
+ * gallery is in its corner), then the photo or video with its caption,
+ * listing and (video) trim, then send. App builds without the in-app
+ * camera keep «اضف قصة جديدة» and the system camera.
  */
 export default function StoryComposer() {
   const c = useStoryComposer();
   const listingSheet = useRef<BottomSheetModal>(null);
+  const [inAppCamera] = useState(hasStoryCamera);
 
   if (!c.isBusiness) {
     return (
@@ -60,6 +65,13 @@ export default function StoryComposer() {
           progress={c.progress}
           onPublish={() => void c.publish()}
           onDiscard={c.clearMedia}
+        />
+      ) : inAppCamera ? (
+        <StoryCamera
+          preparing={c.preparing}
+          onCaptured={(media) => void c.acceptCaptured(media)}
+          onPickLibrary={() => void c.pickFromLibrary()}
+          onClose={c.close}
         />
       ) : (
         <ComposerStart

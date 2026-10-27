@@ -175,9 +175,15 @@ const author = (
   stories,
 });
 
-const loadImage = (screen: { getByTestId: (id: string) => unknown }) =>
+// expo-image passes the loaded image's size (a 4:3 photo here)
+const loadImage = (
+  screen: { getByTestId: (id: string) => unknown },
+  size = { width: 1200, height: 900 },
+) =>
   act(() => {
-    fireEvent(screen.getByTestId('story-image') as never, 'load');
+    fireEvent(screen.getByTestId('story-image') as never, 'load', {
+      source: size,
+    });
   });
 
 describe('StoryViewer', () => {
@@ -204,6 +210,19 @@ describe('StoryViewer', () => {
   it('story media is kept in memory only, never on disk', async () => {
     const screen = await render(<StoryViewer authorId="a1" source="feed" />);
     expect(screen.getByTestId('story-image').props.cachePolicy).toBe('memory');
+  });
+
+  // As on Instagram: a story shot in the 9:16 camera fills the screen;
+  // any other shape still fits inside
+  it('a 9:16 photo fills the screen; a 4:3 one fits inside', async () => {
+    const screen = await render(<StoryViewer authorId="a1" source="feed" />);
+    expect(screen.getByTestId('story-image').props.contentFit).toBe('contain');
+
+    await loadImage(screen, { width: 1080, height: 1920 });
+    expect(screen.getByTestId('story-image').props.contentFit).toBe('cover');
+
+    await loadImage(screen, { width: 1200, height: 900 });
+    expect(screen.getByTestId('story-image').props.contentFit).toBe('contain');
   });
 
   it('moves on after 5 seconds of showing, and closes after the last story', async () => {

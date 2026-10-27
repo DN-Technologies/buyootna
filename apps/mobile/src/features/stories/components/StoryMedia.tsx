@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
+import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { storyFit } from '../storyFrame';
 import type { ViewerStory } from '../types';
 import StoryVideo from './StoryVideo';
 
@@ -27,6 +29,9 @@ export default function StoryMedia({
   onWaiting,
   onError,
 }: StoryMediaProps) {
+  // A 9:16 photo fills the screen; until its size is known, it fits inside
+  const [fit, setFit] = useState<'cover' | 'contain'>('contain');
+
   return (
     <>
       {story.mediaType === 'VIDEO' ? (
@@ -46,10 +51,13 @@ export default function StoryMedia({
           source={{ uri: story.mediaUrl }}
           // Memory only: story media must not stay on the phone's disk
           cachePolicy="memory"
-          contentFit="contain"
+          contentFit={fit}
           recyclingKey={story.id}
           style={StyleSheet.absoluteFill}
-          onLoad={onReady}
+          onLoad={(e) => {
+            setFit(storyFit(e.source.width, e.source.height));
+            onReady();
+          }}
           onError={onError}
         />
       )}

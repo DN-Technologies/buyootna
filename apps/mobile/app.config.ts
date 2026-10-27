@@ -1,5 +1,12 @@
 import type { ExpoConfig } from 'expo/config';
 
+// The same wording for every plugin that writes these iOS permission texts
+// (image picker, audio, story camera): whichever is applied last wins
+const CAMERA_PERMISSION =
+  'يحتاج التطبيق إلى الكاميرا لالتقاط صور وفيديوهات قصصك، وإرسال الصور في المحادثة، وإضافتها إلى إعلانك';
+const MICROPHONE_PERMISSION =
+  'يحتاج التطبيق إلى الميكروفون لتسجيل صوت فيديوهات قصصك والرسائل الصوتية في المحادثة';
+
 const PRODUCTION_API_URL = 'https://api.buyootna.cloud';
 const LOCAL_API_URL_PATTERN = /localhost|127\.0\.0\.1|10\.0\.2\.2/;
 
@@ -53,7 +60,7 @@ checkApiUrl();
 const config: ExpoConfig = {
   name: 'Buyootna',
   slug: 'buyootna',
-  version: '1.6.1',
+  version: '1.7.0',
   orientation: 'portrait',
   icon: './src/assets/images/icon.png',
   scheme: 'buyootnamobile',
@@ -150,19 +157,31 @@ const config: ExpoConfig = {
       {
         photosPermission: 'يحتاج التطبيق للوصول إلى صورك لإضافتها إلى إعلانك',
         cameraPermission:
-          'يحتاج التطبيق إلى الكاميرا لالتقاط صور وإرسالها في المحادثة أو إضافتها إلى إعلانك',
+          CAMERA_PERMISSION,
         microphonePermission:
-          'يحتاج التطبيق إلى الميكروفون لتسجيل الرسائل الصوتية في المحادثة',
+          MICROPHONE_PERMISSION,
       },
     ],
     [
       'expo-audio',
       {
         microphonePermission:
-          'يحتاج التطبيق إلى الميكروفون لتسجيل الرسائل الصوتية في المحادثة',
+          MICROPHONE_PERMISSION,
       },
     ],
     'expo-video',
+    [
+      // The in-app story camera (full-screen 9:16, tap for a photo, hold
+      // for a video)
+      'expo-camera',
+      {
+        cameraPermission:
+          CAMERA_PERMISSION,
+        microphonePermission:
+          MICROPHONE_PERMISSION,
+        recordAudioAndroid: true,
+      },
+    ],
     [
       'expo-location',
       {
