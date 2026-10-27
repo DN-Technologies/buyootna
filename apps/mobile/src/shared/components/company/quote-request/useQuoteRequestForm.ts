@@ -3,6 +3,12 @@ import { useRef, useState } from 'react';
 
 import { companyRequestsService } from '@/shared/api/companyRequests.service';
 import { useGovArea } from '@/shared/components/forms/GovAreaFields';
+import {
+  OTHER_TYPE,
+  requestTypeOptions,
+  SPECIALTY_OPTIONS,
+  specialtyOfType,
+} from '@/shared/data/serviceCatalog';
 import { showAlert } from '@/shared/utils/alert';
 
 export interface ServiceItem {
@@ -14,7 +20,11 @@ const MAX_ATTACHMENTS = 10;
 
 interface Options {
   companyName: string;
+  // The company's / office's own services (their request types)
   services: ServiceItem[];
+  // A company with no services yet: pick from the services catalogue
+  // (مجال التخصص, then نوع الطلب) as in طلب عرض سعر
+  catalogFallback?: boolean;
   targetIdentityId?: string;
   // Called after a successful send (the sheet closes itself)
   onSent: () => void;
@@ -27,10 +37,12 @@ interface Options {
 export function useQuoteRequestForm({
   companyName,
   services,
+  catalogFallback = false,
   targetIdentityId,
   onSent,
 }: Options) {
   const [serviceId, setServiceId] = useState('');
+  const [specialtyId, setSpecialtyIdState] = useState('');
   const [priceFrom, setPriceFrom] = useState('');
   const [priceTo, setPriceTo] = useState('');
   // Where: the governorate and an area of it (no map pin)
@@ -41,13 +53,24 @@ export function useQuoteRequestForm({
   // Blocks a quick second tap before isSubmitting has re-rendered
   const submittingRef = useRef(false);
 
-  const serviceOptions = services.map((svc) => ({
-    id: svc.id,
-    label: svc.title,
-  }));
+  const usesCatalog = catalogFallback && services.length === 0;
+  // The company's own request types; from the catalogue when it has none;
+  // an office with none can still ask, as «اخرى»
+  const serviceOptions = usesCatalog
+    ? requestTypeOptions(specialtyId)
+    : services.length
+      ? services.map((svc) => ({ id: svc.id, label: svc.title }))
+      : [{ id: OTHER_TYPE, label: OTHER_TYPE }];
+
+  // Another specialty has another list of request types
+  const setSpecialtyId = (id: string) => {
+    setSpecialtyIdState(id);
+    setServiceId('');
+  };
 
   const reset = () => {
     setServiceId('');
+    setSpecialtyIdState('');
     setPriceFrom('');
     setPriceTo('');
     govArea.reset();
@@ -90,8 +113,11 @@ export function useQuoteRequestForm({
 
   const submit = async () => {
     if (submittingRef.current) return;
-    if (!serviceId) {
-      showAlert('تنبيه', 'يرجى اختيار نوع الطلب');
+    if (usesCatalog ? !specialtyId : !serviceId) {
+      showAlert(
+        'تنبيه',
+        usesCatalog ? 'يرجى اختيار مجال التخصص' : 'يرجى اختيار نوع الطلب',
+      );
       return;
     }
     if (!govArea.isComplete) {
@@ -103,16 +129,20 @@ export function useQuoteRequestForm({
       return;
     }
 
-    // The options come from the company's own services; their titles are
-    // the human-readable category
-    const category =
-      services.find((svc) => svc.id === serviceId)?.title || serviceId;
+    // Sent like طلب عرض سعر: the request type names it, the specialty is
+    // its category (looked up in the catalogue for the company's own types)
+    const type = usesCatalog
+      ? serviceId
+      : services.find((svc) => svc.id === serviceId)?.title || serviceId;
+    const specialty = usesCatalog ? specialtyId : specialtyOfType(type);
+    const title = type || specialty || '';
+    const category = specialty || title;
 
     try {
       submittingRef.current = true;
       setIsSubmitting(true);
       await companyRequestsService.create({
-        title: category,
+        title,
         category,
         priceRange:
           priceFrom || priceTo
@@ -140,6 +170,10 @@ export function useQuoteRequestForm({
   };
 
   return {
+    usesCatalog,
+    specialtyOptions: SPECIALTY_OPTIONS,
+    specialtyId,
+    setSpecialtyId,
     serviceOptions,
     serviceId,
     setServiceId,

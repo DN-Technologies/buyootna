@@ -18,10 +18,15 @@ const hookRef = {
 };
 const onSent = jest.fn();
 
+// What the sheet is opened with (each test may change it)
+let mockServices = [{ id: 's1', title: 'تشطيب' }];
+let mockCatalogFallback = false;
+
 function Harness() {
   hookRef.current = useQuoteRequestForm({
     companyName: 'شركة أركان',
-    services: [{ id: 's1', title: 'تشطيب' }],
+    services: mockServices,
+    catalogFallback: mockCatalogFallback,
     targetIdentityId: 'company-1',
     onSent,
   });
@@ -38,8 +43,92 @@ const fill = async () => {
 };
 
 describe('useQuoteRequestForm (company profile sheet)', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockServices = [{ id: 's1', title: 'تشطيب' }];
+    mockCatalogFallback = false;
+  });
   afterEach(() => cleanup());
+
+  // QA: the sheet showed a made-up list (الأثاث / شبكات نت / ديكورات
+  // وتصميم) and, from the companies list, sent the request to nobody
+  it("offers the company's own request types and sends to it, with the type's specialty", async () => {
+    mockServices = [{ id: 'svc-1', title: 'مخططات تنفيذية' }];
+    (companyRequestsService.create as jest.Mock).mockResolvedValue({});
+    await render(<Harness />);
+
+    expect(hookRef.current.usesCatalog).toBe(false);
+    expect(hookRef.current.serviceOptions).toEqual([
+      { id: 'svc-1', label: 'مخططات تنفيذية' },
+    ]);
+
+    await act(async () => {
+      hookRef.current.setServiceId('svc-1');
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
+      hookRef.current.setDescription('تفاصيل');
+    });
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+
+    expect(companyRequestsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'مخططات تنفيذية',
+        category: 'مكتب هندسي',
+        targetIdentityId: 'company-1',
+      }),
+    );
+  });
+
+  it('a company with no services yet: the catalogue, specialty first', async () => {
+    mockServices = [];
+    mockCatalogFallback = true;
+    (companyRequestsService.create as jest.Mock).mockResolvedValue({});
+    await render(<Harness />);
+
+    expect(hookRef.current.usesCatalog).toBe(true);
+    expect(hookRef.current.serviceOptions).toEqual([]);
+    expect(hookRef.current.specialtyOptions.length).toBeGreaterThan(0);
+
+    await act(async () => {
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
+      hookRef.current.setDescription('تفاصيل');
+    });
+    // No specialty: not sent
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+    expect(companyRequestsService.create).not.toHaveBeenCalled();
+
+    await act(async () => {
+      hookRef.current.setSpecialtyId('مكتب هندسي');
+    });
+    expect(hookRef.current.serviceOptions.map((o) => o.label)).toContain(
+      'تصميم الواجهات',
+    );
+    await act(async () => {
+      hookRef.current.setServiceId('تصميم الواجهات');
+    });
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+    expect(companyRequestsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'تصميم الواجهات',
+        category: 'مكتب هندسي',
+      }),
+    );
+  });
+
+  it('an office with no services offers «اخرى», never made-up types', async () => {
+    mockServices = [];
+    await render(<Harness />);
+    expect(hookRef.current.serviceOptions).toEqual([
+      { id: 'اخرى', label: 'اخرى' },
+    ]);
+  });
 
   it('sends once and empties the form', async () => {
     (companyRequestsService.create as jest.Mock).mockResolvedValue({});

@@ -121,6 +121,8 @@ describe('UsersDirectoryService', () => {
           OR: [
             { hqLocation: { contains: 'حولي', mode: 'insensitive' } },
             { serviceAreas: { contains: 'حولي', mode: 'insensitive' } },
+            // A company serving all of Kuwait is in حولي too
+            { serviceAreas: { contains: 'جميع مناطق الكويت' } },
           ],
         },
       ]);

@@ -19,6 +19,9 @@ import { hasActiveCompanySubscription } from '../../company-subscriptions/compan
 import { splitList } from '../../properties/dto/get-properties-filter.dto';
 import { readableLocation } from '../../../common/utils/location.util';
 
+// مناطق تقديم الخدمة: «all of Kuwait» (the app's choice), matched by any place
+const ALL_KUWAIT_AREAS = 'جميع مناطق الكويت';
+
 @Injectable()
 export class UsersDirectoryService {
   constructor(
@@ -79,10 +82,16 @@ export class UsersDirectoryService {
     const places = splitList(location);
     if (places) {
       narrowing.push({
-        OR: places.flatMap((place) => [
-          { hqLocation: { contains: place, mode: 'insensitive' as const } },
-          { serviceAreas: { contains: place, mode: 'insensitive' as const } },
-        ]),
+        OR: [
+          ...places.flatMap((place) => [
+            { hqLocation: { contains: place, mode: 'insensitive' as const } },
+            {
+              serviceAreas: { contains: place, mode: 'insensitive' as const },
+            },
+          ]),
+          // A company serving all of Kuwait serves every governorate
+          { serviceAreas: { contains: ALL_KUWAIT_AREAS } },
+        ],
       });
     }
     if (narrowing.length > 0) companyDataWhere.AND = narrowing;

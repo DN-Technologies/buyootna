@@ -31,11 +31,19 @@ import {
   useQuoteRequestForm,
 } from './quote-request/useQuoteRequestForm';
 
+// Stable: a new [] each render would re-create the form's options
+const NO_SERVICES: ServiceItem[] = [];
+
 interface QuoteRequestModalProps {
   companyName?: string;
   companySubtitle?: string;
   companyLogoUrl?: string;
+  // The company's / office's own services: its request types
   services?: ServiceItem[];
+  // The services are still loading (opened from a list)
+  servicesLoading?: boolean;
+  // A company with no services yet picks from the services catalogue
+  catalogFallback?: boolean;
   onRequestSubmitted?: () => void;
   /**
    * The COMPANY/OFFICE identity this directed quote is sent to. Without it
@@ -43,12 +51,6 @@ interface QuoteRequestModalProps {
    */
   targetIdentityId?: string;
 }
-
-const DEFAULT_SERVICES: ServiceItem[] = [
-  { id: '1', title: 'الأثاث' },
-  { id: '2', title: 'شبكات نت' },
-  { id: '3', title: 'ديكورات وتصميم' },
-];
 
 /**
  * تقديم طلب سعر sent straight to one company or office: the form lives in
@@ -61,7 +63,9 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       companyName = 'الشركة',
       companySubtitle,
       companyLogoUrl,
-      services = DEFAULT_SERVICES,
+      services = NO_SERVICES,
+      servicesLoading = false,
+      catalogFallback = false,
       onRequestSubmitted,
       targetIdentityId,
     },
@@ -75,6 +79,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
     const form = useQuoteRequestForm({
       companyName,
       services,
+      catalogFallback,
       targetIdentityId,
       onSent: () => {
         internalRef.current?.dismiss();
@@ -140,13 +145,37 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             logoUrl={companyLogoUrl}
           />
 
+          {form.usesCatalog && !servicesLoading && (
+            // No services of its own yet: the catalogue, as طلب عرض سعر
+            <InlineDropdown
+              title="مجال التخصص"
+              required
+              placeholder="اختر مجال التخصص"
+              options={form.specialtyOptions}
+              value={form.specialtyId}
+              onChange={form.setSpecialtyId}
+              testID="quote-specialty"
+            />
+          )}
+
           <InlineDropdown
             title="نوع الطلب"
-            required
-            placeholder="حدد الخدمة التي ترغب بها"
+            required={!form.usesCatalog}
+            optional={form.usesCatalog}
+            placeholder={
+              servicesLoading
+                ? 'جاري تحميل خدمات الشركة...'
+                : form.usesCatalog && !form.specialtyId
+                  ? 'اختر مجال التخصص أولاً'
+                  : 'حدد الخدمة التي ترغب بها'
+            }
             options={form.serviceOptions}
             value={form.serviceId}
             onChange={form.setServiceId}
+            disabled={
+              servicesLoading || (form.usesCatalog && !form.specialtyId)
+            }
+            testID="quote-service"
           />
 
           <QuotePriceRangeFields

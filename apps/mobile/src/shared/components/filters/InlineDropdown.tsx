@@ -43,8 +43,16 @@ export default function InlineDropdown({
     setIsOpen(false);
   };
 
+  const open = isOpen && !disabled;
+
   return (
-    <View className="mb-6 w-full">
+    // Open, it's raised above the fields after it (zIndex; elevation sets the
+    // drawing order on Android) so its list covers them instead of pushing
+    // them down
+    <View
+      className="mb-6 w-full"
+      style={{ zIndex: open ? 20 : 0, elevation: open ? 20 : 0 }}
+    >
       {/* Title */}
       <Text
         className="mb-1 font-cairo text-[14px] leading-[22px] text-[#111111]"
@@ -54,6 +62,7 @@ export default function InlineDropdown({
         <RequirementMark required={required} optional={optional} />
       </Text>
 
+      <View>
       {/* Dropdown Header/Trigger */}
       <TouchableOpacity
         testID={testID}
@@ -80,13 +89,17 @@ export default function InlineDropdown({
         />
       </TouchableOpacity>
 
-      {/* Expanded Options List */}
-      {isOpen && !disabled && (
+      {/* Expanded Options List: over the next fields, just under the trigger */}
+      {open && (
         // The shadow sits on an outer view: overflow-hidden (needed for the
         // rounded corners) would clip it on iOS
         <View
-          className="mt-1 rounded-md bg-white"
+          className="rounded-md bg-white"
           style={{
+            position: 'absolute',
+            top: 50,
+            left: 0,
+            right: 0,
             shadowColor: '#0F172A',
             shadowOpacity: 0.12,
             shadowRadius: 12,
@@ -94,7 +107,8 @@ export default function InlineDropdown({
             elevation: 6,
           }}
         >
-          <View className="max-h-64 overflow-hidden rounded-md border border-gray-200 bg-white">
+          {/* Taller list (QA): more of a long list shows before it scrolls */}
+          <View className="max-h-80 overflow-hidden rounded-md border border-gray-200 bg-white">
             <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
             {options.map((option, index) => (
               <TouchableOpacity
@@ -102,7 +116,7 @@ export default function InlineDropdown({
                 testID={testID ? `${testID}-${option.id}` : undefined}
                 activeOpacity={0.7}
                 onPress={() => handleSelect(option.id)}
-                className={`items-start px-4 py-3 ${
+                className={`min-h-[52px] items-start justify-center px-4 py-3.5 ${
                   index !== options.length - 1 ? 'border-b border-gray-100' : ''
                 } ${value === option.id ? 'bg-gray-50' : ''}`}
               >
@@ -119,6 +133,7 @@ export default function InlineDropdown({
           </View>
         </View>
       )}
+      </View>
     </View>
   );
 }

@@ -487,6 +487,35 @@ export const OTHER_TYPE = 'اخرى';
 export const listedTypes = (specialty: string): string[] =>
   SERVICE_CATALOG.find((item) => item.specialty === specialty)?.types ?? [];
 
+// مجال التخصص and نوع الطلب pickers for a request (طلب عرض سعر, and a
+// direct request to a company with no services yet)
+export const SPECIALTY_OPTIONS = SPECIALTIES.map((specialty) => ({
+  id: specialty,
+  label: specialty,
+}));
+
+/** نوع الطلب for a specialty: its listed types, then «اخرى». */
+export const requestTypeOptions = (specialty: string) =>
+  specialty
+    ? [...listedTypes(specialty), OTHER_TYPE].map((type) => ({
+        id: type,
+        label: type,
+      }))
+    : [];
+
+/**
+ * The specialty a type is listed under (the first one, for the paired
+ * specialties that share their types), or a specialty named like it; null
+ * for a type outside the catalogue.
+ */
+export function specialtyOfType(type: string): string | null {
+  if (SPECIALTIES.includes(type)) return type;
+  return (
+    SERVICE_CATALOG.find((item) => item.types.includes(type))?.specialty ??
+    null
+  );
+}
+
 /**
  * What the company is offering with this selection. "الكل" on a specialty
  * with no listed types stands for the specialty itself.

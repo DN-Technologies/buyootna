@@ -57,7 +57,22 @@ jest.mock('@/shared/hooks/auth/useAuthGuard', () => ({
 }));
 
 // Heavy sheets aren't under test here
-jest.mock('@/shared/components/company/QuoteRequestModal', () => () => null);
+// Records what the list opens the quote sheet with
+let mockQuoteProps: Record<string, unknown> = {};
+jest.mock('@/shared/components/company/QuoteRequestModal', () => {
+  const React = jest.requireActual('react');
+  return React.forwardRef((props: Record<string, unknown>, _ref: unknown) => {
+    mockQuoteProps = props;
+    return null;
+  });
+});
+jest.mock('@/shared/hooks/providers/useCompanyDetails', () => ({
+  useCompanyDetails: (id?: string) => ({
+    company: id ? { id, logoUrl: 'https://cdn/logo.png' } : undefined,
+    services: id ? [{ id: 'svc-1', title: 'مخططات تنفيذية' }] : [],
+    isLoading: false,
+  }),
+}));
 jest.mock('@/shared/components/auth/AuthGuardSheet', () => () => null);
 
 async function renderScreen() {
@@ -117,6 +132,38 @@ describe('CompaniesScreen', () => {
     expect(otherChat).not.toBeDisabled();
 
     useAuthStore.setState({ user: null });
+  });
+
+  // QA: from the list the sheet offered a made-up list of services and sent
+  // the request to nobody (a public request)
+  it("asks the tapped company, offering its own services", async () => {
+    (feedService.getCompanies as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          id: 'c-other',
+          userId: 'someone',
+          name: 'الرائد للهندسة',
+          category: '',
+          rating: 0,
+          reviewsCount: 0,
+          projectsCount: '0',
+          lastActivityAt: new Date().toISOString(),
+          logoUrl: '',
+        },
+      ],
+      meta: { hasNextPage: false, current: 1 },
+    });
+    const { findByText, getByTestId } = await renderScreen();
+    await findByText('الرائد للهندسة');
+
+    await fireEvent.press(getByTestId('company-quote'));
+
+    expect(mockQuoteProps).toMatchObject({
+      companyName: 'الرائد للهندسة',
+      targetIdentityId: 'c-other',
+      services: [{ id: 'svc-1', title: 'مخططات تنفيذية' }],
+      catalogFallback: true,
+    });
   });
 
   // QA: the keyboard closed after every letter because the list header was
