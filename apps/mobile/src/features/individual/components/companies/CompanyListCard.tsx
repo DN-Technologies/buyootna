@@ -69,12 +69,23 @@ export default function CompanyListCard({
               <MaterialIcons name="verified" size={16} color="#3B82F6" />
             )}
             <Text
-              className="flex-1 font-cairo-semibold text-base text-[#111111]"
+              className="shrink font-cairo-semibold text-base text-[#111111]"
               style={{ writingDirection: 'rtl' }}
               numberOfLines={1}
             >
               {name}
             </Text>
+            {/* Says why its quote and chat buttons are off: it's yours */}
+            {isOwn && (
+              <View
+                testID="company-own-tag"
+                className="rounded-full bg-[#FBF3E4] px-2 py-0.5"
+              >
+                <Text className="font-cairo-semibold text-[11px] leading-[18px] text-[#B28648]">
+                  شركتك
+                </Text>
+              </View>
+            )}
           </View>
           <Text
             className="mt-0.5 font-cairo-medium text-[11px] text-[#6B6A6A]"
