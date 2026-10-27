@@ -130,6 +130,8 @@ describe('CompaniesScreen', () => {
     expect(ownChat).toBeDisabled();
     expect(otherQuote).not.toBeDisabled();
     expect(otherChat).not.toBeDisabled();
+    // «شركتك» says why: on the account's own company only
+    expect(getAllByTestId('company-own-tag')).toHaveLength(1);
 
     useAuthStore.setState({ user: null });
   });

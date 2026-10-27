@@ -695,8 +695,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P2",
       story: {
-        en: "An account that owns a company saw it in شركات like any other, with working «طلب عرض سعر» and chat buttons, so it could ask itself for a quote or open a chat with itself. When a company's owner (CompanyDto.userId) is the signed-in account, whichever persona is active, its card's quote and chat buttons are now disabled and dimmed (CompanyListCard isOwn), and on its company page the «طلب عرض سعر» bar is disabled too (CompanyBottomBar disabled). Other companies are unchanged.",
-        ar: "الحساب الذي يملك شركة كان يراها في شركات مثل غيرها، مع زري «طلب عرض سعر» والمحادثة يعملان، فيستطيع طلب عرض سعر من نفسه أو فتح محادثة مع نفسه. الآن عندما يكون مالك الشركة (CompanyDto.userId) هو الحساب المسجّل، أياً كانت الهوية النشطة، يُعطّل زرا عرض السعر والمحادثة في بطاقتها ويبهتان (CompanyListCard isOwn)، ويُعطّل شريط «طلب عرض سعر» في صفحة الشركة كذلك (CompanyBottomBar disabled). وبقية الشركات دون تغيير.",
+        en: "An account that owns a company saw it in شركات like any other, with working «طلب عرض سعر» and chat buttons, so it could ask itself for a quote or open a chat with itself. When a company's owner (CompanyDto.userId) is the signed-in account, whichever persona is active, its card's quote and chat buttons are now disabled and dimmed (CompanyListCard isOwn), and the card is tagged «شركتك» next to the name so it's clear why, and on its company page the «طلب عرض سعر» bar is disabled too (CompanyBottomBar disabled). Other companies are unchanged.",
+        ar: "الحساب الذي يملك شركة كان يراها في شركات مثل غيرها، مع زري «طلب عرض سعر» والمحادثة يعملان، فيستطيع طلب عرض سعر من نفسه أو فتح محادثة مع نفسه. الآن عندما يكون مالك الشركة (CompanyDto.userId) هو الحساب المسجّل، أياً كانت الهوية النشطة، يُعطّل زرا عرض السعر والمحادثة في بطاقتها ويبهتان (CompanyListCard isOwn)، ويُعطّل شريط «طلب عرض سعر» في صفحة الشركة كذلك (CompanyBottomBar disabled). وبقية الشركات دون تغيير، وتحمل البطاقة وسم «شركتك» بجانب الاسم ليتضح السبب.",
       },
       acceptanceCriteria: {
         en: [
@@ -714,7 +714,7 @@ export const mobileShared: DocSection = {
         en: ["Add a company to your account, open شركات: its buttons don't respond, another company's do. Open your company's page: «طلب عرض سعر» doesn't respond."],
         ar: ["أضف شركة إلى حسابك وافتح شركات: أزرارها لا تستجيب وأزرار شركة أخرى تستجيب. افتح صفحة شركتك: «طلب عرض سعر» لا يستجيب."],
       },
-      updatedIn: "fix/own-company-actions",
+      updatedIn: "fix/own-company-actions, feat/own-company-tag",
     },
     {
       id: "mobile-services-catalogue",
