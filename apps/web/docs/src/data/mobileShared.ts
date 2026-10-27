@@ -2768,5 +2768,40 @@ export const mobileShared: DocSection = {
       },
       updatedIn: "feat/launch-animation",
     },
+    {
+      id: "mobile-cairo-font-everywhere",
+      title: {
+        en: "Every text uses the app's font (no system-font fallbacks)",
+        ar: "كل النصوص بخط التطبيق (لا رجوع لخط النظام)",
+      },
+      priority: "P2",
+      story: {
+        en: "QA: the company profile card's description and address showed the phone's system Arabic font instead of Cairo. 42 texts used the class font-cairo-regular and 12 used font-almarai-regular, which weren't defined in the Tailwind config, and an undefined class is dropped without a warning. Both are now defined (same fonts as font-cairo and font-almarai), which fixes them all at once: the company and office profile cards, request details and filters, the reply sheet, edit-profile license and general info, add-listing fields, working hours and the header menus.",
+        ar: "بلاغ QA: وصف الشركة وعنوانها في بطاقة الملف كانا بخط النظام العربي بدل خط Cairo. 42 نصاً تستخدم الصنف font-cairo-regular و12 تستخدم font-almarai-regular، ولم يكونا معرّفين في إعداد Tailwind، والصنف غير المعرّف يُتجاهل بلا تنبيه. الآن هما معرّفان (بنفس خطي font-cairo وfont-almarai)، فيُصلح ذلك كل المواضع مرة واحدة: بطاقتي ملف الشركة والمكتب، وتفاصيل الطلبات وفلاترها، ونافذة الرد، وقسمي الترخيص والمعلومات العامة في تعديل الملف، وحقول إضافة الإعلان، وساعات العمل، وقوائم الرأس.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company المزيد: the description under the name and the address line are in Cairo, like the title and the menu.",
+          "Office المزيد: the same in the office profile card.",
+          "No text in those screens switches to a different (system) Arabic font.",
+        ],
+        ar: [
+          "المزيد للشركة: الوصف تحت الاسم وسطر العنوان بخط Cairo مثل العنوان والقائمة.",
+          "المزيد للمكتب: الأمر نفسه في بطاقة ملف المكتب.",
+          "لا يتحول أي نص في هذه الشاشات إلى خط عربي آخر (خط النظام).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Compare the company profile card's description with the menu rows below it: the letter shapes match.",
+          "Open a request's details and the request filters, and the office add-listing form: no system-font text.",
+        ],
+        ar: [
+          "قارن وصف بطاقة ملف الشركة بصفوف القائمة تحتها: أشكال الحروف متطابقة.",
+          "افتح تفاصيل طلب وفلاتر الطلبات ونموذج إضافة إعلان للمكتب: لا يوجد نص بخط النظام.",
+        ],
+      },
+      updatedIn: "fix/undefined-font-classes",
+    },
   ],
 };
