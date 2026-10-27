@@ -106,7 +106,8 @@ export class FavoritesService {
         identity?.companyData?.logoUrl ||
         identity?.individualData?.avatarUrl ||
         identity?.user?.avatarUrl ||
-        'https://via.placeholder.com/150';
+        // No photo: the app draws its own avatar icon
+        null;
 
       return {
         id: prop.id,

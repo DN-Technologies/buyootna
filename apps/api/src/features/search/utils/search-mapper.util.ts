@@ -6,7 +6,8 @@ export interface SearchResultItem {
   category: string;
   serviceArea: string;
   projectsCount: string;
-  logoUrl: string;
+  // No logo / photo: null, and the app draws its own avatar icon
+  logoUrl: string | null;
   isFavorite: boolean;
 }
 
@@ -38,7 +39,7 @@ export function mapToFrontendCard(
       category: profile?.specialty || 'General Contracting',
       serviceArea: profile?.serviceAreas || 'All Areas',
       projectsCount: String(company._count?.properties ?? 0),
-      logoUrl: profile?.logoUrl || 'https://via.placeholder.com/150',
+      logoUrl: profile?.logoUrl || null,
       isFavorite: false,
     };
   }
@@ -78,7 +79,7 @@ export function mapToFrontendCard(
     projectsCount: property.price
       ? `${property.price.toLocaleString()} د.ك`
       : 'السعر عند الاتصال',
-    logoUrl: property.images?.[0] || 'https://via.placeholder.com/150',
+    logoUrl: property.images?.[0] || null,
     isFavorite: false, // You can cross-reference with a UserFavorites table here
   };
 }

@@ -135,7 +135,8 @@ describe('userService', () => {
       const profile = await userService.getUserProfile('user-1');
 
       expect(profile.name).toBe('ahmed');
-      expect(profile.avatarUrl).toBe('https://via.placeholder.com/150');
+      // No photo: null, and Avatar draws the person icon (no placeholder URL)
+      expect(profile.avatarUrl).toBeNull();
       expect(profile.joinedDate).toBe('1/2025');
     });
   });

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
+import Avatar from '@/shared/components/ui/Avatar';
 
 export interface SuggestionCardProps {
   id: string;
@@ -54,12 +55,18 @@ export default function SuggestionCard({
       }}
     >
       {/* 1. Image Box  */}
-      <View className="h-[88px] w-[64px] overflow-hidden rounded-sm bg-red-500">
-        <Image
-          source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
+      <View className="h-[88px] w-[64px] overflow-hidden rounded-sm bg-[#F1F5F9]">
+        {logoUrl && typeof logoUrl !== 'string' ? (
+          // A bundled image (require)
+          <Image
+            source={logoUrl}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
+          // A URL, or the person icon when there's none
+          <Avatar uri={logoUrl} testID="suggestion-card-image" />
+        )}
       </View>
 
       {/* 2. Content Column  */}

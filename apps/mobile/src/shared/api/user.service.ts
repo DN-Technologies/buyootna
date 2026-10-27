@@ -17,7 +17,8 @@ export const userService = {
     const user = response.data;
 
     let name = 'مستخدم بيوتنا';
-    let avatarUrl = 'https://via.placeholder.com/150';
+    // No photo: null, and Avatar draws the person icon
+    let avatarUrl: string | null = null;
 
     if (user.role === 'COMPANY' && user.companyProfile) {
       name = user.companyProfile.name || name;

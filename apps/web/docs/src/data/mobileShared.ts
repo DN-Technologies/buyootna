@@ -2819,19 +2819,21 @@ export const mobileShared: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "QA: after changing the profile photo (تعديل الملف), the avatar pill on the home and the profile switcher (اختر الهوية) kept the old one, because the photo was saved on the account while they show the profile's. PATCH /users/profile now saves an individual's photo on the profile too, so المزيد, the avatar pill and the switcher all show it after saving. The app no longer sends a placeholder address (via.placeholder.com) when there's no photo, and the API ignores it from older apps. With no photo, avatars show a person icon (as the avatar pill) instead of the Buyootna logo, for people, companies and offices alike.",
-        ar: "بلاغ QA: بعد تغيير صورة الملف (تعديل الملف) بقيت الصورة القديمة في زر الصورة بالرئيسية وفي نافذة اختر الهوية، لأن الصورة كانت تُحفظ على الحساب بينما يعرضان صورة الملف. الآن يحفظ PATCH /users/profile صورة الفرد على الملف أيضاً، فتظهر في المزيد وزر الصورة ونافذة الهويات بعد الحفظ. ولم يعد التطبيق يرسل عنواناً بديلاً (via.placeholder.com) عند عدم وجود صورة، والواجهة البرمجية تتجاهله من النسخ الأقدم. وبلا صورة تعرض الصور الرمزية أيقونة شخص (مثل زر الصورة) بدل شعار بيوتنا، للأفراد والشركات والمكاتب.",
+        en: "QA: after changing the profile photo (تعديل الملف), the avatar pill on the home and the profile switcher (اختر الهوية) kept the old one, because the photo was saved on the account while they show the profile's. PATCH /users/profile now saves an individual's photo on the profile too, so المزيد, the avatar pill and the switcher all show it after saving. The app no longer sends a placeholder address (via.placeholder.com) when there's no photo, and the API ignores it from older apps. With no photo, avatars show a person icon (as the avatar pill) instead of the Buyootna logo, for people, companies and offices alike, including the chat header, a profile page, an ad's advertiser row and search results. The API returns null for a missing photo or logo (favourites, search, the ad feed) instead of a via.placeholder.com address, which showed an empty grey box when that site was slow or down.",
+        ar: "بلاغ QA: بعد تغيير صورة الملف (تعديل الملف) بقيت الصورة القديمة في زر الصورة بالرئيسية وفي نافذة اختر الهوية، لأن الصورة كانت تُحفظ على الحساب بينما يعرضان صورة الملف. الآن يحفظ PATCH /users/profile صورة الفرد على الملف أيضاً، فتظهر في المزيد وزر الصورة ونافذة الهويات بعد الحفظ. ولم يعد التطبيق يرسل عنواناً بديلاً (via.placeholder.com) عند عدم وجود صورة، والواجهة البرمجية تتجاهله من النسخ الأقدم. وبلا صورة تعرض الصور الرمزية أيقونة شخص (مثل زر الصورة) بدل شعار بيوتنا، للأفراد والشركات والمكاتب، بما في ذلك رأس المحادثة وصفحة الملف وصف المعلن في الإعلان ونتائج البحث. وتعيد الواجهة البرمجية null عند عدم وجود صورة أو شعار (المفضلة والبحث وقائمة الإعلانات) بدل عنوان via.placeholder.com الذي كان يظهر مربعاً رمادياً فارغاً عند بطء ذلك الموقع أو تعطله.",
       },
       acceptanceCriteria: {
         en: [
           "Change the photo in تعديل الملف and save: المزيد, the avatar pill on the home and the profile switcher all show the new photo.",
           "Saving the profile without touching the photo keeps the photo there is.",
           "A person, company or office with no photo shows the person icon, not the Buyootna logo.",
+          "Chat header, profile page, an ad's advertiser row and company search results show the person icon when there's no photo or logo; never an empty grey box.",
         ],
         ar: [
           "غيّر الصورة في تعديل الملف واحفظ: تظهر الصورة الجديدة في المزيد وزر الصورة بالرئيسية ونافذة اختر الهوية.",
           "حفظ الملف دون تغيير الصورة يُبقي الصورة الحالية.",
           "الفرد أو الشركة أو المكتب بلا صورة يظهر بأيقونة شخص لا بشعار بيوتنا.",
+          "رأس المحادثة وصفحة الملف وصف المعلن في الإعلان ونتائج بحث الشركات تعرض أيقونة الشخص عند عدم وجود صورة أو شعار؛ ولا مربع رمادي فارغ أبداً.",
         ],
       },
       testScenarios: {
@@ -2844,7 +2846,7 @@ export const mobileShared: DocSection = {
           "غيّر الاسم فقط واحفظ: تبقى الصورة.",
         ],
       },
-      updatedIn: "fix/individual-avatar-everywhere",
+      updatedIn: "fix/no-placeholder-images",
     },
   ],
 };

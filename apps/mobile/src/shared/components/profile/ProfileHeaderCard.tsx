@@ -7,6 +7,8 @@ import {
   formatResponseTime,
 } from '@/shared/utils/helpers/activity';
 
+import Avatar from '@/shared/components/ui/Avatar';
+
 import { UserProfile } from './types';
 
 interface ProfileHeaderCardProps {
@@ -39,11 +41,7 @@ export default function ProfileHeaderCard({
       >
         {/* Overlapping Avatar */}
         <View className="absolute -top-10 left-5 z-10 h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-sm">
-          <Image
-            source={{ uri: userProfile.avatarUrl }}
-            className="h-full w-full"
-            contentFit="cover"
-          />
+          <Avatar uri={userProfile.avatarUrl} testID="profile-header-avatar" />
         </View>
 
         {/* Spacer */}
