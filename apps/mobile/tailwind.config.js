@@ -15,6 +15,9 @@ module.exports = {
       fontFamily: {
         sans: ['Cairo_400Regular'],
         cairo: ['Cairo_400Regular'],
+        // Same as `cairo`: 42 places use this name, and an undefined class is
+        // dropped silently, so they showed the phone's system font instead
+        'cairo-regular': ['Cairo_400Regular'],
         'cairo-medium': ['Cairo_500Medium'],
         'cairo-semibold': ['Cairo_600SemiBold'],
         'cairo-bold': ['Cairo_700Bold'],
@@ -25,6 +28,7 @@ module.exports = {
         'readex-pro-extralight': ['ReadexPro_200ExtraLight'],
         'readex-pro-light': ['ReadexPro_300Light'],
         almarai: ['Almarai_400Regular'],
+        'almarai-regular': ['Almarai_400Regular'],
         'almarai-bold': ['Almarai_700Bold'],
       },
       colors: {
