@@ -1,9 +1,10 @@
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
+  BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
 import { MinusIcon, PlusIcon } from '@/assets/icons/company-add';
 import CompanySheetHeader from '@/features/company/components/CompanySheetHeader';
@@ -77,6 +78,12 @@ const AddItemSheet = forwardRef<BottomSheetModal, AddItemSheetProps>(
           height: 5,
         }}
         backgroundStyle={{ backgroundColor: '#FFFFFF', borderRadius: 24 }}
+        // The sheet rises above the keyboard (its inputs are
+        // BottomSheetTextInput, which it tracks). No
+        // android_keyboardInputMode="adjustResize": with edge-to-edge the
+        // window never resizes, so the sheet would stay under the keyboard.
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
       >
         <SafeBottomSheetView>
           <View className="gap-4 bg-white pb-6 pt-1">
@@ -91,7 +98,7 @@ const AddItemSheet = forwardRef<BottomSheetModal, AddItemSheetProps>(
             <View className="gap-4 px-4 pt-2">
               <View className="gap-1.5">
                 <FieldLabel text="اسم البند" />
-                <TextInput
+                <BottomSheetTextInput
                   value={name}
                   onChangeText={setName}
                   testID="invoice-item-name"
@@ -104,7 +111,7 @@ const AddItemSheet = forwardRef<BottomSheetModal, AddItemSheetProps>(
 
               <View className="gap-1.5">
                 <FieldLabel text="السعر" />
-                <TextInput
+                <BottomSheetTextInput
                   value={price}
                   onChangeText={setPrice}
                   testID="invoice-item-price"
