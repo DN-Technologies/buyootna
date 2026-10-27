@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ChangePasswordOtpSheet from '@/shared/components/auth/ChangePasswordOtpSheet';
+import { SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { showAlert } from '@/shared/utils/alert';
 
@@ -14,7 +15,6 @@ import {
   CompanyLicenseSection,
   CompanyLogoUpload,
   CompanySaveButton,
-  KUWAIT_ACTIVITIES,
   KUWAIT_AREAS,
   SelectionModal,
 } from './edit-profile';
@@ -128,7 +128,9 @@ export default function CompanyEditProfile() {
         <SelectionModal
           visible={profile.activityModalVisible}
           title="اختر النشاط"
-          options={KUWAIT_ACTIVITIES}
+          // The services catalogue's specialties, as إضافة خدمة and طلب
+          // عرض سعر (an older activity still shows until changed)
+          options={SPECIALTIES}
           selectedValue={identity.licenseActivity}
           onSelect={(val) => setIdentityField('licenseActivity', val)}
           onClose={() => profile.setActivityModalVisible(false)}

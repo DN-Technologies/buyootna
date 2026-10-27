@@ -2866,8 +2866,8 @@ export const mobileShared: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "QA: the تقديم طلب سعر sheet offered a made-up list (الأثاث / شبكات نت / ديكورات وتصميم) instead of the services catalogue, and from the companies list it sent the request to nobody (it went out as a public request). Now نوع الطلب lists the company's own services (its request types from إضافة خدمة), sent like طلب عرض سعر: the type as the title and its catalogue specialty as the category, addressed to that company. A company with no services yet gets مجال التخصص then نوع الطلب from the catalogue; an office with none can send «اخرى». From the companies list the sheet loads the tapped company (its services and logo) and addresses the request to it. Dropdowns (here and in طلب عرض سعر, the filters, alerts and the governorate/area) open over the fields after them instead of pushing them down, with taller rows and a taller list.",
-        ar: "بلاغ QA: نافذة تقديم طلب سعر كانت تعرض قائمة وهمية (الأثاث / شبكات نت / ديكورات وتصميم) بدل دليل الخدمات، ومن قائمة الشركات كانت ترسل الطلب لا لأحد (يخرج كطلب عام). الآن يعرض نوع الطلب خدمات الشركة نفسها (أنواع الطلب من إضافة خدمة)، ويُرسل كما في طلب عرض سعر: النوع عنواناً وتخصصه في الدليل تصنيفاً، موجّهاً إلى تلك الشركة. والشركة بلا خدمات بعد تعرض مجال التخصص ثم نوع الطلب من الدليل؛ والمكتب بلا خدمات يمكنه إرسال «اخرى». ومن قائمة الشركات تُحمّل النافذة الشركة المختارة (خدماتها وشعارها) وتوجّه الطلب إليها. والقوائم المنسدلة (هنا وفي طلب عرض سعر والفلاتر والتنبيهات والمحافظة/المنطقة) تفتح فوق الحقول التي بعدها بدل دفعها للأسفل، بصفوف وقائمة أطول.",
+        en: "QA: the تقديم طلب سعر sheet offered a made-up list (الأثاث / شبكات نت / ديكورات وتصميم) instead of the services catalogue, and from the companies list it sent the request to nobody (it went out as a public request). Now نوع الطلب lists the company's own services (its request types from إضافة خدمة), sent like طلب عرض سعر: the type as the title and its catalogue specialty as the category, addressed to that company. A company with no services yet gets مجال التخصص then نوع الطلب from the catalogue; an office with none can send «اخرى». From the companies list the sheet loads the tapped company (its services and logo) and addresses the request to it. Dropdowns (here and in طلب عرض سعر, the filters, alerts and the governorate/area) open over the fields after them instead of pushing them down, with taller rows and a taller list. The company's تعديل الملف › الرخصة › النشاط offers the same catalogue specialties instead of an old hard-coded list (an older saved activity still shows until changed).",
+        ar: "بلاغ QA: نافذة تقديم طلب سعر كانت تعرض قائمة وهمية (الأثاث / شبكات نت / ديكورات وتصميم) بدل دليل الخدمات، ومن قائمة الشركات كانت ترسل الطلب لا لأحد (يخرج كطلب عام). الآن يعرض نوع الطلب خدمات الشركة نفسها (أنواع الطلب من إضافة خدمة)، ويُرسل كما في طلب عرض سعر: النوع عنواناً وتخصصه في الدليل تصنيفاً، موجّهاً إلى تلك الشركة. والشركة بلا خدمات بعد تعرض مجال التخصص ثم نوع الطلب من الدليل؛ والمكتب بلا خدمات يمكنه إرسال «اخرى». ومن قائمة الشركات تُحمّل النافذة الشركة المختارة (خدماتها وشعارها) وتوجّه الطلب إليها. والقوائم المنسدلة (هنا وفي طلب عرض سعر والفلاتر والتنبيهات والمحافظة/المنطقة) تفتح فوق الحقول التي بعدها بدل دفعها للأسفل، بصفوف وقائمة أطول. ونشاط الشركة في تعديل الملف › الرخصة › النشاط يعرض تخصصات الدليل نفسها بدل قائمة قديمة ثابتة (والنشاط القديم المحفوظ يبقى ظاهراً حتى يُغيَّر).",
       },
       acceptanceCriteria: {
         en: [
@@ -2876,6 +2876,7 @@ export const mobileShared: DocSection = {
           "A company with no services: مجال التخصص (required), then نوع الطلب from that specialty.",
           "From الشركات, a request reaches the tapped company's طلبات خاصة, not the public list.",
           "An open dropdown covers the fields below it; they don't move.",
+          "Company تعديل الملف › النشاط lists the catalogue specialties (e.g. مكتب هندسي), not the old list.",
         ],
         ar: [
           "لا تعرض أي نافذة الأثاث / شبكات نت / ديكورات وتصميم إلا إذا كانت الشركة تقدمها فعلاً.",
@@ -2883,6 +2884,7 @@ export const mobileShared: DocSection = {
           "شركة بلا خدمات: مجال التخصص (مطلوب)، ثم نوع الطلب من ذلك التخصص.",
           "من الشركات يصل الطلب إلى طلبات خاصة للشركة المختارة لا إلى القائمة العامة.",
           "القائمة المنسدلة المفتوحة تغطي الحقول تحتها؛ ولا تتحرك تلك الحقول.",
+          "تعديل ملف الشركة › النشاط يعرض تخصصات الدليل (مثل مكتب هندسي) لا القائمة القديمة.",
         ],
       },
       testScenarios: {

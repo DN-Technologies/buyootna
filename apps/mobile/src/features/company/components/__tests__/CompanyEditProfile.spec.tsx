@@ -171,6 +171,18 @@ describe('CompanyEditProfile', () => {
     expect(getByText('حفظ التغييرات')).toBeTruthy();
   });
 
+  // QA: النشاط offered an old hard-coded list; it's the services
+  // catalogue's specialties now, as إضافة خدمة and طلب عرض سعر
+  it('النشاط offers the services catalogue specialties', async () => {
+    const { getByText, queryByText } = await render(<CompanyEditProfile />);
+
+    // The saved, older activity still shows until it's changed
+    await fireEvent.press(getByText('تشطيبات'));
+
+    expect(getByText('مكتب هندسي')).toBeTruthy();
+    expect(queryByText('تشطيبات،بناء،ديكور،كهرباء')).toBeNull();
+  });
+
   it('Save button stays disabled when unmodified (Figma 4410:159865)', async () => {
     const { getByText } = await render(<CompanyEditProfile />);
 
