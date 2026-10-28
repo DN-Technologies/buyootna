@@ -460,12 +460,14 @@ export const mobileShared: DocSection = {
           "The bottom sheet offers 'إنشاء حساب' (sign up), 'تسجيل دخول' (log in), and 'لاحقاً' (later/dismiss).",
           "Dismissing via 'لاحقاً' returns the guest to the exact screen/state they were on.",
           "The same actions work immediately (no sheet) once a real session exists.",
+          "«شارك برأيك» on a company, office or personal profile shows a guest the sign-in sheet instead of the review sheet.",
         ],
         ar: [
           "الدالة guardAction() تعترض جميع الإجراءات السبعة المذكورة عند عدم وجود جلسة دخول.",
           "الشاشة السفلية تعرض 'إنشاء حساب' و'تسجيل دخول' و'لاحقاً' (تجاهل الشاشة).",
           "إغلاق الشاشة عبر 'لاحقاً' يعيد الزائر إلى نفس الشاشة/الحالة التي كان فيها بالضبط.",
           "نفس الإجراءات تعمل فوراً (دون ظهور الشاشة) بمجرد وجود جلسة دخول حقيقية.",
+          "«شارك برأيك» في ملف الشركة والمكتب والملف الشخصي يعرض للزائر نافذة تسجيل الدخول بدل نافذة التقييم.",
         ],
       },
       testScenarios: {
@@ -474,15 +476,17 @@ export const mobileShared: DocSection = {
           "As a guest, tap the '+' add-listing button and the 'Ask for Offer' button on a property — confirm both are gated.",
           "Complete login from the sheet mid-flow (e.g. from Favorites) and confirm the originally-attempted action completes automatically or the user lands back where they intended.",
           "Kill and relaunch the app as a guest — confirm gating still triggers after a cold start (not just first-session state).",
+          "As a guest open a company, an office and a personal profile and tap «شارك برأيك» on each — the sign-in sheet shows and the review sheet does not open.",
         ],
         ar: [
           "بصفتك زائراً، اضغط أيقونة القلب على بطاقة عقار في نتائج البحث، وفي تفاصيل العقار، وفي الصفحة الرئيسية — تأكد من ظهور الشاشة في المواضع الثلاثة، لا في موضع واحد فقط.",
           "بصفتك زائراً، اضغط زر '+' لإضافة إعلان وزر 'طلب عرض سعر' على عقار — تأكد أن كليهما مقيَّد.",
           "أكمل تسجيل الدخول من داخل الشاشة أثناء التدفق (مثلاً من المفضلة) وتأكد أن الإجراء الأصلي يُنفَّذ تلقائياً أو أن المستخدم يعود إلى ما كان ينوي فعله.",
           "أغلق التطبيق تماماً وأعد تشغيله كزائر — تأكد أن التقييد لا يزال يعمل بعد بدء تشغيل بارد (لا في حالة الجلسة الأولى فقط).",
+          "كزائر افتح ملف شركة ثم مكتب ثم ملف شخصي، واضغط «شارك برأيك» في كل منها — تظهر نافذة تسجيل الدخول ولا تُفتح نافذة التقييم.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/guest-review-login",
     },
     {
       id: "mobile-chat-realtime",

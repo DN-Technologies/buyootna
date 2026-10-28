@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProfileHighlights from '@/features/stories/components/ProfileHighlights';
 import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import OfficeAboutTab from '@/shared/components/office/OfficeAboutTab';
 import OfficeBottomBar from '@/shared/components/office/OfficeBottomBar';
 import OfficeHeaderCard from '@/shared/components/office/OfficeHeaderCard';
@@ -18,6 +19,7 @@ import OfficeTabsSwitcher, {
 } from '@/shared/components/office/OfficeTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useBlockFlow, useBlockStatus } from '@/shared/hooks/blocks/useBlocks';
 import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
@@ -38,6 +40,8 @@ export default function OfficeProfileScreen() {
 
   // Modal references
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
+  // A review needs an account: a guest gets the sign-in sheet instead
+  const { guardAction, authSheetRef } = useAuthGuard();
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
@@ -147,7 +151,9 @@ export default function OfficeProfileScreen() {
                   displayedReviews={displayedReviews}
                   visibleReviewsCount={visibleReviewsCount}
                   onOpenSort={() => sortSheetRef.current?.present()}
-                  onOpenAddReview={() => addReviewSheetRef.current?.present()}
+                  onOpenAddReview={() =>
+                    guardAction(() => addReviewSheetRef.current?.present())
+                  }
                   onToggleLike={handleToggleLike}
                   onToggleDislike={handleToggleDislike}
                   onShowMoreReviews={handleShowMoreReviews}
@@ -202,6 +208,7 @@ export default function OfficeProfileScreen() {
           onAddReview={handleAddReview}
           onSubmitReport={handleSubmitReport}
         />
+        <AuthGuardSheet ref={authSheetRef} />
       </ContentContainer>
     </SafeAreaView>
   );

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import AddReviewSheet from '@/shared/components/profile/AddReviewSheet';
 import {
   FilterBottomSheet,
@@ -15,6 +16,7 @@ import ProfileNavBar from '@/shared/components/profile/ProfileNavBar';
 import ProfileReviewsTab from '@/shared/components/profile/ProfileReviewsTab';
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useUserProfile } from '@/shared/hooks/auth/useUserProfile';
 import { useProfileContact } from '@/shared/hooks/providers/useProfileContact';
 
@@ -31,6 +33,8 @@ export default function UserProfileScreen() {
 
   // Bottom Sheet Modal Refs
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
+  // A review needs an account: a guest gets the sign-in sheet instead
+  const { guardAction, authSheetRef } = useAuthGuard();
   const filterSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
 
@@ -63,7 +67,9 @@ export default function UserProfileScreen() {
       onViewModeChange={setViewMode}
       onOpenFilter={() => filterSheetRef.current?.present()}
       reviewSummary={reviewSummary}
-      onAddReview={() => addReviewSheetRef.current?.present()}
+      onAddReview={() =>
+        guardAction(() => addReviewSheetRef.current?.present())
+      }
       onOpenSort={() => sortSheetRef.current?.present()}
       isOwnProfile={isOwnProfile}
     />
@@ -122,6 +128,7 @@ export default function UserProfileScreen() {
           selectedValue={propertySort}
           onSelect={setPropertySort}
         />
+        <AuthGuardSheet ref={authSheetRef} />
       </ContentContainer>
     </View>
   );
