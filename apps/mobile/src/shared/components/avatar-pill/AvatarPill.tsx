@@ -6,6 +6,7 @@ import { runOnJS } from 'react-native-reanimated';
 
 import PulseQuickView from '@/shared/components/pulse/PulseQuickView';
 import { usePulse } from '@/shared/components/pulse/usePulse';
+import { FLOATING } from '@/shared/components/ui/floating';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
@@ -30,6 +31,8 @@ interface AvatarPillProps {
   onSwitchProfile: () => void;
   // Opening or closing (the top bar makes room on narrow phones)
   onOpenChange?: (open: boolean) => void;
+  // White with a shadow, over content
+  floating?: boolean;
 }
 
 /**
@@ -42,6 +45,7 @@ export default function AvatarPill({
   authSheetRef,
   onSwitchProfile,
   onOpenChange,
+  floating = false,
 }: AvatarPillProps) {
   const token = useAuthStore((s) => s.token);
   const { avatarUrl } = useIdentity();
@@ -89,7 +93,10 @@ export default function AvatarPill({
           onLayout={measure}
           testID="avatar-pill"
           className="h-[46px] flex-row items-center rounded-full p-[4px]"
-          style={{ borderWidth: 0.5, borderColor: GOLD, gap: 8 }}
+          style={[
+            { borderWidth: 0.5, borderColor: GOLD, gap: 8 },
+            floating && FLOATING,
+          ]}
         >
           <PillPhoto
             avatarUrl={token ? avatarUrl : null}

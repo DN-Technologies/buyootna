@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import type { HomeSort } from '@/features/individual/components/home/homeSort';
+import type { CollapsibleScrollHandlers } from '@/features/individual/components/home/useCollapsibleHeader';
 import { usePropertyPreviewSheet } from '@/features/individual/components/property-details-sheet/usePropertyPreviewSheet';
 import PropertyDetailsSheet from '@/features/individual/components/PropertyDetailsSheet';
 import { feedService } from '@/features/individual/services/feed.service';
@@ -35,6 +36,10 @@ interface HomePropertiesProps {
   viewMode?: 'card' | 'list';
   sortBy?: HomeSort;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+  // The home header's (it slides away as the list scrolls)
+  scrollHandlers?: CollapsibleScrollHandlers;
+  // Room for a header floating over the list
+  topInset?: number;
 }
 
 export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
@@ -46,6 +51,8 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
       viewMode = 'card',
       sortBy = 'DEFAULT',
       ListHeaderComponent,
+      scrollHandlers,
+      topInset = 0,
     },
     ref,
   ) {
@@ -192,14 +199,16 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: scrollContentBottomPadding,
-            paddingTop: 12,
+            paddingTop: 12 + topInset,
           }}
           showsVerticalScrollIndicator={false}
+          {...scrollHandlers}
           refreshControl={
             onRefresh ? (
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                progressViewOffset={topInset}
                 colors={['#15304D']}
                 tintColor="#15304D"
               />
@@ -270,14 +279,16 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: scrollContentBottomPadding,
-            paddingTop: 12,
+            paddingTop: 12 + topInset,
           }}
           showsVerticalScrollIndicator={false}
+          {...scrollHandlers}
           refreshControl={
             onRefresh ? (
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                progressViewOffset={topInset}
                 colors={['#15304D']}
                 tintColor="#15304D"
               />

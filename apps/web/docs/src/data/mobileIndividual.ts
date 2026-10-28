@@ -149,6 +149,7 @@ export const mobileIndividual: DocSection = {
           "AC3: toggling Card ↔ List view preserves the currently active Sale/Rent/Exchange filter and the already-loaded dataset rather than silently resetting to page 1 of 'all'.",
           'AC4: infinite scroll (onEndReached, page-based, deduplicated by item.id) continues to respect whichever filter is active after a filter change mid-scroll — no cross-filter duplicate or missing items.',
           "The بيع / إيجار / بدل pills show each word in full on one line ('إيجار', not 'ايجا'), on Android too.",
+          'As on Facebook, scrolling a list down slides the عقارات / مكاتب عقارية tabs, the filter button and the بيع / إيجار / بدل pills up with the finger, by as much as the list scrolls; only the top bar (avatar, map, الرئيسية / القصص) stays. Once they have slid away, the white behind the header goes too and only the top bar buttons float over the list (white, with a soft shadow) as it scrolls under them. Scrolling up pulls them back the same way; when the list stops they settle all the way shown or hidden (whichever is nearer); at the top they are always shown; pull-to-refresh and the end-of-list bounce do not toggle them. Switching tab or to القصص and back shows them again.',
         ],
         ar: [
           'AC1: التبديل بين بيع/إيجار/بدل يُفعّل جلباً جديداً للبيانات (مرئياً عبر هيكل التحميل) وتستبدل القائمة نتائج الفلتر السابق بالكامل — لا تُضيف إليها أبداً.',
@@ -156,6 +157,7 @@ export const mobileIndividual: DocSection = {
           "AC3: التبديل بين عرض البطاقات وعرض القائمة يحافظ على فلتر بيع/إيجار/بدل النشط حالياً وعلى مجموعة البيانات المُحمّلة مسبقاً، بدلاً من إعادة التعيين الصامتة إلى الصفحة 1 من 'الكل'.",
           'AC4: التمرير اللانهائي (onEndReached، بنظام الصفحات، مع إزالة التكرار حسب item.id) يستمر باحترام الفلتر النشط بعد أي تغيير للفلتر أثناء التمرير — دون عناصر مكررة أو مفقودة بين الفلاتر.',
           "أزرار بيع / إيجار / بدل تعرض كل كلمة كاملة في سطر واحد ('إيجار' لا 'ايجا')، في Android أيضاً.",
+          'كما في فيسبوك، التمرير لأسفل في القائمة يُزيح مع الإصبع، بقدر ما تمرّ القائمة، تبويبات عقارات / مكاتب عقارية وزر الفلاتر وأزرار بيع / إيجار / بدل؛ ويبقى الشريط العلوي فقط (الصورة، الخريطة، الرئيسية / القصص). وبعد اختفائها تختفي خلفية الترويسة البيضاء ولا يطفو فوق القائمة إلا أزرار الشريط العلوي (بيضاء بظل خفيف) والقائمة تمر تحتها. والتمرير لأعلى يُعيدها بالطريقة نفسها؛ وعند توقف القائمة تستقر ظاهرة أو مخفية كلياً (أيهما أقرب)؛ وفي أعلى القائمة تظهر دائماً؛ والسحب للتحديث وارتداد نهاية القائمة لا يُخفيانها ولا يُظهرانها. والتبديل بين التبويبات أو إلى القصص والعودة يُظهرها من جديد.',
         ],
       },
       testScenarios: {
@@ -172,7 +174,7 @@ export const mobileIndividual: DocSection = {
           'TC4: حمّل أكثر من 20 عنصراً في عرض البطاقات، بدّل إلى عرض القائمة أثناء التمرير، وتأكد أن نفس البيانات تُعرض فوراً في عرض القائمة دون طلب شبكة إضافي أو ظهور مؤقت لحالة فارغة.',
         ],
       },
-      updatedIn: 'fix/rent-label-cut',
+      updatedIn: 'feat/collapsible-home-header',
     },
     {
       id: 'mobile-home-top-bar-and-stories',

@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
@@ -23,6 +24,7 @@ import HomeOffices from '@/features/individual/components/home/sections/HomeOffi
 import HomeProperties from '@/features/individual/components/home/sections/HomeProperties';
 import type { HomeMode } from '@/features/individual/components/home/topbar/HomeModeSwitch';
 import HomeTopBar from '@/features/individual/components/home/topbar/HomeTopBar';
+import { useCollapsibleHeader } from '@/features/individual/components/home/useCollapsibleHeader';
 import { feedService } from '@/features/individual/services/feed.service';
 import StoriesList from '@/features/stories/components/StoriesList';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
@@ -86,6 +88,19 @@ export default function HomeScreen() {
   if (activeTab === 'offices') visited.offices.current = true;
   if (mode === 'stories') visited.stories.current = true;
 
+  // The tabs + pills slide away while a list scrolls down (the top bar
+  // stays); a switch brings them back, since each list keeps its scroll
+  const collapse = useCollapsibleHeader();
+  // The header floats over the lists, which start below it: its full height
+  // (the top bar, plus the tabs + pills however far they've slid away)
+  const [topBarHeight, setTopBarHeight] = useState(0);
+  const [blockHeight, setBlockHeight] = useState(0);
+  const headerInset = topBarHeight + blockHeight;
+  const { show: showHeader } = collapse;
+  useEffect(() => {
+    showHeader();
+  }, [activeTab, mode, showHeader]);
+
   const [feedData, setFeedData] = useState<HomeFeedResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -147,50 +162,74 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
       <ContentContainer className="flex-1">
-        {/* The top bar (Figma 9297:75802): fixed above the content */}
+        {/* The top bar (Figma 9297:75802) over the content, with the tabs +
+            pills under it on the home. White while those show; once they
+            slide away only the top bar's buttons float over the list */}
         <View
-          className="bg-white pt-[8px]"
-          style={{ borderBottomWidth: 0.5, borderBottomColor: '#ECECEC' }}
+          style={
+            mode === 'home'
+              ? { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }
+              : undefined
+          }
         >
-          <HomeTopBar
-            mode={mode}
-            onModeChange={setMode}
-            authSheetRef={authSheetRef}
-            onSwitchProfile={() => profileSheetRef.current?.present()}
+          <Animated.View
+            pointerEvents="none"
+            className="absolute inset-0 bg-white"
+            style={collapse.backgroundStyle}
           />
+          <View
+            className="pt-[8px]"
+            onLayout={(e) => setTopBarHeight(e.nativeEvent.layout.height)}
+          >
+            <HomeTopBar
+              mode={mode}
+              onModeChange={setMode}
+              authSheetRef={authSheetRef}
+              onSwitchProfile={() => profileSheetRef.current?.present()}
+            />
+          </View>
           {mode === 'home' ? (
-            <View className="py-[12px]" style={{ gap: 12 }}>
-              <View className="h-[42px] flex-row items-center px-[16px]" style={{ gap: 12 }}>
-                <GoldSegment
-                  testID="home-tabs"
-                  options={TABS}
-                  value={activeTab === 'offices' ? 'offices' : 'properties'}
-                  onChange={setActiveTab}
+            <Animated.View style={collapse.animatedStyle}>
+              <Animated.View
+                onLayout={(e) => {
+                  collapse.onLayout(e);
+                  setBlockHeight(e.nativeEvent.layout.height);
+                }}
+                className="py-[12px]"
+                style={[{ gap: 12 }, collapse.contentStyle]}
+              >
+                <View className="h-[42px] flex-row items-center px-[16px]" style={{ gap: 12 }}>
+                  <GoldSegment
+                    testID="home-tabs"
+                    options={TABS}
+                    value={activeTab === 'offices' ? 'offices' : 'properties'}
+                    onChange={setActiveTab}
+                  />
+                  <TouchableOpacity
+                    testID="home-filter-button"
+                    accessibilityRole="button"
+                    accessibilityLabel="الفلاتر"
+                    activeOpacity={0.7}
+                    onPress={() => filterSheetRef.current?.present()}
+                    className="size-[40px] shrink-0 items-center justify-center rounded-full"
+                    style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
+                  >
+                    <View className="size-[22px] items-center justify-center">
+                      <Image
+                        source={require('@/assets/icons/home/topbar/filter.svg')}
+                        style={{ width: 17.5, height: 15.667 }}
+                        contentFit="contain"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                <HomeFilterPills
+                  activeTab={activeTab}
+                  activePropFilter={activePropFilter}
+                  onPropFilterChange={setActivePropFilter}
                 />
-                <TouchableOpacity
-                  testID="home-filter-button"
-                  accessibilityRole="button"
-                  accessibilityLabel="الفلاتر"
-                  activeOpacity={0.7}
-                  onPress={() => filterSheetRef.current?.present()}
-                  className="size-[40px] shrink-0 items-center justify-center rounded-full"
-                  style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
-                >
-                  <View className="size-[22px] items-center justify-center">
-                    <Image
-                      source={require('@/assets/icons/home/topbar/filter.svg')}
-                      style={{ width: 17.5, height: 15.667 }}
-                      contentFit="contain"
-                    />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              <HomeFilterPills
-                activeTab={activeTab}
-                activePropFilter={activePropFilter}
-                onPropFilterChange={setActivePropFilter}
-              />
-            </View>
+              </Animated.View>
+            </Animated.View>
           ) : (
             <View className="h-[12px]" />
           )}
@@ -206,13 +245,16 @@ export default function HomeScreen() {
                 ref={scrollRef}
                 className="flex-1 px-[16px] pt-[12px]"
                 contentContainerStyle={{
+                  paddingTop: headerInset,
                   paddingBottom: scrollContentBottomPadding,
                 }} // Extra padding for the custom bottom bar
                 showsVerticalScrollIndicator={false}
+                {...collapse.scrollHandlers}
                 refreshControl={
                   <RefreshControl
                     refreshing={refreshing}
                     onRefresh={onRefresh}
+                    progressViewOffset={headerInset}
                     colors={['#15304D']}
                     tintColor="#15304D"
                   />
@@ -238,6 +280,8 @@ export default function HomeScreen() {
                 viewMode={viewMode}
                 sortBy={sortBy}
                 ListHeaderComponent={sortRow}
+                scrollHandlers={collapse.scrollHandlers}
+                topInset={headerInset}
               />
             )}
           </FadeLayer>
@@ -251,6 +295,8 @@ export default function HomeScreen() {
                 }
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                scrollHandlers={collapse.scrollHandlers}
+                topInset={headerInset}
               />
             </FadeLayer>
           )}

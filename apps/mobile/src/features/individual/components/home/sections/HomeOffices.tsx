@@ -2,8 +2,14 @@ import { FlashList, FlashListRef } from '@shopify/flash-list';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { forwardRef, useMemo, useRef } from 'react';
-import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  Text,
+  View,
+} from 'react-native';
 
+import type { CollapsibleScrollHandlers } from '@/features/individual/components/home/useCollapsibleHeader';
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
@@ -17,11 +23,21 @@ interface HomeOfficesProps {
   refreshing?: boolean;
   onRefresh?: () => Promise<void>;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+  // The home header's (it slides away as the list scrolls)
+  scrollHandlers?: CollapsibleScrollHandlers;
+  // Room for a header floating over the list
+  topInset?: number;
 }
 
 export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
   function HomeOffices(
-    { refreshing = false, onRefresh, ListHeaderComponent }: HomeOfficesProps,
+    {
+      refreshing = false,
+      onRefresh,
+      ListHeaderComponent,
+      scrollHandlers,
+      topInset = 0,
+    }: HomeOfficesProps,
     ref,
   ) {
   const router = useRouter();
@@ -96,14 +112,16 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
       contentContainerStyle={{
         paddingHorizontal: 16,
         paddingBottom: scrollContentBottomPadding,
-        paddingTop: 12,
+        paddingTop: 12 + topInset,
       }}
       showsVerticalScrollIndicator={false}
+      {...scrollHandlers}
       refreshControl={
         onRefresh ? (
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
+            progressViewOffset={topInset}
             colors={['#15304D']}
             tintColor="#15304D"
           />

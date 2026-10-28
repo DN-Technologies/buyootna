@@ -44,6 +44,7 @@ export default function HomeModeSwitch({ mode, onChange }: HomeModeSwitchProps) 
       modes={MODES}
       value={mode}
       onChange={onChange}
+      floating
     />
   );
 }

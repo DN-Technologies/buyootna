@@ -46,7 +46,8 @@
     "production": {
       "ios": {
         "appleId": "dar-alnokhba@hotmail.com",
-        "appleTeamId": "WQK745C8P6"
+        "appleTeamId": "WQK745C8P6",
+        "ascAppId": "6804829215"
       }
     }
   }

@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import { animateNextLayout } from '@/shared/utils/animation/animateNextLayout';
 
+import { FLOATING } from './floating';
 import SlidingSegment, { SEGMENT_MS } from './SlidingSegment';
 
 export interface ModeSwitchOption<T extends string> {
@@ -19,6 +20,8 @@ interface ModeSwitchProps<T extends string> {
   onChange: (value: T) => void;
   // Each side is `${testID}-${id}`
   testID: string;
+  // White with a shadow, over content
+  floating?: boolean;
 }
 
 /**
@@ -32,6 +35,7 @@ export default function ModeSwitch<T extends string>({
   value,
   onChange,
   testID,
+  floating = false,
 }: ModeSwitchProps<T>) {
   const byId = new Map(modes.map((m) => [m.id, m]));
   return (
@@ -42,7 +46,10 @@ export default function ModeSwitch<T extends string>({
       // The cream sits centred inside the gold border, with an even 4pt gap
       // all round (as «عقارات / مكاتب عقارية»), not over the border
       className="h-[40px] items-center rounded-[20px] bg-white p-[4px]"
-      style={{ borderWidth: 0.5, borderColor: '#C5A36D', gap: 2 }}
+      style={[
+        { borderWidth: 0.5, borderColor: '#C5A36D', gap: 2 },
+        floating && FLOATING,
+      ]}
       thumbStyle={{ backgroundColor: '#FBEFCD', borderRadius: 16 }}
       renderOption={(id, active) => {
         const m = byId.get(id)!;

@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import AvatarPill, { AVATAR_PILL_OPEN_WIDTH } from '@/shared/components/avatar-pill/AvatarPill';
+import { FLOATING } from '@/shared/components/ui/floating';
 import { IOS_SPRING } from '@/shared/components/ui/SlidingSegment';
 
 import HomeModeSwitch, { type HomeMode } from './HomeModeSwitch';
@@ -67,12 +68,13 @@ export default function HomeTopBar({
           authSheetRef={authSheetRef}
           onSwitchProfile={onSwitchProfile}
           onOpenChange={setPillOpen}
+          floating
         />
       </View>
       <Animated.View
         testID="home-map-slot"
         pointerEvents={hideMap ? 'none' : 'auto'}
-        className="flex-row items-center overflow-hidden"
+        className="flex-row items-center"
         style={mapStyle}
       >
         <View style={{ width: GAP }} />
@@ -83,7 +85,10 @@ export default function HomeTopBar({
           activeOpacity={0.7}
           onPress={() => router.push('/map')}
           className="h-[40px] items-center justify-center rounded-full"
-          style={{ width: MAP_WIDTH, borderWidth: 0.5, borderColor: '#C5A36D' }}
+          style={[
+            { width: MAP_WIDTH, borderWidth: 0.5, borderColor: '#C5A36D' },
+            FLOATING,
+          ]}
         >
           <Image
             source={require('@/assets/icons/home/topbar/map.svg')}
