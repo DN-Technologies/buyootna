@@ -18,14 +18,17 @@ export type NotificationType =
   | 'REPORT_DISMISSED'
   | 'NEW_DEVICE_LOGIN'
   // A company answered the user's quote request
-  | 'REQUEST_REPLY';
+  | 'REQUEST_REPLY'
+  // A client sent the company/office (identityId) a quote request
+  | 'REQUEST_RECEIVED';
 
 // What a notification points at, e.g. the matched listing for ALERT_MATCH
 export interface NotificationData {
   propertyId?: string;
   // NEW_DEVICE_LOGIN: the session that just signed in
   sessionId?: string;
-  // REQUEST_REPLY: the request that was answered
+  // REQUEST_REPLY: the request that was answered; REQUEST_RECEIVED: the
+  // request sent to the company
   requestId?: string;
 }
 

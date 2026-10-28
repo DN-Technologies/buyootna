@@ -55,7 +55,12 @@ export class CompanyRequestsService {
       push,
       this.reads,
     );
-    this.requester = new CompanyRequestsRequesterActions(prisma, this.reads);
+    this.requester = new CompanyRequestsRequesterActions(
+      prisma,
+      notifications,
+      push,
+      this.reads,
+    );
   }
 
   create(

@@ -24,6 +24,18 @@ describe('getNotificationRoute', () => {
     expect(getNotificationRoute(notification({ data: null }))).toBeNull();
   });
 
+  it("opens a request sent to the company on the company's side", () => {
+    expect(
+      getNotificationRoute(
+        notification({
+          type: 'REQUEST_RECEIVED',
+          identityId: 'company-1',
+          data: { requestId: 'r1' },
+        }),
+      ),
+    ).toBe('/(company)/(requests)/r1');
+  });
+
   it('opens nothing for other notification types', () => {
     expect(
       getNotificationRoute(

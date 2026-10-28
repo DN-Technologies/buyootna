@@ -213,6 +213,8 @@ enum NotificationType {
   SUBSCRIPTION_EXPIRING
   // A company answered a quote request (الرد على العميل)
   REQUEST_REPLY
+  // A client sent a company/office a quote request (طلب عرض سعر)
+  REQUEST_RECEIVED
 }
 
 model Notification {

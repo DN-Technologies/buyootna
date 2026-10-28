@@ -4,6 +4,8 @@ import {
   PrismaMock,
   setupCompanyRequestsService,
   baseRequest,
+  mockNotifications,
+  mockPush,
 } from './company-requests.service.harness';
 import * as subscriptionRules from 'src/features/company-subscriptions/company-subscription.rules';
 
@@ -132,6 +134,85 @@ describe('CompanyRequestsService: create', () => {
         service.create('client-1', { ...dto, targetIdentityId: 'client-1' }),
       ).rejects.toThrow(BadRequestException);
       expect(prisma.companyRequest.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // QA: a company sent a طلب عرض سعر got no notification at all
+  describe('telling the company', () => {
+    const dto = {
+      title: 'تشطيب محل',
+      location: 'السالمية',
+      description: 'وصف',
+    };
+    const target = {
+      id: 'company-1',
+      type: 'COMPANY',
+      companyData: { status: 'APPROVED' },
+      officeData: null,
+    };
+    beforeEach(() => {
+      mockNotifications.create.mockClear();
+      mockPush.sendToTokens.mockClear();
+    });
+
+    it('a request sent to it: a notice on its persona and a push to its account', async () => {
+      prisma.identity.findUnique
+        .mockResolvedValueOnce(target)
+        .mockResolvedValueOnce({ userId: 'user-company' });
+      prisma.session.findMany.mockResolvedValue([
+        { pushToken: 't1' },
+        { pushToken: 't2' },
+      ]);
+
+      await service.create('client-1', {
+        ...dto,
+        targetIdentityId: 'company-1',
+      });
+
+      expect(mockNotifications.create).toHaveBeenCalledWith({
+        userId: 'user-company',
+        type: 'REQUEST_RECEIVED',
+        title: 'طلب عرض سعر جديد',
+        body: 'أرسل لك نواف الجارحي طلب «تشطيب محل»',
+        identityId: 'company-1',
+        data: { requestId: 'req-1' },
+      });
+      expect(mockPush.sendToTokens).toHaveBeenCalledWith(['t1', 't2'], {
+        title: 'طلب عرض سعر جديد',
+        body: 'أرسل لك نواف الجارحي طلب «تشطيب محل»',
+        data: {
+          type: 'REQUEST_RECEIVED',
+          route: '/(company)/(requests)/req-1',
+          requestId: 'req-1',
+          identityId: 'company-1',
+        },
+      });
+    });
+
+    it('a public request tells no one', async () => {
+      prisma.companyRequest.create.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: null,
+      });
+
+      await service.create('client-1', dto);
+
+      expect(mockNotifications.create).not.toHaveBeenCalled();
+      expect(mockPush.sendToTokens).not.toHaveBeenCalled();
+    });
+
+    it('a failed notice does not fail the request', async () => {
+      prisma.identity.findUnique
+        .mockResolvedValueOnce(target)
+        .mockResolvedValueOnce({ userId: 'user-company' });
+      mockNotifications.create.mockRejectedValueOnce(new Error('db down'));
+
+      const result = await service.create('client-1', {
+        ...dto,
+        targetIdentityId: 'company-1',
+      });
+
+      expect(result.id).toBe('req-1');
     });
   });
 

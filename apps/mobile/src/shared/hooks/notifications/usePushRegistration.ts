@@ -1,11 +1,11 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
 import { devicesService } from '@/shared/api/devices.service';
+import { openAsPersona } from '@/shared/navigation/openAsPersona';
 
 // Show pushes as a banner even while the app is open (e.g. a security alert)
 Notifications.setNotificationHandler({
@@ -43,7 +43,7 @@ function getProjectId(): string | undefined {
 // away, the screen sat on top of the launch screen: it loaded without the
 // sign-in, and Back led to the launch screen instead of home.
 let launching = true;
-let heldRoute: string | null = null;
+let heldRoute: { route: string; identityId?: string } | null = null;
 let heldTimer: ReturnType<typeof setTimeout> | null = null;
 // A launch that never reaches home (e.g. opened by a link) still opens it
 const HELD_ROUTE_MAX_MS = 30000;
@@ -51,9 +51,9 @@ const HELD_ROUTE_MAX_MS = 30000;
 function openHeldRoute() {
   if (heldTimer) clearTimeout(heldTimer);
   heldTimer = null;
-  const route = heldRoute;
+  const held = heldRoute;
   heldRoute = null;
-  if (route) router.push(route as any);
+  if (held) void openAsPersona(held.route, held.identityId);
 }
 
 /** Called once the launch screen has routed to the home screen. */
@@ -74,13 +74,17 @@ export function resetLaunchForTests() {
 export function openPushRoute(
   response: Notifications.NotificationResponse | null,
 ) {
-  const route = response?.notification.request.content.data?.route;
+  const data = response?.notification.request.content.data;
+  const route = data?.route;
   if (typeof route !== 'string' || !route.startsWith('/')) return;
+  // The persona it's for (a request sent to the company): opened as it
+  const identityId =
+    typeof data?.identityId === 'string' ? data.identityId : undefined;
   if (!launching) {
-    router.push(route as any);
+    void openAsPersona(route, identityId);
     return;
   }
-  heldRoute = route;
+  heldRoute = { route, identityId };
   if (!heldTimer) {
     heldTimer = setTimeout(() => {
       launching = false;
