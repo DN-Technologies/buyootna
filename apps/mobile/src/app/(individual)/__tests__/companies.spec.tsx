@@ -52,8 +52,12 @@ jest.mock('@/shared/hooks/providers/useProviderFavorites', () => ({
   }),
 }));
 
+const mockGuardAction = jest.fn();
 jest.mock('@/shared/hooks/auth/useAuthGuard', () => ({
-  useAuthGuard: () => ({ guardAction: jest.fn(), authSheetRef: { current: null } }),
+  useAuthGuard: () => ({
+    guardAction: mockGuardAction,
+    authSheetRef: { current: null },
+  }),
 }));
 
 // Heavy sheets aren't under test here
@@ -134,6 +138,38 @@ describe('CompaniesScreen', () => {
     expect(getAllByTestId('company-own-tag')).toHaveLength(1);
 
     useAuthStore.setState({ user: null });
+  });
+
+  // QA: a company whose account also had an individual persona opened a
+  // chat with that individual: the card sent the account id, which the API
+  // reads as the account's default (individual) persona
+  it("chats with the company's persona, not its account", async () => {
+    mockGuardAction.mockImplementation((action: () => void) => action());
+    (feedService.getCompanies as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          id: 'company-persona',
+          userId: 'owner-account',
+          name: 'الرائد للهندسة',
+          category: '',
+          rating: 0,
+          reviewsCount: 0,
+          projectsCount: '0',
+          lastActivityAt: new Date().toISOString(),
+          logoUrl: '',
+        },
+      ],
+      meta: { hasNextPage: false, current: 1 },
+    });
+    const { findByText, getByTestId } = await renderScreen();
+    await findByText('الرائد للهندسة');
+
+    await fireEvent.press(getByTestId('company-chat'));
+
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/chat/[id]',
+      params: { id: 'new', recipientId: 'company-persona' },
+    });
   });
 
   // QA: from the list the sheet offered a made-up list of services and sent

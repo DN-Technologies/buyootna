@@ -68,6 +68,41 @@ describe('chat with a suspended or blocked account', () => {
     );
   });
 
+  // QA: chatting with a company whose account also has an individual
+  // persona reached the individual; the app now sends the company persona
+  it("a company's persona id reaches the company, even with an individual persona", async () => {
+    const prisma = {
+      identity: {
+        findUnique: jest
+          .fn()
+          .mockResolvedValueOnce({ id: 'i2-company' }) // a persona id
+          .mockResolvedValueOnce({
+            id: 'i2-company',
+            userId: 'u2',
+            user: { isDisabled: false, isBlocked: true },
+          }),
+        findMany: jest.fn().mockResolvedValue([
+          { id: 'i2', type: 'INDIVIDUAL' },
+          { id: 'i2-company', type: 'COMPANY' },
+        ]),
+      },
+      $transaction: jest.fn(),
+    };
+    const service = new ChatConversationsService(
+      prisma as unknown as PrismaService,
+      display,
+    );
+
+    await expect(
+      service.findOrCreateConversation('u1', 'i1', 'i2-company'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    // Never fell back to the account's default (individual) persona
+    expect(prisma.identity.findMany).not.toHaveBeenCalled();
+    expect(prisma.identity.findUnique).toHaveBeenLastCalledWith(
+      expect.objectContaining({ where: { id: 'i2-company' } }),
+    );
+  });
+
   it("refuses a chat between the same account's own personas", async () => {
     const prisma = {
       identity: {

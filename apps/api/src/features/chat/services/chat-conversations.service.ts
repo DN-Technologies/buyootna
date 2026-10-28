@@ -102,7 +102,10 @@ export class ChatConversationsService {
     requestId?: string,
   ) {
     // recipientId is normally a persona id (ad host, company, office card);
-    // an account id still works and means that account's default persona
+    // an account id still works and means that account's default persona,
+    // its individual one if it has one. So a company or office must be
+    // addressed by its persona id, or an owner who is also an individual
+    // gets the chat as that individual (older apps sent the account id)
     const recipientIdentityId =
       (
         await this.prisma.identity.findUnique({
