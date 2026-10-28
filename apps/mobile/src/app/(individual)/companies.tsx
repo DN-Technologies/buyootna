@@ -154,9 +154,11 @@ export default function CompaniesScreen() {
     quoteModalRef.current?.present();
   };
 
-  const handleChatPress = (companyUserId: string) => {
-    // Opens the chat at once; the chat screen creates the conversation
-    guardAction(() => openChatWith(router, { recipientId: companyUserId }));
+  const handleChatPress = (companyId: string) => {
+    // Opens the chat at once; the chat screen creates the conversation.
+    // With the company's persona id: an account id means the account's
+    // default persona, its individual one if it has one, not the company
+    guardAction(() => openChatWith(router, { recipientId: companyId }));
   };
 
   const renderHeader = () => (
@@ -291,7 +293,7 @@ export default function CompaniesScreen() {
               onToggleFavorite={() =>
                 guardAction(() => providerFavorites.toggleFavorite(item.id))
               }
-              onChatPress={() => handleChatPress(item.userId)}
+              onChatPress={() => handleChatPress(item.id)}
               onQuotePress={() => handleQuotePress(item.id, item.name)}
               isOwn={!!currentUserId && item.userId === currentUserId}
             />

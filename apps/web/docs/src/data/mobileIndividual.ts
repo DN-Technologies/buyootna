@@ -1847,12 +1847,14 @@ export const mobileIndividual: DocSection = {
           'The تصفية البحث icon (and the التصنيف row) opens the Figma "services filters" sheet: التخصص, نوع الخدمة, المحافظة and المنطقة, each picked from a list like the governorate and area (several allowed). عرض النتائج is grey until something changes, then filters the list (specialty, category and location sent to the API; picked areas narrow further than their governorates); إعادة التعيين clears the picks. The icon shows a dot while a filter is applied.',
           'The الترتيب حسب icon opens الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً; each reorders the whole list, also across pages.',
           'طلب عرض سعر opens as a bottom sheet over a dimmed background.',
+          "The chat button opens a chat with the company itself, even when the company's owner also has an individual profile (it used to reach that individual).",
         ],
         ar: [
           'كتابة اسم شركة كامل في خانة البحث تُبقي الكيبورد مفتوحاً؛ وتتحدّث النتائج بعد توقف قصير.',
           'أيقونة تصفية البحث (وصف التصنيف) تفتح نافذة الفلاتر حسب تصميم فيجما: التخصص ونوع الخدمة والمحافظة والمنطقة، ويُختار كل منها من قائمة مثل المحافظة والمنطقة (ويمكن اختيار أكثر من واحد). زر عرض النتائج رمادي حتى يتغير شيء ثم يصفّي القائمة (يُرسل التخصص والتصنيف والموقع للـ API؛ والمناطق المختارة أضيق من محافظاتها)؛ وإعادة التعيين تمسح الاختيارات. وتظهر على الأيقونة نقطة ما دام فلتر مطبقاً.',
           'أيقونة الترتيب حسب تفتح الكل / الأعلى تقييماً / الأقل تقييماً / الأكثر مشاريعاً؛ وكل خيار يعيد ترتيب القائمة كاملة عبر الصفحات أيضاً.',
           'طلب عرض سعر يُفتح كنافذة سفلية فوق خلفية داكنة.',
+          'زر المحادثة يفتح محادثة مع الشركة نفسها، حتى لو كان لصاحب الشركة حساب فرد أيضاً (كانت تصل إلى حساب الفرد).',
         ],
       },
       testScenarios: {
@@ -1861,15 +1863,17 @@ export const mobileIndividual: DocSection = {
           'Tap تصفية البحث, pick التخصص التشطيب and المحافظة حولي, tap عرض النتائج — only matching companies show and the icon has a dot; reopen and tap إعادة التعيين then عرض النتائج — all companies again.',
           'Tap الترتيب حسب → الأعلى تقييماً — highest-rated first; scroll to load more and the order continues; الأكثر مشاريعاً orders by مشاريع مكتملة.',
           'Tap طلب عرض سعر on a card — the sheet slides up over a darkened list.',
+          "As an individual, tap المحادثة on a company whose owner also has an individual profile — the chat header shows the company's name and logo, not the owner's.",
         ],
         ar: [
           "في الشركات اكتب 'بابل' حرفاً حرفاً — لا يُغلق الكيبورد وتضيق القائمة.",
           'اضغط تصفية البحث، اختر التخصص التشطيب والمحافظة حولي، اضغط عرض النتائج — تظهر الشركات المطابقة فقط وعلى الأيقونة نقطة؛ افتحها مجدداً واضغط إعادة التعيين ثم عرض النتائج — تعود كل الشركات.',
           'اضغط الترتيب حسب ← الأعلى تقييماً — الأعلى تقييماً أولاً؛ مرّر لتحميل المزيد ويستمر الترتيب؛ والأكثر مشاريعاً يرتب حسب المشاريع المكتملة.',
           'اضغط طلب عرض سعر على بطاقة — تظهر النافذة فوق قائمة معتمة.',
+          'كفرد، اضغط المحادثة على شركة لصاحبها حساب فرد أيضاً — رأس المحادثة يعرض اسم الشركة وشعارها لا اسم صاحبها.',
         ],
       },
-      updatedIn: 'feat/companies-filter-sheet',
+      updatedIn: 'fix/company-chat-persona',
     },
     {
       id: 'mobile-alert-success-view-alerts',
