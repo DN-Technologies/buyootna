@@ -260,6 +260,7 @@ export const mobileShared: DocSection = {
           "A failed cut says «تعذر تجهيز الفيديو، اختر فيديو آخر» and uploads nothing.",
           "On an older app build the composer still works with the 30 s limit and no trim bar.",
           "«حالتي»: + opens the composer, the eye pill lists viewers, share opens the share sheet.",
+          "The story tools (close, trim, sound, caption, listing) stay readable over any photo: each on a dark see-through fill, with a dark shade behind the top and bottom.",
         ],
         ar: [
           "شاشات البداية والصورة والفيديو وقصتي تطابق إطارات Figma.",
@@ -269,6 +270,7 @@ export const mobileShared: DocSection = {
           "فشل القص يعرض «تعذر تجهيز الفيديو، اختر فيديو آخر» ولا يرفع شيئاً.",
           "في إصدار أقدم من التطبيق تعمل شاشة النشر بحد 30 ثانية ودون شريط القص.",
           "«حالتي»: + تفتح النشر، وزر العين يعرض المشاهدين، والمشاركة تفتح نافذة المشاركة.",
+          "أدوات القصة (الإغلاق، القص، الصوت، الشرح، الإعلان) تبقى واضحة فوق أي صورة: خلفية داكنة شفافة لكل أداة وتظليل داكن خلف الأعلى والأسفل.",
         ],
       },
       testScenarios: {
@@ -278,6 +280,7 @@ export const mobileShared: DocSection = {
           "Repeat on Android.",
           "Pick a 10 s video and send it untouched: it plays with sound, same length.",
           "Open your story: «حالتي», + opens the composer, «👁 N» lists the viewers, share opens the share sheet.",
+          "Pick a light photo or a white screenshot: close, the trim bar, sound, the caption field and the listing button are all readable.",
         ],
         ar: [
           "يحتاج إصدار التطبيق 1.6.0 (بناء تطوير أو EAS فيه وحدة story-video-editor).",
@@ -285,9 +288,10 @@ export const mobileShared: DocSection = {
           "كرر على Android.",
           "اختر فيديو 10 ثوانٍ وأرسله دون تعديل: يعمل بالصوت وبالمدة نفسها.",
           "افتح قصتك: «حالتي»، و+ تفتح النشر، و«👁 N» يعرض المشاهدين، والمشاركة تفتح نافذة المشاركة.",
+          "اختر صورة فاتحة أو لقطة شاشة بيضاء: زر الإغلاق وشريط القص والصوت وخانة الشرح وزر الإعلان كلها مقروءة.",
         ],
       },
-      updatedIn: "feat/story-composer-figma",
+      updatedIn: "fix/story-composer-contrast",
     },
     {
       id: "mobile-stories-video",

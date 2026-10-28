@@ -16,6 +16,7 @@ import {
   STORY_TRIM_MIN_MS,
   type TrimRange,
 } from '../../videoEditor';
+import { STORY_GLASS } from './storyGlass';
 
 const FRAMES = 8;
 const HANDLE = 12;
@@ -129,11 +130,7 @@ export default function VideoTrimBar({
       >
         <View
           className="h-[44px] flex-row overflow-hidden rounded-[6px]"
-          style={{
-            borderWidth: 1,
-            borderColor: '#FFFFFF',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-          }}
+          style={{ ...STORY_GLASS, borderWidth: 1 }}
         >
           {frames.map((f, i) =>
             f ? (
@@ -190,11 +187,7 @@ export default function VideoTrimBar({
           accessibilityState={{ checked: !muted }}
           onPress={onToggleMuted}
           className="h-[24px] w-[32px] items-center justify-center rounded-full"
-          style={{
-            borderWidth: 0.83,
-            borderColor: '#FFFFFF',
-            backgroundColor: 'rgba(17,17,17,0.1)',
-          }}
+          style={STORY_GLASS}
         >
           {muted ? (
             // Figma has only the sound-on icon; off is the same family's
@@ -209,11 +202,7 @@ export default function VideoTrimBar({
         </TouchableOpacity>
         <View
           className="h-[24px] items-center justify-center rounded-full px-[12px]"
-          style={{
-            borderWidth: 0.83,
-            borderColor: '#FFFFFF',
-            backgroundColor: 'rgba(17,17,17,0.1)',
-          }}
+          style={STORY_GLASS}
         >
           <Text
             testID="composer-trim-range"
