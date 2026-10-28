@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -17,15 +18,9 @@ import { SvgXml } from 'react-native-svg';
 import type { StoryMedia } from '../../publishStory';
 import { STORY_CAPTION_MAX } from '../../storyPhoto';
 import type { TrimRange } from '../../videoEditor';
+import { STORY_GLASS, STORY_SCRIM } from './storyGlass';
 import { playArrowXml } from './storyIconXml';
 import VideoTrimBar from './VideoTrimBar';
-
-// Figma's glassy controls over the photo
-const GLASS = {
-  borderWidth: 0.83,
-  borderColor: '#FFFFFF',
-  backgroundColor: 'rgba(255,255,255,0.1)',
-} as const;
 
 interface ComposerPreviewProps {
   media: StoryMedia;
@@ -184,9 +179,10 @@ export default function ComposerPreview({
         />
       )}
 
-      <View
+      <LinearGradient
+        colors={[STORY_SCRIM, 'transparent']}
         className="px-[12px]"
-        style={{ paddingTop: insets.top + 16, gap: 8 }}
+        style={{ paddingTop: insets.top + 16, paddingBottom: 24, gap: 8 }}
         pointerEvents="box-none"
       >
         <View className="flex-row px-[6px]" pointerEvents="box-none">
@@ -197,7 +193,7 @@ export default function ComposerPreview({
             accessibilityRole="button"
             accessibilityLabel="إلغاء"
             className="size-[40px] items-center justify-center rounded-full"
-            style={{ ...GLASS, backgroundColor: 'rgba(17,17,17,0.1)' }}
+            style={STORY_GLASS}
           >
             <Image
               source={require('@/assets/icons/stories/close.svg')}
@@ -217,12 +213,13 @@ export default function ComposerPreview({
             onToggleMuted={onToggleMuted}
           />
         ) : null}
-      </View>
+      </LinearGradient>
 
       <View className="flex-1" pointerEvents="none" />
 
-      <View
-        className="px-[16px] pt-[16px]"
+      <LinearGradient
+        colors={['transparent', STORY_SCRIM]}
+        className="px-[16px] pt-[32px]"
         style={{ paddingBottom: insets.bottom + 12, gap: 10 }}
       >
         {linkedLabel && (
@@ -259,7 +256,7 @@ export default function ComposerPreview({
             accessibilityRole="button"
             accessibilityLabel="ربط بإعلان"
             className="size-[42px] items-center justify-center rounded-[24px]"
-            style={GLASS}
+            style={STORY_GLASS}
           >
             <Image
               source={require('@/assets/icons/stories/image-plus.svg')}
@@ -276,7 +273,7 @@ export default function ComposerPreview({
 
           <View
             className="min-h-[44px] flex-1 justify-center rounded-[24px] px-[16px]"
-            style={{ borderWidth: 1, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.1)' }}
+            style={STORY_GLASS}
           >
             <TextInput
               testID="composer-caption"
@@ -284,7 +281,7 @@ export default function ComposerPreview({
               onChangeText={onCaption}
               editable={!busy}
               placeholder="اضافة شرح توضيحي...."
-              placeholderTextColor="#FFFFFF"
+              placeholderTextColor="rgba(255,255,255,0.85)"
               maxLength={STORY_CAPTION_MAX}
               multiline
               className="max-h-[96px] py-[10px] font-cairo-semibold text-[14px] text-white"
@@ -319,7 +316,7 @@ export default function ComposerPreview({
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 }
