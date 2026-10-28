@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProfileHighlights from '@/features/stories/components/ProfileHighlights';
 import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
+import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import CompanyAboutTab from '@/shared/components/company/CompanyAboutTab';
 import CompanyBottomBar from '@/shared/components/company/CompanyBottomBar';
 import CompanyGalleryTab from '@/shared/components/company/CompanyGalleryTab';
@@ -18,6 +19,7 @@ import CompanyTabsSwitcher, {
 } from '@/shared/components/company/CompanyTabsSwitcher';
 import CompanyDetailSkeleton from '@/shared/components/skeletons/CompanyDetailSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useBlockFlow, useBlockStatus } from '@/shared/hooks/blocks/useBlocks';
 import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
@@ -34,6 +36,8 @@ export default function CompanyProfileScreen() {
 
   // Modal references
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
+  // A review needs an account: a guest gets the sign-in sheet instead
+  const { guardAction, authSheetRef } = useAuthGuard();
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
 
@@ -120,7 +124,9 @@ export default function CompanyProfileScreen() {
                   displayedReviews={displayedReviews}
                   visibleReviewsCount={visibleReviewsCount}
                   onOpenSort={() => sortSheetRef.current?.present()}
-                  onOpenAddReview={() => addReviewSheetRef.current?.present()}
+                  onOpenAddReview={() =>
+                    guardAction(() => addReviewSheetRef.current?.present())
+                  }
                   onToggleLike={handleToggleLike}
                   onToggleDislike={handleToggleDislike}
                   onShowMoreReviews={handleShowMoreReviews}
@@ -165,6 +171,7 @@ export default function CompanyProfileScreen() {
           onAddReview={handleAddReview}
           onSubmitReport={handleSubmitReport}
         />
+        <AuthGuardSheet ref={authSheetRef} />
       </ContentContainer>
     </SafeAreaView>
   );

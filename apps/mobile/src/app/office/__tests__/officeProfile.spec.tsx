@@ -4,6 +4,7 @@ import OfficeProfileScreen from '@/app/office/[id]';
 import { useOfficeDetails } from '@/shared/hooks/providers/useOfficeDetails';
 import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -22,6 +23,16 @@ jest.mock('@gorhom/bottom-sheet', () => ({
 jest.mock('@/shared/hooks/useReviewReport', () => ({
   useReviewReport: () => ({ reportReview: jest.fn(), reportSheet: null }),
 }));
+
+// The sign-in sheet a guest gets: records being opened
+const mockAuthPresent = jest.fn();
+jest.mock('@/shared/components/auth/AuthGuardSheet', () => {
+  const { forwardRef, useImperativeHandle } = jest.requireActual('react');
+  return forwardRef(function MockAuthGuardSheet(_p: unknown, ref: unknown) {
+    useImperativeHandle(ref, () => ({ present: mockAuthPresent }));
+    return null;
+  });
+});
 
 jest.mock('@/shared/components/office/OfficeModals', () => {
   return function MockOfficeModals() {
@@ -366,6 +377,36 @@ describe('OfficeProfileScreen', () => {
         disabled: false,
         selected: false,
       });
+    });
+  });
+
+  // QA: a guest tapping «شارك برأيك» got no sign-in prompt
+  describe('«شارك برأيك»', () => {
+    beforeEach(() => {
+      mockUseOfficeDetails.mockReturnValue({
+        office: { id: 'off-ident-1', name: 'مكتب الرواد العقاري', userId: 'user-off-1', services: [], properties: [] },
+        isLoading: false,
+        isError: false,
+        services: [],
+        properties: [],
+        workingHours: [],
+        targetUserId: 'user-off-1',
+      });
+    });
+    afterEach(() => useAuthStore.setState({ token: null }));
+
+    it('asks a guest to sign in', async () => {
+      useAuthStore.setState({ token: null });
+      const screen = await render(<OfficeProfileScreen />);
+      fireEvent.press(screen.getByText('شارك برأيك'));
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+    });
+
+    it('a signed-in user goes straight to the review', async () => {
+      useAuthStore.setState({ token: 't' });
+      const screen = await render(<OfficeProfileScreen />);
+      fireEvent.press(screen.getByText('شارك برأيك'));
+      expect(mockAuthPresent).not.toHaveBeenCalled();
     });
   });
 
