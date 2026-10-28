@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { RequestOfferStatus, RequestStatus } from '@prisma/client';
@@ -8,20 +9,30 @@ import { RequestOfferStatus, RequestStatus } from '@prisma/client';
 import { addressDetailsWrite } from '../../../core/dto/address-details.dto';
 import { assertCleanContent } from '../../../core/content-filter/content-filter';
 import type { PrismaService } from '../../../core/prisma/prisma.service';
+import type { PushService } from '../../../core/push/push.service';
 import { hasActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
+import type { NotificationsService } from '../../notifications/notifications.service';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
 import { CreateCompanyRequestDto } from './dto/create-company-request.dto';
 import type { CompanyRequestsReads } from './company-requests-reads';
 import { toResponseDto } from './company-requests.mapper';
-import { CLIENT_INCLUDE, parsePriceRange } from './company-requests.rules';
+import {
+  CLIENT_INCLUDE,
+  parsePriceRange,
+  type RequestWithClient,
+} from './company-requests.rules';
 
 /**
  * What the requester does: submit a request (public, or to one company),
  * delete their own, and accept or reject the offers it got.
  */
 export class CompanyRequestsRequesterActions {
+  private readonly logger = new Logger('CompanyRequestsService');
+
   constructor(
     private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+    private readonly push: PushService,
     private readonly reads: CompanyRequestsReads,
   ) {}
 
@@ -89,7 +100,67 @@ export class CompanyRequestsRequesterActions {
       include: { clientIdentity: { include: CLIENT_INCLUDE } },
     });
 
+    if (targetIdentityId) {
+      await this.notifyProviderOfRequest(request, targetIdentityId);
+    }
     return toResponseDto(request, clientIdentityId, 0);
+  }
+
+  /**
+   * Tells the company/office a request was sent to it: an in-app notice on
+   * its persona and a push to its account. Never throws: a failed notice
+   * must not fail the request.
+   */
+  private async notifyProviderOfRequest(
+    request: RequestWithClient,
+    providerIdentityId: string,
+  ) {
+    try {
+      const provider = await this.prisma.identity.findUnique({
+        where: { id: providerIdentityId },
+        select: { userId: true },
+      });
+      if (!provider) return;
+      const client = request.clientIdentity;
+      const clientName =
+        (client.individualData || client.officeData || client.companyData)
+          ?.name || 'عميل';
+      const title = 'طلب عرض سعر جديد';
+      const body = `أرسل لك ${clientName} طلب «${request.title}»`;
+      const { userId } = provider;
+
+      await this.notifications.create({
+        userId,
+        type: 'REQUEST_RECEIVED',
+        title,
+        body,
+        identityId: providerIdentityId,
+        data: { requestId: request.id },
+      });
+      const sessions = await this.prisma.session.findMany({
+        where: { userId, pushToken: { not: null } },
+        select: { pushToken: true },
+      });
+      await this.push.sendToTokens(
+        sessions.map((s) => s.pushToken).filter((t): t is string => !!t),
+        {
+          title,
+          body,
+          data: {
+            type: 'REQUEST_RECEIVED',
+            route: `/(company)/(requests)/${request.id}`,
+            requestId: request.id,
+            // The persona it's for: the app switches to it before opening
+            identityId: providerIdentityId,
+          },
+        },
+      );
+    } catch (err) {
+      this.logger.error(
+        `Request notice for ${request.id} failed`,
+        err as Error,
+      );
+    }
   }
 
   /** The requester deletes one of their own requests. */

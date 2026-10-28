@@ -687,22 +687,26 @@ export const mobileCompany: DocSection = {
           "A request sent to the company appears under its filter; accepting it moves it to accepted.",
           "Accepting a public request another company already took is refused.",
           "A pending company sees no requests at all.",
+          "A quote request sent to the company tells it: «طلب عرض سعر جديد» in the bell and as a push; tapping it opens the request as the company, even from another profile.",
         ],
         ar: [
           "الطلب المرسل للشركة يظهر تحت الفلتر المناسب؛ وقبوله ينقله إلى المقبولة.",
           "قبول طلب عام أخذته شركة أخرى يُرفض.",
           "الشركة قيد المراجعة لا ترى أي طلبات.",
+          "طلب عرض سعر يُرسل إلى الشركة يُبلغها: إشعار «طلب عرض سعر جديد» في الجرس وإشعار فوري؛ والضغط عليه يفتح الطلب كملف الشركة حتى لو كان المستخدم على ملف آخر.",
         ],
       },
       testScenarios: {
         en: [
           "From an individual account send a quote request to an approved company; accept it from the company.",
+          "As an individual, send the company a quote request (with the company on its owner's individual profile, or the app closed) — «طلب عرض سعر جديد» arrives as a push and in the bell; tapping it switches to the company profile and opens the request.",
         ],
         ar: [
           "من حساب فرد أرسل طلب عرض سعر لشركة معتمدة؛ ثم اقبله من الشركة.",
+          "اطلب عرض سعر من الشركة كفرد (وصاحب الشركة على ملفه الفردي، أو التطبيق مغلق) — يصل «طلب عرض سعر جديد» بإشعار؛ والضغط عليه يبدّل إلى ملف الشركة ويفتح الطلب.",
         ],
       },
-      updatedIn: "feat/docs-platform",
+      updatedIn: "fix/request-received-notification",
     },
     {
       id: "mobile-company-add-tab-empty",

@@ -21,6 +21,7 @@ import { AppNotification } from '@/shared/api/notifications.service';
 import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { openAsPersona } from '@/shared/navigation/openAsPersona';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 export default function NotificationListScreen() {
@@ -55,7 +56,14 @@ export default function NotificationListScreen() {
   const handleOpenNotification = (notification: AppNotification) => {
     handleMarkAsRead(notification);
     const route = getNotificationRoute(notification);
-    if (route) router.push(route as any);
+    if (!route) return;
+    // A request sent to the company opens as the company, whichever profile
+    // is in use
+    if (notification.type === 'REQUEST_RECEIVED') {
+      void openAsPersona(route, notification.identityId);
+      return;
+    }
+    router.push(route as any);
   };
 
   // Back to this profile's home. Not '/': that is the launch screen, which
