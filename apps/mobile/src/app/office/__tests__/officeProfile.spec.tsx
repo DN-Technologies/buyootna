@@ -412,6 +412,7 @@ describe('OfficeProfileScreen', () => {
 
   describe('blocking from the profile menu', () => {
     beforeEach(() => {
+      useAuthStore.setState({ token: 't' });
       mockUseOfficeDetails.mockReturnValue({
         office: { id: 'off-ident-1', name: 'مكتب الرواد العقاري', userId: 'user-off-1', services: [], properties: [] },
         isLoading: false,
@@ -421,6 +422,37 @@ describe('OfficeProfileScreen', () => {
         workingHours: [],
         targetUserId: 'user-off-1',
       });
+    });
+
+    afterEach(() => useAuthStore.setState({ token: null }));
+
+    // QA: a guest got no sign-in prompt for حظر / إبلاغ
+    it('asks a guest to sign in instead of blocking', async () => {
+      useAuthStore.setState({ token: null });
+      const screen = await render(<OfficeProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      alertButtons()
+        .find((b) => b.text === 'حظر المكتب')
+        ?.onPress?.();
+      expect(mockAskToBlock).not.toHaveBeenCalled();
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks a guest to sign in instead of reporting', async () => {
+      useAuthStore.setState({ token: null });
+      const handleOpenReport = jest.fn();
+      mockUseOfficeReport.mockReturnValue({
+        reportSheetRef: { current: null },
+        handleOpenReport,
+        handleSubmitReport: jest.fn(),
+      });
+      const screen = await render(<OfficeProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const report = alertButtons().find((b) => /إبلاغ/.test(b.text));
+      expect(report).toBeTruthy();
+      report?.onPress?.();
+      expect(handleOpenReport).not.toHaveBeenCalled();
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
     });
 
     it('offers «حظر المكتب», which asks to block the account and its profile', async () => {

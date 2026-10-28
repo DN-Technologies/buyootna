@@ -272,6 +272,7 @@ describe('CompanyProfileScreen', () => {
 
   describe('blocking from the profile menu', () => {
     beforeEach(() => {
+      useAuthStore.setState({ token: 't' });
       mockUseCompanyDetails.mockReturnValue({
         company: { id: 'comp-ident-1', name: 'شركة البناء الحديث', userId: 'user-1', services: [], projects: [] },
         isLoading: false,
@@ -279,6 +280,37 @@ describe('CompanyProfileScreen', () => {
         projects: [],
         targetUserId: 'user-1',
       });
+    });
+
+    afterEach(() => useAuthStore.setState({ token: null }));
+
+    // QA: a guest got no sign-in prompt for حظر / إبلاغ
+    it('asks a guest to sign in instead of blocking', async () => {
+      useAuthStore.setState({ token: null });
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      alertButtons()
+        .find((b) => b.text === 'حظر الشركة')
+        ?.onPress?.();
+      expect(mockAskToBlock).not.toHaveBeenCalled();
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks a guest to sign in instead of reporting', async () => {
+      useAuthStore.setState({ token: null });
+      const handleOpenReport = jest.fn();
+      mockUseCompanyReport.mockReturnValue({
+        reportSheetRef: { current: null },
+        handleOpenReport,
+        handleSubmitReport: jest.fn(),
+      });
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const report = alertButtons().find((b) => /إبلاغ/.test(b.text));
+      expect(report).toBeTruthy();
+      report?.onPress?.();
+      expect(handleOpenReport).not.toHaveBeenCalled();
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
     });
 
     it('offers «حظر الشركة», which asks to block the account and its profile', async () => {
