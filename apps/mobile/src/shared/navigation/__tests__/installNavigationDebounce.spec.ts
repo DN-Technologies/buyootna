@@ -114,6 +114,42 @@ describe('installNavigationDebounce', () => {
     expect(originalPush).toHaveBeenCalledTimes(1);
   });
 
+  // QA: «إنشاء حساب» on المزيد opened the selection screen once; after
+  // «تخطي والمتابعة كزائر» (a replace back to home) it never opened again
+  it('allows the same target again once it was replaced (continue as guest)', () => {
+    const { onNavigationStateChange } = require('../installNavigationDebounce');
+    router.push('/(auth)/selection' as any);
+    onNavigationStateChange('selection-1');
+    now += 700;
+    router.replace('/(individual)/home' as any);
+    now += 700;
+    router.push('/(auth)/selection' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(2);
+  });
+
+  it('allows the same target again once another screen is focused (a swipe back)', () => {
+    const { onNavigationStateChange } = require('../installNavigationDebounce');
+    router.push('/(auth)/selection' as any);
+    onNavigationStateChange('selection-1'); // the screen it opened
+    onNavigationStateChange('more-1'); // swiped back: no router.back call
+    now += 700;
+    router.push('/(auth)/selection' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps refusing it while the screen it opened is still showing', () => {
+    const { onNavigationStateChange } = require('../installNavigationDebounce');
+    router.push('/chat/1' as any);
+    onNavigationStateChange('chat-1');
+    onNavigationStateChange('chat-1'); // e.g. its params updated
+    now += 700;
+    router.push('/chat/1' as any);
+
+    expect(originalPush).toHaveBeenCalledTimes(1);
+  });
+
   it('still allows a different target after the window', () => {
     router.push('/chat/1' as any);
     now += 700;

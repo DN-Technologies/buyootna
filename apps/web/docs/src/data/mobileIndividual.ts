@@ -2182,14 +2182,14 @@ export const mobileIndividual: DocSection = {
         ar: "عند تسجيل الخروج كان في المزيد زر إنشاء حساب في بطاقة الترحيب أعلى الشاشة، وزر تسجيل الدخول منفصلاً بعرض كامل في أسفلها تحت كل أقسام القائمة. الآن الزران متجاوران في بطاقة الترحيب: إنشاء حساب (ممتلئ، يفتح اختيار نوع الحساب) على اليمين، وتسجيل الدخول (بإطار، يفتح دخول الفرد) على اليسار. وأُزيل الزر السفلي.",
       },
       acceptanceCriteria: {
-        en: ["Signed out, the welcome card shows إنشاء حساب and تسجيل الدخول in one row.", "There is no تسجيل الدخول button at the bottom of المزيد.", "Each button opens the same screen as before."],
-        ar: ["عند تسجيل الخروج تعرض بطاقة الترحيب إنشاء حساب وتسجيل الدخول في صف واحد.", "لا يوجد زر تسجيل الدخول في أسفل المزيد.", "كل زر يفتح الشاشة نفسها كما كان."],
+        en: ["Signed out, the welcome card shows إنشاء حساب and تسجيل الدخول in one row.", "There is no تسجيل الدخول button at the bottom of المزيد.", "Each button opens the same screen as before.", "إنشاء حساب keeps working after تخطي والمتابعة كزائر or a swipe back: it opens the account screen every time."],
+        ar: ["عند تسجيل الخروج تعرض بطاقة الترحيب إنشاء حساب وتسجيل الدخول في صف واحد.", "لا يوجد زر تسجيل الدخول في أسفل المزيد.", "كل زر يفتح الشاشة نفسها كما كان.", "إنشاء حساب يبقى يعمل بعد تخطي والمتابعة كزائر أو السحب للرجوع: يفتح شاشة الحساب في كل مرة."],
       },
       testScenarios: {
-        en: ["Sign out and open المزيد: both buttons in the card; tap each and check where it goes."],
-        ar: ["سجّل الخروج وافتح المزيد: الزران في البطاقة؛ اضغط كلاً منهما وتحقق من وجهته."],
+        en: ["Sign out and open المزيد: both buttons in the card; tap each and check where it goes.", "Tap إنشاء حساب › تخطي والمتابعة كزائر, back on المزيد tap إنشاء حساب again: it opens. Repeat leaving with a swipe back."],
+        ar: ["سجّل الخروج وافتح المزيد: الزران في البطاقة؛ اضغط كلاً منهما وتحقق من وجهته.", "اضغط إنشاء حساب › تخطي والمتابعة كزائر، ثم في المزيد اضغط إنشاء حساب مرة أخرى: تُفتح. كرّر مع الرجوع بالسحب."],
       },
-      updatedIn: "feat/guest-more-auth-buttons",
+      updatedIn: "fix/create-account-dead-tap",
     },
     {
       id: "mobile-company-office-logout",
