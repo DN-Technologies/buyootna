@@ -461,6 +461,7 @@ export const mobileShared: DocSection = {
           "Dismissing via 'لاحقاً' returns the guest to the exact screen/state they were on.",
           "The same actions work immediately (no sheet) once a real session exists.",
           "«شارك برأيك» on a company, office or personal profile shows a guest the sign-in sheet instead of the review sheet.",
+          "In a company or office profile's ⋯ menu, حظر and الإبلاغ show a guest the sign-in sheet; nothing is blocked or reported.",
         ],
         ar: [
           "الدالة guardAction() تعترض جميع الإجراءات السبعة المذكورة عند عدم وجود جلسة دخول.",
@@ -468,6 +469,7 @@ export const mobileShared: DocSection = {
           "إغلاق الشاشة عبر 'لاحقاً' يعيد الزائر إلى نفس الشاشة/الحالة التي كان فيها بالضبط.",
           "نفس الإجراءات تعمل فوراً (دون ظهور الشاشة) بمجرد وجود جلسة دخول حقيقية.",
           "«شارك برأيك» في ملف الشركة والمكتب والملف الشخصي يعرض للزائر نافذة تسجيل الدخول بدل نافذة التقييم.",
+          "في قائمة ⋯ لملف الشركة أو المكتب، الحظر والإبلاغ يعرضان للزائر نافذة تسجيل الدخول؛ ولا يُحظر أو يُبلَّغ عن شيء.",
         ],
       },
       testScenarios: {
@@ -477,6 +479,7 @@ export const mobileShared: DocSection = {
           "Complete login from the sheet mid-flow (e.g. from Favorites) and confirm the originally-attempted action completes automatically or the user lands back where they intended.",
           "Kill and relaunch the app as a guest — confirm gating still triggers after a cold start (not just first-session state).",
           "As a guest open a company, an office and a personal profile and tap «شارك برأيك» on each — the sign-in sheet shows and the review sheet does not open.",
+          "As a guest open an office profile › ⋯ › حظر المكتب, then › الإبلاغ: the sign-in sheet each time. Repeat on a company.",
         ],
         ar: [
           "بصفتك زائراً، اضغط أيقونة القلب على بطاقة عقار في نتائج البحث، وفي تفاصيل العقار، وفي الصفحة الرئيسية — تأكد من ظهور الشاشة في المواضع الثلاثة، لا في موضع واحد فقط.",
@@ -484,9 +487,10 @@ export const mobileShared: DocSection = {
           "أكمل تسجيل الدخول من داخل الشاشة أثناء التدفق (مثلاً من المفضلة) وتأكد أن الإجراء الأصلي يُنفَّذ تلقائياً أو أن المستخدم يعود إلى ما كان ينوي فعله.",
           "أغلق التطبيق تماماً وأعد تشغيله كزائر — تأكد أن التقييد لا يزال يعمل بعد بدء تشغيل بارد (لا في حالة الجلسة الأولى فقط).",
           "كزائر افتح ملف شركة ثم مكتب ثم ملف شخصي، واضغط «شارك برأيك» في كل منها — تظهر نافذة تسجيل الدخول ولا تُفتح نافذة التقييم.",
+          "كزائر افتح ملف مكتب › ⋯ › حظر المكتب ثم › الإبلاغ: نافذة تسجيل الدخول في كل مرة. كرّر في ملف شركة.",
         ],
       },
-      updatedIn: "fix/guest-review-login",
+      updatedIn: "fix/guest-block-report-login",
     },
     {
       id: "mobile-chat-realtime",

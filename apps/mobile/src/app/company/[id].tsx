@@ -36,7 +36,8 @@ export default function CompanyProfileScreen() {
 
   // Modal references
   const addReviewSheetRef = useRef<BottomSheetModal>(null);
-  // A review needs an account: a guest gets the sign-in sheet instead
+  // A review, a report or a block needs an account: a guest gets the
+  // sign-in sheet instead
   const { guardAction, authSheetRef } = useAuthGuard();
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const quoteModalRef = useRef<BottomSheetModal>(null);
@@ -85,8 +86,10 @@ export default function CompanyProfileScreen() {
         {/* Navigation Bar */}
         <CompanyNavBar
           onBack={() => router.back()}
-          onOpenReport={handleOpenReport}
-          onToggleBlock={toggleBlock}
+          // Reporting and blocking need an account: a guest gets the
+          // sign-in sheet instead
+          onOpenReport={() => guardAction(handleOpenReport)}
+          onToggleBlock={toggleBlock && (() => guardAction(toggleBlock))}
           blocked={!!blockedByMe}
         />
 
