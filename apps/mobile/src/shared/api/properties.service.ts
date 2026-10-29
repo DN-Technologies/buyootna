@@ -65,6 +65,9 @@ export interface UploadImagesResponse {
   urls: string[];
 }
 
+// POST /media/upload/listings accepts at most this many files per request
+const UPLOAD_BATCH_SIZE = 10;
+
 export const propertiesService = {
   getPropertyById: async (id: string): Promise<PropertyDetailsDto> => {
     const response = await apiClient.get<PropertyDetailsDto>(
@@ -100,39 +103,46 @@ export const propertiesService = {
 
   /**
    * Upload local image URIs to the backend (which stores them in S3).
-   * Uses multipart/form-data since we're sending binary files.
+   * Uses multipart/form-data since we're sending binary files. The endpoint
+   * takes up to 10 files a request and a مميز ad has up to 15, so they go
+   * in batches of 10, in order.
    */
   uploadImages: async (localUris: string[]): Promise<string[]> => {
-    const formData = new FormData();
+    const urls: string[] = [];
+    for (let i = 0; i < localUris.length; i += UPLOAD_BATCH_SIZE) {
+      const batch = localUris.slice(i, i + UPLOAD_BATCH_SIZE);
+      const formData = new FormData();
 
-    for (const uri of localUris) {
-      // Determine the file extension and MIME type from the URI
-      const filename = uri.split('/').pop() || 'photo.jpg';
-      const match = /\.(\w+)$/.exec(filename);
-      const ext = match ? match[1].toLowerCase() : 'jpg';
-      const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+      for (const uri of batch) {
+        // Determine the file extension and MIME type from the URI
+        const filename = uri.split('/').pop() || 'photo.jpg';
+        const match = /\.(\w+)$/.exec(filename);
+        const ext = match ? match[1].toLowerCase() : 'jpg';
+        const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
 
-      // React Native's FormData accepts this object shape for file uploads
-      formData.append('images', {
-        uri: uri,
-        type: mimeType,
-        name: filename,
-      } as unknown as Blob);
+        // React Native's FormData accepts this object shape for file uploads
+        formData.append('images', {
+          uri: uri,
+          type: mimeType,
+          name: filename,
+        } as unknown as Blob);
+      }
+
+      const response = await apiClient.post<UploadImagesResponse>(
+        '/media/upload/listings',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          // Image uploads can take longer than the default 10s timeout
+          timeout: 60000,
+        },
+      );
+      urls.push(...response.data.urls);
     }
 
-    const response = await apiClient.post<UploadImagesResponse>(
-      '/media/upload/listings',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        // Image uploads can take longer than the default 10s timeout
-        timeout: 60000,
-      },
-    );
-
-    return response.data.urls;
+    return urls;
   },
 
   /**

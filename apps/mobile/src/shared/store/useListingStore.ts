@@ -208,11 +208,11 @@ export const useListingStore = create<ListingStore>((set, get) => ({
   updateField: (field, value) => set({ [field]: value }),
 
   // Image Handlers
-  // Defensive cap -- MAX_IMAGES (10) is enforced by the picker UI itself,
-  // but never let the store silently exceed it regardless of caller.
+  // Defensive cap -- the picker enforces the ad type's own limit (عادي 5,
+  // مميز 15); never let the store exceed the highest any package allows.
   addImages: (uris) =>
     set((state) => ({
-      images: [...state.images, ...uris].slice(0, 10),
+      images: [...state.images, ...uris].slice(0, 15),
     })),
   removeImage: (index) =>
     set((state) => ({

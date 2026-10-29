@@ -5,21 +5,24 @@ import { Text, TouchableOpacity, View } from 'react-native';
 
 import SectionTitle from '@/shared/components/add-listing/SectionTitle';
 import { SafeImage } from '@/shared/components/ui/SafeImage';
+import { useAdImageLimit } from '@/shared/hooks/properties/useAdImageLimit';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
 
-const MAX_IMAGES = 10;
-
 export default function ImageUploadZone() {
-  const { images, addImages, removeImage } = useListingStore();
-  const remainingSlots = Math.max(0, MAX_IMAGES - images.length);
+  const { images, addImages, removeImage, adLevel } = useListingStore();
+  // The ad type's package decides it: عادي 5, مميز 15 (was a flat 10, QA)
+  const maxImages = useAdImageLimit(adLevel);
+  const levelLabel = adLevel === 'premium' ? 'الإعلان المميز' : 'الإعلان العادي';
+  const limitMessage = `${levelLabel} يسمح بـ ${maxImages} صور كحد أقصى.`;
+  const remainingSlots = Math.max(0, maxImages - images.length);
   const hasReachedLimit = remainingSlots === 0;
+  // Switching to a type with a lower limit leaves photos to remove
+  const overBy = Math.max(0, images.length - maxImages);
 
   const handlePickImages = async () => {
     if (hasReachedLimit) {
-      showAlert('الحد الأقصى للصور', 'الحد الأقصى للصور هو 10 صور.', [
-        { text: 'حسناً' },
-      ]);
+      showAlert('الحد الأقصى للصور', limitMessage, [{ text: 'حسناً' }]);
       return;
     }
 
@@ -44,16 +47,14 @@ export default function ImageUploadZone() {
 
       if (!result.canceled && result.assets) {
         // Defensive clamp in case the native picker ever returns more than
-        // the requested selectionLimit -- never let the store exceed MAX_IMAGES.
+        // the requested selectionLimit -- never let the store exceed the limit.
         const selectedUris = result.assets
           .map((asset) => asset.uri)
           .slice(0, remainingSlots);
         addImages(selectedUris);
 
         if (result.assets.length > remainingSlots) {
-          showAlert('الحد الأقصى للصور', 'الحد الأقصى للصور هو 10 صور.', [
-            { text: 'حسناً' },
-          ]);
+          showAlert('الحد الأقصى للصور', limitMessage, [{ text: 'حسناً' }]);
         }
       }
     } catch (error) {
@@ -67,6 +68,15 @@ export default function ImageUploadZone() {
   return (
     <View className="w-full" style={{ gap: 16 }}>
       <SectionTitle>الصور</SectionTitle>
+      <Text
+        testID="image-limit"
+        className={`font-cairo-medium text-[13px] ${overBy > 0 ? 'text-[#DC2626]' : 'text-[#6B6A6A]'}`}
+        style={{ writingDirection: 'rtl' }}
+      >
+        {overBy > 0
+          ? `${limitMessage} احذف ${overBy} ${overBy === 1 ? 'صورة' : 'صور'} للمتابعة.`
+          : `${images.length}/${maxImages} صور`}
+      </Text>
 
       {/* --- Selected Images Previews --- */}
       {images.length > 0 && (
@@ -99,7 +109,7 @@ export default function ImageUploadZone() {
       {hasReachedLimit ? (
         <View className="w-full items-center justify-center rounded border border-dashed border-[#D7D7D7] bg-gray-50 px-6 py-4">
           <Text className="text-center font-cairo-medium text-[13px] text-[#94A3B8]">
-            الحد الأقصى للصور هو 10 صور
+            {limitMessage}
           </Text>
         </View>
       ) : (
