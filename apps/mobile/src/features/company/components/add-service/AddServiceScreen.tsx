@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import CompanyFormHeader from '../CompanyFormHeader';
 import CompanySubmitButton from '../CompanySubmitButton';
-import CompanySuccessSheet from '../CompanySuccessSheet';
 import AddServiceForm from './AddServiceForm';
 import { useAddService } from './useAddService';
 
@@ -35,16 +34,6 @@ export default function AddServiceScreen() {
           />
         </View>
       </KeyboardAvoidingView>
-
-      <CompanySuccessSheet
-        ref={service.successSheetRef}
-        title="تمت إضافة الخدمة بنجاح!"
-        description="الخدمة الآن نشطة ومتاحة في ملفك العقاري. يمكن للمستخدمين تصفحها وبدء التواصل معك مباشرة عبر المحادثات."
-        primaryLabel="عرض الخدمة"
-        onPrimary={service.viewService}
-        secondaryLabel="إضافة خدمة أخرى"
-        onSecondary={service.addAnother}
-      />
     </SafeAreaView>
   );
 }
