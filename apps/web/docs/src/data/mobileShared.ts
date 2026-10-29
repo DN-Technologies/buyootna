@@ -616,6 +616,7 @@ export const mobileShared: DocSection = {
           "Required-field validation blocks submission with clear inline errors rather than a silent failure.",
           "Successfully created listings appear immediately in the user's own listings/'My Ads' and in relevant search feeds.",
           "On a Sell ad, turning on 'مدخول العقار' and entering an amount saves it; the card then shows 'مدخول العقار {amount} د.ك', and editing the ad shows the saved income.",
+          "Photos follow the ad type's package: إعلان عادي up to 5, إعلان مميز up to 15 (the most any of the user's packages of that type allows; 5 / 15 when unknown). Under الصور a counter shows 'N/limit صور'; the picker stops at the limit. Switching to a type with a lower limit while holding more photos turns the line red ('… احذف N صور للمتابعة.') and publishing asks to remove them first. The 15 photos of a featured ad upload in batches of 10.",
         ],
         ar: [
           "الحقول المُدخلة في SharedPropertyInfo تبقى محفوظة بشكل صحيح عند التبديل بين تبويبات بيع/إيجار/بدل قبل الإرسال.",
@@ -623,6 +624,7 @@ export const mobileShared: DocSection = {
           "التحقق من الحقول المطلوبة يمنع الإرسال مع رسائل خطأ واضحة داخل الشاشة، لا فشلاً صامتاً.",
           "الإعلانات المُنشأة بنجاح تظهر فوراً في إعلانات المستخدم الخاصة ('إعلاناتي') وفي واجهات البحث ذات الصلة.",
           "في إعلان البيع، تفعيل 'مدخول العقار' وإدخال مبلغ يحفظه؛ ثم تعرض البطاقة 'مدخول العقار {المبلغ} د.ك'، ويظهر المدخول المحفوظ عند تعديل الإعلان.",
+          "عدد الصور يتبع باقة نوع الإعلان: الإعلان العادي حتى 5، والإعلان المميز حتى 15 (أكبر عدد تسمح به باقات المستخدم من هذا النوع؛ 5 / 15 إن لم يُعرف). تحت الصور عدّاد 'N/الحد صور'؛ ويتوقف منتقي الصور عند الحد. التبديل إلى نوع بحد أقل مع صور أكثر يجعل السطر أحمر ('… احذف N صور للمتابعة.') ويطلب النشر حذفها أولاً. وصور الإعلان المميز الخمس عشرة تُرفع على دفعات من 10.",
         ],
       },
       testScenarios: {
@@ -631,15 +633,17 @@ export const mobileShared: DocSection = {
           "Start a Rent listing, switch to Exchange mid-flow, and confirm shared fields (location, images) aren't lost and type-specific fields (rent price vs. exchange terms) reset/validate appropriately.",
           "Attempt to submit with a required field missing (e.g. no images, no price) and confirm the app blocks submission with a visible error rather than sending an incomplete request.",
           "Edit an existing listing via /edit-listing/[id] and confirm changes save without duplicating the listing or resetting untouched fields.",
+          "With إعلان عادي picked, the picker stops at 5 photos and the counter reads '5/5 صور'. Switch to إعلان مميز: the limit becomes 15; add 15 and publish from الباقة الذهبية: all 15 show on the ad. Switch back to عادي with 15: the line turns red and publishing asks to remove 10.",
         ],
         ar: [
           "أنشئ إعلان بيع بجميع الحقول، أرسله، وتحقق من ظهوره بالنوع/السعر/الحقول الصحيحة في شاشة تفاصيل العقار.",
           "ابدأ إعلان إيجار، ثم بدّل إلى بدل أثناء التدفق، وتأكد أن الحقول المشتركة (الموقع، الصور) لم تُفقد وأن الحقول الخاصة بكل نوع (سعر الإيجار مقابل شروط البدل) تُعاد تهيئتها/تُتحقق منها بشكل مناسب.",
           "حاول الإرسال مع غياب حقل مطلوب (مثلاً بلا صور أو بلا سعر) وتأكد أن التطبيق يمنع الإرسال مع خطأ واضح، لا أن يرسل طلباً ناقصاً.",
           "عدّل إعلاناً موجوداً عبر /edit-listing/[id] وتأكد أن التعديلات تُحفظ دون تكرار الإعلان أو إعادة تعيين الحقول التي لم تُلمس.",
+          "مع اختيار إعلان عادي يتوقف المنتقي عند 5 صور ويعرض العدّاد '5/5 صور'. بدّل إلى إعلان مميز: يصبح الحد 15؛ أضف 15 وانشر من الباقة الذهبية: تظهر الصور الخمس عشرة في الإعلان. ارجع إلى عادي مع 15: يصبح السطر أحمر ويطلب النشر حذف 10.",
         ],
       },
-      updatedIn: "fix/property-income",
+      updatedIn: "fix/ad-image-limit-by-type",
     },
     {
       id: "mobile-login-profile-type",

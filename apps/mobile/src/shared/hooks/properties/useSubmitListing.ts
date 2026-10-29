@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 
 import { plansService, PublishOption } from '@/shared/api/plans.service';
 import { propertiesService } from '@/shared/api/properties.service';
+import { imageLimitFor } from '@/shared/hooks/properties/useAdImageLimit';
 import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useListingStore } from '@/shared/store/useListingStore';
@@ -106,6 +107,21 @@ export function useSubmitListing() {
     if (!optionsRes.canPublish || optionsRes.options.length === 0) {
       setQuotaSheetMode('exhausted');
       quotaSheetRef.current?.present();
+      return null;
+    }
+
+    // More photos than the ad type allows (e.g. switched from مميز to
+    // عادي): ask to remove some instead of a server refusal at the end
+    const imageLimit = imageLimitFor(draftData.adLevel, optionsRes.options);
+    if (draftData.images.length > imageLimit) {
+      const levelLabel =
+        draftData.adLevel === 'premium' ? 'الإعلان المميز' : 'الإعلان العادي';
+      showAlert(
+        'عدد الصور أكثر من المسموح',
+        `${levelLabel} يسمح بـ ${imageLimit} صور كحد أقصى. احذف ${
+          draftData.images.length - imageLimit
+        } من الصور ثم انشر.`,
+      );
       return null;
     }
 

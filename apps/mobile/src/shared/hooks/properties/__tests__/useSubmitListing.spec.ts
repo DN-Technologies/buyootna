@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { plansService, PublishOption } from '@/shared/api/plans.service';
 import { propertiesService } from '@/shared/api/properties.service';
+import { imageLimitFor } from '@/shared/hooks/properties/useAdImageLimit';
 import { useSubmitListing } from '@/shared/hooks/properties/useSubmitListing';
 import { useListingStore } from '@/shared/store/useListingStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -236,6 +237,60 @@ describe('useSubmitListing clear price and owner', () => {
 
   it('does not ask an office for the owner declaration', async () => {
     useAuthStore.setState({ activeIdentity: { id: 'o1', type: 'OFFICE' } });
+    const { result } = await setup();
+
+    await act(() => result.current.handleSubmit());
+
+    expect(mockCreate).toHaveBeenCalledTimes(1);
+  });
+});
+
+// QA: every ad allowed 10 photos; عادي allows 5 and مميز 15
+describe('photo limit by ad type', () => {
+  const free: PublishOption = {
+    ...option('FREE_QUOTA'),
+    type: 'FREE_QUOTA',
+    maxImagesPerAd: 5,
+    featuredDays: 0,
+  };
+  const golden: PublishOption = {
+    ...option('slot-gold'),
+    maxImagesPerAd: 15,
+    featuredDays: 7,
+  };
+  const photos = (n: number) => Array.from({ length: n }, (_, i) => `img-${i}`);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useListingStore.getState().resetForm();
+    (propertiesService.uploadImages as jest.Mock).mockResolvedValue(['u']);
+    mockCreate.mockResolvedValue({ property: { id: 'prop-1' } });
+    mockGetOptions.mockResolvedValue({ canPublish: true, options: [free, golden] });
+  });
+
+  it('gives عادي 5 and مميز 15 from the packages, with those as defaults', () => {
+    expect(imageLimitFor('normal', [free, golden])).toBe(5);
+    expect(imageLimitFor('premium', [free, golden])).toBe(15);
+    expect(imageLimitFor('normal', undefined)).toBe(5);
+    expect(imageLimitFor('premium', [])).toBe(15);
+  });
+
+  it('asks to remove photos before publishing a normal ad with 6', async () => {
+    useListingStore.setState({ adLevel: 'normal', images: photos(6) });
+    const { result } = await setup();
+
+    await act(() => result.current.handleSubmit());
+
+    expect(mockAlert).toHaveBeenCalledWith(
+      'عدد الصور أكثر من المسموح',
+      expect.stringContaining('5'),
+    );
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it('publishes a featured ad with 15 photos', async () => {
+    mockGetOptions.mockResolvedValue({ canPublish: true, options: [golden] });
+    useListingStore.setState({ adLevel: 'premium', images: photos(15) });
     const { result } = await setup();
 
     await act(() => result.current.handleSubmit());
