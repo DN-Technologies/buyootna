@@ -152,7 +152,10 @@ export default function CompanyProfileScreen() {
             active subscription can't receive requests */}
         {company?.acceptsRequests !== false && (
           <CompanyBottomBar
-            onRequestQuote={() => quoteModalRef.current?.present()}
+            // A guest is asked to sign in first (QA): the form needs an account
+            onRequestQuote={() =>
+              guardAction(() => quoteModalRef.current?.present())
+            }
             disabled={!!currentUserId && company?.userId === currentUserId}
           />
         )}

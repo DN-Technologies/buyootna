@@ -148,11 +148,13 @@ export default function CompaniesScreen() {
   // asked for a quote by the account itself
   const currentUserId = useAuthStore((state) => state.user?.id);
 
-  const handleQuotePress = (companyId: string, companyName: string) => {
-    setSelectedCompanyId(companyId);
-    setSelectedCompanyName(companyName);
-    quoteModalRef.current?.present();
-  };
+  // A guest is asked to sign in first (QA): the form needs an account
+  const handleQuotePress = (companyId: string, companyName: string) =>
+    guardAction(() => {
+      setSelectedCompanyId(companyId);
+      setSelectedCompanyName(companyName);
+      quoteModalRef.current?.present();
+    });
 
   const handleChatPress = (companyId: string) => {
     // Opens the chat at once; the chat screen creates the conversation.
