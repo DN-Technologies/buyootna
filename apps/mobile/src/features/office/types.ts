@@ -1,67 +1,44 @@
-export interface OfficeListing {
+// GET /offices/me/dashboard
+export interface OfficeDashboardStats {
+  activeListings: number;
+  activeListingsThisWeek: number;
+  activeServices: number;
+  newMessagesToday: number;
+  totalViews: number;
+}
+
+export interface OfficeDashboardBilling {
+  hasActivePackage: boolean;
+  adsRemaining: number;
+  freeAdsRemaining: number;
+}
+
+export interface OfficeDashboardListing {
   id: string;
-  title: string;
-  price: string | number;
-  currency?: string;
-  tag?: string;
+  type: 'SALE' | 'RENT' | 'EXCHANGE' | 'AUCTION' | 'DEAL';
+  // PropertyCategory key (APARTMENT, HOUSE ...)
+  category: string;
+  // null: السعر غير معلن
+  price: number | null;
   images: string[];
-  viewsCount: number;
+  isFeatured: boolean;
+  featuredUntil: string | null;
+  views: number;
   favoritesCount: number;
   chatsCount: number;
 }
 
-export interface OfficeService {
-  id: string;
+export interface OfficeDashboardService {
   title: string;
-  description: string;
-  iconName: 'building' | 'search' | 'repeat';
-  requestTag?: string;
-  actionLabel?: string;
+  // Open requests sent to the office that mention the service
+  openRequests: number;
 }
 
-export interface MarketProperty {
-  id: string;
-  title: string;
-  isFeatured?: boolean;
-  price: string | number;
-  currency?: string;
-  space: string;
-  location: string;
-  propertyIncome?: string | number | null;
-  exchangeRequirements?: {
-    source: string;
-    target: string;
-  };
-}
-
-export interface OfficeConversation {
-  id: string;
-  clientName: string;
-  avatarUrl?: string;
-  categoryTag: string;
-  lastMessage: string;
-  unreadCount: number;
-  timeAgo: string;
-}
-
-export interface OfficeGroupActivity {
-  id: string;
-  groupName: string;
-  avatarLetter: string;
-  lastMessage: string;
-  unreadCount: number;
-  timeAgo: string;
-}
-
-export interface OfficeStats {
-  activeListings: number;
-  activeListingsSubtitle?: string;
-  activeServices: number;
-  activeServicesSubtitle?: string;
-  views: string | number;
-  viewsSubtitle?: string;
-  newMessages: number;
-  newMessagesSubtitle?: string;
+export interface OfficeDashboard {
+  stats: OfficeDashboardStats;
+  billing: OfficeDashboardBilling;
+  listings: OfficeDashboardListing[];
+  services: OfficeDashboardService[];
 }
 
 export type OfficeListingType = 'sell' | 'rent' | 'exchange';

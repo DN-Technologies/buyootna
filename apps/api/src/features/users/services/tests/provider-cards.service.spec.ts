@@ -13,6 +13,7 @@ describe('ProviderCardsService', () => {
         },
       ]),
     },
+    companyService: { groupBy: jest.fn().mockResolvedValue([]) },
   };
   // Ratings are keyed by the persona (identity), not the account
   const identityStats = {
@@ -50,12 +51,71 @@ describe('ProviderCardsService', () => {
         rating: 4.3,
         reviewsCount: 9,
         projectsCount: '12',
+        // No service rows: counted from the free-text list
+        servicesCount: 1,
         serviceArea: ['العاصمة'],
         logoUrl: 'logo.png',
         isVerified: true,
         lastActivityAt: '2026-09-20T10:00:00.000Z',
       },
     ]);
+  });
+
+  it("counts a company's visible service rows when it has them", async () => {
+    prisma.companyService.groupBy.mockResolvedValueOnce([
+      { identityId: 'c1', _count: { _all: 5 } },
+    ]);
+
+    const [card] = await service.formatCompanyCards([
+      {
+        id: 'c1',
+        userId: 'u1',
+        companyData: {
+          name: 'مؤسسة النخبة',
+          services: 'تشطيب',
+          serviceAreas: [],
+          logoUrl: null,
+          isVerified: true,
+          updatedAt: new Date('2026-01-01'),
+        },
+      } as never,
+    ]);
+
+    expect(card.servicesCount).toBe(5);
+    expect(prisma.companyService.groupBy).toHaveBeenLastCalledWith({
+      by: ['identityId'],
+      where: { identityId: { in: ['c1'] }, isHidden: false },
+      _count: { _all: true },
+    });
+  });
+
+  it("counts an office's live ads per type and its services", async () => {
+    prisma.property.groupBy.mockResolvedValueOnce([
+      { identityId: 'o1', type: 'SALE', _count: { _all: 30 } },
+      { identityId: 'o1', type: 'RENT', _count: { _all: 7 } },
+      { identityId: 'o2', type: 'RENT', _count: { _all: 4 } },
+    ]);
+
+    const [card] = await service.formatOfficeCards([
+      {
+        id: 'o1',
+        userId: 'u9',
+        officeData: {
+          name: 'الوطن للعقارات',
+          services: 'عقار للايجار، تبادل عقاري',
+          hqLocation: 'السالمية',
+          logoUrl: null,
+          isVerified: true,
+        },
+        user: { phone: null, whatsapp: null },
+      } as never,
+    ]);
+
+    expect(card).toMatchObject({
+      propertiesCount: 37,
+      listingTypes: ['SALE', 'RENT'],
+      servicesCount: 2,
+    });
   });
 
   it('builds office cards with contact details', async () => {

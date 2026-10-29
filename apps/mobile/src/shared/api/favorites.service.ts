@@ -39,6 +39,10 @@ export interface FavoriteOffice {
   location: string;
   logoUrl?: string | null;
   isVerified: boolean;
+  // Live ads, their deal types and the services count (newer APIs)
+  propertiesCount?: number;
+  listingTypes?: string[];
+  servicesCount?: number;
   phone?: string | null;
   whatsapp?: string | null;
   isFavorite: boolean;

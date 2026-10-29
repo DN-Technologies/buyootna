@@ -9,7 +9,8 @@ import { PrismaService } from '../../../core/prisma/prisma.service';
 import { IdentityStatsService } from '../../../core/trust-signals/identity-stats.service';
 import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import { readableLocation } from '../../../common/utils/location.util';
-import { visibleServices } from './profile-formatting.util';
+import { notExpiredWhere } from '../../properties/services/property-expiry.util';
+import { formatServiceList, visibleServices } from './profile-formatting.util';
 
 type CompanyIdentity = Identity & {
   companyData: CompanyIdentityData | null;
@@ -34,12 +35,17 @@ export class ProviderCardsService {
   async formatCompanyCards(identities: CompanyIdentity[]) {
     const identityIds = identities.map((i) => i.id);
 
-    const [propertyStats, stats] = await Promise.all([
+    const [propertyStats, serviceRows, stats] = await Promise.all([
       this.prisma.property.groupBy({
         by: ['identityId'],
         where: { identityId: { in: identityIds } },
         _count: { _all: true },
         _max: { createdAt: true },
+      }),
+      this.prisma.companyService.groupBy({
+        by: ['identityId'],
+        where: { identityId: { in: identityIds }, isHidden: false },
+        _count: { _all: true },
       }),
       this.identityStats.getStats(identityIds),
     ]);
@@ -50,19 +56,27 @@ export class ProviderCardsService {
     const lastActivityByIdentity = new Map(
       propertyStats.map((p) => [p.identityId, p._max.createdAt]),
     );
+    const serviceRowsByIdentity = new Map(
+      serviceRows.map((r) => [r.identityId, r._count._all]),
+    );
 
     return identities
       .filter((i) => i.companyData !== null)
       .map((i) => {
         const s = stats.get(i.id);
+        const category = visibleServices(i.companyData!) || '';
         return {
           id: i.id,
           userId: i.userId,
           name: i.companyData!.name,
-          category: visibleServices(i.companyData!) || '',
+          category,
           rating: s?.rating ?? 0,
           reviewsCount: s?.reviewsCount ?? 0,
           projectsCount: String(projectsCountByIdentity.get(i.id) ?? 0),
+          // عدد الخدمات: its service rows, else the free-text list's entries
+          servicesCount:
+            serviceRowsByIdentity.get(i.id) ??
+            formatServiceList(category, i.companyData!.name).length,
           serviceArea: i.companyData!.serviceAreas,
           logoUrl: i.companyData!.logoUrl,
           isVerified: i.companyData!.isVerified,
@@ -74,9 +88,21 @@ export class ProviderCardsService {
   }
 
   async formatOfficeCards(identities: OfficeIdentity[]) {
-    const stats = await this.identityStats.getStats(
-      identities.map((i) => i.id),
-    );
+    const identityIds = identities.map((i) => i.id);
+    const [listingStats, stats] = await Promise.all([
+      // The office's live ads, per type (بيع / إيجار / بدل ... tags)
+      this.prisma.property.groupBy({
+        by: ['identityId', 'type'],
+        where: {
+          identityId: { in: identityIds },
+          status: 'ACTIVE',
+          isHidden: false,
+          ...notExpiredWhere(),
+        },
+        _count: { _all: true },
+      }),
+      this.identityStats.getStats(identityIds),
+    ]);
 
     return identities
       .filter((i) => i.officeData !== null)
@@ -86,6 +112,16 @@ export class ProviderCardsService {
           id: i.id,
           userId: i.userId,
           name: i.officeData!.name,
+          propertiesCount: listingStats
+            .filter((l) => l.identityId === i.id)
+            .reduce((sum, l) => sum + l._count._all, 0),
+          listingTypes: listingStats
+            .filter((l) => l.identityId === i.id)
+            .map((l) => l.type),
+          servicesCount: formatServiceList(
+            i.officeData!.services,
+            i.officeData!.name,
+          ).length,
           rating: s?.rating ?? 0,
           reviewsCount: s?.reviewsCount ?? 0,
           location: readableLocation(i.officeData!.hqLocation) || '',

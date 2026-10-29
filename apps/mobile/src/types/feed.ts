@@ -36,6 +36,8 @@ export interface CompanyDto {
   rating: number;
   reviewsCount: number;
   projectsCount: string; // e.g., '+50'
+  // عدد الخدمات (newer APIs)
+  servicesCount?: number;
   serviceArea: string;
   logoUrl: string;
   isVerified: boolean;
@@ -54,6 +56,11 @@ export interface OfficeDto {
   logoUrl: string;
   isVerified: boolean;
   isFavorite?: boolean;
+  // Live ads, their deal types (SALE/RENT/EXCHANGE) and its services count
+  // (newer APIs)
+  propertiesCount?: number;
+  listingTypes?: string[];
+  servicesCount?: number;
   phone?: string | null;
   whatsapp?: string | null;
 }

@@ -13,6 +13,9 @@ export interface CompanyListCardProps {
   reviewsCount: number;
   projectsCount: string;
   lastActivityAt: string;
+  // When given, the first stat is عدد الخدمات (office home) instead of
+  // the last activity
+  servicesCount?: number;
   logoUrl: string;
   isVerified?: boolean;
   isFavorite?: boolean;
@@ -31,6 +34,7 @@ export default function CompanyListCard({
   reviewsCount,
   projectsCount,
   lastActivityAt,
+  servicesCount,
   logoUrl,
   isVerified = false,
   isFavorite = false,
@@ -111,14 +115,25 @@ export default function CompanyListCard({
 
       {/* --- 2. Stats Row --- */}
       <View className="mb-3 flex-row items-center border-t border-gray-100 pt-3">
-        <View className="flex-1 items-center">
-          <Text className="font-cairo-medium text-[12px] text-[#111111]">
-            اخر نشاط
-          </Text>
-          <Text className="font-cairo text-[10px] text-[#6B6A6A]">
-            {formatTimeAgo(lastActivityAt)}
-          </Text>
-        </View>
+        {servicesCount !== undefined ? (
+          <View className="flex-1 items-center">
+            <Text className="font-cairo-medium text-[12px] text-[#111111]">
+              عدد الخدمات
+            </Text>
+            <Text className="font-cairo text-[10px] text-[#6B6A6A]">
+              {servicesCount}
+            </Text>
+          </View>
+        ) : (
+          <View className="flex-1 items-center">
+            <Text className="font-cairo-medium text-[12px] text-[#111111]">
+              اخر نشاط
+            </Text>
+            <Text className="font-cairo text-[10px] text-[#6B6A6A]">
+              {formatTimeAgo(lastActivityAt)}
+            </Text>
+          </View>
+        )}
 
         <View className="h-8 w-[1px] bg-gray-100" />
 

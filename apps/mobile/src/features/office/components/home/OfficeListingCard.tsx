@@ -1,15 +1,59 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import {
+  I18nManager,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-import SafeLinearGradient from '@/shared/components/ui/SafeLinearGradient';
+import { NO_IMAGE_SOURCE } from '@/constants/images';
+import { SafeLinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { formatNumber } from '@/shared/utils/formatNumber';
+import {
+  formatArabicDate,
+  getArabicCategoryLabel,
+  getArabicTypeLabel,
+} from '@/shared/utils/helpers/property';
 
-import { OfficeListing } from '../../types';
+import { OfficeDashboardListing } from '../../types';
+
+const CARD_WIDTH = 247;
+const IMAGE_HEIGHT = 163;
 
 interface OfficeListingCardProps {
-  listing: OfficeListing;
+  listing: OfficeDashboardListing;
   onPress?: () => void;
   onManagePress?: () => void;
+}
+
+// "التمييز نشط حتى 25 مايو" while a paid feature runs, else just "مميز"
+export function featuredBadgeLabel(
+  listing: Pick<OfficeDashboardListing, 'isFeatured' | 'featuredUntil'>,
+): string | null {
+  if (!listing.isFeatured) return null;
+  if (!listing.featuredUntil) return 'مميز';
+  const until = formatArabicDate(listing.featuredUntil).replace(/ \d{4}$/, '');
+  return until ? `التمييز نشط حتى ${until}` : 'مميز';
+}
+
+// RTL: the icon (first) on the right of its count
+function Stat({ value, icon }: { value: number; icon: React.ReactNode }) {
+  return (
+    <View className="min-h-5 flex-row items-center gap-1.5">
+      {icon}
+      <Text
+        className="font-cairo text-[14px] text-[#6B6A6A]"
+        style={{ writingDirection: 'rtl' }}
+      >
+        {value}
+      </Text>
+    </View>
+  );
 }
 
 export default function OfficeListingCard({
@@ -17,128 +61,139 @@ export default function OfficeListingCard({
   onPress,
   onManagePress,
 }: OfficeListingCardProps) {
-  const firstImage =
-    listing.images && listing.images.length > 0
-      ? listing.images[0]
-      : 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80';
+  const [activeIndex, setActiveIndex] = useState(0);
+  const images = listing.images.length ? listing.images : [null];
+  const title = [
+    getArabicCategoryLabel(listing.category),
+    getArabicTypeLabel(listing.type),
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const badge = featuredBadgeLabel(listing);
 
-  const formattedPrice =
-    typeof listing.price === 'number'
-      ? formatNumber(listing.price)
-      : listing.price;
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const raw = Math.round(event.nativeEvent.contentOffset.x / CARD_WIDTH);
+    // In RTL the first photo sits at the largest raw offset
+    const last = images.length - 1;
+    const index = I18nManager.isRTL ? last - raw : raw;
+    setActiveIndex(Math.min(Math.max(index, 0), last));
+  };
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={onPress}
-      className="w-[247px] overflow-hidden rounded-[6px] border border-[#ECECEC] bg-white shadow-sm"
-      accessibilityRole="button"
-      accessibilityLabel={listing.title}
-    >
-      {/* 1. Property Image Area */}
-      <View className="relative h-[160px] w-full bg-gray-100">
-        <Image
-          source={{ uri: firstImage }}
-          className="h-full w-full"
-          resizeMode="cover"
-        />
+    <View className="w-[247px] rounded-[4px]" style={{ elevation: 1 }}>
+      <View style={{ height: IMAGE_HEIGHT }} className="overflow-hidden rounded-[2px] bg-gray-100">
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          {images.map((uri, index) => (
+            <TouchableOpacity
+              key={index}
+              activeOpacity={0.95}
+              onPress={onPress}
+              accessibilityRole="button"
+              accessibilityLabel={title}
+            >
+              <Image
+                source={uri ? { uri } : NO_IMAGE_SOURCE}
+                style={{ width: CARD_WIDTH, height: IMAGE_HEIGHT }}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-        {/* Top Feature Tag Badge */}
-        {listing.tag && (
-          <View className="absolute left-2.5 top-2">
+        {badge && (
+          <View className="absolute right-3 top-2.5" pointerEvents="none">
             <SafeLinearGradient
               colors={['#FF8D28', '#FACC15']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              className="items-center justify-center rounded-br-[10px] rounded-tl-[8px] rounded-tr-[10px] px-2.5 py-1"
+              className="h-5 items-center justify-center rounded-br-[10px] rounded-tl-[8px] rounded-tr-[10px] px-2"
             >
               <Text
-                className="font-cairo text-[11px] text-[#111111]"
+                className="font-almarai text-[12px] text-[#111111]"
                 style={{ writingDirection: 'rtl' }}
               >
-                {listing.tag}
+                {badge}
               </Text>
             </SafeLinearGradient>
           </View>
         )}
 
-        {/* Carousel Pagination Dots */}
-        <View className="absolute bottom-2 left-0 right-0 flex-row items-center justify-center gap-1">
-          <View className="h-1.5 w-4 rounded-full bg-white" />
-          <View className="h-1.5 w-1.5 rounded-full bg-white/60" />
-          <View className="h-1.5 w-1.5 rounded-full bg-white/60" />
-          <View className="h-1.5 w-1.5 rounded-full bg-white/60" />
-        </View>
+        {images.length > 1 && (
+          <View
+            className="absolute left-0 right-0 flex-row items-center justify-center gap-1"
+            style={{ top: 133 }}
+            pointerEvents="none"
+          >
+            {images.map((_, index) => (
+              <View
+                key={index}
+                className={`h-1.5 rounded-full ${
+                  index === activeIndex ? 'w-3.5 bg-white' : 'w-1.5 bg-white/60'
+                }`}
+              />
+            ))}
+          </View>
+        )}
       </View>
 
-      {/* 2. Content Info */}
-      <View className="p-3">
-        {/* Title */}
+      {/* The details panel rises over the photo's bottom edge */}
+      <View
+        className="items-start gap-1 rounded-b-[2px] rounded-t-[6px] border border-[#ECECEC] bg-[#FEFEFE] p-3"
+        style={{ marginTop: -18 }}
+      >
         <Text
           className="font-cairo text-[14px] text-[#111111]"
           style={{ writingDirection: 'rtl' }}
           numberOfLines={1}
         >
-          {listing.title}
+          {title}
         </Text>
 
-        {/* Price Row */}
-        <View className="mt-1 flex-row items-baseline justify-end gap-1">
-          <Text
-            className="font-cairo-bold text-[20px] leading-[28px] text-[#15304D]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            {formattedPrice}
-          </Text>
-          <Text
-            className="font-cairo text-[12px] text-[#6B6A6A]"
-            style={{ writingDirection: 'rtl' }}
-          >
-            {listing.currency || 'د.ك'}
-          </Text>
+        <View className="mt-1.5 flex-row items-end gap-0.5 pb-1">
+          {listing.price !== null ? (
+            <>
+              <Text className="font-cairo-semibold text-[22px] leading-[26px] text-[#15304D]">
+                {formatNumber(listing.price)}
+              </Text>
+              <Text className="font-cairo-semibold text-[12px] text-[#15304D]">
+                د.ك
+              </Text>
+            </>
+          ) : (
+            <Text
+              className="font-cairo-semibold text-[18px] leading-[26px] text-[#15304D]"
+              style={{ writingDirection: 'rtl' }}
+            >
+              السعر غير معلن
+            </Text>
+          )}
         </View>
 
-        {/* Stats Row (Views, Favorites, Chats) */}
-        <View className="mt-2 flex-row items-center justify-end gap-4">
-          {/* Views */}
-          <View className="flex-row items-center gap-1">
-            <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {listing.viewsCount}
-            </Text>
-            <Ionicons name="eye-outline" size={14} color="#6B6A6A" />
-          </View>
-
-          {/* Favorites */}
-          <View className="flex-row items-center gap-1">
-            <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {listing.favoritesCount}
-            </Text>
-            <Ionicons name="heart-outline" size={14} color="#6B6A6A" />
-          </View>
-
-          {/* Chats */}
-          <View className="flex-row items-center gap-1">
-            <Text
-              className="font-cairo text-[13px] text-[#6B6A6A]"
-              style={{ writingDirection: 'rtl' }}
-            >
-              {listing.chatsCount}
-            </Text>
-            <Feather name="message-square" size={13} color="#6B6A6A" />
-          </View>
+        <View className="flex-row items-center gap-5">
+          <Stat
+            value={listing.views}
+            icon={<Ionicons name="eye-outline" size={16} color="#6B6A6A" />}
+          />
+          <Stat
+            value={listing.favoritesCount}
+            icon={<Ionicons name="heart-outline" size={16} color="#6B6A6A" />}
+          />
+          <Stat
+            value={listing.chatsCount}
+            icon={<Feather name="message-square" size={15} color="#6B6A6A" />}
+          />
         </View>
 
-        {/* Action Button: إدارة الإعلان */}
         <TouchableOpacity
           onPress={onManagePress || onPress}
           activeOpacity={0.8}
-          className="mt-3 h-8 w-full items-center justify-center rounded-[8px] bg-[#F5F7F9]"
+          className="mt-1 h-8 w-full items-center justify-center rounded-[8px] bg-[#F5F7F9]"
           accessibilityRole="button"
           accessibilityLabel="إدارة الإعلان"
         >
@@ -150,6 +205,6 @@ export default function OfficeListingCard({
           </Text>
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
