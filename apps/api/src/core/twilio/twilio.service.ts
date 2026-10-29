@@ -40,6 +40,15 @@ export class TwilioService {
     { code: string; expiresAt: Date }
   >();
 
+  // Codes this server made and handed to Verify (customCode), keyed by
+  // phone. With custom codes Twilio expects the app to check the code and
+  // report it approved, so they're kept here (in memory only) until used,
+  // replaced or expired.
+  private readonly customCodes = new Map<
+    string,
+    { code: string; verificationSid: string; expiresAt: Date }
+  >();
+
   /** Real Twilio Verify (true), or mock codes in the log (false). */
   get isConfigured(): boolean {
     return this.twilioClient !== null && this.serviceSid !== null;
@@ -141,7 +150,7 @@ export class TwilioService {
       // enabled refuses that; then Verify makes the code, unseen.
       const customCode = randomInt(100000, 1000000).toString();
       let code: string | null = customCode;
-      let verification: { status: string };
+      let verification: { sid: string; status: string };
       try {
         verification = await this.twilioClient.verify.v2
           .services(this.serviceSid)
@@ -161,6 +170,18 @@ export class TwilioService {
           .verifications.create({ to: formattedPhone, channel: 'sms' });
       }
 
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      if (code) {
+        // A new code replaces the previous one for this phone
+        this.customCodes.set(formattedPhone, {
+          code,
+          verificationSid: verification.sid,
+          expiresAt,
+        });
+      } else {
+        this.customCodes.delete(formattedPhone);
+      }
+
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
@@ -170,7 +191,7 @@ export class TwilioService {
         recipient: formattedPhone,
         code,
         provider: 'twilio',
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        expiresAt,
       });
       return { success: true };
     } catch (error: unknown) {
@@ -202,6 +223,32 @@ export class TwilioService {
         this.feed?.recordPhoneUsed(formattedPhone);
       }
       return isValid;
+    }
+
+    // Our own code: checked here, then reported approved to Twilio (Verify
+    // feedback, required with custom codes)
+    const custom = this.customCodes.get(formattedPhone);
+    if (custom) {
+      if (custom.expiresAt <= new Date()) {
+        this.customCodes.delete(formattedPhone);
+        return false;
+      }
+      if (custom.code !== code) return false;
+      this.customCodes.delete(formattedPhone);
+      this.feed?.recordPhoneUsed(formattedPhone);
+      try {
+        await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications(custom.verificationSid)
+          .update({ status: 'approved' });
+      } catch (error: unknown) {
+        // Feedback only: the user is verified either way
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `Could not report verification ${custom.verificationSid} approved to Twilio: ${message}`,
+        );
+      }
+      return true;
     }
 
     try {

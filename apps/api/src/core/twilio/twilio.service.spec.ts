@@ -170,14 +170,27 @@ describe('TwilioService with Twilio Verify', () => {
   function withVerify(create: jest.Mock) {
     const feed = { recordSent: jest.fn(), recordPhoneUsed: jest.fn() };
     const service = new TwilioService(feed as never);
+    const update = jest.fn().mockResolvedValue({ status: 'approved' });
+    const checks = jest.fn().mockResolvedValue({ status: 'approved' });
+    const verifications = Object.assign(
+      jest.fn(() => ({ update })),
+      { create },
+    );
     const client = {
-      verify: { v2: { services: () => ({ verifications: { create } }) } },
+      verify: {
+        v2: {
+          services: () => ({
+            verifications,
+            verificationChecks: { create: checks },
+          }),
+        },
+      },
     };
     Object.assign(service as unknown as Record<string, unknown>, {
       twilioClient: client,
       serviceSid: 'VA123',
     });
-    return { service, feed };
+    return { service, feed, update, checks, verifications };
   }
 
   it('sends its own 6-digit code through Verify and lists it on the feed', async () => {
@@ -229,5 +242,42 @@ describe('TwilioService with Twilio Verify', () => {
     );
     expect(create).toHaveBeenCalledTimes(1);
     expect(feed.recordSent).not.toHaveBeenCalled();
+  });
+
+  it('checks its own code here and reports it approved to Twilio', async () => {
+    const create = jest.fn().mockResolvedValue({ sid: 'VE1', status: 'pending' });
+    const { service, feed, update, checks, verifications } = withVerify(create);
+    await service.sendVerification('96111111');
+    const code = create.mock.calls[0][0].customCode;
+
+    await expect(service.checkVerification('96111111', '000000')).resolves.toBe(
+      code === '000000',
+    );
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(true);
+
+    expect(checks).not.toHaveBeenCalled();
+    expect(verifications).toHaveBeenCalledWith('VE1');
+    expect(update).toHaveBeenCalledWith({ status: 'approved' });
+    expect(feed.recordPhoneUsed).toHaveBeenCalledWith('+96596111111');
+    // Used once
+    await expect(service.checkVerification('96111111', code)).resolves.toBe(true);
+    expect(checks).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks Twilio to check its own code when it made it (custom codes off)", async () => {
+    const create = jest
+      .fn()
+      .mockRejectedValueOnce(
+        Object.assign(new Error('Custom code not allowed'), { code: 60200 }),
+      )
+      .mockResolvedValueOnce({ sid: 'VE2', status: 'pending' });
+    const { service, checks, update } = withVerify(create);
+    await service.sendVerification('96111111');
+
+    await expect(service.checkVerification('96111111', '123456')).resolves.toBe(
+      true,
+    );
+    expect(checks).toHaveBeenCalledWith({ to: '+96596111111', code: '123456' });
+    expect(update).not.toHaveBeenCalled();
   });
 });

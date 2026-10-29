@@ -85,8 +85,9 @@ after the risk was explained, and break the rules above on purpose:
    and are dropped when used or expired — never written to the database,
    logs or a cache (the PWA's service worker caches no API data). Phone
    OTPs go through Twilio Verify with a code the server makes (`customCode`,
-   2026-10-29, at the owner's request so QA sees every code); Verify still
-   delivers and checks it. If the Twilio account has custom codes disabled,
+   2026-10-29, at the owner's request so QA sees every code); Verify
+   delivers it, the server checks it (in memory, like the feed) and reports
+   it approved to Twilio, as Twilio requires for custom codes. If the Twilio account has custom codes disabled,
    Verify makes the code and that one can't be shown.
 2. **Wiping the production database** from the portal: typed confirmation
    («buyootna-production»), the separate DANGER password, a 10-second
