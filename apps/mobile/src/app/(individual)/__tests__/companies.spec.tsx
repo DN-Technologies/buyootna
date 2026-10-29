@@ -175,6 +175,8 @@ describe('CompaniesScreen', () => {
   // QA: from the list the sheet offered a made-up list of services and sent
   // the request to nobody (a public request)
   it("asks the tapped company, offering its own services", async () => {
+    // Signed in: the guard runs the action
+    mockGuardAction.mockImplementation((action: () => void) => action());
     (feedService.getCompanies as jest.Mock).mockResolvedValue({
       data: [
         {
@@ -202,6 +204,36 @@ describe('CompaniesScreen', () => {
       services: [{ id: 'svc-1', title: 'مخططات تنفيذية' }],
       catalogFallback: true,
     });
+  });
+
+  // QA: a guest got the quote sheet instead of the sign-in prompt
+  it('a guest\'s طلب عرض سعر goes through the sign-in guard, not the sheet', async () => {
+    mockQuoteProps = {};
+    // A guest: the guard shows the sign-in sheet and skips the action
+    mockGuardAction.mockImplementation(() => undefined);
+    (feedService.getCompanies as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          id: 'c-guest',
+          userId: 'owner',
+          name: 'الرائد للهندسة',
+          category: '',
+          rating: 0,
+          reviewsCount: 0,
+          projectsCount: '0',
+          lastActivityAt: new Date().toISOString(),
+          logoUrl: '',
+        },
+      ],
+      meta: { hasNextPage: false, current: 1 },
+    });
+    const { findByText, getByTestId } = await renderScreen();
+    await findByText('الرائد للهندسة');
+
+    await fireEvent.press(getByTestId('company-quote'));
+
+    expect(mockGuardAction).toHaveBeenCalledTimes(1);
+    expect(mockQuoteProps.targetIdentityId).toBeUndefined();
   });
 
   // QA: the keyboard closed after every letter because the list header was

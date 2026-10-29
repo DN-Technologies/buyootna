@@ -270,6 +270,34 @@ describe('CompanyProfileScreen', () => {
     });
   });
 
+  // QA: «طلب عرض سعر» opened the quote sheet for a guest
+  describe('requesting a quote', () => {
+    beforeEach(() => {
+      mockUseCompanyDetails.mockReturnValue({
+        company: { id: 'comp-ident-1', name: 'شركة البناء الحديث', userId: 'user-1', services: [], projects: [] },
+        isLoading: false,
+        services: [],
+        projects: [],
+        targetUserId: 'user-1',
+      });
+    });
+    afterEach(() => useAuthStore.setState({ token: null }));
+
+    it('asks a guest to sign in instead of opening the quote sheet', async () => {
+      useAuthStore.setState({ token: null });
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByText('طلب عرض سعر'));
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+    });
+
+    it('a signed-in user goes straight to the quote sheet', async () => {
+      useAuthStore.setState({ token: 't' });
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByText('طلب عرض سعر'));
+      expect(mockAuthPresent).not.toHaveBeenCalled();
+    });
+  });
+
   describe('blocking from the profile menu', () => {
     beforeEach(() => {
       useAuthStore.setState({ token: 't' });
