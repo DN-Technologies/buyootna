@@ -84,7 +84,10 @@ after the risk was explained, and break the rules above on purpose:
    `TestingAuditLog` (who, which recipient, when); codes live only in memory
    and are dropped when used or expired — never written to the database,
    logs or a cache (the PWA's service worker caches no API data). Phone
-   OTPs sent by real Twilio Verify can't be shown: Twilio generates them.
+   OTPs go through Twilio Verify with a code the server makes (`customCode`,
+   2026-10-29, at the owner's request so QA sees every code); Verify still
+   delivers and checks it. If the Twilio account has custom codes disabled,
+   Verify makes the code and that one can't be shown.
 2. **Wiping the production database** from the portal: typed confirmation
    («buyootna-production»), the separate DANGER password, a 10-second
    countdown, and a `pg_dump` to S3 first — no backup, no wipe. The backup

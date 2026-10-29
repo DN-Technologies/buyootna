@@ -4,6 +4,7 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import Twilio from 'twilio';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 import { OtpFeedService, OtpPurpose } from '../otp-feed/otp-feed.service';
@@ -16,6 +17,16 @@ const OTP_TTL_MS = () => getOtpRateLimitConfig().OTP_EXPIRY_MINUTES * 60 * 1000;
 const mockSmsAllowed = () =>
   process.env.NODE_ENV !== 'production' ||
   process.env.ALLOW_MOCK_SMS === 'true';
+
+// Twilio's answer when custom codes aren't enabled for the account (or the
+// parameter is otherwise rejected): fall back to Verify's own code
+function isCustomCodeRefused(error: unknown): boolean {
+  const e = error as { code?: number; message?: string };
+  return (
+    e?.code === 60200 ||
+    /custom ?code/i.test(e?.message ?? '')
+  );
+}
 
 @Injectable()
 export class TwilioService {
@@ -123,22 +134,41 @@ export class TwilioService {
     }
 
     try {
-      const verification = await this.twilioClient.verify.v2
-        .services(this.serviceSid)
-        .verifications.create({
-          to: formattedPhone,
-          channel: 'sms',
-        });
+      // The code is made here and handed to Verify (customCode), which still
+      // delivers and checks it, so the testing portal's الرموز can show it
+      // (owner's decision: every user's OTP is shown, see
+      // docs/ai/security-policy.md). An account without custom codes
+      // enabled refuses that; then Verify makes the code, unseen.
+      const customCode = randomInt(100000, 1000000).toString();
+      let code: string | null = customCode;
+      let verification: { status: string };
+      try {
+        verification = await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications.create({
+            to: formattedPhone,
+            channel: 'sms',
+            customCode,
+          });
+      } catch (error: unknown) {
+        if (!isCustomCodeRefused(error)) throw error;
+        this.logger.warn(
+          'Twilio Verify refused a custom code (not enabled on the account): sending its own code instead',
+        );
+        code = null;
+        verification = await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications.create({ to: formattedPhone, channel: 'sms' });
+      }
 
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
-      // Twilio Verify makes the code itself: the feed lists the send, no code
       this.feed?.recordSent({
         channel: 'SMS',
         purpose,
         recipient: formattedPhone,
-        code: null,
+        code,
         provider: 'twilio',
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       });
