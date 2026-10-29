@@ -466,6 +466,7 @@ export const mobileShared: DocSection = {
           "The same actions work immediately (no sheet) once a real session exists.",
           "«شارك برأيك» on a company, office or personal profile shows a guest the sign-in sheet instead of the review sheet.",
           "In a company or office profile's ⋯ menu, حظر and الإبلاغ show a guest the sign-in sheet; nothing is blocked or reported.",
+          "On نشاطي, the '+' at the top shows a guest the sign-in sheet at once; add-listing never opens, so nothing loads or hangs.",
         ],
         ar: [
           "الدالة guardAction() تعترض جميع الإجراءات السبعة المذكورة عند عدم وجود جلسة دخول.",
@@ -474,6 +475,7 @@ export const mobileShared: DocSection = {
           "نفس الإجراءات تعمل فوراً (دون ظهور الشاشة) بمجرد وجود جلسة دخول حقيقية.",
           "«شارك برأيك» في ملف الشركة والمكتب والملف الشخصي يعرض للزائر نافذة تسجيل الدخول بدل نافذة التقييم.",
           "في قائمة ⋯ لملف الشركة أو المكتب، الحظر والإبلاغ يعرضان للزائر نافذة تسجيل الدخول؛ ولا يُحظر أو يُبلَّغ عن شيء.",
+          "في نشاطي، زر '+' في الأعلى يعرض للزائر نافذة تسجيل الدخول فوراً؛ ولا تُفتح شاشة إضافة إعلان، فلا تحميل ولا تعليق.",
         ],
       },
       testScenarios: {
@@ -484,6 +486,7 @@ export const mobileShared: DocSection = {
           "Kill and relaunch the app as a guest — confirm gating still triggers after a cold start (not just first-session state).",
           "As a guest open a company, an office and a personal profile and tap «شارك برأيك» on each — the sign-in sheet shows and the review sheet does not open.",
           "As a guest open an office profile › ⋯ › حظر المكتب, then › الإبلاغ: the sign-in sheet each time. Repeat on a company.",
+          "As a guest open نشاطي and tap the '+' at the top: the sign-in sheet shows with no spinner; 'لاحقاً' leaves you on نشاطي and the app stays responsive.",
         ],
         ar: [
           "بصفتك زائراً، اضغط أيقونة القلب على بطاقة عقار في نتائج البحث، وفي تفاصيل العقار، وفي الصفحة الرئيسية — تأكد من ظهور الشاشة في المواضع الثلاثة، لا في موضع واحد فقط.",
@@ -492,9 +495,10 @@ export const mobileShared: DocSection = {
           "أغلق التطبيق تماماً وأعد تشغيله كزائر — تأكد أن التقييد لا يزال يعمل بعد بدء تشغيل بارد (لا في حالة الجلسة الأولى فقط).",
           "كزائر افتح ملف شركة ثم مكتب ثم ملف شخصي، واضغط «شارك برأيك» في كل منها — تظهر نافذة تسجيل الدخول ولا تُفتح نافذة التقييم.",
           "كزائر افتح ملف مكتب › ⋯ › حظر المكتب ثم › الإبلاغ: نافذة تسجيل الدخول في كل مرة. كرّر في ملف شركة.",
+          "كزائر افتح نشاطي واضغط '+' في الأعلى: تظهر نافذة تسجيل الدخول دون مؤشر تحميل؛ و'لاحقاً' يُبقيك في نشاطي والتطبيق يستجيب.",
         ],
       },
-      updatedIn: "fix/guest-block-report-login",
+      updatedIn: "fix/guest-activity-plus-login",
     },
     {
       id: "mobile-chat-realtime",

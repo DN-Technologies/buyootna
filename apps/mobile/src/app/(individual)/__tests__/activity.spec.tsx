@@ -18,6 +18,15 @@ const render = (ui: ReactElement) =>
   );
 
 jest.mock('@gorhom/bottom-sheet');
+
+const mockAuthPresent = jest.fn();
+jest.mock('@/shared/components/auth/AuthGuardSheet', () => {
+  const { forwardRef, useImperativeHandle } = jest.requireActual('react');
+  return forwardRef(function MockAuthGuardSheet(_p: unknown, ref: unknown) {
+    useImperativeHandle(ref, () => ({ present: mockAuthPresent }));
+    return null;
+  });
+});
 jest.mock('@shopify/flash-list');
 
 jest.mock('expo-router', () => ({
@@ -96,6 +105,15 @@ describe('ActivityScreen', () => {
       const { getByText } = await render(<ActivityScreen />);
 
       expect(getByText('ابدأ رحلتك العقارية')).toBeTruthy();
+    });
+
+    it('asks a guest to sign in from the "+" instead of opening add-listing', async () => {
+      const { getByTestId } = await render(<ActivityScreen />);
+
+      await fireEvent.press(getByTestId('activity-add-btn'));
+
+      expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+      expect(router.push).not.toHaveBeenCalled();
     });
   });
 
