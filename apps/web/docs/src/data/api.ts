@@ -79,6 +79,45 @@ export const api: DocSection = {
       updatedIn: "feat/avatar-pill-idle-state",
     },
     {
+      id: "api-office-dashboard",
+      title: {
+        en: "The office home: GET /offices/me/dashboard",
+        ar: "رئيسية المكتب: GET /offices/me/dashboard",
+      },
+      priority: "P1",
+      story: {
+        en: "GET /offices/me/dashboard (JWT) returns, for the active profile when it is an OFFICE: stats { activeListings (its ACTIVE ads), activeListingsThisWeek (ACTIVE ads published in the last 7 days), activeServices (entries in its services text), newMessagesToday (messages others sent in its chats since midnight Kuwait time), totalViews (lifetime views of all its ads) }, billing { hasActivePackage (an ACTIVE ad slot with credits), adsRemaining (their sum), freeAdsRemaining }, listings (up to 10 ACTIVE, not hidden, featured first then newest: id, type, category, price (null = no price), images, isFeatured (false once featuredUntil passed), featuredUntil, views, favoritesCount, chatsCount) and services ({ title, openRequests }: PENDING/RESPONDED requests sent to the office whose category or title mentions the service). Any other profile gets 403 'هذه الصفحة متاحة لحسابات المكاتب فقط'. The directory cards gained counts too: GET /users/offices cards carry propertiesCount (live ads), listingTypes (their deal types) and servicesCount; GET /users/companies cards carry servicesCount (visible service rows, else the entries of its services text).",
+        ar: "GET /offices/me/dashboard (يتطلب JWT) يعيد للملف النشط إن كان مكتباً: stats { activeListings (إعلاناته النشطة)، activeListingsThisWeek (النشطة المنشورة في آخر 7 أيام)، activeServices (عدد خدمات نص ملفه)، newMessagesToday (رسائل الآخرين في محادثاته منذ منتصف الليل بتوقيت الكويت)، totalViews (مجموع مشاهدات كل إعلاناته) }، وbilling { hasActivePackage (باقة نشطة فيها رصيد)، adsRemaining (مجموع رصيدها)، freeAdsRemaining }، وlistings (حتى 10 نشطة غير مخفية، المميز أولاً ثم الأحدث: id وtype وcategory وprice (null = بلا سعر) وimages وisFeatured (false بعد انقضاء featuredUntil) وfeaturedUntil وviews وfavoritesCount وchatsCount)، وservices ({ title, openRequests }: الطلبات PENDING/RESPONDED المرسلة للمكتب التي تذكر الخدمة في فئتها أو عنوانها). وأي ملف آخر يحصل على 403 'هذه الصفحة متاحة لحسابات المكاتب فقط'. كما زادت بطاقات الأدلة: بطاقات GET /users/offices فيها propertiesCount (الإعلانات الحية) وlistingTypes (أنواع صفقاتها) وservicesCount؛ وبطاقات GET /users/companies فيها servicesCount (صفوف الخدمات الظاهرة، وإلا عدد خدمات نصها).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company or individual token gets 403; no token gets 401.",
+          "A new office gets zeros, empty listings and services, and freeAdsRemaining 1.",
+          "favoritesCount and chatsCount are computed for all listed ads in one query each, not per ad.",
+          "Another profile's ads, chats, packages and requests never count.",
+        ],
+        ar: [
+          "رمز شركة أو فرد يحصل على 403؛ وبلا رمز 401.",
+          "المكتب الجديد يحصل على أصفار وقوائم إعلانات وخدمات فارغة وfreeAdsRemaining = 1.",
+          "favoritesCount وchatsCount يُحسبان لكل الإعلانات المعروضة باستعلام واحد لكل منهما، لا لكل إعلان.",
+          "إعلانات الملفات الأخرى ومحادثاتها وباقاتها وطلباتها لا تُحسب أبداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Run offices.service.spec.ts and provider-cards.service.spec.ts.",
+          "With an office token: curl /offices/me/dashboard, publish an ad and buy a package, curl again: activeListings, activeListingsThisWeek and billing change accordingly. With a company token: 403.",
+          "curl /users/offices and /users/companies: every card has the new counts.",
+        ],
+        ar: [
+          "تشغيل offices.service.spec.ts وprovider-cards.service.spec.ts.",
+          "برمز مكتب: نفّذ curl على /offices/me/dashboard، وانشر إعلاناً واشترِ باقة، ثم أعد: تتغير activeListings وactiveListingsThisWeek وbilling تبعاً لذلك. برمز شركة: 403.",
+          "نفّذ curl على /users/offices و/users/companies: كل بطاقة فيها العدّادات الجديدة.",
+        ],
+      },
+      updatedIn: "feat/office-home-dashboard",
+    },
+    {
       id: "api-alerts-unseen-matches",
       title: {
         en: "Alert matches not opened yet: GET /alerts/me/unseen-matches",

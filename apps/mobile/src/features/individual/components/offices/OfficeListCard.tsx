@@ -9,10 +9,25 @@ import {
   HeartIcon,
   LocationIcon,
 } from '@/assets/icons/home/cards';
-import { PropertiesTabIcon } from '@/assets/icons/tab';
+import { BuildingOutlineIcon } from '@/assets/icons/office-home';
 import { showAlert } from '@/shared/utils/alert';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
+
+const DEAL_TAGS: Record<string, string> = {
+  RENT: 'إيجار',
+  SALE: 'بيع',
+  EXCHANGE: 'بدل',
+};
+
+// إيجار / بيع / بدل for the deals it has live ads in, then "N خدمة"
+export function officeTags(listingTypes: string[], servicesCount: number) {
+  const tags = ['RENT', 'SALE', 'EXCHANGE']
+    .filter((t) => listingTypes.includes(t))
+    .map((t) => DEAL_TAGS[t]);
+  if (servicesCount > 0) tags.push(`${servicesCount} خدمة`);
+  return tags;
+}
 
 export interface OfficeListCardProps {
   id: string;
@@ -25,6 +40,9 @@ export interface OfficeListCardProps {
   isFavorite?: boolean;
   propertiesCount?: number;
   services?: string[];
+  // From the API card: the deal types of its live ads and its services count
+  listingTypes?: string[];
+  servicesCount?: number;
   phone?: string | null;
   whatsapp?: string | null;
   onPress?: () => void;
@@ -35,14 +53,16 @@ export interface OfficeListCardProps {
 export default function OfficeListCard({
   id,
   name,
-  rating = 3.5,
-  reviewsCount = 40,
+  rating = 0,
+  reviewsCount = 0,
   location,
   logoUrl,
   isVerified = true,
   isFavorite = false,
-  propertiesCount = 37,
+  propertiesCount = 0,
   services,
+  listingTypes = [],
+  servicesCount = 0,
   phone,
   whatsapp,
   onPress,
@@ -73,7 +93,9 @@ export default function OfficeListCard({
   };
 
   const displayTags =
-    services && services.length > 0 ? services : ['إيجار', 'بيع', '2 خدمة'];
+    services && services.length > 0
+      ? services
+      : officeTags(listingTypes, servicesCount);
 
   return (
     <TouchableOpacity
@@ -178,7 +200,7 @@ export default function OfficeListCard({
       <View className="flex-row items-center justify-between">
         {/* Right in RTL: Properties Count */}
         <View className="flex-row items-center gap-1.5">
-          <PropertiesTabIcon color="#6B6A6A" size={14} />
+          <BuildingOutlineIcon color="#6B6A6A" size={16} />
           <Text className="font-cairo-medium leading-[20px] text-xs text-[#6B6A6A]">
             {propertiesCount} عقار
           </Text>
@@ -187,7 +209,7 @@ export default function OfficeListCard({
         {/* Left in RTL: Rating & Reviews */}
         <View className="flex-row items-center gap-1">
           <Text className="font-cairo leading-[22px] text-xs text-[#8E8E93]">
-            ( {reviewsCount > 0 ? `+${reviewsCount}` : '+40'} تقييم )
+            {reviewsCount > 0 ? `( +${reviewsCount} تقييم )` : '( لا تقييمات )'}
           </Text>
           <Text className="font-cairo-bold leading-[22px] text-xs text-[#111111]">
             {rating}

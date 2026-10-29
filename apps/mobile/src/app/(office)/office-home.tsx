@@ -2,34 +2,53 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import HomeConversationCard from '@/features/company/components/home/HomeConversationCard';
 import {
   MarketPropertyCard,
-  OfficeConversationCard,
-  OfficeGroupCard,
+  OfficeAdsUpsellCard,
+  OfficeBusinessSectors,
   OfficeHomeHeader,
   OfficeListingCard,
   OfficeSectionHeader,
   OfficeServiceCard,
   OfficeStatsGrid,
 } from '@/features/office/components/home';
-import {
-  MARKET_PROPERTIES_MOCK,
-  OFFICE_CONVERSATIONS_MOCK,
-  OFFICE_GROUPS_MOCK,
-  OFFICE_LISTINGS_MOCK,
-  OFFICE_SERVICES_MOCK,
-  OFFICE_STATS_MOCK,
-} from '@/features/office/mockData';
+import { useOfficeHome } from '@/features/office/hooks/useOfficeHome';
 import StoryStudio from '@/features/stories/studio/StoryStudio';
 import type { BusinessHomeMode } from '@/features/stories/studio/StudioModeSwitch';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import FadeLayer from '@/shared/components/ui/FadeLayer';
-import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+
+const EDIT_PROFILE = '/(office)/(more)/office-edit-profile';
+
+// A horizontal row of cards, first card on the right
+function CardRow({ children }: { children: React.ReactNode }) {
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        gap: 12,
+        flexDirection: 'row-reverse',
+      }}
+    >
+      {children}
+    </ScrollView>
+  );
+}
 
 export default function OfficeHomeScreen() {
   const router = useRouter();
@@ -37,32 +56,38 @@ export default function OfficeHomeScreen() {
   const [mode, setMode] = useState<BusinessHomeMode>('home');
   const studioOpened = useRef(false);
   if (mode === 'studio') studioOpened.current = true;
-  const { activeIdentity } = useIdentity();
   const { token, refreshProfile } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+  const home = useOfficeHome();
+  const { dashboard } = home;
 
-
-  // Not on the first focus: the profile was just loaded (sign-in, launch or
-  // a profile switch). Coming back to the home refreshes it
+  // Not on the first focus: the profile and home were just loaded (sign-in,
+  // launch or a profile switch). Coming back to the home refreshes them
   const focusedBefore = useRef(false);
+  const refetchHome = home.refetch;
   useFocusEffect(
     useCallback(() => {
       if (!token) return;
       if (focusedBefore.current) {
         refreshProfile();
+        refetchHome();
       } else {
         focusedBefore.current = true;
       }
-    }, [refreshProfile, token])
+    }, [refreshProfile, refetchHome, token])
   );
 
   const handleRefresh = async () => {
     setRefreshing(true);
     if (token) {
-      await refreshProfile();
+      await Promise.all([refreshProfile(), home.refetch()]);
     }
     setRefreshing(false);
   };
+
+  const billing = dashboard?.billing;
+  const canPublish =
+    !!billing && (billing.hasActivePackage || billing.freeAdsRemaining > 0);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -82,168 +107,137 @@ export default function OfficeHomeScreen() {
               <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
             }
           >
-            <ContentContainer className="px-4">
-              {/* 2. 2x2 Stats Grid */}
-              <View className="mt-2">
-                <OfficeStatsGrid
-                  stats={OFFICE_STATS_MOCK}
-                  onPressActiveListings={() =>
-                    router.push('/(office)/office-properties')
-                  }
-                  onPressActiveServices={() =>
-                    router.push('/(office)/office-properties')
-                  }
-                  onPressNewMessages={() => router.push('/(office)/office-chats')}
-                />
+            {home.isDashboardLoading ? (
+              <ActivityIndicator className="py-16" color="#15304D" />
+            ) : !dashboard ? (
+              <View className="items-center gap-3 px-4 py-16">
+                <Text
+                  className="text-center font-cairo-medium text-[14px] text-[#6B6A6A]"
+                  style={{ writingDirection: 'rtl' }}
+                >
+                  {home.dashboardError ?? 'فشل في تحميل البيانات'}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => home.refetch()}
+                  className="h-10 items-center justify-center rounded-full border border-[#15304D] px-6"
+                  accessibilityRole="button"
+                >
+                  <Text className="font-cairo-semibold text-[14px] text-[#15304D]">
+                    إعادة المحاولة
+                  </Text>
+                </TouchableOpacity>
               </View>
+            ) : (
+              <>
+                <ContentContainer className="mt-2 px-4">
+                  <OfficeStatsGrid
+                    stats={dashboard.stats}
+                    onPressActiveListings={() =>
+                      router.push('/(office)/office-properties')
+                    }
+                    onPressActiveServices={() => router.push(EDIT_PROFILE)}
+                    onPressNewMessages={() => router.push('/(office)/office-chats')}
+                  />
+                </ContentContainer>
 
-              {/* 3. Section: اعلاناتي (My Listings) */}
-              <View className="mt-6">
-                <OfficeSectionHeader
-                  title="اعلاناتي"
-                  actionText="عرض الكل"
-                  onPressAction={() => router.push('/(office)/office-properties')}
-                />
-              </View>
-            </ContentContainer>
+                {/* اعلانات المكتب: its ads, or how to get its first one up */}
+                <ContentContainer className="mt-6 px-4">
+                  <OfficeSectionHeader
+                    title="اعلانات المكتب"
+                    onPressAction={
+                      dashboard.listings.length
+                        ? () => router.push('/(office)/office-properties')
+                        : undefined
+                    }
+                  />
+                </ContentContainer>
+                {dashboard.listings.length ? (
+                  <CardRow>
+                    {dashboard.listings.map((listing) => (
+                      <OfficeListingCard
+                        key={listing.id}
+                        listing={listing}
+                        onPress={() => router.push(`/property/${listing.id}`)}
+                        onManagePress={() =>
+                          router.push('/(office)/office-properties')
+                        }
+                      />
+                    ))}
+                  </CardRow>
+                ) : (
+                  <ContentContainer className="px-4">
+                    <OfficeAdsUpsellCard
+                      variant={canPublish ? 'start' : 'buy'}
+                      onPress={() =>
+                        router.push(canPublish ? '/(office)/add' : '/plans')
+                      }
+                    />
+                  </ContentContainer>
+                )}
 
-            {/* Horizontal Listings Scroll */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                gap: 12,
-                flexDirection: 'row-reverse',
-              }}
-              className="mt-1"
-            >
-              {OFFICE_LISTINGS_MOCK.map((listing) => (
-                <OfficeListingCard
-                  key={listing.id}
-                  listing={listing}
-                  onPress={() => router.push('/(office)/office-properties')}
-                  onManagePress={() => router.push('/(office)/office-properties')}
-                />
-              ))}
-            </ScrollView>
+                {/* الخدمات: from the office profile; none, no section */}
+                {dashboard.services.length > 0 && (
+                  <>
+                    <ContentContainer className="mt-6 px-4">
+                      <OfficeSectionHeader
+                        title="الخدمات"
+                        onPressAction={() => router.push(EDIT_PROFILE)}
+                      />
+                    </ContentContainer>
+                    <CardRow>
+                      {dashboard.services.map((service) => (
+                        <OfficeServiceCard
+                          key={service.title}
+                          service={service}
+                          onPress={() => router.push(EDIT_PROFILE)}
+                        />
+                      ))}
+                    </CardRow>
+                  </>
+                )}
 
-            {/* 4. Section: الخدمات النشطة (Active Services) */}
-            <ContentContainer className="mt-6 px-4">
-              <OfficeSectionHeader
-                title="الخدمات النشطة"
-                actionText="عرض الكل"
-                onPressAction={() => router.push('/(office)/office-properties')}
-              />
-            </ContentContainer>
+                {home.market.length > 0 && (
+                  <>
+                    <ContentContainer className="mt-6 px-4">
+                      <OfficeSectionHeader
+                        title="عقارات السوق"
+                        onPressAction={() => router.push('/search')}
+                      />
+                    </ContentContainer>
+                    <CardRow>
+                      {home.market.map((property) => (
+                        <MarketPropertyCard
+                          key={property.id}
+                          property={property}
+                          onPress={() => router.push(`/property/${property.id}`)}
+                        />
+                      ))}
+                    </CardRow>
+                  </>
+                )}
 
-            {/* Horizontal Services Scroll */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                gap: 12,
-                flexDirection: 'row-reverse',
-              }}
-              className="mt-1"
-            >
-              {OFFICE_SERVICES_MOCK.map((service) => (
-                <OfficeServiceCard
-                  key={service.id}
-                  service={service}
-                  onPress={() => router.push('/(office)/office-properties')}
-                  onActionPress={() => router.push('/(office)/office-properties')}
-                />
-              ))}
-            </ScrollView>
+                <OfficeBusinessSectors ownIdentityId={home.identityId} />
 
-            {/* 5. Section: عقارات قد تهمك (Market Properties) */}
-            <ContentContainer className="mt-6 px-4">
-              <OfficeSectionHeader
-                title="عقارات قد تهمك"
-                actionText="عرض الكل"
-                onPressAction={() => router.push('/search')}
-              />
-            </ContentContainer>
-
-            {/* Horizontal Market Properties Scroll */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                gap: 12,
-                flexDirection: 'row-reverse',
-              }}
-              className="mt-1"
-            >
-              {MARKET_PROPERTIES_MOCK.map((property) => (
-                <MarketPropertyCard
-                  key={property.id}
-                  property={property}
-                  onPress={() => router.push('/search')}
-                />
-              ))}
-            </ScrollView>
-
-            {/* 6. Section: أحدث المحادثات (Recent Conversations) */}
-            <ContentContainer className="mt-6 px-4">
-              <OfficeSectionHeader
-                title="أحدث المحادثات"
-                actionText="عرض الكل"
-                onPressAction={() => router.push('/(office)/office-chats')}
-              />
-            </ContentContainer>
-
-            {/* Horizontal Conversations Scroll */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                gap: 12,
-                flexDirection: 'row-reverse',
-              }}
-              className="mt-1"
-            >
-              {OFFICE_CONVERSATIONS_MOCK.map((conversation) => (
-                <OfficeConversationCard
-                  key={conversation.id}
-                  conversation={conversation}
-                  onPress={() => router.push('/(office)/office-chats')}
-                />
-              ))}
-            </ScrollView>
-
-            {/* 7. Section: نشاط المجموعات (Group Activity) */}
-            <ContentContainer className="mt-6 px-4">
-              <OfficeSectionHeader
-                title="نشاط المجموعات"
-                actionText="عرض الكل"
-                onPressAction={() => router.push('/(office)/office-chats')}
-              />
-            </ContentContainer>
-
-            {/* Horizontal Group Activity Scroll */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 16,
-                gap: 12,
-                flexDirection: 'row-reverse',
-              }}
-              className="mt-1"
-            >
-              {OFFICE_GROUPS_MOCK.map((group) => (
-                <OfficeGroupCard
-                  key={group.id}
-                  group={group}
-                  onPress={() => router.push('/(office)/office-chats')}
-                />
-              ))}
-            </ScrollView>
+                {home.conversations.length > 0 && (
+                  <>
+                    <ContentContainer className="mt-6 px-4">
+                      <OfficeSectionHeader
+                        title="أحدث المحادثات"
+                        onPressAction={() => router.push('/(office)/office-chats')}
+                      />
+                    </ContentContainer>
+                    <CardRow>
+                      {home.conversations.map((conversation) => (
+                        <HomeConversationCard
+                          key={conversation.id}
+                          conversation={conversation}
+                        />
+                      ))}
+                    </CardRow>
+                  </>
+                )}
+              </>
+            )}
           </ScrollView>
         </FadeLayer>
         {/* Mounted once first opened, then kept (its scroll and data) */}

@@ -5,14 +5,15 @@ import Svg, { Path } from 'react-native-svg';
 import {
   ActivityIcon,
   AddIcon,
+  BuildingTabIcon,
   ChatTabIcon,
   CompaniesTabIcon,
   HomeIcon,
   MenuIcon,
   OrdersIcon,
-  PropertiesTabIcon,
 } from '@/assets/icons/tab/index';
 import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
+import { useChatStore } from '@/shared/store/useChatStore';
 
 interface CustomTabBarProps extends BottomTabBarProps {
   onOpenPlusSheet: () => void;
@@ -53,6 +54,10 @@ export default function CustomTabBar({
 }: CustomTabBarProps) {
   const { width: windowWidth } = useWindowDimensions();
   const { tabBarHeight: BAR_HEIGHT, bottomInset } = useTabBarHeight();
+  // المحادثات badge: unread messages across the loaded inbox
+  const chatUnread = useChatStore((s) =>
+    s.conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0),
+  );
 
   // See KNOWN_TAB_ROUTE_NAMES above for why this check exists at all.
   const activeRouteName = state.routes[state.index]?.name;
@@ -165,14 +170,14 @@ export default function CustomTabBar({
               label = 'الطلبات';
               break;
             case 'office-properties':
-              IconComponent = PropertiesTabIcon;
+              IconComponent = BuildingTabIcon;
               label = 'العقارات';
               break;
             case 'company-chats':
             case 'office-chats':
               IconComponent = ChatTabIcon;
               label = 'المحادثات';
-              badgeCount = 2; // Can be linked to useChatStore unread count
+              badgeCount = chatUnread;
               break;
             case 'more':
             case 'company-more':
@@ -221,7 +226,7 @@ export default function CustomTabBar({
                         lineHeight: 12,
                       }}
                     >
-                      {badgeCount}
+                      {badgeCount > 99 ? '99+' : badgeCount}
                     </Text>
                   </View>
                 )}

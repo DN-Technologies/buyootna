@@ -12,7 +12,14 @@ export default function OfficeSectionHeader({
   onPressAction,
 }: OfficeSectionHeaderProps) {
   return (
+    // RTL: the title (first) on the right, «عرض الكل» on the left
     <View className="flex-row items-center justify-between pb-3 pt-2">
+      <Text
+        className="font-almarai-bold text-[18px] text-black"
+        style={{ writingDirection: 'rtl' }}
+      >
+        {title}
+      </Text>
       {onPressAction ? (
         <TouchableOpacity
           onPress={onPressAction}
@@ -30,12 +37,6 @@ export default function OfficeSectionHeader({
       ) : (
         <View />
       )}
-      <Text
-        className="font-cairo-bold text-[18px] text-[#111111]"
-        style={{ writingDirection: 'rtl' }}
-      >
-        {title}
-      </Text>
     </View>
   );
 }

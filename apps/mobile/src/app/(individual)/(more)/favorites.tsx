@@ -221,6 +221,9 @@ export default function FavoritesScreen() {
                 location={item.location}
                 logoUrl={item.logoUrl ?? undefined}
                 isVerified={item.isVerified}
+                propertiesCount={item.propertiesCount}
+                listingTypes={item.listingTypes}
+                servicesCount={item.servicesCount}
                 phone={item.phone}
                 whatsapp={item.whatsapp}
                 isFavorite

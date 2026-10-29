@@ -136,6 +136,9 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
           location={item.location}
           logoUrl={item.logoUrl}
           isVerified={item.isVerified}
+          propertiesCount={item.propertiesCount}
+          listingTypes={item.listingTypes}
+          servicesCount={item.servicesCount}
           phone={item.phone}
           whatsapp={item.whatsapp}
           isFavorite={providerFavorites.isFavorited(item.id)}

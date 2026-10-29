@@ -1,3 +1,4 @@
+import type { OfficeDashboard } from '@/features/office/types';
 import apiClient from '@/shared/api/api';
 import { CompanyServiceItemData } from '@/shared/components/company/CompanyServicesTab';
 import { ResponseTime } from '@/shared/utils/helpers/activity';
@@ -35,6 +36,17 @@ export interface OfficeDetailsResponse extends OfficeHeaderData {
 }
 
 export const officeService = {
+  /**
+   * The signed-in office's home: stats, ad-package state, its active ads
+   * and its services (403 for any other persona).
+   */
+  getDashboard: async (): Promise<OfficeDashboard> => {
+    const response = await apiClient.get<OfficeDashboard>(
+      '/offices/me/dashboard',
+    );
+    return response.data;
+  },
+
   /**
    * Fetches full office profile details by profile ID or user ID.
    */
