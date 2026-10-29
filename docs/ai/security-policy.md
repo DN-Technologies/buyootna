@@ -87,7 +87,9 @@ after the risk was explained, and break the rules above on purpose:
    OTPs go through Twilio Verify with a code the server makes (`customCode`,
    2026-10-29, at the owner's request so QA sees every code); Verify
    delivers it, the server checks it (in memory, like the feed) and reports
-   it approved to Twilio, as Twilio requires for custom codes. If the Twilio account has custom codes disabled,
+   it approved to Twilio, as Twilio requires for custom codes. This is for
+   the QA phase: `TESTING_SHOW_SMS_CODES=false` in the server's
+   `apps/api/.env` turns it off (Verify makes the code again, unseen). If the Twilio account has custom codes disabled,
    Verify makes the code and that one can't be shown.
 2. **Wiping the production database** from the portal: typed confirmation
    («buyootna-production»), the separate DANGER password, a 10-second

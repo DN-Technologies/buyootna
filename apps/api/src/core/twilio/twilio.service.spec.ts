@@ -280,4 +280,21 @@ describe('TwilioService with Twilio Verify', () => {
     expect(checks).toHaveBeenCalledWith({ to: '+96596111111', code: '123456' });
     expect(update).not.toHaveBeenCalled();
   });
+
+  it('with TESTING_SHOW_SMS_CODES=false, Twilio makes the code again', async () => {
+    process.env.TESTING_SHOW_SMS_CODES = 'false';
+    try {
+      const create = jest.fn().mockResolvedValue({ sid: 'VE3', status: 'pending' });
+      const { service, feed } = withVerify(create);
+
+      await service.sendVerification('96111111');
+
+      expect(create.mock.calls[0][0].customCode).toBeUndefined();
+      expect(feed.recordSent).toHaveBeenCalledWith(
+        expect.objectContaining({ code: null }),
+      );
+    } finally {
+      delete process.env.TESTING_SHOW_SMS_CODES;
+    }
+  });
 });

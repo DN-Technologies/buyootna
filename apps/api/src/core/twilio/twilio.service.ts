@@ -18,6 +18,12 @@ const mockSmsAllowed = () =>
   process.env.NODE_ENV !== 'production' ||
   process.env.ALLOW_MOCK_SMS === 'true';
 
+// While QA tests the app the server makes SMS codes itself so the testing
+// portal can show them. TESTING_SHOW_SMS_CODES=false turns that off: Twilio
+// Verify makes the code again and nobody but the phone sees it.
+const showSmsCodesOnPortal = () =>
+  process.env.TESTING_SHOW_SMS_CODES !== 'false';
+
 // Twilio's answer when custom codes aren't enabled for the account (or the
 // parameter is otherwise rejected): fall back to Verify's own code
 function isCustomCodeRefused(error: unknown): boolean {
@@ -148,7 +154,9 @@ export class TwilioService {
       // (owner's decision: every user's OTP is shown, see
       // docs/ai/security-policy.md). An account without custom codes
       // enabled refuses that; then Verify makes the code, unseen.
-      const customCode = randomInt(100000, 1000000).toString();
+      const customCode = showSmsCodesOnPortal()
+        ? randomInt(100000, 1000000).toString()
+        : null;
       let code: string | null = customCode;
       let verification: { sid: string; status: string };
       try {
@@ -157,10 +165,10 @@ export class TwilioService {
           .verifications.create({
             to: formattedPhone,
             channel: 'sms',
-            customCode,
+            ...(customCode ? { customCode } : {}),
           });
       } catch (error: unknown) {
-        if (!isCustomCodeRefused(error)) throw error;
+        if (!customCode || !isCustomCodeRefused(error)) throw error;
         this.logger.warn(
           'Twilio Verify refused a custom code (not enabled on the account): sending its own code instead',
         );
