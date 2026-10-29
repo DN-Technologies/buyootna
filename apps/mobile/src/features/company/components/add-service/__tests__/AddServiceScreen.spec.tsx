@@ -14,8 +14,16 @@ let mockMyServices: {
   isLoading: boolean;
 } = { specialty: null, services: [], isLoading: false };
 
+const mockBack = jest.fn();
+const mockReplace = jest.fn();
+let mockCanGoBack = true;
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: jest.fn(), back: jest.fn() }),
+  useRouter: () => ({
+    push: jest.fn(),
+    back: mockBack,
+    replace: mockReplace,
+    canGoBack: () => mockCanGoBack,
+  }),
 }));
 
 jest.mock('@tanstack/react-query', () => ({
@@ -137,7 +145,26 @@ describe('AddServiceScreen', () => {
     expect(sent.types).toHaveLength(29);
     expect(sent.types).not.toContain('الكل');
     expect(sent.title).toBeUndefined();
-    expect(mockPresent).toHaveBeenCalled();
+    // QA: saved, then straight back to الخدمات (no sheet left on the form)
+    await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1));
+    expect(mockPresent).not.toHaveBeenCalled();
+  });
+
+  it('opened with nothing to go back to, it lands on الخدمات', async () => {
+    mockCanGoBack = false;
+    const { getByTestId, getByText } = await render(<AddServiceScreen />);
+
+    await fireEvent.press(getByTestId('service-specialty'));
+    await fireEvent.press(getByTestId('service-specialty-مكتب هندسي'));
+    await fireEvent.press(getByTestId('service-types'));
+    await fireEvent.press(getByTestId('service-type-الكل'));
+    await fireEvent.press(getByText('إضافة الخدمة'));
+
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith('/company-services'),
+    );
+    expect(mockBack).not.toHaveBeenCalled();
+    mockCanGoBack = true;
   });
 
   it('"اخرى" asks for a title before the button enables', async () => {

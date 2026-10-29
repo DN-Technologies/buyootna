@@ -1,7 +1,6 @@
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import { useMyCompanyServices } from '@/features/company/hooks/useMyCompanyServices';
 import { handleSubscriptionRequired } from '@/features/company/utils/subscriptionRequired';
@@ -41,7 +40,6 @@ export function useAddService() {
   const [description, setDescription] = useState('');
   const [openField, setOpenField] = useState<OpenField>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const successSheetRef = useRef<BottomSheetModal>(null);
 
   const specialty = lockedSpecialty ?? pickedSpecialty;
   const {
@@ -91,10 +89,16 @@ export function useAddService() {
         description: description.trim() || undefined,
       });
       refreshProfile();
+      // The services list refetches with the new service
       queryClient.invalidateQueries({ queryKey: ['companyServices'] });
-      setIsSubmitting(false);
-      setOpenField(null);
-      successSheetRef.current?.present();
+      // Back to where إضافة خدمة was opened from (الخدمات), right away: the
+      // screen used to stay put and QA tapped again, adding duplicates. The
+      // button stays disabled (isSubmitting) until the screen is gone
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/company-services' as never);
+      }
     } catch (error) {
       setIsSubmitting(false);
       if (handleSubscriptionRequired(error, router)) return;
@@ -104,23 +108,6 @@ export function useAddService() {
         [{ text: 'حسناً' }],
       );
     }
-  };
-
-  const viewService = () => {
-    successSheetRef.current?.dismiss();
-    if (activeIdentity?.id) {
-      router.push(`/company/${activeIdentity.id}` as never);
-    } else {
-      router.back();
-    }
-  };
-
-  const addAnother = () => {
-    successSheetRef.current?.dismiss();
-    setSelectedTypes([]);
-    setServiceTitle('');
-    setDescription('');
-    setOpenField(null);
   };
 
   return {
@@ -149,9 +136,5 @@ export function useAddService() {
     isValid,
     isSubmitting,
     submit,
-    // Success sheet actions
-    successSheetRef,
-    viewService,
-    addAnother,
   };
 }

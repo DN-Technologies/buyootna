@@ -334,7 +334,7 @@ export const mobileCompany: DocSection = {
           "الكل ticks and unticks all listed types; the closed field then reads الكل.",
           "With اخرى ticked, عنوان الخدمة appears and إضافة الخدمة stays disabled until it is filled.",
           "إضافة الخدمة is disabled until a specialty and at least one type are chosen.",
-          "After a successful save the sheet 'تمت إضافة الخدمة بنجاح!' offers عرض الخدمة and إضافة خدمة أخرى.",
+          "After a successful save the screen closes at once and الخدمات shows the new service; the button stays disabled while saving, so a second tap can't add it twice. (The Figma success sheet is no longer shown here, per QA.)",
           "A company that already has a service sees its التخصص greyed, without a chevron, and cannot open the list.",
           "Adding a type the company already offers does not duplicate it.",
         ],
@@ -344,7 +344,7 @@ export const mobileCompany: DocSection = {
           "الكل يحدد ويلغي كل الأنواع المدرجة؛ ويقرأ الحقل المغلق عندها الكل.",
           "عند تحديد اخرى يظهر عنوان الخدمة ويبقى إضافة الخدمة معطلاً حتى يُملأ.",
           "إضافة الخدمة معطل حتى يُختار تخصص ونوع واحد على الأقل.",
-          "بعد الحفظ تعرض نافذة 'تمت إضافة الخدمة بنجاح!' زرّي عرض الخدمة وإضافة خدمة أخرى.",
+          "بعد نجاح الحفظ تُغلق الشاشة فوراً وتظهر الخدمة الجديدة في الخدمات؛ ويبقى الزر معطلاً أثناء الحفظ فلا يضيفها ضغط ثانٍ مرتين. (لم تعد نافذة النجاح من فيجما تظهر هنا، بطلب QA.)",
           "الشركة التي لديها خدمة ترى التخصص باهتاً بلا سهم ولا تستطيع فتح القائمة.",
           "إضافة نوع موجود مسبقاً لدى الشركة لا تكرره.",
         ],
@@ -361,7 +361,7 @@ export const mobileCompany: DocSection = {
           "اختر تخصصاً غير مكتب هندسي وتحقق أن المعروض الكل واخرى فقط.",
         ],
       },
-      updatedIn: "feat/company-add-flows-figma",
+      updatedIn: "fix/add-service-returns",
     },
     {
       id: "mobile-company-add-service-second-time",
@@ -371,8 +371,8 @@ export const mobileCompany: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "After a company's first service, opening إضافة خدمة again offered every service type as new: ticking one already added did nothing on save or failed with «هذه الخدمات مضافة مسبقاً», and the التخصص lock read the profile in the auth store, which could still be empty right after the first service. The form now loads the company's services (GET /users/profile/services through useMyCompanyServices). التخصص is locked from the specialty the server returns. In نوع الخدمة the types already added show ticked and greyed (#A0A0A0) and can't be pressed (Figma 8453:24047). الكل picks only the types still free, and turns greyed once none are left (for a specialty without a list, once the specialty itself was added). اخرى stays available, since each اخرى service has its own title. The checklist waits for the services to load before it opens. After a success, إضافة خدمة أخرى shows the types just added as taken. The rows of both lists have a minimum height and a 24pt line height, so Cairo's lower strokes are no longer cut.",
-        ar: "بعد أول خدمة للشركة كان فتح إضافة خدمة مرة أخرى يعرض كل أنواع الخدمة كأنها جديدة: تحديد نوع مضاف سابقاً لا يفعل شيئاً عند الحفظ أو يفشل برسالة «هذه الخدمات مضافة مسبقاً»، وكان قفل التخصص يقرأ الملف من مخزن الجلسة الذي قد يكون فارغاً بعد أول خدمة مباشرة. الآن يحمّل النموذج خدمات الشركة (GET /users/profile/services عبر useMyCompanyServices). يُقفل التخصص حسب التخصص الذي يعيده الخادم. وفي نوع الخدمة تظهر الأنواع المضافة مسبقاً محددة وباهتة (#A0A0A0) ولا يمكن الضغط عليها (Figma 8453:24047). الكل يحدد الأنواع المتبقية فقط، ويصبح باهتاً عندما لا يتبقى شيء (وللتخصص الذي لا قائمة له، بعد إضافة التخصص نفسه). وتبقى اخرى متاحة لأن لكل خدمة اخرى عنواناً خاصاً بها. ولا تُفتح القائمة قبل تحميل الخدمات. وبعد النجاح يعرض إضافة خدمة أخرى الأنواع المضافة للتو كمأخوذة. وصار لصفوف القائمتين ارتفاع أدنى وارتفاع سطر 24 نقطة، فلا تُقص أطراف حروف خط Cairo السفلية.",
+        en: "After a company's first service, opening إضافة خدمة again offered every service type as new: ticking one already added did nothing on save or failed with «هذه الخدمات مضافة مسبقاً», and the التخصص lock read the profile in the auth store, which could still be empty right after the first service. The form now loads the company's services (GET /users/profile/services through useMyCompanyServices). التخصص is locked from the specialty the server returns. In نوع الخدمة the types already added show ticked and greyed (#A0A0A0) and can't be pressed (Figma 8453:24047). الكل picks only the types still free, and turns greyed once none are left (for a specialty without a list, once the specialty itself was added). اخرى stays available, since each اخرى service has its own title. The checklist waits for the services to load before it opens. Opening إضافة خدمة again after a success shows the types just added as taken. The rows of both lists have a minimum height and a 24pt line height, so Cairo's lower strokes are no longer cut.",
+        ar: "بعد أول خدمة للشركة كان فتح إضافة خدمة مرة أخرى يعرض كل أنواع الخدمة كأنها جديدة: تحديد نوع مضاف سابقاً لا يفعل شيئاً عند الحفظ أو يفشل برسالة «هذه الخدمات مضافة مسبقاً»، وكان قفل التخصص يقرأ الملف من مخزن الجلسة الذي قد يكون فارغاً بعد أول خدمة مباشرة. الآن يحمّل النموذج خدمات الشركة (GET /users/profile/services عبر useMyCompanyServices). يُقفل التخصص حسب التخصص الذي يعيده الخادم. وفي نوع الخدمة تظهر الأنواع المضافة مسبقاً محددة وباهتة (#A0A0A0) ولا يمكن الضغط عليها (Figma 8453:24047). الكل يحدد الأنواع المتبقية فقط، ويصبح باهتاً عندما لا يتبقى شيء (وللتخصص الذي لا قائمة له، بعد إضافة التخصص نفسه). وتبقى اخرى متاحة لأن لكل خدمة اخرى عنواناً خاصاً بها. ولا تُفتح القائمة قبل تحميل الخدمات. وبعد النجاح يعرض فتح إضافة خدمة مجدداً الأنواع المضافة للتو كمأخوذة. وصار لصفوف القائمتين ارتفاع أدنى وارتفاع سطر 24 نقطة، فلا تُقص أطراف حروف خط Cairo السفلية.",
       },
       acceptanceCriteria: {
         en: [
@@ -380,27 +380,27 @@ export const mobileCompany: DocSection = {
           "The types added before are ticked, greyed and do nothing when pressed.",
           "الكل sends only the types not added yet.",
           "With every listed type added, الكل is greyed; اخرى with a title still adds a service.",
-          "After «إضافة خدمة أخرى», the types just added show as taken.",
+          "Opening إضافة خدمة again, the types just added show as taken.",
         ],
         ar: [
           "في المرة الثانية: يعرض التخصص تخصص الشركة باهتاً ودون قائمة.",
           "الأنواع المضافة سابقاً محددة وباهتة ولا تفعل شيئاً عند الضغط.",
           "الكل يرسل الأنواع غير المضافة فقط.",
           "عند إضافة كل الأنواع المدرجة يكون الكل باهتاً، وتبقى اخرى مع عنوان تضيف خدمة.",
-          "بعد «إضافة خدمة أخرى» تظهر الأنواع المضافة للتو كمأخوذة.",
+          "عند فتح إضافة خدمة مجدداً تظهر الأنواع المضافة للتو كمأخوذة.",
         ],
       },
       testScenarios: {
         en: [
-          "As a company with an active subscription, add مكتب هندسي with three types. Tap «إضافة خدمة أخرى»: التخصص is locked and those three are greyed and ticked.",
+          "As a company with an active subscription, add مكتب هندسي with three types. You're back on الخدمات with the new service; open إضافة خدمة again: التخصص is locked and those three are greyed and ticked.",
           "Pick اخرى, write a title and add it; open the company page: the new service is listed.",
         ],
         ar: [
-          "كشركة باشتراك نشط أضف مكتب هندسي بثلاثة أنواع. اضغط «إضافة خدمة أخرى»: التخصص مقفل والأنواع الثلاثة باهتة ومحددة.",
+          "كشركة باشتراك نشط أضف مكتب هندسي بثلاثة أنواع. تعود إلى الخدمات مع الخدمة الجديدة؛ افتح إضافة خدمة مجدداً: التخصص مقفل والأنواع الثلاثة باهتة ومحددة.",
           "اختر اخرى واكتب عنواناً وأضفها، ثم افتح صفحة الشركة: تظهر الخدمة الجديدة.",
         ],
       },
-      updatedIn: "feat/add-service-second-time",
+      updatedIn: "fix/add-service-returns",
     },
     {
       id: "mobile-company-requests-status-views",
