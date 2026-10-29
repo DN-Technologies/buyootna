@@ -86,18 +86,18 @@ export const testing: DocSection = {
       },
       priority: "P0",
       story: {
-        en: "By the owner's decision (docs/ai/security-policy.md) the portal shows the OTPs of every user. Every code the platform sends — email (sign-up, password reset, account suspension, email change) and SMS (sign-up, password change, recovery, phone change, contact phone, account suspension) — is listed for 30 minutes with its recipient, purpose, time left and status (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps never returns a code; «إظهار الرمز» calls POST /testing-portal/otps/:id/reveal, which returns it while it's still valid and writes OTP_REVEALED (tester, recipient, purpose) to the audit log. Codes live only in memory and are dropped when used, replaced or expired. Phone codes sent by real Twilio Verify are listed without a code (Twilio makes it). Mock-mode log lines show codes as •••••• on السجلات.",
-        ar: "بقرار المالك (docs/ai/security-policy.md) تعرض البوابة رموز التحقق لكل المستخدمين. كل رمز ترسله المنصة — بالبريد (إنشاء حساب، استعادة كلمة المرور، تعطيل الحساب، تغيير البريد) وبالرسائل (إنشاء حساب، تغيير كلمة المرور، استعادة الحساب، تغيير الرقم، رقم التواصل، تعطيل الحساب) — يُعرض 30 دقيقة مع المستلم والغرض والوقت المتبقي والحالة (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps لا يُرجع الرمز أبداً؛ «إظهار الرمز» يستدعي POST /testing-portal/otps/:id/reveal الذي يُرجعه ما دام صالحاً ويكتب OTP_REVEALED (المختبر، المستلم، الغرض) في سجل البوابة. الرموز في الذاكرة فقط وتُحذف عند استخدامها أو استبدالها أو انتهائها. رموز الهاتف المرسلة عبر Twilio Verify الحقيقي تظهر بلا رمز (Twilio يصنعه). وأسطر الوضع التجريبي تظهر الرموز فيها •••••• في السجلات.",
+        en: "By the owner's decision (docs/ai/security-policy.md) the portal shows the OTPs of every user. Every code the platform sends — email (sign-up, password reset, account suspension, email change) and SMS (sign-up, password change, recovery, phone change, contact phone, account suspension) — is listed for 30 minutes with its recipient, purpose, time left and status (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps never returns a code; «إظهار الرمز» calls POST /testing-portal/otps/:id/reveal, which returns it while it's still valid and writes OTP_REVEALED (tester, recipient, purpose) to the audit log. Codes live only in memory and are dropped when used, replaced or expired. Phone codes go through Twilio Verify with a code the server makes (customCode; the server checks it and reports it approved to Twilio), so they show too — for the QA phase; TESTING_SHOW_SMS_CODES=false on the server turns it off; only if the Twilio account has custom codes disabled does Verify make the code, and then the entry is listed without one ('أُرسل عبر Twilio Verify برمز صنعه Twilio …'). Mock-mode log lines show codes as •••••• on السجلات.",
+        ar: "بقرار المالك (docs/ai/security-policy.md) تعرض البوابة رموز التحقق لكل المستخدمين. كل رمز ترسله المنصة — بالبريد (إنشاء حساب، استعادة كلمة المرور، تعطيل الحساب، تغيير البريد) وبالرسائل (إنشاء حساب، تغيير كلمة المرور، استعادة الحساب، تغيير الرقم، رقم التواصل، تعطيل الحساب) — يُعرض 30 دقيقة مع المستلم والغرض والوقت المتبقي والحالة (صالح / استُخدم / استُبدل برمز أحدث / انتهت صلاحيته). GET /testing-portal/otps لا يُرجع الرمز أبداً؛ «إظهار الرمز» يستدعي POST /testing-portal/otps/:id/reveal الذي يُرجعه ما دام صالحاً ويكتب OTP_REVEALED (المختبر، المستلم، الغرض) في سجل البوابة. الرموز في الذاكرة فقط وتُحذف عند استخدامها أو استبدالها أو انتهائها. رموز الهاتف تُرسل عبر Twilio Verify برمز يصنعه الخادم (customCode؛ ويتحقق منه الخادم ويُبلغ Twilio بقبوله) فتظهر أيضاً — لمرحلة الاختبار؛ ويوقفه TESTING_SHOW_SMS_CODES=false على الخادم؛ وفقط إن كانت الرموز المخصصة غير مفعّلة في حساب Twilio يصنع Verify الرمز، فيظهر الإدخال بلا رمز ('أُرسل عبر Twilio Verify برمز صنعه Twilio …'). وأسطر الوضع التجريبي تظهر الرموز فيها •••••• في السجلات.",
       },
       acceptanceCriteria: {
         en: [
-          "Signing up with an email (or a phone in mock SMS mode) shows a صالح entry within 5 s; «إظهار الرمز» shows the code, which completes the sign-up.",
+          "Signing up with an email or a phone (real Twilio or mock SMS) shows a صالح entry within 5 s; «إظهار الرمز» shows the code, which completes the sign-up.",
           "After it's used the entry turns استُخدم and no code can be shown; asking for a new code marks the old one استُبدل برمز أحدث.",
           "Each reveal appears in المزيد › سجل البوابة as «إظهار رمز تحقق» with the recipient.",
           "The code is never in the list response, the database, the logs screen or the service worker cache.",
         ],
         ar: [
-          "إنشاء حساب ببريد (أو برقم في الوضع التجريبي للرسائل) يظهر كرمز «صالح» خلال 5 ثوانٍ؛ «إظهار الرمز» يعرض الرمز الذي يكمل التسجيل.",
+          "إنشاء حساب ببريد أو برقم (عبر Twilio الحقيقي أو الوضع التجريبي) يظهر كرمز «صالح» خلال 5 ثوانٍ؛ «إظهار الرمز» يعرض الرمز الذي يكمل التسجيل.",
           "بعد استخدامه يصبح «استُخدم» ولا يمكن إظهاره؛ وطلب رمز جديد يجعل القديم «استُبدل برمز أحدث».",
           "كل إظهار يظهر في المزيد › سجل البوابة كـ«إظهار رمز تحقق» مع المستلم.",
           "الرمز لا يوجد أبداً في استجابة القائمة ولا قاعدة البيانات ولا شاشة السجلات ولا ذاكرة عامل الخدمة.",
@@ -115,7 +115,7 @@ export const testing: DocSection = {
           "اترك رمزاً ظاهراً: يختفي وحده بعد دقيقة.",
         ],
       },
-      updatedIn: "feat/testing-otp-feed",
+      updatedIn: "feat/otp-feed-sms-codes",
     },
     {
       id: "testing-account-tools",

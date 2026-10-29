@@ -4,6 +4,7 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import Twilio from 'twilio';
 import { getOtpRateLimitConfig } from '../otp-rate-limiter/otp-rate-limiter.config';
 import { OtpFeedService, OtpPurpose } from '../otp-feed/otp-feed.service';
@@ -17,6 +18,22 @@ const mockSmsAllowed = () =>
   process.env.NODE_ENV !== 'production' ||
   process.env.ALLOW_MOCK_SMS === 'true';
 
+// While QA tests the app the server makes SMS codes itself so the testing
+// portal can show them. TESTING_SHOW_SMS_CODES=false turns that off: Twilio
+// Verify makes the code again and nobody but the phone sees it.
+const showSmsCodesOnPortal = () =>
+  process.env.TESTING_SHOW_SMS_CODES !== 'false';
+
+// Twilio's answer when custom codes aren't enabled for the account (or the
+// parameter is otherwise rejected): fall back to Verify's own code
+function isCustomCodeRefused(error: unknown): boolean {
+  const e = error as { code?: number; message?: string };
+  return (
+    e?.code === 60200 ||
+    /custom ?code/i.test(e?.message ?? '')
+  );
+}
+
 @Injectable()
 export class TwilioService {
   private readonly logger = new Logger(TwilioService.name);
@@ -27,6 +44,15 @@ export class TwilioService {
   private readonly mockCodes = new Map<
     string,
     { code: string; expiresAt: Date }
+  >();
+
+  // Codes this server made and handed to Verify (customCode), keyed by
+  // phone. With custom codes Twilio expects the app to check the code and
+  // report it approved, so they're kept here (in memory only) until used,
+  // replaced or expired.
+  private readonly customCodes = new Map<
+    string,
+    { code: string; verificationSid: string; expiresAt: Date }
   >();
 
   /** Real Twilio Verify (true), or mock codes in the log (false). */
@@ -123,24 +149,57 @@ export class TwilioService {
     }
 
     try {
-      const verification = await this.twilioClient.verify.v2
-        .services(this.serviceSid)
-        .verifications.create({
-          to: formattedPhone,
-          channel: 'sms',
+      // The code is made here and handed to Verify (customCode), which still
+      // delivers and checks it, so the testing portal's الرموز can show it
+      // (owner's decision: every user's OTP is shown, see
+      // docs/ai/security-policy.md). An account without custom codes
+      // enabled refuses that; then Verify makes the code, unseen.
+      const customCode = showSmsCodesOnPortal()
+        ? randomInt(100000, 1000000).toString()
+        : null;
+      let code: string | null = customCode;
+      let verification: { sid: string; status: string };
+      try {
+        verification = await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications.create({
+            to: formattedPhone,
+            channel: 'sms',
+            ...(customCode ? { customCode } : {}),
+          });
+      } catch (error: unknown) {
+        if (!customCode || !isCustomCodeRefused(error)) throw error;
+        this.logger.warn(
+          'Twilio Verify refused a custom code (not enabled on the account): sending its own code instead',
+        );
+        code = null;
+        verification = await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications.create({ to: formattedPhone, channel: 'sms' });
+      }
+
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      if (code) {
+        // A new code replaces the previous one for this phone
+        this.customCodes.set(formattedPhone, {
+          code,
+          verificationSid: verification.sid,
+          expiresAt,
         });
+      } else {
+        this.customCodes.delete(formattedPhone);
+      }
 
       this.logger.log(
         `Twilio OTP verification sent to ${formattedPhone}. Status: ${verification.status}`,
       );
-      // Twilio Verify makes the code itself: the feed lists the send, no code
       this.feed?.recordSent({
         channel: 'SMS',
         purpose,
         recipient: formattedPhone,
-        code: null,
+        code,
         provider: 'twilio',
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        expiresAt,
       });
       return { success: true };
     } catch (error: unknown) {
@@ -172,6 +231,32 @@ export class TwilioService {
         this.feed?.recordPhoneUsed(formattedPhone);
       }
       return isValid;
+    }
+
+    // Our own code: checked here, then reported approved to Twilio (Verify
+    // feedback, required with custom codes)
+    const custom = this.customCodes.get(formattedPhone);
+    if (custom) {
+      if (custom.expiresAt <= new Date()) {
+        this.customCodes.delete(formattedPhone);
+        return false;
+      }
+      if (custom.code !== code) return false;
+      this.customCodes.delete(formattedPhone);
+      this.feed?.recordPhoneUsed(formattedPhone);
+      try {
+        await this.twilioClient.verify.v2
+          .services(this.serviceSid)
+          .verifications(custom.verificationSid)
+          .update({ status: 'approved' });
+      } catch (error: unknown) {
+        // Feedback only: the user is verified either way
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.warn(
+          `Could not report verification ${custom.verificationSid} approved to Twilio: ${message}`,
+        );
+      }
+      return true;
     }
 
     try {

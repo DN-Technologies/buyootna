@@ -145,7 +145,7 @@ function OtpCard({ item, now }: { item: OtpItem; now: number }) {
         </button>
       ) : realTwilio && item.status === 'PENDING' ? (
         <p className="mt-3 text-xs text-muted">
-          أُرسل عبر Twilio Verify: الرمز يصل للهاتف فقط ولا يصل إلى الخادم.
+          أُرسل عبر Twilio Verify برمز صنعه Twilio (الرموز المخصصة غير مفعّلة في حساب Twilio)، فلا يمكن إظهاره.
         </p>
       ) : null}
       {error && <p className="mt-2 text-xs text-down">{error}</p>}
