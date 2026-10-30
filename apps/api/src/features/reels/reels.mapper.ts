@@ -104,7 +104,7 @@ export function toViewerReelDto(
   reel: ViewerReelRow,
   links: ReelLinks,
   now: Date,
-  state: { liked: boolean; viewed: boolean },
+  state: { liked: boolean; viewed: boolean; followed: boolean },
 ): ViewerReelDto | null {
   const author = toAuthorDto(reel.identity);
   if (!author) return null;

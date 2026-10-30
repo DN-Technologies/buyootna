@@ -11,7 +11,7 @@ const HOUR = 3600 * 1000;
 describe('reel cursor', () => {
   const cursor = {
     snapshotAt: new Date(NOW.getTime() - HOUR),
-    seen: true,
+    tier: 2,
     publishedAt: new Date(NOW.getTime() - 2 * HOUR),
     id: ID,
     lastAuthorId: AUTHOR,
@@ -28,7 +28,7 @@ describe('reel cursor', () => {
       ...cursor,
       snapshotAt: new Date(NOW.getTime() - 5.9 * HOUR),
     });
-    expect(decodeReelCursor(old, NOW).seen).toBe(true);
+    expect(decodeReelCursor(old, NOW).tier).toBe(2);
     const expired = encodeReelCursor({
       ...cursor,
       snapshotAt: new Date(NOW.getTime() - 6.1 * HOUR),
@@ -38,20 +38,24 @@ describe('reel cursor', () => {
 
   it.each([
     ['not base64 json', '%%%'],
-    ['another version', forge({ v: 2 })],
+    ['another version', forge({ v: 1 })],
+    [
+      'an impossible tier',
+      forge({ v: 2, s: NOW.toISOString(), t: 4, p: NOW.toISOString(), i: ID }),
+    ],
     [
       'an id that could reach the query',
       forge({
-        v: 1,
+        v: 2,
         s: NOW.toISOString(),
-        n: false,
+        t: 0,
         p: NOW.toISOString(),
         i: "x' OR 1=1",
       }),
     ],
     [
       'a bad date',
-      forge({ v: 1, s: 'nope', n: false, p: NOW.toISOString(), i: ID }),
+      forge({ v: 2, s: 'nope', t: 0, p: NOW.toISOString(), i: ID }),
     ],
   ])('refuses %s', (_name, raw) => {
     expect(() => decodeReelCursor(raw, NOW)).toThrow(BadRequestException);

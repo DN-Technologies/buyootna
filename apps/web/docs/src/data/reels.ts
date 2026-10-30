@@ -433,5 +433,44 @@ export const reels: DocSection = {
       },
       updatedIn: "feat/reels-filters",
     },
+    {
+      id: "reels-followed",
+      title: {
+        en: "Followed companies come first in the feed",
+        ar: "تظهر الشركات المتابَعة أولاً في الريلز",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify the feed's order for a signed-in profile that follows companies or offices, and the follow button on a reel.",
+        ar: "تحقق من ترتيب الريلز لملف مسجل يتابع شركات أو مكاتب، ومن زر المتابعة على الريل.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The feed's order is unseen from followed, unseen from others, seen from followed, seen from others, newest first within each.",
+          "A follow made during a scroll changes the order only from the next scroll. Pages never repeat or lose a reel.",
+          "«متابعة» beside the author's name follows at once, on every reel by that author in the viewer, and appears in the app's favourites. Tapping «تتابعه» unfollows.",
+          "It's hidden on your own reels, and a guest gets the sign-in sheet. A guest's feed stays newest first.",
+        ],
+        ar: [
+          "ترتيب الريلز: غير المشاهَدة من المتابَعين، ثم غير المشاهَدة من غيرهم، ثم المشاهَدة من المتابَعين، ثم المشاهَدة من غيرهم، والأحدث أولاً في كل جزء.",
+          "المتابعة أثناء التمرير لا تغير الترتيب إلا من التمرير التالي. ولا تتكرر الريلز ولا تُفقد بين الصفحات.",
+          "«متابعة» بجانب اسم صاحب الريل تتابعه فوراً على كل ريلزه في العارض، ويظهر في مفضلة التطبيق. والضغط على «تتابعه» يلغي المتابعة.",
+          "يُخفى الزر على ريلزك، ويحصل الزائر على نافذة تسجيل الدخول. وتبقى صفحة الزائر بترتيب الأحدث أولاً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Follow a company from the viewer, close it and reopen the feed: confirm its unseen reels come first.",
+          "Watch one of its reels and reload: confirm that reel moves after all unseen reels, before seen reels from others.",
+          "Unfollow in the app's favourites and reload: confirm the order goes back.",
+        ],
+        ar: [
+          "تابع شركة من العارض ثم أغلقه وأعد فتح الصفحة: تأكد أن ريلزها غير المشاهَدة تأتي أولاً.",
+          "شاهد أحد ريلزها وأعد التحميل: تأكد أنه انتقل بعد كل غير المشاهَد وقبل المشاهَد من غيرها.",
+          "ألغِ المتابعة من مفضلة التطبيق وأعد التحميل: تأكد من عودة الترتيب.",
+        ],
+      },
+      updatedIn: "feat/reels-followed",
+    },
   ],
 };
