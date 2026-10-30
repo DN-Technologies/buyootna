@@ -4,6 +4,8 @@ import { StoriesModule } from '../stories/stories.module';
 
 import { ReelsCleanupService } from './reels-cleanup.service';
 import { ReelsEnabledGuard } from './reels-enabled.guard';
+import { ReelsEngagementService } from './reels-engagement.service';
+import { ReelsFeedService } from './reels-feed.service';
 import { ReelsMediaService } from './reels-media.service';
 import {
   ReelsAvailabilityController,
@@ -17,6 +19,8 @@ import { ReelsService } from './reels.service';
   controllers: [ReelsAvailabilityController, ReelsController],
   providers: [
     ReelsService,
+    ReelsFeedService,
+    ReelsEngagementService,
     ReelsMediaService,
     ReelsCleanupService,
     ReelsEnabledGuard,

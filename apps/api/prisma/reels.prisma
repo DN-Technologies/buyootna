@@ -46,6 +46,8 @@ model Reel {
   // reels); until then the cleanup keeps retrying
   mediaDeletedAt   DateTime?
   failureReason    String?
+  views            ReelView[]
+  likes            ReelLike[]
 
   // Feed + cleanup
   @@index([status, publishedAt(sort: Desc), id(sort: Desc)])
@@ -53,4 +55,30 @@ model Reel {
   @@index([identityId, status, publishedAt(sort: Desc)])
   // The per-author publish limit, deleted reels included
   @@index([identityId, publishedAt])
+}
+
+// One view per viewing profile and reel; the first one is kept. What "unseen
+// first" reads. Rows older than 180 days are pruned (Reel.viewCount stays)
+model ReelView {
+  reelId           String
+  reel             Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  viewerIdentityId String
+  viewer           Identity @relation("ReelViewer", fields: [viewerIdentityId], references: [id], onDelete: Cascade)
+  viewedAt         DateTime @default(now())
+
+  @@id([reelId, viewerIdentityId])
+  @@index([viewerIdentityId, reelId])
+  @@index([viewedAt])
+}
+
+// One like per profile and reel
+model ReelLike {
+  reelId     String
+  reel       Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity @relation("ReelLiker", fields: [identityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([reelId, identityId])
+  @@index([identityId])
 }
