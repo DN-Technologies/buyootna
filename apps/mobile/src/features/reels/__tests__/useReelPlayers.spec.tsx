@@ -192,6 +192,32 @@ describe('useReelPlayers', () => {
     });
   });
 
+  it('leaving stops the sound on every player, before they are released', async () => {
+    const { unmount } = await renderHook(() => useReelPlayers(base));
+    await flush();
+    mockPlayers.forEach((p) => p.pause.mockClear());
+    await unmount();
+    mockPlayers.forEach((p) => {
+      expect(p.pause).toHaveBeenCalled();
+      expect(p.muted).toBe(true);
+    });
+  });
+
+  it('a load finishing after leaving does not start playing', async () => {
+    let finish: () => void = () => undefined;
+    mockPlayers[0].replaceAsync.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }) as never,
+    );
+    const { unmount } = await renderHook(() => useReelPlayers(base));
+    await flush();
+    await unmount();
+    mockPlayers[0].play.mockClear();
+    await act(async () => finish());
+    expect(mockPlayers[0].play).not.toHaveBeenCalled();
+  });
+
   it('gives a player only to the reels near the one on screen', async () => {
     const { result } = await renderHook(() =>
       useReelPlayers({ ...base, activeIndex: 2 }),

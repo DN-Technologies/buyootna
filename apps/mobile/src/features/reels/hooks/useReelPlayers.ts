@@ -1,5 +1,12 @@
 import { useVideoPlayer, type VideoPlayer } from 'expo-video';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { reelSlot, reelWindow } from '../reelRules';
 import type { ViewerReel } from '../types';
@@ -56,6 +63,23 @@ export function useReelPlayers({
   const [retries, setRetries] = useState(0);
   // Reels whose cached copy wouldn't play: streamed directly from then on
   const uncached = useRef(new Set<string>());
+
+  // Leaving the viewer stops the sound now. Releasing a player only drops this
+  // side's reference, and the native one plays on until nothing else holds it.
+  // A layout effect, because its cleanup runs before useVideoPlayer's release
+  const leaving = useRef(false);
+  useLayoutEffect(() => {
+    leaving.current = false;
+    return () => {
+      leaving.current = true;
+      players.forEach((player) => {
+        safely(() => {
+          player.muted = true;
+          player.pause();
+        });
+      });
+    };
+  }, [players]);
 
   const latest = useRef({ items, activeIndex, playing, onTime });
   latest.current = { items, activeIndex, playing, onTime };
@@ -124,7 +148,11 @@ export function useReelPlayers({
         .then(() => {
           // It may have become the one on screen while loading
           const after = latest.current;
-          if (after.playing && reelSlot(after.activeIndex) === slot) {
+          if (
+            !leaving.current &&
+            after.playing &&
+            reelSlot(after.activeIndex) === slot
+          ) {
             safely(() => players[slot].play());
           }
         })
