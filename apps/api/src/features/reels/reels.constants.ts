@@ -42,6 +42,10 @@ export type ReelListingType = (typeof REEL_FILTER_LISTING_TYPES)[number];
 export const REEL_RANK_WINDOW_MS = 90 * 24 * HOUR_MS;
 export const REEL_RANK_BATCH = 500;
 
+export const REEL_COMMENT_MAX = 500;
+export const REEL_COMMENT_HOURLY_LIMIT = 20;
+export const REEL_COMMENTS_PAGE = 20;
+
 export const REEL_PAGE_DEFAULT = 10;
 export const REEL_PAGE_MAX = 20;
 // A scroll keeps its snapshot this long; past it the app starts again quietly

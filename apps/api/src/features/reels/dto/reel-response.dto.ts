@@ -92,6 +92,12 @@ export class AuthorReelDto {
 
   @ApiProperty()
   likeCount: number;
+
+  @ApiProperty()
+  commentCount: number;
+
+  @ApiProperty()
+  commentsEnabled: boolean;
 }
 
 export class ReelAuthorDto {

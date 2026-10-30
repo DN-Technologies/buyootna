@@ -136,3 +136,88 @@ describe('ReportsService.createForReel', () => {
     ).resolves.toMatchObject({ data: { id: 'winner' } });
   });
 });
+
+describe('ReportsService.createForReelComment', () => {
+  let service: ReportsService;
+  const prisma = {
+    reelComment: { findUnique: jest.fn() },
+    report: { findUnique: jest.fn(), create: jest.fn() },
+  };
+  const COMMENT = '44444444-4444-4444-8444-444444444444';
+  const row = (over: Record<string, unknown> = {}) => ({
+    id: COMMENT,
+    reelId: REEL,
+    body: 'تعليق مسيء',
+    createdAt: new Date('2026-10-30T10:00:00.000Z'),
+    identityId: 'commenter-ident',
+    identity: { userId: 'commenter-user' },
+    ...over,
+  });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    prisma.reelComment.findUnique.mockResolvedValue(row());
+    prisma.report.findUnique.mockResolvedValue(null);
+    prisma.report.create.mockImplementation(
+      ({ data }: { data: Record<string, unknown> }) =>
+        Promise.resolve({ id: 'report-1', ...data }),
+    );
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        ReportsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ModerationAlertService, useValue: alerts },
+      ],
+    }).compile();
+    service = module.get(ReportsService);
+  });
+
+  it('files against the commenter, keeps the text, and emails the moderators', async () => {
+    await service.createForReelComment(reporter, COMMENT, dto);
+    expect(prisma.report.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        targetUserId: 'commenter-user',
+        targetIdentityId: 'commenter-ident',
+        targetReelCommentId: COMMENT,
+        targetReelCommentSnapshot: expect.objectContaining({
+          comment: 'تعليق مسيء',
+          reelId: REEL,
+        }) as unknown,
+      }) as unknown,
+    });
+    expect(alerts.reportCreated).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'تعليق' }),
+    );
+  });
+
+  it('answers 404 once the comment is gone', async () => {
+    prisma.reelComment.findUnique.mockResolvedValue(null);
+    await expect(
+      service.createForReelComment(reporter, COMMENT, dto),
+    ).rejects.toThrow(NotFoundException);
+  });
+
+  it("refuses a report on the reporter's own account", async () => {
+    prisma.reelComment.findUnique.mockResolvedValue(
+      row({ identity: { userId: reporter.userId } }),
+    );
+    await expect(
+      service.createForReelComment(reporter, COMMENT, dto),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('repeating returns the first report', async () => {
+    prisma.report.findUnique.mockImplementation(
+      ({ where }: { where: Record<string, unknown> }) =>
+        Promise.resolve(
+          'reporterIdentityId_targetReelCommentId' in where
+            ? { id: 'first' }
+            : null,
+        ),
+    );
+    await expect(
+      service.createForReelComment(reporter, COMMENT, dto),
+    ).resolves.toMatchObject({ data: { id: 'first' } });
+    expect(prisma.report.create).not.toHaveBeenCalled();
+  });
+});

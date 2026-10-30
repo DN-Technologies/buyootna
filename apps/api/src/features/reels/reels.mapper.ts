@@ -27,6 +27,8 @@ export const REEL_SELECT = {
   createdAt: true,
   viewCount: true,
   likeCount: true,
+  commentCount: true,
+  commentsEnabled: true,
   property: {
     select: {
       id: true,
@@ -86,6 +88,8 @@ export function toAuthorReelDto(
     publishedAt: (reel.publishedAt ?? reel.createdAt).toISOString(),
     viewCount: reel.viewCount,
     likeCount: reel.likeCount,
+    commentCount: reel.commentCount,
+    commentsEnabled: reel.commentsEnabled,
   };
 }
 

@@ -37,6 +37,9 @@ model Reel {
   hadListing       Boolean    @default(false)
   viewCount        Int        @default(0)
   likeCount        Int        @default(0)
+  commentCount     Int        @default(0)
+  // The author can turn comments off; existing ones are then hidden, not lost
+  commentsEnabled  Boolean    @default(true)
   // Quality × freshness, refreshed hourly (reels-ranking.service.ts). Only
   // orders the feed with REELS_RANKED_FEED=true
   rankScore        Float      @default(0)
@@ -52,6 +55,7 @@ model Reel {
   views            ReelView[]
   likes            ReelLike[]
   reports          Report[]
+  comments         ReelComment[]
 
   // Feed + cleanup
   @@index([status, publishedAt(sort: Desc), id(sort: Desc)])
@@ -91,4 +95,22 @@ model ReelLike {
 
   @@id([reelId, identityId])
   @@index([identityId])
+}
+
+// A comment on a reel: flat, no replies. Public text, so it goes through the
+// content filter, can be reported, and hides across blocks (Guideline 1.2)
+model ReelComment {
+  id         String   @id @default(uuid())
+  reelId     String
+  reel       Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity @relation("ReelCommenter", fields: [identityId], references: [id], onDelete: Cascade)
+  body       String   @db.VarChar(500)
+  createdAt  DateTime @default(now())
+  reports    Report[]
+
+  // A reel's comments, newest first
+  @@index([reelId, createdAt(sort: Desc), id(sort: Desc)])
+  // The per-profile hourly limit
+  @@index([identityId, createdAt])
 }

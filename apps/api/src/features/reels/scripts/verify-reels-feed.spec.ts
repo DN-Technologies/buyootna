@@ -16,7 +16,10 @@ import { randomUUID } from 'crypto';
 
 import { Prisma } from '@prisma/client';
 
+import { BANNED_WORDS } from '../../../core/content-filter/banned-words';
 import { PrismaService } from '../../../core/prisma/prisma.service';
+import type { NotificationsService } from '../../notifications/notifications.service';
+import { ReelsCommentsService } from '../reels-comments.service';
 import { ReelsEngagementService } from '../reels-engagement.service';
 import {
   feedQuery,
@@ -575,6 +578,149 @@ describeIfDb('Reels feed (real Postgres)', () => {
         watches: [{ reelId: reel, watchedMs: 59_000, completed: true }],
       });
       expect(await row()).toMatchObject({ watchedMs: 20_000 });
+    });
+  });
+
+  describe('comments', () => {
+    const notifications = { create: jest.fn().mockResolvedValue(undefined) };
+    let comments: ReelsCommentsService;
+    beforeAll(() => {
+      comments = new ReelsCommentsService(
+        prisma,
+        notifications as unknown as NotificationsService,
+      );
+    });
+    beforeEach(() => jest.clearAllMocks());
+
+    const count = async (id: string) =>
+      (await prisma.reel.findUniqueOrThrow({ where: { id } })).commentCount;
+
+    it('adds, lists newest first, counts and tells the author', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      await comments.create(reel, viewer, 'الأول');
+      await comments.create(reel, viewer, 'الثاني');
+      expect(await count(reel)).toBe(2);
+
+      const asGuest = await comments.list(reel, null, undefined);
+      expect(asGuest.comments.map((c) => c.body)).toEqual(['الثاني', 'الأول']);
+      expect(asGuest.comments[0].canDelete).toBe(false);
+      expect(notifications.create).toHaveBeenCalledTimes(2);
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: office.userId,
+          type: 'REEL_COMMENT',
+          data: expect.objectContaining({ reelId: reel }) as unknown,
+        }),
+      );
+    });
+
+    it("doesn't notify you about your own comment", async () => {
+      const office = await makeOffice();
+      const reel = await makeReel(office.identityId, 10);
+      await comments.create(reel, office, 'تعليقي');
+      expect(notifications.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses banned words', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      const banned = BANNED_WORDS[0];
+      await expect(
+        comments.create(reel, viewer, `كلمة ${banned}`),
+      ).rejects.toThrow();
+      expect(await count(reel)).toBe(0);
+    });
+
+    it('never passes 20 an hour, even all at once', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      const results = await Promise.allSettled(
+        Array.from({ length: 30 }, (_, i) =>
+          comments.create(reel, viewer, `تعليق ${i}`),
+        ),
+      );
+      expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(20);
+      expect(await count(reel)).toBe(20);
+    });
+
+    it('hides across a block either way, and from suspended accounts', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const blocker = await makeViewer();
+      const suspended = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      await comments.create(reel, blocker, 'من حظرني');
+      await comments.create(reel, suspended, 'موقوف');
+      await comments.create(reel, office, 'ظاهر');
+      await prisma.userBlock.create({
+        data: { blockerUserId: blocker.userId, blockedUserId: viewer.userId },
+      });
+      await prisma.user.update({
+        where: { id: suspended.userId },
+        data: { isDisabled: true },
+      });
+      const seen = await comments.list(reel, viewer, undefined);
+      expect(seen.comments.map((c) => c.body)).toEqual(['ظاهر']);
+    });
+
+    it('can be deleted by its writer or the reel author, nobody else', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const stranger = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      const first = await comments.create(reel, viewer, 'واحد');
+      const second = await comments.create(reel, viewer, 'اثنان');
+
+      await expect(comments.remove(first.id, stranger)).rejects.toThrow();
+      await comments.remove(first.id, viewer);
+      await comments.remove(second.id, office);
+      await comments.remove(second.id, office);
+      expect(await count(reel)).toBe(0);
+    });
+
+    it('the author can turn them off, hiding but keeping them', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const stranger = await makeViewer();
+      const reel = await makeReel(office.identityId, 10);
+      await comments.create(reel, viewer, 'قديم');
+
+      await expect(
+        comments.setEnabled(reel, stranger.identityId, false),
+      ).rejects.toThrow();
+      await comments.setEnabled(reel, office.identityId, false);
+      expect((await comments.list(reel, viewer, undefined)).comments).toEqual(
+        [],
+      );
+      await expect(comments.create(reel, viewer, 'جديد')).rejects.toThrow();
+
+      await comments.setEnabled(reel, office.identityId, true);
+      expect(
+        (await comments.list(reel, viewer, undefined)).comments,
+      ).toHaveLength(1);
+    });
+
+    it('pages cover every comment once', async () => {
+      const office = await makeOffice();
+      const viewers = await Promise.all(
+        Array.from({ length: 3 }, () => makeViewer()),
+      );
+      const reel = await makeReel(office.identityId, 10);
+      for (let i = 0; i < 45; i += 1) {
+        await comments.create(reel, viewers[i % 3], `تعليق ${i}`);
+      }
+      const seen: string[] = [];
+      let cursor: string | undefined;
+      do {
+        const page = await comments.list(reel, null, cursor);
+        seen.push(...page.comments.map((c) => c.id));
+        cursor = page.nextCursor ?? undefined;
+      } while (cursor);
+      expect(new Set(seen).size).toBe(45);
     });
   });
 

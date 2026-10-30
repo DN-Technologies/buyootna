@@ -79,6 +79,7 @@ model Identity {
   reels             Reel[]             @relation("ReelAuthor")
   reelViews         ReelView[]         @relation("ReelViewer")
   reelLikes         ReelLike[]         @relation("ReelLiker")
+  reelComments      ReelComment[]      @relation("ReelCommenter")
   blockedAs         UserBlock[]        @relation("UserBlocksAsProfile")
 
   // One individual, one company and one office per account

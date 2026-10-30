@@ -146,6 +146,20 @@ export function useReelActions({
     if (isMine(reel)) {
       showAlert('خيارات', '', [
         {
+          text: reel.commentsEnabled ? 'إيقاف التعليقات' : 'تشغيل التعليقات',
+          onPress: () => {
+            const commentsEnabled = !reel.commentsEnabled;
+            update(reel.id, { commentsEnabled });
+            reelsService
+              .setCommentsEnabled(reel.id, commentsEnabled)
+              .catch((error: unknown) => {
+                update(reel.id, { commentsEnabled: reel.commentsEnabled });
+                showAlert('خطأ', serverMessage(error) ?? 'تعذر تغيير التعليقات');
+              })
+              .finally(closeSheet);
+          },
+        },
+        {
           text: 'حذف الفيديو',
           style: 'destructive',
           onPress: () => void remove(reel).finally(closeSheet),
@@ -203,6 +217,7 @@ export function useReelActions({
     submitReport,
     reportSheet,
     authSheetRef,
+    guardAction,
     onReportClosed: () => {
       reporting.current = null;
       closeSheet();

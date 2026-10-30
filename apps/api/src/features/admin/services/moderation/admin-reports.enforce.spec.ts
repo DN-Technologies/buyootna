@@ -15,10 +15,12 @@ describe('AdminReportsService.removeReportedContent', () => {
     review: { deleteMany: jest.fn() },
     story: { findUnique: jest.fn(), updateMany: jest.fn() },
     reel: { updateMany: jest.fn() },
+    reelComment: { findUnique: jest.fn(), deleteMany: jest.fn() },
+    $transaction: jest.fn((run: (tx: unknown) => unknown) => run(prisma)),
   };
   const auditLog = { log: jest.fn() };
   const service = new AdminReportsService(
-    prisma as unknown as PrismaService,
+    prisma,
     {} as NotificationsService,
     auditLog as unknown as AdminAuditLogService,
   );
@@ -30,6 +32,7 @@ describe('AdminReportsService.removeReportedContent', () => {
     targetReviewId: null,
     targetStoryId: null,
     targetReelId: null,
+    targetReelCommentId: null,
     ...over,
   });
 
@@ -111,6 +114,43 @@ describe('AdminReportsService.removeReportedContent', () => {
         targetUserId: 'user-2',
       }),
     );
+  });
+
+  it('takes a reported comment down, lowers the count and logs it', async () => {
+    prisma.report.findUnique.mockResolvedValue(
+      report({ targetReelCommentId: 'c-1' }),
+    );
+    prisma.reelComment.findUnique.mockResolvedValue({ reelId: 'reel-1' });
+    prisma.reelComment.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.reel.updateMany.mockResolvedValue({ count: 1 });
+
+    await expect(
+      service.removeReportedContent('rep-1', 'admin-1', now),
+    ).resolves.toEqual({ targetUserId: 'user-2', removed: 'REEL_COMMENT' });
+    expect(prisma.reelComment.deleteMany).toHaveBeenCalledWith({
+      where: { id: 'c-1' },
+    });
+    expect(prisma.reel.updateMany).toHaveBeenCalledWith({
+      where: { id: 'reel-1', commentCount: { gt: 0 } },
+      data: { commentCount: { decrement: 1 } },
+    });
+    expect(auditLog.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'REEL_COMMENT_REMOVED',
+        targetId: 'c-1',
+      }),
+    );
+  });
+
+  it('skips a comment already gone', async () => {
+    prisma.report.findUnique.mockResolvedValue(
+      report({ targetReelCommentId: 'c-1' }),
+    );
+    prisma.reelComment.findUnique.mockResolvedValue(null);
+    await expect(
+      service.removeReportedContent('rep-1', 'admin-1', now),
+    ).resolves.toEqual({ targetUserId: 'user-2', removed: null });
+    expect(auditLog.log).not.toHaveBeenCalled();
   });
 
   it('skips a reel already gone', async () => {

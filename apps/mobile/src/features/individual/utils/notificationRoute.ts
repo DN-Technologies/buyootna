@@ -16,6 +16,10 @@ export function getNotificationRoute(
   if (notification.type === 'REQUEST_RECEIVED' && notification.data?.requestId) {
     return `/(company)/(requests)/${notification.data.requestId}`;
   }
+  // A comment on the company's or office's reel: that reel
+  if (notification.type === 'REEL_COMMENT' && notification.data?.reelId) {
+    return `/reels?startId=${notification.data.reelId}`;
+  }
   // Security alert: open Active Devices so an unknown device can be removed
   if (notification.type === 'NEW_DEVICE_LOGIN') {
     return '/devices';
