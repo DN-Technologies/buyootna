@@ -4,13 +4,13 @@ import { REEL_CURSOR_MAX_AGE_MS } from '../reels.constants';
 
 /**
  * Where a page ended: the snapshot every page of this scroll shares, and the
- * last reel's sort key. `seen` says the scroll has moved on from the unseen
- * reels to the seen ones (feed only). `lastAuthorId` is who was shown last,
- * so the next page doesn't start with the same author.
+ * last reel's sort key. `tier` is the part of the feed it's in (feed only:
+ * 0 unseen and followed, 1 unseen, 2 seen and followed, 3 seen). `lastAuthorId`
+ * is who was shown last, so the next page doesn't start with the same author.
  */
 export interface ReelCursor {
   snapshotAt: Date;
-  seen: boolean;
+  tier: number;
   publishedAt: Date;
   id: string;
   lastAuthorId?: string;
@@ -19,9 +19,9 @@ export interface ReelCursor {
 }
 
 interface CursorJson {
-  v: 1;
+  v: 2;
   s: string;
-  n: boolean;
+  t: number;
   p: string;
   i: string;
   a?: string;
@@ -32,9 +32,9 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function encodeReelCursor(cursor: ReelCursor): string {
   const json: CursorJson = {
-    v: 1,
+    v: 2,
     s: cursor.snapshotAt.toISOString(),
-    n: cursor.seen,
+    t: cursor.tier,
     p: cursor.publishedAt.toISOString(),
     i: cursor.id,
     ...(cursor.lastAuthorId ? { a: cursor.lastAuthorId } : {}),
@@ -84,7 +84,7 @@ export function decodeReelCursor(
 
   return {
     snapshotAt,
-    seen: parsed.n,
+    tier: parsed.t,
     publishedAt,
     id: parsed.i,
     ...(parsed.a ? { lastAuthorId: parsed.a } : {}),
@@ -96,9 +96,12 @@ function isCursorJson(value: unknown): value is CursorJson {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
   return (
-    v.v === 1 &&
+    v.v === 2 &&
     typeof v.s === 'string' &&
-    typeof v.n === 'boolean' &&
+    typeof v.t === 'number' &&
+    Number.isInteger(v.t) &&
+    v.t >= 0 &&
+    v.t <= 3 &&
     typeof v.p === 'string' &&
     typeof v.i === 'string' &&
     UUID.test(v.i) &&

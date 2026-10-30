@@ -53,6 +53,8 @@ interface ReelItemProps {
   onRetry: () => void;
   onDoubleTap: () => void;
   onLike: () => void;
+  canFollow: boolean;
+  onFollow: () => void;
   onMessage: () => void;
   onShare: () => void;
   onOptions: () => void;
@@ -119,6 +121,8 @@ function ReelItem({
   onRetry,
   onDoubleTap,
   onLike,
+  canFollow,
+  onFollow,
   onMessage,
   onShare,
   onOptions,
@@ -304,6 +308,26 @@ function ReelItem({
                 </Text>
               </View>
             </TouchableOpacity>
+            {canFollow && (
+              <TouchableOpacity
+                testID="reel-follow"
+                onPress={onFollow}
+                activeOpacity={0.85}
+                accessibilityLabel={reel.followed ? 'إلغاء المتابعة' : 'متابعة'}
+                className="h-[28px] items-center justify-center self-start rounded-full px-[12px]"
+                style={
+                  reel.followed ? STORY_GLASS : { backgroundColor: GOLD }
+                }
+              >
+                <Text
+                  className={`font-cairo-semibold text-[12px] leading-[17px] ${
+                    reel.followed ? 'text-white' : 'text-[#15304D]'
+                  }`}
+                >
+                  {reel.followed ? 'تتابعه' : 'متابعة'}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {!!reel.caption && (
               <Pressable onPress={() => setExpanded((e) => !e)}>

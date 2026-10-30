@@ -145,6 +145,7 @@ export default function ReelsViewer({
 
   const actions = useReelActions({
     update: session.update,
+    updateAuthor: session.updateAuthor,
     removeWhere: session.removeWhere,
     setSheetOpen,
   });
@@ -317,6 +318,8 @@ export default function ReelsViewer({
             onRetry={() => players.retry(item.id)}
             onDoubleTap={() => actions.like(item)}
             onLike={() => void actions.toggleLike(item)}
+            canFollow={!actions.isMine(item)}
+            onFollow={() => void actions.toggleFollow(item)}
             onMessage={() => void actions.message(item)}
             onShare={() => void actions.share(item)}
             onOptions={() => actions.options(item)}

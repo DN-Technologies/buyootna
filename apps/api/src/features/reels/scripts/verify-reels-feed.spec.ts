@@ -396,12 +396,82 @@ describeIfDb('Reels feed (real Postgres)', () => {
     expect(second.reels).toHaveLength(1);
   });
 
+  it('puts followed companies first, within unseen and within seen', async () => {
+    const followedOne = await makeOffice();
+    const other = await makeOffice();
+    const viewer = await makeViewer();
+    await prisma.providerFavorite.create({
+      data: {
+        identityId: viewer.identityId,
+        providerId: followedOne.identityId,
+      },
+    });
+    const followedUnseen = await makeReel(followedOne.identityId, 30);
+    const followedSeen = await makeReel(followedOne.identityId, 10);
+    const otherUnseen = await makeReel(other.identityId, 5);
+    const otherSeen = await makeReel(other.identityId, 1);
+    const own = [followedUnseen, followedSeen, otherUnseen, otherSeen];
+    await engagement.recordViews(viewer, {
+      reelIds: [followedSeen, otherSeen],
+    });
+
+    expect(await allIds(viewer, own)).toEqual([
+      followedUnseen,
+      otherUnseen,
+      followedSeen,
+      otherSeen,
+    ]);
+
+    const page = await feed.feed(viewer, { limit: 20 });
+    const byId = new Map(page.reels.map((r) => [r.id, r]));
+    expect(byId.get(followedUnseen)?.followed).toBe(true);
+    expect(byId.get(otherUnseen)?.followed).toBe(false);
+
+    // Paged one at a time: the same order, nothing repeated or lost
+    const oneByOne: string[] = [];
+    let cursor: string | undefined;
+    do {
+      const next = await feed.feed(viewer, { cursor, limit: 1 });
+      oneByOne.push(...next.reels.map((r) => r.id));
+      cursor = next.nextCursor ?? undefined;
+    } while (cursor);
+    expect(oneByOne.filter((id) => own.includes(id))).toEqual(
+      await allIds(viewer, own),
+    );
+
+    // A guest is unaffected by anyone's follows
+    const guest = await feed.feed(null, { limit: 20 });
+    expect(guest.reels.every((r) => r.followed === false)).toBe(true);
+  });
+
+  it('a follow made during a scroll waits for the next one', async () => {
+    const author = await makeOffice();
+    const other = await makeOffice();
+    const viewer = await makeViewer();
+    const older = await makeReel(author.identityId, 20);
+    const newer = await makeReel(other.identityId, 10);
+    const first = await feed.feed(viewer, { limit: 1 });
+    await prisma.providerFavorite.create({
+      data: { identityId: viewer.identityId, providerId: author.identityId },
+    });
+    const ids = [...first.reels.map((r) => r.id)];
+    let cursor = first.nextCursor ?? undefined;
+    while (cursor) {
+      const next = await feed.feed(viewer, { cursor, limit: 5 });
+      ids.push(...next.reels.map((r) => r.id));
+      cursor = next.nextCursor ?? undefined;
+    }
+    const mine = ids.filter((id) => [older, newer].includes(id));
+    expect(mine).toEqual([newer, older]);
+  });
+
   it('spreads out one author within a page', async () => {
     const a = await makeOffice();
     const b = await makeOffice();
-    const a1 = await makeReel(a.identityId, 1);
-    const a2 = await makeReel(a.identityId, 2);
-    const b1 = await makeReel(b.identityId, 3);
+    // Newer than anything the earlier tests left
+    const a1 = await makeReel(a.identityId, 0.001);
+    const a2 = await makeReel(a.identityId, 0.002);
+    const b1 = await makeReel(b.identityId, 0.003);
     const page = await feed.feed(null, { limit: 20 });
     const order = page.reels
       .map((r) => r.id)
@@ -510,12 +580,12 @@ describeIfDb('Reels feed (real Postgres)', () => {
     );
     const cursor = {
       snapshotAt: now,
-      seen: false,
+      tier: 1,
       publishedAt: deep[0].publishedAt,
       id: deep[0].id,
     };
     const plan = await prisma.$queryRaw<{ 'QUERY PLAN': string }[]>(
-      Prisma.sql`EXPLAIN ANALYZE ${feedQuery(viewer, now, now, cursor, 11, false)}`,
+      Prisma.sql`EXPLAIN ANALYZE ${feedQuery(viewer, now, now, cursor, 11, 1)}`,
     );
     const planText = plan.map((p) => p['QUERY PLAN']).join('\n');
     console.log(
@@ -526,7 +596,7 @@ describeIfDb('Reels feed (real Postgres)', () => {
     expect(signedIn).toBeLessThan(500);
     expect(planText).toContain('Execution Time');
     const deepStart = Date.now();
-    await prisma.$queryRaw(feedQuery(viewer, now, now, cursor, 11, false));
+    await prisma.$queryRaw(feedQuery(viewer, now, now, cursor, 11, 1));
     expect(Date.now() - deepStart).toBeLessThan(500);
   }, 300_000);
 });

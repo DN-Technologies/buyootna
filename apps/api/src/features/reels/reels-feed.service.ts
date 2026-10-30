@@ -65,16 +65,19 @@ function utc(date: Date): Prisma.Sql {
 }
 
 /**
- * Reads of reels. The main feed: a signed-in profile gets what it hasn't seen,
- * newest first, then what it has seen, newest first; a guest gets newest
- * first. Same-author reels are spread out within each page.
+ * Reads of reels. The main feed: a signed-in profile gets four parts, each
+ * newest first, as the stories feed orders its authors:
+ *
+ *   tier 0 unseen + followed, 1 unseen, 2 seen + followed, 3 seen
+ *
+ * A guest gets newest first. Same-author reels are spread out within each page.
  *
  * The scroll's snapshot (the first page's time) fixes what counts as seen and
- * what can appear, so reels don't move between pages. Other changes apply at
+ * as followed and what can appear, so reels don't move between pages. Other changes apply at
  * once and can make a page skip a reel: a deletion, a block, a listing sold.
  *
- * Unseen and seen are two keyset queries on the same index, not a rank worked
- * out over every reel, so a page costs the same however many reels exist.
+ * The parts are keyset queries on the same index, not a rank worked out over
+ * every reel, so a page costs about the same however many reels exist.
  */
 @Injectable()
 export class ReelsFeedService {
@@ -96,30 +99,25 @@ export class ReelsFeedService {
     const snapshotAt = cursor?.snapshotAt ?? now;
     const take = limit + 1;
 
-    // A guest has one list, kept in the "unseen" part: nothing to tell apart
-    const onSeen = cursor?.seen ?? false;
-    const first = await this.prisma.$queryRaw<FeedRankRow[]>(
-      feedQuery(viewer, snapshotAt, now, cursor, take, onSeen, query),
-    );
-    const firstSeen = onSeen;
-    const rest =
-      viewer && !onSeen && first.length < take
-        ? await this.prisma.$queryRaw<FeedRankRow[]>(
-            feedQuery(
-              viewer,
-              snapshotAt,
-              now,
-              null,
-              take - first.length,
-              true,
-              query,
-            ),
-          )
-        : [];
-    const ranked = [
-      ...first.map((rank) => ({ ...rank, seen: firstSeen })),
-      ...rest.map((rank) => ({ ...rank, seen: true })),
-    ];
+    // A guest has one list, kept in tier 0: nothing to tell apart
+    const lastTier = viewer ? 3 : 0;
+    const ranked: (FeedRankRow & { tier: number })[] = [];
+    for (let tier = cursor?.tier ?? 0; tier <= lastTier; tier += 1) {
+      const rows = await this.prisma.$queryRaw<FeedRankRow[]>(
+        feedQuery(
+          viewer,
+          snapshotAt,
+          now,
+          // The cursor only applies in the part it stopped in
+          tier === cursor?.tier ? cursor : null,
+          take - ranked.length,
+          tier,
+          query,
+        ),
+      );
+      ranked.push(...rows.map((row) => ({ ...row, tier })));
+      if (ranked.length >= take) break;
+    }
 
     const page = ranked.slice(0, limit);
     const shown = spreadAuthors(page, cursor?.lastAuthorId);
@@ -128,7 +126,7 @@ export class ReelsFeedService {
       ranked.length > limit && last
         ? encodeReelCursor({
             snapshotAt,
-            seen: last.seen,
+            tier: last.tier,
             publishedAt: new Date(last.publishedIso),
             id: last.id,
             lastAuthorId: shown[shown.length - 1]?.identityId,
@@ -136,7 +134,7 @@ export class ReelsFeedService {
           })
         : null;
 
-    const seen = new Set(page.filter((r) => r.seen).map((r) => r.id));
+    const seen = new Set(page.filter((r) => r.tier >= 2).map((r) => r.id));
     const reels = await this.viewerReels(
       viewer,
       shown.map((r) => r.id),
@@ -241,7 +239,7 @@ export class ReelsFeedService {
     return rows.length > limit && last?.publishedAt
       ? encodeReelCursor({
           snapshotAt,
-          seen: false,
+          tier: 0,
           publishedAt: last.publishedAt,
           id: last.id,
         })
@@ -256,7 +254,7 @@ export class ReelsFeedService {
     now: Date,
   ): Promise<ViewerReelDto[]> {
     if (ids.length === 0) return [];
-    const [rows, likes] = await Promise.all([
+    const [rows, likes, follows] = await Promise.all([
       this.prisma.reel.findMany({
         where: { id: { in: ids } },
         select: VIEWER_REEL_SELECT,
@@ -267,9 +265,16 @@ export class ReelsFeedService {
             select: { reelId: true },
           })
         : Promise.resolve<{ reelId: string }[]>([]),
+      viewer
+        ? this.prisma.providerFavorite.findMany({
+            where: { identityId: viewer.identityId },
+            select: { providerId: true },
+          })
+        : Promise.resolve<{ providerId: string }[]>([]),
     ]);
     const byId = new Map<string, ViewerReelRow>(rows.map((r) => [r.id, r]));
     const liked = new Set(likes.map((l) => l.reelId));
+    const followed = new Set(follows.map((f) => f.providerId));
     return ids.flatMap((id) => {
       const row = byId.get(id);
       // Gone between the queries: left out of this page
@@ -277,6 +282,7 @@ export class ReelsFeedService {
       const dto = toViewerReelDto(row, this.media.linksFor(row), now, {
         liked: liked.has(id),
         viewed: seen.has(id),
+        followed: followed.has(row.identityId),
       });
       return dto ? [dto] : [];
     });
@@ -299,7 +305,7 @@ function afterCursor(cursor: ReelCursor): Prisma.ReelWhereInput {
  * approved office, whose account is neither disabled nor blocked. A reel
  * published with a listing shows only while that listing can be shown to the
  * public. For a signed-in viewer: not its own account's reels, no block either
- * way, and only the seen or only the unseen ones. A filter keeps reels whose
+ * way, and only that tier's reels. A filter keeps reels whose
  * listing matches, which leaves out reels with no listing.
  */
 export function feedQuery(
@@ -308,7 +314,7 @@ export function feedQuery(
   now: Date,
   cursor: ReelCursor | null,
   take: number,
-  seen: boolean,
+  tier: number,
   filters: ReelFilters = {},
 ): Prisma.Sql {
   const after = cursor
@@ -325,11 +331,17 @@ export function feedQuery(
     ? Prisma.sql`
         AND i."userId" <> ${viewer.userId}
         AND ${notBlockedSql(viewer.userId, Prisma.sql`i."userId"`)}
-        AND ${seen ? Prisma.sql`EXISTS` : Prisma.sql`NOT EXISTS`} (
+        AND ${tier >= 2 ? Prisma.sql`EXISTS` : Prisma.sql`NOT EXISTS`} (
           SELECT 1 FROM "ReelView" v
           WHERE v."reelId" = r.id
             AND v."viewerIdentityId" = ${viewer.identityId}
             AND v."viewedAt" <= ${utc(snapshotAt)}
+        )
+        AND ${tier % 2 === 0 ? Prisma.sql`EXISTS` : Prisma.sql`NOT EXISTS`} (
+          SELECT 1 FROM "ProviderFavorite" f
+          WHERE f."identityId" = ${viewer.identityId}
+            AND f."providerId" = r."identityId"
+            AND f."createdAt" <= ${utc(snapshotAt)}
         )`
     : Prisma.empty;
 

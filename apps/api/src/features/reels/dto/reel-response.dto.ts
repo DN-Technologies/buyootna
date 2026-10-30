@@ -125,6 +125,9 @@ export class ViewerReelDto extends AuthorReelDto {
   @ApiProperty({ description: 'Always false for a guest' })
   liked: boolean;
 
+  @ApiProperty({ description: 'Always false for a guest' })
+  followed: boolean;
+
   @ApiProperty({
     description:
       "Seen by this profile. Always false for a guest, and in an author's list",

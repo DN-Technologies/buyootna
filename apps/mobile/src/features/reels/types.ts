@@ -35,6 +35,7 @@ export interface ViewerReel extends AuthorReel {
   author: ReelAuthor;
   liked: boolean;
   viewed: boolean;
+  followed: boolean;
 }
 
 export interface ReelPage {

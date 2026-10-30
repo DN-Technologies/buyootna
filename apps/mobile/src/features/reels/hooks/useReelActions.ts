@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { Share } from 'react-native';
 
 import { chatService } from '@/shared/api/chat.service';
+import { favoritesService } from '@/shared/api/favorites.service';
 import { reelsService } from '@/shared/api/reels.service';
 import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useBlockFlow } from '@/shared/hooks/blocks/useBlocks';
@@ -29,10 +30,12 @@ const serverMessage = (error: unknown) => {
  */
 export function useReelActions({
   update,
+  updateAuthor,
   removeWhere,
   setSheetOpen,
 }: {
   update: (id: string, patch: Partial<ViewerReel>) => void;
+  updateAuthor: (authorId: string, patch: Partial<ViewerReel>) => void;
   removeWhere: (shouldRemove: (reel: ViewerReel) => boolean) => void;
   // Pauses the video while a sheet or question is up
   setSheetOpen: (open: boolean) => void;
@@ -62,6 +65,21 @@ export function useReelActions({
         update(reel.id, state);
       } catch {
         update(reel.id, { liked: reel.liked, likeCount: reel.likeCount });
+      }
+    });
+
+  /** Follows or unfollows the author, across all of its reels here. */
+  const toggleFollow = (reel: ViewerReel) =>
+    guardAction(async () => {
+      const followed = !reel.followed;
+      const authorId = reel.author.identityId;
+      updateAuthor(authorId, { followed });
+      try {
+        // It toggles on the server: its answer settles any disagreement
+        const { favorited } = await favoritesService.toggleProvider(authorId);
+        updateAuthor(authorId, { followed: favorited });
+      } catch {
+        updateAuthor(authorId, { followed: reel.followed });
       }
     });
 
@@ -177,6 +195,7 @@ export function useReelActions({
     isMine,
     like,
     toggleLike,
+    toggleFollow,
     openProfile,
     openListing,
     message,

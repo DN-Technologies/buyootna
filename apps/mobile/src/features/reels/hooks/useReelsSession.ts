@@ -121,6 +121,18 @@ export function useReelsSession({
     [replace],
   );
 
+  /** A follow: every reel by that author, however far down the list. */
+  const updateAuthor = useCallback(
+    (authorId: string, patch: Partial<ViewerReel>) => {
+      replace(
+        shown.current.map((r) =>
+          r.author.identityId === authorId ? { ...r, ...patch } : r,
+        ),
+      );
+    },
+    [replace],
+  );
+
   /** A reel deleted, or everything by an account just blocked. */
   const removeWhere = useCallback(
     (shouldRemove: (reel: ViewerReel) => boolean) => {
@@ -137,6 +149,7 @@ export function useReelsSession({
     retry: start,
     loadMore,
     update,
+    updateAuthor,
     removeWhere,
   };
 }
