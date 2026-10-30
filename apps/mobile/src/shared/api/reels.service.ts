@@ -1,3 +1,4 @@
+import type { ReelWatch } from '@/features/reels/reelWatchQueue';
 import type {
   AuthorReel,
   MyReelsPage,
@@ -58,6 +59,11 @@ export const reelsService = {
   /** Records that the current profile watched these reels (repeat-safe). */
   recordViews: async (reelIds: string[]): Promise<void> => {
     await apiClient.post('/reels/views', { reelIds });
+  },
+
+  /** How much of each reel was watched, for ranking (keeps the highest). */
+  recordWatches: async (watches: ReelWatch[]): Promise<void> => {
+    await apiClient.post('/reels/watches', { watches });
   },
 
   like: async (id: string): Promise<ReelLikeState> => {

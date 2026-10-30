@@ -28,7 +28,8 @@ import { useAuthStore } from '@/shared/store/useAuthStore';
 import { useReelActions } from '../hooks/useReelActions';
 import { useReelPlayers } from '../hooks/useReelPlayers';
 import { useReelsSession } from '../hooks/useReelsSession';
-import { reachedView } from '../reelRules';
+import { reachedEnd, reachedView } from '../reelRules';
+import { ReelWatchQueue } from '../reelWatchQueue';
 import type { ReelFilters, ViewerReel } from '../types';
 import ReelFiltersSheet, { hasReelFilters } from './ReelFiltersSheet';
 import ReelItem from './ReelItem';
@@ -119,19 +120,56 @@ export default function ReelsViewer({
       token ? new StoryViewQueue((ids) => reelsService.recordViews(ids)) : null,
     [token],
   );
-  useEffect(
-    () => () => {
-      void queue?.flush().finally(() => queue.dispose());
-    },
-    [queue],
+  // After the views: a watch only adds to a view the server already has
+  const watches = useMemo(
+    () =>
+      token
+        ? new ReelWatchQueue(async (batch) => {
+            await queue?.flush();
+            await reelsService.recordWatches(batch);
+          })
+        : null,
+    [queue, token],
   );
+  // How far the reel on screen got, reported as it moves on
+  const watched = useRef<{ reelId: string; ms: number; ended: boolean } | null>(
+    null,
+  );
+  const reportWatch = useCallback(() => {
+    const now = watched.current;
+    watched.current = null;
+    if (now) {
+      watches?.add({
+        reelId: now.reelId,
+        watchedMs: Math.round(now.ms),
+        completed: now.ended,
+      });
+    }
+  }, [watches]);
 
   const onTime = useCallback(
     (reel: ViewerReel, seconds: number, duration: number) => {
       progress.value = duration > 0 ? seconds / duration : 0;
       if (reachedView(seconds, duration)) queue?.add(reel.id);
+      if (watched.current?.reelId !== reel.id) {
+        reportWatch();
+        watched.current = { reelId: reel.id, ms: 0, ended: false };
+      }
+      const current = watched.current;
+      current.ms = Math.max(current.ms, seconds * 1000);
+      current.ended = current.ended || reachedEnd(seconds, duration);
     },
-    [progress, queue],
+    [progress, queue, reportWatch],
+  );
+
+  // Leaving the viewer counts as moving on, too: that report first, then send
+  useEffect(
+    () => () => {
+      reportWatch();
+      void queue?.flush().finally(() => queue.dispose());
+      void watches?.flush().finally(() => watches.dispose());
+    },
+    [queue, reportWatch, watches],
   );
 
   const playing = focused && appActive && !paused && !sheetOpen;

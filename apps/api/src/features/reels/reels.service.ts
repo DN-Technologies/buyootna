@@ -25,6 +25,7 @@ import {
   assertWithinLimit,
   reelLockKey,
 } from './reels.rules';
+import { reelRankScore } from './utils/rank-score';
 
 /** A reel's life as its author drives it: upload slot, publish, delete. */
 @Injectable()
@@ -173,6 +174,11 @@ export class ReelsService {
           caption: dto.caption?.trim() || null,
           propertyId: dto.propertyId ?? null,
           hadListing: !!dto.propertyId,
+          // Until the next hourly refresh
+          rankScore: reelRankScore(
+            { views: 0, completed: 0, likes: 0, publishedAt: now },
+            now,
+          ),
         },
       });
       return result.count;

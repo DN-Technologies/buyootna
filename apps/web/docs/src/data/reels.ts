@@ -472,5 +472,50 @@ export const reels: DocSection = {
       },
       updatedIn: "feat/reels-followed",
     },
+    {
+      id: "reels-ranking",
+      title: {
+        en: "Ranking the feed by what people watch",
+        ar: "ترتيب الريلز حسب ما يشاهده الناس",
+      },
+      priority: "P2",
+      story: {
+        en: "Verify that watch data is collected, that scores refresh hourly, and that REELS_RANKED_FEED turns ranked order on and off.",
+        ar: "تحقق من جمع بيانات المشاهدة وتحديث النقاط كل ساعة، ومن أن REELS_RANKED_FEED يشغل الترتيب ويوقفه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With REELS_RANKED_FEED unset within each part, newest first. Scores change nothing.",
+          "With REELS_RANKED_FEED=true each part sorts by score instead: followed and unseen still come first.",
+          "The score is quality × freshness. Quality is the completion and like rates, smoothed so a few views can't swing it. Freshness falls to about 37% after 7 days. There is no paid boost.",
+          "A new reel gets the average score at once and appears straight away. Reels older than 90 days score 0.",
+          "Moving on from a reel reports how long it played and whether it reached the end. Each profile counts once, the highest is kept, and it can't exceed the reel's length. A watch under 3 seconds and guests' watches don't count.",
+          "Turning ranking on or off mid-scroll restarts the list quietly.",
+        ],
+        ar: [
+          "عند عدم ضبط REELS_RANKED_FEED يبقى الترتيب كما هو: الأحدث أولاً في كل جزء، ولا تغير النقاط شيئاً.",
+          "عند REELS_RANKED_FEED=true يُرتب كل جزء بالنقاط بدلاً من ذلك، وتبقى المتابَعة وغير المشاهَدة أولاً.",
+          "النقاط هي الجودة × الحداثة. الجودة هي معدلا الإكمال والإعجاب، مع تلطيف يمنع قلة المشاهدات من التأثير الكبير. وتنخفض الحداثة إلى نحو 37% بعد 7 أيام. ولا يوجد تمييز مدفوع.",
+          "يحصل الريل الجديد على النقاط المتوسطة فوراً ويظهر مباشرة. والريلز الأقدم من 90 يوماً نقاطها 0.",
+          "الانتقال من ريل يبلغ عن مدة تشغيله وهل وصل إلى نهايته. ويُحتسب كل ملف مرة واحدة ويُحفظ الأعلى، ولا يتجاوز طول الريل. ولا تُحتسب المشاهدة الأقل من 3 ثوانٍ ولا مشاهدات الزوار.",
+          "تشغيل الترتيب أو إيقافه أثناء التمرير يعيد القائمة بهدوء.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Watch a reel to the end as a signed-in profile, swipe on, and check its ReelView row has completed = true and a sensible watchedMs.",
+          "Watch for 2 seconds and swipe on: confirm no row is added.",
+          "With about 1,000 views collected, set REELS_RANKED_FEED=true, restart the API, and confirm well-watched recent reels rise.",
+          "Unset it and restart: confirm the order is newest first again.",
+        ],
+        ar: [
+          "شاهد ريلاً حتى نهايته بملف مسجل ثم انتقل، وتأكد أن سجل ReelView فيه completed = true وقيمة watchedMs منطقية.",
+          "شاهد ثانيتين ثم انتقل: تأكد من عدم إضافة سجل.",
+          "بعد جمع نحو 1000 مشاهدة، اضبط REELS_RANKED_FEED=true وأعد تشغيل الخادم، وتأكد من صعود الريلز الحديثة الأكثر مشاهدة.",
+          "ألغِ الضبط وأعد التشغيل: تأكد من عودة ترتيب الأحدث أولاً.",
+        ],
+      },
+      updatedIn: "feat/reels-ranking",
+    },
   ],
 };

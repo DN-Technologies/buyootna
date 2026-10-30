@@ -8,6 +8,7 @@ import { ReelsEnabledGuard } from './reels-enabled.guard';
 import { ReelsEngagementService } from './reels-engagement.service';
 import { ReelsFeedService } from './reels-feed.service';
 import { ReelsMediaService } from './reels-media.service';
+import { ReelsRankingService } from './reels-ranking.service';
 import {
   ReelsAvailabilityController,
   ReelsController,
@@ -24,6 +25,7 @@ import { ReelsService } from './reels.service';
     ReelsEngagementService,
     ReelsMediaService,
     ReelsCleanupService,
+    ReelsRankingService,
     ReelsEnabledGuard,
   ],
 })

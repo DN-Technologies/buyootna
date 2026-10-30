@@ -37,6 +37,9 @@ model Reel {
   hadListing       Boolean    @default(false)
   viewCount        Int        @default(0)
   likeCount        Int        @default(0)
+  // Quality × freshness, refreshed hourly (reels-ranking.service.ts). Only
+  // orders the feed with REELS_RANKED_FEED=true
+  rankScore        Float      @default(0)
   createdAt        DateTime   @default(now())
   // Publish after this and the slot is abandoned
   uploadExpiresAt  DateTime
@@ -52,6 +55,8 @@ model Reel {
 
   // Feed + cleanup
   @@index([status, publishedAt(sort: Desc), id(sort: Desc)])
+  // The feed, when ranked
+  @@index([status, rankScore(sort: Desc), id(sort: Desc)])
   // One author's reels
   @@index([identityId, status, publishedAt(sort: Desc)])
   // The per-author publish limit, deleted reels included
@@ -66,6 +71,10 @@ model ReelView {
   viewerIdentityId String
   viewer           Identity @relation("ReelViewer", fields: [viewerIdentityId], references: [id], onDelete: Cascade)
   viewedAt         DateTime @default(now())
+  // The most it played in one go, and whether it played to the end. For
+  // ranking; one row per profile, so replays can't inflate a reel
+  watchedMs        Int      @default(0)
+  completed        Boolean  @default(false)
 
   @@id([reelId, viewerIdentityId])
   @@index([viewerIdentityId, reelId])

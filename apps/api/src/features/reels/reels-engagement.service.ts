@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../core/prisma/prisma.service';
 import type { RecordReelViewsDto } from './dto/record-reel-views.dto';
+import type { RecordReelWatchesDto } from './dto/record-reel-watches.dto';
 import type { ReelLikeDto } from './dto/reel-response.dto';
 import type { ReelViewer } from './reels-feed.service';
 import { reelNotFound } from './reels.errors';
@@ -51,6 +52,30 @@ export class ReelsEngagementService {
         data: { viewCount: { increment: 1 } },
       });
     });
+  }
+
+  /**
+   * Adds how much of each reel was watched to the profile's view of it, keeping
+   * the highest. A watch with no view yet (under 3 seconds) adds nothing, and
+   * the time can't exceed what the server measured the reel to be.
+   */
+  async recordWatches(
+    viewer: ReelViewer,
+    dto: RecordReelWatchesDto,
+  ): Promise<void> {
+    await this.prisma.$executeRaw(Prisma.sql`
+      UPDATE "ReelView" v
+      SET "watchedMs" = GREATEST(v."watchedMs", LEAST(d.ms, COALESCE(r."durationMs", d.ms))),
+          completed = v.completed OR d.completed
+      FROM unnest(
+             ${dto.watches.map((w) => w.reelId)}::text[],
+             ${dto.watches.map((w) => w.watchedMs)}::int[],
+             ${dto.watches.map((w) => w.completed)}::boolean[]
+           ) AS d(id, ms, completed)
+      JOIN "Reel" r ON r.id = d.id
+      WHERE v."reelId" = d.id
+        AND v."viewerIdentityId" = ${viewer.identityId}
+    `);
   }
 
   /** Likes a reel the profile may see. */

@@ -13,6 +13,8 @@ export interface ReelCursor {
   tier: number;
   publishedAt: Date;
   id: string;
+  // The last reel's score, when the feed is ranked
+  rankScore?: number;
   lastAuthorId?: string;
   // The filters the scroll is under, if any (see reelFilterKey)
   filterKey?: string;
@@ -24,6 +26,7 @@ interface CursorJson {
   t: number;
   p: string;
   i: string;
+  r?: number;
   a?: string;
   f?: string;
 }
@@ -37,13 +40,14 @@ export function encodeReelCursor(cursor: ReelCursor): string {
     t: cursor.tier,
     p: cursor.publishedAt.toISOString(),
     i: cursor.id,
+    ...(cursor.rankScore !== undefined ? { r: cursor.rankScore } : {}),
     ...(cursor.lastAuthorId ? { a: cursor.lastAuthorId } : {}),
     ...(cursor.filterKey ? { f: cursor.filterKey } : {}),
   };
   return Buffer.from(JSON.stringify(json)).toString('base64url');
 }
 
-function cursorError(): BadRequestException {
+export function cursorError(): BadRequestException {
   return new BadRequestException({
     statusCode: 400,
     message: 'انتهت صلاحية الصفحة، يرجى تحديث الفيديوهات',
@@ -87,6 +91,7 @@ export function decodeReelCursor(
     tier: parsed.t,
     publishedAt,
     id: parsed.i,
+    ...(parsed.r !== undefined ? { rankScore: parsed.r } : {}),
     ...(parsed.a ? { lastAuthorId: parsed.a } : {}),
     ...(parsed.f ? { filterKey: parsed.f } : {}),
   };
@@ -106,6 +111,7 @@ function isCursorJson(value: unknown): value is CursorJson {
     typeof v.i === 'string' &&
     UUID.test(v.i) &&
     (v.a === undefined || (typeof v.a === 'string' && UUID.test(v.a))) &&
+    (v.r === undefined || (typeof v.r === 'number' && Number.isFinite(v.r))) &&
     (v.f === undefined || typeof v.f === 'string')
   );
 }
