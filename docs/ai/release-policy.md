@@ -50,6 +50,15 @@ shipping `localhost:8000` or leaking a dev-only feature flag to
 production — has already happened multiple times before these checks
 existed; don't reintroduce a path around them.
 
+## For the next native build: reel links opening the app
+
+A shared `https://buyootna.cloud/reels/:id` opens the website, whose «فتح في
+التطبيق» uses the `buyootnamobile://` scheme. For the link itself to open the
+app, a new binary must add `associatedDomains` (iOS) and an `intentFilters`
+entry (Android) to `app.config.ts`, and the landing site must serve
+`/.well-known/apple-app-site-association` and `assetlinks.json`. An OTA can't
+do this.
+
 ## Backend/web deploys
 
 - CD pipeline (`cd.yml`) is `workflow_dispatch`-only — it does not run

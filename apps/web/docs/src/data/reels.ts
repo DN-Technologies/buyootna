@@ -517,5 +517,50 @@ export const reels: DocSection = {
       },
       updatedIn: "feat/reels-ranking",
     },
+    {
+      id: "reels-web-page",
+      title: {
+        en: "A shared reel opens on the website",
+        ar: "الريل المشارَك يفتح في الموقع",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify buyootna.cloud/reels/:id for someone with no app, and how a shared link previews.",
+        ar: "تحقق من buyootna.cloud/reels/:id لمن لا يملك التطبيق، ومن شكل معاينة الرابط المشارَك.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Sharing from the viewer sends a link to this page.",
+          "The page plays the video with its poster and controls, and shows the author, views, caption, and the listing when there is one.",
+          "A shared link previews with the poster, author and caption in WhatsApp and similar apps.",
+          "«فتح في التطبيق» opens the reel in the app when it's installed. Tapping the shared link itself opens the website, not the app, until a future native build adds Universal Links and App Links.",
+          "A deleted or removed reel, a suspended author, or reels still switched off gives the site's not-found page, within about a minute.",
+          "Plays on the website don't count as views.",
+        ],
+        ar: [
+          "المشاركة من العارض ترسل رابطاً إلى هذه الصفحة.",
+          "تشغّل الصفحة الفيديو مع الغلاف وأدوات التحكم، وتعرض صاحب الريل والمشاهدات والوصف، والإعلان إن وُجد.",
+          "يُعرض الرابط المشارَك مع الغلاف وصاحب الريل والوصف في واتساب والتطبيقات المشابهة.",
+          "«فتح في التطبيق» تفتح الريل في التطبيق إذا كان مثبتاً. أما الضغط على الرابط المشارَك نفسه فيفتح الموقع وليس التطبيق، إلى أن يضيف إصدار لاحق الروابط العامة.",
+          "الريل المحذوف أو المُزال، أو صاحب الريل الموقوف، أو تعطيل الريلز، يعرض صفحة عدم وجود الموقع خلال دقيقة تقريباً.",
+          "التشغيل في الموقع لا يُحتسب مشاهدة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Share a reel to WhatsApp: confirm the preview, then open it on a phone with no app and play it.",
+          "On a phone with the app, tap «فتح في التطبيق»: confirm that reel opens, and back reaches home.",
+          "Delete the reel and reopen the link after a minute: confirm the not-found page.",
+          "With REELS_ENABLED off, open a link: confirm the not-found page.",
+        ],
+        ar: [
+          "شارك ريلاً إلى واتساب: تأكد من المعاينة، ثم افتحه على هاتف دون التطبيق وشغّله.",
+          "على هاتف فيه التطبيق، اضغط «فتح في التطبيق»: تأكد من فتح ذلك الريل وأن الرجوع يصل إلى الرئيسية.",
+          "احذف الريل وأعد فتح الرابط بعد دقيقة: تأكد من صفحة عدم الوجود.",
+          "عند تعطيل REELS_ENABLED، افتح رابطاً: تأكد من صفحة عدم الوجود.",
+        ],
+      },
+      updatedIn: "feat/reels-web-page",
+    },
   ],
 };
