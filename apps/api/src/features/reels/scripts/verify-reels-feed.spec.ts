@@ -114,7 +114,7 @@ describeIfDb('Reels feed (real Postgres)', () => {
     minutesAgo: number,
     data: Record<string, unknown> = {},
   ) => {
-    const id = randomUUID();
+    const id: string = randomUUID();
     await prisma.reel.create({
       data: {
         id,
