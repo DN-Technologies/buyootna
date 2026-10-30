@@ -99,9 +99,11 @@ const CONTENT_LABEL = {
   PROPERTY: 'الإعلان المبلغ عنه',
   REVIEW: 'التقييم المبلغ عنه',
   STORY: 'القصة المبلغ عنها',
+  REEL: 'الفيديو المبلغ عنه',
 } as const
 
-// A reported review's comment or story's caption, for the drawer
+// A reported review's comment, or a story's or reel's caption, and a reel's
+// link to watch it, for the drawer
 function reportedContent(row: AdminReportRow) {
   if (!row.content) return {}
   const snap = row.content.snapshot ?? {}
@@ -114,6 +116,7 @@ function reportedContent(row: AdminReportRow) {
   return {
     contentLabel: CONTENT_LABEL[row.content.kind],
     contentText: text || undefined,
+    contentUrl: typeof snap.mediaUrl === 'string' ? snap.mediaUrl : undefined,
   }
 }
 

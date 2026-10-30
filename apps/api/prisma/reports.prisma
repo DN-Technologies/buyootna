@@ -50,6 +50,12 @@ model Report {
   targetReview         Review?   @relation(fields: [targetReviewId], references: [id], onDelete: SetNull)
   targetReviewSnapshot Json?
 
+  // A report made from a reel: against its author (USER), linked to the reel
+  // while it exists, with what it showed kept here once it is removed
+  targetReelId       String?
+  targetReel         Reel?     @relation(fields: [targetReelId], references: [id], onDelete: SetNull)
+  targetReelSnapshot Json?
+
   resolvedAt         DateTime?
   resolvedByAdminId  String?
   resolvedByAdmin    User?     @relation("ReportResolvedBy", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
@@ -63,6 +69,8 @@ model Report {
   // One report per reporting profile and story (other reports have no
   // story, and NULLs never collide)
   @@unique([reporterIdentityId, targetStoryId])
+  @@unique([reporterIdentityId, targetReelId])
+  @@index([targetReelId])
   @@index([targetStoryId])
   @@index([targetReviewId])
   @@index([status])

@@ -105,6 +105,13 @@ function reportContent(row: ReportRow) {
       snapshot: snapshot(row.targetStorySnapshot),
     };
   }
+  if (row.targetReelId || row.targetReelSnapshot) {
+    return {
+      kind: 'REEL' as const,
+      id: row.targetReelId,
+      snapshot: snapshot(row.targetReelSnapshot),
+    };
+  }
   return null;
 }
 
@@ -476,6 +483,27 @@ export class AdminReportsService {
           action: 'STORY_REMOVED',
           targetType: 'STORY',
           targetId: report.targetStoryId,
+          targetUserId: report.targetUserId ?? undefined,
+          metadata: { reason },
+        });
+      }
+    } else if (report.targetReelId) {
+      // Leaves every read at once; the reels cleanup deletes its public files
+      // within 10 minutes
+      const { count } = await this.prisma.reel.updateMany({
+        where: {
+          id: report.targetReelId,
+          status: { in: ['PENDING', 'ACTIVE'] },
+        },
+        data: { status: 'DELETED', deletedAt: now },
+      });
+      if (count > 0) {
+        removed = 'REEL';
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action: 'REEL_REMOVED',
+          targetType: 'REEL',
+          targetId: report.targetReelId,
           targetUserId: report.targetUserId ?? undefined,
           metadata: { reason },
         });

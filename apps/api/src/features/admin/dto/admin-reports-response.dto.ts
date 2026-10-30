@@ -29,12 +29,12 @@ export class ReportAssignedAdminDto {
 }
 
 export class ReportContentDto {
-  @ApiProperty({ enum: ['PROPERTY', 'REVIEW', 'STORY'] })
-  kind: 'PROPERTY' | 'REVIEW' | 'STORY';
+  @ApiProperty({ enum: ['PROPERTY', 'REVIEW', 'STORY', 'REEL'] })
+  kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL';
 
   @ApiProperty({
     nullable: true,
-    description: 'Null once the listing, review or story is gone',
+    description: 'Null once the listing, review, story or reel is gone',
   })
   id: string | null;
 
@@ -42,7 +42,7 @@ export class ReportContentDto {
     type: 'object',
     additionalProperties: true,
     nullable: true,
-    description: 'What a review or story showed when it was reported',
+    description: 'What a review, story or reel showed when it was reported',
   })
   snapshot: Record<string, unknown> | null;
 }
@@ -82,7 +82,7 @@ export class AdminReportRowDto {
     type: ReportContentDto,
     nullable: true,
     description:
-      'The listing, review or story reported (null for a report on an account alone); what «حذف المحتوى وإيقاف الحساب» removes',
+      'The listing, review, story or reel reported (null for a report on an account alone); what «حذف المحتوى وإيقاف الحساب» removes',
   })
   content: ReportContentDto | null;
 

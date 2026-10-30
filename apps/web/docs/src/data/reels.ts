@@ -233,5 +233,50 @@ export const reels: DocSection = {
       },
       updatedIn: "feat/reels-api-feed",
     },
+    {
+      id: "reels-moderation",
+      title: {
+        en: "A reported reel reaches admins, who can remove it",
+        ar: "يصل الريل المبلغ عنه إلى المشرفين الذين يستطيعون إزالته",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify the App Store Guideline 1.2 path for reels: report, moderator email, review in the admin portal, and removal.",
+        ar: "تحقق من مسار إرشادات متجر التطبيقات 1.2 للريلز: البلاغ، وبريد المشرفين، والمراجعة في لوحة التحكم، والإزالة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A signed-in profile can report a published reel with POST /reels/:id/reports. A guest gets 401, and a report on your own account's reel is refused.",
+          "One report per profile and reel: repeating returns the first and sends no second email.",
+          "Each new report emails MODERATION_ALERT_EMAIL.",
+          "In admin › البلاغات, the report shows «الفيديو المبلغ عنه», its caption, and a «مشاهدة الفيديو» link.",
+          "«حذف المحتوى وإيقاف الحساب» takes the reel out of every read at once, suspends the account, resolves the report and writes «حذف فيديو ريلز» to the logs.",
+          "The reel's public files are deleted within 10 minutes. A phone that cached the video may keep its copy until the cache evicts it.",
+        ],
+        ar: [
+          "يستطيع الملف المسجل الإبلاغ عن ريل منشور عبر POST /reels/:id/reports. يحصل الزائر على 401، ويُرفض البلاغ على ريل يخص حسابك.",
+          "بلاغ واحد لكل ملف شخصي وريل: التكرار يعيد البلاغ الأول ولا يرسل بريداً ثانياً.",
+          "يُرسل كل بلاغ جديد بريداً إلى MODERATION_ALERT_EMAIL.",
+          "في لوحة التحكم › البلاغات، يعرض البلاغ «الفيديو المبلغ عنه» ووصفه ورابط «مشاهدة الفيديو».",
+          "«حذف المحتوى وإيقاف الحساب» يخرج الريل من كل القراءات فوراً، ويوقف الحساب، ويغلق البلاغ، ويسجل «حذف فيديو ريلز» في السجلات.",
+          "تُحذف ملفات الريل العامة خلال 10 دقائق. قد يحتفظ الهاتف الذي خزّن الفيديو بنسخته حتى يزيلها من ذاكرته المؤقتة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an individual, report a reel twice: confirm one report and one email.",
+          "In the admin portal, open the report and use «مشاهدة الفيديو»: confirm the video opens.",
+          "Use «حذف المحتوى وإيقاف الحساب»: confirm the reel leaves the feed and its link answers 404, the author can't sign in, and the logs show the removal.",
+          "After 10 minutes, open the video link from the report: confirm it no longer opens.",
+        ],
+        ar: [
+          "كفرد، أبلغ عن ريل مرتين: تأكد من بلاغ واحد وبريد واحد.",
+          "في لوحة التحكم، افتح البلاغ واستخدم «مشاهدة الفيديو»: تأكد من فتح الفيديو.",
+          "استخدم «حذف المحتوى وإيقاف الحساب»: تأكد أن الريل خرج من الصفحة وأن رابطه يعيد 404 وأن صاحبه لا يستطيع تسجيل الدخول وأن السجلات تعرض الإزالة.",
+          "بعد 10 دقائق، افتح رابط الفيديو من البلاغ: تأكد أنه لم يعد يفتح.",
+        ],
+      },
+      updatedIn: "feat/reels-moderation",
+    },
   ],
 };

@@ -142,6 +142,80 @@ export class ReportsService {
   }
 
   /**
+   * A report made from a reel: a report against its author, linked to the
+   * reel, with a snapshot including its links, so the admin can watch it.
+   * One per reporting profile and reel: repeating it, even at the same
+   * moment, returns the first one.
+   */
+  async createForReel(
+    reporter: { userId: string; identityId: string },
+    reelId: string,
+    dto: CreateReportDto,
+    linksFor: (reel: { mediaKey: string; posterKey: string }) => {
+      mediaUrl: string;
+      posterUrl: string;
+    },
+  ) {
+    const reel = await this.prisma.reel.findUnique({
+      where: { id: reelId },
+      select: {
+        id: true,
+        identityId: true,
+        status: true,
+        caption: true,
+        mediaKey: true,
+        posterKey: true,
+        publishedAt: true,
+        identity: { select: { userId: true } },
+      },
+    });
+    if (!reel || reel.status !== 'ACTIVE') {
+      throw new NotFoundException('الفيديو غير موجود');
+    }
+    if (reel.identity.userId === reporter.userId) {
+      throw new BadRequestException('لا يمكنك تقديم بلاغ ضد حسابك الشخصي');
+    }
+
+    const existing = await this.findReelReport(reporter.identityId, reelId);
+    if (existing) return this.reportResult(existing);
+
+    try {
+      const report = await this.prisma.report.create({
+        data: {
+          reportNumber: await this.nextReportNumber(),
+          targetType: ReportTargetType.USER,
+          reason: dto.reason,
+          description: dto.description,
+          reporterUserId: reporter.userId,
+          reporterIdentityId: reporter.identityId,
+          targetUserId: reel.identity.userId,
+          targetIdentityId: reel.identityId,
+          targetReelId: reel.id,
+          targetReelSnapshot: {
+            reelId: reel.id,
+            authorIdentityId: reel.identityId,
+            caption: reel.caption,
+            publishedAt: reel.publishedAt?.toISOString() ?? null,
+            ...linksFor(reel),
+          },
+        },
+      });
+      this.alert(report, 'فيديو');
+      return this.reportResult(report);
+    } catch (error) {
+      // A simultaneous report by the same profile won the unique key
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const winner = await this.findReelReport(reporter.identityId, reelId);
+        if (winner) return this.reportResult(winner);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * A report made from a listing (إبلاغ عن الإعلان): PROPERTY, against the
    * listing and its owner. A profile's report on a listing still pending
    * review is returned again instead of being filed twice.
@@ -297,6 +371,17 @@ export class ReportsService {
         reporterIdentityId_targetStoryId: {
           reporterIdentityId,
           targetStoryId: storyId,
+        },
+      },
+    });
+  }
+
+  private findReelReport(reporterIdentityId: string, reelId: string) {
+    return this.prisma.report.findUnique({
+      where: {
+        reporterIdentityId_targetReelId: {
+          reporterIdentityId,
+          targetReelId: reelId,
         },
       },
     });

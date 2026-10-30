@@ -20,6 +20,8 @@ import { OptionalJwtGuard } from '../../core/guards/optional-jwt.guard';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
+import { CreateReportDto } from '../reports/dto/create-report.dto';
+import { ReportsService } from '../reports/reports.service';
 import { CreateReelUploadDto } from './dto/create-reel-upload.dto';
 import { PublishReelDto } from './dto/publish-reel.dto';
 import { RecordReelViewsDto } from './dto/record-reel-views.dto';
@@ -36,6 +38,7 @@ import {
 import { ReelsEnabledGuard } from './reels-enabled.guard';
 import { ReelsEngagementService } from './reels-engagement.service';
 import { ReelsFeedService, type ReelViewer } from './reels-feed.service';
+import { ReelsMediaService } from './reels-media.service';
 import { reelsEnabledFor } from './reels.switch';
 import { ReelsService } from './reels.service';
 
@@ -69,6 +72,8 @@ export class ReelsController {
     private readonly reels: ReelsService,
     private readonly feedService: ReelsFeedService,
     private readonly engagement: ReelsEngagementService,
+    private readonly media: ReelsMediaService,
+    private readonly reports: ReportsService,
   ) {}
 
   @Post('uploads')
@@ -149,6 +154,26 @@ export class ReelsController {
     @CurrentUser() reqUser?: RequestUser,
   ) {
     return this.feedService.findOne(viewerOf(reqUser), id);
+  }
+
+  @Post(':id/reports')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary:
+      'Report a reel: a report against its author, linked to the reel (one per profile and reel; repeating returns the first)',
+  })
+  @ApiCommonErrors()
+  report(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateReportDto,
+  ) {
+    return this.reports.createForReel(
+      { userId: reqUser.userId, identityId: reqUser.identityId },
+      id,
+      dto,
+      (reel) => this.media.linksFor(reel),
+    );
   }
 
   @Put(':id/like')
