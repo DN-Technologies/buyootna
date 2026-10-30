@@ -57,10 +57,10 @@ export default async function ReelPage({ params }: PageProps) {
           playsInline
           loop
           preload="metadata"
-          className="aspect-[9/16] w-full max-w-[360px] rounded-2xl bg-black object-contain"
+          className="aspect-9/16 w-full max-w-90 rounded-2xl bg-black object-contain"
         />
 
-        <div className="flex w-full max-w-[420px] flex-col gap-5">
+        <div className="flex w-full max-w-105 flex-col gap-5">
           <div className="flex items-center gap-3">
             <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-surface">
               {reel.author.logoUrl ? (
