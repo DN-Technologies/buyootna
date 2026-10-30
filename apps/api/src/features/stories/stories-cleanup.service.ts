@@ -182,12 +182,16 @@ export class StoriesCleanupService {
    * Daily: deletes story files that no row accounts for any more — left
    * behind when an account or profile was deleted (its rows cascade away
    * without touching S3). Files of any existing row are the purge's job.
+   * Production only: a development database doesn't know production's
+   * stories, and may share its bucket, so there this would delete real
+   * files.
    */
   @Cron(CronExpression.EVERY_DAY_AT_4AM)
   async reconcile(now = new Date()): Promise<ReconcileResult> {
-    if (this.reconciling) return { scanned: 0, deleted: 0, failed: 0 };
-    this.reconciling = true;
     const result: ReconcileResult = { scanned: 0, deleted: 0, failed: 0 };
+    if (process.env.NODE_ENV !== 'production' || this.reconciling)
+      return result;
+    this.reconciling = true;
     try {
       let token: string | undefined;
       do {
