@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import ReelsStudioSection from '@/features/reels/components/ReelsStudioSection';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { useMyStories } from '../hooks/useStoriesQueries';
@@ -101,6 +102,8 @@ export default function StoryStudio() {
         <StudioSection title="الآن" hint="قصصك المنشورة، تختفي بعد 24 ساعة">
           <StudioLiveRow stories={live.data?.stories ?? []} identityId={identityId} />
         </StudioSection>
+
+        <ReelsStudioSection identityId={identityId} />
 
         <StudioSection
           title="المميزة"

@@ -38,7 +38,7 @@ import type { CapturedStoryMedia } from '../camera/useStoryCamera';
 export const NO_LISTING = 'none';
 const VIDEO_MAX_SECONDS = STORY_VIDEO_MAX_MS / 1000;
 
-const sizeOf = async (uri: string, reported?: number | null) => {
+export const sizeOf = async (uri: string, reported?: number | null) => {
   if (reported) return reported;
   const info = await getInfoAsync(uri);
   return info.exists ? info.size : undefined;
@@ -48,7 +48,7 @@ const sizeOf = async (uri: string, reported?: number | null) => {
  * The video's still, as a JPEG within the poster limit (made again at a
  * lower quality if the first is too big); null if it can't be made.
  */
-async function makePoster(
+export async function makePoster(
   uri: string,
 ): Promise<{ uri: string; sizeBytes: number } | null> {
   for (const quality of [0.7, 0.4]) {

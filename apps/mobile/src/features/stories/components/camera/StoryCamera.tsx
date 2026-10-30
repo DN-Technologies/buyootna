@@ -35,6 +35,9 @@ interface StoryCameraProps {
   onCaptured: (media: CapturedStoryMedia) => void;
   onPickLibrary: () => void;
   onClose: () => void;
+  // For reels: the longest recording, and no photos
+  maxMs?: number;
+  videoOnly?: boolean;
 }
 
 /**
@@ -47,9 +50,11 @@ export default function StoryCamera({
   onCaptured,
   onPickLibrary,
   onClose,
+  maxMs,
+  videoOnly = false,
 }: StoryCameraProps) {
   const insets = useSafeAreaInsets();
-  const cam = useStoryCamera(onCaptured);
+  const cam = useStoryCamera(onCaptured, { maxMs, videoOnly });
 
   // Pinch from the zoom it started at
   const pinchBase = useRef(0);
@@ -123,7 +128,9 @@ export default function StoryCamera({
                 className="text-center font-cairo-bold text-[16px] text-white"
                 style={{ writingDirection: 'rtl' }}
               >
-                اسمح للتطبيق باستخدام الكاميرا لإضافة قصة
+                {videoOnly
+                  ? 'اسمح للتطبيق باستخدام الكاميرا لإضافة فيديو'
+                  : 'اسمح للتطبيق باستخدام الكاميرا لإضافة قصة'}
               </Text>
               <TouchableOpacity
                 testID="story-camera-settings"
@@ -138,7 +145,9 @@ export default function StoryCamera({
                 className="text-center font-cairo text-[13px] text-white/70"
                 style={{ writingDirection: 'rtl' }}
               >
-                أو اختر صورة أو فيديو من المعرض
+                {videoOnly
+                  ? 'أو اختر فيديو من المعرض'
+                  : 'أو اختر صورة أو فيديو من المعرض'}
               </Text>
             </>
           )}
@@ -199,6 +208,7 @@ export default function StoryCamera({
             <CaptureButton
               recording={cam.recording}
               disabled={cam.busy}
+              maxMs={maxMs}
               onPhoto={() => void cam.takePhoto()}
               onHoldStart={onHoldStart}
               onHoldEnd={cam.stopRecording}

@@ -10,6 +10,7 @@ import {
   REEL_LIMIT_WINDOW_MS,
   REEL_ORPHAN_MIN_AGE_MS,
   REEL_PENDING_GRACE_MS,
+  REEL_VIEW_RETENTION_MS,
 } from './reels.constants';
 
 export interface ReelPurgeResult {
@@ -169,6 +170,25 @@ export class ReelsCleanupService {
     return batch
       .filter((r) => this.media.keysOf(r).every((k) => !failedKeys.has(k)))
       .map((r) => r.id);
+  }
+
+  /**
+   * Daily: drops per-viewer rows too old to matter. The reel keeps its count;
+   * a reel that old may show as unseen again, which is fine.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_5AM)
+  async pruneViews(now = new Date()): Promise<number> {
+    try {
+      const { count } = await this.prisma.reelView.deleteMany({
+        where: {
+          viewedAt: { lt: new Date(now.getTime() - REEL_VIEW_RETENTION_MS) },
+        },
+      });
+      return count;
+    } catch (error) {
+      this.logger.error('Reel view pruning failed', error as Error);
+      return 0;
+    }
   }
 
   /**

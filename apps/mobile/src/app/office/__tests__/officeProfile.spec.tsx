@@ -7,6 +7,10 @@ import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const mockPush = jest.fn();
+jest.mock('@/features/reels/components/ProfileReels', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
     back: jest.fn(),

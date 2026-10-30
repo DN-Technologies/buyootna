@@ -34,6 +34,27 @@ export const REEL_PUT_TTL_SECONDS = 10 * 60;
 export const REEL_DAILY_PUBLISH_LIMIT = 10;
 export const REEL_LIMIT_WINDOW_MS = 24 * HOUR_MS;
 
+// The deals the feed can be narrowed to
+export const REEL_FILTER_LISTING_TYPES = ['SALE', 'RENT', 'EXCHANGE'] as const;
+export type ReelListingType = (typeof REEL_FILTER_LISTING_TYPES)[number];
+
+// Ranking: reels older than this score 0, and aren't scored any more
+export const REEL_RANK_WINDOW_MS = 90 * 24 * HOUR_MS;
+export const REEL_RANK_BATCH = 500;
+
+export const REEL_COMMENT_MAX = 500;
+export const REEL_COMMENT_HOURLY_LIMIT = 20;
+export const REEL_COMMENTS_PAGE = 20;
+
+export const REEL_PAGE_DEFAULT = 10;
+export const REEL_PAGE_MAX = 20;
+// A scroll keeps its snapshot this long; past it the app starts again quietly
+export const REEL_CURSOR_MAX_AGE_MS = 6 * HOUR_MS;
+// Views the app sends in one request
+export const REEL_VIEWS_BATCH_MAX = 50;
+// Per-viewer rows are dropped after this; the reel's viewCount stays
+export const REEL_VIEW_RETENTION_MS = 180 * 24 * HOUR_MS;
+
 // Cleanup: leaves a publish that started just before the deadline alone
 export const REEL_PENDING_GRACE_MS = 5 * MINUTE_MS;
 // Reconciliation: files younger than this are never treated as orphans

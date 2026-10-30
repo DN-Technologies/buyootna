@@ -31,9 +31,9 @@ export interface AdminReportRow {
   submittedBy: AdminReportUserSummary | null
   against: AdminReportUserSummary | null
   assignedAdmin: AdminReportAssignedAdmin | null
-  // The listing, review or story reported (null for an account alone)
+  // The listing, review, story or reel reported (null for an account alone)
   content: {
-    kind: 'PROPERTY' | 'REVIEW' | 'STORY'
+    kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL' | 'REEL_COMMENT'
     id: string | null
     snapshot: Record<string, unknown> | null
   } | null

@@ -125,3 +125,28 @@ export interface PropertyDetails {
     role: 'INDIVIDUAL' | 'COMPANY' | 'OFFICE'
   }
 }
+
+/** A reel from GET /reels/:id, as a guest sees it. */
+export interface PublicReel {
+  id: string;
+  mediaUrl: string;
+  posterUrl: string;
+  caption: string | null;
+  publishedAt: string;
+  viewCount: number;
+  likeCount: number;
+  author: {
+    identityId: string;
+    type: 'COMPANY' | 'OFFICE';
+    name: string;
+    logoUrl: string | null;
+    isVerified: boolean;
+  };
+  property: {
+    id: string;
+    type: string;
+    category: string;
+    location: string;
+    coverUrl: string | null;
+  } | null;
+}

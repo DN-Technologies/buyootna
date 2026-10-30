@@ -42,6 +42,7 @@ export interface ReportItem {
   // What a reported review or story said (kept even once it is deleted)
   contentLabel?: string
   contentText?: string
+  contentUrl?: string
 }
 
 export type StatusFilterOption = 'الكل' | 'قيد الانتظار' | 'تم حلها' | 'مرفوض'

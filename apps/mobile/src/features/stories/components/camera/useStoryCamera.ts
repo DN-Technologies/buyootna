@@ -37,7 +37,13 @@ export const clampZoom = (zoom: number) => Math.min(1, Math.max(0, zoom));
  * The story camera's state and actions: what's allowed, front/back, flash,
  * zoom, a photo (cropped to 9:16) and a video up to the story limit.
  */
-export function useStoryCamera(onCaptured: (media: CapturedStoryMedia) => void) {
+export function useStoryCamera(
+  onCaptured: (media: CapturedStoryMedia) => void,
+  {
+    maxMs = STORY_VIDEO_MAX_MS,
+    videoOnly = false,
+  }: { maxMs?: number; videoOnly?: boolean } = {},
+) {
   const cameraRef = useRef<CameraView>(null);
   const [cameraPermission, requestCamera] = useCameraPermissions();
   const [micPermission, requestMic] = useMicrophonePermissions();
@@ -85,6 +91,10 @@ export function useStoryCamera(onCaptured: (media: CapturedStoryMedia) => void) 
   const takePhoto = useCallback(async () => {
     const camera = cameraRef.current;
     if (!camera || busy || recording) return;
+    if (videoOnly) {
+      showAlert('تنبيه', 'اضغط مطولاً لتسجيل فيديو');
+      return;
+    }
     setBusy(true);
     try {
       const picture = await camera.takePictureAsync({ quality: 0.85 });
@@ -95,7 +105,7 @@ export function useStoryCamera(onCaptured: (media: CapturedStoryMedia) => void) 
     } finally {
       setBusy(false);
     }
-  }, [busy, recording, onCaptured]);
+  }, [busy, recording, onCaptured, videoOnly]);
 
   const record = useCallback(async () => {
     const camera = cameraRef.current;
@@ -104,12 +114,17 @@ export function useStoryCamera(onCaptured: (media: CapturedStoryMedia) => void) 
     recordStartedAt.current = Date.now();
     try {
       const result = await camera.recordAsync({
-        maxDuration: STORY_VIDEO_MAX_MS / 1000,
+        maxDuration: maxMs / 1000,
       });
-      const durationMs = Math.min(Date.now() - recordStartedAt.current, STORY_VIDEO_MAX_MS);
+      const durationMs = Math.min(Date.now() - recordStartedAt.current, maxMs);
       if (!result?.uri) return;
       if (durationMs < STORY_TRIM_MIN_MS) {
-        showAlert('تنبيه', 'اضغط مطولاً لتسجيل فيديو، أو اضغط مرة لالتقاط صورة');
+        showAlert(
+          'تنبيه',
+          videoOnly
+            ? 'اضغط مطولاً لتسجيل فيديو'
+            : 'اضغط مطولاً لتسجيل فيديو، أو اضغط مرة لالتقاط صورة',
+        );
         return;
       }
       onCaptured({ kind: 'video', uri: result.uri, durationMs });
@@ -120,7 +135,7 @@ export function useStoryCamera(onCaptured: (media: CapturedStoryMedia) => void) 
       // Android goes back to picture mode (a no-op on iOS)
       setMode(idleMode());
     }
-  }, [onCaptured]);
+  }, [maxMs, onCaptured, videoOnly]);
 
   const startRecording = useCallback(() => {
     if (busy || recording) return;

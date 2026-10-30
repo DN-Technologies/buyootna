@@ -44,3 +44,24 @@ describe('the video trim', () => {
     expect(formatClock(95_400)).toBe('1:35');
   });
 });
+
+describe('a longer limit (reels)', () => {
+  it('starts with the first 60 seconds', () => {
+    expect(initialTrim(120_000, 60_000)).toEqual({ startMs: 0, endMs: 60_000 });
+    expect(initialTrim(null, 60_000)).toEqual({ startMs: 0, endMs: 60_000 });
+    expect(initialTrim(12_000, 60_000)).toEqual({ startMs: 0, endMs: 12_000 });
+  });
+
+  it('lets the kept part grow to 60 seconds, and no further', () => {
+    expect(
+      clampTrim({ startMs: 0, endMs: 45_000 }, 120_000, 'end', 60_000).endMs,
+    ).toBe(45_000);
+    expect(
+      clampTrim({ startMs: 0, endMs: 90_000 }, 120_000, 'end', 60_000).endMs,
+    ).toBe(60_000);
+    // The story limit is still 30 seconds
+    expect(clampTrim({ startMs: 0, endMs: 45_000 }, 120_000, 'end').endMs).toBe(
+      30_000,
+    );
+  });
+});

@@ -37,6 +37,12 @@ model Reel {
   hadListing       Boolean    @default(false)
   viewCount        Int        @default(0)
   likeCount        Int        @default(0)
+  commentCount     Int        @default(0)
+  // The author can turn comments off; existing ones are then hidden, not lost
+  commentsEnabled  Boolean    @default(true)
+  // Quality × freshness, refreshed hourly (reels-ranking.service.ts). Only
+  // orders the feed with REELS_RANKED_FEED=true
+  rankScore        Float      @default(0)
   createdAt        DateTime   @default(now())
   // Publish after this and the slot is abandoned
   uploadExpiresAt  DateTime
@@ -46,11 +52,65 @@ model Reel {
   // reels); until then the cleanup keeps retrying
   mediaDeletedAt   DateTime?
   failureReason    String?
+  views            ReelView[]
+  likes            ReelLike[]
+  reports          Report[]
+  comments         ReelComment[]
 
   // Feed + cleanup
   @@index([status, publishedAt(sort: Desc), id(sort: Desc)])
+  // The feed, when ranked
+  @@index([status, rankScore(sort: Desc), id(sort: Desc)])
   // One author's reels
   @@index([identityId, status, publishedAt(sort: Desc)])
   // The per-author publish limit, deleted reels included
   @@index([identityId, publishedAt])
+}
+
+// One view per viewing profile and reel; the first one is kept. What "unseen
+// first" reads. Rows older than 180 days are pruned (Reel.viewCount stays)
+model ReelView {
+  reelId           String
+  reel             Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  viewerIdentityId String
+  viewer           Identity @relation("ReelViewer", fields: [viewerIdentityId], references: [id], onDelete: Cascade)
+  viewedAt         DateTime @default(now())
+  // The most it played in one go, and whether it played to the end. For
+  // ranking; one row per profile, so replays can't inflate a reel
+  watchedMs        Int      @default(0)
+  completed        Boolean  @default(false)
+
+  @@id([reelId, viewerIdentityId])
+  @@index([viewerIdentityId, reelId])
+  @@index([viewedAt])
+}
+
+// One like per profile and reel
+model ReelLike {
+  reelId     String
+  reel       Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity @relation("ReelLiker", fields: [identityId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([reelId, identityId])
+  @@index([identityId])
+}
+
+// A comment on a reel: flat, no replies. Public text, so it goes through the
+// content filter, can be reported, and hides across blocks (Guideline 1.2)
+model ReelComment {
+  id         String   @id @default(uuid())
+  reelId     String
+  reel       Reel     @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  identityId String
+  identity   Identity @relation("ReelCommenter", fields: [identityId], references: [id], onDelete: Cascade)
+  body       String   @db.VarChar(500)
+  createdAt  DateTime @default(now())
+  reports    Report[]
+
+  // A reel's comments, newest first
+  @@index([reelId, createdAt(sort: Desc), id(sort: Desc)])
+  // The per-profile hourly limit
+  @@index([identityId, createdAt])
 }

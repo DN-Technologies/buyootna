@@ -6,6 +6,10 @@ import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
 import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
+jest.mock('@/features/reels/components/ProfileReels', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
     back: jest.fn(),

@@ -71,6 +71,7 @@ export function useBlockFlow() {
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: blocksKey(accountId) });
     void queryClient.invalidateQueries({ queryKey: ['stories'] });
+    void queryClient.invalidateQueries({ queryKey: ['reels'] });
     for (const key of LISTING_QUERY_KEYS) {
       void queryClient.invalidateQueries({ queryKey: [key] });
     }

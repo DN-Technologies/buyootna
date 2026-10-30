@@ -72,6 +72,25 @@ export const reelLimitReached = () =>
     HttpStatus.TOO_MANY_REQUESTS,
   );
 
+export const commentNotFound = () => new NotFoundException('التعليق غير موجود');
+
+export const commentsOff = () =>
+  new ForbiddenException({
+    statusCode: 403,
+    message: 'التعليقات مغلقة على هذا الفيديو',
+    code: 'REEL_COMMENTS_OFF',
+  });
+
+export const commentLimitReached = () =>
+  new HttpException(
+    {
+      statusCode: HttpStatus.TOO_MANY_REQUESTS,
+      message: 'وصلت للحد الأقصى من التعليقات، حاول لاحقاً',
+      code: 'REEL_COMMENT_LIMIT',
+    },
+    HttpStatus.TOO_MANY_REQUESTS,
+  );
+
 export const propertyNotOwn = () =>
   new BadRequestException({
     statusCode: 400,

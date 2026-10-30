@@ -75,8 +75,11 @@ model Identity {
   stories           Story[]            @relation("StoryAuthor")
   storyViews        StoryView[]        @relation("StoryViewer")
   storyHighlights   StoryHighlight[]   @relation("StoryHighlightAuthor")
-  // Reels this company/office posted
+  // Reels this company/office posted, and those this profile viewed or liked
   reels             Reel[]             @relation("ReelAuthor")
+  reelViews         ReelView[]         @relation("ReelViewer")
+  reelLikes         ReelLike[]         @relation("ReelLiker")
+  reelComments      ReelComment[]      @relation("ReelCommenter")
   blockedAs         UserBlock[]        @relation("UserBlocksAsProfile")
 
   // One individual, one company and one office per account

@@ -25,6 +25,8 @@ export const LOG_ACTION_LABEL: Record<BackendAdminActionType, string> = {
   FEATURE_PACKAGE_UPDATED: 'تعديل باقة تمييز',
   REVIEW_DELETED: 'حذف تقييم',
   STORY_REMOVED: 'حذف قصة',
+  REEL_REMOVED: 'حذف فيديو ريلز',
+  REEL_COMMENT_REMOVED: 'حذف تعليق على فيديو ريلز',
 }
 
 export const LOG_TARGET_TYPE_LABEL: Record<string, string> = {
@@ -35,6 +37,8 @@ export const LOG_TARGET_TYPE_LABEL: Record<string, string> = {
   USER: 'مستخدم',
   PLAN: 'باقة',
   COMPANY_PROJECT: 'مشروع',
+  REEL: 'فيديو ريلز',
+  REEL_COMMENT: 'تعليق على فيديو ريلز',
 }
 
 /** One line about an action: who did what, to whom («أحمد: تغيير الباقة — سارة»). */

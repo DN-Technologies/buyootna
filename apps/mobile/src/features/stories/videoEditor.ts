@@ -29,11 +29,14 @@ export interface TrimRange {
   endMs: number;
 }
 
-/** A video's first part that a story can hold. */
-export function initialTrim(durationMs: number | null): TrimRange {
+/** A video's first part that a story (or, with `maxMs`, a reel) can hold. */
+export function initialTrim(
+  durationMs: number | null,
+  maxMs: number = STORY_VIDEO_MAX_MS,
+): TrimRange {
   return {
     startMs: 0,
-    endMs: Math.min(durationMs ?? STORY_VIDEO_MAX_MS, STORY_VIDEO_MAX_MS),
+    endMs: Math.min(durationMs ?? maxMs, maxMs),
   };
 }
 

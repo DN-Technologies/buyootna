@@ -20,7 +20,9 @@ export type NotificationType =
   // A company answered the user's quote request
   | 'REQUEST_REPLY'
   // A client sent the company/office (identityId) a quote request
-  | 'REQUEST_RECEIVED';
+  | 'REQUEST_RECEIVED'
+  // Someone commented on the company's/office's reel
+  | 'REEL_COMMENT';
 
 // What a notification points at, e.g. the matched listing for ALERT_MATCH
 export interface NotificationData {
@@ -30,6 +32,8 @@ export interface NotificationData {
   // REQUEST_REPLY: the request that was answered; REQUEST_RECEIVED: the
   // request sent to the company
   requestId?: string;
+  // REEL_COMMENT: the reel commented on
+  reelId?: string;
 }
 
 export interface AppNotification {

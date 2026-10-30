@@ -39,6 +39,9 @@ interface ComposerPreviewProps {
   onPublish: () => void;
   // Back to choosing another photo or video
   onDiscard: () => void;
+  // For reels: the longest part that can be kept, and what send is called
+  maxMs?: number;
+  publishLabel?: string;
 }
 
 /** The chosen video, playing only its kept part, looped. */
@@ -154,6 +157,8 @@ export default function ComposerPreview({
   progress,
   onPublish,
   onDiscard,
+  maxMs,
+  publishLabel = 'نشر القصة',
 }: ComposerPreviewProps) {
   const insets = useSafeAreaInsets();
   const [seekTo, setSeekTo] = useState<number | null>(null);
@@ -211,6 +216,7 @@ export default function ComposerPreview({
             onSeek={setSeekTo}
             muted={muted}
             onToggleMuted={onToggleMuted}
+            maxMs={maxMs}
           />
         ) : null}
       </LinearGradient>
@@ -294,7 +300,7 @@ export default function ComposerPreview({
             onPress={onPublish}
             disabled={busy}
             accessibilityRole="button"
-            accessibilityLabel="نشر القصة"
+            accessibilityLabel={publishLabel}
             className="size-[42px] items-center justify-center rounded-[24px] bg-[#15304D]"
           >
             {progress !== null ? (
