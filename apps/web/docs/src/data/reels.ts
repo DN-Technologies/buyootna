@@ -4,8 +4,8 @@ export const reels: DocSection = {
   slug: "reels",
   title: { en: "Reels", ar: "الريلز" },
   summary: {
-    en: "Short public videos from companies and offices, hidden behind a server switch until launch. These stories grow as each part ships; today the API and the viewer exist; posting from the app comes next.",
-    ar: "فيديوهات قصيرة عامة من الشركات والمكاتب، مخفية خلف مفتاح في الخادم حتى الإطلاق. تتوسع هذه القصص مع كل جزء يُنشر؛ حالياً تتوفر الواجهة البرمجية والعارض؛ ويأتي النشر من التطبيق لاحقاً.",
+    en: "Short public videos from companies and offices, hidden behind a server switch until launch. These stories grow as each part ships; watching and posting are both in the app.",
+    ar: "فيديوهات قصيرة عامة من الشركات والمكاتب، مخفية خلف مفتاح في الخادم حتى الإطلاق. تتوسع هذه القصص مع كل جزء يُنشر؛ المشاهدة والنشر متاحان كلاهما في التطبيق.",
   },
   stories: [
     {
@@ -336,6 +336,57 @@ export const reels: DocSection = {
         ],
       },
       updatedIn: "feat/reels-viewer",
+    },
+    {
+      id: "reels-posting",
+      title: {
+        en: "Companies and offices post reels from the app",
+        ar: "تنشر الشركات والمكاتب الريلز من التطبيق",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify posting from «ريلز» in the studio on the company and office home, on real phones.",
+        ar: "تحقق من النشر عبر «ريلز» في الاستوديو بالصفحة الرئيسية للشركة والمكتب، على هواتف حقيقية.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the switch on, the studio shows «ريلز» with «فيديو جديد» and the profile's reels with their views and likes. With it off, the section doesn't appear.",
+          "«فيديو جديد» opens the camera, where holding the shutter records up to 60 seconds and a tap only explains that. The gallery offers videos only, up to 10 minutes long.",
+          "The trim bar keeps 1 to 60 seconds, and the sound can be turned off. Stories still stop at 30 seconds.",
+          "Every reel is exported through the trimmer before upload, so the file is a 720p H.264 MP4, even if no cut was made.",
+          "An export over 50 MB says so before uploading anything. Upload progress shows on the send button.",
+          "A caption and one of the profile's active listings are optional, and the published reel shows them.",
+          "After publishing, the screen closes and the new reel is in the studio. A refused file says why, a limit says so, and a lapsed company is offered the plans.",
+          "Opening your own reel from the studio offers «حذف الفيديو».",
+        ],
+        ar: [
+          "عند تفعيل المفتاح، يعرض الاستوديو «ريلز» مع «فيديو جديد» وريلز الملف بمشاهداتها وإعجاباتها. وعند تعطيله لا يظهر القسم.",
+          "«فيديو جديد» يفتح الكاميرا، حيث يسجل الضغط المطول حتى 60 ثانية وتكتفي الضغطة الواحدة بالشرح. ويعرض المعرض الفيديوهات فقط، حتى 10 دقائق.",
+          "يحتفظ شريط القص بجزء من ثانية إلى 60 ثانية، ويمكن إيقاف الصوت. وتبقى القصص متوقفة عند 30 ثانية.",
+          "يُصدَّر كل ريل عبر أداة القص قبل الرفع، فيكون الملف MP4 بصيغة H.264 ودقة 720p، حتى دون أي قص.",
+          "الملف المصدَّر الذي يتجاوز 50 ميجابايت يُبلَّغ عنه قبل رفع أي شيء. ويظهر تقدم الرفع على زر الإرسال.",
+          "الوصف وأحد إعلانات الملف النشطة اختياريان، ويعرضهما الريل المنشور.",
+          "بعد النشر تُغلق الشاشة ويظهر الريل الجديد في الاستوديو. ويوضح الملف المرفوض السبب، ويوضح بلوغ الحد ذلك، وتُعرض الباقات على الشركة منتهية الاشتراك.",
+          "فتح ريلك من الاستوديو يعرض «حذف الفيديو».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On an iPhone and an Android, record 20 seconds and publish: confirm it appears in the studio and plays in the feed for another account.",
+          "Pick a 3-minute gallery video, keep 45 seconds and publish: confirm the published reel is 45 seconds long.",
+          "Pick a short 1080p or HEVC clip with no cut: confirm it still publishes and the file is 720p H.264.",
+          "Post an eleventh reel within 24 hours: confirm the limit message.",
+          "Post a story after this: confirm it still stops at 30 seconds.",
+        ],
+        ar: [
+          "على آيفون وأندرويد، سجّل 20 ثانية وانشر: تأكد من ظهوره في الاستوديو وتشغيله في الصفحة الرئيسية لحساب آخر.",
+          "اختر فيديو مدته 3 دقائق من المعرض واحتفظ بـ45 ثانية وانشر: تأكد أن الريل المنشور مدته 45 ثانية.",
+          "اختر مقطعاً قصيراً بدقة 1080p أو بصيغة HEVC دون قص: تأكد من نشره وأن الملف بصيغة H.264 ودقة 720p.",
+          "انشر الريل الحادي عشر خلال 24 ساعة: تأكد من رسالة الحد.",
+          "انشر قصة بعد ذلك: تأكد أنها ما زالت تتوقف عند 30 ثانية.",
+        ],
+      },
+      updatedIn: "feat/reels-posting",
     },
   ],
 };

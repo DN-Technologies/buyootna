@@ -39,6 +39,16 @@ export function useReelsRail(enabled: boolean) {
   });
 }
 
+/** The current profile's newest reels with their counts, for its studio. */
+export function useMyReels(enabled: boolean) {
+  const key = useReelsKey();
+  return useQuery({
+    queryKey: [...key, 'mine'],
+    queryFn: () => reelsService.getMine(undefined, RAIL_SIZE),
+    enabled,
+  });
+}
+
 /** A company's or office's newest reels, for the row on its profile. */
 export function useAuthorReelsRail(authorId: string | undefined, enabled: boolean) {
   const key = useReelsKey();

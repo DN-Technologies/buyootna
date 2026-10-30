@@ -7,19 +7,22 @@ import { SvgXml } from 'react-native-svg';
 import { eyeXml } from '@/features/stories/components/composer/storyIconXml';
 
 import { formatReelCount } from '../reelRules';
-import type { ViewerReel } from '../types';
+import type { AuthorReel } from '../types';
 
 export const REEL_CARD_WIDTH = 112;
-const CARD_HEIGHT = 199;
+export const REEL_CARD_HEIGHT = 199;
 
 /** A reel in a row: its poster, who posted it (unless obvious), its views. */
 export default function ReelCard({
   reel,
-  showAuthor,
+  authorName,
+  showLikes = false,
   onPress,
 }: {
-  reel: ViewerReel;
-  showAuthor: boolean;
+  reel: AuthorReel;
+  // Left out where it's obvious: its own profile, the author's studio
+  authorName?: string;
+  showLikes?: boolean;
   onPress: () => void;
 }) {
   return (
@@ -27,9 +30,9 @@ export default function ReelCard({
       testID={`reel-card-${reel.id}`}
       onPress={onPress}
       activeOpacity={0.85}
-      accessibilityLabel={`فيديو من ${reel.author.name}`}
+      accessibilityLabel={authorName ? `فيديو من ${authorName}` : 'فيديو'}
       className="overflow-hidden rounded-[14px] bg-[#15304D]"
-      style={{ width: REEL_CARD_WIDTH, height: CARD_HEIGHT }}
+      style={{ width: REEL_CARD_WIDTH, height: REEL_CARD_HEIGHT }}
     >
       <Image
         source={{ uri: reel.posterUrl }}
@@ -45,12 +48,12 @@ export default function ReelCard({
         <Ionicons name="play" size={16} color="#FFFFFF" />
       </View>
       <View className="absolute bottom-[8px] start-[8px] end-[8px]" style={{ gap: 2 }}>
-        {showAuthor && (
+        {!!authorName && (
           <Text
             numberOfLines={1}
             className="font-cairo-semibold text-[12px] leading-[17px] text-white"
           >
-            {reel.author.name}
+            {authorName}
           </Text>
         )}
         <View className="flex-row items-center" style={{ gap: 3 }}>
@@ -58,6 +61,19 @@ export default function ReelCard({
           <Text className="font-cairo text-[11px] leading-[15px] text-white">
             {formatReelCount(reel.viewCount)}
           </Text>
+          {showLikes && (
+            <>
+              <Ionicons
+                name="heart"
+                size={12}
+                color="#FFFFFF"
+                style={{ marginStart: 6 }}
+              />
+              <Text className="font-cairo text-[11px] leading-[15px] text-white">
+                {formatReelCount(reel.likeCount)}
+              </Text>
+            </>
+          )}
         </View>
       </View>
     </TouchableOpacity>

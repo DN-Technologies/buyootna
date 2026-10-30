@@ -27,6 +27,8 @@ const ZOOM_DRAG = 300;
 interface CaptureButtonProps {
   recording: boolean;
   disabled?: boolean;
+  // The longest recording, for the ring: a story's 30 seconds unless told
+  maxMs?: number;
   onPhoto: () => void;
   onHoldStart: () => void;
   onHoldEnd: () => void;
@@ -41,6 +43,7 @@ interface CaptureButtonProps {
 export default function CaptureButton({
   recording,
   disabled = false,
+  maxMs = STORY_VIDEO_MAX_MS,
   onPhoto,
   onHoldStart,
   onHoldEnd,
@@ -53,7 +56,7 @@ export default function CaptureButton({
     if (recording) {
       progress.value = 0;
       progress.value = withTiming(1, {
-        duration: STORY_VIDEO_MAX_MS,
+        duration: maxMs,
         easing: Easing.linear,
       });
     } else {

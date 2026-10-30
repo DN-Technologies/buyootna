@@ -2,8 +2,10 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import ProfileReels from '../components/ProfileReels';
 import ReelsRail from '../components/ReelsRail';
+import ReelsStudioSection from '../components/ReelsStudioSection';
 import {
   useAuthorReelsRail,
+  useMyReels,
   useReelsAvailable,
   useReelsRail,
 } from '../hooks/useReelsQueries';
@@ -19,11 +21,15 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('expo-image', () => ({ Image: 'Image' }));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }));
 jest.mock('react-native-svg', () => ({ SvgXml: 'SvgXml' }));
-jest.mock('@expo/vector-icons', () => ({ Ionicons: 'Ionicons' }));
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: 'Ionicons',
+  Feather: 'Feather',
+}));
 jest.mock('../hooks/useReelsQueries', () => ({
   useReelsAvailable: jest.fn(),
   useReelsRail: jest.fn(),
   useAuthorReelsRail: jest.fn(),
+  useMyReels: jest.fn(),
 }));
 
 const reel = {
@@ -74,6 +80,37 @@ describe('ReelsRail', () => {
     await render(<ReelsRail />);
     fireEvent.press(screen.getByTestId('reels-rail-all'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/reels', params: {} });
+  });
+});
+
+describe('ReelsStudioSection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useMyReels as jest.Mock).mockReturnValue(query([reel]));
+  });
+
+  it('shows nothing while the switch is off', async () => {
+    (useReelsAvailable as jest.Mock).mockReturnValue(false);
+    await render(<ReelsStudioSection identityId="me" />);
+    expect(screen.queryByTestId('studio-reels')).toBeNull();
+  });
+
+  it('posts a new one, also with none yet', async () => {
+    (useReelsAvailable as jest.Mock).mockReturnValue(true);
+    (useMyReels as jest.Mock).mockReturnValue(query([]));
+    await render(<ReelsStudioSection identityId="me" />);
+    fireEvent.press(screen.getByTestId('studio-reel-new'));
+    expect(mockPush).toHaveBeenCalledWith('/reels/new');
+  });
+
+  it('opens its own reel in the viewer', async () => {
+    (useReelsAvailable as jest.Mock).mockReturnValue(true);
+    await render(<ReelsStudioSection identityId="me" />);
+    fireEvent.press(screen.getByTestId('reel-card-r1'));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/reels',
+      params: { authorId: 'me', startId: 'r1' },
+    });
   });
 });
 

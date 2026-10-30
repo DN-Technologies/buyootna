@@ -54,7 +54,11 @@ export default function ReelsRail() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 10 }}
         renderItem={({ item }) => (
-          <ReelCard reel={item} showAuthor onPress={() => open(item.id)} />
+          <ReelCard
+            reel={item}
+            authorName={item.author.name}
+            onPress={() => open(item.id)}
+          />
         )}
       />
     </View>

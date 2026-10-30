@@ -7,6 +7,7 @@ import type {
   StoryUploadSlot,
   StoryVideoType,
 } from './types';
+import { uploadThenPublish } from './uploadThenPublish';
 
 /** A picked photo, or a video with the poster made from it. */
 export type StoryMedia =
@@ -38,8 +39,6 @@ export class StoryUploadError extends Error {
 const errorCode = (error: unknown) =>
   (error as { response?: { data?: { code?: string } } })?.response?.data?.code;
 
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 const uploadRequest = (media: StoryMedia): StoryUploadRequest =>
   media.kind === 'VIDEO'
     ? {
@@ -51,11 +50,8 @@ const uploadRequest = (media: StoryMedia): StoryUploadRequest =>
     : { mediaType: 'IMAGE', contentType: media.type, sizeBytes: media.sizeBytes };
 
 /**
- * Posts a story: an upload slot, the files straight to S3 (a video's
- * poster first, then the video, whose progress is reported), then publish
- * (the server checks the files). A failed upload is retried once with the
- * same links while they are valid, otherwise with a new slot; a publish
- * that finds the files not there yet is retried once.
+ * Posts a story, through uploadThenPublish: the files straight to S3 (a
+ * video's poster first), then publish, with the same retries.
  */
 export async function publishStory(
   service: Service,
@@ -64,40 +60,22 @@ export async function publishStory(
   onProgress?: (fraction: number) => void,
   now: () => number = Date.now,
 ): Promise<AuthorStory> {
-  const ok = (status: number) => status >= 200 && status < 300;
-  const put = (...args: Parameters<Service['uploadToSlot']>) =>
-    service.uploadToSlot(...args).catch(() => 0);
-  const upload = async (slot: StoryUploadSlot): Promise<number> => {
-    if (media.kind === 'VIDEO') {
-      if (!slot.poster) return 0;
-      const posterStatus = await put(slot.poster, media.poster.uri);
-      if (!ok(posterStatus)) return posterStatus;
-    }
-    return put(slot.media, media.uri, onProgress);
-  };
-
-  const request = uploadRequest(media);
-  let slot = await service.createUpload(request);
-  let status = await upload(slot);
-  if (!ok(status)) {
-    if (Date.parse(slot.uploadUrlExpiresAt) <= now()) {
-      slot = await service.createUpload(request);
-    }
-    status = await upload(slot);
-  }
-  if (!ok(status)) throw new StoryUploadError(status, media.kind);
-
   const body = {
     ...(details.caption?.trim() ? { caption: details.caption.trim() } : {}),
     ...(details.propertyId ? { propertyId: details.propertyId } : {}),
   };
-  try {
-    return await service.publish(slot.storyId, body);
-  } catch (error) {
-    if (errorCode(error) !== 'STORY_UPLOAD_INCOMPLETE') throw error;
-    await delay(1000);
-    return service.publish(slot.storyId, body);
-  }
+  const request = uploadRequest(media);
+  return uploadThenPublish<StoryUploadSlot, AuthorStory>({
+    createSlot: () => service.createUpload(request),
+    put: service.uploadToSlot,
+    mediaUri: media.uri,
+    posterUri: media.kind === 'VIDEO' ? media.poster.uri : undefined,
+    publish: (slot) => service.publish(slot.storyId, body),
+    incompleteCode: 'STORY_UPLOAD_INCOMPLETE',
+    uploadError: (status) => new StoryUploadError(status, media.kind),
+    onProgress,
+    now,
+  });
 }
 
 const serverMessage = (error: unknown) => {

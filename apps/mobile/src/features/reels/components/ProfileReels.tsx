@@ -39,7 +39,6 @@ export default function ProfileReels({ authorId }: { authorId?: string }) {
         renderItem={({ item }) => (
           <ReelCard
             reel={item}
-            showAuthor={false}
             onPress={() =>
               router.push({
                 pathname: '/reels',

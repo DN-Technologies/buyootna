@@ -47,3 +47,29 @@ export interface ReelLikeState {
   liked: boolean;
   likeCount: number;
 }
+
+export interface MyReelsPage {
+  reels: AuthorReel[];
+  nextCursor: string | null;
+}
+
+export interface ReelUploadTarget {
+  method: 'PUT';
+  url: string;
+  headers: Record<string, string>;
+}
+
+export interface ReelUploadSlot {
+  reelId: string;
+  uploadUrlExpiresAt: string;
+  publishBefore: string;
+  media: ReelUploadTarget;
+  poster: ReelUploadTarget;
+}
+
+/** What POST /reels/uploads is told about the files. */
+export interface ReelUploadRequest {
+  contentType: 'video/mp4';
+  sizeBytes: number;
+  poster: { contentType: 'image/jpeg'; sizeBytes: number };
+}

@@ -28,6 +28,10 @@ const story = (id: string, over: Record<string, unknown> = {}) => ({
 });
 const query = (data: unknown) => ({ data, refetch: jest.fn(), isRefetching: false });
 const mockReorder = jest.fn();
+jest.mock('@/features/reels/components/ReelsStudioSection', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('../hooks/useStoriesQueries', () => ({
   useMyStories: () => query({ stories: [] }),
 }));
