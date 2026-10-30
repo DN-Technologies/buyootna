@@ -24,6 +24,7 @@ import {
   type ReelViewer,
 } from '../reels-feed.service';
 import { ReelsMediaService } from '../reels-media.service';
+import { ReelsRankingService } from '../reels-ranking.service';
 
 const describeIfDb = process.env.VERIFY_REELS_DB ? describe : describe.skip;
 
@@ -465,6 +466,118 @@ describeIfDb('Reels feed (real Postgres)', () => {
     expect(mine).toEqual([newer, older]);
   });
 
+  describe('ranking', () => {
+    const saved = process.env.REELS_RANKED_FEED;
+    afterEach(() => {
+      process.env.REELS_RANKED_FEED = saved;
+    });
+
+    it('with the setting off the score changes nothing; on, it decides', async () => {
+      const office = await makeOffice();
+      const viewers = await Promise.all(
+        Array.from({ length: 12 }, () => makeViewer()),
+      );
+      const older = await makeReel(office.identityId, 120);
+      const newer = await makeReel(office.identityId, 60, {
+        durationMs: 20_000,
+      });
+      // The older one is watched to the end and liked by all
+      for (const viewer of viewers) {
+        await engagement.recordViews(viewer, { reelIds: [older, newer] });
+        await engagement.recordWatches(viewer, {
+          watches: [
+            { reelId: older, watchedMs: 15_000, completed: true },
+            { reelId: newer, watchedMs: 3_000, completed: false },
+          ],
+        });
+        await engagement.like(viewer, older);
+      }
+      const ranking = new ReelsRankingService(prisma);
+      expect(await ranking.refresh()).toBeGreaterThanOrEqual(2);
+
+      const row = await prisma.reel.findUniqueOrThrow({ where: { id: older } });
+      const other = await prisma.reel.findUniqueOrThrow({
+        where: { id: newer },
+      });
+      expect(row.rankScore).toBeGreaterThan(other.rankScore);
+
+      delete process.env.REELS_RANKED_FEED;
+      expect(await allIds(null, [older, newer])).toEqual([newer, older]);
+
+      process.env.REELS_RANKED_FEED = 'true';
+      expect(await allIds(null, [older, newer])).toEqual([older, newer]);
+    });
+
+    it('pages by score cover every reel once', async () => {
+      const office = await makeOffice();
+      const ids: string[] = [];
+      for (let i = 0; i < 15; i += 1) {
+        ids.push(
+          await makeReel(office.identityId, 200 + i, {
+            rankScore: 5 + (i % 4) * 0.25,
+          }),
+        );
+      }
+      process.env.REELS_RANKED_FEED = 'true';
+      const seen: string[] = [];
+      let cursor: string | undefined;
+      do {
+        const next = await feed.feed(null, { cursor, limit: 4 });
+        seen.push(...next.reels.map((r) => r.id));
+        cursor = next.nextCursor ?? undefined;
+      } while (cursor);
+      const mine = seen.filter((id) => ids.includes(id));
+      expect(mine).toHaveLength(15);
+      expect(new Set(mine).size).toBe(15);
+    });
+
+    it('turning ranking on mid-scroll starts it again', async () => {
+      const office = await makeOffice();
+      await makeReel(office.identityId, 300);
+      await makeReel(office.identityId, 301);
+      delete process.env.REELS_RANKED_FEED;
+      const first = await feed.feed(null, { limit: 1 });
+      process.env.REELS_RANKED_FEED = 'true';
+      await expect(
+        feed.feed(null, { cursor: first.nextCursor ?? undefined, limit: 1 }),
+      ).rejects.toThrow();
+    });
+
+    it('a watch keeps the highest, is capped at the reel, and needs a view', async () => {
+      const office = await makeOffice();
+      const viewer = await makeViewer();
+      const reel = await makeReel(office.identityId, 10, {
+        durationMs: 20_000,
+      });
+      const row = () =>
+        prisma.reelView.findUnique({
+          where: {
+            reelId_viewerIdentityId: {
+              reelId: reel,
+              viewerIdentityId: viewer.identityId,
+            },
+          },
+        });
+      await engagement.recordWatches(viewer, {
+        watches: [{ reelId: reel, watchedMs: 9_000, completed: false }],
+      });
+      expect(await row()).toBeNull();
+
+      await engagement.recordViews(viewer, { reelIds: [reel] });
+      await engagement.recordWatches(viewer, {
+        watches: [{ reelId: reel, watchedMs: 9_000, completed: false }],
+      });
+      await engagement.recordWatches(viewer, {
+        watches: [{ reelId: reel, watchedMs: 4_000, completed: true }],
+      });
+      expect(await row()).toMatchObject({ watchedMs: 9_000, completed: true });
+      await engagement.recordWatches(viewer, {
+        watches: [{ reelId: reel, watchedMs: 59_000, completed: true }],
+      });
+      expect(await row()).toMatchObject({ watchedMs: 20_000 });
+    });
+  });
+
   it('spreads out one author within a page', async () => {
     const a = await makeOffice();
     const b = await makeOffice();
@@ -514,25 +627,34 @@ describeIfDb('Reels feed (real Postgres)', () => {
     expect(row.viewCount).toBe(0);
   });
 
-  it('stays fast with about 50 000 reels and 1 million views', async () => {
-    const office = await makeOffice();
+  it('stays fast with about 50 000 reels across 300 authors and 1 million views', async () => {
+    const authors = await Promise.all(
+      Array.from({ length: 300 }, () => makeOffice()),
+    );
+    const authorIds = authors.map((a) => a.identityId);
     const viewer = await makeViewer();
     await prisma.$executeRaw(Prisma.sql`
       INSERT INTO "Reel" (id, "identityId", status, "mediaKey", "mediaContentType",
-        "mediaSizeBytes", "posterKey", "posterSizeBytes", "uploadExpiresAt", "publishedAt")
-      SELECT gen_random_uuid()::text, ${office.identityId}, 'ACTIVE',
+        "mediaSizeBytes", "posterKey", "posterSizeBytes", "uploadExpiresAt", "publishedAt", "durationMs")
+      SELECT gen_random_uuid()::text, (${authorIds}::text[])[1 + n % 300], 'ACTIVE',
         'load/' || n || '/media.mp4', 'video/mp4', 1,
         'load/' || n || '/poster.jpg', 1, now(),
-        now() - (n || ' minutes')::interval - interval '1 day'
+        now() - (n || ' minutes')::interval - interval '1 day', 30000
       FROM generate_series(1, 50000) n
     `);
-    // A heavy viewer who has seen 2 000 reels, and many others who watched
+    const loadReels = Prisma.sql`"mediaKey" LIKE 'load/%'`;
+    // A heavy viewer who has seen 2 000 reels and follows 50 authors
     await prisma.$executeRaw(Prisma.sql`
       INSERT INTO "ReelView" ("reelId", "viewerIdentityId")
       SELECT id, ${viewer.identityId} FROM "Reel"
-      WHERE "identityId" = ${office.identityId}
+      WHERE ${loadReels}
       ORDER BY "publishedAt" DESC LIMIT 2000
     `);
+    await prisma.providerFavorite.createMany({
+      data: authorIds
+        .slice(0, 50)
+        .map((providerId) => ({ identityId: viewer.identityId, providerId })),
+    });
     const others = Array.from({ length: 200 }, () => randomUUID());
     await prisma.$executeRaw(Prisma.sql`
       INSERT INTO "User" (id, password, email, "updatedAt")
@@ -545,11 +667,11 @@ describeIfDb('Reels feed (real Postgres)', () => {
     `);
     userIds.push(...others);
     await prisma.$executeRaw(Prisma.sql`
-      INSERT INTO "ReelView" ("reelId", "viewerIdentityId")
-      SELECT r.id, o.id
+      INSERT INTO "ReelView" ("reelId", "viewerIdentityId", completed)
+      SELECT r.id, o.id, random() < 0.3
       FROM unnest(${others}::text[]) AS o(id)
       CROSS JOIN LATERAL (
-        SELECT id FROM "Reel" WHERE "identityId" = ${office.identityId}
+        SELECT id FROM "Reel" WHERE ${loadReels}
         ORDER BY random() LIMIT 5000
       ) r
     `);
@@ -574,8 +696,7 @@ describeIfDb('Reels feed (real Postgres)', () => {
 
     // Deep in the list, past everything this viewer has seen
     const deep = await prisma.$queryRaw<{ publishedAt: Date; id: string }[]>(
-      Prisma.sql`SELECT "publishedAt", id FROM "Reel"
-                 WHERE "identityId" = ${office.identityId}
+      Prisma.sql`SELECT "publishedAt", id FROM "Reel" WHERE ${loadReels}
                  ORDER BY "publishedAt" DESC, id DESC OFFSET 40000 LIMIT 1`,
     );
     const cursor = {
@@ -584,19 +705,29 @@ describeIfDb('Reels feed (real Postgres)', () => {
       publishedAt: deep[0].publishedAt,
       id: deep[0].id,
     };
+    const start = Date.now();
+    await prisma.$queryRaw(feedQuery(viewer, now, now, cursor, 11, 1));
+    const deepMs = Date.now() - start;
+
+    const rankStart = Date.now();
+    const scored = await new ReelsRankingService(prisma).refresh();
+    const rankMs = Date.now() - rankStart;
+    process.env.REELS_RANKED_FEED = 'true';
+    const rankedMs = await timed(() => feed.feed(viewer, { limit: 10 }));
+    delete process.env.REELS_RANKED_FEED;
     const plan = await prisma.$queryRaw<{ 'QUERY PLAN': string }[]>(
-      Prisma.sql`EXPLAIN ANALYZE ${feedQuery(viewer, now, now, cursor, 11, 1)}`,
+      Prisma.sql`EXPLAIN ANALYZE ${feedQuery(viewer, now, now, null, 11, 1)}`,
     );
-    const planText = plan.map((p) => p['QUERY PLAN']).join('\n');
     console.log(
-      `Load: guest ${guest} ms, signed in ${signedIn} ms\n${planText}`,
+      `Load: guest ${guest} ms, signed in ${signedIn} ms, deep ${deepMs} ms, ranked ${rankedMs} ms; scored ${scored} reels in ${rankMs} ms\n` +
+        plan.map((p) => p['QUERY PLAN']).join('\n'),
     );
 
     expect(guest).toBeLessThan(500);
     expect(signedIn).toBeLessThan(500);
-    expect(planText).toContain('Execution Time');
-    const deepStart = Date.now();
-    await prisma.$queryRaw(feedQuery(viewer, now, now, cursor, 11, 1));
-    expect(Date.now() - deepStart).toBeLessThan(500);
+    expect(deepMs).toBeLessThan(500);
+    expect(rankedMs).toBeLessThan(500);
+    expect(scored).toBeGreaterThanOrEqual(50000);
+    expect(rankMs).toBeLessThan(60_000);
   }, 300_000);
 });

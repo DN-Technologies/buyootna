@@ -225,6 +225,7 @@ describe('ReelsService', () => {
           caption: 'عرض',
           propertyId: null,
           hadListing: false,
+          rankScore: 0.4,
         },
       });
     });

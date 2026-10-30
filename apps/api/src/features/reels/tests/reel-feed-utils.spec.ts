@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 import { decodeReelCursor, encodeReelCursor } from '../utils/reel-cursor';
+import { reelRankScore } from '../utils/rank-score';
 import { spreadAuthors } from '../utils/spread-authors';
 
 const NOW = new Date('2026-10-30T12:00:00.000Z');
@@ -81,6 +82,64 @@ describe('reel cursor', () => {
       snapshotAt: new Date(NOW.getTime() + HOUR),
     });
     expect(() => decodeReelCursor(future, NOW)).toThrow(BadRequestException);
+  });
+});
+
+describe('reelRankScore', () => {
+  const NOW_ = new Date('2026-10-30T12:00:00.000Z');
+  const score = (
+    over: Partial<Parameters<typeof reelRankScore>[0]> = {},
+  ): number =>
+    reelRankScore(
+      { views: 0, completed: 0, likes: 0, publishedAt: NOW_, ...over },
+      NOW_,
+    );
+  const daysAgo = (days: number) =>
+    new Date(NOW_.getTime() - days * 24 * 3600 * 1000);
+
+  it('a brand new reel gets the average', () => {
+    expect(score()).toBeCloseTo(0.4);
+  });
+
+  it('a few early views cannot swing it to an extreme', () => {
+    expect(score({ views: 1, completed: 1, likes: 1 })).toBeLessThan(0.65);
+    expect(score({ views: 1 })).toBeGreaterThan(0.3);
+  });
+
+  it('a reel people finish and like beats one they do not', () => {
+    const good = score({ views: 200, completed: 160, likes: 40 });
+    const poor = score({ views: 200, completed: 10, likes: 1 });
+    expect(good).toBeGreaterThan(poor);
+    expect(good).toBeGreaterThan(score());
+    expect(poor).toBeLessThan(score());
+  });
+
+  it('fades with age: about 37% after a week', () => {
+    expect(score({ publishedAt: daysAgo(7) }) / score()).toBeCloseTo(0.368, 2);
+  });
+
+  it('a new reel can beat an old good one, but not a recent great one', () => {
+    const newReel = score();
+    expect(
+      score({
+        views: 500,
+        completed: 400,
+        likes: 100,
+        publishedAt: daysAgo(30),
+      }),
+    ).toBeLessThan(newReel);
+    expect(
+      score({
+        views: 500,
+        completed: 400,
+        likes: 100,
+        publishedAt: daysAgo(1),
+      }),
+    ).toBeGreaterThan(newReel);
+  });
+
+  it('a date in the future counts as new', () => {
+    expect(score({ publishedAt: daysAgo(-1) })).toBeCloseTo(score());
   });
 });
 

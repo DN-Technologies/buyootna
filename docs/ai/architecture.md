@@ -68,6 +68,9 @@ out. When adding a new model that belongs to an account:
   `EXPO_PUBLIC_*` flag, so they turn on or off with an API restart and no OTA.
   The app asks `GET /reels/availability` and treats an error as off; every
   other `/reels` route answers 404 to anyone the switch is off for.
+  `REELS_RANKED_FEED=true` sorts the feed by `Reel.rankScore` instead of
+  newest first; scores refresh hourly either way, so it can be turned on once
+  there is real watch data.
 
 ## Deeper reference
 

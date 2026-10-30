@@ -49,6 +49,10 @@ export function reachedView(
   return currentTime >= needed;
 }
 
+/** Played to (nearly) the end: it loops, so it may never quite reach it. */
+export const reachedEnd = (currentTime: number, duration: number) =>
+  duration > 0 && currentTime >= duration * 0.9;
+
 /** «1.2 ألف» past a thousand, so the counts stay short beside the video. */
 export function formatReelCount(count: number): string {
   if (count < 1000) return String(count);

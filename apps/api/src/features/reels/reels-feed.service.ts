@@ -11,6 +11,7 @@ import type {
   ViewerReelDto,
 } from './dto/reel-response.dto';
 import { ReelsMediaService } from './reels-media.service';
+import { reelsRankedFeed } from './reels-ranking.service';
 import { REEL_PAGE_DEFAULT } from './reels.constants';
 import { reelNotFound } from './reels.errors';
 import {
@@ -22,6 +23,7 @@ import {
   visibleReelAuthor,
 } from './reels.mapper';
 import {
+  cursorError,
   decodeReelCursor,
   encodeReelCursor,
   type ReelCursor,
@@ -53,6 +55,7 @@ export interface FeedRankRow {
   id: string;
   identityId: string;
   publishedIso: string;
+  rankScore: number;
 }
 
 /**
@@ -98,6 +101,10 @@ export class ReelsFeedService {
       : null;
     const snapshotAt = cursor?.snapshotAt ?? now;
     const take = limit + 1;
+    const rankedFeed = reelsRankedFeed();
+    // Ranking turned on mid-scroll: this cursor can't say where it was
+    if (cursor && rankedFeed && cursor.rankScore === undefined)
+      throw cursorError();
 
     // A guest has one list, kept in tier 0: nothing to tell apart
     const lastTier = viewer ? 3 : 0;
@@ -113,6 +120,7 @@ export class ReelsFeedService {
           take - ranked.length,
           tier,
           query,
+          rankedFeed,
         ),
       );
       ranked.push(...rows.map((row) => ({ ...row, tier })));
@@ -129,6 +137,7 @@ export class ReelsFeedService {
             tier: last.tier,
             publishedAt: new Date(last.publishedIso),
             id: last.id,
+            ...(rankedFeed ? { rankScore: last.rankScore } : {}),
             lastAuthorId: shown[shown.length - 1]?.identityId,
             filterKey,
           })
@@ -316,9 +325,12 @@ export function feedQuery(
   take: number,
   tier: number,
   filters: ReelFilters = {},
+  ranked = false,
 ): Prisma.Sql {
   const after = cursor
-    ? Prisma.sql`AND (r."publishedAt", r.id) < (${utc(cursor.publishedAt)}, ${cursor.id})`
+    ? ranked
+      ? Prisma.sql`AND (r."rankScore", r.id) < (${cursor.rankScore ?? 0}::float8, ${cursor.id})`
+      : Prisma.sql`AND (r."publishedAt", r.id) < (${utc(cursor.publishedAt)}, ${cursor.id})`
     : Prisma.empty;
   const filtered = reelFilterKey(filters)
     ? Prisma.sql`
@@ -348,7 +360,8 @@ export function feedQuery(
   return Prisma.sql`
     SELECT r.id,
            r."identityId",
-           to_char(r."publishedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "publishedIso"
+           to_char(r."publishedAt", 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS "publishedIso",
+           r."rankScore"
     FROM "Reel" r
     JOIN "Identity" i ON i.id = r."identityId"
     JOIN "User" u ON u.id = i."userId"
@@ -373,7 +386,7 @@ export function feedQuery(
       ${filtered}
       ${forViewer}
       ${after}
-    ORDER BY r."publishedAt" DESC, r.id DESC
+    ORDER BY ${ranked ? Prisma.sql`r."rankScore" DESC` : Prisma.sql`r."publishedAt" DESC`}, r.id DESC
     LIMIT ${take}
   `;
 }

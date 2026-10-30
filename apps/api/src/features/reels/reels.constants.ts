@@ -38,6 +38,10 @@ export const REEL_LIMIT_WINDOW_MS = 24 * HOUR_MS;
 export const REEL_FILTER_LISTING_TYPES = ['SALE', 'RENT', 'EXCHANGE'] as const;
 export type ReelListingType = (typeof REEL_FILTER_LISTING_TYPES)[number];
 
+// Ranking: reels older than this score 0, and aren't scored any more
+export const REEL_RANK_WINDOW_MS = 90 * 24 * HOUR_MS;
+export const REEL_RANK_BATCH = 500;
+
 export const REEL_PAGE_DEFAULT = 10;
 export const REEL_PAGE_MAX = 20;
 // A scroll keeps its snapshot this long; past it the app starts again quietly

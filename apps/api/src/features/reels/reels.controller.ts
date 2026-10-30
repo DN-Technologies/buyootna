@@ -25,6 +25,7 @@ import { ReportsService } from '../reports/reports.service';
 import { CreateReelUploadDto } from './dto/create-reel-upload.dto';
 import { PublishReelDto } from './dto/publish-reel.dto';
 import { RecordReelViewsDto } from './dto/record-reel-views.dto';
+import { RecordReelWatchesDto } from './dto/record-reel-watches.dto';
 import { ReelFeedQueryDto } from './dto/reel-feed-query.dto';
 import { ReelListQueryDto } from './dto/reel-list-query.dto';
 import {
@@ -108,6 +109,22 @@ export class ReelsController {
     @Body() dto: RecordReelViewsDto,
   ): Promise<void> {
     await this.engagement.recordViews(viewerOf(reqUser)!, dto);
+  }
+
+  @Post('watches')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Record how much of each reel the current profile watched (up to 50; keeps the highest; for ranking)',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async recordWatches(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RecordReelWatchesDto,
+  ): Promise<void> {
+    await this.engagement.recordWatches(viewerOf(reqUser)!, dto);
   }
 
   @Get('feed')
