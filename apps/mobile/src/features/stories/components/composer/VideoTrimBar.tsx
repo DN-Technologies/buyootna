@@ -31,15 +31,18 @@ interface VideoTrimBarProps {
   onSeek: (ms: number) => void;
   muted: boolean;
   onToggleMuted: () => void;
+  // The longest part that can be kept: a story's 30 seconds unless told
+  maxMs?: number;
 }
 
-/** Keeps a range within the video, 1–30 seconds long. */
+/** Keeps a range within the video, 1 second to `maxMs` long. */
 export function clampTrim(
   range: TrimRange,
   durationMs: number,
   moved: 'start' | 'end',
+  maxMs: number = STORY_VIDEO_MAX_MS,
 ): TrimRange {
-  const max = Math.min(STORY_VIDEO_MAX_MS, durationMs);
+  const max = Math.min(maxMs, durationMs);
   let { startMs, endMs } = range;
   if (moved === 'start') {
     startMs = Math.max(0, Math.max(endMs - max, Math.min(startMs, endMs - STORY_TRIM_MIN_MS)));
@@ -62,11 +65,12 @@ export default function VideoTrimBar({
   onSeek,
   muted,
   onToggleMuted,
+  maxMs = STORY_VIDEO_MAX_MS,
 }: VideoTrimBarProps) {
   const [width, setWidth] = useState(0);
   const [frames, setFrames] = useState<string[]>([]);
-  const latest = useRef({ value, width, durationMs, onChange, onSeek });
-  latest.current = { value, width, durationMs, onChange, onSeek };
+  const latest = useRef({ value, width, durationMs, onChange, onSeek, maxMs });
+  latest.current = { value, width, durationMs, onChange, onSeek, maxMs };
 
   useEffect(() => {
     let live = true;
@@ -105,6 +109,7 @@ export default function VideoTrimBar({
             : { ...l.value, endMs: ms },
           l.durationMs,
           which,
+          l.maxMs,
         );
         l.onChange(next);
         l.onSeek(which === 'start' ? next.startMs : next.endMs);

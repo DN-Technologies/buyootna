@@ -1,9 +1,14 @@
 import type {
+  AuthorReel,
+  MyReelsPage,
   ReelLikeState,
   ReelPage,
+  ReelUploadRequest,
+  ReelUploadSlot,
   ViewerReel,
 } from '@/features/reels/types';
 import apiClient from '@/shared/api/api';
+import { storiesService } from '@/shared/api/stories.service';
 
 const pageParams = (cursor?: string, limit?: number) => ({
   ...(cursor ? { cursor } : {}),
@@ -70,6 +75,38 @@ export const reelsService = {
       reason,
       ...(description ? { description } : {}),
     });
+  },
+
+  /** The current profile's published reels, with their counts. */
+  getMine: async (cursor?: string, limit?: number): Promise<MyReelsPage> => {
+    const response = await apiClient.get<MyReelsPage>('/reels/me', {
+      params: pageParams(cursor, limit),
+    });
+    return response.data;
+  },
+
+  /** An upload slot for a video of exactly `sizeBytes`, and its poster. */
+  createUpload: async (request: ReelUploadRequest): Promise<ReelUploadSlot> => {
+    const response = await apiClient.post<ReelUploadSlot>(
+      '/reels/uploads',
+      request,
+    );
+    return response.data;
+  },
+
+  /** PUTs a file straight to S3, the same way a story's file goes. */
+  uploadToSlot: storiesService.uploadToSlot,
+
+  /** Publishes an uploaded reel once the server has checked the file. */
+  publish: async (
+    id: string,
+    body: { caption?: string; propertyId?: string },
+  ): Promise<AuthorReel> => {
+    const response = await apiClient.post<AuthorReel>(
+      `/reels/${id}/publish`,
+      body,
+    );
+    return response.data;
   },
 
   /** Deletes one of the current profile's reels (repeat-safe). */
