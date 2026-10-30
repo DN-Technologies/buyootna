@@ -9,6 +9,7 @@ import { offices } from "./offices";
 import { management } from "./management";
 import { landing } from "./landing";
 import { api } from "./api";
+import { reels } from "./reels";
 import { roadmap } from "./roadmap";
 import { DocSection } from "./types";
 
@@ -24,6 +25,7 @@ export const sections: DocSection[] = [
   management,
   landing,
   api,
+  reels,
   roadmap,
 ];
 

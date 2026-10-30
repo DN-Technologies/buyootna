@@ -23,6 +23,7 @@ import { OtpRateLimiterModule } from './core/otp-rate-limiter/otp-rate-limiter.m
 import { PropertiesModule } from './features/properties/properties.module';
 import { SearchModule } from './features/search/search.module';
 import { MediaModule } from './media/media.module';
+import { ReelsModule } from './features/reels/reels.module';
 import { StoriesModule } from './features/stories/stories.module';
 import { BlocksModule } from './features/blocks/blocks.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
@@ -96,6 +97,7 @@ import { PulseModule } from './features/pulse/pulse.module';
     NotificationsModule,
     SavedLocationsModule,
     StoriesModule,
+    ReelsModule,
     BlocksModule,
     DevicesModule,
     PlansModule,

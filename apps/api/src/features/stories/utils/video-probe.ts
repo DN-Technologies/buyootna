@@ -20,6 +20,19 @@ export interface ProbedVideo {
 export type VideoVerdict =
   ({ ok: true } & ProbedVideo) | { ok: false; reason: string };
 
+/** What a video may be; Stories' own rules unless a caller passes others. */
+export interface VideoRules {
+  maxMs: number;
+  maxSide: number;
+  videoCodecs: readonly string[];
+}
+
+export const STORY_VIDEO_RULES: VideoRules = {
+  maxMs: STORY_VIDEO_MAX_MS,
+  maxSide: STORY_VIDEO_MAX_SIDE,
+  videoCodecs: STORY_VIDEO_CODECS,
+};
+
 /** ffprobe could not run at all (not installed, or crashed for itself). */
 export class VideoProbeUnavailableError extends Error {}
 
@@ -72,12 +85,15 @@ function quarterTurned(stream: FfprobeStream): boolean {
 }
 
 /**
- * Applies the story rules to ffprobe's JSON: an MP4/MOV container, exactly
- * one H.264/HEVC video stream, at most one AAC audio stream, ≤ 30.5 s and
- * ≤ 1920 px per side. Other streams (an iPhone's timecode/metadata tracks)
- * are ignored.
+ * Applies the rules to ffprobe's JSON: an MP4/MOV container, exactly one
+ * video stream of an allowed codec (a story: H.264/HEVC), at most one AAC
+ * audio stream, within the length and size (a story: ≤ 30.5 s, ≤ 1920 px per
+ * side). Other streams (an iPhone's timecode/metadata tracks) are ignored.
  */
-export function judgeVideo(json: string): VideoVerdict {
+export function judgeVideo(
+  json: string,
+  rules: VideoRules = STORY_VIDEO_RULES,
+): VideoVerdict {
   let out: FfprobeOutput;
   try {
     out = JSON.parse(json) as FfprobeOutput;
@@ -93,9 +109,7 @@ export function judgeVideo(json: string): VideoVerdict {
   const audios = streams.filter((s) => s.codec_type === 'audio');
   if (videos.length !== 1) return { ok: false, reason: 'video_streams' };
   const video = videos[0];
-  if (
-    !(STORY_VIDEO_CODECS as readonly string[]).includes(video.codec_name ?? '')
-  ) {
+  if (!rules.videoCodecs.includes(video.codec_name ?? '')) {
     return { ok: false, reason: 'video_codec' };
   }
   if (audios.length > 1) return { ok: false, reason: 'audio_streams' };
@@ -111,14 +125,14 @@ export function judgeVideo(json: string): VideoVerdict {
   const duration = seconds(out.format?.duration) ?? seconds(video.duration);
   if (duration === null) return { ok: false, reason: 'no_duration' };
   const durationMs = Math.round(duration * 1000);
-  if (durationMs > STORY_VIDEO_MAX_MS) return { ok: false, reason: 'too_long' };
+  if (durationMs > rules.maxMs) return { ok: false, reason: 'too_long' };
 
   const w = video.width ?? 0;
   const h = video.height ?? 0;
   if (!Number.isInteger(w) || !Number.isInteger(h) || w <= 0 || h <= 0) {
     return { ok: false, reason: 'no_dimensions' };
   }
-  if (w > STORY_VIDEO_MAX_SIDE || h > STORY_VIDEO_MAX_SIDE) {
+  if (w > rules.maxSide || h > rules.maxSide) {
     return { ok: false, reason: 'too_large' };
   }
   const [width, height] = quarterTurned(video) ? [h, w] : [w, h];
@@ -154,7 +168,10 @@ const probes = new Limiter(STORY_PROBE_MAX_CONCURRENT);
  * long fails the story; ffprobe missing from the server throws instead, so
  * the story stays pending and the app can retry.
  */
-export function probeVideoFile(path: string): Promise<VideoVerdict> {
+export function probeVideoFile(
+  path: string,
+  rules: VideoRules = STORY_VIDEO_RULES,
+): Promise<VideoVerdict> {
   return probes.run(
     () =>
       new Promise<VideoVerdict>((resolve, reject) => {
@@ -168,7 +185,7 @@ export function probeVideoFile(path: string): Promise<VideoVerdict> {
             windowsHide: true,
           },
           (error, stdout) => {
-            if (!error) return resolve(judgeVideo(String(stdout)));
+            if (!error) return resolve(judgeVideo(String(stdout), rules));
             const e = error as NodeJS.ErrnoException & { killed?: boolean };
             if (e.code === 'ENOENT') {
               return reject(

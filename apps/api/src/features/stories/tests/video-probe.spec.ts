@@ -28,6 +28,30 @@ const out = (
     ],
   });
 
+describe('judgeVideo with other rules (reels)', () => {
+  const rules = { maxMs: 60_500, maxSide: 1920, videoCodecs: ['h264'] };
+  const hevc = [
+    { codec_type: 'video', codec_name: 'hevc', width: 720, height: 1280 },
+  ];
+
+  it('a 60 s video passes them, and still fails the story rules', () => {
+    const video = out({ format: { duration: '60.000000' } });
+    expect(judgeVideo(video, rules)).toMatchObject({
+      ok: true,
+      durationMs: 60_000,
+    });
+    expect(judgeVideo(video)).toEqual({ ok: false, reason: 'too_long' });
+  });
+
+  it('HEVC fails them, and still passes the story rules', () => {
+    expect(judgeVideo(out({ streams: hevc }), rules)).toEqual({
+      ok: false,
+      reason: 'video_codec',
+    });
+    expect(judgeVideo(out({ streams: hevc }))).toMatchObject({ ok: true });
+  });
+});
+
 describe('judgeVideo', () => {
   it('a 30 s 720p H.264 + AAC phone video passes, with its measurements', () => {
     expect(judgeVideo(out())).toEqual({

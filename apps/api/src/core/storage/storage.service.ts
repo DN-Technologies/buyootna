@@ -382,6 +382,17 @@ export class StorageService {
     );
   }
 
+  /**
+   * The stable link of an object under a public prefix: `baseUrl` when given
+   * (a CDN in front of the bucket), otherwise the bucket's own address.
+   */
+  publicUrl(key: string, baseUrl?: string): string {
+    const base =
+      baseUrl?.replace(/\/+$/, '') ||
+      `https://${this.bucketName}.s3.${this.region}.amazonaws.com`;
+    return `${base}/${key}`;
+  }
+
   // Multiple File Uploads
   async uploadMultipleFiles(
     files: Express.Multer.File[],

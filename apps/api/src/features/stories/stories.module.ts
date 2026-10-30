@@ -18,5 +18,7 @@ import { StoriesService } from './stories.service';
     StoriesMediaService,
     StoriesCleanupService,
   ],
+  // Reels reuse the upload slot and the file checks
+  exports: [StoriesMediaService],
 })
 export class StoriesModule {}

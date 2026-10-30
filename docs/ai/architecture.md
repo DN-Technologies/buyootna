@@ -63,6 +63,11 @@ out. When adding a new model that belongs to an account:
   [`release-policy.md`](./release-policy.md) for why this specific flag
   has already caused a production incident when a publish tool didn't
   account for it.
+- **Server switches**: reels are hidden by `REELS_ENABLED` and
+  `REELS_TESTER_USER_IDS` in the server's `apps/api/.env`, not by an
+  `EXPO_PUBLIC_*` flag, so they turn on or off with an API restart and no OTA.
+  The app asks `GET /reels/availability` and treats an error as off; every
+  other `/reels` route answers 404 to anyone the switch is off for.
 
 ## Deeper reference
 
