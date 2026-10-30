@@ -1,8 +1,15 @@
 import { Prisma } from '@prisma/client';
 
+import {
+  AUTHOR_SELECT,
+  toAuthorDto,
+  visibleAuthorFor,
+  VISIBLE_AUTHOR_WHERE,
+} from '../stories/stories.mapper';
 import type {
   AuthorReelDto,
   ReelPropertyLinkDto,
+  ViewerReelDto,
 } from './dto/reel-response.dto';
 import type { ReelLinks } from './reels-media.service';
 
@@ -80,4 +87,38 @@ export function toAuthorReelDto(
     viewCount: reel.viewCount,
     likeCount: reel.likeCount,
   };
+}
+
+/** What a viewer's response needs: the reel and who posted it. */
+export const VIEWER_REEL_SELECT = {
+  ...REEL_SELECT,
+  identity: { select: AUTHOR_SELECT },
+} satisfies Prisma.ReelSelect;
+
+export type ViewerReelRow = Prisma.ReelGetPayload<{
+  select: typeof VIEWER_REEL_SELECT;
+}>;
+
+/** Null when the author's data is gone between the queries: left out. */
+export function toViewerReelDto(
+  reel: ViewerReelRow,
+  links: ReelLinks,
+  now: Date,
+  state: { liked: boolean; viewed: boolean },
+): ViewerReelDto | null {
+  const author = toAuthorDto(reel.identity);
+  if (!author) return null;
+  return { ...toAuthorReelDto(reel, links, now), author, ...state };
+}
+
+/**
+ * Who may be shown on a profile or by a direct link: an approved company or
+ * office whose account is neither disabled nor blocked (and, for a signed-in
+ * viewer, no block either way). A lapsed subscription or a sold listing only
+ * takes a reel off the main feed.
+ */
+export function visibleReelAuthor(
+  viewerUserId?: string,
+): Prisma.IdentityWhereInput {
+  return viewerUserId ? visibleAuthorFor(viewerUserId) : VISIBLE_AUTHOR_WHERE;
 }

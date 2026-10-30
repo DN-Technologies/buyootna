@@ -8,6 +8,8 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -20,14 +22,25 @@ import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator'
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateReelUploadDto } from './dto/create-reel-upload.dto';
 import { PublishReelDto } from './dto/publish-reel.dto';
+import { RecordReelViewsDto } from './dto/record-reel-views.dto';
+import { ReelListQueryDto } from './dto/reel-list-query.dto';
 import {
   AuthorReelDto,
+  MyReelsDto,
   ReelAvailabilityDto,
+  ReelFeedDto,
+  ReelLikeDto,
   ReelUploadSlotDto,
+  ViewerReelDto,
 } from './dto/reel-response.dto';
 import { ReelsEnabledGuard } from './reels-enabled.guard';
+import { ReelsEngagementService } from './reels-engagement.service';
+import { ReelsFeedService, type ReelViewer } from './reels-feed.service';
 import { reelsEnabledFor } from './reels.switch';
 import { ReelsService } from './reels.service';
+
+const viewerOf = (reqUser?: RequestUser): ReelViewer | null =>
+  reqUser ? { identityId: reqUser.identityId, userId: reqUser.userId } : null;
 
 /**
  * The one route that answers whether the switch is on or off. Registered
@@ -52,7 +65,11 @@ export class ReelsAvailabilityController {
 @Controller('reels')
 @UseGuards(OptionalJwtGuard, ReelsEnabledGuard)
 export class ReelsController {
-  constructor(private readonly reels: ReelsService) {}
+  constructor(
+    private readonly reels: ReelsService,
+    private readonly feedService: ReelsFeedService,
+    private readonly engagement: ReelsEngagementService,
+  ) {}
 
   @Post('uploads')
   @UseGuards(AuthGuard('jwt'))
@@ -67,6 +84,95 @@ export class ReelsController {
     @Body() dto: CreateReelUploadDto,
   ) {
     return this.reels.createUpload(reqUser.identityId, dto);
+  }
+
+  // The fixed paths below are declared before ':id', so they aren't taken for
+  // a reel id
+  @Post('views')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary:
+      'Record that the current profile watched these reels (up to 50; repeat-safe; reels it may not view are skipped)',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async recordViews(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: RecordReelViewsDto,
+  ): Promise<void> {
+    await this.engagement.recordViews(viewerOf(reqUser)!, dto);
+  }
+
+  @Get('feed')
+  @ApiOperation({
+    summary:
+      'Main feed, for guests too. Signed in: unseen newest first, then seen newest first. Guests: newest first.',
+  })
+  @ApiResponse({ status: 200, type: ReelFeedDto })
+  @ApiCommonErrors()
+  feed(@Query() query: ReelListQueryDto, @CurrentUser() reqUser?: RequestUser) {
+    return this.feedService.feed(viewerOf(reqUser), query);
+  }
+
+  @Get('me')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: "The current profile's published reels, with their counts",
+  })
+  @ApiResponse({ status: 200, type: MyReelsDto })
+  @ApiCommonErrors()
+  mine(@CurrentUser() reqUser: RequestUser, @Query() query: ReelListQueryDto) {
+    return this.feedService.mine(reqUser.identityId, query);
+  }
+
+  @Get('authors/:identityId')
+  @ApiOperation({
+    summary: "A company's or office's reels as shown on its profile",
+  })
+  @ApiResponse({ status: 200, type: ReelFeedDto })
+  @ApiCommonErrors()
+  byAuthor(
+    @Param('identityId', ParseUUIDPipe) identityId: string,
+    @Query() query: ReelListQueryDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.feedService.byAuthor(viewerOf(reqUser), identityId, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'One reel, for shares and links' })
+  @ApiResponse({ status: 200, type: ViewerReelDto })
+  @ApiCommonErrors()
+  findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.feedService.findOne(viewerOf(reqUser), id);
+  }
+
+  @Put(':id/like')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Like a reel (repeat-safe)' })
+  @ApiResponse({ status: 200, type: ReelLikeDto })
+  @ApiCommonErrors()
+  like(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.engagement.like(viewerOf(reqUser)!, id);
+  }
+
+  @Delete(':id/like')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Take back a like (repeat-safe)' })
+  @ApiResponse({ status: 200, type: ReelLikeDto })
+  @ApiCommonErrors()
+  unlike(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.engagement.unlike(viewerOf(reqUser)!, id);
   }
 
   @Post(':id/publish')
