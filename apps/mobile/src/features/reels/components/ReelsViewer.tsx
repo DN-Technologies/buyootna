@@ -21,6 +21,7 @@ import { StoryViewQueue } from '@/features/stories/storyViewQueue';
 import { reelsService } from '@/shared/api/reels.service';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
+import { getIdentityHomeRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import { useReelActions } from '../hooks/useReelActions';
@@ -91,7 +92,13 @@ export default function ReelsViewer({
 
   const close = useCallback(() => {
     if (router.canGoBack()) router.back();
-    else router.replace('/');
+    // Opened by a link, with nothing beneath. Straight to home: '/' is the
+    // launch route, and from inside this modal it never gets past launch
+    else {
+      router.replace(
+        getIdentityHomeRoute(useAuthStore.getState().activeIdentity?.type),
+      );
+    }
   }, [router]);
 
   // Guests' views aren't counted: they can't be told apart

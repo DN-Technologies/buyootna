@@ -322,6 +322,8 @@ export const reels: DocSection = {
           "As a guest, open the row, watch, and tap like: confirm the sign-in sheet appears.",
           "Leave the viewer open past 6 hours and keep swiping: confirm it carries on without an error.",
           "Turn on airplane mode mid-scroll: confirm «إعادة المحاولة» appears, and works once back online.",
+          "Force-quit the app while a reel is first loading, then open that reel again: confirm it still plays.",
+          "Open a reel from a link with the app closed, then press back: confirm you land on home, not a blank screen.",
         ],
         ar: [
           "على هاتف أندرويد رخيص وببيانات الجوال، اسحب عبر 100 ريل: تأكد من عدم وجود انهيار أو فيديو عالق على صورة ريل آخر، ومن ظهور الإطار الأول خلال ثانية تقريباً.",
@@ -329,6 +331,8 @@ export const reels: DocSection = {
           "كزائر، افتح الصف وشاهد واضغط إعجاب: تأكد من ظهور نافذة تسجيل الدخول.",
           "اترك العارض مفتوحاً أكثر من 6 ساعات وتابع السحب: تأكد أنه يستمر دون خطأ.",
           "فعّل وضع الطيران أثناء التمرير: تأكد من ظهور «إعادة المحاولة» وأنها تعمل بعد عودة الاتصال.",
+          "أغلق التطبيق إجبارياً أثناء أول تحميل لريل ثم افتح ذلك الريل مجدداً: تأكد أنه يعمل.",
+          "افتح ريلاً من رابط والتطبيق مغلق ثم اضغط رجوع: تأكد من الوصول إلى الرئيسية وليس شاشة فارغة.",
         ],
       },
       updatedIn: "feat/reels-viewer",

@@ -136,18 +136,60 @@ describe('useReelPlayers', () => {
     expect(onTime).toHaveBeenCalledWith(reels[0], 4, 60);
   });
 
-  it('tracks each reel by what its player says, and retries a failure', async () => {
+  it('tracks each reel by what its player says', async () => {
     const { result } = await renderHook(() => useReelPlayers(base));
     await flush();
-    await act(async () => mockPlayers[0].emit('statusChange', { status: 'readyToPlay' }));
-    await act(async () => mockPlayers[1].emit('statusChange', { status: 'error' }));
+    await act(async () =>
+      mockPlayers[0].emit('statusChange', { status: 'readyToPlay' }),
+    );
     expect(result.current.statuses.r0).toBe('ready');
+  });
+
+  it('a broken cached copy quietly reloads from the network', async () => {
+    const { result } = await renderHook(() => useReelPlayers(base));
+    await flush();
+    mockPlayers[1].replaceAsync.mockClear();
+
+    await act(async () =>
+      mockPlayers[1].emit('statusChange', { status: 'error' }),
+    );
+    await flush();
+
+    expect(mockPlayers[1].replaceAsync).toHaveBeenCalledWith({
+      uri: 'https://cdn.test/1.mp4',
+      useCaching: false,
+    });
+    expect(result.current.statuses.r1).not.toBe('error');
+  });
+
+  it('a failure from the network too asks the viewer, and can be retried', async () => {
+    const { result } = await renderHook(() => useReelPlayers(base));
+    await flush();
+    const fail = () =>
+      act(async () => mockPlayers[1].emit('statusChange', { status: 'error' }));
+    await fail();
+    await flush();
+    await fail();
     expect(result.current.statuses.r1).toBe('error');
 
     mockPlayers[1].replaceAsync.mockClear();
     await act(async () => result.current.retry('r1'));
     await flush();
     expect(mockPlayers[1].replaceAsync).toHaveBeenCalledTimes(1);
+    expect(mockPlayers[1].replaceAsync).toHaveBeenCalledWith({
+      uri: 'https://cdn.test/1.mp4',
+      useCaching: false,
+    });
+  });
+
+  it('a load that rejects is handled the same way', async () => {
+    mockPlayers[0].replaceAsync.mockRejectedValueOnce(new Error('stopped') as never);
+    await renderHook(() => useReelPlayers(base));
+    await flush();
+    expect(mockPlayers[0].replaceAsync).toHaveBeenLastCalledWith({
+      uri: 'https://cdn.test/0.mp4',
+      useCaching: false,
+    });
   });
 
   it('gives a player only to the reels near the one on screen', async () => {

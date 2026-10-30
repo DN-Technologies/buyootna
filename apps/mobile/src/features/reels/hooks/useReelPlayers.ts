@@ -54,23 +54,39 @@ export function useReelPlayers({
   const held = useRef<(string | null)[]>([null, null, null]);
   const [statuses, setStatuses] = useState<Record<string, ReelStatus>>({});
   const [retries, setRetries] = useState(0);
+  // Reels whose cached copy wouldn't play: streamed directly from then on
+  const uncached = useRef(new Set<string>());
 
   const latest = useRef({ items, activeIndex, playing, onTime });
   latest.current = { items, activeIndex, playing, onTime };
 
   const activeSlot = reelSlot(activeIndex);
 
+  /**
+   * A load failed. A download cut short (the app killed mid-reel) leaves a
+   * cached file the player refuses every time, so the first failure quietly
+   * tries again from the network; only a second one shows «إعادة المحاولة».
+   */
+  const onFailed = useCallback((id: string, slot: number) => {
+    if (uncached.current.has(id)) {
+      setStatuses((all) => ({ ...all, [id]: 'error' }));
+      return;
+    }
+    uncached.current.add(id);
+    if (held.current[slot] === id) held.current[slot] = null;
+    setRetries((n) => n + 1);
+  }, []);
+
   useEffect(() => {
     const subscriptions = players.flatMap((player, slot) => [
       player.addListener('statusChange', ({ status }) => {
         const id = held.current[slot];
         if (!id) return;
-        const next: ReelStatus =
-          status === 'readyToPlay'
-            ? 'ready'
-            : status === 'error'
-              ? 'error'
-              : 'loading';
+        if (status === 'error') {
+          onFailed(id, slot);
+          return;
+        }
+        const next: ReelStatus = status === 'readyToPlay' ? 'ready' : 'loading';
         setStatuses((all) => (all[id] === next ? all : { ...all, [id]: next }));
       }),
       player.addListener('timeUpdate', ({ currentTime }) => {
@@ -86,7 +102,7 @@ export function useReelPlayers({
       }),
     ]);
     return () => subscriptions.forEach((s) => s.remove());
-  }, [players]);
+  }, [onFailed, players]);
 
   // Load the window: the reel on screen first, then the next, then the last
   const windowIds = reelWindow(activeIndex, items.length)
@@ -101,7 +117,10 @@ export function useReelPlayers({
       held.current[slot] = reel.id;
       setStatuses((all) => ({ ...all, [reel.id]: 'loading' }));
       void players[slot]
-        .replaceAsync({ uri: reel.mediaUrl, useCaching: true })
+        .replaceAsync({
+          uri: reel.mediaUrl,
+          useCaching: !uncached.current.has(reel.id),
+        })
         .then(() => {
           // It may have become the one on screen while loading
           const after = latest.current;
@@ -109,11 +128,9 @@ export function useReelPlayers({
             safely(() => players[slot].play());
           }
         })
-        .catch(() => {
-          setStatuses((all) => ({ ...all, [reel.id]: 'error' }));
-        });
+        .catch(() => onFailed(reel.id, slot));
     }
-  }, [activeIndex, windowIds, players, retries]);
+  }, [activeIndex, windowIds, onFailed, players, retries]);
 
   // Only the reel on screen plays; one you come back to starts over
   const previousSlot = useRef(activeSlot);
