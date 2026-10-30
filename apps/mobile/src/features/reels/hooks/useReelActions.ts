@@ -13,9 +13,8 @@ import { showAlert } from '@/shared/utils/alert';
 
 import type { ViewerReel } from '../types';
 
-// The website has no page per reel yet: the site itself, where the app can be
-// downloaded (as when sharing a profile)
-const SITE_URL = 'https://buyootna.cloud';
+// A page that plays it for anyone, with a way into the app
+const reelLink = (id: string) => `https://buyootna.cloud/reels/${id}`;
 
 const serverMessage = (error: unknown) => {
   const message = (error as { response?: { data?: { message?: unknown } } })
@@ -113,7 +112,7 @@ export function useReelActions({
     try {
       await Share.share({
         title: reel.author.name,
-        message: `شاهد هذا الفيديو من ${reel.author.name} على بيوتنا\n${SITE_URL}`,
+        message: `شاهد هذا الفيديو من ${reel.author.name} على بيوتنا\n${reelLink(reel.id)}`,
       });
     } catch (error) {
       console.warn('Sharing the reel failed:', error);

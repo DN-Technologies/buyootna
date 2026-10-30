@@ -5,6 +5,7 @@ import type {
   Page,
   Property,
   PropertyDetails,
+  PublicReel,
 } from './types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.buyootna.cloud'
@@ -92,6 +93,23 @@ export interface OfficeQuery {
 
 export const getOffices = (query: OfficeQuery = {}) =>
   getPage<Office>('/users/offices', { ...query })
+
+/**
+ * One reel, as anyone may see it, or null when it's gone, hidden, or reels are
+ * still switched off. Refreshed every minute, so a takedown reaches this page
+ * soon. Asks as a guest: a tester's access doesn't apply here.
+ */
+export async function getReel(id: string): Promise<PublicReel | null> {
+  try {
+    const response = await fetch(`${API_URL}/reels/${encodeURIComponent(id)}`, {
+      next: { revalidate: 60 },
+    })
+    if (!response.ok) return null
+    return (await response.json()) as PublicReel
+  } catch {
+    return null
+  }
+}
 
 /**
  * One ad with its advertiser, or null when it doesn't exist, was removed,
