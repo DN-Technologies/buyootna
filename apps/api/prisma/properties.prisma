@@ -77,6 +77,8 @@ model Property {
   reports            Report[]
   // Stories that link to this listing
   stories            Story[]
+  // Reels that link to this listing
+  reels              Reel[]
   featureInvoices    Invoice[]
 
   // New identity-based relation

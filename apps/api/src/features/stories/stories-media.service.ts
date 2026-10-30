@@ -22,6 +22,7 @@ import { dimensionProblem, probeImage } from './utils/image-probe';
 import {
   probeVideoFile,
   VideoProbeUnavailableError,
+  type VideoRules,
   type VideoVerdict,
 } from './utils/video-probe';
 
@@ -53,7 +54,8 @@ export interface StoryLinks {
 @Injectable()
 export class StoriesMediaService {
   // ffprobe on a local file; replaced in tests
-  probeVideo: (path: string) => Promise<VideoVerdict> = probeVideoFile;
+  probeVideo: (path: string, rules?: VideoRules) => Promise<VideoVerdict> =
+    probeVideoFile;
 
   constructor(private readonly storage: StorageService) {}
 
@@ -144,16 +146,19 @@ export class StoriesMediaService {
    * (size, type, this story's id); the poster must really be a JPEG within
    * the photo limits; the video is downloaded to a private temp folder and
    * judged by ffprobe (container, codecs, streams, ≤ 30.5 s, ≤ 1920 px),
-   * then the copy is removed.
+   * then the copy is removed. Reels reuse this with their own `rules`.
    */
-  async checkVideo(story: {
-    id: string;
-    mediaKey: string;
-    mediaContentType: string;
-    mediaSizeBytes: number;
-    posterKey: string | null;
-    posterSizeBytes: number | null;
-  }): Promise<MediaCheck> {
+  async checkVideo(
+    story: {
+      id: string;
+      mediaKey: string;
+      mediaContentType: string;
+      mediaSizeBytes: number;
+      posterKey: string | null;
+      posterSizeBytes: number | null;
+    },
+    rules?: VideoRules,
+  ): Promise<MediaCheck> {
     if (!story.posterKey || !story.posterSizeBytes) {
       return { ok: false, missing: false, reason: 'poster_missing' };
     }
@@ -199,7 +204,9 @@ export class StoriesMediaService {
         file,
         story.mediaSizeBytes,
       );
-      const verdict = await this.probeVideo(file);
+      const verdict = await (rules
+        ? this.probeVideo(file, rules)
+        : this.probeVideo(file));
       if (!verdict.ok)
         return { ok: false, missing: false, reason: verdict.reason };
       return {

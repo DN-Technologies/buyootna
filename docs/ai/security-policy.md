@@ -46,6 +46,19 @@ story, suspends the account that posted it and resolves the report. Keep
 `apps/api/src/core/content-filter/banned-words.ts` to unambiguous words:
 a false positive refuses a real listing.
 
+### Reel files are public on purpose
+
+`reels/` (`REELS_S3_PREFIX`) isn't in the bucket policy's private list, unlike
+`chat/`, `stories/` and `backups/`: reels are marketing content, and stable
+links let phones cache them. A file can be read for up to about 35 minutes
+before it passes the publish checks: keys are unguessable, the signed type
+only allows MP4 and JPEG, only approved publishers can upload, and refused
+files are deleted at once. Never put private media under this prefix.
+
+`ReelsCleanupService.reconcile` deletes files no reel row accounts for, so it
+runs only with `NODE_ENV=production`. A development API must set its own
+`REELS_S3_PREFIX` (`reels-dev/`), because it may use production's bucket.
+
 ## Database access
 
 - CLAUDE.md's standing rule: **development/local always uses the Neon
