@@ -57,6 +57,20 @@ describe('reel cursor', () => {
     expect(() => decodeReelCursor(raw, NOW)).toThrow(BadRequestException);
   });
 
+  it('belongs to the filters it was made under', () => {
+    const raw = encodeReelCursor({ ...cursor, filterKey: 'capital||SALE' });
+    expect(decodeReelCursor(raw, NOW, 'capital||SALE').filterKey).toBe(
+      'capital||SALE',
+    );
+    expect(() => decodeReelCursor(raw, NOW, 'capital||RENT')).toThrow(
+      BadRequestException,
+    );
+    expect(() => decodeReelCursor(raw, NOW)).toThrow(BadRequestException);
+    expect(() =>
+      decodeReelCursor(encodeReelCursor(cursor), NOW, 'capital||SALE'),
+    ).toThrow(BadRequestException);
+  });
+
   it('refuses a snapshot from the future', () => {
     const future = encodeReelCursor({
       ...cursor,

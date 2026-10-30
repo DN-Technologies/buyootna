@@ -34,6 +34,10 @@ export const REEL_PUT_TTL_SECONDS = 10 * 60;
 export const REEL_DAILY_PUBLISH_LIMIT = 10;
 export const REEL_LIMIT_WINDOW_MS = 24 * HOUR_MS;
 
+// The deals the feed can be narrowed to
+export const REEL_FILTER_LISTING_TYPES = ['SALE', 'RENT', 'EXCHANGE'] as const;
+export type ReelListingType = (typeof REEL_FILTER_LISTING_TYPES)[number];
+
 export const REEL_PAGE_DEFAULT = 10;
 export const REEL_PAGE_MAX = 20;
 // A scroll keeps its snapshot this long; past it the app starts again quietly

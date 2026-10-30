@@ -36,7 +36,11 @@ describe('useReelsSession', () => {
 
     await act(() => result.current.loadMore());
     expect(ids(result.current.items)).toEqual(['a', 'b', 'c']);
-    expect(service.getFeed).toHaveBeenLastCalledWith('next');
+    expect(service.getFeed).toHaveBeenLastCalledWith(
+      'next',
+      undefined,
+      undefined,
+    );
 
     // That was the last page
     await act(() => result.current.loadMore());
@@ -49,6 +53,45 @@ describe('useReelsSession', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(service.getByAuthor).toHaveBeenCalledWith('x', undefined);
     expect(service.getFeed).not.toHaveBeenCalled();
+  });
+
+  it('asks for the filters, and starts again when they change', async () => {
+    service.getFeed.mockResolvedValue(page(['a']));
+    const filters = { listingType: 'SALE' as const };
+    const { result, rerender } = await renderHook(
+      (props: { filters?: { listingType: 'SALE' } }) => useReelsSession(props),
+      { initialProps: {} },
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await rerender({ filters });
+    await waitFor(() =>
+      expect(service.getFeed).toHaveBeenLastCalledWith(
+        undefined,
+        undefined,
+        filters,
+      ),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(ids(result.current.items)).toEqual(['a']);
+  });
+
+  it('an answer to the old filters, arriving late, is dropped', async () => {
+    let answerOld: (page: ReelPage) => void = () => undefined;
+    service.getFeed
+      .mockReturnValueOnce(
+        new Promise<ReelPage>((resolve) => {
+          answerOld = resolve;
+        }),
+      )
+      .mockResolvedValueOnce(page(['new']));
+    const { result, rerender } = await renderHook(
+      (props: { filters?: { listingType: 'SALE' } }) => useReelsSession(props),
+      { initialProps: {} },
+    );
+    await rerender({ filters: { listingType: 'SALE' } });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => answerOld(page(['old'])));
+    expect(ids(result.current.items)).toEqual(['new']);
   });
 
   it('opens at a reel in the first page', async () => {

@@ -43,6 +43,13 @@ export interface ReelPage {
   nextCursor: string | null;
 }
 
+/** What the main feed can be narrowed to, by the reel's listing. */
+export interface ReelFilters {
+  governorateId?: string;
+  areaId?: string;
+  listingType?: 'SALE' | 'RENT' | 'EXCHANGE';
+}
+
 export interface ReelLikeState {
   liked: boolean;
   likeCount: number;

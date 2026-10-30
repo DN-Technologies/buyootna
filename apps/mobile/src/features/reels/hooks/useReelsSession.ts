@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { reelsService } from '@/shared/api/reels.service';
 
 import { mergeReels } from '../reelRules';
-import type { ReelPage, ViewerReel } from '../types';
+import type { ReelFilters, ReelPage, ViewerReel } from '../types';
 
 // Pages in a row that may add nothing (all already shown) before giving up
 const MAX_EMPTY_PAGES = 5;
@@ -21,9 +21,12 @@ const errorCode = (error: unknown) =>
 export function useReelsSession({
   authorId,
   startId,
+  filters,
 }: {
   authorId?: string;
   startId?: string;
+  // The main feed only
+  filters?: ReelFilters;
 }) {
   const [items, setItems] = useState<ViewerReel[]>([]);
   const [startIndex, setStartIndex] = useState(0);
@@ -32,6 +35,8 @@ export function useReelsSession({
   const cursor = useRef<string | undefined>(undefined);
   const finished = useRef(false);
   const busy = useRef(false);
+  // Bumped when the list starts again: an answer to an older request is dropped
+  const generation = useRef(0);
   const shown = useRef<ViewerReel[]>([]);
 
   const replace = useCallback((next: ViewerReel[]) => {
@@ -43,13 +48,14 @@ export function useReelsSession({
     (at?: string): Promise<ReelPage> =>
       authorId
         ? reelsService.getByAuthor(authorId, at)
-        : reelsService.getFeed(at),
-    [authorId],
+        : reelsService.getFeed(at, undefined, filters),
+    [authorId, filters],
   );
 
   const loadMore = useCallback(async () => {
     if (busy.current || finished.current) return;
     busy.current = true;
+    const mine = generation.current;
     try {
       for (let tries = 0; tries < MAX_EMPTY_PAGES; tries += 1) {
         let page: ReelPage;
@@ -60,6 +66,7 @@ export function useReelsSession({
           cursor.current = undefined;
           page = await fetchPage();
         }
+        if (mine !== generation.current) return;
         cursor.current = page.nextCursor ?? undefined;
         finished.current = !page.nextCursor;
         const next = mergeReels(shown.current, page.reels);
@@ -68,13 +75,17 @@ export function useReelsSession({
         if (added || finished.current) break;
       }
     } finally {
-      busy.current = false;
+      if (mine === generation.current) busy.current = false;
     }
   }, [fetchPage, replace]);
 
   const start = useCallback(async () => {
+    generation.current += 1;
+    const mine = generation.current;
+    busy.current = false;
     setLoading(true);
     setFailed(false);
+    setStartIndex(0);
     cursor.current = undefined;
     finished.current = false;
     replace([]);
@@ -92,9 +103,9 @@ export function useReelsSession({
         setStartIndex(index);
       }
     } catch {
-      setFailed(true);
+      if (mine === generation.current) setFailed(true);
     } finally {
-      setLoading(false);
+      if (mine === generation.current) setLoading(false);
     }
   }, [loadMore, replace, startId]);
 

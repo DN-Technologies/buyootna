@@ -25,6 +25,7 @@ import { ReportsService } from '../reports/reports.service';
 import { CreateReelUploadDto } from './dto/create-reel-upload.dto';
 import { PublishReelDto } from './dto/publish-reel.dto';
 import { RecordReelViewsDto } from './dto/record-reel-views.dto';
+import { ReelFeedQueryDto } from './dto/reel-feed-query.dto';
 import { ReelListQueryDto } from './dto/reel-list-query.dto';
 import {
   AuthorReelDto,
@@ -112,11 +113,11 @@ export class ReelsController {
   @Get('feed')
   @ApiOperation({
     summary:
-      'Main feed, for guests too. Signed in: unseen newest first, then seen newest first. Guests: newest first.',
+      'Main feed, for guests too. Signed in: unseen newest first, then seen newest first. Guests: newest first. Filters narrow it by the reel listing, leaving out reels with none.',
   })
   @ApiResponse({ status: 200, type: ReelFeedDto })
   @ApiCommonErrors()
-  feed(@Query() query: ReelListQueryDto, @CurrentUser() reqUser?: RequestUser) {
+  feed(@Query() query: ReelFeedQueryDto, @CurrentUser() reqUser?: RequestUser) {
     return this.feedService.feed(viewerOf(reqUser), query);
   }
 
