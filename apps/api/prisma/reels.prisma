@@ -48,6 +48,7 @@ model Reel {
   failureReason    String?
   views            ReelView[]
   likes            ReelLike[]
+  reports          Report[]
 
   // Feed + cleanup
   @@index([status, publishedAt(sort: Desc), id(sort: Desc)])

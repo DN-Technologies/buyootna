@@ -373,6 +373,16 @@ export function ReportReviewDrawer({
                       {report.contentText}
                     </p>
                   )}
+                  {report.contentUrl && (
+                    <a
+                      href={report.contentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-['Cairo'] font-medium text-[14px] text-[#15304D] underline block"
+                    >
+                      مشاهدة الفيديو
+                    </a>
+                  )}
                 </div>
               </>
             )}

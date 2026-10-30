@@ -25,6 +25,7 @@ export type BackendAdminActionType =
   | 'FEATURE_PACKAGE_UPDATED'
   | 'REVIEW_DELETED'
   | 'STORY_REMOVED'
+  | 'REEL_REMOVED'
 
 export interface AdminLogActor {
   id: string

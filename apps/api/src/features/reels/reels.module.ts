@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { ReportsModule } from '../reports/reports.module';
 import { StoriesModule } from '../stories/stories.module';
 
 import { ReelsCleanupService } from './reels-cleanup.service';
@@ -15,7 +16,7 @@ import { ReelsService } from './reels.service';
 
 // PrismaModule and StorageModule are global
 @Module({
-  imports: [StoriesModule],
+  imports: [StoriesModule, ReportsModule],
   controllers: [ReelsAvailabilityController, ReelsController],
   providers: [
     ReelsService,

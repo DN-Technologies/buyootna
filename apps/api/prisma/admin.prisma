@@ -30,6 +30,7 @@ enum AdminActionType {
   // «حذف المحتوى وإيقاف الحساب» on a report (Guideline 1.2)
   REVIEW_DELETED
   STORY_REMOVED
+  REEL_REMOVED
 }
 
 model AdminActionLog {
