@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import ReelsRail from '@/features/reels/components/ReelsRail';
 import GoldSegment, {
   type GoldSegmentOption,
 } from '@/shared/components/ui/GoldSegment';
@@ -63,14 +64,17 @@ export default function StoriesList({ authSheetRef }: StoriesListProps) {
   };
 
   const header = (
-    <View className="flex-row pb-[16px]">
-      <GoldSegment
-        testID="stories-segment"
-        options={SEGMENTS}
-        value={segment}
-        onChange={setSegment}
-      />
-    </View>
+    <>
+      <ReelsRail />
+      <View className="flex-row pb-[16px]">
+        <GoldSegment
+          testID="stories-segment"
+          options={SEGMENTS}
+          value={segment}
+          onChange={setSegment}
+        />
+      </View>
+    </>
   );
 
   if (!token) {

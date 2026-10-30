@@ -10,6 +10,10 @@ jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (effect: () => void) => effect(),
 }));
 jest.mock('expo-image', () => ({ Image: 'Image' }));
+jest.mock('@/features/reels/components/ReelsRail', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 jest.mock('@/shared/hooks/device/useTabBarHeight', () => ({
   useTabBarHeight: () => ({ scrollContentBottomPadding: 0 }),
 }));
