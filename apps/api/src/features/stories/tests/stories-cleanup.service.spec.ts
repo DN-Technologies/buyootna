@@ -217,6 +217,31 @@ describe('StoriesCleanupService', () => {
 
   describe('reconcile', () => {
     const old = new Date('2026-10-20T09:00:00.000Z');
+    const savedEnv = process.env.NODE_ENV;
+
+    beforeEach(() => {
+      process.env.NODE_ENV = 'production';
+    });
+    afterAll(() => {
+      process.env.NODE_ENV = savedEnv;
+    });
+
+    it('does nothing outside production, so it cannot delete real files', async () => {
+      process.env.NODE_ENV = 'development';
+      await expect(service.reconcile(NOW)).resolves.toEqual({
+        scanned: 0,
+        deleted: 0,
+        failed: 0,
+      });
+      expect(storage.listKeys).not.toHaveBeenCalled();
+      expect(storage.deleteKeysReporting).not.toHaveBeenCalled();
+    });
+
+    it('does nothing when NODE_ENV is unset (a local API)', async () => {
+      delete process.env.NODE_ENV;
+      await service.reconcile(NOW);
+      expect(storage.listKeys).not.toHaveBeenCalled();
+    });
 
     it('deletes old files no row accounts for, and nothing else', async () => {
       storage.listKeys.mockResolvedValueOnce({
