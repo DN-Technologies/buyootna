@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ProfileReels from '@/features/reels/components/ProfileReels';
 import ProfileHighlights from '@/features/stories/components/ProfileHighlights';
 import { useProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
@@ -112,6 +113,7 @@ export default function CompanyProfileScreen() {
               <CompanyHeaderCard company={company} logoRing={storyRing} />
               {/* المميزة: its highlights, kept past their 24 hours */}
               <ProfileHighlights authorId={company?.id} />
+              <ProfileReels authorId={company?.id} />
 
               {/* Tab Navigation Switcher */}
               <CompanyTabsSwitcher

@@ -4,8 +4,8 @@ export const reels: DocSection = {
   slug: "reels",
   title: { en: "Reels", ar: "الريلز" },
   summary: {
-    en: "Short public videos from companies and offices, hidden behind a server switch until launch. These stories grow as each part ships; today only the API exists, for posting and for the feed.",
-    ar: "فيديوهات قصيرة عامة من الشركات والمكاتب، مخفية خلف مفتاح في الخادم حتى الإطلاق. تتوسع هذه القصص مع كل جزء يُنشر؛ حالياً تتوفر الواجهة البرمجية فقط، للنشر وللصفحة الرئيسية.",
+    en: "Short public videos from companies and offices, hidden behind a server switch until launch. These stories grow as each part ships; today the API and the viewer exist; posting from the app comes next.",
+    ar: "فيديوهات قصيرة عامة من الشركات والمكاتب، مخفية خلف مفتاح في الخادم حتى الإطلاق. تتوسع هذه القصص مع كل جزء يُنشر؛ حالياً تتوفر الواجهة البرمجية والعارض؛ ويأتي النشر من التطبيق لاحقاً.",
   },
   stories: [
     {
@@ -277,6 +277,61 @@ export const reels: DocSection = {
         ],
       },
       updatedIn: "feat/reels-moderation",
+    },
+    {
+      id: "reels-viewer",
+      title: {
+        en: "Watching reels in the app",
+        ar: "مشاهدة الريلز في التطبيق",
+      },
+      priority: "P0",
+      story: {
+        en: "Verify the «ريلز» row and the full-screen viewer on real phones, for guests and signed-in profiles.",
+        ar: "تحقق من صف «ريلز» والعارض بملء الشاشة على هواتف حقيقية، للزوار والملفات المسجلة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "With the switch off, no reels row appears anywhere and the layout doesn't change.",
+          "With it on, the «ريلز» row shows in «القصص» on the individual home, for guests too, and on company and office profiles that have reels.",
+          "Tapping a card opens the viewer at that reel. Swiping up and down moves one reel at a time, and only the reel on screen plays, with sound.",
+          "A tap pauses and resumes, and a double tap likes with a heart. The mute button applies to every reel.",
+          "The video stops when you leave the screen, lock the phone, send the app to the background or open a sheet.",
+          "A view counts after 3 seconds, or near the end of a shorter reel. Guests' views don't count.",
+          "A guest who likes, messages, reports or blocks gets the sign-in sheet.",
+          "A linked listing shows a card with «عرض الإعلان». Without one, «عرض الملف» opens the profile.",
+          "Your own reel offers delete instead of report and block. Blocking an account removes its reels from the viewer at once.",
+          "A reel that fails to load shows «إعادة المحاولة». Opening a reel again replays from the phone's cache without downloading it again.",
+        ],
+        ar: [
+          "عند تعطيل المفتاح، لا يظهر صف الريلز في أي مكان ولا يتغير التخطيط.",
+          "عند تفعيله، يظهر صف «ريلز» في «القصص» بالصفحة الرئيسية للأفراد، وللزوار أيضاً، وفي ملفات الشركات والمكاتب التي لديها ريلز.",
+          "الضغط على بطاقة يفتح العارض عند ذلك الريل. السحب للأعلى والأسفل ينتقل ريلاً واحداً في كل مرة، ولا يعمل إلا الريل الظاهر، مع الصوت.",
+          "الضغطة الواحدة توقف وتستأنف، والضغطتان تسجلان إعجاباً مع قلب. وزر كتم الصوت ينطبق على كل الريلز.",
+          "يتوقف الفيديو عند مغادرة الشاشة أو قفل الهاتف أو إرسال التطبيق إلى الخلفية أو فتح نافذة سفلية.",
+          "تُحتسب المشاهدة بعد 3 ثوانٍ، أو قرب نهاية الريل الأقصر. ولا تُحتسب مشاهدات الزوار.",
+          "الزائر الذي يعجب أو يراسل أو يبلغ أو يحظر تظهر له نافذة تسجيل الدخول.",
+          "الإعلان المرتبط يظهر كبطاقة فيها «عرض الإعلان». وبدونه يفتح «عرض الملف» الملف الشخصي.",
+          "ريلك الخاص يعرض الحذف بدلاً من الإبلاغ والحظر. وحظر حساب يزيل ريلزه من العارض فوراً.",
+          "الريل الذي يفشل تحميله يعرض «إعادة المحاولة». وإعادة فتح ريل تشغّله من ذاكرة الهاتف دون تنزيله مجدداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On a cheap Android on mobile data, swipe through 100 reels: confirm no crash, no video stuck on another reel's picture, and that the first frame appears in about a second.",
+          "Play a reel, lock the phone and unlock it: confirm it stops, then resumes.",
+          "As a guest, open the row, watch, and tap like: confirm the sign-in sheet appears.",
+          "Leave the viewer open past 6 hours and keep swiping: confirm it carries on without an error.",
+          "Turn on airplane mode mid-scroll: confirm «إعادة المحاولة» appears, and works once back online.",
+        ],
+        ar: [
+          "على هاتف أندرويد رخيص وببيانات الجوال، اسحب عبر 100 ريل: تأكد من عدم وجود انهيار أو فيديو عالق على صورة ريل آخر، ومن ظهور الإطار الأول خلال ثانية تقريباً.",
+          "شغّل ريلاً واقفل الهاتف ثم افتحه: تأكد أنه يتوقف ثم يستأنف.",
+          "كزائر، افتح الصف وشاهد واضغط إعجاب: تأكد من ظهور نافذة تسجيل الدخول.",
+          "اترك العارض مفتوحاً أكثر من 6 ساعات وتابع السحب: تأكد أنه يستمر دون خطأ.",
+          "فعّل وضع الطيران أثناء التمرير: تأكد من ظهور «إعادة المحاولة» وأنها تعمل بعد عودة الاتصال.",
+        ],
+      },
+      updatedIn: "feat/reels-viewer",
     },
   ],
 };

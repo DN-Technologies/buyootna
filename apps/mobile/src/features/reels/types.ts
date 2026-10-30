@@ -1,0 +1,49 @@
+/** What the API answers for reels (apps/api/src/features/reels). */
+
+export interface ReelAuthor {
+  identityId: string;
+  type: 'COMPANY' | 'OFFICE';
+  name: string;
+  logoUrl: string | null;
+  isVerified: boolean;
+  subtitle: string | null;
+}
+
+export interface ReelPropertyLink {
+  id: string;
+  type: string;
+  category: string;
+  location: string;
+  coverUrl: string | null;
+}
+
+export interface AuthorReel {
+  id: string;
+  mediaUrl: string;
+  posterUrl: string;
+  width: number | null;
+  height: number | null;
+  durationMs: number | null;
+  caption: string | null;
+  property: ReelPropertyLink | null;
+  publishedAt: string;
+  viewCount: number;
+  likeCount: number;
+}
+
+export interface ViewerReel extends AuthorReel {
+  author: ReelAuthor;
+  liked: boolean;
+  viewed: boolean;
+}
+
+export interface ReelPage {
+  snapshotAt: string;
+  reels: ViewerReel[];
+  nextCursor: string | null;
+}
+
+export interface ReelLikeState {
+  liked: boolean;
+  likeCount: number;
+}
