@@ -2,6 +2,8 @@ import type { ReelWatch } from '@/features/reels/reelWatchQueue';
 import type {
   AuthorReel,
   MyReelsPage,
+  ReelComment,
+  ReelCommentsPage,
   ReelFilters,
   ReelLikeState,
   ReelPage,
@@ -74,6 +76,47 @@ export const reelsService = {
   unlike: async (id: string): Promise<ReelLikeState> => {
     const response = await apiClient.delete<ReelLikeState>(`/reels/${id}/like`);
     return response.data;
+  },
+
+  getComments: async (id: string, cursor?: string): Promise<ReelCommentsPage> => {
+    const response = await apiClient.get<ReelCommentsPage>(
+      `/reels/${id}/comments`,
+      { params: pageParams(cursor) },
+    );
+    return response.data;
+  },
+
+  addComment: async (id: string, body: string): Promise<ReelComment> => {
+    const response = await apiClient.post<ReelComment>(
+      `/reels/${id}/comments`,
+      { body },
+    );
+    return response.data;
+  },
+
+  /** Your own, or any on your reel (repeat-safe). */
+  removeComment: async (commentId: string): Promise<void> => {
+    await apiClient.delete(`/reels/comments/${commentId}`);
+  },
+
+  /** Reports a comment (a report against its author). */
+  reportComment: async (
+    commentId: string,
+    reason: string,
+    description?: string,
+  ): Promise<void> => {
+    await apiClient.post(`/reels/comments/${commentId}/reports`, {
+      reason,
+      ...(description ? { description } : {}),
+    });
+  },
+
+  /** The author turns comments on or off for its reel. */
+  setCommentsEnabled: async (
+    id: string,
+    commentsEnabled: boolean,
+  ): Promise<void> => {
+    await apiClient.patch(`/reels/${id}`, { commentsEnabled });
   },
 
   /** Reports a reel (a report against its author). */

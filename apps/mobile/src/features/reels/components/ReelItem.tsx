@@ -24,7 +24,6 @@ import { SvgXml } from 'react-native-svg';
 import { VerifiedBadgeIcon } from '@/assets/icons/activity';
 import { STORY_GLASS } from '@/features/stories/components/composer/storyGlass';
 import {
-  eyeXml,
   moreXml,
   shareXml,
 } from '@/features/stories/components/composer/storyIconXml';
@@ -55,6 +54,7 @@ interface ReelItemProps {
   onLike: () => void;
   canFollow: boolean;
   onFollow: () => void;
+  onComments: () => void;
   onMessage: () => void;
   onShare: () => void;
   onOptions: () => void;
@@ -123,6 +123,7 @@ function ReelItem({
   onLike,
   canFollow,
   onFollow,
+  onComments,
   onMessage,
   onShare,
   onOptions,
@@ -304,7 +305,8 @@ function ReelItem({
                   className="font-cairo text-[12px] leading-[18px] text-[#E3E3E3]"
                   style={styles.shadow}
                 >
-                  {formatTimeAgo(reel.publishedAt)}
+                  {formatTimeAgo(reel.publishedAt)} ·{' '}
+                  {formatReelCount(reel.viewCount)} مشاهدة
                 </Text>
               </View>
             </TouchableOpacity>
@@ -406,19 +408,22 @@ function ReelItem({
                 color={reel.liked ? '#EF4444' : '#FFFFFF'}
               />
             </RailButton>
-            <RailButton
-              testID="reel-views"
-              label="المشاهدات"
-              count={formatReelCount(reel.viewCount)}
-            >
-              <SvgXml xml={eyeXml} width={24} height={24} />
-            </RailButton>
+            {reel.commentsEnabled && (
+              <RailButton
+                testID="reel-comments-open"
+                label="التعليقات"
+                count={formatReelCount(reel.commentCount)}
+                onPress={onComments}
+              >
+                <Ionicons name="chatbubble-outline" size={22} color="#FFFFFF" />
+              </RailButton>
+            )}
             <RailButton
               testID="reel-message"
               label="إرسال رسالة"
               onPress={onMessage}
             >
-              <Feather name="message-circle" size={22} color="#FFFFFF" />
+              <Feather name="send" size={21} color="#FFFFFF" />
             </RailButton>
             <RailButton testID="reel-share" label="مشاركة" onPress={onShare}>
               <SvgXml xml={shareXml} width={24} height={24} />

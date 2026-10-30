@@ -100,6 +100,7 @@ const CONTENT_LABEL = {
   REVIEW: 'التقييم المبلغ عنه',
   STORY: 'القصة المبلغ عنها',
   REEL: 'الفيديو المبلغ عنه',
+  REEL_COMMENT: 'التعليق المبلغ عنه',
 } as const
 
 // A reported review's comment, or a story's or reel's caption, and a reel's

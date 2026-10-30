@@ -56,6 +56,12 @@ model Report {
   targetReel         Reel?     @relation(fields: [targetReelId], references: [id], onDelete: SetNull)
   targetReelSnapshot Json?
 
+  // A report made from a comment on a reel: against its author (USER), with
+  // its text kept here once it is deleted
+  targetReelCommentId       String?
+  targetReelComment         ReelComment? @relation(fields: [targetReelCommentId], references: [id], onDelete: SetNull)
+  targetReelCommentSnapshot Json?
+
   resolvedAt         DateTime?
   resolvedByAdminId  String?
   resolvedByAdmin    User?     @relation("ReportResolvedBy", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
@@ -70,6 +76,8 @@ model Report {
   // story, and NULLs never collide)
   @@unique([reporterIdentityId, targetStoryId])
   @@unique([reporterIdentityId, targetReelId])
+  @@unique([reporterIdentityId, targetReelCommentId])
+  @@index([targetReelCommentId])
   @@index([targetReelId])
   @@index([targetStoryId])
   @@index([targetReviewId])

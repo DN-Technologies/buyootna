@@ -29,8 +29,10 @@ export class ReportAssignedAdminDto {
 }
 
 export class ReportContentDto {
-  @ApiProperty({ enum: ['PROPERTY', 'REVIEW', 'STORY', 'REEL'] })
-  kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL';
+  @ApiProperty({
+    enum: ['PROPERTY', 'REVIEW', 'STORY', 'REEL', 'REEL_COMMENT'],
+  })
+  kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL' | 'REEL_COMMENT';
 
   @ApiProperty({
     nullable: true,

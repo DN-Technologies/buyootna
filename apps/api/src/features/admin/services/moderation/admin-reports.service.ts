@@ -5,6 +5,7 @@ import { NotificationsService } from '../../../notifications/notifications.servi
 import { AdminReportsFilterDto } from '../../dto/admin-reports-filter.dto';
 import { AdminReportUpdateDto } from '../../dto/admin-report-update.dto';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { removeReelComment } from '../../../reels/reels.rules';
 import { deletedRowKeptUntil } from '../../../stories/stories.rules';
 import { findOwnedIdentity } from '../users/admin-persona.util';
 
@@ -103,6 +104,13 @@ function reportContent(row: ReportRow) {
       kind: 'STORY' as const,
       id: row.targetStoryId,
       snapshot: snapshot(row.targetStorySnapshot),
+    };
+  }
+  if (row.targetReelCommentId || row.targetReelCommentSnapshot) {
+    return {
+      kind: 'REEL_COMMENT' as const,
+      id: row.targetReelCommentId,
+      snapshot: snapshot(row.targetReelCommentSnapshot),
     };
   }
   if (row.targetReelId || row.targetReelSnapshot) {
@@ -483,6 +491,29 @@ export class AdminReportsService {
           action: 'STORY_REMOVED',
           targetType: 'STORY',
           targetId: report.targetStoryId,
+          targetUserId: report.targetUserId ?? undefined,
+          metadata: { reason },
+        });
+      }
+    } else if (report.targetReelCommentId) {
+      const comment = await this.prisma.reelComment.findUnique({
+        where: { id: report.targetReelCommentId },
+        select: { reelId: true },
+      });
+      if (
+        comment &&
+        (await removeReelComment(
+          this.prisma,
+          report.targetReelCommentId,
+          comment.reelId,
+        ))
+      ) {
+        removed = 'REEL_COMMENT';
+        await this.auditLog.log({
+          actorAdminId: adminUserId,
+          action: 'REEL_COMMENT_REMOVED',
+          targetType: 'REEL_COMMENT',
+          targetId: report.targetReelCommentId,
           targetUserId: report.targetUserId ?? undefined,
           metadata: { reason },
         });

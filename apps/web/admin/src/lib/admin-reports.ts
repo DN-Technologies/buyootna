@@ -33,7 +33,7 @@ export interface AdminReportRow {
   assignedAdmin: AdminReportAssignedAdmin | null
   // The listing, review, story or reel reported (null for an account alone)
   content: {
-    kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL'
+    kind: 'PROPERTY' | 'REVIEW' | 'STORY' | 'REEL' | 'REEL_COMMENT'
     id: string | null
     snapshot: Record<string, unknown> | null
   } | null

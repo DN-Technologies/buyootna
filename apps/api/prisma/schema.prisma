@@ -215,6 +215,8 @@ enum NotificationType {
   REQUEST_REPLY
   // A client sent a company/office a quote request (طلب عرض سعر)
   REQUEST_RECEIVED
+  // Someone commented on a company's or office's reel
+  REEL_COMMENT
 }
 
 model Notification {

@@ -29,6 +29,8 @@ export interface AuthorReel {
   publishedAt: string;
   viewCount: number;
   likeCount: number;
+  commentCount: number;
+  commentsEnabled: boolean;
 }
 
 export interface ViewerReel extends AuthorReel {
@@ -54,6 +56,28 @@ export interface ReelFilters {
 export interface ReelLikeState {
   liked: boolean;
   likeCount: number;
+}
+
+export interface ReelComment {
+  id: string;
+  body: string;
+  createdAt: string;
+  author: {
+    identityId: string;
+    type: string;
+    name: string;
+    avatarUrl: string | null;
+    isVerified: boolean;
+  };
+  // Written by the current profile
+  mine: boolean;
+  // Its own, or any on the current profile's reel
+  canDelete: boolean;
+}
+
+export interface ReelCommentsPage {
+  comments: ReelComment[];
+  nextCursor: string | null;
 }
 
 export interface MyReelsPage {

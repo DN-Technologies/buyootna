@@ -71,3 +71,26 @@ export async function assertOwnListing(
   });
   if (!property) throw propertyNotOwn();
 }
+
+/**
+ * Deletes a comment and lowers its reel's count together, once however many
+ * times it's called. Also what an admin's takedown uses.
+ */
+export async function removeReelComment(
+  db: PrismaService,
+  commentId: string,
+  reelId: string,
+): Promise<boolean> {
+  return db.$transaction(async (tx) => {
+    const { count } = await tx.reelComment.deleteMany({
+      where: { id: commentId },
+    });
+    if (count > 0) {
+      await tx.reel.updateMany({
+        where: { id: reelId, commentCount: { gt: 0 } },
+        data: { commentCount: { decrement: 1 } },
+      });
+    }
+    return count > 0;
+  });
+}

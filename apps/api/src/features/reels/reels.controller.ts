@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -23,6 +24,12 @@ import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { CreateReportDto } from '../reports/dto/create-report.dto';
 import { ReportsService } from '../reports/reports.service';
 import { CreateReelUploadDto } from './dto/create-reel-upload.dto';
+import {
+  CreateReelCommentDto,
+  ReelCommentDto,
+  ReelCommentsDto,
+  UpdateReelDto,
+} from './dto/reel-comment.dto';
 import { PublishReelDto } from './dto/publish-reel.dto';
 import { RecordReelViewsDto } from './dto/record-reel-views.dto';
 import { RecordReelWatchesDto } from './dto/record-reel-watches.dto';
@@ -37,6 +44,7 @@ import {
   ReelUploadSlotDto,
   ViewerReelDto,
 } from './dto/reel-response.dto';
+import { ReelsCommentsService } from './reels-comments.service';
 import { ReelsEnabledGuard } from './reels-enabled.guard';
 import { ReelsEngagementService } from './reels-engagement.service';
 import { ReelsFeedService, type ReelViewer } from './reels-feed.service';
@@ -76,6 +84,7 @@ export class ReelsController {
     private readonly engagement: ReelsEngagementService,
     private readonly media: ReelsMediaService,
     private readonly reports: ReportsService,
+    private readonly reelComments: ReelsCommentsService,
   ) {}
 
   @Post('uploads')
@@ -191,6 +200,81 @@ export class ReelsController {
       id,
       dto,
       (reel) => this.media.linksFor(reel),
+    );
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({ summary: "A reel's comments, newest first; for guests too" })
+  @ApiResponse({ status: 200, type: ReelCommentsDto })
+  @ApiCommonErrors()
+  comments(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: ReelListQueryDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.reelComments.list(id, viewerOf(reqUser), query.cursor);
+  }
+
+  @Post(':id/comments')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Comment on a reel (20 an hour per profile)' })
+  @ApiResponse({ status: 201, type: ReelCommentDto })
+  @ApiCommonErrors()
+  addComment(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateReelCommentDto,
+  ) {
+    return this.reelComments.create(id, viewerOf(reqUser)!, dto.body);
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'The author turns comments on or off' })
+  @ApiCommonErrors()
+  update(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateReelDto,
+  ) {
+    return this.reelComments.setEnabled(
+      id,
+      reqUser.identityId,
+      dto.commentsEnabled,
+    );
+  }
+
+  @Delete('comments/:commentId')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Delete your comment, or any on your reel (repeat-safe)',
+  })
+  @ApiResponse({ status: 204 })
+  @ApiCommonErrors()
+  async removeComment(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+  ): Promise<void> {
+    await this.reelComments.remove(commentId, viewerOf(reqUser)!);
+  }
+
+  @Post('comments/:commentId/reports')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary:
+      'Report a comment: a report against its author (one per profile and comment; repeating returns the first)',
+  })
+  @ApiCommonErrors()
+  reportComment(
+    @CurrentUser() reqUser: RequestUser,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
+    @Body() dto: CreateReportDto,
+  ) {
+    return this.reports.createForReelComment(
+      { userId: reqUser.userId, identityId: reqUser.identityId },
+      commentId,
+      dto,
     );
   }
 

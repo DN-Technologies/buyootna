@@ -31,6 +31,7 @@ import { useReelsSession } from '../hooks/useReelsSession';
 import { reachedEnd, reachedView } from '../reelRules';
 import { ReelWatchQueue } from '../reelWatchQueue';
 import type { ReelFilters, ViewerReel } from '../types';
+import ReelCommentsSheet from './ReelCommentsSheet';
 import ReelFiltersSheet, { hasReelFilters } from './ReelFiltersSheet';
 import ReelItem from './ReelItem';
 
@@ -62,6 +63,8 @@ export default function ReelsViewer({
   // Once filtered, the reel it opened at no longer decides where the list starts
   const [refined, setRefined] = useState(false);
   const filterSheet = useRef<BottomSheetModal>(null);
+  const commentsSheet = useRef<BottomSheetModal>(null);
+  const [commentsFor, setCommentsFor] = useState<string | null>(null);
   const session = useReelsSession({
     authorId,
     startId: refined ? undefined : startId,
@@ -358,6 +361,11 @@ export default function ReelsViewer({
             onLike={() => void actions.toggleLike(item)}
             canFollow={!actions.isMine(item)}
             onFollow={() => void actions.toggleFollow(item)}
+            onComments={() => {
+              setCommentsFor(item.id);
+              setSheetOpen(true);
+              commentsSheet.current?.present();
+            }}
             onMessage={() => void actions.message(item)}
             onShare={() => void actions.share(item)}
             onOptions={() => actions.options(item)}
@@ -383,6 +391,23 @@ export default function ReelsViewer({
           void actions.submitReport(reason, description)
         }
         onClose={actions.onReportClosed}
+      />
+      <ReelCommentsSheet
+        ref={commentsSheet}
+        reel={items.find((r) => r.id === commentsFor) ?? null}
+        guard={actions.guardAction}
+        onCountChange={(reelId, by) => {
+          const reel = items.find((r) => r.id === reelId);
+          if (reel) {
+            session.update(reelId, {
+              commentCount: Math.max(0, reel.commentCount + by),
+            });
+          }
+        }}
+        onBlocked={(identityId) =>
+          session.removeWhere((r) => r.author.identityId === identityId)
+        }
+        onClose={() => setSheetOpen(false)}
       />
       <ReelFiltersSheet
         ref={filterSheet}

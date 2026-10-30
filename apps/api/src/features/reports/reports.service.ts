@@ -216,6 +216,76 @@ export class ReportsService {
   }
 
   /**
+   * A report made from a comment on a reel: against its author, with its text
+   * kept since the comment may be deleted. One per reporting profile and
+   * comment: repeating it, even at the same moment, returns the first one.
+   */
+  async createForReelComment(
+    reporter: { userId: string; identityId: string },
+    commentId: string,
+    dto: CreateReportDto,
+  ) {
+    const comment = await this.prisma.reelComment.findUnique({
+      where: { id: commentId },
+      select: {
+        id: true,
+        reelId: true,
+        body: true,
+        createdAt: true,
+        identityId: true,
+        identity: { select: { userId: true } },
+      },
+    });
+    if (!comment) throw new NotFoundException('التعليق غير موجود');
+    if (comment.identity.userId === reporter.userId) {
+      throw new BadRequestException('لا يمكنك تقديم بلاغ ضد حسابك الشخصي');
+    }
+
+    const existing = await this.findReelCommentReport(
+      reporter.identityId,
+      commentId,
+    );
+    if (existing) return this.reportResult(existing);
+
+    try {
+      const report = await this.prisma.report.create({
+        data: {
+          reportNumber: await this.nextReportNumber(),
+          targetType: ReportTargetType.USER,
+          reason: dto.reason,
+          description: dto.description,
+          reporterUserId: reporter.userId,
+          reporterIdentityId: reporter.identityId,
+          targetUserId: comment.identity.userId,
+          targetIdentityId: comment.identityId,
+          targetReelCommentId: comment.id,
+          targetReelCommentSnapshot: {
+            commentId: comment.id,
+            reelId: comment.reelId,
+            // The admin drawer shows a snapshot's `comment`
+            comment: comment.body,
+            createdAt: comment.createdAt.toISOString(),
+          },
+        },
+      });
+      this.alert(report, 'تعليق');
+      return this.reportResult(report);
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const winner = await this.findReelCommentReport(
+          reporter.identityId,
+          commentId,
+        );
+        if (winner) return this.reportResult(winner);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * A report made from a listing (إبلاغ عن الإعلان): PROPERTY, against the
    * listing and its owner. A profile's report on a listing still pending
    * review is returned again instead of being filed twice.
@@ -371,6 +441,17 @@ export class ReportsService {
         reporterIdentityId_targetStoryId: {
           reporterIdentityId,
           targetStoryId: storyId,
+        },
+      },
+    });
+  }
+
+  private findReelCommentReport(reporterIdentityId: string, commentId: string) {
+    return this.prisma.report.findUnique({
+      where: {
+        reporterIdentityId_targetReelCommentId: {
+          reporterIdentityId,
+          targetReelCommentId: commentId,
         },
       },
     });
