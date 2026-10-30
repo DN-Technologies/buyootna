@@ -388,5 +388,50 @@ export const reels: DocSection = {
       },
       updatedIn: "feat/reels-posting",
     },
+    {
+      id: "reels-filters",
+      title: {
+        en: "Filtering reels by area and deal",
+        ar: "تصفية الريلز حسب المنطقة ونوع الصفقة",
+      },
+      priority: "P1",
+      story: {
+        en: "Verify the filter button in the main reels viewer and GET /reels/feed's governorateId, areaId and listingType.",
+        ar: "تحقق من زر التصفية في عارض الريلز الرئيسي ومن governorateId وareaId وlistingType في GET /reels/feed.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The filter sheet offers الكل, بيع, إيجار and بدل, then a governorate, then an area of it. Area stays off until a governorate is chosen, and changing governorate clears the area.",
+          "Filters match the reel's listing, so a reel with no listing is hidden while any filter is on. This is stated in the sheet.",
+          "«عرض النتائج» restarts the list from the top, and a gold dot marks the button while a filter is on.",
+          "No match shows «لا توجد فيديوهات مطابقة» with «إزالة الفلاتر».",
+          "One author's reels have no filter button. Filters don't affect the home row, and they end when the viewer closes.",
+          "A cursor made under other filters answers REEL_CURSOR_EXPIRED.",
+        ],
+        ar: [
+          "تعرض نافذة التصفية الكل وبيع وإيجار وبدل، ثم المحافظة، ثم منطقة منها. تبقى المنطقة معطلة حتى اختيار المحافظة، وتغيير المحافظة يمسح المنطقة.",
+          "تطابق الفلاتر إعلان الريل، فيُخفى الريل غير المرتبط بإعلان ما دام أي فلتر مفعلاً. وتوضح النافذة ذلك.",
+          "«عرض النتائج» تعيد القائمة من أولها، وتظهر نقطة ذهبية على الزر ما دام هناك فلتر مفعل.",
+          "عند عدم وجود نتائج تظهر «لا توجد فيديوهات مطابقة» مع «إزالة الفلاتر».",
+          "ريلز صاحب واحد ليس فيها زر تصفية. ولا تؤثر الفلاتر في صف الرئيسية، وتنتهي عند إغلاق العارض.",
+          "المؤشر الصادر تحت فلاتر أخرى يعيد REEL_CURSOR_EXPIRED.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Filter to إيجار: confirm every reel shown has a rental listing.",
+          "Choose a governorate and an area with no reels: confirm the empty message, then clear the filters.",
+          "Open the viewer from a card, filter, then reset: confirm the list starts from the top and doesn't jump.",
+          "Change a filter while the list is loading: confirm only the new results appear.",
+        ],
+        ar: [
+          "صفِّ إلى إيجار: تأكد أن كل ريل معروض مرتبط بإعلان إيجار.",
+          "اختر محافظة ومنطقة بلا ريلز: تأكد من رسالة عدم وجود نتائج، ثم أزل الفلاتر.",
+          "افتح العارض من بطاقة ثم صفِّ ثم أعد التعيين: تأكد أن القائمة تبدأ من أولها دون قفز.",
+          "غيّر فلتراً أثناء تحميل القائمة: تأكد من ظهور النتائج الجديدة فقط.",
+        ],
+      },
+      updatedIn: "feat/reels-filters",
+    },
   ],
 };

@@ -14,6 +14,8 @@ export interface ReelCursor {
   publishedAt: Date;
   id: string;
   lastAuthorId?: string;
+  // The filters the scroll is under, if any (see reelFilterKey)
+  filterKey?: string;
 }
 
 interface CursorJson {
@@ -23,6 +25,7 @@ interface CursorJson {
   p: string;
   i: string;
   a?: string;
+  f?: string;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -35,6 +38,7 @@ export function encodeReelCursor(cursor: ReelCursor): string {
     p: cursor.publishedAt.toISOString(),
     i: cursor.id,
     ...(cursor.lastAuthorId ? { a: cursor.lastAuthorId } : {}),
+    ...(cursor.filterKey ? { f: cursor.filterKey } : {}),
   };
   return Buffer.from(JSON.stringify(json)).toString('base64url');
 }
@@ -49,10 +53,15 @@ function cursorError(): BadRequestException {
 
 /**
  * Reads a cursor the server issued. A malformed one, or one whose snapshot is
- * older than REEL_CURSOR_MAX_AGE_MS, is refused with REEL_CURSOR_EXPIRED: the
- * app starts again from the first page and drops what it already showed.
+ * older than REEL_CURSOR_MAX_AGE_MS, or one made under other filters, is
+ * refused with REEL_CURSOR_EXPIRED: the app starts again from the first page
+ * and drops what it already showed.
  */
-export function decodeReelCursor(raw: string, now = new Date()): ReelCursor {
+export function decodeReelCursor(
+  raw: string,
+  now = new Date(),
+  filterKey?: string,
+): ReelCursor {
   let parsed: unknown;
   try {
     parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8'));
@@ -71,6 +80,7 @@ export function decodeReelCursor(raw: string, now = new Date()): ReelCursor {
   }
   const age = now.getTime() - snapshotAt.getTime();
   if (age < 0 || age > REEL_CURSOR_MAX_AGE_MS) throw cursorError();
+  if ((parsed.f ?? undefined) !== filterKey) throw cursorError();
 
   return {
     snapshotAt,
@@ -78,6 +88,7 @@ export function decodeReelCursor(raw: string, now = new Date()): ReelCursor {
     publishedAt,
     id: parsed.i,
     ...(parsed.a ? { lastAuthorId: parsed.a } : {}),
+    ...(parsed.f ? { filterKey: parsed.f } : {}),
   };
 }
 
@@ -91,6 +102,7 @@ function isCursorJson(value: unknown): value is CursorJson {
     typeof v.p === 'string' &&
     typeof v.i === 'string' &&
     UUID.test(v.i) &&
-    (v.a === undefined || (typeof v.a === 'string' && UUID.test(v.a)))
+    (v.a === undefined || (typeof v.a === 'string' && UUID.test(v.a))) &&
+    (v.f === undefined || typeof v.f === 'string')
   );
 }

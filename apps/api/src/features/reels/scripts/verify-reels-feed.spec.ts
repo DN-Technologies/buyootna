@@ -337,6 +337,65 @@ describeIfDb('Reels feed (real Postgres)', () => {
     expect(mine.slice(13).sort()).toEqual([...ids.slice(0, 12)].sort());
   });
 
+  it('filters by the listing, leaving out reels with none', async () => {
+    const office = await makeOffice();
+    const [gov] = await prisma.governorate.findMany({ take: 1 });
+    const govId =
+      gov?.id ??
+      (await prisma.governorate.create({ data: { name: 'اختبار' } })).id;
+    const area = await prisma.area.create({
+      data: { name: `منطقة ${randomUUID()}`, governorateId: govId },
+    });
+    const sale = await makeListing(office.identityId, {
+      type: 'SALE',
+      governorateId: govId,
+      areaId: area.id,
+    });
+    const rent = await makeListing(office.identityId, {
+      type: 'RENT',
+      governorateId: govId,
+    });
+    const saleReel = await makeReel(office.identityId, 3, {
+      propertyId: sale.id,
+      hadListing: true,
+    });
+    const rentReel = await makeReel(office.identityId, 4, {
+      propertyId: rent.id,
+      hadListing: true,
+    });
+    const noListing = await makeReel(office.identityId, 5);
+    const own = [saleReel, rentReel, noListing];
+    const ids = async (filters: Record<string, string>) =>
+      (await feed.feed(null, { limit: 20, ...filters })).reels
+        .map((r) => r.id)
+        .filter((id) => own.includes(id));
+
+    expect(await ids({ listingType: 'SALE' })).toEqual([saleReel]);
+    expect(await ids({ listingType: 'RENT' })).toEqual([rentReel]);
+    expect(await ids({ governorateId: govId })).toEqual([saleReel, rentReel]);
+    expect(await ids({ areaId: area.id })).toEqual([saleReel]);
+    expect(await ids({ governorateId: govId, listingType: 'RENT' })).toEqual([
+      rentReel,
+    ]);
+    expect(await ids({ listingType: 'EXCHANGE' })).toEqual([]);
+
+    // A cursor made under one filter can't be used with another
+    const first = await feed.feed(null, { limit: 1, governorateId: govId });
+    expect(first.nextCursor).not.toBeNull();
+    await expect(
+      feed.feed(null, {
+        cursor: first.nextCursor ?? undefined,
+        listingType: 'SALE',
+      }),
+    ).rejects.toThrow();
+    const second = await feed.feed(null, {
+      cursor: first.nextCursor ?? undefined,
+      limit: 1,
+      governorateId: govId,
+    });
+    expect(second.reels).toHaveLength(1);
+  });
+
   it('spreads out one author within a page', async () => {
     const a = await makeOffice();
     const b = await makeOffice();

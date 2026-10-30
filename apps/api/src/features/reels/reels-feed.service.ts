@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { notBlockedSql } from '../blocks/block.rules';
+import type { ReelFeedQueryDto } from './dto/reel-feed-query.dto';
 import type { ReelListQueryDto } from './dto/reel-list-query.dto';
 import type {
   MyReelsDto,
@@ -30,6 +31,21 @@ import { spreadAuthors } from './utils/spread-authors';
 export interface ReelViewer {
   identityId: string;
   userId: string;
+}
+
+/** What the main feed can be narrowed to, by the reel's listing. */
+export interface ReelFilters {
+  governorateId?: string;
+  areaId?: string;
+  listingType?: string;
+}
+
+/** One text for a set of filters, or undefined for none. */
+export function reelFilterKey(filters: ReelFilters): string | undefined {
+  const { governorateId, areaId, listingType } = filters;
+  return governorateId || areaId || listingType
+    ? [governorateId ?? '', areaId ?? '', listingType ?? ''].join('|')
+    : undefined;
 }
 
 /** One reel's place in the feed, from the ordering query. */
@@ -69,24 +85,35 @@ export class ReelsFeedService {
 
   async feed(
     viewer: ReelViewer | null,
-    query: ReelListQueryDto,
+    query: ReelFeedQueryDto,
     now = new Date(),
   ): Promise<ReelFeedDto> {
     const limit = query.limit ?? REEL_PAGE_DEFAULT;
-    const cursor = query.cursor ? decodeReelCursor(query.cursor, now) : null;
+    const filterKey = reelFilterKey(query);
+    const cursor = query.cursor
+      ? decodeReelCursor(query.cursor, now, filterKey)
+      : null;
     const snapshotAt = cursor?.snapshotAt ?? now;
     const take = limit + 1;
 
     // A guest has one list, kept in the "unseen" part: nothing to tell apart
     const onSeen = cursor?.seen ?? false;
     const first = await this.prisma.$queryRaw<FeedRankRow[]>(
-      feedQuery(viewer, snapshotAt, now, cursor, take, onSeen),
+      feedQuery(viewer, snapshotAt, now, cursor, take, onSeen, query),
     );
     const firstSeen = onSeen;
     const rest =
       viewer && !onSeen && first.length < take
         ? await this.prisma.$queryRaw<FeedRankRow[]>(
-            feedQuery(viewer, snapshotAt, now, null, take - first.length, true),
+            feedQuery(
+              viewer,
+              snapshotAt,
+              now,
+              null,
+              take - first.length,
+              true,
+              query,
+            ),
           )
         : [];
     const ranked = [
@@ -105,6 +132,7 @@ export class ReelsFeedService {
             publishedAt: new Date(last.publishedIso),
             id: last.id,
             lastAuthorId: shown[shown.length - 1]?.identityId,
+            filterKey,
           })
         : null;
 
@@ -271,7 +299,8 @@ function afterCursor(cursor: ReelCursor): Prisma.ReelWhereInput {
  * approved office, whose account is neither disabled nor blocked. A reel
  * published with a listing shows only while that listing can be shown to the
  * public. For a signed-in viewer: not its own account's reels, no block either
- * way, and only the seen or only the unseen ones.
+ * way, and only the seen or only the unseen ones. A filter keeps reels whose
+ * listing matches, which leaves out reels with no listing.
  */
 export function feedQuery(
   viewer: ReelViewer | null,
@@ -280,9 +309,17 @@ export function feedQuery(
   cursor: ReelCursor | null,
   take: number,
   seen: boolean,
+  filters: ReelFilters = {},
 ): Prisma.Sql {
   const after = cursor
     ? Prisma.sql`AND (r."publishedAt", r.id) < (${utc(cursor.publishedAt)}, ${cursor.id})`
+    : Prisma.empty;
+  const filtered = reelFilterKey(filters)
+    ? Prisma.sql`
+        AND p.id IS NOT NULL
+        ${filters.governorateId ? Prisma.sql`AND p."governorateId" = ${filters.governorateId}` : Prisma.empty}
+        ${filters.areaId ? Prisma.sql`AND p."areaId" = ${filters.areaId}` : Prisma.empty}
+        ${filters.listingType ? Prisma.sql`AND p.type::text = ${filters.listingType}` : Prisma.empty}`
     : Prisma.empty;
   const forViewer = viewer
     ? Prisma.sql`
@@ -321,6 +358,7 @@ export function feedQuery(
         AND p."isHidden" = false
         AND (p."endDate" IS NULL OR p."endDate" > ${utc(now)})
       ))
+      ${filtered}
       ${forViewer}
       ${after}
     ORDER BY r."publishedAt" DESC, r.id DESC

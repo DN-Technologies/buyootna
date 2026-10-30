@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -28,7 +29,8 @@ import { useReelActions } from '../hooks/useReelActions';
 import { useReelPlayers } from '../hooks/useReelPlayers';
 import { useReelsSession } from '../hooks/useReelsSession';
 import { reachedView } from '../reelRules';
-import type { ViewerReel } from '../types';
+import type { ReelFilters, ViewerReel } from '../types';
+import ReelFiltersSheet, { hasReelFilters } from './ReelFiltersSheet';
 import ReelItem from './ReelItem';
 
 // Fetch more this many reels before the end
@@ -53,7 +55,17 @@ export default function ReelsViewer({
   const insets = useSafeAreaInsets();
   const focused = useIsFocused();
   const token = useAuthStore((s) => s.token);
-  const session = useReelsSession({ authorId, startId });
+  // The main feed only; a new choice starts the list again
+  const [filters, setFilters] = useState<ReelFilters>({});
+  const filtered = hasReelFilters(filters);
+  // Once filtered, the reel it opened at no longer decides where the list starts
+  const [refined, setRefined] = useState(false);
+  const filterSheet = useRef<BottomSheetModal>(null);
+  const session = useReelsSession({
+    authorId,
+    startId: refined ? undefined : startId,
+    filters: authorId || !filtered ? undefined : filters,
+  });
   const { items, startIndex, loadMore } = session;
 
   const [height, setHeight] = useState(0);
@@ -174,6 +186,28 @@ export default function ReelsViewer({
         />
       </TouchableOpacity>
       <Text className="font-cairo-bold text-[18px] text-white">ريلز</Text>
+      <View className="flex-row" style={{ gap: 8 }}>
+      {!authorId && (
+        <TouchableOpacity
+          testID="reels-filter"
+          onPress={() => {
+            setSheetOpen(true);
+            filterSheet.current?.present();
+          }}
+          accessibilityLabel="تصفية"
+          className="size-[40px] items-center justify-center rounded-full"
+          style={STORY_GLASS}
+        >
+          <Feather name="sliders" size={18} color="#FFFFFF" />
+          {filtered && (
+            <View
+              testID="reels-filter-on"
+              className="absolute size-[9px] rounded-full bg-[#FFD084]"
+              style={{ top: 3, end: 3 }}
+            />
+          )}
+        </TouchableOpacity>
+      )}
       <TouchableOpacity
         testID="reels-mute"
         onPress={() => setMuted((m) => !m)}
@@ -187,6 +221,7 @@ export default function ReelsViewer({
           color="#FFFFFF"
         />
       </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -204,8 +239,28 @@ export default function ReelsViewer({
     body = (
       <View className="flex-1 items-center justify-center" style={{ gap: 14 }}>
         <Text className="font-cairo text-[14px] text-white">
-          {session.failed ? 'تعذر تحميل الفيديوهات' : 'لا توجد فيديوهات حالياً'}
+          {session.failed
+            ? 'تعذر تحميل الفيديوهات'
+            : filtered
+              ? 'لا توجد فيديوهات مطابقة'
+              : 'لا توجد فيديوهات حالياً'}
         </Text>
+        {!session.failed && filtered && (
+          <TouchableOpacity
+            testID="reels-clear-filters"
+            onPress={() => {
+              setFilters({});
+              setActiveIndex(0);
+            }}
+            activeOpacity={0.8}
+            className="h-[42px] items-center justify-center rounded-full px-[22px]"
+            style={STORY_GLASS}
+          >
+            <Text className="font-cairo-semibold text-[14px] text-white">
+              إزالة الفلاتر
+            </Text>
+          </TouchableOpacity>
+        )}
         {session.failed && (
           <TouchableOpacity
             testID="reels-retry"
@@ -225,6 +280,8 @@ export default function ReelsViewer({
     body = (
       <FlatList
         testID="reels-list"
+        // A new filter is a new list, from the top
+        key={JSON.stringify(filters)}
         data={items}
         keyExtractor={(r) => r.id}
         pagingEnabled
@@ -285,6 +342,16 @@ export default function ReelsViewer({
           void actions.submitReport(reason, description)
         }
         onClose={actions.onReportClosed}
+      />
+      <ReelFiltersSheet
+        ref={filterSheet}
+        value={filters}
+        onApply={(next) => {
+          setRefined(true);
+          setFilters(next);
+          setActiveIndex(0);
+        }}
+        onClose={() => setSheetOpen(false)}
       />
       <AuthGuardSheet ref={actions.authSheetRef} />
     </View>

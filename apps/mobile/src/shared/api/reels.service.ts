@@ -1,6 +1,7 @@
 import type {
   AuthorReel,
   MyReelsPage,
+  ReelFilters,
   ReelLikeState,
   ReelPage,
   ReelUploadRequest,
@@ -25,9 +26,13 @@ export const reelsService = {
   },
 
   /** One page of the main feed; pass the previous page's nextCursor. */
-  getFeed: async (cursor?: string, limit?: number): Promise<ReelPage> => {
+  getFeed: async (
+    cursor?: string,
+    limit?: number,
+    filters?: ReelFilters,
+  ): Promise<ReelPage> => {
     const response = await apiClient.get<ReelPage>('/reels/feed', {
-      params: pageParams(cursor, limit),
+      params: { ...pageParams(cursor, limit), ...filters },
     });
     return response.data;
   },
