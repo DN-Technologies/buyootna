@@ -127,9 +127,11 @@ export class OfficesService {
             where: { propertyId: { in: ids } },
             _count: { _all: true },
           }),
+          // A chat row exists as soon as someone taps chat: only one with a
+          // message counts
           this.prisma.conversation.groupBy({
             by: ['propertyId'],
-            where: { propertyId: { in: ids } },
+            where: { propertyId: { in: ids }, messages: { some: {} } },
             _count: { _all: true },
           }),
         ])

@@ -296,8 +296,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               الوصف
             </Text>
             <Text className="font-cairo text-sm leading-6 text-[#111111]" style={{writingDirection: "rtl"}}>
-              {property.description ||
-                'شقة فاخرة للبيع في قلب السالمية، تتميز بتصميم معماري حديث وتشطيبات سوبر لوكس. الشقة تقع في الدور الـ 4 مما يوفر إطلالة بانورامية على الخليج العربي. موقع البرج حيوي جداً وقريب من المجمعات التجارية والخدمات الرئيسية.'}
+              {property.description || '-'}
             </Text>
           </View>
 

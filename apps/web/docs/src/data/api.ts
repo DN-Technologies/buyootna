@@ -94,12 +94,14 @@ export const api: DocSection = {
           "A company or individual token gets 403; no token gets 401.",
           "A new office gets zeros, empty listings and services, and freeAdsRemaining 1.",
           "favoritesCount and chatsCount are computed for all listed ads in one query each, not per ad.",
+          "chatsCount counts only chats with at least one message; a chat opened without writing does not count.",
           "Another profile's ads, chats, packages and requests never count.",
         ],
         ar: [
           "رمز شركة أو فرد يحصل على 403؛ وبلا رمز 401.",
           "المكتب الجديد يحصل على أصفار وقوائم إعلانات وخدمات فارغة وfreeAdsRemaining = 1.",
           "favoritesCount وchatsCount يُحسبان لكل الإعلانات المعروضة باستعلام واحد لكل منهما، لا لكل إعلان.",
+          "لا يحسب chatsCount إلا المحادثات التي فيها رسالة واحدة على الأقل؛ والمحادثة المفتوحة دون كتابة لا تُحتسب.",
           "إعلانات الملفات الأخرى ومحادثاتها وباقاتها وطلباتها لا تُحسب أبداً.",
         ],
       },
@@ -115,7 +117,7 @@ export const api: DocSection = {
           "نفّذ curl على /users/offices و/users/companies: كل بطاقة فيها العدّادات الجديدة.",
         ],
       },
-      updatedIn: "feat/office-home-dashboard",
+      updatedIn: "fix/activity-ad-real-counts",
     },
     {
       id: "api-alerts-unseen-matches",
