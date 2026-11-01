@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
 import { IMAGE_URLS, makeActivityItem, renderedImages } from '../../__tests__/draftFixture';
@@ -20,17 +20,35 @@ const renderCard = (images: string[]) =>
   );
 
 describe('DraftAdCard', () => {
-  it('shows the first uploaded image as a full-size thumbnail', async () => {
-    await renderCard(IMAGE_URLS);
-    const [image] = renderedImages;
+  it('shows every uploaded photo, each the width of the card', async () => {
+    const { getByTestId } = await renderCard(IMAGE_URLS);
+    await act(async () => {
+      fireEvent(getByTestId('ad-image-gallery'), 'layout', {
+        nativeEvent: { layout: { width: 320, height: 210 } },
+      });
+    });
+    const shown = renderedImages.slice(-IMAGE_URLS.length);
 
-    expect(image.source).toEqual({ uri: IMAGE_URLS[0] });
+    expect(shown.map((image) => image.source)).toEqual(
+      IMAGE_URLS.map((uri) => ({ uri })),
+    );
     // expo-image ignores NativeWind className; without an explicit style it
     // renders at 0x0 and the card looks empty
-    expect(StyleSheet.flatten(image.style)).toMatchObject({
-      width: '100%',
-      height: '100%',
-    });
+    shown.forEach((image) =>
+      expect(StyleSheet.flatten(image.style)).toMatchObject({
+        width: 320,
+        height: '100%',
+      }),
+    );
+  });
+
+  it('the photos page by swiping', async () => {
+    const { getByTestId } = await renderCard(IMAGE_URLS);
+    const scroll = getByTestId('ad-image-gallery-scroll');
+
+    expect(scroll.props.horizontal).toBe(true);
+    expect(scroll.props.pagingEnabled).toBe(true);
+    expect(scroll.props.scrollEnabled).toBe(IMAGE_URLS.length > 1);
   });
 
   it('falls back to the placeholder when the draft has no images', async () => {
