@@ -67,10 +67,14 @@ export default function ActiveAdCard({
           </View>
         )}
 
-        {/* Optional: Hidden Ad Badge */}
+        {/* Hidden Ad Badge: where «نشط» sits, styled like the portfolio card's
+            «مخفي» */}
         {property.isHidden && (
-          <View className="absolute left-4 top-4 rounded-lg border border-gray-200 bg-white px-3 py-1.5 shadow-sm">
-            <Text className="font-cairo-bold text-[11px] text-[#111111]">
+          <View
+            testID={`active-ad-hidden-badge-${property.id}`}
+            className="absolute right-4 top-4 rounded-br-[10px] rounded-tl-[8px] rounded-tr-[10px] bg-white/80 px-3 py-[5px]"
+          >
+            <Text className="font-almarai text-[12px] text-[#111111]">
               اعلان مخفي
             </Text>
           </View>
