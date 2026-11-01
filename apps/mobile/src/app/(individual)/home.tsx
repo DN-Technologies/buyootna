@@ -2,7 +2,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { useScrollToTop } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import  { useCallback, useEffect, useRef, useState } from 'react';
+import  { useEffect, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -29,7 +29,6 @@ import { feedService } from '@/features/individual/services/feed.service';
 import StoriesList from '@/features/stories/components/StoriesList';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
-import GlobalFilterSheet from '@/shared/components/filters/GlobalFilterSheet';
 import RadioSelectionSheet from '@/shared/components/profile/RadioSelectionSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import FadeLayer from '@/shared/components/ui/FadeLayer';
@@ -46,7 +45,6 @@ type PropertyFilter = 'all' | 'sale' | 'rent' | 'exchange';
 
 export default function HomeScreen() {
   const token = useAuthStore((state) => state.token);
-  const filterSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const [sortBy, setSortBy] = useState<HomeSort>('DEFAULT');
   const { scrollContentBottomPadding } = useTabBarHeight();
@@ -55,20 +53,6 @@ export default function HomeScreen() {
   // to top regardless of which sub-tab/view is currently showing.
   const scrollRef = useRef<any>(null);
   useScrollToTop(scrollRef);
-
-  // Navigate to results screen with advanced filter payload
-  const handleAdvancedSearch = useCallback(
-    (data: { tab: string; filters: any }) => {
-      router.push({
-        pathname: '/search/results',
-        params: {
-          tab: data.tab,
-          filters: JSON.stringify(data.filters),
-        },
-      });
-    },
-    [],
-  );
 
   // --- State ---
   const [activeTab, setActiveTab] = useState<PrimaryTab>('properties');
@@ -208,9 +192,9 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     testID="home-filter-button"
                     accessibilityRole="button"
-                    accessibilityLabel="الفلاتر"
+                    accessibilityLabel="الترتيب حسب"
                     activeOpacity={0.7}
-                    onPress={() => filterSheetRef.current?.present()}
+                    onPress={() => sortSheetRef.current?.present()}
                     className="size-[40px] shrink-0 items-center justify-center rounded-full"
                     style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
                   >
@@ -306,10 +290,6 @@ export default function HomeScreen() {
             </FadeLayer>
           )}
         </View>
-        <GlobalFilterSheet
-          ref={filterSheetRef}
-          onApplyFilters={handleAdvancedSearch}
-        />
         {/* Sorts the عقارات list; picking one from another tab opens it */}
         <RadioSelectionSheet
           ref={sortSheetRef}

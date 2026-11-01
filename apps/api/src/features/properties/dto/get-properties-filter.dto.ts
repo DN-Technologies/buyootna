@@ -25,6 +25,8 @@ export const PROPERTY_SORTS = [
   'OLDEST',
   'PRICE_DESC',
   'PRICE_ASC',
+  'FEATURED',
+  'MOST_VIEWED',
 ] as const;
 export type PropertySort = (typeof PROPERTY_SORTS)[number];
 
@@ -96,7 +98,9 @@ export class GetPropertiesFilterDto {
 
   // DEFAULT: priority, then featured, then newest. NEWEST/OLDEST: purely
   // by publish date; PRICE_DESC/PRICE_ASC: purely by price (ads without a
-  // price last) -- so the user sees exactly the order they asked for.
+  // price last); FEATURED: featured ads first, then newest; MOST_VIEWED: most
+  // views first, then newest -- so the user sees exactly the order they asked
+  // for.
   @IsOptional()
   @IsIn(PROPERTY_SORTS, { message: 'طريقة الترتيب غير صالحة' })
   sort?: PropertySort;
