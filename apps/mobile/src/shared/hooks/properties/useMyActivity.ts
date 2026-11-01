@@ -34,6 +34,8 @@ export interface ActivityItem {
   areaSize?: number | null;
   floors?: number | null;
   views?: number;
+  favoritesCount?: number;
+  chatsCount?: number;
   features?: any[] | null;
 }
 

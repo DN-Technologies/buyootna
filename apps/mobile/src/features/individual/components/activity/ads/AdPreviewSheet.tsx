@@ -319,7 +319,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
                 مرات الحفظ
               </Text>
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">80</Text>
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.favoritesCount ?? 0}</Text>
             </View>
 
             {/* Separator */}
@@ -330,7 +330,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
                 عدد التواصل
               </Text>
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">4</Text>
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.chatsCount ?? 0}</Text>
             </View>
           </View>
 

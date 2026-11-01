@@ -361,6 +361,14 @@ export class MyActivityPropertyDto {
 
   @ApiProperty()
   views: number;
+
+  @ApiProperty({ description: 'How many profiles saved this ad' })
+  favoritesCount: number;
+
+  @ApiProperty({
+    description: 'Chats opened from this ad with at least one message',
+  })
+  chatsCount: number;
 }
 
 export class IncrementViewsResponseDto {

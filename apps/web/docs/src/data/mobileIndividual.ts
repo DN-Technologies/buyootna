@@ -1251,8 +1251,8 @@ export const mobileIndividual: DocSection = {
       },
       priority: 'P0',
       story: {
-        en: "Regression check for a fixed bug: in نشاطي, tapping a published ad did nothing, so the user couldn't open their own ad. The active ad card had no tap action, only its ⋮ menu. Now tapping anywhere on an active, hidden or featured ad opens its details sheet (photos, price, publish date, specs, location, features, description, views / saves / contacts) with a visible/hidden switch, share, ✕, and تعديل / تمييز / حذف buttons. The card's ⋮ menu is gone — those actions live in the sheet. Archived ads still open with their republish action; tapping a draft opens its preview. The photos of active, hidden, featured and draft cards swipe sideways, with one dot per photo marking the one shown (they used to show only the first photo under three fixed dots); a swipe only pages, a tap still opens.",
-        ar: 'فحص تراجع لخطأ تم إصلاحه: في نشاطي كان الضغط على إعلان منشور لا يفعل شيئاً، فلا يستطيع المستخدم فتح إعلانه. بطاقة الإعلان النشط لم يكن لها أي إجراء عند الضغط، فقط قائمة ⋮. الآن الضغط في أي مكان على إعلان نشط أو مخفي أو مميز يفتح نافذة تفاصيله (الصور والسعر وتاريخ النشر والمواصفات والموقع والمزايا والوصف والمشاهدات/الحفظ/التواصل) مع مفتاح إظهار/إخفاء ومشاركة و✕ وأزرار تعديل / تمييز / حذف. وأُزيلت قائمة ⋮ من البطاقة — هذه الإجراءات صارت داخل النافذة. والإعلانات المؤرشفة ما زالت تفتح مع إجراء إعادة النشر؛ والضغط على مسودة يفتح معاينتها. وصور بطاقات الإعلانات النشطة والمخفية والمميزة والمسودات تُسحب جانبياً، مع نقطة لكل صورة تبيّن المعروضة (كانت تُظهر الصورة الأولى فقط تحت ثلاث نقاط ثابتة)؛ والسحب يقلّب الصور فقط، والضغط ما زال يفتح.',
+        en: "Regression check for a fixed bug: in نشاطي, tapping a published ad did nothing, so the user couldn't open their own ad. The active ad card had no tap action, only its ⋮ menu. Now tapping anywhere on an active, hidden or featured ad opens its details sheet (photos, price, publish date, specs, location, features, description, views / saves / contacts) with a visible/hidden switch, share, ✕, and تعديل / تمييز / حذف buttons. The card's ⋮ menu is gone — those actions live in the sheet. Archived ads still open with their republish action; tapping a draft opens its preview. The photos of active, hidden, featured and draft cards swipe sideways, with one dot per photo marking the one shown (they used to show only the first photo under three fixed dots); a swipe only pages, a tap still opens. On the card and in the sheet, مرات الحفظ and عدد التواصل are real (they used to be a fixed 80 and 4): GET /properties/me/activity returns favoritesCount (profiles that saved the ad) and chatsCount (chats on this ad with at least one message; opening a chat without writing doesn't count). A chat belongs to one ad at a time: if the same two people later chat from another ad, it moves to that ad's count.",
+        ar: 'فحص تراجع لخطأ تم إصلاحه: في نشاطي كان الضغط على إعلان منشور لا يفعل شيئاً، فلا يستطيع المستخدم فتح إعلانه. بطاقة الإعلان النشط لم يكن لها أي إجراء عند الضغط، فقط قائمة ⋮. الآن الضغط في أي مكان على إعلان نشط أو مخفي أو مميز يفتح نافذة تفاصيله (الصور والسعر وتاريخ النشر والمواصفات والموقع والمزايا والوصف والمشاهدات/الحفظ/التواصل) مع مفتاح إظهار/إخفاء ومشاركة و✕ وأزرار تعديل / تمييز / حذف. وأُزيلت قائمة ⋮ من البطاقة — هذه الإجراءات صارت داخل النافذة. والإعلانات المؤرشفة ما زالت تفتح مع إجراء إعادة النشر؛ والضغط على مسودة يفتح معاينتها. وصور بطاقات الإعلانات النشطة والمخفية والمميزة والمسودات تُسحب جانبياً، مع نقطة لكل صورة تبيّن المعروضة (كانت تُظهر الصورة الأولى فقط تحت ثلاث نقاط ثابتة)؛ والسحب يقلّب الصور فقط، والضغط ما زال يفتح. وعلى البطاقة وفي النافذة صارت مرات الحفظ وعدد التواصل حقيقية (كانت 80 و4 ثابتة): يعيد GET /properties/me/activity الحقل favoritesCount (الهويات التي حفظت الإعلان) وchatsCount (المحادثات على هذا الإعلان وفيها رسالة واحدة على الأقل؛ وفتح محادثة دون كتابة لا يُحتسب). والمحادثة تتبع إعلاناً واحداً في كل مرة: إذا تحدث الشخصان نفسهما لاحقاً من إعلان آخر، تنتقل إلى عدّاد ذلك الإعلان.',
       },
       acceptanceCriteria: {
         en: [
@@ -1262,6 +1262,7 @@ export const mobileIndividual: DocSection = {
           'An archived ad opens its details with the republish action, as before.',
           'Tapping a draft card opens its preview; its حذف button still only deletes.',
           'An ad with several photos swipes through all of them on its card, and the dot follows; an ad with one photo shows no dots and does not swipe.',
+          'مرات الحفظ and عدد التواصل show the ad\'s real numbers on the card and in the sheet; a new ad shows 0 and 0, never 80 and 4.',
         ],
         ar: [
           'الضغط على صورة أو نص إعلان نشط يفتح نافذة تفاصيل هذا الإعلان بتاريخ نشره الحقيقي.',
@@ -1270,6 +1271,7 @@ export const mobileIndividual: DocSection = {
           'الإعلان المؤرشف يفتح تفاصيله مع إجراء إعادة النشر كما كان.',
           'الضغط على بطاقة مسودة يفتح معاينتها؛ وزر حذف فيها ما زال يحذف فقط.',
           'الإعلان ذو الصور المتعددة تُسحب كل صوره على بطاقته وتتبعها النقطة؛ والإعلان ذو الصورة الواحدة بلا نقاط ولا يُسحب.',
+          'مرات الحفظ وعدد التواصل تعرض أرقام الإعلان الحقيقية على البطاقة وفي النافذة؛ والإعلان الجديد يعرض 0 و0، لا 80 و4 أبداً.',
         ],
       },
       testScenarios: {
@@ -1280,6 +1282,7 @@ export const mobileIndividual: DocSection = {
           'Switch to المؤرشفة and tap an ad — details open with إعادة نشر.',
           'Tap a draft card — its preview sheet opens.',
           'On an active ad with 3 photos, swipe its photo left and right — each photo shows and the dot moves; then tap the photo — the details sheet opens.',
+          'From another account save the ad: pull to refresh on نشاطي — مرات الحفظ goes up by 1. From that account tap chat on the ad and go back without writing — عدد التواصل stays; send a message — it goes up by 1.',
         ],
         ar: [
           'افتح نشاطي، اضغط على صورة إعلان نشط، أغلق النافذة، ثم اضغط على نص السعر — كلاهما يفتح نافذة تفاصيله.',
@@ -1288,9 +1291,10 @@ export const mobileIndividual: DocSection = {
           'انتقل إلى المؤرشفة واضغط على إعلان — تفتح التفاصيل مع إعادة نشر.',
           'اضغط على بطاقة مسودة — تفتح نافذة معاينتها.',
           'على إعلان نشط بثلاث صور، اسحب صورته يميناً ويساراً — تظهر كل صورة وتتحرك النقطة؛ ثم اضغط على الصورة — تفتح نافذة التفاصيل.',
+          'من حساب آخر احفظ الإعلان: اسحب للتحديث في نشاطي — تزيد مرات الحفظ 1. ومن ذلك الحساب اضغط محادثة على الإعلان وارجع دون كتابة — لا يتغير عدد التواصل؛ وأرسل رسالة — يزيد 1.',
         ],
       },
-      updatedIn: 'fix/activity-card-swipe',
+      updatedIn: 'fix/activity-ad-real-counts',
     },
     {
       id: 'mobile-profile-listings-favorite-heart',
