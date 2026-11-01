@@ -58,7 +58,7 @@ export default function PropertyCategoryFacts({
                 {entry.label}
               </Text>
               <Text
-                className="font-cairo-bold text-sm text-[#111111]"
+                className="font-cairo-bold text-sm text-[#15304D]"
                 style={{ writingDirection: 'rtl' }}
               >
                 {entry.value}
