@@ -67,6 +67,42 @@ describe('useActivityFilters', () => {
     ]);
   });
 
+  describe('a hidden ad', () => {
+    const withHidden: ActivityItem[] = [
+      buildItem({ id: 'visible-1', status: 'ACTIVE' }),
+      buildItem({ id: 'hidden-1', status: 'ACTIVE', isHidden: true }),
+      buildItem({
+        id: 'hidden-premium',
+        status: 'ACTIVE',
+        isHidden: true,
+        isPremium: true,
+      }),
+    ];
+
+    it('is not counted or listed under نشطة', async () => {
+      const { result } = await renderHook(() =>
+        useActivityFilters(withHidden, 'ACTIVE', 'NEWEST'),
+      );
+
+      expect(result.current.filterPills[1]).toEqual({
+        id: 'ACTIVE',
+        label: 'نشطة (1)',
+      });
+      expect(result.current.sortedAndFilteredData.map((i) => i.id)).toEqual([
+        'visible-1',
+      ]);
+    });
+
+    it('stays under الكل, and under مميزة when featured', async () => {
+      const { result } = await renderHook(() =>
+        useActivityFilters(withHidden, 'ALL', 'NEWEST'),
+      );
+      expect(result.current.filterPills[0].label).toBe('الكل (3)');
+      expect(result.current.sortedAndFilteredData).toHaveLength(3);
+      expect(result.current.filterPills[2].label).toBe('مميزة (1)');
+    });
+  });
+
   it('sorts by newest createdAt first when sortBy is NEWEST', async () => {
     const { result } = await renderHook(() => useActivityFilters(data, 'ALL', 'NEWEST'));
 

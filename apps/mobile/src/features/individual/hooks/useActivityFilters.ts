@@ -6,6 +6,10 @@ import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
 
 export type ActivitySortBy = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
 
+// A hidden ad isn't active: nobody but its owner sees it
+const isActiveAd = (item: ActivityItem) =>
+  item.status === 'ACTIVE' && !item.isHidden;
+
 /**
  * Derives the filter-pill counts and the filtered/sorted list shown on the
  * activity screen. Pure client-side filtering/sorting over the full
@@ -30,7 +34,7 @@ export function useActivityFilters(
 
   const filterPills: FilterPill[] = useMemo(() => {
     const allCount = data.length;
-    const activeCount = data.filter((item) => item.status === 'ACTIVE').length;
+    const activeCount = data.filter(isActiveAd).length;
     const draftCount = data.filter((item) => item.status === 'DRAFT').length;
     const premiumCount = data.filter((item) => item.isPremium).length;
     const archivedCount = data.filter(
@@ -57,7 +61,9 @@ export function useActivityFilters(
             ? data.filter(
                 (item) => item.status === 'EXPIRED' || item.status === 'CLOSED',
               )
-            : data.filter((item) => item.status === activeFilterId);
+            : activeFilterId === 'ACTIVE'
+              ? data.filter(isActiveAd)
+              : data.filter((item) => item.status === activeFilterId);
 
     return [...filteredData].sort((a, b) => {
       if (sortBy === 'PRICE_ASC') return (a.price ?? 0) - (b.price ?? 0);

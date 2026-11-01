@@ -1259,6 +1259,7 @@ export const mobileIndividual: DocSection = {
           "Tapping the image or the text of an active ad opens that ad's details sheet, with its real publish date.",
           'Hidden (اعلان مخفي) and featured (إعلان مميز) ads open the same way; the active card has no ⋮ button.',
           'The اعلان مخفي badge sits in the same corner as نشط, with the same shape and font, on translucent white.',
+          'A hidden ad is not counted or listed under نشطة; it stays under الكل (and مميزة when featured), and showing it again returns it to نشطة.',
           'In the sheet: the switch shows/hides just this ad, تعديل opens the edit screen, تمييز opens the feature sheet, حذف asks to confirm, share opens the share sheet, ✕ closes it.',
           'An archived ad opens its details with the republish action, as before.',
           'Tapping a draft card opens its preview; its حذف button still only deletes.',
@@ -1269,6 +1270,7 @@ export const mobileIndividual: DocSection = {
           'الضغط على صورة أو نص إعلان نشط يفتح نافذة تفاصيل هذا الإعلان بتاريخ نشره الحقيقي.',
           'الإعلانات المخفية (اعلان مخفي) والمميزة (إعلان مميز) تفتح بنفس الطريقة؛ ولا يوجد زر ⋮ في البطاقة.',
           'شارة اعلان مخفي في نفس زاوية نشط، وبنفس الشكل والخط، على خلفية بيضاء شفافة.',
+          'الإعلان المخفي لا يُحسب ولا يظهر ضمن نشطة؛ ويبقى ضمن الكل (ومميزة إن كان مميزاً)، وإظهاره مجدداً يعيده إلى نشطة.',
           'داخل النافذة: المفتاح يُظهر/يُخفي هذا الإعلان فقط، وتعديل يفتح شاشة التعديل، وتمييز يفتح نافذة التمييز، وحذف يطلب التأكيد، والمشاركة تفتح نافذة المشاركة، و✕ تغلقها.',
           'الإعلان المؤرشف يفتح تفاصيله مع إجراء إعادة النشر كما كان.',
           'الضغط على بطاقة مسودة يفتح معاينتها؛ وزر حذف فيها ما زال يحذف فقط.',
@@ -1279,7 +1281,7 @@ export const mobileIndividual: DocSection = {
       testScenarios: {
         en: [
           "Open نشاطي, tap an active ad's image, close the sheet, tap its price text — both open its details sheet.",
-          'In the sheet flip the switch off — the card gets اعلان مخفي; flip it on — it goes back to نشط.',
+          'In the sheet flip the switch off — the card gets اعلان مخفي and نشطة drops by 1; flip it on — it goes back to نشط and نشطة goes up by 1.',
           'In the sheet tap تمييز, then حذف — each closes the sheet and opens its own sheet.',
           'Switch to المؤرشفة and tap an ad — details open with إعادة نشر.',
           'Tap a draft card — its preview sheet opens.',
@@ -1288,7 +1290,7 @@ export const mobileIndividual: DocSection = {
         ],
         ar: [
           'افتح نشاطي، اضغط على صورة إعلان نشط، أغلق النافذة، ثم اضغط على نص السعر — كلاهما يفتح نافذة تفاصيله.',
-          'أطفئ المفتاح في النافذة — تظهر على البطاقة اعلان مخفي؛ وأشعله — تعود إلى نشط.',
+          'أطفئ المفتاح في النافذة — تظهر على البطاقة اعلان مخفي وتنقص نشطة 1؛ وأشعله — تعود إلى نشط وتزيد نشطة 1.',
           'اضغط تمييز في النافذة ثم حذف — كل منهما يغلق النافذة ويفتح نافذته.',
           'انتقل إلى المؤرشفة واضغط على إعلان — تفتح التفاصيل مع إعادة نشر.',
           'اضغط على بطاقة مسودة — تفتح نافذة معاينتها.',
@@ -1296,7 +1298,7 @@ export const mobileIndividual: DocSection = {
           'من حساب آخر احفظ الإعلان: اسحب للتحديث في نشاطي — تزيد مرات الحفظ 1. ومن ذلك الحساب اضغط محادثة على الإعلان وارجع دون كتابة — لا يتغير عدد التواصل؛ وأرسل رسالة — يزيد 1.',
         ],
       },
-      updatedIn: 'fix/activity-hidden-badge-style',
+      updatedIn: 'fix/activity-hidden-not-active',
     },
     {
       id: 'mobile-profile-listings-favorite-heart',
