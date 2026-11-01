@@ -44,6 +44,20 @@ function listOrder(
       { id: 'asc' },
     ];
   }
+  if (sort === 'FEATURED') {
+    return [
+      { isFeatured: 'desc' },
+      { publishedAt: { sort: 'desc', nulls: 'last' } },
+      { id: 'asc' },
+    ];
+  }
+  if (sort === 'MOST_VIEWED') {
+    return [
+      { views: 'desc' },
+      { publishedAt: { sort: 'desc', nulls: 'last' } },
+      { id: 'asc' },
+    ];
+  }
   return [
     { isPriority: 'desc' },
     { isFeatured: 'desc' },

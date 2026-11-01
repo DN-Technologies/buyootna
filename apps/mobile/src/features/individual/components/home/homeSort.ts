@@ -6,13 +6,16 @@ export type HomeSort =
   | 'NEWEST'
   | 'OLDEST'
   | 'PRICE_DESC'
-  | 'PRICE_ASC';
+  | 'PRICE_ASC'
+  | 'FEATURED'
+  | 'MOST_VIEWED';
 
-// In the design's order
 export const HOME_SORT_OPTIONS: RadioOption[] = [
   { label: 'الكل', value: 'DEFAULT' },
-  { label: 'الأقدم أولاً', value: 'OLDEST' },
+  { label: 'المميزة', value: 'FEATURED' },
   { label: 'الأحدث أولاً', value: 'NEWEST' },
+  { label: 'الأكثر مشاهدة', value: 'MOST_VIEWED' },
+  { label: 'الأقدم أولاً', value: 'OLDEST' },
   { label: 'السعر (من الأعلى للأقل)', value: 'PRICE_DESC' },
   { label: 'السعر (من الأقل للأعلى)', value: 'PRICE_ASC' },
 ];

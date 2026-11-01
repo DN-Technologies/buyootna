@@ -955,23 +955,25 @@ export const mobileIndividual: DocSection = {
     {
       id: 'mobile-home-sort',
       title: {
-        en: 'Home sort: default, oldest, newest and price (high→low, low→high)',
-        ar: 'ترتيب الرئيسية: الافتراضي والأقدم والأحدث والسعر (من الأعلى والأقل)',
+        en: 'Home sort: default, featured, newest, most viewed, oldest and price (high→low, low→high)',
+        ar: 'ترتيب الرئيسية: الافتراضي والمميزة والأحدث والأكثر مشاهدة والأقدم والسعر (من الأعلى والأقل)',
       },
       priority: 'P1',
       story: {
-        en: "Verify 'الترتيب' on the listings screen opens 'الترتيب حسب' with, in order: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى), and reloads GET /properties with sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; the price orders sort strictly by price, with ads that have no price at the end; pages never repeat or skip ads.",
-        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات يفتح 'الترتيب حسب' بالترتيب: الكل، الأقدم أولاً، الأحدث أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى)، ويعيد تحميل GET /properties مع sort=DEFAULT|OLDEST|NEWEST|PRICE_DESC|PRICE_ASC. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ وترتيبا السعر حسب السعر فقط مع الإعلانات بلا سعر في النهاية؛ ولا تتكرر الصفحات أو تتخطى إعلانات.",
+        en: "Verify 'الترتيب' on the listings screen and Home's gold filter button both open 'الترتيب حسب' with, in order: الكل، المميزة، الأحدث أولاً، الأكثر مشاهدة، الأقدم أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى), and reload GET /properties with sort=DEFAULT|FEATURED|NEWEST|MOST_VIEWED|OLDEST|PRICE_DESC|PRICE_ASC. FEATURED: featured ads first, then newest. MOST_VIEWED: most views first, then newest. تصفية البحث now opens only from the Search screens, not from Home. Default puts priority and featured ads first, then newest; Newest/Oldest order strictly by publish date; the price orders sort strictly by price, with ads that have no price at the end; pages never repeat or skip ads.",
+        ar: "تحقق من أن 'الترتيب' في شاشة الإعلانات وزر الفلتر الذهبي في الرئيسية يفتحان 'الترتيب حسب' بالترتيب: الكل، المميزة، الأحدث أولاً، الأكثر مشاهدة، الأقدم أولاً، السعر (من الأعلى للأقل)، السعر (من الأقل للأعلى)، ويعيدان تحميل GET /properties مع sort=DEFAULT|FEATURED|NEWEST|MOST_VIEWED|OLDEST|PRICE_DESC|PRICE_ASC. FEATURED: الإعلانات المميزة أولاً ثم الأحدث. MOST_VIEWED: الأكثر مشاهدة أولاً ثم الأحدث. وتصفية البحث تُفتح الآن من شاشات البحث فقط لا من الرئيسية. الافتراضي يضع إعلانات الأولوية والمميزة أولاً ثم الأحدث؛ الأحدث/الأقدم يرتبان حسب تاريخ النشر فقط؛ وترتيبا السعر حسب السعر فقط مع الإعلانات بلا سعر في النهاية؛ ولا تتكرر الصفحات أو تتخطى إعلانات.",
       },
       acceptanceCriteria: {
         en: [
           'The chosen option stays selected when the sheet is reopened.',
+          'المميزة starts with featured ads; الأكثر مشاهدة starts with the ad with the most views.',
           'Newest shows a just-republished ad first; Oldest shows it last.',
           'Price high→low starts with the most expensive ad; low→high with the cheapest.',
           'Scrolling through several pages shows each ad exactly once.',
         ],
         ar: [
           'يبقى الخيار المختار محدداً عند إعادة فتح النافذة.',
+          'المميزة تبدأ بالإعلانات المميزة؛ والأكثر مشاهدة تبدأ بالإعلان الأعلى مشاهدات.',
           'الأحدث يعرض الإعلان المعاد نشره للتو أولاً؛ والأقدم يعرضه أخيراً.',
           'السعر من الأعلى يبدأ بأغلى إعلان؛ ومن الأقل يبدأ بأرخص إعلان.',
           'التمرير عبر عدة صفحات يعرض كل إعلان مرة واحدة فقط.',
@@ -979,17 +981,17 @@ export const mobileIndividual: DocSection = {
       },
       testScenarios: {
         en: [
-          'Switch between the five sorts and compare the first 5 ads.',
+          'Tap Home\'s gold filter button, switch between the seven sorts and compare the first 5 ads.',
           "Republish an ad, then choose الأحدث أولاً — it's first.",
           'Choose each price order on the sale and rent tabs and check the prices go down / up.',
         ],
         ar: [
-          'بدّل بين الترتيبات الخمسة وقارن أول 5 إعلانات.',
+          'اضغط زر الفلتر الذهبي في الرئيسية، وبدّل بين الترتيبات السبعة وقارن أول 5 إعلانات.',
           'أعد نشر إعلان ثم اختر الأحدث أولاً — يظهر أولاً.',
           'اختر كل ترتيب سعر في تبويبي البيع والإيجار وتأكد أن الأسعار تنزل / تصعد.',
         ],
       },
-      updatedIn: 'feat/home-price-sort',
+      updatedIn: 'feat/home-sort-sheet',
     },
     {
       id: 'mobile-settings',

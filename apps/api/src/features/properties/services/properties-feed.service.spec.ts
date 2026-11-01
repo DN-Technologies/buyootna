@@ -137,6 +137,26 @@ describe('PropertiesFeedService.findAll sorting', () => {
     },
   );
 
+  it('FEATURED puts featured ads first, then newest, ignoring priority', async () => {
+    await service.findAll({ sort: 'FEATURED' });
+    const { orderBy } = prisma.property.findMany.mock.calls[0][0];
+    expect(orderBy).toEqual([
+      { isFeatured: 'desc' },
+      { publishedAt: { sort: 'desc', nulls: 'last' } },
+      { id: 'asc' },
+    ]);
+  });
+
+  it('MOST_VIEWED puts the most viewed first, then newest', async () => {
+    await service.findAll({ sort: 'MOST_VIEWED' });
+    const { orderBy } = prisma.property.findMany.mock.calls[0][0];
+    expect(orderBy).toEqual([
+      { views: 'desc' },
+      { publishedAt: { sort: 'desc', nulls: 'last' } },
+      { id: 'asc' },
+    ]);
+  });
+
   it('rejects an unknown sort value in the query', async () => {
     const dto = plainToInstance(GetPropertiesFilterDto, { sort: 'CHEAPEST' });
 
