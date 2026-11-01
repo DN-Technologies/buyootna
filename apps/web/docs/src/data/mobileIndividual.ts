@@ -1774,13 +1774,15 @@ export const mobileIndividual: DocSection = {
       acceptanceCriteria: {
         en: [
           "With a purchased package that has ads remaining, نشاطي → إعلاناتي shows the عادي / فضي / ذهبي counters, and each equals the same tier's number on رصيد الحساب.",
-          'With no remaining package ads, the free-quota banner shows instead (with the real free-ad count).',
+          'With no remaining package ads and a free ad left, the free-quota banner shows instead (with the real free-ad count).',
+          'With no remaining package ads and no free ad left, the banner is gone and only the اشتر باقة إعلانات button stays.',
           'No placeholder numbers (1 / 12 / 5) ever appear.',
           'Counters update after publishing with a package credit, on returning to نشاطي.',
         ],
         ar: [
           'مع باقة مشتراة بها إعلانات متبقية، يعرض نشاطي ← إعلاناتي عدادات عادي / فضي / ذهبي، وكل منها يساوي رقم نفس الفئة في رصيد الحساب.',
-          'بدون إعلانات متبقية في الباقات يظهر شريط الإعلان المجاني بدلاً منها (بعدد الإعلانات المجانية الحقيقي).',
+          'بدون إعلانات متبقية في الباقات ومع إعلان مجاني متبقٍ يظهر شريط الإعلان المجاني بدلاً منها (بعدد الإعلانات المجانية الحقيقي).',
+          'بدون إعلانات متبقية في الباقات وبلا إعلان مجاني، يختفي الشريط ويبقى زر اشتر باقة إعلانات فقط.',
           'لا تظهر أبداً أرقام مؤقتة (1 / 12 / 5).',
           'تتحدّث العدادات بعد النشر برصيد باقة، عند العودة إلى نشاطي.',
         ],
@@ -1797,7 +1799,7 @@ export const mobileIndividual: DocSection = {
           'بحساب لم يشترِ باقة من قبل — يظهر شريط الإعلان المجاني بدون عدادات.',
         ],
       },
-      updatedIn: 'feat/company-more-edit-profile',
+      updatedIn: 'fix/activity-hide-empty-free-banner',
     },
     {
       id: 'mobile-required-optional-field-marks',
