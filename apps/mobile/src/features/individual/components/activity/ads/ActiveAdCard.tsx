@@ -1,5 +1,6 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 
+import AdImageGallery from '@/features/individual/components/activity/ads/AdImageGallery';
 import { formatAdDate } from '@/features/individual/components/activity/ads/formatAdDate';
 import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/SafeLinearGradient';
 import { ActivityItem } from '@/shared/hooks/properties/useMyActivity';
@@ -20,29 +21,15 @@ export default function ActiveAdCard({
   property,
   onPress,
 }: ActiveAdCardProps) {
-  const coverImage = property.images?.[0];
-  const imageSource = coverImage
-    ? { uri: coverImage }
-    : require('@/assets/images/no-image.png');
-
   const displayLabel = `${getArabicCategoryLabel(property.category)} ${getArabicTypeLabel(property.type as any)}`;
 
   // The whole card opens the ad's details sheet (edit / feature / delete live
-  // there)
+  // there): a tap on a photo or on the body; a swipe on the photos only
+  // pages through them
   return (
-    <TouchableOpacity
-      testID={`active-ad-card-${property.id}`}
-      accessibilityRole="button"
-      activeOpacity={0.85}
-      onPress={onPress}
-      className="z-10 mb-4 overflow-hidden rounded-md border border-[#FEFEFE] bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
-      {/* --- Image Header & Badges --- */}
-      <View className="relative h-[210px] w-full bg-gray-50">
-        <Image
-          source={imageSource}
-          className="h-full w-full"
-          resizeMode="cover"
-        />
+    <View className="z-10 mb-4 overflow-hidden rounded-md border border-[#FEFEFE] bg-[#FEFEFE] shadow-sm shadow-gray-200/30">
+      {/* --- Swipeable Photos & Badges --- */}
+      <AdImageGallery images={property.images} onPress={onPress}>
 
         {/* Green "Active" Badge with Linear Gradient (Matches Figma colors and corner geometry) */}
         {!property.isPremium && !property.isHidden && (
@@ -88,17 +75,15 @@ export default function ActiveAdCard({
             </Text>
           </View>
         )}
-
-        {/* Pagination Dots  */}
-        <View className="absolute bottom-4 left-0 right-0 flex-row items-center justify-center gap-1.5">
-          <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
-          <View className="h-1.5 w-1.5 rounded-full bg-white/40" />
-          <View className="h-1.5 w-4 rounded-full bg-[#15304D]" />
-        </View>
-      </View>
+      </AdImageGallery>
 
       {/* --- Content Body --- */}
-      <View className="relative p-4">
+      <TouchableOpacity
+        testID={`active-ad-card-${property.id}`}
+        accessibilityRole="button"
+        activeOpacity={0.85}
+        onPress={onPress}
+        className="relative p-4">
         {/* Category label */}
         <View className="mb-1">
           <Text className="font-cairo-bold text-[16px] text-[#111111]">
@@ -159,7 +144,7 @@ export default function ActiveAdCard({
             </Text>
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }

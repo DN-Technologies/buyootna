@@ -1251,8 +1251,8 @@ export const mobileIndividual: DocSection = {
       },
       priority: 'P0',
       story: {
-        en: "Regression check for a fixed bug: in نشاطي, tapping a published ad did nothing, so the user couldn't open their own ad. The active ad card had no tap action, only its ⋮ menu. Now tapping anywhere on an active, hidden or featured ad opens its details sheet (photos, price, publish date, specs, location, features, description, views / saves / contacts) with a visible/hidden switch, share, ✕, and تعديل / تمييز / حذف buttons. The card's ⋮ menu is gone — those actions live in the sheet. Archived ads still open with their republish action; tapping a draft opens its preview.",
-        ar: 'فحص تراجع لخطأ تم إصلاحه: في نشاطي كان الضغط على إعلان منشور لا يفعل شيئاً، فلا يستطيع المستخدم فتح إعلانه. بطاقة الإعلان النشط لم يكن لها أي إجراء عند الضغط، فقط قائمة ⋮. الآن الضغط في أي مكان على إعلان نشط أو مخفي أو مميز يفتح نافذة تفاصيله (الصور والسعر وتاريخ النشر والمواصفات والموقع والمزايا والوصف والمشاهدات/الحفظ/التواصل) مع مفتاح إظهار/إخفاء ومشاركة و✕ وأزرار تعديل / تمييز / حذف. وأُزيلت قائمة ⋮ من البطاقة — هذه الإجراءات صارت داخل النافذة. والإعلانات المؤرشفة ما زالت تفتح مع إجراء إعادة النشر؛ والضغط على مسودة يفتح معاينتها.',
+        en: "Regression check for a fixed bug: in نشاطي, tapping a published ad did nothing, so the user couldn't open their own ad. The active ad card had no tap action, only its ⋮ menu. Now tapping anywhere on an active, hidden or featured ad opens its details sheet (photos, price, publish date, specs, location, features, description, views / saves / contacts) with a visible/hidden switch, share, ✕, and تعديل / تمييز / حذف buttons. The card's ⋮ menu is gone — those actions live in the sheet. Archived ads still open with their republish action; tapping a draft opens its preview. The photos of active, hidden, featured and draft cards swipe sideways, with one dot per photo marking the one shown (they used to show only the first photo under three fixed dots); a swipe only pages, a tap still opens.",
+        ar: 'فحص تراجع لخطأ تم إصلاحه: في نشاطي كان الضغط على إعلان منشور لا يفعل شيئاً، فلا يستطيع المستخدم فتح إعلانه. بطاقة الإعلان النشط لم يكن لها أي إجراء عند الضغط، فقط قائمة ⋮. الآن الضغط في أي مكان على إعلان نشط أو مخفي أو مميز يفتح نافذة تفاصيله (الصور والسعر وتاريخ النشر والمواصفات والموقع والمزايا والوصف والمشاهدات/الحفظ/التواصل) مع مفتاح إظهار/إخفاء ومشاركة و✕ وأزرار تعديل / تمييز / حذف. وأُزيلت قائمة ⋮ من البطاقة — هذه الإجراءات صارت داخل النافذة. والإعلانات المؤرشفة ما زالت تفتح مع إجراء إعادة النشر؛ والضغط على مسودة يفتح معاينتها. وصور بطاقات الإعلانات النشطة والمخفية والمميزة والمسودات تُسحب جانبياً، مع نقطة لكل صورة تبيّن المعروضة (كانت تُظهر الصورة الأولى فقط تحت ثلاث نقاط ثابتة)؛ والسحب يقلّب الصور فقط، والضغط ما زال يفتح.',
       },
       acceptanceCriteria: {
         en: [
@@ -1261,6 +1261,7 @@ export const mobileIndividual: DocSection = {
           'In the sheet: the switch shows/hides just this ad, تعديل opens the edit screen, تمييز opens the feature sheet, حذف asks to confirm, share opens the share sheet, ✕ closes it.',
           'An archived ad opens its details with the republish action, as before.',
           'Tapping a draft card opens its preview; its حذف button still only deletes.',
+          'An ad with several photos swipes through all of them on its card, and the dot follows; an ad with one photo shows no dots and does not swipe.',
         ],
         ar: [
           'الضغط على صورة أو نص إعلان نشط يفتح نافذة تفاصيل هذا الإعلان بتاريخ نشره الحقيقي.',
@@ -1268,6 +1269,7 @@ export const mobileIndividual: DocSection = {
           'داخل النافذة: المفتاح يُظهر/يُخفي هذا الإعلان فقط، وتعديل يفتح شاشة التعديل، وتمييز يفتح نافذة التمييز، وحذف يطلب التأكيد، والمشاركة تفتح نافذة المشاركة، و✕ تغلقها.',
           'الإعلان المؤرشف يفتح تفاصيله مع إجراء إعادة النشر كما كان.',
           'الضغط على بطاقة مسودة يفتح معاينتها؛ وزر حذف فيها ما زال يحذف فقط.',
+          'الإعلان ذو الصور المتعددة تُسحب كل صوره على بطاقته وتتبعها النقطة؛ والإعلان ذو الصورة الواحدة بلا نقاط ولا يُسحب.',
         ],
       },
       testScenarios: {
@@ -1277,6 +1279,7 @@ export const mobileIndividual: DocSection = {
           'In the sheet tap تمييز, then حذف — each closes the sheet and opens its own sheet.',
           'Switch to المؤرشفة and tap an ad — details open with إعادة نشر.',
           'Tap a draft card — its preview sheet opens.',
+          'On an active ad with 3 photos, swipe its photo left and right — each photo shows and the dot moves; then tap the photo — the details sheet opens.',
         ],
         ar: [
           'افتح نشاطي، اضغط على صورة إعلان نشط، أغلق النافذة، ثم اضغط على نص السعر — كلاهما يفتح نافذة تفاصيله.',
@@ -1284,9 +1287,10 @@ export const mobileIndividual: DocSection = {
           'اضغط تمييز في النافذة ثم حذف — كل منهما يغلق النافذة ويفتح نافذته.',
           'انتقل إلى المؤرشفة واضغط على إعلان — تفتح التفاصيل مع إعادة نشر.',
           'اضغط على بطاقة مسودة — تفتح نافذة معاينتها.',
+          'على إعلان نشط بثلاث صور، اسحب صورته يميناً ويساراً — تظهر كل صورة وتتحرك النقطة؛ ثم اضغط على الصورة — تفتح نافذة التفاصيل.',
         ],
       },
-      updatedIn: 'feat/activity-card-details-sheet',
+      updatedIn: 'fix/activity-card-swipe',
     },
     {
       id: 'mobile-profile-listings-favorite-heart',
