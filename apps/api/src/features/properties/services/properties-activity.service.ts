@@ -31,6 +31,30 @@ export class PropertiesActivityService {
       orderBy: { updatedAt: 'desc' },
     });
 
+    const ids = properties.map((p) => p.id);
+    const [favoriteCounts, chatCounts] = ids.length
+      ? await Promise.all([
+          this.prisma.favorite.groupBy({
+            by: ['propertyId'],
+            where: { propertyId: { in: ids } },
+            _count: { _all: true },
+          }),
+          // A chat row exists as soon as someone taps chat: only one with a
+          // message counts as contact
+          this.prisma.conversation.groupBy({
+            by: ['propertyId'],
+            where: { propertyId: { in: ids }, messages: { some: {} } },
+            _count: { _all: true },
+          }),
+        ])
+      : [[], []];
+    const favoritesBy = new Map(
+      favoriteCounts.map((f) => [f.propertyId, f._count._all]),
+    );
+    const chatsBy = new Map(
+      chatCounts.map((c) => [c.propertyId, c._count._all]),
+    );
+
     return properties.map((p) => ({
       id: p.id,
       images: p.images,
@@ -52,6 +76,8 @@ export class PropertiesActivityService {
       areaSize: p.areaSize,
       floors: p.floors,
       views: p.views,
+      favoritesCount: favoritesBy.get(p.id) ?? 0,
+      chatsCount: chatsBy.get(p.id) ?? 0,
     }));
   }
 }

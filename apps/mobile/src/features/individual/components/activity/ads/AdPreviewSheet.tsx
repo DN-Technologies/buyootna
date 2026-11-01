@@ -296,8 +296,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               الوصف
             </Text>
             <Text className="font-cairo text-sm leading-6 text-[#111111]" style={{writingDirection: "rtl"}}>
-              {property.description ||
-                'شقة فاخرة للبيع في قلب السالمية، تتميز بتصميم معماري حديث وتشطيبات سوبر لوكس. الشقة تقع في الدور الـ 4 مما يوفر إطلالة بانورامية على الخليج العربي. موقع البرج حيوي جداً وقريب من المجمعات التجارية والخدمات الرئيسية.'}
+              {property.description || '-'}
             </Text>
           </View>
 
@@ -319,7 +318,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
                 مرات الحفظ
               </Text>
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">80</Text>
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.favoritesCount ?? 0}</Text>
             </View>
 
             {/* Separator */}
@@ -330,7 +329,7 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               <Text className="mb-0.5 font-cairo text-[11px] text-[#6B6A6A]">
                 عدد التواصل
               </Text>
-              <Text className="font-cairo-bold text-[14px] text-[#15304D]">4</Text>
+              <Text className="font-cairo-bold text-[14px] text-[#15304D]">{property.chatsCount ?? 0}</Text>
             </View>
           </View>
 

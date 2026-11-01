@@ -127,7 +127,7 @@ export default function ActiveAdCard({
               مرات الحفظ
             </Text>
             <Text className="font-cairo-bold text-[14px] text-[#15304D]">
-              80
+              {property.favoritesCount ?? 0}
             </Text>
           </View>
 
@@ -140,7 +140,7 @@ export default function ActiveAdCard({
               عدد التواصل
             </Text>
             <Text className="font-cairo-bold text-[14px] text-[#15304D]">
-              4
+              {property.chatsCount ?? 0}
             </Text>
           </View>
         </View>

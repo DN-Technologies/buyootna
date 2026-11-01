@@ -166,6 +166,11 @@ describe('OfficesService', () => {
     expect(prisma.favorite.groupBy).toHaveBeenCalledWith(
       expect.objectContaining({ where: { propertyId: { in: ['p1', 'p2'] } } }),
     );
+    expect(prisma.conversation.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { propertyId: { in: ['p1', 'p2'] }, messages: { some: {} } },
+      }),
+    );
     expect(
       listings.map((l) => [l.id, l.isFeatured, l.favoritesCount, l.chatsCount]),
     ).toEqual([
