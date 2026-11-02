@@ -28,7 +28,12 @@ export default function ReviewCardItem({
             <Avatar uri={item.avatarUrl} testID={`review-avatar-${item.id}`} />
           </View>
           <View>
-            <Text className="text-right font-cairo-semibold text-[14px] text-[#111111]">
+            {/* Right-aligned for a Latin name too; text-right flips under RTL */}
+            <Text
+              testID={`review-name-${item.id}`}
+              className="font-cairo-semibold text-[14px] text-[#111111]"
+              style={{ writingDirection: 'rtl' }}
+            >
               {item.userName}
             </Text>
             <View className="mt-0.5 flex-row items-center gap-1">
@@ -98,7 +103,7 @@ export default function ReviewCardItem({
           </Text>
         </TouchableOpacity>
 
-        {onReport && (
+        {onReport && !item.isMine && (
           <TouchableOpacity
             testID={`review-report-${item.id}`}
             activeOpacity={0.7}

@@ -35,7 +35,8 @@ export default function ReviewsSummarySection({
         className="flex-row items-center gap-1.5"
       >
         <Feather name="sliders" size={16} color="#111111" />
-        <Text className="font-cairo-semibold text-sm text-[#111111]">
+        {/* The line height centres Cairo's glyphs on the icon */}
+        <Text className="font-cairo-semibold text-[14px] leading-[22px] text-[#111111]">
           الترتيب حسب
         </Text>
       </TouchableOpacity>

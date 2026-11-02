@@ -197,6 +197,10 @@ export class ReviewsService {
         dislikes: dislikesCount,
         userLiked: userReaction?.type === ReactionType.LIKE,
         userDisliked: userReaction?.type === ReactionType.DISLIKE,
+        // Written by this account, from any of its profiles: the same rule
+        // that refuses reporting your own review
+        isMine:
+          !!currentUserId && (ident?.userId ?? r.reviewerId) === currentUserId,
       };
     });
 

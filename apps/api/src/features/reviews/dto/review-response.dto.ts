@@ -33,6 +33,11 @@ export class ReviewItemDto {
 
   @ApiProperty()
   userDisliked: boolean;
+
+  @ApiProperty({
+    description: 'Written by the signed-in account, from any of its profiles',
+  })
+  isMine: boolean;
 }
 
 class ReviewListMetaDto {

@@ -1592,12 +1592,18 @@ export const mobileIndividual: DocSection = {
       },
       acceptanceCriteria: {
         en: [
+          'The reviewer\'s name starts on the right, next to the avatar, for Latin and Arabic names.',
+          'إبلاغ is not offered on your own reviews, from any profile of your account (GET reviews returns isMine; the server refuses such a report anyway). Other people\'s reviews still offer it.',
+          'On a user\'s profile, الترتيب حسب is vertically centred on its icon.',
           'A review by an account with no picture shows the Buyootna logo in the avatar circle.',
           'A review by an account with a personal photo, or a company / office logo, shows that image.',
           "Two reviewers without pictures never show the same stranger's face.",
           'GET /reviews returns avatarUrl: null for a reviewer with no picture.',
         ],
         ar: [
+          'يبدأ اسم المقيّم من اليمين بجانب الصورة، للأسماء اللاتينية والعربية.',
+          'لا يظهر إبلاغ على تقييماتك، من أي ملف في حسابك (يعيد GET reviews الحقل isMine؛ والخادم يرفض هذا البلاغ أصلاً). وما زال يظهر على تقييمات الآخرين.',
+          'في ملف المستخدم، الترتيب حسب في المنتصف رأسياً مع أيقونته.',
           'تقييم من حساب بلا صورة يعرض شعار بيوتنا داخل دائرة الصورة.',
           'تقييم من حساب له صورة شخصية أو شعار شركة/مكتب يعرض تلك الصورة.',
           'لا يظهر لمقيِّمين بلا صور وجه الغريب نفسه أبداً.',
@@ -1614,7 +1620,7 @@ export const mobileIndividual: DocSection = {
           'أضف صورة للملف الشخصي وقيّم شركة أخرى — تظهر الصورة في التقييم.',
         ],
       },
-      updatedIn: 'fix/review-avatar',
+      updatedIn: 'fix/review-name-align',
     },
     {
       id: 'mobile-account-balance-history-rtl',
