@@ -1992,25 +1992,29 @@ export const mobileIndividual: DocSection = {
         en: [
           "From نشاطي → تنبيهاتي → +, create an alert and tap 'عرض تنبيهاتي': the alerts tab is shown with the new alert.",
           "From search results ('إنشاء تنبيه'), create an alert and tap 'عرض تنبيهاتي': نشاطي opens on تنبيهاتي (not back to the results).",
+          "From search results on a company or office profile, create an alert and tap 'عرض تنبيهاتي': نشاطي opens on تنبيهاتي, not the profile's home.",
           "'العودة للرئيسية' still goes home.",
         ],
         ar: [
           "من نشاطي ← تنبيهاتي ← +، أنشئ تنبيهاً واضغط 'عرض تنبيهاتي': يظهر تبويب تنبيهاتي مع التنبيه الجديد.",
           "من نتائج البحث ('إنشاء تنبيه') أنشئ تنبيهاً واضغط 'عرض تنبيهاتي': يفتح نشاطي على تنبيهاتي (لا العودة للنتائج).",
+          "من نتائج البحث بحساب شركة أو مكتب، أنشئ تنبيهاً واضغط 'عرض تنبيهاتي': يفتح نشاطي على تنبيهاتي، لا الصفحة الرئيسية للملف.",
           "'العودة للرئيسية' ما زال يذهب للرئيسية.",
         ],
       },
       testScenarios: {
         en: [
           "Create an alert from the search results screen, tap 'عرض تنبيهاتي' — the تنبيهاتي tab lists it.",
+          "As a company, and again as an office, search, create an alert from the results and tap 'عرض تنبيهاتي' — the تنبيهاتي tab lists it, and swiping back returns to the results.",
           "Create one from نشاطي, tap it again — same result, no stacked screens (swipe back doesn't return to the form).",
         ],
         ar: [
           "أنشئ تنبيهاً من شاشة نتائج البحث واضغط 'عرض تنبيهاتي' — يظهر في تبويب تنبيهاتي.",
+          'بحساب شركة ثم بحساب مكتب، ابحث وأنشئ تنبيهاً من النتائج واضغط \'عرض تنبيهاتي\' — يظهر في تبويب تنبيهاتي، والسحب للخلف يعيد إلى النتائج.',
           'أنشئ آخر من نشاطي واضغط الزر — النتيجة نفسها دون تكدّس شاشات (السحب للخلف لا يعيد إلى النموذج).',
         ],
       },
-      updatedIn: 'fix/alert-success-view-alerts',
+      updatedIn: 'fix/company-view-alerts',
     },
     {
       id: 'mobile-date-range-field-order',
