@@ -31,6 +31,8 @@ export interface ReviewItem {
   dislikes: number;
   userLiked?: boolean;
   userDisliked?: boolean;
+  // Written by this account: it can't report its own review
+  isMine?: boolean;
 }
 
 export interface ReviewSummary {
