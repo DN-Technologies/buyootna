@@ -134,6 +134,15 @@ export class IdentityStatsDto {
   @ApiProperty({ description: 'Ads deleted with the "تم البيع" reason' })
   soldCount: number;
 
+  @ApiProperty({ description: "Lifetime views of the persona's ads" })
+  totalViews: number;
+
+  @ApiProperty({ description: "Times the persona's ads were saved" })
+  favoritesCount: number;
+
+  @ApiProperty({ description: 'Chats where someone else wrote to the persona' })
+  contactsCount: number;
+
   @ApiProperty({ type: IdentityPresenceDto })
   presence: IdentityPresenceDto;
 

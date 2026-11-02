@@ -1460,8 +1460,8 @@ export const api: DocSection = {
       },
       priority: "P1",
       story: {
-        en: "Ratings, activity and response speed used to be hardcoded (4.5 stars, isActiveNow: true, +85 works). GET /users/:id now adds stats {identityId, rating, reviewsCount, soldCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} for the persona the profile shows. /users/company/:id and /users/office/:id return real isActiveNow, lastSeenAt, rating, reviewsCount and responseTime. The ad host card, home and search company cards use real ratings and ads counts. Ratings count the persona's reviews exactly like the reviews summary. Presence: a persona is online while its app holds the chat socket, or was seen within 2 minutes (requests refresh Identity.lastSeenAt at most once a minute). Response speed: median time to answer a chat over 90 days, null under 3 answers. Sold: ads deleted with the تم البيع reason.",
-        ar: "كانت التقييمات والنشاط وسرعة الرد ثابتة في الكود (4.5 نجوم، isActiveNow: true، +85 عمل). الآن يضيف GET /users/:id الحقل stats {identityId, rating, reviewsCount, soldCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} للهوية المعروضة. ويعيد /users/company/:id و /users/office/:id قيماً حقيقية لـ isActiveNow و lastSeenAt و rating و reviewsCount و responseTime. وبطاقة المعلن وبطاقات الشركات في الرئيسية والبحث تستخدم تقييمات وأعداد إعلانات حقيقية. التقييم يحسب تقييمات الهوية تماماً كملخص التقييمات. النشاط: الهوية نشطة ما دام تطبيقها متصلاً بمقبس المحادثة، أو شوهدت خلال دقيقتين (الطلبات تحدّث Identity.lastSeenAt مرة كل دقيقة على الأكثر). سرعة الرد: وسيط زمن الرد على المحادثات خلال 90 يوماً، و null بأقل من 3 ردود. المباعة: الإعلانات المحذوفة بسبب تم البيع.",
+        en: "Ratings, activity and response speed used to be hardcoded (4.5 stars, isActiveNow: true, +85 works). GET /users/:id now adds stats {identityId, rating, reviewsCount, soldCount, totalViews, favoritesCount, contactsCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} for the persona the profile shows. /users/company/:id and /users/office/:id return real isActiveNow, lastSeenAt, rating, reviewsCount and responseTime. The ad host card, home and search company cards use real ratings and ads counts. Ratings count the persona's reviews exactly like the reviews summary. Presence: a persona is online while its app holds the chat socket, or was seen within 2 minutes (requests refresh Identity.lastSeenAt at most once a minute). Response speed: median time to answer a chat over 90 days, null under 3 answers. Sold: ads deleted with the تم البيع reason.",
+        ar: "كانت التقييمات والنشاط وسرعة الرد ثابتة في الكود (4.5 نجوم، isActiveNow: true، +85 عمل). الآن يضيف GET /users/:id الحقل stats {identityId, rating, reviewsCount, soldCount, totalViews, favoritesCount, contactsCount, presence {isOnline, lastSeenAt}, responseTime {medianSeconds, sampleSize} | null} للهوية المعروضة. ويعيد /users/company/:id و /users/office/:id قيماً حقيقية لـ isActiveNow و lastSeenAt و rating و reviewsCount و responseTime. وبطاقة المعلن وبطاقات الشركات في الرئيسية والبحث تستخدم تقييمات وأعداد إعلانات حقيقية. التقييم يحسب تقييمات الهوية تماماً كملخص التقييمات. النشاط: الهوية نشطة ما دام تطبيقها متصلاً بمقبس المحادثة، أو شوهدت خلال دقيقتين (الطلبات تحدّث Identity.lastSeenAt مرة كل دقيقة على الأكثر). سرعة الرد: وسيط زمن الرد على المحادثات خلال 90 يوماً، و null بأقل من 3 ردود. المباعة: الإعلانات المحذوفة بسبب تم البيع.",
       },
       acceptanceCriteria: {
         en: [
@@ -1469,7 +1469,8 @@ export const api: DocSection = {
           "stats.rating and reviewsCount match GET /users/:id/reviews/summary for the same persona.",
           "presence.isOnline is true while that persona's app is open and false a couple of minutes after it is closed; lastSeenAt is kept.",
           "responseTime is null until the persona has answered at least 3 chats in 90 days.",
-          "soldCount equals the persona's ads deleted with reason SOLD.",
+          "soldCount equals the persona's ads deleted with reason SOLD. The app no longer shows it (only the owner's تم البيع choice feeds it); the admin panel still does.",
+          "totalViews sums the views of the persona's ads, favoritesCount counts saves of them, and contactsCount counts chats where someone else wrote to the persona.",
           "Older app builds keep working (fields only added, none removed).",
         ],
         ar: [
@@ -1477,7 +1478,8 @@ export const api: DocSection = {
           "stats.rating و reviewsCount يطابقان GET /users/:id/reviews/summary لنفس الهوية.",
           "presence.isOnline يكون true ما دام تطبيق الهوية مفتوحاً و false بعد دقيقتين تقريباً من إغلاقه؛ ويبقى lastSeenAt.",
           "responseTime يبقى null حتى ترد الهوية على 3 محادثات على الأقل خلال 90 يوماً.",
-          "soldCount يساوي إعلانات الهوية المحذوفة بسبب SOLD.",
+          "soldCount يساوي إعلانات الهوية المحذوفة بسبب SOLD. ولم يعد التطبيق يعرضه (مصدره فقط اختيار المالك تم البيع)؛ وما زالت لوحة الإدارة تعرضه.",
+          "totalViews يجمع مشاهدات إعلانات الهوية، وfavoritesCount يحسب مرات حفظها، وcontactsCount يحسب المحادثات التي كتب فيها شخص آخر إلى الهوية.",
           "إصدارات التطبيق القديمة تعمل كما هي (الحقول أُضيفت فقط ولم يُحذف شيء).",
         ],
       },
@@ -1495,7 +1497,7 @@ export const api: DocSection = {
           "احذف أحد إعلانات A بسبب تم البيع — يزيد soldCount بواحد.",
         ],
       },
-      updatedIn: "feat/real-trust-signals",
+      updatedIn: "feat/profile-engagement-stats",
     },
     {
       id: "api-identity-contact-phone",

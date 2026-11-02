@@ -11,6 +11,9 @@ describe('IdentityStatsService', () => {
     identity: { findMany: jest.Mock };
     review: { findMany: jest.Mock };
     propertyDeletionLog: { groupBy: jest.Mock };
+    property: { aggregate: jest.Mock };
+    favorite: { count: jest.Mock };
+    conversation: { count: jest.Mock };
     $queryRaw: jest.Mock;
   };
   let presence: { presenceOf: jest.Mock };
@@ -37,6 +40,9 @@ describe('IdentityStatsService', () => {
           .fn()
           .mockResolvedValue([{ identityId: 'i1', _count: { _all: 3 } }]),
       },
+      property: { aggregate: jest.fn() },
+      favorite: { count: jest.fn() },
+      conversation: { count: jest.fn() },
       $queryRaw: jest.fn(),
     };
     presence = {
@@ -93,6 +99,45 @@ describe('IdentityStatsService', () => {
   it('skips the queries for an empty list', async () => {
     expect((await service.getStats([])).size).toBe(0);
     expect(prisma.identity.findMany).not.toHaveBeenCalled();
+  });
+
+  describe('getEngagement', () => {
+    it("adds up the persona's views, saves and chats where others wrote", async () => {
+      prisma.property.aggregate.mockResolvedValue({ _sum: { views: 120 } });
+      prisma.favorite.count.mockResolvedValue(7);
+      prisma.conversation.count.mockResolvedValue(3);
+
+      await expect(service.getEngagement('i1')).resolves.toEqual({
+        totalViews: 120,
+        favoritesCount: 7,
+        contactsCount: 3,
+      });
+      expect(prisma.property.aggregate).toHaveBeenCalledWith({
+        where: { identityId: 'i1' },
+        _sum: { views: true },
+      });
+      expect(prisma.favorite.count).toHaveBeenCalledWith({
+        where: { property: { identityId: 'i1' } },
+      });
+      expect(prisma.conversation.count).toHaveBeenCalledWith({
+        where: {
+          participants: { some: { identityId: 'i1' } },
+          messages: { some: { senderIdentityId: { not: 'i1' } } },
+        },
+      });
+    });
+
+    it('is zero for a persona with no ads', async () => {
+      prisma.property.aggregate.mockResolvedValue({ _sum: { views: null } });
+      prisma.favorite.count.mockResolvedValue(0);
+      prisma.conversation.count.mockResolvedValue(0);
+
+      await expect(service.getEngagement('i2')).resolves.toEqual({
+        totalViews: 0,
+        favoritesCount: 0,
+        contactsCount: 0,
+      });
+    });
   });
 
   describe('getResponseTime', () => {

@@ -1,13 +1,14 @@
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
+import { Fragment } from 'react';
 import { Text, View } from 'react-native';
 
+import Avatar from '@/shared/components/ui/Avatar';
+import { formatNumber } from '@/shared/utils/formatNumber';
 import {
   formatPresence,
   formatResponseTime,
 } from '@/shared/utils/helpers/activity';
-
-import Avatar from '@/shared/components/ui/Avatar';
 
 import { UserProfile } from './types';
 
@@ -22,6 +23,12 @@ export default function ProfileHeaderCard({
 }: ProfileHeaderCardProps) {
   const activity = formatPresence(userProfile.presence);
   const responseTime = formatResponseTime(userProfile.responseTime);
+  const stats = [
+    { label: 'الإعلانات', value: propertiesCount },
+    { label: 'المشاهدات', value: userProfile.totalViews },
+    { label: 'المفضلة', value: userProfile.favoritesCount },
+    { label: 'التواصل', value: userProfile.contactsCount },
+  ];
 
   return (
     <View className="mb-4">
@@ -114,40 +121,36 @@ export default function ProfileHeaderCard({
         </View>
 
         {/* Stats Bar Component */}
-        <View
-          style={{ flexDirection: 'row' }}
-          className="mt-4 items-center justify-between rounded-xl bg-[#F8F9FC] p-4"
-        >
-          <View className="flex-1 items-center">
-            <Text className="font-sans text-sm font-bold text-[#111111]">
-              {propertiesCount}
-            </Text>
-            <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-              الإعلانات
-            </Text>
-          </View>
-          <View className="h-6 w-[1px] bg-slate-200" />
-          <View className="flex-1 items-center">
-            <Text className="font-sans text-sm font-bold text-[#111111]">
-              {userProfile.soldCount}
-            </Text>
-            <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-              العقارات المباعة
-            </Text>
+        <View className="mt-4 rounded-xl bg-[#F8F9FC] p-4">
+          <View
+            testID="profile-stats"
+            style={{ flexDirection: 'row' }}
+            className="items-center justify-between"
+          >
+            {stats.map((stat, index) => (
+              <Fragment key={stat.label}>
+                {index > 0 && <View className="h-6 w-[1px] bg-slate-200" />}
+                <View className="flex-1 items-center">
+                  <Text className="font-sans text-sm font-bold text-[#111111]">
+                    {formatNumber(stat.value)}
+                  </Text>
+                  <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
+                    {stat.label}
+                  </Text>
+                </View>
+              </Fragment>
+            ))}
           </View>
           {/* Shown once there are enough answered chats to say anything */}
           {responseTime && (
-            <>
-              <View className="h-6 w-[1px] bg-slate-200" />
-              <View className="flex-1 items-center">
-                <Text className="font-cairo-bold text-[11px] text-[#111111]">
-                  {responseTime}
-                </Text>
-                <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
-                  سرعة الرد
-                </Text>
-              </View>
-            </>
+            <View className="mt-3 items-center border-t border-slate-200 pt-3">
+              <Text className="font-cairo-bold text-[11px] text-[#111111]">
+                {responseTime}
+              </Text>
+              <Text className="mt-0.5 font-cairo text-[10px] text-[#6B6A6A]">
+                سرعة الرد
+              </Text>
+            </View>
           )}
         </View>
       </View>
