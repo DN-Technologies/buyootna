@@ -1303,6 +1303,47 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/activity-hidden-not-active',
     },
     {
+      id: 'mobile-user-profile-options',
+      title: {
+        en: "The ⋮ on a user's profile reports or blocks them",
+        ar: 'زر ⋮ في الملف الشخصي للمستخدم يبلّغ عنه أو يحظره',
+      },
+      priority: 'P1',
+      story: {
+        en: "QA bug fix: the ⋮ at the top of a user's profile did nothing. It now opens خيارات with إبلاغ عن المستخدم, حظر المستخدم (إلغاء حظر المستخدم once blocked) and إلغاء, using the same report sheet and block confirmation as company and office profiles. A guest gets the sign-in sheet instead. There is no ⋮ on your own profile, or until the profile has loaded. Individual profiles have no public web page, so unlike company and office profiles there is no share option.",
+        ar: 'إصلاح بلاغ QA: كان زر ⋮ أعلى الملف الشخصي للمستخدم لا يفعل شيئاً. الآن يفتح خيارات مع إبلاغ عن المستخدم وحظر المستخدم (إلغاء حظر المستخدم بعد الحظر) وإلغاء، بنفس نافذة البلاغ وتأكيد الحظر في ملفات الشركات والمكاتب. ويرى الزائر نافذة تسجيل الدخول بدلاً من ذلك. ولا يظهر ⋮ في ملفك الشخصي أو قبل تحميل الملف. وليس لملفات الأفراد صفحة ويب عامة، لذا لا يوجد خيار مشاركة بخلاف ملفات الشركات والمكاتب.',
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping ⋮ on another user's profile opens خيارات.",
+          'إبلاغ عن المستخدم opens the report sheet, and a sent report reaches the admin reports list.',
+          'حظر المستخدم asks to confirm; once blocked, the option reads إلغاء حظر المستخدم.',
+          'A guest gets the sign-in sheet for both.',
+          'Your own profile has no ⋮.',
+        ],
+        ar: [
+          'الضغط على ⋮ في ملف مستخدم آخر يفتح خيارات.',
+          'إبلاغ عن المستخدم يفتح نافذة البلاغ، والبلاغ المرسل يصل إلى قائمة البلاغات في لوحة الإدارة.',
+          'حظر المستخدم يطلب التأكيد؛ وبعد الحظر يصبح الخيار إلغاء حظر المستخدم.',
+          'يرى الزائر نافذة تسجيل الدخول لكليهما.',
+          'لا يوجد ⋮ في ملفك الشخصي.',
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open an ad, tap the advertiser's name, tap ⋮ — خيارات opens. Send a report, then block and unblock.",
+          'As a guest, tap ⋮ then حظر المستخدم — the sign-in sheet opens.',
+          'Open your own profile — no ⋮.',
+        ],
+        ar: [
+          'افتح إعلاناً، واضغط اسم المعلن، ثم ⋮ — تفتح خيارات. أرسل بلاغاً، ثم احظر وألغِ الحظر.',
+          'كزائر، اضغط ⋮ ثم حظر المستخدم — تفتح نافذة تسجيل الدخول.',
+          'افتح ملفك الشخصي — لا يوجد ⋮.',
+        ],
+      },
+      updatedIn: 'fix/profile-menu-button',
+    },
+    {
       id: 'mobile-profile-listings-favorite-heart',
       title: {
         en: "The heart on an advertiser's ads works (profile and office pages)",

@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Image as ExpoImage } from 'expo-image';
 import { useRouter } from 'expo-router';
-import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -35,15 +34,19 @@ export default function ProfileNavBar({ onBack, onMore }: ProfileNavBarProps) {
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={onMore}
-        className="p-2"
-        accessibilityRole="button"
-        accessibilityLabel="المزيد"
-      >
-        <Feather name="more-vertical" size={20} color="#111111" />
-      </TouchableOpacity>
+      {/* No options on your own profile */}
+      {onMore && (
+        <TouchableOpacity
+          testID="profile-options"
+          activeOpacity={0.8}
+          onPress={onMore}
+          className="p-2"
+          accessibilityRole="button"
+          accessibilityLabel="المزيد"
+        >
+          <Feather name="more-vertical" size={20} color="#111111" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
