@@ -354,13 +354,19 @@ export class UsersController {
       fullUser.identities[0]?.id;
     if (!statsIdentityId) return { ...fullUser, stats: null };
 
-    const [stats, responseTime] = await Promise.all([
+    const [stats, responseTime, engagement] = await Promise.all([
       this.identityStats.getOne(statsIdentityId),
       this.identityStats.getResponseTime(statsIdentityId),
+      this.identityStats.getEngagement(statsIdentityId),
     ]);
     return {
       ...fullUser,
-      stats: { identityId: statsIdentityId, ...stats, responseTime },
+      stats: {
+        identityId: statsIdentityId,
+        ...stats,
+        ...engagement,
+        responseTime,
+      },
     };
   }
 }

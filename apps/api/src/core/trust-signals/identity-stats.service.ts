@@ -21,6 +21,12 @@ export interface IdentityStats {
   presence: IdentityPresence;
 }
 
+export interface IdentityEngagement {
+  totalViews: number;
+  favoritesCount: number;
+  contactsCount: number;
+}
+
 const EMPTY_PRESENCE: IdentityPresence = { isOnline: false, lastSeenAt: null };
 
 /**
@@ -105,6 +111,32 @@ export class IdentityStatsService {
         presence: EMPTY_PRESENCE,
       }
     );
+  }
+
+  /**
+   * What the persona's ads and chats have drawn, for its public profile:
+   * lifetime views of its ads, times its ads were saved, and chats where
+   * someone else wrote to it (a chat opened without writing isn't contact).
+   */
+  async getEngagement(identityId: string): Promise<IdentityEngagement> {
+    const [views, favoritesCount, contactsCount] = await Promise.all([
+      this.prisma.property.aggregate({
+        where: { identityId },
+        _sum: { views: true },
+      }),
+      this.prisma.favorite.count({ where: { property: { identityId } } }),
+      this.prisma.conversation.count({
+        where: {
+          participants: { some: { identityId } },
+          messages: { some: { senderIdentityId: { not: identityId } } },
+        },
+      }),
+    ]);
+    return {
+      totalViews: views._sum.views ?? 0,
+      favoritesCount,
+      contactsCount,
+    };
   }
 
   /**

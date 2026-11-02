@@ -8,6 +8,10 @@ export interface UserProfile {
   rating: number;
   reviewsCount: number;
   soldCount: number;
+  // Across the persona's ads and chats; 0 from an older API
+  totalViews: number;
+  favoritesCount: number;
+  contactsCount: number;
   presence: IdentityPresence | null;
   responseTime: ResponseTime | null;
   phone: string;

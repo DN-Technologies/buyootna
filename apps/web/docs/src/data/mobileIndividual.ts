@@ -1303,6 +1303,45 @@ export const mobileIndividual: DocSection = {
       updatedIn: 'fix/activity-hidden-not-active',
     },
     {
+      id: 'mobile-user-profile-stats',
+      title: {
+        en: "A user's profile shows views, saves and contacts instead of sold",
+        ar: 'الملف الشخصي للمستخدم يعرض المشاهدات والمفضلة والتواصل بدلاً من المباعة',
+      },
+      priority: 'P1',
+      story: {
+        en: "QA request: العقارات المباعة only counted ads the owner deleted with تم البيع, so it was self-reported and usually 0. The profile's stats bar now reads الإعلانات, المشاهدات (lifetime views of the advertiser's ads), المفضلة (times they were saved) and التواصل (chats where someone else wrote to them; opening a chat without writing doesn't count). سرعة الرد, once there are enough answered chats, moves to its own line under them. Numbers are for the profile shown, not the whole account.",
+        ar: 'طلب QA: كانت العقارات المباعة تحسب فقط الإعلانات التي حذفها مالكها باختيار تم البيع، فهي بإقرار المالك وغالباً 0. يعرض شريط الملف الآن الإعلانات والمشاهدات (إجمالي مشاهدات إعلانات المعلن) والمفضلة (مرات حفظها) والتواصل (المحادثات التي كتب فيها شخص آخر إليه؛ وفتح محادثة دون كتابة لا يُحتسب). وتنتقل سرعة الرد، عند توفر محادثات كافية، إلى سطر خاص تحتها. والأرقام للملف المعروض لا للحساب كله.',
+      },
+      acceptanceCriteria: {
+        en: [
+          'The bar shows الإعلانات, المشاهدات, المفضلة and التواصل; العقارات المباعة is gone.',
+          'A new advertiser shows 0 for the last three.',
+          'Saving one of the ads raises المفضلة by 1; a chat with a message from someone else raises التواصل by 1.',
+          'سرعة الرد appears on its own line once there are enough answered chats.',
+        ],
+        ar: [
+          'يعرض الشريط الإعلانات والمشاهدات والمفضلة والتواصل؛ واختفت العقارات المباعة.',
+          'المعلن الجديد يعرض 0 في الثلاثة الأخيرة.',
+          'حفظ أحد الإعلانات يزيد المفضلة 1؛ ومحادثة فيها رسالة من شخص آخر تزيد التواصل 1.',
+          'تظهر سرعة الرد في سطر خاص عند توفر محادثات كافية مُجاب عنها.',
+        ],
+      },
+      testScenarios: {
+        en: [
+          "From another account, save one of the advertiser's ads and reopen the profile — المفضلة goes up by 1.",
+          'From that account, tap chat and go back without writing — التواصل stays. Send a message — it goes up by 1.',
+          'Open an ad of theirs, then reopen the profile — المشاهدات has gone up.',
+        ],
+        ar: [
+          'من حساب آخر احفظ أحد إعلانات المعلن وأعد فتح الملف — تزيد المفضلة 1.',
+          'ومن ذلك الحساب اضغط محادثة وارجع دون كتابة — لا يتغير التواصل. وأرسل رسالة — يزيد 1.',
+          'افتح أحد إعلاناته ثم أعد فتح الملف — تزيد المشاهدات.',
+        ],
+      },
+      updatedIn: 'feat/profile-engagement-stats',
+    },
+    {
       id: 'mobile-profile-listings-favorite-heart',
       title: {
         en: "The heart on an advertiser's ads works (profile and office pages)",
