@@ -15,10 +15,14 @@ import ProfileListingsTab from '@/shared/components/profile/ProfileListingsTab';
 import ProfileNavBar from '@/shared/components/profile/ProfileNavBar';
 import ProfileReviewsTab from '@/shared/components/profile/ProfileReviewsTab';
 import PropertyActionBar from '@/shared/components/property/PropertyActionBar';
+import ReportReasonSheet from '@/shared/components/report/ReportReasonSheet';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import { useAuthGuard } from '@/shared/hooks/auth/useAuthGuard';
 import { useUserProfile } from '@/shared/hooks/auth/useUserProfile';
+import { useBlockFlow, useBlockStatus } from '@/shared/hooks/blocks/useBlocks';
+import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useProfileContact } from '@/shared/hooks/providers/useProfileContact';
+import { showAlert } from '@/shared/utils/alert';
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -56,6 +60,36 @@ export default function UserProfileScreen() {
   const { canWhatsapp, handleWhatsapp, handleCall, handleChat } =
     useProfileContact(userProfile);
 
+  // ⋮: report or block the account behind the profile. Both need an account:
+  // a guest gets the sign-in sheet instead
+  const { reportSheetRef, handleOpenReport, handleSubmitReport } =
+    useOfficeReport(userProfile?.id);
+  const blockedByMe = useBlockStatus(userProfile?.id);
+  const { askToBlock, askToUnblock } = useBlockFlow();
+
+  const handleShowOptions = () => {
+    if (!userProfile) return;
+    const { id: userId, name } = userProfile;
+    showAlert('خيارات', '', [
+      {
+        text: 'إبلاغ عن المستخدم',
+        style: 'destructive',
+        onPress: () => guardAction(handleOpenReport),
+      },
+      {
+        text: blockedByMe ? 'إلغاء حظر المستخدم' : 'حظر المستخدم',
+        style: blockedByMe ? 'default' : 'destructive',
+        onPress: () =>
+          guardAction(() =>
+            blockedByMe
+              ? askToUnblock(userId, name)
+              : askToBlock({ userId, identityId: idStr }, name),
+          ),
+      },
+      { text: 'إلغاء', style: 'cancel' },
+    ]);
+  };
+
   const renderHeader = () => (
     <ProfileHeader
       isLoadingProfile={isLoadingProfile}
@@ -79,7 +113,9 @@ export default function UserProfileScreen() {
     <View className="flex-1 bg-white">
       <ContentContainer className="flex-1">
         {/* Top Navigation Bar */}
-        <ProfileNavBar />
+        <ProfileNavBar
+          onMore={userProfile && !isOwnProfile ? handleShowOptions : undefined}
+        />
 
         {/* Tab Views */}
         {activeTab === 'listings' ? (
@@ -128,6 +164,7 @@ export default function UserProfileScreen() {
           selectedValue={propertySort}
           onSelect={setPropertySort}
         />
+        <ReportReasonSheet ref={reportSheetRef} onSubmit={handleSubmitReport} />
         <AuthGuardSheet ref={authSheetRef} />
       </ContentContainer>
     </View>
