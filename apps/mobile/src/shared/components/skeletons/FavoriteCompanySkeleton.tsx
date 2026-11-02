@@ -10,7 +10,7 @@ export default function FavoriteCompanySkeleton() {
       {/* Logo, name + category, and the heart */}
       <View className="flex-row items-start justify-between">
         <View className="flex-row items-center gap-3 pl-2">
-          <View className="h-[64px] w-[64px] rounded-sm bg-slate-200" />
+          <View className="h-[64px] w-[64px] rounded-full bg-slate-200" />
           <View className="gap-2">
             <View className="h-4 w-32 rounded-md bg-slate-200" />
             <View className="h-3 w-24 rounded-md bg-slate-100" />

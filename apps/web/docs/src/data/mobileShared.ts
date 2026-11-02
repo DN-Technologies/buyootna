@@ -236,6 +236,7 @@ export const mobileShared: DocSection = {
           "With some stories watched the ring is dashed gold; with all watched it is grey, once back on the list.",
           "A company with no live stories has a round logo, no ring, and its logo acts as part of the card.",
           "A guest sees no rings, and if the lookup fails the list still works, without rings.",
+          "While شركات and المفضلة › شركات load, the placeholder logos are round too.",
         ],
         ar: [
           "شركة لها قصص لم تُشاهد تظهر بطاقتها بحلقة ذهبية؛ والضغط على الحلقة يفتح العارض لا الملف.",
@@ -243,6 +244,7 @@ export const mobileShared: DocSection = {
           "بعد مشاهدة بعض القصص تصبح الحلقة ذهبية متقطعة، وبعد مشاهدتها كلها رمادية عند الرجوع إلى القائمة.",
           "شركة بلا قصص حية: شعار دائري بلا حلقة، والشعار جزء من البطاقة.",
           "الزائر لا يرى حلقات، وإن فشل الطلب تعمل القائمة بلا حلقات.",
+          "أثناء تحميل شركات والمفضلة › شركات تكون الشعارات المؤقتة دائرية أيضاً.",
         ],
       },
       testScenarios: {
@@ -257,7 +259,7 @@ export const mobileShared: DocSection = {
           "سجل الخروج وافتح شركات: شعارات دائرية بلا حلقات.",
         ],
       },
-      updatedIn: "feat/company-card-story-rings",
+      updatedIn: "fix/company-skeleton-round",
     },
     {
       id: "mobile-story-reply-quote",
