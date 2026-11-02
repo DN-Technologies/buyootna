@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import type { StoryAuthor } from '../types';
 
 interface StoryRingProps {
-  author: StoryAuthor;
+  author: Pick<StoryAuthor, 'name' | 'logoUrl'>;
   hasUnseen: boolean;
   // Some stories watched, new ones left: a dashed gold ring («القصص» list)
   partial?: boolean;

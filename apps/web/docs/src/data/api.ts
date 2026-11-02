@@ -9,6 +9,43 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-story-rings",
+      title: {
+        en: "Stories: GET /stories/rings, rings for a list of profiles",
+        ar: "القصص: GET /stories/rings، حلقات قائمة من الملفات",
+      },
+      priority: "P2",
+      story: {
+        en: "GET /stories/rings?ids=<comma-separated profile ids> (login required, 50 ids at most) returns { rings: [{ identityId, hasUnseen, partial }] } for those with live stories, as the current profile sees them. Profiles with no live stories, and authors hidden or blocked either way, are left out. It signs no media and runs two queries however many ids are asked.",
+        ar: "يعيد GET /stories/rings?ids=<معرفات الملفات مفصولة بفواصل> (يتطلب تسجيل الدخول، 50 معرفاً على الأكثر) القيمة { rings: [{ identityId، hasUnseen، partial }] } لمن لهم قصص حية كما يراها الملف الحالي. ويُستبعد من لا قصص حية له، ومن هو مخفي أو بينه وبين الحساب حظر. ولا يوقّع أي وسائط، وينفذ استعلامين مهما بلغ عدد المعرفات.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "No story watched: hasUnseen true, partial false. Some watched: both true. All watched: both false.",
+          "Expired or unpublished stories give no ring, and neither does an author blocked either way.",
+          "Without a token: 401. A non-UUID, no ids, or more than 50: 400.",
+        ],
+        ar: [
+          "لم تُشاهد أي قصة: hasUnseen صحيحة وpartial خاطئة. شوهد بعضها: كلتاهما صحيحة. شوهدت كلها: كلتاهما خاطئة.",
+          "القصص المنتهية أو غير المنشورة لا تعطي حلقة، ولا صاحبها المحظور من أي طرف.",
+          "بلا رمز دخول: 401. ومعرف غير UUID أو بلا معرفات أو أكثر من 50: 400.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "With a token, call it with a company that has a live story and one that doesn't: only the first is returned.",
+          "Record a view of its only story (POST /stories/views) and call again: hasUnseen is false.",
+          "Block that company's account and call again: it's gone.",
+        ],
+        ar: [
+          "برمز دخول، استدعه بشركة لها قصة حية وأخرى بلا قصص: تعود الأولى فقط.",
+          "سجل مشاهدة قصتها الوحيدة (POST /stories/views) واستدعه مجدداً: hasUnseen خاطئة.",
+          "احظر حساب تلك الشركة واستدعه مجدداً: تختفي.",
+        ],
+      },
+      updatedIn: "feat/company-card-story-rings",
+    },
+    {
       id: "api-story-highlights",
       title: {
         en: "Stories: the 30-day archive and highlights (المميزة)",

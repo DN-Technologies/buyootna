@@ -145,6 +145,25 @@ export class FeedAuthorDto extends StoryAuthorStoriesDto {
   latestPublishedAt: string;
 }
 
+export class StoryRingDto {
+  @ApiProperty()
+  identityId: string;
+
+  @ApiProperty({ description: 'At least one live story is still unwatched' })
+  hasUnseen: boolean;
+
+  @ApiProperty({ description: 'Some watched, with new ones left' })
+  partial: boolean;
+}
+
+export class StoryRingsDto {
+  @ApiProperty({
+    type: [StoryRingDto],
+    description: 'Only the asked-about profiles with live stories',
+  })
+  rings: StoryRingDto[];
+}
+
 export class StoryFeedDto {
   @ApiProperty({
     description:

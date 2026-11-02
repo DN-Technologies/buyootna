@@ -28,6 +28,10 @@ jest.mock('@/shared/hooks/properties/useFavorites', () => ({
 const mockPresent = jest.fn();
 const mockDismiss = jest.fn();
 
+jest.mock('@/features/stories/hooks/useStoryRings', () => ({
+  useStoryRings: () => () => null,
+}));
+
 jest.mock('@gorhom/bottom-sheet', () => {
   const { View, ScrollView } = require('react-native');
   const React = require('react');

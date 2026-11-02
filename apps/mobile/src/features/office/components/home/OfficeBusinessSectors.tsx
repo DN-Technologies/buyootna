@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
 import OfficeListCard from '@/features/individual/components/offices/OfficeListCard';
 import { feedService } from '@/features/individual/services/feed.service';
+import { useStoryRings } from '@/features/stories/hooks/useStoryRings';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import GoldSegment, {
   GoldSegmentOption,
@@ -52,7 +53,10 @@ export default function OfficeBusinessSectors({
   const officeItems = (offices.data?.data ?? [])
     .filter((o) => o.id !== ownIdentityId)
     .slice(0, ROW_LIMIT);
-  const companyItems = companies.data?.data ?? [];
+  const companyItems = useMemo(() => companies.data?.data ?? [], [companies.data]);
+  const storyRingFor = useStoryRings(
+    useMemo(() => companyItems.map((c) => c.id), [companyItems]),
+  );
   const isEmpty =
     sector === 'offices' ? officeItems.length === 0 : companyItems.length === 0;
 
@@ -123,6 +127,7 @@ export default function OfficeBusinessSectors({
                     lastActivityAt={company.lastActivityAt}
                     servicesCount={company.servicesCount ?? 0}
                     logoUrl={company.logoUrl}
+                    storyRing={storyRingFor(company.id)}
                     isVerified={company.isVerified}
                     onPress={() => router.push(`/company/${company.id}` as any)}
                     // The quote request starts from the company's profile

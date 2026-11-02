@@ -219,6 +219,47 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/stories-phase6",
     },
     {
+      id: "mobile-company-card-story-rings",
+      title: {
+        en: "Stories: rings on company logos in the lists, like WhatsApp",
+        ar: "القصص: حلقات على شعارات الشركات في القوائم، مثل واتساب",
+      },
+      priority: "P2",
+      story: {
+        en: "Company logos on the شركات list, المفضلة, the home's companies slider and the office home's company sector are now round. While a company has live stories its logo has a ring: gold while none are watched, dashed gold when some are, grey when all are. Tapping the ring opens the stories; the rest of the card still opens the profile. A company with no logo shows its first letter. Guests see round logos with no rings, as stories need a login. The company profile header keeps its rounded-square ring.",
+        ar: "أصبحت شعارات الشركات دائرية في قائمة شركات والمفضلة وشريط الشركات في الرئيسية وقسم الشركات في رئيسية المكتب. وما دامت للشركة قصص حية يظهر حول شعارها حلقة: ذهبية إن لم تُشاهد أي قصة، وذهبية متقطعة إن شوهد بعضها، ورمادية إن شوهدت كلها. والضغط على الحلقة يفتح القصص، وباقي البطاقة يفتح الملف كما كان. والشركة بلا شعار يظهر أول حرف من اسمها. ويرى الزائر الشعارات دائرية بلا حلقات لأن القصص تتطلب تسجيل الدخول. ويبقى رأس ملف الشركة بحلقته المربعة المستديرة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company with unwatched stories has a gold ring on its card; tapping the ring opens the viewer, not the profile.",
+          "Tapping anywhere else on that card opens the profile.",
+          "With some stories watched the ring is dashed gold; with all watched it is grey, once back on the list.",
+          "A company with no live stories has a round logo, no ring, and its logo acts as part of the card.",
+          "A guest sees no rings, and if the lookup fails the list still works, without rings.",
+        ],
+        ar: [
+          "شركة لها قصص لم تُشاهد تظهر بطاقتها بحلقة ذهبية؛ والضغط على الحلقة يفتح العارض لا الملف.",
+          "الضغط في أي مكان آخر من البطاقة يفتح الملف.",
+          "بعد مشاهدة بعض القصص تصبح الحلقة ذهبية متقطعة، وبعد مشاهدتها كلها رمادية عند الرجوع إلى القائمة.",
+          "شركة بلا قصص حية: شعار دائري بلا حلقة، والشعار جزء من البطاقة.",
+          "الزائر لا يرى حلقات، وإن فشل الطلب تعمل القائمة بلا حلقات.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Post a story as a company. As another account, open شركات: gold ring › tap it › watch all › back › grey ring.",
+          "Tap the same card's body: its profile opens. Repeat the ring check on المفضلة › شركات and the home's companies slider.",
+          "Sign out and open شركات: round logos, no rings.",
+        ],
+        ar: [
+          "انشر قصة كشركة. ومن حساب آخر افتح شركات: حلقة ذهبية › اضغطها › شاهد الكل › ارجع › حلقة رمادية.",
+          "اضغط جسم البطاقة نفسها: يفتح ملفها. وكرر فحص الحلقة في المفضلة › شركات وشريط الشركات في الرئيسية.",
+          "سجل الخروج وافتح شركات: شعارات دائرية بلا حلقات.",
+        ],
+      },
+      updatedIn: "feat/company-card-story-rings",
+    },
+    {
       id: "mobile-stories-composer-figma",
       title: {
         en: "Stories: the new «اضف قصة جديدة», trimming videos on the phone, and «حالتي»",

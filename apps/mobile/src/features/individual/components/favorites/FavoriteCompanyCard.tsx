@@ -1,8 +1,9 @@
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { ChatIcon, HeartIcon } from '@/assets/icons/home/cards';
+import CompanyLogoAvatar from '@/features/stories/components/CompanyLogoAvatar';
+import type { ProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 
 export interface FavoriteCompanyCardProps {
   id: string;
@@ -18,6 +19,8 @@ export interface FavoriteCompanyCardProps {
   onFavoriteToggle?: () => void;
   onQuoteRequest?: () => void;
   onChatPress?: () => void;
+  // Its live stories: a ring around the logo that opens them
+  storyRing?: ProviderStoryRing | null;
 }
 
 export default function FavoriteCompanyCard({
@@ -33,6 +36,7 @@ export default function FavoriteCompanyCard({
   onFavoriteToggle,
   onQuoteRequest,
   onChatPress,
+  storyRing,
 }: FavoriteCompanyCardProps) {
   return (
     <TouchableOpacity
@@ -47,17 +51,7 @@ export default function FavoriteCompanyCard({
             card on Android */}
         <View className="min-w-0 flex-1 flex-row items-center gap-3 pl-2">
           {/* Logo */}
-          <View className="h-[64px] w-[64px] items-center justify-center overflow-hidden rounded-sm bg-[#111111]">
-            {logoUrl ? (
-              <Image
-                source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
-                style={{ width: '100%', height: '100%' }}
-                contentFit="cover"
-              />
-            ) : (
-              <MaterialIcons name="business" size={24} color="#D4AF37" />
-            )}
-          </View>
+          <CompanyLogoAvatar name={name} logoUrl={logoUrl} ring={storyRing} />
 
           {/* Shrinks with a long name so the badge never runs onto the heart */}
           <View className="min-w-0 flex-1">

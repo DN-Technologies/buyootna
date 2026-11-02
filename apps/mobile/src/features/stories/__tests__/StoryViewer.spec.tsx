@@ -95,7 +95,14 @@ jest.mock('../hooks/useStoryHighlights', () => {
     useHighlightMutations: () => ({ update: { mutate: jest.fn() } }),
   };
 });
+// The view queue refreshes the lists' rings after sending
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
+}));
+
 jest.mock('../hooks/useStoriesQueries', () => ({
+  storiesKeys: { rings: () => ['rings'] },
   useActiveIdentityId: () => mockIdentityId,
   useStoriesFeed: () => ({ authors: mockAuthors, refetch: mockRefetch }),
   useAuthorStories: () => ({

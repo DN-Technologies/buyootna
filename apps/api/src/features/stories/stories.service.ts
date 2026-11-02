@@ -14,6 +14,7 @@ import type {
   MyStoriesDto,
   StoryArchiveDto,
   StoryAuthorStoriesDto,
+  StoryRingsDto,
   StoryHighlightDto,
   StoryHighlightsDto,
   StoryUploadSlotDto,
@@ -91,6 +92,14 @@ export class StoriesService {
     now = new Date(),
   ): Promise<StoryAuthorStoriesDto> {
     return this.reads.findByAuthor(viewer, authorId, now);
+  }
+
+  findRings(
+    viewer: { identityId: string; userId: string },
+    authorIds: string[],
+    now = new Date(),
+  ): Promise<StoryRingsDto> {
+    return this.reads.findRings(viewer, authorIds, now);
   }
 
   recordViews(

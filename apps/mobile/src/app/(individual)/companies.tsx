@@ -26,6 +26,7 @@ import {
   type CompanySort,
   feedService,
 } from '@/features/individual/services/feed.service';
+import { useStoryRings } from '@/features/stories/hooks/useStoryRings';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
 import QuoteRequestModal from '@/shared/components/company/QuoteRequestModal';
 import CompanyFilterSheet, {
@@ -133,6 +134,10 @@ export default function CompaniesScreen() {
       return true;
     });
   }, [infiniteData]);
+
+  const storyRingFor = useStoryRings(
+    useMemo(() => data.map((c) => c.id), [data]),
+  );
 
   const isFetchingRef = useRef(false);
   const fetchMoreData = () => {
@@ -298,6 +303,7 @@ export default function CompaniesScreen() {
               onChatPress={() => handleChatPress(item.id)}
               onQuotePress={() => handleQuotePress(item.id, item.name)}
               isOwn={!!currentUserId && item.userId === currentUserId}
+              storyRing={storyRingFor(item.id)}
             />
           )}
           onEndReached={fetchMoreData}

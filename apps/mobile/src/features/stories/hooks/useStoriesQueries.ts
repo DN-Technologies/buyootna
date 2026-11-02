@@ -30,6 +30,11 @@ export const storiesKeys = {
       : (['stories', identityId, 'feed'] as const),
   author: (identityId: string | null, authorId: string) =>
     ['stories', identityId, 'author', authorId] as const,
+  // Without `authorIds`: every list's rings
+  rings: (identityId: string | null, authorIds?: string[]) =>
+    authorIds
+      ? (['stories', identityId, 'rings', authorIds] as const)
+      : (['stories', identityId, 'rings'] as const),
 };
 
 export function useActiveIdentityId(): string | null {

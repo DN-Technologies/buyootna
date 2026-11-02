@@ -52,6 +52,70 @@ describe("StoriesService: the author's own stories and one author's", () => {
     });
   });
 
+  describe('findRings', () => {
+    const OTHER = '55555555-5555-4555-8555-555555555555';
+    const second = '44444444-4444-4444-8444-444444444444';
+
+    it('only live stories of authors this account may see', async () => {
+      prisma.story.findMany.mockResolvedValue([]);
+      await service.findRings(VIEWER, [AUTHOR], NOW);
+      const { where } = callArg<{ where: Record<string, unknown> }>(
+        prisma.story.findMany,
+      );
+      expect(where).toMatchObject({
+        identityId: { in: [AUTHOR] },
+        status: 'ACTIVE',
+        expiresAt: { gt: NOW },
+        identity: {
+          user: {
+            blocksMade: { none: { blockedUserId: VIEWER.userId } },
+            blocksReceived: { none: { blockerUserId: VIEWER.userId } },
+          },
+        },
+      });
+    });
+
+    it('asks nothing more and draws no ring when none have stories', async () => {
+      prisma.story.findMany.mockResolvedValue([]);
+      expect(await service.findRings(VIEWER, [AUTHOR], NOW)).toEqual({
+        rings: [],
+      });
+      expect(prisma.storyView.findMany).not.toHaveBeenCalled();
+    });
+
+    it('tells unseen, partly watched and seen apart, per author', async () => {
+      const third = '66666666-6666-4666-8666-666666666666';
+      const fourth = '77777777-7777-4777-8777-777777777777';
+      const SEEN_AUTHOR = '88888888-8888-4888-8888-888888888888';
+      prisma.story.findMany.mockResolvedValue([
+        { id: STORY, identityId: AUTHOR },
+        { id: second, identityId: OTHER },
+        { id: third, identityId: OTHER },
+        { id: fourth, identityId: SEEN_AUTHOR },
+      ]);
+      prisma.storyView.findMany.mockResolvedValue([
+        { storyId: second },
+        { storyId: fourth },
+      ]);
+
+      const { rings } = await service.findRings(
+        VIEWER,
+        [AUTHOR, OTHER, SEEN_AUTHOR],
+        NOW,
+      );
+
+      expect(rings).toEqual([
+        { identityId: AUTHOR, hasUnseen: true, partial: false },
+        { identityId: OTHER, hasUnseen: true, partial: true },
+        { identityId: SEEN_AUTHOR, hasUnseen: false, partial: false },
+      ]);
+      expect(
+        callArg<{ where: Record<string, unknown> }>(prisma.storyView.findMany)
+          .where,
+      ).toMatchObject({ viewerIdentityId: VIEWER.identityId });
+    });
+  });
+
   describe('findByAuthor', () => {
     const author = {
       id: AUTHOR,
