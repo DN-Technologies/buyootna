@@ -22,8 +22,8 @@ export default function CompanySkeleton({ cardWidth = '100%' }: CompanySkeletonP
       <View className="mb-4 flex-row items-start justify-between">
         {/* Top Right: Logo & Info */}
         <View className="mr-3 flex-1 flex-row">
-          {/* Logo Box Placeholder */}
-          <View className="h-16 w-16 rounded-sm bg-slate-200" />
+          {/* Logo Placeholder: round, like the card (CompanyLogoAvatar) */}
+          <View className="h-16 w-16 rounded-full bg-slate-200" />
 
           {/* Info Placeholders */}
           <View className="ml-3 mr-1 flex-1">
