@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
   Max,
   MaxLength,
   Min,
@@ -63,6 +64,11 @@ export class SendMessageDto {
   @IsOptional()
   @IsString()
   replyToId?: string;
+
+  // Replying to this story (must be by the other participant)
+  @IsOptional()
+  @IsUUID()
+  storyId?: string;
 
   // Uploaded photos / documents to send with it (POST .../attachments)
   @IsOptional()

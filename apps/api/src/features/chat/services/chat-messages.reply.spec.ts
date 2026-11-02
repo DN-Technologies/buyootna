@@ -4,6 +4,7 @@ import { ChatMessagesService, replyPreview } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { ChatAttachmentsService } from './chat-attachments.service';
 import { ChatProposalsService } from './chat-proposals.service';
+import type { StoriesMediaService } from '../../stories/stories-media.service';
 
 describe('replyPreview', () => {
   const source = {
@@ -90,6 +91,7 @@ describe('ChatMessagesService replies and hiding', () => {
       {} as ChatParticipantDisplayService,
       {} as ChatAttachmentsService,
       {} as ChatProposalsService,
+      {} as StoriesMediaService,
     );
   });
 

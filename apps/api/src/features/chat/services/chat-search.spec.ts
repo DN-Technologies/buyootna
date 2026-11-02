@@ -6,6 +6,7 @@ import { ChatMessagesService } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { chatPushBody } from './chat-push.service';
 import { ChatProposalsService } from './chat-proposals.service';
+import type { StoriesMediaService } from '../../stories/stories-media.service';
 
 describe('conversationSearchWhere (chats list search)', () => {
   it('matches the ad title in Arabic: category and listing type', () => {
@@ -50,6 +51,7 @@ describe('ChatMessagesService.searchMessages (in-chat search)', () => {
     {} as ChatParticipantDisplayService,
     {} as ChatAttachmentsService,
     {} as ChatProposalsService,
+    {} as StoriesMediaService,
   );
 
   beforeEach(() => jest.clearAllMocks());

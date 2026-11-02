@@ -3,7 +3,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppState } from 'react-native';
 
-import { ChatMessage } from '@/shared/api/chat.service';
+import { ChatMessage, StoryReplyTarget } from '@/shared/api/chat.service';
 import { socketService } from '@/shared/services/socket.service';
 import { useChatStore } from '@/shared/store/useChatStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -16,15 +16,28 @@ const EMPTY_MESSAGES: ChatMessage[] = [];
 export interface UseChatConversationParams {
   conversationId: string;
   listRef?: React.RefObject<FlashListRef<any> | null>;
+  // Opened from a story's «إرسال رسالة»: the next message replies to it
+  initialStoryTarget?: StoryReplyTarget | null;
 }
 
 export function useChatConversation({
   conversationId,
   listRef,
+  initialStoryTarget = null,
 }: UseChatConversationParams) {
   const [inputText, setInputText] = useState('');
   // Replying to this message (swipe right, or رد in the options)
-  const [replyTarget, setReplyTarget] = useState<ChatMessage | null>(null);
+  const [replyTarget, setMessageReplyTarget] = useState<ChatMessage | null>(
+    null,
+  );
+  // Replying to this story; a message quotes one or the other, never both
+  const [storyTarget, setStoryTarget] = useState<StoryReplyTarget | null>(
+    initialStoryTarget,
+  );
+  const setReplyTarget = useCallback((message: ChatMessage | null) => {
+    setMessageReplyTarget(message);
+    if (message) setStoryTarget(null);
+  }, []);
   // The message whose long-press options are open
   const [optionsFor, setOptionsFor] = useState<ChatMessage | null>(null);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
@@ -161,6 +174,7 @@ export function useChatConversation({
       content: inputText.trim(),
       type: 'TEXT',
       replyTo: replyTarget ?? undefined,
+      storyReply: storyTarget ?? undefined,
     });
     if (!sent) {
       // No socket exists at all -- keep the user's text in the input
@@ -169,10 +183,19 @@ export function useChatConversation({
     }
     setInputText('');
     setReplyTarget(null);
+    setStoryTarget(null);
     requestAnimationFrame(() => {
       listRef?.current?.scrollToEnd({ animated: true });
     });
-  }, [conversationId, inputText, listRef, sendMessage, replyTarget]);
+  }, [
+    conversationId,
+    inputText,
+    listRef,
+    sendMessage,
+    replyTarget,
+    setReplyTarget,
+    storyTarget,
+  ]);
 
   /** نسخ: the message text to the clipboard. */
   const copyMessage = useCallback(async (message: ChatMessage) => {
@@ -192,7 +215,7 @@ export function useChatConversation({
         showAlert('خطأ', 'تعذر حذف الرسالة، حاول مرة أخرى');
       }
     },
-    [conversationId, replyTarget],
+    [conversationId, replyTarget, setReplyTarget],
   );
 
   const handleRetryLoad = useCallback(() => {
@@ -228,6 +251,8 @@ export function useChatConversation({
     isLoadingMessages: isLoading,
     replyTarget,
     setReplyTarget,
+    storyTarget,
+    setStoryTarget,
     optionsFor,
     setOptionsFor,
     copyMessage,

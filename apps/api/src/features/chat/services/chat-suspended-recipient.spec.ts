@@ -8,6 +8,7 @@ import {
 } from './chat-participant-display.service';
 import { ChatAttachmentsService } from './chat-attachments.service';
 import { ChatProposalsService } from './chat-proposals.service';
+import type { StoriesMediaService } from '../../stories/stories-media.service';
 
 describe('chat with a suspended or blocked account', () => {
   const display = {} as ChatParticipantDisplayService;
@@ -146,6 +147,7 @@ describe('chat with a suspended or blocked account', () => {
       display,
       {} as ChatAttachmentsService,
       {} as ChatProposalsService,
+      {} as StoriesMediaService,
     );
 
     await expect(
@@ -172,6 +174,7 @@ describe('chat with a suspended or blocked account', () => {
       display,
       {} as ChatAttachmentsService,
       {} as ChatProposalsService,
+      {} as StoriesMediaService,
     );
 
     await expect(
@@ -274,6 +277,7 @@ describe('chat between accounts with a block', () => {
       display,
       {} as ChatAttachmentsService,
       {} as ChatProposalsService,
+      {} as StoriesMediaService,
     );
     await expect(
       service.sendMessage({ userId: 'u1', identityId: 'i1' }, 'c1', {

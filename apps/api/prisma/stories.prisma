@@ -54,6 +54,8 @@ model Story {
   views            StoryView[]
   reports          Report[]
   highlightItems   StoryHighlightItem[]
+  // Chat messages sent as a reply to it
+  chatReplies      Message[]
 
   // Feed + cleanup
   @@index([status, expiresAt])

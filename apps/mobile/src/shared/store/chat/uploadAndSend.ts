@@ -38,6 +38,7 @@ export async function uploadAndSend(
       type: pending.type,
       attachmentIds: uploaded.map((a) => a.id),
       replyToId,
+      storyId: pending.storyId,
       tempId: pending.id,
     });
     if (!sent) throw new Error('no socket');

@@ -5,6 +5,7 @@ import {
   ChatMessage,
   chatService,
   LocalAttachment,
+  StoryReplyTarget,
 } from '@/shared/api/chat.service';
 import { ChatComposer } from '@/shared/components/chat/AttachmentPanel';
 import { ProposalAction } from '@/shared/components/chat/ProposalCard';
@@ -22,6 +23,9 @@ interface UseChatComposerOptions {
   // The message being replied to: attached to whatever is sent, then cleared
   replyTarget: ChatMessage | null;
   setReplyTarget: (message: ChatMessage | null) => void;
+  // The story being replied to: the same, attached once
+  storyTarget?: StoryReplyTarget | null;
+  setStoryTarget?: (target: StoryReplyTarget | null) => void;
   listRef: RefObject<FlashListRef<any> | null>;
 }
 
@@ -34,6 +38,8 @@ export function useChatComposer({
   conversationId,
   replyTarget,
   setReplyTarget,
+  storyTarget,
+  setStoryTarget,
   listRef,
 }: UseChatComposerOptions) {
   // عقار / الموقع / موعد معاينة / عرض سعر from the "+" panel; a counter
@@ -47,6 +53,7 @@ export function useChatComposer({
 
   const afterSend = () => {
     setReplyTarget(null);
+    setStoryTarget?.(null);
     requestAnimationFrame(() => listRef.current?.scrollToEnd({ animated: true }));
   };
 
@@ -61,6 +68,7 @@ export function useChatComposer({
     const sent = useChatStore.getState().sendMessage(conversationId, {
       ...payload,
       replyTo: replyTarget ?? undefined,
+      storyReply: storyTarget ?? undefined,
     });
     if (!sent) {
       showAlert('خطأ', 'تعذر الإرسال، تحقق من الاتصال وحاول مرة أخرى');
@@ -88,6 +96,7 @@ export function useChatComposer({
       files,
       caption,
       replyTo: replyTarget ?? undefined,
+      storyReply: storyTarget ?? undefined,
     });
     afterSend();
   };

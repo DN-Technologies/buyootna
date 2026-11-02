@@ -44,6 +44,47 @@ const setup = async (over: { conversationId?: string; replyTarget?: ChatMessage 
     }),
   );
 
+describe('useChatComposer replying to a story', () => {
+  const storyReply = {
+    storyId: 's1',
+    preview: {
+      mediaType: 'IMAGE',
+      thumbnailUrl: null,
+      isLive: true,
+      authorIdentityId: 'author',
+      unavailable: false,
+    },
+  } as const;
+  const setStoryTarget = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useChatStore.getState as jest.Mock).mockReturnValue(store);
+    store.sendMessage.mockReturnValue(true);
+  });
+
+  it('attaches the story to a voice note or file, then clears it', async () => {
+    const { result } = await renderHook(() =>
+      useChatComposer({
+        conversationId: 'c1',
+        replyTarget: null,
+        setReplyTarget,
+        storyTarget: storyReply,
+        setStoryTarget,
+        listRef: { current: { scrollToEnd } as never },
+      }),
+    );
+    await act(async () => {
+      result.current.sendVoice(photo);
+    });
+    expect(store.sendAttachments).toHaveBeenCalledWith(
+      'c1',
+      expect.objectContaining({ storyReply }),
+    );
+    expect(setStoryTarget).toHaveBeenCalledWith(null);
+  });
+});
+
 describe('useChatComposer', () => {
   beforeEach(() => {
     jest.clearAllMocks();

@@ -7,6 +7,7 @@ import { PresenceService } from '../../core/trust-signals/presence.service';
 import { PrismaService } from '../../core/prisma/prisma.service';
 import { ChatAttachmentsService } from './services/chat-attachments.service';
 import { ChatProposalsService } from './services/chat-proposals.service';
+import { StoriesMediaService } from '../stories/stories-media.service';
 
 describe('ChatParticipantDisplayService.resolve', () => {
   let displayService: ChatParticipantDisplayService;
@@ -160,6 +161,7 @@ describe('ChatService.findOrCreateConversation', () => {
           },
         },
         { provide: ChatProposalsService, useValue: {} },
+        { provide: StoriesMediaService, useValue: {} },
       ],
     }).compile();
 
@@ -393,6 +395,7 @@ describe('ChatService.getConversations', () => {
           },
         },
         { provide: ChatProposalsService, useValue: {} },
+        { provide: StoriesMediaService, useValue: {} },
       ],
     }).compile();
 

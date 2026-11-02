@@ -39,7 +39,20 @@ export function useStoryActions({
         author.author.identityId,
         current.property?.id,
       );
-      router.push(`/chat/${conversation.id}` as never);
+      router.push({
+        pathname: '/chat/[id]',
+        params: {
+          id: conversation.id,
+          // Quoted on the message; a video's playable file never goes to chat
+          storyId: current.id,
+          storyMediaType: current.mediaType,
+          storyThumbnail:
+            (current.mediaType === 'VIDEO'
+              ? current.posterUrl
+              : current.mediaUrl) ?? '',
+          storyAuthorId: author.author.identityId,
+        },
+      });
     } catch (error) {
       showAlert('تنبيه', serverMessage(error) ?? 'تعذر بدء المحادثة');
     } finally {

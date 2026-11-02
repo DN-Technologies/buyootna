@@ -47,6 +47,30 @@ describe('useChatStore sending', () => {
     expect(messages[0].sending).toBe(true);
   });
 
+  it('a story reply sends its id and shows the quote at once', () => {
+    mockSendMessage.mockReturnValue(true);
+    const preview = {
+      mediaType: 'IMAGE' as const,
+      thumbnailUrl: 'https://x/t.jpg',
+      isLive: true,
+      authorIdentityId: 'author',
+      unavailable: false,
+    };
+
+    useChatStore.getState().sendMessage('conv-1', {
+      content: 'كم السعر؟',
+      type: 'TEXT',
+      storyReply: { storyId: 's1', preview },
+    });
+
+    const [, payload] = mockSendMessage.mock.calls[0];
+    expect(payload.storyId).toBe('s1');
+    expect(payload.storyReply).toBeUndefined();
+    const [bubble] =
+      useChatStore.getState().messagesByConversation['conv-1'] ?? [];
+    expect(bubble.storyReply).toEqual(preview);
+  });
+
   it('inserts nothing and reports failure when there is no socket', () => {
     mockSendMessage.mockReturnValue(false);
 

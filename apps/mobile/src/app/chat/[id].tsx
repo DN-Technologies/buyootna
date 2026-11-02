@@ -1,6 +1,6 @@
 import { FlashListRef } from '@shopify/flash-list';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { KeyboardAvoidingView, Pressable, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -48,6 +48,11 @@ export default function ChatDetailsScreen() {
     recipientId?: string;
     propertyId?: string;
     requestId?: string;
+    // From a story's «إرسال رسالة»
+    storyId?: string;
+    storyMediaType?: string;
+    storyThumbnail?: string;
+    storyAuthorId?: string;
   }>();
   const routeId = Array.isArray(params.id) ? params.id[0] : params.id;
   const listRef = useRef<FlashListRef<any>>(null);
@@ -63,7 +68,29 @@ export default function ChatDetailsScreen() {
   });
   const conversationId = isNewChat ? (startedId ?? '') : routeId;
 
-  const chat = useChatConversation({ conversationId, listRef });
+  const chat = useChatConversation({
+    conversationId,
+    listRef,
+    initialStoryTarget: params.storyId
+      ? {
+          storyId: params.storyId,
+          preview: {
+            mediaType: params.storyMediaType === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+            thumbnailUrl: params.storyThumbnail || null,
+            isLive: true,
+            authorIdentityId: params.storyAuthorId ?? null,
+            unavailable: false,
+          },
+        }
+      : null,
+  });
+
+  // Replying to a story: straight to the keyboard
+  useEffect(() => {
+    if (!params.storyId) return;
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [params.storyId]);
 
   // "متصل" / "يكتب الان..." for the other person, and my own typing signal
   useChatLiveSignals();
@@ -83,6 +110,8 @@ export default function ChatDetailsScreen() {
     conversationId,
     replyTarget: chat.replyTarget,
     setReplyTarget: chat.setReplyTarget,
+    storyTarget: chat.storyTarget,
+    setStoryTarget: chat.setStoryTarget,
     listRef,
   });
   const media = useChatMedia(chat.displayMessages);
@@ -183,6 +212,13 @@ export default function ChatDetailsScreen() {
               reply={quoteOf(chat.replyTarget)}
               otherName={chat.otherUserName}
               onCancel={() => chat.setReplyTarget(null)}
+            />
+          )}
+          {chat.storyTarget && !chat.otherUnavailable && (
+            <ReplyComposeBar
+              story={chat.storyTarget.preview}
+              otherName={chat.otherUserName}
+              onCancel={() => chat.setStoryTarget(null)}
             />
           )}
           {/* Their account is deleted, suspended or blocked: say so where

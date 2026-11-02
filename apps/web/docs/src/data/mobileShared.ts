@@ -260,6 +260,53 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/company-card-story-rings",
     },
     {
+      id: "mobile-story-reply-quote",
+      title: {
+        en: "Stories: a reply in chat quotes the clip, like WhatsApp",
+        ar: "القصص: الرد في المحادثة يقتبس المقطع، مثل واتساب",
+      },
+      priority: "P1",
+      story: {
+        en: "«إرسال رسالة» under a story opens the chat with the keyboard up and the clip in the compose bar («الرد على قصة {الشركة}», its thumbnail and ✕). The next message sent, of any type, shows the clip as a quote: «قصة {الشركة}» for the sender and «قصتك» for the company. While the story is live the quote opens that company's stories. After 24 hours the thumbnail stays but no longer opens anything. A story its author deleted, one removed after its 30-day archive, or one hidden by a block shows «قصة لم تعد متاحة», with the message itself untouched. Chat never gets a video's playable file, only its poster.",
+        ar: "يفتح «إرسال رسالة» أسفل القصة المحادثة مع لوحة المفاتيح والمقطع في شريط الكتابة («الرد على قصة {الشركة}» مع صورته و✕). والرسالة التالية، من أي نوع، تعرض المقطع كاقتباس: «قصة {الشركة}» للمرسل و«قصتك» للشركة. وما دامت القصة حية يفتح الاقتباس قصص تلك الشركة. وبعد 24 ساعة تبقى الصورة لكنه لا يفتح شيئاً. والقصة التي حذفها صاحبها، أو أُزيلت بعد أرشيف 30 يوماً، أو أخفاها حظر، تظهر «قصة لم تعد متاحة» وتبقى الرسالة كما هي. ولا تصل المحادثة أبداً ملف الفيديو القابل للتشغيل، بل صورته فقط.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Tapping «إرسال رسالة» opens the chat with the compose bar showing the story; ✕ removes it and the message goes as a plain one.",
+          "Only the next message carries the quote; the one after it doesn't.",
+          "Swiping to reply to a message replaces the story in the compose bar: a message never quotes both.",
+          "The sender sees «قصة {الشركة}» and the company sees «قصتك», live as the message arrives.",
+          "Tapping the quote opens the company's stories while the story is live, and does nothing after 24 hours.",
+          "After 24 hours the thumbnail stays. After the author deletes the story, the quote says «قصة لم تعد متاحة» with no image.",
+          "An expired image link leaves the text line, with no blank space.",
+        ],
+        ar: [
+          "الضغط على «إرسال رسالة» يفتح المحادثة وشريط الكتابة يعرض القصة؛ و✕ يزيلها فتُرسل الرسالة عادية.",
+          "الرسالة التالية فقط تحمل الاقتباس، لا التي بعدها.",
+          "السحب للرد على رسالة يستبدل القصة في شريط الكتابة: لا تقتبس رسالة الاثنين معاً.",
+          "يرى المرسل «قصة {الشركة}» وترى الشركة «قصتك»، فور وصول الرسالة.",
+          "الضغط على الاقتباس يفتح قصص الشركة ما دامت القصة حية، ولا يفعل شيئاً بعد 24 ساعة.",
+          "بعد 24 ساعة تبقى الصورة. وبعد حذف صاحبها القصة يقول الاقتباس «قصة لم تعد متاحة» بلا صورة.",
+          "رابط صورة منتهٍ يترك سطر النص وحده، بلا فراغ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Post a photo story and a video story as a company. From another account, reply to each and send a text: both phones show the quote, the video with its poster.",
+          "Reply with a voice note instead of text: the quote is on the voice bubble.",
+          "Delete the story as the company, then reopen the chat on both phones: «قصة لم تعد متاحة».",
+          "Reply again and tap ✕ before sending: a plain message, no quote.",
+        ],
+        ar: [
+          "انشر قصة صورة وقصة فيديو كشركة. ومن حساب آخر رد على كل منهما برسالة نصية: يظهر الاقتباس على الهاتفين، والفيديو بصورته.",
+          "رد برسالة صوتية بدل النص: الاقتباس على فقاعة الصوت.",
+          "احذف القصة كشركة ثم أعد فتح المحادثة على الهاتفين: «قصة لم تعد متاحة».",
+          "رد مجدداً واضغط ✕ قبل الإرسال: رسالة عادية بلا اقتباس.",
+        ],
+      },
+      updatedIn: "feat/story-reply-quote",
+    },
+    {
       id: "mobile-stories-composer-figma",
       title: {
         en: "Stories: the new «اضف قصة جديدة», trimming videos on the phone, and «حالتي»",
