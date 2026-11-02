@@ -15,6 +15,8 @@ import { InvoicesEmptyIcon } from '@/assets/icons/more';
 import { invoicesService, InvoiceStatus } from '@/shared/api/invoices.service';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
+import { getIdentityPlansRoute } from '@/shared/navigation/getIdentityHomeRoute';
+import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';
 
@@ -27,6 +29,8 @@ const TABS = [
 
 export default function InvoicesScreen() {
   const router = useRouter();
+  // Companies open this screen too (الفواتير in their More)
+  const identityType = useAuthStore((state) => state.activeIdentity?.type);
   const [activeTab, setActiveTab] = useState<'ALL' | InvoiceStatus>('ALL');
   const [isExporting, setIsExporting] = useState(false);
 
@@ -317,7 +321,7 @@ export default function InvoicesScreen() {
           {/* Action Button */}
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.push('/plans')}
+            onPress={() => router.push(getIdentityPlansRoute(identityType))}
             className="h-[44px] w-full items-center justify-center rounded-full bg-[#15304D]"
           >
             <Text className="font-cairo-semibold text-[14px] leading-[22px] text-white">
