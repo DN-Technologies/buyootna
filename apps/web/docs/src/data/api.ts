@@ -9,6 +9,45 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-story-reply",
+      title: {
+        en: "Chat: a message can reply to a story (storyId, storyReply)",
+        ar: "المحادثات: يمكن للرسالة الرد على قصة (storyId وstoryReply)",
+      },
+      priority: "P1",
+      story: {
+        en: "send_message takes an optional storyId. It links only an ACTIVE story, not yet cleared of its files, by the other participant; anything else sends a plain message. Migration 20261102200000_message_story_reply adds Message.storyId (set to null when the story's row goes) and Message.storyMediaType (copied at send, so the message stays a story reply). Messages from GET .../messages and new_message carry storyReply: { mediaType, thumbnailUrl, isLive, authorIdentityId, unavailable }, or null. thumbnailUrl is a link of 15 minutes at most to a photo or a video's poster, never to a playable video.",
+        ar: "يقبل send_message الحقل الاختياري storyId. ويربط فقط قصة ACTIVE لم تُحذف ملفاتها وصاحبها الطرف الآخر؛ وغير ذلك يرسل رسالة عادية. ويضيف الترحيل 20261102200000_message_story_reply الحقل Message.storyId (يصبح null عند زوال صف القصة) وMessage.storyMediaType (يُنسخ عند الإرسال لتبقى الرسالة رداً على قصة). وتحمل الرسائل من GET .../messages وnew_message القيمة storyReply: { mediaType، thumbnailUrl، isLive، authorIdentityId، unavailable } أو null. وthumbnailUrl رابط لا يتجاوز 15 دقيقة إلى صورة أو غلاف فيديو، لا إلى فيديو قابل للتشغيل أبداً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A story of someone else, a deleted story or an unknown id: the message is still sent, with storyReply null.",
+          "Past its 24 hours: thumbnailUrl present, isLive false. Deleted, purged, or the two accounts blocked either way: thumbnailUrl null, unavailable true.",
+          "storyReply never contains the video's media link.",
+          "Ordinary messages: storyReply null.",
+        ],
+        ar: [
+          "قصة شخص آخر أو قصة محذوفة أو معرف مجهول: تُرسل الرسالة مع storyReply بقيمة null.",
+          "بعد 24 ساعة: thumbnailUrl موجود وisLive خاطئة. والمحذوفة أو المزالة أو عند الحظر من أي طرف: thumbnailUrl بقيمة null وunavailable صحيحة.",
+          "لا يحتوي storyReply أبداً رابط ملف الفيديو.",
+          "الرسائل العادية: storyReply بقيمة null.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Send with the storyId of the other participant's live story, then GET the messages: storyReply is filled.",
+          "Send with a story by a third company: the message arrives with storyReply null.",
+          "Delete the story and GET again: unavailable true. Block the account and GET again: the same, for a story still live.",
+        ],
+        ar: [
+          "أرسل بمعرف قصة حية للطرف الآخر ثم اطلب الرسائل: storyReply معبأ.",
+          "أرسل بقصة شركة ثالثة: تصل الرسالة مع storyReply بقيمة null.",
+          "احذف القصة واطلب مجدداً: unavailable صحيحة. واحظر الحساب واطلب مجدداً: النتيجة نفسها لقصة ما زالت حية.",
+        ],
+      },
+      updatedIn: "feat/story-reply-quote",
+    },
+    {
       id: "api-story-rings",
       title: {
         en: "Stories: GET /stories/rings, rings for a list of profiles",

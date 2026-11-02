@@ -18,7 +18,13 @@ import {
   blockedContactError,
   isBlockedEitherWay,
 } from '../../blocks/block.rules';
+import { StoriesMediaService } from '../../stories/stories-media.service';
 import { receiptOf } from './chat-receipts.service';
+import {
+  presentStoryReply,
+  STORY_REPLY_SELECT,
+  type StoryReplySource,
+} from './chat-story-reply';
 import {
   presentRequestContext,
   REQUEST_CONTEXT_SELECT,
@@ -65,6 +71,7 @@ type MessageWithReply = Prisma.MessageGetPayload<object> & {
   proposal: Prisma.ChatProposalGetPayload<{
     select: typeof PROPOSAL_SELECT;
   }> | null;
+  story: StoryReplySource | null;
 };
 
 /** The ad card in a PROPERTY message; `unavailable` once it's off the market. */
@@ -134,6 +141,7 @@ export class ChatMessagesService {
     private readonly displayService: ChatParticipantDisplayService,
     private readonly attachments: ChatAttachmentsService,
     private readonly proposals: ChatProposalsService,
+    private readonly storyMedia: StoriesMediaService,
   ) {}
 
   // Get messages for a single conversation
@@ -189,6 +197,7 @@ export class ChatMessagesService {
           orderBy: { createdAt: 'asc' },
         },
         proposal: { select: PROPOSAL_SELECT },
+        story: { select: STORY_REPLY_SELECT },
       },
     });
 
@@ -235,6 +244,18 @@ export class ChatMessagesService {
       return p ? propertyCard(p) : undefined;
     };
 
+    // A block hides the other's stories, here too. Asked only when this page
+    // quotes one
+    const now = new Date();
+    const myUserId = conversation?.participants.find(
+      (p) => p.identityId === identityId,
+    )?.identity.userId;
+    const storiesHidden =
+      messages.some((m) => m.storyMediaType) &&
+      !!myUserId &&
+      !!ident &&
+      (await isBlockedEitherWay(this.prisma, myUserId, ident.userId));
+
     return {
       data: await Promise.all(
         messages.reverse().map(async (msg) => ({
@@ -247,6 +268,9 @@ export class ChatMessagesService {
           location: locationOf(msg),
           proposal: msg.proposal ? presentProposal(msg.proposal) : undefined,
           replyTo: replyPreview(msg.replyToId, msg.replyTo, identityId),
+          storyReply: await presentStoryReply(this.storyMedia, msg, now, {
+            hidden: storiesHidden,
+          }),
           // Private files: fresh signed links for this participant
           attachments: msg.attachments.length
             ? await this.attachments.present(msg.attachments)
@@ -314,6 +338,7 @@ export class ChatMessagesService {
     const others = await this.prisma.conversationParticipant.findMany({
       where: { conversationId, identityId: { not: sender.identityId } },
       select: {
+        identityId: true,
         identity: {
           select: {
             userId: true,
@@ -394,6 +419,21 @@ export class ChatMessagesService {
         })
       : null;
 
+    // A story reply only to a story of the person being written to; anything
+    // else is sent as a plain message. Its files may already be gone
+    const story =
+      typeof dto.storyId === 'string'
+        ? await this.prisma.story.findFirst({
+            where: {
+              id: dto.storyId,
+              identityId: { in: others.map((o) => o.identityId) },
+              status: 'ACTIVE',
+              mediaDeletedAt: null,
+            },
+            select: STORY_REPLY_SELECT,
+          })
+        : null;
+
     return await this.prisma.$transaction(async (tx) => {
       const message = await tx.message.create({
         data: {
@@ -406,6 +446,8 @@ export class ChatMessagesService {
           imageUrl: dto.imageUrl || null,
           propertyId: dto.propertyId || null,
           replyToId: replyTo?.id ?? null,
+          storyId: story?.id ?? null,
+          storyMediaType: story?.mediaType ?? null,
           ...(type === 'LOCATION'
             ? {
                 latitude: dto.latitude,
@@ -486,6 +528,11 @@ export class ChatMessagesService {
         // Broadcast to both sides: each app works out "you" from
         // replyTo.senderIdentityId
         replyTo: replyPreview(replyTo?.id ?? null, replyTo),
+        storyReply: await presentStoryReply(
+          this.storyMedia,
+          { storyMediaType: message.storyMediaType, story },
+          new Date(),
+        ),
         attachments: claimed.length
           ? await this.attachments.present(claimed)
           : undefined,

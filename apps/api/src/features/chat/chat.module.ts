@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PushModule } from '../../core/push/push.module';
+import { StoriesModule } from '../stories/stories.module';
 import { ChatPushService } from './services/chat-push.service';
 import { ChatAttachmentsService } from './services/chat-attachments.service';
 import { ChatController } from './chat.controller';
@@ -18,6 +19,7 @@ import { ChatReceiptsService } from './services/chat-receipts.service';
       secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
     }),
     PushModule,
+    StoriesModule,
   ],
   controllers: [ChatController],
   providers: [

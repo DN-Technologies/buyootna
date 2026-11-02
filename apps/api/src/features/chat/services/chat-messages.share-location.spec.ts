@@ -5,6 +5,7 @@ import { ChatAttachmentsService } from './chat-attachments.service';
 import { ChatMessagesService, propertyCard } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { ChatProposalsService } from './chat-proposals.service';
+import type { StoriesMediaService } from '../../stories/stories-media.service';
 
 const sender = { userId: 'u-me', identityId: 'me' };
 
@@ -61,6 +62,7 @@ describe('ChatMessagesService — location, shared ads, proposals', () => {
       {} as ChatParticipantDisplayService,
       {} as ChatAttachmentsService,
       proposals as unknown as ChatProposalsService,
+      {} as StoriesMediaService,
     );
   });
 

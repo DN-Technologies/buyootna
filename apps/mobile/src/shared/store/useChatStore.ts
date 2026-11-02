@@ -134,10 +134,11 @@ export const useChatStore = create<ChatState>((set, get) => {
       // 1. Emit via socket. No socket object at all means the emit would be
       // silently dropped -- report the failure instead of showing an
       // optimistic bubble that can never be confirmed.
-      const { replyTo, property: _card, ...fields } = payload;
+      const { replyTo, property: _card, storyReply, ...fields } = payload;
       const emitted = socketService.sendMessage(conversationId, {
         ...fields,
         replyToId: replyTo?.id,
+        storyId: storyReply?.storyId,
         tempId,
       });
       if (!emitted) return false;
@@ -191,12 +192,16 @@ export const useChatStore = create<ChatState>((set, get) => {
       }
     },
 
-    sendAttachments: async (conversationId, { files, caption, replyTo }) => {
+    sendAttachments: async (
+      conversationId,
+      { files, caption, replyTo, storyReply },
+    ) => {
       const pending = pendingAttachmentsMessage(
         newTempId(),
         files,
         caption,
         replyTo,
+        storyReply,
       );
       setMessages(conversationId, (messages) => [...messages, pending]);
       await uploadAndSend(patchMessage, conversationId, pending, replyTo?.id);

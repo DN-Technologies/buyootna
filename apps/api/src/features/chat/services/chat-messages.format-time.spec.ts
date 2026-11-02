@@ -3,6 +3,7 @@ import { ChatMessagesService } from './chat-messages.service';
 import { ChatParticipantDisplayService } from './chat-participant-display.service';
 import { ChatAttachmentsService } from './chat-attachments.service';
 import { ChatProposalsService } from './chat-proposals.service';
+import type { StoriesMediaService } from '../../stories/stories-media.service';
 
 // The preformatted `timestamp` older app builds show as-is
 describe('ChatMessagesService.formatTime', () => {
@@ -11,6 +12,7 @@ describe('ChatMessagesService.formatTime', () => {
     {} as ChatParticipantDisplayService,
     {} as ChatAttachmentsService,
     {} as ChatProposalsService,
+    {} as StoriesMediaService,
   );
 
   it('uses western digits and Kuwait time, whatever the server zone', () => {

@@ -9,6 +9,7 @@ import {
   ConversationSummary,
   LocalAttachment,
   ReplyPreview,
+  StoryReplyTarget,
 } from '@/shared/api/chat.service';
 import { messageTypeFor } from '@/shared/utils/chatAttachments';
 
@@ -37,7 +38,7 @@ export function optimisticMessage(
   tempId: string,
   payload: SendMessagePayload,
 ): ChatMessage {
-  const { replyTo, property } = payload;
+  const { replyTo, property, storyReply } = payload;
   return {
     id: tempId,
     type: payload.type || 'TEXT',
@@ -66,6 +67,7 @@ export function optimisticMessage(
         }
       : undefined,
     replyTo: replyTo ? quoteOf(replyTo) : null,
+    storyReply: storyReply?.preview ?? null,
     isMine: true,
     // Shown via formatMessageTime(createdAt); kept for the type
     timestamp: '',
@@ -80,6 +82,7 @@ export function pendingAttachmentsMessage(
   files: LocalAttachment[],
   caption?: string,
   replyTo?: ChatMessage,
+  storyReply?: StoryReplyTarget,
 ): ChatMessage {
   return {
     id: tempId,
@@ -88,6 +91,8 @@ export function pendingAttachmentsMessage(
     localAttachments: files,
     uploadProgress: 0,
     replyTo: replyTo ? quoteOf(replyTo) : null,
+    storyReply: storyReply?.preview ?? null,
+    storyId: storyReply?.storyId,
     isMine: true,
     timestamp: '',
     createdAt: new Date().toISOString(),

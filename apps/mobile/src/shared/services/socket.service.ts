@@ -142,6 +142,7 @@ class SocketService {
       propertyId?: string;
       tempId?: string;
       replyToId?: string;
+      storyId?: string;
       attachmentIds?: string[];
       latitude?: number;
       longitude?: number;

@@ -320,7 +320,16 @@ describe('StoryViewer', () => {
       fireEvent.press(screen.getByTestId('story-reply'));
     });
     await waitFor(() =>
-      expect(mockRouter.push).toHaveBeenCalledWith('/chat/c1'),
+      expect(mockRouter.push).toHaveBeenCalledWith({
+        pathname: '/chat/[id]',
+        params: expect.objectContaining({
+          id: 'c1',
+          storyMediaType: 'IMAGE',
+          storyThumbnail: expect.stringContaining('https://s3.test/'),
+          storyAuthorId: 'a2',
+          storyId: expect.any(String),
+        }),
+      }),
     );
     expect(chatService.createConversation).toHaveBeenCalledWith('a2', 'p1');
   });

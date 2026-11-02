@@ -5,6 +5,7 @@ import {
   ConversationSummary,
   LocalAttachment,
   ProposalInput,
+  StoryReplyTarget,
 } from '@/shared/api/chat.service';
 
 export interface ConversationPagination {
@@ -28,6 +29,8 @@ export interface SendMessagePayload {
   proposal?: ProposalInput;
   // Replying to this message (shown quoted on the new bubble)
   replyTo?: ChatMessage;
+  // Replying to this story (shown quoted on the new bubble)
+  storyReply?: StoryReplyTarget;
 }
 
 export interface ChatState {
@@ -92,6 +95,7 @@ export interface ChatState {
       files: LocalAttachment[];
       caption?: string;
       replyTo?: ChatMessage;
+      storyReply?: StoryReplyTarget;
     },
   ) => Promise<void>;
   /** Tries a failed attachment message again. */

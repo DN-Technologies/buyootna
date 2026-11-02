@@ -11,6 +11,7 @@ import ProposalCard, {
   ProposalAction,
 } from '@/shared/components/chat/ProposalCard';
 import ReplyQuote from '@/shared/components/chat/ReplyQuote';
+import StoryReplyQuote from '@/shared/components/chat/StoryReplyQuote';
 import { messageStatus } from '@/shared/utils/chatReceipts';
 
 import AttachmentBubble from './AttachmentBubble';
@@ -48,11 +49,18 @@ export default function ChatMessageBubble({
   onCounterProposal,
 }: ChatMessageBubbleProps) {
   const status = messageStatus(item, otherReceipt);
-  const quote = item.replyTo ? (
+  // My bubbles are navy
+  const quote = item.storyReply ? (
+    <StoryReplyQuote
+      story={item.storyReply}
+      isMine={item.isMine}
+      otherName={otherUserName}
+      onDark={item.isMine && item.type === 'TEXT'}
+    />
+  ) : item.replyTo ? (
     <ReplyQuote
       reply={item.replyTo}
       otherName={otherUserName}
-      // My bubbles are navy
       onDark={item.isMine && item.type === 'TEXT'}
       onPress={() => onJumpTo(item.replyTo!.id)}
     />

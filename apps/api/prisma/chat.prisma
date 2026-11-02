@@ -80,8 +80,15 @@ model Message {
   // APPOINTMENT / OFFER: the proposal and its answer
   proposal ChatProposal?
 
+  // Sent as a reply to a story. The story's row goes in the end; the type,
+  // copied at send, keeps the message marked as a story reply after that
+  storyId        String?
+  story          Story?          @relation(fields: [storyId], references: [id], onDelete: SetNull)
+  storyMediaType StoryMediaType?
+
   @@index([conversationId, createdAt])
   @@index([senderIdentityId])
+  @@index([storyId])
 }
 
 // "حذف لدي": a message hidden for one persona; the other side still sees it

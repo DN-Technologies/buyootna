@@ -158,6 +158,24 @@ export interface ReplyPreview {
   isMine?: boolean;
 }
 
+/** The story a message replies to, as the server shows it. */
+export interface StoryReplyPreview {
+  mediaType: 'IMAGE' | 'VIDEO';
+  // A photo, or a video's poster. Short-lived, so it may fail to load
+  thumbnailUrl: string | null;
+  // Within its 24 hours: tapping the quote can open it
+  isLive: boolean;
+  authorIdentityId: string | null;
+  // Deleted, purged or hidden by a block: the quote stays, without the clip
+  unavailable: boolean;
+}
+
+/** The story a message being written will reply to. */
+export interface StoryReplyTarget {
+  storyId: string;
+  preview: StoryReplyPreview;
+}
+
 export interface ChatMessage {
   id: string;
   // The id of the sending bubble this message replaced: the list keeps it as
@@ -189,6 +207,10 @@ export interface ChatMessage {
   senderId?: string;
   // Set when this message replies to another one
   replyTo?: ReplyPreview | null;
+  // Set when this message replies to a story
+  storyReply?: StoryReplyPreview | null;
+  // While sending: the story's id, for a retry
+  storyId?: string;
   // Photos / documents (private, signed links)
   attachments?: ChatAttachment[];
   // While sending: the picked files shown before upload finishes
