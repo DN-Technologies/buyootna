@@ -1,13 +1,14 @@
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import {
   DimensionValue,
-  Image,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
+import CompanyLogoAvatar from '@/features/stories/components/CompanyLogoAvatar';
+import type { ProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 
 export interface CompanyCardProps {
   id: string;
@@ -23,6 +24,8 @@ export interface CompanyCardProps {
   onPress?: () => void;
   onFavorite?: () => void;
   onQuoteRequest?: () => void;
+  // Its live stories: a ring around the logo that opens them
+  storyRing?: ProviderStoryRing | null;
 }
 
 export default function CompanyCard({
@@ -38,6 +41,7 @@ export default function CompanyCard({
   onPress,
   onFavorite,
   onQuoteRequest,
+  storyRing,
 }: CompanyCardProps) {
   return (
     <TouchableOpacity
@@ -58,13 +62,7 @@ export default function CompanyCard({
         {/* Top Right: Logo & Info */}
         <View className="mr-3 flex-1 flex-row">
           {/* Logo Box */}
-          <View className="h-16 w-16 overflow-hidden rounded-sm">
-            <Image
-              source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="cover"
-            />
-          </View>
+          <CompanyLogoAvatar name={name} logoUrl={logoUrl} ring={storyRing} />
           <View className="ml-3 mr-1 flex-1">
             <Text
               className="font-cairo-semibold text-base leading-[28px] text-[#111111]"

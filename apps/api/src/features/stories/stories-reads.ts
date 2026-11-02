@@ -5,6 +5,7 @@ import type {
   AuthorStoryDto,
   MyStoriesDto,
   StoryAuthorStoriesDto,
+  StoryRingsDto,
 } from './dto/story-response.dto';
 import type { StoriesMediaService } from './stories-media.service';
 import {
@@ -51,6 +52,51 @@ export class StoriesReads {
       })),
     );
     return { stories };
+  }
+
+  /**
+   * The rings to draw around these profiles' logos in a list. Two queries
+   * however many profiles, and no signed media links: nothing here is played.
+   * Hidden or blocked authors simply have no ring, as they have no stories.
+   */
+  async findRings(
+    viewer: { identityId: string; userId: string },
+    authorIds: string[],
+    now: Date,
+  ): Promise<StoryRingsDto> {
+    const rows = await this.prisma.story.findMany({
+      where: {
+        identityId: { in: authorIds },
+        ...liveStoryWhere(now),
+        identity: visibleAuthorFor(viewer.userId),
+      },
+      select: { id: true, identityId: true },
+    });
+    if (rows.length === 0) return { rings: [] };
+
+    const views = await this.prisma.storyView.findMany({
+      where: {
+        viewerIdentityId: viewer.identityId,
+        storyId: { in: rows.map((r) => r.id) },
+      },
+      select: { storyId: true },
+    });
+    const seen = new Set(views.map((v) => v.storyId));
+
+    const byAuthor = new Map<string, { seen: number; unseen: number }>();
+    for (const row of rows) {
+      const counts = byAuthor.get(row.identityId) ?? { seen: 0, unseen: 0 };
+      if (seen.has(row.id)) counts.seen += 1;
+      else counts.unseen += 1;
+      byAuthor.set(row.identityId, counts);
+    }
+    return {
+      rings: [...byAuthor].map(([identityId, counts]) => ({
+        identityId,
+        hasUnseen: counts.unseen > 0,
+        partial: counts.unseen > 0 && counts.seen > 0,
+      })),
+    };
   }
 
   /**

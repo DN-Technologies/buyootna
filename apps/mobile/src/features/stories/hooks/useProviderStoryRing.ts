@@ -7,8 +7,16 @@ import { useAuthorStories } from './useStoriesQueries';
 /** What a provider's profile shows around its logo while it has stories. */
 export interface ProviderStoryRing {
   hasUnseen: boolean;
+  // Some watched, new ones left: a dashed ring (lists only)
+  partial?: boolean;
   onPress: () => void;
 }
+
+/** A provider's live stories, in the viewer. */
+export const providerStoriesHref = (identityId: string) => ({
+  pathname: '/stories/[authorId]' as const,
+  params: { authorId: identityId, source: 'author' },
+});
 
 /**
  * A company's or office's live stories for its profile header: a ring
@@ -33,10 +41,6 @@ export function useProviderStoryRing(
   if (!identityId || stories.length === 0) return null;
   return {
     hasUnseen: !!query.data?.hasUnseen,
-    onPress: () =>
-      router.push({
-        pathname: '/stories/[authorId]',
-        params: { authorId: identityId, source: 'author' },
-      }),
+    onPress: () => router.push(providerStoriesHref(identityId)),
   };
 }

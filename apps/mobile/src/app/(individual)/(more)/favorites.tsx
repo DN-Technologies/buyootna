@@ -26,6 +26,7 @@ import {
   sortByRating,
   sortFavoriteProperties,
 } from '@/features/individual/utils/favoritesSort';
+import { useStoryRings } from '@/features/stories/hooks/useStoryRings';
 import FavoriteCompanySkeleton from '@/shared/components/skeletons/FavoriteCompanySkeleton';
 import FavoritePropertySkeleton from '@/shared/components/skeletons/FavoritePropertySkeleton';
 import OfficeListSkeleton from '@/shared/components/skeletons/OfficeListSkeleton';
@@ -51,6 +52,9 @@ export default function FavoritesScreen() {
   const router = useRouter();
   const favorites = useFavoriteProperties();
   const favoriteCompanies = useFavoriteProviders('COMPANY');
+  const storyRingFor = useStoryRings(
+    useMemo(() => favoriteCompanies.items.map((c) => c.id), [favoriteCompanies.items]),
+  );
   const favoriteOffices = useFavoriteProviders('OFFICE');
   const undo = useFavoritesUndo();
 
@@ -184,6 +188,7 @@ export default function FavoritesScreen() {
                 lastActivity={formatTimeAgo(item.lastActivityAt)}
                 logoUrl={item.logoUrl}
                 isVerified={item.isVerified}
+                storyRing={storyRingFor(item.id)}
                 onPress={() => router.push(`/company/${item.id}`)}
                 onFavoriteToggle={async () =>
                   undo.offerUndo(await favoriteCompanies.remove(item))

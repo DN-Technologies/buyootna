@@ -12,6 +12,13 @@ export interface StoryAuthor {
   subtitle?: string | null;
 }
 
+/** A profile's ring in a list: GET /stories/rings */
+export interface StoryRingSummary {
+  identityId: string;
+  hasUnseen: boolean;
+  partial: boolean;
+}
+
 export interface StoryPropertyLink {
   id: string;
   type: string;

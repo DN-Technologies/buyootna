@@ -23,7 +23,7 @@ export default function StoryTray({
 }) {
   const router = useRouter();
   const { authors, refetch, loadMore } = useStoriesFeed();
-  const { isBusiness, activeIdentity, displayName, avatarUrl, isVerified } =
+  const { isBusiness, activeIdentity, displayName, avatarUrl } =
     useIdentity();
   const mine = useMyStories(isBusiness);
   const refetchMine = mine.refetch;
@@ -53,13 +53,7 @@ export default function StoryTray({
         <View>
           <StoryRing
             testID="story-ring-mine"
-            author={{
-              identityId: activeIdentity.id,
-              type: ownType,
-              name: displayName,
-              logoUrl: avatarUrl ?? null,
-              isVerified: !!isVerified,
-            }}
+            author={{ name: displayName, logoUrl: avatarUrl ?? null }}
             hasUnseen={hasMine}
             onPress={hasMine ? openMine : openComposer}
           />

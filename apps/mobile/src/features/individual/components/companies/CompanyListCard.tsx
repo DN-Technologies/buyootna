@@ -1,8 +1,9 @@
 import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { HeartIcon } from '@/assets/icons/home/cards';
+import CompanyLogoAvatar from '@/features/stories/components/CompanyLogoAvatar';
+import type { ProviderStoryRing } from '@/features/stories/hooks/useProviderStoryRing';
 import { formatTimeAgo } from '@/shared/utils/helpers/time';
 
 export interface CompanyListCardProps {
@@ -25,6 +26,8 @@ export interface CompanyListCardProps {
   onQuotePress?: () => void;
   // The viewer's own company: no quote request or chat with yourself
   isOwn?: boolean;
+  // Its live stories: a ring around the logo that opens them
+  storyRing?: ProviderStoryRing | null;
 }
 
 export default function CompanyListCard({
@@ -43,6 +46,7 @@ export default function CompanyListCard({
   onChatPress,
   onQuotePress,
   isOwn = false,
+  storyRing,
 }: CompanyListCardProps) {
   return (
     <TouchableOpacity
@@ -59,13 +63,7 @@ export default function CompanyListCard({
     >
       {/* --- 1. Header: Logo, Name & Heart --- */}
       <View className="mb-3 flex-row items-start">
-        <View className="h-16 w-16 overflow-hidden rounded-lg bg-[#111111]">
-          <Image
-            source={typeof logoUrl === 'string' ? { uri: logoUrl } : logoUrl}
-            style={{ width: '100%', height: '100%' }}
-            contentFit="cover"
-          />
-        </View>
+        <CompanyLogoAvatar name={name} logoUrl={logoUrl} ring={storyRing} />
 
         <View className="mx-3 flex-1">
           <View className="flex-row items-center gap-1">

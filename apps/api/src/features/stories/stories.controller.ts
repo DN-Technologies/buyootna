@@ -41,9 +41,11 @@ import {
   StoryFeedDto,
   StoryHighlightDto,
   StoryHighlightsDto,
+  StoryRingsDto,
   StoryUploadSlotDto,
   StoryViewersDto,
 } from './dto/story-response.dto';
+import { StoryRingsQueryDto } from './dto/story-rings-query.dto';
 import { StoriesFeedService } from './stories-feed.service';
 import { StoriesService } from './stories.service';
 
@@ -172,6 +174,23 @@ export class StoriesController {
   @ApiCommonErrors()
   mine(@CurrentUser() reqUser: RequestUser) {
     return this.stories.findMine(reqUser.identityId);
+  }
+
+  @Get('rings')
+  @ApiOperation({
+    summary:
+      'Which of these companies and offices have live stories, and whether the current profile has watched them',
+  })
+  @ApiResponse({ status: 200, type: StoryRingsDto })
+  @ApiCommonErrors()
+  rings(
+    @CurrentUser() reqUser: RequestUser,
+    @Query() query: StoryRingsQueryDto,
+  ) {
+    return this.stories.findRings(
+      { identityId: reqUser.identityId, userId: reqUser.userId },
+      query.ids,
+    );
   }
 
   @Get('authors/:identityId')

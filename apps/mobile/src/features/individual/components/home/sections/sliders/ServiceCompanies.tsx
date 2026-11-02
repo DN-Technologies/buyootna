@@ -13,6 +13,7 @@ import {
 import { COMPANIES_DATA } from '@/assets/mock/companiesData';
 import CompanyCard from '@/features/individual/components/CompanyCard';
 import { feedService } from '@/features/individual/services/feed.service';
+import { useStoryRings } from '@/features/stories/hooks/useStoryRings';
 import { useProviderFavorites } from '@/shared/hooks/providers/useProviderFavorites';
 import { CompanyDto } from '@/types/feed';
 
@@ -134,6 +135,14 @@ export default function ServiceCompanies({
     });
   }, [infiniteData]);
 
+  // The mock fallback's ids aren't real profiles: nothing to look up
+  const storyRingFor = useStoryRings(
+    useMemo(
+      () => (isMockFallback ? [] : data.map((c) => c.id)),
+      [data, isMockFallback],
+    ),
+  );
+
   // Load more local or API companies
   const isFetchingRef = useRef(false);
   const fetchMoreData = () => {
@@ -169,6 +178,7 @@ export default function ServiceCompanies({
                 isFavorite={providerFavorites.isFavorited(item.id)}
                 onFavorite={() => providerFavorites.toggleFavorite(item.id)}
                 cardWidth={HORIZONTAL_CARD_WIDTH}
+                storyRing={storyRingFor(item.id)}
                 onPress={() => router.push(`/company/${item.id}`)}
               />
             </View>

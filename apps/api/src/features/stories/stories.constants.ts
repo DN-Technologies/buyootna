@@ -80,6 +80,9 @@ export const STORY_VIEWERS_MAX_LIMIT = 50;
 
 export const STORY_FEED_DEFAULT_LIMIT = 20;
 export const STORY_FEED_MAX_LIMIT = 30;
+
+/** How many profiles one ring lookup may ask about. */
+export const STORY_RINGS_MAX_IDS = 50;
 // A feed cursor older than this is refused (the app starts again)
 export const STORY_CURSOR_MAX_AGE_MS = 30 * MINUTE_MS;
 

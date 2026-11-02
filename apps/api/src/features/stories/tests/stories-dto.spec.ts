@@ -6,12 +6,33 @@ import { PublishStoryDto } from '../dto/publish-story.dto';
 import { RecordStoryViewsDto } from '../dto/record-story-views.dto';
 import { StoryViewersQueryDto } from '../dto/story-viewers-query.dto';
 import { StoryFeedQueryDto } from '../dto/story-feed-query.dto';
+import { StoryRingsQueryDto } from '../dto/story-rings-query.dto';
 import { toViewerStoryDto, type StoryRow } from '../stories.mapper';
 
 const errorsOf = async <T extends object>(cls: new () => T, plain: object) =>
   (await validate(plainToInstance(cls, plain))).map((e) => e.property);
 
 describe('story DTOs', () => {
+  describe('StoryRingsQueryDto', () => {
+    const id = '11111111-1111-4111-8111-111111111111';
+
+    it('takes comma-separated profile ids', async () => {
+      const dto = plainToInstance(StoryRingsQueryDto, { ids: `${id},${id}` });
+      expect(await validate(dto)).toEqual([]);
+      expect(dto.ids).toEqual([id, id]);
+    });
+
+    it.each([
+      ['missing', {}],
+      ['empty', { ids: '' }],
+      ['not an id', { ids: 'abc' }],
+      ['one bad id among good', { ids: `${id},abc` }],
+      ['more than 50', { ids: Array(51).fill(id).join(',') }],
+    ])('refuses %s', async (_label, plain) => {
+      expect(await errorsOf(StoryRingsQueryDto, plain)).toEqual(['ids']);
+    });
+  });
+
   describe('CreateStoryUploadDto', () => {
     const ok = {
       mediaType: 'IMAGE',

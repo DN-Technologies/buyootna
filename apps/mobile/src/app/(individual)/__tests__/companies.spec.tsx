@@ -8,6 +8,10 @@ import CompaniesScreen from '../companies';
 
 // The shared mock leaves out sheet footers; the filter sheet's buttons live
 // in one, so this one renders it under the sheet's content
+jest.mock('@/features/stories/hooks/useStoryRings', () => ({
+  useStoryRings: () => () => null,
+}));
+
 jest.mock('@gorhom/bottom-sheet', () => {
   const React = require('react');
   const { View } = require('react-native');

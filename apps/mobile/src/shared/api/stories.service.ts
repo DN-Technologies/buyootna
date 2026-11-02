@@ -13,6 +13,7 @@ import type {
   StoryHighlight,
   StoryHighlightInput,
   StoryHighlights,
+  StoryRingSummary,
   StoryUploadRequest,
   StoryUploadSlot,
   StoryUploadTarget,
@@ -39,6 +40,15 @@ export const storiesService = {
       `/stories/authors/${identityId}`,
     );
     return response.data;
+  },
+
+  /** Which of these profiles have live stories (50 ids at most). */
+  getRings: async (ids: string[]): Promise<StoryRingSummary[]> => {
+    const response = await apiClient.get<{ rings: StoryRingSummary[] }>(
+      '/stories/rings',
+      { params: { ids: ids.join(',') } },
+    );
+    return response.data.rings;
   },
 
   /** Records that the current profile watched these stories (repeat-safe). */
