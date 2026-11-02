@@ -262,8 +262,9 @@ export default function AddAlertScreen() {
         onViewAlerts={() => {
           setShowSuccess(false);
           // Always land on the alerts list, whichever screen opened the form
-          // (back would return to e.g. search results)
-          if (router.canDismiss()) router.dismissAll();
+          // (back would return to e.g. search results). No dismissAll first:
+          // it pops the screen this replace is aimed at, and the replace is
+          // lost, leaving the user on their home
           router.replace({
             pathname: '/(individual)/activity',
             params: { tab: 'alerts' },
