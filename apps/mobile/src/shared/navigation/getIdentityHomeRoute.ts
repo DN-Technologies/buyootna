@@ -20,6 +20,16 @@ export function getIdentityHomeRoute(type: IdentityType | null | undefined): Hre
 }
 
 /**
+ * Where this identity browses packages. A company's are subscriptions with
+ * their own screen; /plans sells individuals' and offices' ad packages.
+ */
+export function getIdentityPlansRoute(
+  type: IdentityType | null | undefined,
+): Href {
+  return type === 'COMPANY' ? ('/company-plans' as Href) : '/plans';
+}
+
+/**
  * Navigate to the authenticated home for `type` and drop every screen the
  * (auth) flow pushed (selection, login/signup, OTP) from history, so a
  * post-auth edge swipe-back can't return the user to those screens. Auth

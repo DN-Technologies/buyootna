@@ -750,6 +750,39 @@ export const mobileCompany: DocSection = {
       updatedIn: "feat/docs-platform",
     },
     {
+      id: "mobile-company-invoices-browse-plans",
+      title: {
+        en: "Company الفواتير: «استعرض الباقات» opens the company packages",
+        ar: "الفواتير للشركة: «استعرض الباقات» يفتح باقات الشركات",
+      },
+      priority: "P1",
+      story: {
+        en: "On a company's More → الفواتير with no invoices, «استعرض الباقات» opens the company packages (company-plans). The screen is shared, and the button always went to the individual packages (/plans). Individuals and offices still go to /plans.",
+        ar: "في المزيد ← الفواتير لحساب شركة بلا فواتير، يفتح «استعرض الباقات» باقات الشركات (company-plans). فالشاشة مشتركة وكان الزر يذهب دائماً إلى باقات الأفراد (/plans). ويبقى الأفراد والمكاتب على /plans.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "As a company with no invoices, «استعرض الباقات» opens the same screen as More → الباقات.",
+          "As an individual or an office, it still opens /plans.",
+        ],
+        ar: [
+          "كشركة بلا فواتير، يفتح «استعرض الباقات» الشاشة نفسها التي يفتحها المزيد ← الباقات.",
+          "كفرد أو مكتب، يبقى يفتح /plans.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Log in as a company with no invoices: More → الفواتير → استعرض الباقات shows the company packages.",
+          "Switch to the account's individual profile and repeat: the individual packages show.",
+        ],
+        ar: [
+          "سجل الدخول كشركة بلا فواتير: المزيد ← الفواتير ← استعرض الباقات يعرض باقات الشركات.",
+          "بدّل إلى الملف الفردي للحساب وكرر: تظهر باقات الأفراد.",
+        ],
+      },
+      updatedIn: "fix/company-invoices-plans",
+    },
+    {
       id: "mobile-company-service-invoices",
       title: {
         en: "Company فواتير الخدمات: issue to a client from an accepted request, track and mark paid",
