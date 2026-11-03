@@ -29,6 +29,10 @@ import type { ListingStatus } from '@prisma/client';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { RenewPropertyDto } from './dto/renew-property.dto';
 import { GetPropertiesFilterDto } from './dto/get-properties-filter.dto';
+import {
+  BulkPropertiesDto,
+  BulkPropertiesResponseDto,
+} from './dto/bulk-properties.dto';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
@@ -232,6 +236,37 @@ export class PropertiesController {
     @Body() dto?: { reason?: string },
   ) {
     return this.propertiesService.remove(reqUser.identityId, id, dto?.reason);
+  }
+
+  @Post('me/bulk')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      "Hide, show or delete many of the current identity's ads at once (100 at most); others' ids are ignored",
+  })
+  @ApiResponse({ status: 201, type: BulkPropertiesResponseDto })
+  @ApiCommonErrors()
+  async bulk(
+    @CurrentUser() reqUser: RequestUser,
+    @Body() dto: BulkPropertiesDto,
+  ) {
+    return this.propertiesService.bulk(reqUser.identityId, dto.action, dto.ids);
+  }
+
+  @Post(':id/close')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiAuth()
+  @ApiOperation({
+    summary:
+      'Mark one of your live ads as sold / rented / swapped (CLOSED): it moves to the archive',
+  })
+  @ApiParam({ name: 'id', description: 'Property ID' })
+  @ApiResponse({ status: 201, description: 'Moved to the archive' })
+  @ApiResponse({ status: 400, description: 'The ad is not live' })
+  @ApiCommonErrors()
+  async close(@CurrentUser() reqUser: RequestUser, @Param('id') id: string) {
+    return this.propertiesService.close(reqUser.identityId, id);
   }
 
   @Post(':id/archive')

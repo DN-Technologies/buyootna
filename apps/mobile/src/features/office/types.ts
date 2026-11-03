@@ -5,11 +5,15 @@ export interface OfficeDashboardStats {
   activeServices: number;
   newMessagesToday: number;
   totalViews: number;
+  // «العقارات المباعة»: ads marked as sold / rented / swapped (newer APIs)
+  closedListings?: number;
 }
 
 export interface OfficeDashboardBilling {
   hasActivePackage: boolean;
   adsRemaining: number;
+  // What the running packages hold in all: «4 من اصل 20» (newer APIs)
+  adsTotal?: number;
   freeAdsRemaining: number;
 }
 

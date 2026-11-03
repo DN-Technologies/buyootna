@@ -68,6 +68,12 @@ export class PropertiesActivityService {
       endDate: p.endDate,
       isPremium: p.isFeatured,
       isHidden: p.isHidden,
+      // The office's عقارات tab groups by governorate, filters by area and
+      // deal, and shows how long the featuring lasts
+      governorateId: p.governorateId,
+      areaId: p.areaId,
+      listingType: p.type,
+      featuredUntil: p.featuredUntil,
       location: p.location,
       description: p.description,
       automatedNumber: p.automatedNumber,

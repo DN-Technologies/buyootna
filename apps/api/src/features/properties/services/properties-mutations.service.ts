@@ -400,6 +400,44 @@ export class PropertiesMutationsService {
     };
   }
 
+  // --- CLOSE (تم البيع) ---
+  /**
+   * The owner marks a live ad as done (sold, rented or swapped): it leaves
+   * the market for the archive, where it can be republished.
+   */
+  async close(identityId: string, propertyId: string) {
+    await this.verifyOwnership(identityId, propertyId);
+    const closed = await this.prisma.property.updateMany({
+      where: { id: propertyId, identityId, status: ListingStatus.ACTIVE },
+      data: { status: ListingStatus.CLOSED },
+    });
+    if (closed.count === 0) {
+      throw new BadRequestException('يمكن إغلاق الإعلانات النشطة فقط');
+    }
+    return { message: 'تم نقل الإعلان إلى المؤرشفة' };
+  }
+
+  // --- BULK (hide / show / delete many) ---
+  /**
+   * Many of the caller's own ads at once, in one statement: ids of anyone
+   * else's ads are simply not matched.
+   */
+  async bulk(
+    identityId: string,
+    action: 'hide' | 'show' | 'delete',
+    ids: string[],
+  ) {
+    const where = { id: { in: ids }, identityId };
+    const { count } =
+      action === 'delete'
+        ? await this.prisma.property.deleteMany({ where })
+        : await this.prisma.property.updateMany({
+            where,
+            data: { isHidden: action === 'hide' },
+          });
+    return { count };
+  }
+
   // --- RENEW PROPERTY ---
   /**
    * Republishes an archived (expired/closed) ad, spending one credit: the

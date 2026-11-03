@@ -19,6 +19,29 @@ describe('PropertiesActivityService.getMyActivity', () => {
     prisma.conversation.groupBy.mockResolvedValue([]);
   });
 
+  it('gives the office tab what it groups and filters by', async () => {
+    const featuredUntil = new Date('2026-05-25T00:00:00.000Z');
+    prisma.property.findMany.mockResolvedValue([
+      {
+        ...ad('a'),
+        type: 'RENT',
+        governorateId: 'gov-1',
+        areaId: 'area-1',
+        featuredUntil,
+      },
+    ]);
+
+    const [first] = await service.getMyActivity('me');
+
+    expect(first).toMatchObject({
+      type: 'إيجار',
+      listingType: 'RENT',
+      governorateId: 'gov-1',
+      areaId: 'area-1',
+      featuredUntil,
+    });
+  });
+
   it("returns each ad's real saves and chats", async () => {
     prisma.property.findMany.mockResolvedValue([ad('a'), ad('b')]);
     prisma.favorite.groupBy.mockResolvedValue([

@@ -39,6 +39,9 @@ interface AdPreviewSheetProps {
   onSharePress?: () => void;
   onToggleVisibility?: (propertyId: string, hide: boolean) => void;
   onPublishPress?: (propertyId: string) => Promise<void>;
+  // Offices: «تم البيع» / «تم التأجير» / «تمت المبادلة» on a live ad
+  markDoneLabel?: string;
+  onMarkDonePress?: (propertyId: string) => void;
 }
 
 const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
@@ -53,6 +56,8 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
       onSharePress,
       onToggleVisibility,
       onPublishPress,
+      markDoneLabel,
+      onMarkDonePress,
     },
     ref,
   ) => {
@@ -372,6 +377,25 @@ const AdPreviewSheet = forwardRef<BottomSheetModal, AdPreviewSheetProps>(
               <Text className="font-cairo-semibold text-sm text-[#9C1E28] leading-[22px]">حذف</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Offices: the ad is done (sold / rented / swapped) */}
+          {!!onMarkDonePress && property.status === 'ACTIVE' && (
+            <View className="px-6 mb-8 -mt-4">
+              <TouchableOpacity
+                testID="ad-preview-mark-done"
+                activeOpacity={0.8}
+                onPress={() => {
+                  handleClose();
+                  onMarkDonePress(property.id);
+                }}
+                className="h-[40px] w-full items-center justify-center rounded-full border border-[#15304D] bg-white"
+              >
+                <Text className="font-cairo-semibold text-sm text-[#15304D] leading-[22px]">
+                  {markDoneLabel ?? 'تم البيع'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </BottomSheetScrollView>
       </BottomSheetModal>
     );

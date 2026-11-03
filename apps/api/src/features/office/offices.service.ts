@@ -54,6 +54,7 @@ export class OfficesService {
       activeSlots,
       listings,
       openRequests,
+      closedListings,
     ] = await Promise.all([
       this.prisma.identity.findUnique({
         where: { id: identityId },
@@ -90,7 +91,10 @@ export class OfficesService {
           status: SlotStatus.ACTIVE,
           adsRemaining: { gt: 0 },
         },
-        select: { adsRemaining: true },
+        select: {
+          adsRemaining: true,
+          plan: { select: { maxActiveAds: true } },
+        },
       }),
       this.prisma.property.findMany({
         where: { identityId, status: ListingStatus.ACTIVE, isHidden: false },
@@ -116,6 +120,10 @@ export class OfficesService {
           status: { in: [RequestStatus.PENDING, RequestStatus.RESPONDED] },
         },
         select: { category: true, title: true },
+      }),
+      // «العقارات المباعة»: the ads the office marked as done
+      this.prisma.property.count({
+        where: { identityId, status: ListingStatus.CLOSED },
       }),
     ]);
 
@@ -166,10 +174,16 @@ export class OfficesService {
         activeServices: services.length,
         newMessagesToday,
         totalViews: viewsAgg._sum.views ?? 0,
+        closedListings,
       },
       billing: {
         hasActivePackage: activeSlots.length > 0,
         adsRemaining,
+        // «4 من أصل 20»: what the running packages hold in all
+        adsTotal: activeSlots.reduce(
+          (sum, slot) => sum + (slot.plan?.maxActiveAds ?? 0),
+          0,
+        ),
         freeAdsRemaining: identity?.freeAdsRemaining ?? 0,
       },
       listings: listings.map((l) => ({

@@ -16,6 +16,8 @@ interface AdImageGalleryProps {
   // Badges drawn over the photos
   children?: ReactNode;
   testID?: string;
+  // The office's ad cards are shorter (Figma 4494:145820: 163)
+  height?: number;
 }
 
 /**
@@ -28,6 +30,7 @@ export default function AdImageGallery({
   onPress,
   children,
   testID = 'ad-image-gallery',
+  height,
 }: AdImageGalleryProps) {
   const [width, setWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -48,7 +51,8 @@ export default function AdImageGallery({
   return (
     <View
       testID={testID}
-      className="relative h-[210px] w-full bg-gray-50"
+      className={`relative w-full bg-gray-50 ${height ? '' : 'h-[210px]'}`}
+      style={height ? { height } : undefined}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <ScrollView
         testID={`${testID}-scroll`}

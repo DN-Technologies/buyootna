@@ -9,6 +9,41 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-office-properties",
+      title: {
+        en: "Office ads: close (تم البيع), bulk hide / show / delete, and the activity and dashboard fields",
+        ar: "إعلانات المكتب: الإغلاق (تم البيع)، والإخفاء والإظهار والحذف بالجملة، وحقول النشاط ولوحة المكتب",
+      },
+      priority: "P1",
+      story: {
+        en: "POST /properties/:id/close moves one of your ACTIVE ads to CLOSED (the archive, where it can be republished); anything else is 400. POST /properties/me/bulk { action: hide | show | delete, ids (1-100 UUIDs) } acts on your own ads among the ids in one statement and returns { count }; others' ids are ignored. GET /properties/me/activity adds governorateId, areaId, listingType (SALE / RENT / EXCHANGE) and featuredUntil. GET /offices/me/dashboard adds stats.closedListings and billing.adsTotal (the running packages' maxActiveAds summed).",
+        ar: "ينقل POST /properties/:id/close أحد إعلاناتك النشطة إلى CLOSED (المؤرشفة، ويمكن إعادة نشره)، وغير ذلك 400. ويعمل POST /properties/me/bulk { action: hide | show | delete، ids (من 1 إلى 100 معرف UUID) } على إعلاناتك أنت من بين المعرفات دفعة واحدة ويعيد { count }، وتُتجاهل معرفات غيرك. ويضيف GET /properties/me/activity الحقول governorateId وareaId وlistingType (SALE / RENT / EXCHANGE) وfeaturedUntil. ويضيف GET /offices/me/dashboard الحقلين stats.closedListings وbilling.adsTotal (مجموع maxActiveAds للباقات الجارية).",
+      },
+      acceptanceCriteria: {
+        en: [
+          "close: your ACTIVE ad → CLOSED and listed with the archive; a draft, an expired ad or someone else's → 400 / 404.",
+          "bulk: only your ads change; an unknown action, no ids, a non-UUID or more than 100 → 400.",
+          "dashboard: closedListings counts your CLOSED ads; adsTotal is 0 with no package.",
+        ],
+        ar: [
+          "الإغلاق: إعلانك النشط ← CLOSED ويظهر مع المؤرشفة؛ والمسودة أو المنتهي أو إعلان غيرك ← 400 / 404.",
+          "بالجملة: تتغير إعلاناتك فقط؛ والإجراء المجهول أو غياب المعرفات أو معرف غير UUID أو أكثر من 100 ← 400.",
+          "لوحة المكتب: يعد closedListings إعلاناتك المغلقة؛ وadsTotal يساوي 0 بلا باقة.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an office, POST /properties/me/bulk { action: 'hide', ids: [your ad, another office's ad] }: count 1, and only yours is hidden.",
+          "POST /properties/<live ad>/close, then GET /offices/me/dashboard: closedListings went up by one.",
+        ],
+        ar: [
+          "كمكتب، أرسل POST /properties/me/bulk { action: 'hide'، ids: [إعلانك، إعلان مكتب آخر] }: العدد 1 ويُخفى إعلانك فقط.",
+          "أرسل POST /properties/<إعلان نشط>/close ثم GET /offices/me/dashboard: ارتفع closedListings واحداً.",
+        ],
+      },
+      updatedIn: "feat/office-properties",
+    },
+    {
       id: "api-story-reply",
       title: {
         en: "Chat: a message can reply to a story (storyId, storyReply)",
