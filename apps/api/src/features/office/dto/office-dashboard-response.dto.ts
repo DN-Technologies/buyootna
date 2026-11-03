@@ -24,6 +24,11 @@ export class OfficeDashboardStatsDto {
       "Lifetime sum of views across all of this office's properties, regardless of status",
   })
   totalViews: number;
+
+  @ApiProperty({
+    description: 'Ads the office marked as sold / rented / swapped (CLOSED)',
+  })
+  closedListings: number;
 }
 
 export class OfficeDashboardBillingDto {
@@ -32,6 +37,12 @@ export class OfficeDashboardBillingDto {
 
   @ApiProperty({ description: 'Credits left across ACTIVE ad packages' })
   adsRemaining: number;
+
+  @ApiProperty({
+    description:
+      "What the ACTIVE ad packages hold in all (their plans' maxActiveAds)",
+  })
+  adsTotal: number;
 
   @ApiProperty({ description: 'The welcome free ad, if not used yet' })
   freeAdsRemaining: number;

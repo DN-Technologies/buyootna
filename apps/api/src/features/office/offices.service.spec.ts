@@ -68,10 +68,12 @@ describe('OfficesService', () => {
         activeServices: 0,
         newMessagesToday: 0,
         totalViews: 0,
+        closedListings: 0,
       },
       billing: {
         hasActivePackage: false,
         adsRemaining: 0,
+        adsTotal: 0,
         freeAdsRemaining: 1,
       },
       listings: [],
@@ -115,8 +117,8 @@ describe('OfficesService', () => {
 
   it('sums credits across active packages', async () => {
     prisma.userPlanSlot.findMany.mockResolvedValue([
-      { adsRemaining: 3 },
-      { adsRemaining: 2 },
+      { adsRemaining: 3, plan: { maxActiveAds: 10 } },
+      { adsRemaining: 2, plan: { maxActiveAds: 5 } },
     ]);
 
     const { billing } = await service.getDashboard('office-1', 'OFFICE', NOW);
@@ -124,7 +126,23 @@ describe('OfficesService', () => {
     expect(billing).toEqual({
       hasActivePackage: true,
       adsRemaining: 5,
+      // «5 من أصل 15»
+      adsTotal: 15,
       freeAdsRemaining: 1,
+    });
+  });
+
+  it('counts the ads the office marked as done (CLOSED)', async () => {
+    prisma.property.count
+      .mockResolvedValueOnce(5) // active
+      .mockResolvedValueOnce(3) // this week
+      .mockResolvedValueOnce(2); // closed
+
+    const { stats } = await service.getDashboard('office-1', 'OFFICE', NOW);
+
+    expect(stats.closedListings).toBe(2);
+    expect(prisma.property.count).toHaveBeenNthCalledWith(3, {
+      where: { identityId: 'office-1', status: 'CLOSED' },
     });
   });
 

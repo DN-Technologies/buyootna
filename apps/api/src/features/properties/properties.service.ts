@@ -51,6 +51,14 @@ export class PropertiesService {
     return this.mutationsService.archive(identityId, propertyId);
   }
 
+  close(identityId: string, propertyId: string) {
+    return this.mutationsService.close(identityId, propertyId);
+  }
+
+  bulk(identityId: string, action: 'hide' | 'show' | 'delete', ids: string[]) {
+    return this.mutationsService.bulk(identityId, action, ids);
+  }
+
   renew(identityId: string, propertyId: string, planSlotId?: string) {
     return this.mutationsService.renew(identityId, propertyId, planSlotId);
   }

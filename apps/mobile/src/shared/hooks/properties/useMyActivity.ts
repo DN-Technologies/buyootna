@@ -24,6 +24,11 @@ export interface ActivityItem {
   endDate?: string | null;
   isPremium?: boolean;
   isHidden?: boolean;
+  // For the office's عقارات tab (older APIs leave them out)
+  governorateId?: string | null;
+  areaId?: string | null;
+  listingType?: 'SALE' | 'RENT' | 'EXCHANGE' | 'AUCTION' | 'DEAL';
+  featuredUntil?: string | null;
 
   // Detailed fields for previewing listings
   location?: string;
@@ -100,9 +105,11 @@ export function subscriptionFromWallet(
 
 export function useMyActivity(status?: ActivityListingStatus) {
   const { token } = useAuthStore();
+  // Per profile: after a switch, one profile's ads never show for another
+  const identityId = useAuthStore((s) => s.activeIdentity?.id);
 
   const query = useQuery({
-    queryKey: ['myActivity', status],
+    queryKey: ['myActivity', status, identityId],
     queryFn: () => fetchMyActivity(status),
     enabled: !!token,
   });

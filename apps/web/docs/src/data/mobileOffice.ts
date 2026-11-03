@@ -9,6 +9,65 @@ export const mobileOffice: DocSection = {
   },
   stories: [
     {
+      id: "mobile-office-properties-tab",
+      title: {
+        en: "Office «العقارات» tab: the office's own ads by governorate, drafts and archive",
+        ar: "تبويب «العقارات» للمكتب: إعلانات المكتب حسب المحافظة والمسودات والمؤرشفة",
+      },
+      priority: "P1",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=4494-145517&m=dev",
+          label: { en: "Ads by governorate", ar: "الإعلانات حسب المحافظة" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=4494-145794&m=dev",
+          label: { en: "Drafts", ar: "المسودات" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=4494-145820&m=dev",
+          label: { en: "One governorate", ar: "محافظة واحدة" },
+        },
+      ],
+      story: {
+        en: "The office's second tab, «عقارات المكتب», replaces its placeholder. الاعلانات shows four tiles (active ads this week, ads marked as sold, ad balance «n من اصل m», total views) and one card per governorate with its categories, ad count and featured count. A governorate opens its ads with a المنطقة dropdown, filter (الكل / نشطة / مميزة / المخفية) and sort sheets, بيع / ايجار / بدل tabs with counts, and cards with their badge (featured until a date, نشط, اعلان مخفي), price, date, views, saves and contacts. المسودات lists drafts to preview and publish or delete; المؤرشفة lists expired and sold ads, which open with «إعادة النشر». The ⋮ menus hide all, show hidden, delete all, delete all drafts, and in a governorate «تحديد متعدد» picks ads to hide, show or delete. An ad's sheet has «تم البيع» (or «تم التأجير» / «تمت المبادلة»), which moves it to المؤرشفة and counts it as sold. «تحديد متعدد», the empty states and «تم البيع» have no Figma frame.",
+        ar: "يحل «عقارات المكتب» محل الشاشة المؤقتة في التبويب الثاني للمكتب. تعرض الاعلانات أربع بطاقات (الإعلانات النشطة هذا الأسبوع، والعقارات المباعة، ورصيد الإعلانات «n من اصل m»، وإجمالي المشاهدات) وبطاقة لكل محافظة بفئاتها وعدد عقاراتها والمميزة منها. وتفتح المحافظة إعلاناتها مع قائمة المنطقة، ونافذتي التصفية (الكل / نشطة / مميزة / المخفية) والترتيب، وتبويبات بيع / ايجار / بدل بأعدادها، وبطاقات بشارتها (التمييز نشط حتى تاريخ، نشط، اعلان مخفي) والسعر والتاريخ والمشاهدات ومرات الحفظ والتواصل. وتعرض المسودات المسودات للمعاينة والنشر أو الحذف، والمؤرشفة الإعلانات المنتهية والمباعة وتفتح مع «إعادة النشر». وتخفي قوائم ⋮ الكل وتظهر المخفية وتحذف الكل وتحذف جميع المسودات، وفي المحافظة يختار «تحديد متعدد» إعلانات لإخفائها أو إظهارها أو حذفها. وفي نافذة الإعلان «تم البيع» (أو «تم التأجير» / «تمت المبادلة») ينقله إلى المؤرشفة ويحسبه ضمن المباعة. ولا يوجد إطار فيجما لـ«تحديد متعدد» ولا لحالات الفراغ ولا لـ«تم البيع».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Every governorate has a card, with 0 when the office has nothing there; the counts match the ads.",
+          "A governorate's بيع / ايجار / بدل counts match its ads, and المنطقة, the filter and the sort narrow and order the cards.",
+          "«اخفاء جميع الاعلانات», «اظهار الاعلانات المخفية» and «حذف» ask first with the Figma texts, then act on that tab or governorate only.",
+          "«تحديد متعدد» picks cards instead of opening them, and the bar hides, shows or deletes only the picked ones.",
+          "«تم البيع» on a live ad (hidden ones included) moves it to المؤرشفة and raises «العقارات المباعة» by one.",
+          "المسودات (n) counts the drafts; a draft publishes from its preview.",
+        ],
+        ar: [
+          "لكل محافظة بطاقة، وفيها 0 إن لم يكن للمكتب شيء فيها؛ والأعداد تطابق الإعلانات.",
+          "أعداد بيع / ايجار / بدل في المحافظة تطابق إعلاناتها، والمنطقة والتصفية والترتيب تحصر البطاقات وترتبها.",
+          "«اخفاء جميع الاعلانات» و«اظهار الاعلانات المخفية» و«حذف» تسأل أولاً بنصوص فيجما، ثم تعمل على ذلك التبويب أو تلك المحافظة فقط.",
+          "«تحديد متعدد» يختار البطاقات بدل فتحها، والشريط يخفي أو يظهر أو يحذف المختار فقط.",
+          "«تم البيع» على إعلان نشط ينقله إلى المؤرشفة ويرفع «العقارات المباعة» واحداً.",
+          "تعد المسودات (n) المسودات؛ وتُنشر المسودة من معاينتها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As an office with ads in two governorates (sale and rent, one featured, one hidden) and a draft: check the tiles and cards, then open a governorate and switch deals, areas, filter and sort.",
+          "Hide all in a governorate: only its ads hide; show them again from ⋮.",
+          "Pick two ads with «تحديد متعدد» and delete them: only those two go.",
+          "Open a live ad and tap «تم البيع»: it shows in المؤرشفة and the sold tile goes up; republish it from there.",
+        ],
+        ar: [
+          "كمكتب له إعلانات في محافظتين (بيع وإيجار، واحد مميز وواحد مخفي) ومسودة: تحقق من البطاقات، ثم افتح محافظة وبدّل الصفقة والمنطقة والتصفية والترتيب.",
+          "أخفِ الكل في محافظة: تُخفى إعلاناتها فقط؛ ثم أظهرها من ⋮.",
+          "اختر إعلانين بـ«تحديد متعدد» واحذفهما: يُحذف هذان فقط.",
+          "افتح إعلاناً نشطاً واضغط «تم البيع»: يظهر في المؤرشفة وترتفع بطاقة المباعة؛ ثم أعد نشره من هناك.",
+        ],
+      },
+      updatedIn: "feat/office-properties",
+    },
+    {
       id: "mobile-office-dashboard-figma",
       title: {
         en: "Office Home matches the Figma home and its states",

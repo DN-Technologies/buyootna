@@ -1,88 +1,237 @@
-import { Feather } from '@expo/vector-icons';
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMemo, useRef, useState } from 'react';
+import { RefreshControl, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import ActivitySuccessToast from '@/features/individual/components/activity/ActivitySuccessToast';
+import ArchivedAdCard from '@/features/individual/components/activity/ads/ArchivedAdCard';
+import DraftAdCard from '@/features/individual/components/activity/ads/DraftAdCard';
+import { useActivityToast } from '@/features/individual/hooks/useActivityToast';
+import { useAdActions } from '@/features/individual/hooks/useAdActions';
+import OfficeAdSheets, {
+  type OfficeAdSheetsHandle,
+} from '@/features/office/properties/components/OfficeAdSheets';
+import OfficeEmptyState from '@/features/office/properties/components/OfficeEmptyState';
+import OfficePropertiesHeader from '@/features/office/properties/components/OfficePropertiesHeader';
+import OfficePropertyStats from '@/features/office/properties/components/OfficePropertyStats';
+import OptionsMenu, {
+  type OptionsMenuItem,
+} from '@/features/office/properties/components/OptionsMenu';
+import OwnerGovernorateCard from '@/features/office/properties/components/OwnerGovernorateCard';
+import UnderlineTabs from '@/features/office/properties/components/UnderlineTabs';
+import {
+  governorateSummaries,
+  markDoneLabel,
+  type OfficeTab,
+} from '@/features/office/properties/officeProperties';
+import {
+  useOfficeBulkActions,
+  useOfficeProperties,
+} from '@/features/office/properties/useOfficeProperties';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
+import { useTabBarHeight } from '@/shared/hooks/device/useTabBarHeight';
 
-type PropertyTabFilter = 'all' | 'published' | 'draft' | 'archived';
-
+/** «عقارات المكتب»: the office's own ads (Figma 4494:145517 / 145794). */
 export default function OfficePropertiesScreen() {
-  const [activeFilter, setActiveFilter] = useState<PropertyTabFilter>('all');
+  const router = useRouter();
+  const { scrollContentBottomPadding } = useTabBarHeight();
+  const data = useOfficeProperties();
+  const bulk = useOfficeBulkActions();
+  const { triggerToast, ...toast } = useActivityToast();
+  const sheets = useRef<OfficeAdSheetsHandle>(null);
+  const [tab, setTab] = useState<OfficeTab>('ads');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const filters: { key: PropertyTabFilter; label: string }[] = [
-    { key: 'all', label: 'الكل' },
-    { key: 'published', label: 'المنشورة' },
-    { key: 'draft', label: 'المسودة' },
-    { key: 'archived', label: 'المؤرشفة' },
+  const adActions = useAdActions({
+    refetch: data.refetch,
+    triggerToast,
+    freeAdsRemaining: data.freeAdsRemaining,
+    listedAds: data.ads,
+  });
+
+  const summaries = useMemo(() => governorateSummaries(data.ads), [data.ads]);
+  const addAd = () => router.push('/(office)/add');
+
+  const ask = (
+    confirm: Parameters<OfficeAdSheetsHandle['confirm']>[0],
+    ids: string[],
+    action: 'hide' | 'show' | 'delete',
+    done: string,
+  ) =>
+    sheets.current?.confirm(confirm, async () => {
+      if (await bulk.run(action, ids)) triggerToast(done);
+    });
+
+  const shownIds = data.ads.filter((ad) => !ad.isHidden).map((ad) => ad.id);
+  const hiddenIds = data.ads.filter((ad) => ad.isHidden).map((ad) => ad.id);
+  const menuItems: OptionsMenuItem[] =
+    tab === 'ads'
+      ? [
+          ...(shownIds.length
+            ? [
+                {
+                  key: 'hide-all',
+                  label: 'اخفاء جميع الاعلانات',
+                  onPress: () =>
+                    ask({ kind: 'hideAll', scope: 'all' }, shownIds, 'hide', 'تم إخفاء الإعلانات'),
+                },
+              ]
+            : []),
+          ...(hiddenIds.length
+            ? [
+                {
+                  key: 'show-hidden',
+                  label: 'اظهار الاعلانات المخفية',
+                  onPress: () =>
+                    ask({ kind: 'showHidden' }, hiddenIds, 'show', 'تم إظهار الإعلانات'),
+                },
+              ]
+            : []),
+          ...(data.ads.length
+            ? [
+                {
+                  key: 'delete-all',
+                  label: 'حذف الكل',
+                  danger: true,
+                  onPress: () =>
+                    ask(
+                      { kind: 'deleteAll', scope: 'all' },
+                      data.ads.map((ad) => ad.id),
+                      'delete',
+                      'تم حذف الإعلانات',
+                    ),
+                },
+              ]
+            : []),
+        ]
+      : tab === 'drafts' && data.drafts.length
+        ? [
+            {
+              key: 'delete-drafts',
+              label: 'حذف جميع المسودات',
+              danger: true,
+              onPress: () =>
+                ask(
+                  { kind: 'deleteDrafts' },
+                  data.drafts.map((d) => d.id),
+                  'delete',
+                  'تم حذف المسودات',
+                ),
+            },
+          ]
+        : [];
+
+  const markDone = (propertyId: string) => {
+    const ad = data.ads.find((a) => a.id === propertyId);
+    if (!ad) return;
+    sheets.current?.confirm(
+      { kind: 'markDone', label: markDoneLabel(ad) },
+      async () => {
+        if (await bulk.markDone(propertyId)) triggerToast('تم نقل الإعلان إلى المؤرشفة');
+      },
+    );
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await data.refetch();
+    setRefreshing(false);
+  };
+
+  const tabs = [
+    { id: 'ads' as const, label: 'الاعلانات' },
+    { id: 'drafts' as const, label: `المسودات (${data.drafts.length})` },
+    { id: 'archived' as const, label: 'المؤرشفة' },
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F5F6FA]">
-      {/* Header */}
-      <View className="bg-white px-5 py-4">
-        <Text
-          className="font-cairo-bold text-lg text-[#111111]"
-          style={{ writingDirection: 'rtl' }}
+    <SafeAreaView className="flex-1 bg-white" edges={['top', 'left', 'right']}>
+      <ContentContainer className="flex-1">
+        <OfficePropertiesHeader
+          title="عقارات المكتب"
+          onAddPress={addAd}
+          onMenuPress={menuItems.length ? () => setMenuOpen(true) : undefined}
+        />
+        <UnderlineTabs tabs={tabs} active={tab} onChange={setTab} testID="office-properties-tabs" />
+
+        <ScrollView
+          testID="office-properties-scroll"
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: scrollContentBottomPadding }}
         >
-          العقارات والإعلانات
-        </Text>
-      </View>
-
-      {/* Filter Pills */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingVertical: 12,
-          gap: 8,
-          flexDirection: 'row-reverse',
-        }}
-      >
-        {filters.map((filter) => (
-          <TouchableOpacity
-            key={filter.key}
-            onPress={() => setActiveFilter(filter.key)}
-            className={`rounded-full px-5 py-2 ${
-              activeFilter === filter.key
-                ? 'bg-[#15304D]'
-                : 'border border-gray-200 bg-white'
-            }`}
-          >
-            <Text
-              className={`font-cairo-semibold text-sm ${
-                activeFilter === filter.key
-                  ? 'text-white'
-                  : 'text-[#6B6A6A]'
-              }`}
-            >
-              {filter.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120 }}
-      >
-        <ContentContainer>
-          {/* Empty State */}
-          <View className="mx-4 mt-8 items-center rounded-2xl bg-white py-16">
-            <View className="mb-4 h-20 w-20 items-center justify-center rounded-full bg-[#F0F4FF]">
-              <Feather name="home" size={36} color="#94A3B8" />
+          {data.isLoading || data.error ? (
+            <View className="px-4">
+              <OfficeEmptyState loading={data.isLoading} error={data.error} message="" />
             </View>
-            <Text className="font-cairo-bold text-base text-[#111111]">
-              لا توجد عقارات مضافة
-            </Text>
-            <Text className="mt-1 font-cairo-medium text-sm text-[#6B6A6A]">
-              اضغط على زر (+) في المنتصف لإضافة عقار جديد
-            </Text>
-          </View>
-        </ContentContainer>
-      </ScrollView>
+          ) : tab === 'ads' ? (
+            <View style={{ gap: 16 }}>
+              <OfficePropertyStats dashboard={data.dashboard} />
+              <View className="px-4" style={{ gap: 12 }}>
+                {summaries.map((summary) => (
+                  <OwnerGovernorateCard
+                    key={summary.governorateId}
+                    summary={summary}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/office-governorate/[governorateId]',
+                        params: { governorateId: summary.governorateId },
+                      })
+                    }
+                  />
+                ))}
+              </View>
+            </View>
+          ) : tab === 'drafts' ? (
+            <View className="px-4">
+              {data.drafts.length === 0 ? (
+                <OfficeEmptyState message="لا توجد مسودات حالياً" />
+              ) : (
+                data.drafts.map((draft) => (
+                  <DraftAdCard
+                    key={draft.id}
+                    property={draft}
+                    onPublishPress={() => adActions.handlePublishDraft(draft)}
+                    onDeletePress={() => adActions.handleDeleteAd(draft.id)}
+                  />
+                ))
+              )}
+            </View>
+          ) : (
+            <View className="px-4">
+              {data.archived.length === 0 ? (
+                <OfficeEmptyState message="لا توجد إعلانات مؤرشفة حالياً" />
+              ) : (
+                data.archived.map((ad) => (
+                  <ArchivedAdCard
+                    key={ad.id}
+                    property={ad}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/property/[id]',
+                        // Archived ads open with their republish action
+                        params: { id: ad.id, archived: 'true' },
+                      })
+                    }
+                  />
+                ))
+              )}
+            </View>
+          )}
+        </ScrollView>
+      </ContentContainer>
+
+      <OptionsMenu visible={menuOpen} items={menuItems} onClose={() => setMenuOpen(false)} />
+      <OfficeAdSheets ref={sheets} adActions={adActions} onMarkDone={markDone} />
+      <ActivitySuccessToast
+        visible={toast.showToast}
+        message={toast.toastMessage}
+        subtitle={toast.toastSubtitle}
+        bottomOffset={scrollContentBottomPadding}
+        fadeAnim={toast.fadeAnim}
+        slideAnim={toast.slideAnim}
+      />
     </SafeAreaView>
   );
 }
