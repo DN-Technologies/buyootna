@@ -39,6 +39,18 @@ jest.mock('../useOfficeProperties', () => ({
   useOfficeBulkActions: () => ({ run: mockRun, markDone: mockMarkDone, isWorking: false }),
 }));
 
+// The toast animates on a timer that would outlive the test
+jest.mock('@/features/individual/hooks/useActivityToast', () => ({
+  useActivityToast: () => ({
+    triggerToast: jest.fn(),
+    showToast: false,
+    toastMessage: '',
+    toastSubtitle: null,
+    fadeAnim: { setValue: jest.fn() },
+    slideAnim: { setValue: jest.fn() },
+  }),
+}));
+
 const mockAdActions = {
   handleOpenAd: jest.fn(),
   handlePublishDraft: jest.fn(),
