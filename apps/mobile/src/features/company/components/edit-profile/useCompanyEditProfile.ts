@@ -62,6 +62,8 @@ export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   licenseExpiry: '',
 };
 
+export const PHONE_REQUIRED_MESSAGE = 'رقم الهاتف مطلوب للتواصل معك.';
+
 const stripKuwaitPrefix = (val?: string | null) =>
   (val ?? '').replace(/^(?:\+?965)/, '');
 
@@ -164,6 +166,9 @@ export function useCompanyEditProfile() {
       })
       .catch(() => setPhoneVerified(null));
   }, []);
+
+  // As on the individual's edit profile: unknown (not loaded) doesn't block
+  const phoneRequired = loginMethod !== null && loginMethod !== 'EMAIL';
 
   const isNewPhone = (value: string) =>
     localPhone(value) !== '' && localPhone(value) !== localPhone(user?.phone);
@@ -298,9 +303,12 @@ export function useCompanyEditProfile() {
       );
       return;
     }
-    // Always required: it's how people reach the company
-    if (localPhone(data.phone).length !== 8) {
-      showAlert('تنبيه', 'رقم الهاتف مطلوب للتواصل معك.');
+    // Required when it signs the account in. A company that registered and
+    // signs in by email may have none, and was refused every save (QA); the
+    // API accepts that too. A partial number never gets here: the field's
+    // own rule (8 digits) stops the submit
+    if (phoneRequired && localPhone(data.phone) === '') {
+      showAlert('تنبيه', PHONE_REQUIRED_MESSAGE);
       return;
     }
     if (isNewPhone(data.phone)) {
@@ -336,6 +344,7 @@ export function useCompanyEditProfile() {
     licenseFile,
     setLicenseFile,
     // Verification
+    phoneRequired,
     phoneChanged,
     needsPhoneVerification:
       !phoneChanged && !!user?.phone && phoneVerified === false,

@@ -38,6 +38,8 @@ interface CompanyGeneralInfoSectionProps {
   // Verification wiring (new email/phone must be proven before saving)
   emailNeedsCode: boolean;
   sendEmailCode: () => void;
+  // False for an account that signs in by email: the field shows (اختياري)
+  phoneRequired: boolean;
   phoneChanged: boolean;
   needsPhoneVerification: boolean;
   verifySavedPhone: () => void;
@@ -51,6 +53,7 @@ export default function CompanyGeneralInfoSection({
   onOpenServiceAreas,
   emailNeedsCode,
   sendEmailCode,
+  phoneRequired,
   phoneChanged,
   needsPhoneVerification,
   verifySavedPhone,
@@ -108,7 +111,8 @@ export default function CompanyGeneralInfoSection({
           name="phone"
           label="رقم الهاتف"
           requiredMessage="رقم الهاتف مطلوب"
-          // Always required (it's how people reach you); checked on save
+          // Required only when it signs the account in; checked on save
+          required={phoneRequired}
           requiredInForm={false}
           labelClassName={LABEL_CLASS}
           inputClassName={INPUT_CLASS}

@@ -1,6 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import {
   SelectionModal,
 } from '@/features/company/components/edit-profile';
 import apiClient from '@/shared/api/api';
+import { settingsService } from '@/shared/api/settings.service';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
@@ -62,6 +63,16 @@ export default function OfficeEditProfile() {
   const [name, setName] = useState(initialValues.name);
   const [email, setEmail] = useState(initialValues.email);
   const [phone, setPhone] = useState(initialValues.phone);
+  // The phone is required only when it signs the account in: an office that
+  // signs in by email may have none (the API accepts that). Unknown: not
+  // required, as on the individual's edit profile
+  const [phoneRequired, setPhoneRequired] = useState(false);
+  useEffect(() => {
+    settingsService
+      .getLoginMethod()
+      .then((m) => setPhoneRequired((m.loginMethod ?? 'BOTH') !== 'EMAIL'))
+      .catch(() => setPhoneRequired(false));
+  }, []);
   const [hqLocation, setHqLocation] = useState(initialValues.hqLocation);
   const [about, setAbout] = useState(initialValues.about);
   const [workingHours, setWorkingHours] = useState(initialValues.workingHours);
@@ -157,9 +168,14 @@ export default function OfficeEditProfile() {
       showAlert('تنبيه', 'يرجى إدخال اسم المكتب');
       return;
     }
-    // Always required: it's how people reach the office
-    if (phone.replace(/\D/g, '').slice(-8).length !== 8) {
+    // Required when it signs the account in; a number typed in must be whole
+    const phoneDigits = phone.replace(/\D/g, '').slice(-8);
+    if (phoneDigits === '' && phoneRequired) {
       showAlert('تنبيه', 'رقم الهاتف مطلوب للتواصل معك.');
+      return;
+    }
+    if (phoneDigits !== '' && phoneDigits.length !== 8) {
+      showAlert('تنبيه', 'يرجى إدخال رقم هاتف صحيح من 8 أرقام.');
       return;
     }
 

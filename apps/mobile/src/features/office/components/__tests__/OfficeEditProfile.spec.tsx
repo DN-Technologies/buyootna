@@ -1,6 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import apiClient from '@/shared/api/api';
+import { useAlertStore } from '@/shared/store/useAlertStore';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 import OfficeEditProfile from '../edit-profile/OfficeEditProfile';
@@ -169,5 +170,71 @@ describe('OfficeEditProfile (Figma Design Implementation 4494:136911 / 4494:1389
     expect(body.get('licenseNumber')).toBe('6743963845');
     // مواعيد العمل no longer overwrite the services text
     expect(body.has('services')).toBe(false);
+  });
+
+  // QA: an account that signs in by email, with no phone, was refused every
+  // save with «رقم الهاتف مطلوب»
+  const withLoginMethod = (loginMethod: string) =>
+    (apiClient.get as jest.Mock).mockImplementation((url: string) =>
+      Promise.resolve(
+        url === '/users/account/login-method'
+          ? { data: { loginMethod, phoneVerified: false } }
+          : { data: {} },
+      ),
+    );
+
+  const renameAndSave = async () => {
+    const screen = await render(<OfficeEditProfile />);
+    await waitFor(() =>
+      expect(apiClient.get).toHaveBeenCalledWith('/users/account/login-method'),
+    );
+    await fireEvent.changeText(
+      screen.getByDisplayValue('المنار للعقارات'),
+      'مكتب المنار الحديث',
+    );
+    await fireEvent.press(screen.getByTestId('save-button'));
+    return screen;
+  };
+
+  it('saves for an office signed in by email with no phone', async () => {
+    withLoginMethod('EMAIL');
+    (apiClient.patch as jest.Mock).mockResolvedValue({ data: {} });
+    useAuthStore.setState({
+      user: { id: 'user-1', email: 'salemelshekh@gmail.com', phone: null } as any,
+    });
+    const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
+
+    await renameAndSave();
+
+    await waitFor(() =>
+      expect(apiClient.patch).toHaveBeenCalledWith(
+        '/users/profile',
+        expect.objectContaining({ name: 'مكتب المنار الحديث', phone: '' }),
+      ),
+    );
+    expect(alertSpy).not.toHaveBeenCalledWith(
+      'تنبيه',
+      'رقم الهاتف مطلوب للتواصل معك.',
+    );
+    alertSpy.mockRestore();
+  });
+
+  it('still asks an office that signs in by phone for one', async () => {
+    withLoginMethod('PHONE');
+    useAuthStore.setState({
+      user: { id: 'user-1', email: 'salemelshekh@gmail.com', phone: null } as any,
+    });
+    const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
+
+    await renameAndSave();
+
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        'تنبيه',
+        'رقم الهاتف مطلوب للتواصل معك.',
+      ),
+    );
+    expect(apiClient.patch).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 });
