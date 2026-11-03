@@ -66,17 +66,24 @@ export default function CompanyListCard({
         <CompanyLogoAvatar name={name} logoUrl={logoUrl} ring={storyRing} />
 
         <View className="mx-3 flex-1">
+          {/* RTL: the name, then the badge on its left, centred on the line */}
           <View className="flex-row items-center gap-1">
-            {isVerified && (
-              <MaterialIcons name="verified" size={16} color="#3B82F6" />
-            )}
             <Text
-              className="shrink font-cairo-semibold text-base text-[#111111]"
-              style={{ writingDirection: 'rtl' }}
+              className="shrink font-cairo-semibold text-base leading-[24px] text-[#111111]"
+              style={{ writingDirection: 'rtl', includeFontPadding: false }}
               numberOfLines={1}
             >
               {name}
             </Text>
+            {isVerified && (
+              <MaterialIcons
+                testID="company-verified-badge"
+                name="verified"
+                size={16}
+                color="#3B82F6"
+                style={{ flexShrink: 0 }}
+              />
+            )}
             {/* Says why its quote and chat buttons are off: it's yours */}
             {isOwn && (
               <View
