@@ -1344,6 +1344,45 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-company-office-phone-optional",
+      title: {
+        en: "Company and office edit profile: the phone is required only when it signs the account in",
+        ar: "تعديل ملف الشركة والمكتب: رقم الهاتف مطلوب فقط إن كان يُستخدم لتسجيل الدخول",
+      },
+      priority: "P1",
+      story: {
+        en: "A company or office that registered with an email and signs in by email has no phone on file. Saving any edit to its profile was refused with «رقم الهاتف مطلوب للتواصل معك.», although the API accepts the save. Now, as on the individual's edit profile, the phone follows the sign-in method (طريقة تسجيل الدخول): needed for PHONE or BOTH, optional for EMAIL, where the field shows (اختياري). A number that is typed in must still be 8 digits, and a new number is still verified by SMS before saving.",
+        ar: "الشركة أو المكتب المسجل ببريد إلكتروني ويدخل به ليس لديه رقم هاتف. فكان حفظ أي تعديل على الملف يُرفض بـ«رقم الهاتف مطلوب للتواصل معك.»، مع أن الخادم يقبل الحفظ. والآن، كما في تعديل ملف الفرد، يتبع رقم الهاتف طريقة تسجيل الدخول: مطلوب مع الهاتف أو كليهما، واختياري مع البريد حيث يظهر بجانبه (اختياري). والرقم المُدخل يجب أن يكون 8 أرقام، والرقم الجديد يُتحقق منه برسالة قبل الحفظ.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company signed in by email with no phone: edit the name and save; it saves with no phone prompt.",
+          "The same for an office.",
+          "An account signed in by phone or both, with the phone cleared, is still asked for it.",
+          "A partial number (fewer than 8 digits) doesn't save.",
+        ],
+        ar: [
+          "شركة تدخل بالبريد وبلا رقم هاتف: عدّل الاسم واحفظ؛ يُحفظ دون طلب الهاتف.",
+          "وكذلك المكتب.",
+          "الحساب الذي يدخل بالهاتف أو بكليهما، إن مُسح رقمه، يُطلب منه.",
+          "الرقم الناقص (أقل من 8 أرقام) لا يُحفظ.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in as a company registered by email, open تعديل الحساب, change the name, tap حفظ: saved.",
+          "Repeat as an office.",
+          "As an account signing in by phone, clear the phone and tap حفظ: «رقم الهاتف مطلوب للتواصل معك.».",
+        ],
+        ar: [
+          "ادخل بحساب شركة مسجل بالبريد، افتح تعديل الحساب، غيّر الاسم واضغط حفظ: يُحفظ.",
+          "كرر ذلك بحساب مكتب.",
+          "بحساب يدخل بالهاتف، امسح الرقم واضغط حفظ: «رقم الهاتف مطلوب للتواصل معك.».",
+        ],
+      },
+      updatedIn: "fix/company-phone-optional",
+    },
+    {
       id: "mobile-profile-share",
       title: {
         en: "«مشاركة الملف الشخصي» opens the share sheet on office and company profiles",

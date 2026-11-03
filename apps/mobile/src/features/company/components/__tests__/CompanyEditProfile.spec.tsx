@@ -298,6 +298,95 @@ describe('CompanyEditProfile', () => {
     expect(apiClient.patch).not.toHaveBeenCalled();
   });
 
+  // QA: a company signed in by email, with no phone on file, was refused
+  // every save with «رقم الهاتف مطلوب»
+  describe('a company that signs in by email, with no phone', () => {
+    beforeEach(() => {
+      (settingsService.getLoginMethod as jest.Mock).mockResolvedValue({
+        loginMethod: 'EMAIL',
+        email: 'salemelshekh@gmail.com',
+        phone: null,
+        phoneVerified: false,
+      });
+      useAuthStore.setState({
+        user: {
+          id: 'user-1',
+          email: 'salemelshekh@gmail.com',
+          phone: null,
+          whatsapp: null,
+        } as any,
+      } as any);
+    });
+
+    const editNameAndSave = async () => {
+      const screen = await render(<CompanyEditProfile />);
+      // The sign-in method has loaded: the phone is marked optional
+      await screen.findByText('(اختياري)');
+      await fireEvent.changeText(
+        screen.getByDisplayValue('دار العقار الحديث'),
+        'دار العقار الجديد',
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByTestId('save-button').props.accessibilityState?.disabled,
+        ).toBe(false),
+      );
+      return screen;
+    };
+
+    it('saves without asking for a phone', async () => {
+      const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
+      const screen = await editNameAndSave();
+      await fireEvent.press(screen.getByTestId('save-button'));
+
+      await waitFor(() =>
+        expect(settingsService.updateProfile).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'دار العقار الجديد', phone: '' }),
+        ),
+      );
+      expect(alertSpy).not.toHaveBeenCalledWith(
+        'تنبيه',
+        'رقم الهاتف مطلوب للتواصل معك.',
+      );
+      expect(settingsService.requestPhoneOtp).not.toHaveBeenCalled();
+      alertSpy.mockRestore();
+    });
+
+    it('still refuses a number with fewer than 8 digits', async () => {
+      const screen = await editNameAndSave();
+      await fireEvent.changeText(screen.getByTestId('phone-input'), '5123');
+      await fireEvent.press(screen.getByTestId('save-button'));
+
+      // The field's own rule (8 digits) stops the submit
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 50));
+      });
+      expect(settingsService.updateProfile).not.toHaveBeenCalled();
+      expect(apiClient.patch).not.toHaveBeenCalled();
+    });
+  });
+
+  it('a company that signs in by phone is still asked for one', async () => {
+    const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
+    const screen = await render(<CompanyEditProfile />);
+    await waitFor(() => expect(settingsService.getLoginMethod).toHaveBeenCalled());
+    await fireEvent.changeText(screen.getAllByDisplayValue('58094586')[0], '');
+    await fireEvent.changeText(
+      screen.getByDisplayValue('دار العقار الحديث'),
+      'دار العقار الجديد',
+    );
+    await fireEvent.press(screen.getByTestId('save-button'));
+
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith(
+        'تنبيه',
+        'رقم الهاتف مطلوب للتواصل معك.',
+      ),
+    );
+    expect(settingsService.updateProfile).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
+  });
+
   it('a new email surfaces the code link and blocks saving until verified', async () => {
     const alertSpy = jest.spyOn(useAlertStore.getState(), 'showAlert');
     const { getByDisplayValue, getByTestId, queryByTestId } = await render(

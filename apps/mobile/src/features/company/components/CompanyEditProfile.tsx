@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import ChangePasswordOtpSheet from '@/shared/components/auth/ChangePasswordOtpSheet';
+import { ChangePasswordOtpSheet } from '@/shared/components/auth/ChangePasswordOtpSheet';
 import { SPECIALTIES } from '@/shared/data/serviceCatalog';
 import { useIdentity } from '@/shared/hooks/auth/useIdentity';
 import { showAlert } from '@/shared/utils/alert';
@@ -96,6 +96,7 @@ export default function CompanyEditProfile() {
             onOpenServiceAreas={() => profile.setServiceAreasModalVisible(true)}
             emailNeedsCode={profile.emailNeedsCode}
             sendEmailCode={profile.sendEmailCode}
+            phoneRequired={profile.phoneRequired}
             phoneChanged={profile.phoneChanged}
             needsPhoneVerification={profile.needsPhoneVerification}
             verifySavedPhone={profile.verifySavedPhone}

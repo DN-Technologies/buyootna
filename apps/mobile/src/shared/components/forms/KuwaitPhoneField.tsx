@@ -62,6 +62,7 @@ export default function KuwaitPhoneField({
           }
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
+              testID={`${String(name)}-input`}
               className={
                 inputClassName ??
                 `flex-1 border ${
