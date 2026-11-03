@@ -53,7 +53,7 @@ export default function CompanyProfileCard({
             shadowRadius: 3,
           }}
         >
-          <Avatar uri={avatarUrl} />
+          <Avatar uri={avatarUrl} name={displayName} />
         </View>
       </View>
 

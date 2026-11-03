@@ -1,5 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
+import { nameInitials } from '@/shared/utils/nameInitials';
+
 import ChatHeader from '../ChatHeader';
 import ChatListItem from '../ChatListItem';
 import ChatPinnedPropertyBar from '../ChatPinnedPropertyBar';
@@ -59,7 +61,7 @@ describe('ChatListItem (Figma 4410:167994)', () => {
 
     expect(getByTestId('chat-online-dot')).toBeTruthy();
     expect(getByTestId('chat-avatar-initial')).toBeTruthy();
-    expect(getByText('أ')).toBeTruthy();
+    expect(getByText(nameInitials('أحمد'))).toBeTruthy();
   });
 });
 

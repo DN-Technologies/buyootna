@@ -1,5 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
+import { nameInitials } from '@/shared/utils/nameInitials';
+
 import StoryTray from '../components/StoryTray';
 import type { FeedAuthor } from '../types';
 
@@ -92,7 +94,7 @@ describe('StoryTray', () => {
   it('a provider without a logo shows its initial', async () => {
     mockAuthors = [author('a1', true)];
     const screen = await render(<StoryTray />);
-    expect(screen.getByText('م')).toBeTruthy();
+    expect(screen.getByText(nameInitials('مكتب a1'))).toBeTruthy();
   });
 
   describe('«قصتك» for companies and offices', () => {

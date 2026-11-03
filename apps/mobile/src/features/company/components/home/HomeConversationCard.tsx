@@ -82,7 +82,10 @@ export default function HomeConversationCard({
 
         {/* Avatar (left in RTL) */}
         <View className="h-12 w-12 overflow-hidden rounded-full">
-          <Avatar uri={conversation.otherUser?.avatarUrl} />
+          <Avatar
+            uri={conversation.otherUser?.avatarUrl}
+            name={conversation.otherUser?.name}
+          />
         </View>
       </View>
     </TouchableOpacity>

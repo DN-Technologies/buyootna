@@ -1,6 +1,8 @@
 import { Image } from 'expo-image';
 import { Text, View } from 'react-native';
 
+import { nameInitials } from '@/shared/utils/nameInitials';
+
 import type { ProviderStoryRing } from '../hooks/useProviderStoryRing';
 import StoryRing from './StoryRing';
 
@@ -44,7 +46,7 @@ export default function CompanyLogoAvatar({
   return (
     <View
       testID={testID}
-      className="items-center justify-center overflow-hidden rounded-full bg-[#DEE3E8]"
+      className="items-center justify-center overflow-hidden rounded-full bg-[#FBEFCD]"
       style={{ width: size, height: size }}
     >
       {logoUrl ? (
@@ -55,7 +57,7 @@ export default function CompanyLogoAvatar({
         />
       ) : (
         <Text className="font-cairo-bold text-[18px] text-[#15304D]">
-          {name.trim().charAt(0)}
+          {nameInitials(name)}
         </Text>
       )}
     </View>

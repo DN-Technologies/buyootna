@@ -54,7 +54,7 @@ export default function OfficeProfileCard({
             shadowRadius: 3,
           }}
         >
-          <Avatar uri={avatarUrl} />
+          <Avatar uri={avatarUrl} name={displayName} />
         </View>
       </View>
 

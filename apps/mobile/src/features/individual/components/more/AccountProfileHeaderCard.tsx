@@ -30,7 +30,7 @@ export default function AccountProfileHeaderCard({
         <View className="-mt-10 mb-2 flex-row items-start justify-between">
           {/* Overlapping Avatar */}
           <View className="h-20 w-20 overflow-hidden rounded-xl border-4 border-white shadow-sm">
-            <Avatar uri={avatarUrl} />
+            <Avatar uri={avatarUrl} name={displayName} />
           </View>
 
           {/* Account Type Selector */}

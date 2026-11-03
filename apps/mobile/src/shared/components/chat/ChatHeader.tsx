@@ -62,7 +62,7 @@ export default function ChatHeader({
               <View className="h-11 w-11 rounded-full bg-slate-200" />
             ) : (
               <View className="h-11 w-11 overflow-hidden rounded-full">
-                <Avatar uri={avatarUrl} testID="chat-header-avatar" />
+                <Avatar uri={avatarUrl} name={userName} testID="chat-header-avatar" />
               </View>
             )}
             {isOnline && !isLoading && (
