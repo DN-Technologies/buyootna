@@ -32,9 +32,17 @@ const target: StoryReplyTarget = {
 };
 
 describe('useChatConversation replying to a story', () => {
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
   const sendMessage = jest.fn(() => true);
 
+  // Sending scrolls the list on the next frame: flushed here, so that timer
+  // never fires after the test (it broke later suites in CI)
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     useChatStore.setState({
       sendMessage,

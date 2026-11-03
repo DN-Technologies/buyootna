@@ -81,7 +81,7 @@ export default function AttachmentMessageBubble({
       <View
         testID="attachment-bubble"
         className={`rounded-md p-1.5 ${
-          isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
+          isMine ? 'rounded-bl-none bg-[#15304D]' : 'rounded-br-none bg-[#F9FAFE]'
         }`}
       >
         {quote && <View className="px-1 pt-1">{quote}</View>}
