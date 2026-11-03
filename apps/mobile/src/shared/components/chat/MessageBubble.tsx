@@ -43,8 +43,8 @@ export default function MessageBubble({
         <View
           className={`gap-[10px] rounded-[6px] px-5 py-3 ${
             isMine
-              ? 'rounded-br-none bg-[#15304D]'
-              : 'rounded-bl-none bg-[#F9FAFE]'
+              ? 'rounded-bl-none bg-[#15304D]'
+              : 'rounded-br-none bg-[#F9FAFE]'
           }`}
           style={BUBBLE_SHADOW}
         >

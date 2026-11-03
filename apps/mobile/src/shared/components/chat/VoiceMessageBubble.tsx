@@ -127,7 +127,7 @@ export default function VoiceMessageBubble({
         <View
           testID="voice-bubble"
           className={`w-60 rounded-md px-3 py-2.5 ${
-            isMine ? 'rounded-br-none bg-[#15304D]' : 'rounded-bl-none bg-[#F9FAFE]'
+            isMine ? 'rounded-bl-none bg-[#15304D]' : 'rounded-br-none bg-[#F9FAFE]'
           }`}
         >
           {quote}
