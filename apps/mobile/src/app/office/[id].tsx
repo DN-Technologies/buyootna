@@ -27,6 +27,7 @@ import { useOfficeReport } from '@/shared/hooks/providers/useOfficeReport';
 import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
+import { shareProfile } from '@/shared/utils/helpers/shareProfile';
 import { openChatWith } from '@/shared/utils/openChat';
 import { openUrlThrottled } from '@/shared/utils/openUrl';
 
@@ -117,6 +118,7 @@ export default function OfficeProfileScreen() {
           onOpenReport={() => guardAction(handleOpenReport)}
           onToggleBlock={toggleBlock && (() => guardAction(toggleBlock))}
           blocked={!!blockedByMe}
+          onShareProfile={office ? () => void shareProfile(officeName) : undefined}
         />
 
         {isLoading ? (
