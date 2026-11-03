@@ -1383,6 +1383,41 @@ export const mobileShared: DocSection = {
       updatedIn: "fix/company-phone-optional",
     },
     {
+      id: "mobile-profile-share",
+      title: {
+        en: "«مشاركة الملف الشخصي» opens the share sheet on office and company profiles",
+        ar: "«مشاركة الملف الشخصي» يفتح نافذة المشاركة في ملفات المكاتب والشركات",
+      },
+      priority: "P1",
+      story: {
+        en: "On an office's or company's profile, ⋮ → «مشاركة الملف الشخصي» opens the phone's share sheet with «تابع {name} على بيوتنا» and the site link, for guests and signed-in users. It did nothing: neither page passed a share action, and on iOS a share sheet asked for while the app's alert was still closing was dropped. The alert now runs a button's action once it has closed on iOS, which also covers anything else opened from an alert button. Without a share action the option isn't offered.",
+        ar: "في ملف مكتب أو شركة، يفتح ⋮ ← «مشاركة الملف الشخصي» نافذة المشاركة في الهاتف بنص «تابع {الاسم} على بيوتنا» ورابط الموقع، للزائر والمسجّل. وكان لا يفعل شيئاً: لم تمرر الصفحتان إجراء المشاركة، وعلى iOS كانت نافذة المشاركة تُتجاهل إن طُلبت والتنبيه ما زال يُغلق. والآن ينفذ التنبيه إجراء الزر بعد أن يُغلق على iOS، وهذا يشمل كل ما يُفتح من زر تنبيه. وبلا إجراء مشاركة لا يظهر الخيار.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Office and company profiles: ⋮ → «مشاركة الملف الشخصي» opens the share sheet with the profile's name.",
+          "Works signed out as well as signed in.",
+          "Other alert buttons (report, block, cancel) still work as before.",
+        ],
+        ar: [
+          "ملفا المكتب والشركة: ⋮ ← «مشاركة الملف الشخصي» يفتح نافذة المشاركة باسم الملف.",
+          "يعمل للزائر كما للمسجّل.",
+          "أزرار التنبيه الأخرى (إبلاغ، حظر، إلغاء) تعمل كما كانت.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open any office profile on iOS, ⋮ → «مشاركة الملف الشخصي»: the share sheet appears; copy the text.",
+          "Repeat on a company profile, and signed out.",
+        ],
+        ar: [
+          "افتح ملف أي مكتب على iOS، ⋮ ← «مشاركة الملف الشخصي»: تظهر نافذة المشاركة؛ انسخ النص.",
+          "كرر ذلك في ملف شركة، ثم دون تسجيل دخول.",
+        ],
+      },
+      updatedIn: "fix/profile-share",
+    },
+    {
       id: "mobile-chat-inbox-redesign",
       title: {
         en: "Chats list: the new Figma inbox, search behind «+», and letter avatars",

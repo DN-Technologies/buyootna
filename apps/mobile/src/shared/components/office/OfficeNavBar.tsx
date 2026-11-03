@@ -21,10 +21,10 @@ export default function OfficeNavBar({
 }: OfficeNavBarProps) {
   const handleShowOptions = () => {
     showAlert('خيارات', '', [
-      {
-        text: 'مشاركة الملف الشخصي',
-        onPress: onShareProfile ?? (() => {}),
-      },
+      // Only when the page can share: a no-op here was a dead tap (QA)
+      ...(onShareProfile
+        ? [{ text: 'مشاركة الملف الشخصي', onPress: onShareProfile }]
+        : []),
       {
         text: 'إبلاغ عن المكتب',
         style: 'destructive',
