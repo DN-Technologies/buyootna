@@ -4,7 +4,6 @@ import type { StoriesService } from '../stories.service';
 import {
   AUTHOR,
   NOW,
-  pending,
   setupStoriesService,
   STORY,
   storyRow,
