@@ -80,6 +80,10 @@ jest.mock('@/shared/hooks/blocks/useBlocks', () => ({
   }),
 }));
 jest.mock('@/shared/utils/alert', () => ({ showAlert: jest.fn() }));
+// QA: «مشاركة الملف الشخصي» did nothing
+jest.mock('@/shared/utils/helpers/shareProfile', () => ({
+  shareProfile: jest.fn(),
+}));
 type AlertButton = { text: string; onPress?: () => void };
 const alertButtons = (): AlertButton[] => {
   const { showAlert } = jest.requireMock<{ showAlert: jest.Mock }>(
@@ -343,6 +347,23 @@ describe('CompanyProfileScreen', () => {
       report?.onPress?.();
       expect(handleOpenReport).not.toHaveBeenCalled();
       expect(mockAuthPresent).toHaveBeenCalledTimes(1);
+    });
+
+    it('«مشاركة الملف الشخصي» opens the share sheet with its name, for anyone', async () => {
+      useAuthStore.setState({ token: null });
+      const { shareProfile } = jest.requireMock<{ shareProfile: jest.Mock }>(
+        '@/shared/utils/helpers/shareProfile',
+      );
+      shareProfile.mockClear();
+      const screen = await render(<CompanyProfileScreen />);
+      await fireEvent.press(screen.getByTestId('profile-options'));
+      const share = alertButtons().find(
+        (b) => b.text === 'مشاركة الملف الشخصي',
+      );
+      expect(share).toBeTruthy();
+      share?.onPress?.();
+      expect(shareProfile).toHaveBeenCalledWith(expect.any(String));
+      expect(shareProfile.mock.calls[0][0]).not.toBe('');
     });
 
     it('offers «حظر الشركة», which asks to block the account and its profile', async () => {

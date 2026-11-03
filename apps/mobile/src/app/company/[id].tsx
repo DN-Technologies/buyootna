@@ -26,6 +26,7 @@ import { useCompanyDetails } from '@/shared/hooks/providers/useCompanyDetails';
 import { useCompanyReport } from '@/shared/hooks/providers/useCompanyReport';
 import { useCompanyReviews } from '@/shared/hooks/providers/useCompanyReviews';
 import { useAuthStore } from '@/shared/store/useAuthStore';
+import { shareProfile } from '@/shared/utils/helpers/shareProfile';
 
 export default function CompanyProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -92,6 +93,9 @@ export default function CompanyProfileScreen() {
           onOpenReport={() => guardAction(handleOpenReport)}
           onToggleBlock={toggleBlock && (() => guardAction(toggleBlock))}
           blocked={!!blockedByMe}
+          onShareProfile={
+            company ? () => void shareProfile(company.name) : undefined
+          }
         />
 
         {isLoading ? (
