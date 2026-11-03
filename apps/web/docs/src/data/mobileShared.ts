@@ -1344,6 +1344,41 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-home-map-back",
+      title: {
+        en: "The map from home has a back button and is a stack screen",
+        ar: "للخريطة المفتوحة من الرئيسية زر رجوع وهي شاشة ضمن المكدس",
+      },
+      priority: "P1",
+      story: {
+        en: "Home's map icon opened the map as a hidden tab with no tab bar; its only way out was a «layers» icon that wasn't read as one, so users were stuck (QA). The first button of the map's top bar is now a back chevron («رجوع») that returns to where the map was opened, or to home when it was opened by a link. The map moved from the individual tabs into the main stack (the /map path is unchanged), so it opens like other pushed screens and the iOS edge swipe can go back.",
+        ar: "كانت أيقونة الخريطة في الرئيسية تفتحها كتبويب مخفي بلا شريط تبويبات، ومخرجها الوحيد أيقونة «طبقات» لا تُفهم كرجوع، فيعلق المستخدم. أصبح أول زر في شريط الخريطة سهم رجوع («رجوع») يعيد إلى حيث فُتحت، أو إلى الرئيسية إن فُتحت من رابط. ونُقلت الخريطة من تبويبات الفرد إلى المكدس الرئيسي (المسار /map كما هو)، فتُفتح كغيرها من الشاشات ويمكن الرجوع بالسحب من حافة الشاشة على iOS.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Home → map icon → the map shows a back chevron at the start of its top bar.",
+          "The chevron returns to home.",
+          "On iOS, swiping from the screen edge goes back (panning the map elsewhere still moves the map).",
+        ],
+        ar: [
+          "الرئيسية ← أيقونة الخريطة ← يظهر سهم رجوع في بداية شريط الخريطة.",
+          "السهم يعيد إلى الرئيسية.",
+          "على iOS، السحب من حافة الشاشة يرجع (وتحريك الخريطة في غير ذلك يحرك الخريطة).",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open the map from home and tap the back chevron.",
+          "Open it again and swipe from the screen edge on a real iPhone.",
+        ],
+        ar: [
+          "افتح الخريطة من الرئيسية واضغط سهم الرجوع.",
+          "افتحها مرة أخرى واسحب من حافة الشاشة على iPhone حقيقي.",
+        ],
+      },
+      updatedIn: "fix/home-map-back",
+    },
+    {
       id: "mobile-company-office-phone-optional",
       title: {
         en: "Company and office edit profile: the phone is required only when it signs the account in",
