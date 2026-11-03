@@ -63,14 +63,22 @@ export default function MapOverlayUI({
         style={{ paddingTop: Math.max(insets.top, 12) }}
       >
         <View className="flex-row items-center gap-2 px-5 py-1.5">
-          {/* List View / Stack Layers Button */}
+          {/* Back: the map has no tab bar, and a "layers" icon here wasn't
+              read as the way out (QA: a dead end). Back to where it was
+              opened; home if it was opened by a link */}
           <TouchableOpacity
             activeOpacity={0.7}
-            // Home is a tab next to the map; '/' is the launch screen
-            onPress={() => router.navigate('/(individual)/home')}
+            testID="map-back"
+            accessibilityRole="button"
+            accessibilityLabel="رجوع"
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace('/(individual)/home')
+            }
             className="h-[45px] w-[45px] items-center justify-center rounded-full border border-gray-100 bg-[#F8FAFC]"
           >
-            <Feather name="layers" size={20} color="#111111" />
+            <Feather name="chevron-right" size={22} color="#111111" />
           </TouchableOpacity>
 
           {/* Tab Pill Container */}

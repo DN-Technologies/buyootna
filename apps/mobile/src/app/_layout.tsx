@@ -203,6 +203,13 @@ function RootLayout() {
                   <Stack.Screen name="(company)" />
                   <Stack.Screen name="(office)" />
                   <Stack.Screen name="property/[id]" />
+                  {/* The map from home: a stack screen (not a hidden tab), so
+                      the iOS swipe from the edge goes back too. The swipe is
+                      limited to the edge, so panning the map isn't taken */}
+                  <Stack.Screen
+                    name="map"
+                    options={{ gestureEnabled: true, fullScreenGestureEnabled: false }}
+                  />
                   {/* Stories open over everything, full screen */}
                   <Stack.Screen
                     name="stories/[authorId]"
