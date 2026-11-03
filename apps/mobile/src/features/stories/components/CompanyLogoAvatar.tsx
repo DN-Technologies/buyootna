@@ -46,7 +46,7 @@ export default function CompanyLogoAvatar({
   return (
     <View
       testID={testID}
-      className="items-center justify-center overflow-hidden rounded-full bg-[#DEE3E8]"
+      className="items-center justify-center overflow-hidden rounded-full bg-[#FBEFCD]"
       style={{ width: size, height: size }}
     >
       {logoUrl ? (

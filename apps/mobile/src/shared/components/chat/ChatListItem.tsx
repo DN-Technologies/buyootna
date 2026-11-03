@@ -75,9 +75,9 @@ export default function ChatListItem({
         ) : (
           <View
             testID="chat-avatar-initial"
-            className="h-11 w-11 items-center justify-center rounded-full bg-[#BEEFB9]"
+            className="h-11 w-11 items-center justify-center rounded-full bg-[#FBEFCD]"
           >
-            <Text className="font-cairo-medium text-[16px] leading-[21px] text-[#0F1828]">
+            <Text className="font-cairo-bold text-[16px] leading-[21px] text-[#15304D]">
               {nameInitials(user.name)}
             </Text>
           </View>

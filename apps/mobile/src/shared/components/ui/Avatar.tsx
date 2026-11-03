@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, Text, View } from 'react-native';
 
-import { nameInitials } from '@/shared/utils/nameInitials';
+import { LETTER_AVATAR, nameInitials } from '@/shared/utils/nameInitials';
 
 interface AvatarProps {
   uri?: string | null;
@@ -47,7 +47,8 @@ export default function Avatar({ uri, testID, name }: AvatarProps) {
         height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F1F5F9',
+        // The app's gold behind a letter; the neutral grey behind the icon
+        backgroundColor: initials ? LETTER_AVATAR.background : '#F1F5F9',
       }}
     >
       {iconSize > 0 &&
@@ -59,7 +60,7 @@ export default function Avatar({ uri, testID, name }: AvatarProps) {
               fontFamily: 'Cairo_700Bold',
               fontSize: Math.round(iconSize * 0.8),
               lineHeight: Math.round(iconSize * 1.4),
-              color: '#15304D',
+              color: LETTER_AVATAR.letter,
               includeFontPadding: false,
             }}
           >

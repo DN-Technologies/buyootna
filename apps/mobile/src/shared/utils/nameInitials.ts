@@ -1,3 +1,10 @@
+/**
+ * A letter avatar's colours, the app's own: the light gold of its pills
+ * (#FBEFCD) behind the brand navy (#15304D). Kept in step with the
+ * bg-[#FBEFCD] / text-[#15304D] classes the letter fallbacks use.
+ */
+export const LETTER_AVATAR = { background: '#FBEFCD', letter: '#15304D' };
+
 // Arabic's definite article, which would make every «ال…» name start alike
 const ARTICLE = /^ال(?=\S{2,})/;
 

@@ -60,7 +60,7 @@ export default function BlockedAccountsScreen() {
               testID={`blocked-${item.userId}`}
               className="flex-row items-center gap-3 border-b border-gray-50 py-3"
             >
-              <View className="size-11 items-center justify-center overflow-hidden rounded-full bg-[#DEE3E8]">
+              <View className="size-11 items-center justify-center overflow-hidden rounded-full bg-[#FBEFCD]">
                 {item.avatarUrl ? (
                   <Image
                     source={{ uri: item.avatarUrl }}

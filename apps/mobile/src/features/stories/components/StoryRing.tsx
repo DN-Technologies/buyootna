@@ -40,7 +40,7 @@ export default function StoryRing({
   const ringState = !hasUnseen ? 'seen' : partial ? 'partial' : 'unseen';
   const avatar = (
     <View
-      className={`items-center justify-center overflow-hidden rounded-full border-white bg-[#DEE3E8] ${
+      className={`items-center justify-center overflow-hidden rounded-full border-white bg-[#FBEFCD] ${
         isList ? '' : 'border-2'
       }`}
       style={{
