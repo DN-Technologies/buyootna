@@ -35,7 +35,7 @@ export default function ListerProfileSnippet({
         {/* Avatar with Verification Badge */}
         <View className="relative">
           <View className="h-14 w-14 overflow-hidden rounded-full">
-            <Avatar uri={avatarUrl} testID="lister-avatar" />
+            <Avatar uri={avatarUrl} name={name} testID="lister-avatar" />
           </View>
           {isVerified && (
             <View className="absolute -bottom-0.5 -left-0.5 rounded-full">

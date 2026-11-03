@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
 import CompanyListCard from '@/features/individual/components/companies/CompanyListCard';
+import { nameInitials } from '@/shared/utils/nameInitials';
 
 import CompanyLogoAvatar from '../components/CompanyLogoAvatar';
 
@@ -24,7 +25,7 @@ describe('CompanyLogoAvatar', () => {
     const { getByText } = await render(
       <CompanyLogoAvatar name="  شركة" logoUrl="" />,
     );
-    expect(getByText('ش')).toBeTruthy();
+    expect(getByText(nameInitials('شركة'))).toBeTruthy();
   });
 
   it.each([
@@ -42,7 +43,7 @@ describe('CompanyLogoAvatar', () => {
     const { getByText } = await render(
       <CompanyLogoAvatar name="شركة" logoUrl={7} ring={ring()} />,
     );
-    expect(getByText('ش')).toBeTruthy();
+    expect(getByText(nameInitials('شركة'))).toBeTruthy();
   });
 });
 

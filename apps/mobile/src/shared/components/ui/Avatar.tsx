@@ -1,10 +1,14 @@
 import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { Image, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
+
+import { nameInitials } from '@/shared/utils/nameInitials';
 
 interface AvatarProps {
   uri?: string | null;
   testID?: string;
+  // Without a photo: the name's letters instead of the person icon
+  name?: string | null;
 }
 
 /**
@@ -16,9 +20,10 @@ interface AvatarProps {
  * Caller controls size/rounding/border via the wrapping View, same as a raw
  * <Image> before.
  */
-export default function Avatar({ uri, testID }: AvatarProps) {
-  // The icon scales with whatever size the caller gives the avatar
+export default function Avatar({ uri, testID, name }: AvatarProps) {
+  // The icon or letters scale with whatever size the caller gives the avatar
   const [iconSize, setIconSize] = useState(0);
+  const initials = nameInitials(name);
 
   if (uri) {
     return (
@@ -45,7 +50,24 @@ export default function Avatar({ uri, testID }: AvatarProps) {
         backgroundColor: '#F1F5F9',
       }}
     >
-      {iconSize > 0 && <Feather name="user" size={iconSize} color="#94A3B8" />}
+      {iconSize > 0 &&
+        (initials ? (
+          <Text
+            testID={testID ? `${testID}-initials` : undefined}
+            numberOfLines={1}
+            style={{
+              fontFamily: 'Cairo_700Bold',
+              fontSize: Math.round(iconSize * 0.8),
+              lineHeight: Math.round(iconSize * 1.4),
+              color: '#15304D',
+              includeFontPadding: false,
+            }}
+          >
+            {initials}
+          </Text>
+        ) : (
+          <Feather name="user" size={iconSize} color="#94A3B8" />
+        ))}
     </View>
   );
 }

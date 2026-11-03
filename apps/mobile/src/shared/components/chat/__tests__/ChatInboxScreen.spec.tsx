@@ -113,7 +113,7 @@ jest.mock('@/shared/store/useChatStore', () => ({
   ),
 }));
 
-describe('ChatInboxScreen (Figma 4410:167991)', () => {
+describe('ChatInboxScreen (Figma 9191:26630)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockToken = 'token';
@@ -157,7 +157,8 @@ describe('ChatInboxScreen (Figma 4410:167991)', () => {
     expect(text.props.children).toBe(label);
     expect(text.props.numberOfLines).toBe(1);
     expect(text.props.style?.letterSpacing).toBeUndefined();
-    expect(String(text.props.className)).toContain('leading-[22px]');
+    // Cairo 14: a 24 line keeps the Arabic marks inside it
+    expect(String(text.props.className)).toContain('leading-[24px]');
   });
 
   it('shows who is online and who is typing', async () => {
@@ -169,6 +170,28 @@ describe('ChatInboxScreen (Figma 4410:167991)', () => {
     expect(getByTestId('chat-list-typing')).toBeTruthy();
     useChatLiveStore.getState().reset();
   });
+
+  it.each(['chat-inbox-plus', 'chat-inbox-search-open'])(
+    '%s turns the tabs into the search field, and ✕ brings them back',
+    async (opener) => {
+      const { getByTestId, queryByTestId } = await render(<ChatInboxScreen />);
+      expect(queryByTestId('chat-inbox-search')).toBeNull();
+      expect(getByTestId('chat-inbox-tab-ALL')).toBeTruthy();
+
+      await fireEvent.press(getByTestId(opener));
+      expect(queryByTestId('chat-inbox-tab-ALL')).toBeNull();
+      await fireEvent.changeText(getByTestId('chat-inbox-search'), 'محمد');
+      expect(getByTestId('chat-inbox-search').props.value).toBe('محمد');
+
+      await fireEvent.press(getByTestId('chat-inbox-search-clear'));
+      expect(queryByTestId('chat-inbox-search')).toBeNull();
+      expect(getByTestId('chat-inbox-tab-ALL')).toBeTruthy();
+
+      // Opening again starts empty
+      await fireEvent.press(getByTestId('chat-inbox-plus'));
+      expect(getByTestId('chat-inbox-search').props.value).toBe('');
+    },
+  );
 
   it('as a tab it has no back arrow', async () => {
     const { queryByTestId, getByText } = await render(

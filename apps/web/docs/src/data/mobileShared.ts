@@ -1344,6 +1344,57 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-chat-inbox-redesign",
+      title: {
+        en: "Chats list: the new Figma inbox, search behind «+», and letter avatars",
+        ar: "قائمة المحادثات: تصميم Figma الجديد، والبحث خلف «+»، والحرف بدل الصورة",
+      },
+      priority: "P2",
+      figmaFrameUrls: [
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9191-26630&m=dev",
+          label: { en: "All", ar: "الكل" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9191-31589&m=dev",
+          label: { en: "Unread", ar: "غير المقروء" },
+        },
+        {
+          url: "https://www.figma.com/design/UKbISBqMsuU82l0FGIev5L/Byoutna-App---Dashboard?node-id=9191-32180&m=dev",
+          label: { en: "Search", ar: "البحث" },
+        },
+      ],
+      story: {
+        en: "«محادثاتي» has a row under the title with 🔍 on the right, a yellow pill with الكل and غير المقروء, and «+» on the left. «+» or 🔍 turns the row into a search field (gold border), with ✕ on the left to clear it and bring the tabs back. Each chat is a card: an unread one is tinted with a green count, a read one is white with my ticks. A company, office or person without a photo shows the first letter of their name, leaving out «ال» (so «الصباح» shows «ص»), here and on profile headers, reviews, story rings, company cards and the blocked list.",
+        ar: "في «محادثاتي» صف تحت العنوان فيه 🔍 يميناً، وشريط أصفر بـ«الكل» و«غير المقروء»، و«+» يساراً. يحوّل «+» أو 🔍 الصف إلى حقل بحث (بإطار ذهبي)، وفيه ✕ يساراً يمسح البحث ويعيد التبويبات. وكل محادثة بطاقة: غير المقروءة مظللة بعدد أخضر، والمقروءة بيضاء بعلامات القراءة. ومن لا صورة له من شركة أو مكتب أو فرد يظهر أول حرف من اسمه بلا «ال» (فـ«الصباح» تظهر «ص»)، هنا وفي رؤوس الملفات والتقييمات وحلقات القصص وبطاقات الشركات وقائمة المحظورين.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "«+» and 🔍 both open the search field; ✕ clears the query and brings back الكل / غير المقروء.",
+          "An unread chat is a tinted card with a green count (9+ above nine); a read chat is white.",
+          "A profile without a photo shows one letter, never «ا» from «ال».",
+        ],
+        ar: [
+          "يفتح «+» و🔍 حقل البحث؛ ويمسح ✕ البحث ويعيد «الكل» / «غير المقروء».",
+          "المحادثة غير المقروءة بطاقة مظللة بعدد أخضر (9+ فوق التسعة)؛ والمقروءة بيضاء.",
+          "الملف بلا صورة يظهر حرفاً واحداً، ولا يكون «ا» من «ال».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open محادثاتي with one unread and one read chat: compare with the Figma frames.",
+          "Tap «+», type a name, then ✕: the tabs come back and the list is whole again.",
+          "Chat with a company named «الصباح» that has no logo: its avatar shows «ص».",
+        ],
+        ar: [
+          "افتح محادثاتي ومعك محادثة غير مقروءة وأخرى مقروءة: قارن بإطارات Figma.",
+          "اضغط «+» واكتب اسماً ثم ✕: تعود التبويبات وتعود القائمة كاملة.",
+          "حادث شركة اسمها «الصباح» بلا شعار: تظهر صورتها «ص».",
+        ],
+      },
+      updatedIn: "feat/chat-inbox-figma",
+    },
+    {
       id: "mobile-chat-figma-list-and-screen",
       title: {
         en: "Chat: one chats list for every account, navy bubbles for my messages",

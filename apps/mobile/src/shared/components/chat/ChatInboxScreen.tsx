@@ -1,5 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { FlashList } from '@shopify/flash-list';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -13,8 +14,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BackChevronIcon, RequestCloseIcon } from '@/assets/icons/activity';
-import { SearchIcon } from '@/assets/icons/company-add';
 import { ConversationSummary } from '@/shared/api/chat.service';
 import GuestEmptyState from '@/shared/components/auth/GuestEmptyState';
 import ChatListItem from '@/shared/components/chat/ChatListItem';
@@ -42,6 +41,9 @@ interface ChatInboxScreenProps {
 
 type Tab = 'ALL' | 'UNREAD';
 
+// 12 between the chat cards
+const RowGap = () => <View className="h-3" />;
+
 const TABS: { id: Tab; label: string }[] = [
   { id: 'ALL', label: 'الكل' },
   { id: 'UNREAD', label: 'غير المقروء' },
@@ -58,9 +60,10 @@ const contextTag = (conversation: ConversationSummary) => {
 };
 
 /**
- * "محادثاتي" (Figma 4410:167991): one chats list for every account type.
- * Search runs on the server (name, ad, message text); the tabs filter what
- * is loaded.
+ * "محادثاتي" (Figma 9191:26630): one chats list for every account type.
+ * Under the title, 🔍, the الكل / غير المقروء pill and «+»; «+» or 🔍 turns
+ * that row into the search field and ✕ back (9191:32180). Search runs on the
+ * server (name, ad, message text); the tabs filter what is loaded.
  */
 export default function ChatInboxScreen({
   variant = 'screen',
@@ -130,10 +133,11 @@ export default function ChatInboxScreen({
           onPress={() => router.back()}
           className="h-8 w-8 items-center justify-center rounded-full"
         >
-          {/* The asset points left; the back arrow points right under RTL */}
-          <View style={{ transform: [{ scaleX: -1 }] }}>
-            <BackChevronIcon color="#111111" />
-          </View>
+          {/* Figma flips the asset: it points right, back under RTL */}
+          <Image
+            source={require('@/assets/icons/chat/inbox/back.svg')}
+            style={{ width: 20, height: 20, transform: [{ scaleX: -1 }] }}
+          />
         </TouchableOpacity>
       ) : (
         <View className="h-8 w-8" />
@@ -205,39 +209,96 @@ export default function ChatInboxScreen({
         <ContentContainer className="flex-1">
           {header}
 
-          {/* Search pill: the magnifier on the right, the clear button on the left */}
-          <View className="h-[42px] justify-center px-4">
-            <View
-              className={`flex-row items-center gap-[6px] rounded-full border bg-[#F9FAFE] px-3 ${
-                isSearchActive ? 'border-[#15304D]' : 'border-[#ECECEC]'
-              }`}
+          {/* RTL: 🔍 on the right, then the tabs pill (or the search
+              field), then «+» (or ✕) on the left */}
+          <View
+            testID="chat-inbox-toolbar"
+            className="flex-row items-center justify-between px-4 pb-4 pt-3"
+          >
+            <TouchableOpacity
+              testID="chat-inbox-search-open"
+              accessibilityLabel="بحث"
+              onPress={() => setIsSearchActive(true)}
+              className="h-10 w-10 items-center justify-center rounded-[14px]"
             >
-              <SearchIcon color={isSearchActive ? '#15304D' : '#989898'} />
-              <TextInput
-                testID="chat-inbox-search"
-                className="h-10 flex-1 py-0 text-right font-cairo text-[13px] text-[#111111]"
-                placeholder="ابحث باسم المستخدم..."
-                placeholderTextColor="#989898"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                onFocus={() => setIsSearchActive(true)}
-                textAlign="right"
+              <Image
+                source={require('@/assets/icons/chat/inbox/search.svg')}
+                style={{ width: 26, height: 26, position: "relative", top: -3 }}
               />
-              {isSearchActive && (
-                <TouchableOpacity
-                  testID="chat-inbox-search-clear"
-                  accessibilityLabel="إلغاء البحث"
-                  onPress={() => {
-                    setSearchQuery('');
-                    setIsSearchActive(false);
-                    Keyboard.dismiss();
-                  }}
-                  hitSlop={8}
-                >
-                  <RequestCloseIcon size={16} color="#989898" />
-                </TouchableOpacity>
-              )}
-            </View>
+            </TouchableOpacity>
+
+            {isSearchActive ? (
+              <View className="h-11 flex-1 flex-row items-center rounded-full border-[0.5px] border-[#C5A36D] bg-[#F9FAFE] px-4 mx-2">
+                <TextInput
+                  testID="chat-inbox-search"
+                  autoFocus
+                  className="h-11 flex-1 py-0 text-right font-cairo text-[13px] text-[#111111]"
+                  placeholder="ابحث باسم المستخدم..."
+                  placeholderTextColor="#989898"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  textAlign="right"
+                />
+              </View>
+            ) : (
+              <View className="h-[46px] w-[230px] flex-row items-center justify-center rounded-full bg-[#FBEFCD] px-3 py-1">
+                {TABS.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <TouchableOpacity
+                      key={tab.id}
+                      testID={`chat-inbox-tab-${tab.id}`}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: isActive }}
+                      onPress={() => setActiveTab(tab.id)}
+                      className={`h-[34px] items-center justify-center rounded-2xl px-3 ${
+                        isActive ? 'bg-white' : ''
+                      }`}
+                      style={{ width: tab.id === 'ALL' ? 86 : 112 }}
+                    >
+                      {/* One line: Android measured a negative letter
+                          spacing narrower than it drew, and wrapped
+                          'غير المقروء' (QA) */}
+                      <Text
+                        testID={`chat-inbox-tab-label-${tab.id}`}
+                        numberOfLines={1}
+                        className={`text-[14px] leading-[24px] ${
+                          isActive
+                            ? 'font-cairo-bold text-[#111111]'
+                            : 'font-cairo-medium text-[#6B6A6A]'
+                        }`}
+                      >
+                        {tab.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+
+            <TouchableOpacity
+              testID={isSearchActive ? 'chat-inbox-search-clear' : 'chat-inbox-plus'}
+              accessibilityLabel={isSearchActive ? 'إلغاء البحث' : 'بحث'}
+              onPress={() => {
+                if (isSearchActive) {
+                  setSearchQuery('');
+                  setIsSearchActive(false);
+                  Keyboard.dismiss();
+                } else {
+                  setIsSearchActive(true);
+                }
+              }}
+              className="h-10 w-10 items-center justify-center rounded-[14px]"
+            >
+              <Image
+                source={
+                  isSearchActive
+                    ? require('@/assets/icons/chat/inbox/close.svg')
+                    : require('@/assets/icons/chat/inbox/plus.svg')
+                }
+                style={{ width: 24, height: 24 }}
+              />
+            </TouchableOpacity>
           </View>
 
           {isSearchActive ? (
@@ -246,7 +307,11 @@ export default function ChatInboxScreen({
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: listBottomPadding }}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                paddingBottom: listBottomPadding,
+              }}
+              ItemSeparatorComponent={RowGap}
               ListEmptyComponent={
                 searchQuery.trim() && !isSearching ? (
                   <Text
@@ -261,44 +326,6 @@ export default function ChatInboxScreen({
             />
           ) : (
             <>
-              {/* الكل on the right, غير المقروء after it */}
-              <View className="h-11 flex-row items-center gap-4 border-b border-[#EBECEE] pe-4 ps-5">
-                {TABS.map((tab) => {
-                  const isActive = activeTab === tab.id;
-                  return (
-                    <TouchableOpacity
-                      key={tab.id}
-                      testID={`chat-inbox-tab-${tab.id}`}
-                      accessibilityRole="tab"
-                      accessibilityState={{ selected: isActive }}
-                      onPress={() => setActiveTab(tab.id)}
-                      className="h-11 shrink-0 items-center justify-between pt-[12px]"
-                    >
-                      {/* One line, as wide as it needs. A negative letter
-                          spacing made Android measure the label narrower
-                          than it drew it, so 'غير المقروء' wrapped onto two
-                          lines, and the 18px line cut the second (QA) */}
-                      <Text
-                        testID={`chat-inbox-tab-label-${tab.id}`}
-                        numberOfLines={1}
-                        className={`text-[15px] leading-[22px] ${
-                          isActive
-                            ? 'font-almarai-bold text-[#15304D]'
-                            : 'font-almarai-regular text-[#6B6A6A]'
-                        }`}
-                      >
-                        {tab.label}
-                      </Text>
-                      <View
-                        className={`h-[2px] w-full rounded-t-[6px] ${
-                          isActive ? 'bg-[#15304D]' : 'bg-transparent'
-                        }`}
-                      />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
               {isLoading && conversations.length === 0 ? (
                 <ChatListSkeleton count={6} />
               ) : (
@@ -308,7 +335,11 @@ export default function ChatInboxScreen({
                   extraData={[onlineByIdentity, typingByConversation]}
                   keyExtractor={(item) => item.id}
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: listBottomPadding }}
+                  contentContainerStyle={{
+                    paddingHorizontal: 16,
+                    paddingBottom: listBottomPadding,
+                  }}
+                  ItemSeparatorComponent={RowGap}
                   ListEmptyComponent={EmptyChatState}
                   refreshing={pullToRefresh.refreshing}
                   onRefresh={pullToRefresh.onRefresh}

@@ -2,6 +2,8 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import { nameInitials } from '@/shared/utils/nameInitials';
+
 import type { StoryAuthor } from '../types';
 
 interface StoryRingProps {
@@ -55,7 +57,7 @@ export default function StoryRing({
         />
       ) : (
         <Text className="font-cairo-bold text-[18px] text-[#15304D]">
-          {author.name.trim().charAt(0)}
+          {nameInitials(author.name)}
         </Text>
       )}
     </View>

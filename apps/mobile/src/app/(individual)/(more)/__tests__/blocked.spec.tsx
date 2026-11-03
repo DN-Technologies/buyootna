@@ -1,6 +1,7 @@
 import { fireEvent, render } from '@testing-library/react-native';
 
 import BlockedAccountsScreen from '@/app/(individual)/(more)/blocked';
+import { nameInitials } from '@/shared/utils/nameInitials';
 
 const mockBack = jest.fn();
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: mockBack }) }));
@@ -40,7 +41,7 @@ describe('Settings › المحظورون', () => {
     expect(screen.getByText('المحظورون')).toBeTruthy();
     expect(screen.getByText('شركة البنيان')).toBeTruthy();
     // No picture: the initial
-    expect(screen.getByText('أ')).toBeTruthy();
+    expect(screen.getByText(nameInitials('أحمد'))).toBeTruthy();
     await fireEvent.press(screen.getByTestId('unblock-u3'));
     expect(mockAskToUnblock).toHaveBeenCalledWith('u3', 'أحمد');
   });

@@ -48,7 +48,11 @@ export default function ProfileHeaderCard({
       >
         {/* Overlapping Avatar */}
         <View className="absolute -top-10 left-5 z-10 h-20 w-20 overflow-hidden rounded-2xl border-4 border-white bg-slate-100 shadow-sm">
-          <Avatar uri={userProfile.avatarUrl} testID="profile-header-avatar" />
+          <Avatar
+            uri={userProfile.avatarUrl}
+            name={userProfile.name}
+            testID="profile-header-avatar"
+          />
         </View>
 
         {/* Spacer */}

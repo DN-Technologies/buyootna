@@ -61,4 +61,45 @@ describe('ChatListItem', () => {
     expect(name.props.numberOfLines).toBe(1);
     expect(String(name.props.className)).toContain('shrink');
   });
+
+  describe('Figma 9191:26630', () => {
+    const row = (unreadCount: number, isOnline = false) =>
+      render(
+        <ChatListItem
+          id="c1"
+          user={{ name: 'محمد العتيبي', avatarUrl: '', isOnline }}
+          propertyContext="شقة السالمية"
+          lastMessage="ارغب في التفاوض"
+          timestamp="15 دقيقة"
+          unreadCount={unreadCount}
+          onPress={jest.fn()}
+        />,
+      );
+
+    it('an unread chat is a tinted card with a green count', async () => {
+      const { getByTestId } = await row(3);
+      expect(String(getByTestId('chat-list-card-c1').props.className)).toContain(
+        'bg-[#F3F5FB]',
+      );
+      expect(String(getByTestId('chat-unread-badge').props.className)).toContain(
+        'bg-[#15A72B]',
+      );
+    });
+
+    it('a read chat is plain white, with no count', async () => {
+      const { getByTestId, queryByTestId } = await row(0);
+      expect(String(getByTestId('chat-list-card-c1').props.className)).toContain(
+        'bg-white',
+      );
+      expect(queryByTestId('chat-unread-badge')).toBeNull();
+    });
+
+    it('shows the online dot only while they are online', async () => {
+      const offline = await row(0);
+      expect(offline.queryByTestId('chat-online-dot')).toBeNull();
+      offline.unmount();
+      const online = await row(0, true);
+      expect(online.getByTestId('chat-online-dot')).toBeTruthy();
+    });
+  });
 });

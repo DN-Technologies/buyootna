@@ -25,7 +25,11 @@ export default function ReviewCardItem({
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
           <View className="h-[48px] w-[48px] overflow-hidden rounded-full">
-            <Avatar uri={item.avatarUrl} testID={`review-avatar-${item.id}`} />
+            <Avatar
+              uri={item.avatarUrl}
+              name={item.userName}
+              testID={`review-avatar-${item.id}`}
+            />
           </View>
           <View>
             {/* Right-aligned for a Latin name too; text-right flips under RTL */}

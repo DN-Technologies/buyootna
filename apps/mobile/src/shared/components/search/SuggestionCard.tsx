@@ -65,7 +65,7 @@ export default function SuggestionCard({
           />
         ) : (
           // A URL, or the person icon when there's none
-          <Avatar uri={logoUrl} testID="suggestion-card-image" />
+          <Avatar uri={logoUrl} name={name} testID="suggestion-card-image" />
         )}
       </View>
 
