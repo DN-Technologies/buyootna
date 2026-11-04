@@ -44,9 +44,14 @@ const INPUT_TEXT = {
   fontSize: 14,
   color: '#111111',
   textAlign: 'right' as const,
+  writingDirection: 'rtl' as const,
   letterSpacing: -0.408,
   paddingVertical: 0,
 };
+
+// Arabic text reads from the right: without this a label or placeholder
+// sat on the left of its column (the app's pattern, as in AdLevelSelector)
+const RTL = { writingDirection: 'rtl' as const };
 
 const withCommas = (value: string) =>
   value.replace(/[^\d]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -97,7 +102,9 @@ function PickerField({
 }) {
   return (
     <View className="flex-1" style={{ gap: 10 }}>
-      <Text className={LABEL}>{label}</Text>
+      <Text className={LABEL} style={RTL}>
+        {label}
+      </Text>
       <TouchableOpacity
         testID={testID}
         accessibilityRole="button"
@@ -107,6 +114,7 @@ function PickerField({
       >
         <Text
           numberOfLines={1}
+          style={RTL}
           className={`font-cairo text-[14px] leading-[21px] tracking-[-0.408px] ${
             value ? 'text-[#111111]' : 'text-[#979797]'
           }`}
@@ -137,7 +145,9 @@ function NumberField({
 }) {
   return (
     <View className="flex-1" style={{ gap: 10 }}>
-      <Text className={LABEL}>{label}</Text>
+      <Text className={LABEL} style={RTL}>
+        {label}
+      </Text>
       <View className={`${BOX} px-[16px]`}>
         <BottomSheetTextInput
           testID={testID}
@@ -276,7 +286,10 @@ const HomeFilterSheet = forwardRef<BottomSheetModal, HomeFilterSheetProps>(
         <View testID="home-filter-sheet" className="flex-1 bg-white">
           {/* Title, with ✕ on the left */}
           <View className="flex-row items-center justify-between py-[6px] pl-[10px] pr-[16px]">
-            <Text className="flex-1 font-cairo-semibold text-[18px] leading-[22px] text-[#111111]">
+            <Text
+              className="font-cairo-semibold text-[18px] leading-[22px] text-[#111111]"
+              style={RTL}
+            >
               تصفية البحث
             </Text>
             <TouchableOpacity
@@ -376,7 +389,9 @@ const HomeFilterSheet = forwardRef<BottomSheetModal, HomeFilterSheetProps>(
                   />
                 </View>
                 <View style={{ gap: 12 }}>
-                  <Text className={LABEL}>الحالة</Text>
+                  <Text className={LABEL} style={RTL}>
+                    الحالة
+                  </Text>
                   <View className="flex-row" style={{ gap: 14 }}>
                     {EXCHANGE_CATEGORIES.map((option) => (
                       <Chip
@@ -399,7 +414,9 @@ const HomeFilterSheet = forwardRef<BottomSheetModal, HomeFilterSheetProps>(
 
             {(tab === 'sale' || tab === 'rent') && (
               <View style={{ gap: 12 }}>
-                <Text className={LABEL}>فئة العقار</Text>
+                <Text className={LABEL} style={RTL}>
+                  فئة العقار
+                </Text>
                 <View className="flex-row flex-wrap" style={{ rowGap: 10, columnGap: 8 }}>
                   {SALE_RENT_CATEGORIES.map((option) => (
                     <Chip
