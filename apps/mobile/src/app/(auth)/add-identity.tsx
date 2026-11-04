@@ -21,11 +21,6 @@ interface IdentityOption {
   route: string;
 }
 
-// Company/office accounts stay hidden unless enabled via env, the same flag
-// the signup screens use (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true)
-const COMPANIES_ENABLED =
-  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
-
 const identityOptions: IdentityOption[] = [
   {
     type: 'INDIVIDUAL',
@@ -34,22 +29,18 @@ const identityOptions: IdentityOption[] = [
     icon: require('@/assets/icons/individual-icon.svg'),
     route: '/(auth)/add-identity-individual',
   },
-  ...(COMPANIES_ENABLED
-    ? ([
-        {
-          type: 'COMPANY',
-          title: 'حساب شركة',
-          description: 'للشركات العقارية والمطورين',
-          route: '/(auth)/add-identity-company',
-        },
-        {
-          type: 'OFFICE',
-          title: 'حساب مكتب',
-          description: 'للمكاتب العقارية والوسطاء',
-          route: '/(auth)/add-identity-office',
-        },
-      ] as IdentityOption[])
-    : []),
+  {
+    type: 'COMPANY',
+    title: 'حساب شركة',
+    description: 'للشركات العقارية والمطورين',
+    route: '/(auth)/add-identity-company',
+  },
+  {
+    type: 'OFFICE',
+    title: 'حساب مكتب',
+    description: 'للمكاتب العقارية والوسطاء',
+    route: '/(auth)/add-identity-office',
+  },
 ];
 
 export default function AddIdentityScreen() {

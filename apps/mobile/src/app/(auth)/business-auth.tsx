@@ -9,7 +9,6 @@ import {
   CompanySignupForm,
 } from '@/features/auth/components/company';
 import { useBusinessAuth } from '@/features/auth/hooks';
-import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
 
 export default function BusinessAuthScreen() {
   const {
@@ -27,12 +26,7 @@ export default function BusinessAuthScreen() {
     onSignupFinal,
     handleAccountTypeChange,
     handleBack,
-    isLocked,
   } = useBusinessAuth();
-
-  if (isLocked) {
-    return <ComingSoonGate />;
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">

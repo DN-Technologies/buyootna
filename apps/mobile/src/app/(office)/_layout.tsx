@@ -5,14 +5,8 @@ import { useRef } from 'react';
 import { OfficeAddActionSheet } from '@/features/office/components/add';
 import QuotaExhaustedSheet from '@/shared/components/add-listing/QuotaExhaustedSheet';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
-import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
 import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-
-// Office accounts are enabled when EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS is 'true'
-// or by default on the feat/offices branch unless explicitly disabled ('false').
-const OFFICES_ENABLED =
-  process.env.EXPO_PUBLIC_ENABLE_OFFICE_ACCOUNTS !== 'false';
 
 export default function OfficeLayout() {
   const token = useAuthStore((state) => state.token);
@@ -32,10 +26,6 @@ export default function OfficeLayout() {
   const handleOpenQuotaSheet = () => {
     quotaSheetRef.current?.present();
   };
-
-  if (!OFFICES_ENABLED) {
-    return <ComingSoonGate />;
-  }
 
   return (
     <>

@@ -1344,6 +1344,41 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-business-accounts-open",
+      title: {
+        en: "Company and office accounts are open in every build: no «قريباً» screen",
+        ar: "حسابات الشركات والمكاتب متاحة في كل نسخة: لا شاشة «قريباً»",
+      },
+      priority: "P1",
+      story: {
+        en: "Company and office accounts were behind build flags (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS / _OFFICE_ACCOUNTS); a build without them showed «قريباً — حسابات المكاتب العقارية والشركات غير متاحة حالياً» instead of the company or office app, and hid «شركة» when signing up. All three account types (individual, company, office) are open now, in every build: the flags and the coming-soon screen are removed.",
+        ar: "كانت حسابات الشركات والمكاتب خلف إعدادات في النسخة؛ والنسخة بدونها تعرض «قريباً — حسابات المكاتب العقارية والشركات غير متاحة حالياً» بدل تطبيق الشركة أو المكتب، وتخفي «شركة» عند التسجيل. أصبحت الأنواع الثلاثة (فرد، شركة، مكتب) متاحة في كل نسخة، وأُزيلت الإعدادات وشاشة «قريباً».",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Signing in as a company or an office opens its app, never «قريباً».",
+          "Sign-up offers «شركة» next to «فرد».",
+          "Add account (إضافة حساب) offers company and office accounts.",
+        ],
+        ar: [
+          "الدخول بحساب شركة أو مكتب يفتح تطبيقه، ولا تظهر «قريباً».",
+          "التسجيل يعرض «شركة» بجانب «فرد».",
+          "إضافة حساب تعرض حساب شركة وحساب مكتب.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign in with a company account, then an office account.",
+          "Start sign-up and open add account from المزيد.",
+        ],
+        ar: [
+          "ادخل بحساب شركة، ثم بحساب مكتب.",
+          "ابدأ التسجيل وافتح إضافة حساب من المزيد.",
+        ],
+      },
+      updatedIn: "fix/open-business-accounts",
+    },
+    {
       id: "mobile-ad-level-required",
       title: {
         en: "Add ad: «إعلان عادي / مميز» must be picked, and a level with none left is greyed out",

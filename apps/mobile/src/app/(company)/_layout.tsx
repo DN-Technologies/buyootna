@@ -4,15 +4,8 @@ import { useRef } from 'react';
 
 import CompanyActionsSheet from '@/features/company/components/CompanyActionsSheet';
 import AuthGuardSheet from '@/shared/components/auth/AuthGuardSheet';
-import ComingSoonGate from '@/shared/components/auth/ComingSoonGate';
 import CustomTabBar from '@/shared/components/navigation/CustomTabBar';
 import { useAuthStore } from '@/shared/store/useAuthStore';
-
-// Company tabs stay behind the ComingSoonGate unless explicitly enabled via
-// env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the feat/companies
-// branch. Unset elsewhere (dev/main/production) keeps production locked.
-const COMPANIES_ENABLED =
-  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
 
 export default function CompanyLayout() {
   const token = useAuthStore((state) => state.token);
@@ -27,10 +20,6 @@ export default function CompanyLayout() {
       actionsSheetRef.current?.present();
     }
   };
-
-  if (!COMPANIES_ENABLED) {
-    return <ComingSoonGate />;
-  }
 
   return (
     <>

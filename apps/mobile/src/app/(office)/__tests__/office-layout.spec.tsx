@@ -20,7 +20,6 @@ jest.mock('@/features/office/components/add', () => ({
 }));
 jest.mock('@/shared/components/add-listing/QuotaExhaustedSheet', () => 'QuotaExhaustedSheet');
 jest.mock('@/shared/components/auth/AuthGuardSheet', () => 'AuthGuardSheet');
-jest.mock('@/shared/components/auth/ComingSoonGate', () => 'ComingSoonGate');
 
 jest.mock('@/shared/store/useAuthStore', () => ({
   useAuthStore: jest.fn(() => ({ token: 'mock-token' })),

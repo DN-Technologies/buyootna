@@ -1,6 +1,5 @@
 export {
   type BusinessAuthMode,
-  COMPANY_OFFICE_LOCKED,
   useBusinessAuth,
 } from './useBusinessAuth';
 export {
