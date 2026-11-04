@@ -13,6 +13,16 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
+import {
+  EMPTY_FILTERS_BY_TAB,
+  EMPTY_HOME_FILTERS,
+  hasHomeFilters,
+  type HomeFiltersByTab,
+  type HomeFilterTab,
+  toOfficeLocation,
+  toPropertyFilterParams,
+} from '@/features/individual/components/home/filter/homeFilter';
+import HomeFilterSheet from '@/features/individual/components/home/filter/HomeFilterSheet';
 import HomeFilterPills from '@/features/individual/components/home/HomeFilterPills';
 import {
   HOME_SORT_OPTIONS,
@@ -47,6 +57,10 @@ export default function HomeScreen() {
   const token = useAuthStore((state) => state.token);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const [sortBy, setSortBy] = useState<HomeSort>('DEFAULT');
+  // تصفية البحث (Figma 5550:138840): what each list is filtered by
+  const filterSheetRef = useRef<BottomSheetModal>(null);
+  const [filters, setFilters] =
+    useState<HomeFiltersByTab>(EMPTY_FILTERS_BY_TAB);
   const { scrollContentBottomPadding } = useTabBarHeight();
   // Shared across all three possible active scrollables below (only one is
   // ever mounted at a time), so tapping the already-active Home tab scrolls
@@ -129,6 +143,24 @@ export default function HomeScreen() {
     setRefreshing(false);
   };
 
+  // The filter tab for the list on screen, and that list's filters
+  const filterTab: HomeFilterTab =
+    activeTab === 'offices'
+      ? 'offices'
+      : activePropFilter === 'all'
+        ? 'sale'
+        : activePropFilter;
+  const propertyFilterParams =
+    activePropFilter !== 'all' &&
+    hasHomeFilters(activePropFilter, filters[activePropFilter])
+      ? toPropertyFilterParams(activePropFilter, filters[activePropFilter])
+      : undefined;
+  const officeLocation = hasHomeFilters('offices', filters.offices)
+    ? toOfficeLocation(filters.offices)
+    : undefined;
+  const isFiltered =
+    activeTab === 'offices' ? !!officeLocation : !!propertyFilterParams;
+
   const TABS: GoldSegmentOption<'properties' | 'offices'>[] = [
     { id: 'properties', label: 'عقارات' },
     { id: 'offices', label: 'مكاتب عقارية' },
@@ -189,12 +221,15 @@ export default function HomeScreen() {
                     value={activeTab === 'offices' ? 'offices' : 'properties'}
                     onChange={setActiveTab}
                   />
+                  {/* تصفية البحث (it opened the sort, which is «الترتيب حسب»
+                      above the list) */}
                   <TouchableOpacity
                     testID="home-filter-button"
                     accessibilityRole="button"
-                    accessibilityLabel="الترتيب حسب"
+                    accessibilityLabel="تصفية البحث"
+                    accessibilityState={{ selected: isFiltered }}
                     activeOpacity={0.7}
-                    onPress={() => sortSheetRef.current?.present()}
+                    onPress={() => filterSheetRef.current?.present()}
                     className="size-[40px] shrink-0 items-center justify-center rounded-full"
                     style={{ borderWidth: 0.3, borderColor: '#C5A36D' }}
                   >
@@ -205,6 +240,13 @@ export default function HomeScreen() {
                         contentFit="contain"
                       />
                     </View>
+                    {/* The list on screen is filtered */}
+                    {isFiltered && (
+                      <View
+                        testID="home-filter-active"
+                        className="absolute right-[6px] top-[6px] size-[8px] rounded-full border border-white bg-[#C5A36D]"
+                      />
+                    )}
                   </TouchableOpacity>
                 </View>
                 <HomeFilterPills
@@ -263,6 +305,7 @@ export default function HomeScreen() {
                 onRefresh={onRefresh}
                 viewMode={viewMode}
                 sortBy={sortBy}
+                filterParams={propertyFilterParams}
                 ListHeaderComponent={sortRow}
                 scrollHandlers={collapse.scrollHandlers}
                 topInset={headerInset}
@@ -281,6 +324,7 @@ export default function HomeScreen() {
                 onRefresh={onRefresh}
                 scrollHandlers={collapse.scrollHandlers}
                 topInset={headerInset}
+                location={officeLocation}
               />
             </FadeLayer>
           )}
@@ -300,6 +344,24 @@ export default function HomeScreen() {
             setSortBy(value as HomeSort);
             if (activeTab !== 'properties') setActiveTab('properties');
           }}
+        />
+        <HomeFilterSheet
+          ref={filterSheetRef}
+          initialTab={filterTab}
+          applied={filters}
+          // Filter that list, and show it
+          onApply={(tab, value) => {
+            setFilters((prev) => ({ ...prev, [tab]: value }));
+            if (tab === 'offices') {
+              setActiveTab('offices');
+            } else {
+              setActiveTab('properties');
+              setActivePropFilter(tab);
+            }
+          }}
+          onReset={(tab) =>
+            setFilters((prev) => ({ ...prev, [tab]: EMPTY_HOME_FILTERS }))
+          }
         />
         <ConnectionErrorModal
           visible={showErrorModal}

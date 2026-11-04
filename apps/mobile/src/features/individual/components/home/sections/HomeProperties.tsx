@@ -35,6 +35,8 @@ interface HomePropertiesProps {
   onRefresh?: () => Promise<void>;
   viewMode?: 'card' | 'list';
   sortBy?: HomeSort;
+  // تصفية البحث's query params for this list (none: unfiltered)
+  filterParams?: Record<string, string>;
   ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
   // The home header's (it slides away as the list scrolls)
   scrollHandlers?: CollapsibleScrollHandlers;
@@ -50,6 +52,7 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
       onRefresh,
       viewMode = 'card',
       sortBy = 'DEFAULT',
+      filterParams,
       ListHeaderComponent,
       scrollHandlers,
       topInset = 0,
@@ -99,13 +102,14 @@ export default forwardRef<FlashListRef<any>, HomePropertiesProps>(
     // resetToIdentityHome) triggers a real refetch of user-specific
     // results (e.g. per-user pricing/eligibility) instead of continuing to
     // show whatever was cached from before the auth state changed.
-    queryKey: ['homeProperties', activeFilter, sortBy, token],
+    queryKey: ['homeProperties', activeFilter, sortBy, filterParams, token],
     queryFn: ({ pageParam }) =>
       feedService.getProperties(
         getBackendType(activeFilter),
         pageParam,
         10,
         sortBy,
+        filterParams,
       ),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>

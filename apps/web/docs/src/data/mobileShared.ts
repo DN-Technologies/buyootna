@@ -9,6 +9,45 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-home-filter-sheet",
+      title: {
+        en: "Home: the filter button opens «تصفية البحث» (Figma), not the sort",
+        ar: "الرئيسية: زر التصفية يفتح «تصفية البحث» (Figma) لا الترتيب",
+      },
+      priority: "P1",
+      story: {
+        en: "The filter button next to عقارات / مكاتب عقارية opened «الترتيب حسب» (sorting; that stays above the list). It now opens «تصفية البحث» (Figma 5550:138840 بيع, 5550:138765 ايجار, 5550:138675 بدل) with tabs بيع / ايجار / بدل / مكاتب. بيع and ايجار: المحافظة, المنطقة, فئة العقار (شاليه، شقة، بيت، تجاري، عمارة، مكتب; several at once) and السعر (the most to pay). بدل: المحافظة, المنطقة, سنة الطلب, السنة المطلوبة, الحالة (مبنى / أرض) and السعر. مكاتب: المحافظة and المنطقة, matched in the offices' addresses. «عرض النتائج» stays grey until something is set; it filters that list and shows it, and a gold dot on the button marks a filtered list. «إعادة التعيين» clears that tab and its list. Each tab keeps its own filters.",
+        ar: "كان زر التصفية بجانب عقارات / مكاتب عقارية يفتح «الترتيب حسب» (الترتيب باقٍ فوق القائمة). أصبح يفتح «تصفية البحث» (Figma) بتبويبات بيع / ايجار / بدل / مكاتب. بيع وايجار: المحافظة، المنطقة، فئة العقار (أكثر من فئة) والسعر (الحد الأعلى). بدل: المحافظة، المنطقة، سنة الطلب، السنة المطلوبة، الحالة (مبنى / أرض) والسعر. مكاتب: المحافظة والمنطقة حسب عنوان المكتب. «عرض النتائج» رمادي حتى يُحدَّد شيء، ثم يصفّي تلك القائمة ويعرضها، ونقطة ذهبية على الزر تدل على قائمة مصفّاة. «إعادة التعيين» يمسح ذلك التبويب وقائمته. لكل تبويب تصفيته.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "The filter button opens «تصفية البحث» on the tab of the list on screen; «الترتيب حسب» still sorts.",
+          "بيع / ايجار: picking شقة and «عرض النتائج» shows only apartments for sale / rent.",
+          "بدل: years, الحالة and price narrow the swap list.",
+          "مكاتب: a governorate or area narrows the offices list.",
+          "A filtered list shows a gold dot on the button; «إعادة التعيين» clears it.",
+        ],
+        ar: [
+          "زر التصفية يفتح «تصفية البحث» على تبويب القائمة المعروضة؛ و«الترتيب حسب» ما زال يرتب.",
+          "بيع / ايجار: اختيار شقة ثم «عرض النتائج» يعرض الشقق فقط.",
+          "بدل: السنوات والحالة والسعر تضيّق قائمة البدل.",
+          "مكاتب: المحافظة أو المنطقة تضيّق قائمة المكاتب.",
+          "القائمة المصفّاة تُظهر نقطة ذهبية على الزر؛ و«إعادة التعيين» يمسحها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On بيع, open the filter, pick شقة and a governorate, «عرض النتائج»; then «إعادة التعيين».",
+          "Repeat on بدل with سنة الطلب and أرض, and on مكاتب with an area.",
+        ],
+        ar: [
+          "في بيع، افتح التصفية، اختر شقة ومحافظة، «عرض النتائج»؛ ثم «إعادة التعيين».",
+          "كرر في بدل بسنة الطلب وأرض، وفي مكاتب بمنطقة.",
+        ],
+      },
+      updatedIn: "feat/home-filter-sheet",
+    },
+    {
       id: "mobile-late-identity-home",
       title: {
         en: "A company or office opened while the API was unreachable lands on its own home once it loads",
