@@ -24,6 +24,7 @@ import { plansService } from '@/shared/api/plans.service';
 import ImageUploadZone from '@/shared/components/add-listing/ImageUploadZone';
 import ListingTypeRadios from '@/shared/components/add-listing/ListingTypeRadios';
 import { useContactPhonePrefill } from '@/shared/hooks/auth/useContactPhonePrefill';
+import { useAdLevelChoice } from '@/shared/hooks/properties/useAdLevelChoice';
 import {
   isListingFormValid,
   useListingStore,
@@ -63,7 +64,11 @@ export default function CreateListingScreen() {
     router.push('/add-listing/preview');
   };
 
-  const isFormValid = isListingFormValid(store);
+  // عادي / مميز must be picked on a new ad (QA); see useAdLevelChoice
+  const adLevelChoice = useAdLevelChoice();
+  const adLevelMissing =
+    adLevelChoice.required && !store.isEdit && !store.adLevelChosen;
+  const isFormValid = isListingFormValid(store) && !adLevelMissing;
 
   return (
     <SafeAreaView className="flex-1 bg-white">

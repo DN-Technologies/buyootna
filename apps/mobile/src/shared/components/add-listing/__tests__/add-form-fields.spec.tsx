@@ -15,7 +15,10 @@ import { useListingStore } from '@/shared/store/useListingStore';
 import { getCategoryFields } from '@/shared/utils/data/propertyCategories';
 
 jest.mock('@/shared/api/plans.service', () => ({
-  plansService: { getPublishOptions: jest.fn() },
+  plansService: {
+    getPublishOptions: jest.fn(),
+    getWallet: jest.fn(() => Promise.resolve({ freeAdsRemaining: 0 })),
+  },
 }));
 jest.mock('@/shared/api/properties.service', () => ({
   propertiesService: { getFeaturesMetadata: jest.fn() },
@@ -196,5 +199,99 @@ describe('AdLevelSection', () => {
       fireEvent.press(getByTestId('ad-level-premium'));
     });
     expect(useListingStore.getState().adLevel).toBe('premium');
+    expect(useListingStore.getState().adLevelChosen).toBe(true);
+  });
+
+  // QA: عادي was preselected (an ad went on without a choice), and a level
+  // with nothing left could still be picked
+  it('starts with no level picked and asks for one', async () => {
+    mockGetOptions.mockResolvedValue({
+      canPublish: true,
+      options: [slot(1, 0), slot(2, 30)],
+    });
+
+    const { findByTestId, getByTestId, queryByTestId } = await renderSection();
+
+    expect(await findByTestId('ad-level-required')).toBeTruthy();
+    expect(
+      getByTestId('ad-level-normal').props.accessibilityState?.selected,
+    ).toBe(false);
+    expect(
+      getByTestId('ad-level-premium').props.accessibilityState?.selected,
+    ).toBe(false);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('ad-level-normal'));
+    });
+    expect(useListingStore.getState().adLevelChosen).toBe(true);
+    expect(queryByTestId('ad-level-required')).toBeNull();
+  });
+
+  it('greys out مميز with none left, and it cannot be picked', async () => {
+    mockGetOptions.mockResolvedValue({
+      canPublish: true,
+      options: [slot(1, 0), slot(0, 30)],
+    });
+
+    const { findByTestId, getByTestId } = await renderSection();
+
+    await findByTestId('ad-level-required');
+    const premium = getByTestId('ad-level-premium');
+    expect(premium.props.accessibilityState?.disabled).toBe(true);
+    await act(async () => {
+      fireEvent.press(premium);
+    });
+    expect(useListingStore.getState().adLevelChosen).toBe(false);
+    expect(useListingStore.getState().adLevel).toBe('normal');
+    expect(
+      getByTestId('ad-level-normal').props.accessibilityState?.disabled,
+    ).toBe(false);
+  });
+
+  it('keeps عادي pickable when only the free ad is left for it', async () => {
+    (plansService.getWallet as jest.Mock).mockResolvedValueOnce({
+      freeAdsRemaining: 1,
+    });
+    mockGetOptions.mockResolvedValue({
+      canPublish: true,
+      options: [slot(0, 0), slot(2, 30)],
+    });
+
+    const { findByTestId, getByTestId } = await renderSection();
+
+    await findByTestId('ad-level-required');
+    await waitFor(() =>
+      expect(
+        getByTestId('ad-level-normal').props.accessibilityState?.disabled,
+      ).toBe(false),
+    );
+  });
+
+  it('asks for nothing when no level has anything left', async () => {
+    mockGetOptions.mockResolvedValue({
+      canPublish: true,
+      options: [slot(0, 0), slot(0, 30)],
+    });
+
+    const { findByText, queryByTestId } = await renderSection();
+
+    await findByText('اختر نوع اعلانك');
+    expect(queryByTestId('ad-level-required')).toBeNull();
+  });
+
+  it('an edited ad keeps its level, even with none of it left', async () => {
+    mockGetOptions.mockResolvedValue({
+      canPublish: true,
+      options: [slot(1, 0), slot(0, 30)],
+    });
+    useListingStore.setState({ adLevel: 'premium', adLevelChosen: true });
+
+    const { findByText, getByTestId, queryByTestId } = await renderSection();
+
+    await findByText('اختر نوع اعلانك');
+    const premium = getByTestId('ad-level-premium');
+    expect(premium.props.accessibilityState?.selected).toBe(true);
+    expect(premium.props.accessibilityState?.disabled).toBe(false);
+    expect(queryByTestId('ad-level-required')).toBeNull();
   });
 });

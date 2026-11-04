@@ -5,11 +5,15 @@ import { SafeLinearGradient as LinearGradient } from '@/shared/components/ui/Saf
 import { AdLevel } from '@/shared/store/useListingStore';
 
 interface AdLevelSelectorProps {
-  value: AdLevel;
+  // null: not chosen yet
+  value: AdLevel | null;
   onChange: (level: AdLevel) => void;
   // Ads left to publish at each level, from the user's packages
   normalCount: number;
   featuredCount: number;
+  // Nothing left of that level: greyed out and can't be picked
+  normalDisabled?: boolean;
+  featuredDisabled?: boolean;
 }
 
 interface LevelCardContentProps {
@@ -56,8 +60,14 @@ export default function AdLevelSelector({
   onChange,
   normalCount,
   featuredCount,
+  normalDisabled = false,
+  featuredDisabled = false,
 }: AdLevelSelectorProps) {
   const isPremium = value === 'premium';
+  const isNormal = value === 'normal';
+  // The chosen level stays pickable (an edited ad keeps its level)
+  const normalOff = normalDisabled && !isNormal;
+  const featuredOff = featuredDisabled && !isPremium;
 
   return (
     <View className="w-full">
@@ -72,12 +82,16 @@ export default function AdLevelSelector({
         {/* First so that it renders on the right in RTL, as in Figma */}
         <TouchableOpacity
           testID="ad-level-normal"
+          accessibilityRole="radio"
+          accessibilityState={{ selected: isNormal, disabled: normalOff }}
           activeOpacity={0.85}
+          disabled={normalOff}
           onPress={() => onChange('normal')}
           className="flex-1 overflow-hidden rounded-lg bg-[#F5F7F9]"
           style={{
             borderWidth: 1.5,
-            borderColor: isPremium ? 'transparent' : '#15304D',
+            borderColor: isNormal ? '#15304D' : 'transparent',
+            opacity: normalOff ? 0.45 : 1,
           }}
         >
           <LevelCardContent
@@ -90,12 +104,16 @@ export default function AdLevelSelector({
 
         <TouchableOpacity
           testID="ad-level-premium"
+          accessibilityRole="radio"
+          accessibilityState={{ selected: isPremium, disabled: featuredOff }}
           activeOpacity={0.85}
+          disabled={featuredOff}
           onPress={() => onChange('premium')}
           className="flex-1 overflow-hidden rounded-lg"
           style={{
             borderWidth: 1.5,
             borderColor: isPremium ? '#15304D' : 'transparent',
+            opacity: featuredOff ? 0.45 : 1,
           }}
         >
           <LinearGradient

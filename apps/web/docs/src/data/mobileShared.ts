@@ -1344,6 +1344,45 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-ad-level-required",
+      title: {
+        en: "Add ad: «إعلان عادي / مميز» must be picked, and a level with none left is greyed out",
+        ar: "إضافة إعلان: يجب اختيار «إعلان عادي / مميز»، والنوع الذي لم يبقَ منه شيء يظهر معطلاً",
+      },
+      priority: "P1",
+      story: {
+        en: "With package ads, a new ad shows «اختر نوع اعلانك». عادي was preselected, so an ad went to preview without a choice, and a level with 0 left could still be picked (QA). Now neither starts selected: «يرجى اختيار نوع الإعلان» shows in red and «معاينة الاعلان» stays disabled until one is picked. A level with nothing left is greyed out and can't be picked; the free ad counts as a normal one. With nothing left at all no choice is asked, and publishing shows the no-balance sheet as before. An edited ad keeps its level.",
+        ar: "مع إعلانات الباقات، يظهر في الإعلان الجديد «اختر نوع اعلانك». كان «عادي» محدداً مسبقاً، فيذهب الإعلان للمعاينة دون اختيار، وكان يمكن اختيار نوع رصيده 0. والآن لا يكون أي منهما محدداً: تظهر «يرجى اختيار نوع الإعلان» بالأحمر ويبقى «معاينة الاعلان» معطلاً حتى الاختيار. والنوع الذي لم يبقَ منه شيء يظهر باهتاً ولا يمكن اختياره؛ والإعلان المجاني يُحسب كإعلان عادي. وإن لم يبقَ شيء إطلاقاً لا يُطلب اختيار، ويظهر عند النشر تنبيه نفاد الرصيد كما كان. والإعلان عند تعديله يحتفظ بنوعه.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A new ad with packages: neither عادي nor مميز is selected, the red hint shows and the preview button is disabled.",
+          "Picking one hides the hint; with the rest filled in, preview opens.",
+          "0 featured ads: «إعلان مميز» is greyed out and tapping it does nothing.",
+          "0 normal package ads but the free ad left: «إعلان عادي» can still be picked.",
+          "Editing a featured ad with 0 featured left keeps it selected.",
+        ],
+        ar: [
+          "إعلان جديد مع باقات: لا عادي ولا مميز محدد، ويظهر التنبيه الأحمر وزر المعاينة معطل.",
+          "اختيار أحدهما يخفي التنبيه؛ ومع اكتمال باقي الحقول تُفتح المعاينة.",
+          "رصيد المميز 0: «إعلان مميز» باهت والضغط عليه لا يفعل شيئاً.",
+          "رصيد العادي في الباقات 0 مع بقاء الإعلان المجاني: يمكن اختيار «إعلان عادي».",
+          "تعديل إعلان مميز ورصيد المميز 0: يبقى محدداً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "As a user with a normal package and no featured ads left, open إضافة إعلان and fill everything but the ad type.",
+          "Try مميز (nothing happens), then pick عادي and preview.",
+        ],
+        ar: [
+          "بحساب لديه باقة عادية ولا إعلانات مميزة، افتح إضافة إعلان واملأ كل شيء عدا نوع الإعلان.",
+          "جرّب مميز (لا شيء يحدث)، ثم اختر عادي واعرض المعاينة.",
+        ],
+      },
+      updatedIn: "fix/ad-type-balance",
+    },
+    {
       id: "mobile-card-location-seed",
       title: {
         en: "Ad cards show «المحافظة - المنطقة» in the location line, not the demo ad's title",
