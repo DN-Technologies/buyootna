@@ -80,6 +80,9 @@ export interface ListingStateData {
 
   // 5. Meta
   adLevel: AdLevel;
+  // The user picked عادي / مميز themselves (QA: a preselected عادي let an ad
+  // go to preview without a choice). Set when editing: the ad has a level
+  adLevelChosen: boolean;
   images: string[]; // Array of local image URIs
 
   // 6. Submission State
@@ -181,6 +184,7 @@ const initialState: Omit<ListingStateData, 'listingType'> = {
   showWhatsapp: false,
   whatsappNumber: '',
   adLevel: 'normal',
+  adLevelChosen: false,
   images: [],
   isSubmitting: false,
   submissionError: null,
@@ -343,6 +347,7 @@ export const useListingStore = create<ListingStore>((set, get) => ({
       whatsappNumber: property.whatsappNumber || '',
       images: property.images || [],
       adLevel: property.isFeatured ? 'premium' : 'normal',
+      adLevelChosen: true,
     });
   },
 
