@@ -16,7 +16,6 @@ jest.mock('@/assets/icons/account', () => ({
 }));
 
 // The flag is read when the screen module loads
-process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS = 'true';
 // eslint-disable-next-line @typescript-eslint/no-require-imports -- must load after the flag is set
 const AddIdentityScreen = require('../add-identity').default;
 
