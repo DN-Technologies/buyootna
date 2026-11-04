@@ -214,17 +214,6 @@ const SERVICES_LIST = [
   'صيانة تكييف • تمديدات كهربائية • سباكة وصحي',
 ];
 
-const PROPERTY_TITLES = [
-  'شقة فاخرة تشطيب سوبر ديلوكس',
-  'فيلا راقية موقع بطن وظهر',
-  'بيت حكومي زاوية مجدد بالكامل',
-  'أرض فضاء موقع مميز للبدل',
-  'دور كامل للإيجار مساحات واسعة',
-  'شقة للاستثمار دخل ممتاز',
-  'شاليه مميز على البحر مباشرة',
-  'مجمع تجاري استثماري دخل مرتفع',
-];
-
 const DESCRIPTIONS = [
   'عقار مميز جداً يتمتع بكافة الخدمات وقريب من المسجد والجمعية. تشطيب راقي سوبر ديلوكس ومساحات واسعة جداً تناسب العائلات الكبيرة.',
   'فرصة ممتازة للاستثمار أو السكن الراقي في موقع استراتيجي سهل المدخل والمخرج. يحتوي على مواقف سيارات مظللة وكافة التجهيزات الحديثة.',
@@ -465,13 +454,6 @@ export async function runDevSeed(
     const randomArea = allAreas[i % allAreas.length];
     const type = listingTypes[i % listingTypes.length];
     const category = propertyCategories[i % propertyCategories.length];
-    const companyProfile = companyProfilesData.find(
-      (cp) => cp.userId === randomUser.id,
-    );
-    const companyName = companyProfile
-      ? companyProfile.name
-      : 'بيوتنا العقارية';
-
     // Pricing rules depending on ListingType
     let price: number | null = null;
     if (type === ListingType.RENT) {
@@ -487,8 +469,6 @@ export async function runDevSeed(
     const beds = 1 + (i % 5); // 1 to 5 beds
     const baths = 1 + (i % 4); // 1 to 4 baths
 
-    // Arabic title
-    const title = `${PROPERTY_TITLES[i % PROPERTY_TITLES.length]} - ${companyName}`;
     const description = `مساحة ${areaSize}م² - ${DESCRIPTIONS[i % DESCRIPTIONS.length]}`;
 
     // Select images
@@ -510,7 +490,9 @@ export async function runDevSeed(
       price,
       beds,
       baths,
-      location: title,
+      // «المحافظة - المنطقة», as the cards show it (the title here put
+      // «شقة فاخرة … - <company>» in the location line, QA)
+      location: `${randomArea.govName} - ${randomArea.areaName}`,
       description,
       images,
       status,
@@ -712,7 +694,7 @@ export async function runDevSeed(
         price,
         beds: 3,
         baths: 2,
-        location: `بيت للبيع/شقة للإيجار للمالك الشخصي ${i}`,
+        location: `${randomArea.govName} - ${randomArea.areaName}`,
         description: `مساحة ${areaSize}م² - عقار شخصي مميز معروض مباشرة من المالك للتواصل والمعاينة.`,
         images: [
           'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
@@ -897,7 +879,7 @@ export async function runDevSeed(
         price: i % 2 === 0 ? 500 + i * 50 : 95000 + i * 15000,
         beds: 2 + i,
         baths: 2,
-        location: `عقار تابع لمكتب المراجعة رقم ${i}`,
+        location: `${randomArea.govName} - ${randomArea.areaName}`,
         description: 'عقار تجريبي معروض من مكتب عقاري لأغراض مراجعة التطبيق.',
         images: [
           'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',

@@ -1344,6 +1344,41 @@ export const mobileShared: DocSection = {
       updatedIn: "feat/map-picker",
     },
     {
+      id: "mobile-card-location-seed",
+      title: {
+        en: "Ad cards show «المحافظة - المنطقة» in the location line, not the demo ad's title",
+        ar: "سطر الموقع في بطاقات الإعلانات يعرض «المحافظة - المنطقة» لا عنوان الإعلان التجريبي",
+      },
+      priority: "P2",
+      story: {
+        en: "Demo ads made by the dev seed (the testing portal) stored the ad's title as its location, so their cards read «شقة فاخرة تشطيب سوبر ديلوكس - الغانم للمقاولات 48» where a location belongs (QA). The seed now writes «المحافظة - المنطقة» from the ad's own governorate and area, and a migration rewrites the seeded rows already in the database the same way. Only the seed's exact texts are matched; a location a user typed is left alone.",
+        ar: "الإعلانات التجريبية التي ينشئها الـ seed (بوابة الاختبار) كانت تحفظ عنوان الإعلان كموقع، فتظهر في البطاقة «شقة فاخرة تشطيب سوبر ديلوكس - الغانم للمقاولات 48» مكان الموقع. أصبح الـ seed يكتب «المحافظة - المنطقة» من محافظة الإعلان ومنطقته، وتعيد migration كتابة الإعلانات التجريبية الموجودة بالطريقة نفسها. تُطابق نصوص الـ seed فقط؛ والموقع الذي كتبه المستخدم يبقى كما هو.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Home cards for demo ads show «المحافظة - المنطقة», e.g. «الفروانية - الرقعي».",
+          "Ads whose users typed their location are unchanged.",
+          "A fresh seed from the testing portal creates ads with «المحافظة - المنطقة».",
+        ],
+        ar: [
+          "بطاقات الإعلانات التجريبية في الرئيسية تعرض «المحافظة - المنطقة»، مثل «الفروانية - الرقعي».",
+          "الإعلانات التي كتب أصحابها موقعها لا تتغير.",
+          "إعادة الـ seed من بوابة الاختبار تنشئ إعلانات بـ«المحافظة - المنطقة».",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "After the deploy, scroll home's بيع / إيجار lists: no location line shows an ad title or a company name.",
+          "Open one of those ads: the details show the same location.",
+        ],
+        ar: [
+          "بعد النشر، تصفح قوائم بيع / إيجار في الرئيسية: لا يظهر عنوان إعلان أو اسم شركة في سطر الموقع.",
+          "افتح أحد هذه الإعلانات: تعرض التفاصيل الموقع نفسه.",
+        ],
+      },
+      updatedIn: "fix/card-location",
+    },
+    {
       id: "mobile-home-map-back",
       title: {
         en: "The map from home has a back button and is a stack screen",
