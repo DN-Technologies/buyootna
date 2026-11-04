@@ -1,0 +1,36 @@
+name: Branch Rules
+
+# The dev / prod flow (docs/ai/context.md, rule 3): main is production and
+# takes only a release PR from dev, or an urgent fix from a hotfix/* branch
+# (merged back into dev right after). Branch protection on main requires
+# this check, so a PR from any other branch can't be merged into main.
+on:
+  pull_request:
+    branches: [main]
+    # edited: a PR whose base is switched to main is checked too
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  release-source:
+    name: Release Source (dev or hotfix/*)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check where the PR comes from
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          THIS_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REPO" != "$THIS_REPO" ]; then
+            echo "::error::A PR into main must come from this repository's dev or hotfix/* branch, not from $HEAD_REPO."
+            exit 1
+          fi
+          case "$HEAD_REF" in
+            dev|hotfix/*)
+              echo "OK: '$HEAD_REF' may go into main."
+              ;;
+            *)
+              echo "::error::'$HEAD_REF' can't go into main. Open the PR into dev; main only takes a release PR from dev, or an urgent fix from a hotfix/* branch."
+              exit 1
+              ;;
+          esac

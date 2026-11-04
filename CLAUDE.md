@@ -74,6 +74,18 @@ docker compose build
 
 ---
 
+## 🔀 Pushing changes: dev → main
+
+Every change branches off `dev` and goes back through a PR into `dev`;
+`main` (production) takes only a release PR from `dev`, or an urgent fix
+from a `hotfix/*` branch that is merged back into `dev` the same day.
+Direct pushes to `dev` and `main` are blocked by the pre-push hook and by
+GitHub's branch protection, and a PR into `main` from any other branch
+fails the "Release Source" check. Details: `docs/ai/context.md` rule 3 and
+the release flow in `docs/ai/release-policy.md`.
+
+---
+
 ## Start here: `docs/ai/`
 
 Read [`docs/ai/context.md`](docs/ai/context.md) before starting any task.

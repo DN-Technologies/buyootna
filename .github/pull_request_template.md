@@ -1,3 +1,6 @@
+<!-- Base branch: dev. Only a release PR from dev (or a hotfix/* PR) goes
+     into main: docs/ai/context.md, rule 3. -->
+
 ## What changed and why
 
 <!-- The root cause / motivation, not just the diff. -->
