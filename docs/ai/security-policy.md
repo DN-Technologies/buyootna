@@ -8,6 +8,15 @@ access.
 
 - Passport JWT strategy (`AuthGuard('jwt')`) for authenticated routes,
   Local strategy for login, Twilio SMS OTP for phone verification.
+- **`JWT_SECRET` is per server and required.** It signs logins,
+  password-reset tokens, reactivation tickets and chat connections, and is
+  read only through `jwtSecret()` (`src/core/utils/jwt-secret.ts`). Every
+  server sets its own long random value in `apps/api/.env`; the development
+  and production servers never share one. In production the API refuses to
+  start without it (or with fewer than 32 characters). Don't add a fallback
+  value: production ran for weeks on a fixed string from this repo, so
+  anyone who knew it could sign in as any user (found and rotated
+  2026-11-04).
 - **OTP rate limiting**: `OtpRateLimiterService` is checked via
   `OtpRateLimitGuard` on the request path. **Recording a successful send
   (`recordRequest`) is the responsibility of the specific caller that

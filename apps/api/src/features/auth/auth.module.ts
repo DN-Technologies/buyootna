@@ -14,12 +14,13 @@ import { AuthRegistrationService } from './services/auth-registration.service';
 import { AuthPasswordService } from './services/auth-password.service';
 import { UsersModule } from '../users/users.module';
 import { DevicesModule } from '../devices/devices.module';
+import { jwtSecret } from 'src/core/utils/jwt-secret';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
+      secret: jwtSecret(),
       signOptions: { expiresIn: '7d' }, // Token valid for 7 days
     }),
     UsersModule,

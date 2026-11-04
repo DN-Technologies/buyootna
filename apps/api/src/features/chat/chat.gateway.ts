@@ -17,6 +17,7 @@ import {
   ChatReceiptsService,
   ConversationReceipt,
 } from './services/chat-receipts.service';
+import { jwtSecret } from 'src/core/utils/jwt-secret';
 
 // What a connected socket speaks as (set on connect)
 interface SocketIdentity {
@@ -58,7 +59,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Verify token
       const payload = this.jwtService.verify<JwtPayload>(token, {
-        secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
+        secret: jwtSecret(),
       });
 
       // The account and the persona this socket speaks as. The app
