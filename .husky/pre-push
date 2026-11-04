@@ -1,9 +1,19 @@
 while read -r local_ref local_sha remote_ref remote_sha; do
   branch="${remote_ref#refs/heads/}"
+  # The dev / prod flow (docs/ai/context.md, rule 3): both branches only
+  # take pull requests. GitHub's branch protection enforces the same.
   if [ "$branch" = "main" ]; then
     echo ""
     echo "Blocked: direct push to 'main' is not allowed."
-    echo "Open a pull request from 'dev' into 'main' instead."
+    echo "Open a release pull request from 'dev' into 'main' (or, for an"
+    echo "urgent production fix, from a 'hotfix/*' branch) instead."
+    echo ""
+    exit 1
+  fi
+  if [ "$branch" = "dev" ]; then
+    echo ""
+    echo "Blocked: direct push to 'dev' is not allowed."
+    echo "Push your branch and open a pull request into 'dev' instead."
     echo ""
     exit 1
   fi

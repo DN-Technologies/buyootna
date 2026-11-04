@@ -59,6 +59,24 @@ entry (Android) to `app.config.ts`, and the landing site must serve
 `/.well-known/apple-app-site-association` and `assetlinks.json`. An OTA can't
 do this.
 
+## Release flow (dev → main)
+
+The branch rule is `context.md` rule 3; this is how a change reaches users.
+
+1. **Into `dev`:** a branch off `dev`, a PR into `dev`, merged once CI passes.
+2. **Release PR:** a PR from `dev` into `main`, titled `Release: …` and
+   listing the PRs it carries. CI and the "Release Source" check must pass.
+3. **Ship from `main`:** after the merge, run CD (`cd.yml`, by hand) when
+   the API, web apps or migrations changed, and publish the OTA from `main`
+   with `release-ota.js` when the app changed. Nothing ships from `dev`.
+4. **Hotfix:** for an urgent production fix only, a `hotfix/*` branch off
+   `main` and a PR into `main`, shipped as in step 3; then a PR from `main`
+   into `dev` brings it back the same day.
+
+Until a dev environment (server and dev app) exists, step 2 follows step 1
+right away whenever a change is to ship. Once it exists, merging into `dev`
+deploys there and QA tests there before the release PR.
+
 ## Backend/web deploys
 
 - CD pipeline (`cd.yml`) is `workflow_dispatch`-only — it does not run
@@ -91,5 +109,6 @@ do this.
   2026-10-21). To clear a leaked lock: find the holder with
   `SELECT pid FROM pg_locks WHERE locktype = 'advisory' AND objid = 72707369`
   and `pg_terminate_backend(<pid>)` it.
-- `main` is never pushed to directly (pre-push hook blocks it); changes
-  land only via a `dev` → `main` PR gated by `.github/CODEOWNERS` review.
+- `main` is never pushed to directly (pre-push hook and branch protection
+  block it); changes land only via a release PR from `dev`, or a `hotfix/*`
+  PR. See "Release flow" below.
