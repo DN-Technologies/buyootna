@@ -46,10 +46,19 @@ Read extra docs only when relevant — don't load all of them for every task:
    `node_modules/.pnpm/...` paths baked into CocoaPods). If the linker
    ever changes, re-run `pod install` in `apps/mobile/ios` or the iOS
    build fails with missing-file errors pointing into the old layout.
-3. **Branching.** `main` is production, `dev` is the integration branch.
-   Feature work targets `dev`. `main` is never pushed to directly — it's
-   blocked by a pre-push hook — and only takes changes via a `dev` → `main`
-   PR gated by `.github/CODEOWNERS` review.
+3. **Branching: every change goes through `dev`.** `main` is production,
+   `dev` is the integration branch.
+   - Every change branches off `dev` and returns through a PR into `dev`.
+   - `main` takes only a release PR from `dev`, or an urgent production fix
+     from a `hotfix/*` branch cut from `main`, which is then merged back
+     into `dev` the same day (a PR from `main` into `dev`).
+   - Nothing is pushed straight to either branch: the pre-push hook blocks
+     it, and GitHub's branch protection requires a PR whose CI checks pass.
+     A PR into `main` from any other branch fails the "Release Source"
+     check (`.github/workflows/branch-rules.yml`).
+   - No review approval is required (the code owner can't approve their own
+     PRs); the gate is CI plus the release PR itself. How a release ships
+     (CD, OTA) is in `release-policy.md`.
 4. **Verify empirically, not just by typechecking.** A passing `tsc
    --noEmit` or a green test suite is necessary but not sufficient for
    anything integration-shaped (API contracts, OTA publishes, DB
