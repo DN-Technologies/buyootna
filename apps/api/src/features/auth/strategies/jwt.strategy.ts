@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { IdentityType, User, Identity } from '@prisma/client';
 import { PrismaService } from '../../../core/prisma/prisma.service';
 import { PresenceService } from '../../../core/trust-signals/presence.service';
+import { jwtSecret } from 'src/core/utils/jwt-secret';
 
 export interface JwtPayload {
   sub: string; // userId (auth principal)
@@ -42,7 +43,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'super-secret-fallback-key',
+      secretOrKey: jwtSecret(),
     });
   }
 

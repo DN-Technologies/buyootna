@@ -36,12 +36,15 @@ export const feedService = {
     page: number = 1,
     limit: number = 10,
     sort: HomeSort = 'DEFAULT',
+    // تصفية البحث: governorateId, areaId, category, maxPrice, years
+    filters?: Record<string, string>,
   ): Promise<PropertiesResponse> => {
     const response = await apiClient.get<PropertiesResponse>('/properties', {
       params: {
         page,
         limit,
         ...(type ? { type } : {}),
+        ...filters,
         // The default order needs no param (and older APIs don't know it)
         ...(sort !== 'DEFAULT' ? { sort } : {}),
       },
@@ -91,6 +94,8 @@ export const feedService = {
     page: number = 1,
     limit: number = 10,
     search?: string,
+    // تصفية البحث: a place name matched in the office's address
+    location?: string,
   ): Promise<OfficesResponse> => {
     const params = new URLSearchParams({
       page: String(page),
@@ -98,6 +103,9 @@ export const feedService = {
     });
     if (search) {
       params.set('search', search);
+    }
+    if (location) {
+      params.set('location', location);
     }
     const response = await apiClient.get<OfficesResponse>(
       `/users/offices?${params.toString()}`,

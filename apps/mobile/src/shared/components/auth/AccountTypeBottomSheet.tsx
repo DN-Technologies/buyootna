@@ -6,15 +6,9 @@ import {
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
+import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
 import SelectionCard from '@/shared/components/ui/SelectionCard';
 import { AccountType } from '@/types';
-import SafeBottomSheetView from '@/shared/components/ui/SafeBottomSheetView';
-
-// Company option stays hidden unless explicitly enabled via env
-// (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the feat/companies
-// branch. Unset elsewhere (dev/main/production) keeps it hidden.
-const COMPANIES_ENABLED =
-  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS === 'true';
 
 interface AccountTypeBottomSheetProps {
   onContinue: (type: AccountType) => void;
@@ -88,19 +82,17 @@ const AccountTypeBottomSheet = forwardRef<
             }}
           />
 
-          {COMPANIES_ENABLED && (
-            <SelectionCard
-              title="شركة"
-              description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
-              type="company"
-              isSelected={selectedType === 'company'}
-              onPress={() => {
-                setSelectedType('company');
-                onContinue('company');
-                handleClose();
-              }}
-            />
-          )}
+          <SelectionCard
+            title="شركة"
+            description="للمكاتب العقارية والهندسية أو محلات المقاولات التي تقدم خدمات بيع، تسويق، تصميم."
+            type="company"
+            isSelected={selectedType === 'company'}
+            onPress={() => {
+              setSelectedType('company');
+              onContinue('company');
+              handleClose();
+            }}
+          />
         </View>
       </SafeBottomSheetView>
     </BottomSheetModal>

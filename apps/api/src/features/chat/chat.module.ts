@@ -12,11 +12,12 @@ import { ChatMessagesService } from './services/chat-messages.service';
 import { ChatParticipantDisplayService } from './services/chat-participant-display.service';
 import { ChatProposalsService } from './services/chat-proposals.service';
 import { ChatReceiptsService } from './services/chat-receipts.service';
+import { jwtSecret } from 'src/core/utils/jwt-secret';
 
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
+      secret: jwtSecret(),
     }),
     PushModule,
     StoriesModule,

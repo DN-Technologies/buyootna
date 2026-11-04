@@ -16,12 +16,6 @@ import { AccountType } from '@/types';
 import { requireTermsAccepted } from '../terms';
 import { loginAs } from '../utils/loginAs';
 
-// Company/office accounts stay behind the ComingSoonGate unless explicitly
-// enabled via env (EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS=true) — e.g. on the
-// feat/companies branch. Unset elsewhere keeps production locked.
-export const COMPANY_OFFICE_LOCKED =
-  process.env.EXPO_PUBLIC_ENABLE_COMPANY_ACCOUNTS !== 'true';
-
 export type BusinessAuthMode = 'login' | 'signup';
 export type AuthMode = BusinessAuthMode;
 
@@ -173,7 +167,6 @@ export function useBusinessAuth() {
     onSignupFinal,
     handleAccountTypeChange,
     handleBack,
-    isLocked: COMPANY_OFFICE_LOCKED,
   };
 }
 

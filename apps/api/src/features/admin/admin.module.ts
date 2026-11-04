@@ -26,6 +26,7 @@ import { CompanyRequestsModule } from '../company/company-requests/company-reque
 import { PlansModule } from '../plans/plans.module';
 import { InvoicesModule } from '../invoices/invoices.module';
 import { ReviewsModule } from '../reviews/reviews.module';
+import { jwtSecret } from 'src/core/utils/jwt-secret';
 
 @Module({
   imports: [
@@ -35,7 +36,7 @@ import { ReviewsModule } from '../reviews/reviews.module';
     InvoicesModule,
     ReviewsModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-fallback-key',
+      secret: jwtSecret(),
     }),
   ],
   controllers: ADMIN_CONTROLLERS,

@@ -111,9 +111,18 @@ describe('useBlocks', () => {
   });
 
   it('status: asked only for someone else, null until known', async () => {
-    (blocksService.status as jest.Mock).mockResolvedValue({ blocked: true });
+    // Answered only when the test says so: an already-resolved answer could
+    // land inside renderHook's act, so "null until known" failed at random
+    // (CI on #471)
+    let answer!: (value: { blocked: boolean }) => void;
+    (blocksService.status as jest.Mock).mockReturnValue(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
     const { result } = await renderHook(() => useBlockStatus('u2'), { wrapper });
     expect(result.current).toBeNull();
+    await act(async () => answer({ blocked: true }));
     await waitFor(() => expect(result.current).toBe(true));
     (blocksService.status as jest.Mock).mockClear();
     await renderHook(() => useBlockStatus('me'), { wrapper });

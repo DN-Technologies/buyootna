@@ -27,6 +27,8 @@ interface HomeOfficesProps {
   scrollHandlers?: CollapsibleScrollHandlers;
   // Room for a header floating over the list
   topInset?: number;
+  // تصفية البحث: a place name the offices' addresses must match
+  location?: string;
 }
 
 export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
@@ -37,6 +39,7 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
       ListHeaderComponent,
       scrollHandlers,
       topInset = 0,
+      location,
     }: HomeOfficesProps,
     ref,
   ) {
@@ -53,8 +56,9 @@ export default forwardRef<FlashListRef<any>, HomeOfficesProps>(
     fetchNextPage,
   } = useInfiniteQuery({
     // See HomeProperties.tsx for why `token` is part of this key.
-    queryKey: ['offices', token],
-    queryFn: ({ pageParam }) => feedService.getOffices(pageParam, 10),
+    queryKey: ['offices', location, token],
+    queryFn: ({ pageParam }) =>
+      feedService.getOffices(pageParam, 10, undefined, location),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.meta.hasNextPage ? lastPage.meta.current + 1 : undefined,
