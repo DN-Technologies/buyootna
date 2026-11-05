@@ -53,6 +53,8 @@ export default function CompanyProfileScreen() {
   const blockedByMe = useBlockStatus(company?.userId);
   const { askToBlock, askToUnblock } = useBlockFlow();
   const accountId = useAuthStore((state) => state.user?.id);
+  const leaveProfile = () =>
+    router.canGoBack() ? router.back() : router.replace('/(individual)/home');
   const toggleBlock =
     company?.userId && company.userId !== accountId
       ? () =>
@@ -61,6 +63,9 @@ export default function CompanyProfileScreen() {
             : askToBlock(
                 { userId: company.userId, identityId: company.id },
                 company.name,
+                // Blocked: its profile closes (QA: it stayed open and could
+                // still be sent a request)
+                leaveProfile,
               )
       : undefined;
   // The account's own company: its quote button doesn't respond
@@ -156,7 +161,7 @@ export default function CompanyProfileScreen() {
 
         {/* Fixed Bottom Quote Request Action Bar; a company without an
             active subscription can't receive requests */}
-        {company?.acceptsRequests !== false && (
+        {company?.acceptsRequests !== false && !blockedByMe && (
           <CompanyBottomBar
             // A guest is asked to sign in first (QA): the form needs an account
             onRequestQuote={() =>

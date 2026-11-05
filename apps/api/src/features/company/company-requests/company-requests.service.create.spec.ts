@@ -73,6 +73,33 @@ describe('CompanyRequestsService: create', () => {
       expect(prisma.companyRequest.create).not.toHaveBeenCalled();
     });
 
+    // QA: a company or office the client blocked still received requests
+    it('refuses a request to a company the client blocked, or that blocked them', async () => {
+      // The client and the company are two accounts
+      prisma.identity.findUnique.mockImplementation(
+        ({ where }: { where: { id: string } }) =>
+          Promise.resolve(
+            where.id === 'client-1'
+              ? { id: 'client-1', userId: 'user-client' }
+              : {
+                  id: 'company-1',
+                  userId: 'user-company',
+                  type: 'COMPANY',
+                  companyData: { status: 'APPROVED' },
+                  officeData: null,
+                },
+          ),
+      );
+      prisma.userBlock.findFirst.mockResolvedValue({
+        blockerUserId: 'user-company',
+      });
+
+      await expect(
+        service.create('client-1', { ...dto, targetIdentityId: 'company-1' }),
+      ).rejects.toMatchObject({ response: { code: 'USER_BLOCKED' } });
+      expect(prisma.companyRequest.create).not.toHaveBeenCalled();
+    });
+
     it('creates a public request when no target identity is given', async () => {
       prisma.companyRequest.create.mockResolvedValue({
         ...baseRequest,
