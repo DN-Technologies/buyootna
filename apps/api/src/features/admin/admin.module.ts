@@ -18,6 +18,7 @@ import { AdminRequestsService } from './services/user-profile/admin-requests.ser
 import { AdminExhibitionService } from './services/user-profile/admin-exhibition.service';
 import { AdminPlansService } from './services/billing/admin-plans.service';
 import { AdminPlanCatalogService } from './services/billing/admin-plan-catalog.service';
+import { AdminDiscountCodesService } from './services/billing/admin-discount-codes.service';
 import { AdminFeaturePackagesService } from './services/billing/admin-feature-packages.service';
 import { AdminInvoicesService } from './services/billing/admin-invoices.service';
 import { AdminBillingListService } from './services/billing/admin-billing-list.service';
@@ -63,6 +64,7 @@ import { jwtSecret } from 'src/core/utils/jwt-secret';
     AdminRatingsService,
     AdminNotesService,
     AdminFeaturePackagesService,
+    AdminDiscountCodesService,
   ],
   exports: [
     AdminService,

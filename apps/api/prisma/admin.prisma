@@ -25,6 +25,9 @@ enum AdminActionType {
   COMPANY_PROJECT_DELETED
   FEATURE_PACKAGE_CREATED
   FEATURE_PACKAGE_UPDATED
+  // An admin created or edited a discount code (أكواد الخصم)
+  DISCOUNT_CODE_CREATED
+  DISCOUNT_CODE_UPDATED
   // An admin edited a plan on the Plans page
   PLAN_UPDATED
   // «حذف المحتوى وإيقاف الحساب» on a report (Guideline 1.2)

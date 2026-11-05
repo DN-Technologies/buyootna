@@ -1,0 +1,54 @@
+// «كود الخصم» on the payment screen. The admin creates codes (أكواد الخصم);
+// the server checks one when a purchase is quoted or charged and takes it
+// off the price. A use is only recorded once the invoice is paid, so a
+// failed or abandoned payment never uses a code up.
+
+enum DiscountType {
+  PERCENT // value is a percentage (1-100), capped by maxDiscount if set
+  FIXED // value is KWD off
+}
+
+// What a code can be used for
+enum DiscountPurpose {
+  PLAN // ad packages (الباقات)
+  SUBSCRIPTION // a company subscription
+  FEATURE // تمييز الإعلان
+}
+
+model DiscountCode {
+  id            String            @id @default(uuid())
+  // Stored upper-case; matched without regard to case
+  code          String            @unique
+  type          DiscountType
+  value         Float
+  maxDiscount   Float?
+  // The purchase must cost at least this much (KWD)
+  minAmount     Float?
+  appliesTo     DiscountPurpose[]
+  startsAt      DateTime?
+  expiresAt     DateTime?
+  // Total paid uses allowed; null is unlimited
+  maxUses       Int?
+  usedCount     Int               @default(0)
+  // One paid use per account
+  onePerAccount Boolean           @default(true)
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  invoices    Invoice[]
+  redemptions DiscountRedemption[]
+}
+
+// One paid use of a code
+model DiscountRedemption {
+  id        String       @id @default(uuid())
+  codeId    String
+  code      DiscountCode @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  userId    String
+  invoiceId String       @unique
+  invoice   Invoice      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@index([codeId, userId])
+}

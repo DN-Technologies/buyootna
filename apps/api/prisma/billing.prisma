@@ -89,6 +89,14 @@ model Invoice {
   companyPlan         CompanyPlan?         @relation(fields: [companyPlanId], references: [id], onDelete: SetNull)
   companySubscription CompanySubscription?
 
+  // «كود الخصم»: amount is what was charged; these keep the price before
+  // the code and what it took off
+  originalAmount     Float?
+  discountAmount     Float?
+  discountCodeId     String?
+  discountCode       DiscountCode?       @relation(fields: [discountCodeId], references: [id], onDelete: SetNull)
+  discountRedemption DiscountRedemption?
+
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
