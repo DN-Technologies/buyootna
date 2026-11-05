@@ -166,7 +166,6 @@ const OfficeAdSheets = forwardRef<
       <FeatureAdSheet
         ref={adActions.featureAdSheetRef}
         propertyId={adActions.selectedPropertyId || undefined}
-        onSuccess={adActions.handleFeatureSuccess}
       />
       {texts && (
         <ConfirmActionSheet

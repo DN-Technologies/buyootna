@@ -170,7 +170,6 @@ export default function ActivitySheets({
       <FeatureAdSheet
         ref={adActions.featureAdSheetRef}
         propertyId={adActions.selectedPropertyId || undefined}
-        onSuccess={adActions.handleFeatureSuccess}
       />
 
       {/* --- Sort Ads Bottom Sheet --- */}
