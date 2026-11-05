@@ -11,8 +11,10 @@ import { showAlert } from '@/shared/utils/alert';
 import CompanyPlansScreen from '../company-plans';
 
 const mockPush = jest.fn();
+const mockRouterPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ back: jest.fn(), push: mockPush, replace: jest.fn() }),
+  router: { push: (...args: unknown[]) => mockRouterPush(...args) },
 }));
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn() }));
 jest.mock('expo-linking', () => ({
@@ -128,43 +130,21 @@ describe('CompanyPlansScreen', () => {
     expect(mockAlert).not.toHaveBeenCalled();
   });
 
-  it('on Android opens the payment gateway for the chosen plan', async () => {
+  // «اشترك» opens «الدفع» (Figma 5557:142956), which charges through Tap
+  it('on Android opens the payment screen for the chosen plan', async () => {
     setPlatform('android');
-    mockCharge.mockResolvedValue({
-      checkoutUrl: 'https://tap/checkout',
-      invoiceId: 'inv-1',
-      status: 'PENDING',
-    });
     const { getByTestId } = await renderScreen();
 
     await act(async () => {
       fireEvent.press(getByTestId('subscribe-annual'));
     });
 
-    expect(mockCharge).toHaveBeenCalledWith(
-      'p12',
-      'buyootna://payment-callback',
-    );
-    expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(
-      'https://tap/checkout',
-    );
-  });
-
-  it('on Android shows the server error when the charge fails', async () => {
-    setPlatform('android');
-    mockCharge.mockRejectedValue({
-      response: { data: { message: 'الباقة غير موجودة أو غير نشطة' } },
+    expect(mockRouterPush).toHaveBeenCalledWith({
+      pathname: '/checkout',
+      params: { purpose: 'subscription', companyPlanId: 'p12' },
     });
-    const { getByTestId } = await renderScreen();
-
-    await act(async () => {
-      fireEvent.press(getByTestId('subscribe-half-year'));
-    });
-
-    expect(mockAlert).toHaveBeenCalledWith(
-      'خطأ',
-      'الباقة غير موجودة أو غير نشطة',
-    );
+    expect(mockCharge).not.toHaveBeenCalled();
+    expect(WebBrowser.openBrowserAsync).not.toHaveBeenCalled();
   });
 });
 
