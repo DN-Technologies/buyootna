@@ -1,0 +1,43 @@
+// Kuwait's governorates and areas (ids are slugs, e.g. "hawally"), and the
+// places a user saved in the location picker.
+
+model Governorate {
+  id         String     @id @default(uuid())
+  name       String
+  areas      Area[]
+  properties Property[]
+}
+
+model Area {
+  id            String      @id @default(uuid())
+  name          String
+  governorateId String
+  governorate   Governorate @relation(fields: [governorateId], references: [id], onDelete: Cascade)
+  properties    Property[]
+
+  @@index([governorateId])
+}
+
+enum SavedLocationLabel {
+  HOME
+  WORK
+  OTHER
+}
+
+// Places the user saved in the location picker (المنزل / العمل / custom)
+model SavedLocation {
+  id        String             @id @default(uuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     SavedLocationLabel
+  // Shown for OTHER; HOME and WORK use their fixed titles
+  name      String?
+  address   String
+  latitude  Float
+  longitude Float
+  details   Json?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId])
+}
