@@ -15,7 +15,7 @@ import {
   PackagesIcon,
   ReportsNavIcon,
 } from '@/components/icons/AdminIcons'
-import { History as LogsNavIcon } from 'lucide-react'
+import { History as LogsNavIcon, TicketPercent as DiscountCodesIcon } from 'lucide-react'
 
 interface NavItem {
   title: string
@@ -54,6 +54,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'الاشتراكات والفواتير', href: '/billing', icon: BillingIcon },
       { title: 'الباقات والأسعار', href: '/plans', icon: PackagesIcon },
+      { title: 'أكواد الخصم', href: '/discount-codes', icon: DiscountCodesIcon },
     ],
   },
   {
