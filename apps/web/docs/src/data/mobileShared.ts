@@ -9,6 +9,45 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-block-company-office",
+      title: {
+        en: "Blocking a company or office closes its profile, hides it from the lists and refuses requests both ways",
+        ar: "حظر شركة أو مكتب يغلق ملفه ويخفيه من القوائم ويمنع الطلبات بين الطرفين",
+      },
+      priority: "P1",
+      story: {
+        en: "After «حظر» on a company's or office's profile, the profile stayed open, the company stayed in the companies tab, and «طلب عرض سعر» still sent it a request. Now the profile closes on a successful block; the companies and offices lists (signed in) leave out accounts blocked either way; a blocked profile opened again shows no request, chat or call buttons; and the API refuses a request to a company or office blocked either way (403 «لا يمكنك إرسال طلب إلى هذه الجهة»), and a company can't open or answer a request from a client blocked either way.",
+        ar: "بعد «حظر» في ملف شركة أو مكتب، كان الملف يبقى مفتوحاً، وتبقى الشركة في تبويب الشركات، ويرسل «طلب عرض سعر» طلباً إليها. الآن يُغلق الملف بعد الحظر؛ وقوائم الشركات والمكاتب (للمسجّل) تُخفي الحسابات المحظورة من الطرفين؛ والملف المحظور إن فُتح لا يعرض أزرار الطلب أو المحادثة أو الاتصال؛ والخادم يرفض الطلب إلى شركة أو مكتب محظور من أي طرف (403 «لا يمكنك إرسال طلب إلى هذه الجهة»)، ولا تستطيع الشركة فتح أو الرد على طلب عميل محظور.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Block a company from its profile: the profile closes and the company is gone from the companies tab.",
+          "Block an office: the profile closes and it is gone from the offices list.",
+          "Opening a blocked company or office again shows no request, chat or call button.",
+          "A request to a blocked company (e.g. from an older screen) is refused.",
+          "Unblocking brings it back.",
+        ],
+        ar: [
+          "حظر شركة من ملفها: يُغلق الملف وتختفي من تبويب الشركات.",
+          "حظر مكتب: يُغلق الملف ويختفي من قائمة المكاتب.",
+          "فتح شركة أو مكتب محظور مرة أخرى لا يعرض زر طلب أو محادثة أو اتصال.",
+          "الطلب إلى شركة محظورة (من شاشة قديمة مثلاً) يُرفض.",
+          "إلغاء الحظر يعيدها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Signed in, open a company → ⋮ → حظر الشركة → confirm: back on the list without it.",
+          "Repeat with an office; then unblock from الإعدادات and check both are back.",
+        ],
+        ar: [
+          "بحساب مسجّل، افتح شركة ← ⋮ ← حظر الشركة ← تأكيد: العودة للقائمة دونها.",
+          "كرر مع مكتب؛ ثم ألغِ الحظر من الإعدادات وتحقق من عودتهما.",
+        ],
+      },
+      updatedIn: "fix/block-company-office",
+    },
+    {
       id: "mobile-invoice-download",
       title: {
         en: "Invoices: «تحميل» saves the PDF to the device (no «قريباً», no share sheet)",

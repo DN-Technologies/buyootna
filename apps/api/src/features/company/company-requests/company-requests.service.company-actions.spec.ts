@@ -172,6 +172,22 @@ describe('CompanyRequestsService: a company accepts, rejects and responds', () =
   describe('respond (a company answers a request)', () => {
     const dto = { message: 'مرحبا', notes: 'خلال يومين', price: 200 };
 
+    // Blocked either way: the request is as good as gone for that company
+    it("can't answer a request from a client it blocked, or who blocked it", async () => {
+      prisma.companyRequest.findUnique.mockResolvedValue({
+        ...baseRequest,
+        targetIdentityId: 'company-1',
+      });
+      prisma.userBlock.findFirst.mockResolvedValue({
+        blockerUserId: 'user-client',
+      });
+
+      await expect(service.respond('req-1', 'company-1', dto)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prisma.requestOffer.upsert).not.toHaveBeenCalled();
+    });
+
     it("creates the company's offer and marks a pending request responded", async () => {
       prisma.companyRequest.findUnique.mockResolvedValue({
         ...baseRequest,

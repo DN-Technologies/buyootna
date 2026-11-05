@@ -67,12 +67,20 @@ export default function OfficeProfileScreen() {
   const accountId = useAuthStore((state) => state.user?.id);
   const officeUserId = office?.userId;
   const officeName = office?.name ?? 'المكتب';
+  const leaveProfile = () =>
+    router.canGoBack() ? router.back() : router.replace('/(individual)/home');
   const toggleBlock =
     officeUserId && officeUserId !== accountId
       ? () =>
           blockedByMe
             ? askToUnblock(officeUserId, officeName)
-            : askToBlock({ userId: officeUserId, identityId: office?.id }, officeName)
+            : askToBlock(
+                { userId: officeUserId, identityId: office?.id },
+                officeName,
+                // Blocked: its profile closes (QA: it stayed open and could
+                // still be contacted)
+                leaveProfile,
+              )
       : undefined;
 
   const {
@@ -188,7 +196,8 @@ export default function OfficeProfileScreen() {
         )}
 
         {/* ابدأ المحادثة, and اتصال when the office has a number */}
-        {office && (
+        {/* None for an office you blocked */}
+        {office && !blockedByMe && (
           <OfficeBottomBar
             phone={office.phone}
             onCall={handleCall}

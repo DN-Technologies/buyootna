@@ -10,9 +10,12 @@ jest.mock('@/features/reels/components/ProfileReels', () => ({
   __esModule: true,
   default: () => null,
 }));
+const mockBack = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
-    back: jest.fn(),
+    back: mockBack,
+    canGoBack: () => true,
+    replace: jest.fn(),
     push: jest.fn(),
   })),
   useLocalSearchParams: jest.fn(() => ({ id: 'comp-1' })),
@@ -375,7 +378,18 @@ describe('CompanyProfileScreen', () => {
       expect(mockAskToBlock).toHaveBeenCalledWith(
         { userId: 'user-1', identityId: 'comp-ident-1' },
         expect.any(String),
+        expect.any(Function),
       );
+      // QA: once blocked, the company's profile closes
+      mockBack.mockClear();
+      mockAskToBlock.mock.calls[0][2]();
+      expect(mockBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('a blocked company can not be sent a request', async () => {
+      mockBlocked = true;
+      const screen = await render(<CompanyProfileScreen />);
+      expect(screen.queryByTestId('company-request-quote')).toBeNull();
     });
 
     it('once blocked, offers «إلغاء حظر الشركة» instead', async () => {

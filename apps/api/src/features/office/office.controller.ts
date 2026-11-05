@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
@@ -17,7 +18,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import { OptionalJwtGuard } from '../../core/guards/optional-jwt.guard';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
+import type { RequestUser } from '../auth/strategies/jwt.strategy';
 import { GetOfficesFilterDto } from './dto/get-offices-filter.dto';
 import { RegisterOfficeDto } from './dto/register-office.dto';
 import {
@@ -52,8 +56,13 @@ export class OfficeController {
   })
   @ApiResponse({ status: 200, type: OfficeListResponseDto })
   @ApiCommonErrors()
-  async findAllOffices(@Query() filters: GetOfficesFilterDto) {
-    return this.directoryService.findOffices(filters);
+  // Signed in, accounts blocked either way aren't listed
+  @UseGuards(OptionalJwtGuard)
+  async findAllOffices(
+    @Query() filters: GetOfficesFilterDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.directoryService.findOffices(filters, reqUser?.userId);
   }
 
   @Get('office/:id')
