@@ -12,13 +12,18 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InvoicesEmptyIcon } from '@/assets/icons/more';
-import { invoicesService, InvoiceStatus } from '@/shared/api/invoices.service';
+import {
+  type InvoiceResponse,
+  invoicesService,
+  InvoiceStatus,
+} from '@/shared/api/invoices.service';
 import ConnectionErrorModal from '@/shared/components/feedback/ConnectionErrorModal';
 import ListRowSkeleton from '@/shared/components/skeletons/ListRowSkeleton';
 import { getIdentityPlansRoute } from '@/shared/navigation/getIdentityHomeRoute';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 import { showAlert } from '@/shared/utils/alert';
 import { exportInvoicesToPdf } from '@/shared/utils/invoiceExportHelper';
+import { confirmPdfSaved } from '@/shared/utils/savePdfToDevice';
 
 const TABS = [
   { key: 'ALL', label: 'الكل' },
@@ -62,11 +67,31 @@ export default function InvoicesScreen() {
       setIsExporting(true);
       const listToExport =
         filteredInvoices.length > 0 ? filteredInvoices : invoices;
-      await exportInvoicesToPdf(listToExport);
+      if ((await exportInvoicesToPdf(listToExport)) === 'saved') {
+        confirmPdfSaved('كشف الفواتير');
+      }
     } catch {
       showAlert('خطأ', 'حدث خطأ أثناء تصدير الفواتير. يرجى المحاولة لاحقاً');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // تحميل on a card: that invoice's PDF (it only said «قريباً», QA)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const handleDownloadOne = async (invoice: InvoiceResponse) => {
+    if (downloadingId) return;
+    try {
+      setDownloadingId(invoice.id);
+      const result = await exportInvoicesToPdf([invoice], {
+        subtitle: `فاتورة رقم ${invoice.invoiceNo}`,
+        fileName: `فاتورة-${invoice.invoiceNo}.pdf`,
+      });
+      if (result === 'saved') confirmPdfSaved('الفاتورة');
+    } catch {
+      showAlert('خطأ', 'حدث خطأ أثناء تحميل الفاتورة. يرجى المحاولة لاحقاً');
+    } finally {
+      setDownloadingId(null);
     }
   };
 
@@ -284,13 +309,17 @@ export default function InvoicesScreen() {
                     {/* Action Link (Left) */}
                     {invoice.status === 'PAID' && (
                       <TouchableOpacity
+                        testID={`invoice-download-${invoice.id}`}
                         activeOpacity={0.7}
-                        onPress={() =>
-                          showAlert('تحميل', 'سيتم تحميل الفاتورة قريباً')
-                        }
+                        disabled={!!downloadingId}
+                        onPress={() => handleDownloadOne(invoice)}
                         className="flex-row items-center gap-1.5"
                       >
-                        <Feather name="download" size={14} color="#15304D" />
+                        {downloadingId === invoice.id ? (
+                          <ActivityIndicator size="small" color="#15304D" />
+                        ) : (
+                          <Feather name="download" size={14} color="#15304D" />
+                        )}
                         <Text className="font-cairo-bold text-[13px] text-[#15304D]">
                           تحميل
                         </Text>
