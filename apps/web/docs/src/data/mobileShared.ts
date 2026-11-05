@@ -9,6 +9,45 @@ export const mobileShared: DocSection = {
   },
   stories: [
     {
+      id: "mobile-invoice-download",
+      title: {
+        en: "Invoices: «تحميل» saves the PDF to the device (no «قريباً», no share sheet)",
+        ar: "الفواتير: «تحميل» يحفظ ملف PDF على الجهاز (لا «قريباً» ولا نافذة المشاركة)",
+      },
+      priority: "P1",
+      story: {
+        en: "On الفواتير, a paid invoice's «تحميل» only said «سيتم تحميل الفاتورة قريباً», and the top bar's download icon opened the share sheet; the service invoices' card, details and top-bar downloads opened the share sheet too. Now each makes the PDF (one invoice, or the statement of the list) and saves it into a folder the user picks: the Files app on iOS, e.g. Downloads on Android. The folder is asked for once per app session (iOS grants access until the app restarts); a taken name gets «(2)». «تم التحميل» confirms it; cancelling the picker saves nothing and says nothing.",
+        ar: "في الفواتير، كان «تحميل» في الفاتورة المدفوعة يقول «سيتم تحميل الفاتورة قريباً» فقط، وأيقونة التحميل في الأعلى تفتح نافذة المشاركة؛ وكذلك تحميل فواتير الخدمات. الآن يُنشأ ملف PDF (فاتورة واحدة أو كشف القائمة) ويُحفظ في مجلد يختاره المستخدم: تطبيق الملفات على iOS، أو التنزيلات على Android. يُطلب المجلد مرة في كل جلسة، والاسم المكرر يُضاف له «(2)». تؤكد «تم التحميل» الحفظ؛ وإلغاء الاختيار لا يحفظ شيئاً.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A paid invoice's «تحميل» asks for a folder, then saves «فاتورة-<رقم>.pdf» there and shows «تم التحميل».",
+          "The top-bar download saves «كشف-الفواتير.pdf» the same way; no share sheet.",
+          "The second download in the same session saves without asking again.",
+          "Service invoices (card, details, top bar) save the same way.",
+          "Cancelling the folder picker saves nothing.",
+        ],
+        ar: [
+          "«تحميل» في فاتورة مدفوعة يطلب مجلداً ثم يحفظ «فاتورة-<رقم>.pdf» ويظهر «تم التحميل».",
+          "أيقونة التحميل في الأعلى تحفظ «كشف-الفواتير.pdf» بالطريقة نفسها؛ دون نافذة المشاركة.",
+          "التحميل الثاني في الجلسة نفسها يحفظ دون سؤال.",
+          "فواتير الخدمات (البطاقة والتفاصيل والأعلى) تحفظ بالطريقة نفسها.",
+          "إلغاء اختيار المجلد لا يحفظ شيئاً.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "On iOS: الفواتير → «تحميل» on a paid invoice → pick a folder in Files → open Files and find the PDF.",
+          "Repeat on Android (pick Downloads), and with the top-bar icon.",
+        ],
+        ar: [
+          "على iOS: الفواتير ← «تحميل» في فاتورة مدفوعة ← اختر مجلداً في الملفات ← افتح الملفات وابحث عن الملف.",
+          "كرر على Android (اختر التنزيلات)، وبأيقونة الأعلى.",
+        ],
+      },
+      updatedIn: "fix/invoice-download",
+    },
+    {
       id: "mobile-home-filter-sheet",
       title: {
         en: "Home: the filter button opens «تصفية البحث» (Figma), not the sort",

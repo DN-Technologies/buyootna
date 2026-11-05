@@ -1,5 +1,3 @@
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
 
 import {
   formatDay,
@@ -9,6 +7,7 @@ import {
   paymentLine,
 } from '@/features/service-invoices/format';
 import type { ServiceInvoice } from '@/shared/api/serviceInvoices.service';
+import { savePdfToDevice,type SaveResult } from '@/shared/utils/savePdfToDevice';
 
 // Values come from users (service names, client names): never raw into HTML
 const esc = (value: unknown) =>
@@ -37,21 +36,14 @@ const page = (body: string) => `
   <html dir="rtl" lang="ar"><head><meta charset="utf-8" /><style>${STYLE}</style></head>
   <body>${body}<div class="footer">بيوتنا • فواتير الخدمات</div></body></html>`;
 
-async function share(html: string, dialogTitle: string): Promise<boolean> {
-  const { uri } = await Print.printToFileAsync({ html });
-  if (!(await Sharing.isAvailableAsync())) return false;
-  await Sharing.shareAsync(uri, {
-    UTI: '.pdf',
-    mimeType: 'application/pdf',
-    dialogTitle,
-  });
-  return true;
-}
+// Saved into a folder the user picks: a download, not the share sheet (QA)
+const save = (html: string, fileName: string): Promise<SaveResult> =>
+  savePdfToDevice(html, fileName);
 
 const row = (label: string, value: string) =>
   `<div class="row"><span class="muted">${esc(label)}</span><span>${esc(value)}</span></div>`;
 
-/** One invoice as a receipt-style PDF, handed to the share sheet. */
+/** One invoice as a receipt-style PDF, saved to the device. */
 export function exportServiceInvoicePdf(invoice: ServiceInvoice) {
   const warranty = formatWarranty(invoice.warrantyMonths);
   const items = invoice.items
@@ -81,7 +73,7 @@ export function exportServiceInvoicePdf(invoice: ServiceInvoice) {
     <div class="row total"><span>الاجمالي</span><span>${esc(formatMoney(invoice.total))}</span></div>
     <div class="row"><span class="muted">${esc(paymentLine(invoice.paidAt))}</span><span></span></div>
   `);
-  return share(html, `فاتورة ${invoice.invoiceNo}`);
+  return save(html, `فاتورة-${invoice.invoiceNo}.pdf`);
 }
 
 /** Every invoice in the current list as one table PDF. */
@@ -110,5 +102,5 @@ export function exportServiceInvoicesPdf(invoices: ServiceInvoice[]) {
       <tbody>${rows}</tbody>
     </table>
   `);
-  return share(html, 'فواتير الخدمات');
+  return save(html, 'فواتير-الخدمات.pdf');
 }

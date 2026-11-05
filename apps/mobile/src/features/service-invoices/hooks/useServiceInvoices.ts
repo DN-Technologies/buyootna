@@ -8,6 +8,10 @@ import {
 import { showAlert } from '@/shared/utils/alert';
 import { getApiErrorMessage } from '@/shared/utils/getApiErrorMessage';
 import {
+  confirmPdfSaved,
+  type SaveResult,
+} from '@/shared/utils/savePdfToDevice';
+import {
   exportServiceInvoicePdf,
   exportServiceInvoicesPdf,
 } from '@/shared/utils/serviceInvoicePdf';
@@ -79,11 +83,14 @@ export function useServiceInvoices(mode: InvoicesMode) {
     }
   };
 
-  const runExport = async (work: () => Promise<boolean>) => {
+  const runExport = async (
+    work: () => Promise<SaveResult>,
+    what: 'الفاتورة' | 'كشف الفواتير',
+  ) => {
     if (isExporting) return;
     setIsExporting(true);
     try {
-      await work();
+      if ((await work()) === 'saved') confirmPdfSaved(what);
     } catch {
       showAlert('خطأ', 'حدث خطأ أثناء تصدير الفاتورة. يرجى المحاولة لاحقاً');
     } finally {
@@ -92,14 +99,14 @@ export function useServiceInvoices(mode: InvoicesMode) {
   };
 
   const exportOne = (invoice: ServiceInvoice) =>
-    runExport(() => exportServiceInvoicePdf(invoice));
+    runExport(() => exportServiceInvoicePdf(invoice), 'الفاتورة');
 
   const exportAll = () => {
     if (invoices.length === 0) {
       showAlert('تنبيه', 'لا توجد فواتير لتصديرها حالياً');
       return Promise.resolve();
     }
-    return runExport(() => exportServiceInvoicesPdf(invoices));
+    return runExport(() => exportServiceInvoicesPdf(invoices), 'كشف الفواتير');
   };
 
   return {
