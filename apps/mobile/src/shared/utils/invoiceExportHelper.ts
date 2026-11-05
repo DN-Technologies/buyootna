@@ -1,11 +1,22 @@
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-
 import { InvoiceResponse } from '@/shared/api/invoices.service';
+import { savePdfToDevice,type SaveResult } from '@/shared/utils/savePdfToDevice';
 
-export async function exportInvoicesToPdf(invoices: InvoiceResponse[]): Promise<boolean> {
+interface ExportOptions {
+  // Under the brand: what the PDF is (one invoice, or the statement)
+  subtitle?: string;
+  fileName?: string;
+}
+
+/** A PDF of these invoices, saved into a folder the user picks. */
+export async function exportInvoicesToPdf(
+  invoices: InvoiceResponse[],
+  {
+    subtitle = 'كشف تفصيلي بجميع الفواتير والاشتراكات',
+    fileName = 'كشف-الفواتير.pdf',
+  }: ExportOptions = {},
+): Promise<SaveResult> {
   if (!invoices || invoices.length === 0) {
-    return false;
+    return 'cancelled';
   }
 
   const currentDate = new Date().toLocaleDateString('ar-KW-u-nu-latn', {
@@ -144,7 +155,7 @@ export async function exportInvoicesToPdf(invoices: InvoiceResponse[]): Promise<
       <div class="header">
         <div>
           <div class="brand">بيوتنا Buyootna</div>
-          <div class="subtitle">كشف تفصيلي بجميع الفواتير والاشتراكات</div>
+          <div class="subtitle">${subtitle}</div>
         </div>
         <div style="text-align: left; font-size: 12px; color: #64748B;">
           <div>تاريخ التصدير: ${currentDate}</div>
@@ -191,21 +202,9 @@ export async function exportInvoicesToPdf(invoices: InvoiceResponse[]): Promise<
   `;
 
   try {
-    const { uri } = await Print.printToFileAsync({
-      html: htmlContent,
-    });
-
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
-        UTI: '.pdf',
-        mimeType: 'application/pdf',
-        dialogTitle: 'تصدير كشف الفواتير - تطبيق بيوتنا',
-      });
-      return true;
-    }
-    return false;
+    return await savePdfToDevice(htmlContent, fileName);
   } catch (error) {
-    console.error('Error generating or sharing PDF invoice statement:', error);
+    console.error('Error generating or saving the invoices PDF:', error);
     throw error;
   }
 }
