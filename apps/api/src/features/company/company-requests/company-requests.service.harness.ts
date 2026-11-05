@@ -69,6 +69,7 @@ export interface PrismaMock {
   };
   $transaction: jest.Mock;
   identity: { findUnique: jest.Mock };
+  userBlock: { findFirst: jest.Mock };
   companyIdentityData: { findUnique: jest.Mock };
   requestDismissal: { upsert: jest.Mock };
   requestBookmark: { upsert: jest.Mock; deleteMany: jest.Mock };
@@ -104,10 +105,13 @@ function createPrisma(): PrismaMock {
     companyIdentityData: {
       findUnique: jest.fn().mockResolvedValue({ specialty: null }),
     },
+    // No block between the two accounts unless a test says so
+    userBlock: { findFirst: jest.fn().mockResolvedValue(null) },
     // The caller/target: an approved company unless a test says otherwise
     identity: {
       findUnique: jest.fn().mockResolvedValue({
         id: 'company-1',
+        userId: 'user-company',
         type: 'COMPANY',
         companyData: { status: 'APPROVED' },
         officeData: null,

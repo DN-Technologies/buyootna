@@ -3,6 +3,7 @@ import { Prisma, RequestStatus } from '@prisma/client';
 
 import type { PrismaService } from '../../../core/prisma/prisma.service';
 import { CompanyRequestResponseDto } from './dto/company-request-response.dto';
+import { isBlockedEitherWay } from '../../blocks/block.rules';
 
 /**
  * What every part of the company requests feature shares: the includes, the
@@ -177,6 +178,25 @@ export async function getVisibleRequestOrThrow(
 
   if (!request || !isVisible) {
     throw new NotFoundException('الطلب غير موجود');
+  }
+
+  // A company and a client that blocked each other don't see each other's
+  // requests (the lists hide them; this covers opening one by id)
+  if (request.clientIdentityId !== identityId) {
+    const viewer = await prisma.identity.findUnique({
+      where: { id: identityId },
+      select: { userId: true },
+    });
+    if (
+      viewer &&
+      (await isBlockedEitherWay(
+        prisma,
+        viewer.userId,
+        request.clientIdentity.userId,
+      ))
+    ) {
+      throw new NotFoundException('الطلب غير موجود');
+    }
   }
 
   return request;

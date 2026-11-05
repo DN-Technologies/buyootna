@@ -26,6 +26,8 @@ const LISTING_QUERY_KEYS = [
   'searchResults',
   'mapDiscover',
   'serviceCompanies',
+  // The companies tab (QA: a blocked company stayed in it)
+  'companies',
   'offices',
   'companyRequests',
 ] as const;

@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../core/decorators/current-user.decorator';
+import { OptionalJwtGuard } from '../../core/guards/optional-jwt.guard';
 import { ApiAuth } from '../../core/swagger/api-auth.decorator';
 import { ApiCommonErrors } from '../../core/swagger/api-common-errors.decorator';
 import type { RequestUser } from '../auth/strategies/jwt.strategy';
@@ -108,8 +109,13 @@ export class CompanyController {
   })
   @ApiResponse({ status: 200, type: CompanyListResponseDto })
   @ApiCommonErrors()
-  async findAllCompanies(@Query() filters: GetCompaniesFilterDto) {
-    return this.directoryService.findCompanies(filters);
+  // Signed in, accounts blocked either way aren't listed
+  @UseGuards(OptionalJwtGuard)
+  async findAllCompanies(
+    @Query() filters: GetCompaniesFilterDto,
+    @CurrentUser() reqUser?: RequestUser,
+  ) {
+    return this.directoryService.findCompanies(filters, reqUser?.userId);
   }
 
   @Get('company/:id')

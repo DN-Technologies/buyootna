@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -21,6 +22,7 @@ import {
   parsePriceRange,
   type RequestWithClient,
 } from './company-requests.rules';
+import { isBlockedEitherWay } from '../../blocks/block.rules';
 
 /**
  * What the requester does: submit a request (public, or to one company),
@@ -54,6 +56,7 @@ export class CompanyRequestsRequesterActions {
         select: {
           id: true,
           type: true,
+          userId: true,
           companyData: { select: { status: true } },
           officeData: { select: { status: true } },
         },
@@ -70,6 +73,22 @@ export class CompanyRequestsRequesterActions {
       }
       if (target.id === clientIdentityId) {
         throw new BadRequestException('لا يمكن إرسال طلب إلى نفسك');
+      }
+      // No requests between accounts that blocked each other (QA: a blocked
+      // company still received them)
+      const client = await this.prisma.identity.findUnique({
+        where: { id: clientIdentityId },
+        select: { userId: true },
+      });
+      if (
+        client &&
+        (await isBlockedEitherWay(this.prisma, client.userId, target.userId))
+      ) {
+        throw new ForbiddenException({
+          statusCode: 403,
+          message: 'لا يمكنك إرسال طلب إلى هذه الجهة',
+          code: 'USER_BLOCKED',
+        });
       }
       // Receiving private requests is part of a company's subscription
       if (!(await hasActiveCompanySubscription(this.prisma, target.id))) {

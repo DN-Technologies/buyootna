@@ -7,13 +7,16 @@ import { useOfficeReviews } from '@/shared/hooks/providers/useOfficeReviews';
 import { useAuthStore } from '@/shared/store/useAuthStore';
 
 const mockPush = jest.fn();
+const mockBack = jest.fn();
 jest.mock('@/features/reels/components/ProfileReels', () => ({
   __esModule: true,
   default: () => null,
 }));
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({
-    back: jest.fn(),
+    back: mockBack,
+    canGoBack: () => true,
+    replace: jest.fn(),
     push: mockPush,
   })),
   useLocalSearchParams: jest.fn(() => ({ id: 'off-1' })),
@@ -489,7 +492,19 @@ describe('OfficeProfileScreen', () => {
       expect(mockAskToBlock).toHaveBeenCalledWith(
         { userId: 'user-off-1', identityId: 'off-ident-1' },
         expect.any(String),
+        expect.any(Function),
       );
+      // QA: once blocked, the office's profile closes
+      mockBack.mockClear();
+      mockAskToBlock.mock.calls[0][2]();
+      expect(mockBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('a blocked office offers no chat or call', async () => {
+      mockBlocked = true;
+      const screen = await render(<OfficeProfileScreen />);
+      expect(screen.queryByTestId('office-start-chat')).toBeNull();
+      expect(screen.queryByTestId('office-call')).toBeNull();
     });
 
     it('once blocked, offers «إلغاء حظر المكتب» instead', async () => {

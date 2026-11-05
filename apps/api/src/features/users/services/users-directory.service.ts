@@ -18,6 +18,7 @@ import { contactPhoneOf } from '../../identities/utils/contact-phone.util';
 import { hasActiveCompanySubscription } from '../../company-subscriptions/company-subscription.rules';
 import { splitList } from '../../properties/dto/get-properties-filter.dto';
 import { readableLocation } from '../../../common/utils/location.util';
+import { notBlockedUserWhere } from '../../blocks/block.rules';
 
 // مناطق تقديم الخدمة: «all of Kuwait» (the app's choice), matched by any place
 const ALL_KUWAIT_AREAS = 'جميع مناطق الكويت';
@@ -31,7 +32,8 @@ export class UsersDirectoryService {
   ) {}
 
   // --- Find Companies ---
-  async findCompanies(filters: GetCompaniesFilterDto) {
+  // viewerUserId: signed in, accounts blocked either way aren't listed
+  async findCompanies(filters: GetCompaniesFilterDto, viewerUserId?: string) {
     const {
       category,
       search,
@@ -99,8 +101,13 @@ export class UsersDirectoryService {
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'COMPANY',
       companyData: companyDataWhere,
-      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
-      user: { isDisabled: false, isBlocked: false },
+      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed, nor one
+      // the viewer blocked (or was blocked by)
+      user: {
+        isDisabled: false,
+        isBlocked: false,
+        ...(viewerUserId ? notBlockedUserWhere(viewerUserId) : {}),
+      },
     };
 
     let formattedCompanies: Awaited<
@@ -152,7 +159,7 @@ export class UsersDirectoryService {
   }
 
   // --- Find Offices ---
-  async findOffices(filters: GetOfficesFilterDto) {
+  async findOffices(filters: GetOfficesFilterDto, viewerUserId?: string) {
     const { search, location, page = 1, limit = 10 } = filters;
     const skip = (page - 1) * limit;
 
@@ -176,8 +183,13 @@ export class UsersDirectoryService {
     const whereClause: Prisma.IdentityWhereInput = {
       type: 'OFFICE',
       officeData: officeDataWhere,
-      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed
-      user: { isDisabled: false, isBlocked: false },
+      // Suspended (تعطيل مؤقت) or blocked accounts aren't listed, nor one
+      // the viewer blocked (or was blocked by)
+      user: {
+        isDisabled: false,
+        isBlocked: false,
+        ...(viewerUserId ? notBlockedUserWhere(viewerUserId) : {}),
+      },
     };
 
     const [identities, totalCount] = await Promise.all([
