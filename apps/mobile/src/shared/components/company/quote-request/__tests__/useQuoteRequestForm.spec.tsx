@@ -21,12 +21,14 @@ const onSent = jest.fn();
 // What the sheet is opened with (each test may change it)
 let mockServices = [{ id: 's1', title: 'تشطيب' }];
 let mockCatalogFallback = false;
+let mockSpecialty: string | null = null;
 
 function Harness() {
   hookRef.current = useQuoteRequestForm({
     companyName: 'شركة أركان',
     services: mockServices,
     catalogFallback: mockCatalogFallback,
+    companySpecialty: mockSpecialty,
     targetIdentityId: 'company-1',
     onSent,
   });
@@ -47,6 +49,7 @@ describe('useQuoteRequestForm (company profile sheet)', () => {
     jest.clearAllMocks();
     mockServices = [{ id: 's1', title: 'تشطيب' }];
     mockCatalogFallback = false;
+    mockSpecialty = null;
   });
   afterEach(() => cleanup());
 
@@ -182,5 +185,65 @@ describe('useQuoteRequestForm (company profile sheet)', () => {
       await hookRef.current.submit();
     });
     expect(companyRequestsService.create).not.toHaveBeenCalled();
+  });
+
+  // The company's «التخصص» (sign-up) shows fixed; with no services its
+  // types are offered, and it is the request's category
+  it("shows the company's specialty fixed and offers its types", async () => {
+    mockServices = [];
+    mockCatalogFallback = true;
+    mockSpecialty = 'مقاول عام';
+    (companyRequestsService.create as jest.Mock).mockResolvedValue({});
+    await render(<Harness />);
+
+    expect(hookRef.current.fixedSpecialty).toBe('مقاول عام');
+    expect(hookRef.current.specialtyOptions).toEqual([
+      { id: 'مقاول عام', label: 'مقاول عام' },
+    ]);
+    await act(async () => hookRef.current.setSpecialtyId('مكتب هندسي'));
+    expect(hookRef.current.specialtyId).toBe('مقاول عام');
+
+    const type = hookRef.current.serviceOptions[0];
+    expect(type).toBeTruthy();
+    await act(async () => {
+      hookRef.current.setServiceId(type.id);
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
+      hookRef.current.setDescription('تفاصيل');
+    });
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+
+    expect(companyRequestsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: type.id,
+        category: 'مقاول عام',
+        targetIdentityId: 'company-1',
+      }),
+    );
+  });
+
+  it('with its own services, still sends under its specialty', async () => {
+    mockServices = [{ id: 'svc-1', title: 'مخططات تنفيذية' }];
+    mockSpecialty = 'مقاول عام';
+    (companyRequestsService.create as jest.Mock).mockResolvedValue({});
+    await render(<Harness />);
+
+    expect(hookRef.current.serviceOptions).toEqual([
+      { id: 'svc-1', label: 'مخططات تنفيذية' },
+    ]);
+    await act(async () => {
+      hookRef.current.setServiceId('svc-1');
+      hookRef.current.govArea.setGovernorateId('hawally');
+      hookRef.current.govArea.setAreaId('hawally_2');
+      hookRef.current.setDescription('تفاصيل');
+    });
+    await act(async () => {
+      await hookRef.current.submit();
+    });
+    expect(companyRequestsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ category: 'مقاول عام' }),
+    );
   });
 });

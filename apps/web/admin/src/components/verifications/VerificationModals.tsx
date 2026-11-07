@@ -5,7 +5,9 @@ import { AdminDashboardPendingVerification } from '@/lib/admin-dashboard'
 import ReviewVerificationDrawer from '@/components/dashboard/ReviewVerificationDrawer'
 import ConfirmVerificationModal from '@/components/dashboard/ConfirmVerificationModal'
 import RejectVerificationModal from '@/components/dashboard/RejectVerificationModal'
-import RequestEditModal from '@/components/dashboard/RequestEditModal'
+import RequestEditModal, {
+  type RequestEditOptions,
+} from '@/components/dashboard/RequestEditModal'
 import VerificationSuccessToast from '@/components/dashboard/VerificationSuccessToast'
 
 interface VerificationModalsProps {
@@ -33,11 +35,7 @@ interface VerificationModalsProps {
 
   requestEditModalOpen: boolean
   onCloseRequestEditModal: () => void
-  onConfirmRequestEdit: (options: {
-    notes: string
-    notifyEmail: boolean
-    notifyInApp: boolean
-  }) => void
+  onConfirmRequestEdit: (options: RequestEditOptions) => void
 
   isSubmitting: boolean
 
@@ -119,6 +117,8 @@ export default function VerificationModals({
         onClose={onCloseRequestEditModal}
         onConfirm={onConfirmRequestEdit}
         isLoading={isSubmitting}
+        // A company: per field, for its «استكمال البيانات» screen
+        withFields={selectedForReview?.type === 'شركة'}
       />
     </>
   )

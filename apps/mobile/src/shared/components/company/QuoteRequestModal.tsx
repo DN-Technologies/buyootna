@@ -44,6 +44,8 @@ interface QuoteRequestModalProps {
   servicesLoading?: boolean;
   // A company with no services yet picks from the services catalogue
   catalogFallback?: boolean;
+  // The company's «التخصص», shown fixed
+  companySpecialty?: string | null;
   onRequestSubmitted?: () => void;
   /**
    * The COMPANY/OFFICE identity this directed quote is sent to. Without it
@@ -66,6 +68,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       services = NO_SERVICES,
       servicesLoading = false,
       catalogFallback = false,
+      companySpecialty,
       onRequestSubmitted,
       targetIdentityId,
     },
@@ -80,6 +83,7 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
       companyName,
       services,
       catalogFallback,
+      companySpecialty,
       targetIdentityId,
       onSent: () => {
         internalRef.current?.dismiss();
@@ -145,17 +149,31 @@ const QuoteRequestModal = forwardRef<BottomSheetModal, QuoteRequestModalProps>(
             logoUrl={companyLogoUrl}
           />
 
-          {form.usesCatalog && !servicesLoading && (
-            // No services of its own yet: the catalogue, as طلب عرض سعر
+          {form.fixedSpecialty ? (
+            // The company's own «التخصص»: shown, not picked
             <InlineDropdown
               title="مجال التخصص"
-              required
-              placeholder="اختر مجال التخصص"
+              placeholder={form.fixedSpecialty}
               options={form.specialtyOptions}
-              value={form.specialtyId}
+              value={form.fixedSpecialty}
               onChange={form.setSpecialtyId}
+              disabled
               testID="quote-specialty"
             />
+          ) : (
+            form.usesCatalog &&
+            !servicesLoading && (
+              // No services nor specialty yet: the catalogue, as طلب عرض سعر
+              <InlineDropdown
+                title="مجال التخصص"
+                required
+                placeholder="اختر مجال التخصص"
+                options={form.specialtyOptions}
+                value={form.specialtyId}
+                onChange={form.setSpecialtyId}
+                testID="quote-specialty"
+              />
+            )
           )}
 
           <InlineDropdown

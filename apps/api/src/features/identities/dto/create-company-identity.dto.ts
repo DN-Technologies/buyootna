@@ -12,9 +12,10 @@ export class CreateCompanyIdentityDto {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
+  // The licence comes with «طلب التوثيق» now; older builds still send it
+  @IsOptional()
   @IsString()
-  licenseNumber: string;
+  licenseNumber?: string;
 
   @IsOptional()
   @IsString()

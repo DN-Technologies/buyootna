@@ -45,9 +45,9 @@ export interface CompanyIdentityFields {
   // be typed into the `services` column, which also holds the company's
   // services list (search, cards), so it overwrote that.
   workingHours: string;
-  licenseActivity: string;
-  licenseNumber: string;
-  licenseExpiry: string;
+  // «التخصص»: the services catalogue's مجال التخصص (sign-up sets it)
+  specialty: string;
+  // The licence is sent with «طلب التوثيق», not edited here
 }
 
 export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
@@ -57,9 +57,7 @@ export const EMPTY_IDENTITY_FIELDS: CompanyIdentityFields = {
   serviceAreas: '',
   about: '',
   workingHours: '',
-  licenseActivity: '',
-  licenseNumber: '',
-  licenseExpiry: '',
+  specialty: '',
 };
 
 export const PHONE_REQUIRED_MESSAGE = 'رقم الهاتف مطلوب للتواصل معك.';
@@ -115,9 +113,7 @@ export function useCompanyEditProfile() {
       workingHours: companyData?.workingHours
         ? JSON.stringify(companyData.workingHours)
         : '',
-      licenseActivity: companyData?.licenseActivity || '',
-      licenseNumber: companyData?.licenseNumber || '',
-      licenseExpiry: companyData?.licenseExpiry || '',
+      specialty: companyData?.specialty || '',
     }),
     [companyData],
   );
@@ -130,7 +126,6 @@ export function useCompanyEditProfile() {
 
   // --- Files ---
   const [logoFile, setLogoFile] = useState<PickedFile | null>(null);
-  const [licenseFile, setLicenseFile] = useState<PickedFile | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -138,21 +133,6 @@ export function useCompanyEditProfile() {
   const [activityModalVisible, setActivityModalVisible] = useState(false);
   const [serviceAreasModalVisible, setServiceAreasModalVisible] =
     useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const onDateChange = (_event: unknown, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setIdentityField(
-        'licenseExpiry',
-        selectedDate.toLocaleDateString('ar-KW-u-nu-latn', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        }),
-      );
-    }
-  };
 
   // --- Verification state (phone by SMS, email by emailed code) ---
   const [phoneVerified, setPhoneVerified] = useState<boolean | null>(null);
@@ -243,7 +223,7 @@ export function useCompanyEditProfile() {
       // 2. Company/licence fields + picked files (multipart when files attached)
       const identityPatch = buildIdentityPatch();
       const hasIdentityPatch = Object.keys(identityPatch).length > 0;
-      if (hasIdentityPatch || logoFile || licenseFile) {
+      if (hasIdentityPatch || logoFile) {
         const formData = new FormData();
         Object.entries(identityPatch).forEach(([key, value]) => {
           if (value !== undefined) formData.append(key, value);
@@ -253,13 +233,6 @@ export function useCompanyEditProfile() {
             uri: logoFile.uri,
             name: logoFile.name || 'logo.jpg',
             type: logoFile.mimeType || 'image/jpeg',
-          } as unknown as Blob);
-        }
-        if (licenseFile) {
-          formData.append('license', {
-            uri: licenseFile.uri,
-            name: licenseFile.name || 'license.jpg',
-            type: licenseFile.mimeType || 'image/jpeg',
           } as unknown as Blob);
         }
         await apiClient.patch(`/identities/${activeIdentity.id}`, formData, {
@@ -322,7 +295,7 @@ export function useCompanyEditProfile() {
 
   const { isDirty } = form.formState;
   const canSubmit =
-    (isDirty || identityChanged || !!logoFile || !!licenseFile) &&
+    (isDirty || identityChanged || !!logoFile) &&
     !isSubmitting;
 
   const phoneChanged = isNewPhone(form.watch('phone') ?? '');
@@ -341,8 +314,6 @@ export function useCompanyEditProfile() {
     identityChanged,
     logoFile,
     setLogoFile,
-    licenseFile,
-    setLicenseFile,
     // Verification
     phoneRequired,
     phoneChanged,
@@ -362,8 +333,5 @@ export function useCompanyEditProfile() {
     setActivityModalVisible,
     serviceAreasModalVisible,
     setServiceAreasModalVisible,
-    showDatePicker,
-    setShowDatePicker,
-    onDateChange,
   };
 }

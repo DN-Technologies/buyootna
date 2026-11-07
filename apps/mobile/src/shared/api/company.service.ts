@@ -12,6 +12,9 @@ export interface CompanyDetailsResponse extends CompanyHeaderData {
   projects: CompanyProjectItemData[];
   // مواعيد العمل as the company set them (null: not set)
   workingHours?: WorkingDay[] | null;
+  // «التخصص» (the services catalogue's مجال التخصص); null for older
+  // companies that never set one
+  specialty?: string | null;
 }
 
 // One of the current company's projects, as GET /users/profile/projects

@@ -268,6 +268,8 @@ export const SignupStep2: React.FC<Step2Props> = ({
 };
 
 interface Step3Props extends StepProps {
+  // A company picks «التخصص»; an office fills in its licence
+  onOpenSpecialtySheet: () => void;
   onOpenActivitySheet: () => void;
   onOpenDatePicker: () => void;
   showDatePicker: boolean;
@@ -279,13 +281,35 @@ interface Step3Props extends StepProps {
 export const SignupStep3: React.FC<Step3Props> = ({
   control,
   type,
+  onOpenSpecialtySheet,
   onOpenActivitySheet,
   onOpenDatePicker,
   showDatePicker,
   onDateChange,
   licenseFile,
   pickLicense,
-}) => (
+}) =>
+  type === 'company' ? (
+    // The licence comes with «طلب التوثيق»; sign-up asks the specialty,
+    // which matches requests and the company's services
+    <View className="flex-1">
+      <TouchableOpacity
+        testID="signup-specialty"
+        activeOpacity={1}
+        onPress={onOpenSpecialtySheet}
+      >
+        <FormInput
+          control={control}
+          name="specialty"
+          label="التخصص"
+          placeholder="اختر تخصص الشركة"
+          editable={false}
+          pointerEvents="none"
+          rightIcon={<Feather name="chevron-down" size={20} color="#6B6A6A" />}
+        />
+      </TouchableOpacity>
+    </View>
+  ) : (
   <View className="flex-1">
     <TouchableOpacity activeOpacity={1} onPress={onOpenActivitySheet}>
       <FormInput

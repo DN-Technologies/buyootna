@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ApprovalStatus, Prisma } from '@prisma/client';
+import { ApprovalStatus, Prisma, VerificationStatus } from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { AdminVerificationsFilterDto } from '../../dto/admin-verifications-filter.dto';
 
@@ -39,9 +39,46 @@ function toDisplayStatus(
   return 'غير موثق';
 }
 
+// A company is live from sign-up; its row is about the «موثق» badge: its
+// latest «طلب التوثيق» (or the licence on file for older companies)
+const COMPANY_INCLUDE = {
+  identity: {
+    include: {
+      user: true,
+      verificationRequests: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
+  },
+} satisfies Prisma.CompanyIdentityDataInclude;
+
 type CompanyRow = Prisma.CompanyIdentityDataGetPayload<{
-  include: { identity: { include: { user: true } } };
+  include: typeof COMPANY_INCLUDE;
 }>;
+
+const PENDING_REQUEST = {
+  identity: {
+    verificationRequests: { some: { status: VerificationStatus.PENDING } },
+  },
+} satisfies Prisma.CompanyIdentityDataWhereInput;
+
+const COMPANY_STATUS_WHERE: Record<
+  string,
+  Prisma.CompanyIdentityDataWhereInput | undefined
+> = {
+  VERIFIED: { isVerified: true },
+  PENDING: PENDING_REQUEST,
+  UNVERIFIED: { isVerified: false, NOT: PENDING_REQUEST },
+  ALL: undefined,
+};
+
+function companyDisplayStatus(
+  row: CompanyRow,
+): 'قيد الانتظار' | 'موثق' | 'غير موثق' {
+  if (row.isVerified) return 'موثق';
+  const request = row.identity.verificationRequests[0];
+  return request?.status === VerificationStatus.PENDING
+    ? 'قيد الانتظار'
+    : 'غير موثق';
+}
 type OfficeRow = Prisma.OfficeIdentityDataGetPayload<{
   include: { identity: { include: { user: true } } };
 }>;
@@ -87,8 +124,9 @@ export class AdminVerificationsService {
         ]
       : undefined;
 
+    const companyStatusWhere = COMPANY_STATUS_WHERE[status];
     const companyWhere: Prisma.CompanyIdentityDataWhereInput = {
-      ...(approvalStatus ? { status: approvalStatus } : {}),
+      ...(companyStatusWhere ?? {}),
       ...(searchOr ? { OR: searchOr } : {}),
     };
     const officeWhere: Prisma.OfficeIdentityDataWhereInput = {
@@ -112,7 +150,7 @@ export class AdminVerificationsService {
         ? Promise.resolve([] as CompanyRow[])
         : this.prisma.companyIdentityData.findMany({
             where: companyWhere,
-            include: { identity: { include: { user: true } } },
+            include: COMPANY_INCLUDE,
           }),
       accountType === 'شركة'
         ? Promise.resolve([] as OfficeRow[])
@@ -122,16 +160,16 @@ export class AdminVerificationsService {
           }),
       this.prisma.companyIdentityData.count(),
       this.prisma.officeIdentityData.count(),
-      this.prisma.companyIdentityData.count({
-        where: { status: ApprovalStatus.PENDING },
+      this.prisma.companyVerificationRequest.count({
+        where: { status: VerificationStatus.PENDING },
       }),
       this.prisma.officeIdentityData.count({
         where: { status: ApprovalStatus.PENDING },
       }),
-      this.prisma.companyIdentityData.count({
+      this.prisma.companyVerificationRequest.count({
         where: {
-          status: ApprovalStatus.APPROVED,
-          updatedAt: { gte: dayBounds(0).start, lt: dayBounds(0).end },
+          status: VerificationStatus.APPROVED,
+          reviewedAt: { gte: dayBounds(0).start, lt: dayBounds(0).end },
         },
       }),
       this.prisma.officeIdentityData.count({
@@ -140,10 +178,10 @@ export class AdminVerificationsService {
           updatedAt: { gte: dayBounds(0).start, lt: dayBounds(0).end },
         },
       }),
-      this.prisma.companyIdentityData.count({
+      this.prisma.companyVerificationRequest.count({
         where: {
-          status: ApprovalStatus.REJECTED,
-          updatedAt: { gte: dayBounds(0).start, lt: dayBounds(0).end },
+          status: VerificationStatus.CHANGES_REQUESTED,
+          reviewedAt: { gte: dayBounds(0).start, lt: dayBounds(0).end },
         },
       }),
       this.prisma.officeIdentityData.count({
@@ -175,27 +213,39 @@ export class AdminVerificationsService {
 
     const data = pageRows.map((row) => {
       const user = row.identity.user;
+      // A company: its latest «طلب التوثيق» (licence and status)
+      const request =
+        row.accountType === 'شركة'
+          ? (row.identity.verificationRequests[0] ?? null)
+          : null;
+      const licence = request ?? row;
+      const displayStatus =
+        row.accountType === 'شركة'
+          ? companyDisplayStatus(row)
+          : toDisplayStatus(row.status);
       return {
         identityId: row.identityId,
         userId: user.id,
         name: row.name,
         email: user.email || user.phone || '—',
         accountType: row.accountType,
-        status: toDisplayStatus(row.status),
+        status: displayStatus,
         accountStatus:
           user.isBlocked || user.isDisabled
             ? ('موقوف' as const)
             : ('نشط' as const),
-        attachmentsText: row.licenseFileUrl ? '1' : '0',
-        sentAt: row.createdAt.toISOString(),
+        attachmentsText: licence.licenseFileUrl ? '1' : '0',
+        sentAt: (request?.submittedAt ?? row.createdAt).toISOString(),
         actionLabel:
-          row.status === ApprovalStatus.APPROVED
-            ? ('عرض' as const)
-            : ('مراجعة' as const),
-        licenseNumber: row.licenseNumber,
-        licenseActivity: row.licenseActivity,
-        licenseExpiry: row.licenseExpiry,
-        licenseFileUrl: row.licenseFileUrl,
+          displayStatus === 'موثق' ? ('عرض' as const) : ('مراجعة' as const),
+        licenseNumber: licence.licenseNumber,
+        licenseActivity: licence.licenseActivity,
+        licenseExpiry: licence.licenseExpiry,
+        licenseFileUrl: licence.licenseFileUrl,
+        // A company's «طلب التوثيق» (null: none sent)
+        verificationRequestId: request?.id ?? null,
+        verificationRequestStatus: request?.status ?? null,
+        verificationIssues: request?.issues ?? null,
         logoUrl: row.logoUrl,
         createdAt: row.createdAt.toISOString(),
       };

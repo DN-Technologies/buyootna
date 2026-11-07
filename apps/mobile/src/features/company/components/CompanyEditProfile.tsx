@@ -1,4 +1,3 @@
-import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
@@ -57,17 +56,6 @@ export default function CompanyEditProfile() {
     }
   };
 
-  // Licence file: a document (SVG/JPG/PNG) picked from the files app
-  const pickLicense = async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: ['image/jpeg', 'image/png', 'image/svg+xml'],
-      copyToCacheDirectory: true,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      profile.setLicenseFile(result.assets[0]);
-    }
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -102,19 +90,14 @@ export default function CompanyEditProfile() {
             verifySavedPhone={profile.verifySavedPhone}
           />
 
-          {/* 4. Section 2: الرخصة */}
+          {/* 4. التخصص (the licence goes with «طلب التوثيق» on المزيد) */}
+
           <CompanyLicenseSection
-            licenseActivity={identity.licenseActivity}
+
+            specialty={identity.specialty}
+
             onOpenActivityModal={() => profile.setActivityModalVisible(true)}
-            licenseNumber={identity.licenseNumber}
-            setLicenseNumber={(val) => setIdentityField('licenseNumber', val)}
-            licenseExpiry={identity.licenseExpiry}
-            showDatePicker={profile.showDatePicker}
-            setShowDatePicker={profile.setShowDatePicker}
-            onDateChange={profile.onDateChange}
-            licenseFile={profile.licenseFile}
-            existingLicenseUrl={activeIdentity?.companyData?.licenseFileUrl}
-            onPickLicense={pickLicense}
+
           />
         </ScrollView>
 
@@ -128,12 +111,12 @@ export default function CompanyEditProfile() {
         {/* Modals */}
         <SelectionModal
           visible={profile.activityModalVisible}
-          title="اختر النشاط"
+          title="اختر التخصص"
           // The services catalogue's specialties, as إضافة خدمة and طلب
-          // عرض سعر (an older activity still shows until changed)
+          // عرض سعر
           options={SPECIALTIES}
-          selectedValue={identity.licenseActivity}
-          onSelect={(val) => setIdentityField('licenseActivity', val)}
+          selectedValue={identity.specialty}
+          onSelect={(val) => setIdentityField('specialty', val)}
           onClose={() => profile.setActivityModalVisible(false)}
         />
 

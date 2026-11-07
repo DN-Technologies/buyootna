@@ -2,6 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UserSafeDto } from '../../users/dto/user-response.dto';
 
 class CompanyProfileDto {
+  @ApiProperty({
+    nullable: true,
+    example: 'المقاولات العامة',
+    description:
+      "The company's «التخصص» (services catalogue). طلب عرض سعر shows it as the request's field",
+  })
+  specialty: string | null;
+
   @ApiProperty()
   id: string;
 

@@ -352,7 +352,8 @@ describe('CompanyServicesService', () => {
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it('deleting the service removes every sub-service and clears the specialty', async () => {
+    // The specialty is chosen at sign-up (التخصص) and stays
+    it('deleting the service removes every sub-service and keeps the specialty', async () => {
       prisma.identity.findFirst.mockResolvedValue(
         company({
           specialty: 'مكتب هندسي',
@@ -371,7 +372,7 @@ describe('CompanyServicesService', () => {
       });
       expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
         where: { identityId: 'identity-1' },
-        data: { specialty: null, servicesHidden: false, services: 'تشطيب' },
+        data: { servicesHidden: false, services: 'تشطيب' },
       });
     });
   });

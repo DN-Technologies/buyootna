@@ -147,7 +147,8 @@ export default function CompanyBasicInfoCard({
         <div className="w-px bg-[#ECECEC]" />
         <Field
           label="رقم الرخصة"
-          value={licenseNumber || '—'}
+          // A company signs up without one; it comes with «طلب التوثيق»
+          value={licenseNumber || 'لم يُرفع الترخيص بعد'}
           icon={Hash}
           loading={loading}
         />

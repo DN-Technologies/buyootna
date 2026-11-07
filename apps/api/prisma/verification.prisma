@@ -1,0 +1,39 @@
+// «طلب التوثيق»: a company signs up without its licence and sends it here
+// for the «موثق» badge. One open request at a time: PENDING while the admin
+// reviews it, CHANGES_REQUESTED when fields must be fixed (`issues` holds
+// the reason per field), APPROVED once verified (the licence is then copied
+// onto CompanyIdentityData and isVerified set).
+enum VerificationStatus {
+  PENDING
+  CHANGES_REQUESTED
+  APPROVED
+}
+
+model CompanyVerificationRequest {
+  id              String             @id @default(uuid())
+  identityId      String
+  status          VerificationStatus @default(PENDING)
+  licenseActivity String?
+  // Normalised (no spaces, Western digits), as on CompanyIdentityData
+  licenseNumber   String
+  licenseExpiry   String?
+  licenseFileUrl  String
+  // Shown on «تفاصيل طلب التوثيق»: name, size (bytes) and type of the file
+  licenseFileName String?
+  licenseFileSize Int?
+  licenseFileType String?
+  // What the admin asked to fix: { licenseFile?, licenseNumber?,
+  // licenseActivity?, licenseExpiry?, note? } -> reason (Arabic text)
+  issues          Json?
+  // The last (re)submission
+  submittedAt     DateTime           @default(now())
+  reviewedAt      DateTime?
+  reviewedById    String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  identity Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@index([identityId, createdAt])
+  @@index([status])
+}
