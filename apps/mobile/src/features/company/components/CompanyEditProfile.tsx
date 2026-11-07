@@ -104,7 +104,7 @@ export default function CompanyEditProfile() {
 
           {/* 4. Section 2: الرخصة */}
           <CompanyLicenseSection
-            licenseActivity={identity.licenseActivity}
+            specialty={identity.specialty}
             onOpenActivityModal={() => profile.setActivityModalVisible(true)}
             licenseNumber={identity.licenseNumber}
             setLicenseNumber={(val) => setIdentityField('licenseNumber', val)}
@@ -128,12 +128,12 @@ export default function CompanyEditProfile() {
         {/* Modals */}
         <SelectionModal
           visible={profile.activityModalVisible}
-          title="اختر النشاط"
+          title="اختر التخصص"
           // The services catalogue's specialties, as إضافة خدمة and طلب
-          // عرض سعر (an older activity still shows until changed)
+          // عرض سعر
           options={SPECIALTIES}
-          selectedValue={identity.licenseActivity}
-          onSelect={(val) => setIdentityField('licenseActivity', val)}
+          selectedValue={identity.specialty}
+          onSelect={(val) => setIdentityField('specialty', val)}
           onClose={() => profile.setActivityModalVisible(false)}
         />
 

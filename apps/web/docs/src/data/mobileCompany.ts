@@ -9,6 +9,47 @@ export const mobileCompany: DocSection = {
   },
   stories: [
     {
+      id: "mobile-company-signup-specialty",
+      title: {
+        en: "Company sign-up asks «التخصص», not the licence; the quote sheet shows it fixed",
+        ar: "تسجيل الشركة يطلب «التخصص» لا الرخصة؛ ونموذج طلب عرض السعر يظهره ثابتاً",
+      },
+      priority: "P1",
+      story: {
+        en: "Step 3 of company sign-up (and «إضافة حساب» → company) no longer has «رقم الرخصة», «تاريخ انتهاء الرخصة» or «صورة الرخصة»: the licence comes with «طلب التوثيق». It asks «التخصص» instead, a required pick from the services catalogue's مجال التخصص, sent as specialty with no licence fields. Office sign-up is unchanged. On company edit profile the field «النشاط» is now «التخصص» and saves the specialty (the API refuses a change while the company has services). On a company's profile and from the companies list, «طلب عرض سعر» shows the company's specialty as a fixed «مجال التخصص»; «نوع الطلب» lists its own services, or that specialty's types when it has none, and the request's category is the specialty. A company without a specialty (older accounts) keeps the catalogue picker.",
+        ar: "لم تعد الخطوة الثالثة من تسجيل الشركة (و«إضافة حساب» ← شركة) تحتوي «رقم الرخصة» و«تاريخ انتهاء الرخصة» و«صورة الرخصة»: الرخصة تأتي مع «طلب التوثيق». وتطلب بدلها «التخصص»، اختياراً مطلوباً من مجالات التخصص في كتالوج الخدمات، ويُرسل دون حقول الرخصة. وتسجيل المكتب كما هو. وفي تعديل ملف الشركة أصبح حقل «النشاط» «التخصص» ويحفظ التخصص (ويرفض الخادم تغييره مع وجود خدمات). وفي ملف الشركة ومن قائمة الشركات يظهر «طلب عرض سعر» تخصص الشركة «مجال التخصص» ثابتاً؛ و«نوع الطلب» يعرض خدماتها، أو أنواع ذلك التخصص إن لم تكن لها خدمات، وفئة الطلب هي التخصص. والشركة دون تخصص (الحسابات القديمة) يبقى لها اختيار المجال من الكتالوج.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "Company sign-up step 3 shows only «التخصص»; it can't finish without one («التخصص مطلوب»).",
+          "The sign-up request carries specialty and no licenseNumber, licenseExpiry, licenseActivity or licence file.",
+          "Office sign-up still shows and requires its licence.",
+          "Company edit profile shows «التخصص» with the saved specialty.",
+          "The quote sheet shows the company's specialty fixed; the sent request's category is that specialty.",
+        ],
+        ar: [
+          "الخطوة الثالثة لتسجيل الشركة تعرض «التخصص» فقط؛ ولا يكتمل التسجيل دونه («التخصص مطلوب»).",
+          "طلب التسجيل يحمل التخصص دون رقم الرخصة أو تاريخها أو النشاط أو ملفها.",
+          "تسجيل المكتب ما زال يعرض رخصته ويطلبها.",
+          "تعديل ملف الشركة يعرض «التخصص» بالتخصص المحفوظ.",
+          "نموذج طلب عرض السعر يعرض تخصص الشركة ثابتاً؛ وفئة الطلب المرسل هي ذلك التخصص.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Sign up a new company, pick «مقاول عام» in step 3: the account is created and lands in the company app, without «موثق».",
+          "As an individual, open that company and tap «طلب عرض سعر»: «مجال التخصص» reads «مقاول عام» and can't be changed; «نوع الطلب» lists its types.",
+          "Sign up an office: step 3 still asks the licence number, expiry and image.",
+        ],
+        ar: [
+          "سجّل شركة جديدة واختر «مقاول عام» في الخطوة الثالثة: يُنشأ الحساب ويفتح تطبيق الشركة دون «موثق».",
+          "كفرد، افتح تلك الشركة واضغط «طلب عرض سعر»: «مجال التخصص» «مقاول عام» ولا يتغير؛ و«نوع الطلب» يعرض أنواعه.",
+          "سجّل مكتباً: الخطوة الثالثة ما زالت تطلب رقم الرخصة وتاريخها وصورتها.",
+        ],
+      },
+      updatedIn: "feat/company-signup-specialty-app",
+    },
+    {
       id: "mobile-company-services",
       title: {
         en: "More › الخدمات from Figma: sub-service switches, edit, add a sub-service, hide or delete the service",

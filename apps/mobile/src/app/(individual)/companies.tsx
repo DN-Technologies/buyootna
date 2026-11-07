@@ -326,6 +326,7 @@ export default function CompaniesScreen() {
         servicesLoading={selectedCompany.isLoading}
         // No services yet: the client picks from the services catalogue
         catalogFallback
+        companySpecialty={selectedCompany.company?.specialty}
         // Without it the request went out as a public one, not to them
         targetIdentityId={selectedCompanyId}
       />
