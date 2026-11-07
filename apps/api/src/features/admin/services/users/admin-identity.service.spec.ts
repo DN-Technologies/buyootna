@@ -5,6 +5,7 @@ import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { NotificationsService } from '../../../notifications/notifications.service';
 import { MailService } from '../../../../core/mail/mail.service';
 import { AdminAuditLogService } from '../audit/admin-audit-log.service';
+import { CompanyVerificationService } from '../../../identities/verification/company-verification.service';
 
 interface MockPrismaService {
   identity: {
@@ -48,6 +49,7 @@ describe('AdminIdentityService', () => {
   let notifications: MockNotificationsService;
   let mail: MockMailService;
   let auditLog: { log: jest.Mock };
+  let verification: { approve: jest.Mock; requestChanges: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -74,6 +76,11 @@ describe('AdminIdentityService', () => {
     };
 
     auditLog = { log: jest.fn().mockResolvedValue(undefined) };
+    // No «طلب التوثيق» unless a test says so
+    verification = {
+      approve: jest.fn().mockResolvedValue(null),
+      requestChanges: jest.fn().mockResolvedValue(null),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -94,6 +101,7 @@ describe('AdminIdentityService', () => {
           provide: AdminAuditLogService,
           useValue: auditLog,
         },
+        { provide: CompanyVerificationService, useValue: verification },
       ],
     }).compile();
 
@@ -208,6 +216,106 @@ describe('AdminIdentityService', () => {
           status: 'APPROVED',
         }),
       ).resolves.toBeDefined();
+    });
+  });
+
+  // «طلب التوثيق»: a company is live from sign-up; the decision is its badge
+  describe('a company verification request', () => {
+    const company = {
+      id: 'identity-company-1',
+      userId: 'user-1',
+      type: 'COMPANY',
+      companyData: { id: 'company-data-1' },
+      officeData: null,
+      user: { id: 'user-1', email: 'c@example.com', name: 'شركة' },
+    };
+
+    it('approving approves its pending request and turns the badge on', async () => {
+      prisma.identity.findUnique.mockResolvedValue(company);
+
+      await service.updateIdentityStatus(
+        'identity-company-1',
+        { status: 'APPROVED' },
+        'admin-1',
+      );
+
+      expect(verification.approve).toHaveBeenCalledWith(
+        'identity-company-1',
+        'admin-1',
+      );
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-company-1' },
+        data: { status: 'APPROVED', isVerified: true },
+      });
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'حسابك موثق بنجاح' }),
+      );
+    });
+
+    it('rejecting sends the request back with the reason and keeps the company live', async () => {
+      prisma.identity.findUnique.mockResolvedValue(company);
+      verification.requestChanges.mockResolvedValue({ id: 'vr-1' });
+
+      await service.updateIdentityStatus(
+        'identity-company-1',
+        { status: 'REJECTED', reason: 'الصورة غير واضحة' },
+        'admin-1',
+      );
+
+      expect(verification.requestChanges).toHaveBeenCalledWith(
+        'identity-company-1',
+        { note: 'الصورة غير واضحة' },
+        'admin-1',
+      );
+      // Never REJECTED: that would take the company off the app
+      expect(prisma.companyIdentityData.update).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: 'REJECTED' }),
+        }),
+      );
+    });
+
+    it('revoking a verified company without a request only drops the badge', async () => {
+      prisma.identity.findUnique.mockResolvedValue(company);
+
+      await service.updateIdentityStatus(
+        'identity-company-1',
+        { status: 'REJECTED' },
+        'admin-1',
+      );
+
+      expect(prisma.companyIdentityData.update).toHaveBeenCalledWith({
+        where: { identityId: 'identity-company-1' },
+        data: { isVerified: false },
+      });
+    });
+
+    it('asks for changes per field', async () => {
+      prisma.identity.findUnique.mockResolvedValue(company);
+
+      await service.requestIdentityEdit(
+        'identity-company-1',
+        { issues: { licenseNumber: 'غير مطابق لصورة الرخصة' } },
+        'admin-1',
+      );
+
+      expect(verification.requestChanges).toHaveBeenCalledWith(
+        'identity-company-1',
+        { licenseNumber: 'غير مطابق لصورة الرخصة', note: undefined },
+        'admin-1',
+      );
+      expect(notifications.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: 'رقم الرخصة: غير مطابق لصورة الرخصة',
+        }),
+      );
+    });
+
+    it('needs a note or a field to fix', async () => {
+      prisma.identity.findUnique.mockResolvedValue(company);
+      await expect(
+        service.requestIdentityEdit('identity-company-1', {}),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

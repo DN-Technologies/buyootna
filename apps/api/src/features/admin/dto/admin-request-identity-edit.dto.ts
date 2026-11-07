@@ -1,9 +1,23 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { VerificationIssuesDto } from '../../identities/verification/company-verification.dto';
 
 export class AdminRequestIdentityEditDto {
-  @IsNotEmpty()
+  // A general note; required unless `issues` names a field
+  @IsOptional()
   @IsString()
-  notes!: string;
+  notes?: string;
+
+  // A company's «طلب التوثيق»: the reason per field it must fix
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => VerificationIssuesDto)
+  issues?: VerificationIssuesDto;
 
   @IsOptional()
   @IsBoolean()

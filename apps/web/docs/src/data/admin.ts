@@ -9,6 +9,39 @@ export const admin: DocSection = {
   },
   stories: [
     {
+      id: "admin-company-verification-fields",
+      title: {
+        en: "Verifications: a company's «طلب التوثيق», sent back per field",
+        ar: "التوثيق: «طلب التوثيق» للشركة، وإعادته حقلاً حقلاً",
+      },
+      priority: "P1",
+      story: {
+        en: "For a company, the verifications list and the review drawer show the licence from its latest «طلب التوثيق» (status: قيد الانتظار while pending, موثق once verified, غير موثق otherwise). «طلب تعديل» on a company lets the admin tick صورة الرخصة / رقم الرخصة / النشاط / تاريخ الانتهاء, each with a reason (a suggested text is filled in), plus an optional general note; the company sees each reason under that field. Approving verifies the company with that licence; rejecting sends the request back with the reason and the company stays live.",
+        ar: "للشركة تعرض قائمة التوثيق ودرج المراجعة الرخصة من آخر «طلب توثيق». و«طلب تعديل» للشركة يتيح اختيار صورة الرخصة ورقمها والنشاط وتاريخ الانتهاء، لكل منها سبب (مع نص مقترح)، وملاحظة عامة اختيارية؛ وترى الشركة كل سبب تحت حقله. والاعتماد يوثق الشركة بتلك الرخصة؛ والرفض يعيد الطلب بالسبب وتبقى الشركة نشطة.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "A company's request-edit popup lists the four fields with a reason each.",
+          "«إرسال طلب التعديل» stays disabled until a field with its reason, or a note, is given.",
+          "Offices keep the notes-only popup.",
+        ],
+        ar: [
+          "نافذة طلب تعديل الشركة تعرض الحقول الأربعة مع سبب لكل منها.",
+          "«إرسال طلب التعديل» معطل حتى يُختار حقل بسببه أو تُكتب ملاحظة.",
+          "المكاتب تبقى بنافذة الملاحظات فقط.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Open a pending company in التوثيق → طلب تعديل → tick رقم الرخصة → send: the app shows «استكمال البيانات» with that reason.",
+        ],
+        ar: [
+          "افتح شركة قيد الانتظار في التوثيق ← طلب تعديل ← اختر رقم الرخصة ← أرسل: يظهر في التطبيق «استكمال البيانات» بذلك السبب.",
+        ],
+      },
+      updatedIn: "feat/company-verification-request",
+    },
+    {
       id: "admin-auth-guard",
       title: {
         en: "Only verified admins reach the dashboard",

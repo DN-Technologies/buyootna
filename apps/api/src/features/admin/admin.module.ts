@@ -1,3 +1,4 @@
+import { IdentitiesModule } from '../identities/identities.module';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ADMIN_CONTROLLERS } from './controllers';
@@ -31,6 +32,7 @@ import { jwtSecret } from 'src/core/utils/jwt-secret';
 @Module({
   imports: [
     NotificationsModule,
+    IdentitiesModule,
     CompanyRequestsModule,
     PlansModule,
     InvoicesModule,

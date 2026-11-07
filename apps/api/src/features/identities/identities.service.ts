@@ -434,10 +434,14 @@ export class IdentitiesService {
           ? Prisma.DbNull
           : (parsedHours as unknown as Prisma.InputJsonValue);
 
+    // A company's licence changes only through «طلب التوثيق» (reviewed
+    // before the «موثق» badge); edit profile can't touch it. An office
+    // keeps editing its own here.
+    const editsLicence = identity.type === IdentityType.OFFICE;
     // A changed licence number must still be free platform-wide
-    const nextLicense = (
-      dto as UpdateCompanyIdentityDto | UpdateOfficeIdentityDto
-    ).licenseNumber;
+    const nextLicense = editsLicence
+      ? (dto as UpdateOfficeIdentityDto).licenseNumber
+      : undefined;
     const licenseNumber = nextLicense
       ? normalizeLicenseNumber(nextLicense)
       : undefined;
@@ -445,13 +449,15 @@ export class IdentitiesService {
       await assertLicenseAvailable(this.prisma, licenseNumber, identityId);
     }
 
+    const licenceUpload = editsLicence ? licenseFile : undefined;
     const hasFiles =
-      identity.type !== IdentityType.INDIVIDUAL && !!(logoFile || licenseFile);
+      identity.type !== IdentityType.INDIVIDUAL &&
+      !!(logoFile || licenceUpload);
     const uploaded = hasFiles
       ? await this.uploadProviderFiles(
           identity.type as ProviderType,
           logoFile,
-          licenseFile,
+          licenceUpload,
         )
       : {};
     const payload = hasFiles
@@ -488,15 +494,11 @@ export class IdentitiesService {
           where: { identityId },
           data: {
             name: companyDto.name,
-            licenseNumber,
             services: companyDto.services,
             hqLocation: companyDto.hqLocation,
             serviceAreas: companyDto.serviceAreas,
             about: companyDto.about,
-            licenseActivity: companyDto.licenseActivity,
-            licenseExpiry: companyDto.licenseExpiry,
             logoUrl: companyDto.logoUrl,
-            licenseFileUrl: companyDto.licenseFileUrl,
             // Multipart bodies carry the map point as text
             latitude: toCoordinate(companyDto.latitude),
             longitude: toCoordinate(companyDto.longitude),

@@ -21,6 +21,7 @@ import {
 import LogoutBottomSheet from '@/features/auth/components/LogoutBottomSheet';
 import ProfileBottomSheet from '@/features/auth/components/ProfileBottomSheet';
 import CompanyProfileCard from '@/features/company/components/CompanyProfileCard';
+import CompanyVerificationAction from '@/features/company/verification/CompanyVerificationAction';
 import ProfileHeaderCardSkeleton from '@/shared/components/skeletons/ProfileHeaderCardSkeleton';
 import ContentContainer from '@/shared/components/ui/ContentContainer';
 import MenuItem from '@/shared/components/ui/MenuItem';
@@ -109,6 +110,7 @@ export default function CompanyMoreScreen() {
               location={companyLocation}
               onOpenAccountSelector={() => profileSheetRef.current?.present()}
               onEditPress={handleEditProfile}
+              secondaryAction={<CompanyVerificationAction />}
             />
           ) : (
             <ProfileHeaderCardSkeleton />

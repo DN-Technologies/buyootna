@@ -13,6 +13,12 @@ import CompanyMoreScreen from '../company-more';
 
 jest.mock('@gorhom/bottom-sheet');
 
+// «طلب التوثيق» has its own specs (features/company/verification)
+jest.mock('@/features/company/verification/CompanyVerificationAction', () => {
+  const { Text } = jest.requireActual('react-native');
+  return { __esModule: true, default: () => <Text>طلب توثيق</Text> };
+});
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useRouter: () => jest.requireMock('expo-router').router,

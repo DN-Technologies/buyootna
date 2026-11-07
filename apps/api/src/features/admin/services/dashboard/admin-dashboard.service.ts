@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ApprovalStatus, InvoiceStatus, Role } from '@prisma/client';
+import {
+  ApprovalStatus,
+  InvoiceStatus,
+  Role,
+  VerificationStatus,
+} from '@prisma/client';
 import { PrismaService } from '../../../../core/prisma/prisma.service';
 import { hasAccountType } from '../users/account-type.util';
 
@@ -115,19 +120,22 @@ export class AdminDashboardService {
           user: { include: { activePlan: true } },
         },
       }),
-      this.prisma.companyIdentityData.findMany({
-        where: { status: ApprovalStatus.PENDING },
+      // A company is live from sign-up: what waits is its «طلب التوثيق»
+      this.prisma.companyVerificationRequest.findMany({
+        where: { status: VerificationStatus.PENDING },
         take: 7,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { submittedAt: 'desc' },
         select: {
+          id: true,
           identityId: true,
-          name: true,
           licenseNumber: true,
           licenseActivity: true,
           licenseExpiry: true,
           licenseFileUrl: true,
-          logoUrl: true,
-          createdAt: true,
+          submittedAt: true,
+          identity: {
+            select: { companyData: { select: { name: true, logoUrl: true } } },
+          },
         },
       }),
       this.prisma.officeIdentityData.findMany({
@@ -207,14 +215,14 @@ export class AdminDashboardService {
     const pendingVerifications = [
       ...pendingCompanies.map((c) => ({
         identityId: c.identityId,
-        name: c.name,
+        name: c.identity.companyData?.name ?? '',
         type: 'شركة' as const,
         licenseNumber: c.licenseNumber,
         licenseActivity: c.licenseActivity,
         licenseExpiry: c.licenseExpiry,
         licenseFileUrl: c.licenseFileUrl,
-        logoUrl: c.logoUrl,
-        createdAt: c.createdAt,
+        logoUrl: c.identity.companyData?.logoUrl ?? null,
+        createdAt: c.submittedAt,
       })),
       ...pendingOffices.map((o) => ({
         identityId: o.identityId,

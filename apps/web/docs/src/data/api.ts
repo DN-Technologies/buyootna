@@ -9,6 +9,43 @@ export const api: DocSection = {
   },
   stories: [
     {
+      id: "api-company-verification-request",
+      title: {
+        en: "Company verification requests: GET/POST/PATCH /identities/:id/verification",
+        ar: "طلبات توثيق الشركات: GET/POST/PATCH /identities/:id/verification",
+      },
+      priority: "P1",
+      story: {
+        en: "New CompanyVerificationRequest (migration): PENDING → CHANGES_REQUESTED (issues: a reason per field licenseFile/licenseNumber/licenseActivity/licenseExpiry, plus a note) → APPROVED. GET returns the badge and the latest request; POST (multipart, `license` file ≤10 MB) needs the licence number and image, is refused while one is open or once verified, and checks the number is free platform-wide; PATCH resubmits only the fields sent back. Admin: PATCH /admin/identities/:id/status APPROVED approves the pending request (licence copied onto the company, isVerified true); REJECTED sends it back with the reason and keeps the company live (it never goes REJECTED); POST /admin/identities/:id/request-edit takes `issues` per field. The verifications list and the dashboard's pending list follow the request for companies. A company's licence can no longer be changed through PATCH /identities/:id (older app builds included).",
+        ar: "جدول جديد CompanyVerificationRequest: قيد المراجعة ← بحاجة لاستكمال (سبب لكل حقل) ← معتمد. GET يعيد الشارة وآخر طلب؛ وPOST يحتاج رقم الرخصة وصورتها ويُرفض مع طلب مفتوح أو بعد التوثيق ويتحقق أن الرقم غير مستخدم؛ وPATCH يعيد إرسال الحقول المعادة فقط. الإدارة: الاعتماد ينقل الرخصة للشركة ويوثقها؛ والرفض يعيد الطلب بالسبب وتبقى الشركة نشطة؛ وطلب التعديل يقبل سبباً لكل حقل. وقائمة التوثيق ولوحة المعلومات تتبعان الطلب للشركات. ولم يعد ممكناً تغيير رخصة الشركة عبر PATCH /identities/:id.",
+      },
+      acceptanceCriteria: {
+        en: [
+          "POST without the licence image: 400 «صورة الرخصة مطلوبة»; a second POST while one is open: 409.",
+          "PATCH changes only the fields in `issues` and returns to PENDING.",
+          "Admin approve copies the licence onto the company and sets isVerified.",
+          "Admin reject never sets the company REJECTED.",
+          "PATCH /identities/:id ignores a company's licence fields and file.",
+        ],
+        ar: [
+          "POST دون صورة الرخصة: 400؛ وطلب ثانٍ مع طلب مفتوح: 409.",
+          "PATCH يغيّر الحقول المعادة فقط ويعود قيد المراجعة.",
+          "اعتماد المشرف ينقل الرخصة ويوثق الشركة.",
+          "رفض المشرف لا يجعل الشركة مرفوضة.",
+          "PATCH /identities/:id يتجاهل حقول رخصة الشركة وملفها.",
+        ],
+      },
+      testScenarios: {
+        en: [
+          "Send a request, ask changes on رقم الرخصة in the admin, resend with a new number, approve: the company is verified with the new number.",
+        ],
+        ar: [
+          "أرسل طلباً، واطلب تعديل رقم الرخصة من الإدارة، وأعد الإرسال برقم جديد، ثم اعتمد: تُوثق الشركة بالرقم الجديد.",
+        ],
+      },
+      updatedIn: "feat/company-verification-request",
+    },
+    {
       id: "api-company-signup-specialty",
       title: {
         en: "Company sign-up: no licence (it comes with «طلب التوثيق»), «التخصص» required and kept",

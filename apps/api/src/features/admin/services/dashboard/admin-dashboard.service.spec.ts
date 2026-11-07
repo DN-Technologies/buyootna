@@ -14,7 +14,7 @@ describe('AdminDashboardService', () => {
       aggregate: jest.Mock;
       findMany: jest.Mock;
     };
-    companyIdentityData: {
+    companyVerificationRequest: {
       findMany: jest.Mock;
     };
     officeIdentityData: {
@@ -35,7 +35,7 @@ describe('AdminDashboardService', () => {
         aggregate: jest.fn().mockResolvedValue({ _sum: { amount: 0 } }),
         findMany: jest.fn().mockResolvedValue([]),
       },
-      companyIdentityData: {
+      companyVerificationRequest: {
         findMany: jest.fn().mockResolvedValue([]),
       },
       officeIdentityData: {
@@ -104,8 +104,12 @@ describe('AdminDashboardService', () => {
         },
       ]);
 
-      prisma.companyIdentityData.findMany.mockResolvedValue([
-        { identityId: 'company-identity-1', name: 'شركة الاختبار' },
+      // A company's pending «طلب التوثيق»
+      prisma.companyVerificationRequest.findMany.mockResolvedValue([
+        {
+          identityId: 'company-identity-1',
+          identity: { companyData: { name: 'شركة الاختبار', logoUrl: null } },
+        },
       ]);
       prisma.officeIdentityData.findMany.mockResolvedValue([
         { identityId: 'office-identity-1', name: 'مكتب الاختبار' },
@@ -148,6 +152,7 @@ describe('AdminDashboardService', () => {
           identityId: 'company-identity-1',
           name: 'شركة الاختبار',
           type: 'شركة',
+          logoUrl: null,
         },
         {
           identityId: 'office-identity-1',

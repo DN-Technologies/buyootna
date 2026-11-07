@@ -49,6 +49,24 @@ export class AdminVerificationRowDto {
   @ApiProperty({ nullable: true })
   logoUrl: string | null;
 
+  @ApiProperty({
+    nullable: true,
+    description: "A company's latest «طلب التوثيق» (null: none sent)",
+  })
+  verificationRequestId: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    enum: ['PENDING', 'CHANGES_REQUESTED', 'APPROVED'],
+  })
+  verificationRequestStatus: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: 'What the admin asked the company to fix, per field',
+  })
+  verificationIssues: unknown;
+
   @ApiProperty()
   createdAt: string;
 }

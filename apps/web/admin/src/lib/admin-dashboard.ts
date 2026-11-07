@@ -76,8 +76,19 @@ export async function updateIdentityStatus(
   return res.data;
 }
 
+// A company's «طلب التوثيق»: the fields it must fix, a reason each
+export type VerificationIssueField =
+  | 'licenseFile'
+  | 'licenseNumber'
+  | 'licenseActivity'
+  | 'licenseExpiry';
+
+export type VerificationIssues = Partial<Record<VerificationIssueField, string>>;
+
 export interface RequestIdentityEditOptions {
-  notes: string;
+  // A general note; optional when `issues` names a field
+  notes?: string;
+  issues?: VerificationIssues;
   notifyEmail?: boolean;
   notifyInApp?: boolean;
 }
